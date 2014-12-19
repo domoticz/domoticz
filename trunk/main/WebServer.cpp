@@ -3189,7 +3189,7 @@ namespace http {
 
 			if (
 				((iType == pTypeThermostat) && (iSubType == sTypeThermSetpoint))||
-				(iType == pTypeRadiator1)
+				((iType == pTypeRadiator1) && (iSubType== sTypeSmartwares))
 				)
 			{
 				int urights = 3;
@@ -4061,7 +4061,7 @@ namespace http {
 						int SubType = atoi(sd[3].c_str());
 						int used = atoi(sd[4].c_str());
 						_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
-						bool bdoAdd;
+						bool bdoAdd=false;
 						switch (Type)
 						{
 						case pTypeLighting1:
@@ -4079,6 +4079,7 @@ namespace http {
 						case pTypeThermostat2:
 						case pTypeThermostat3:
 						case pTypeRemote:
+						case pTypeRadiator1:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -4094,6 +4095,8 @@ namespace http {
 								if (resultSD.size() > 0)
 									bdoAdd = true;
 							}
+							if ((Type == pTypeRadiator1) && (SubType != sTypeSmartwaresSwitchRadiator))
+								bdoAdd = false;
 							if (bdoAdd)
 							{
 								root["result"][ii]["idx"] = ID;
@@ -4122,7 +4125,7 @@ namespace http {
 				int ii = 0;
 
 				//First List/Switch Devices
-				szQuery << "SELECT ID, Name, Type, Used FROM DeviceStatus ORDER BY Name";
+				szQuery << "SELECT ID, Name, Type, SubType, Used FROM DeviceStatus ORDER BY Name";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
 				{
@@ -4134,7 +4137,8 @@ namespace http {
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 						int Type = atoi(sd[2].c_str());
-						int used = atoi(sd[3].c_str());
+						int SubType = atoi(sd[3].c_str());
+						int used = atoi(sd[4].c_str());
 						if (used)
 						{
 							switch (Type)
@@ -4154,12 +4158,19 @@ namespace http {
 							case pTypeThermostat2:
 							case pTypeThermostat3:
 							case pTypeRemote:
-							{
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
 								ii++;
-							}
+								break;
+							case pTypeRadiator1:
+								if (SubType == sTypeSmartwaresSwitchRadiator)
+								{
+									root["result"][ii]["type"] = 0;
+									root["result"][ii]["idx"] = ID;
+									root["result"][ii]["Name"] = "[Light/Switch] " + Name;
+									ii++;
+								}
 								break;
 							}
 						}
@@ -4661,8 +4672,8 @@ namespace http {
 					else if (lighttype == 301)
 					{
 						//Smartwares Radiator
-						dtype = pTypeLighting2;
-						subtype = sTypeAC;
+						dtype = pTypeRadiator1;
+						subtype = sTypeSmartwaresSwitchRadiator;
 						std::string id = m_pWebEm->FindValue("id");
 						sunitcode = m_pWebEm->FindValue("unitcode");
 						if (
@@ -5024,8 +5035,8 @@ namespace http {
 						result = m_sql.query(szQuery.str());
 
 						//Now continue to insert the switch
-						dtype = pTypeLighting2;
-						subtype = sTypeAC;
+						dtype = pTypeRadiator1;
+						subtype = sTypeSmartwaresSwitchRadiator;
 
 					}
 				}
@@ -5125,7 +5136,8 @@ namespace http {
 					(dType == pTypeChime) ||
 					(dType == pTypeThermostat2) ||
 					(dType == pTypeThermostat3) ||
-					(dType == pTypeRemote)
+					(dType == pTypeRemote)||
+					((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
 					)
 				{
 					if (switchtype != STYPE_PushOff)
@@ -5919,7 +5931,8 @@ namespace http {
 					(dType != pTypeChime) &&
 					(dType != pTypeThermostat2) &&
 					(dType != pTypeThermostat3) &&
-					(dType != pTypeRemote)
+					(dType != pTypeRemote)&&
+					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
 					)
 					return; //no light device! we should not be here!
 
@@ -7938,7 +7951,8 @@ namespace http {
 								(dType != pTypeThermostat3) &&
 								(dType != pTypeRemote) &&
 								(dType != pTypeChime) &&
-								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus)))
+								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
+								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
 								)
 								continue;
 						}
@@ -8003,7 +8017,7 @@ namespace http {
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
 								(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) &&
 								(dType != pTypeWEIGHT)&&
-								(dType != pTypeRadiator1)
+								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwares)))
 								)
 								continue;
 						}
@@ -8121,7 +8135,8 @@ namespace http {
 						(dType == pTypeChime) ||
 						(dType == pTypeThermostat2) ||
 						(dType == pTypeThermostat3) ||
-						(dType == pTypeRemote)
+						(dType == pTypeRemote)||
+						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
 						)
 					{
 						//add light details
@@ -12332,7 +12347,8 @@ namespace http {
 				(dType != pTypeChime) &&
 				(dType != pTypeThermostat2) &&
 				(dType != pTypeThermostat3) &&
-				(dType != pTypeRemote)
+				(dType != pTypeRemote)&&
+				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
 				)
 				return; //no light device! we should not be here!
 

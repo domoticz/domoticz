@@ -1,6 +1,7 @@
 #pragma once
 
 #define sTypeDomoticzSecurity 0x83
+#define sTypeSmartwaresSwitchRadiator 0x84
 
 #define sTypeRAINWU 0x70	 //Weather Underground (Total rain reported, no counter)
 

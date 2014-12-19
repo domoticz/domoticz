@@ -97,7 +97,7 @@ define(['app'], function (app) {
 				$.each(data.result, function(i,item){
 							//Lights
 							var isdimmer=false;
-							if (((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 2') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0))&&(item.Favorite!=0))
+							if (((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 2') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0)||(item.SubType=="Smartwares Mode"))&&(item.Favorite!=0))
 							{
 								id="#dashcontent #light_" + item.idx;
 								var obj=$(id);
@@ -937,7 +937,7 @@ define(['app'], function (app) {
 							(item.SubType=="A/D")||
 							(item.SubType=="Thermostat Mode")||
 							(item.SubType=="Thermostat Fan Mode")||
-							(item.Type == "Radiator 1")
+							(item.SubType=="Smartwares")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -984,7 +984,7 @@ define(['app'], function (app) {
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 									status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 								}
-								else if (item.Type == "Radiator 1") {
+								else if (item.SubType=="Smartwares") {
 									status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 								}
 								if (typeof item.Usage != 'undefined') {
@@ -1078,7 +1078,7 @@ define(['app'], function (app) {
 									status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 									bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 								}
-								else if (item.Type == "Radiator 1") {
+								else if (item.SubType=="Smartwares") {
 									status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 									bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 								}
@@ -1380,7 +1380,7 @@ define(['app'], function (app) {
 				$.each(data.result, function(i,item){
 				  if (
 						(item.Favorite!=0)&&
-						((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 2') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0)||((item.Type.indexOf('Value') == 0) && (typeof item.SwitchType != 'undefined')))
+						((item.Type.indexOf('Light') == 0)||(item.SubType=="Smartwares Mode")||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 2') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0)||((item.Type.indexOf('Value') == 0) && (typeof item.SwitchType != 'undefined')))
 					  )
 				  {
 					totdevices+=1;
@@ -2432,7 +2432,7 @@ define(['app'], function (app) {
 							(item.SubType=="A/D")||
 							(item.SubType=="Thermostat Mode")||
 							(item.SubType=="Thermostat Fan Mode")||
-							(item.Type == "Radiator 1")
+							(item.SubType=="Smartwares")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -2507,7 +2507,7 @@ define(['app'], function (app) {
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
-						else if (item.Type == "Radiator 1") {
+						else if (item.SubType=="Smartwares") {
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
@@ -2593,7 +2593,7 @@ define(['app'], function (app) {
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							xhtm+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
-						else if (item.Type == "Radiator 1") {
+						else if (item.SubType=="Smartwares") {
 							xhtm+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						xhtm+='</td>\n';
@@ -2673,7 +2673,7 @@ define(['app'], function (app) {
 							xhtm+='override.png" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
-						else if (item.Type == "Radiator 1") {
+						else if (item.SubType=="Smartwares") {
 							xhtm+='override.png" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name + '\');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
