@@ -1659,6 +1659,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	case pTypeRemote:
 		bIsLightSwitch=true;
 		break;
+	case pTypeRadiator1:
+		bIsLightSwitch = (subType == sTypeSmartwaresSwitchRadiator);
+		break;
 	}
 	if (!bIsLightSwitch)
 		return devRowID;
@@ -1760,6 +1763,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 					case pTypeThermostat3:
 						newnValue=thermostat3_sOff;
 						break;
+					case pTypeRadiator1:
+						newnValue = Radiator1_sNight;
+						break;
 					default:
 						continue;
 					}
@@ -1830,6 +1836,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				break;
 			case pTypeThermostat3:
 				newnValue=thermostat3_sOff;
+				break;
+			case pTypeRadiator1:
+				newnValue = Radiator1_sNight;
 				break;
 			default:
 				continue;
@@ -1919,6 +1928,11 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
         {
             break;
         }
+	case pTypeRadiator1:
+		if (subType != sTypeSmartwaresSwitchRadiator)
+		{
+			break;
+		}
 	case pTypeLighting1:
 	case pTypeLighting2:
 	case pTypeLighting3:
@@ -2089,6 +2103,10 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							break;
 						case pTypeRFY:
 							cmd = rfy_sStop;
+							bAdd2DelayQueue = true;
+							break;
+						case pTypeRadiator1:
+							cmd = Radiator1_sNight;
 							bAdd2DelayQueue = true;
 							break;
 						}
@@ -6057,7 +6075,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -6065,6 +6083,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeLighting4,
 		pTypeLighting5,
 		pTypeLighting6,
+		pTypeRadiator1,
 		pTypeLimitlessLights,
 		pTypeSecurity1,
 		pTypeCurtain,

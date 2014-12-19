@@ -1107,7 +1107,13 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=pResponse->LIGHTING6.unitcode;
 	}
-	else if (devType==pTypeLimitlessLights)
+	else if ((devType == pTypeRadiator1) && (subType == sTypeSmartwaresSwitchRadiator))
+	{
+		sprintf(szTmp, "%X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
+		ID = szTmp;
+		Unit = pResponse->RADIATOR1.unitcode;
+	}
+	else if (devType == pTypeLimitlessLights)
 	{
 		_tLimitlessLights *pLed=(_tLimitlessLights *)pResponse;
 		ID = "1";
@@ -1252,6 +1258,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			case pTypeThermostat:
 			case pTypeThermostat2:
 			case pTypeThermostat3:
+			case pTypeRadiator1:
 				//we received a control message from a domoticz client,
 				//and should actually perform this command ourself switch
 				DeviceRowIdx = PerformRealActionFromDomoticzClient(pRXCommand, &pOrgHardware);
@@ -6258,6 +6265,9 @@ unsigned long long MainWorker::decode_Radiator1(const CDomoticzHardwareBase *pHa
 		case sTypeSmartwares:
 			WriteMessage("subtype       = Smartwares");
 			break;
+		case sTypeSmartwaresSwitchRadiator:
+			WriteMessage("subtype       = Smartwares Radiator Switch");
+			break;
 		default:
 			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RADIATOR1.packettype, pResponse->RADIATOR1.subtype);
 			WriteMessage(szTmp);
@@ -8708,6 +8718,33 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			return true;
 		}
 		break;
+	case pTypeRadiator1:
+		tRBUF lcmd;
+		lcmd.RADIATOR1.packetlength = sizeof(lcmd.RADIATOR1) - 1;
+		lcmd.RADIATOR1.packettype = pTypeRadiator1;
+		lcmd.RADIATOR1.subtype = sTypeSmartwares;
+		lcmd.RADIATOR1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.RADIATOR1.id1 = ID1;
+		lcmd.RADIATOR1.id2 = ID2;
+		lcmd.RADIATOR1.id3 = ID3;
+		lcmd.RADIATOR1.id4 = ID4;
+		lcmd.RADIATOR1.unitcode = Unit;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RADIATOR1.cmnd))
+			return false;
+		if (level > 15)
+			level = 15;
+		lcmd.RADIATOR1.temperature=0;
+		lcmd.RADIATOR1.tempPoint5 = 0;
+		lcmd.RADIATOR1.filler = 0;
+		lcmd.RADIATOR1.rssi = 7;
+		WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1));
+
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			lcmd.RADIATOR1.subtype = sTypeSmartwaresSwitchRadiator;
+			DecodeRXMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd);
+		}
+		return true;
 	}
 	return false;
 }

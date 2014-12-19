@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 685
+# ref 687
 
 CACHE:
 # CSS
@@ -503,3 +503,6 @@ ozwcp/cp.html
 FALLBACK:
 /images images/iphone-icon.png
 / views/offline.html
+# Floorplans
+CACHE:
+images/floorplans/example.jpg

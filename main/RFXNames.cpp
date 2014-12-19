@@ -509,6 +509,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
+		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },
 
 		{ pTypeDT, sTypeDT1, "RTGR328N" },
 
@@ -722,6 +723,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Status" },
+		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Status" },
 
 		{ pTypeDT, sTypeDT1, "?????" },
 
@@ -2106,7 +2108,8 @@ bool IsLightSwitchOn(const std::string &lstatus)
 		(lstatus=="Light On")||
 		(lstatus=="Light 2 On")||
 		(lstatus=="Open inline relay")||
-		(lstatus.find("Set Level")!=std::string::npos)||
+		(lstatus == "Day") ||
+		(lstatus.find("Set Level") != std::string::npos) ||
 		(lstatus.find("Set Group Level")!=std::string::npos)
 		);
 }
