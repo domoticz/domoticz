@@ -9,6 +9,7 @@
 
 #include "../httpclient/HTTPClient.h"
 #include "../webserver/Base64.h"
+#include <boost/algorithm/string/join.hpp>
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
@@ -41,10 +42,12 @@
 //#include "../hardware/S0MeterTCP.h"
 #include "../hardware/Teleinfo.h"
 #include "../hardware/Limitless.h"
+#include "../hardware/MochadTCP.h"
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/SolarEdgeTCP.h"
 #include "../hardware/SBFSpot.h"
+#include "../hardware/PhilipsHue.h"
 #include "../hardware/ICYThermostat.h"
 #include "../hardware/WOL.h"
 #include "../hardware/Meteostick.h"
@@ -52,8 +55,7 @@
 #include "../hardware/ToonThermostat.h"
 #include "../hardware/HarmonyHub.h"
 #include "../hardware/EcoDevices.h"
-#include "../hardware/MochadTCP.h"
-#include "../hardware/PhilipsHue.h"
+#include "../hardware/evohome.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -377,6 +379,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EnOceanESP2:
 	case HTYPE_EnOceanESP3:
 	case HTYPE_Meteostick:
+	case HTYPE_EVOHOME_SERIAL:
 	{
 			//USB/Serial
 #if defined WIN32
@@ -452,6 +455,10 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type==HTYPE_EnOceanESP3)
 			{
 				pHardware = new CEnOceanESP3(ID,szSerialPort, Mode1);
+			}
+			else if (Type==HTYPE_EVOHOME_SERIAL)
+			{
+				pHardware = new CEvohome(ID,szSerialPort);
 			}
 		}
 		break;
@@ -549,6 +556,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);
+		break;
+	case HTYPE_EVOHOME_SCRIPT:
+		pHardware = new CEvohome(ID);
 		break;
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
@@ -1320,6 +1330,13 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			break;
 		case pTypeSecurity1:
 			DeviceRowIdx = decode_Security1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeEvohome:
+			DeviceRowIdx=decode_evohome1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeEvohomeZone:
+		case pTypeEvohomeWater:
+			DeviceRowIdx=decode_evohome2(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCamera:
 			DeviceRowIdx = decode_Camera1(pHardware, HwdID, (tRBUF *)pRXCommand);
@@ -4657,6 +4674,126 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 		WriteMessageEnd();
 	}
 	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=255;//Unknown
+	unsigned char BatteryLevel = 255;//Unknown
+	
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue FROM DeviceStatus WHERE (HardwareID==" << HwdID << ") AND (";
+	if(pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
+	{
+		szQuery << "Unit == " << (int)pEvo->EVOHOME2.zone << ") AND (Type==" << (int)pEvo->EVOHOME2.type << ")";
+	}
+	else//unit number not available then id3 should be the zone device id
+	{
+		szQuery << "DeviceID == '" << std::hex << (int)RFX_GETID3(pEvo->EVOHOME2.id1,pEvo->EVOHOME2.id2,pEvo->EVOHOME2.id3) << std::dec << "')";
+	}
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1 && !pEvo->EVOHOME2.zone)
+		return -1;
+
+	bool bNewDev=false;
+	std::string name,szDevID;
+	unsigned char Unit;
+	unsigned char dType;
+	unsigned char dSubType;
+	std::string szUpdateStat;
+	if (result.size()>0)
+	{
+		std::vector<std::string> sd=result[0];
+		szDevID=sd[1];
+		Unit=atoi(sd[2].c_str());
+		dType=atoi(sd[3].c_str());
+		dSubType=atoi(sd[4].c_str());
+		szUpdateStat=sd[5];
+	}
+	else
+	{
+		bNewDev=true;
+		Unit=pEvo->EVOHOME2.zone;//should always be non zero
+		dType=pEvo->EVOHOME2.type;
+		dSubType=pEvo->EVOHOME2.subtype;		
+		if(!pHardware)
+			return -1;
+		CEvohome *pEvoHW=(CEvohome*)pHardware;//do we have rtti
+		if(dType==pTypeEvohomeWater)
+			name="Hot Water";
+		else 
+			name=pEvoHW->GetZoneName(Unit-1);
+		if(name.empty())
+			return -1;
+		szUpdateStat="0.0;0.0;Auto";
+	}
+	
+	if(dType==pTypeEvohomeWater && pEvo->EVOHOME2.updatetype==CEvohome::updSetPoint)
+		sprintf(szTmp,"%s",pEvo->EVOHOME2.temperature?"On":"Off");
+	else
+		sprintf(szTmp,"%.1f",pEvo->EVOHOME2.temperature/100.0f);
+	
+	std::vector<std::string> strarray;
+	StringSplit(szUpdateStat, ";", strarray);
+	if (strarray.size() >= 3)
+	{
+		if(pEvo->EVOHOME2.updatetype==CEvohome::updSetPoint)//SetPoint
+		{
+			strarray[1]=szTmp;
+			if(pEvo->EVOHOME2.mode<=CEvohome::zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
+			{
+				int nControllerMode=pEvo->EVOHOME2.controllermode;
+				if(dType==pTypeEvohomeWater && (nControllerMode==CEvohome::cmEvoHeatingOff || nControllerMode==CEvohome::cmEvoAutoWithEco || nControllerMode==CEvohome::cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
+					nControllerMode=CEvohome::cmEvoAuto;
+				if(pEvo->EVOHOME2.mode==CEvohome::zmAuto || nControllerMode==CEvohome::cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
+					strarray[2]=CEvohome::GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
+				else
+					strarray[2]=CEvohome::GetZoneModeName(pEvo->EVOHOME2.mode);
+				if(pEvo->EVOHOME2.mode==CEvohome::zmTmp)
+				{
+					std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+					if(strarray.size()<4) //add or set until
+						strarray.push_back(szISODate);
+					else
+						strarray[3]=szISODate;
+				}
+				else
+					if(strarray.size()>=4) //remove until
+						strarray.resize(3);
+			}
+		}
+		else if(pEvo->EVOHOME2.updatetype==CEvohome::updOverride)
+		{
+			strarray[2]=CEvohome::GetZoneModeName(pEvo->EVOHOME2.mode);
+			if(strarray.size()>=4) //remove until
+				strarray.resize(3);
+		}
+		else
+			strarray[0]=szTmp;
+		szUpdateStat=boost::algorithm::join(strarray, ";");
+	}
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, szDevID.c_str(),Unit,dType,dSubType,SignalLevel,BatteryLevel,cmnd,szUpdateStat.c_str(),m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
+	if(bNewDev)
+	{
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (ID == " << DevRowIdx << ")";
+		result = m_sql.query(szQuery.str());
+	}
+	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	//Not ready
+	return -1;
 }
 
 unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
@@ -8749,6 +8886,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	return false;
 }
 
+bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until)
+{   
+	//not ready
+	return false;
+}
+
 bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue)
 {
 	unsigned long long ID;
@@ -8812,7 +8955,9 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType==HTYPE_OpenThermGateway)||
 		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT)||
-		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
+		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT)||
+		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT)||
+		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		)
 	{
 		if (pHardware->HwdType==HTYPE_OpenThermGateway)
@@ -9439,7 +9584,7 @@ void MainWorker::HeartbeatCheck()
 	{
 		CDomoticzHardwareBase *pHardware = (CDomoticzHardwareBase *)(*itt);
 		//Skip Dummy Hardware
-		bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_Domoticz);
+		bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_Domoticz) && (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT);
 		if (bDoCheck)
 		{
 			//Check Thread Timeout

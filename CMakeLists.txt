@@ -175,6 +175,7 @@ hardware/Dummy.cpp
 hardware/EcoDevices.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
+hardware/evohome.cpp
 hardware/ForecastIO.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp

@@ -99,7 +99,7 @@ void ZWaveBase::Do_Work()
 				time_t tdiff=atime-m_ControllerCommandStartTime;
 				if (tdiff>=CONTROLLER_COMMAND_TIMEOUT)
 				{
-					_log.Log(LOG_ERROR,"ZWave: Stopping Controller command (Timeout!)");
+					_log.Log(LOG_STATUS,"ZWave: Stopping Controller command (Timeout!)");
 					CancelControllerCommand();
 				}
 			}

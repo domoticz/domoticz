@@ -1421,11 +1421,11 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 {
 	boost::lock_guard<boost::mutex> l(luaMutex);
 
-	if (isEventscheduled(filename))
-	{
-		//_log.Log(LOG_NORM,"Already scheduled this event, skipping");
-		return;
-	}
+	//if (isEventscheduled(filename))
+	//{
+	//	//_log.Log(LOG_NORM,"Already scheduled this event, skipping");
+	//	return;
+	//}
 
 	lua_State *lua_state;
 	lua_state = luaL_newstate();
