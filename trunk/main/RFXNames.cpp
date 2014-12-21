@@ -2,6 +2,7 @@
 #include "RFXNames.h"
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
+#include "../hardware/evohome.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;
@@ -174,6 +175,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
 		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface" },
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
+		{ HTYPE_EVOHOME_SERIAL, "evohome - via serial for HGI/S80" },
+		{ HTYPE_EVOHOME_SCRIPT, "evohome - via script" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -241,6 +244,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_PERCENTAGE, "Percentage", "P" },
 		{ NTYPE_RPM, "RPM", "Z" },
 		{ NTYPE_DEWPOINT, "Dew Point", "D" },
+		{ NTYPE_SETPOINT, "Set Point", "N" },
 		
 		{  0,NULL,NULL }
 	};
@@ -271,8 +275,9 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_TODAYCOUNTER, "cnt" },
 		{ NTYPE_SWITCH_OFF, "On" },
 		{ NTYPE_PERCENTAGE, "%%" },
-		{ NTYPE_DEWPOINT, "degrees" },
 		{ NTYPE_RPM, "RPM" },
+		{ NTYPE_DEWPOINT, "degrees" },
+		{ NTYPE_SETPOINT, "degrees" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -366,6 +371,9 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeBBQ, "BBQ Meter", "bbq" },
 		{ pTypePOWER, "Current/Energy" , "current" },
 		{ pTypeRFY, "RFY" , "blinds" },
+		{ pTypeEvohome, "Heating" , "evohome" },
+		{ pTypeEvohomeZone, "Heating" , "evohome" },
+		{ pTypeEvohomeWater, "Heating" , "evohome" },
 		{  0,NULL,NULL }
 	};
 	if (snum==1)
@@ -583,6 +591,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
 
+		{ pTypeEvohome, sTypeEvohome, "evohome" },
+		{ pTypeEvohomeZone, sTypeEvohomeZone, "Zone" },
+		{ pTypeEvohomeWater, sTypeEvohomeWater, "Hot Water" },
 
 		{  0,0,NULL }
 	};
@@ -796,6 +807,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFYext, "Status" },
+		{ pTypeEvohome, sTypeEvohome, "Status" },
+		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
+		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
 
 		{  0,0,NULL }
 	};
@@ -1470,6 +1484,9 @@ void GetLightStatus(
 			break;
 		}
 		break;
+	case pTypeEvohome:
+		llevel=0;
+		lstatus=CEvohome::GetWebAPIModeName(nValue);
 	}
 }
 
@@ -2108,8 +2125,7 @@ bool IsLightSwitchOn(const std::string &lstatus)
 		(lstatus=="Light On")||
 		(lstatus=="Light 2 On")||
 		(lstatus=="Open inline relay")||
-		(lstatus == "Day") ||
-		(lstatus.find("Set Level") != std::string::npos) ||
+		(lstatus.find("Set Level")!=std::string::npos)||
 		(lstatus.find("Set Group Level")!=std::string::npos)
 		);
 }

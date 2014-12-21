@@ -93,6 +93,9 @@ enum _eHardwareTypes {
 	HTYPE_HARMONY_HUB,			//36
 	HTYPE_Mochad,				//37
 	HTYPE_Philips_Hue,			//38
+	HTYPE_EVOHOME_SERIAL,		//39
+	HTYPE_EVOHOME_SCRIPT,		//40
+
 	HTYPE_END
 };
 
@@ -118,6 +121,7 @@ enum _eNotificationTypes
 	NTYPE_PERCENTAGE,
 	NTYPE_DEWPOINT,
 	NTYPE_RPM,
+	NTYPE_SETPOINT,
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);

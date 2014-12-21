@@ -38,6 +38,7 @@ public:
 private:
 	friend class C1Wire;
 	friend class CDummy;
+	friend class CEvohome;
 	friend class DomoticzTCP;
 	friend class P1MeterBase;
 	friend class P1MeterSerial;

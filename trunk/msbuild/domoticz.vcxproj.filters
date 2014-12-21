@@ -162,8 +162,11 @@
     <Filter Include="Devices\ZWave\OpenZWave\Control Panel">
       <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Teleinfo\SolarEdge">
+    <Filter Include="Devices\SolarEdge">
       <UniqueIdentifier>{e30a6865-acaf-4ce1-a43d-37183b91520f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\EvoHome">
+      <UniqueIdentifier>{424992c9-c3da-4799-9ea2-b4136c3845ac}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -421,10 +424,10 @@
       <Filter>Devices\AsyncSerialTCP</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\SolarEdgeBase.h">
-      <Filter>Devices\Teleinfo\SolarEdge</Filter>
+      <Filter>Devices\SolarEdge</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\SolarEdgeTCP.h">
-      <Filter>Devices\Teleinfo\SolarEdge</Filter>
+      <Filter>Devices\SolarEdge</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h">
       <Filter>TCPProxy</Filter>
@@ -491,6 +494,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinyxml.h">
       <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\evohome.h">
+      <Filter>Devices\EvoHome</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -711,10 +717,10 @@
       <Filter>Devices\AsyncSerialTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\SolarEdgeBase.cpp">
-      <Filter>Devices\Teleinfo\SolarEdge</Filter>
+      <Filter>Devices\SolarEdge</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\SolarEdgeTCP.cpp">
-      <Filter>Devices\Teleinfo\SolarEdge</Filter>
+      <Filter>Devices\SolarEdge</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
       <Filter>TCPProxy</Filter>
@@ -787,6 +793,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxmlparser.cpp">
       <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\evohome.cpp">
+      <Filter>Devices\EvoHome</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

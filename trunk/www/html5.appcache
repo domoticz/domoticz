@@ -444,6 +444,7 @@ js/jquery.isotope.min.js
 js/jquery.jeditable.mini.js
 js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
+js/jquery-ui-timepicker-addon.js
 js/modules/exporting.js
 js/ng-grid-flexible-height.js
 js/ng-grid.min.js
