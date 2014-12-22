@@ -35,6 +35,14 @@
 
 extern bool bHasInternalTemperature;
 extern std::string szInternalTemperatureCommand;
+
+extern bool bHasInternalVoltage;
+extern std::string szInternalVoltageCommand;
+
+extern bool bHasInternalCurrent;
+extern std::string szInternalCurrentCommand;
+
+
 #define round(a) ( int ) ( a + .5 )
 
 CHardwareMonitor::CHardwareMonitor()
@@ -327,6 +335,50 @@ void CHardwareMonitor::GetInternalTemperature()
 	}
 }
 
+void CHardwareMonitor::GetInternalVoltage()
+{
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand.c_str());
+	if (ret.size() < 1)
+		return;
+	std::string tmpline = ret[0];
+	if (tmpline.find("volt=") == std::string::npos)
+		return;
+	tmpline = tmpline.substr(5);
+	size_t pos = tmpline.find("'");
+	if (pos != std::string::npos)
+	{
+		tmpline = tmpline.substr(0, pos);
+	}
+
+	float voltage = static_cast<float>(atof(tmpline.c_str()));
+	if (voltage == 0)
+		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
+
+	SendVoltage(1, voltage, "Internal Voltage");
+}
+
+void CHardwareMonitor::GetInternalCurrent()
+{
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand.c_str());
+	if (ret.size() < 1)
+		return;
+	std::string tmpline = ret[0];
+	if (tmpline.find("curr=") == std::string::npos)
+		return;
+	tmpline = tmpline.substr(5);
+	size_t pos = tmpline.find("'");
+	if (pos != std::string::npos)
+	{
+		tmpline = tmpline.substr(0, pos);
+	}
+
+	float current = static_cast<float>(atof(tmpline.c_str()));
+	if (current == 0)
+		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
+
+	SendVoltage(1, current, "Internal Current");
+}
+
 void CHardwareMonitor::FetchData()
 {
 #ifdef WIN32
@@ -343,6 +395,14 @@ void CHardwareMonitor::FetchData()
 	if (bHasInternalTemperature)
 	{
 		GetInternalTemperature();
+	}
+	if (bHasInternalVoltage)
+	{
+		GetInternalVoltage();
+	}
+	if (bHasInternalCurrent)
+	{
+		GetInternalCurrent();
 	}
 #endif
 }
