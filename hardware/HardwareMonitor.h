@@ -24,6 +24,8 @@ private:
 	void Init();
 	void FetchData();
 	void GetInternalTemperature();
+	void GetInternalVoltage();
+	void GetInternalCurrent();
 	void UpdateSystemSensor(const std::string& qType, const int dindex, const std::string& devName, const std::string& devValue);
 	void SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname);
 	void SendTempSensor(const int Idx, const float Temp, const std::string &defaultname);
