@@ -57,17 +57,17 @@ char const CEvohomeMsg::szPacketType[5][8]={"Unknown","I","RQ","RP","W"};
 
 const char* CEvohome::GetControllerModeName(uint8_t nControllerMode)
 {
-	return m_szControllerMode[min(nControllerMode,(uint8_t)6)];
+	return m_szControllerMode[(std::min)(nControllerMode,(uint8_t)6)];
 }
 
 const char* CEvohome::GetWebAPIModeName(uint8_t nControllerMode)
 {
-	return m_szWebAPIMode[min(nControllerMode,(uint8_t)6)];
+	return m_szWebAPIMode[(std::min)(nControllerMode,(uint8_t)6)];
 }
 
 const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
 {
-	return m_szZoneMode[min(nZoneMode,(uint8_t)6)];
+	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)];
 }
 
 CEvohome::CEvohome(const int ID, const char* szSerialPort) :
@@ -1234,7 +1234,7 @@ bool CEvohome::SetZoneCount(uint8_t nZoneCount)
 bool CEvohome::SetMaxZoneCount(uint8_t nZoneCount)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
-	int nMaxZones=max(m_nZoneCount,nZoneCount);
+	int nMaxZones=(std::max)(m_nZoneCount,nZoneCount);
 	bool bRet=(m_nZoneCount!=nMaxZones);
 	m_nZoneCount=nMaxZones;
 	return bRet;
