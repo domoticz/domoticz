@@ -566,7 +566,11 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 			}
 			int ps=0;
 			for(size_t j=0;j<tkn.length();j+=2)
-				sscanf(tkn.substr(j,2).c_str(),"%02hhx",&payload[ps++]);//requires C99
+			{
+				unsigned int nHex;
+				sscanf(tkn.substr(j,2).c_str(),"%02x",&nHex);
+				payload[ps++]=static_cast<uint8_t>(nHex);
+			}
 			if(ps==payloadsize)
 			{
 				SetFlag(flgpay);
@@ -999,7 +1003,7 @@ bool CEvohome::DecodeSysInfo(CEvohomeMsg &msg)//10e0
 	msg.Get(edt, 10).Get(edtp2);
 	msg.payload[38]='\0';//presumably not null terminated if name consumes all available bytes in the payload
 	SetControllerName((const char*)&msg.payload[msg.GetPos()]);
-	Log(false, LOG_STATUS, "evohome: %s: d1 %s App Ver %d (%s) Name %s", tag, edt.Getstrdate().c_str(), nAppVer, edtp2.Getstrdate().c_str(), &msg.payload[msg.GetPos()]);
+	Log(false, LOG_STATUS, "evohome: %s: d1 %s App Ver %d (%s) Name %s", tag, edt.GetStrDate().c_str(), nAppVer, edtp2.GetStrDate().c_str(), &msg.payload[msg.GetPos()]);
 	return true;
 }
 
