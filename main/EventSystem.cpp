@@ -460,7 +460,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
-			}
+				else if (sitem.subType == sTypeCurrent)
+				{
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					isUtility = true;
+				}
+		}
 			break;
 		case pTypeRAIN:
 			if (splitresults.size() == 2)
