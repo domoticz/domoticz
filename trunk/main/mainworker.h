@@ -46,8 +46,8 @@ public:
 
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 
-	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue);
-	bool SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue);
+	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue, const std::string &ooc);
+	bool SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue, bool ooc=false);
 	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
@@ -56,6 +56,7 @@ public:
 	bool DoesDeviceActiveAScene(const int HwdId, const std::string &idx, const int unit, const int devType, const int subType);
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
+	bool SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until);
 	bool SetThermostatState(const std::string &idx, const int newState);
 	bool SetSetPointInt(const std::vector<std::string> &sd, const float TempValue);
 	bool SetClock(const std::string &idx, const std::string &clockstr);

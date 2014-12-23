@@ -240,7 +240,7 @@ public:
 		
 		szRet+=std::string("[Local Override ").append((nFlags&flgLocalOverrideDisabled)?"Disabled] ":"Enabled] ");
 		szRet+=std::string("[Window Function ").append((nFlags&flgWindowFunctionDisabled)?"Disabled] ":"Enabled] ");
-		szRet+=std::string((nFlags&flgSingleRoomZone)?"[Single":"[Multi").append("Room Zone] ");
+		szRet+=std::string((nFlags&flgSingleRoomZone)?"[Single":"[Multi").append(" Room Zone] ");
 		return szRet;
 	}
 };
@@ -324,6 +324,7 @@ public:
 	
 	packettype SetPacketType(const std::string &szPkt)
 	{
+		type=pktunk;
 		for (int i = pktinf; i <= pktwrt; i++)
 		{
 			if (szPkt == szPacketType[i])
@@ -331,7 +332,7 @@ public:
 				return static_cast<packettype>(i);
 			}
 		}
-		return pktunk;
+		return type;
 	}
 	
 	std::string GetStrID(int idx) const

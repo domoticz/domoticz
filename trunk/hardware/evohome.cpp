@@ -57,17 +57,17 @@ char const CEvohomeMsg::szPacketType[5][8]={"Unknown","I","RQ","RP","W"};
 
 const char* CEvohome::GetControllerModeName(uint8_t nControllerMode)
 {
-	return m_szControllerMode[(std::min)(nControllerMode,(uint8_t)6)];
+	return m_szControllerMode[(std::min)(nControllerMode,(uint8_t)6)]; //parentheses around function name apparently avoids macro expansion otherwise windef.h macros will conflict here
 }
 
 const char* CEvohome::GetWebAPIModeName(uint8_t nControllerMode)
 {
-	return m_szWebAPIMode[(std::min)(nControllerMode,(uint8_t)6)];
+	return m_szWebAPIMode[(std::min)(nControllerMode,(uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
 }
 
 const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
 {
-	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)];
+	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
 }
 
 CEvohome::CEvohome(const int ID, const char* szSerialPort) :
@@ -364,7 +364,11 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 			boost::replace_all(OnAction, "{state}", s_strid.str());
 			boost::replace_all(OnAction, "{until}", CEvohomeDateTime::GetISODate(tsen->EVOHOME2));
 			//Execute possible script
-			std::string scriptname=OnAction.substr(9);
+			std::string scriptname;
+			if (OnAction.find("script:///") != std::string::npos)
+				scriptname = OnAction.substr(9);
+			else
+				scriptname = OnAction.substr(8);
 			std::string scriptparams="";
 			//Add parameters
 			int pindex=scriptname.find(' ');
@@ -512,9 +516,11 @@ int CEvohome::ProcessBuf(char * buf, int size)
 				start = i + 1;
 				continue;
 			}
-			//convert into a null terminated string
-			std::string msg = std::string(buf + start, buf + start + (i - start));
-			ProcessMsg(msg.c_str());
+			if(i!=start) //skip empty messages
+			{
+				std::string msg = std::string(buf + start, i - start -1);
+				ProcessMsg(msg.c_str());
+			}
 			start = i + 1;
 		}
 	}
@@ -1234,7 +1240,7 @@ bool CEvohome::SetZoneCount(uint8_t nZoneCount)
 bool CEvohome::SetMaxZoneCount(uint8_t nZoneCount)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
-	int nMaxZones=(std::max)(m_nZoneCount,nZoneCount);
+	int nMaxZones=(std::max)(m_nZoneCount,nZoneCount); //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
 	bool bRet=(m_nZoneCount!=nMaxZones);
 	m_nZoneCount=nMaxZones;
 	return bRet;
@@ -1287,7 +1293,7 @@ void CEvohome::InitZoneNames()
 	{
 		if(m_ZoneNames[i].empty())
 		{
-			sprintf(szTmp,"Zone %d",i+1);
+			sprintf(szTmp,"Zone %lu",i+1);
 			m_ZoneNames[i]=szTmp;
 		}
 	}

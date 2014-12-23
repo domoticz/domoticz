@@ -201,6 +201,47 @@ void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, co
 	}
 }
 
+void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp, "%08X", (unsigned int)Idx);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeCURRENT) << ") AND (Subtype==" << int(sTypeELEC1) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.CURRENT.packettype = pTypeCURRENT;
+	tsen.CURRENT.subtype = sTypeELEC1;
+	tsen.CURRENT.packetlength = sizeof(tsen.CURRENT) - 1;
+	tsen.CURRENT.id1 = (unsigned char)(Idx >> 8);
+	tsen.CURRENT.id2 = (unsigned char)Idx & 0xFF;
+	int amps = round(Curr*10.0f);
+	tsen.CURRENT.ch1h = amps / 256;
+	amps -= (tsen.CURRENT.ch1h * 256);
+	tsen.CURRENT.ch1l = (BYTE)amps;
+	tsen.CURRENT.battery_level = 9;
+	tsen.CURRENT.rssi = 12;
+	sDecodeRXMessage(this, (const unsigned char *)&tsen);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeCURRENT) << ") AND (Subtype==" << int(sTypeELEC1) << ")";
+		result = m_sql.query(szQuery.str());
+	}
+}
+
 void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits = true;
@@ -376,7 +417,7 @@ void CHardwareMonitor::GetInternalCurrent()
 	if (current == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
-	SendVoltage(1, current, "Internal Current");
+	SendCurrent(1, current, "Internal Current");
 }
 
 void CHardwareMonitor::FetchData()
@@ -416,34 +457,35 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 		return;
 	}
 	int doffset = 0;
-	int dsubtype=0;
 	if (qType == "Temperature")
 	{
-		dsubtype = sTypeSystemTemp;
 		doffset = 1000;
 		float temp = static_cast<float>(atof(devValue.c_str()));
 		SendTempSensor(doffset + dindex, temp, devName);
 	}
 	else if (qType == "Load")
 	{
-		dsubtype = sTypePercentage;
 		doffset = 1100;
 		float perc = static_cast<float>(atof(devValue.c_str()));
 		SendPercentage(doffset + dindex, perc, devName);
 	}
 	else if (qType == "Fan")
 	{
-		dsubtype = sTypeFan;
 		doffset = 1200;
 		int fanspeed = atoi(devValue.c_str());
 		SendFanSensor(doffset + dindex, fanspeed, devName);
 	}
 	else if (qType == "Voltage")
 	{
-		dsubtype = sTypeVoltage;
 		doffset = 1300;
 		float volt = static_cast<float>(atof(devValue.c_str()));
 		SendVoltage(doffset + dindex, volt, devName);
+	}
+	else if (qType == "Current")
+	{
+		doffset = 1400;
+		float curr = static_cast<float>(atof(devValue.c_str()));
+		SendCurrent(doffset + dindex, curr, devName);
 	}
 	return;
 }

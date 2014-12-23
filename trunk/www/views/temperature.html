@@ -22,6 +22,42 @@
 		</table>
     </form>
 </div>
+<div id="dialog-editsetpoint" title="Edit Set Point">
+    <form>
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="devicename">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 230px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:100px"><label for="setpoint">Set Point: </label></td>
+          <td><input type="text" id="setpoint" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> &deg; <span id="tempcf">C</span></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:60px"><label for="until">Until: </label></td>
+          <td><input type="text" id="until" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;<a class="btnsmall" onclick="return MakePerm('#until');" data-i18n="Permanent">Permanent</a></td>
+        </tr>
+		</table>
+    </form>
+</div>
+<div id="dialog-editstate" title="Edit State">
+    <form>
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="devicename">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 230px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:60px"><label for="state">State: </label></td>
+          <td><select id="state" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all"><option value="On">On</option><option value="Off">Off</option></select></td>
+        </tr>
+        <tr>
+          <td align="right" style="width:60px"><label for="until_state">Until: </label></td>
+          <td><input type="text" id="until_state" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;<a class="btnsmall" onclick="return MakePerm('#until_state');" data-i18n="Permanent">Permanent</a></td>
+        </tr>
+		</table>
+    </form>
+</div>
 <div id="customlog" style="display:none;">
 	<table width="100%">
 		<tr>
@@ -58,6 +94,10 @@
 				   </tr>
 				   <tr>
 					  <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphDew"><span data-i18n="Dew Point"></span></td>
+					  <td style="padding: 2px;">&nbsp;</td>
+				   </tr>
+				   <tr>
+					  <td style="padding: 2px;"><input type="checkbox" class="devicecheckbox" id="graphSet"><span data-i18n="Set Point">Set Point</span></td>
 					  <td style="padding: 2px;">&nbsp;</td>
 				   </tr>
 				</table>

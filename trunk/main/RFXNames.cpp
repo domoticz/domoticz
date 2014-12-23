@@ -175,8 +175,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
 		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface" },
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
-		{ HTYPE_EVOHOME_SERIAL, "evohome - via serial for HGI/S80" },
-		{ HTYPE_EVOHOME_SCRIPT, "evohome - via script" },
+		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
+		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -591,7 +591,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
 
-		{ pTypeEvohome, sTypeEvohome, "evohome" },
+		{ pTypeEvohome, sTypeEvohome, "Evohome" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Zone" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Hot Water" },
 
@@ -1487,6 +1487,7 @@ void GetLightStatus(
 	case pTypeEvohome:
 		llevel=0;
 		lstatus=CEvohome::GetWebAPIModeName(nValue);
+		break;
 	}
 }
 

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 687
+# ref 689
 
 CACHE:
 # CSS
@@ -9,6 +9,7 @@ css/colpick.css
 css/jquery.dataTables.min.css
 css/demo_table_jui.css
 css/jquery.uix.multiselect.css
+css/jquery-ui-timepicker-addon.css
 css/style.css
 css/ui-darkness/jquery-ui-1.10.3.custom.min.css
 secpanel/css/font.less

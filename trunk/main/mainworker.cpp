@@ -1332,11 +1332,11 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			DeviceRowIdx = decode_Security1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeEvohome:
-			DeviceRowIdx=decode_evohome1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_evohome1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeEvohomeZone:
 		case pTypeEvohomeWater:
-			DeviceRowIdx=decode_evohome2(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_evohome2(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCamera:
 			DeviceRowIdx = decode_Camera1(pHardware, HwdID, (tRBUF *)pRXCommand);
@@ -1522,6 +1522,8 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 	unsigned char devType=pTypeInterfaceMessage;
 
 	char szTmp[100];
+
+	WriteMessageStart();
 
 	switch (pResponse->IRESPONSE.subtype)
 	{
@@ -1792,6 +1794,7 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 		WriteMessage(szTmp);
 		break;
 	}
+	WriteMessageEnd();
 	return -1;
 }
 
@@ -4792,8 +4795,79 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 
 unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
-	//Not ready
-	return -1;
+	char szTmp[100];
+	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
+	unsigned char devType=pTypeEvohome;
+	unsigned char subType=pEvo->EVOHOME1.subtype;
+	std::stringstream szID;
+	szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
+	std::string ID(szID.str());
+	unsigned char Unit=0;
+	unsigned char cmnd=pEvo->EVOHOME1.status;
+	unsigned char SignalLevel=255;//Unknown
+	unsigned char BatteryLevel = 255;//Unknown
+
+	std::string szUntilDate;
+	if(pEvo->EVOHOME1.mode==CEvohome::cmTmp)//temporary
+		szUntilDate=CEvohomeDateTime::GetISODate(pEvo->EVOHOME1);
+
+	//FIXME A similar check is also done in switchmodal do we want to forward the ooc flag and rely on this check entirely?
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << HwdID << ") AND (DeviceID == '" << ID << "')";
+	result=m_sql.query(szQuery.str());
+	bool bNewDev=false;
+	std::string name;
+	if (result.size()>0)
+	{
+		std::vector<std::string> sd=result[0];	
+		if(atoi(sd[7].c_str())==cmnd && sd[8]==szUntilDate)
+			return -1;
+	}
+	else
+	{
+		bNewDev=true;
+		if(!pHardware)
+			return -1;
+		CEvohome *pEvoHW=(CEvohome*)pHardware;
+		name=pEvoHW->GetControllerName();
+		if(name.empty())
+			return -1;
+	}
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szUntilDate.c_str(),m_LastDeviceName,pEvo->EVOHOME1.action);
+	if (DevRowIdx == -1)
+		return -1;
+	if(bNewDev)
+	{
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (ID == " << DevRowIdx << ")";
+		result = m_sql.query(szQuery.str());
+	}
+	
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
+	if (m_verboselevel == EVBL_ALL)
+	{
+		WriteMessageStart();
+		switch (pEvo->EVOHOME1.subtype)
+		{
+		case sTypeEvohome:
+			WriteMessage("subtype       = Evohome");
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pEvo->EVOHOME1.type, pEvo->EVOHOME1.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp, "id         = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
+		WriteMessage(szTmp);
+		WriteMessage("status        = %s", CEvohome::GetControllerModeName(pEvo->EVOHOME1.status));
+
+		WriteMessageEnd();
+	}
+	return DevRowIdx;
 }
 
 unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
@@ -8888,25 +8962,102 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, const std::string &action, const std::string &ooc, const std::string &until)
 {   
-	//not ready
-	return false;
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return false;
+	std::vector<std::string> sd=result[0];	
+	
+	int nStatus=0;
+	if(status=="Away")
+		nStatus=CEvohome::cmEvoAway;
+	else if(status=="AutoWithEco")
+		nStatus=CEvohome::cmEvoAutoWithEco;
+	else if(status=="DayOff")
+		nStatus=CEvohome::cmEvoDayOff;
+	else if(status=="Custom")
+		nStatus=CEvohome::cmEvoCustom;
+	else if(status=="Auto")
+		nStatus=CEvohome::cmEvoAuto;
+	else if(status=="HeatingOff")
+		nStatus=CEvohome::cmEvoHeatingOff;
+
+	int nValue=atoi(sd[7].c_str());
+	if(ooc=="1" && nValue==nStatus)
+		return false;//FIXME not an error ... status = (already set)
+	
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex=FindDomoticzHardware(HardwareID);
+	if (hindex==-1)
+		return false;
+
+	unsigned char Unit=atoi(sd[2].c_str());
+	unsigned char dType=atoi(sd[3].c_str());
+	unsigned char dSubType=atoi(sd[4].c_str());
+	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+
+	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
+	if (pHardware==NULL)
+		return false;
+
+	unsigned long ID;
+	std::stringstream s_strid;
+	s_strid << std::hex << sd[1];
+	s_strid >> ID;
+	
+	//Update Domoticz evohome Device
+	REVOBUF tsen;
+	memset(&tsen,0,sizeof(REVOBUF));
+	tsen.EVOHOME1.len=sizeof(tsen.EVOHOME1)-1;
+	tsen.EVOHOME1.type=pTypeEvohome;
+	tsen.EVOHOME1.subtype=sTypeEvohome;
+	RFX_SETID3(ID,tsen.EVOHOME1.id1,tsen.EVOHOME1.id2,tsen.EVOHOME1.id3)
+	tsen.EVOHOME1.action=(action=="1")?1:0;
+	tsen.EVOHOME1.status=nStatus;
+	
+	tsen.EVOHOME1.mode=until.empty()?CEvohome::cmPerm:CEvohome::cmTmp;
+	if(tsen.EVOHOME1.mode==CEvohome::cmTmp)
+		sscanf(until.c_str(),"%hu-%hhu-%hhuT%hhu:%hhu:00",&tsen.EVOHOME1.year,&tsen.EVOHOME1.month,&tsen.EVOHOME1.day,&tsen.EVOHOME1.hrs,&tsen.EVOHOME1.mins);//C99
+	WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME1));
+		
+	// convert now to string form
+	time_t now = time(0);
+	char *szDate = asctime(localtime(&now));
+	szDate[strlen(szDate)-1]=0;
+
+	WriteMessageStart();
+
+	std::stringstream sTmp;
+	sTmp << szDate << " (System) evohome status = "<< status << " (" << nStatus << ") action = " << action << " (" << bool(tsen.EVOHOME1.action) << ")";
+	WriteMessage(sTmp.str().c_str(),false);
+	
+	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
+	unsigned long long DeviceRowIdx=decode_evohome1(pHardware, HardwareID, (const tRBUF*)&tsen);
+	WriteMessageEnd();
+	if(DeviceRowIdx==-1)
+		return false;
+	m_sharedserver.SendToAll(DeviceRowIdx,(const char*)&tsen,tsen.EVOHOME1.len+1,NULL);
+	return true;
 }
 
-bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue)
+bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue, const std::string &ooc)
 {
 	unsigned long long ID;
 	std::stringstream s_str(idx);
 	s_str >> ID;
 
-	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()));
+	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()), atoi(ooc.c_str()));
 }
 
-bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue)
+bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue, bool ooc)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2 FROM DeviceStatus WHERE (ID == " << idx << ")";
+	szQuery << "SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue FROM DeviceStatus WHERE (ID == " << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -8916,7 +9067,13 @@ bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcm
 	int iOnDelay = atoi(sd[6].c_str());
 
 	bool bIsOn = IsLightSwitchOn(switchcmd);
-
+	int nValue=atoi(sd[7].c_str());
+	if (ooc)//Only on change
+	{
+		int nNewVal=bIsOn?1:0;//Is that everything we need here
+		if(nValue==nNewVal)
+			return true;//FIXME no return code for already set
+	}
 	//Check if we have an On-Delay, if yes, add it to the tasker
 	if ((bIsOn)&&(iOnDelay != 0))
 	{
@@ -8925,6 +9082,69 @@ bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcm
 	}
 	else
 		return SwitchLightInt(sd,switchcmd,level,hue,false);
+}
+
+bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until)
+{
+	//Get Device details
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (ID == " << idx << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()<1)
+		return false;
+
+	std::vector<std::string> sd=result[0];
+	int HardwareID = atoi(sd[0].c_str());
+	int hindex=FindDomoticzHardware(HardwareID);
+	if (hindex==-1)
+		return false;
+	
+	unsigned long ID;
+	std::stringstream s_strid;
+	s_strid << std::hex << sd[1];
+	s_strid >> ID;
+
+	unsigned char Unit=atoi(sd[2].c_str());
+	unsigned char dType=atoi(sd[3].c_str());
+	unsigned char dSubType=atoi(sd[4].c_str());
+	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+
+	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
+	if (pHardware==NULL)
+		return false;
+
+	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+	{
+		REVOBUF tsen;
+		memset(&tsen, 0, sizeof(tsen.EVOHOME2));
+		tsen.EVOHOME2.len = sizeof(tsen.EVOHOME2) - 1;
+		tsen.EVOHOME2.type=dType;
+		tsen.EVOHOME2.subtype=dSubType;
+		RFX_SETID3(ID,tsen.EVOHOME2.id1,tsen.EVOHOME2.id2,tsen.EVOHOME2.id3)
+		
+		tsen.EVOHOME2.zone = Unit;//controller is 0 so let our zones start from 1...
+		tsen.EVOHOME2.updatetype = CEvohome::updSetPoint;//setpoint
+		tsen.EVOHOME2.temperature = (dType==pTypeEvohomeWater)?TempValue:TempValue*100.0f;
+		tsen.EVOHOME2.mode=newMode;
+		if(newMode==CEvohome::zmTmp)
+			sscanf(until.c_str(),"%hu-%hhu-%hhuT%hhu:%hhu:00",&tsen.EVOHOME2.year,&tsen.EVOHOME2.month,&tsen.EVOHOME2.day,&tsen.EVOHOME2.hrs,&tsen.EVOHOME2.mins);//C99
+		WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME2));
+		
+		//Pass across the current controller mode if we're going to update as per the hw device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==" << HardwareID << ") AND (Unit==0)";
+		result = m_sql.query(szQuery.str()); //-V519
+		if (result.size() > 0)
+		{
+			sd=result[0];
+			tsen.EVOHOME2.controllermode=atoi(sd[2].c_str());
+		}
+		//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
+		DecodeRXMessage(pHardware, (const unsigned char*)&tsen);
+	}
+	return true;
 }
 
 bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float TempValue)
@@ -8980,6 +9200,10 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CToonThermostat *pGateway = (CToonThermostat*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
+		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+		{
+			SetSetPoint(sd[7],TempValue,CEvohome::zmPerm,"");
+		}
 	}
 	else
 	{
@@ -9033,7 +9257,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue)
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == " << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
