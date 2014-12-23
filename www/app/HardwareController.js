@@ -41,7 +41,7 @@ define(['app'], function (app) {
 			var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 			
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0))
+			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
 			{
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -361,7 +361,7 @@ define(['app'], function (app) {
 				return;
 			}
 
-			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("GPIO") >= 0))
+			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("GPIO") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
 			{
 				$.ajax({
 					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
@@ -1667,6 +1667,56 @@ define(['app'], function (app) {
 		   ShowHardware();
 		  });
 		}
+		
+		CreateEvohomeSensors= function(idx,name)
+		{
+			$.devIdx=idx;
+			$( "#dialog-createevohomesensor" ).dialog({
+				  autoOpen: false,
+				  width: 380,
+				  height: 160,
+				  modal: true,
+				  resizable: false,
+				  buttons: {
+					  "OK": function() {
+						  var bValid = true;
+						  $( this ).dialog( "close" );
+						  
+							var SensorType=$("#dialog-createevohomesensor #sensortype option:selected").val();
+							if (typeof SensorType == 'undefined') {
+								bootbox.alert($.i18n('No Sensor Type Selected!'));
+								return ;
+							}
+							$.ajax({
+								 url: "json.htm?type=createevohomesensor&idx=" + $.devIdx + "&sensortype=" + SensorType,
+								 async: false, 
+								 dataType: 'json',
+								 success: function(data) {
+									if (data.status == 'OK') {
+										ShowNotify($.i18n('Sensor Created, and can be found in the devices tab!'), 2500);
+									}
+									else {
+										ShowNotify($.i18n('Problem creating Sensor!'), 2500, true);
+									}
+								 },
+								 error: function(){
+										HideNotify();
+										ShowNotify($.i18n('Problem creating Sensor!'), 2500, true);
+								 }     
+							});
+					  },
+					  Cancel: function() {
+						  $( this ).dialog( "close" );
+					  }
+				  },
+				  close: function() {
+					$( this ).dialog( "close" );
+				  }
+			});
+			
+			$( "#dialog-createevohomesensor" ).i18n();
+			$( "#dialog-createevohomesensor" ).dialog( "open" );
+		}
 
 		CreateDummySensors = function(idx,name)
 		{
@@ -1773,6 +1823,10 @@ define(['app'], function (app) {
 					{
 						SerialName="GPIO";
 					}
+					else if(HwTypeStr.indexOf("Evohome") >= 0 && HwTypeStr.indexOf("script") >= 0)
+					{
+						SerialName="Script";
+					}
 					else
 					{
 						var serpos=jQuery.inArray(item.Port, $.myglobals.SerialPortVal);
@@ -1819,6 +1873,9 @@ define(['app'], function (app) {
 					}
 					else if (HwTypeStr.indexOf("Dummy") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">Create Virtual Sensors</span>';
+					}
+					else if (HwTypeStr.indexOf("Evohome") >= 0 && HwTypeStr.indexOf("script") >= 0) {
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">Create Devices</span>';
 					}
 					else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
 					{

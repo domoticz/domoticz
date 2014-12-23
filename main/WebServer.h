@@ -166,6 +166,7 @@ private:
 	void RType_Plans(Json::Value &root);
 	void RType_FloorPlans(Json::Value &root);
 	void RType_Scenes(Json::Value &root);
+	void RType_CreateEvohomeSensor(Json::Value &root);
 #ifdef WITH_OPENZWAVE
 	//ZWave
 	void Cmd_ZWaveUpdateNode(Json::Value &root);

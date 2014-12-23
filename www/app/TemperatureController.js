@@ -45,7 +45,86 @@ define(['app'], function (app) {
 			$("#dialog-edittempdevicesmall #devicename").val(name);
 			$("#dialog-edittempdevicesmall" ).dialog( "open" );
 		}
-
+		
+		//evohome
+		//FIXME some of this functionality would be good in a shared js / class library
+		//as we might like to use it from the dashboard or in scenes at some point
+		MakePerm = function(idt){
+			$(idt).val('');return false;
+		}
+		
+		EditSetPoint = function(idx,name,setpoint,mode,until,callback)
+		{
+			//HeatingOff does not apply to dhw
+			if (mode=="HeatingOff"){
+				bootbox.alert($.i18n('Can\'t change zone when the heating is off'));
+				return false;
+			}
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.devIdx=idx;
+			$("#dialog-editsetpoint #devicename").val(name);
+			$("#dialog-editsetpoint #setpoint").val(setpoint);
+			if(mode.indexOf("Override")==-1)
+				$(":button:contains('Cancel Override')").attr("disabled","d‌​isabled").addClass( 'ui-state-disabled' );
+			else
+				$(":button:contains('Cancel Override')").removeAttr("disabled").removeClass( 'ui-state-disabled' );
+			$("#dialog-editsetpoint #until").datetimepicker();
+			if(until!="")
+				$("#dialog-editsetpoint #until").datetimepicker("setDate", (new Date(until)));
+			$("#dialog-editsetpoint" ).dialog( "open" );
+		}
+		EditState = function(idx,name,state,mode,until,callback)
+		{
+			//HeatingOff does not apply to dhw
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.devIdx=idx;
+			$("#dialog-editstate #devicename").val(name);
+			$("#dialog-editstate #state").val(state);
+			if(mode.indexOf("Override")==-1)
+				$(":button:contains('Cancel Override')").attr("disabled","d‌​isabled").addClass( 'ui-state-disabled' );
+			else
+				$(":button:contains('Cancel Override')").removeAttr("disabled").removeClass( 'ui-state-disabled' );
+			$("#dialog-editstate #until_state").datetimepicker();
+			if(until!="")
+				$("#dialog-editstate #until_state").datetimepicker("setDate", (new Date(until)));
+			$("#dialog-editstate" ).dialog( "open" );
+		}
+		EvoSetPointColor = function(item, sHeatMode, bkcolor){
+			if (typeof item.SetPoint != 'undefined') {
+				if(sHeatMode=="HeatingOff")//seems to be used whenever the heating is off
+					bkcolor="#9b9b9b";
+				else if(item.SetPoint>=25)
+					bkcolor="#ff0302";
+				else if(item.SetPoint>=22)
+					bkcolor="#ff6a2a";
+				else if(item.SetPoint>=19)
+					bkcolor="#fe9b2d";
+				else if(item.SetPoint>=16)
+					bkcolor="#79bc5c";
+				else //min on temp 5 or greater
+					bkcolor="#6ca5fd";
+			}
+			return bkcolor;
+		}
+		//FIXME move this to a shared js ...see lightscontroller.js
+		EvoDisplayTextMode = function(strstatus){
+			if(strstatus=="Auto")//FIXME better way to convert?
+				strstatus="Normal";
+			else if(strstatus=="AutoWithEco")//FIXME better way to convert?
+				strstatus="Economy";
+			else if(strstatus=="DayOff")//FIXME better way to convert?
+				strstatus="Day Off";
+			else if(strstatus=="HeatingOff")//FIXME better way to convert?
+				strstatus="Heating Off";
+			return strstatus;
+		}
+		
 		AddTempDevice = function()
 		{
 		  bootbox.alert($.i18n('Please use the devices tab for this.'));
@@ -62,6 +141,9 @@ define(['app'], function (app) {
 			var datatablecm = [];
 			var datatabledp = [];
 			var datatableba = [];
+			var datatablese = [];
+			var datatablesm = [];
+			var datatablesx = [];
 
 			$.each(data.result, function(i,item)
 			{
@@ -81,6 +163,9 @@ define(['app'], function (app) {
 				if (typeof item.ba != 'undefined') {
 				  datatableba.push( [GetUTCFromString(item.d), parseFloat(item.ba) ] );
 				}
+				if (typeof item.se != 'undefined') {
+				  datatablese.push( [GetUTCFromString(item.d), parseFloat(item.se) ] );
+				}
 			  } else {
 				if (typeof item.te != 'undefined') {
 				  datatablete.push( [GetDateFromString(item.d), parseFloat(item.te) ] );
@@ -98,6 +183,11 @@ define(['app'], function (app) {
 				}
 				if (typeof item.ba != 'undefined') {
 				  datatableba.push( [GetDateFromString(item.d), parseFloat(item.ba) ] );
+				}
+				if (typeof item.se != 'undefined') {
+				  datatablese.push( [GetDateFromString(item.d), parseFloat(item.se) ] );
+				  datatablesm.push( [GetDateFromString(item.d), parseFloat(item.sm) ] );
+				  datatablesx.push( [GetDateFromString(item.d), parseFloat(item.sx) ] );
 				}
 			  }
 			});
@@ -165,6 +255,41 @@ define(['app'], function (app) {
 			  }
 			}
 			
+			if (datatablese.length!=0)
+			{
+			  //Add Temperature series
+			  chart.addSeries(
+				{
+				  id: 'setpoint'+deviceid,
+				  name: devicename+':'+$.i18n('SetPoint'),
+				  yAxis: 0
+				}
+			  );
+			  series = chart.get('setpoint'+deviceid);
+			  series.setData(datatablese);
+			  if (isday==0) {
+				chart.addSeries(
+				  {
+					id: 'setpointmin'+deviceid,
+					name: devicename+':'+$.i18n('SetPoint')+'_min',
+					yAxis: 0
+				  }
+				);
+				series = chart.get('setpointmin'+deviceid);
+				series.setData(datatablesm);
+				
+				chart.addSeries(
+				  {
+					id: 'setpointmax'+deviceid,
+					name: devicename+':'+$.i18n('SetPoint')+'_max',
+					yAxis: 0
+				  }
+				);
+				series = chart.get('setpointmax'+deviceid);
+				series.setData(datatablesx);
+			  }
+			}
+			
 			if (datatabledp.length!=0)
 			{
 			  chart.addSeries(
@@ -209,6 +334,12 @@ define(['app'], function (app) {
 			if(dew!=null) {dew.remove()};
 			baro=chart.get('baro'+deviceid);
 			if(baro!=null) {baro.remove()};
+		        setpoint=chart.get('setpoint'+deviceid);
+			if(setpoint!=null) {setpoint.remove()};
+			setpointmin=chart.get('setpointmin'+deviceid);
+			if(setpointmin!=null) {setpointmin.remove()};
+		        setpointmax=chart.get('setpointmax'+deviceid);
+			if(setpointmax!=null) {setpointmax.remove()};
 		}
 
 		ClearCustomGraph = function()
@@ -245,7 +376,7 @@ define(['app'], function (app) {
 			if (cb.checked==true) {
 				$.ajax({
 				   url: "json.htm?type=graph&sensor=temp&idx="+cb.id+"&range="+$("#tempcontent #graphfrom").val()+"T"+$("#tempcontent #graphto").val()+"&graphtype="+$("#tempcontent #combocustomgraphtype").val()+
-				   "&graphTemp="+$("#tempcontent #graphTemp").prop("checked")+"&graphChill="+$("#tempcontent #graphChill").prop("checked")+"&graphHum="+$("#tempcontent #graphHum").prop("checked")+"&graphBaro="+$("#tempcontent #graphBaro").prop("checked")+"&graphDew="+$("#tempcontent #graphDew").prop("checked"),
+				   "&graphTemp="+$("#tempcontent #graphTemp").prop("checked")+"&graphChill="+$("#tempcontent #graphChill").prop("checked")+"&graphHum="+$("#tempcontent #graphHum").prop("checked")+"&graphBaro="+$("#tempcontent #graphBaro").prop("checked")+"&graphDew="+$("#tempcontent #graphDew").prop("checked")+"&graphSet="+$("#tempcontent #graphSet").prop("checked"),
 				   async: false,
 				   dataType: 'json',
 				   success: function(data) {
@@ -272,7 +403,7 @@ define(['app'], function (app) {
 				RemoveMultipleDataFromTempChart($.CustomChart.highcharts(),$(this).attr('id'));
 				$.ajax({
 				   url: "json.htm?type=graph&sensor=temp&idx="+$(this).attr('id')+"&range="+$("#tempcontent #graphfrom").val()+"T"+$("#tempcontent #graphto").val()+"&graphtype="+$("#tempcontent #combocustomgraphtype").val()+
-				   "&graphTemp="+$("#tempcontent #graphTemp").prop("checked")+"&graphChill="+$("#tempcontent #graphChill").prop("checked")+"&graphHum="+$("#tempcontent #graphHum").prop("checked")+"&graphBaro="+$("#tempcontent #graphBaro").prop("checked")+"&graphDew="+$("#tempcontent #graphDew").prop("checked"),
+				   "&graphTemp="+$("#tempcontent #graphTemp").prop("checked")+"&graphChill="+$("#tempcontent #graphChill").prop("checked")+"&graphHum="+$("#tempcontent #graphHum").prop("checked")+"&graphBaro="+$("#tempcontent #graphBaro").prop("checked")+"&graphDew="+$("#tempcontent #graphDew").prop("checked")+"&graphSet="+$("#tempcontent #graphSet").prop("checked"),
 				   async: false,
 				   dataType: 'json',
 				   graphid: $(this).attr('id'),
@@ -490,13 +621,41 @@ define(['app'], function (app) {
 					
 					var status="";
 					var bigtext="";
+					var setonclick="";
 					var bHaveTemperature=false;
 					var bHaveBefore=false;
+					//Evohome...
+					var sHeatMode="";
+					if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
+						sHeatMode=item.Status;
+					}
 					if (typeof item.Temp != 'undefined') {
 						 status+=item.Temp + '\u00B0 ' + $.myglobals.tempsign;
 						 bigtext=item.Temp + '\u00B0';
 						 bHaveTemperature=true;
 						 bHaveBefore=true;
+					}
+					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
+						var tUntil="";
+						if (typeof item.Until != 'undefined')
+							tUntil=item.Until;
+						if (typeof item.SetPoint != 'undefined'){
+							bigtext+=' ('+item.SetPoint + '\u00B0)';
+							status+=', '+$.i18n('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
+							setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+						}
+						if (typeof item.State != 'undefined'){
+							bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
+							status+=', '+$.i18n('State') + ': ' + item.State;
+							setonclick='EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.State + '\', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+						}
+						if(sHeatMode!="Auto")
+							bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
+						status+=', '+$.i18n('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
+						if (tUntil!=""){
+							status+=', '+$.i18n('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+						}
+						bHaveBefore=true;
 					}
 					if (typeof item.Chill != 'undefined') {
 						if (bigtext!="") {
@@ -550,6 +709,8 @@ define(['app'], function (app) {
 							}
 						}
 					}
+					//Evohome...
+					nbackcolor=EvoSetPointColor(item,sHeatMode,nbackcolor);
 					
 					var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
 					if (obackcolor!=nbackcolor) {
@@ -559,6 +720,8 @@ define(['app'], function (app) {
 					if ($(id + " #status").html()!=status) {
 									$(id + " #bigtext").html(bigtext);
 									$(id + " #status").html(status);
+									if (setonclick!="")
+										$(id + " #set").attr("onclick",setonclick);
 								}
 								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 									$(id + " #lastupdate").html(item.LastUpdate);
@@ -668,11 +831,29 @@ define(['app'], function (app) {
 								}
 							}
 						}
+											
+						//Evohome...
+						var sHeatMode="";
+						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
+							sHeatMode=item.Status;
+						}
+						nbackcolor=EvoSetPointColor(item,sHeatMode,nbackcolor);
+						
 						xhtm+='\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n';
 				  xhtm+='\t      <td id="bigtext">';
+				  var tUntil="";
 				  var bigtext="";
 					if (typeof item.Temp != 'undefined') {
 						bigtext=item.Temp + '\u00B0';
+					}
+					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
+						if (typeof item.SetPoint != 'undefined'){
+							bigtext+=' ('+item.SetPoint + '\u00B0)';
+						}
+						if (typeof item.State != 'undefined')
+							bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
+						if(sHeatMode!="Auto")
+							bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
 					}
 					if (typeof item.Humidity != 'undefined') {
 						if (bigtext!="") {
@@ -707,6 +888,20 @@ define(['app'], function (app) {
 									 xhtm+=item.Temp + '\u00B0 ' + $.myglobals.tempsign;
 									 bHaveTemperature=true;
 									 bHaveBefore=true;
+							}
+							if (item.SubType=="Zone" || item.SubType=="Hot Water") {
+								if (typeof item.SetPoint != 'undefined'){
+									xhtm+=', '+$.i18n('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
+								}
+								if (typeof item.State != 'undefined'){
+									xhtm+=', '+$.i18n('State') + ': ' + item.State;
+								}
+								xhtm+=', '+$.i18n('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
+								if (typeof item.Until != 'undefined'){
+									tUntil=item.Until;
+									xhtm+=', '+$.i18n('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+								}
+								bHaveBefore=true;
 							}
 							if (typeof item.Chill != 'undefined') {
 								if (typeof item.Temp != 'undefined') {
@@ -770,6 +965,11 @@ define(['app'], function (app) {
 				if (typeof item.forecast_url != 'undefined') {
 					xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Forecast">Forecast</a>';
 				}
+				if (typeof item.SetPoint != 'undefined')
+					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
+				if (typeof item.State != 'undefined')
+					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.State + '\', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
+				
 							xhtm+=
 						'</td>\n' +
 						'\t    </tr>\n' +
@@ -890,6 +1090,132 @@ define(['app'], function (app) {
 				  },
 				  close: function() {
 					$( this ).dialog( "close" );
+				  }
+			});
+			$( "#dialog-editsetpoint" ).dialog({
+				  autoOpen: false,
+				  width: 360,
+				  height: 230,
+				  modal: true,
+				  resizable: false,
+				  buttons: {
+					  "Set": function() {
+						  var bValid = true;
+						  bValid = bValid && checkLength( $("#dialog-editsetpoint #edittable #devicename"), 2, 100 );
+						  var setpoint=$("#dialog-editsetpoint #edittable #setpoint").val();
+						  if (setpoint<5 || setpoint>35){
+							bootbox.alert($.i18n('Set point must be between 5 and 35 degrees'));
+							return false;
+						  }
+						  var tUntil="";
+						  if($("#dialog-editsetpoint #edittable #until").val()!=""){
+							var selectedDate = $("#dialog-editsetpoint #edittable #until").datetimepicker('getDate');
+							var now = new Date();
+							if (selectedDate < now) {
+								bootbox.alert($.i18n('Temporary set point date / time must be in the future'));
+								return false;
+							}
+							tUntil=selectedDate.toISOString();
+						  }
+						  if ( bValid ) {
+							  $( this ).dialog( "close" );
+							 
+							  $.ajax({
+								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + '&setpoint=' + setpoint + '&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride')+'&until='+tUntil+'&used=true',
+								 async: false,
+								 dataType: 'json',
+								 success: function(data) {
+									ShowTemps();
+								 }
+							  });
+
+						  }
+					  },
+					  //on mobile small may be better so it might loook better to change 'Cancel Override' to 'Cancel' on those clients
+				          "Cancel Override": function() {
+						  var bValid = true;
+						  bValid = bValid && checkLength( $("#dialog-editsetpoint #edittable #devicename"), 2, 100 );
+						  if ( bValid ) {
+							  $( this ).dialog( "close" );
+							  var aValue=$("#dialog-editsetpoint #edittable #setpoint").val();
+							  if(aValue<5) aValue=5;//These values will display but the controller will update back the currently scheduled setpoint in due course
+							  if(aValue>35) aValue=35;//These values will display but the controller will update back the currently scheduled setpoint in due course
+							  $.ajax({
+								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + '&setpoint=' + aValue + '&mode=Auto&used=true',
+								 async: false,
+								 dataType: 'json',
+								 success: function(data) {
+									ShowTemps();
+								 }
+							  });
+
+						  }
+					  },
+					 //on mobile small may be better so it might loook better to change 'Cancel Override' to 'Cancel' on those clients...hence 'Cancel' will now be 'Back'
+					  "Back": function() {
+						  $( this ).dialog( "close" );
+						  ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
+					  }
+				  },
+				  close: function() {
+					$( this ).dialog( "close" );
+					ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
+				  }
+			});
+			$( "#dialog-editstate" ).dialog({
+				  autoOpen: false,
+				  width: 360,
+				  height: 230,
+				  modal: true,
+				  resizable: false,
+				  buttons: {
+					  "Set": function() {
+						  var bValid = true;
+						  bValid = bValid && checkLength( $("#dialog-editstate #edittable #devicename"), 2, 100 );
+						  if ( bValid ) {
+							  $( this ).dialog( "close" );
+							  var aValue=$("#dialog-editstate #edittable #state").val();
+							  var tUntil="";
+							  if($("#dialog-editstate #edittable #until_state").val()!="")
+								tUntil=$("#dialog-editstate #edittable #until_state").datetimepicker('getDate').toISOString();
+							  $.ajax({
+								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) + '&state=' + aValue + '&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride')+'&until='+tUntil+'&used=true',
+								 async: false,
+								 dataType: 'json',
+								 success: function(data) {
+									ShowTemps();
+								 }
+							  });
+
+						  }
+					  },
+					  //on mobile small may be better so it might loook better to change 'Cancel Override' to 'Cancel' on those clients
+				          "Cancel Override": function() {
+						  var bValid = true;
+						  bValid = bValid && checkLength( $("#dialog-editstate #edittable #devicename"), 2, 100 );
+						  if ( bValid ) {
+							  $( this ).dialog( "close" );
+							  var aValue=$("#dialog-editstate #edittable #state").val();
+							  $.ajax({
+								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) + '&state=' + aValue + '&mode=Auto&used=true',
+								 async: false,
+								 dataType: 'json',
+								 success: function(data) {
+									ShowTemps();
+								 }
+							  });
+
+						  }
+					  },
+					 //on mobile small may be better so it might loook better to change 'Cancel Override' to 'Cancel' on those clients...hence 'Cancel' will now be 'Back'
+					  "Back": function() {
+						  $( this ).dialog( "close" );
+						  ShowTemps();//going into the dialog removes the background timer refresh (see EditState)
+					  }
+				  },
+				  close: function() {
+					$( this ).dialog( "close" );
+					ShowTemps();//going into the dialog removes the background timer refresh (see EditState)
 				  }
 			});
 			$( "#dialog-edittempdevicesmall" ).dialog({

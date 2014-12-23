@@ -1259,6 +1259,80 @@ define(['app'], function (app) {
 			});
 		}
 
+		//Evohome...
+		
+		SwitchModal= function(idx, name, status, refreshfunction)
+		{
+			clearInterval($.myglobals.refreshTimer);
+			
+			ShowNotify($.i18n('Setting Evohome ') + ' ' + $.i18n(name));
+			
+			//FIXME avoid conflicts when setting a new status while reading the status from the web gateway at the same time
+			//(the status can flick back to the previous status after an update)...now implemented with script side lockout
+			$.ajax({
+			url: "json.htm?type=command&param=switchmodal" + 
+						"&idx=" + idx + 
+						"&status=" + status +
+						"&action=1",
+			async: false, 
+			dataType: 'json',
+			success: function(data) {
+					if (data.status=="ERROR") {
+						HideNotify();
+						bootbox.alert($.i18n('Problem sending switch command'));
+					}
+			//wait 1 second
+			setTimeout(function() {
+				HideNotify();
+				refreshfunction();
+			}, 1000);
+			},
+			error: function(){
+				HideNotify();
+				alert($.i18n('Problem sending switch command'));
+			}     
+			});
+		}
+		
+		//FIXME move this to a shared js ...see temperaturecontroller.js
+		EvoDisplayTextMode = function(strstatus){
+			if(strstatus=="Auto")//FIXME better way to convert?
+				strstatus="Normal";
+			else if(strstatus=="AutoWithEco")//FIXME better way to convert?
+				strstatus="Economy";
+			else if(strstatus=="DayOff")//FIXME better way to convert?
+				strstatus="Day Off";
+			else if(strstatus=="HeatingOff")//FIXME better way to convert?
+				strstatus="Heating Off";
+			return strstatus;
+		}
+		
+		EvoGetStatusText = function(item){
+			if(item.SubType=="Evohome")
+				return EvoDisplayTextMode(item.Status);
+			else
+				return item.Status;//Don't convert for non Evohome switches just in case those status above get used anywhere
+		}
+		
+		EvohomeAddJS = function()
+		{
+			  return "<script type='text/javascript'> function deselect(e,id) { $(id).slideFadeToggle('swing', function() { e.removeClass('selected'); });} $.fn.slideFadeToggle = function(easing, callback) {  return this.animate({ opacity: 'toggle',height: 'toggle' }, 'fast', easing, callback);};</script>";	  
+		}
+		
+		EvohomeImg = function(item)
+		{
+			//see http://www.theevohomeshop.co.uk/evohome-controller-display-icons/
+			return '<div title="Quick Actions" class="'+((item.Status=="Auto") ? "evoimgnorm" : "evoimg")+'"><img src="images/evohome/'+item.Status+'.png" class="lcursor" onclick="if($(this).hasClass(\'selected\')){deselect($(this),\'#evopop_'+ item.idx +'\');}else{$(this).addClass(\'selected\');$(\'#evopop_'+ item.idx +'\').slideFadeToggle();}return false;"></div>';
+		}
+
+		EvohomePopupMenu = function(item)
+		{
+			var htm='\t      <td id="img"><a href="#evohome" id="evohome_'+ item.idx +'">'+EvohomeImg(item)+'</a></td>\n<div id="evopop_'+ item.idx +'" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">  <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">         <li class="ui-li-divider ui-bar-inherit ui-first-child">Choose an action</li>';
+			$.each([{"name":"Normal","data":"Auto"},{"name":"Economy","data":"AutoWithEco"},{"name":"Away","data":"Away"},{"name":"Day Off","data":"DayOff"},{"name":"Custom","data":"Custom"},{"name":"Heating Off","data":"HeatingOff"}],function(idx, obj){htm+='<li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-'+obj.data+'" onclick="SwitchModal(\''+item.idx+'\',\''+obj.name+'\',\''+obj.data+'\',RefreshLights);deselect($(this),\'#evopop_'+ item.idx +'\');return false;">'+obj.name+'</a></li>';});
+			htm+='</ul></div>';
+			return htm;
+		}
+		
 		RefreshLights = function()
 		{
 			if (typeof $scope.mytimer != 'undefined') {
@@ -1291,6 +1365,9 @@ define(['app'], function (app) {
 								var img3="";
 								if (item.SubType=="Security Panel") {
 									img='<a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a>';
+								}
+								else if (item.SubType=="Evohome") {
+									img=EvohomeImg(item);
 								}
 								else if (item.SwitchType == "X10 Siren") {
 									if (
@@ -1529,8 +1606,8 @@ define(['app'], function (app) {
 										dslider.slider( "value", item.LevelInt+1 );
 									}
 								}
-								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
-									$(id + " #status").html(TranslateStatus(item.Status));
+								if ($(id + " #status").html()!=TranslateStatus(EvoGetStatusText(item))) {
+									$(id + " #status").html(TranslateStatus(EvoGetStatusText(item)));
 								}
 								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 									$(id + " #lastupdate").html(item.LastUpdate);
@@ -1624,6 +1701,10 @@ define(['app'], function (app) {
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
+				 
+				 
+			  htmlcontent+=EvohomeAddJS();
+
 			  if (typeof data.result != 'undefined') {
 				bAllowWidgetReorder=data.AllowWidgetOrdering;
 
@@ -1680,6 +1761,9 @@ define(['app'], function (app) {
 				  xhtm+='</td>\n';
 				  if (item.SubType=="Security Panel") {
 					xhtm+='\t      <td id="img"><a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a></td>\n';
+				  }
+				  else if (item.SubType=="Evohome") {
+					xhtm+=EvohomePopupMenu(item);
 				  }
 				  else if (item.SwitchType == "X10 Siren") {
 					if (
@@ -1905,7 +1989,7 @@ define(['app'], function (app) {
 								}
 						  }
 					xhtm+=
-						'\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
+						'\t      <td id="status">' + TranslateStatus(EvoGetStatusText(item)) + '</td>\n' +
 						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 						'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {
