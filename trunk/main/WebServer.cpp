@@ -5319,6 +5319,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
 					ii++;
 				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
 				if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
 				{
 					root["result"][ii]["val"] = NTYPE_USAGE;
@@ -8071,6 +8078,7 @@ namespace http {
 								(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD))) &&
 								(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeVoltage))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeCurrent))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
@@ -9519,6 +9527,14 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Voltage"] = atof(sValue.c_str());
+						}
+						else if (dSubType == sTypeCurrent)
+						{
+							sprintf(szData, "%.3f A", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "current";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["Current"] = atof(sValue.c_str());
 						}
 						else if (dSubType == sTypeTextStatus)
 						{
@@ -12802,6 +12818,7 @@ namespace http {
 						((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorAD)) ||
 						((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorVolt)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
 						(dType == pTypeLux) ||
 						(dType == pTypeWEIGHT) ||
@@ -13117,15 +13134,20 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure))
 						)
 					{//day
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 						float vdiv = 10.0f;
-						if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+						if (
+							((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+							((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+							)
+						{
 							vdiv = 1000.0f;
-
+						}
 						szQuery.clear();
 						szQuery.str("");
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
@@ -13143,6 +13165,8 @@ namespace http {
 								if (metertype == 1)
 									fValue *= 0.6214f;
 								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+									sprintf(szTmp, "%.3f", fValue);
+								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 									sprintf(szTmp, "%.3f", fValue);
 								else
 									sprintf(szTmp, "%.1f", fValue);
@@ -14969,6 +14993,7 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure))
 						)
 					{//month/year
@@ -14976,8 +15001,13 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						float vdiv = 10.0f;
-						if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+						if (
+							((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+							((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+							)
+						{
 							vdiv = 1000.0f;
+						}
 
 						szQuery << "SELECT Value1,Value2, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
@@ -14999,10 +15029,14 @@ namespace http {
 								}
 								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
 									sprintf(szTmp, "%.3f", fValue1);
+								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+									sprintf(szTmp, "%.3f", fValue1);
 								else
 									sprintf(szTmp, "%.1f", fValue1);
 								root["result"][ii]["v_min"] = szTmp;
 								if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+									sprintf(szTmp, "%.3f", fValue2);
+								else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 									sprintf(szTmp, "%.3f", fValue2);
 								else
 									sprintf(szTmp, "%.1f", fValue2);
@@ -15478,12 +15512,18 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure))
 						)
 					{
 						float vdiv = 10.0f;
-						if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+						if (
+							((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
+							((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+							)
+						{
 							vdiv = 1000.0f;
+						}
 
 						szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 						result = m_sql.query(szQuery.str());
@@ -15500,10 +15540,14 @@ namespace http {
 
 							if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
 								sprintf(szTmp, "%.3f", fValue1);
+							else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
+								sprintf(szTmp, "%.3f", fValue1);
 							else
 								sprintf(szTmp, "%.1f", fValue1);
 							root["result"][ii]["v_min"] = szTmp;
 							if ((dType == pTypeGeneral) && (dSubType == sTypeVoltage))
+								sprintf(szTmp, "%.3f", fValue2);
+							else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 								sprintf(szTmp, "%.3f", fValue2);
 							else
 								sprintf(szTmp, "%.1f", fValue2);

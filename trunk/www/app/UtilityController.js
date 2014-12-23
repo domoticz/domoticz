@@ -647,7 +647,7 @@ define(['app'], function (app) {
 							status=item.Data;
 							bigtext=item.Data;
 						}
-						else if ((item.SubType == "Voltage")||(item.SubType == "A/D")||(item.SubType == "Pressure")) {
+						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")||(item.SubType == "Pressure")) {
 							status=item.Data;
 							bigtext=item.Data;
 						}
@@ -893,7 +893,7 @@ define(['app'], function (app) {
 						else if (item.SubType == "Leaf Wetness") {
 						  xhtm+=item.Data;
 						}
-						else if ((item.SubType == "Voltage")||(item.SubType == "A/D")||(item.SubType == "Pressure")) {
+						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")||(item.SubType == "Pressure")) {
 						  xhtm+=item.Data;
 						}
 						else if (item.Type == "Lux") {
@@ -951,7 +951,7 @@ define(['app'], function (app) {
 					  xhtm+='leaf48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
-					else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
+					else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
@@ -1133,13 +1133,19 @@ define(['app'], function (app) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
+				  else if ((item.Type == "General")&&(item.SubType == "Current")) {
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'CurrentGeneral\');" data-i18n="Log">Log</a> ';
+					if (permissions.hasPermission("Admin")) {
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+					}
+				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Pressure")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Pressure\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  else if ((item.SubType == "Voltage")||(item.SubType == "A/D")) {
+				  else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';

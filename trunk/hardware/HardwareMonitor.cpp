@@ -210,34 +210,26 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	char szTmp[30];
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeCURRENT) << ") AND (Subtype==" << int(sTypeELEC1) << ")";
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeCurrent) << ")";
 	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
 	}
 
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-	tsen.CURRENT.packettype = pTypeCURRENT;
-	tsen.CURRENT.subtype = sTypeELEC1;
-	tsen.CURRENT.packetlength = sizeof(tsen.CURRENT) - 1;
-	tsen.CURRENT.id1 = (unsigned char)(Idx >> 8);
-	tsen.CURRENT.id2 = (unsigned char)Idx & 0xFF;
-	int amps = round(Curr*10.0f);
-	tsen.CURRENT.ch1h = amps / 256;
-	amps -= (tsen.CURRENT.ch1h * 256);
-	tsen.CURRENT.ch1l = (BYTE)amps;
-	tsen.CURRENT.battery_level = 9;
-	tsen.CURRENT.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&tsen);
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeCurrent;
+	gDevice.id = 1;
+	gDevice.floatval1 = Curr;
+	gDevice.intval1 = static_cast<int>(Idx);
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeCURRENT) << ") AND (Subtype==" << int(sTypeELEC1) << ")";
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeCurrent) << ")";
 		result = m_sql.query(szQuery.str());
 	}
 }

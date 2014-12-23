@@ -931,6 +931,7 @@ define(['app'], function (app) {
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
+							(item.SubType=="Current")||
 							(item.SubType=="Text")||
 							(item.SubType=="Alert")||
 							(item.SubType=="Pressure")||
@@ -972,6 +973,7 @@ define(['app'], function (app) {
 											(item.SubType=="Soil Moisture")||
 											(item.SubType=="Leaf Wetness")||
 											(item.SubType=="Voltage")||
+											(item.SubType=="Current")||
 											(item.SubType=="Text")||
 											(item.SubType=="Pressure")||
 											(item.SubType=="A/D")
@@ -1051,7 +1053,7 @@ define(['app'], function (app) {
 									status=item.Data;
 									bigtext=item.Data;
 								}
-								else if ((item.SubType=="Voltage")||(item.SubType=="A/D")||(item.SubType=="Pressure")) {
+								else if ((item.SubType=="Voltage")||(item.SubType=="Current")||(item.SubType=="A/D")||(item.SubType=="Pressure")) {
 									status=item.Data;
 									bigtext=item.Data;
 								}
@@ -2426,6 +2428,7 @@ define(['app'], function (app) {
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
+							(item.SubType=="Current")||
 							(item.SubType=="Text")||
 							(item.SubType=="Alert")||
 							(item.SubType=="Pressure")||
@@ -2495,6 +2498,7 @@ define(['app'], function (app) {
 									(item.SubType=="Soil Moisture")||
 									(item.SubType=="Leaf Wetness")||
 									(item.SubType=="Voltage")||
+									(item.SubType=="Current")||
 									(item.SubType=="Text")||
 									(item.SubType=="Pressure")||
 									(item.SubType=="A/D")
@@ -2585,6 +2589,7 @@ define(['app'], function (app) {
 								(item.SubType=="Soil Moisture")||
 								(item.SubType=="Leaf Wetness")||
 								(item.SubType=="Voltage")||
+								(item.SubType=="Current")||
 								(item.SubType=="Pressure")||
 								(item.SubType=="A/D")
 							) {
@@ -2653,7 +2658,7 @@ define(['app'], function (app) {
 							xhtm+='leaf48.png" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
-						else if ((item.SubType=="Voltage")||(item.SubType=="A/D")) {
+						else if ((item.SubType=="Voltage")||(item.SubType=="Current")||(item.SubType=="A/D")) {
 							xhtm+='current48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
