@@ -2218,7 +2218,6 @@ table.dataTable thead th, table.dataTable thead td {
 }
 
 .ui-popup {
-	position: relative;
 	z-index: 1100;
 	display: none;
 	position: absolute;
@@ -2408,6 +2407,9 @@ table.dataTable thead th, table.dataTable thead td {
 	border-radius: 4px;
 	width: 48px;
 	height: 48px;
+	-webkit-transform-style: preserve-3d;
+	-moz-transform-style: preserve-3d;
+	transform-style: preserve-3d;
 }
 
 .evoimgnorm {
@@ -2422,8 +2424,36 @@ table.dataTable thead th, table.dataTable thead td {
 	margin-left: auto;
 	margin-right: auto;
 	width: 75%;
-	padding-top: 7px;
-	vertical-align: middle;
+	/*vertical center*/
+	position: relative;
+	top: 50%;
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+}
+
+.evoimg.evomini, .evoimgnorm.evomini{
+	width: 40px;
+	height: 40px;
+}
+
+.evoimg.evomobile, .evoimgnorm.evomobile{
+	width: 30px;
+	height: 30px;
+}
+
+table.mobileitem .evoimg.evomobile, table.mobileitem .evoimgnorm.evomobile{
+	float:right;
+}
+
+span.evomobile {
+	float:right;
+	position:relative;
+	right: 200px;
+}
+
+span.evomobile .ui-popup {
+	left: 0px;
 }
 
 .ui-btn:hover {

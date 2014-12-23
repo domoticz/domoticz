@@ -102,10 +102,10 @@ public:
 	static unsigned int GetID(unsigned char idType, unsigned int idAddr){return idType<<18|idAddr;}
 	static unsigned int GetID(const std::string &szID)
 	{
-		unsigned char idType;
+		unsigned int idType;
 		unsigned int idAddr;
-		sscanf(szID.c_str(),"%hhu:%u",&idType,&idAddr);//requires C99
-		return GetID(idType,idAddr);
+		sscanf(szID.c_str(),"%u:%u",&idType,&idAddr);
+		return GetID(static_cast<unsigned char>(idType),idAddr);
 	}
 	static std::string GetStrID(unsigned int nID)
 	{
@@ -188,11 +188,22 @@ public:
 		return szTmp;
 	}
 	
+	template <class T> static void DecodeISODate(T &out, const char* str)
+	{
+		unsigned int y,m,d,h,n;
+		sscanf(str,"%04u-%02u-%02uT%02u:%02u:",&y,&m,&d,&h,&n);
+		out.year=static_cast<uint16_t>(y);
+		out.month=static_cast<uint8_t>(m);
+		out.day=static_cast<uint8_t>(d);
+		out.hrs=static_cast<uint8_t>(h);
+		out.mins=static_cast<uint8_t>(n);
+	}
+	
 	unsigned char DecodeTime(const unsigned char* msg, unsigned char nOfs){return DecodeTime(*this,msg,nOfs);}
 	unsigned char DecodeDate(const unsigned char* msg, unsigned char nOfs){return DecodeDate(*this,msg,nOfs);}
 	virtual unsigned char Decode(const unsigned char* msg, unsigned char nOfs){return DecodeDateTime(*this,msg,nOfs);}
 	
-	std::string Getstrdate() const{return GetStrDate(*this);}
+	std::string GetStrDate() const{return GetStrDate(*this);}
 	
 	virtual std::string Encode() const
 	{

@@ -11955,7 +11955,7 @@ namespace http {
 				if (urights < 1)
 					return;
 				if(dType == pTypeEvohomeWater)
-					m_mainworker.SetSetPoint(idx, (state=="On")?1:0, nEvoMode, until);//FIXME float not guaranteed precise?
+					m_mainworker.SetSetPoint(idx, (state=="On")?1.0f:0.0f, nEvoMode, until);//FIXME float not guaranteed precise?
 				else if(dType == pTypeEvohomeZone)
 					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())), nEvoMode, until);
 				else

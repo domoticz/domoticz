@@ -4835,7 +4835,7 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 			return -1;
 	}
 
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szUntilDate.c_str(),m_LastDeviceName,pEvo->EVOHOME1.action);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szUntilDate.c_str(),m_LastDeviceName,pEvo->EVOHOME1.action!=0);
 	if (DevRowIdx == -1)
 		return -1;
 	if(bNewDev)
@@ -4863,7 +4863,8 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 
 		sprintf(szTmp, "id         = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 		WriteMessage(szTmp);
-		WriteMessage("status        = %s", CEvohome::GetControllerModeName(pEvo->EVOHOME1.status));
+		WriteMessage("status        = ");
+		WriteMessage(CEvohome::GetControllerModeName(pEvo->EVOHOME1.status));
 
 		WriteMessageEnd();
 	}
@@ -9033,7 +9034,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	
 	tsen.EVOHOME1.mode=until.empty()?CEvohome::cmPerm:CEvohome::cmTmp;
 	if(tsen.EVOHOME1.mode==CEvohome::cmTmp)
-		sscanf(until.c_str(),"%hu-%hhu-%hhuT%hhu:%hhu:00",&tsen.EVOHOME1.year,&tsen.EVOHOME1.month,&tsen.EVOHOME1.day,&tsen.EVOHOME1.hrs,&tsen.EVOHOME1.mins);//C99
+		CEvohomeDateTime::DecodeISODate(tsen.EVOHOME1,until.c_str());
 	WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME1));
 		
 	// convert now to string form
@@ -9044,7 +9045,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	WriteMessageStart();
 
 	std::stringstream sTmp;
-	sTmp << szDate << " (System) evohome status = "<< status << " (" << nStatus << ") action = " << action << " (" << bool(tsen.EVOHOME1.action) << ")";
+	sTmp << szDate << " (System) evohome status = "<< status << " (" << nStatus << ") action = " << action << " (" << (int)tsen.EVOHOME1.action << ")";
 	WriteMessage(sTmp.str().c_str(),false);
 	
 	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
@@ -9062,7 +9063,7 @@ bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcm
 	std::stringstream s_str(idx);
 	s_str >> ID;
 
-	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()), atoi(ooc.c_str()));
+	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()), atoi(ooc.c_str())!=0);
 }
 
 bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue, bool ooc)
@@ -9138,10 +9139,10 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		
 		tsen.EVOHOME2.zone = Unit;//controller is 0 so let our zones start from 1...
 		tsen.EVOHOME2.updatetype = CEvohome::updSetPoint;//setpoint
-		tsen.EVOHOME2.temperature = (dType==pTypeEvohomeWater)?TempValue:TempValue*100.0f;
+		tsen.EVOHOME2.temperature = static_cast<int16_t>((dType==pTypeEvohomeWater)?TempValue:TempValue*100.0f);
 		tsen.EVOHOME2.mode=newMode;
 		if(newMode==CEvohome::zmTmp)
-			sscanf(until.c_str(),"%hu-%hhu-%hhuT%hhu:%hhu:00",&tsen.EVOHOME2.year,&tsen.EVOHOME2.month,&tsen.EVOHOME2.day,&tsen.EVOHOME2.hrs,&tsen.EVOHOME2.mins);//C99
+			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2,until.c_str());
 		WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME2));
 		
 		//Pass across the current controller mode if we're going to update as per the hw device
