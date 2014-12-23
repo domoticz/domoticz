@@ -3,14 +3,14 @@ define(['app'], function (app) {
 
 		$scope.LastUpdateTime = parseInt(0);
 		
-		//evohome...
+		//Evohome...
 		//FIXME move evohome functions to a shared js ...see temperaturecontroller.js and lightscontroller.js
 		
 		SwitchModal= function(idx, name, status, refreshfunction)
 		{
 			clearInterval($.myglobals.refreshTimer);
 			
-			ShowNotify($.i18n('Setting evohome ') + ' ' + $.i18n(name));
+			ShowNotify($.i18n('Setting Evohome ') + ' ' + $.i18n(name));
 			
 			//FIXME avoid conflicts when setting a new status while reading the status from the web gateway at the same time
 			//(the status can flick back to the previous status after an update)...now implemented with script side lockout
@@ -52,10 +52,10 @@ define(['app'], function (app) {
 		}
 		
 		EvoGetStatusText = function(item){
-			if(item.SubType=="evohome")
+			if(item.SubType=="Evohome")
 				return EvoDisplayTextMode(item.Status);
 			else
-				return item.Status;//Don't convert for non evohome switches just in case those status above get used anywhere
+				return item.Status;//Don't convert for non Evohome switches just in case those status above get used anywhere
 		}
 		
 		EvohomeAddJS = function()
@@ -999,7 +999,7 @@ define(['app'], function (app) {
 									}
 									if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var img="";
-										if (item.SubType=="evohome") {
+										if (item.SubType=="Evohome") {
 											img+=EvohomeImg(item,'evomobile');
 										}
 										if ($(id + " #img").html()!=img) {
@@ -1008,7 +1008,7 @@ define(['app'], function (app) {
 									}
 									else {
 										var img="";
-										if (item.SubType=="evohome") {
+										if (item.SubType=="Evohome") {
 											img=EvohomeImg(item,'evomini');
 										}
 										var nbackcolor="#D4E1EE";
@@ -2568,7 +2568,7 @@ define(['app'], function (app) {
 					}
 					var xhtm="";
 								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
-									if (item.SubType=="evohome") {
+									if (item.SubType=="Evohome") {
 										xhtm+=
 											'\t    <tr id="evohome_' + item.idx +'">\n' +
 											'\t      <td id="name">' + item.Name + '</td>\n';
@@ -2577,7 +2577,7 @@ define(['app'], function (app) {
 									}
 								}
 								else {
-									if (item.SubType=="evohome") {
+									if (item.SubType=="Evohome") {
 										if ($.DashboardType==0) {
 											xhtm='\t<div class="span4 movable" id="evohome_' + item.idx +'">\n';
 										}
