@@ -340,7 +340,8 @@ public:
 		{
 			if (szPkt == szPacketType[i])
 			{
-				return static_cast<packettype>(i);
+				type=static_cast<packettype>(i);
+				break;
 			}
 		}
 		return type;
