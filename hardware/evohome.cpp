@@ -774,12 +774,13 @@ bool CEvohome::DecodeSetpointOverride(CEvohomeMsg &msg)//0x2349
 		Log(true,LOG_STATUS,"evohome: %s: A local override is in effect for zone %d",tag,tsen.EVOHOME2.zone);
 		return true;
 	}
-	tsen.EVOHOME2.mode=ConvertMode(m_evoToDczOverrideMode,msg.payload[3]);
-	if(tsen.EVOHOME2.mode==-1)
+	int nMode=ConvertMode(m_evoToDczOverrideMode,msg.payload[3]);
+	if(nMode==-1)
 	{
 		Log(false,LOG_STATUS,"evohome: %s: WARNING unexpected mode %d",tag,msg.payload[3]);
 		return false;
 	}
+	tsen.EVOHOME2.mode=static_cast<uint8_t>(nMode);
 	tsen.EVOHOME2.controllermode=ConvertMode(m_evoToDczControllerMode,GetControllerMode());
 	if(msg.payloadsize == 13)
 	{	
@@ -887,12 +888,13 @@ bool CEvohome::DecodeDHWState(CEvohomeMsg &msg)//1F41
 	tsen.EVOHOME2.temperature = msg.payload[1];//just on or off for DHW
 	if(tsen.EVOHOME2.temperature == 0x7F)//FIXME this is just a guess?
 		return false;
-	tsen.EVOHOME2.mode=ConvertMode(m_evoToDczOverrideMode,msg.payload[2]);
-	if(tsen.EVOHOME2.mode==-1)
+	int nMode=ConvertMode(m_evoToDczOverrideMode,msg.payload[2]);
+	if(nMode==-1)
 	{
 		Log(false,LOG_STATUS,"evohome: %s: WARNING unexpected mode %d",tag, msg.payload[2]);
 		return false;
 	}
+	tsen.EVOHOME2.mode=static_cast<uint8_t>(nMode);
 	tsen.EVOHOME2.controllermode=ConvertMode(m_evoToDczControllerMode,GetControllerMode());
 	if(msg.payloadsize == 12)
 	{	
@@ -970,12 +972,13 @@ bool CEvohome::DecodeControllerMode(CEvohomeMsg &msg)//2E04
 	RFX_SETID3(msg.GetID(0),tsen.EVOHOME1.id1,tsen.EVOHOME1.id2,tsen.EVOHOME1.id3);
 	
 	int nControllerMode=msg.payload[0];
-	tsen.EVOHOME1.status=ConvertMode(m_evoToDczControllerMode,nControllerMode);//this converts to the modes originally setup with the web client ver
-	if(tsen.EVOHOME1.status==-1)
+	int nMode=ConvertMode(m_evoToDczControllerMode,nControllerMode);//this converts to the modes originally setup with the web client ver
+	if(nMode==-1)
 	{
 		Log(false,LOG_STATUS,"evohome: %s: WARNING unexpected mode %d",tag, nControllerMode);
 		return false;
 	}
+	tsen.EVOHOME1.status=static_cast<uint8_t>(nMode);
 	CEvohomeDateTime::DecodeDateTime(tsen.EVOHOME1,msg.payload,1);
 	tsen.EVOHOME1.mode=msg.payload[7];//1 is tmp 0 is perm
 	Log(true,LOG_STATUS,"evohome: %s: Setting: (%d=%s) (%d=%s) %s", tag, tsen.EVOHOME1.status, GetControllerModeName(tsen.EVOHOME1.status),tsen.EVOHOME1.mode,tsen.EVOHOME1.mode?"Temporary":"Permanent",CEvohomeDateTime::GetStrDate(tsen.EVOHOME1).c_str());
