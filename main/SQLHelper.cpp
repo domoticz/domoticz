@@ -5866,7 +5866,7 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 {
 	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
-
+	/*
 	// Check if an event for the same device is already in queue, and if so, replace it
 	// _log.Log(LOG_NORM, "Request to add task: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Hue, tItem._relatedEvent.c_str());
 	// Remove any previous task linked to the same device
@@ -5882,6 +5882,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 		else
 			++itt;
 	}
+	*/
 	// _log.Log(LOG_NORM, "=> Adding new task item");  
 	m_background_task_queue.push_back(tItem);
 }
