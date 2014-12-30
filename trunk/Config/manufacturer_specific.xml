@@ -56,6 +56,7 @@
 		<Product type="0001" id="0016" name="Key Fob" config="aeon_labs/keyfob.xml"/>
 		<Product type="0003" id="0011" name="Micro Double Switch" />
 		<Product type="0002" id="0036" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor.xml"/>
+		<Product type="0004" id="0025" name="Z-Wave Repeater"/>
 	</Manufacturer>
         <Manufacturer id="0111" name="Airline Mechanical">
                 <Product type="8200" id="0200" name="ZDS-100"/>
@@ -217,6 +218,7 @@
 		<Product type="0100" id="0107" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="0109" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="100a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
+		<Product type="0100" id="300a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0700" id="1000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
 		<Product type="0700" id="4000" name="FGK101 Door Opening Sensor" config="fibaro/fgk001.xml" />
 		<Product type="0300" id="0104" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
@@ -237,6 +239,7 @@
 		<Product type="0200" id="0107" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="0109" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="100a" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
+		<Product type="0200" id="300a" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0600" id="1000" name="FGWPE Wall Plug" config="fibaro/fgwpe.xml" />
 		<Product type="0800" id="1001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
 		<Product type="0800" id="4001" name="FGMS001 Motion Sensor" config="fibaro/fgms.xml" />
@@ -335,6 +338,9 @@
 		<Product type="4341" id="9000" name="CA9000 PIR Occupancy Sensor"/>
 	</Manufacturer>
 	<Manufacturer id="0013" name="Internet Dom">
+	</Manufacturer>
+	<Manufacturer id="0126" name="Iris">
+		<Product type="0002" id="0001" name="Range Extender" config="iris/rangeextender.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0063" name="GE">
 		<Product type="4450" id="3030" name="45602 Lamp Dimmer Module" config="ge/dimmer_module.xml"/>
@@ -444,6 +450,7 @@
 		<Product type="0003" id="0002" name="Danalock Circle/Square"/>
 	</Manufacturer>
 	<Manufacturer id="0154" name="Popp">
+		<Product type="1100" id="0001" name="123601 Plug-in Switch" config="popp/123601.xml" />
 		<Product type="1100" id="0002" name="123580 Plug-in Dimmer" config="popp/123580.xml" />
 		<Product type="1100" id="0001" name="123601 Plug-in Switch" config="popp/123601.xml" />
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml" />
@@ -487,6 +494,7 @@
 		<Product type="0101" id="8371" name="ZXT-310EU"/>
 		<Product type="0101" id="8377" name="ZXT-120" config="remotec/zxt-120.xml"/>
 		<Product type="8201" id="8120" name="ZFM-X10EU Dual Mode Insert Module "/>
+		<Product type="8000" id="0002" name="ZFM-80" config="remotec/zfm-80.xml" />
 	</Manufacturer>
 	<Manufacturer id="0010" name="RCS">
 	  <Product type="0001" id="0002" name="TZ43 Thermostat" />
@@ -600,10 +608,11 @@
 		<Product type="2001" id="0102" name="ZD2102 Door/Window Sensor"/>
 		<Product type="2001" id="0104" name="ZD2102 Door/Window Sensor"/>
 		<Product type="2001" id="0105" name="ZD2102 Door/Window Sensor"/>
-		<Product type="2002" id="0201" name="ZP3102 PIR Motion Sensor"/>
-		<Product type="2002" id="0202" name="ZP3102 PIR Motion Sensor"/>
-		<Product type="2002" id="0203" name="ZP3102 PIR Motion Sensor"/>
-		<Product type="2002" id="0204" name="ZP3102 PIR Motion Sensor"/>
+		<Product type="2002" id="0201" name="ZP3102 US PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0202" name="ZP3102 AU PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0203" name="ZP3102 EU PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0204" name="ZP3102 JP PIR Motion Sensor" config="vision/zp3102.xml"/>
+		<Product type="2002" id="0205" name="ZP3102 EU PIR Motion Sensor" config="vision/zp3102.xml"/>		
 		<Product type="2003" id="0302" name="ZS5101 Shock and Vibration Sensor"/>
 		<Product type="2004" id="0403" name="ZS6101 Smoke Detector"/>
 		<Product type="2005" id="0503" name="ZM1601 Battery Operated Siren" config="vision/zm1601eu.xml"/>
@@ -625,6 +634,7 @@
 		<Product type="0001" id="0001" name="Smoke Detector"/>
 		<Product type="0001" id="0069" name="Key Fob"/>
 		<Product type="0002" id="0003" name="Z-Wave USB Stick"/>
+		<Product type="0400" id="0001" name="ZME_UZB1 USB Stick"/>
 		<Product type="0024" id="0001" name="Floor Thermostat"/>
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="0100" id="0004" name="ZME_WCD2 Double Paddle Wall Controller" config="zwave.me/ZME_WCD2.xml"/>

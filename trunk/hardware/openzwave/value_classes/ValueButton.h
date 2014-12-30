@@ -52,6 +52,8 @@ namespace OpenZWave
 		bool PressButton();
 		bool ReleaseButton();
 
+		virtual string const GetAsString() const { return ( IsPressed() ? "true" : "false" ); }
+
 		// From Value
 		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
 		virtual void WriteXML( TiXmlElement* _valueElement );

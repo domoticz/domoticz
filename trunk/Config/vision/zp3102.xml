@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vision ZP3102 PIR Motion Sensor -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+        <!-- COMMAND_CLASS_CONFIGURATION -->
+        <!--    IMPORTANT: Controllers may only allow to configure signed values.
+                In order to set values in the range 128...255 the value sent in the application shall be the desired value minus 256.
+                For example: to set a parameter to 200? it may be needed to set a value of 200 minus 256 = minus 56.
+                In case of two byte value the same logic applies: Values greater than 32768 may needed to be given as negative values too.-->
+        <CommandClass id="112">
+                <Value type="byte" genre="config" index="1" label="Re-Trigger Waiting Time" units="minutes" min="1" max="255" value="3">
+                        <Help>Time until an associated device will turn off if no new movement is detected</Help>
+                </Value>
+        </CommandClass>
+
+        <!-- COMMAND_CLASS_BASIC -->
+        <CommandClass id="32" setasreport="true"/>
+
+        <!-- COMMAND_CLASS_ASSOCIATION -->
+        <CommandClass id="133">
+                <Associations num_groups="1">
+                        <Group index="1" max_associations="5" label="Basic on/off group for detecting movements" auto="true"/>
+                </Associations>
+        </CommandClass>
+
+</Product>

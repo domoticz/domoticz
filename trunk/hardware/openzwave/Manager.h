@@ -135,6 +135,7 @@ namespace OpenZWave
 		 * and then call the AddDriver method for each attached PC Z-Wave controller in turn.
 		 * \param _options a locked Options object containing all the application's configurable option values.
 		 * \return a pointer to the newly created Manager object, or NULL if creation failed.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_OPTIONS if the Options Class is not setup and Locked
 		 * \see Options, Get, Destroy, AddWatcher, AddDriver
 		 */
 		static Manager* Create();
@@ -407,6 +408,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Get the polling intensity of a device's state.
 		 * \param _valueId The ID of the value to check polling.
 		 * \return Intensity, number of polling for one polling interval.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		uint8 GetPollIntensity( ValueID const &_valueId );
 
@@ -813,6 +816,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Gets the user-friendly label for the value.
 		 * \param _id The unique identifier of the value.
 		 * \return The value label.
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		string GetValueLabel( ValueID const& _id );
@@ -821,6 +826,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Sets the user-friendly label for the value.
 		 * \param _id The unique identifier of the value.
 		 * \param _value The new value of the label.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		void SetValueLabel( ValueID const& _id, string const& _value );
@@ -829,6 +836,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Gets the units that the value is measured in.
 		 * \param _id The unique identifier of the value.
 		 * \return The value units.
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		string GetValueUnits( ValueID const& _id );
@@ -837,6 +846,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Sets the units that the value is measured in.
 		 * \param _id The unique identifier of the value.
 		 * \param _value The new value of the units.
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		void SetValueUnits( ValueID const& _id, string const& _value );
@@ -845,6 +856,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Gets a help string describing the value's purpose and usage.
 		 * \param _id The unique identifier of the value.
 		 * \return The value help text.
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		string GetValueHelp( ValueID const& _id );
@@ -853,6 +866,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Sets a help string describing the value's purpose and usage.
 		 * \param _id The unique identifier of the value.
 		 * \param _value The new value of the help text.
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		void SetValueHelp( ValueID const& _id, string const& _value );
@@ -861,6 +876,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Gets the minimum that this value may contain.
 		 * \param _id The unique identifier of the value.
 		 * \return The value minimum.
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		int32 GetValueMin( ValueID const& _id );
@@ -869,6 +886,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Gets the maximum that this value may contain.
 		 * \param _id The unique identifier of the value.
 		 * \return The value maximum.
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		int32 GetValueMax( ValueID const& _id );
@@ -877,6 +896,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Test whether the value is read-only.
 		 * \param _id The unique identifier of the value.
 		 * \return true if the value cannot be changed by the user.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		bool IsValueReadOnly( ValueID const& _id );
@@ -885,6 +906,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Test whether the value is write-only.
 		 * \param _id The unique identifier of the value.
 		 * \return true if the value can only be written to and not read.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		bool IsValueWriteOnly( ValueID const& _id );
@@ -893,6 +916,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Test whether the value has been set.
 		 * \param _id The unique identifier of the value.
 		 * \return true if the value has actually been set by a status message from the device, rather than simply being the default.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		bool IsValueSet( ValueID const& _id );
@@ -901,6 +926,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Test whether the value is currently being polled.
 		 * \param _id The unique identifier of the value.
 		 * \return true if the value is being polled, otherwise false.
+ 		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID
 		 */
 		bool IsValuePolled( ValueID const& _id );
@@ -910,6 +937,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a bool that will be filled with the value.
 		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_Bool. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsBool( ValueID const& _id, bool* o_value );
@@ -919,6 +949,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a uint8 that will be filled with the value.
 		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_Byte. The type can be tested with a call to ValueID::GetType
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsByte( ValueID const& _id, uint8* o_value );
@@ -928,6 +961,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a float that will be filled with the value.
 		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_Decimal. The type can be tested with a call to ValueID::GetType
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsFloat( ValueID const& _id, float* o_value );
@@ -937,6 +973,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to an int32 that will be filled with the value.
 		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_Int. The type can be tested with a call to ValueID::GetType
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsInt( ValueID const& _id, int32* o_value );
@@ -946,6 +985,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to an int16 that will be filled with the value.
 		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_Short. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsString, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsShort( ValueID const& _id, int16* o_value );
@@ -955,7 +997,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * Creates a string representation of a value, regardless of type.
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a string that will be filled with the value.
-		 * \return true if the value was obtained.</returns>
+		 * \return true if the value was obtained.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsString( ValueID const& _id, string* o_value );
@@ -966,6 +1011,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param o_value Pointer to a uint8* that will be filled with the value. This return value will need to be freed as it was dynamically allocated.
 		 * \param o_length Pointer to a uint8 that will be fill with the data length.
 		 * \return true if the value was obtained. Returns false if the value is not a ValueID::ValueType_Raw. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueListSelection, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueAsRaw( ValueID const& _id, uint8** o_value, uint8* o_length );
@@ -975,6 +1023,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a string that will be filled with the selected item.
 		 * \return True if the value was obtained.  Returns false if the value is not a ValueID::ValueType_List. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueListSelection( ValueID const& _id, string* o_value );
@@ -984,6 +1035,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to an integer that will be filled with the selected item.
 		 * \return True if the value was obtained.  Returns false if the value is not a ValueID::ValueType_List. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListItems, GetValueAsRaw
 		 */
 		bool GetValueListSelection( ValueID const& _id, int32* o_value );
@@ -993,6 +1047,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a vector of strings that will be filled with list items. The vector will be cleared before the items are added.
 		 * \return true if the list items were obtained.  Returns false if the value is not a ValueID::ValueType_List. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueAsRaw
 		 */
 		bool GetValueListItems( ValueID const& _id, vector<string>* o_value );
@@ -1002,6 +1059,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a uint8 that will be filled with the precision value.
 		 * \return true if the value was obtained.  Returns false if the value is not a ValueID::ValueType_Decimal. The type can be tested with a call to ValueID::GetType
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueListItems
 		 */
 		bool GetValueFloatPrecision( ValueID const& _id, uint8* o_value );
@@ -1014,6 +1074,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the bool value.
 		 * \param _value The new value of the bool.
 		 * \return true if the value was set.  Returns false if the value is not a ValueID::ValueType_Bool. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 *
 		 */
 		bool SetValue( ValueID const& _id, bool const _value );
 
@@ -1025,6 +1089,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the byte value.
 		 * \param _value The new value of the byte.
 		 * \return true if the value was set.  Returns false if the value is not a ValueID::ValueType_Byte. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool SetValue( ValueID const& _id, uint8 const _value );
 
@@ -1037,6 +1104,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the decimal value.
 		 * \param _value The new value of the decimal.
 		 * \return true if the value was set.  Returns false if the value is not a ValueID::ValueType_Decimal. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool SetValue( ValueID const& _id, float const _value );
 
@@ -1048,6 +1118,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the integer value.
 		 * \param _value The new value of the integer.
 		 * \return true if the value was set.  Returns false if the value is not a ValueID::ValueType_Int. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool SetValue( ValueID const& _id, int32 const _value );
 
@@ -1059,6 +1132,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the integer value.
 		 * \param _value The new value of the integer.
 		 * \return true if the value was set.  Returns false if the value is not a ValueID::ValueType_Short. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool SetValue( ValueID const& _id, int16 const _value );
 
@@ -1070,6 +1146,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the raw value.
 		 * \param _value The new collection of bytes.
 		 * \return true if the value was set.  Returns false if the value is not a ValueID::ValueType_Raw. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool SetValue( ValueID const& _id, uint8 const* _value, uint8 const _length );
 
@@ -1081,6 +1160,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _id The unique identifier of the integer value.
 		 * \param _value The new value of the string.
 		 * \return true if the value was set.  Returns false if the value could not be parsed into the correct type for the value.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool SetValue( ValueID const& _id, string const& _value );
 
@@ -1093,6 +1175,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _selectedItem A string matching the new selected item in the list.
 		 * \return true if the value was set.  Returns false if the selection is not in the list, or if the value is not a ValueID::ValueType_List.
 		 * The type can be tested with a call to ValueID::GetType
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool SetValueListSelection( ValueID const& _id, string const& _selectedItem );
 
@@ -1102,6 +1187,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * of the specified ValueID (just like a poll, except only one-time, not recurring).
 		 * \param _id The unique identifier of the value to be refreshed.
 		 * \return true if the driver and node were found; false otherwise
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool RefreshValue( ValueID const& _id);
 
@@ -1111,14 +1198,31 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * out spurious data reported occasionally by some devices.
 		 * \param _id The unique identifier of the value whose changes should or should not be verified.
 		 * \param _verify if true, verify changes; if false, don't verify changes.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 * \sa Manager::GetChangeVerified
 		 */
 		void SetChangeVerified( ValueID const& _id, bool _verify );
+
+		/**
+		 * \brief determine if value changes upon a refresh should be verified.  If so, the
+		 * library will immediately refresh the value a second time whenever a change is observed.  This helps to filter
+		 * out spurious data reported occasionally by some devices.
+		 * \param _id The unique identifier of the value whose changes should or should not be verified.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 * \sa Manager::SetChangeVerified
+		 */
+		bool GetChangeVerified( ValueID const& _id );
 
 		/**
 		 * \brief Starts an activity in a device.
 		 * Since buttons are write-only values that do not report a state, no notification callbacks are sent.
 		 * \param _id The unique identifier of the integer value.
 		 * \return true if the activity was started.  Returns false if the value is not a ValueID::ValueType_Button. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool PressButton( ValueID const& _id );
 
@@ -1127,6 +1231,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * Since buttons are write-only values that do not report a state, no notification callbacks are sent.
 		 * \param _id The unique identifier of the integer value.
 		 * \return true if the activity was stopped.  Returns false if the value is not a ValueID::ValueType_Button. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		bool ReleaseButton( ValueID const& _id );
 	/*@}*/
@@ -1152,6 +1259,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \brief Get the number of switch points defined in a schedule.
 		 * \param _id The unique identifier of the schedule value.
 		 * \return the number of switch points defined in this schedule.  Returns zero if the value is not a ValueID::ValueType_Schedule. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 */
 		uint8 GetNumSwitchPoints( ValueID const& _id );
 
@@ -1169,6 +1279,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * to 120 (12.0C).  There are two special setback values - 121 is used to set Frost Protection mode, and
 		 * 122 is used to set Energy Saving mode.
 		 * \return true if successful.  Returns false if the value is not a ValueID::ValueType_Schedule. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see GetNumSwitchPoints, RemoveSwitchPoint, ClearSwitchPoints
 		 */
 		bool SetSwitchPoint( ValueID const& _id, uint8 const _hours, uint8 const _minutes, int8 const _setback );
@@ -1183,6 +1296,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * between 0 and 59.
 		 * \return true if successful.  Returns false if the value is not a ValueID::ValueType_Schedule or if there
 		 * is not switch point with the specified time values. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see GetNumSwitchPoints, SetSwitchPoint, ClearSwitchPoints
 		 */
 		bool RemoveSwitchPoint( ValueID const& _id, uint8 const _hours, uint8 const _minutes );
@@ -1190,6 +1306,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Clears all switch points from the schedule.
 		 * \param _id The unique identifier of the schedule value.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see GetNumSwitchPoints, SetSwitchPoint, RemoveSwitchPoint
 		 */
 		void ClearSwitchPoints( ValueID const& _id );
@@ -1206,6 +1325,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * (-12.8C)to 120 (12.0C).  There are two special setback values - 121 is used to set Frost Protection mode, and
 		 * 122 is used to set Energy Saving mode.
 		 * \return true if successful.  Returns false if the value is not a ValueID::ValueType_Schedule. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
 		 * \see GetNumSwitchPoints
 		 */
 		bool GetSwitchPoint( ValueID const& _id, uint8 const _idx, uint8* o_hours, uint8* o_minutes, int8* o_setback );

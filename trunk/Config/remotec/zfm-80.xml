@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="External switch action" value="3">
+			<Help>Set external switch type.</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Type A: tact switch (normally open)" value="1" />
+			<Item label="Type B: tact switch (normally closed)" value="2" />
+			<Item label="Type C: rocker switch (short = on)" value="3" />
+			<Item label="Type A: rocker switch (short = off)" value="4" />
+		</Value>
+		<Value type="byte" index="2" genre="config" label="Fail-safe timeout" units="minutes" min="0" max="240" value="0">
+			<Help>Set timeout period.</Help>
+		</Value>
+		<Value type="byte" index="3" genre="config" label="Fail-safe command source node id" units="Node ID number" min="1" max="232" value="0">
+			<Help>Configure Node ID number for Z-Wave command source.</Help>
+		</Value>
+		<Value type="list" index="4" genre="config" label="Fail-safe timeout action" value="0">
+			<Help>Set relay output status if timeout period has been reached.</Help>
+			<Item label="Turn off relay" value="0" />
+			<Item label="Turn on relay" value="1" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Relay" />
+		</Associations>
+	</CommandClass>
+</Product>

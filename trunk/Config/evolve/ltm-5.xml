@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Ignore Start-Level (Transmitting)" value="1">
+			<Help>Dimmers controlled by this switch will start dimming from their current level.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="3" genre="config" label="Night Light" value="1">
+			<Help>In night-light mode the LED on the switch will turn ON when the switch is turned OFF.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="4" genre="config" label="Invert Switch" value="0">
+			<Help>Change the top of the switch to OFF and the bottom of the switch to ON.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="5" genre="config" label="Ignore Start-Level (Receiving)" value="1">
+			<Help>This dimmer will start dimming from its current level.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="19" genre="config" label="LED transmission indication" value="2">
+			<Help>Flicker LED while transmitting.</Help>
+			<Item label="No flicker" value="0" />
+			<Item label="Flicker whole transmission" value="1" />
+			<Item label="Flicker 1 second" value="2" />
+		</Value>
+		<Value type="byte" index="20" genre="config" label="Polling interval" units="minutes" min="1" max="255" value="2">
+			<Help>How often to poll to keep synchronized with group.</Help>
+		</Value>
+		<Value type="list" index="21" genre="config" label="Poll first node in group" value="0">
+			<Help>Poll only the first node in Group 1.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Group 1" />
+		</Associations>
+	</CommandClass>
+</Product>
