@@ -29,6 +29,9 @@
 #define _Value_H
 
 #include <string>
+#ifdef __FreeBSD__
+#include <time.h>
+#endif
 #include "Defs.h"
 #include "platform/Ref.h"
 #include "value_classes/ValueID.h"
@@ -75,6 +78,7 @@ namespace OpenZWave
 		int32 GetMax()const{ return m_max; }
 
 		void SetChangeVerified( bool _verify ){ m_verifyChanges = _verify; }
+		bool GetChangeVerified() { return m_verifyChanges; }
 
 		virtual string const GetAsString() const { return ""; }
 		virtual bool SetFromString( string const& _value ) { return false; }

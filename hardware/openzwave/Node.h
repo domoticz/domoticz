@@ -130,6 +130,7 @@ namespace OpenZWave
 	public:
 		enum QueryStage
 		{
+			QueryStage_None,						/**< Query process hasn't started for this node */
 			QueryStage_ProtocolInfo,				/**< Retrieve protocol information */
 			QueryStage_Probe,					/**< Ping device to see if alive */
 			QueryStage_WakeUp,					/**< Start wake up process if a sleeping node */
@@ -146,8 +147,7 @@ namespace OpenZWave
 			QueryStage_Session,					/**< Retrieve session information (changes infrequently) */
 			QueryStage_Dynamic,					/**< Retrieve dynamic information (changes frequently) */
 			QueryStage_Configuration,				/**< Retrieve configurable parameter information (only done on request) */
-			QueryStage_Complete,					/**< Query process is completed for this node */
-			QueryStage_None						/**< Query process hasn't started for this node */
+			QueryStage_Complete					/**< Query process is completed for this node */
 		};
 
 
