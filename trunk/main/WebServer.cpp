@@ -471,7 +471,7 @@ namespace http {
 			}
 		}
 
-		int GetDirFilesRecursive(const std::string &DirPath, std::vector<std::string> &_Files)
+		int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string,int> &_Files)
 		{
 			DIR* dir;
 			struct dirent *ent;
@@ -481,7 +481,7 @@ namespace http {
 				{
 					if (ent->d_type == DT_DIR)
 					{
-						if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0))
+						if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
 						{
 							std::string nextdir = DirPath + ent->d_name + "/";
 							if (GetDirFilesRecursive(nextdir.c_str(), _Files))
@@ -494,7 +494,7 @@ namespace http {
 					else
 					{
 						std::string fname = DirPath + ent->d_name;
-						_Files.push_back(fname);
+						_Files[fname]=1;
 					}
 				}
 			}
@@ -514,11 +514,11 @@ namespace http {
 			m_sql.GetPreferencesVar("WebTheme", sWebTheme);
 
 			//Get Dynamic Theme Files
-			std::vector<std::string> _ThemeFiles;
+			std::map<std::string,int> _ThemeFiles;
 			GetDirFilesRecursive(szWWWFolder + "/styles/" + sWebTheme + "/", _ThemeFiles);
 
 			//Get Dynamic Floorplan Files
-			std::vector<std::string> _FloorplanFiles;
+			std::map<std::string,int> _FloorplanFiles;
 			GetDirFilesRecursive(szWWWFolder + "/images/floorplans/", _FloorplanFiles);
 
 			std::ifstream is(filename.c_str());
@@ -532,10 +532,10 @@ namespace http {
 						if (sLine.find("#ThemeFiles") != std::string::npos)
 						{
 							//Add all theme files
-							std::vector<std::string>::const_iterator itt;
+							std::map<std::string,int>::const_iterator itt;
 							for (itt = _ThemeFiles.begin(); itt != _ThemeFiles.end(); ++itt)
 							{
-								std::string tfname = (*itt).substr(szWWWFolder.size() + 1);
+								std::string tfname = (itt->first).substr(szWWWFolder.size() + 1);
 								response += tfname + "\n";
 							}
 							continue;
@@ -543,10 +543,10 @@ namespace http {
 						else if (sLine.find("#Floorplans") != std::string::npos)
 						{
 							//Add all floorplans
-							std::vector<std::string>::const_iterator itt;
+							std::map<std::string,int>::const_iterator itt;
 							for (itt = _FloorplanFiles.begin(); itt != _FloorplanFiles.end(); ++itt)
 							{
-								std::string tfname = (*itt).substr(szWWWFolder.size() + 1);
+								std::string tfname = (itt->first).substr(szWWWFolder.size() + 1);
 								response += tfname + "\n";
 							}
 							continue;
