@@ -75,6 +75,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Manual add Smartwares Radiator switch/device (will be visible afterwards at Utilities)
 - Implemented: Cubie internal Voltage/Current sensors
 - Implemented: Evohome support (Thanks to Will!)
+- Implemented: GUI Theme selection
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

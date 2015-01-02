@@ -155,8 +155,6 @@ namespace http {
 				infile.close();
 			}
 
-			CheckAppCache(serverpath);
-
 			if (m_pWebEm != NULL)
 				delete m_pWebEm;
 			try {
@@ -225,6 +223,11 @@ namespace http {
 				boost::bind(
 				&CWebServer::GetJSonPage,	// member function
 				this));			// instance of class
+			m_pWebEm->RegisterPageCode("/html5.appcache",
+				boost::bind(
+				&CWebServer::GetAppCache,
+				this));
+
 			m_pWebEm->RegisterPageCode("/camsnapshot.jpg",
 				boost::bind(
 				&CWebServer::GetCameraSnapshot,
@@ -258,6 +261,7 @@ namespace http {
 			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this));
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1), true);
+			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1), true);
 
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1), true);
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1), true);
@@ -437,6 +441,12 @@ namespace http {
 				return;
 			m_pWebEm->SetAuthenticationMethod((_eAuthenticationMethod)amethod);
 		}
+		void CWebServer::SetWebTheme(const std::string &themename)
+		{
+			if (m_pWebEm == NULL)
+				return;
+			m_pWebEm->SetWebTheme(themename);
+		}
 
 		void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication)
 		{
@@ -459,6 +469,93 @@ namespace http {
 			{
 				pf->second(root);
 			}
+		}
+
+		int GetDirFilesRecursive(const std::string &DirPath, std::vector<std::string> &_Files)
+		{
+			DIR* dir;
+			struct dirent *ent;
+			if ((dir = opendir(DirPath.c_str())) != NULL)
+			{
+				while ((ent = readdir(dir)) != NULL)
+				{
+					if (ent->d_type == DT_DIR)
+					{
+						if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0))
+						{
+							std::string nextdir = DirPath + ent->d_name + "/";
+							if (GetDirFilesRecursive(nextdir.c_str(), _Files))
+							{
+								closedir(dir);
+								return 1;
+							}
+						}
+					}
+					else
+					{
+						std::string fname = DirPath + ent->d_name;
+						_Files.push_back(fname);
+					}
+				}
+			}
+			closedir(dir);
+			return 0;
+		}
+
+		std::string CWebServer::GetAppCache()
+		{
+			//Return the appcache file (dynamicly generated)
+			std::string response="";
+			std::string sLine;
+			std::string filename = szWWWFolder + "/html5.appcache";
+
+
+			std::string sWebTheme="default";
+			m_sql.GetPreferencesVar("WebTheme", sWebTheme);
+
+			//Get Dynamic Theme Files
+			std::vector<std::string> _ThemeFiles;
+			GetDirFilesRecursive(szWWWFolder + "/styles/" + sWebTheme + "/", _ThemeFiles);
+
+			//Get Dynamic Floorplan Files
+			std::vector<std::string> _FloorplanFiles;
+			GetDirFilesRecursive(szWWWFolder + "/images/floorplans/", _FloorplanFiles);
+
+			std::ifstream is(filename.c_str());
+			if (is)
+			{
+				while (!is.eof())
+				{
+					getline(is, sLine);
+					if (sLine != "")
+					{
+						if (sLine.find("#ThemeFiles") != std::string::npos)
+						{
+							//Add all theme files
+							std::vector<std::string>::const_iterator itt;
+							for (itt = _ThemeFiles.begin(); itt != _ThemeFiles.end(); ++itt)
+							{
+								std::string tfname = (*itt).substr(szWWWFolder.size() + 1);
+								response += tfname + "\n";
+							}
+							continue;
+						}
+						else if (sLine.find("#Floorplans") != std::string::npos)
+						{
+							//Add all floorplans
+							std::vector<std::string>::const_iterator itt;
+							for (itt = _FloorplanFiles.begin(); itt != _FloorplanFiles.end(); ++itt)
+							{
+								std::string tfname = (*itt).substr(szWWWFolder.size() + 1);
+								response += tfname + "\n";
+							}
+							continue;
+						}
+					}
+					response += sLine + "\n";
+				}
+			}
+			return response;
 		}
 
 		std::string CWebServer::GetJSonPage()
@@ -512,6 +609,19 @@ namespace http {
 			}
 		}
 
+		void CWebServer::Cmd_GetThemes(Json::Value &root)
+		{
+			root["status"] = "OK";
+			root["title"] = "GetThemes";
+			std::vector<std::string>::const_iterator itt;
+			int ii = 0;
+			for (itt = m_mainworker.m_webthemes.begin(); itt != m_mainworker.m_webthemes.end(); ++itt)
+			{
+				root["result"][ii]["theme"] = *itt;
+				ii++;
+			}
+		}
+
 		void CWebServer::Cmd_LoginCheck(Json::Value &root)
 		{
 			std::string tmpusrname = m_pWebEm->FindValue("username");
@@ -549,110 +659,6 @@ namespace http {
 				}
 			}
 		}
-
-		void CWebServer::CheckAppCache(const std::string &serverpath)
-		{
-			_log.Log(LOG_NORM, "AppCache: Check starting...");
-			try {
-				/*
-				** Load floor plan images from database
-				*/
-				std::stringstream szQuery;
-				std::vector<std::vector<std::string> > result;
-				std::vector<std::string> images;
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT ImageFile FROM Floorplans ORDER BY [Order]";
-				result = m_sql.query(szQuery.str());
-				if (result.size() > 0)
-				{
-					int ii = 0;
-					CURLEncode* oEncoder = new CURLEncode();
-					for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
-					{
-						std::string sImage = oEncoder->URLEncode((*itt)[0]);
-						for (std::string::size_type found = sImage.find("%2F"); found!=std::string::npos; found = sImage.find("%2F"))  
-							sImage.replace(found, 3, "/");
-						images.insert(images.end(), sImage);
-//						_log.Log(LOG_NORM, "AppCache: Encoded image '%s'.", sImage.c_str());
-					}
-				}
-				else return;  // if no floorplans then bail out
-				
-				/*
-				**  Scan manifest file and remove those images already in the file
-				**  Images will be at the end of the file after the '# Floorplans' comment
-				*/
-				std::string sLine = "";
-				std::ifstream infile;
-				bool bFoundComment = false;
-				std::string manifestfile = serverpath + "/html5.appcache";
-				infile.open(manifestfile.c_str());
-				if (infile.is_open())
-				{
-					while (!infile.eof())
-					{
-						getline(infile, sLine);
-						if (sLine.size() != 0)
-						{
-							if (!bFoundComment)
-							{
-								if (sLine == "# Floorplans")
-								{
-									bFoundComment = true;
-//									_log.Log(LOG_NORM, "AppCache: Found comment '# Floorplans'.");
-								}
-							}
-							else
-							{
-								for (std::vector<std::string>::iterator itt = images.begin(); itt != images.end(); ++itt)
-								{
-									if (sLine == *itt)
-									{
-										_log.Log(LOG_NORM, "AppCache: Image '%s' found in cache file.", itt->c_str());
-										images.erase(itt); // clear images already in file to avoid duplication
-										break;
-									}
-								}
-							}
-						}
-					}
-					infile.close();
-				}
-				else
-				{
-					_log.Log(LOG_ERROR, "AppCache: Cache file '%s' failed to open for read.", manifestfile.c_str());
-					return;
-				}
-
-				if (images.size() > 0)
-				{
-					std::ofstream outfile;
-					outfile.open(manifestfile.c_str(), std::ios::out | std::ios::app);
-					if (outfile.is_open())
-					{
-						if (!bFoundComment)
-						{
-							_log.Log(LOG_NORM, "AppCache: Inserting comment '# Floorplans'.");
-							outfile << "# Floorplans" << std::endl << "CACHE:" << std::endl;
-						}
-						std::vector<std::string>::const_iterator itt;
-						for (itt = images.begin(); itt != images.end(); ++itt)
-						{
-							_log.Log(LOG_NORM, "AppCache: Inserting image '%s' into cache file.", itt->c_str());
-							outfile << itt->c_str() << std::endl;
-						}
-						outfile.flush();
-						outfile.close();
-					}
-					else _log.Log(LOG_ERROR, "AppCache: Cache file '%s' failed to open for append.", manifestfile.c_str());
-				}
-			}
-			catch (...) {
-				_log.Log(LOG_ERROR, "AppCache: Exception during floorplan check.");
-			}
-			_log.Log(LOG_NORM, "AppCache: Check complete.");
-		};
 
 		void CWebServer::Cmd_AddHardware(Json::Value &root)
 		{
@@ -7333,6 +7339,9 @@ namespace http {
 			}
 
 			m_sql.UpdatePreferencesVar("Language", m_pWebEm->FindValue("Language").c_str());
+			std::string SelectedTheme = m_pWebEm->FindValue("Themes");
+			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
+			m_pWebEm->SetWebTheme(SelectedTheme);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
 			rnvalue = atoi(m_pWebEm->FindValue("RandomSpread").c_str());
@@ -12625,6 +12634,10 @@ namespace http {
 				else if (Key == "FloorplanInactiveOpacity")
 				{
 					root["FloorplanInactiveOpacity"] = nValue;
+				}
+				else if (Key == "WebTheme")
+				{
+					root["WebTheme"] = sValue;
 				}
 			}
 		}

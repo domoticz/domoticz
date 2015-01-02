@@ -178,7 +178,7 @@ namespace http {
 			bool IsPageOverride(const request& req, reply& rep);
 
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
-
+			void SetWebTheme(const std::string &themename);
 			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs);
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
@@ -205,6 +205,8 @@ namespace http {
 			bool m_bRemembermeUser;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
+			// actual theme selected
+			std::string actTheme;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;

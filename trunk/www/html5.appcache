@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 690
+# ref 692
 
 CACHE:
 # CSS
@@ -484,6 +484,12 @@ secpanel/js/less.js
 secpanel/js/ion.sound.js
 ozwcp/cp.js
 
+#Dynamic theme
+#ThemeFiles
+
+#Dynamic floorplans
+#Floorplans
+
 # HTML pages
 views/cam.html
 views/dashboard.html
@@ -525,6 +531,3 @@ ozwcp/cp.html
 FALLBACK:
 /images images/iphone-icon.png
 / views/offline.html
-# Floorplans
-CACHE:
-images/floorplans/example.jpg
