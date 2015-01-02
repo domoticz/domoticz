@@ -76,6 +76,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Cubie internal Voltage/Current sensors
 - Implemented: Evohome support (Thanks to Will!)
 - Implemented: GUI Theme selection
+- Changed: Themes are now sorted, ignoring .svn folders
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

@@ -158,7 +158,7 @@ void MainWorker::GetAvailableWebThemes()
 			std::string dirname = de->d_name;
 			if (de->d_type == DT_DIR)
 			{
-				if ((dirname != ".") && (dirname != ".."))
+				if ((dirname != ".") && (dirname != "..") && (dirname != ".svn"))
 				{
 					m_webthemes.push_back(dirname);
 				}
