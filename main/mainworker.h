@@ -105,11 +105,12 @@ public:
 	bool m_bHaveDownloadedDomoticzUpdate;
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 
+	void GetAvailableWebThemes();
+
 	tcp::server::CTCPServer m_sharedserver;
 	std::string m_LastSunriseSet;
 	std::vector<std::string> m_webthemes;
 private:
-	void GetAvailableWebThemes();
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	std::string m_LastDeviceName;

@@ -613,6 +613,7 @@ namespace http {
 		{
 			root["status"] = "OK";
 			root["title"] = "GetThemes";
+			m_mainworker.GetAvailableWebThemes();
 			std::vector<std::string>::const_iterator itt;
 			int ii = 0;
 			for (itt = m_mainworker.m_webthemes.begin(); itt != m_mainworker.m_webthemes.end(); ++itt)
