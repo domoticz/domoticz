@@ -36,6 +36,7 @@ public:
 	char * DisplayHardwareTypesCombo();
 	char * DisplayLanguageCombo();
 	std::string GetJSonPage();
+	std::string GetAppCache();
 	std::string GetCameraSnapshot();
 	std::string GetInternalCameraSnapshot();
 	std::string GetDatabaseBackup();
@@ -57,16 +58,17 @@ public:
 	bool FindAdminUser();
 	int FindUser(const char* szUserName);
 	void SetAuthenticationMethod(int amethod);
+	void SetWebTheme(const std::string &themename);
 	std::vector<_tWebUserPassword> m_users;
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate);
 private:
-	void CheckAppCache(const std::string &serverpath);
 	void HandleCommand(const std::string &cparam, Json::Value &root);
 	void HandleRType(const std::string &rtype, Json::Value &root);
 
 	//Commands
 	void Cmd_GetLanguage(Json::Value &root);
+	void Cmd_GetThemes(Json::Value &root);
 	void Cmd_LoginCheck(Json::Value &root);
 	void Cmd_AddHardware(Json::Value &root);
 	void Cmd_UpdateHardware(Json::Value &root);

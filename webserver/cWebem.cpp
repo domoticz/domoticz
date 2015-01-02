@@ -53,7 +53,8 @@ myServer( address, port, myRequestHandler ),
 m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
 m_actsessionid(""),
-m_actualuser("")
+m_actualuser(""),
+actTheme("")
 {
 	
 	m_actualuser_rights = -1;
@@ -509,7 +510,6 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	{
 		request_path += "index.html";
 	}
-
 	myNameValues.clear();
 	m_lastRequestPath=request_path;
 
@@ -645,6 +645,11 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	rep.headers[3].name = "Pragma";
 	rep.headers[3].value = "no-cache";
 	return true;
+}
+
+void cWebem::SetWebTheme(const std::string &themename)
+{
+	actTheme = "/styles/"+themename;
 }
 
 void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs)

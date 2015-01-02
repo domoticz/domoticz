@@ -110,7 +110,6 @@
       }
       
       function parseXmlBlocks(xml,pairId) {
-            	
       	var boolString = "";
      
 		function parseLogicCompare(thisBlock){
@@ -335,6 +334,10 @@
 						setString += '="Set Level '+$(titleB).text()+'"'; 
 						setArray.push(setString);
 					}
+					//else if ((blockB.attr("type")=="math_number") && ($(titleB).attr("name") == "NUM")) {
+					//	setString += '="'+$(titleB).text()+'"'; 
+					//	setArray.push(setString);
+					//}
 				}
 		    }
 	      	else if ($(this).attr('type') == 'logic_setafter') {

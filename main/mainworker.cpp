@@ -141,6 +141,52 @@ void MainWorker::StopDomoticzHardware()
 	}
 }
 
+void MainWorker::GetAvailableWebThemes()
+{
+	m_webthemes.clear();
+	DIR *d = NULL;
+
+	std::string ThemeFolder = szWWWFolder + "/styles/";
+
+	d = opendir(ThemeFolder.c_str());
+	if (d != NULL)
+	{
+		struct dirent *de = NULL;
+		// Loop while not NULL
+		while ((de = readdir(d)))
+		{
+			std::string dirname = de->d_name;
+			if (de->d_type == DT_DIR)
+			{
+				if ((dirname != ".") && (dirname != ".."))
+				{
+					m_webthemes.push_back(dirname);
+				}
+			}
+		}
+		closedir(d);
+	}
+	//check if current theme is found, if not, select default
+	bool bFound = false;
+	std::string sValue;
+	if (m_sql.GetPreferencesVar("WebTheme", sValue))
+	{
+		std::vector<std::string>::const_iterator itt;
+		for (itt = m_webthemes.begin(); itt != m_webthemes.end(); ++itt)
+		{
+			if (*itt == sValue)
+			{
+				bFound = true;
+				break;
+			}
+		}
+	}
+	if (!bFound)
+	{
+		m_sql.UpdatePreferencesVar("WebTheme", "default");
+	}
+}
+
 void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 {
 	pHardware->m_bEnableReceive=false;
@@ -591,6 +637,7 @@ bool MainWorker::Start()
 		return false;
 	}
 	GetSunSettings();
+	GetAvailableWebThemes();
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
@@ -665,7 +712,11 @@ bool MainWorker::StartThread()
 	{
 		m_webserver.SetAuthenticationMethod(nValue);
 	}
-
+	std::string sValue;
+	if (m_sql.GetPreferencesVar("WebTheme", sValue))
+	{
+		m_webserver.SetWebTheme(sValue);
+	}
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();

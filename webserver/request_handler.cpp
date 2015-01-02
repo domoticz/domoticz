@@ -110,7 +110,10 @@ void request_handler::handle_request(const std::string &sHost, const request& re
   {
     request_path += "index.html";
   }
-
+  else if (request_path.find("/acttheme/") == 0)
+  {
+	  request_path = myWebem->actTheme + request_path.substr(9);
+  }
 
   size_t paramPos=request_path.find_first_of('?');
   if (paramPos!=std::string::npos)

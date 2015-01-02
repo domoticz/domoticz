@@ -362,6 +362,13 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isTemp = true;
 			isBaro = true;
 			break;
+		case pTypeRadiator1:
+			if (sitem.subType == sTypeSmartwares)
+			{
+				utilityval = static_cast<float>(atof(sitem.sValue.c_str()));
+				isUtility = true;
+			}
+			break;
 		case pTypeUV:
 			if (splitresults.size() == 2)
 			{
@@ -465,7 +472,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
-		}
+				else if (sitem.subType == sTypeSetPoint)
+				{
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					isUtility = true;
+				}
+			}
 			break;
 		case pTypeRAIN:
 			if (splitresults.size() == 2)

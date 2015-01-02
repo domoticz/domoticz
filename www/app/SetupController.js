@@ -163,6 +163,25 @@ define(['app'], function (app) {
 			$("#sunriseset").html(suntext);
 		  }
 		  
+		  //Get Themes
+		  var actTheme="default";
+		  $.ajax({
+			 url: "json.htm?type=command&param=getthemes",
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					actTheme=data.acttheme;
+					$("#settingscontent #combothemes").html("");
+					$.each(data.result, function(i,item) {
+						var option = $('<option />');
+						option.attr('value', item.theme).text(item.theme);
+						$("#settingscontent #combothemes").append(option);
+					});
+				}
+			 }
+		  });
+		  
 
 		  $.ajax({
 			 url: "json.htm?type=settings", 
@@ -317,6 +336,10 @@ define(['app'], function (app) {
 			  if (typeof data.Language != 'undefined') {
 				$("#languagetable #combolanguage").val(data.Language);
 			  }
+			  if (typeof data.WebTheme != 'undefined') {
+				$("#settingscontent #combothemes").val(data.WebTheme);
+			  }
+			  
 			  if (typeof data.AuthenticationMethod != 'undefined') {
 				$("#webtable #comboauthmethod").val(data.AuthenticationMethod);
 			  }
