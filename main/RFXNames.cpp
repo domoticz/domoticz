@@ -392,7 +392,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP4, "RTHN318" },
 		{ pTypeTEMP, sTypeTEMP5, "LaCrosse TX3" },
 		{ pTypeTEMP, sTypeTEMP6, "TS15C" },
-		{ pTypeTEMP, sTypeTEMP7, "Viking 02811" },
+		{ pTypeTEMP, sTypeTEMP7, "Viking 02811, Proove TSS330" },
 		{ pTypeTEMP, sTypeTEMP8, "LaCrosse WS2300" },
 		{ pTypeTEMP, sTypeTEMP9, "RUBiCSON" },
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
@@ -410,7 +410,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_HUM, sTypeTH6, "THGR918, THGRN228, THGN500" },
 		{ pTypeTEMP_HUM, sTypeTH7, "Cresta, TFA TS34C" },
 		{ pTypeTEMP_HUM, sTypeTH8, "WT450H" },
-		{ pTypeTEMP_HUM, sTypeTH9, "Viking 02035, 02038" },
+		{ pTypeTEMP_HUM, sTypeTH9, "Viking 02035, 02038, TSS320" },
 		{ pTypeTEMP_HUM, sTypeTH10, "Rubicson/IW008T/TX95" },
 		{ pTypeTEMP_HUM, sTypeTH11, "Oregon EW109" },
 		{ pTypeTEMP_HUM, sTypeTH12, "Imagintronix" },
@@ -486,6 +486,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT5, "Media Mount" },
 		{ pTypeBlinds, sTypeBlindsT6, "T6 DC106" },
 		{ pTypeBlinds, sTypeBlindsT7, "Forest" },
+		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain CS4330CN" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -578,6 +579,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeChime, sTypeByronSX, "ByronSX" },
 		{ pTypeChime, sTypeByronMP001, "Byron MP001" },
+		{ pTypeChime, sTypeSelectPlus, "SelectPlus" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
@@ -704,6 +706,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT5, "Status" },
 		{ pTypeBlinds, sTypeBlindsT6, "Status" },
 		{ pTypeBlinds, sTypeBlindsT7, "Status" },
+		{ pTypeBlinds, sTypeBlindsT8, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },
@@ -796,6 +799,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeChime, sTypeByronSX, "Status" },
 		{ pTypeChime, sTypeByronMP001, "Status" },
+		{ pTypeChime, sTypeSelectPlus, "Status" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Temperature,Total rain" },
 

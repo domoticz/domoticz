@@ -1695,8 +1695,9 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			if (!rep.bIsGZIP)
 				CompressWebOutput(req,rep);
 		}
-		else if (rep.headers[1].value == "image/png")
+		else if (rep.headers[1].value.find("image/")!=std::string::npos)
 		{
+			//Cache images
 			int theaders = rep.headers.size();
 			rep.headers.resize(theaders + 2);
 

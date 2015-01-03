@@ -9,7 +9,7 @@
 
 /*
                                                                    
-Copyright 2011-2014, RFXCOM
+Copyright 2011-2015, RFXCOM
 
 ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under
 Netherlands Copyright Laws and Treaties and shall be subject to the 
@@ -27,6 +27,13 @@ portions of this file.
 */
 
 /*
+SDK version 7.00
+	TEMP7 - TSS330 added and TH9 – TSS320 added
+	BlindsT8 = Chamberlain CS4330CN added
+	SelectPlus Chime added
+	Interface command - start receiver added
+	IRESPONSE size increased to 0x14
+
 SDK version 6.27
 	Livolo Appliance 1-10 added
 	Somfy RFY commands: Enable sun+wind & Disable sun added
@@ -243,6 +250,7 @@ SDK version 4.9
 #define cmdSETMODE	0x03 // set configuration of the interface
 
 #define cmdSAVE		0x06 // save receiving modes of the receiver/transceiver in non-volatile memory
+#define cmdStartRec	0x07 // start RFXtrx receiver
 
 #define cmd310		0x50 // select 310MHz in the 310/315 transceiver
 #define cmd315		0x51 // select 315MHz in the 310/315 transceiver
@@ -259,6 +267,7 @@ SDK version 4.9
 #define sTypeUnknownRFYremote 0x01
 #define sTypeExtError 0x02
 #define sTypeRFYremoteList 0x03
+#define sTypeRecStarted 0x07
 #define sTypeInterfaceWrongCommand 0xFF
 #define recType310 0x50
 #define recType315 0x51
@@ -454,6 +463,7 @@ SDK version 4.9
 #define pTypeChime 0x16
 #define sTypeByronSX 0x0
 #define sTypeByronMP001 0x1
+#define sTypeSelectPlus 0x2
 #define chime_sound0 0x1
 #define chime_sound1 0x3
 #define chime_sound2 0x5
@@ -490,6 +500,8 @@ SDK version 4.9
 #define sTypeBlindsT5 0x5	//Media Mount
 #define sTypeBlindsT6 0x6	//DC106, YOOHA, Rohrmotor24 RMF
 #define sTypeBlindsT7 0x7	//Forest
+#define sTypeBlindsT8 0x8	//Chamberlain CS4330CN
+
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
 #define blinds_sStop 0x2
@@ -651,7 +663,7 @@ SDK version 4.9
 #define sTypeTEMP4 0x4	//RTHN318
 #define sTypeTEMP5 0x5  //LaCrosse TX3
 #define sTypeTEMP6 0x6  //TS15C
-#define sTypeTEMP7 0x7  //Viking 02811
+#define sTypeTEMP7 0x7  //Viking 02811,TSS330
 #define sTypeTEMP8 0x8  //LaCrosse WS2300
 #define sTypeTEMP9 0x9  //RUBiCSON
 #define sTypeTEMP10 0xA  //TFA 30.3133
@@ -678,7 +690,7 @@ SDK version 4.9
 #define sTypeTH6 0x6  //THGR918,THGRN228,THGN500
 #define sTypeTH7 0x7  //TFA TS34C, Cresta
 #define sTypeTH8 0x8  //WT450H
-#define sTypeTH9 0x9  //Viking 02035,02038 (02035 has no humidity)
+#define sTypeTH9 0x9  //Viking 02035,02038 (02035 has no humidity), TSS320
 #define sTypeTH10 0xA   //Rubicson
 #define sTypeTH11 0xB   //EW109
 #define sTypeTH12 0xC   //Imagintronix
@@ -872,6 +884,13 @@ typedef union tRBUF {
 		BYTE	msg7;
 		BYTE	msg8;
 		BYTE	msg9;
+		BYTE	msg10;
+        BYTE	msg11;
+        BYTE	msg12;
+        BYTE	msg13;
+        BYTE	msg14;
+        BYTE	msg15;
+        BYTE	msg16;
 	} IRESPONSE;
 
 	struct {

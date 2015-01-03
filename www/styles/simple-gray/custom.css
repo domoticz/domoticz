@@ -11,3 +11,18 @@ background: -ms-linear-gradient(top,  #606c88 0%,#3f4c6b 100%); /* IE10+ */
 background: linear-gradient(to bottom,  #606c88 0%,#3f4c6b 100%); /* W3C */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b',GradientType=0 ); /* IE6-9 */
 }
+
+#copyright p {
+	font-family: 'Abel', sans-serif;
+	font-size: 1.125em;
+	color: #AAAAAA;
+}
+
+#copyright a {
+	color: #A3A4D3;
+	text-decoration: none;
+}
+
+.warning-text {
+	color: yellow;
+}

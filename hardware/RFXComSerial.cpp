@@ -23,6 +23,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequested=false;
+	m_bReceiverStarted = false;
 }
 
 RFXComSerial::RFXComSerial(const std::string& devname,
@@ -44,6 +45,7 @@ bool RFXComSerial::StartHardware()
 {
 	//return OpenSerialDevice();
 	//somehow retry does not seem to work?!
+	m_bReceiverStarted = false;
 
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
@@ -138,12 +140,61 @@ bool RFXComSerial::OpenSerialDevice()
 	return true;
 }
 
+bool RFXComSerial::onInternalMessage(const unsigned char *pBuffer, const size_t Len)
+{
+	if (!m_bEnableReceive)
+		return true; //receiving not enabled
+
+	size_t ii = 0;
+	while (ii < Len)
+	{
+		if (m_rxbufferpos == 0)	//1st char of a packet received
+		{
+			if (pBuffer[ii] == 0) //ignore first char if 00
+				return true;
+		}
+		m_rxbuffer[m_rxbufferpos] = pBuffer[ii];
+		m_rxbufferpos++;
+		if (m_rxbufferpos >= sizeof(m_rxbuffer))
+		{
+			//something is out of sync here!!
+			//restart
+			_log.Log(LOG_ERROR, "input buffer out of sync, going to restart!....");
+			m_rxbufferpos = 0;
+			return false;
+		}
+		if (m_rxbufferpos > m_rxbuffer[0])
+		{
+			if (!m_bReceiverStarted)
+			{
+				if (m_rxbuffer[1] == pTypeInterfaceMessage)
+				{
+					const tRBUF *pResponse = (tRBUF *)&m_rxbuffer;
+					if (pResponse->IRESPONSE.subtype == cmdStartRec)
+					{
+						m_bReceiverStarted = true;// strstr((char*)&pResponse->IRESPONSE.msg1, "Copyright RFXCOM") != NULL;
+					}
+					else
+					{
+						_log.Log(LOG_STATUS, "RFXCOM: Please upgrade your RFXTrx Firmware!...");
+					}
+				}
+			}
+			else
+				sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer);//decode message
+			m_rxbufferpos = 0;    //set to zero to receive next message
+		}
+		ii++;
+	}
+	return true;
+}
+
 void RFXComSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	try
 	{
-		bool bRet=onRFXMessage((const unsigned char *)data,len);
+		bool bRet = onInternalMessage((const unsigned char *)data, len);
 		if (bRet==false)
 		{
 			//close serial connection, and restart

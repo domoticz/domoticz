@@ -222,7 +222,6 @@ void CDavisLoggerSerial::readCallback(const char *data, size_t len)
 			}
 			break;
 		}
-		//onRFXMessage((const unsigned char *)data,len);
 	}
 	catch (...)
 	{

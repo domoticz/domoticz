@@ -479,7 +479,6 @@ void CEvohome::ReadCallback(const char *data, size_t len)
 				//Don't throw from a Stop command
 			}
 		}
-		//onRFXMessage((const unsigned char *)data,len);
 	}
 	catch (...)
 	{

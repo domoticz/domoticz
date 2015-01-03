@@ -2459,3 +2459,7 @@ span.evomobile .ui-popup {
 .ui-btn:hover {
 	background-color: rgba(255,255,255,.3)!important;
 }
+
+.warning-text {
+	color: red;
+}

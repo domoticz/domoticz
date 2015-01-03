@@ -105,6 +105,7 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 
   if (request_path.find("/@login")==0)
 	  request_path="/";
+
   // If path ends in slash (i.e. is a directory) then add "index.html".
   if (request_path[request_path.size() - 1] == '/')
   {

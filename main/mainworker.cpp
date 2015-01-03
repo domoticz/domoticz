@@ -192,31 +192,28 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	pHardware->m_bEnableReceive=false;
 
 	if (
-		(pHardware->HwdType==HTYPE_RFXtrx315)||
-		(pHardware->HwdType==HTYPE_RFXtrx433)||
-		(pHardware->HwdType==HTYPE_RFXLAN)
+		(pHardware->HwdType != HTYPE_RFXtrx315) &&
+		(pHardware->HwdType != HTYPE_RFXtrx433) &&
+		(pHardware->HwdType != HTYPE_RFXLAN)
 		)
 	{
-		pHardware->m_rxbufferpos=0;
-		//Send Reset
-		SendCommand(pHardware->m_HwdID,cmdRESET,"Reset");
-
-		//wait at least 50ms
-		boost::this_thread::sleep(boost::posix_time::millisec(500));
-		pHardware->m_rxbufferpos=0;
+		//clear buffer, and enable receive
+		pHardware->m_rxbufferpos = 0;
+		pHardware->m_bEnableReceive = true;
+		return;
 	}
-	//clear buffer, and enable receive
-	pHardware->m_rxbufferpos=0;
-	pHardware->m_bEnableReceive=true;
+	pHardware->m_rxbufferpos = 0;
+	//Send Reset
+	SendCommand(pHardware->m_HwdID,cmdRESET,"Reset");
+	//wait at least 500ms
+	boost::this_thread::sleep(boost::posix_time::millisec(500));
+	pHardware->m_rxbufferpos = 0;
+	pHardware->m_bEnableReceive = true;
 
-	if (
-		(pHardware->HwdType==HTYPE_RFXtrx315)||
-		(pHardware->HwdType==HTYPE_RFXtrx433)||
-		(pHardware->HwdType==HTYPE_RFXLAN)
-		)
-	{
-		SendCommand(pHardware->m_HwdID,cmdSTATUS,"Status");
-	}
+	SendCommand(pHardware->m_HwdID, cmdStartRec, "Start Receiver");
+	boost::this_thread::sleep(boost::posix_time::millisec(50));
+
+	SendCommand(pHardware->m_HwdID, cmdSTATUS, "Status");
 }
 
 void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
@@ -1840,9 +1837,17 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 		}
 		break;
 	case sTypeInterfaceWrongCommand:
-		WriteMessage("subtype           = Wrong command received from application");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
-		WriteMessage(szTmp);
+		if (pResponse->IRESPONSE.cmnd == 0x07)
+		{
+			WriteMessage("Please upgrade your RFXTrx Firmware!");
+		}
+		else
+		{
+			sprintf(szTmp, "subtype          = Wrong command received from application (%d)", pResponse->IRESPONSE.cmnd);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+			WriteMessage(szTmp);
+		}
 		break;
 	}
 	WriteMessageEnd();
@@ -2380,7 +2385,7 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 			WriteMessage("subtype       = TEMP6 - TS15C");
 			break;
 		case sTypeTEMP7:
-			WriteMessage("subtype       = TEMP7 - Viking 02811");
+			WriteMessage("subtype       = TEMP7 - Viking 02811, Proove TSS330");
 			break;
 		case sTypeTEMP8:
 			WriteMessage("subtype       = TEMP8 - LaCrosse WS2300");
@@ -2693,7 +2698,7 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH9:
-			WriteMessage("subtype       = TH9 - Viking 02038, 02035 (02035 has no humidity)");
+			WriteMessage("subtype       = TH9 - Viking 02038, 02035 (02035 has no humidity), TSS320");
 			break;
 		case sTypeTH10:
 			WriteMessage("subtype       = TH10 - Rubicson/IW008T/TX95");
@@ -4268,6 +4273,14 @@ unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardwa
 				WriteMessage("Switch 6      = Off");
 			else
 				WriteMessage("Switch 6      = On");
+			break;
+		case sTypeSelectPlus:
+			WriteMessage("subtype       = SelectPlus");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			WriteMessage(szTmp);
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CHIME.packettype, pResponse->CHIME.subtype);
 			WriteMessage(szTmp);
@@ -4527,6 +4540,9 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 			break;
 		case sTypeBlindsT7:
 			WriteMessage("subtype       = Forest");
+			break;
+		case sTypeBlindsT8:
+			WriteMessage("subtype       = Chamberlain CS4330CN");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
