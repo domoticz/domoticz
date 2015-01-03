@@ -531,11 +531,13 @@ namespace http {
 					{
 						if (sLine.find("#ThemeFiles") != std::string::npos)
 						{
+							response += "#Theme=" + sWebTheme + "\n";
 							//Add all theme files
 							std::map<std::string,int>::const_iterator itt;
 							for (itt = _ThemeFiles.begin(); itt != _ThemeFiles.end(); ++itt)
 							{
 								std::string tfname = (itt->first).substr(szWWWFolder.size() + 1);
+								tfname=stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + "\n";
 							}
 							continue;

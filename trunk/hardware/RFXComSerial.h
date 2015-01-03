@@ -37,12 +37,15 @@ public:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 
+	bool m_bReceiverStarted;
+
 	void WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
 	bool StopHardware();
 	bool OpenSerialDevice();
 	void Do_Work();
+	bool onInternalMessage(const unsigned char *pBuffer, const size_t Len);
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	int m_retrycntr;
