@@ -136,11 +136,12 @@ bool RFXComTCP::onInternalMessage(const unsigned char *pBuffer, const size_t Len
 					const tRBUF *pResponse = (tRBUF *)&m_rxbuffer;
 					if (pResponse->IRESPONSE.subtype == cmdStartRec)
 					{
-						m_bReceiverStarted = true;// strstr((char*)&pResponse->IRESPONSE.msg1, "Copyright RFXCOM") != NULL;
+						m_bReceiverStarted = strstr((char*)&pResponse->IRESPONSE.msg1, "Copyright RFXCOM") != NULL;
 					}
 					else
 					{
 						_log.Log(LOG_STATUS, "RFXCOM: Please upgrade your RFXTrx Firmware!...");
+						m_bReceiverStarted = true;
 					}
 				}
 			}
