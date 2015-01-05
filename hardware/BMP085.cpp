@@ -50,6 +50,27 @@ Circuit detail:
 
 #define BMP085_I2C_ADDRESS 0x77
 
+#define BMP085_ULTRALOWPOWER 0
+#define BMP085_STANDARD 1
+#define BMP085_HIGHRES 2
+#define BMP085_ULTRAHIGHRES 3
+#define BMP085_CAL_AC1 0xAA // R Calibration data (16 bits)
+#define BMP085_CAL_AC2 0xAC // R Calibration data (16 bits)
+#define BMP085_CAL_AC3 0xAE // R Calibration data (16 bits)
+#define BMP085_CAL_AC4 0xB0 // R Calibration data (16 bits)
+#define BMP085_CAL_AC5 0xB2 // R Calibration data (16 bits)
+#define BMP085_CAL_AC6 0xB4 // R Calibration data (16 bits)
+#define BMP085_CAL_B1 0xB6 // R Calibration data (16 bits)
+#define BMP085_CAL_B2 0xB8 // R Calibration data (16 bits)
+#define BMP085_CAL_MB 0xBA // R Calibration data (16 bits)
+#define BMP085_CAL_MC 0xBC // R Calibration data (16 bits)
+#define BMP085_CAL_MD 0xBE // R Calibration data (16 bits)
+#define BMP085_CONTROL 0xF4
+#define BMP085_TEMPDATA 0xF6
+#define BMP085_PRESSUREDATA 0xF6
+#define BMP085_READTEMPCMD 0x2E
+#define BMP085_READPRESSURECMD 0x34
+
 const unsigned char BMP085_OVERSAMPLING_SETTING = 3;
 
 #define I2C_READ_INTERVAL 30
@@ -171,17 +192,17 @@ bool CBMP085::bmp085_Calibration()
 	int fd = bmp085_i2c_Begin();
 	if (fd < 0)
 		return false;
-	ac1 = bmp085_i2c_Read_Int(fd,0xAA);
-	ac2 = bmp085_i2c_Read_Int(fd,0xAC);
-	ac3 = bmp085_i2c_Read_Int(fd,0xAE);
-	ac4 = bmp085_i2c_Read_Int(fd,0xB0);
-	ac5 = bmp085_i2c_Read_Int(fd,0xB2);
-	ac6 = bmp085_i2c_Read_Int(fd,0xB4);
-	b1 = bmp085_i2c_Read_Int(fd,0xB6);
-	b2 = bmp085_i2c_Read_Int(fd,0xB8);
-	mb = bmp085_i2c_Read_Int(fd,0xBA);
-	mc = bmp085_i2c_Read_Int(fd,0xBC);
-	md = bmp085_i2c_Read_Int(fd,0xBE);
+	ac1 = bmp085_i2c_Read_Int(fd,BMP085_CAL_AC1);
+	ac2 = bmp085_i2c_Read_Int(fd,BMP085_CAL_AC2);
+	ac3 = bmp085_i2c_Read_Int(fd,BMP085_CAL_AC3);
+	ac4 = bmp085_i2c_Read_Int(fd,BMP085_CAL_AC4);
+	ac5 = bmp085_i2c_Read_Int(fd,BMP085_CAL_AC5);
+	ac6 = bmp085_i2c_Read_Int(fd,BMP085_CAL_AC6);
+	b1 = bmp085_i2c_Read_Int(fd,BMP085_CAL_B1);
+	b2 = bmp085_i2c_Read_Int(fd,BMP085_CAL_B2);
+	mb = bmp085_i2c_Read_Int(fd,BMP085_CAL_MB);
+	mc = bmp085_i2c_Read_Int(fd,BMP085_CAL_MC);
+	md = bmp085_i2c_Read_Int(fd,BMP085_CAL_MD);
 	close(fd);
 	return true;
 #else
@@ -190,21 +211,21 @@ bool CBMP085::bmp085_Calibration()
 }
 
 // Read the uncompensated temperature value
-unsigned int CBMP085::bmp085_ReadUT()
+signed int CBMP085::bmp085_ReadUT()
 {
-	unsigned int ut = 0;
+	signed int ut = 0;
 #ifdef __arm__
 	int fd = bmp085_i2c_Begin();
 
 	// Write 0x2E into Register 0xF4
 	// This requests a temperature reading
-	bmp085_i2c_Write_Byte(fd,0xF4,0x2E);
+	bmp085_i2c_Write_Byte(fd,BMP085_CONTROL,0x2E);
 	
 	// Wait at least 4.5ms
 	usleep(5000);
 
 	// Read the two byte result from address 0xF6
-	ut = bmp085_i2c_Read_Int(fd,0xF6);
+	ut = bmp085_i2c_Read_Int(fd,BMP085_TEMPDATA);
 
 	// Close the i2c file
 	close (fd);
@@ -221,7 +242,7 @@ unsigned int CBMP085::bmp085_ReadUP()
 
 	// Write 0x34+(BMP085_OVERSAMPLING_SETTING<<6) into register 0xF4
 	// Request a pressure reading w/ oversampling setting
-	bmp085_i2c_Write_Byte(fd,0xF4,0x34 + (BMP085_OVERSAMPLING_SETTING<<6));
+	bmp085_i2c_Write_Byte(fd,BMP085_CONTROL,0x34 + (BMP085_OVERSAMPLING_SETTING<<6));
 
 	// Wait for conversion, delay time dependent on oversampling setting
 	usleep((2 + (3<<BMP085_OVERSAMPLING_SETTING)) * 1000);
@@ -229,7 +250,7 @@ unsigned int CBMP085::bmp085_ReadUP()
 	// Read the three byte result from 0xF6
 	// 0xF6 = MSB, 0xF7 = LSB and 0xF8 = XLSB
 	unsigned char values[3];
-	bmp085_i2c_Read_Block(fd, 0xF6, 3, values);
+	bmp085_i2c_Read_Block(fd, BMP085_PRESSUREDATA, 3, values);
 
 	up = (((unsigned int) values[0] << 16) | ((unsigned int) values[1] << 8) | (unsigned int) values[2]) >> (8-BMP085_OVERSAMPLING_SETTING);
 
@@ -239,13 +260,21 @@ unsigned int CBMP085::bmp085_ReadUP()
 	return up;
 }
 
+int32_t CBMP085::computeB5(int32_t UT) 
+{
+	int32_t X1 = (UT - (int32_t)ac6) * ((int32_t)ac5) >> 15;
+	int32_t X2 = ((int32_t)mc << 11) / (X1 + (int32_t)md);
+	return X1 + X2;
+}
+
 // Calculate pressure given uncalibrated pressure
 // Value returned will be in units of Pa
 unsigned int CBMP085::bmp085_GetPressure()
 {
-	unsigned int up = bmp085_ReadUP();
-	int x1, x2, x3, b3, b6, p;
-	unsigned int b4, b7;
+	int32_t up, b3, b6, x1, x2, x3, p;
+	uint32_t b4, b7;
+
+	up = bmp085_ReadUP();
   
 	b6 = b5 - 4000;
 	// Calculate B3
@@ -276,16 +305,11 @@ unsigned int CBMP085::bmp085_GetPressure()
 
 // Calculate temperature given uncalibrated temperature
 // Value returned will be in units of 0.1 deg C
-unsigned int CBMP085::bmp085_GetTemperature()
+int32_t CBMP085::bmp085_GetTemperature()
 {
-	unsigned int ut = bmp085_ReadUT();
-	int x1, x2;
-  
-	x1 = (((int)ut - (int)ac6)*(int)ac5) >> 15;
-	x2 = ((int)mc << 11)/(x1 + md);
-	b5 = x1 + x2;
-
-	unsigned int result = ((b5 + 8)>>4);  
+	int32_t ut = bmp085_ReadUT();
+	b5 = computeB5(ut);
+	int32_t result = ((b5 + 8) >> 4);
 
 	return result;
 }
@@ -298,7 +322,7 @@ void CBMP085::ReadSensorDetails()
 		return;
 	}
 
-	unsigned int temperature = bmp085_GetTemperature();
+	int32_t temperature = bmp085_GetTemperature();
 	unsigned int pressure = bmp085_GetPressure();
 
 #ifndef __arm__

@@ -4674,10 +4674,10 @@ namespace http {
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
-						if (lighttype != 206)
-							return; //only blinds1 T6 for now
+						if ((lighttype != 206) && (lighttype != 207))
+							return; //only blinds1 T6/T7 for now
 						dtype = pTypeBlinds;
-						subtype = sTypeBlindsT6;
+						subtype = lighttype-200;
 						std::string id = m_pWebEm->FindValue("id");
 						sunitcode = m_pWebEm->FindValue("unitcode");
 						if (
@@ -4990,10 +4990,10 @@ namespace http {
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
-						if (lighttype != 206)
-							return; //only blinds1 T6 for now
+						if ((lighttype != 206) && (lighttype != 207))
+							return; //only blinds1 T6/T7 for now
 						dtype = pTypeBlinds;
-						subtype = sTypeBlindsT6;
+						subtype = lighttype-200;
 						std::string id = m_pWebEm->FindValue("id");
 						sunitcode = m_pWebEm->FindValue("unitcode");
 						if (
