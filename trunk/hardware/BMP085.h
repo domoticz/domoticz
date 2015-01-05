@@ -8,7 +8,7 @@ public:
 	CBMP085(const int ID);
 	~CBMP085();
 
-	unsigned int bmp085_GetTemperature();
+	int32_t bmp085_GetTemperature();
 	unsigned int bmp085_GetPressure();
 	bool bmp085_Calibration();
 	void WriteToHardware(const char *pdata, const unsigned char length);
@@ -17,8 +17,9 @@ private:
 	bool StopHardware();
 	void ReadSensorDetails();
 	int bmp085_i2c_Begin();
-	unsigned int bmp085_ReadUT();
+	signed int bmp085_ReadUT();
 	unsigned int bmp085_ReadUP();
+	int32_t computeB5(int32_t UT);
 
 	void Do_Work();
 	boost::shared_ptr<boost::thread> m_thread;
@@ -26,17 +27,7 @@ private:
 	int m_waitcntr;
 
 	// Calibration values - These are stored in the BMP085
-	short int ac1;
-	short int ac2; 
-	short int ac3; 
-	unsigned short int ac4;
-	unsigned short int ac5;
-	unsigned short int ac6;
-	short int b1; 
-	short int b2;
-	short int mb;
-	short int mc;
-	short int md;
-
-	int b5; 
+	int16_t ac1, ac2, ac3, b1, b2, mb, mc, md;
+	uint16_t ac4, ac5, ac6;
+	int32_t b5;
 };
