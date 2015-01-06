@@ -30,15 +30,4 @@ private:
 	int16_t ac1, ac2, ac3, b1, b2, mb, mc, md;
 	uint16_t ac4, ac5, ac6;
 	int32_t b5;
-
-	//Forecast calculation
-	float m_LastPressure;
-	int m_LastMinute;
-	int CalculateForecast(const float pressure);
-	float m_pressureSamples[180];
-	int m_minuteCount;
-	bool m_firstRound;
-	float m_pressureAvg[7];
-	int m_LastForecast;
-	double dP_dt;
 };
