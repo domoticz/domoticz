@@ -90,6 +90,7 @@ CBMP085::CBMP085(const int ID)
 	m_firstRound = true;
 	m_LastMinute = -1;
 	m_LastForecast = -1;
+	dP_dt = 0;
 }
 
 CBMP085::~CBMP085()
@@ -107,6 +108,7 @@ bool CBMP085::StartHardware()
 	m_firstRound = true;
 	m_LastMinute = -1;
 	m_LastForecast = -1;
+	dP_dt = 0;
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CBMP085::Do_Work, this)));
 	sOnConnected(this);
@@ -358,7 +360,7 @@ void CBMP085::ReadSensorDetails()
 	tsensor.baro=float(((double)pressure)/100);
 	tsensor.altitude=float(altitude);
 
-	m_LastPressure = (float)pressure;//in PA i suppose???? else tsensor.baro;
+	m_LastPressure = float(((double)pressure) / 1000); //kilo pascal
 
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
@@ -409,12 +411,10 @@ int CBMP085::CalculateForecast(const float pressure)
 	m_pressureSamples[m_minuteCount] = pressure;
 	m_minuteCount++;
 
-	double dP_dt;
-
 	if (m_minuteCount == 5) {
 		// Avg pressure in first 5 min, value averaged from 0 to 5 min.
-		m_pressureAvg[0] = ((m_pressureSamples[1] + m_pressureSamples[2]
-			+ m_pressureSamples[3] + m_pressureSamples[4] + m_pressureSamples[5])
+		m_pressureAvg[0] = ((m_pressureSamples[0] + m_pressureSamples[1]
+			+ m_pressureSamples[2] + m_pressureSamples[3] + m_pressureSamples[4])
 			/ 5);
 	}
 	else if (m_minuteCount == 35) {
