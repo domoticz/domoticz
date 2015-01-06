@@ -1461,13 +1461,13 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 	tsen.EVOHOME2.len=sizeof(tsen.EVOHOME2)-1;
 	RFX_SETID3(msg.GetID(0),tsen.EVOHOME2.id1,tsen.EVOHOME2.id2,tsen.EVOHOME2.id3)
 	tsen.EVOHOME2.updatetype = updBattery;
-	tsen.EVOHOME2.battery_level=nBattery;
 	
 	double dbCharge=0;
 	if(nBattery!=0xFF)
 		dbCharge=(double)nBattery/2.0; //Presumed to be the charge level where sent
-	if(nBattery>10 && nLowBat!=0)
-		nBattery=10;
+	if(nLowBat==0)
+		nBattery=0;
+	tsen.EVOHOME2.battery_level=nBattery;
 	if(msg.id[0].GetIDType()==CEvohomeID::devZone)
 	{
 		if(msg.id[2].GetIDType()==CEvohomeID::devController)
