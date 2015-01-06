@@ -40,5 +40,5 @@ private:
 	bool m_firstRound;
 	float m_pressureAvg[7];
 	int m_LastForecast;
-
+	double dP_dt;
 };
