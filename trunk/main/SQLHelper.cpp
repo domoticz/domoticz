@@ -2348,6 +2348,48 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 		}
 	}
 
+	//check if PushALot enabled
+	if (GetPreferencesVar("PushALotAPI", nValue, sValue))
+	{
+		sValue = stdstring_trim(sValue);
+		if (sValue != "")
+		{
+			//send message to PushAlot
+			std::stringstream sPostData;
+			std::string IsImportant;
+			std::string IsSilent;
+
+			// map priority to PushAlot 'IsSilent' & 'IsImportant'
+			switch (Priority) {
+			case -2: // Fall through to -1
+			case -1:
+				IsImportant = "False";
+				IsSilent = "True";
+				break;
+			case 2: // Fall through to 1
+			case 1:
+				IsImportant = "True";
+				IsSilent = "False";
+				break;
+			default:
+				IsImportant = "False";
+				IsSilent = "False";
+				break;
+			}
+
+			sPostData << "AuthorizationToken=" << sValue << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Body=" << uencode.URLEncode(Message);
+			std::vector<std::string> ExtraHeaders;
+			if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "Error sending PushALot Notification!");
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "Notification sent (PushALot)");
+			}
+		}
+	}
+
 	//check if Email enabled
 	if (GetPreferencesVar("UseEmailInNotifications", nValue))
 	{
@@ -2460,6 +2502,50 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 			}
 		}
 	}
+
+	//check if PushALot enabled
+	if (GetPreferencesVar("PushALotAPI", nValue, sValue))
+	{
+		sValue = stdstring_trim(sValue);
+		if (sValue != "")
+		{
+			//send message to PushAlot
+			std::stringstream sPostData;
+			std::string IsImportant;
+			std::string IsSilent;
+
+			// map priority to PushAlot 'IsSilent' & 'IsImportant'
+			switch (Priority) {
+				case -2: // Fall through to -1
+				case -1:
+					IsImportant = "False";
+					IsSilent = "True";
+					break;
+				case 2: // Fall through to 1
+				case 1:
+					IsImportant = "True";
+					IsSilent = "False";
+					break;
+				default:
+					IsImportant = "False";
+					IsSilent = "False";
+					break;
+			}
+
+			sPostData << "AuthorizationToken=" << sValue << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Title=" << uencode.URLEncode(Subject) << "&Body=" << uencode.URLEncode(notimessage);
+
+			std::vector<std::string> ExtraHeaders;
+			if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
+			{
+				_log.Log(LOG_ERROR, "Error sending PushALot Notification!");
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "Notification sent (PushALot)");
+			}
+		}
+	}
+
 	//check if Email enabled
 	if (GetPreferencesVar("UseEmailInNotifications", nValue))
 	{

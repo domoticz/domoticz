@@ -4379,6 +4379,31 @@ namespace http {
 					root["status"] = "OK";
 				}
 			}
+			else if (cparam == "testpushalot")
+			{
+				CURLEncode uencode;
+				std::string palapi = CURLEncode::URLDecode(m_pWebEm->FindValue("palapi"));
+				if (palapi == "")
+					return;
+
+				root["title"] = "Test PushALot";
+				std::stringstream sPostData;
+				std::string sResult;
+				std::string palTitle = "Domoticz test";
+				std::string palMessage = "Domoticz test message!";
+				std::vector<std::string> ExtraHeaders;
+				sPostData << "AuthorizationToken=" << palapi << "&IsImportant=False&IsSilent=False&Source=Domoticz&Title=" << uencode.URLEncode(palTitle) << "&Body=" << uencode.URLEncode(palMessage);
+
+				if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
+				{
+					_log.Log(LOG_ERROR, "Error sending PushALot Notification!");
+				}
+				else
+				{
+					_log.Log(LOG_STATUS, "Notification sent (PushALot)");
+					root["status"] = "OK";
+				}
+			}
 			else if (cparam == "testemail")
 			{
 				std::string EmailFrom = m_pWebEm->FindValue("EmailFrom");
@@ -7140,6 +7165,8 @@ namespace http {
 			m_sql.UpdatePreferencesVar("PushoverAPI", CURLEncode::URLDecode(PushoverAPI).c_str());
 			std::string PushoverUser = m_pWebEm->FindValue("PushoverUserID");
 			m_sql.UpdatePreferencesVar("PushoverUser", CURLEncode::URLDecode(PushoverUser).c_str());
+			std::string PushALotAPI = m_pWebEm->FindValue("PushALotAPIKey");
+			m_sql.UpdatePreferencesVar("PushALotAPI", CURLEncode::URLDecode(PushALotAPI).c_str());
 			std::string DashboardType = m_pWebEm->FindValue("DashboardType");
 			m_sql.UpdatePreferencesVar("DashboardType", atoi(DashboardType.c_str()));
 			std::string MobileType = m_pWebEm->FindValue("MobileType");
@@ -12483,6 +12510,10 @@ namespace http {
 				else if (Key == "PushoverUser")
 				{
 					root["PushoverUser"] = sValue;
+				}
+				else if (Key == "PushALotAPI")
+				{
+					root["PushALotAPI"] = sValue;
 				}
 				else if (Key == "DashboardType")
 				{
