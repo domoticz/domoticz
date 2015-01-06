@@ -88,6 +88,35 @@ define(['app'], function (app) {
 		  
 		}
 
+		$scope.TestPushAlotNotification = function()
+		{
+		  var PushAlotAPI=$("#pushalottable #palapikey").val();
+		  if (PushAlotAPI=="") {
+			ShowNotify($.i18n('Please enter the API key!...'), 3500, true);
+			return;
+		  }
+			$.ajax({
+				url: "json.htm?type=command&param=testpushalot&palapi="+PushAlotAPI,
+				async: false,
+				dataType: 'json',
+				success: function(data) {
+					if (data.status != "OK") {
+						HideNotify();
+						ShowNotify($.i18n('Problem sending notification, please check the API key!'), 3000, true);
+						return;
+					}
+					else {
+						HideNotify();
+						ShowNotify($.i18n('Notification sent!<br>Should arrive at your device soon...'), 3000);
+					}
+				},
+				error: function(){
+					HideNotify();
+					ShowNotify($.i18n('Problem sending notification, please check the API key!'), 3000, true);
+				}
+			});
+		}
+
 		$scope.TestEmailNotification = function()
 		{
 			var EmailServer=$("#emailtable #EmailServer").val();
@@ -203,6 +232,9 @@ define(['app'], function (app) {
 			  }
 			  if (typeof data.PushoverUser != 'undefined') {
 				$("#pushovertable #pouserid").val(data.PushoverUser);
+			  }
+			  if (typeof data.PushALotAPI != 'undefined') {
+				$("#pushalottable #palapikey").val(data.PushALotAPI);
 			  }
 			  if (typeof data.LightHistoryDays != 'undefined') {
 				$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);

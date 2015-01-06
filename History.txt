@@ -79,6 +79,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Changed: Themes are now sorted, ignoring .svn folders
 - Changed: Better/Correct appcache handling of themes
 - Implemented: Blinds1, T7 Forest
+- Implemented: PushAlot notification system (Thanks to Toni!)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
