@@ -4751,13 +4751,11 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
-	if(pEvo->EVOHOME2.updatetype==CEvohome::updBattery)
-		BatteryLevel=pEvo->EVOHOME2.battery_level;
 	
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue FROM DeviceStatus WHERE (HardwareID==" << HwdID << ") AND (";
+	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel FROM DeviceStatus WHERE (HardwareID==" << HwdID << ") AND (";
 	if(pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
 	{
 		szQuery << "Unit == " << (int)pEvo->EVOHOME2.zone << ") AND (Type==" << (int)pEvo->EVOHOME2.type << ")";
@@ -4784,6 +4782,7 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 		dType=atoi(sd[3].c_str());
 		dSubType=atoi(sd[4].c_str());
 		szUpdateStat=sd[5];
+		BatteryLevel=atoi(sd[6].c_str());
 	}
 	else
 	{
@@ -4803,7 +4802,9 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 		szUpdateStat="0.0;0.0;Auto";
 	}
 	
-	if(pEvo->EVOHOME2.updatetype!=CEvohome::updBattery)
+	if(pEvo->EVOHOME2.updatetype==CEvohome::updBattery)
+		BatteryLevel=pEvo->EVOHOME2.battery_level;
+	else
 	{
 		if(dType==pTypeEvohomeWater && pEvo->EVOHOME2.updatetype==CEvohome::updSetPoint)
 			sprintf(szTmp,"%s",pEvo->EVOHOME2.temperature?"On":"Off");
