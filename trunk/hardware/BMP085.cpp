@@ -75,10 +75,21 @@ const unsigned char BMP085_OVERSAMPLING_SETTING = 3;
 
 #define I2C_READ_INTERVAL 30
 
+#define FC_BMP085_STABLE 0			//Stable weather
+#define FC_BMP085_SUNNY 1			//Slowly rising HP stable good weather (Clear/Sunny)
+#define FC_BMP085_CLOUDY_RAIN 2		//Slowly falling Low Pressure System, stable rainy weather (Cloudy/Rain)
+#define FC_BMP085_UNSTABLE 3		//Quickly rising HP, not stable weather
+#define FC_BMP085_THUNDERSTORM 4	//Quickly falling LP, Thunderstorm, not stable (Thunderstorm)
+#define FC_BMP085_UNKNOWN 5			//
+
 CBMP085::CBMP085(const int ID)
 {
 	m_stoprequested=false;
 	m_HwdID=ID;
+	m_minuteCount = 0;
+	m_firstRound = true;
+	m_LastMinute = -1;
+	m_LastForecast = -1;
 }
 
 CBMP085::~CBMP085()
@@ -92,6 +103,10 @@ bool CBMP085::StartHardware()
 #endif
 	m_waitcntr=(I2C_READ_INTERVAL-5)*2;
 	m_stoprequested=false;
+	m_minuteCount = 0;
+	m_firstRound = true;
+	m_LastMinute = -1;
+	m_LastForecast = -1;
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CBMP085::Do_Work, this)));
 	sOnConnected(this);
@@ -133,6 +148,11 @@ void CBMP085::Do_Work()
 
 		if (ltime.tm_sec % 12 == 0) {
 			mytime(&m_LastHeartbeat);
+		}
+		if (ltime.tm_min != m_LastMinute)
+		{
+			m_LastMinute = ltime.tm_min;
+			m_LastForecast=CalculateForecast(m_LastPressure);
 		}
 	}
 	_log.Log(LOG_STATUS,"I2C: Worker stopped...");
@@ -338,17 +358,146 @@ void CBMP085::ReadSensorDetails()
 	tsensor.baro=float(((double)pressure)/100);
 	tsensor.altitude=float(altitude);
 
+	m_LastPressure = (float)pressure;//in PA i suppose???? else tsensor.baro;
+
 	//this is probably not good, need to take the rising/falling of the pressure into account?
 	//any help would be welcome!
 
 	tsensor.forecast=baroForecastNoInfo;
-	if (tsensor.baro<1000)
-		tsensor.forecast=baroForecastRain;
-	else if (tsensor.baro<1020)
-		tsensor.forecast=baroForecastCloudy;
-	else if (tsensor.baro<1030)
-		tsensor.forecast=baroForecastPartlyCloudy;
-	else
-		tsensor.forecast=baroForecastSunny;
+
+	if (m_LastForecast != -1)
+	{
+		switch (m_LastForecast)
+		{
+		case FC_BMP085_STABLE:			//Stable weather
+			tsensor.forecast = baroForecastCloudy;
+			break;
+		case FC_BMP085_SUNNY:			//Slowly rising HP stable good weather (Clear/Sunny)
+			tsensor.forecast = baroForecastSunny;
+			break;
+		case FC_BMP085_CLOUDY_RAIN:		//Slowly falling Low Pressure System, stable rainy weather (Cloudy/Rain)
+			tsensor.forecast = baroForecastRain;
+			break;
+		case FC_BMP085_UNSTABLE:		//Quickly rising HP, not stable weather
+			break;
+		case FC_BMP085_THUNDERSTORM:	//Quickly falling LP, Thunderstorm, not stable (Thunderstorm)
+			tsensor.forecast = baroForecastRain;
+			break;
+		case FC_BMP085_UNKNOWN:			//
+			break;
+		}
+		//if (tsensor.baro < 1000)
+		//	tsensor.forecast = baroForecastRain;
+		//else if (tsensor.baro < 1020)
+		//	tsensor.forecast = baroForecastCloudy;
+		//else if (tsensor.baro < 1030)
+		//	tsensor.forecast = baroForecastPartlyCloudy;
+		//else
+		//	tsensor.forecast = baroForecastSunny;
+	}
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor);//decode message
+}
+
+//Should be called every minute
+int CBMP085::CalculateForecast(const float pressure)
+{
+	// Algorithm found here
+	// http://www.freescale.com/files/sensors/doc/app_note/AN3914.pdf
+	if (m_minuteCount > 180)
+		m_minuteCount = 6;
+
+	m_pressureSamples[m_minuteCount] = pressure;
+	m_minuteCount++;
+
+	double dP_dt;
+
+	if (m_minuteCount == 5) {
+		// Avg pressure in first 5 min, value averaged from 0 to 5 min.
+		m_pressureAvg[0] = ((m_pressureSamples[1] + m_pressureSamples[2]
+			+ m_pressureSamples[3] + m_pressureSamples[4] + m_pressureSamples[5])
+			/ 5);
+	}
+	else if (m_minuteCount == 35) {
+		// Avg pressure in 30 min, value averaged from 0 to 5 min.
+		m_pressureAvg[1] = ((m_pressureSamples[30] + m_pressureSamples[31]
+			+ m_pressureSamples[32] + m_pressureSamples[33]
+			+ m_pressureSamples[34]) / 5);
+		float change = (m_pressureAvg[1] - m_pressureAvg[0]);
+		if (m_firstRound) // first time initial 3 hour
+			dP_dt = ((65.0 / 1023.0) * 2 * change); // note this is for t = 0.5hour
+		else
+			dP_dt = (((65.0 / 1023.0) * change) / 1.5); // divide by 1.5 as this is the difference in time from 0 value.
+	}
+	else if (m_minuteCount == 60) {
+		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
+		m_pressureAvg[2] = ((m_pressureSamples[55] + m_pressureSamples[56]
+			+ m_pressureSamples[57] + m_pressureSamples[58]
+			+ m_pressureSamples[59]) / 5);
+		float change = (m_pressureAvg[2] - m_pressureAvg[0]);
+		if (m_firstRound) //first time initial 3 hour
+			dP_dt = ((65.0 / 1023.0) * change); //note this is for t = 1 hour
+		else
+			dP_dt = (((65.0 / 1023.0) * change) / 2); //divide by 2 as this is the difference in time from 0 value
+	}
+	else if (m_minuteCount == 95) {
+		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
+		m_pressureAvg[3] = ((m_pressureSamples[90] + m_pressureSamples[91]
+			+ m_pressureSamples[92] + m_pressureSamples[93]
+			+ m_pressureSamples[94]) / 5);
+		float change = (m_pressureAvg[3] - m_pressureAvg[0]);
+		if (m_firstRound) // first time initial 3 hour
+			dP_dt = (((65.0 / 1023.0) * change) / 1.5); // note this is for t = 1.5 hour
+		else
+			dP_dt = (((65.0 / 1023.0) * change) / 2.5); // divide by 2.5 as this is the difference in time from 0 value
+	}
+	else if (m_minuteCount == 120) {
+		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
+		m_pressureAvg[4] = ((m_pressureSamples[115] + m_pressureSamples[116]
+			+ m_pressureSamples[117] + m_pressureSamples[118]
+			+ m_pressureSamples[119]) / 5);
+		float change = (m_pressureAvg[4] - m_pressureAvg[0]);
+		if (m_firstRound) // first time initial 3 hour
+			dP_dt = (((65.0 / 1023.0) * change) / 2); // note this is for t = 2 hour
+		else
+			dP_dt = (((65.0 / 1023.0) * change) / 3); // divide by 3 as this is the difference in time from 0 value
+	}
+	else if (m_minuteCount == 155) {
+		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
+		m_pressureAvg[5] = ((m_pressureSamples[150] + m_pressureSamples[151]
+			+ m_pressureSamples[152] + m_pressureSamples[153]
+			+ m_pressureSamples[154]) / 5);
+		float change = (m_pressureAvg[5] - m_pressureAvg[0]);
+		if (m_firstRound) // first time initial 3 hour
+			dP_dt = (((65.0 / 1023.0) * change) / 2.5); // note this is for t = 2.5 hour
+		else
+			dP_dt = (((65.0 / 1023.0) * change) / 3.5); // divide by 3.5 as this is the difference in time from 0 value
+	}
+	else if (m_minuteCount == 180) {
+		// Avg pressure at end of the hour, value averaged from 0 to 5 min.
+		m_pressureAvg[6] = ((m_pressureSamples[175] + m_pressureSamples[176]
+			+ m_pressureSamples[177] + m_pressureSamples[178]
+			+ m_pressureSamples[179]) / 5);
+		float change = (m_pressureAvg[6] - m_pressureAvg[0]);
+		if (m_firstRound) // first time initial 3 hour
+			dP_dt = (((65.0 / 1023.0) * change) / 3); // note this is for t = 3 hour
+		else
+			dP_dt = (((65.0 / 1023.0) * change) / 4); // divide by 4 as this is the difference in time from 0 value
+		m_pressureAvg[0] = m_pressureAvg[5]; // Equating the pressure at 0 to the pressure at 2 hour after 3 hours have past.
+		m_firstRound = false; // flag to let you know that this is on the past 3 hour mark. Initialized to 0 outside main loop.
+	}
+
+	if (m_minuteCount < 35 && m_firstRound) //if time is less than 35 min on the first 3 hour interval.
+		return FC_BMP085_UNKNOWN; // Unknown, more time needed
+	else if (dP_dt < (-0.25))
+		return FC_BMP085_THUNDERSTORM; // Quickly falling LP, Thunderstorm, not stable
+	else if (dP_dt > 0.25)
+		return FC_BMP085_UNSTABLE; // Quickly rising HP, not stable weather
+	else if ((dP_dt > (-0.25)) && (dP_dt < (-0.05)))
+		return FC_BMP085_CLOUDY_RAIN; // Slowly falling Low Pressure System, stable rainy weather
+	else if ((dP_dt > 0.05) && (dP_dt < 0.25))
+		return FC_BMP085_SUNNY; // Slowly rising HP stable good weather
+	else if ((dP_dt >(-0.05)) && (dP_dt < 0.05))
+		return FC_BMP085_STABLE; // Stable weather
+	else
+		return FC_BMP085_UNKNOWN; // Unknown
 }
