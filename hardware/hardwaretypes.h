@@ -89,6 +89,9 @@
 #define pTypeEvohomeWater 0x47 //Seems easier to define a new type here
 #define sTypeEvohomeWater 0x00 //Hot water (Ideally this would just be a zone but for whatever reason evohome treats this differently)
 
+#define pTypeEvohomeRelay 0x44 //Relay
+#define sTypeEvohomeRelay 0x00 
+
 //#define sTypeEvohomeOutside 0x30 //If connected
 //#define sTypeEvohomeStatus 0x40 //Not sure if we can do this in 1 sensor would be for things like zone valve status, boiler relay status (maybe OT values too) and comms errors (maybe seperature sensor or switch for each is easiest)
 
@@ -342,5 +345,17 @@ typedef union tREVOBUF {
 		uint8_t	day;
 		uint8_t	hrs;
 		uint8_t	mins;
+		uint8_t	battery_level;
 	} EVOHOME2;
+	
+	struct _tEVOHOME3 {
+		unsigned char len;
+		unsigned char type;
+		unsigned char subtype;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		uint8_t	devno;
+		uint8_t	demand;
+	} EVOHOME3;
 } REVOBUF;

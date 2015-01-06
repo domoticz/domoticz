@@ -24,16 +24,23 @@
 class CEvohomeDataType
 {
 public:
+	//uint24_t may occasionally be defined but is not portable etc.
+	struct uint24_t {
+		uint32_t val : 24;
+	};
+	
 	virtual unsigned char Decode(const unsigned char* msg, unsigned char nOfs)=0;
 	virtual unsigned char Encode(unsigned char* msg, unsigned char nOfs) const=0;
 	virtual std::string Encode() const=0;
 	
+	static void Add(const uint24_t &in, unsigned char* msg, unsigned char &nOfs){msg[nOfs++]=(in.val>>16)&0xFF;msg[nOfs++]=(in.val>>8)&0xFF;msg[nOfs++]=in.val&0xFF;}
 	static void Add(const uint16_t &in, unsigned char* msg, unsigned char &nOfs){msg[nOfs++]=(in>>8)&0xFF;msg[nOfs++]=in&0xFF;}
 	static void Add(const int16_t &in, unsigned char* msg, unsigned char &nOfs){msg[nOfs++]=(in>>8)&0xFF;msg[nOfs++]=in&0xFF;}
 	static void Add(const uint8_t &in, unsigned char* msg, unsigned char &nOfs){msg[nOfs++]=in;}
 	static void Add(const CEvohomeDataType &in, unsigned char* msg, unsigned char &nOfs){in.Add(msg,nOfs);}
 	void Add(unsigned char* msg, unsigned char &nOfs) const{nOfs=Encode(msg,nOfs);}
 	
+	static void Get(uint24_t &out, const unsigned char* msg, unsigned char &nOfs){out.val=msg[nOfs++]<<16;out.val|=msg[nOfs++]<<8;out.val|=msg[nOfs++];}
 	static void Get(uint16_t &out, const unsigned char* msg, unsigned char &nOfs){out=msg[nOfs++]<<8;out|=msg[nOfs++];}
 	static void Get(int16_t &out, const unsigned char* msg, unsigned char &nOfs){out=msg[nOfs++]<<8;out|=msg[nOfs++];}
 	static void Get(uint8_t &out, const unsigned char* msg, unsigned char &nOfs){out=msg[nOfs++];}
@@ -121,6 +128,8 @@ public:
 		sprintf(szTmp,"%06x",nID);
 		return szTmp;
 	}
+	
+	bool IsValid(){return (m_nID!=0);}
 	
 	unsigned char GetIDType() const{return GetIDType(GetID());}
 	unsigned int GetIDAddr() const{return GetIDAddr(GetID());}
@@ -278,10 +287,11 @@ public:
 		pktwrt,
 	};
 	
-	CEvohomeMsg():flags(0),type(pktunk),timestamp(0),command(0),payloadsize(0),readofs(0){}
-	CEvohomeMsg(const char * rawmsg):flags(0),type(pktunk),timestamp(0),command(0),payloadsize(0),readofs(0){DecodePacket(rawmsg);}
-	CEvohomeMsg(packettype nType, int nAddr, int nCommand):flags(0),type(nType),timestamp(0),command(nCommand),payloadsize(0),readofs(0){SetID(1,nAddr);SetFlag(flgpkt|flgcmd);}
-	CEvohomeMsg(const CEvohomeMsg& src):readofs(0){*this=src;}
+	CEvohomeMsg():flags(0),type(pktunk),timestamp(0),command(0),payloadsize(0),readofs(0),enccount(0){}
+	CEvohomeMsg(const char * rawmsg):flags(0),type(pktunk),timestamp(0),command(0),payloadsize(0),readofs(0),enccount(0){DecodePacket(rawmsg);}
+	CEvohomeMsg(packettype nType, int nAddr, int nCommand):flags(0),type(nType),timestamp(0),command(nCommand),payloadsize(0),readofs(0),enccount(0){SetID(1,nAddr);SetFlag(flgpkt|flgcmd);}
+	CEvohomeMsg(packettype nType, int nAddr1, int nAddr2, int nCommand):flags(0),type(nType),timestamp(0),command(nCommand),payloadsize(0),readofs(0),enccount(0){SetID(1,nAddr1);SetID(2,nAddr2);SetFlag(flgpkt|flgcmd);}
+	CEvohomeMsg(const CEvohomeMsg& src):readofs(0),enccount(0){*this=src;}
 	~CEvohomeMsg(){}
 	
 	CEvohomeMsg& operator = (const CEvohomeMsg& src)
@@ -366,6 +376,7 @@ public:
 		id[idx]=nID;
 		SetFlag(flgid1<<idx);
 	}
+	bool BadMsg(){return (enccount>30);}
 	
 	static char const szPacketType[5][8];
 
@@ -378,6 +389,7 @@ public:
 	unsigned char readofs;
 	static int const m_nBufSize=256;
 	unsigned char payload[m_nBufSize];
+	unsigned int enccount;
 };
 
 class CEvohome : public AsyncSerial, public CDomoticzHardwareBase
@@ -434,26 +446,33 @@ public:
 		cmdActuatorState=0x3EF0,
 		cmdActuatorCheck=0x3B00,
 		cmdBinding=0x1FC9,
-		//0x1060 //Misc sensor message <1:DevNo><1:FF/64/C8><1:01> DevNo can be a zone number / 0 for DHW (64/C8 may relate to multiple sensors per zone or FF N/A) last byte may be battery low indicator
+		cmdExternalSensor=0x0002,
+		cmdDeviceInfo=0x0418,
+		cmdBatteryInfo=0x1060,
 		//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
 		//0x1F09 //Unknown fixed message FF070D
 		//0x0005
 		//0x0006
 		//0x0404
-		//0x0418 //device info? (last 3 bytes are the id) - can be requested by device number - presumably we could iterate the list of bound devices this way
 	};
 	
 	enum msgUpdate{
 		updTemp,
 		updSetPoint,
 		updOverride,
+		updBattery,
 	};
+	static const uint8_t m_nMaxZones=12;
 	
 	int GetControllerID();
+	int GetGatewayID();
 	uint8_t GetZoneCount();
 	uint8_t GetControllerMode();
 	std::string GetControllerName();
 	std::string GetZoneName(uint8_t nZone);
+		
+	void SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
+	int Bind(uint8_t nDevNo, unsigned char nDevType);//use CEvohomeID::devType atm but there could be additional specialisations
 		
 	static const char* GetControllerModeName(uint8_t nControllerMode);
 	static const char* GetWebAPIModeName(uint8_t nControllerMode);
@@ -491,6 +510,9 @@ private:
 	bool DecodeActuatorState(CEvohomeMsg &msg);
 	bool DecodeActuatorCheck(CEvohomeMsg &msg);
 	bool DecodeZoneWindow(CEvohomeMsg &msg);
+	bool DecodeExternalSensor(CEvohomeMsg &msg);
+	bool DecodeDeviceInfo(CEvohomeMsg &msg);
+	bool DecodeBatteryInfo(CEvohomeMsg &msg);
 	bool DumpMessage(CEvohomeMsg &msg);
 	
 	void AddSendQueue(const CEvohomeMsg &msg);
@@ -507,9 +529,20 @@ private:
 	void RequestZoneInfo(uint8_t nZone);
 	void RequestZoneTemp(uint8_t nZone);
 	void RequestZoneName(uint8_t nZone);
+	void RequestZoneStartupInfo(uint8_t nZone);
 	void RequestSetPointOverride(uint8_t nZone);
+	void RequestDeviceInfo(uint8_t nAddr);
+	
+	void SendExternalSensor();
+	
+	void RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID=0);
+	void SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
+	void UpdateRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand);
+	void CheckRelayHeatDemand();
+	void SendRelayKeepAlive();
 	
 	void SetControllerID(int nID);
+	void SetGatewayID(int nID);
 	
 	bool SetMaxZoneCount(uint8_t nZoneCount);
 	bool SetZoneCount(uint8_t nZoneCount);
@@ -536,7 +569,6 @@ private:
 	volatile bool m_stoprequested;
 	int m_retrycntr;
 	
-	static const uint8_t m_nMaxZones=12;
 	std::vector <zoneModeType> m_ZoneOverrideLocal;	
 	
 	static const char m_szNameErr[18];
@@ -565,6 +597,28 @@ private:
 	boost::mutex m_mtxControllerID;
 	
 	unsigned int m_nMyID;//gateway ID
+	boost::mutex m_mtxGatewayID;
+	
+	unsigned int m_nBindID;//device ID of bound device
+	unsigned char m_nBindIDType;//what type of device to bind
+	boost::mutex m_mtxBindNotify;
+	boost::condition_variable m_cndBindNotify;
+	
+	struct _tRelayCheck
+	{
+		_tRelayCheck():m_stLastCheck(boost::posix_time::min_date_time),m_nDemand(0){}
+		_tRelayCheck(uint8_t demand):m_stLastCheck(boost::posix_time::min_date_time),m_nDemand(demand){}
+		_tRelayCheck(boost::system_time st, uint8_t demand):m_stLastCheck(st),m_nDemand(demand){}
+		boost::system_time m_stLastCheck;
+		uint8_t m_nDemand;
+	};
+	typedef std::map < uint8_t, _tRelayCheck > tmap_relay_check;
+	typedef tmap_relay_check::iterator tmap_relay_check_it;
+	typedef tmap_relay_check::value_type tmap_relay_check_pair;
+	boost::mutex m_mtxRelayCheck;
+	tmap_relay_check m_RelayCheck;
+	
+	bool m_bStartup[2];
 	
 	static bool m_bDebug;//Debug mode for extra logging
 	static std::ofstream *m_pEvoLog;

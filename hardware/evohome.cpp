@@ -77,6 +77,9 @@ CEvohome::CEvohome(const int ID, const char* szSerialPort) :
 	m_HwdID=ID;
 	m_nDevID=0;
 	m_nMyID=0;
+	m_nBindID=0;
+	for(int i=0;i<2;i++)
+		m_bStartup[i]=true;
 
 	m_stoprequested=false;
 	m_nBufPtr=0;
@@ -111,6 +114,9 @@ CEvohome::CEvohome(const int ID, const char* szSerialPort) :
 	RegisterDecoder(cmdActuatorState,boost::bind(&CEvohome::DecodeActuatorState,this, _1));
 	RegisterDecoder(cmdActuatorCheck,boost::bind(&CEvohome::DecodeActuatorCheck,this, _1));
 	RegisterDecoder(cmdZoneWindow,boost::bind(&CEvohome::DecodeZoneWindow,this, _1));
+	RegisterDecoder(cmdExternalSensor,boost::bind(&CEvohome::DecodeExternalSensor,this, _1));
+	RegisterDecoder(cmdDeviceInfo,boost::bind(&CEvohome::DecodeDeviceInfo,this, _1));
+	RegisterDecoder(cmdBatteryInfo,boost::bind(&CEvohome::DecodeBatteryInfo,this, _1));
 }
 
 CEvohome::~CEvohome(void)
@@ -154,6 +160,17 @@ bool CEvohome::StartHardware()
 			s_strid << std::hex << sd[1];
 			s_strid >> m_nDevID;
 			m_nControllerMode=atoi(sd[2].c_str());
+		}
+		
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << (int)pTypeEvohomeRelay << ") AND (Unit>=64) AND (Unit<96)";//we'll put our custom relays in this range
+		result = m_sql.query(szQuery.str());
+		m_RelayCheck.clear();
+		for(int i=0;i<result.size();i++)
+		{
+			Log(true,LOG_STATUS,"evohome: Relay: devno=%d demmand=%d",atoi(result[i][0].c_str()),atoi(result[i][4].c_str()));
+			m_RelayCheck.insert( tmap_relay_check_pair( static_cast<uint8_t>(atoi(result[i][0].c_str())),_tRelayCheck(boost::get_system_time()-boost::posix_time::minutes(19),static_cast<uint8_t>(atoi(result[i][4].c_str()))) ) ); //allow 1 minute for startup before trying to restore demand
 		}
 		
 		//Start worker thread
@@ -228,6 +245,7 @@ bool CEvohome::OpenSerialDevice()
 	
 void CEvohome::Do_Work()
 {
+	boost::system_time stLastRelayCheck(boost::posix_time::min_date_time);
 	int nStartup=0;
 	while (!m_stoprequested)
 	{
@@ -254,7 +272,7 @@ void CEvohome::Do_Work()
 				OpenSerialDevice();
 				if (isOpen())//do some startup stuff
 				{
-					if(GetControllerID())//can't proceed without it
+					if(GetControllerID()!=0)//can't proceed without it
 						RequestCurrentState();
 				}
 			}
@@ -269,6 +287,16 @@ void CEvohome::Do_Work()
 				{
 					InitControllerName();
 					InitZoneNames();
+				}
+			}
+			boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);
+			if(!m_RelayCheck.empty() && GetGatewayID()!=0)
+			{
+				CheckRelayHeatDemand();
+				if((boost::get_system_time()-stLastRelayCheck)>boost::posix_time::seconds(604)) //not sure if it makes a difference but avg time is about 604-605 seconds but not clear how reference point derived - seems steady once started
+				{
+					SendRelayKeepAlive();
+					stLastRelayCheck=boost::get_system_time();
 				}
 			}
 		}
@@ -287,6 +315,7 @@ std::string CEvohomeMsg::Encode()
 		sprintf(szTmp,"%02hhX",payload[i]);
 		szRet+=szTmp;
 	}
+	enccount++;
 	return szRet;
 }
 
@@ -318,6 +347,12 @@ void CEvohome::WriteToHardware(const char *pdata, const unsigned char length)
 				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdDHWState).Add((uint8_t)(tsen->EVOHOME2.zone-1)).Add((uint8_t)tsen->EVOHOME2.temperature).Add(ConvertMode(m_dczToEvoZoneMode,tsen->EVOHOME2.mode)).Add((uint16_t)0).Add((uint8_t)0).Add_if(CEvohomeDateTime(tsen->EVOHOME2),(tsen->EVOHOME2.mode==2)));
 			else
 				RunScript(pdata,length);
+			break;
+		case pTypeEvohomeRelay:
+			if (length<sizeof(REVOBUF::_tEVOHOME3))
+				return;
+			if(!m_bScriptOnly)//Only supported by HGI80
+				SetRelayHeatDemand(tsen->EVOHOME3.devno,tsen->EVOHOME3.demand);
 			break;
 	}
 }
@@ -428,20 +463,22 @@ void CEvohome::RequestSysInfo()
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdSysInfo).Add(uint8_t(0)));
 }
 
+void CEvohome::RequestZoneStartupInfo(uint8_t nZone)
+{
+	RequestZoneTemp(nZone);
+	RequestSetPointOverride(nZone);
+	RequestZoneInfo(nZone);
+	RequestZoneName(nZone);
+}
+
 void CEvohome::RequestCurrentState()
 {
 	RequestSysInfo();
 	RequestControllerMode();
-	
-	for(uint8_t i=0;i<m_nMaxZones;i++)//max 12 zones
-	{
-		RequestZoneName(i);
-		RequestZoneTemp(i);
-		RequestSetPointOverride(i);
-		RequestZoneInfo(i);
-	}
 	RequestDHWTemp();
-	RequestDHWState();
+	RequestDHWState();	
+	RequestZoneStartupInfo(0);
+	RequestDeviceInfo(0);
 }
 
 void CEvohome::RequestZoneState()
@@ -451,6 +488,7 @@ void CEvohome::RequestZoneState()
 		RequestSetPointOverride(i);
 	//Trying this linked to DHW heat demand instead...that won't be adequate do it here too!
 	RequestDHWState();
+	SendExternalSensor();
 }
 
 void CEvohome::RequestZoneNames()
@@ -458,6 +496,82 @@ void CEvohome::RequestZoneNames()
 	uint8_t nZoneCount=GetZoneCount();
 	for(uint8_t i=0;i<nZoneCount;i++)
 		RequestZoneName(i);
+}
+
+void CEvohome::RequestDeviceInfo(uint8_t nAddr)
+{
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdDeviceInfo).Add(uint8_t(0)).Add(uint8_t(0)).Add(nAddr));
+}
+
+void CEvohome::SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
+{
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,GetGatewayID(),cmdControllerHeatDemand).Add(nDevNo).Add(nDemand));
+}
+
+void CEvohome::UpdateRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
+{
+	SendRelayHeatDemand(nDevNo,nDemand);
+	m_RelayCheck[nDevNo]=_tRelayCheck(boost::get_system_time(),nDemand);
+}
+
+void CEvohome::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
+{
+	if(nDevNo<64 || nDevNo>=96 || GetGatewayID()==0) //atm no reason to interfere with non custom relays
+		return;
+	boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);
+	UpdateRelayHeatDemand(nDevNo,nDemand);
+}
+
+void CEvohome::CheckRelayHeatDemand()
+{
+	for(tmap_relay_check_it it = m_RelayCheck.begin(); it != m_RelayCheck.end(); it++)
+	{
+		if((boost::get_system_time()-it->second.m_stLastCheck)>boost::posix_time::seconds(1202)) //avg seems around 1202-1203 but not clear how reference point derived
+		{
+			Log(true,LOG_STATUS,"evohome: Relay: Refreshing heat demand devno=%d demand=%d",it->first,it->second.m_nDemand);
+			UpdateRelayHeatDemand(it->first,it->second.m_nDemand);
+		}
+	}
+}
+
+void CEvohome::SendRelayKeepAlive()
+{
+	Log(true,LOG_STATUS,"evohome: Relay: Sending keep alive");
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,GetGatewayID(),cmdActuatorCheck).Add((uint8_t)0xFC).Add((uint8_t)0xC8));
+}
+
+void CEvohome::SendExternalSensor()
+{
+	if(GetGatewayID()==0)
+		return;
+	double dbTemp=0.0,dbUV=0.0;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT sValue FROM DeviceStatus WHERE (Name=='Outside')";//There could be different types depending on how data is received from WU etc.
+	result = m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		std::vector<std::string> strarray;
+		StringSplit(result[0][0], ";", strarray);
+		if (strarray.size() >= 1)
+			dbTemp=atof(strarray[0].c_str());
+		else
+			return;
+	}
+	else
+		return;
+	
+	//FIXME no light level data available UV from WU is only thing vaguely close (on dev system) without a real sensor 
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT sValue FROM DeviceStatus WHERE (Type==" << (int)pTypeUV << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size()>0)
+		dbUV=atof(result[0][0].c_str());
+	else
+		return;
+	
+	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,GetGatewayID(),cmdExternalSensor).Add((uint8_t)0).Add(static_cast<uint16_t>(dbUV*39)).Add((uint8_t)2).Add((uint8_t)2).Add(static_cast<int16_t>(dbTemp*100.0)).Add((uint8_t)1));
 }
 
 void CEvohome::ReadCallback(const char *data, size_t len)
@@ -688,6 +802,55 @@ bool CEvohome::DumpMessage(CEvohomeMsg &msg)
 	}
 	Log(true,LOG_STATUS,"evohome: %s: payload=%s (ASCII)=%s",tag, strpayload.c_str(), strascii.c_str());
 	return true;
+}
+
+int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devType atm but there could be additional specialisations
+{
+	int nGatewayID=GetGatewayID();
+	if(nGatewayID==0)
+		return 0;
+		
+	if(nDevType!=CEvohomeID::devRelay)//Binding a relay to the HGI80
+	{
+		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		m_nBindID=0;
+		m_nBindIDType=nDevType;
+		/*if(!m_cndBindNotify.wait_for(lock,boost::posix_time::seconds(60)))
+			return 0;*/
+		boost::system_time const timeout=boost::get_system_time() + boost::posix_time::seconds(60);//monotonic?
+		while(m_nBindID==0)
+		{
+			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,cmdBinding).Add(nDevNo).Add((uint16_t)cmdControllerHeatDemand).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0xFC).Add((uint16_t)cmdActuatorCheck).Add(CEvohomeID(nGatewayID)).Add((uint8_t)nDevNo).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
+			boost::system_time const wait=boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
+			if(!m_cndBindNotify.timed_wait(lock,wait) && boost::get_system_time()>timeout)
+				return 0;
+		}
+		
+		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,m_nBindID,cmdBinding).Add((uint8_t)0).Add((uint16_t)0xFFFF).Add(CEvohomeID(nGatewayID)));
+		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,0x0009).Add(nDevNo).Add((uint8_t)0).Add((uint8_t)0xFF)); //not sure if 1st byte is devno 2nd byte can be 00 or 01
+		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,0x1100).Add((uint8_t)0xFC).Add((uint16_t)0x1804).Add((uint16_t)0).Add((uint16_t)0x7FFF).Add((uint8_t)0x01)); //probably relay settings.. usually sent after cmd 0x0009
+		
+		return m_nBindID;
+	}
+	else if(nDevType==CEvohomeID::devSensor)//Binding the HGI80 to the evohome controller as an outdoor sensor (there are other sensors)
+	{
+		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
+		m_nBindID=0;
+		m_nBindIDType=CEvohomeID::devController;
+		
+		boost::system_time const timeout=boost::get_system_time() + boost::posix_time::seconds(60);//monotonic?
+		while(m_nBindID==0)
+		{
+			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,nGatewayID,cmdBinding).Add((uint8_t)0).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)2).Add((uint16_t)cmdExternalSensor).Add(CEvohomeID(nGatewayID)).Add((uint8_t)0).Add((uint16_t)cmdBinding).Add(CEvohomeID(nGatewayID)));
+			boost::system_time const wait=boost::get_system_time() + boost::posix_time::seconds(5);//monotonic?
+			if(!m_cndBindNotify.timed_wait(lock,wait) && boost::get_system_time()>timeout)
+				return 0;
+		}
+		AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,m_nBindID,cmdBinding).Add((uint8_t)0).Add((uint16_t)0xFFFF).Add(CEvohomeID(nGatewayID)));
+		return m_nBindID;
+	}
+	
+	return 0;
 }
 
 bool CEvohome::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
@@ -1023,6 +1186,7 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 	if(memcmp(&msg.payload[2],m_szNameErr,18)==0)
 	{
 		Log(true,LOG_STATUS,"evohome: %s: Warning zone name not set: %d", tag, msg.payload[0]);
+		m_bStartup[0]=false;
 		return true;
 	}
 	msg.payload[22]='\0';//presumably not null terminated if name consumes all available bytes in the payload
@@ -1030,6 +1194,8 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 	SetMaxZoneCount(nZone);//this should increase on startup as we poll all zones so we don't respond to changes here
 	SetZoneName(msg.payload[0],(const char*)&msg.payload[2]);
 	Log(true,LOG_STATUS,"evohome: %s: %d: Name %s",tag,nZone,&msg.payload[2]);
+	if(m_bStartup[0] && nZone<m_nMaxZones)
+		RequestZoneStartupInfo(nZone);
 	return true;
 }
 
@@ -1127,8 +1293,30 @@ bool CEvohome::DecodeBinding(CEvohomeMsg &msg)
 		msg.Get(nDevNo).Get(nCmd).Get(idDev);
 		Log(true,LOG_STATUS,"evohome: %s: Dev No %d: Cmd 0x%04x DeviceID 0x%06x (%s)",tag,nDevNo,nCmd,idDev.GetID(),idDev.GetStrID().c_str());
 	}
+	if(msg.type==CEvohomeMsg::pktwrt)
+	{
+		boost::lock_guard<boost::mutex> lock(m_mtxBindNotify);
+		if(msg.id[0].GetIDType()==m_nBindIDType)
+		{
+			m_nBindID=msg.GetID(0);
+			m_cndBindNotify.notify_one();
+		}
+	}
 	
 	return true;
+}
+
+void CEvohome::RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID)
+{
+	REVOBUF tsen;
+	memset(&tsen,0,sizeof(REVOBUF));
+	tsen.EVOHOME3.len=sizeof(tsen.EVOHOME3)-1;
+	tsen.EVOHOME3.type=pTypeEvohomeRelay;
+	tsen.EVOHOME3.subtype=sTypeEvohomeRelay;
+	RFX_SETID3(nID,tsen.EVOHOME3.id1,tsen.EVOHOME3.id2,tsen.EVOHOME3.id3);
+	tsen.EVOHOME3.devno=nDevNo;
+	tsen.EVOHOME3.demand=nDemand;
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3);//Decode messages
 }
 
 bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
@@ -1142,7 +1330,12 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	int nDemand = msg.payload[1];
 	std::string szSourceType("Unknown"), szDevType("Unknown");
 	if(msg.command==0x0008)
-		szSourceType="Controller";
+	{
+		if(msg.GetID(0)==GetControllerID())
+			szSourceType="Controller";
+		else if(msg.GetID(0)==GetGatewayID())
+			szSourceType="Gateway";
+	}
 	else if(msg.command==0x3150)
 		szSourceType="Zone";
 	
@@ -1163,6 +1356,9 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	}
 
 	Log(true,LOG_STATUS,"evohome: %s: %s DevNo 0x%02x %s: %d", tag, szSourceType.c_str(), nDevNo, szDevType.c_str(), nDemand);
+
+	if(msg.command==0x0008)
+		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand));
 	return true;
 }
 
@@ -1195,9 +1391,108 @@ bool CEvohome::DecodeActuatorState(CEvohomeMsg &msg)
 	int nDemand = msg.payload[1];
 	//a demand of 0xc8 (200) may have special meaning (probably immediate switch on but not sure how long it stays on for)
 	//I think the relays listen for the demand and generate a proportional on / off time for a given time slot
-	//presumably there are some settings that give it the appropriate time slots to use
+	//presumably there are some settings (0x1100) that give it the appropriate time slots to use
+	//The relay does not appear to always announce its state - perhaps this message is considered informational rather than a requirement
 	
 	Log(true,LOG_STATUS,"evohome: %s: ID:0x%06x (%s) DevNo 0x%02x: %d", tag, msg.GetID(0), msg.GetStrID(0).c_str(), nDevNo, nDemand);
+	RXRelay(static_cast<uint8_t>(0xFF),static_cast<uint8_t>(nDemand),msg.GetID(0));//devno is always 0 and therefore not valid
+	return true;
+}
+
+bool CEvohome::DecodeExternalSensor(CEvohomeMsg &msg)
+{
+	char tag[] = "EXTERNAL_SENSOR";
+	if (msg.payloadsize < 4) {
+		Log(false,LOG_ERROR,"evohome: %s: Error decoding command, packet size too small: %d", tag, msg.payloadsize);
+		return false;
+	}
+	if (msg.payloadsize % 4 != 0) {
+		Log(false,LOG_ERROR,"evohome: %s: Error decoding command, incorrect packet size: %d", tag, msg.payloadsize);
+		return false;
+	}	
+	for (int i = 0 ; i < msg.payloadsize ; i += 4) {
+		uint8_t nDevNo,nType;
+		CEvohomeTemp temp;
+		msg.Get(nDevNo).Get(temp).Get(nType);
+		Log(true,LOG_STATUS,"evohome: %s: %d: Temp %.1f Type %d",tag,nDevNo,temp.GetTemp(),nType);
+	}
+	return true;
+}
+
+bool CEvohome::DecodeDeviceInfo(CEvohomeMsg &msg)
+{
+	char tag[] = "DEVICE_INFO";
+	if (msg.payloadsize == 3){
+		Log(true,LOG_STATUS,"evohome: %s: Request for device info %d",tag, msg.payload[2]);
+		return true;
+	}
+	if (msg.payloadsize != 22){
+		Log(false,LOG_ERROR,"evohome: %s: Error decoding command, unknown packet size: %d", tag, msg.payloadsize);
+		return false;
+	}
+	uint8_t nAddr,nDevNo,nDevType;
+	CEvohomeID idDev;
+	msg.Get(nAddr,2).Get(nDevNo,5).Get(nDevType).Get(idDev,19);
+	if(!idDev.IsValid())
+	{
+		m_bStartup[1]=false;
+		return true;
+	}
+	Log(true,LOG_STATUS,"evohome: %s: %d: Addr=%d ?=%d ID:0x%06x (%s)", tag,nDevNo,nAddr,nDevType,idDev.GetID(),idDev.GetStrID().c_str());
+	if(nDevType==4 && (nDevNo==0xF9 || nDevNo==0xFA || nDevNo==0xFC)) //not sure what nDevType actually represents so far 4 seems to cover TRVs and Relays but could have entirely alternate meaning
+		RXRelay(nDevNo,static_cast<uint8_t>(0xFF),idDev.GetID());//We've found an internal relay so associate it's deviceid with its devno
+	if(m_bStartup[1])
+		RequestDeviceInfo(nAddr+1);
+	return true;
+}
+
+bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
+{
+	char tag[] = "BATTERY_INFO";
+	if (msg.payloadsize != 3){
+		Log(false,LOG_ERROR,"evohome: %s: Error decoding command, unknown packet size: %d", tag, msg.payloadsize);
+		return false;
+	}
+	std::string szType("Unknown");
+	uint8_t nDevNo,nBattery,nLowBat;
+	msg.Get(nDevNo).Get(nBattery).Get(nLowBat);
+	REVOBUF tsen;
+	memset(&tsen,0,sizeof(REVOBUF));
+	tsen.EVOHOME2.len=sizeof(tsen.EVOHOME2)-1;
+	RFX_SETID3(msg.GetID(0),tsen.EVOHOME2.id1,tsen.EVOHOME2.id2,tsen.EVOHOME2.id3)
+	tsen.EVOHOME2.updatetype = updBattery;
+	tsen.EVOHOME2.battery_level=nBattery;
+	
+	double dbCharge=0;
+	if(nBattery!=0xFF)
+		dbCharge=(double)nBattery/2.0; //Presumed to be the charge level where sent
+	if(nBattery>10 && nLowBat!=0)
+		nBattery=10;
+	if(msg.id[0].GetIDType()==CEvohomeID::devZone)
+	{
+		if(msg.id[2].GetIDType()==CEvohomeID::devController)
+		{
+			szType="Zone";
+			nDevNo++;
+			tsen.EVOHOME2.type=pTypeEvohomeZone;
+			tsen.EVOHOME2.subtype=sTypeEvohomeZone;
+			tsen.EVOHOME2.zone=nDevNo;
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+		}
+		else
+			szType="Dev";
+	}
+	else if(msg.id[0].GetIDType()==CEvohomeID::devSensor)
+	{
+		szType="DHW";
+		nDevNo++;
+		tsen.EVOHOME2.type=pTypeEvohomeWater;
+		tsen.EVOHOME2.subtype=sTypeEvohomeWater;
+		tsen.EVOHOME2.zone=nDevNo;
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+	}
+	Log(true,LOG_STATUS,"evohome: %s: %s=%d charge=%d (%.1f %%) level=%d (%s)",tag,szType.c_str(),nDevNo,nBattery,dbCharge,nLowBat,(nLowBat==0)?"Low":"OK");
+	
 	return true;
 }
 
@@ -1230,8 +1525,13 @@ void CEvohome::Do_Send()
 	boost::lock_guard<boost::mutex> sl(m_mtxSend);
 	if(!m_SendQueue.empty())
 	{
-		std::string out(m_SendQueue.front().Encode()+"\r\n");
-		write(out.c_str(),out.length());
+		if(m_SendQueue.front().BadMsg())//message rejected by HGI80 which will not be picked up as a failed send
+			m_SendQueue.pop_front();
+		else
+		{
+			std::string out(m_SendQueue.front().Encode()+"\r\n");
+			write(out.c_str(),out.length());
+		}
 	}
 }
 
@@ -1331,6 +1631,18 @@ void CEvohome::SetControllerID(int nID)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxControllerID);
 	m_nDevID=nID;
+}
+
+int CEvohome::GetGatewayID()
+{
+	boost::lock_guard<boost::mutex> l(m_mtxGatewayID);
+	return m_nMyID;
+}
+
+void CEvohome::SetGatewayID(int nID)
+{
+	boost::lock_guard<boost::mutex> l(m_mtxGatewayID);
+	m_nMyID=nID;
 }
 
 void CEvohome::LogDate()

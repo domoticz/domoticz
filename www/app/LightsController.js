@@ -1547,6 +1547,18 @@ define(['app'], function (app) {
 													img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 									}
 					}
+					else if (item.SwitchType == "TPI") {
+									var RO=(item.Unit>100)?true:false;
+									isdimmer=true;
+									if (
+											(item.Status == 'On')
+										 ) {
+													img='<img src="images/Fireplace48_On.png" title="' + $.i18n(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor"')+' height="48" width="48">';
+									}
+									else {
+													img='<img src="images/Fireplace48_Off.png" title="' + $.i18n(RO?"Off":"Turn On") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor"') + ' height="48" width="48">';
+									}
+					}
 					else if (item.SwitchType == "Dusk Sensor") {
 									if (
 											(item.Status == 'On')
@@ -1949,6 +1961,17 @@ define(['app'], function (app) {
 										xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 									 }
 							}
+							else if (item.SwitchType == "TPI") {
+									var RO=(item.Unit>100)?true:false;
+									bIsDimmer=true;
+									if (item.Status == 'On')
+									{
+										xhtm+='\t      <td id="img"><img src="images/Fireplace48_On.png" title="' + $.i18n(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor"') + ' height="48" width="48"></td>\n';
+									}
+									else {
+										xhtm+='\t      <td id="img"><img src="images/Fireplace48_Off.png" title="' + $.i18n(RO?"Off":"Turn On") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor"') + ' height="48" width="48"></td>\n';
+									}
+							}
 							else if (item.SwitchType == "Dusk Sensor") {
 								bAddTimer=false;
 								if (item.Status == 'On')
@@ -1994,6 +2017,12 @@ define(['app'], function (app) {
 						'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {
 						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+					}
+					else if (item.SwitchType == "TPI") {
+						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
+						if(item.Unit>100)
+							xhtm+=' data-disabled="true"';
+						xhtm+='></div>';
 					}
 					else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
 						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
@@ -2124,6 +2153,8 @@ define(['app'], function (app) {
 					$( this ).slider( "option", "type", $( this ).data('type'));
 					$( this ).slider( "option", "isprotected", $( this ).data('isprotected'));
 					$( this ).slider( "value", $( this ).data('svalue')+1 );
+					if($( this ).data('disabled'))
+						$( this ).slider( "option", "disabled", true );
 				},
 				slide: function(event, ui) { //When the slider is sliding
 					clearInterval($.setDimValue);
@@ -2140,13 +2171,16 @@ define(['app'], function (app) {
 					if (typeof obj != 'undefined') {
 						var img="";
 						var status="";
+						var imgname="dimmer48-o";
+						if (dtype=="relay")
+							imgname="Fireplace48_O"
 						if (fPercentage==0)
 						{
-							img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + idx + ',\'On\',RefreshLights,' + isProtected +');" class="lcursor" height="48" width="48">';
+							img='<img src="images/'+imgname+'ff.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + idx + ',\'On\',RefreshLights,' + isProtected +');" class="lcursor" height="48" width="48">';
 							status="Off";
 						}
 						else {
-							img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshLights,' + isProtected +');" class="lcursor" height="48" width="48">';
+							img='<img src="images/'+imgname+'n.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshLights,' + isProtected +');" class="lcursor" height="48" width="48">';
 							status="Set Level: " + fPercentage + " %";
 						}
 						if (dtype!="blinds") {
@@ -2158,7 +2192,14 @@ define(['app'], function (app) {
 							$(id + " #status").html(status);
 						}
 					}
-					$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
+					if (dtype!="relay")
+						$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
+				},
+				stop: function(event, ui) {
+					var idx=$( this ).data('idx');
+					var dtype=$( this ).slider( "option", "type");
+					if (dtype=="relay")
+						SetDimValue(idx,ui.value);
 				}
 			});
 			ResizeDimSliders();
