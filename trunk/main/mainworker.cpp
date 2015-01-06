@@ -1386,6 +1386,9 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeEvohomeWater:
 			DeviceRowIdx = decode_evohome2(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeEvohomeRelay:
+			DeviceRowIdx = decode_evohome3(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
 		case pTypeCamera:
 			DeviceRowIdx = decode_Camera1(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
@@ -4748,6 +4751,8 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
+	if(pEvo->EVOHOME2.updatetype==CEvohome::updBattery)
+		BatteryLevel=pEvo->EVOHOME2.battery_level;
 	
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -4798,49 +4803,52 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 		szUpdateStat="0.0;0.0;Auto";
 	}
 	
-	if(dType==pTypeEvohomeWater && pEvo->EVOHOME2.updatetype==CEvohome::updSetPoint)
-		sprintf(szTmp,"%s",pEvo->EVOHOME2.temperature?"On":"Off");
-	else
-		sprintf(szTmp,"%.1f",pEvo->EVOHOME2.temperature/100.0f);
-	
-	std::vector<std::string> strarray;
-	StringSplit(szUpdateStat, ";", strarray);
-	if (strarray.size() >= 3)
+	if(pEvo->EVOHOME2.updatetype!=CEvohome::updBattery)
 	{
-		if(pEvo->EVOHOME2.updatetype==CEvohome::updSetPoint)//SetPoint
-		{
-			strarray[1]=szTmp;
-			if(pEvo->EVOHOME2.mode<=CEvohome::zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
-			{
-				int nControllerMode=pEvo->EVOHOME2.controllermode;
-				if(dType==pTypeEvohomeWater && (nControllerMode==CEvohome::cmEvoHeatingOff || nControllerMode==CEvohome::cmEvoAutoWithEco || nControllerMode==CEvohome::cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
-					nControllerMode=CEvohome::cmEvoAuto;
-				if(pEvo->EVOHOME2.mode==CEvohome::zmAuto || nControllerMode==CEvohome::cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
-					strarray[2]=CEvohome::GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
-				else
-					strarray[2]=CEvohome::GetZoneModeName(pEvo->EVOHOME2.mode);
-				if(pEvo->EVOHOME2.mode==CEvohome::zmTmp)
-				{
-					std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
-					if(strarray.size()<4) //add or set until
-						strarray.push_back(szISODate);
-					else
-						strarray[3]=szISODate;
-				}
-				else
-					if(strarray.size()>=4) //remove until
-						strarray.resize(3);
-			}
-		}
-		else if(pEvo->EVOHOME2.updatetype==CEvohome::updOverride)
-		{
-			strarray[2]=CEvohome::GetZoneModeName(pEvo->EVOHOME2.mode);
-			if(strarray.size()>=4) //remove until
-				strarray.resize(3);
-		}
+		if(dType==pTypeEvohomeWater && pEvo->EVOHOME2.updatetype==CEvohome::updSetPoint)
+			sprintf(szTmp,"%s",pEvo->EVOHOME2.temperature?"On":"Off");
 		else
-			strarray[0]=szTmp;
-		szUpdateStat=boost::algorithm::join(strarray, ";");
+			sprintf(szTmp,"%.1f",pEvo->EVOHOME2.temperature/100.0f);
+		
+		std::vector<std::string> strarray;
+		StringSplit(szUpdateStat, ";", strarray);
+		if (strarray.size() >= 3)
+		{
+			if(pEvo->EVOHOME2.updatetype==CEvohome::updSetPoint)//SetPoint
+			{
+				strarray[1]=szTmp;
+				if(pEvo->EVOHOME2.mode<=CEvohome::zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
+				{
+					int nControllerMode=pEvo->EVOHOME2.controllermode;
+					if(dType==pTypeEvohomeWater && (nControllerMode==CEvohome::cmEvoHeatingOff || nControllerMode==CEvohome::cmEvoAutoWithEco || nControllerMode==CEvohome::cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
+						nControllerMode=CEvohome::cmEvoAuto;
+					if(pEvo->EVOHOME2.mode==CEvohome::zmAuto || nControllerMode==CEvohome::cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
+						strarray[2]=CEvohome::GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
+					else
+						strarray[2]=CEvohome::GetZoneModeName(pEvo->EVOHOME2.mode);
+					if(pEvo->EVOHOME2.mode==CEvohome::zmTmp)
+					{
+						std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+						if(strarray.size()<4) //add or set until
+							strarray.push_back(szISODate);
+						else
+							strarray[3]=szISODate;
+					}
+					else
+						if(strarray.size()>=4) //remove until
+							strarray.resize(3);
+				}
+			}
+			else if(pEvo->EVOHOME2.updatetype==CEvohome::updOverride)
+			{
+				strarray[2]=CEvohome::GetZoneModeName(pEvo->EVOHOME2.mode);
+				if(strarray.size()>=4) //remove until
+					strarray.resize(3);
+			}
+			else
+				strarray[0]=szTmp;
+			szUpdateStat=boost::algorithm::join(strarray, ";");
+		}
 	}
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, szDevID.c_str(),Unit,dType,dSubType,SignalLevel,BatteryLevel,cmnd,szUpdateStat.c_str(),m_LastDeviceName);
 	if (DevRowIdx == -1)
@@ -4930,6 +4938,92 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 
 		WriteMessageEnd();
 	}
+	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_evohome3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
+	unsigned char devType=pTypeEvohomeRelay;
+	unsigned char subType=pEvo->EVOHOME1.subtype;
+	std::stringstream szID;
+	int nDevID=(int)RFX_GETID3(pEvo->EVOHOME3.id1,pEvo->EVOHOME3.id2,pEvo->EVOHOME3.id3);
+	szID << std::hex << nDevID;
+	std::string ID(szID.str());
+	unsigned char Unit=pEvo->EVOHOME3.devno;
+	unsigned char cmnd=(pEvo->EVOHOME3.demand==200)?light1_sOn:light1_sOff;
+	sprintf(szTmp, "%d", pEvo->EVOHOME3.demand);
+	std::string szDemand(szTmp);
+	
+	if(Unit==0xFF && nDevID==0)
+		return -1;
+	//Get Device details (devno or devid not available)
+	bool bNewDev=false;
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << HwdID << ") AND (";
+	if(Unit==0xFF)
+		szQuery << "DeviceID == '" << ID << "')";
+	else
+		szQuery << "Unit == '" << (int)Unit << "')  AND (Type==" << (int)pEvo->EVOHOME3.type << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		if(pEvo->EVOHOME3.demand==0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
+			return -1;
+		unsigned char cur_cmnd=atoi(result[0][5].c_str());
+		if(Unit==0xFF)
+		{
+			Unit=atoi(result[0][2].c_str());
+			szDemand=result[0][6];
+			if(cmnd==cur_cmnd)
+				return -1;
+		}
+		else if(nDevID==0)
+		{
+			ID=result[0][1];
+			cmnd=cur_cmnd;
+			if(szDemand==result[0][6])
+				return -1;
+		}
+		else //we have all info (calls from frontend/API)
+		{
+			if(cmnd==cur_cmnd && szDemand==result[0][6])
+				return -1;
+		}
+	}
+	else
+	{
+		if(Unit==0xFF || nDevID==0)
+			return -1;
+		bNewDev=true;
+		if(pEvo->EVOHOME3.demand==0xFF)//0418 allows us to associate unit and deviceid but no state information other messages only contain one or the other
+			szDemand="0";
+	}
+
+	unsigned char SignalLevel=255;//Unknown
+	unsigned char BatteryLevel = 255;//Unknown
+
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szDemand.c_str(),m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
+	
+	if(bNewDev && (Unit==0xF9 || Unit==0xFA || Unit==0xFC))
+	{
+		if(Unit==0xF9)
+			m_LastDeviceName="CH Valve";
+		else if(Unit==0xFA)
+			m_LastDeviceName="DHW Valve";
+		else if(Unit==0xFC)
+			m_LastDeviceName="Boiler";
+		std::vector<std::vector<std::string> > result;
+		std::stringstream szQuery;
+		szQuery << "UPDATE DeviceStatus SET Name='" << m_LastDeviceName << "' WHERE (ID == " << DevRowIdx << ")";
+		result = m_sql.query(szQuery.str());
+	}
+	
+	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 	return DevRowIdx;
 }
 
@@ -8998,6 +9092,28 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.REMOTE.toggle=0;
 			lcmd.REMOTE.rssi=7;
 			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.REMOTE));
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
+		break;
+	case pTypeEvohomeRelay:
+		{
+			REVOBUF lcmd;
+			memset(&lcmd,0,sizeof(REVOBUF));
+			lcmd.EVOHOME3.len=sizeof(lcmd.EVOHOME3)-1;
+			lcmd.EVOHOME3.type=pTypeEvohomeRelay;
+			lcmd.EVOHOME3.subtype=sTypeEvohomeRelay;
+			RFX_SETID3(ID,lcmd.EVOHOME3.id1,lcmd.EVOHOME3.id2,lcmd.EVOHOME3.id3)
+			lcmd.EVOHOME3.devno=Unit;
+			if(switchcmd=="On")
+				lcmd.EVOHOME3.demand=200;
+			else
+				lcmd.EVOHOME3.demand=level;
+
+			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.EVOHOME3));
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);

@@ -1668,6 +1668,53 @@ define(['app'], function (app) {
 		  });
 		}
 		
+		BindEvohome= function(idx,name,devtype)
+		{
+			$.devIdx=idx;
+			if(devtype=="Relay")
+				ShowNotify($.i18n('Hold bind button on relay...'));
+			else
+				ShowNotify($.i18n('Binding Domoticz outdoor temperature device to evohome controller...'));
+
+			setTimeout(function() {
+				var bNewDevice = false;
+				var bIsUsed = false;
+				var Name = "";
+
+				$.ajax({
+				   url: "json.htm?type=bindevohome&idx=" + $.devIdx + "&type=" + devtype, 
+				   async: false, 
+				   dataType: 'json',
+				   success: function(data) {
+					if (typeof data.status != 'undefined') {
+					  bIsUsed=data.Used;
+					  if (data.status == 'OK')
+						bNewDevice=true;
+					  else
+						Name=data.Name;
+					}
+				   }
+				});
+				HideNotify();
+
+				setTimeout(function() {
+					if ((bNewDevice == true) && (bIsUsed == false))
+					{
+						if(devtype=="Relay")
+							ShowNotify($.i18n('Relay bound, and can be found in the devices tab!'));
+						else
+							ShowNotify($.i18n('Domoticz outdoor temperature device has been bound to evohome controller'));
+					}
+					else {
+						if (bIsUsed == true)
+							ShowNotify($.i18n('Already used by') + ':<br>"' + Name +'"', 3500, true);
+						else
+							ShowNotify($.i18n('Timeout...<br>Please try again!'), 2500, true);
+					}
+				}, 200);
+			}, 600);
+		}
+		
 		CreateEvohomeSensors= function(idx,name)
 		{
 			$.devIdx=idx;
@@ -1874,8 +1921,14 @@ define(['app'], function (app) {
 					else if (HwTypeStr.indexOf("Dummy") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">Create Virtual Sensors</span>';
 					}
-					else if (HwTypeStr.indexOf("Evohome") >= 0 && HwTypeStr.indexOf("script") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">Create Devices</span>';
+					else if (HwTypeStr.indexOf("Evohome") >= 0) {
+						if(HwTypeStr.indexOf("script") >= 0)
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">Create Devices</span>';
+						else
+						{
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohomeRelay(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohomeRelay(' + item.idx + ',\'' + item.Name + '\',\'OutdoorSensor\');">Outdoor Sensor</span>';
+						}
 					}
 					else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
 					{

@@ -26,6 +26,7 @@
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
 #include "../hardware/WOL.h"
+#include "../hardware/evohome.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/config.h"
@@ -372,6 +373,7 @@ namespace http {
 			RegisterRType("updatescene", boost::bind(&CWebServer::RType_UpdateScene, this, _1));
 			RegisterRType("createvirtualsensor", boost::bind(&CWebServer::RType_CreateVirtualSensor, this, _1));
 			RegisterRType("createevohomesensor", boost::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1));
+			RegisterRType("bindevohome", boost::bind(&CWebServer::RType_BindEvohome, this, _1));
 			RegisterRType("custom_light_icons", boost::bind(&CWebServer::RType_CustomLightIcons, this, _1));
 			RegisterRType("plans", boost::bind(&CWebServer::RType_Plans, this, _1));
 			RegisterRType("floorplans", boost::bind(&CWebServer::RType_FloorPlans, this, _1));
@@ -4092,6 +4094,7 @@ namespace http {
 						case pTypeLimitlessLights:
 						case pTypeSecurity1:
 						case pTypeEvohome:
+						case pTypeEvohomeRelay:	
 						case pTypeCurtain:
 						case pTypeBlinds:
 						case pTypeRFY:
@@ -4172,6 +4175,7 @@ namespace http {
 							case pTypeLimitlessLights:
 							case pTypeSecurity1:
 							case pTypeEvohome:
+							case pTypeEvohomeRelay:
 							case pTypeCurtain:
 							case pTypeBlinds:
 							case pTypeRFY:
@@ -5152,6 +5156,7 @@ namespace http {
 					(dType == pTypeLimitlessLights) ||
 					(dType == pTypeSecurity1) ||
 					(dType == pTypeEvohome) ||
+					(dType == pTypeEvohomeRelay) ||
 					(dType == pTypeCurtain) ||
 					(dType == pTypeBlinds) ||
 					(dType == pTypeRFY) ||
@@ -5964,6 +5969,7 @@ namespace http {
 					(dType != pTypeLimitlessLights) &&
 					(dType != pTypeSecurity1) &&
 					(dType != pTypeEvohome) &&
+					(dType != pTypeEvohomeRelay) &&
 					(dType != pTypeCurtain) &&
 					(dType != pTypeBlinds) &&
 					(dType != pTypeRFY) &&
@@ -8037,6 +8043,7 @@ namespace http {
 								(dType != pTypeLimitlessLights) &&
 								(dType != pTypeSecurity1) &&
 								(dType != pTypeEvohome) &&
+								(dType != pTypeEvohomeRelay) &&
 								(dType != pTypeCurtain) &&
 								(dType != pTypeBlinds) &&
 								(dType != pTypeRFY) &&
@@ -8479,7 +8486,7 @@ namespace http {
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = false;
 					}
-					else if (dType == pTypeEvohome)
+					else if (dType == pTypeEvohome || dType == pTypeEvohomeRelay)
 					{
 						std::string lstatus="";
 						int llevel=0;
@@ -8499,10 +8506,22 @@ namespace http {
 						root["result"][ii]["StrParam1"]=strParam1;
 						root["result"][ii]["StrParam2"]=strParam2;
 						root["result"][ii]["Protected"]=(iProtected!=0);
-
+						
 						sprintf(szData,"%s", lstatus.c_str());
 						root["result"][ii]["Data"]=szData;
 						root["result"][ii]["HaveTimeout"]=false;
+						
+						if (dType == pTypeEvohomeRelay)
+						{
+							root["result"][ii]["SwitchType"]="TPI";
+							root["result"][ii]["Level"] = llevel;
+							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
+							if(root["result"][ii]["Unit"]>100)
+								root["result"][ii]["Protected"]=true;
+							
+							sprintf(szData,"%s: %d", lstatus.c_str(), atoi(sValue.c_str()));
+							root["result"][ii]["Data"]=szData;
+						}
 					}
 					else if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
 					{
@@ -10043,7 +10062,7 @@ namespace http {
 				bCreated = true;
 				break;
 			case pTypeEvohomeZone://max of 12 zones
-				if (nDevCount>=12)
+				if (nDevCount>=CEvohome::m_nMaxZones)
 				{
 					root["status"] = "ERR";
 					root["message"] = "Maximum number of supported zones reached";
@@ -10068,6 +10087,85 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "CreateEvohomeSensor";
 			}
+		}
+		
+		void CWebServer::RType_BindEvohome(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string type = m_pWebEm->FindValue("type");
+			int HwdID = atoi(idx.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HwdID);
+			if (pHardware == NULL)
+				return;
+			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL)
+				return;
+			CEvohome *pEvoHW=(CEvohome*)pHardware;
+
+			int nDevNo=0;
+			int nID=0;
+			if(type=="Relay")
+			{
+				//get dev count
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				szQuery << "SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (Type==" << (int)pTypeEvohomeRelay << ") AND (Unit>=64) AND (Unit<96)";
+				result = m_sql.query(szQuery.str());
+				
+				int nDevCount=0;
+				if (result.size() > 0)
+				{
+					nDevCount = atol(result[0][0].c_str());
+				}
+				
+				if(nDevCount>=32)//arbitrary maximum
+				{
+					root["status"] = "ERR";
+					root["message"] = "Maximum number of relays reached";
+					return;
+				}
+				
+				nDevNo=nDevCount+64;
+				nID=pEvoHW->Bind(nDevNo,CEvohomeID::devRelay);
+			}
+			else if(type=="OutdoorSensor")
+				nID=pEvoHW->Bind(0,CEvohomeID::devSensor);
+			if(nID==0)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Timeout when binding device";
+				return;
+			}
+			
+			if(type=="Relay")
+			{
+				std::string devid(CEvohomeID::GetHexID(nID));
+				
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				szQuery << "SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (DeviceID==" << devid << ")";
+				result = m_sql.query(szQuery.str());
+				if (result.size() > 0)
+				{
+					root["status"] = "ERR";
+					root["message"] = "Device already exists";
+					root["Used"] = true;
+					root["Name"] = result[0][2];
+					return;
+				}
+				
+				std::string devname;
+				m_sql.UpdateValue(HwdID, devid.c_str(), nDevNo, pTypeEvohomeRelay, sTypeEvohomeRelay, 10, 255, 0, "Off", devname);
+				pEvoHW->SetRelayHeatDemand(nDevNo,0);//initialise heat demand
+			}
+			root["status"] = "OK";
+			root["title"] = "BindEvohome";
+			root["Used"] = false;
 		}
 
 		void CWebServer::RType_CreateVirtualSensor(Json::Value &root)
@@ -12678,6 +12776,7 @@ namespace http {
 				(dType != pTypeLimitlessLights) &&
 				(dType != pTypeSecurity1) &&
 				(dType != pTypeEvohome) &&
+				(dType != pTypeEvohomeRelay) &&
 				(dType != pTypeCurtain) &&
 				(dType != pTypeBlinds) &&
 				(dType != pTypeRFY) &&

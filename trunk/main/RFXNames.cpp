@@ -374,6 +374,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeEvohome, "Heating" , "evohome" },
 		{ pTypeEvohomeZone, "Heating" , "evohome" },
 		{ pTypeEvohomeWater, "Heating" , "evohome" },
+		{ pTypeEvohomeRelay, "Heating" , "evohome" },
 		{  0,NULL,NULL }
 	};
 	if (snum==1)
@@ -597,6 +598,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeEvohome, sTypeEvohome, "Evohome" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Zone" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Hot Water" },
+		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Relay" },
 
 		{  0,0,NULL }
 	};
@@ -816,6 +818,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohome, sTypeEvohome, "Status" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
+		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
 
 		{  0,0,NULL }
 	};
@@ -1493,6 +1496,20 @@ void GetLightStatus(
 	case pTypeEvohome:
 		llevel=0;
 		lstatus=CEvohome::GetWebAPIModeName(nValue);
+		break;
+	case pTypeEvohomeRelay:
+		bHaveDimmer=true;
+		maxDimLevel=200;
+		llevel=int(0.5f*atof(sValue.c_str()));;
+		switch (nValue)
+		{
+		case light1_sOff:
+			lstatus="Off";
+			break;
+		case light1_sOn:
+			lstatus="On";
+			break;
+		}
 		break;
 	}
 }

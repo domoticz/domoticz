@@ -1960,6 +1960,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeLimitlessLights:
 	case pTypeSecurity1:
 	case pTypeEvohome:
+	case pTypeEvohomeRelay:
 	case pTypeCurtain:
 	case pTypeBlinds:
 	case pTypeRFY:

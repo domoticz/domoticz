@@ -171,7 +171,7 @@ define(['app'], function (app) {
 				$.each(data.result, function(i,item){
 							//Lights
 							var isdimmer=false;
-							if (((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 2') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0)||(item.SubType=="Smartwares Mode"))&&(item.Favorite!=0))
+							if (((item.Type.indexOf('Light') == 0)||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 2') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0)||(item.SubType=="Smartwares Mode")||(item.SubType=="Relay"))&&(item.Favorite!=0))
 							{
 								id="#dashcontent #light_" + item.idx;
 								var obj=$(id);
@@ -320,6 +320,22 @@ define(['app'], function (app) {
 														status=
 															'<label id=\"statustext\"><button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.i18n("On") +'</button></label> ' +
 															'<label id=\"img\"><button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.i18n("Off") +'</button></label>';
+											}
+										}
+										else if (item.SwitchType == "TPI") {
+											var RO=(item.Unit>100)?true:false;
+											isdimmer=true;
+											var img="";
+											if (item.Status == 'On')
+											{
+														status=
+															'<label id=\"statustext\"><button class="btn btn-mini btn-info" type="button" '+(RO?'disabled':'')+' onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.i18n("On") +'</button></label> ' +
+															'<label id=\"img\"><button class="btn btn-mini" type="button" '+(RO?'disabled':'')+' onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.i18n("Off") +'</button></label>';
+											}
+											else {
+														status=
+															'<label id=\"statustext\"><button class="btn btn-mini" type="button" '+(RO?'disabled':'')+' onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.i18n("On") +'</button></label> ' +
+															'<label id=\"img\"><button class="btn btn-mini btn-info" type="button" '+(RO?'disabled':'')+' onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.i18n("Off") +'</button></label>';
 											}
 										}
 										else if (item.SwitchType == "Dusk Sensor") {
@@ -511,6 +527,18 @@ define(['app'], function (app) {
 											}
 											else {
 														img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+											}
+										}
+										else if (item.SwitchType == "TPI") {
+											var RO=(item.Unit>100)?true:false;
+											isdimmer=true;
+											if (
+													(item.Status == 'On')
+												 ) {
+														img='<img src="images/Fireplace48_On.png" title="' + $.i18n(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor"') + ' height="40" width="40">';
+											}
+											else {
+														img='<img src="images/Fireplace48_Off.png" title="' + $.i18n(RO?"Off":"Turn On") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor"') + ' height="40" width="40">';
 											}
 										}
 										else if (item.SwitchType == "Dusk Sensor") {
@@ -1001,33 +1029,35 @@ define(['app'], function (app) {
 										var img="";
 										if (item.SubType=="Evohome") {
 											img+=EvohomeImg(item,'evomobile');
-										}
-										if ($(id + " #img").html()!=img) {
-											$(id + " #img").html(img);
+											
+											if ($(id + " #img").html()!=img) {
+												$(id + " #img").html(img);
+											}
 										}
 									}
 									else {
 										var img="";
 										if (item.SubType=="Evohome") {
 											img=EvohomeImg(item,'evomini');
-										}
-										var nbackcolor="#D4E1EE";
-										if (item.Protected==true) {
-											nbackcolor="#A4B1EE";
-										}
-										var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
-										if (obackcolor!=nbackcolor) {
-											$(id + " #name").css( "background-color", nbackcolor );
-										}
 										
-										if ($(id + " #img").html()!=img) {
-											$(id + " #img").html(img);
-										}
-										if ($(id + " #status").html()!=TranslateStatus(EvoDisplayTextMode(item.Status))) {
-											$(id + " #status").html(TranslateStatus(EvoDisplayTextMode(item.Status)));
-										}
-										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-											$(id + " #lastupdate").html(item.LastUpdate);
+											var nbackcolor="#D4E1EE";
+											if (item.Protected==true) {
+												nbackcolor="#A4B1EE";
+											}
+											var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+											if (obackcolor!=nbackcolor) {
+												$(id + " #name").css( "background-color", nbackcolor );
+											}
+											
+											if ($(id + " #img").html()!=img) {
+												$(id + " #img").html(img);
+											}
+											if ($(id + " #status").html()!=TranslateStatus(EvoDisplayTextMode(item.Status))) {
+												$(id + " #status").html(TranslateStatus(EvoDisplayTextMode(item.Status)));
+											}
+											if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+												$(id + " #lastupdate").html(item.LastUpdate);
+											}
 										}
 									}
 								}
@@ -1504,7 +1534,7 @@ define(['app'], function (app) {
 				$.each(data.result, function(i,item){
 				  if (
 						(item.Favorite!=0)&&
-						((item.Type.indexOf('Light') == 0)||(item.SubType=="Smartwares Mode")||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 2') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0)||((item.Type.indexOf('Value') == 0) && (typeof item.SwitchType != 'undefined')))
+						((item.Type.indexOf('Light') == 0)||(item.SubType=="Smartwares Mode")||(item.Type.indexOf('Blind') == 0)||(item.Type.indexOf('Curtain') == 0)||(item.Type.indexOf('Thermostat 2') == 0)||(item.Type.indexOf('Thermostat 3') == 0)||(item.Type.indexOf('Chime') == 0)||(item.Type.indexOf('RFY') == 0)||(item.SubType=="Relay")||((item.Type.indexOf('Value') == 0) && (typeof item.SwitchType != 'undefined')))
 					  )
 				  {
 					totdevices+=1;
@@ -1693,6 +1723,21 @@ define(['app'], function (app) {
 															'<label id=\"img\"><button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.i18n("Off") +'</button></label>';
 											}
 										}
+									else if (item.SwitchType == "TPI") {
+										var img="";
+										var RO=(item.Unit>100)?true:false;
+										if (item.Status == 'On')
+										{
+													status=
+														'<label id=\"statustext\"><button class="btn btn-mini btn-info" type="button" '+(RO?'disabled':'')+' onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.i18n("On") +'</button></label> ' +
+														'<label id=\"img\"><button class="btn btn-mini" type="button" '+(RO?'disabled':'')+' onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.i18n("Off") +'</button></label>';
+										}
+										else {
+													status=
+														'<label id=\"statustext\"><button class="btn btn-mini" type="button" '+(RO?'disabled':'')+' onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.i18n("On") +'</button></label> ' +
+														'<label id=\"img\"><button class="btn btn-mini btn-info" type="button" '+(RO?'disabled':'')+' onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.i18n("Off") +'</button></label>';
+										}
+									}
 									else if (item.SwitchType == "Dusk Sensor") {
 										if (item.Status == 'On')
 										{
@@ -1750,6 +1795,17 @@ define(['app'], function (app) {
 										xhtm+='<tr>';
 										xhtm+='<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
 										xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidernorm" id="light_' + item.idx +'_slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+										xhtm+='</td>';
+										xhtm+='</tr>';
+									}
+									else if (item.SwitchType == "TPI") {
+										var RO=(item.Unit>100)?true:false;
+										xhtm+='<tr>';
+										xhtm+='<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
+										xhtm+='<div style="margin-top: -11px; margin-left: 24px;" class="dimslider dimslidernorm" id="light_' + item.idx +'_slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
+										if(item.Unit>100)
+											xhtm+=' data-disabled="true"';
+										xhtm+='></div>';
 										xhtm+='</td>';
 										xhtm+='</tr>';
 									}
@@ -1915,6 +1971,16 @@ define(['app'], function (app) {
 													xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
 										}
 									}
+									else if (item.SwitchType == "TPI") {
+										var RO=(item.Unit>100)?true:false;
+										if (item.Status == 'On')
+										{
+													xhtm+='\t      <td id="img"><img src="images/Fireplace48_On.png" title="' + $.i18n(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor"') + ' height="40" width="40"></td>\n';
+										}
+										else {
+													xhtm+='\t      <td id="img"><img src="images/Fireplace48_Off.png" title="' + $.i18n(RO?"Off":"Turn On") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor"') + ' height="40" width="40"></td>\n';
+										}
+									}
 									else if (item.SwitchType == "Dusk Sensor") {
 										if (item.Status == 'On')
 										{
@@ -1968,6 +2034,12 @@ define(['app'], function (app) {
 												'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 									if (item.SwitchType == "Dimmer") {
 										xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
+									}
+									else if (item.SwitchType == "TPI") {
+										xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
+										if(item.Unit>100)
+											xhtm+=' data-disabled="true"';
+										xhtm+='></div></td>';
 									}
 									else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
 										xhtm+='<td><div style="margin-left:94px; margin-top: 0.2em;" class="dimslider dimslidersmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
@@ -3038,6 +3110,8 @@ define(['app'], function (app) {
 					$( this ).slider( "option", "type", $( this ).data('type'));
 					$( this ).slider( "option", "isprotected", $( this ).data('isprotected'));
 					$( this ).slider( "value", $( this ).data('svalue')+1 );
+					if($( this ).data('disabled'))
+						$( this ).slider( "option", "disabled", true );
 				},
 				slide: function(event, ui) { //When the slider is sliding
 					clearInterval($.setDimValue);
@@ -3075,13 +3149,16 @@ define(['app'], function (app) {
 							}
 						}
 						else {
+							var imgname="dimmer48-o";
+							if (dtype=="relay")
+								imgname="Fireplace48_O"
 							if (fPercentage==0)
 							{
-								img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + idx + ',\'On\',RefreshFavorites,' + isProtected +');" class="lcursor" height="40" width="40">';
+								img='<img src="images/'+imgname+'ff.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + idx + ',\'On\',RefreshFavorites,' + isProtected +');" class="lcursor" height="40" width="40">';
 								status="Off";
 							}
 							else {
-								img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites,' + isProtected +');" class="lcursor" height="40" width="40">';
+								img='<img src="images/'+imgname+'n.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites,' + isProtected +');" class="lcursor" height="40" width="40">';
 								status='' + $.i18n("Set Level") +': ' + fPercentage + " %";
 							}
 							if (dtype!="blinds") {
@@ -3094,7 +3171,14 @@ define(['app'], function (app) {
 							}
 						}
 					}
-					$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
+					if (dtype!="relay")
+						$.setDimValue = setInterval(function() { SetDimValue(idx,ui.value); }, 500);
+				},
+				stop: function(event, ui) {
+					var idx=$( this ).data('idx');
+					var dtype=$( this ).slider( "option", "type");
+					if (dtype=="relay")
+						SetDimValue(idx,ui.value);
 				}
 			});
 			ResizeDimSliders();
