@@ -7,6 +7,7 @@
 		<Product type="1e12" id="015e" name="CT30 Thermostat" config="2gig/ct30.xml"/>
 		<Product type="6401" id="0105" name="CT100 Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6401" id="0107" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
+		<Product type="6501" id="000c" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002a" name="3e Technologies">
 	</Manufacturer>
@@ -41,6 +42,7 @@
 		<Product type="0002" id="001d" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
 		<Product type="0002" id="0005" name="Multi Sensor" config="aeon_labs/alms.xml"/>
 		<Product type="0003" id="0006" name="Smart Energy Switch" config="aeon_labs/ses.xml"/>
+		<Product type="0003" id="004b" name="Smart Energy Switch v2" config="aeon_labs/ses2.xml"/>
 		<Product type="0001" id="0007" name="Z-Stick S2 Lite"/>
 		<Product type="0003" id="0008" name="Smart Energy Illuminator"/>
 		<Product type="0002" id="0009" name="Home Energy Meter" config="aeon_labs/hem.xml"/>
@@ -199,7 +201,7 @@
 		<Product type="4457" id="3034" name="LRM-AS Wall Dimmer 500W" config="evolve/lrm-as.xml"/>
                 <Product type="5246" id="3133" name="LFM-20 Fixture Module"/>
                 <Product type="5257" id="3533" name="LSM-15 Wall Switch" config="evolve/lsm-15.xml"/>
-		<Product type="5457" id="3033" name="LTM-5 Wall Switch Transmitter"/>
+		<Product type="5457" id="3033" name="LTM-5 Wall Switch Transmitter" config="evolve/ltm-5.xml" />
 	</Manufacturer>
 	<Manufacturer id="0036" name="Exceptional Innv">
 	</Manufacturer>

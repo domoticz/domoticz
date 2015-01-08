@@ -155,6 +155,58 @@ double CalculateAltitudeFromPressure(double pressure)
 	return altitude;
 }
 
+/**************************************************************************/
+/*!
+Calculates the altitude (in meters) from the specified atmospheric
+pressure (in hPa), sea-level pressure (in hPa), and temperature (in °C)
+@param seaLevel Sea-level pressure in hPa
+@param atmospheric Atmospheric pressure in hPa
+@param temp Temperature in degrees Celsius
+*/
+/**************************************************************************/
+float pressureToAltitude(float seaLevel, float atmospheric, float temp)
+{
+	/* Hyposometric formula: */
+	/* */
+	/* ((P0/P)^(1/5.257) - 1) * (T + 273.15) */
+	/* h = ------------------------------------- */
+	/* 0.0065 */
+	/* */
+	/* where: h = height (in meters) */
+	/* P0 = sea-level pressure (in hPa) */
+	/* P = atmospheric pressure (in hPa) */
+	/* T = temperature (in °C) */
+	return (((float)pow((seaLevel / atmospheric), 0.190223F) - 1.0F)
+		* (temp + 273.15F)) / 0.0065F;
+}
+
+/**************************************************************************/
+/*!
+Calculates the sea-level pressure (in hPa) based on the current
+altitude (in meters), atmospheric pressure (in hPa), and temperature
+(in °C)
+@param altitude altitude in meters
+@param atmospheric Atmospheric pressure in hPa
+@param temp Temperature in degrees Celsius
+*/
+/**************************************************************************/
+float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp)
+{
+	/* Sea-level pressure: */
+	/* */
+	/* 0.0065*h */
+	/* P0 = P * (1 - ----------------- ) ^ -5.257 */
+	/* T+0.0065*h+273.15 */
+	/* */
+	/* where: P0 = sea-level pressure (in hPa) */
+	/* P = atmospheric pressure (in hPa) */
+	/* h = altitude (in meters) */
+	/* T = Temperature (in °C) */
+	return atmospheric * (float)pow((1.0F - (0.0065F * altitude) /
+		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
+}
+
+
 std::string &stdstring_ltrim(std::string &s)
 {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
