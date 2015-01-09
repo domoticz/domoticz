@@ -1236,13 +1236,13 @@ define(['app'], function (app) {
 				 dataType: 'json',
 				 success: function(data) {
 					if (data.status == 'OK') {
-						var topologywindow = "<center>ZWave Network Information</center><p><p><iframe src='../zwavetopology.html?hwid="+$.devIdx+"' name='topoframe' frameBorder='0' height='"+window.innerHeight*0.7+"' width='100%'/>";
+						var topologywindow = '<center><span data-i18n="ZWave Network Information">ZWave Network Information</span></center><p><p><iframe src="../zwavetopology.html?hwid='+$.devIdx+'" name="topoframe" frameBorder="0" height="'+window.innerHeight*0.7+'" width="100%"/>';
 						noty({
 							text: topologywindow,
 							type: 'alert',
 							modal: true,
 							buttons: [
-								{addClass: 'btn btn-primary', text: 'Close', onClick: function($noty) 
+								{addClass: 'btn btn-primary', text: $.i18n("Close"), onClick: function($noty) 
 									{$noty.close();
 													
 									}
@@ -1882,20 +1882,20 @@ define(['app'], function (app) {
 						}
 					}
 
-					var enabledstr="No";
+					var enabledstr=$.i18n("No");
 					if (item.Enabled=="true") {
-						enabledstr="Yes";
+						enabledstr=$.i18n("Yes");
 					}
 					if (HwTypeStr.indexOf("RFXCOM") >= 0)
 					{
 						HwTypeStr+='<br>Firmware version: ' + item.Mode2;
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Set Mode</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Set Mode</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Limitless") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Set Mode</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenZWave") >= 0) {
 						if (typeof item.NodesQueried != 'undefined') {
@@ -1903,27 +1903,27 @@ define(['app'], function (app) {
 							if (item.NodesQueried != true) {
 								lblStatus="label-important";
 							}
-							HwTypeStr+=' <span class="label ' + lblStatus + ' lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
+							HwTypeStr+=' <span class="label ' + lblStatus + ' lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
 						}
 					}
 					else if (HwTypeStr.indexOf("SBFSpot") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Wake-on-LAN") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Setup</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Dummy") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">Create Virtual Sensors</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.i18n("Create Virtual Sensors") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Evohome") >= 0) {
 						if(HwTypeStr.indexOf("script") >= 0)
-							HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">Create Devices</span>';
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">' + $.i18n("Create Devices") + '</span>';
 						else
 						{
 							HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohomeRelay(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
