@@ -16,3 +16,7 @@ background-image: -webkit-linear-gradient(bottom, #120B8F 0%, #4E89E6 50%, #120B
 background-image: -ms-linear-gradient(bottom, #120B8F 0%, #4E89E6 50%, #120B8F 100%);
 background-image: linear-gradient(to bottom, #120B8F 0%, #4E89E6 50%, #120B8F 100%)
 }
+
+.warning-text {
+	color: yellow;
+}

@@ -255,7 +255,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 								isloggedin: false,
 								rights: -1
 						};
-						permissions.setPermissions(permissionList);					
+						permissions.setPermissions(permissionList);
 						$location.path('/Login');
 						return $q.reject(response);
 					}
@@ -292,7 +292,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	} ]);
 
 	
-	app.run(function($rootScope, $location, $route, $http, permissions) {
+	app.run(function($rootScope, $location, $window, $route, $http, permissions) {
 		var permissionList = {
 				isloggedin: false,
 				rights: -1
@@ -346,7 +346,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				//}
 				
 				if ( (!permissions.isAuthenticated()) && (next.templateUrl!="views/login.html") ) {
-					$location.path('/Login');
+					//$location.path('/Login');
+					$window.location = '/#Login';
+					$window.location.reload();
 					return;
 				}
 				else if ( (permissions.isAuthenticated()) && (next.templateUrl=="views/login.html") ) {

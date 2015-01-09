@@ -27,10 +27,13 @@ portions of this file.
 */
 
 /*
+SDK version 7.01
+	SelectPlus200689103 White Chime added
+
 SDK version 7.00
 	TEMP7 - TSS330 added and TH9 – TSS320 added
 	BlindsT8 = Chamberlain CS4330CN added
-	SelectPlus Chime added
+	SelectPlus200689101 White Chime added
 	Interface command - start receiver added
 	IRESPONSE size increased to 0x14
 
@@ -464,6 +467,7 @@ SDK version 4.9
 #define sTypeByronSX 0x0
 #define sTypeByronMP001 0x1
 #define sTypeSelectPlus 0x2
+#define sTypeSelectPlus3 0x3
 #define chime_sound0 0x1
 #define chime_sound1 0x3
 #define chime_sound2 0x5

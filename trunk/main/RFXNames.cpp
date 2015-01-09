@@ -473,6 +473,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeTRC02_2, "TRC02_2 (RGB)" },
 		{ pTypeLighting5, sTypeAoke, "Aoke" },
 		{ pTypeLighting5, sTypeEurodomest, "Eurodomest" },
+		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo Appliance" },
+		
 
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
@@ -581,6 +583,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeChime, sTypeByronSX, "ByronSX" },
 		{ pTypeChime, sTypeByronMP001, "Byron MP001" },
 		{ pTypeChime, sTypeSelectPlus, "SelectPlus" },
+		{ pTypeChime, sTypeSelectPlus3, "SelectPlus3" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
@@ -695,6 +698,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeTRC02_2, "Status" },
 		{ pTypeLighting5, sTypeAoke, "Status" },
 		{ pTypeLighting5, sTypeEurodomest, "Status" },
+		{ pTypeLighting5, sTypeLivoloAppliance, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -802,6 +806,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeChime, sTypeByronSX, "Status" },
 		{ pTypeChime, sTypeByronMP001, "Status" },
 		{ pTypeChime, sTypeSelectPlus, "Status" },
+		{ pTypeChime, sTypeSelectPlus3, "Status" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Temperature,Total rain" },
 
@@ -1159,6 +1164,18 @@ void GetLightStatus(
 				break;
 			case light5_sLivoloGang3Toggle:
 				lstatus="Set Level";
+				break;
+			}
+			break;
+		case sTypeLivoloAppliance:
+			bHaveGroupCmd = true;
+			switch (nValue)
+			{
+			case light5_sLivoloAllOff:
+				lstatus = "Off";
+				break;
+			case light5_sLivoloGang1Toggle:
+				lstatus = "On";
 				break;
 			}
 			break;
