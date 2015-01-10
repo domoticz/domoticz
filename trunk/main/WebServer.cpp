@@ -14708,44 +14708,50 @@ namespace http {
 									root["resultprev"][iPrev]["ta"] = ta;
 								}
 							}
-							//No chill/baro/hum for now
-							/*
 							if (
-							((dType==pTypeWIND)&&(dSubType==sTypeWIND4))||
-							((dType==pTypeWIND)&&(dSubType==sTypeWINDNoTemp))
-							)
+								((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
+								((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp))
+								)
 							{
-							double ch=ConvertTemperature(atof(sd[3].c_str()),tempsign);
-							double cm=ConvertTemperature(atof(sd[2].c_str()),tempsign);
-							root["resultprev"][iPrev]["ch"]=ch;
-							root["resultprev"][iPrev]["cm"]=cm;
+								double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
+								double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+								root["resultprev"][iPrev]["ch"] = ch;
+								root["resultprev"][iPrev]["cm"] = cm;
 							}
-							if ((dType==pTypeHUM)||(dType==pTypeTEMP_HUM)||(dType==pTypeTEMP_HUM_BARO))
+							if ((dType == pTypeHUM) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO))
 							{
-							root["resultprev"][iPrev]["hu"]=sd[4];
+								root["resultprev"][iPrev]["hu"] = sd[4];
 							}
 							if (
-							(dType==pTypeTEMP_HUM_BARO)||
-							(dType==pTypeTEMP_BARO)
-							)
+								(dType == pTypeTEMP_HUM_BARO) ||
+								(dType == pTypeTEMP_BARO)
+								)
 							{
-							if (dType==pTypeTEMP_HUM_BARO)
+								if (dType == pTypeTEMP_HUM_BARO)
+								{
+									if (dSubType == sTypeTHBFloat)
+									{
+										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+										root["resultprev"][iPrev]["ba"] = szTmp;
+									}
+									else
+										root["resultprev"][iPrev]["ba"] = sd[5];
+								}
+								else if (dType == pTypeTEMP_BARO)
+								{
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									root["resultprev"][iPrev]["ba"] = szTmp;
+								}
+							}
+							if ((dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater))
 							{
-							if (dSubType==sTypeTHBFloat)
-							{
-							sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
-							root["resultprev"][iPrev]["ba"]=szTmp;
+								double sx = ConvertTemperature(atof(sd[8].c_str()), tempsign);
+								double sm = ConvertTemperature(atof(sd[7].c_str()), tempsign);
+								double se = ConvertTemperature(atof(sd[9].c_str()), tempsign);
+								root["resultprev"][iPrev]["se"] = se;
+								root["resultprev"][iPrev]["sm"] = sm;
+								root["resultprev"][iPrev]["sx"] = sx;
 							}
-							else
-							root["resultprev"][iPrev]["ba"]=sd[5];
-							}
-							else if (dType==pTypeTEMP_BARO)
-							{
-							sprintf(szTmp,"%.1f",atof(sd[5].c_str())/10.0f);
-							root["resultprev"][iPrev]["ba"]=szTmp;
-							}
-							}
-							*/
 							iPrev++;
 						}
 					}

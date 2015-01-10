@@ -2463,3 +2463,30 @@ span.evomobile .ui-popup {
 .warning-text {
 	color: red;
 }
+
+.sub-tabs {
+	border-bottom: 0px solid #ffff00;
+	margin: 0 0 0 0;
+}
+
+.sub-tabs > li > a {
+	color: #555555;
+	cursor: default;
+	background-color: #ffffff;
+	border: 1px solid #ddd;
+	border-bottom-color: transparent;
+}
+
+.sub-tabs > .active > a {
+	color: #555555;
+	cursor: default;
+	background-color: #ccc;
+	border: 1px solid #ddd;
+	border-bottom-color: transparent;
+}
+
+.sub-tabs-apply {
+	color: #fff!important;
+	border: 1px solid #ff0000!important;
+}
+
