@@ -498,6 +498,15 @@ const char *sqlCreateFloorplanOrderTrigger =
 	"	UPDATE Floorplans SET [Order] = (SELECT MAX([Order]) FROM Floorplans)+1 WHERE Floorplans.ID = NEW.ID;\n"
 	"END;\n";
 
+const char *sqlCreateCustomImages =
+	"CREATE TABLE IF NOT EXISTS [CustomImages]("
+	"	[Name] VARCHAR(80) NOT NULL, "
+	"	[Description] VARCHAR(80) NOT NULL, "
+	"	[IconSmall] BLOB, "
+	"	[ImageOn] BLOB, "
+	"	[ImageOff] BLOB);";
+
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -613,6 +622,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateUserVariables);
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
+	query(sqlCreateCustomImages);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{

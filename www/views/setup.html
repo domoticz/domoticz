@@ -79,74 +79,85 @@
 							</table>
 							<span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span data-i18n="Here"></span></a><br>
 							<br>
-							<h2><span data-i18n="Dashboard"></span>:</h2>
-							<table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Mode"></span>: </label></td>
-								<td><select id="combosdashtype" name="DashboardType" style="width:120px" class="combobox ui-corner-all">
-									<option data-i18n="Normal" value="0">Normal</option>
-									<option data-i18n="Compact" value="1">Compact</option>
-									<option data-i18n="Mobile" value="2">Mobile</option>
-									<option data-i18n="Floorplan" value="3">Floorplan</option>
-								</select></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"/> <span data-i18n="AllowWidgetOrdering">Allow Widget Re-Order</span></td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Dashboard"></span>:</h2>
+									<table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Mode"></span>: </label></td>
+										<td><select id="combosdashtype" name="DashboardType" style="width:120px" class="combobox ui-corner-all">
+											<option data-i18n="Normal" value="0">Normal</option>
+											<option data-i18n="Compact" value="1">Compact</option>
+											<option data-i18n="Mobile" value="2">Mobile</option>
+											<option data-i18n="Floorplan" value="3">Floorplan</option>
+										</select></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"/> <span data-i18n="AllowWidgetOrdering">Allow Widget Re-Order</span></td>
+									</tr>
+									</table>
+								</div>
+								<div class="span3">
+									<h2><span data-i18n="Mobile"></span>:</h2>
+									<table class="display" id="mobilemodetable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Mode"></span>: </label></td>
+										<td><select id="combosmobiletype" name="MobileType" style="width:120px" class="combobox ui-corner-all">
+											<option data-i18n="Mobile" value="0">Mobile</option>
+											<option data-i18n="Dashboard" value="1">Dashboard</option>
+										</select></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="Mobile"></span>:</h2>
-							<table class="display" id="mobilemodetable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Mode"></span>: </label></td>
-								<td><select id="combosmobiletype" name="MobileType" style="width:120px" class="combobox ui-corner-all">
-									<option data-i18n="Mobile" value="0">Mobile</option>
-									<option data-i18n="Dashboard" value="1">Dashboard</option>
-								</select></td>
-							</tr>
-							</table>
-							<br>
-							<h2><span data-i18n="WebsiteProtection"></span>:</h2>
-							<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Username"></span>: </label></td>
-								<td><input type="input" id="WebUserName" name="WebUserName" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
-								<td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Authentication"></span>: </label></td>
-								<td><select id="comboauthmethod" name="AuthenticationMethod" style="width:140px" class="combobox ui-corner-all">
-									<option data-i18n="Login Page" value="0">Login Page</option>
-									<option data-i18n="Basic-Auth" value="1">Basic-Auth</option>
-								</select></td>
-							</tr>
-							<tr style="display:none;">
-								<td align="right" style="width:60px"><label><span data-i18n="Guest User">Guest User</span>: </label></td>
-								<td><select id="comboguestuser" name="GuestUser" style="width:140px" class="combobox ui-corner-all">
-									<option data-i18n="None" value="0">None</option>
-								</select></td>
-							</tr>
-							</table>
-							<br>
-							<h2><span data-i18n="SecurityPanel"></span>:</h2>
-							<table class="display" id="sectable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
-								<td><input type="password" id="SecPassword" name="SecPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Delay">Delay</span>: </label></td>
-								<td>
-									<input type="input" id="SecOnDelay" name="SecOnDelay" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;
-									<span data-i18n="(seconds, 0=no delay)"></span>
-								</td>
-							</tr>
-							</table>
-							<br>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="WebsiteProtection"></span>:</h2>
+									<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:120px"><label><span data-i18n="Username"></span>: </label></td>
+										<td><input type="input" id="WebUserName" name="WebUserName" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Password"></span>: </label></td>
+										<td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Authentication"></span>: </label></td>
+										<td><select id="comboauthmethod" name="AuthenticationMethod" style="width:200px" class="combobox ui-corner-all">
+											<option data-i18n="Login Page" value="0">Login Page</option>
+											<option data-i18n="Basic-Auth" value="1">Basic-Auth</option>
+										</select></td>
+									</tr>
+									<tr style="display:none;">
+										<td align="right" style="width:60px"><label><span data-i18n="Guest User">Guest User</span>: </label></td>
+										<td><select id="comboguestuser" name="GuestUser" style="width:140px" class="combobox ui-corner-all">
+											<option data-i18n="None" value="0">None</option>
+										</select></td>
+									</tr>
+									</table>
+									<br>
+								</div>
+								<div class="span4">
+									<h2><span data-i18n="SecurityPanel"></span>:</h2>
+									<table class="display" id="sectable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
+										<td><input type="password" id="SecPassword" name="SecPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Delay">Delay</span>: </label></td>
+										<td>
+											<input type="input" id="SecOnDelay" name="SecOnDelay" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;
+											<span data-i18n="(seconds, 0=no delay)"></span>
+										</td>
+									</tr>
+									</table>
+								</div>
+								<br>
+							</div>
 							<h2><span data-i18n="Light/Switch Protection">Light/Switch Protection</span>:</h2>
 							<table class="display" id="protectiontable" border="0" cellpadding="0" cellspacing="0">
 							<tr>
@@ -155,50 +166,62 @@
 							</tr>
 							</table>
 							<br>
-							<h2><span data-i18n="LocalNetworks(no_username/password)"></span>:</h2>
-							<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Networks"></span>: </label></td>
-								<td>
-									<input type="input" id="WebLocalNetworks" name="WebLocalNetworks" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
-									<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.*;192.168.0.*)
-								</td>
-							</tr>
-							</table>
-							<br>
-							<h2><span data-i18n="RemoteSharedPortForDomoticzClients"></span>:</h2>
-							<table class="display" id="remotesharedtable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Port"></span>: </label></td>
-								<td><input type="input" id="RemoteSharedPort" name="RemoteSharedPort" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							</table>
-							<br>
-							<div id="SoftwareUpdates">
-								<h2><span data-i18n="SoftwareUpdates"></span>:</h2>
-								<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="LocalNetworks(no_username/password)"></span>:</h2>
+									<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td colspan="2"><input type="checkbox" id="checkforupdates" name="checkforupdates"/> <span data-i18n="CheckForSoftwareUpdates"></span></td>
+										<td align="right" style="width:60px"><label><span data-i18n="Networks"></span>: </label></td>
+										<td>
+											<input type="input" id="WebLocalNetworks" name="WebLocalNetworks" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+											<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.*;192.168.0.*)
+										</td>
 									</tr>
+									</table>
+									<br>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="RemoteSharedPortForDomoticzClients"></span>:</h2>
+									<table class="display" id="remotesharedtable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:130px"><label><span data-i18n="Release Channel">Release Channel</span>: </label></td>
-										<td><select id="comboReleaseChannel" name="ReleaseChannel" style="width:140px" class="combobox ui-corner-all">
-											<option data-i18n="Stable" value="0">Stable</option>
-											<option data-i18n="Beta" value="1">Beta</option>
-										</select></td>
+										<td align="right" style="width:60px"><label><span data-i18n="Port"></span>: </label></td>
+										<td><input type="input" id="RemoteSharedPort" name="RemoteSharedPort" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 									</tr>
-								</table>
+									</table>
+									<br>
+								</div>
 							</div>
-							<br>
-							<div id="AutoBackup">
-								<h2><span data-i18n="AutoBackup"></span>:</h2>
-								<table class="display" id="autobackuptable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td colspan="2"><input type="checkbox" id="enableautobackup" name="enableautobackup"/> <span data-i18n="EnableAutoBackup"></span></td>
-									</tr>
-								</table>
+							<div class="row-fluid">
+								<div class="span6">
+									<div id="SoftwareUpdates">
+										<h2><span data-i18n="SoftwareUpdates"></span>:</h2>
+										<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
+											<tr>
+												<td colspan="2"><input type="checkbox" id="checkforupdates" name="checkforupdates"/> <span data-i18n="CheckForSoftwareUpdates"></span></td>
+											</tr>
+											<tr>
+												<td align="right" style="width:130px"><label><span data-i18n="Release Channel">Release Channel</span>: </label></td>
+												<td><select id="comboReleaseChannel" name="ReleaseChannel" style="width:140px" class="combobox ui-corner-all">
+													<option data-i18n="Stable" value="0">Stable</option>
+													<option data-i18n="Beta" value="1">Beta</option>
+												</select></td>
+											</tr>
+										</table>
+									</div>
+									<br>
+								</div>
+								<div class="span6">
+									<div id="AutoBackup">
+										<h2><span data-i18n="AutoBackup"></span>:</h2>
+										<table class="display" id="autobackuptable" border="0" cellpadding="0" cellspacing="0">
+											<tr>
+												<td colspan="2"><input type="checkbox" id="enableautobackup" name="enableautobackup"/> <span data-i18n="EnableAutoBackup"></span></td>
+											</tr>
+										</table>
+									</div>
+									<br>			
+								</div>
 							</div>
-							<br>			
 							<div id="NewHardware">
 								<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
 								<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
@@ -277,49 +300,58 @@
 							<div class="page-header-small">
 								<h1 data-i18n="Notifications">Notifications</h1>
 							</div>
-							<h2><span data-i18n="Prowl (iPhone/iPad)"></span>:</h2>
-							<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
-								<td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestProwlNotification()">Test</button></td>
-							</tr>
-							</table>
-							<span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
-							<br>
-							<h2><span data-i18n="NMA (Android)"></span>:</h2>
-							<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
-								<td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNMANotification()">Test</button></td>
-							</tr>
-							</table>
-							<span data-i18n="To get a free account/API key click"></span> <a href="https://www.notifymyandroid.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
-							<br>
-							<h2><span data-i18n="Pushover (Android/iOs)"></span>:</h2>
-							<table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:40px"><label for="pouserid"><span data-i18n="User ID"></span>: </label></td>
-								<td><input type="input" id="pouserid" name="PushoverUserID" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
-							</tr>
-							<tr>
-								<td align="right" style="width:80px"><label for="poapikey"><span data-i18n="API Key"></span>: </label></td>
-								<td><input type="input" id="apikey" name="PushoverAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestPushoverNotification()">Test</button></td>
-							</tr>
-							</table>
-							<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span data-i18n="Here"></span></a><br>
-							<br>
-
-							<!-- I don't think the notification service name needs to be localized -->
-							<h2>Pushalot (Windows/Windows Phone):</h2>
-							<table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:80px"><label for="palapikey"><span data-i18n="API Key"></span>: </label></td>
-								<td><input type="input" id="palapikey" name="PushALotAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestPushAlotNotification()">Test</button></td>
-							</tr>
-							</table>
-							<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span data-i18n="Here"></span></a><br>
-							<br>
-
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Prowl (iPhone/iPad)"></span>:</h2>
+									<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestProwlNotification()">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="NMA (Android)"></span>:</h2>
+									<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNMANotification()">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.notifymyandroid.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Pushover (Android/iOs)"></span>:</h2>
+									<table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:40px"><label for="pouserid"><span data-i18n="User ID"></span>: </label></td>
+										<td><input type="input" id="pouserid" name="PushoverUserID" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
+									</tr>
+									<tr>
+										<td align="right" style="width:80px"><label for="poapikey"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="apikey" name="PushoverAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestPushoverNotification()">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+								<div class="span6">
+									<h2>span data-i18n="Pushalot (Windows/Windows Phone)"></span>:</h2>
+									<table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="palapikey"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="palapikey" name="PushALotAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestPushAlotNotification()">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+							</div>
 							<h2><span data-i18n="Notification Intervals"></span>:</h2>
 							<table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
 							<tr>
@@ -358,7 +390,7 @@
 							</tr>
 							<tr>
 								<td align="right" style="width:60px"><label><span data-i18n="Switches"></span>: </label></td>
-								<td><select id="comboNotificationSwitchesInterval" name="NotificationSwitchInterval" style="width:100px" class="combobox ui-corner-all">
+								<td><select id="comboNotificationSwitchesInterval" name="NotificationSwitchInterval" style="width:120px" class="combobox ui-corner-all">
 									<option data-i18n="Direct" value="0">Direct</option>
 									<option data-i18n="1 Minute" value="60">1 Minute</option>
 									<option data-i18n="5 Minutes" value="300">5 Minutes</option>
@@ -515,7 +547,7 @@
 							<table class="display" id="p1metertable" border="0" cellpadding="0" cellspacing="0">
 								<tr>
 									<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
-									<td><select id="comboP1MeterType" name="SmartMeterType" style="width:160px" class="combobox ui-corner-all">
+									<td><select id="comboP1MeterType" name="SmartMeterType" style="width:180px" class="combobox ui-corner-all">
 										<option data-i18n="With Decimals" value="0">With Decimals</option>
 										<option data-i18n="No Decimals" value="1">No Decimals</option>
 									</select></td>

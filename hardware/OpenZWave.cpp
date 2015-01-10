@@ -755,6 +755,7 @@ bool COpenZWave::OpenSerialConnector()
 {
 	_log.Log(LOG_STATUS, "OpenZWave: Starting...");
 
+	m_allNodesQueried = false;
 	m_updateTime = mytime(NULL);
 	CloseSerialConnector();
 	m_bNeedSave = false;
