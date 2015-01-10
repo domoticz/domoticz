@@ -11,6 +11,8 @@
 //#include <fstream>
 #include "resource.h"
 
+extern bool g_bStopApplication;
+
 console::console()
 {
 	m_old_cout=NULL;
@@ -172,6 +174,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case WM_TRAYEXIT:
+			g_bStopApplication = true;
 			DestroyWindow(hwnd);
 			break;
 		case WM_SHOWCONSOLEWINDOW:
@@ -180,10 +183,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_CLOSE:
+		g_bStopApplication = true;
 		DestroyWindow(hwnd);
 		break;
 	case WM_DESTROY:
-		TrayMessage(NIM_DELETE,NULL);
+		g_bStopApplication = true;
+		TrayMessage(NIM_DELETE, NULL);
 		PostQuitMessage(0);
 		break;
 	default:
