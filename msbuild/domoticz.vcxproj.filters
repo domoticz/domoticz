@@ -168,6 +168,9 @@
     <Filter Include="Devices\EvoHome">
       <UniqueIdentifier>{424992c9-c3da-4799-9ea2-b4136c3845ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\FibaroLink">
+      <UniqueIdentifier>{b108db7e-5f5a-44df-8dfd-bea4d48f48b4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -444,9 +447,6 @@
     <ClInclude Include="..\hardware\PVOutput_Input.h">
       <Filter>Devices\PVOutput%28Input%29</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\DataPush.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\EnOceanESP2.h">
       <Filter>Devices\EnOcean</Filter>
     </ClInclude>
@@ -497,6 +497,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\evohome.h">
       <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\DataPush.h">
+      <Filter>Devices\FibaroLink</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -737,9 +740,6 @@
     <ClCompile Include="..\hardware\PVOutput_Input.cpp">
       <Filter>Devices\PVOutput%28Input%29</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\DataPush.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\EnOceanESP2.cpp">
       <Filter>Devices\EnOcean</Filter>
     </ClCompile>
@@ -796,6 +796,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\evohome.cpp">
       <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\DataPush.cpp">
+      <Filter>Devices\FibaroLink</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
