@@ -172,7 +172,14 @@ void OTGWTCP::SendOutsideTemperature()
 void OTGWTCP::SetSetpoint(const int idx, const float temp)
 {
 	char szCmd[30];
-	if (idx==5)
+	if (idx == 1)
+	{
+		//Control Set Point (MsgID=1)
+		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
+		sprintf(szCmd, "CS=%.1f\r\n", temp);
+		write((const unsigned char*)&szCmd, strlen(szCmd));
+	}
+	else if (idx == 5)
 	{
 		//Room Set Point
 		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
