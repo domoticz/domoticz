@@ -47,8 +47,6 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-//#define DEBUG_DOWNLOAD
-
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
 
@@ -78,6 +76,8 @@ static const _tGuiLanguage guiLanguage[] =
 
 	{ NULL, NULL }
 };
+
+//#define DEBUG_DOWNLOAD
 
 namespace http {
 	namespace server {
@@ -1127,6 +1127,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FibaroPassword", password.c_str());
 			m_sql.UpdatePreferencesVar("FibaroActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("FibaroDebug", idebugenabled);
+			m_mainworker.m_datapush.UpdateActive();
 			root["status"] = "OK";
 			root["title"] = "SaveFibaroLinkConfig";
 		}
@@ -3530,6 +3531,7 @@ namespace http {
 					bool bHaveUpdate = (version < atoi(strarray[2].c_str()));
 #ifdef DEBUG_DOWNLOAD
 					bHaveUpdate = true;
+					bIsForced = true;
 #endif
 					if ((bHaveUpdate) && (!bIsForced))
 					{

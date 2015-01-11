@@ -667,7 +667,7 @@ bool MainWorker::Start()
 			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, Username, Password, mode1, mode2, mode3, mode4, mode5, DataTimeout);
 		}
 	}
-
+	m_datapush.UpdateActive();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	if (m_bStartHardware==false)
 		m_bStartHardware=true;

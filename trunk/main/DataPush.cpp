@@ -23,12 +23,23 @@ const char *findVarTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsign
 	return "Not supported";
 }
 
-void CDataPush::DoWork(const unsigned long long DeviceRowIdxIn)
+CDataPush::CDataPush()
 {
-	DeviceRowIdx = DeviceRowIdxIn;
+	m_bFibaroLinkActive = false;
+}
+
+void CDataPush::UpdateActive()
+{
 	int fActive;
 	m_sql.GetPreferencesVar("FibaroActive", fActive);
-	if (fActive==1) {
+	m_bFibaroLinkActive = (fActive == 1);
+}
+
+void CDataPush::DoWork(const unsigned long long DeviceRowIdxIn)
+{
+	m_DeviceRowIdx = DeviceRowIdxIn;
+	if (m_bFibaroLinkActive)
+	{
 		DoFibaroPush();
 	}
 }
@@ -58,7 +69,7 @@ void CDataPush::DoFibaroPush()
 		sprintf(szTmp, 
 			"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType FROM FibaroLink as A, DeviceStatus as B "
 			"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
-			DeviceRowIdx);
+			m_DeviceRowIdx);
 		result=m_sql.query(szTmp);
 		if (result.size()>0)
 		{
@@ -222,8 +233,7 @@ std::string CDataPush::DropdownOptionsValue(const unsigned long long DeviceRowId
 
 std::string CDataPush::ProcessSendValue(std::string rawsendValue, int delpos, int nValue, int includeUnit, int metertypein)
 {
-	
-	std::string vType = DropdownOptionsValue(DeviceRowIdx,delpos);
+	std::string vType = DropdownOptionsValue(m_DeviceRowIdx,delpos);
 	unsigned char tempsign=m_sql.m_tempsign[0];
 	_eMeterType metertype = (_eMeterType) metertypein;
 	char szData[100]= "";
