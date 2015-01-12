@@ -2202,14 +2202,14 @@ define(['app'], function (app) {
 						SetDimValue(idx,ui.value);
 				}
 			});
-			ResizeDimSliders();
+			$scope.ResizeDimSliders();
 			$scope.mytimer=$interval(function() {
 				RefreshLights();
 			}, 10000);
 		  return false;
 		}
 
-		ResizeDimSliders = function()
+		$scope.ResizeDimSliders = function()
 		{
 			var width=$(".span4").width()-90;
 			$("#lightcontent .dimslider").width(width);
@@ -2576,7 +2576,7 @@ define(['app'], function (app) {
 						 $.myglobals.CommandStr.push($(this).text());
 			});
 
-			$(window).resize(function() { ResizeDimSliders(); });
+			$(window).resize(function() { $scope.ResizeDimSliders(); });
 
 			$( "#dialog-addlightdevice" ).dialog({
 				  autoOpen: false,
@@ -2762,6 +2762,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
+			$(window).off("resize");
 		}); 
 	} ]);
 });

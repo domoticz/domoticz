@@ -3181,7 +3181,7 @@ define(['app'], function (app) {
 						SetDimValue(idx,ui.value);
 				}
 			});
-			ResizeDimSliders();
+			$scope.ResizeDimSliders();
 
 			var bAllowReorder=bAllowWidgetReorder;
 			if (bAllowReorder==true) {
@@ -3232,7 +3232,7 @@ define(['app'], function (app) {
 			}, 10000);
 		}
 
-		ResizeDimSliders = function()
+		$scope.ResizeDimSliders = function()
 		{
 			var width=$(".span4").width()-70;
 			$("#dashcontent .span4 .dimslidernorm").width(width);
@@ -3253,7 +3253,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
-			$(window).resize(function() { ResizeDimSliders(); });
+			$(window).resize(function() { $scope.ResizeDimSliders(); });
 			$scope.LastUpdateTime=parseInt(0);
 			ShowFavorites();
 		};
@@ -3263,6 +3263,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
+			$(window).off("resize");
 		}); 
 		
 	} ]);
