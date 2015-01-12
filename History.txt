@@ -84,6 +84,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Changed: Settings Page
 - Fixed: Windows Exit application from trayicon
 - Implemented: OTGW, added support for setting the Control Setpoint
+- Implemented: Wind Gust chart
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

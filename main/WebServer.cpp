@@ -14043,7 +14043,7 @@ namespace http {
 
 					szQuery.clear();
 					szQuery.str("");
-					szQuery << "SELECT Direction, Speed FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
+					szQuery << "SELECT Direction, Speed, Gust FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
 					{
@@ -14051,6 +14051,7 @@ namespace http {
 						std::map<int, int> _directions;
 						float wdirtable[17][8];
 						int wdirtabletemp[17][8];
+						std::string szLegendLabels[7];
 						int ii = 0;
 
 						int totalvalues = 0;
@@ -14067,6 +14068,58 @@ namespace http {
 							}
 						}
 
+						if (m_sql.m_windunit == WINDUNIT_MS)
+						{
+							szLegendLabels[0] = "&lt; 0.5 " + m_sql.m_windsign;
+							szLegendLabels[1] = "0.5-2 " + m_sql.m_windsign;
+							szLegendLabels[2] = "2-4 " + m_sql.m_windsign;
+							szLegendLabels[3] = "4-6 " + m_sql.m_windsign;
+							szLegendLabels[4] = "6-8 " + m_sql.m_windsign;
+							szLegendLabels[5] = "8-10 " + m_sql.m_windsign;
+							szLegendLabels[6] = "&gt; 10" + m_sql.m_windsign;
+						}
+						else if (m_sql.m_windunit == WINDUNIT_KMH)
+						{
+							szLegendLabels[0] = "&lt; 2 " + m_sql.m_windsign;
+							szLegendLabels[1] = "2-4 " + m_sql.m_windsign;
+							szLegendLabels[2] = "4-6 " + m_sql.m_windsign;
+							szLegendLabels[3] = "6-10 " + m_sql.m_windsign;
+							szLegendLabels[4] = "10-20 " + m_sql.m_windsign;
+							szLegendLabels[5] = "20-36 " + m_sql.m_windsign;
+							szLegendLabels[6] = "&gt; 36" + m_sql.m_windsign;
+						}
+						else if (m_sql.m_windunit == WINDUNIT_MPH)
+						{
+							szLegendLabels[0] = "&lt; 3 " + m_sql.m_windsign;
+							szLegendLabels[1] = "3-7 " + m_sql.m_windsign;
+							szLegendLabels[2] = "7-12 " + m_sql.m_windsign;
+							szLegendLabels[3] = "12-18 " + m_sql.m_windsign;
+							szLegendLabels[4] = "18-24 " + m_sql.m_windsign;
+							szLegendLabels[5] = "24-46 " + m_sql.m_windsign;
+							szLegendLabels[6] = "&gt; 46" + m_sql.m_windsign;
+						}
+						else if (m_sql.m_windunit == WINDUNIT_Knots)
+						{
+							szLegendLabels[0] = "&lt; 3 " + m_sql.m_windsign;
+							szLegendLabels[1] = "3-7 " + m_sql.m_windsign;
+							szLegendLabels[2] = "7-17 " + m_sql.m_windsign;
+							szLegendLabels[3] = "17-27 " + m_sql.m_windsign;
+							szLegendLabels[4] = "27-34 " + m_sql.m_windsign;
+							szLegendLabels[5] = "34-41 " + m_sql.m_windsign;
+							szLegendLabels[6] = "&gt; 41" + m_sql.m_windsign;
+						}
+						else {
+							//Todo !
+							szLegendLabels[0] = "&lt; 0.5 " + m_sql.m_windsign;
+							szLegendLabels[1] = "0.5-2 " + m_sql.m_windsign;
+							szLegendLabels[2] = "2-4 " + m_sql.m_windsign;
+							szLegendLabels[3] = "4-6 " + m_sql.m_windsign;
+							szLegendLabels[4] = "6-8 " + m_sql.m_windsign;
+							szLegendLabels[5] = "8-10 " + m_sql.m_windsign;
+							szLegendLabels[6] = "&gt; 10" + m_sql.m_windsign;
+						}
+						
+
 						for (itt = result.begin(); itt != result.end(); ++itt)
 						{
 							std::vector<std::string> sd = *itt;
@@ -14074,37 +14127,79 @@ namespace http {
 							if (fdirection == 360)
 								fdirection = 0;
 							int direction = int(fdirection);
-							float speed = static_cast<float>(atof(sd[1].c_str()));
+							float speed = static_cast<float>(atof(sd[1].c_str())) * m_sql.m_windscale;
+							float gust = static_cast<float>(atof(sd[2].c_str())) * m_sql.m_windscale;
 							int bucket = int(fdirection / 22.5f);
 
 							int speedpos = 0;
-							if (speed < 0.5f) speedpos = 0;
-							else if (speed < 2.0f) speedpos = 1;
-							else if (speed < 4.0f) speedpos = 2;
-							else if (speed < 6.0f) speedpos = 3;
-							else if (speed < 8.0f) speedpos = 4;
-							else if (speed < 10.0f) speedpos = 5;
-							else speedpos = 6;
+
+							if (m_sql.m_windunit == WINDUNIT_MS)
+							{
+								if (gust < 0.5f) speedpos = 0;
+								else if (gust < 2.0f) speedpos = 1;
+								else if (gust < 4.0f) speedpos = 2;
+								else if (gust < 6.0f) speedpos = 3;
+								else if (gust < 8.0f) speedpos = 4;
+								else if (gust < 10.0f) speedpos = 5;
+								else speedpos = 6;
+							}
+							else if (m_sql.m_windunit == WINDUNIT_KMH)
+							{
+								if (gust < 2.0f) speedpos = 0;
+								else if (gust < 4.0f) speedpos = 1;
+								else if (gust < 6.0f) speedpos = 2;
+								else if (gust < 10.0f) speedpos = 3;
+								else if (gust < 20.0f) speedpos = 4;
+								else if (gust < 36.0f) speedpos = 5;
+								else speedpos = 6;
+							}
+							else if (m_sql.m_windunit == WINDUNIT_MPH)
+							{
+								if (gust < 3.0f) speedpos = 0;
+								else if (gust < 7.0f) speedpos = 1;
+								else if (gust < 12.0f) speedpos = 2;
+								else if (gust < 18.0f) speedpos = 3;
+								else if (gust < 24.0f) speedpos = 4;
+								else if (gust < 46.0f) speedpos = 5;
+								else speedpos = 6;
+							}
+							else if (m_sql.m_windunit == WINDUNIT_Knots)
+							{
+								if (gust < 3.0f) speedpos = 0;
+								else if (gust < 7.0f) speedpos = 1;
+								else if (gust < 17.0f) speedpos = 2;
+								else if (gust < 27.0f) speedpos = 3;
+								else if (gust < 34.0f) speedpos = 4;
+								else if (gust < 41.0f) speedpos = 5;
+								else speedpos = 6;
+							}
+							else
+							{
+								//Still todo !
+								if (gust < 0.5f) speedpos = 0;
+								else if (gust < 2.0f) speedpos = 1;
+								else if (gust < 4.0f) speedpos = 2;
+								else if (gust < 6.0f) speedpos = 3;
+								else if (gust < 8.0f) speedpos = 4;
+								else if (gust < 10.0f) speedpos = 5;
+								else speedpos = 6;
+							}
 							wdirtabletemp[bucket][speedpos]++;
 							_directions[direction]++;
 							totalvalues++;
 						}
 
-						float totals[16];
-						for (ii = 0; ii < 16; ii++)
+						for (int jj = 0; jj < 7; jj++)
 						{
-							totals[ii] = 0;
-						}
-						for (ii = 0; ii < 16; ii++)
-						{
-							float total = 0;
-							for (int jj = 0; jj < 8; jj++)
+							root["result_speed"][jj]["label"] = szLegendLabels[jj];
+							
+							for (ii = 0; ii < 16; ii++)
 							{
 								float svalue = (100.0f / totalvalues)*wdirtabletemp[ii][jj];
-								wdirtable[ii][jj] = svalue;
-								total += svalue;
+								wdirtable[jj][ii] = svalue;
+								sprintf(szTmp, "%.2f", svalue);
+								root["result_speed"][jj]["sp"][ii] = szTmp;
 							}
-							wdirtable[ii][7] = total;
 						}
 						ii = 0;
 						for (idir = 0; idir < 360 + 1; idir++)
