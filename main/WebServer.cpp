@@ -11971,6 +11971,7 @@ namespace http {
 			std::string strParam1 = base64_decode(m_pWebEm->FindValue("strparam1"));
 			std::string strParam2 = base64_decode(m_pWebEm->FindValue("strparam2"));
 			std::string tmpstr = m_pWebEm->FindValue("protected");
+			bool bHasstrParam1 = m_pWebEm->HasValue("strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
 			char szTmp[200];
@@ -12007,7 +12008,7 @@ namespace http {
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
 	
-			szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,sValue,StrParam1,StrParam2,Protected FROM DeviceStatus WHERE (ID == " << idx << ")";
+			szQuery << "SELECT Type,SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
 			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
@@ -12015,23 +12016,8 @@ namespace http {
 			szQuery.str("");
 			std::vector<std::string> sd=result[0];
 				
-			//FIXME we need a way to make sure our script parameters are not overwritten
-			//This will work except where we want to update to ""
-			if(strParam1=="")
-				strParam1=sd[7];
-			if(strParam2=="")
-				strParam2=sd[8];
-			if(tmpstr=="") //strprotected
-				iProtected = (sd[9] == "true" || sd[9]=="1") ? 1 : 0;
-
-			int HardwareID = atoi(sd[0].c_str());
-			unsigned long ID;
-			std::stringstream s_strid;
-			s_strid << std::hex << sd[1];
-			s_strid >> ID;
-			unsigned char Unit=atoi(sd[2].c_str());
-			unsigned char dType=atoi(sd[3].c_str());
-			unsigned char dSubType=atoi(sd[4].c_str());
+			unsigned char dType=atoi(sd[0].c_str());
+			unsigned char dSubType=atoi(sd[1].c_str());
 			
 			int nEvoMode=0;
 			
@@ -12072,11 +12058,13 @@ namespace http {
 			}
 			result = m_sql.query(szQuery.str());
 
-			//FIXME we need to make sure any script parameters are not overwritten (see above)
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "', Protected=" << iProtected << " WHERE (ID == " << idx << ")";
-			result = m_sql.query(szQuery.str());
+			if (bHasstrParam1)
+			{
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "', Protected=" << iProtected << " WHERE (ID == " << idx << ")";
+				result = m_sql.query(szQuery.str());
+			}
 
 			if (setPoint != "" || state!="")
 			{

@@ -783,6 +783,12 @@ std::string& cWebem::FindValue( const char* name )
 	return ret;
 }
 
+bool cWebem::HasValue(const char* name)
+{
+	webem_iter_name_value iter = myNameValues.find(name);
+	return (iter != myNameValues.end());
+}
+
 #ifndef HAVE_MD5
 typedef struct MD5Context {
 	uint32_t buf[4];

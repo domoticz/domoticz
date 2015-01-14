@@ -6,43 +6,43 @@
 			<td style="width:320px">
 				<table class="display" id="cameraparamstable" border="0" cellpadding="0" cellspacing="20">
 					<tr>
-						<td align="right" style="width:80px"><label for="enabled">Enabled:</label></td>
+						<td align="right" style="width:120px"><label for="enabled"><span data-i18n="Enabled">Enabled</span>:</label></td>
 						<td><input type="checkbox" id="enabled" checked></td>
 					</tr>
 					<tr>
-						<td align="right" style="width:110px"><label for="cameraname">Name:</label></td>
+						<td align="right"><label for="cameraname"><span data-i18n="Name">Name</span>:</label></td>
 						<td><input type="text" id="cameraname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 					</tr>
 					<tr>
-						<td align="right" style="width:110px"><label for="cameraaddress">IP Address:</label></td>
+						<td align="right"><label for="cameraaddress"><span data-i18n="IP Address">IP Address</span>:</label></td>
 						<td><input type="text" id="cameraaddress" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 					</tr>
 					<tr>
-						<td align="right" style="width:110px"><label for="cameraport">Port:</label></td>
+						<td align="right"><label for="cameraport"><span data-i18n="Port">Port</span>:</label></td>
 						<td><input type="text" id="cameraport" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="80"/></td>
 					</tr>
 					<tr>
-						<td align="right" style="width:110px"><label id="lblusername" for="username">Username:</label></td>
+						<td align="right"><label id="lblusername" for="username"><span data-i18n="Username">Username</span>:</label></td>
 						<td><input type="text" id="username" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 					</tr>
 					<tr>
-						<td align="right" style="width:110px"><label id="lblpassword" for="password">Password:</label></td>
+						<td align="right"><label id="lblpassword" for="password"><span data-i18n="Password">Password</span>:</label></td>
 							<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 					</tr>
 					<tr>
-						<td align="right" style="width:110px"><label for="imageurl">ImageURL:</label></td>
-						<td><input type="text" id="imageurl" style="width: 130px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="image.jpg"/></td>
+						<td align="right"><label for="imageurl"><span data-i18n="ImageURL">ImageURL</span>:</label></td>
+						<td><input type="text" id="imageurl" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="image.jpg"/></td>
 					</tr>
 					<tr>
 						<td></td>
-						<td><a class="btnstyle3" onclick="TestCamFeed();">Test Connection</a></td>
+						<td><a class="btnstyle3" onclick="TestCamFeed();" data-i18n="Test Connection">Test Connection</a></td>
 					</tr>
 				</table>
 			</td>
 			<td>
 				<img id="camfeed" id="camfeed" onload="load_testcam_video()" src="images/camera_default.png" width="280" height="210" style="max-height: 220px; border: 1px solid #1E2832;">
 				<br>
-				When everything is filled in correctly, the feed should display above.
+				<span data-i18n="When everything is filled in correctly, the feed should display above.">When everything is filled in correctly, the feed should display above.</span>
 			</td>
 		</tr>
 	</table>
@@ -143,12 +143,13 @@ function AddCameraDevice()
 	$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
 	$.count=0;
 	$.testcamfeed="";
+	$( "#dialog-add-edit-camera" ).i18n();
 	$( "#dialog-add-edit-camera" ).dialog({
 		resizable: false,
-		width: 690,
+		width: 720,
 		height:480,
 		modal: true,
-		title: 'Add New Camera',
+		title: $.i18n('Add New Camera'),
 		buttons: {
 			"Cancel": function() {
 				$( this ).dialog( "close" );
@@ -175,10 +176,10 @@ function EditCamera(idx)
 	$.testcamfeed="";
 	$.count=0;
 	$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
-
+	$( "#dialog-add-edit-camera" ).i18n();
 	$( "#dialog-add-edit-camera" ).dialog({
 		resizable: false,
-		width: 690,
+		width: 720,
 		height:480,
 		modal: true,
 		title: 'Edit Camera',
