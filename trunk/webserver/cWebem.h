@@ -168,7 +168,8 @@ namespace http {
 			void RegisterWhitelistURLString(const char* idname);
 
 			bool CheckForAction( request& req );
-			std::string& FindValue( const char* name );
+			std::string& FindValue(const char* name);
+			bool HasValue(const char* name);
 			bool HasParams()
 			{
 				return !myNameValues.empty(); 

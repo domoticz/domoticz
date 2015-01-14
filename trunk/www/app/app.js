@@ -110,7 +110,19 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 	  };
 	});
-	
+	app.directive('sbLoad', ['$parse', function ($parse) {
+	return {
+	  restrict: 'A',
+	  link: function (scope, elem, attrs) {
+		var fn = $parse(attrs.sbLoad);
+		elem.on('load', function (event) {
+		  scope.$apply(function() {
+			fn(scope, { $event: event });
+		  });
+		});
+	  }
+	};
+	}]);	
 	app.config(function($routeProvider,$locationProvider) {
 			$routeProvider.
 			  when('/Dashboard', angularAMD.route({
