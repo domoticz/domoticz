@@ -466,7 +466,7 @@ void CBMP085::ReadSensorDetails()
 		switch (forecast)
 		{
 		case FC_BMP085_STABLE:			//Stable weather
-			m_LastSendForecast = baroForecastCloudy;
+			//m_LastSendForecast = baroForecastCloudy;
 			break;
 		case FC_BMP085_SUNNY:			//Slowly rising HP stable good weather (Clear/Sunny)
 			m_LastSendForecast = baroForecastSunny;

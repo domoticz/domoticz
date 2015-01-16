@@ -99,8 +99,7 @@ static std::string readWUndergroundTestFile( const char *path )
 std::string CWunderground::GetForecastURL()
 {
 	std::stringstream sURL;
-	CURLEncode m_urlencoder;
-	std::string szLoc=m_urlencoder.URLEncode(m_Location);
+	std::string szLoc = CURLEncode::URLEncode(m_Location);
 	sURL << "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=" << szLoc;
 	return sURL.str();
 }
@@ -112,8 +111,7 @@ void CWunderground::GetMeterDetails()
 	sResult=readWUndergroundTestFile("E:\\underground.json");
 #else
 	std::stringstream sURL;
-	CURLEncode m_urlencoder;
-	std::string szLoc=m_urlencoder.URLEncode(m_Location);
+	std::string szLoc = CURLEncode::URLEncode(m_Location);
 	sURL << "http://api.wunderground.com/api/" << m_APIKey << "/conditions/q/" << szLoc << ".json";
 	bool bret;
 	std::string szURL=sURL.str();

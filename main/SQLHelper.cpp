@@ -2285,8 +2285,6 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 	//Make a system tray message
 	ShowSystemTrayNotification(Message.c_str());
 #endif
-	CURLEncode uencode;
-
 	//check if prowl enabled
 	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
 	{
@@ -2387,7 +2385,7 @@ bool CSQLHelper::SendNotification(const std::string &EventID, const std::string 
 				break;
 			}
 
-			sPostData << "AuthorizationToken=" << sValue << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Body=" << uencode.URLEncode(Message);
+			sPostData << "AuthorizationToken=" << sValue << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Body=" << CURLEncode::URLEncode(Message);
 			std::vector<std::string> ExtraHeaders;
 			if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
 			{
@@ -2439,7 +2437,6 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 	std::string notimessage=Body;
 	notimessage=stdreplace(notimessage,"<br>"," ");
 
-	CURLEncode uencode;
 	//check if prowl enabled
 	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
 	{
@@ -2448,7 +2445,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 		{
 			//send message to Prowl
 			std::stringstream sPostData;
-			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << uencode.URLEncode(Subject) << "&description=" << uencode.URLEncode(notimessage) << "&priority=" << Priority;
+			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << CURLEncode::URLEncode(Subject) << "&description=" << CURLEncode::URLEncode(notimessage) << "&priority=" << Priority;
 			std::vector<std::string> ExtraHeaders;
 			if (!HTTPClient::POST("https://api.prowlapp.com/publicapi/add",sPostData.str(),ExtraHeaders,sResult))
 			{
@@ -2468,7 +2465,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 		{
 			//send message to NMA
 			std::stringstream sPostData;
-			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << uencode.URLEncode(Subject) << "&description=" << uencode.URLEncode(notimessage) << "&priority=" << Priority;
+			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << CURLEncode::URLEncode(Subject) << "&description=" << CURLEncode::URLEncode(notimessage) << "&priority=" << Priority;
 			std::vector<std::string> ExtraHeaders;
 			if (!HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult))
 			{
@@ -2491,7 +2488,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 				{
 					char sPostData[300];
 					int poPriority = Priority;
-					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s",poApiKey.c_str(),sValue.c_str(),poPriority,uencode.URLEncode(Subject).c_str(),uencode.URLEncode(notimessage).c_str());
+					sprintf(sPostData, "token=%s&user=%s&priority=%d&title=%s&message=%s", poApiKey.c_str(), sValue.c_str(), poPriority, CURLEncode::URLEncode(Subject).c_str(), CURLEncode::URLEncode(notimessage).c_str());
 					std::string poSound = Sound;
 					if (poSound!="") {
 						sprintf(sPostData,"%s&sound=%s",sPostData,poSound.c_str() ) ;
@@ -2542,7 +2539,7 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 					break;
 			}
 
-			sPostData << "AuthorizationToken=" << sValue << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Title=" << uencode.URLEncode(Subject) << "&Body=" << uencode.URLEncode(notimessage);
+			sPostData << "AuthorizationToken=" << sValue << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Title=" << CURLEncode::URLEncode(Subject) << "&Body=" << CURLEncode::URLEncode(notimessage);
 
 			std::vector<std::string> ExtraHeaders;
 			if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
@@ -2847,7 +2844,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
+				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2921,7 +2918,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
+				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3056,7 +3053,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
+				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3162,7 +3159,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
+				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3263,7 +3260,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", m_urlencoder.URLEncode(msg),itt->Priority);
+				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -6311,7 +6308,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		if (bDoSend)
 		{
 			sprintf(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
-			SendNotification("", m_urlencoder.URLEncode(szTmp),1);
+			SendNotification("", CURLEncode::URLEncode(szTmp), 1);
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
 	}

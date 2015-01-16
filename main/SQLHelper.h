@@ -341,7 +341,6 @@ public:
 	bool		m_bDisableEventSystem;
 private:
 	boost::mutex	m_sqlQueryMutex;
-	CURLEncode		m_urlencoder;
 	sqlite3			*m_dbase;
 	std::string		m_dbase_name;
 	unsigned char	m_sensortimeoutcounter;
