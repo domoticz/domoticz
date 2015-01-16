@@ -495,7 +495,7 @@ namespace http {
 					}
 					else
 					{
-						std::string fname = DirPath + ent->d_name;
+						std::string fname = DirPath + CURLEncode::URLEncode(ent->d_name);
 						_Files[fname]=1;
 					}
 				}
@@ -4383,7 +4383,6 @@ namespace http {
 			}
 			else if (cparam == "testpushalot")
 			{
-				CURLEncode uencode;
 				std::string palapi = CURLEncode::URLDecode(m_pWebEm->FindValue("palapi"));
 				if (palapi == "")
 					return;
@@ -4394,7 +4393,7 @@ namespace http {
 				std::string palTitle = "Domoticz test";
 				std::string palMessage = "Domoticz test message!";
 				std::vector<std::string> ExtraHeaders;
-				sPostData << "AuthorizationToken=" << palapi << "&IsImportant=False&IsSilent=False&Source=Domoticz&Title=" << uencode.URLEncode(palTitle) << "&Body=" << uencode.URLEncode(palMessage);
+				sPostData << "AuthorizationToken=" << palapi << "&IsImportant=False&IsSilent=False&Source=Domoticz&Title=" << CURLEncode::URLEncode(palTitle) << "&Body=" << CURLEncode::URLEncode(palMessage);
 
 				if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
 				{

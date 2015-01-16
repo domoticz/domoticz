@@ -100,8 +100,7 @@ static std::string readForecastIOTestFile( const char *path )
 std::string CForecastIO::GetForecastURL()
 {
 	std::stringstream sURL;
-	CURLEncode m_urlencoder;
-	std::string szLoc=m_urlencoder.URLEncode(m_Location);
+	std::string szLoc = CURLEncode::URLEncode(m_Location);
 	sURL << "http://forecast.io/#/f/" << szLoc;
 	return sURL.str();
 }
@@ -113,8 +112,7 @@ void CForecastIO::GetMeterDetails()
 	sResult=readForecastIOTestFile("E:\\forecastio.json");
 #else
 	std::stringstream sURL;
-	CURLEncode m_urlencoder;
-	std::string szLoc=m_urlencoder.URLEncode(m_Location);
+	std::string szLoc = CURLEncode::URLEncode(m_Location);
 	sURL << "https://api.forecast.io/forecast/" << m_APIKey << "/" << szLoc;
 	bool bret;
 	std::string szURL=sURL.str();
