@@ -233,7 +233,6 @@
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
-    <ClCompile Include="..\hardware\libusbwinusbbridge.cpp" />
     <ClCompile Include="..\hardware\Limitless.cpp" />
     <ClCompile Include="..\hardware\HardwareMonitor.cpp" />
     <ClCompile Include="..\hardware\Meteostick.cpp" />
