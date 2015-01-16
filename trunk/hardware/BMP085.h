@@ -21,6 +21,17 @@ private:
 	unsigned int bmp085_ReadUP();
 	int32_t computeB5(int32_t UT);
 
+	//Forecast
+	int CalculateForecast(const float pressure);
+	float m_LastPressure;
+	int m_LastMinute;
+	float m_pressureSamples[180];
+	int m_minuteCount;
+	bool m_firstRound;
+	float m_pressureAvg[7];
+	int m_LastForecast;
+	unsigned char m_LastSendForecast;
+
 	void Do_Work();
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;

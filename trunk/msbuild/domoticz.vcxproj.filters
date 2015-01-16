@@ -641,9 +641,6 @@
     <ClCompile Include="..\hardware\VolcraftCO20Tool.cpp">
       <Filter>Devices\VolcraftCO20</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\libusbwinusbbridge.cpp">
-      <Filter>Devices\TE923</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\1Wire.cpp">
       <Filter>Devices\1-Wire</Filter>
     </ClCompile>
