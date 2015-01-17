@@ -41,6 +41,7 @@
 //#include "config.h"
 //#include "shared_ptr.h"
 #include "../zip/unzip.h"
+#include <boost/shared_ptr.hpp>
 
 #ifdef CLX_ENABLE_AUTOLINK
 #if defined(_MSC_VER) && (_MSC_VER >= 1200) || defined(__BORLANDC__)
@@ -104,7 +105,7 @@ namespace clx {
 		bool open(const char_type* path) {
 			handler_type h = unzOpen(path);
 			if (h == NULL) return false;
-			p_ = std::shared_ptr<storage_impl>(new storage_impl(h));
+			p_ = boost::shared_ptr<storage_impl>(new storage_impl(h));
 			return true;
 		}
 		
@@ -175,7 +176,7 @@ namespace clx {
 			handler_type in_;
 		};
 		
-		std::shared_ptr<storage_impl> p_;
+		boost::shared_ptr<storage_impl> p_;
 		string_type pass_;
 	};
 	
