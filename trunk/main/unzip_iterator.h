@@ -40,7 +40,7 @@
 #include <string>
 #include "../zip/unzip.h"
 #include "unzip_stream.h"
-#include <memory>
+#include <boost/shared_ptr.hpp>
 
 namespace clx {
 	/* --------------------------------------------------------------------- */
@@ -53,7 +53,7 @@ namespace clx {
 	class basic_unzip_iterator : public std::iterator<std::input_iterator_tag, basic_unzip_stream<CharT, Traits> > {
 	public:
 		typedef basic_unzip_stream<CharT, Traits> stream_type;
-		typedef std::shared_ptr<stream_type> stream_ptr;
+		typedef boost::shared_ptr<stream_type> stream_ptr;
 		typedef unzFile handler_type;
 		typedef std::basic_string<CharT, Traits> string_type;
 		
