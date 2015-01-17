@@ -167,7 +167,7 @@ bool CEvohome::StartHardware()
 		szQuery << "SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << (int)pTypeEvohomeRelay << ") AND (Unit>=64) AND (Unit<96)";//we'll put our custom relays in this range
 		result = m_sql.query(szQuery.str());
 		m_RelayCheck.clear();
-		for(int i=0;i<result.size();i++)
+		for (int i = 0; i<static_cast<int>(result.size()); i++)
 		{
 			Log(true,LOG_STATUS,"evohome: Relay: devno=%d demmand=%d",atoi(result[i][0].c_str()),atoi(result[i][4].c_str()));
 			m_RelayCheck.insert( tmap_relay_check_pair( static_cast<uint8_t>(atoi(result[i][0].c_str())),_tRelayCheck(boost::get_system_time()-boost::posix_time::minutes(19),static_cast<uint8_t>(atoi(result[i][4].c_str()))) ) ); //allow 1 minute for startup before trying to restore demand

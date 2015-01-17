@@ -129,10 +129,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/dashboard.html',
 				controller: 'DashboardController'
 			  })).
-			  when('/Cam', angularAMD.route({
-				templateUrl: 'views/cam.html',
-				controller: 'CamController'
-			  })).
 			  when('/Devices', angularAMD.route({
 				templateUrl: 'views/devices.html',
 				controller: 'DevicesController'
@@ -200,6 +196,14 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  when('/RestoreDatabase', angularAMD.route({
 				templateUrl: 'views/restoredatabase.html',
 				controller: 'RestoreDatabaseController'
+			  })).
+			  when('/Cam', angularAMD.route({
+				templateUrl: 'views/cam.html',
+				controller: 'CamController'
+			  })).
+			  when('/CustomIcons', angularAMD.route({
+				templateUrl: 'views/customicons.html',
+				controller: 'CustomIconsController'
 			  })).
 			  when('/Roomplan', angularAMD.route({
 				templateUrl: 'views/roomplan.html',

@@ -2490,3 +2490,79 @@ span.evomobile .ui-popup {
 	border: 1px solid #ff0000!important;
 }
 
+.iconcell {
+    border:1px solid black;
+    margin:0px;
+}
+.iconlist {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;    
+    background-color: #FFF;
+	min-width: 294px;
+    overflow: scroll;
+    overflow-x: hidden;
+    display: -webkit-flex; /* Safari */
+    -webkit-flex-wrap: wrap; /* Safari 6.1+ */
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.iconlist .iconlistitem {
+    padding: 0px;
+    width: 290px;
+    overflow: auto;
+    margin:2px 0px 0px 0px;
+    height: 52px;
+}
+.iconlist .iconlistitem:hover {
+    background: #eee;
+    cursor: pointer;
+}
+
+.iconlist .iconlistitemselected {
+    background: #ddd;
+    cursor: pointer;
+}
+
+.iconlist .iconlistitem h3 {
+    font: bold 20px/1.5 Helvetica, Verdana, sans-serif;
+    color: #000;
+    height: 52px;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-left: 52px;
+    margin-top: -5px;
+}
+.iconlist .iconlistitem img {
+	margin-top: 1px;
+    float: left;
+}
+.iconlist .iconlistitem p {
+    font: 200 12px/1.5 Georgia, Times New Roman, serif;
+    font-style: italic;
+    color: #444;
+    margin-left: 52px;
+    margin-top: -24px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.inputbox {
+    background-color: #FFF;
+    border-color: #B4BAC0;
+    color: #333;
+}
+.autowidth {
+    width: auto !important;
+}
+.inputbox {
+    background-color: #FFF;
+    border: 1px solid #C0C0C0;
+    color: #333;
+    padding: 2px;
+    cursor: text;
+}

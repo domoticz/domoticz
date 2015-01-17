@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 714
+# ref 715
 
 CACHE:
 # CSS
@@ -489,6 +489,9 @@ ozwcp/cp.js
 
 #Dynamic floorplans
 #Floorplans
+
+#Dynamic Switch Icons
+#SwitchIcons
 
 # HTML pages
 views/cam.html

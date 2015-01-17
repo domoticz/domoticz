@@ -12,7 +12,9 @@
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
+#include "WebServer.h"
 #include "../webserver/Base64.h"
+#include "unzip.h"
 #include "mainstructs.h"
 #include <boost/lexical_cast.hpp>
 
@@ -23,7 +25,9 @@
 	#include <pwd.h>
 #endif
 
-#define DB_VERSION 54
+#define DB_VERSION 55
+
+extern http::server::CWebServer m_webserver;
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -500,11 +504,13 @@ const char *sqlCreateFloorplanOrderTrigger =
 
 const char *sqlCreateCustomImages =
 	"CREATE TABLE IF NOT EXISTS [CustomImages]("
+	"	[ID] INTEGER PRIMARY KEY, "
+	"	[Base] VARCHAR(80) NOT NULL, "
 	"	[Name] VARCHAR(80) NOT NULL, "
 	"	[Description] VARCHAR(80) NOT NULL, "
 	"	[IconSmall] BLOB, "
-	"	[ImageOn] BLOB, "
-	"	[ImageOff] BLOB);";
+	"	[IconOn] BLOB, "
+	"	[IconOff] BLOB);";
 
 
 extern std::string szStartupFolder;
@@ -1046,7 +1052,11 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Temperature_Calendar ADD COLUMN [SetPoint_Max] FLOAT default 0");
 			query("ALTER TABLE Temperature_Calendar ADD COLUMN [SetPoint_Avg] FLOAT default 0");
 		}
-
+		if (dbversion < 55)
+		{
+			query("DROP TABLE IF EXISTS [CustomImages]");
+			query(sqlCreateCustomImages);
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -1650,6 +1660,58 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 	if(error != "not an error") 
 		_log.Log(LOG_ERROR,"%s",error.c_str());
 	return results; 
+}
+
+std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &szQuery)
+{
+	if (!m_dbase)
+	{
+		_log.Log(LOG_ERROR, "Database not open!!...Check your user rights!..");
+		std::vector<std::vector<std::string> > results;
+		return results;
+	}
+	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+
+	sqlite3_stmt *statement;
+	std::vector<std::vector<std::string> > results;
+
+	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, 0) == SQLITE_OK)
+	{
+		int cols = sqlite3_column_count(statement);
+		int result = 0;
+		while (true)
+		{
+			result = sqlite3_step(statement);
+
+			if (result == SQLITE_ROW)
+			{
+				std::vector<std::string> values;
+				for (int col = 0; col < cols; col++)
+				{
+					int blobSize = sqlite3_column_bytes(statement, col);
+					char* value = (char*)sqlite3_column_blob(statement, col);
+					if ((blobSize == 0) && (col == 0))
+						break;
+					else if (value == 0)
+						values.push_back(std::string("")); //insert empty string
+					else
+						values.push_back(std::string(value,value+blobSize));
+				}
+				if (values.size()>0)
+					results.push_back(values);
+			}
+			else
+			{
+				break;
+			}
+		}
+		sqlite3_finalize(statement);
+	}
+
+	std::string error = sqlite3_errmsg(m_dbase);
+	if (error != "not an error")
+		_log.Log(LOG_ERROR, "%s", error.c_str());
+	return results;
 }
 
 unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
@@ -6816,3 +6878,162 @@ void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
 	_log.Log(LOG_STATUS, "New sensors allowed for %d minutes...", iTotMinutes);
 }
 
+bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage)
+{
+	//write file to disk
+	std::string outputfile = "custom_icons.zip";
+	std::ofstream outfile;
+	outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!outfile.is_open())
+	{
+		ErrorMessage = "Error writing zip to disk";
+		return false;
+	}
+	outfile << szZip;
+	outfile.flush();
+	outfile.close();
+
+	clx::basic_unzip<char> in(outputfile);
+	if (!in.is_open())
+	{
+		ErrorMessage = "Error opening zip file";
+		return false;
+	}
+	clx::basic_unzip<char>::iterator fitt = in.find("icons.txt");
+	if (fitt == in.end())
+	{
+		//definition file not found
+		ErrorMessage = "Icon definition file not found";
+		return false;
+	}
+
+	uLong fsize;
+	unsigned char *pFBuf = (unsigned char *)(fitt).Extract(fsize,1);
+	if (pFBuf == NULL)
+	{
+		ErrorMessage = "Could not extract icons.txt";
+		return false;
+	}
+	pFBuf[fsize] = 0; //null terminate
+
+	std::string _defFile = std::string(pFBuf, pFBuf+fsize);
+	free(pFBuf);
+
+	std::vector<std::string> _Lines;
+	StringSplit(_defFile, "\n", _Lines);
+	std::vector<std::string>::const_iterator itt;
+	for (itt = _Lines.begin(); itt != _Lines.end(); ++itt)
+	{
+		std::string sLine = (*itt);
+		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
+		std::vector<std::string> splitresult;
+		StringSplit(sLine, ";", splitresult);
+		if (splitresult.size() == 3)
+		{
+			std::string IconBase = splitresult[0];
+			std::string IconName = splitresult[1];
+			std::string IconDesc = splitresult[2];
+
+			//Check if this Icon(Name) does not exist in the database already
+			std::stringstream szQuery;
+			szQuery << "SELECT Name FROM CustomImages WHERE Base='" << IconBase << "'";
+			std::vector<std::vector<std::string> > result = query(szQuery.str());
+			if (result.size() != 0)
+			{
+				ErrorMessage = "Duplicate Icon Entry (Name)";
+				return false;
+				//For Debug we delete the row
+				//szQuery.clear();
+				//szQuery.str("");
+				//szQuery << "DELETE FROM CustomImages WHERE Base='" << IconBase << "'";
+				//result = query(szQuery.str());
+			}
+			
+			//Locate the files in the zip, if not present back out
+			std::string IconFile16 = IconBase + ".png";
+			std::string IconFile48On = IconBase + "48_On.png";
+			std::string IconFile48Off = IconBase + "48_Off.png";
+
+			std::map<std::string, std::string> _dbImageFiles;
+			_dbImageFiles["IconSmall"] = IconFile16;
+			_dbImageFiles["IconOn"] = IconFile48On;
+			_dbImageFiles["IconOff"] = IconFile48Off;
+
+			std::map<std::string, std::string>::const_iterator iItt;
+
+			for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
+			{
+				std::string TableField = iItt->first;
+				std::string IconFile = iItt->second;
+				if (in.find(IconFile) == in.end())
+				{
+					ErrorMessage = "Icon File: " + IconFile + " is not present";
+					return false;
+				}
+			}
+			//All good, now lets add it to the database
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "INSERT INTO CustomImages (Base,Name, Description) VALUES ('" << IconBase << "', '" << IconName << "', '" << IconDesc << "')";
+			result = query(szQuery.str());
+
+			//Get our Database ROWID
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ID FROM CustomImages WHERE Base='" << IconBase << "'";
+			result = query(szQuery.str());
+			if (result.size() == 0)
+			{
+				ErrorMessage = "Error adding new row to database!";
+				return false;
+			}
+			int RowID = atoi(result[0][0].c_str());
+
+			//Insert the Icons
+
+			for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
+			{
+				std::string TableField = iItt->first;
+				std::string IconFile = iItt->second;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "UPDATE CustomImages SET " << TableField << " = ? WHERE ID=" << RowID;
+
+				sqlite3_stmt *stmt = NULL;
+				int rc = sqlite3_prepare_v2(m_dbase, szQuery.str().c_str(), -1, &stmt, NULL);
+				if (rc != SQLITE_OK) {
+					ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+					return false;
+				}
+				// SQLITE_STATIC because the statement is finalized
+				// before the buffer is freed:
+				pFBuf = (unsigned char *)in.find(IconFile).Extract(fsize);
+				if (pFBuf == NULL)
+				{
+					ErrorMessage = "Could not extract File: " + IconFile16;
+					return false;
+				}
+				rc = sqlite3_bind_blob(stmt, 1, pFBuf, fsize, SQLITE_STATIC);
+				if (rc != SQLITE_OK) {
+					ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+					free(pFBuf);
+					return false;
+				}
+				else {
+					rc = sqlite3_step(stmt);
+					if (rc != SQLITE_DONE)
+					{
+						free(pFBuf);
+						ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+						return false;
+					}
+				}
+				sqlite3_finalize(stmt);
+				free(pFBuf);
+			}
+		}
+	}
+	m_webserver.ReloadCustomSwitchIcons();
+	return true;
+}
