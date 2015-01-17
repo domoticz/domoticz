@@ -49,8 +49,11 @@ public:
 	char * SetP1USBType();
 	char * RestoreDatabase();
 	char * SBFSpotImportOldData();
+	char * UploadCustomIcon();
 
 	cWebem *m_pWebEm;
+
+	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();
 	void AddUser(const unsigned long ID, const std::string &username, const std::string &password, const int userrights, const int activetabs);
@@ -219,6 +222,7 @@ private:
 	std::wstring m_wretstr;
 	time_t m_LastUpdateCheck;
 	std::vector<_tCustomIcon> m_custom_light_icons;
+	std::map<int, int> m_custom_light_icons_lookup;
 };
 
 } //server

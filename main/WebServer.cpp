@@ -123,14 +123,15 @@ namespace http {
 			_log.Log(LOG_STATUS, "WebServer stopped...");
 		}
 
-		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword)
+		void CWebServer::ReloadCustomSwitchIcons()
 		{
-			StopServer();
-
 			m_custom_light_icons.clear();
+			m_custom_light_icons_lookup.clear();
 			std::string sLine = "";
+
+			//First get them from the switch_icons.txt file
 			std::ifstream infile;
-			std::string switchlightsfile = serverpath + "/switch_icons.txt";
+			std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
 			infile.open(switchlightsfile.c_str());
 			if (infile.is_open())
 			{
@@ -150,11 +151,79 @@ namespace http {
 							cImage.Title = results[1];
 							cImage.Description = results[2];
 							m_custom_light_icons.push_back(cImage);
+							m_custom_light_icons_lookup[cImage.idx] = m_custom_light_icons.size()-1;
 						}
 					}
 				}
 				infile.close();
 			}
+			//Now get them from the database (idx 100+)
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.query("SELECT ID,Base,Name,Description FROM CustomImages");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					int ID = atoi(sd[0].c_str());
+
+					_tCustomIcon cImage;
+					cImage.idx = 100+ID;
+					cImage.RootFile = sd[1];
+					cImage.Title = sd[2];
+					cImage.Description = sd[3];
+
+					std::string IconFile16 = cImage.RootFile + ".png";
+					std::string IconFile48On = cImage.RootFile + "48_On.png";
+					std::string IconFile48Off = cImage.RootFile + "48_Off.png";
+
+					std::map<std::string, std::string> _dbImageFiles;
+					_dbImageFiles["IconSmall"] = szWWWFolder + "/images/" + IconFile16;
+					_dbImageFiles["IconOn"] = szWWWFolder + "/images/" + IconFile48On;
+					_dbImageFiles["IconOff"] = szWWWFolder + "/images/" + IconFile48Off;
+
+					std::map<std::string, std::string>::const_iterator iItt;
+
+					//Check if files are on disk, else add them
+					for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
+					{
+						std::string TableField = iItt->first;
+						std::string IconFile = iItt->second;
+
+						if (!file_exist(IconFile.c_str()))
+						{
+							//Does not exists, extract it from the database and add it
+							std::stringstream szQuery;
+							szQuery << "SELECT " << TableField << " FROM CustomImages WHERE ID=" << ID;
+							std::vector<std::vector<std::string> > result2;
+							result2 = m_sql.queryBlob(szQuery.str());
+							if (result2.size() > 0)
+							{
+								std::ofstream file;
+								file.open(IconFile.c_str(), ios::out | ios::binary);
+								if (!file.is_open())
+									return;
+
+								file << result2[0][0];
+								file.close();
+							}
+						}
+					}
+
+					m_custom_light_icons.push_back(cImage);
+					m_custom_light_icons_lookup[cImage.idx] = m_custom_light_icons.size() - 1;
+					ii++;
+				}
+			}
+		}
+
+		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword)
+		{
+			StopServer();
+			ReloadCustomSwitchIcons();
 
 			if (m_pWebEm != NULL)
 				delete m_pWebEm;
@@ -260,6 +329,7 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this));
 			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this));
 			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this));
+			m_pWebEm->RegisterActionCode("uploadcustomicon", boost::bind(&CWebServer::UploadCustomIcon, this));
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1), true);
 			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1), true);
@@ -554,6 +624,24 @@ namespace http {
 								response += tfname + "\n";
 							}
 							continue;
+						}
+						else if (sLine.find("#SwitchIcons") != std::string::npos)
+						{
+							//Add database switch icons
+							std::vector<_tCustomIcon>::const_iterator itt;
+							for (itt = m_custom_light_icons.begin(); itt != m_custom_light_icons.end(); ++itt)
+							{
+								if (itt->idx >= 100)
+								{
+									std::string IconFile16 = itt->RootFile + ".png";
+									std::string IconFile48On = itt->RootFile + "48_On.png";
+									std::string IconFile48Off = itt->RootFile + "48_Off.png";
+
+									response += "images/" + IconFile16 + "\n";
+									response += "images/" + IconFile48On + "\n";
+									response += "images/" + IconFile48Off + "\n";
+								}
+							}
 						}
 					}
 					response += sLine + "\n";
@@ -7597,6 +7685,27 @@ namespace http {
 			return (char*)m_retstr.c_str();
 		}
 
+		char * CWebServer::UploadCustomIcon()
+		{
+			m_retstr = "/index.html";
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return (char*)m_retstr.c_str();
+			}
+
+			std::string zipfile = m_pWebEm->FindValue("fileupload");
+			if (zipfile == "") {
+				return (char*)m_retstr.c_str();
+			}
+			std::string ErrorMessage;
+			bool bOK = m_sql.InsertCustomIconFromZip(zipfile,ErrorMessage);
+			//if (!m_sql.RestoreDatabase(dbasefile))
+				//return (char*)m_retstr.c_str();
+			return (char*)m_retstr.c_str();
+		}
+		
+
 		char * CWebServer::SetP1USBType()
 		{
 			m_retstr = "/index.html";
@@ -8286,10 +8395,13 @@ namespace http {
 						root["result"][ii]["StrParam1"] = strParam1;
 						root["result"][ii]["StrParam2"] = strParam2;
 
-						if (CustomImage < static_cast<int>(m_custom_light_icons.size()))
-							root["result"][ii]["Image"] = m_custom_light_icons[CustomImage].RootFile;
-						else
-							root["result"][ii]["Image"] = "Light";
+						std::string IconFile = "Light";
+						std::map<int, int>::const_iterator ittIcon = m_custom_light_icons_lookup.find(CustomImage);
+						if (ittIcon != m_custom_light_icons_lookup.end())
+						{
+							IconFile = m_custom_light_icons[ittIcon->second].RootFile;
+						}
+						root["result"][ii]["Image"] = IconFile;
 
 
 						if (switchtype == STYPE_Dimmer)
