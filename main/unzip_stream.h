@@ -41,6 +41,7 @@
 #include <istream>
 #include <vector>
 #include "../zip/unzip.h"
+#include <memory>
 
 namespace clx {
 	/* --------------------------------------------------------------------- */
