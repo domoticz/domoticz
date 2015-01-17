@@ -40,7 +40,7 @@
 #include <string>
 #include "../zip/unzip.h"
 #include "unzip_stream.h"
-//#include "shared_ptr.h"
+#include <memory>
 
 namespace clx {
 	/* --------------------------------------------------------------------- */

@@ -176,6 +176,9 @@
     <ClInclude Include="..\hardware\P1MeterTCP.h" />
     <ClInclude Include="..\main\Logger.h" />
     <ClInclude Include="..\main\mainstructs.h" />
+    <ClInclude Include="..\main\unzip.h" />
+    <ClInclude Include="..\main\unzip_iterator.h" />
+    <ClInclude Include="..\main\unzip_stream.h" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
