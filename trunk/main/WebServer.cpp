@@ -4,6 +4,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <iostream>
+#include <fstream>
 #include "mainworker.h"
 #include "Helper.h"
 #include "localtime_r.h"
