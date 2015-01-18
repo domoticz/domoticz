@@ -6937,23 +6937,17 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 			std::string IconName = splitresult[1];
 			std::string IconDesc = splitresult[2];
 
+			
+
 			//Check if this Icon(Name) does not exist in the database already
 			std::stringstream szQuery;
-			szQuery << "SELECT Name FROM CustomImages WHERE Base='" << IconBase << "'";
+			szQuery << "SELECT ID FROM CustomImages WHERE Base='" << IconBase << "'";
 			std::vector<std::vector<std::string> > result = query(szQuery.str());
-			if (result.size() != 0)
+			bool bIsDuplicate = (result.size()>0);
+			int RowID = 0;
+			if (bIsDuplicate)
 			{
-				ErrorMessage = "Duplicate Icon Entry (Base): " + IconBase;
-				if (iTotalAdded > 0)
-				{
-					m_webserver.ReloadCustomSwitchIcons();
-				}
-				return false;
-				//For Debug we delete the row
-				//szQuery.clear();
-				//szQuery.str("");
-				//szQuery << "DELETE FROM CustomImages WHERE Base='" << IconBase << "'";
-				//result = query(szQuery.str());
+				RowID=atoi(result[0][0].c_str());
 			}
 			
 			//Locate the files in the zip, if not present back out
@@ -6975,26 +6969,44 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 				if (in.find(IconFile) == in.end())
 				{
 					ErrorMessage = "Icon File: " + IconFile + " is not present";
+					if (iTotalAdded>0)
+					{
+						m_webserver.ReloadCustomSwitchIcons();
+					}
 					return false;
 				}
 			}
+
 			//All good, now lets add it to the database
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "INSERT INTO CustomImages (Base,Name, Description) VALUES ('" << IconBase << "', '" << IconName << "', '" << IconDesc << "')";
-			result = query(szQuery.str());
-
-			//Get our Database ROWID
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT ID FROM CustomImages WHERE Base='" << IconBase << "'";
-			result = query(szQuery.str());
-			if (result.size() == 0)
+			if (!bIsDuplicate)
 			{
-				ErrorMessage = "Error adding new row to database!";
-				return false;
+				szQuery << "INSERT INTO CustomImages (Base,Name, Description) VALUES ('" << IconBase << "', '" << IconName << "', '" << IconDesc << "')";
+				result = query(szQuery.str());
+
+				//Get our Database ROWID
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT ID FROM CustomImages WHERE Base='" << IconBase << "'";
+				result = query(szQuery.str());
+				if (result.size() == 0)
+				{
+					ErrorMessage = "Error adding new row to database!";
+					if (iTotalAdded > 0)
+					{
+						m_webserver.ReloadCustomSwitchIcons();
+					}
+					return false;
+				}
+				RowID = atoi(result[0][0].c_str());
 			}
-			int RowID = atoi(result[0][0].c_str());
+			else
+			{
+				//Update
+				szQuery << "UPDATE CustomImages SET Name='" << IconName << "', Description='" << IconDesc << "' WHERE ID=" << RowID;
+				result = query(szQuery.str());
+			}
 
 			//Insert the Icons
 
@@ -7011,6 +7023,10 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 				int rc = sqlite3_prepare_v2(m_dbase, szQuery.str().c_str(), -1, &stmt, NULL);
 				if (rc != SQLITE_OK) {
 					ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+					if (iTotalAdded > 0)
+					{
+						m_webserver.ReloadCustomSwitchIcons();
+					}
 					return false;
 				}
 				// SQLITE_STATIC because the statement is finalized
@@ -7019,12 +7035,20 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 				if (pFBuf == NULL)
 				{
 					ErrorMessage = "Could not extract File: " + IconFile16;
+					if (iTotalAdded > 0)
+					{
+						m_webserver.ReloadCustomSwitchIcons();
+					}
 					return false;
 				}
 				rc = sqlite3_bind_blob(stmt, 1, pFBuf, fsize, SQLITE_STATIC);
 				if (rc != SQLITE_OK) {
 					ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
 					free(pFBuf);
+					if (iTotalAdded > 0)
+					{
+						m_webserver.ReloadCustomSwitchIcons();
+					}
 					return false;
 				}
 				else {
@@ -7033,6 +7057,10 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 					{
 						free(pFBuf);
 						ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+						if (iTotalAdded > 0)
+						{
+							m_webserver.ReloadCustomSwitchIcons();
+						}
 						return false;
 					}
 				}
