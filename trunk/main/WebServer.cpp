@@ -645,9 +645,9 @@ namespace http {
 									std::string IconFile48On = itt->RootFile + "48_On.png";
 									std::string IconFile48Off = itt->RootFile + "48_Off.png";
 
-									response += "images/" + IconFile16 + "\n";
-									response += "images/" + IconFile48On + "\n";
-									response += "images/" + IconFile48Off + "\n";
+									response += "images/" + CURLEncode::URLEncode(IconFile16) + "\n";
+									response += "images/" + CURLEncode::URLEncode(IconFile48On) + "\n";
+									response += "images/" + CURLEncode::URLEncode(IconFile48Off) + "\n";
 								}
 							}
 						}
