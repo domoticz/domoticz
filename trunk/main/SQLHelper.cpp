@@ -28,6 +28,7 @@
 #define DB_VERSION 55
 
 extern http::server::CWebServer m_webserver;
+extern std::string szWWWFolder;
 
 const char *sqlCreateDeviceStatus =
 "CREATE TABLE IF NOT EXISTS [DeviceStatus] ("
@@ -7006,6 +7007,14 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 				//Update
 				szQuery << "UPDATE CustomImages SET Name='" << IconName << "', Description='" << IconDesc << "' WHERE ID=" << RowID;
 				result = query(szQuery.str());
+
+				//Delete from disk, so it will be updated when we exit this function
+				std::string IconFile16 = szWWWFolder + "/images/" + IconBase + ".png";
+				std::string IconFile48On = szWWWFolder + "/images/" + IconBase + "48_On.png";
+				std::string IconFile48Off = szWWWFolder + "/images/" + IconBase + "48_Off.png";
+				std::remove(IconFile16.c_str());
+				std::remove(IconFile48On.c_str());
+				std::remove(IconFile48Off.c_str());
 			}
 
 			//Insert the Icons
