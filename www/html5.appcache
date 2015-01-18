@@ -397,6 +397,7 @@ i18n/domoticz-vi.json
 # Scripts
 app/app.js
 app/CamController.js
+app/CustomIconsController.js
 app/DashboardController.js
 app/DevicesController.js
 app/DPFibaroController.js
