@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('CustomIconsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
+	app.controller('CustomIconsController', [ '$scope', '$rootScope', '$location', '$http', '$interval','$compile', function($scope,$rootScope,$location,$http,$interval,$compile) {
 
 		$scope.iconset = [];
 		$scope.selectedIcon = [];
@@ -73,6 +73,10 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			var htmlcontent = "";
+			htmlcontent+=$('#iconsmain').html();
+			$('#customiconcontent').html($compile(htmlcontent)($scope));
+			$('#customiconcontent').i18n();
 			$scope.RefreshIconList();
 		};
 
