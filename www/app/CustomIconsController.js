@@ -16,9 +16,6 @@ define(['app'], function (app) {
 					HideNotify();
 					ShowNotify($.i18n('Error uploading Iconset') + ": " + data.error, 5000, true);
 				}
-				else {
-					$scope.myFile = 'undefined';
-				}
 				$scope.RefreshIconList();
 			})
 			.error(function(data){
