@@ -40,6 +40,8 @@ public:
 	std::string GetCameraSnapshot();
 	std::string GetInternalCameraSnapshot();
 	std::string GetDatabaseBackup();
+	std::string Post_UploadCustomIcon();
+
 	char * PostSettings();
 	char * SetRFXCOMMode();
 	char * SetRego6XXType();
@@ -49,7 +51,6 @@ public:
 	char * SetP1USBType();
 	char * RestoreDatabase();
 	char * SBFSpotImportOldData();
-	char * UploadCustomIcon();
 
 	cWebem *m_pWebEm;
 
@@ -142,6 +143,8 @@ private:
 	void Cmd_GetDevicesList(Json::Value &root);
 	void Cmd_GetDevicesListOnOff(Json::Value &root);
 	void Cmd_RegisterWithPhilipsHue(Json::Value &root);
+	void Cmd_GetCustomIconSet(Json::Value &root);
+	void Cmd_DeleteCustomIcon(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

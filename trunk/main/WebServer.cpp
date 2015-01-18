@@ -293,6 +293,12 @@ namespace http {
 				boost::bind(
 				&CWebServer::GetJSonPage,	// member function
 				this));			// instance of class
+
+			m_pWebEm->RegisterPageCode("/uploadcustomicon",
+				boost::bind(
+				&CWebServer::Post_UploadCustomIcon,
+				this));
+
 			m_pWebEm->RegisterPageCode("/html5.appcache",
 				boost::bind(
 				&CWebServer::GetAppCache,
@@ -329,7 +335,6 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this));
 			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this));
 			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this));
-			m_pWebEm->RegisterActionCode("uploadcustomicon", boost::bind(&CWebServer::UploadCustomIcon, this));
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1), true);
 			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1), true);
@@ -415,6 +420,8 @@ namespace http {
 
 			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_RegisterWithPhilipsHue, this, _1));
 
+			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1));
+			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -7685,27 +7692,6 @@ namespace http {
 			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::UploadCustomIcon()
-		{
-			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
-			}
-
-			std::string zipfile = m_pWebEm->FindValue("fileupload");
-			if (zipfile == "") {
-				return (char*)m_retstr.c_str();
-			}
-			std::string ErrorMessage;
-			bool bOK = m_sql.InsertCustomIconFromZip(zipfile,ErrorMessage);
-			//if (!m_sql.RestoreDatabase(dbasefile))
-				//return (char*)m_retstr.c_str();
-			return (char*)m_retstr.c_str();
-		}
-		
-
 		char * CWebServer::SetP1USBType()
 		{
 			m_retstr = "/index.html";
@@ -11815,21 +11801,56 @@ namespace http {
 			}
 		}
 
+		std::string CWebServer::Post_UploadCustomIcon()
+		{
+			Json::Value root;
+			root["title"] = "UploadCustomIcon";
+			root["status"] = "ERROR";
+			root["error"] = "Invalid";
+			if (m_pWebEm->m_actualuser_rights == 2)
+			{
+				//Only admin user allowed
+				std::string zipfile = m_pWebEm->FindValue("file");
+				if (zipfile != "")
+				{
+					std::string ErrorMessage;
+					bool bOK = m_sql.InsertCustomIconFromZip(zipfile, ErrorMessage);
+					if (bOK)
+					{
+						root["status"] = "OK";
+					}
+					else
+					{
+						root["status"] = "ERROR";
+						root["error"] = ErrorMessage;
+					}
+				}
+			}
+			std::string jcallback = m_pWebEm->FindValue("jsoncallback");
+			if (jcallback.size() == 0)
+				m_retstr = root.toStyledString();
+			else
+			{
+				m_retstr = "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
+			}
+			return m_retstr;
+		}
+
 
 		void CWebServer::Cmd_RegisterWithPhilipsHue(Json::Value &root)
 		{
 			root["title"] = "RegisterOnHue";
 
-	std::string sipaddress = m_pWebEm->FindValue("ipaddress");
-	std::string sport = m_pWebEm->FindValue("port");
-			std::string susername = m_pWebEm->FindValue("username");
-	if (
-		(sipaddress == "") ||
-		(sport == "")
-		)
+			std::string sipaddress = m_pWebEm->FindValue("ipaddress");
+			std::string sport = m_pWebEm->FindValue("port");
+					std::string susername = m_pWebEm->FindValue("username");
+			if (
+				(sipaddress == "") ||
+				(sport == "")
+				)
 				return;
 
-	std::string sresult = CPhilipsHue::RegisterUser(sipaddress,(unsigned short)atoi(sport.c_str()),susername);
+			std::string sresult = CPhilipsHue::RegisterUser(sipaddress,(unsigned short)atoi(sport.c_str()),susername);
 			std::vector<std::string> strarray;
 			StringSplit(sresult, ";", strarray);
 			if (strarray.size() != 2)
@@ -11841,6 +11862,71 @@ namespace http {
 			}
 			root["status"] = "OK";
 			root["username"] = strarray[1];
+		}
+
+		void CWebServer::Cmd_GetCustomIconSet(Json::Value &root)
+		{
+			root["status"] = "OK";
+			root["title"] = "GetCustomIconSet";
+			int ii = 0;
+			std::vector<_tCustomIcon>::const_iterator itt;
+			for (itt = m_custom_light_icons.begin(); itt != m_custom_light_icons.end(); ++itt)
+			{
+				if (itt->idx >= 100)
+				{
+					std::string IconFile16 = "images/" + itt->RootFile + ".png";
+					std::string IconFile48On = "images/" + itt->RootFile + "48_On.png";
+					std::string IconFile48Off = "images/" + itt->RootFile + "48_Off.png";
+
+					root["result"][ii]["idx"] = itt->idx - 100;
+					root["result"][ii]["Title"] = itt->Title;
+					root["result"][ii]["Description"] = itt->Description;
+					root["result"][ii]["IconFile16"] = IconFile16;
+					root["result"][ii]["IconFile48On"] = IconFile48On;
+					root["result"][ii]["IconFile48Off"] = IconFile48Off;
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_DeleteCustomIcon(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string sidx = m_pWebEm->FindValue("idx");
+			if (sidx == "")
+				return;
+			int idx = atoi(sidx.c_str());
+			root["status"] = "OK";
+			root["title"] = "DeleteCustomIcon";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "DELETE FROM CustomImages WHERE (ID == " << idx << ")";
+			result = m_sql.query(szQuery.str());
+
+			//Delete icons file from disk
+			std::vector<_tCustomIcon>::const_iterator itt;
+			for (itt = m_custom_light_icons.begin(); itt != m_custom_light_icons.end(); ++itt)
+			{
+				if (itt->idx == idx+100)
+				{
+					std::string IconFile16 = szWWWFolder + "/images/" + itt->RootFile + ".png";
+					std::string IconFile48On = szWWWFolder + "/images/" + itt->RootFile + "48_On.png";
+					std::string IconFile48Off = szWWWFolder + "/images/" + itt->RootFile + "48_Off.png";
+					std::remove(IconFile16.c_str());
+					std::remove(IconFile48On.c_str());
+					std::remove(IconFile48Off.c_str());
+					break;
+				}
+			}
+
+
+			ReloadCustomSwitchIcons();
 		}
 
 		void CWebServer::RType_GetTransfers(Json::Value &root)
