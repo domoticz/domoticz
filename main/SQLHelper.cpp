@@ -6922,6 +6922,9 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 	std::vector<std::string> _Lines;
 	StringSplit(_defFile, "\n", _Lines);
 	std::vector<std::string>::const_iterator itt;
+
+	int iTotalAdded = 0;
+
 	for (itt = _Lines.begin(); itt != _Lines.end(); ++itt)
 	{
 		std::string sLine = (*itt);
@@ -6941,6 +6944,10 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 			if (result.size() != 0)
 			{
 				ErrorMessage = "Duplicate Icon Entry (Base): " + IconBase;
+				if (iTotalAdded > 0)
+				{
+					m_webserver.ReloadCustomSwitchIcons();
+				}
 				return false;
 				//For Debug we delete the row
 				//szQuery.clear();
@@ -7031,6 +7038,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 				}
 				sqlite3_finalize(stmt);
 				free(pFBuf);
+				iTotalAdded++;
 			}
 		}
 	}

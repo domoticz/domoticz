@@ -18,8 +18,8 @@ define(['app'], function (app) {
 				}
 				else {
 					$scope.myFile = 'undefined';
-					$scope.RefreshIconList();
 				}
+				$scope.RefreshIconList();
 			})
 			.error(function(data){
 				HideNotify();
