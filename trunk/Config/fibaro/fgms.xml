@@ -4,24 +4,6 @@
 
   <!-- Configuration -->
   <CommandClass id="112">
-    <Value type="short" genre="config" instance="1" index="0" label="Wake up interval" min="0" max="65535" value="7200">
-	<Help>
-		At each wake up the Fibaro Motion Sensor communicates with the
-		main controller, updates parameter settings and the software if
-		necessary. The Motion Sensor will wake up at a defined time interval
-		and will ALWAYS try to communicate with the main controller
-		Wake Up Interval set to 0 cancels the WAKE UP command frame,
-		i.e. the device will have to be woke up manually, through the B
-		button, sending NODE INFO command frame.
-		Available settings: 0-65535 (0-65535 seconds).
-		Default setting: 7200 (7200 seconds).
-		NOTE
-		It's not recommended to set the value of Wake Up
-		interval below 10 seconds. Short wake up interval
-		may shorten the battery life and delay the reports or
-		even make them impossible.
-	</Help>
-    </Value>
     <Value type="byte" genre="config" instance="1" index="1" label="Motion sensor's sensitivity" min="0" max="255" value="10">
 	<Help>
 		The lower the value, the more sensitive the PIR sensor.
