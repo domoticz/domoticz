@@ -553,6 +553,73 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 		request_path=request_path.substr(0,paramPos);
 	}
+	if (req.method == "POST") {
+		const char *pContent_Type = req.get_req_header(&req, "Content-Type");
+		if (pContent_Type)
+		{
+			if (strstr(pContent_Type, "multipart") != NULL)
+			{
+				const char *pBoundary = strstr(pContent_Type, "boundary=");
+				if (pBoundary != NULL)
+				{
+					std::string szBoundary = std::string("--") + (pBoundary + 9);
+					//Find boundary in content
+					std::istringstream ss(req.content);
+					std::string csubstr;
+					int ii = 0;
+					std::string vName = "";
+					while (!ss.eof())
+					{
+						safeGetline(ss, csubstr);
+						if (ii == 0)
+						{
+							//Boundary
+							if (csubstr != szBoundary)
+							{
+								rep = reply::stock_reply(reply::bad_request);
+								return false;
+							}
+							ii++;
+						}
+						else if (ii == 1)
+						{
+							if (csubstr.find("Content-Disposition:") != std::string::npos)
+							{
+								size_t npos = csubstr.find("name=\"");
+								if (npos == std::string::npos)
+								{
+									rep = reply::stock_reply(reply::bad_request);
+									return false;
+								}
+								vName = csubstr.substr(npos + 6);
+								npos = vName.find("\"");
+								if (npos == std::string::npos)
+								{
+									rep = reply::stock_reply(reply::bad_request);
+									return false;
+								}
+								vName = vName.substr(0, npos);
+								ii++;
+							}
+						}
+						else if (ii == 2)
+						{
+							if (csubstr.size() == 0)
+							{
+								ii++;
+								//2 empty lines, rest is data
+								std::string szContent;
+								size_t bpos = size_t(ss.tellg());
+								szContent = req.content.substr(bpos, ss.rdbuf()->str().size() - bpos - szBoundary.size() - 6);
+								myNameValues.insert(std::pair< std::string, std::string >(vName, szContent));
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 	// Determine the file extension.
 	std::size_t last_slash_pos = request_path.find_last_of("/");

@@ -6940,7 +6940,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 			std::vector<std::vector<std::string> > result = query(szQuery.str());
 			if (result.size() != 0)
 			{
-				ErrorMessage = "Duplicate Icon Entry (Name)";
+				ErrorMessage = "Duplicate Icon Entry (Base)";
 				return false;
 				//For Debug we delete the row
 				//szQuery.clear();
