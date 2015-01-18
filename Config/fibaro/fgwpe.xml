@@ -110,7 +110,20 @@
        <Item label="Cyan illuminatio" value="7" />
        <Item label="Magenta illumination" value="8" />
        <Item label="illumination turned off completely" value="9" />
-    </Value>	
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="62" label="LED ring illumination colour when controlled device is off" value="8" size="1">
+       <Help>0 - LED ring illumination colour takes on the color corresponding to the last measured power at the time when the device controlled was turn off, 1 - White illumination, 2 - Red illumination, 3 - Green illumination, 4 - Blue illumination, 5 - Yellow illumination, 6 - Cyan illumination, 7 - Magenta illumination, 8 - illumination turned off completely. Default setting: 8</Help>
+       <Item label="Depending on the last measured power" value="0" />
+       <Item label="White illumination" value="1" />
+       <Item label="Red illumination" value="2" />
+       <Item label="Green illumination" value="3" />
+       <Item label="Blue illumination" value="4" />
+       <Item label="Yellow illumination" value="5" />
+       <Item label="Cyan illuminatio" value="6" />
+       <Item label="Magenta illumination" value="7" />
+       <Item label="illumination turned off completely" value="8" />
+    </Value>
 
     <Value type="list" genre="config" instance="1" index="63" label="LED ring illumination colour at the Z-Wave network alarm detection. " value="1" size="1">
       <Help>0 - No change in colour. LED ring illumination colour determined by parameters 61 or 62 settings, 1 - LED ring flashes red / blue / white (default), 2 - White illumination, 3 - Red illumination, 4 - Green illumination, 5 - Blue illumination, 6 - Yellow illumination, 7 - Cyan illumination, 8 - Magenta illumination, 9 - illumination turned off completely. Default setting: 1</Help>

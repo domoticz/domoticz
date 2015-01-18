@@ -59,6 +59,7 @@
 		<Product type="0003" id="0011" name="Micro Double Switch" />
 		<Product type="0002" id="0036" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor.xml"/>
 		<Product type="0004" id="0025" name="Z-Wave Repeater"/>
+		<Product type="0004" id="0050" name="Siren Gen5"/>
 	</Manufacturer>
         <Manufacturer id="0111" name="Airline Mechanical">
                 <Product type="8200" id="0200" name="ZDS-100"/>
@@ -91,6 +92,7 @@
 		<Product type="0007" id="0101" name="Tag Reader" config="BeNext/TagReader.xml"/>
 		<Product type="0008" id="0101" name="Power Switch"/>
 		<Product type="000d" id="0100" name="Built-in Dimmer" config="BeNext/BuiltinDimmer.xml"/>
+		<Product type="0017" id="0100" name="Scene Controller" config="BeNext/SceneController.xml"/>
 		<Product type="0018" id="0100" name="Plug-in Dimmer" config="BeNext/PluginDimmer.xml"/>
 		<Product type="001e" id="0001" name="1Pole Switch" config="BeNext/1poleswitch.xml"/>
 		<Product type="001f" id="0001" name="2Pole Switch" config="BeNext/2poleswitch.xml"/>
@@ -116,6 +118,9 @@
 	<Manufacturer id="0011" name="CasaWorks">
 	</Manufacturer>
 	<Manufacturer id="002f" name="Color Kinetics">
+	</Manufacturer>
+	<Manufacturer id="0179" name="ConnectHome">
+		<Product type="0001" id="0001" name="CH-201 Thermostat"/>
 	</Manufacturer>
 	<Manufacturer id="0019" name="ControlThink">
 	</Manufacturer>
@@ -214,6 +219,7 @@
 	<Manufacturer id="010f" name="FIBARO System">
 		<Product type="0501" id="0101" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0501" id="0102" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
+		<Product type="0501" id="0109" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0501" id="1002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0501" id="4002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0100" id="0104" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
@@ -248,10 +254,9 @@
 		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="1001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="9e00" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
-   		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
-   		<Product type="0900" id="3000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
-   		<Product type="0900" id="4000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
-   		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
+    		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
+    		<Product type="0900" id="4000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
+    		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
   	</Manufacturer>
 	<Manufacturer id="0138" name="First Alert">
     		<Product type="0001" id="0002" name="ZCombo Smoke and Carbon Monoxide Detector" />
@@ -347,6 +352,7 @@
 	<Manufacturer id="0063" name="GE">
 		<Product type="4450" id="3030" name="45602 Lamp Dimmer Module" config="ge/dimmer_module.xml"/>
 		<Product type="4457" id="3230" name="45606 2-Way Dimmer Switch" config="ge/dimmer.xml"/>
+		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
 		<Product type="5250" id="3130" name="45604 Outdoor Module"/>
 		<Product type="5252" id="3530" name="45605 Duplex Receptacle"/>
@@ -633,13 +639,20 @@
 		<Product type="3001" id="0104" name="ZM1602 Main Operated Siren"/>
 	</Manufacturer>
 	<Manufacturer id="0115" name="Z-Wave.Me">
-		<Product type="0001" id="0001" name="Smoke Detector"/>
+		<Product type="0001" id="0001" name="Z-Wave USB Stick"/>
 		<Product type="0001" id="0069" name="Key Fob"/>
 		<Product type="0002" id="0003" name="Z-Wave USB Stick"/>
 		<Product type="0400" id="0001" name="ZME_UZB1 USB Stick"/>
 		<Product type="0024" id="0001" name="Floor Thermostat"/>
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="0100" id="0004" name="ZME_WCD2 Double Paddle Wall Controller" config="zwave.me/ZME_WCD2.xml"/>
+		<Product type="0100" id="0200" name="Smoke Detector"/>
+		<Product type="0100" id="0201" name="Smoke Detector"/>
+		<Product type="0200" id="0001" name="iTemp Temperature Sensor" config="zwave.me/iTemp.xml"/>
+		<Product type="0201" id="0001" name="iTemp Temperature Sensor" config="zwave.me/iTemp.xml"/>
+		<Product type="0201" id="0002" name="Thermostat"/>
+		<Product type="0201" id="0003" name="Binary Sensor"/>
+		<Product type="0400" id="0001" name="ZME_UZB1 USB Stick"/>
 		<Product type="1000" id="0001" name="ZME_054313Z Flush-Mountable Switch" config="zwave.me/ZME_05431.xml"/>
 		<Product type="1000" id="0002" name="ZME_06433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>
 		<Product type="1000" id="0003" name="ZME_06436 Motor Control" config="zwave.me/ZME_06436.xml" />

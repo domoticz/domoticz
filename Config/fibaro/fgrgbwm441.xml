@@ -51,12 +51,17 @@
     <Value type="short" genre="config" instance="1" index="14" label="Inputs / Outputs configuration" value="4369">
       <Help>This is too complex to describe here, since this value is built up from 4-bits for each of the 4 channels.  Refer to the table in the product manual.  Default value is 4369 (1111 in hex).</Help>
     </Value>
+    <Value type="list" genre="config" instance="1" index="15" label="Option double click" size="1" value="1">
+      <Help>Option double click (lighting set at 100%). 0 - Double click disabled, 1 - Double click enabled. Default setting 1</Help>
+      <Item label="Double click disabled" value="0"/>
+      <Item label="Double click enabled" value="1"/>
+    </Value>
     <Value type="list" genre="config" instance="1" index="16" label="Saving state before power faillure" size="1" value="1">
       <Help>Saving state before power faillure</Help>
       <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="30" label="Alarm" size="1" value="3">
+    <Value type="list" genre="config" instance="1" index="30" label="Alarm" size="1" value="0">
       <Help>Alarm of any type (general alarm, water flooding alarm, smoke alarm: CO, CO2, temperature alarm).  Default setting 0 (Inactive)</Help>
       <Item label="INACTIVE - no response to alarm frames" value="0"/>
       <Item label="ALARM ON - the device turns on once alarm is detected (all channels set to 99%)" value="1"/>
