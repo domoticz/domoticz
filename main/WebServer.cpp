@@ -204,7 +204,7 @@ namespace http {
 							if (result2.size() > 0)
 							{
 								std::ofstream file;
-								file.open(IconFile.c_str(), ios::out | ios::binary);
+								file.open(IconFile.c_str(), std::ios::out | std::ios::binary);
 								if (!file.is_open())
 									return;
 
