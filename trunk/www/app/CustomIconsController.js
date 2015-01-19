@@ -73,10 +73,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
-			var htmlcontent = "";
-			htmlcontent+=$('#iconsmain').html();
-			$('#customiconcontent').html($compile(htmlcontent)($scope));
-			$('#customiconcontent').i18n();
+			$('#iconsmain').i18n();
 			$scope.RefreshIconList();
 		};
 
