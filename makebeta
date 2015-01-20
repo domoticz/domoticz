@@ -74,7 +74,7 @@ then
   rm ${archive_file}.sha256sum
 fi
 
-tar -zcf ${archive_file} domoticz History.txt License.txt svnversion.h domoticz.sh --exclude .svn www/ scripts/ Config/
+tar -zcf ${archive_file} domoticz History.txt License.txt svnversion.h domoticz.sh server_cert.pem --exclude .svn www/ scripts/ Config/
 if [ $? -ne 0 ]
 then
         echo "Error creating archive!";
