@@ -528,6 +528,9 @@
     <ClInclude Include="..\main\unzip_stream.h">
       <Filter>zip\Main</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\net_skeleton.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -823,6 +826,9 @@
     </ClCompile>
     <ClCompile Include="..\main\DataPush.cpp">
       <Filter>Devices\FibaroLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\net_skeleton.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

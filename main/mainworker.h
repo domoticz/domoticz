@@ -43,6 +43,9 @@ public:
 	void SetVerboseLevel(eVerboseLevel Level);
 	void SetWebserverPort(const std::string &Port);
 	std::string GetWebserverPort();
+	void SetSecureWebserverPort(const std::string &Port);
+	std::string GetSecureWebserverPort();
+	void SetSecureWebserverCert(const std::string &CertFile);
 
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 
@@ -137,6 +140,8 @@ private:
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
 	eVerboseLevel m_verboselevel;
 	std::string m_webserverport;
+	std::string m_secure_webserverport;
+	std::string m_secure_web_cert_file;
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;

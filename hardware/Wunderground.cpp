@@ -137,6 +137,12 @@ void CWunderground::GetMeterDetails()
 		_log.Log(LOG_ERROR,"WUnderground: Invalid data received, or unknown location!");
 		return;
 	}
+
+//	std::string tmpstr2 = root.toStyledString();
+//	FILE *fOut = fopen("E:\\underground.json", "wb+");
+//	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
+//	fclose(fOut);
+
 	std::string tmpstr;
 	int pos;
 	float temp;

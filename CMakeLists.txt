@@ -230,6 +230,7 @@ webserver/connection.cpp
 webserver/connection_manager.cpp
 webserver/cWebem.cpp
 webserver/mime_types.cpp
+webserver/net_skeleton.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp
@@ -272,6 +273,7 @@ IF(CURL_FOUND)
   MESSAGE(STATUS "Curl libraries found at: ${CURL_LIBRARIES}")
   MESSAGE(STATUS "Curl includes found at: ${CURL_INCLUDE_DIRS}")
   INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
+  add_definitions(-DNS_ENABLE_SSL)
 else()
   MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
 ENDIF(CURL_FOUND)

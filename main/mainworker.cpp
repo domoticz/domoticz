@@ -102,6 +102,8 @@ m_LastSunriseSet("")
 	m_bStartHardware=false;
 	m_hardwareStartCounter=0;
 	m_webserverport="8080";
+	m_secure_webserverport = "";
+	m_secure_web_cert_file = "./server_cert.pem";
 	m_bIgnoreUsernamePassword=false;
 
 	time_t atime=mytime(NULL);
@@ -356,6 +358,22 @@ std::string MainWorker::GetWebserverPort()
 {
 	return m_webserverport;
 }
+
+void MainWorker::SetSecureWebserverPort(const std::string &Port)
+{
+	m_secure_webserverport = Port;
+}
+
+std::string MainWorker::GetSecureWebserverPort()
+{
+	return m_secure_webserverport;
+}
+
+void MainWorker::SetSecureWebserverCert(const std::string &CertFile)
+{
+	m_secure_web_cert_file = CertFile;
+}
+
 
 bool MainWorker::RestartHardware(const std::string &idx)
 {
@@ -699,7 +717,7 @@ bool MainWorker::Stop()
 bool MainWorker::StartThread()
 {
 	//Start WebServer
-	if (!m_webserver.StartServer("0.0.0.0",m_webserverport,szWWWFolder,m_bIgnoreUsernamePassword))
+	if (!m_webserver.StartServer("0.0.0.0", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_bIgnoreUsernamePassword))
 	{
         return false;
 	}
