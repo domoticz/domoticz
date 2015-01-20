@@ -16,9 +16,9 @@ DESC="Domoticz Home Automation System"
 NAME=domoticz
 USERNAME=pi
 DAEMON=/home/$USERNAME/domoticz/$NAME
-#DAEMON_ARGS="-daemon -www 8080 -log /tmp/domoticz.txt"
-#DAEMON_ARGS="-daemon -www 8080 -syslog"
-DAEMON_ARGS="-daemon -www 8080"
+#DAEMON_ARGS="-daemon -www 8080 -sslwww 443 -log /tmp/domoticz.txt"
+#DAEMON_ARGS="-daemon -www 8080 -sslwww 443 -syslog"
+DAEMON_ARGS="-daemon -www 8080 -sslwww 443"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
