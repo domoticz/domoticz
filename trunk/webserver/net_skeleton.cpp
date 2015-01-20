@@ -36,6 +36,8 @@
 #define NS_UDP_RECEIVE_BUFFER_SIZE  2000
 #define NS_VPRINTF_BUFFER_SIZE      500
 
+//#define INVALID_SOCKET -1
+
 struct ctl_msg {
   ns_callback_t callback;
   char message[1024 * 8];
