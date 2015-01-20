@@ -451,7 +451,7 @@ void CScheduler::CheckSchedules()
 							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 						}
 					}
-					if (itt->bIsThermostat == true)
+					else if (itt->bIsThermostat == true)
 					{
 						std::stringstream sstr;
 						sstr << itt->RowID;
