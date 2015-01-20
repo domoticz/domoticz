@@ -199,7 +199,9 @@
  * on Windows.
  */
 #define	S_ISFIFO(mode) (((mode) & S_IFMT) == S_IFIFO)
+#ifndef S_ISDIR
 #define	S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
+#endif
 #define	S_ISREG(mode)  (((mode) & S_IFMT) == S_IFREG)
 #define	S_ISLNK(mode)  (((mode) & S_IFMT) == S_IFLNK)
 #define	S_ISSOCK(mode) (((mode) & S_IFMT) == S_IFSOCK)

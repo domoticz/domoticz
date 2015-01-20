@@ -44,6 +44,10 @@
 const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
+#ifdef NS_ENABLE_SSL
+	"\t-sslwww port (for example -sslwww 443)\n"
+	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
+#endif
 #if defined WIN32
 	"\t-wwwroot file_path (for example D:\\www)\n"
 	"\t-dbase file_path (for example D:\\domoticz.db)\n"
@@ -72,6 +76,7 @@ const char *szHelp=
 
 std::string szStartupFolder;
 std::string szWWWFolder;
+
 bool bHasInternalTemperature=false;
 std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
 
@@ -328,17 +333,17 @@ int main(int argc, char**argv)
 #if defined WIN32
 #ifndef _DEBUG
 	CreateMutexA(0, FALSE, "Local\\Domoticz"); 
-    if(GetLastError() == ERROR_ALREADY_EXISTS) { 
+	if(GetLastError() == ERROR_ALREADY_EXISTS) { 
 		MessageBox(HWND_DESKTOP,"Another instance of Domoticz is already running!","Domoticz",MB_OK);
-        return 1; 
+		return 1; 
 	}
 #endif //_DEBUG
-	bool bStartWebBrowser=true;
+	bool bStartWebBrowser = true;
 	RedirectIOToConsole();
 #endif //WIN32
 
-	szStartupFolder="";
-	szWWWFolder="";
+	szStartupFolder = "";
+	szWWWFolder = "";
 
 	CCmdLine cmdLine;
 
@@ -374,9 +379,9 @@ int main(int argc, char**argv)
 
 	if (cmdLine.HasSwitch("-approot"))
 	{
-		if (cmdLine.GetArgumentCount("-approot")!=1)
+		if (cmdLine.GetArgumentCount("-approot") != 1)
 		{
-			_log.Log(LOG_ERROR,"Please specify a APP root path");
+			_log.Log(LOG_ERROR, "Please specify a APP root path");
 			return 1;
 		}
 		std::string szroot = cmdLine.GetSafeArgument("-approot", 0, "");
@@ -414,7 +419,7 @@ int main(int argc, char**argv)
 #endif
 	}
 	GetAppVersion();
-	_log.Log(LOG_STATUS,"Domoticz V%s (c)2012-2014 GizMoCuz",szAppVersion.c_str());
+	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-2014 GizMoCuz", szAppVersion.c_str());
 
 #if !defined WIN32
 	//Check if we are running on a RaspberryPi
@@ -459,42 +464,65 @@ int main(int argc, char**argv)
 	_log.Log(LOG_STATUS,"Startup Path: %s", szStartupFolder.c_str());
 #endif
 
-	szWWWFolder=szStartupFolder+"www";
+	szWWWFolder = szStartupFolder + "www";
 
-	if ((cmdLine.HasSwitch("-h"))||(cmdLine.HasSwitch("--help"))||(cmdLine.HasSwitch("/?")))
+	if ((cmdLine.HasSwitch("-h")) || (cmdLine.HasSwitch("--help")) || (cmdLine.HasSwitch("/?")))
 	{
-		_log.Log(LOG_NORM,szHelp);
+		_log.Log(LOG_NORM, szHelp);
 		return 0;
 	}
 
 	if (cmdLine.HasSwitch("-startupdelay"))
 	{
-		if (cmdLine.GetArgumentCount("-startupdelay")!=1)
+		if (cmdLine.GetArgumentCount("-startupdelay") != 1)
 		{
-			_log.Log(LOG_ERROR,"Please specify a startupdelay");
+			_log.Log(LOG_ERROR, "Please specify a startupdelay");
 			return 1;
 		}
-		int DelaySeconds=atoi(cmdLine.GetSafeArgument("-startupdelay",0,"").c_str());
-		_log.Log(LOG_STATUS,"Startup delay... waiting %d seconds...",DelaySeconds);
+		int DelaySeconds = atoi(cmdLine.GetSafeArgument("-startupdelay", 0, "").c_str());
+		_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
 		sleep_seconds(DelaySeconds);
 	}
 
 	if (cmdLine.HasSwitch("-www"))
 	{
-		if (cmdLine.GetArgumentCount("-www")!=1)
+		if (cmdLine.GetArgumentCount("-www") != 1)
 		{
-			_log.Log(LOG_ERROR,"Please specify a port");
+			_log.Log(LOG_ERROR, "Please specify a port");
 			return 1;
 		}
-		std::string wwwport=cmdLine.GetSafeArgument("-www",0,"8080");
+		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "8080");
 		m_mainworker.SetWebserverPort(wwwport);
 	}
+#ifdef NS_ENABLE_SSL
+	if (cmdLine.HasSwitch("-sslwww"))
+	{
+		if (cmdLine.GetArgumentCount("-sslwww") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a port");
+			return 1;
+		}
+		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "443");
+		m_mainworker.SetSecureWebserverPort(wwwport);
+	}
+	if (cmdLine.HasSwitch("-sslcert"))
+	{
+		if (cmdLine.GetArgumentCount("-sslcert") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a port");
+			return 1;
+		}
+		std::string ca_cert = cmdLine.GetSafeArgument("-sslcert", 0, "./server_cert.pem");
+		m_mainworker.SetSecureWebserverCert(ca_cert);
+	}
+	
+#endif
 	if (cmdLine.HasSwitch("-nowwwpwd"))
 	{
-		m_mainworker.m_bIgnoreUsernamePassword=true;
+		m_mainworker.m_bIgnoreUsernamePassword = true;
 	}
 
-	std::string dbasefile=szStartupFolder + "domoticz.db";
+	std::string dbasefile = szStartupFolder + "domoticz.db";
 #ifdef WIN32
 	if (!IsUserAnAdmin())
 	{
@@ -502,61 +530,61 @@ int main(int argc, char**argv)
 		HRESULT hr = SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath);
 		if (SUCCEEDED(hr))
 		{
-			std::string sPath=szPath;
-			sPath+="\\Domoticz";
+			std::string sPath = szPath;
+			sPath += "\\Domoticz";
 
 			DWORD dwAttr = GetFileAttributes(sPath.c_str());
-			BOOL bDirExists=(dwAttr != 0xffffffff && (dwAttr & FILE_ATTRIBUTE_DIRECTORY));
+			BOOL bDirExists = (dwAttr != 0xffffffff && (dwAttr & FILE_ATTRIBUTE_DIRECTORY));
 			if (!bDirExists)
 			{
-				BOOL bRet=CreateDirectory(sPath.c_str(),NULL);
-				if (bRet==FALSE) {
-					MessageBox(0,"Error creating Domoticz directory in program data folder (%ProgramData%)!!","Error:",MB_OK);
+				BOOL bRet = CreateDirectory(sPath.c_str(), NULL);
+				if (bRet == FALSE) {
+					MessageBox(0, "Error creating Domoticz directory in program data folder (%ProgramData%)!!", "Error:", MB_OK);
 				}
 			}
-			sPath+="\\domoticz.db";
-			dbasefile=sPath;
+			sPath += "\\domoticz.db";
+			dbasefile = sPath;
 		}
 	}
 #endif
 
 	if (cmdLine.HasSwitch("-dbase"))
 	{
-		if (cmdLine.GetArgumentCount("-dbase")!=1)
+		if (cmdLine.GetArgumentCount("-dbase") != 1)
 		{
-			_log.Log(LOG_ERROR,"Please specify a Database Name");
+			_log.Log(LOG_ERROR, "Please specify a Database Name");
 			return 1;
 		}
-		dbasefile=cmdLine.GetSafeArgument("-dbase",0,"domoticz.db");
+		dbasefile = cmdLine.GetSafeArgument("-dbase", 0, "domoticz.db");
 	}
 	m_sql.SetDatabaseName(dbasefile);
 
 	if (cmdLine.HasSwitch("-wwwroot"))
 	{
-		if (cmdLine.GetArgumentCount("-wwwroot")!=1)
+		if (cmdLine.GetArgumentCount("-wwwroot") != 1)
 		{
-			_log.Log(LOG_ERROR,"Please specify a WWW root path");
+			_log.Log(LOG_ERROR, "Please specify a WWW root path");
 			return 1;
 		}
-		std::string szroot=cmdLine.GetSafeArgument("-wwwroot",0,"");
-		if (szroot.size()!=0)
-			szWWWFolder=szroot;
+		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
+		if (szroot.size() != 0)
+			szWWWFolder = szroot;
 	}
 
 	if (cmdLine.HasSwitch("-verbose"))
 	{
-		if (cmdLine.GetArgumentCount("-verbose")!=1)
+		if (cmdLine.GetArgumentCount("-verbose") != 1)
 		{
-			_log.Log(LOG_ERROR,"Please specify a verbose level");
+			_log.Log(LOG_ERROR, "Please specify a verbose level");
 			return 1;
 		}
-		int Level=atoi(cmdLine.GetSafeArgument("-verbose",0,"").c_str());
+		int Level = atoi(cmdLine.GetSafeArgument("-verbose", 0, "").c_str());
 		m_mainworker.SetVerboseLevel((eVerboseLevel)Level);
 	}
 #if defined WIN32
 	if (cmdLine.HasSwitch("-nobrowser"))
 	{
-		bStartWebBrowser=false;
+		bStartWebBrowser = false;
 	}
 #endif
 	if (cmdLine.HasSwitch("-nocache"))
@@ -593,18 +621,18 @@ int main(int argc, char**argv)
 		signal(SIGINT, signal_handler);
 		signal(SIGTERM, signal_handler);
 	}
-	
+
 	if (!m_mainworker.Start())
 	{
 		return 1;
 	}
-	/* now, lets get into an infinite loop of doing nothing. */
 
+	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
 #ifndef _DEBUG
 	RedirectIOToConsole();	//hide console
 #endif
-	InitWindowsHelper(hInstance,hPrevInstance,nShowCmd,atoi(m_mainworker.GetWebserverPort().c_str()),bStartWebBrowser);
+	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
 	MSG Msg;
 	while (!g_bStopApplication)
 	{
@@ -622,7 +650,9 @@ int main(int argc, char**argv)
 	TrayMessage(NIM_DELETE, NULL);
 #else
 	while ( !g_bStopApplication )
+	{
 		sleep_seconds(1);
+	}
 #endif
 	_log.Log(LOG_STATUS, "Closing application!...");
 	fflush(stdout);

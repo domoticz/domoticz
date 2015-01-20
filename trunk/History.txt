@@ -1,4 +1,4 @@
-Version 2.0.xxxx (October xxth 2014)
+Version 2.0.xxxx (January xxth 2015)
 - Implemented: Icon scaling setting per floorplan
 - Updated: floorplan code to handle non-landscape images better
 - Fixed: Possible crash in Eventsystem (GetCurrentMeasurementStates) where string value was empty
@@ -87,6 +87,7 @@ Version 2.0.xxxx (October xxth 2014)
 - Implemented: Wind Gust chart
 - Fixed: Dimmer slider resize
 - Implemented: Option to upload/use Custom Icons for On/Off switches (See updated manual)
+- Implemented: native HTTPS support
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
