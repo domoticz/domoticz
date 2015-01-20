@@ -109,17 +109,6 @@ if(NOT SQLITE3_LIBRARY)
   message(SEND_ERROR "Failed to find the sqlite3 library")
 endif()
 
-find_path(OPENSSL_INCLUDE_DIR openssl/ssl.h)
-find_library(OPENSSL_LIBRARY ssl)
-if(NOT OPENSSL_INCLUDE_DIR)
-  message(SEND_ERROR "Failed to find openssl include files (ssl.h)")
-endif()
-if(NOT OPENSSL_LIBRARY)
-  message(SEND_ERROR "Failed to find the openssl library")
-else()
-  add_definitions(-DNS_ENABLE_SSL)
-endif()
-
 FIND_PROGRAM(SVN_EXECUTABLE svn
   DOC "subversion command line client")
 
@@ -304,6 +293,18 @@ else()
   MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
 
+find_path(OPENSSL_INCLUDE_DIR openssl/ssl.h)
+find_library(OPENSSL_LIBRARY ssl)
+if(NOT OPENSSL_INCLUDE_DIR)
+  message(SEND_ERROR "Failed to find openssl include files (ssl.h), no HTTPS support")
+endif()
+if(NOT OPENSSL_LIBRARY)
+  message(SEND_ERROR "Failed to find the openssl library, no HTTPS support")
+else()
+  add_definitions(-DNS_ENABLE_SSL)
+  target_link_libraries(domoticz ${OPENSSL_LIBRARY})
+endif()
+
 ## support lua popen on Linux platforms
 #IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 #	SET(OperatingSystem "Linux")
@@ -364,7 +365,7 @@ else()
 	message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
 ENDIF(RaspberryPi)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua ${CMAKE_DL_LIBS} ${OPENSSL_LIBRARY})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua ${CMAKE_DL_LIBS})
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
