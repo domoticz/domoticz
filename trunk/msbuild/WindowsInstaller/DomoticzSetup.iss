@@ -54,11 +54,14 @@ Source: "..\..\Config\*"; DestDir: {app}\Config; Flags: recursesubdirs createall
 Source: "..\..\scripts\*"; DestDir: {app}\scripts; Flags: recursesubdirs createallsubdirs ignoreversion;
 Source: "..\Debug\sqlite3.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Debug\libeay32.dll"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Debug\libssl32.dll"; DestDir: {app}; Flags: ignoreversion;
 ;Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\Manual\DomoticzManual.pdf"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\History.txt"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\svnversion.h"; DestDir: {app}; Flags: ignoreversion;
 Source: ".\nssm.exe"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\..\server_cert.pem"; DestDir: {app}; Flags: ignoreversion;
 
 [Icons]
 Name: "{group}\Domoticz"; Filename: "{app}\{#MyAppExeName}"; Parameters: "{code:GetParams}" ; Tasks: RunAsApp; 
@@ -92,12 +95,12 @@ var
  
 function GetParams(Value: string): string;
 begin
-  Result := '-www '+ConfigPage.Values[0]+' -log "'+ LogConfigPage.Values[0] +'\domoticz.log"';
+  Result := '-www '+ConfigPage.Values[0]+' -sslwww '+ConfigPage.Values[1]+' -log "'+ LogConfigPage.Values[0] +'\domoticz.log"';
 end;
 
 function GetParamsService(Value: string): string;
 begin
-  Result := '-www '+ConfigPage.Values[0]+' -log ""'+ LogConfigPage.Values[0] +'\domoticz.log""';
+  Result := '-www '+ConfigPage.Values[0]+' -sslwww '+ConfigPage.Values[1]+' -log ""'+ LogConfigPage.Values[0] +'\domoticz.log""';
 end;
 
 procedure InitializeWizard;
@@ -106,9 +109,13 @@ begin
   ConfigPage := CreateInputQueryPage(wpSelectComponents,
   'User settings', 'Port number', 'Please specify the port on which Domoticz will run');
   // Add items (False means it's not a password edit)
-  ConfigPage.Add('Port number:', False);
+  ConfigPage.Add('HTTP Port number:', False);
   // Set initial values (optional)
   ConfigPage.Values[0] := ExpandConstant('8080');
+
+  ConfigPage.Add('HTTPS Port number:', False);
+  // Set initial values (optional)
+  ConfigPage.Values[1] := ExpandConstant('443');
 
   LogConfigPage := CreateInputDirPage(wpSelectComponents,
     'Select Log File Location', 'Where should the log file be stored?',
