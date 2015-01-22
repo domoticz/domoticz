@@ -55,7 +55,7 @@ Source: "..\..\scripts\*"; DestDir: {app}\scripts; Flags: recursesubdirs createa
 Source: "..\Debug\sqlite3.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Debug\libeay32.dll"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\Debug\libssl32.dll"; DestDir: {app}; Flags: ignoreversion;
+Source: "..\Debug\ssleay32.dll"; DestDir: {app}; Flags: ignoreversion;
 ;Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\Manual\DomoticzManual.pdf"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\History.txt"; DestDir: {app}; Flags: ignoreversion;

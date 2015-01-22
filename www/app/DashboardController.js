@@ -1327,7 +1327,6 @@ define(['app'], function (app) {
 		  var bAllowWidgetReorder = true;
 		  
 			var htmlcontent = "";
-			htmlcontent+=EvohomeAddJS();
 
 			var bShowRoomplan=false;
 			$.RoomPlans = [];
@@ -3053,7 +3052,7 @@ define(['app'], function (app) {
 			}
 				
 			
-			$('#dashcontent').html(suntext+htmlcontent);
+			$('#dashcontent').html(suntext+htmlcontent+EvohomeAddJS());
 			$('#dashcontent').i18n();
 
 			if (bShowRoomplan==true) {
@@ -3234,16 +3233,23 @@ define(['app'], function (app) {
 
 		$scope.ResizeDimSliders = function()
 		{
-			var width=$(".span4").width()-70;
+			var nobj=$("#dashcontent #name");
+			if (typeof nobj == 'undefined') {
+				return;
+			}
+			
+			var width=$("#dashcontent #name").width()-40;
+			//var width=$(".span4").width()-70;
 			$("#dashcontent .span4 .dimslidernorm").width(width);
-			width=$(".span3").width()-70;
+			//width=$(".span3").width()-70;
 			$("#dashcontent .span3 .dimslidernorm").width(width);
 			width=$(".mobileitem").width()-63;
 			$("#dashcontent .mobileitem .dimslidernorm").width(width);
 
-			width=$(".span4").width()-118;
+			var width=$("#dashcontent #name").width()-40;
+			//width=$(".span4").width()-118;
 			$("#dashcontent .span4 .dimslidersmall").width(width);
-			width=$(".span3").width()-112;
+			//width=$(".span3").width()-112;
 			$("#dashcontent .span3 .dimslidersmall").width(width);
 			width=$(".mobileitem").width()-63;
 			$("#dashcontent .mobileitem .dimslidersmall").width(width);
