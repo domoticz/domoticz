@@ -2208,10 +2208,14 @@ define(['app'], function (app) {
 			}, 10000);
 		  return false;
 		}
-
+		
 		$scope.ResizeDimSliders = function()
 		{
-			var width=$(".span4").width()-90;
+			var nobj = $("#lightcontent #name");
+			if (typeof nobj == 'undefined') {
+				return;
+			}
+			var width=nobj.width()-50;
 			$("#lightcontent .dimslider").width(width);
 		}
 
