@@ -30,7 +30,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editraindevice #devicename").val(name);
+		  $("#dialog-editraindevice #devicename").val(decodeURIComponent(name));
 		  $("#dialog-editraindevice #multiply").val(addjmulti);
 		  $("#dialog-editraindevice" ).dialog( "open" );
 		}
@@ -42,7 +42,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editbarodevice #devicename").val(name);
+		  $("#dialog-editbarodevice #devicename").val(decodeURIComponent(name));
 		  $("#dialog-editbarodevice #adjustment").val(addjvalue);
 		  $("#dialog-editbarodevice" ).dialog( "open" );
 		}
@@ -54,7 +54,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editvisibilitydevice #devicename").val(name);
+		  $("#dialog-editvisibilitydevice #devicename").val(decodeURIComponent(name));
 		  $("#dialog-editvisibilitydevice #combometertype").val(switchtype);
 		  $("#dialog-editvisibilitydevice" ).dialog( "open" );
 		}
@@ -66,7 +66,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editweatherdevice #devicename").val(name);
+		  $("#dialog-editweatherdevice #devicename").val(decodeURIComponent(name));
 		  $( "#dialog-editweatherdevice" ).dialog( "open" );
 		}
 
@@ -424,45 +424,45 @@ define(['app'], function (app) {
 				  }
 
 				  if (typeof item.Barometer != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowBaroLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowBaroLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.Rain != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowRainLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowRainLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.UVI != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowUVLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowUVLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.Direction != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowWindLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowWindLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.Visibility != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.Radiation != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + item.Name+ '\',' + item.SwitchTypeVal +', \'Radiation\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');" data-i18n="Log">Log</a> ';
 				  }
 				  if (permissions.hasPermission("Admin")) {
 					  if (bHaveRain) {
-						xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
 					  }
 					  else if (bHaveVisibility) {
-						xhtm+='<a class="btnsmall" onclick="EditVisibilityDevice(' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditVisibilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
 					  }
 					  else if (bHaveRadiation) {
-						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
 					  }
 					  else if (bHaveBaro) {
-						xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';
 					  }
 					  else {
-						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + item.Name + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
 					  }
 					  if (item.Notifications == "true")
-						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
+						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
 					  else
-						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
+						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
 						if (typeof item.forecast_url != 'undefined') {
-							xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + item.Name + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Forecast">Forecast</a>';
+							xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + encodeURIComponent(item.Name) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Forecast">Forecast</a>';
 						}
 				  }
 				  xhtm+=      

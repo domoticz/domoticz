@@ -612,7 +612,7 @@ define(['app'], function (app) {
 						  "iDisplayLength" : 25,
 						  "sPaginationType": "full_numbers"
 						} );
-			$("#scenecontent #devicename").val(name);
+			$("#scenecontent #devicename").val(decodeURIComponent(name));
 
 			$("#scenecontent #combodevice").html("");
 			
@@ -1061,7 +1061,7 @@ define(['app'], function (app) {
 			
 			$('#modal').show();
 		  var htmlcontent = '';
-		  htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + name + '</h2></p><br>\n';
+		  htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + decodeURIComponent(name) + '</h2></p><br>\n';
 		  
 		  var sunRise="";
 		  var sunSet="";
@@ -1321,7 +1321,7 @@ define(['app'], function (app) {
 						'\t      <td id="bigtext">';
 					  if (item.UsedByCamera==true) {
 						var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
-						streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+						streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 						xhtm+=streamurl;
 					  }
 					  xhtm+='</td>\n';
@@ -1359,13 +1359,13 @@ define(['app'], function (app) {
 						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + item.Name + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 							if (item.Timers == "true") {
-								xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
+								xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
 							}
 							else {
-								xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',\'' + item.Type +'\');" data-i18n="Timers">Timers</a> ';
+								xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',\'' + item.Type +'\');" data-i18n="Timers">Timers</a> ';
 							}
 						}
 				  }
