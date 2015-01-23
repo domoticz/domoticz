@@ -422,7 +422,7 @@ define(['app'], function (app) {
 			
 			$('#modal').show();
 			var htmlcontent = '';
-			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + name + '</h2></p><br>\n';
+			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + decodeURIComponent(name) + '</h2></p><br>\n';
 
 			var sunRise="";
 			var sunSet="";
@@ -1040,7 +1040,7 @@ define(['app'], function (app) {
 
 			$('#lightcontent #picker').colpickSetColor(cHSB);
 
-			$("#lightcontent #devicename").val(name);
+			$("#lightcontent #devicename").val(decodeURIComponent(name));
 			
 			if ($.stype=="Security") {
 				$("#lightcontent #SwitchType").hide();
@@ -1766,7 +1766,7 @@ define(['app'], function (app) {
 										'\t      <td id="bigtext">';
 				  if (item.UsedByCamera==true) {
 					var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
-					streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+					streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 					xhtm+=streamurl;
 				  }
 				  
@@ -2039,16 +2039,16 @@ define(['app'], function (app) {
 							  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 					  }
 				  xhtm+=
-						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
+						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
 				  if (permissions.hasPermission("Admin")) {
 					  xhtm+=
-							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + item.Name + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 								if (bAddTimer == true) {
 											if (item.Timers == "true") {
-												xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
+												xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
 											}
 											else {
-												xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + item.Name + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
+												xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
 											}
 								}
 								if (item.SwitchType == "Smoke Detector") {
@@ -2063,9 +2063,9 @@ define(['app'], function (app) {
 									}
 					  }					
 					  if (item.Notifications == "true")
-						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Notifications">Notifications</a>';
+						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Notifications">Notifications</a>';
 					  else
-						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Notifications">Notifications</a>';
+						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Notifications">Notifications</a>';
 				  }
 				  xhtm+=
 						'</td>\n' +

@@ -29,7 +29,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			$.devIdx=idx;
-			$("#dialog-edittempdevice #devicename").val(name);
+			$("#dialog-edittempdevice #devicename").val(decodeURIComponent(name));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
 			$("#dialog-edittempdevice #tempcf").html($.myglobals.tempsign);
 			$("#dialog-edittempdevice" ).dialog( "open" );
@@ -42,7 +42,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			$.devIdx=idx;
-			$("#dialog-edittempdevicesmall #devicename").val(name);
+			$("#dialog-edittempdevicesmall #devicename").val(decodeURIComponent(name));
 			$("#dialog-edittempdevicesmall" ).dialog( "open" );
 		}
 		
@@ -65,7 +65,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			$.devIdx=idx;
-			$("#dialog-editsetpoint #devicename").val(name);
+			$("#dialog-editsetpoint #devicename").val(decodeURIComponent(name));
 			$("#dialog-editsetpoint #setpoint").val(setpoint);
 			if(mode.indexOf("Override")==-1)
 				$(":button:contains('Cancel Override')").attr("disabled","d‌​isabled").addClass( 'ui-state-disabled' );
@@ -84,7 +84,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			$.devIdx=idx;
-			$("#dialog-editstate #devicename").val(name);
+			$("#dialog-editstate #devicename").val(decodeURIComponent(name));
 			$("#dialog-editstate #state").val(state);
 			if(mode.indexOf("Override")==-1)
 				$(":button:contains('Cancel Override')").attr("disabled","d‌​isabled").addClass( 'ui-state-disabled' );
@@ -949,26 +949,26 @@ define(['app'], function (app) {
 						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  xhtm+=
-						'<a class="btnsmall" onclick="ShowTempLog(\'#tempcontent\',\'ShowTemps\',' + item.idx + ',\'' + item.Name + '\');" data-i18n="Log">Log</a> ';
+						'<a class="btnsmall" onclick="ShowTempLog(\'#tempcontent\',\'ShowTemps\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				if (permissions.hasPermission("Admin")) {
 				  if (item.Type=="Humidity") {
-					  xhtm+='<a class="btnsmall" onclick="EditTempDeviceSmall(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
+					  xhtm+='<a class="btnsmall" onclick="EditTempDeviceSmall(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
 				  }
 				  else {
-					  xhtm+='<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + item.Name + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
+					  xhtm+='<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
 				  }
 				  if (item.Notifications == "true")
-					xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
+					xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
 				  else
-					xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
+					xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
 				}
 				if (typeof item.forecast_url != 'undefined') {
-					xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + item.Name + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Forecast">Forecast</a>';
+					xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + encodeURIComponent(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Forecast">Forecast</a>';
 				}
 				if (typeof item.SetPoint != 'undefined')
-					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
+					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SetPoint + ', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
 				if (typeof item.State != 'undefined')
-					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.State + '\', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
+					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditState(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',\'' + item.State + '\', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
 				
 							xhtm+=
 						'</td>\n' +
