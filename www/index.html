@@ -100,6 +100,8 @@
 function NotifyCacheRefresh()
 {
 	$.cachenoty=generate_noty('information', '<b>' + $.i18n('Browser Cache is being refreshed') + '...</b><br>' + $.i18n('Please standby') + '...', false);
+	$.cachecount=0
+	$.cachetotal=0
 }
 
 function ClearNotifyCacheRefresh()
@@ -290,6 +292,21 @@ $(document).ready(function() {
 					window.applicationCache.swapCache();
 					window.location.reload();
 				}
+			}, false);
+			
+			window.applicationCache.addEventListener('error', function(e)
+			{
+				var errText = $.i18n('Browser Cache refresh failed.');
+				errText += (typeof($.cachecount) != 'undefined') ? '<br>Loaded ' + $.cachecount + ' of ' + $.cachetotal + ' files' : '';
+				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
+				ClearNotifyCacheRefresh();
+				generate_noty('error', errText, false);
+			}, false);
+
+			window.applicationCache.addEventListener('progress', function(e)
+			{
+				$.cachecount=e.loaded
+				$.cachetotal=e.total
 			}, false);
 	}
 	
