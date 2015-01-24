@@ -177,6 +177,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
+		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

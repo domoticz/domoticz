@@ -904,7 +904,7 @@ namespace http {
 			int mode4 = 0;
 			int mode5 = 0;
 			int port = atoi(sport.c_str());
-			if ((htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) || (htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick))
+			if ((htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) || (htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_MySensorsUSB))
 			{
 				//USB
 				if ((htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433))
@@ -1044,7 +1044,7 @@ namespace http {
 			if (
 				(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) ||
 				(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
-				(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_System)
+				(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_System) || (htype == HTYPE_MySensorsUSB)
 				)
 			{
 				//USB/System
@@ -9294,6 +9294,7 @@ namespace http {
 						}
 						root["result"][ii]["CounterToday"] = szTmp;
 
+
 						std::vector<std::string> splitresults;
 						StringSplit(sValue, ";", splitresults);
 						if (splitresults.size() < 2)
@@ -15865,6 +15866,29 @@ namespace http {
 								break;
 							}
 							root["counter"] = szTmp;
+						}
+						else if (dType == pTypeYouLess)
+						{
+							std::vector<std::string> results;
+							StringSplit(sValue, ";", results);
+							if (results.size() == 2)
+							{
+								//Add last counter value
+								float fvalue = static_cast<float>(atof(results[0].c_str()));
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+									sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
+									break;
+								case MTYPE_GAS:
+									sprintf(szTmp, "%.2f", fvalue / GasDivider);
+									break;
+								case MTYPE_WATER:
+									sprintf(szTmp, "%.2f", fvalue / WaterDivider);
+									break;
+								}
+								root["counter"] = szTmp;
+							}
 						}
 						//Actual Year
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";

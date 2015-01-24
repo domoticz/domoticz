@@ -180,6 +180,9 @@
     <Filter Include="zip\Main">
       <UniqueIdentifier>{d94c51e7-f020-47eb-b458-27268f4853eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\MySensors">
+      <UniqueIdentifier>{16e4b391-9590-41fe-b5fa-aaf91d629b2b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -531,6 +534,12 @@
     <ClInclude Include="..\webserver\net_skeleton.h">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\MySensorsBase.h">
+      <Filter>Devices\MySensors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\MySensorsSerial.h">
+      <Filter>Devices\MySensors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -829,6 +838,12 @@
     </ClCompile>
     <ClCompile Include="..\webserver\net_skeleton.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MySensorsBase.cpp">
+      <Filter>Devices\MySensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MySensorsSerial.cpp">
+      <Filter>Devices\MySensors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
