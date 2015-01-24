@@ -185,6 +185,8 @@ hardware/ICYThermostat.cpp
 hardware/Limitless.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
+hardware/MySensorsBase.cpp
+hardware/MySensorsSerial.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
 hardware/openzwave/control_panel/zwavelib.cpp

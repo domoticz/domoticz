@@ -56,6 +56,7 @@
 #include "../hardware/HarmonyHub.h"
 #include "../hardware/EcoDevices.h"
 #include "../hardware/evohome.h"
+#include "../hardware/MySensorsSerial.h"
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -436,6 +437,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_S0SmartMeter:
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
+	case HTYPE_MySensorsUSB:
 	case HTYPE_OpenZWave:
 	case HTYPE_EnOceanESP2:
 	case HTYPE_EnOceanESP3:
@@ -503,7 +505,11 @@ bool MainWorker::AddHardwareFromParams(
 			{
 				pHardware = new Teleinfo(ID, szSerialPort);
 			}
-			else if (Type==HTYPE_OpenZWave)
+			else if (Type == HTYPE_MySensorsUSB)
+			{
+				pHardware = new MySensorsSerial(ID, szSerialPort);
+			}
+			else if (Type == HTYPE_OpenZWave)
 			{
 #ifdef WITH_OPENZWAVE
 				pHardware = new COpenZWave(ID, szSerialPort);

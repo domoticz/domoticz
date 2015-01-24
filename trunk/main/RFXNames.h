@@ -95,7 +95,7 @@ enum _eHardwareTypes {
 	HTYPE_Philips_Hue,			//38
 	HTYPE_EVOHOME_SERIAL,		//39
 	HTYPE_EVOHOME_SCRIPT,		//40
-
+	HTYPE_MySensorsUSB,			//41
 	HTYPE_END
 };
 

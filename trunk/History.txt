@@ -89,6 +89,7 @@ Version 2.0.xxxx (January xxth 2015)
 - Implemented: Option to upload/use Custom Icons for On/Off switches (See updated manual)
 - Implemented: native HTTPS support
 - Fixed: Gui, working with Sensors that contains special characters in the name
+- Fixed: YouLess counter value in Report
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
