@@ -653,7 +653,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent #Lighting4').prop('checked',((Mode3 & 0x08)!=0));
 			$('#hardwarecontent #RSL').prop('checked',((Mode3 & 0x10)!=0));
 			$('#hardwarecontent #ByronSX').prop('checked',((Mode3 & 0x20)!=0));
-			$('#hardwarecontent #rfu6').prop('checked',((Mode3 & 0x40)!=0));
+			$('#hardwarecontent #ImaginTronix').prop('checked',((Mode3 & 0x40)!=0));
 
 			$('#hardwarecontent #defaultbutton').click(function (e) {
 				e.preventDefault();
@@ -680,7 +680,7 @@ define(['app'], function (app) {
 				$('#hardwarecontent #Lighting4').prop('checked',false);
 				$('#hardwarecontent #RSL').prop('checked',false);
 				$('#hardwarecontent #ByronSX').prop('checked',false);
-				$('#hardwarecontent #rfu6').prop('checked',false);
+				$('#hardwarecontent #ImaginTronix').prop('checked',false);
 			});
 		}
 
