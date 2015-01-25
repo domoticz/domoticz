@@ -55,7 +55,7 @@ body table#mobileitem tr td:first-child + td + td + td + td:before{
 border-radius: 0px !important;
 }
 
-#comboroom {
+#comboroom, #combofloorplan {
 	font-family: Open Sans, sans-serif;
 	width: 240px;
     height: 34px;
