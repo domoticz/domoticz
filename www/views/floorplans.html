@@ -7,7 +7,7 @@
 		<tr>
 			<td align="left" width="20%" ><a class="btnstylerev" ng-show="actFloorplan>0" ng-click="PrevFloorplan();" data-i18n="Previous">Previous</a></td>
 			<td align="center">
-				<div ng-show="floorPlans.length>0"><span data-i18n="Floorplan"></span>: <select ng-model="selectedFloorplan" ng-options="i.Name for i in floorPlans" ng-change="changeFloorplan()"></select></div>
+				<div ng-show="floorPlans.length>0"><span data-i18n="Floorplan"></span>: <select id="combofloorplan" ng-model="selectedFloorplan" ng-options="i.Name for i in floorPlans" ng-change="changeFloorplan()" class="combobox ui-corner-all"></select></div>
 				<div ng-show="floorPlans.length<1" style="display:none"><a id="NoFloorplansYet" class="btnstyle" has-permission="Admin" onclick="javascript:SwitchLayout('Floorplanedit')" data-i18n="Add Floorplan">Add Floorplan</a></div>
 			</td>
 			<td align="right" width="20%"><a class="btnstyle"  ng-show="actFloorplan < (FloorplanCount-1)" ng-click="NextFloorplan();" data-i18n="Next">Next</a></td>
