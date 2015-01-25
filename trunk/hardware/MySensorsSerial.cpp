@@ -12,6 +12,7 @@
 
 #include <ctime>
 
+//#define DEBUG_MYSENSORS
 
 MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname)
 {
@@ -29,6 +30,7 @@ MySensorsSerial::~MySensorsSerial()
 bool MySensorsSerial::StartHardware()
 {
 	StartHeartbeatThread();
+#ifndef DEBUG_MYSENSORS
 	//Try to open the Serial Port
 	try
 	{
@@ -62,6 +64,21 @@ bool MySensorsSerial::StartHardware()
 		_log.Log(LOG_ERROR,"MySensors: Error opening serial port!!!");
 		return false;
 	}
+#else
+	//std::ifstream infile;
+	//std::string sLine;
+	//infile.open("D:\\MySensors.txt");
+	//if (!infile.is_open())
+	//	return false;
+	//while (!infile.eof())
+	//{
+	//	getline(infile, sLine);
+	//	sLine += "\n";
+	//	ParseData((const unsigned char*)sLine.c_str(), sLine.size());
+	//}
+	//infile.close();
+
+#endif
 	m_bIsStarted=true;
 	m_bufferpos=0;
 	setReadCallback(boost::bind(&MySensorsSerial::readCallback, this, _1, _2));
