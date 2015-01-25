@@ -97,6 +97,66 @@ void MySensorsBase::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
+void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+	result = m_sql.query(szQuery.str()); //-V519
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+	else
+	{
+		//check if we have a change, if not do not update it
+		int nvalue = atoi(result[0][1].c_str());
+		if ((!bOn) && (nvalue == 0))
+			return;
+		if ((bOn && (nvalue != 0)))
+			return;
+	}
+
+	//Send as Lighting 2
+	tRBUF lcmd;
+	memset(&lcmd, 0, sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+	lcmd.LIGHTING2.packettype = pTypeLighting2;
+	lcmd.LIGHTING2.subtype = sTypeAC;
+	lcmd.LIGHTING2.id1 = 0;
+	lcmd.LIGHTING2.id2 = 0;
+	lcmd.LIGHTING2.id3 = 0;
+	lcmd.LIGHTING2.id4 = Idx;
+	lcmd.LIGHTING2.unitcode = 1;
+	double rlevel = (15.0 / 100)*Level;
+	int level = int(rlevel);
+	if (!bOn)
+	{
+		level = 0;
+		lcmd.LIGHTING2.cmnd = light2_sOff;
+	}
+	else
+	{
+		lcmd.LIGHTING2.cmnd = light2_sOn;
+	}
+	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.filler = 0;
+	lcmd.LIGHTING2.rssi = 12;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+		m_sql.query(szQuery.str());
+	}
+
+}
 
 void MySensorsBase::ParseLine()
 {
@@ -162,6 +222,41 @@ void MySensorsBase::ParseLine()
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
 	}
 	break;
+	case V_PRESSURE:
+	{
+		float pressure = (float)atof(payload.c_str());
+		_tGeneralDevice gdevice;
+		gdevice.subtype = sTypePressure;
+		gdevice.floatval1 = pressure;
+		sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+	}
+	break;
+	case V_VAR1: //Custom value
+	case V_VAR2:
+	case V_VAR3:
+	case V_VAR4:
+	case V_VAR5:
+		_log.Log(LOG_STATUS, "MySensors: Custom vars ignored! Node: %d, Child: %d, Payload: %s",node_id, child_sensor_id, payload.c_str());
+		_asm nop;
+		break;
+	case V_TRIPPED:
+		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
+		UpdateSwitch(node_id, child_sensor_id, (payload == "1"), 100,  "Security Sensor");
+		break;
+	case V_LIGHT:
+		//	Light status. 0 = off 1 = on
+		UpdateSwitch(node_id, child_sensor_id, (atoi(payload.c_str())!=0), 100, "Light");
+		break;
+	case V_DIMMER:
+		//	Dimmer value. 0 - 100 %
+		{
+			double level = atof(payload.c_str());
+			UpdateSwitch(node_id, child_sensor_id, (atoi(payload.c_str()) != 0), level, "Light");
+		}
+		break;
+	default:
+		_log.Log(LOG_ERROR, "MySensors: Unhandled sensor, please report with log!");
+		break;
 	}
 }
 
