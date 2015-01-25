@@ -27,8 +27,12 @@ portions of this file.
 */
 
 /*
+SDK version 7.02/7.03
+	msg3_RFU changed to msg3_IMAGINTRONIX
+	IRESPONSE.RFU6enabled changed to IRESPONSE.IMAGINTRONIXenabled
+
 SDK version 7.01
-	SelectPlus200689103 White Chime added
+	SelectPlus200689103 Black Chime added
 
 SDK version 7.00
 	TEMP7 - TSS330 added and TH9 – TSS320 added
@@ -290,7 +294,7 @@ SDK version 4.9
 #define msg3_LIGHTING4 0x08
 #define msg3_RSL 0x10
 #define msg3_SX 0x20
-#define msg3_RFY 0x40
+#define msg3_IMAGINTRONIX 0x40
 #define msg3_undec 0x80
 
 #define msg4_MERTIK 0x01
@@ -860,7 +864,7 @@ typedef union tRBUF {
 		BYTE	LIGHTING4enabled : 1;
 		BYTE	RSLenabled : 1;
 		BYTE	SXenabled : 1;
-		BYTE	RFU6enabled : 1;
+		BYTE	IMAGINTRONIXenabled : 1;
 		BYTE	UNDECODEDenabled : 1;
 
 		//BYTE	msg4;

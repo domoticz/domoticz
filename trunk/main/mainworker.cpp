@@ -1818,10 +1818,10 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 					else
 						WriteMessage("ByronSX           disabled");
 
-					if (pResponse->IRESPONSE.RFU6enabled)
-						WriteMessage("RFU protocol 6    enabled");
+					if (pResponse->IRESPONSE.IMAGINTRONIXenabled)
+						WriteMessage("IMAGINTRONIXenabled    enabled");
 					else
-						WriteMessage("RFU protocol 6    disabled");
+						WriteMessage("IMAGINTRONIXenabled    disabled");
 				}
 				break;
 			case cmdSAVE:
@@ -6893,6 +6893,12 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 				double(pResponse->ENERGY.total5) * 0x100 + 
 				double(pResponse->ENERGY.total6)
 			) / 223.666;
+
+	if (pResponse->ENERGY.subtype == sTypeELEC3)
+	{
+		if (usage == 0)
+			return -1;
+	}
 
 	sprintf(szTmp,"%ld;%.2f",instant,usage);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
