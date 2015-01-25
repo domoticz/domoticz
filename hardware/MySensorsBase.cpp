@@ -237,7 +237,6 @@ void MySensorsBase::ParseLine()
 	case V_VAR4:
 	case V_VAR5:
 		_log.Log(LOG_STATUS, "MySensors: Custom vars ignored! Node: %d, Child: %d, Payload: %s",node_id, child_sensor_id, payload.c_str());
-		_asm nop;
 		break;
 	case V_TRIPPED:
 		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
