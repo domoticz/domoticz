@@ -132,6 +132,11 @@ private:
 	void ParseLine();
 	void SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+	void SendTempSensor(const unsigned char NodeID, const int ChildID, const float temperature);
+	void SendHumiditySensor(const unsigned char NodeID, const int ChildID, const float humidity);
+	void SendBaroSensor(const unsigned char NodeID, const int ChildID, const float pressure);
+	void SendTempHumSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity);
+	void SendTempHumBaroSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity, const float pressure, int forecast);
 
 	void LoadDevicesFromDatabase();
 	void Add2Database(const int nodeID, const std::string &SketchName, const std::string &SketchVersion);
@@ -144,7 +149,7 @@ private:
 	_tMySensorNode* InsertNode(const int nodeID);
 	void RemoveNode(const int nodeID);
 	int FindNextNodeID();
-	_tMySensorSensor* FindSensor(_tMySensorNode *pNode, const int childID);
+	_tMySensorSensor* FindSensor(_tMySensorNode *pNode, const int childID, _eSetType devType);
 	_tMySensorSensor* FindSensor(const int nodeID, _eSetType devType);
 	void InsertSensor(_tMySensorSensor device);
 

@@ -230,7 +230,7 @@ void CWunderground::GetMeterDetails()
 		tsen.TEMP_HUM_BARO.forecast=barometric_forcast;
 
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);
 	}
 	else if (humidity!=0)
 	{
@@ -253,7 +253,7 @@ void CWunderground::GetMeterDetails()
 		tsen.TEMP_HUM.humidity=(BYTE)humidity;
 		tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
 	}
 	else
 	{
@@ -274,7 +274,7 @@ void CWunderground::GetMeterDetails()
 		at10-=(tsen.TEMP.temperatureh*256);
 		tsen.TEMP.temperaturel=(BYTE)(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 	}
 
 	//Wind
@@ -375,7 +375,7 @@ void CWunderground::GetMeterDetails()
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);
 	}
 
 	//UV
@@ -399,7 +399,7 @@ void CWunderground::GetMeterDetails()
 					tsen.UV.id2 = 1;
 
 					tsen.UV.uv = (BYTE)round(UV * 10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);
 				}
 			}
 		}
@@ -447,7 +447,7 @@ void CWunderground::GetMeterDetails()
 				tr10 -= (tsen.RAIN.raintotal2 * 256);
 				tsen.RAIN.raintotal3 = (BYTE)(tr10);
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);
 			}
 		}
 	}
