@@ -7,6 +7,7 @@
 #include "../main/localtime_r.h"
 #include "hardwaretypes.h"
 #include <string>
+#include <sstream>
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
@@ -14,50 +15,6 @@
 #include <ctime>
 
 #define round(a) ( int ) ( a + .5 )
-
-enum _eSetType
-{
-	V_TEMP=0,			//	Temperature
-	V_HUM=1,			//	Humidity
-	V_LIGHT=2,			//	Light status. 0 = off 1 = on
-	V_DIMMER=3,			//	Dimmer value. 0 - 100 %
-	V_PRESSURE=4,		//	Atmospheric Pressure
-	V_FORECAST=5,		//	Whether forecast.One of "stable", "sunny", "cloudy", "unstable", "thunderstorm" or "unknown"
-	V_RAIN=6,			//	Amount of rain
-	V_RAINRATE=7,		//	Rate of rain
-	V_WIND=8,			//	Windspeed
-	V_GUST=9,			//	Gust
-	V_DIRECTION=10,		//	Wind direction
-	V_UV=11,			//	UV light level
-	V_WEIGHT=12,		//	Weight(for scales etc)
-	V_DISTANCE=13,		//	Distance
-	V_IMPEDANCE=14,		//	Impedance value
-	V_ARMED=15,			//	Armed status of a security sensor. 1 = Armed, 0 = Bypassed
-	V_TRIPPED=16,		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
-	V_WATT=17,			//	Watt value for power meters
-	V_KWH=18,			//	Accumulated number of KWH for a power meter
-	V_SCENE_ON=19,		//	Turn on a scene
-	V_SCENE_OFF=20,		//	Turn of a scene
-	V_HEATER=21,		//	Mode of header.One of "Off", "HeatOn", "CoolOn", or "AutoChangeOver"
-	V_HEATER_SW=22,		//	Heater switch power. 1 = On, 0 = Off
-	V_LIGHT_LEVEL=23,	//	Light level. 0 - 100 %
-	V_VAR1=24,			//	Custom value
-	V_VAR2=25,			//	Custom value
-	V_VAR3=26,			//	Custom value
-	V_VAR4=27,			//	Custom value
-	V_VAR5=28,			//	Custom value
-	V_UP=29,			//	Window covering.Up.
-	V_DOWN=30,			//	Window covering.Down.
-	V_STOP=31,			//	Window covering.Stop.
-	V_IR_SEND=32,		//	Send out an IR - command
-	V_IR_RECEIVE=33,	//	This message contains a received IR - command
-	V_FLOW=34,			//	Flow of water(in meter)
-	V_VOLUME=35,		//	Water volume
-	V_LOCK_STATUS=36,	//	Set or get lock status. 1 = Locked, 0 = Unlocked
-	V_DUST_LEVEL=37,	//	Dust level
-	V_VOLTAGE=38,		//	Voltage level
-	V_CURRENT=39,		//	Current level
-};
 
 MySensorsBase::MySensorsBase(void)
 {
@@ -67,6 +24,212 @@ MySensorsBase::MySensorsBase(void)
 
 MySensorsBase::~MySensorsBase(void)
 {
+}
+
+void MySensorsBase::LoadDevicesFromDatabase()
+{
+	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	m_nodes.clear();
+
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT ID, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=" << m_HwdID << ") ORDER BY ID ASC";
+	result = m_sql.query(szQuery.str());
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+
+			int ID = atoi(sd[0].c_str());
+			std::string SkectName = sd[1];
+			std::string SkectVersion = sd[2];
+
+			_tMySensorNode mNode;
+			mNode.nodeID = ID;
+			mNode.SketchName = SkectName;
+			mNode.SketchVersion = SkectVersion;
+			mNode.lastreceived = mytime(NULL);
+			m_nodes[ID] = mNode;
+		}
+	}
+}
+
+void MySensorsBase::Add2Database(const int nodeID, const std::string &SketchName, const std::string &SketchVersion)
+{
+	std::stringstream szQuery;
+	szQuery << "INSERT INTO MySensors (HardwareID, ID, SketchName, SketchVersion) VALUES (" << m_HwdID << "," << nodeID << ", '" << SketchName << "', '" << SketchVersion << "')";
+	m_sql.query(szQuery.str());
+}
+
+void MySensorsBase::DatabaseUpdateSketchName(const int nodeID, const std::string &SketchName)
+{
+	std::stringstream szQuery;
+	szQuery << "UPDATE MySensors SET SketchName='" << SketchName << "' WHERE (HardwareID=" << m_HwdID << ") AND (ID=" << nodeID << ")";
+	m_sql.query(szQuery.str());
+}
+
+void MySensorsBase::DatabaseUpdateSketchVersion(const int nodeID, const std::string &SketchVersion)
+{
+	std::stringstream szQuery;
+	szQuery << "UPDATE MySensors SET SketchVersion='" << SketchVersion << "' WHERE (HardwareID=" << m_HwdID << ") AND (ID=" << nodeID << ")";
+	m_sql.query(szQuery.str());
+}
+
+int MySensorsBase::FindNextNodeID()
+{
+	unsigned char _UsedValues[256];
+	memset(_UsedValues, 0, sizeof(_UsedValues));
+	std::map<int, _tMySensorNode>::const_iterator itt;
+	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	{
+		int ID = itt->first;
+		if (ID < 255)
+		{
+			_UsedValues[ID] = 1;
+		}
+	}
+	for (int ii = 1; ii < 255; ii++)
+	{
+		if (_UsedValues[ii] == 0)
+			return ii;
+	}
+	return -1;
+}
+
+MySensorsBase::_tMySensorNode* MySensorsBase::FindNode(const int nodeID)
+{
+	std::map<int, _tMySensorNode>::iterator itt;
+	itt = m_nodes.find(nodeID);
+	return (itt == m_nodes.end()) ? NULL : &itt->second;
+}
+
+MySensorsBase::_tMySensorNode* MySensorsBase::InsertNode(const int nodeID)
+{
+	_tMySensorNode mNode;
+	mNode.nodeID = nodeID;
+	mNode.SketchName = "Unknown";
+	mNode.SketchVersion = "1.0";
+	mNode.lastreceived = time(NULL);
+	m_nodes[mNode.nodeID] = mNode;
+	Add2Database(mNode.nodeID, mNode.SketchName, mNode.SketchVersion);
+	return FindNode(nodeID);
+}
+
+MySensorsBase::_tMySensorSensor* MySensorsBase::FindSensor(_tMySensorNode *pNode, const int childID)
+{
+	std::vector<_tMySensorSensor>::iterator itt;
+	for (itt = pNode->m_sensors.begin(); itt != pNode->m_sensors.end(); ++itt)
+	{
+		if (itt->childID == childID)
+			return &*itt;
+	}
+	return NULL;
+}
+
+void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor)
+{
+	switch (pSensor->devType)
+	{
+	case V_TEMP:
+	{
+		float temperature = pSensor->floatValue;
+		RBUF tsen;
+		memset(&tsen, 0, sizeof(RBUF));
+		tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+		tsen.TEMP.packettype = pTypeTEMP;
+		tsen.TEMP.subtype = sTypeTEMP5;
+		tsen.TEMP.battery_level = 9;
+		tsen.TEMP.rssi = 12;
+		tsen.TEMP.id1 = (BYTE)0;
+		tsen.TEMP.id2 = (BYTE)pSensor->nodeID;
+
+		tsen.TEMP.tempsign = (temperature >= 0) ? 0 : 1;
+		int at10 = round(abs(temperature*10.0f));
+		tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+		at10 -= (tsen.TEMP.temperatureh * 256);
+		tsen.TEMP.temperaturel = (BYTE)(at10);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	}
+	break;
+	case V_HUM:
+	{
+		float humidity = pSensor->floatValue;
+		RBUF tsen;
+		memset(&tsen, 0, sizeof(RBUF));
+		tsen.HUM.packetlength = sizeof(tsen.HUM) - 1;
+		tsen.HUM.packettype = pTypeHUM;
+		tsen.HUM.subtype = sTypeHUM1;
+		tsen.HUM.battery_level = 9;
+		tsen.HUM.rssi = 12;
+		tsen.TEMP.id1 = (BYTE)0;
+		tsen.TEMP.id2 = (BYTE)pSensor->nodeID;
+
+		tsen.HUM.humidity = (BYTE)round(humidity);
+		tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
+
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
+	}
+	break;
+	case V_PRESSURE:
+	{
+		float pressure = pSensor->floatValue;
+		_tGeneralDevice gdevice;
+		gdevice.intval1 = (pSensor->nodeID << 8) | pSensor->childID;
+		gdevice.subtype = sTypePressure;
+		gdevice.floatval1 = pressure;
+		sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+	}
+	break;
+	case V_TRIPPED:
+		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
+		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Security Sensor");
+		break;
+	case V_LIGHT:
+		//	Light status. 0 = off 1 = on
+		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue != 0), 100, "Light");
+		break;
+	case V_DIMMER:
+		//	Dimmer value. 0 - 100 %
+	{
+		int level = pSensor->intvalue;
+		UpdateSwitch(pSensor->nodeID, pSensor->childID, (level != 0), level, "Light");
+	}
+	break;
+	case V_DUST_LEVEL:
+	{
+		_tAirQualityMeter meter;
+		meter.len = sizeof(_tAirQualityMeter) - 1;
+		meter.type = pTypeAirQuality;
+		meter.subtype = sTypeVoltcraft;
+		meter.airquality = pSensor->intvalue;
+		meter.id1 = pSensor->nodeID;
+		meter.id2 = pSensor->childID;
+		sDecodeRXMessage(this, (const unsigned char *)&meter);//decode message
+	}
+	break;
+	case V_WATT:
+		while (1==0);
+		break;
+	case V_FLOW:
+		//Flow of water in meter
+		while (1==0);
+		break;
+	case V_VOLUME:
+		//Water Volume
+		while (1==0);
+		break;
+	case V_FORECAST:
+	{
+		std::stringstream sstr;
+		sstr << pSensor->nodeID;
+
+		std::string devname;
+		m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, 255, 0, pSensor->stringValue.c_str(), devname);
+	}
+	break;
+	}
 }
 
 void MySensorsBase::ParseData(const unsigned char *pData, int Len)
@@ -130,7 +293,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	lcmd.LIGHTING2.id2 = 0;
 	lcmd.LIGHTING2.id3 = 0;
 	lcmd.LIGHTING2.id4 = Idx;
-	lcmd.LIGHTING2.unitcode = 1;
+	lcmd.LIGHTING2.unitcode = SubUnit;
 	double rlevel = (15.0 / 100)*Level;
 	int level = int(rlevel);
 	if (!bOn)
@@ -155,7 +318,13 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
 		m_sql.query(szQuery.str());
 	}
+}
 
+void MySensorsBase::SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload)
+{
+	std::stringstream sstr;
+	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";0;" << SubType << ";" << Payload << '\n';
+	WriteInt(sstr.str());
 }
 
 void MySensorsBase::ParseLine()
@@ -164,98 +333,224 @@ void MySensorsBase::ParseLine()
 		return;
 	std::string sLine((char*)&m_buffer);
 
+	//_log.Log(LOG_STATUS, sLine.c_str());
+
 	std::vector<std::string> results;
 	StringSplit(sLine, ";", results);
-	if (results.size()!=6)
+	if (results.size()<5)
 		return; //invalid data
 
 	int node_id = atoi(results[0].c_str());
 	int child_sensor_id = atoi(results[1].c_str());
-	int message_type = atoi(results[2].c_str());
+	_eMessageType message_type = (_eMessageType)atoi(results[2].c_str());
 	int ack = atoi(results[3].c_str());
 	int sub_type = atoi(results[4].c_str());
-	std::string payload = results[5];
+	std::string payload = "";
+	if (results.size()>=6)
+		payload=results[5];
 
-	if (message_type != 1)
-		return; //dont want you
+	std::string retMessage;
+	std::stringstream sstr;
+//	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());
 
-	switch (sub_type)
+	if (message_type == MT_Internal)
 	{
-	case V_TEMP:
-	{
-		float temperature = (float)atof(payload.c_str());
-		RBUF tsen;
-		memset(&tsen, 0, sizeof(RBUF));
-		tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
-		tsen.TEMP.packettype = pTypeTEMP;
-		tsen.TEMP.subtype = sTypeTEMP5;
-		tsen.TEMP.battery_level = 9;
-		tsen.TEMP.rssi = 12;
-		tsen.TEMP.id1 = (BYTE)0;
-		tsen.TEMP.id2 = (BYTE)node_id;
-
-		tsen.TEMP.tempsign = (temperature >= 0) ? 0 : 1;
-		int at10 = round(abs(temperature*10.0f));
-		tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
-		at10 -= (tsen.TEMP.temperatureh * 256);
-		tsen.TEMP.temperaturel = (BYTE)(at10);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-	}
-	break;
-	case V_HUM:
-	{
-		float humidity = (float)atof(payload.c_str());
-		RBUF tsen;
-		memset(&tsen, 0, sizeof(RBUF));
-		tsen.HUM.packetlength = sizeof(tsen.HUM) - 1;
-		tsen.HUM.packettype = pTypeHUM;
-		tsen.HUM.subtype = sTypeHUM1;
-		tsen.HUM.battery_level = 9;
-		tsen.HUM.rssi = 12;
-		tsen.TEMP.id1 = (BYTE)0;
-		tsen.TEMP.id2 = (BYTE)node_id;
-
-		tsen.HUM.humidity = (BYTE)round(humidity);
-		tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
-
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
-	}
-	break;
-	case V_PRESSURE:
-	{
-		float pressure = (float)atof(payload.c_str());
-		_tGeneralDevice gdevice;
-		gdevice.subtype = sTypePressure;
-		gdevice.floatval1 = pressure;
-		sDecodeRXMessage(this, (const unsigned char *)&gdevice);
-	}
-	break;
-	case V_VAR1: //Custom value
-	case V_VAR2:
-	case V_VAR3:
-	case V_VAR4:
-	case V_VAR5:
-		_log.Log(LOG_STATUS, "MySensors: Custom vars ignored! Node: %d, Child: %d, Payload: %s",node_id, child_sensor_id, payload.c_str());
-		break;
-	case V_TRIPPED:
-		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
-		UpdateSwitch(node_id, child_sensor_id, (payload == "1"), 100,  "Security Sensor");
-		break;
-	case V_LIGHT:
-		//	Light status. 0 = off 1 = on
-		UpdateSwitch(node_id, child_sensor_id, (atoi(payload.c_str())!=0), 100, "Light");
-		break;
-	case V_DIMMER:
-		//	Dimmer value. 0 - 100 %
+		switch (sub_type)
 		{
-			double level = atof(payload.c_str());
-			UpdateSwitch(node_id, child_sensor_id, (atoi(payload.c_str()) != 0), level, "Light");
+		case I_ID_REQUEST:
+			{
+				//Set a unique node id from the controller
+				int newID = FindNextNodeID();
+				if (newID != -1)
+				{
+					sstr << newID;
+					SendCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, sstr.str());
+				}
+			}
+			break;
+		case I_CONFIG:
+			// (M)etric or (I)mperal back to sensor.
+			//Set a unique node id from the controller
+			SendCommand(node_id, child_sensor_id, message_type, I_CONFIG, "M");
+			break;
+		case I_SKETCH_NAME:
+			_log.Log(LOG_STATUS, "MySensors: Node: %d, Sketch Name: %s", node_id, payload.c_str());
+			if (_tMySensorNode *pNode = FindNode(node_id))
+			{
+				DatabaseUpdateSketchName(node_id, payload);
+			}
+			else
+			{
+				//Unknown Node
+				InsertNode(node_id);
+				DatabaseUpdateSketchName(node_id, payload);
+			}
+			break;
+		case I_SKETCH_VERSION:
+			_log.Log(LOG_STATUS, "MySensors: Node: %d, Sketch Version: %s", node_id, payload.c_str());
+			if (_tMySensorNode *pNode = FindNode(node_id))
+			{
+				DatabaseUpdateSketchVersion(node_id, payload);
+			}
+			else
+			{
+				//Unknown Node
+				InsertNode(node_id);
+				DatabaseUpdateSketchVersion(node_id, payload);
+			}
+			break;
+		case I_LOG_MESSAGE:
+			break;
+		case I_GATEWAY_READY:
+			_log.Log(LOG_NORM, "MySensors: Gateway Ready...");
+			break;
+		case I_TIME:
+			//send time in seconds from 1970
+			sstr << time(NULL);
+			SendCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
+			break;
+		default:
+			while (1==0);
+			break;
 		}
-		break;
-	default:
-		_log.Log(LOG_ERROR, "MySensors: Unhandled sensor, please report with log!");
-		break;
+	}
+	else if (message_type == MT_Set)
+	{
+		_tMySensorNode *pNode = FindNode(node_id);
+		if (pNode == NULL)
+		{
+			pNode = InsertNode(node_id);
+			if (pNode == NULL)
+				return;
+		}
+		pNode->lastreceived = mytime(NULL);
+
+		_tMySensorSensor *pSensor = FindSensor(pNode, child_sensor_id);
+		if (pSensor == NULL)
+		{
+			//Unknown sensor, add it to the system
+			_tMySensorSensor mSensor;
+			mSensor.nodeID = node_id;
+			mSensor.childID = child_sensor_id;
+			mSensor.devType = (_eSetType)sub_type;
+			pNode->m_sensors.push_back(mSensor);
+			pSensor = FindSensor(pNode, child_sensor_id);
+			if (pSensor == NULL)
+				return;
+		}
+		pSensor->lastreceived = mytime(NULL);
+		pSensor->devType = (_eSetType)sub_type;
+		pSensor->bValidValue = true;
+		bool bHaveValue = false;
+		switch (sub_type)
+		{
+		case V_TEMP:
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_HUM:
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_PRESSURE:
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_VAR1: //Custom value
+		case V_VAR2:
+		case V_VAR3:
+		case V_VAR4:
+		case V_VAR5:
+			//_log.Log(LOG_STATUS, "MySensors: Custom vars ignored! Node: %d, Child: %d, Payload: %s", node_id, child_sensor_id, payload.c_str());
+			break;
+		case V_TRIPPED:
+			//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_LIGHT:
+			//	Light status. 0 = off 1 = on
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_DIMMER:
+			//	Dimmer value. 0 - 100 %
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_DUST_LEVEL:
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_WATT:
+			while (1==0);
+			break;
+		case V_FLOW:
+			//Flow of water in meter
+			while (1==0);
+			break;
+		case V_VOLUME:
+			//Water Volume
+			while (1==0);
+			break;
+		case V_WIND:
+			while (1==0);
+			break;
+		case V_GUST:
+			while (1==0);
+			break;
+		case V_DIRECTION:
+			while (1==0);
+			break;
+		case V_FORECAST:
+			pSensor->stringValue = payload;
+			bHaveValue = true;
+			break;
+		default:
+			if (sub_type > V_CURRENT)
+			{
+				_log.Log(LOG_ERROR, "MySensors: Unknown/Invalid sensor type (%d)",sub_type);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "MySensors: Unhandled sensor (sub-type=%d), please report with log!",sub_type);
+			}
+			break;
+		}
+		if (bHaveValue)
+		{
+			SendSensor2Domoticz(pNode, pSensor);
+		}
+	}
+	else if (message_type == MT_Presentation)
+	{
+		//Ignored
+		while (1==0);
+	}
+	else if (message_type == MT_Req)
+	{
+		//Request a variable
+		switch (sub_type)
+		{
+		case V_LIGHT:
+			SendCommand(node_id, child_sensor_id, message_type, sub_type, "1");
+			break;
+		case V_VAR1:
+		case V_VAR2:
+		case V_VAR3:
+		case V_VAR4:
+		case V_VAR5:
+			//cant send back a custom variable
+			break;
+		default:
+			while (1==0);
+			break;
+		}
+		while (1==0);
+	}
+	else {
+		//Unhandled message type
+		while (1==0);
 	}
 }
 

@@ -470,7 +470,7 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 					const std::string sKey=itt2.key().asString();
 					if (!isInt(sKey))
 						continue; //not a scale
-					_device.intvalue=(*itt2)["sensorSate"]["value"].asInt();
+					_device.intvalue=(*itt2)["sensorState"]["value"].asInt();
 					_device.commandClassID=156;
 					_device.devType = ZDTYPE_SWITCH_NORMAL;
 					InsertDevice(_device);

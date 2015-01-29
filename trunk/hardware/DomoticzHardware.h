@@ -75,6 +75,7 @@ private:
 	friend class CHarmonyHub;
 	friend class MochadTCP;
 	friend class CPhilipsHue;
+	friend class MySensorsBase;
 	friend class MySensorsSerial;
 
 	boost::mutex readQueueMutex;

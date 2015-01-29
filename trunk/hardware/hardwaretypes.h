@@ -162,13 +162,15 @@ typedef struct _tAirQualityMeter {
 	unsigned char type;
 	unsigned char subtype;
 	BYTE	id1;
+	BYTE	id2;
 	int airquality;
 	_tAirQualityMeter()
 	{
 		len=sizeof(_tAirQualityMeter)-1;
 		type=pTypeAirQuality;
 		subtype=sTypeVoltcraft;
-		id1=0;
+		id1 = 0;
+		id2 = 1;
 		airquality = 0;
 	}
 } AirQualityMeter;
