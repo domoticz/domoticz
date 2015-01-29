@@ -6,14 +6,150 @@ class MySensorsBase : public CDomoticzHardwareBase
 {
 	friend class MySensorsSerial;
 public:
+	enum _eMessageType
+	{
+		MT_Presentation = 0,	// Sent by a node when they present attached sensors.This is usually done in setup() at startup.
+		MT_Set = 1,			// This message is sent from or to a sensor when a sensor value should be updated
+		MT_Req = 2,			// Requests a variable value(usually from an actuator destined for controller).
+		MT_Internal = 3,		// This is a special internal message.See table "_eInternalType" below for the details
+		MT_Stream = 4			// Used for OTA firmware updates
+	};
+
+	enum _eSetType
+	{
+		V_TEMP = 0,			//	Temperature
+		V_HUM = 1,			//	Humidity
+		V_LIGHT = 2,			//	Light status. 0 = off 1 = on
+		V_DIMMER = 3,			//	Dimmer value. 0 - 100 %
+		V_PRESSURE = 4,		//	Atmospheric Pressure
+		V_FORECAST = 5,		//	Whether forecast.One of "stable", "sunny", "cloudy", "unstable", "thunderstorm" or "unknown"
+		V_RAIN = 6,			//	Amount of rain
+		V_RAINRATE = 7,		//	Rate of rain
+		V_WIND = 8,			//	Windspeed
+		V_GUST = 9,			//	Gust
+		V_DIRECTION = 10,		//	Wind direction
+		V_UV = 11,			//	UV light level
+		V_WEIGHT = 12,		//	Weight(for scales etc)
+		V_DISTANCE = 13,		//	Distance
+		V_IMPEDANCE = 14,		//	Impedance value
+		V_ARMED = 15,			//	Armed status of a security sensor. 1 = Armed, 0 = Bypassed
+		V_TRIPPED = 16,		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
+		V_WATT = 17,			//	Watt value for power meters
+		V_KWH = 18,			//	Accumulated number of KWH for a power meter
+		V_SCENE_ON = 19,		//	Turn on a scene
+		V_SCENE_OFF = 20,		//	Turn of a scene
+		V_HEATER = 21,		//	Mode of header.One of "Off", "HeatOn", "CoolOn", or "AutoChangeOver"
+		V_HEATER_SW = 22,		//	Heater switch power. 1 = On, 0 = Off
+		V_LIGHT_LEVEL = 23,	//	Light level. 0 - 100 %
+		V_VAR1 = 24,			//	Custom value
+		V_VAR2 = 25,			//	Custom value
+		V_VAR3 = 26,			//	Custom value
+		V_VAR4 = 27,			//	Custom value
+		V_VAR5 = 28,			//	Custom value
+		V_UP = 29,			//	Window covering.Up.
+		V_DOWN = 30,			//	Window covering.Down.
+		V_STOP = 31,			//	Window covering.Stop.
+		V_IR_SEND = 32,		//	Send out an IR - command
+		V_IR_RECEIVE = 33,	//	This message contains a received IR - command
+		V_FLOW = 34,			//	Flow of water(in meter)
+		V_VOLUME = 35,		//	Water volume
+		V_LOCK_STATUS = 36,	//	Set or get lock status. 1 = Locked, 0 = Unlocked
+		V_DUST_LEVEL = 37,	//	Dust level
+		V_VOLTAGE = 38,		//	Voltage level
+		V_CURRENT = 39,		//	Current level
+	};
+
+	enum _eInternalType
+	{
+		I_BATTERY_LEVEL = 0,			// Use this to report the battery level(in percent 0 - 100).
+		I_TIME = 1,					// Sensors can request the current time from the Controller using this message.The time will be reported as the seconds since 1970
+		I_VERSION = 2,				// Sensors report their library version at startup using this message type
+		I_ID_REQUEST = 3,				// Use this to request a unique node id from the controller.
+		I_ID_RESPONSE = 4,			// Id response back to sensor.Payload contains sensor id.
+		I_INCLUSION_MODE = 5,			// Start / stop inclusion mode of the Controller(1 = start, 0 = stop).
+		I_CONFIG = 6,					// Config request from node.Reply with(M)etric or(I)mperal back to sensor.
+		I_FIND_PARENT = 7,			// When a sensor starts up, it broadcast a search request to all neighbor nodes.They reply with a I_FIND_PARENT_RESPONSE.
+		I_FIND_PARENT_RESPONSE = 8,	// Reply message type to I_FIND_PARENT request.
+		I_LOG_MESSAGE = 9,			// Sent by the gateway to the Controller to trace - log a message
+		I_CHILDREN = 10,				// A message that can be used to transfer child sensors(from EEPROM routing table) of a repeating node.
+		I_SKETCH_NAME = 11,			// Optional sketch name that can be used to identify sensor in the Controller GUI
+		I_SKETCH_VERSION = 12,		// Optional sketch version that can be reported to keep track of the version of sensor in the Controller GUI.
+		I_REBOOT = 13,				// Used by OTA firmware updates.Request for node to reboot.
+		I_GATEWAY_READY = 14,			// Send by gateway to controller when startup is complete.
+	};
+
+	struct _tMySensorSensor
+	{
+		int nodeID;
+		int childID;
+		_eSetType devType;
+
+		//values
+		float floatValue;
+		int intvalue;
+		bool bValidValue;
+		std::string stringValue;
+
+		//battery
+		bool hasBattery;
+		int batValue;
+
+		time_t lastreceived;
+
+		_tMySensorSensor()
+		{
+			nodeID = -1;
+			childID = 1;
+			hasBattery = false;
+			batValue = 0;
+			floatValue = 0;
+			intvalue = 0;
+			bValidValue = true;
+			devType = V_TEMP;
+		}
+	};
+
+	struct _tMySensorNode
+	{
+		int nodeID;
+		std::string SketchName;
+		std::string SketchVersion;
+		time_t lastreceived;
+		std::vector<_tMySensorSensor> m_sensors;
+		_tMySensorNode()
+		{
+			nodeID = -1;
+		}
+	} MySensorNode;
+
 	MySensorsBase(void);
 	~MySensorsBase(void);
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 private:
+	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
+	void SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+
+	void LoadDevicesFromDatabase();
+	void Add2Database(const int nodeID, const std::string &SketchName, const std::string &SketchVersion);
+	void DatabaseUpdateSketchName(const int nodeID, const std::string &SketchName);
+	void DatabaseUpdateSketchVersion(const int nodeID, const std::string &SketchVersion);
+
+	void SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor);
+
+	_tMySensorNode* FindNode(const int nodeID);
+	_tMySensorNode* InsertNode(const int nodeID);
+	void RemoveNode(const int nodeID);
+	int FindNextNodeID();
+	_tMySensorSensor* FindSensor(_tMySensorNode *pNode, const int childID);
+	_tMySensorSensor* FindSensor(const int nodeID, _eSetType devType);
+	void InsertSensor(_tMySensorSensor device);
+
+	std::map<int, _tMySensorNode> m_nodes;
+
 	static const int readBufferSize=1028;
 	unsigned char m_buffer[readBufferSize];
 	int m_bufferpos;

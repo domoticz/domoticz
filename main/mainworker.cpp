@@ -7815,7 +7815,7 @@ unsigned long long MainWorker::decode_AirQuality(const CDomoticzHardwareBase *pH
 	unsigned char subType=pMeter->subtype;
 	sprintf(szTmp,"%d",pMeter->id1);
 	std::string ID=szTmp;
-	unsigned char Unit=subType;
+	unsigned char Unit=pMeter->id2;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
@@ -8005,7 +8005,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan))
+	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan) || (subType == sTypeTextStatus))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}

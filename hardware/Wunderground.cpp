@@ -150,6 +150,9 @@ void CWunderground::GetMeterDetails()
 	int barometric=0;
 	int barometric_forcast=baroForecastNoInfo;
 
+	if (root["current_observation"].empty() == true)
+		return; ///ehhh
+
 	temp=root["current_observation"]["temp_c"].asFloat();
 
 	if (root["current_observation"]["relative_humidity"].empty()==false)
@@ -376,70 +379,73 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//UV
-	if (root["current_observation"]["UV"].empty()==false)
+	if (root["current_observation"].empty() == false)
 	{
-		if (root["current_observation"]["UV"]!="N/A")
+		if (root["current_observation"]["UV"].empty() == false)
 		{
-			float UV = static_cast<float>(atof(root["current_observation"]["UV"].asString().c_str()));
-			if ((UV<16)&&(UV>=0))
+			if (root["current_observation"]["UV"] != "N/A")
 			{
-				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.UV.packetlength=sizeof(tsen.UV)-1;
-				tsen.UV.packettype=pTypeUV;
-				tsen.UV.subtype=sTypeUV1;
-				tsen.UV.battery_level=9;
-				tsen.UV.rssi=12;
-				tsen.UV.id1=0;
-				tsen.UV.id2=1;
+				float UV = static_cast<float>(atof(root["current_observation"]["UV"].asString().c_str()));
+				if ((UV < 16) && (UV >= 0))
+				{
+					RBUF tsen;
+					memset(&tsen, 0, sizeof(RBUF));
+					tsen.UV.packetlength = sizeof(tsen.UV) - 1;
+					tsen.UV.packettype = pTypeUV;
+					tsen.UV.subtype = sTypeUV1;
+					tsen.UV.battery_level = 9;
+					tsen.UV.rssi = 12;
+					tsen.UV.id1 = 0;
+					tsen.UV.id2 = 1;
 
-				tsen.UV.uv=(BYTE)round(UV*10);
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
+					tsen.UV.uv = (BYTE)round(UV * 10);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
+				}
 			}
 		}
 	}
 
 	//Rain
-	if (root["current_observation"]["precip_today_metric"].empty()==false)
+	if (root["current_observation"]["precip_today_metric"].empty() == false)
 	{
-		if (root["current_observation"]["precip_today_metric"]!="N/A")
+		if (root["current_observation"]["precip_today_metric"] != "N/A")
 		{
 			float RainCount = static_cast<float>(atof(root["current_observation"]["precip_today_metric"].asString().c_str()));
-			if ((RainCount!=-9999.00f)&&(RainCount>=0.00f))
+			if ((RainCount != -9999.00f) && (RainCount >= 0.00f))
 			{
 				RBUF tsen;
-				memset(&tsen,0,sizeof(RBUF));
-				tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
-				tsen.RAIN.packettype=pTypeRAIN;
-				tsen.RAIN.subtype=sTypeRAINWU;
-				tsen.RAIN.battery_level=9;
-				tsen.RAIN.rssi=12;
-				tsen.RAIN.id1=0;
-				tsen.RAIN.id2=1;
+				memset(&tsen, 0, sizeof(RBUF));
+				tsen.RAIN.packetlength = sizeof(tsen.RAIN) - 1;
+				tsen.RAIN.packettype = pTypeRAIN;
+				tsen.RAIN.subtype = sTypeRAINWU;
+				tsen.RAIN.battery_level = 9;
+				tsen.RAIN.rssi = 12;
+				tsen.RAIN.id1 = 0;
+				tsen.RAIN.id2 = 1;
 
-				tsen.RAIN.rainrateh=0;
-				tsen.RAIN.rainratel=0;
+				tsen.RAIN.rainrateh = 0;
+				tsen.RAIN.rainratel = 0;
 
-				if (root["current_observation"]["precip_1hr_metric"].empty()==false)
+				if (root["current_observation"]["precip_1hr_metric"].empty() == false)
 				{
-					if (root["current_observation"]["precip_1hr_metric"]!="N/A")
+					if (root["current_observation"]["precip_1hr_metric"] != "N/A")
 					{
 						float rainrateph = static_cast<float>(atof(root["current_observation"]["precip_1hr_metric"].asString().c_str()));
-						if (rainrateph!=-9999.00f)
+						if (rainrateph != -9999.00f)
 						{
-							int at10=round(abs(rainrateph*10.0f));
-							tsen.RAIN.rainrateh=(BYTE)(at10/256);
-							at10-=(tsen.RAIN.rainrateh*256);
-							tsen.RAIN.rainratel=(BYTE)(at10);
+							int at10 = round(abs(rainrateph*10.0f));
+							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
+							at10 -= (tsen.RAIN.rainrateh * 256);
+							tsen.RAIN.rainratel = (BYTE)(at10);
 						}
 					}
 				}
 
-				int tr10=int((float(RainCount)*10.0f));
-				tsen.RAIN.raintotal1=0;
-				tsen.RAIN.raintotal2=(BYTE)(tr10/256);
-				tr10-=(tsen.RAIN.raintotal2*256);
-				tsen.RAIN.raintotal3=(BYTE)(tr10);
+				int tr10 = int((float(RainCount)*10.0f));
+				tsen.RAIN.raintotal1 = 0;
+				tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
+				tr10 -= (tsen.RAIN.raintotal2 * 256);
+				tsen.RAIN.raintotal3 = (BYTE)(tr10);
 
 				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
 			}
@@ -447,35 +453,35 @@ void CWunderground::GetMeterDetails()
 	}
 
 	//Visibility
-	if (root["current_observation"]["visibility_km"].empty()==false)
+	if (root["current_observation"]["visibility_km"].empty() == false)
 	{
-		if (root["current_observation"]["visibility_km"]!="N/A")
+		if (root["current_observation"]["visibility_km"] != "N/A")
 		{
 			float visibility = static_cast<float>(atof(root["current_observation"]["visibility_km"].asString().c_str()));
-			if (visibility>=0)
+			if (visibility >= 0)
 			{
 				_tGeneralDevice gdevice;
-				gdevice.subtype=sTypeVisibility;
-				gdevice.floatval1=visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
-			}
-		}
-	}
-	//Solar Radiation
-	if (root["current_observation"]["solarradiation"].empty()==false)
-	{
-		if (root["current_observation"]["solarradiation"]!="N/A")
-		{
-			float radiation = static_cast<float>(atof(root["current_observation"]["solarradiation"].asString().c_str()));
-			if (radiation>=0.0f)
-			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype=sTypeSolarRadiation;
-				gdevice.floatval1=radiation;
+				gdevice.subtype = sTypeVisibility;
+				gdevice.floatval1 = visibility;
 				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 			}
 		}
 	}
 
+	//Solar Radiation
+	if (root["current_observation"]["solarradiation"].empty() == false)
+	{
+		if (root["current_observation"]["solarradiation"] != "N/A")
+		{
+			float radiation = static_cast<float>(atof(root["current_observation"]["solarradiation"].asString().c_str()));
+			if (radiation >= 0.0f)
+			{
+				_tGeneralDevice gdevice;
+				gdevice.subtype = sTypeSolarRadiation;
+				gdevice.floatval1 = radiation;
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+			}
+		}
+	}
 }
 

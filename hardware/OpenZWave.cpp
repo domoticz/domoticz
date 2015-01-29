@@ -1346,7 +1346,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 		std::string strValue;
 		if (m_pManager->GetValueAsString(vID, &strValue) == true)
 		{
-		_asm nop;
+		while (1==0);
 		}
 		}
 		}

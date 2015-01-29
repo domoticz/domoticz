@@ -29,6 +29,8 @@ MySensorsSerial::~MySensorsSerial()
 
 bool MySensorsSerial::StartHardware()
 {
+	LoadDevicesFromDatabase();
+
 	StartHeartbeatThread();
 #ifndef DEBUG_MYSENSORS
 	//Try to open the Serial Port
@@ -39,15 +41,15 @@ bool MySensorsSerial::StartHardware()
 		openOnlyBaud(
 			m_szSerialPort,
 			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even),
-			boost::asio::serial_port_base::character_size(7)
+			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
+			boost::asio::serial_port_base::character_size(8)
 			);
 #else
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
-			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::even),
-			boost::asio::serial_port_base::character_size(7)
+			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
+			boost::asio::serial_port_base::character_size(8)
 			);
 #endif
 	}
@@ -65,18 +67,50 @@ bool MySensorsSerial::StartHardware()
 		return false;
 	}
 #else
-	//std::ifstream infile;
-	//std::string sLine;
+	std::ifstream infile;
+	std::string sLine;
 	//infile.open("D:\\MySensors.txt");
-	//if (!infile.is_open())
-	//	return false;
-	//while (!infile.eof())
-	//{
-	//	getline(infile, sLine);
-	//	sLine += "\n";
-	//	ParseData((const unsigned char*)sLine.c_str(), sLine.size());
-	//}
-	//infile.close();
+	infile.open("D:\\log-gw.txt");
+	
+	std::string orgstr;
+
+	if (!infile.is_open())
+		return false;
+	while (!infile.eof())
+	{
+		getline(infile, sLine);
+
+		std::vector<std::string> results;
+		StringSplit(sLine, ";", results);
+		if (results.size() != 6)
+		{
+			StringSplit(sLine, " ", results);
+			if (results.size() >= 7)
+			{
+				orgstr=sLine;
+				sLine = "";
+				sLine += results[2] + ";";
+				sLine += results[3] + ";";
+				sLine += results[4] + ";";
+				sLine += results[5] + ";";
+				sLine += results[6] + ";";
+				//Add the rest
+				for (size_t ii = 7; ii < results.size(); ii++)
+				{
+					sLine += results[ii];
+					if (ii != results.size() - 1)
+						sLine += " ";
+				}
+				StringSplit(sLine, ";", results);
+			}
+		}
+		if (results.size() != 6)
+			continue;
+
+		sLine += "\n";
+		ParseData((const unsigned char*)sLine.c_str(), sLine.size());
+	}
+	infile.close();
 
 #endif
 	m_bIsStarted=true;
@@ -119,7 +153,27 @@ void MySensorsSerial::readCallback(const char *data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
+void MySensorsSerial::WriteInt(const std::string &sendStr)
+{
+	if (!isOpen())
+		return;
+	writeString(sendStr);
+}
+
 void MySensorsSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	if (!isOpen())
+		return;
+	tRBUF *pCmd = (tRBUF *)pdata;
+	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
+	{
+		//Light command
+		int node_id = pCmd->LIGHTING2.id4;
+		int child_sensor_id = pCmd->LIGHTING2.unitcode;
+		std::stringstream sstr;
+		std::string lState = (pCmd->LIGHTING2.cmnd == light2_sOn) ? "1" : "0";
+		SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
+		//SendCommand(node_id, child_sensor_id, MT_Set, V_DIMMER, "100");
+	}
 }
 

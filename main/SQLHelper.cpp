@@ -513,6 +513,12 @@ const char *sqlCreateCustomImages =
 	"	[IconOn] BLOB, "
 	"	[IconOff] BLOB);";
 
+const char *sqlCreateMySensors =
+	"CREATE TABLE IF NOT EXISTS [MySensors]("
+	" [HardwareID] INTEGER NOT NULL,"
+	" [ID] INTEGER NOT NULL,"
+	" [SketchName] VARCHAR(100) DEFAULT Unknown,"
+	" [SketchVersion] VARCHAR(40) DEFAULT(1.0));";
 
 extern std::string szStartupFolder;
 
@@ -630,6 +636,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
 	query(sqlCreateCustomImages);
+	query(sqlCreateMySensors);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{
