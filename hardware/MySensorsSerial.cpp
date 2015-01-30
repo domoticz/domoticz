@@ -160,20 +160,3 @@ void MySensorsSerial::WriteInt(const std::string &sendStr)
 	writeString(sendStr);
 }
 
-void MySensorsSerial::WriteToHardware(const char *pdata, const unsigned char length)
-{
-	if (!isOpen())
-		return;
-	tRBUF *pCmd = (tRBUF *)pdata;
-	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
-	{
-		//Light command
-		int node_id = pCmd->LIGHTING2.id4;
-		int child_sensor_id = pCmd->LIGHTING2.unitcode;
-		std::stringstream sstr;
-		std::string lState = (pCmd->LIGHTING2.cmnd == light2_sOn) ? "1" : "0";
-		SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
-		//SendCommand(node_id, child_sensor_id, MT_Set, V_DIMMER, "100");
-	}
-}
-

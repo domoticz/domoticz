@@ -8,8 +8,6 @@ class MySensorsSerial: public AsyncSerial, public MySensorsBase
 public:
 	MySensorsSerial(const int ID, const std::string& devname);
     ~MySensorsSerial();
-
-	void WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
 	bool StopHardware();
