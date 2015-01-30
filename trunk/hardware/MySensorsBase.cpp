@@ -316,6 +316,21 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		UpdateSwitch(pSensor->nodeID, pSensor->childID, (level != 0), level, "Light");
 	}
 	break;
+	case V_LIGHT_LEVEL:
+		{
+			_tLightMeter lmeter;
+			lmeter.id1 = 0;
+			lmeter.id2 = 0;
+			lmeter.id3 = 0;
+			lmeter.id4 = pSensor->nodeID;
+			lmeter.dunit = pSensor->childID;
+			lmeter.fLux = pSensor->floatValue;
+			lmeter.battery_level = 255;
+			if (pSensor->hasBattery)
+				lmeter.battery_level = pSensor->batValue;
+			sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+		}
+		break;
 	case V_DUST_LEVEL:
 	{
 		_tAirQualityMeter meter;
@@ -384,6 +399,9 @@ void MySensorsBase::ParseData(const unsigned char *pData, int Len)
 void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
 	bool bDeviceExits = true;
+	double rlevel = (15.0 / 100)*Level;
+	int level = int(rlevel);
+
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::stringstream szQuery;
@@ -401,7 +419,12 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 		if ((!bOn) && (nvalue == 0))
 			return;
 		if ((bOn && (nvalue != 0)))
-			return;
+		{
+			//Check Level
+			int slevel = atoi(result[0][2].c_str());
+			if (slevel==level)
+				return;
+		}
 	}
 
 	//Send as Lighting 2
@@ -415,11 +438,8 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	lcmd.LIGHTING2.id3 = 0;
 	lcmd.LIGHTING2.id4 = Idx;
 	lcmd.LIGHTING2.unitcode = SubUnit;
-	double rlevel = (15.0 / 100)*Level;
-	int level = int(rlevel);
 	if (!bOn)
 	{
-		level = 0;
 		lcmd.LIGHTING2.cmnd = light2_sOff;
 	}
 	else
@@ -447,6 +467,65 @@ void MySensorsBase::SendCommand(const int NodeID, const int ChildID, const _eMes
 	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";0;" << SubType << ";" << Payload << '\n';
 	WriteInt(sstr.str());
 }
+
+void MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
+{
+	tRBUF *pCmd = (tRBUF *)pdata;
+	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
+	{
+		//Light command
+
+		int node_id = pCmd->LIGHTING2.id4;
+		int child_sensor_id = pCmd->LIGHTING2.unitcode;
+
+		if (_tMySensorNode *pNode = FindNode(node_id))
+		{
+			bool bIsDimmer = true;
+			_tMySensorSensor *pSensor = FindSensor(pNode, child_sensor_id, V_DIMMER);
+			if (pSensor == NULL)
+			{
+				bIsDimmer = false;
+				pSensor = FindSensor(pNode, child_sensor_id, V_LIGHT);
+			}
+			if (pSensor == NULL)
+			{
+				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown child_id: %d", child_sensor_id);
+				return;
+			}
+
+			int light_command = pCmd->LIGHTING2.cmnd;
+			if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 0))
+			{
+				light_command = light2_sOff;
+			}
+			else if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 255))
+			{
+				light_command = light2_sOn;
+			}
+
+			if ((pCmd->LIGHTING2.cmnd == light2_sOn) || (pCmd->LIGHTING2.cmnd == light2_sOff))
+			{
+				std::string lState = (pCmd->LIGHTING2.cmnd == light2_sOn) ? "1" : "0";
+				SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
+			}
+			else if (pCmd->LIGHTING2.cmnd == light2_sSetLevel)
+			{
+				float fvalue = (100.0f / 15.0f)*float(pCmd->LIGHTING2.level);
+				if (fvalue > 100.0f)
+					fvalue = 100.0f; //99 is fully on
+				int svalue = round(fvalue);
+
+				std::stringstream sstr;
+				sstr << svalue;
+				SendCommand(node_id, child_sensor_id, MT_Set, V_DIMMER, sstr.str());
+			}
+		}
+		else {
+			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
+		}
+	}
+}
+
 
 void MySensorsBase::ParseLine()
 {
@@ -622,6 +701,10 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_DIRECTION:
 			while (1==0);
+			break;
+		case V_LIGHT_LEVEL:
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
 			break;
 		case V_FORECAST:
 			pSensor->stringValue = payload;
