@@ -15,6 +15,36 @@ public:
 		MT_Stream = 4			// Used for OTA firmware updates
 	};
 
+	enum _ePresentationType
+	{
+		S_DOOR=0,				// Door and window sensors
+		S_MOTION=1,				// Motion sensors
+		S_SMOKE=2,				// Smoke sensor
+		S_LIGHT=3,				// Light Actuator(on / off)
+		S_DIMMER=4,				// Dimmable device of some kind
+		S_COVER=5,				// Window covers or shades
+		S_TEMP=6,				// Temperature sensor
+		S_HUM=7,				// Humidity sensor
+		S_BARO=8,				// Barometer sensor(Pressure)
+		S_WIND=9,				// Wind sensor
+		S_RAIN=10,				// Rain sensor
+		S_UV=11,				// UV sensor
+		S_WEIGHT=12,			// Weight sensor for scales etc.
+		S_POWER=13,				// Power measuring device, like power meters
+		S_HEATER=14,			// Heater device
+		S_DISTANCE=15,			// Distance sensor
+		S_LIGHT_LEVEL=16,		// Light sensor
+		S_ARDUINO_NODE=17,		// Arduino node device
+		S_ARDUINO_RELAY=18,		// Arduino repeating node device
+		S_LOCK=19,				// Lock device
+		S_IR=20,				// Ir sender / receiver device
+		S_WATER=21,				// Water meter
+		S_AIR_QUALITY=22,		// Air quality sensor e.g.MQ - 2
+		S_CUSTOM=23,			// Use this for custom sensors where no other fits.
+		S_DUST=24,				// Dust level sensor
+		S_SCENE_CONTROLLER=25	// Scene controller device
+	};
+
 	enum _eSetType
 	{
 		V_TEMP = 0,			//	Temperature
@@ -138,6 +168,7 @@ private:
 	void SendBaroSensor(const unsigned char NodeID, const int ChildID, const float pressure);
 	void SendTempHumSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity);
 	void SendTempHumBaroSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity, const float pressure, int forecast);
+	void SendKwhMeter(const unsigned char NodeID, const int ChildID, const double musage, const double mtotal, const std::string &defaultname);
 
 	void LoadDevicesFromDatabase();
 	void Add2Database(const int nodeID, const std::string &SketchName, const std::string &SketchVersion);
