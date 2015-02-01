@@ -5562,9 +5562,10 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 	result=query(szTmp);
 	sprintf(szTmp,"DELETE FROM ZWaveNodes WHERE (HardwareID== %s)",idx.c_str());
 	query(szTmp);
-	sprintf(szTmp,"DELETE FROM EnoceanSensors WHERE (HardwareID== %s)",idx.c_str());
+	sprintf(szTmp, "DELETE FROM EnoceanSensors WHERE (HardwareID== %s)", idx.c_str());
 	query(szTmp);
-
+	sprintf(szTmp, "DELETE FROM MySensors WHERE (HardwareID== %s)", idx.c_str());
+	query(szTmp);
 }
 
 void CSQLHelper::DeleteCamera(const std::string &idx)

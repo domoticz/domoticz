@@ -246,63 +246,145 @@ void MySensorsBase::SendTempHumBaroSensor(const unsigned char NodeID, const int 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);
 }
 
+void MySensorsBase::SendKwhMeter(const unsigned char NodeID, const int ChildID, const double musage, const double mtotal, const std::string &defaultname)
+{
+	int Idx = (NodeID * 256) + ChildID;
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+
+	tsen.ENERGY.packettype = pTypeENERGY;
+	tsen.ENERGY.subtype = sTypeELEC2;
+	tsen.ENERGY.packetlength = sizeof(tsen.ENERGY) - 1;
+	tsen.ENERGY.id1 = NodeID;
+	tsen.ENERGY.id2 = ChildID;
+	tsen.ENERGY.count = 1;
+	tsen.ENERGY.rssi = 12;
+
+	tsen.ENERGY.battery_level = 9;
+
+	unsigned long long instant = (unsigned long long)(musage*1000.0);
+	tsen.ENERGY.instant1 = (unsigned char)(instant / 0x1000000);
+	instant -= tsen.ENERGY.instant1 * 0x1000000;
+	tsen.ENERGY.instant2 = (unsigned char)(instant / 0x10000);
+	instant -= tsen.ENERGY.instant2 * 0x10000;
+	tsen.ENERGY.instant3 = (unsigned char)(instant / 0x100);
+	instant -= tsen.ENERGY.instant3 * 0x100;
+	tsen.ENERGY.instant4 = (unsigned char)(instant);
+
+	double total = (mtotal*1000.0)*223.666;
+	tsen.ENERGY.total1 = (unsigned char)(total / 0x10000000000ULL);
+	total -= tsen.ENERGY.total1 * 0x10000000000ULL;
+	tsen.ENERGY.total2 = (unsigned char)(total / 0x100000000ULL);
+	total -= tsen.ENERGY.total2 * 0x100000000ULL;
+	tsen.ENERGY.total3 = (unsigned char)(total / 0x1000000);
+	total -= tsen.ENERGY.total3 * 0x1000000;
+	tsen.ENERGY.total4 = (unsigned char)(total / 0x10000);
+	total -= tsen.ENERGY.total4 * 0x10000;
+	tsen.ENERGY.total5 = (unsigned char)(total / 0x100);
+	total -= tsen.ENERGY.total5 * 0x100;
+	tsen.ENERGY.total6 = (unsigned char)(total);
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
+		result = m_sql.query(szQuery.str());
+	}
+}
+
 void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor)
 {
 	switch (pSensor->devType)
 	{
 	case V_TEMP:
 	{
-		SendTempSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
 		_tMySensorSensor *pSensorHum = FindSensor(pSensor->nodeID, V_HUM);
 		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
 		if (pSensorHum && pSensorBaro)
 		{
-			int forecast = baroForecastNoInfo;
-			_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
-			if (pSensorForecast)
-				forecast = pSensorForecast->intvalue;
-			SendTempHumBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue, pSensorHum->floatValue, pSensorBaro->floatValue, forecast);
+			if (pSensorHum->bValidValue && pSensorBaro->bValidValue)
+			{
+				int forecast = baroForecastNoInfo;
+				_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
+				if (pSensorForecast)
+					forecast = pSensorForecast->intvalue;
+				SendTempHumBaroSensor(pSensor->nodeID, 1, pSensor->floatValue, pSensorHum->floatValue, pSensorBaro->floatValue, forecast);
+			}
 		}
 		else if (pSensorHum) {
-			SendTempHumSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue, pSensorHum->floatValue);
+			if (pSensorHum->bValidValue)
+			{
+				SendTempHumSensor(pSensor->nodeID, 1, pSensor->floatValue, pSensorHum->floatValue);
+			}
 		}
+		else
+			SendTempSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
 	}
 	break;
 	case V_HUM:
 	{
-		SendHumiditySensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
 		_tMySensorSensor *pSensorTemp = FindSensor(pSensor->nodeID, V_TEMP);
 		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
 		if (pSensorTemp && pSensorBaro)
 		{
-			int forecast = baroForecastNoInfo;
-			_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
-			if (pSensorForecast)
-				forecast = pSensorForecast->intvalue;
-			SendTempHumBaroSensor(pSensor->nodeID, pSensor->childID, pSensorTemp->floatValue, pSensor->floatValue, pSensorBaro->floatValue, forecast);
+			if (pSensorTemp->bValidValue && pSensorBaro->bValidValue)
+			{
+				int forecast = baroForecastNoInfo;
+				_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
+				if (pSensorForecast)
+					forecast = pSensorForecast->intvalue;
+				SendTempHumBaroSensor(pSensor->nodeID, 1, pSensorTemp->floatValue, pSensor->floatValue, pSensorBaro->floatValue, forecast);
+			}
 		}
 		else if (pSensorTemp) {
-			SendTempHumSensor(pSensor->nodeID, pSensor->childID, pSensorTemp->floatValue, pSensor->floatValue);
+			if (pSensorTemp->bValidValue)
+			{
+				SendTempHumSensor(pSensor->nodeID, 1, pSensorTemp->floatValue, pSensor->floatValue);
+			}
 		}
+		else
+			SendHumiditySensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
 	}
 	break;
 	case V_PRESSURE:
 	{
-		SendBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
 		_tMySensorSensor *pSensorTemp = FindSensor(pSensor->nodeID, V_TEMP);
 		_tMySensorSensor *pSensorHum = FindSensor(pSensor->nodeID, V_HUM);
 		if (pSensorTemp && pSensorHum)
 		{
-			int forecast = baroForecastNoInfo;
-			_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
-			if (pSensorForecast)
-				forecast = pSensorForecast->intvalue;
-			SendTempHumBaroSensor(pSensor->nodeID, pSensor->childID, pSensorTemp->floatValue, pSensorHum->floatValue, pSensor->floatValue, forecast);
+			if (pSensorTemp->bValidValue && pSensorHum->bValidValue)
+			{
+				int forecast = baroForecastNoInfo;
+				_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
+				if (pSensorForecast)
+					forecast = pSensorForecast->intvalue;
+				SendTempHumBaroSensor(pSensor->nodeID, 1, pSensorTemp->floatValue, pSensorHum->floatValue, pSensor->floatValue, forecast);
+			}
 		}
+		else
+			SendBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
 	}
 	break;
 	case V_TRIPPED:
 		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
+		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Security Sensor");
+		break;
+	case V_ARMED:
+		//Armed status of a security sensor. 1 = Armed, 0 = Bypassed
 		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Security Sensor");
 		break;
 	case V_LIGHT:
@@ -340,14 +422,37 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		meter.airquality = pSensor->intvalue;
 		meter.id1 = pSensor->nodeID;
 		meter.id2 = pSensor->childID;
-		sDecodeRXMessage(this, (const unsigned char *)&meter);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&meter);
 	}
 	break;
 	case V_WATT:
-		while (1==0);
+		{
+			_tMySensorSensor *pSensorKwh = FindSensor(pSensor->nodeID, V_KWH);
+			if (pSensorKwh) {
+				SendKwhMeter(pSensor->nodeID, 1, pSensor->floatValue/1000.0f, pSensorKwh->floatValue, "Meter");
+			}
+			else {
+				_tUsageMeter umeter;
+				umeter.id1 = 0;
+				umeter.id2 = 0;
+				umeter.id3 = 0;
+				umeter.id4 = pSensor->nodeID;
+				umeter.dunit = pSensor->childID;
+				umeter.fusage = pSensor->floatValue/1000.0f;
+				sDecodeRXMessage(this, (const unsigned char *)&umeter);
+			}
+		}
 		break;
 	case V_KWH:
-		while (1 == 0);
+		{
+			_tMySensorSensor *pSensorWatt = FindSensor(pSensor->nodeID, V_WATT);
+			if (pSensorWatt) {
+				SendKwhMeter(pSensor->nodeID, 1, pSensorWatt->floatValue/1000.0f, pSensor->floatValue, "Meter");
+			}
+			else {
+				SendKwhMeter(pSensor->nodeID, pSensor->childID, 0, pSensor->floatValue, "Meter");
+			}
+		}
 		break;
 	case V_FLOW:
 		//Flow of water in meter
@@ -449,7 +554,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
 
 	if (!bDeviceExits)
 	{
@@ -683,7 +788,12 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_WATT:
-			while (1==0);
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_KWH:
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
 			break;
 		case V_FLOW:
 			//Flow of water in meter
@@ -704,6 +814,10 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_LIGHT_LEVEL:
 			pSensor->floatValue = (float)atof(payload.c_str());
+			//convert percentage to 1000 scale
+			pSensor->floatValue = (1000.0f / 100.0f)*pSensor->floatValue;
+			if (pSensor->floatValue > 1000.0f)
+				pSensor->floatValue = 1000.0f;
 			bHaveValue = true;
 			break;
 		case V_FORECAST:
@@ -736,8 +850,54 @@ void MySensorsBase::ParseLine()
 	}
 	else if (message_type == MT_Presentation)
 	{
-		//Ignored
-		while (1==0);
+		//Ignored for now
+		if ((node_id == 255) || (child_sensor_id == 255))
+			return;
+
+		bool bDoAdd = false;
+		switch (sub_type)
+		{
+		case S_TEMP:
+			sub_type = V_TEMP;
+			bDoAdd = true;
+			break;
+		case S_HUM:
+			sub_type = V_HUM;
+			bDoAdd = true;
+			break;
+		case S_BARO:
+			sub_type = V_PRESSURE;
+			bDoAdd = true;
+			break;
+		}
+		if (!bDoAdd)
+			return;
+
+		_tMySensorNode *pNode = FindNode(node_id);
+		if (pNode == NULL)
+		{
+			pNode = InsertNode(node_id);
+			if (pNode == NULL)
+				return;
+		}
+		pNode->lastreceived = mytime(NULL);
+
+		_tMySensorSensor *pSensor = FindSensor(pNode, child_sensor_id, (_eSetType)sub_type);
+		if (pSensor == NULL)
+		{
+			//Unknown sensor, add it to the system
+			_tMySensorSensor mSensor;
+			mSensor.nodeID = node_id;
+			mSensor.childID = child_sensor_id;
+			mSensor.devType = (_eSetType)sub_type;
+			pNode->m_sensors.push_back(mSensor);
+			pSensor = FindSensor(pNode, child_sensor_id, mSensor.devType);
+			if (pSensor == NULL)
+				return;
+		}
+		pSensor->lastreceived = mytime(NULL);
+		pSensor->devType = (_eSetType)sub_type;
+		pSensor->bValidValue = false;
 	}
 	else if (message_type == MT_Req)
 	{

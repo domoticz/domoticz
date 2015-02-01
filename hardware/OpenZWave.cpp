@@ -1502,6 +1502,8 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				{
 					//convert from % to Lux (where max is 1000 Lux)
 					fValue = (1000.0f / 100.0f)*fValue;
+					if (fValue > 1000.0f)
+						fValue = 1000.0f;
 				}
 
 				_device.floatValue = fValue;
