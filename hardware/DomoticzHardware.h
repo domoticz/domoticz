@@ -35,6 +35,7 @@ public:
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
 	void *m_pUserData;
 	bool m_bOutputLog;
+	int m_iLastSendNodeBatteryValue;
 private:
 	friend class C1Wire;
 	friend class CDummy;

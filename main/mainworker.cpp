@@ -1540,30 +1540,12 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	}
 	if (DeviceRowIdx == -1)
 		return;
-#ifdef WITH_OPENZWAVE
-	//Quick hack to update zwave battery levels for sensors that does not have them
-	//We should move all sensors to a more general sensor type that includes this
-	if (pHardware->HwdType == HTYPE_OpenZWave)
+	if (pHardware->m_iLastSendNodeBatteryValue != 255)
 	{
-		COpenZWave *pZWave = (COpenZWave *)pHardware;
-		if (pZWave->m_iLastSendNodeBatteryValue != 255)
-		{
-			std::stringstream szQuery;
-			szQuery << "UPDATE DeviceStatus SET BatteryLevel=" << pZWave->m_iLastSendNodeBatteryValue << " WHERE (ID==" << DeviceRowIdx << ")";
-			m_sql.query(szQuery.str());
-		}
+		std::stringstream szQuery;
+		szQuery << "UPDATE DeviceStatus SET BatteryLevel=" << pHardware->m_iLastSendNodeBatteryValue << " WHERE (ID==" << DeviceRowIdx << ")";
+		m_sql.query(szQuery.str());
 	}
-	else if (pHardware->HwdType == HTYPE_RazberryZWave)
-	{
-		CRazberry *pZWave = (CRazberry *)pHardware;
-		if (pZWave->m_iLastSendNodeBatteryValue != 255)
-		{
-			std::stringstream szQuery;
-			szQuery << "UPDATE DeviceStatus SET BatteryLevel=" << pZWave->m_iLastSendNodeBatteryValue << " WHERE (ID==" << DeviceRowIdx << ")";
-			m_sql.query(szQuery.str());
-		}
-	}
-#endif
 
 	if (pHardware->m_bOutputLog)
 	{

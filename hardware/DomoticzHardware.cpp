@@ -19,6 +19,7 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_DataTimeout = 0;
 	m_bSkipReceiveCheck = false;
 	m_bOutputLog = true;
+	m_iLastSendNodeBatteryValue = 255;
 };
 
 CDomoticzHardwareBase::~CDomoticzHardwareBase()

@@ -149,6 +149,21 @@ MySensorsBase::_tMySensorSensor* MySensorsBase::FindSensor(const int nodeID, _eS
 	return NULL;
 }
 
+void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
+{
+	std::map<int, _tMySensorNode>::iterator ittNode;
+	for (ittNode = m_nodes.begin(); ittNode != m_nodes.end(); ++ittNode)
+	{
+		_tMySensorNode *pNode = &ittNode->second;
+		std::vector<_tMySensorSensor>::iterator itt;
+		for (itt = pNode->m_sensors.begin(); itt != pNode->m_sensors.end(); ++itt)
+		{
+			itt->hasBattery = true;
+			itt->batValue = Level;
+		}
+	}
+}
+
 void MySensorsBase::SendTempSensor(const unsigned char NodeID, const int ChildID, const float temperature)
 {
 	RBUF tsen;
@@ -308,6 +323,12 @@ void MySensorsBase::SendKwhMeter(const unsigned char NodeID, const int ChildID, 
 
 void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor)
 {
+	m_iLastSendNodeBatteryValue = 255;
+	if (pSensor->hasBattery)
+	{
+		m_iLastSendNodeBatteryValue = pSensor->batValue;
+	}
+
 	switch (pSensor->devType)
 	{
 	case V_TEMP:
@@ -703,6 +724,9 @@ void MySensorsBase::ParseLine()
 				InsertNode(node_id);
 				DatabaseUpdateSketchVersion(node_id, payload);
 			}
+			break;
+		case I_BATTERY_LEVEL:
+			UpdateNodeBatteryLevel(node_id, atoi(payload.c_str()));
 			break;
 		case I_LOG_MESSAGE:
 			break;

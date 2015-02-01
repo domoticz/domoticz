@@ -184,6 +184,7 @@ private:
 	_tMySensorSensor* FindSensor(_tMySensorNode *pNode, const int childID, _eSetType devType);
 	_tMySensorSensor* FindSensor(const int nodeID, _eSetType devType);
 	void InsertSensor(_tMySensorSensor device);
+	void UpdateNodeBatteryLevel(const int nodeID, const int Level);
 
 	std::map<int, _tMySensorNode> m_nodes;
 
