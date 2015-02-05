@@ -194,11 +194,11 @@
 }
 </style>
 <div id="login">
-<form name="login-form" ng-submit="DoLogin()">
+<form name="login-form" ng-submit="DoLogin()" form-autofill-fix>
     <h1>Domoticz</h1>
     <fieldset id="inputs">
-        <input id="username" type="text" placeholder="Username" autofocus required />
-        <input id="password" type="password" placeholder="Password" required />
+        <input type="text" id="username" name="username" placeholder="Username" autofocus ng-required />
+        <input type="password" id="password" name="password" placeholder="Password" ng-required />
         <br />
         <input type="checkbox" id="rememberme" /> <label for="rememberme" id="remembermelbl"></label><br />
         <br />

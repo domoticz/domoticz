@@ -1,12 +1,12 @@
 define(['app'], function (app) {
-	app.controller('LoginController', [ 'permissions', '$scope', '$rootScope', '$location', '$http', '$interval', function(permissions,$scope,$rootScope,$location,$http,$interval) {
+	app.controller('LoginController', [ 'permissions', '$scope', '$rootScope', '$location', '$http', '$interval','md5', function(permissions,$scope,$rootScope,$location,$http,$interval,md5) {
 
 		$scope.failcounter=0;
 
 		$scope.DoLogin=function()
 		{
 			var musername=encodeURIComponent(btoa($('#username').val()));
-			var mpassword=encodeURIComponent(btoa($('#password').val()));
+			var mpassword=encodeURIComponent(md5.createHash($('#password').val()));
 			var bRememberMe=$('#rememberme').is(":checked");
 
 			$.ajax({

@@ -78,6 +78,8 @@ private:
 	friend class CPhilipsHue;
 	friend class MySensorsBase;
 	friend class MySensorsSerial;
+	friend class MySensorsTCP;
+	friend class MQTT;
 
 	boost::mutex readQueueMutex;
 	virtual bool StartHardware()=0;

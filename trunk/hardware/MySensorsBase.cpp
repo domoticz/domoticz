@@ -606,19 +606,6 @@ void MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 		if (_tMySensorNode *pNode = FindNode(node_id))
 		{
-			bool bIsDimmer = true;
-			_tMySensorSensor *pSensor = FindSensor(pNode, child_sensor_id, V_DIMMER);
-			if (pSensor == NULL)
-			{
-				bIsDimmer = false;
-				pSensor = FindSensor(pNode, child_sensor_id, V_LIGHT);
-			}
-			if (pSensor == NULL)
-			{
-				_log.Log(LOG_ERROR, "MySensors: Light command received for unknown child_id: %d", child_sensor_id);
-				return;
-			}
-
 			int light_command = pCmd->LIGHTING2.cmnd;
 			if ((pCmd->LIGHTING2.cmnd == light2_sSetLevel) && (pCmd->LIGHTING2.level == 0))
 			{

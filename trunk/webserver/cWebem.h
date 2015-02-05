@@ -43,17 +43,15 @@ namespace http {
 
 		// Parsed Authorization header
 		struct ah {
+			std::string method;
 			std::string user;
 			std::string response;
-			char *uri, *cnonce, *qop, *nc, *nonce;
-			ah()
-			{
-				uri = NULL;
-				cnonce = NULL;
-				qop = NULL;
-				nc = NULL;
-				nonce = NULL;
-			}
+			std::string uri;
+			std::string cnonce;
+			std::string qop;
+			std::string nc;
+			std::string nonce;
+			std::string ha1;
 		};
 
 		/**

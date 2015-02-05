@@ -74,7 +74,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 		boost::lock_guard<boost::mutex> l(connectionMutex);
 		std::string s = new_connection_->socket().remote_endpoint().address().to_string();
 		new_connection_->m_endpoint=s;
-		_log.Log(LOG_STATUS,"Incoming connection from: %s", s.c_str());
+		_log.Log(LOG_STATUS,"Incoming Domoticz connection from: %s", s.c_str());
 
 		connections_.insert(new_connection_);
 		new_connection_->start();

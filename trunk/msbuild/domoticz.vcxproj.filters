@@ -183,6 +183,12 @@
     <Filter Include="Devices\MySensors">
       <UniqueIdentifier>{16e4b391-9590-41fe-b5fa-aaf91d629b2b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MQTT">
+      <UniqueIdentifier>{1315bb26-40a6-402e-84be-bc07bee1aef1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\MQTT">
+      <UniqueIdentifier>{3a449100-50ce-4b1e-96f5-5eab825f169c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -540,6 +546,75 @@
     <ClInclude Include="..\hardware\MySensorsSerial.h">
       <Filter>Devices\MySensors</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\MySensorsTCP.h">
+      <Filter>Devices\MySensors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\MQTT.h">
+      <Filter>Devices\MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\Clients.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\Heap.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\LinkedList.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\Log.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\Messages.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTAsync.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTClientPersistence.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTPacket.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTPacketOut.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTPersistence.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTPersistenceDefault.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTProtocol.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTProtocolClient.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\MQTTProtocolOut.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\Socket.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\SocketBuffer.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\SSLSocket.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\StackTrace.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\Thread.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\Tree.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MQTT\utf-8.h">
+      <Filter>MQTT</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -844,6 +919,72 @@
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsSerial.cpp">
       <Filter>Devices\MySensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MySensorsTCP.cpp">
+      <Filter>Devices\MySensors</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MQTT.cpp">
+      <Filter>Devices\MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\Clients.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\Heap.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\LinkedList.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\Log.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\Messages.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\MQTTAsync.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\MQTTPacket.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\MQTTPacketOut.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\MQTTPersistence.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\MQTTPersistenceDefault.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\MQTTProtocolClient.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\MQTTProtocolOut.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\MQTTVersion.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\Socket.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\SocketBuffer.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\SSLSocket.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\StackTrace.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\Thread.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\Tree.c">
+      <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MQTT\utf-8.c">
+      <Filter>MQTT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -40,6 +40,7 @@ namespace OpenZWave
 	extern char const *LogLevelString[];
 	enum LogLevel
 	{
+		LogLevel_Invalid, 	/**< Invalid Log Status */
 		LogLevel_None,		/**< Disable all logging */
 		LogLevel_Always,	/**< These messages should always be shown */
 		LogLevel_Fatal,		/**< A likely fatal issue in the library */

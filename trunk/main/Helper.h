@@ -29,3 +29,4 @@ double ConvertTemperature(const double tValue, const unsigned char tSign);
 
 std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
 
+std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");

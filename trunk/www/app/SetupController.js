@@ -321,7 +321,7 @@ define(['app'], function (app) {
 				$("#emailtable #EmailUsername").val(data.EmailUsername);
 			  }
 			  if (typeof data.EmailPassword!= 'undefined') {
-				$("#emailtable #EmailPassword").val(data.EmailPassword);
+				$("#emailtable #EmailPassword").val(atob(data.EmailPassword));
 			  }
 			  if (typeof data.UseEmailInNotifications != 'undefined') {
 				$("#emailtable #useemailinnotificationsalerts").prop('checked',data.UseEmailInNotifications==1);
@@ -442,13 +442,6 @@ define(['app'], function (app) {
 		  }
 		  
 		  var secpanel=$("#sectable #SecPassword").val();
-		  if (secpanel != "") {
-			if (!$.isNumeric(secpanel)) {
-				ShowNotify($.i18n('Security Panel password can only contain numbers...'), 2000, true);
-				return;
-			}
-		  }
-
 		  var switchprotection=$("#protectiontable #ProtectionPassword").val();
 		  
 		  //Check email settings

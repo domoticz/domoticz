@@ -177,8 +177,21 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (!is)
 		  {
-			  rep = reply::stock_reply(reply::not_found);
-			  return;
+			  if (full_path.find('.') != std::string::npos)
+			  {
+				  rep = reply::stock_reply(reply::not_found);
+				  return;
+			  }
+			  //Maybe it is a folder, lets add the index file
+			  request_path += "/index.html";
+			  full_path = doc_root_ + request_path;
+			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+			  if (!is.is_open())
+			  {
+				  rep = reply::stock_reply(reply::not_found);
+				  return;
+			  }
+			  extension = "html";
 		  }
 
 		  // Fill out the reply to be sent to the client.

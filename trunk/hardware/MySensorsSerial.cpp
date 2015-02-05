@@ -3,6 +3,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
+#include "../main/localtime_r.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include <string>
@@ -14,12 +15,14 @@
 
 //#define DEBUG_MYSENSORS
 
+#define RETRY_DELAY 30
+
 MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname)
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=115200;
-
+	m_stoprequested = false;
 }
 
 MySensorsSerial::~MySensorsSerial()
@@ -31,12 +34,82 @@ bool MySensorsSerial::StartHardware()
 {
 	LoadDevicesFromDatabase();
 
-	StartHeartbeatThread();
+	//return OpenSerialDevice();
+	//somehow retry does not seem to work?!
+
+	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
+
+	//Start worker thread
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsSerial::Do_Work, this)));
+
+	return (m_thread != NULL);
+
+	return true;
+}
+
+bool MySensorsSerial::StopHardware()
+{
+	m_stoprequested = true;
+	if (m_thread != NULL)
+		m_thread->join();
+	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
+	sleep_milliseconds(10);
+	if (isOpen())
+	{
+		try {
+			clearReadCallback();
+			close();
+			doClose();
+			setErrorStatus(true);
+		}
+		catch (...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
+	m_bIsStarted = false;
+	return true;
+}
+
+void MySensorsSerial::Do_Work()
+{
+	while (!m_stoprequested)
+	{
+		sleep_seconds(1);
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+		if (ltime.tm_sec % 12 == 0) {
+			mytime(&m_LastHeartbeat);
+		}
+
+		if (m_stoprequested)
+			break;
+		if (!isOpen())
+		{
+			if (m_retrycntr == 0)
+			{
+				_log.Log(LOG_STATUS, "MySensors: retrying in %d seconds...", RETRY_DELAY);
+			}
+			m_retrycntr++;
+			if (m_retrycntr >= RETRY_DELAY)
+			{
+				m_retrycntr = 0;
+				OpenSerialDevice();
+			}
+		}
+
+	}
+	_log.Log(LOG_STATUS, "RFXCOM: Serial Worker stopped...");
+}
+
+bool MySensorsSerial::OpenSerialDevice()
+{
 #ifndef DEBUG_MYSENSORS
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"MySensors: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS, "MySensors: Using serial port: %s", m_szSerialPort.c_str());
 #ifndef WIN32
 		openOnlyBaud(
 			m_szSerialPort,
@@ -55,15 +128,15 @@ bool MySensorsSerial::StartHardware()
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"MySensors: Error opening serial port!");
+		_log.Log(LOG_ERROR, "MySensors: Error opening serial port!");
 #ifdef _DEBUG
-		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
+		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
 #endif
 		return false;
 	}
-	catch ( ... )
+	catch (...)
 	{
-		_log.Log(LOG_ERROR,"MySensors: Error opening serial port!!!");
+		_log.Log(LOG_ERROR, "MySensors: Error opening serial port!!!");
 		return false;
 	}
 #else
@@ -71,7 +144,7 @@ bool MySensorsSerial::StartHardware()
 	std::string sLine;
 	//infile.open("D:\\MySensors.txt");
 	infile.open("D:\\log-gw.txt");
-	
+
 	std::string orgstr;
 
 	if (!infile.is_open())
@@ -87,7 +160,7 @@ bool MySensorsSerial::StartHardware()
 			StringSplit(sLine, " ", results);
 			if (results.size() >= 7)
 			{
-				orgstr=sLine;
+				orgstr = sLine;
 				sLine = "";
 				sLine += results[2] + ";";
 				sLine += results[3] + ";";
@@ -113,33 +186,12 @@ bool MySensorsSerial::StartHardware()
 	infile.close();
 
 #endif
-	m_bIsStarted=true;
-	m_bufferpos=0;
+	m_bIsStarted = true;
+	m_bufferpos = 0;
 	setReadCallback(boost::bind(&MySensorsSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
-
 	return true;
 }
-
-bool MySensorsSerial::StopHardware()
-{
-	m_bIsStarted=false;
-	if (isOpen())
-	{
-		try {
-			clearReadCallback();
-			close();
-			doClose();
-			setErrorStatus(true);
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
-	StopHeartbeatThread();
-	return true;
-}
-
 
 void MySensorsSerial::readCallback(const char *data, size_t len)
 {

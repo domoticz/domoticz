@@ -45,7 +45,8 @@
 #	endif
 // Disable export warnings
 #	define OPENZWAVE_EXPORT_WARNINGS_OFF	__pragma( warning(push) )\
-											__pragma( warning(disable: 4251) )
+											__pragma( warning(disable: 4251) ) \
+											__pragma( warning(disable: 4275) )
 #	define OPENZWAVE_EXPORT_WARNINGS_ON		__pragma( warning(pop) )
 #else
 #	define OPENZWAVE_EXPORT
