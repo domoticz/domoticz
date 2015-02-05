@@ -301,6 +301,8 @@ $(document).ready(function() {
 				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
 				ClearNotifyCacheRefresh();
 				generate_noty('error', errText, false);
+				setTimeout(function(){	ClearNotifyCacheRefresh();
+										window.location.reload(); }, 1000);
 			}, false);
 
 			window.applicationCache.addEventListener('progress', function(e)
