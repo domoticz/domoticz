@@ -96,6 +96,8 @@ enum _eHardwareTypes {
 	HTYPE_EVOHOME_SERIAL,		//39
 	HTYPE_EVOHOME_SCRIPT,		//40
 	HTYPE_MySensorsUSB,			//41
+	HTYPE_MySensorsTCP,			//42
+	HTYPE_MQTT,					//43
 	HTYPE_END
 };
 

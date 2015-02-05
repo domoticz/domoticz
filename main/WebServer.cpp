@@ -575,10 +575,10 @@ namespace http {
 			//pollpost.html
 			//scenepost.html
 			//thpost.html
-			
-
 			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1));
 #endif	
+
+			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 
 			//Start normal worker thread
 			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
@@ -852,7 +852,6 @@ namespace http {
 				if (request_handler::url_decode(tmpusrpass, usrpass))
 				{
 					usrname = base64_decode(usrname);
-					usrpass = base64_decode(usrpass);
 					int iUser = -1;
 					iUser = FindUser(usrname.c_str());
 					if (iUser == -1)
@@ -911,7 +910,7 @@ namespace http {
 				{
 				}
 			}
-			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad)) {
+			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT)) {
 				//Lan
 				if (address == "")
 					return;
@@ -982,6 +981,14 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			char szTmp[300];
 
+			if (htype == HTYPE_Domoticz)
+			{
+				if (password.size() != 32)
+				{
+					password = GenerateMD5Hash(password);
+				}
+			}
+
 			sprintf(szTmp,
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d,%d)",
 				name.c_str(),
@@ -1049,7 +1056,7 @@ namespace http {
 			{
 				//USB/System
 			}
-			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad)){
+			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT)){
 				//Lan
 				if (address == "")
 					return;
@@ -1121,6 +1128,14 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			char szTmp[300];
+
+			if (htype == HTYPE_Domoticz)
+			{
+				if (password.size() != 32)
+				{
+					password = GenerateMD5Hash(password);
+				}
+			}
 
 			sprintf(szTmp,
 				"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, DataTimeout=%d WHERE (ID == %s)",
@@ -6079,7 +6094,7 @@ namespace http {
 					"INSERT INTO Users (Active, Username, Password, Rights, RemoteSharing, TabsEnabled) VALUES (%d,'%s','%s','%d','%d','%d')",
 					(senabled == "true") ? 1 : 0,
 					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
-					base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
+					password.c_str(),
 					rights,
 					(sRemoteSharing == "true") ? 1 : 0,
 					atoi(sTabsEnabled.c_str())
@@ -6131,12 +6146,11 @@ namespace http {
 
 				root["status"] = "OK";
 				root["title"] = "UpdateUser";
-
 				sprintf(szTmp,
 					"UPDATE Users SET Active=%d, Username='%s', Password='%s', Rights=%d, RemoteSharing=%d, TabsEnabled=%d WHERE (ID == %s)",
 					(senabled == "true") ? 1 : 0,
 					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
-					base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
+					password.c_str(),
 					rights,
 					(sRemoteSharing == "true") ? 1 : 0,
 					atoi(sTabsEnabled.c_str()),
@@ -6356,7 +6370,7 @@ namespace http {
 				if (passcode == "")
 					return;
 				//Check if passcode is correct
-				passcode = base64_encode((const unsigned char*)passcode.c_str(), passcode.size());
+				passcode = GenerateMD5Hash(passcode);
 				std::string rpassword;
 				int nValue = 1;
 				m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
@@ -6398,7 +6412,7 @@ namespace http {
 				if (passcode.size()>0) 
 				{
 					//Check if passcode is correct
-					passcode=base64_encode((const unsigned char*)passcode.c_str(),passcode.size());
+					passcode = GenerateMD5Hash(passcode);
 					std::string rpassword;
 					int nValue=1;
 					m_sql.GetPreferencesVar("ProtectionPassword",nValue,rpassword);
@@ -6444,7 +6458,7 @@ namespace http {
 				if (passcode.size() > 0)
 				{
 					//Check if passcode is correct
-					passcode = base64_encode((const unsigned char*)passcode.c_str(), passcode.size());
+					passcode = GenerateMD5Hash(passcode);
 					std::string rpassword;
 					int nValue = 1;
 					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
@@ -6485,7 +6499,7 @@ namespace http {
 				if (passcode.size() > 0)
 				{
 					//Check if passcode is correct
-					passcode = base64_encode((const unsigned char*)passcode.c_str(), passcode.size());
+					passcode = GenerateMD5Hash(passcode);
 					std::string rpassword;
 					int nValue = 1;
 					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
@@ -6555,7 +6569,6 @@ namespace http {
 					return;
 				}
 				root["title"] = "SetSecStatus";
-				seccode = base64_encode((const unsigned char*)seccode.c_str(), seccode.size());
 				std::string rpassword;
 				int nValue = 1;
 				m_sql.GetPreferencesVar("SecPassword", nValue, rpassword);
@@ -7270,7 +7283,7 @@ namespace http {
 					if ((WebUserName != "") && (WebPassword != ""))
 					{
 						WebUserName = base64_decode(WebUserName);
-						WebPassword = base64_decode(WebPassword);
+						WebPassword = WebPassword;
 						AddUser(10000, WebUserName, WebPassword, URIGHTS_ADMIN, 0xFFFF);
 
 						std::vector<std::vector<std::string> > result;
@@ -7289,7 +7302,7 @@ namespace http {
 									unsigned long ID = (unsigned long)atol(sd[0].c_str());
 
 									std::string username = base64_decode(sd[2]);
-									std::string password = base64_decode(sd[3]);
+									std::string password = sd[3];
 
 									_eUserRights rights = (_eUserRights)atoi(sd[4].c_str());
 									int activetabs = atoi(sd[5].c_str());
@@ -7423,7 +7436,10 @@ namespace http {
 				WebPassword = "";
 			}
 			WebUserName = base64_encode((const unsigned char*)WebUserName.c_str(), WebUserName.size());
-			WebPassword = base64_encode((const unsigned char*)WebPassword.c_str(), WebPassword.size());
+			if (WebPassword.size() != 32)
+			{
+				WebPassword = GenerateMD5Hash(WebPassword);
+			}
 			m_sql.UpdatePreferencesVar("WebUserName", WebUserName.c_str());
 			m_sql.UpdatePreferencesVar("WebPassword", WebPassword.c_str());
 			m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks.c_str());
@@ -7449,12 +7465,18 @@ namespace http {
 
 			std::string SecPassword = m_pWebEm->FindValue("SecPassword");
 			SecPassword = CURLEncode::URLDecode(SecPassword);
-			SecPassword = base64_encode((const unsigned char*)SecPassword.c_str(), SecPassword.size());
+			if (SecPassword.size() != 32)
+			{
+				SecPassword = GenerateMD5Hash(SecPassword);
+			}
 			m_sql.UpdatePreferencesVar("SecPassword", SecPassword.c_str());
 
 			std::string ProtectionPassword = m_pWebEm->FindValue("ProtectionPassword");
 			ProtectionPassword = CURLEncode::URLDecode(ProtectionPassword);
-			ProtectionPassword = base64_encode((const unsigned char*)ProtectionPassword.c_str(), ProtectionPassword.size());
+			if (ProtectionPassword.size() != 32)
+			{
+				ProtectionPassword = GenerateMD5Hash(ProtectionPassword);
+			}
 			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword.c_str());
 
 			int EnergyDivider = atoi(m_pWebEm->FindValue("EnergyDivider").c_str());
@@ -12837,15 +12859,15 @@ namespace http {
 				}
 				else if (Key == "WebPassword")
 				{
-					root["WebPassword"] = base64_decode(sValue);
+					root["WebPassword"] = sValue;
 				}
 				else if (Key == "SecPassword")
 				{
-					root["SecPassword"] = base64_decode(sValue);
+					root["SecPassword"] = sValue;
 				}
 				else if (Key == "ProtectionPassword")
 				{
-					root["ProtectionPassword"] = base64_decode(sValue);
+					root["ProtectionPassword"] = sValue;
 				}
 				else if (Key == "WebLocalNetworks")
 				{
@@ -12929,7 +12951,7 @@ namespace http {
 				}
 				else if (Key == "EmailPassword")
 				{
-					root["EmailPassword"] = base64_decode(sValue);
+					root["EmailPassword"] = sValue;
 				}
 				else if (Key == "UseEmailInNotifications")
 				{

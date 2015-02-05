@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('UsersController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
+	app.controller('UsersController', [ '$scope', '$rootScope', '$location', '$http', '$interval','md5', function($scope,$rootScope,$location,$http,$interval,md5) {
 
 		DeleteUser = function(idx)
 		{
@@ -37,6 +37,9 @@ define(['app'], function (app) {
 			{
 				ShowNotify($.i18n('Please enter a Password!'), 2500, true);
 				return;
+			}
+			if (csettings.password.length!=32) {
+				csettings.password=md5.createHash(csettings.password);
 			}
 			csettings.rights=$("#usercontent #userparamstable #comborights").val();
 			csettings.bEnableSharing=$('#usercontent #userparamstable #enablesharing').is(":checked");

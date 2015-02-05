@@ -248,6 +248,11 @@ void ASyncTCP::write(const unsigned char *pData, size_t length)
 	}
 }
 
+void ASyncTCP::write(const std::string &msg)
+{
+	write((const unsigned char*)msg.c_str(), msg.size());
+}
+
 void ASyncTCP::do_close()
 {
 	if(mIsClosing) return;

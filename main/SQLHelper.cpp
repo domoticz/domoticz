@@ -4,7 +4,6 @@
 #include "RFXtrx.h"
 #include "Helper.h"
 #include "RFXNames.h"
-#include "../msbuild/WindowsHelper.h"
 #include "localtime_r.h"
 #include "Logger.h"
 #include "mainworker.h"
@@ -23,9 +22,11 @@
 	#include <unistd.h>
 	#include <sys/types.h>
 	#include <pwd.h>
+#else
+	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 55
+#define DB_VERSION 56
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -713,14 +714,14 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-		if (dbversion<11)
+		if (dbversion < 11)
 		{
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
 
 			szQuery << "SELECT ID, Username, Password FROM Cameras ORDER BY ID";
 			result = query(szQuery.str());
-			if (result.size()>0)
+			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				for (itt = result.begin(); itt != result.end(); ++itt)
@@ -734,11 +735,11 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-		if (dbversion<12)
+		if (dbversion < 12)
 		{
 			std::vector<std::vector<std::string> > result;
 			result = query("SELECT t.RowID, u.RowID from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID])");
-			if (result.size()>0)
+			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				for (itt = result.begin(); itt != result.end(); ++itt)
@@ -818,7 +819,7 @@ bool CSQLHelper::OpenDatabase()
 
 			std::vector<std::vector<std::string> > result;
 			result = query("SELECT RowID, (Temp_Max+Temp_Min)/2 FROM Temperature_Calendar");
-			if (result.size()>0)
+			if (result.size() > 0)
 			{
 				char szTmp[100];
 				sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", NULL, NULL, NULL);
@@ -997,7 +998,7 @@ bool CSQLHelper::OpenDatabase()
 			sprintf(szTmp, "SELECT ID FROM DeviceStatus WHERE (Type=%d)", pTypeUsage);
 			result = query(szTmp);
 			if (result.size() > 0)
-			{ 
+			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
@@ -1064,6 +1065,97 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("DROP TABLE IF EXISTS [CustomImages]");
 			query(sqlCreateCustomImages);
+		}
+		if (dbversion < 56)
+		{
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result2;
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			std::string pHash;
+			szQuery2 << "SELECT sValue FROM Preferences WHERE (Key='WebPassword')";
+			result2 = m_sql.query(szQuery2.str());
+			if (result2.size() > 0)
+			{
+				std::string pwd = result2[0][0];
+				if (pwd.size() != 32)
+				{
+					pHash = GenerateMD5Hash(base64_decode(pwd));
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Preferences SET sValue='" << pHash << "' WHERE (Key='WebPassword')";
+					m_sql.query(szQuery2.str());
+				}
+			}
+
+			szQuery2.clear();
+			szQuery2.str("");
+			szQuery2 << "SELECT sValue FROM Preferences WHERE (Key='SecPassword')";
+			result2 = m_sql.query(szQuery2.str());
+			if (result2.size() > 0)
+			{
+				std::string pwd = result2[0][0];
+				if (pwd.size() != 32)
+				{
+					pHash = GenerateMD5Hash(base64_decode(pwd));
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Preferences SET sValue='" << pHash << "' WHERE (Key='SecPassword')";
+					m_sql.query(szQuery2.str());
+				}
+			}
+
+			szQuery2.clear();
+			szQuery2.str("");
+			szQuery2 << "SELECT sValue FROM Preferences WHERE (Key='ProtectionPassword')";
+			result2 = m_sql.query(szQuery2.str());
+			if (result2.size() > 0)
+			{
+				std::string pwd = result2[0][0];
+				if (pwd.size() != 32)
+				{
+					pHash = GenerateMD5Hash(base64_decode(pwd));
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Preferences SET sValue='" << pHash << "' WHERE (Key='ProtectionPassword')";
+					m_sql.query(szQuery2.str());
+				}
+			}
+			szQuery2.clear();
+			szQuery2.str("");
+			szQuery2 << "SELECT ID, Password FROM Users";
+			result2 = m_sql.query(szQuery2.str());
+			for (itt = result2.begin(); itt != result2.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+				std::string pwd = sd[1];
+				if (pwd.size() != 32)
+				{
+					pHash = GenerateMD5Hash(base64_decode(pwd));
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Users SET Password='" << pHash << "' WHERE (ID=" << sd[0] << ")";
+					m_sql.query(szQuery2.str());
+				}
+			}
+
+			szQuery2.clear();
+			szQuery2.str("");
+			szQuery2 << "SELECT ID, Password FROM Hardware WHERE ([Type]==" << HTYPE_Domoticz << ")";
+			result2 = m_sql.query(szQuery2.str());
+			for (itt = result2.begin(); itt != result2.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+				std::string pwd = sd[1];
+				if (pwd.size() != 32)
+				{
+					pHash = GenerateMD5Hash(pwd);
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Hardware SET Password='" << pHash << "' WHERE (ID=" << sd[0] << ")";
+					m_sql.query(szQuery2.str());
+				}
+			}
+
 		}
 	}
 	else if (bNewInstall)

@@ -43,7 +43,7 @@ namespace OpenZWave
 	 * (such as passing incorrect ValueID's to the Manager::SetValue methods) or
 	 */
 
-
+OPENZWAVE_EXPORT_WARNINGS_OFF
 	class OPENZWAVE_EXPORT OZWException : public std::runtime_error
 	{
 		public:
@@ -60,7 +60,7 @@ namespace OpenZWave
 			// Construction
 			//-----------------------------------------------------------------------------
 			OZWException(std::string file, int line, ExceptionType exitCode, std::string msg) :
-				std::runtime_error(this->GetExceptionText(file, line, exitCode, msg)),
+				std::runtime_error(OZWException::GetExceptionText(file, line, exitCode, msg)),
 				m_exitCode(exitCode),
 				m_file(file),
 				m_line(line),
@@ -117,6 +117,7 @@ namespace OpenZWave
 			uint32			m_line;
 			std::string 	m_msg;
 	};
+OPENZWAVE_EXPORT_WARNINGS_ON
 }
 
 #endif // _FatalErrorException_H

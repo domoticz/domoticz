@@ -2041,7 +2041,7 @@ define(['app'], function (app) {
 										xhtm+='></div></td>';
 									}
 									else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
-										xhtm+='<td><div style="margin-left:94px; margin-top: 0.2em;" class="dimslider dimslidersmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
+										xhtm+='<td><div style="margin-left:94px; margin-top: 0.2em;" class="dimslider dimslidersmalldouble" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
 									}
 									xhtm+=
 												'\t    </tr>\n' +
@@ -3237,22 +3237,24 @@ define(['app'], function (app) {
 			if (typeof nobj == 'undefined') {
 				return;
 			}
-			
 			var width=$("#dashcontent #name").width()-40;
-			//var width=$(".span4").width()-70;
 			$("#dashcontent .span4 .dimslidernorm").width(width);
 			//width=$(".span3").width()-70;
 			$("#dashcontent .span3 .dimslidernorm").width(width);
 			width=$(".mobileitem").width()-63;
 			$("#dashcontent .mobileitem .dimslidernorm").width(width);
 
-			var width=$("#dashcontent #name").width()-40;
+			width=$("#dashcontent #name").width()-40;
 			//width=$(".span4").width()-118;
 			$("#dashcontent .span4 .dimslidersmall").width(width);
 			//width=$(".span3").width()-112;
 			$("#dashcontent .span3 .dimslidersmall").width(width);
 			width=$(".mobileitem").width()-63;
 			$("#dashcontent .mobileitem .dimslidersmall").width(width);
+			
+			width=$("#dashcontent #name").width()-80;
+			$("#dashcontent .span4 .dimslidersmalldouble").width(width);
+			$("#dashcontent .span3 .dimslidersmalldouble").width(width);
 		}
 		
 		init();

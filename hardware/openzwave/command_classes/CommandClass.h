@@ -52,6 +52,7 @@ namespace OpenZWave
 			RequestFlag_Static		= 0x00000001,	/**< Values that never change. */
 			RequestFlag_Session		= 0x00000002,	/**< Values that change infrequently, and so only need to be requested at start up, or via a manual refresh. */
 			RequestFlag_Dynamic		= 0x00000004,	/**< Values that change and will be requested if polling is enabled on the node. */
+			RequestFlag_AfterMark	= 0x00000008	/**< Values relevent to Controlling CC, not Controlled CC. */
 		};
 
 		CommandClass( uint32 const _homeId, uint8 const _nodeId );

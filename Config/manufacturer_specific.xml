@@ -36,28 +36,29 @@
 		<Product type="0000" id="0000" name="Z-Wave Extender"/>
 		<Product type="0001" id="0001" name="Z-Stick"/>
 		<Product type="0001" id="0002" name="Z-Stick S2"/>
-		<Product type="0002" id="0001" name="Z-Stick S2"/>
 		<Product type="0001" id="0003" name="Minimote" config="aeon_labs/minimote.xml"/>
-		<Product type="0002" id="0004" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
-		<Product type="0002" id="001d" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
-		<Product type="0002" id="0005" name="Multi Sensor" config="aeon_labs/alms.xml"/>
-		<Product type="0003" id="0006" name="Smart Energy Switch" config="aeon_labs/ses.xml"/>
-		<Product type="0003" id="004b" name="Smart Energy Switch v2" config="aeon_labs/ses2.xml"/>
 		<Product type="0001" id="0007" name="Z-Stick S2 Lite"/>
-		<Product type="0003" id="0008" name="Smart Energy Illuminator"/>
+		<Product type="0001" id="0016" name="Key Fob" config="aeon_labs/keyfob.xml"/>
+		<Product type="0002" id="0001" name="Z-Stick S2"/>
+		<Product type="0002" id="0004" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
+		<Product type="0002" id="0005" name="Multi Sensor" config="aeon_labs/alms.xml"/>
 		<Product type="0002" id="0009" name="Home Energy Meter" config="aeon_labs/hem.xml"/>
 		<Product type="0002" id="001c" name="Home Energy Meter G2" config="aeon_labs/hemg2.xml"/>
+		<Product type="0002" id="001d" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
+		<Product type="0002" id="0036" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor.xml"/>
+		<Product type="0003" id="0006" name="Smart Energy Switch" config="aeon_labs/ses.xml"/>
+		<Product type="0003" id="0008" name="Smart Energy Illuminator"/>
 		<Product type="0003" id="000a" name="Smart Energy 220V Utility Switch"/>
 		<Product type="0003" id="000b" name="Smart Energy Strip"/>
 		<Product type="0003" id="000c" name="Micro Smart Energy Switch"/>
 		<Product type="0003" id="000d" name="Micro Smart Energy Illuminator"/>
-		<Product type="0003" id="001b" name="Micro Smart Energy Illuminator G2"/>
 		<Product type="0003" id="000e" name="Micro Motor Controller"/>
-		<Product type="0003" id="001a" name="Micro Switch (2nd Edition)"/>
-		<Product type="0003" id="0012" name="Micro Smart Energy Switch G2" config="aeon_labs/ses.xml" />
-		<Product type="0001" id="0016" name="Key Fob" config="aeon_labs/keyfob.xml"/>
 		<Product type="0003" id="0011" name="Micro Double Switch" />
-		<Product type="0002" id="0036" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor.xml"/>
+		<Product type="0003" id="001a" name="Micro Switch (2nd Edition)"/>
+		<Product type="0003" id="001b" name="Micro Smart Energy Illuminator G2"/>
+		<Product type="0003" id="0012" name="Micro Smart Energy Switch G2" config="aeon_labs/ses.xml" />
+		<Product type="0003" id="0013" name="Micro Smart Energy Dimmer"/>
+		<Product type="0003" id="004b" name="Smart Energy Switch v2" config="aeon_labs/ses2.xml"/>
 		<Product type="0004" id="0025" name="Z-Wave Repeater"/>
 		<Product type="0004" id="0050" name="Siren Gen5"/>
 	</Manufacturer>
@@ -490,6 +491,7 @@
 		<Product type="0002" id="0002" name="ZMNHAA2 Flush 1 Relay" config="qubino/ZMNHAA2.xml"/>
 		<Product type="0003" id="0002" name="ZMNHCA2 Flush Shutter" config="qubino/ZMNHCA2.xml"/>
 		<Product type="0004" id="0001" name="ZMNHJA2 Flush Dimmer Fil Pilote" config="qubino/ZMNHJA2.xml"/>
+		<Product type="0005" id="0001" name="ZMNHIA2 Flush on/off thermostat" config="qubino/ZMNHIA2.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0130" name="Quby">
 		<Product type="0001" id="0001" name="Energy Management System"/>
@@ -536,6 +538,9 @@
 	</Manufacturer>
 	<Manufacturer id="0151" name="Sercomm">
 		<Product type="0002" id="0001" name="SW-CLP01-EU Clamp Power Meter"/>
+	</Manufacturer>
+	<Manufacturer id="0000" name="Sigma Designs">
+		<Product type="0001" id="0001" name="UZB Z-Wave USB Adapter"/>
 	</Manufacturer>
 	<Manufacturer id="0045" name="Sine Wireless">
 	</Manufacturer>
@@ -606,9 +611,6 @@
 	<Manufacturer id="004d" name="Xanboo">
 	</Manufacturer>
 	<Manufacturer id="004e" name="Zdata">
-	</Manufacturer>
-	<Manufacturer id="0000" name="Zensys">
-		<Product type="0001" id="0001" name="Controller"/>
 	</Manufacturer>
 	<Manufacturer id="0109" name="Vision">
 		<Product type="1001" id="0101" name="ZU1401 Z-Wave USB Stick"/>

@@ -6,6 +6,12 @@ get_directory_property (CMAKE_LUA_INCLUDES DIRECTORY lua
 get_directory_property (CMAKE_LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
 
+add_subdirectory (MQTT)
+get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
+    DEFINITION MQTT_INCLUDE_DIRS)
+get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
+    DEFINITION MQTT_LIBRARIES)
+
 project(domoticz)
 
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL 
@@ -185,8 +191,10 @@ hardware/ICYThermostat.cpp
 hardware/Limitless.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
+hardware/MQTT.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
+hardware/MySensorsTCP.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
 hardware/openzwave/control_panel/zwavelib.cpp
@@ -295,6 +303,9 @@ else()
   MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
 
+#
+# Find MD5/RMD160/SHA library
+#
 find_path(OPENSSL_INCLUDE_DIR openssl/ssl.h)
 find_library(OPENSSL_LIBRARY ssl)
 if(NOT OPENSSL_INCLUDE_DIR)
@@ -306,6 +317,19 @@ else()
   add_definitions(-DNS_ENABLE_SSL)
   target_link_libraries(domoticz ${OPENSSL_LIBRARY})
 endif()
+
+FIND_LIBRARY(CRYPTO_LIBRARY NAMES crypto)
+IF(CRYPTO_LIBRARY)
+  MESSAGE(STATUS "Crypto library found at: ${CRYPTO_LIBRARY}")
+  target_link_libraries(domoticz ${CRYPTO_LIBRARY})
+ELSE(CRYPTO_LIBRARY)
+  IF(NOT OPENSSL_FOUND)
+    FIND_LIBRARY(MD_LIBRARY NAMES md)
+    IF(MD_LIBRARY)
+      LIST(APPEND ADDITIONAL_LIBS ${MD_LIBRARY})
+    ENDIF(MD_LIBRARY)
+  ENDIF(NOT OPENSSL_FOUND)
+ENDIF(CRYPTO_LIBRARY)
 
 ## support lua popen on Linux platforms
 #IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -367,7 +391,7 @@ else()
 	message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
 ENDIF(RaspberryPi)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua ${CMAKE_DL_LIBS})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt ${CMAKE_DL_LIBS})
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 

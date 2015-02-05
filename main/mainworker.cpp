@@ -57,6 +57,10 @@
 #include "../hardware/EcoDevices.h"
 #include "../hardware/evohome.h"
 #include "../hardware/MySensorsSerial.h"
+#include "../hardware/MySensorsTCP.h"
+#include "../hardware/MQTT.h"
+
+
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
 	#include "../hardware/GpioPin.h"
@@ -552,6 +556,14 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OpenThermGatewayTCP:
 		//LAN
 		pHardware = new OTGWTCP(ID, Address, Port, Mode1, Mode2, Mode3, Mode4, Mode5);
+		break;
+	case HTYPE_MySensorsTCP:
+		//LAN
+		pHardware = new MySensorsTCP(ID, Address, Port);
+		break;
+	case HTYPE_MQTT:
+		//LAN
+		pHardware = new MQTT(ID, Address, Port);
 		break;
 	case HTYPE_SolarEdgeTCP:
 		pHardware = new SolarEdgeTCP(ID, 22222,Address, Port);
@@ -9408,7 +9420,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 	if (
 		(pHardware->HwdType==HTYPE_OpenThermGateway)||
 		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
-		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT)||
+		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT)||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT)||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
@@ -9906,7 +9918,7 @@ void MainWorker::LoadSharedUsers()
 			std::vector<std::string> sd=*itt;
 			tcp::server::CTCPServerInt::_tRemoteShareUser suser;
 			suser.Username=base64_decode(sd[1]);
-			suser.Password=base64_decode(sd[2]);
+			suser.Password=sd[2];
 
 			//Get User Devices
 			szQuery.clear();
