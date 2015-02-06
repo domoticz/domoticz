@@ -432,7 +432,10 @@ int main(int argc, char**argv)
 		while (!infile.eof())
 		{
 			getline(infile, sLine);
-			if (sLine.find("BCM2708")!=std::string::npos)
+			if (
+				(sLine.find("BCM2708")!=std::string::npos)||
+				(sLine.find("BCM2709")!=std::string::npos)
+				)
 			{
 				_log.Log(LOG_STATUS,"System: Raspberry Pi");
 				szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp";
