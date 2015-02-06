@@ -12,13 +12,6 @@
   src: local('Satisfy'), url('fonts/Satisfy.eot') format('truetype');
 }
 @font-face {
-  font-family: 'Abel';
-  font-style: normal;
-  font-weight: 400;
-  src: url('fonts/Abel.eot');
-  src: local('Abel'), local('Abel-Regular'), url('fonts/Abel.eot') format('truetype');
-} 
-@font-face {
   font-family: 'Oswald';
   font-style: normal;
   src: url('fonts/Oswald-Light.eot');
@@ -118,7 +111,7 @@ height:100%;
 }
 
 #copyright p {
-	font-family: 'Abel', sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 	font-size: 1.125em;
 	color: #6A6A6A;
 }
