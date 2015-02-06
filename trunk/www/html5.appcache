@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 744
+# ref 750
 
 CACHE:
 # CSS
@@ -17,8 +17,6 @@ secpanel/css/reset.less
 secpanel/css/style.less
 
 # Fonts
-css/fonts/Abel.eot
-css/fonts/Abel.ttf
 css/fonts/Oswald-Light.eot
 css/fonts/Oswald-Light.ttf
 css/fonts/Oswald-Regular.eot

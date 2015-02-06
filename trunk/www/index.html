@@ -300,9 +300,8 @@ $(document).ready(function() {
 				errText += (typeof($.cachecount) != 'undefined') ? '<br>Loaded ' + $.cachecount + ' of ' + $.cachetotal + ' files' : '';
 				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
 				ClearNotifyCacheRefresh();
-				generate_noty('error', errText, false);
-				setTimeout(function(){	ClearNotifyCacheRefresh();
-										window.location.reload(); }, 1000);
+				$.cachenoty=generate_noty('error', errText, false);
+				setTimeout(function(){	ClearNotifyCacheRefresh(); }, 2000);
 			}, false);
 
 			window.applicationCache.addEventListener('progress', function(e)

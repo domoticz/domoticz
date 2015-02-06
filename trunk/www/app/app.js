@@ -347,16 +347,15 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		};
 		permissions.setPermissions(permissionList);					
 
-		$.ajax({
-		 url: "json.htm?type=command&param=getversion",
-		 async: true, 
-		 dataType: 'json',
-		 success: function(data) {
-			if (data.status == "OK") {
-				$( "#appversion" ).text("V" + data.version);
-			}
-		 }
-		});
+		$http({
+			url: "json.htm?type=command&param=getversion"}
+			).success(function(data) {
+				if (data.status == "OK") {
+					$( "#appversion" ).text("V" + data.version);
+				}
+			}).error(function(data) {
+			});
+		
 		$.ajax({
 		 url: "json.htm?type=command&param=getauth",
 		 async: false, 
