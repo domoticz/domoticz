@@ -381,6 +381,9 @@ define(['app'], function (app) {
 			  if (typeof data.RaspCamParams != 'undefined') {
 				$("#picamtable #RaspCamParams").val(data.RaspCamParams );
 			  }
+			  if (typeof data.UVCParams != 'undefined') {
+				$("#uvctable #UVCParams").val(data.UVCParams );
+			  }
 			  if (typeof data.AcceptNewHardware != 'undefined') {
 				$("#acceptnewhardwaretable #AcceptNewHardware").prop('checked',data.AcceptNewHardware==1);
 			  }

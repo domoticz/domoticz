@@ -127,6 +127,7 @@ private:
 	virtual bool CancelControllerCommand()=0;
 
 	bool m_bControllerCommandInProgress;
+	bool m_bControllerCommandCanceled;
 	time_t m_ControllerCommandStartTime;
 	int m_LastIncludedNode;
 	time_t m_updateTime;

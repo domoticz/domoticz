@@ -480,6 +480,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 
 			nodeInfo.m_LastSeen = m_updateTime;
 			m_nodes.push_back(nodeInfo);
+			m_LastIncludedNode = _nodeID;
 			AddNode(_homeID, _nodeID, &nodeInfo);
 			m_bNeedSave = true;
 		}
@@ -2065,8 +2066,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 							//Find Empty slot
 							if (sValue.find("0x00 ") == 0)
 							{
-								_log.Log(LOG_ERROR, "OpenZWave: Enrolling User Code/Tag to code index: %d", vNodeIndex);
+								_log.Log(LOG_STATUS, "OpenZWave: Enrolling User Code/Tag to code index: %d", vNodeIndex);
 								m_pManager->SetValue(vNode, strValue);
+								AddValue(vID);
 								bIncludedCode = true;
 								break;
 							}
@@ -2399,8 +2401,10 @@ bool COpenZWave::IncludeDevice()
 {
 	if (m_pManager == NULL)
 		return false;
+	CancelControllerCommand();
 	m_LastIncludedNode = 0;
 	m_ControllerCommandStartTime = mytime(NULL);
+	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_AddDevice, OnDeviceStatusUpdate, this, true);
 	_log.Log(LOG_STATUS, "OpenZWave: Node Include command initiated...");
@@ -2411,8 +2415,9 @@ bool COpenZWave::ExcludeDevice(const int nodeID)
 {
 	if (m_pManager == NULL)
 		return false;
-
+	CancelControllerCommand();
 	m_ControllerCommandStartTime = mytime(NULL);
+	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveDevice, OnDeviceStatusUpdate, this, true);
 	_log.Log(LOG_STATUS, "OpenZWave: Node Exclude command initiated...");
@@ -2567,6 +2572,7 @@ bool COpenZWave::RemoveFailedDevice(const int nodeID)
 		return false;
 
 	m_ControllerCommandStartTime = mytime(NULL);
+	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveFailedNode, OnDeviceStatusUpdate, this, true, (unsigned char)nodeID);
 	_log.Log(LOG_STATUS, "OpenZWave: Remove Failed Device initiated...");
@@ -2579,6 +2585,7 @@ bool COpenZWave::ReceiveConfigurationFromOtherController()
 		return false;
 
 	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
+	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_ReceiveConfiguration, OnDeviceStatusUpdate, this);
 	_log.Log(LOG_STATUS, "OpenZWave: Receive Configuration initiated...");
@@ -2591,6 +2598,7 @@ bool COpenZWave::SendConfigurationToSecondaryController()
 		return false;
 
 	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
+	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_ReplicationSend, OnDeviceStatusUpdate, this);
 	_log.Log(LOG_STATUS, "OpenZWave: Replication to Secondary Controller initiated...");
@@ -2603,6 +2611,7 @@ bool COpenZWave::TransferPrimaryRole()
 		return false;
 
 	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
+	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_TransferPrimaryRole, OnDeviceStatusUpdate, this);
 	_log.Log(LOG_STATUS, "OpenZWave: Transfer Primary Role initiated...");
@@ -2616,6 +2625,7 @@ bool COpenZWave::CancelControllerCommand()
 	if (m_pManager == NULL)
 		return false;
 	m_bControllerCommandInProgress = false;
+	m_bControllerCommandCanceled = true;
 	return m_pManager->CancelControllerCommand(m_controllerID);
 }
 
@@ -2677,8 +2687,15 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		break;
 	case OpenZWave::Driver::ControllerState_Completed:
 		m_bControllerCommandInProgress = false;
-		szLog = "The command has completed successfully";
-		m_bNeedSave=true;
+		if (!m_bControllerCommandCanceled)
+		{
+			szLog = "The command has completed successfully";
+			m_bNeedSave = true;
+		}
+		else
+		{
+			szLog = "The command was canceled";
+		}
 		break;
 	case OpenZWave::Driver::ControllerState_Failed:
 		szLog = "The command has failed";
@@ -3383,6 +3400,7 @@ bool COpenZWave::SetUserCodeEnrollmentMode()
 {
 	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
 	m_bControllerCommandInProgress = true;
+	m_bControllerCommandCanceled = false;
 	m_bInUserCodeEnrollmentMode = true;
 	_log.Log(LOG_STATUS, "OpenZWave: User Code Enrollment mode initiated...");
 	return false;

@@ -72,6 +72,8 @@ bool MQTT::StartHardware()
 	//force connect the next first time
 	m_IsConnected=false;
 
+	m_bIsStarted = true;
+
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MQTT::Do_Work, this)));
 	return (m_thread!=NULL);
@@ -106,6 +108,7 @@ void MQTT::StopMQTT()
 		}
 		MQTTAsync_destroy(&m_mqtt_client);
 	}
+	m_bIsStarted = false;
 }
 
 bool MQTT::StopHardware()
