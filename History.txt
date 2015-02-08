@@ -92,6 +92,7 @@ Version 2.0.xxxx (January xxth 2015)
 - Fixed: YouLess counter value in Report
 - Implemented: Support for MySensors
 - Implemented: Raspberry Pi 2 Internal CPU Temperature
+- Fixed: I2C, possible crash when no device connected
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

@@ -131,7 +131,14 @@ void CBMP085::Do_Work()
 		if (m_waitcntr>=I2C_READ_INTERVAL*2)
 		{
 			m_waitcntr=0;
-			ReadSensorDetails();
+			try
+			{
+				ReadSensorDetails();
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "I2C: Error reading sensor data!...");
+			}
 		}
 
 		time_t atime = mytime(NULL);

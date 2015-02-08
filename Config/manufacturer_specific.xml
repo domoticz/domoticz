@@ -144,7 +144,6 @@
 		<Product type="0064" id="0001" name="RA Plus-W Radiator Thermostat"/>
 		<Product type="8004" id="2000" name="RXZ3 RF relay Switching Unit"/>
 		<Product type="8005" id="0001" name="Living Connect Radiator Thermostat" config="danfoss/living.xml"/>
-		<Product type="0005" id="0004" name="Living Connect Radiator Thermostat" config="danfoss/living.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0031" name="Destiny Networks">
 	</Manufacturer>
@@ -175,22 +174,23 @@
 		<Product type="0128" id="0000" name="ED2.0 Display"/>
 	</Manufacturer>
 	<Manufacturer id="0060" name="Everspring">
-		<Product type="0003" id="0001" name="AD142 Plug-in Dimmer Module"/>
-		<Product type="0104" id="0001" name="AN145 Lamp Screw In Module" config="everspring/an145.xml"/>
-		<Product type="0004" id="0002" name="AN158 Plug-in Meter Appliance Module" config="everspring/an158.xml"/>
-		<Product type="0004" id="0001" name="AN157 Plug-in Appliance Module"/>
-		<Product type="0010" id="0001" name="HAC01 In-wall Remote Module "/>
-		<Product type="000C" id="0001" name="SE812 Siren" config="everspring/se812.xml"/>
-		<Product type="000D" id="0001" name="SF812 Smoke Alarm" config="everspring/sf812.xml"/>
-		<Product type="0202" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>
-		<Product type="0002" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>
-		<Product type="0101" id="0001" name="SP103 PIR Motion Sensor" config="everspring/sp103.xml"/>
 		<Product type="0001" id="0001" name="HSP02 Motion Detector"/>
 		<Product type="0001" id="0002" name="SP814 Motion Detector" config="everspring/sp814.xml"/>
+		<Product type="0002" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>
+		<Product type="0003" id="0001" name="AD142 Plug-in Dimmer Module"/>
+		<Product type="0004" id="0001" name="AN157 Plug-in Appliance Module"/>
+		<Product type="0004" id="0002" name="AN158 Plug-in Meter Appliance Module" config="everspring/an158.xml"/>
 		<Product type="0006" id="0001" name="ST814 Temperature and Humidity Sensor" config="everspring/st814.xml"/>
 		<Product type="0007" id="0001" name="ST815 Illumination Sensor" config="everspring/st815.xml"/>
-		<Product type="000b" id="0001" name="ST812 Flood Detector"/>
 		<Product type="0009" id="0001" name="TSE03 Door Bell" config="everspring/tse03.xml"/>
+		<Product type="000b" id="0001" name="ST812 Flood Detector"/>
+		<Product type="000c" id="0001" name="SE812 Siren" config="everspring/se812.xml"/>
+		<Product type="000d" id="0001" name="SF812 Smoke Alarm" config="everspring/sf812.xml"/>
+		<Product type="0010" id="0001" name="HAC01 In-wall Remote Module"/>
+		<Product type="0011" id="0002" name="HAN02 In-wall Remote Module"/>
+		<Product type="0101" id="0001" name="SP103 PIR Motion Sensor" config="everspring/sp103.xml"/>
+		<Product type="0104" id="0001" name="AN145 Lamp Screw In Module" config="everspring/an145.xml"/>
+		<Product type="0202" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>		
 	</Manufacturer>
 	<Manufacturer id="0116" name="Chromagic Technologies Corporation">
 		<Product type="0001" id="0001" name="HSCP02 Motion Detector"/>
@@ -461,7 +461,6 @@
 	<Manufacturer id="0154" name="Popp">
 		<Product type="1100" id="0001" name="123601 Plug-in Switch" config="popp/123601.xml" />
 		<Product type="1100" id="0002" name="123580 Plug-in Dimmer" config="popp/123580.xml" />
-		<Product type="1100" id="0001" name="123601 Plug-in Switch" config="popp/123601.xml" />
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml" />
 	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
@@ -644,7 +643,6 @@
 		<Product type="0001" id="0001" name="Z-Wave USB Stick"/>
 		<Product type="0001" id="0069" name="Key Fob"/>
 		<Product type="0002" id="0003" name="Z-Wave USB Stick"/>
-		<Product type="0400" id="0001" name="ZME_UZB1 USB Stick"/>
 		<Product type="0024" id="0001" name="Floor Thermostat"/>
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="0100" id="0004" name="ZME_WCD2 Double Paddle Wall Controller" config="zwave.me/ZME_WCD2.xml"/>
@@ -659,10 +657,6 @@
 		<Product type="1000" id="0002" name="ZME_06433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>
 		<Product type="1000" id="0003" name="ZME_06436 Motor Control" config="zwave.me/ZME_06436.xml" />
 		<Product type="1000" id="0004" name="ZME_064435 Wall Controller" config="zwave.me/ZME_064435.xml"/>
-		<Product type="0200" id="0001" name="iTemp Temperature Sensor" config="zwave.me/iTemp.xml"/>
-		<Product type="0201" id="0001" name="iTemp Temperature Sensor" config="zwave.me/iTemp.xml"/>
-		<Product type="0201" id="0002" name="Thermostat"/>
-		<Product type="0201" id="0003" name="Binary Sensor"/>
 		<Product type="1100" id="0002" name="PLDE Plug-in Dimmer"/>
 	</Manufacturer>
 	<Manufacturer id="0147" name="Z-Wave.Me">

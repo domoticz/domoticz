@@ -1393,6 +1393,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 1"); //width/height/time2wait
 	}
+	if (!GetPreferencesVar("UVCParams", sValue))
+	{
+		UpdatePreferencesVar("UVCParams", "- -S80 -B128 -C128 -G80 -x800 -y600 -q100"); //width/height/time2wait
+	}
 	nValue = 1;
 	if (!GetPreferencesVar("AcceptNewHardware", nValue))
 	{
@@ -1541,7 +1545,10 @@ void CSQLHelper::Do_Work()
 				m_bAcceptHardwareTimerActive = false;
 				m_bAcceptNewHardware = m_bPreviousAcceptNewHardware;
 				UpdatePreferencesVar("AcceptNewHardware", (m_bAcceptNewHardware==true)?1:0);
-				_log.Log(LOG_STATUS, "Receiving of new sensors disabled!...");
+				if (!m_bAcceptNewHardware)
+				{
+					_log.Log(LOG_STATUS, "Receiving of new sensors disabled!...");
+				}
 			}
 		}
 
@@ -6857,6 +6864,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		idx.c_str()
 		);
+
 	result = query(szTmp);
 	if (eventtrigger) {
 		std::stringstream vId_str(idx);

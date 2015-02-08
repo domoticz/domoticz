@@ -221,8 +221,11 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 
 bool CCameraHandler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
 {
+	std::string uvcparams="-S80 -B128 -C128 -G80 -x800 -y600 -q100";
+	m_sql.GetPreferencesVar("UVCParams", uvcparams);
+	
 	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
-	std::string nvcmd="uvccapture -S80 -B128 -C128 -G80 -x800 -y600 -q100 -o" + OutputFileName;
+	std::string nvcmd="uvccapture " + uvcparams+ " -o" + OutputFileName;
 	std::remove(OutputFileName.c_str());
 
 	try

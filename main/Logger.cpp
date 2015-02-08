@@ -79,13 +79,26 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	vsnprintf(cbuffer, 1024, logline, argList);
 	va_end(argList);
 
-	struct tm *tm;
-	time_t atime = mytime(NULL);
-	tm = localtime(&atime);
 	char szDate[100];
-	sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d",
-		+tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-		+tm->tm_hour, tm->tm_min, tm->tm_sec);
+#if !defined WIN32
+	// Get a timestamp
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	struct tm *tm;
+	tm = localtime(&tv.tv_sec);
+
+	// create a time stamp string for the log message
+	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+		tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+		tm->tm_hour, tm->tm_min, tm->tm_sec, (int)tv.tv_usec / 1000);
+#else
+	// Get a timestamp
+	SYSTEMTIME time;
+	::GetLocalTime(&time);
+
+	// create a time stamp string for the log message
+	sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+#endif
 
 	std::stringstream sstr;
 	

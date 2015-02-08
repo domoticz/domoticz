@@ -140,6 +140,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "sk", "Slovak" },
 	{ "sv", "Swedish" },
 	{ "no", "Norwegian" },
+	{ "tr_TR", "Turkish" },
 
 	{ NULL, NULL }
 };
@@ -1557,7 +1558,20 @@ namespace http {
 			std::string variablename = m_pWebEm->FindValue("vname");
 			std::string variablevalue = m_pWebEm->FindValue("vvalue");
 			std::string variabletype = m_pWebEm->FindValue("vtype");
-			if ((idx == "") || (variablename == "") || (variablevalue == "") || (variabletype == ""))
+
+			if (idx.empty())
+			{
+				//Get idx from valuename
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				szQuery << "SELECT ID FROM UserVariables WHERE Name='" << variablename << "'";
+				result = m_sql.GetUserVariables();
+				if (result.empty())
+					return;
+				idx = result[0][0];
+			}
+
+			if (idx.empty() || variablename.empty() || variablevalue.empty() || variabletype.empty())
 				return;
 
 			root["status"] = m_sql.UpdateUserVariable(idx, variablename, variabletype, variablevalue, true);
@@ -7557,6 +7571,10 @@ namespace http {
 			std::string RaspCamParams = m_pWebEm->FindValue("RaspCamParams");
 			if (RaspCamParams != "")
 				m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
+			
+            std::string UVCParams = m_pWebEm->FindValue("UVCParams");
+			if (UVCParams != "")
+				m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
 
 			std::string EnableNewHardware = m_pWebEm->FindValue("AcceptNewHardware");
 			int iEnableNewHardware = (EnableNewHardware == "on" ? 1 : 0);
@@ -13032,6 +13050,10 @@ namespace http {
 				else if (Key == "RaspCamParams")
 				{
 					root["RaspCamParams"] = sValue;
+				}
+				else if (Key == "UVCParams")
+				{
+					root["UVCParams"] = sValue;
 				}
 				else if (Key == "AcceptNewHardware")
 				{
