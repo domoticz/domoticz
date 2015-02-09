@@ -1318,14 +1318,26 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	}
 	_log.Log(LOG_NORM,"%s",sstream.str().c_str());
 #endif
-	// convert now to string form
-	struct tm *tm;
-	time_t atime = mytime(NULL);
-	tm = localtime(&atime);
 	char szDate[100];
-	sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d",
-		+tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-		+tm->tm_hour, tm->tm_min, tm->tm_sec);
+#if !defined WIN32
+	// Get a timestamp
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	struct tm *tm;
+	tm = localtime(&tv.tv_sec);
+
+	// create a time stamp string for the log message
+	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+		tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+		tm->tm_hour, tm->tm_min, tm->tm_sec, (int)tv.tv_usec / 1000);
+#else
+	// Get a timestamp
+	SYSTEMTIME time;
+	::GetLocalTime(&time);
+
+	// create a time stamp string for the log message
+	sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+#endif
 
 	unsigned long long DeviceRowIdx = -1;
 	tcp::server::CTCPClient *pClient2Ignore = NULL;
@@ -6875,11 +6887,10 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 	unsigned char BatteryLevel = get_BateryLevel(pHardware,false, pResponse->ENERGY.battery_level & 0x0F);
 
 	long instant;
-	double usage;
 
 	instant = (pResponse->ENERGY.instant1 * 0x1000000) + (pResponse->ENERGY.instant2 * 0x10000) + (pResponse->ENERGY.instant3 * 0x100) + pResponse->ENERGY.instant4;
 
-	usage = (
+	double total = (
 				double(pResponse->ENERGY.total1) * 0x10000000000ULL + 
 				double(pResponse->ENERGY.total2) * 0x100000000ULL + 
 				double(pResponse->ENERGY.total3) * 0x1000000 +
@@ -6890,11 +6901,23 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 
 	if (pResponse->ENERGY.subtype == sTypeELEC3)
 	{
-		if (usage == 0)
-			return -1;
+		if (total == 0)
+		{
+			//Retrieve last total from current record
+			int nValue;
+			std::string sValue;
+			struct tm LastUpdateTime;
+			if (!m_sql.GetLastValue(HwdID, ID.c_str(), Unit, devType, subType, nValue, sValue, LastUpdateTime))
+				return -1;
+			std::vector<std::string> strarray;
+			StringSplit(sValue, ";", strarray);
+			if (strarray.size() != 2)
+				return -1;
+			total = atof(strarray[1].c_str());
+		}
 	}
 
-	sprintf(szTmp,"%ld;%.2f",instant,usage);
+	sprintf(szTmp, "%ld;%.2f", instant, total);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
@@ -6926,7 +6949,7 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 		WriteMessage(szTmp);
 		sprintf(szTmp,"Instant usage = %ld Watt", instant);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"total usage   = %.2f Wh", usage);
+		sprintf(szTmp, "total usage   = %.2f Wh", total);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp,"Signal level  = %d", pResponse->ENERGY.rssi);
