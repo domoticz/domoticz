@@ -1,7 +1,7 @@
 /*
  Domoticz, Open Source Home Automation System
 
- Copyright (C) 2012,2014 Rob Peters (GizMoCuz)
+ Copyright (C) 2012,2015 Rob Peters (GizMoCuz)
 
  Domoticz is free software: you can redistribute it and/or modify it
  under the terms of the GNU General Public License as published
@@ -419,7 +419,7 @@ int main(int argc, char**argv)
 #endif
 	}
 	GetAppVersion();
-	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-2014 GizMoCuz", szAppVersion.c_str());
+	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-2015 GizMoCuz", szAppVersion.c_str());
 
 #if !defined WIN32
 	//Check if we are running on a RaspberryPi
