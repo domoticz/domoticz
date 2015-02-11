@@ -442,6 +442,7 @@
 	</Manufacturer>
 	<Manufacturer id="0096" name="NorthQ">
 		<Product type="0001" id="0001" name="NQ-92021 Power Reader" config="northq/nq92021.xml"/>
+		<Product type="0001" id="0002" name="NQ-9021 Power Reader"/>
 		<Product type="0010" id="0001" name="NQ-9121 Gas Reader" config="northq/nq9121.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0040" name="Novar EDS">

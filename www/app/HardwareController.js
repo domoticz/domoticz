@@ -948,7 +948,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent #P1Baudrate').val(Mode1);
 		}
 
-		EditS0MeterType = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditS0MeterType = function(idx,name,Address)
 		{
 			cursordefault();
 			var htmlcontent = '';
@@ -961,24 +961,45 @@ define(['app'], function (app) {
 				e.preventDefault();
 				SetS0MeterType();
 			});
-
 			$('#hardwarecontent #idx').val(idx);
-			$('#hardwarecontent #combom1type').val(Mode1);
-			if (Mode2!=0) {
-				$('#hardwarecontent #M1PulsesPerHour').val(Mode2);
+			
+			var res=Address.split(";");
+			
+			$('#hardwarecontent #combom1type').val(res[0]);
+			if (res[1]!=0) {
+				$('#hardwarecontent #M1PulsesPerHour').val(res[1]);
 			}
 			else {
 				$('#hardwarecontent #M1PulsesPerHour').val(2000);
 			}
-
-			$('#hardwarecontent #combom2type').val(Mode3);
-			if (Mode4!=0) {
-				$('#hardwarecontent #M2PulsesPerHour').val(Mode4);
+			$('#hardwarecontent #combom2type').val(res[2]);
+			if (res[3]!=0) {
+				$('#hardwarecontent #M2PulsesPerHour').val(res[3]);
 			}
 			else {
 				$('#hardwarecontent #M2PulsesPerHour').val(2000);
 			}
-			$('#hardwarecontent #S0Baudrate').val(Mode5);
+			$('#hardwarecontent #combom3type').val(res[4]);
+			if (res[5]!=0) {
+				$('#hardwarecontent #M3PulsesPerHour').val(res[5]);
+			}
+			else {
+				$('#hardwarecontent #M3PulsesPerHour').val(2000);
+			}
+			$('#hardwarecontent #combom4type').val(res[6]);
+			if (res[7]!=0) {
+				$('#hardwarecontent #M4PulsesPerHour').val(res[7]);
+			}
+			else {
+				$('#hardwarecontent #M4PulsesPerHour').val(2000);
+			}
+			$('#hardwarecontent #combom5type').val(res[8]);
+			if (res[9]!=0) {
+				$('#hardwarecontent #M5PulsesPerHour').val(res[9]);
+			}
+			else {
+				$('#hardwarecontent #M5PulsesPerHour').val(2000);
+			}
 		}
 
 		EditLimitlessType = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
@@ -1892,7 +1913,7 @@ define(['app'], function (app) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.i18n("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Limitless") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';

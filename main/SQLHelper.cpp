@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 56
+#define DB_VERSION 57
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -1155,7 +1155,33 @@ bool CSQLHelper::OpenDatabase()
 					m_sql.query(szQuery2.str());
 				}
 			}
-
+		}
+		if (dbversion < 57)
+		{
+			//S0 Meter patch
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID, Mode1, Mode2, Mode3, Mode4 FROM HARDWARE WHERE([Type]==" << HTYPE_S0SmartMeter << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::stringstream szAddress;
+					szAddress
+						<< sd[1] << ";" << sd[2] << ";"
+						<< sd[3] << ";" << sd[4] << ";"
+						<< sd[1] << ";" << sd[2] << ";"
+						<< sd[1] << ";" << sd[2] << ";"
+						<< sd[1] << ";" << sd[2];
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Hardware SET Address='" << szAddress.str() << "', Mode1=0, Mode2=0, Mode3=0, Mode4=0 WHERE (ID=" << sd[0] << ")";
+					query(szQuery2.str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)

@@ -93,6 +93,8 @@ Version 2.0.xxxx (January xxth 2015)
 - Implemented: Support for MySensors
 - Implemented: Raspberry Pi 2 Internal CPU Temperature
 - Fixed: I2C, possible crash when no device connected
+- Implemented: Option for Dummy device to create Usage (Electric) Sensor
+- Implemented: S0 Meter, settings for meter 3,4 and 5
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

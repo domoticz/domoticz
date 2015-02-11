@@ -25,34 +25,38 @@
 	};
 #endif
 
-S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int M1Type, const int M1PPH, const int M2Type, const int M2PPH)
+S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const std::string& Settings)
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 
-	//Quick hack, meters 3 till 5 uses same parameter as 1 for now, till we can configure it
-	m_meters[0].m_type=M1Type;
-	m_meters[1].m_type=M2Type;
-	m_meters[2].m_type=M1Type;
-	m_meters[3].m_type=M1Type;
-	m_meters[4].m_type=M1Type;
+	m_meters[0].m_type=0;
+	m_meters[1].m_type=0;
+	m_meters[2].m_type=0;
+	m_meters[3].m_type=0;
+	m_meters[4].m_type=0;
 	m_meters[0].m_pulse_per_unit=1000.0;
 	m_meters[1].m_pulse_per_unit=1000.0;
 	m_meters[2].m_pulse_per_unit=1000.0;
 	m_meters[3].m_pulse_per_unit=1000.0;
 	m_meters[4].m_pulse_per_unit=1000.0;
 
-	if (M1PPH!=0)
+	std::vector<std::string> splitresults;
+	StringSplit(Settings, ";", splitresults);
+	if (splitresults.size() == 10)
 	{
-		m_meters[0].m_pulse_per_unit=float(M1PPH);
-		m_meters[1].m_pulse_per_unit=float(M1PPH);
-		m_meters[2].m_pulse_per_unit=float(M1PPH);
-		m_meters[3].m_pulse_per_unit=float(M1PPH);
-		m_meters[4].m_pulse_per_unit=float(M1PPH);
+		m_meters[0].m_type = atoi(splitresults[0].c_str());
+		m_meters[0].m_pulse_per_unit = atof(splitresults[1].c_str());
+		m_meters[1].m_type = atoi(splitresults[2].c_str());
+		m_meters[1].m_pulse_per_unit = atof(splitresults[3].c_str());
+		m_meters[2].m_type = atoi(splitresults[4].c_str());
+		m_meters[2].m_pulse_per_unit = atof(splitresults[5].c_str());
+		m_meters[3].m_type = atoi(splitresults[6].c_str());
+		m_meters[3].m_pulse_per_unit = atof(splitresults[7].c_str());
+		m_meters[4].m_type = atoi(splitresults[8].c_str());
+		m_meters[4].m_pulse_per_unit = atof(splitresults[9].c_str());
 	}
-	if (M2PPH!=0)
-		m_meters[1].m_pulse_per_unit=float(M2PPH);
 }
 
 S0MeterSerial::~S0MeterSerial()
