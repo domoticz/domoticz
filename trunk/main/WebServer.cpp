@@ -7894,25 +7894,31 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
+			std::stringstream szAddress;
 
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
-			result = m_sql.query(szQuery.str());
-			if (result.size() < 1)
-				return (char*)m_retstr.c_str();
+			std::string S0M1Type = m_pWebEm->FindValue("S0M1Type");
+			std::string S0M2Type = m_pWebEm->FindValue("S0M2Type");
+			std::string S0M3Type = m_pWebEm->FindValue("S0M3Type");
+			std::string S0M4Type = m_pWebEm->FindValue("S0M4Type");
+			std::string S0M5Type = m_pWebEm->FindValue("S0M5Type");
 
-			int Mode1 = atoi(m_pWebEm->FindValue("S0M1Type").c_str());
-			int Mode2 = atoi(m_pWebEm->FindValue("M1PulsesPerHour").c_str());
-			int Mode3 = atoi(m_pWebEm->FindValue("S0M2Type").c_str());
-			int Mode4 = atoi(m_pWebEm->FindValue("M2PulsesPerHour").c_str());
-			int Mode5 = atoi(m_pWebEm->FindValue("S0Baudrate").c_str());
-			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5);
+			std::string M1PulsesPerHour = m_pWebEm->FindValue("M1PulsesPerHour");
+			std::string M2PulsesPerHour = m_pWebEm->FindValue("M2PulsesPerHour");
+			std::string M3PulsesPerHour = m_pWebEm->FindValue("M3PulsesPerHour");
+			std::string M4PulsesPerHour = m_pWebEm->FindValue("M4PulsesPerHour");
+			std::string M5PulsesPerHour = m_pWebEm->FindValue("M5PulsesPerHour");
 
+			szAddress <<
+				S0M1Type << ";" << M1PulsesPerHour << ";" <<
+				S0M2Type << ";" << M2PulsesPerHour << ";" <<
+				S0M3Type << ";" << M3PulsesPerHour << ";" <<
+				S0M4Type << ";" << M4PulsesPerHour << ";" <<
+				S0M5Type << ";" << M5PulsesPerHour;
+
+			szQuery << "UPDATE Hardware SET Address='" << szAddress.str() << "' WHERE (ID=" << idx << ")";
+			m_sql.query(szQuery.str());
 			m_mainworker.RestartHardware(idx);
-
 			return (char*)m_retstr.c_str();
 		}
 
@@ -10582,6 +10588,10 @@ namespace http {
 				break;
 			case pTypeAirQuality:
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 10, 255, 0, devname);
+				bCreated = true;
+				break;
+			case pTypeUsage:
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeUsage, sTypeElectric, 10, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case pTypeLux:

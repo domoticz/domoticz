@@ -68,7 +68,7 @@
 			<Help>Maximal level should be greater than minimal. 0=Work as switch: use off and maximal level 10-99 Level limit (Default 99)</Help>
 		</Value>
 		
-		<Value type="short" genre="config" instance="1" index="18" label="Dim Level on 'Switch On'" size="1" min="0" max="99" value="0">
+		<Value type="short" genre="config" instance="1" index="19" label="Dim Level on 'Switch On'" size="1" min="0" max="99" value="0">
 			<Help>Defines how the dimmer hall react on a simple ON Command. 0-99 0=Use previous light level (Default), 1 . 99 Define light level in %</Help>
 		</Value>
 		

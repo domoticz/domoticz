@@ -493,9 +493,7 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type==HTYPE_S0SmartMeter)
 			{
 				int baudrate=9600;
-				if (Mode5==1)
-					baudrate=115200;
-				pHardware = new S0MeterSerial(ID,szSerialPort, baudrate, Mode1, Mode2, Mode3, Mode4);
+				pHardware = new S0MeterSerial(ID,szSerialPort, baudrate, Address);
 			}
 			else if (Type == HTYPE_Meteostick)
 			{
@@ -8195,6 +8193,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		case sTypeZWaveThermostatFanMode:
 			WriteMessage("subtype       = Thermostat Fan Mode");
 			sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Fan_Modes[pMeter->intval2]);
+			WriteMessage(szTmp);
+			break;
+		case sTypePercentage:
+			WriteMessage("subtype       = Percentage");
+			sprintf(szTmp, "Percentage = %.2f",pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		default:

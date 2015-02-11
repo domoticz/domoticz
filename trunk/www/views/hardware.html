@@ -284,16 +284,6 @@
 <form id="s0metertype">
 	<br>
 	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
-	<table>
-		<tr>
-			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
-			<td><select id="S0Baudrate" name="S0Baudrate" style="width:100px" class="combobox ui-corner-all">
-				<option value="0">9600</option>
-				<option value="1">115200</option>
-			</select></td>
-		</tr>
-	</table>
-	<br>
 	<br>
 	<h2>Meter 1:</h2>
 	<table>
@@ -307,7 +297,7 @@
 			</select></td>
 		</tr>
 		<tr>
-			<td align="right" style="width:60px"><label><span data-i18n="Pulses/kWh"></span>: </label></td>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
 			<td><input type="input" id="M1PulsesPerHour" name="M1PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 	</table>
@@ -326,6 +316,57 @@
 		<tr>
 			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
 			<td><input type="input" id="M2PulsesPerHour" name="M2PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 3:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom3type" name="S0M3Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M3PulsesPerHour" name="M3PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 4:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom4type" name="S0M4Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M4PulsesPerHour" name="M4PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+	<br>
+	<h2>Meter 5:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+			<td><select id="combom5type" name="S0M5Type" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">Energy</option>
+				<option value="1">Gas</option>
+				<option value="2">Water</option>
+				<option value="3">Counter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Pulses/Hour"></span>: </label></td>
+			<td><input type="input" id="M5PulsesPerHour" name="M5PulsesPerHour" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 	</table>
 	<br>
@@ -524,6 +565,7 @@
 					<option value="84" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
 					<option value="5" data-i18n="Text">Text</option>
 					<option value="8" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
+					<option value="248" data-i18n="Usage (Electric)">Usage (Electric)</option>
 					<option value="87" data-i18n="UV">UV</option>
 					<option value="4" data-i18n="Voltage">Voltage</option>
 					<option value="86" data-i18n="Wind">Wind</option>

@@ -11,7 +11,6 @@ class S0MeterBase : public CDomoticzHardwareBase
 		double m_volume_total;
 	};
 	friend class S0MeterSerial;
-	friend class S0MeterTCP;
 public:
 	S0MeterBase(void);
 	~S0MeterBase(void);

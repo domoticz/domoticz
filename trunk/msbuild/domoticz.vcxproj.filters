@@ -390,9 +390,6 @@
     <ClInclude Include="..\hardware\S0MeterBase.h">
       <Filter>Devices\S0 Meter</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\S0MeterTCP.h">
-      <Filter>Devices\S0 Meter</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\OTGWBase.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClInclude>
@@ -783,9 +780,6 @@
       <Filter>Devices\PiFace</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\S0MeterBase.cpp">
-      <Filter>Devices\S0 Meter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\S0MeterTCP.cpp">
       <Filter>Devices\S0 Meter</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\OTGWBase.cpp">
