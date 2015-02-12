@@ -102,13 +102,13 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
-+#ifdef __FreeBSD__            
+#ifdef __FreeBSD__            
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
-+#endif
+#endif
 #ifdef __APPLE__
 			else if (fname.find("cu.")!=std::string::npos)
 			{
