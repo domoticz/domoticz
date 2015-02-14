@@ -304,7 +304,8 @@ void SolarEdgeBase::SendMeter(const unsigned char ID1,const unsigned char ID2, c
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
 		result=m_sql.query(szQuery.str());
 	}
@@ -336,7 +337,8 @@ void SolarEdgeBase::SendVoltage(const unsigned long Idx, const float Volt, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
 		result=m_sql.query(szQuery.str());
 	}
@@ -376,7 +378,8 @@ void SolarEdgeBase::SendTempSensor(const unsigned char Idx, const float Temp, co
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
 		result=m_sql.query(szQuery.str());
 	}
@@ -408,7 +411,8 @@ void SolarEdgeBase::SendPercentage(const unsigned long Idx, const float Percenta
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
 		result=m_sql.query(szQuery.str());
 

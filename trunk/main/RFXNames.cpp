@@ -1003,13 +1003,13 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeLighting2:
-		llevel=(int)float((100.0f/15.0f)*atof(sValue.c_str()));
 		switch (dSubType)
 		{
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
-			bHaveDimmer=true;
+			llevel = (int)float((100.0f / 15.0f)*atof(sValue.c_str()));
+			bHaveDimmer = true;
 			maxDimLevel=16;
 			bHaveGroupCmd=true;
 			switch (nValue)

@@ -239,7 +239,8 @@ void Meteostick::SendTempSensor(const unsigned char Idx, const float Temp, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -280,7 +281,8 @@ void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, co
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP_HUM) << ") AND (Subtype==" << int(sTypeTH5) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -323,7 +325,8 @@ void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, c
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP_BARO) << ") AND (Subtype==" << int(sTypeBMP085) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -386,7 +389,8 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeWIND) << ") AND (Subtype==" << int(sTypeWINDNoTemp) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -421,7 +425,8 @@ void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeUV) << ") AND (Subtype==" << int(sTypeUV1) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -453,7 +458,8 @@ void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage,
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -517,7 +523,8 @@ void Meteostick::SendRainSensor(const unsigned char Idx, const float Rainmm, con
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeRAIN) << ") AND (Subtype==" << int(sTypeRAIN3) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -545,7 +552,8 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << finalID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeLeafWetness) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -573,7 +581,8 @@ void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << finalID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeSoilMoisture) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -600,7 +609,8 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeSolarRadiation) << ")";
 		result = m_sql.query(szQuery.str());
 	}

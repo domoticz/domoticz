@@ -961,7 +961,7 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			_log.Log(LOG_ERROR, "OpenZWave: Switch command not sent because not all Awake Nodes have been Queried!");
 		}
 		else {
-			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (NodeID: %d, %02x)", nodeID, nodeID);
+			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		}
 		return;
 	}
@@ -1134,7 +1134,7 @@ void COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 			_log.Log(LOG_ERROR, "OpenZWave: Switch command not sent because not all Awake Nodes have been Queried!");
 		}
 		else {
-			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (NodeID: %d, %02x)", nodeID, nodeID);
+			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		}
 		return;
 	}
@@ -2887,8 +2887,9 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
 	result = m_sql.query(szQuery.str());
-	szQuery = std::stringstream();
-		std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
+	szQuery.clear();
+	szQuery.str("");
+	std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
 
 	if (result.size() < 1)
 	{
