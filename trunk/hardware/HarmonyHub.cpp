@@ -443,8 +443,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << hexId.str() << "')";
 		result = m_sql.query(szQuery.str());
 	}

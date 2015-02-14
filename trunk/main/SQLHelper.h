@@ -191,12 +191,13 @@ public:
 
 	void UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5);
 
-	void UpdatePreferencesVar(const char *Key, const char* sValue);
-	void UpdatePreferencesVar(const char *Key, const int nValue);
-	void UpdatePreferencesVar(const char *Key, const int nValue, const char* sValue);
-	bool GetPreferencesVar(const char *Key, int &nValue, std::string &sValue);
-	bool GetPreferencesVar(const char *Key, int &nValue);
-	bool GetPreferencesVar(const char *Key, std::string &sValue);
+	void UpdatePreferencesVar(const std::string &Key, const std::string &sValue);
+	void UpdatePreferencesVar(const std::string &Key, const int nValue);
+	void UpdatePreferencesVar(const std::string &Key, const int nValue, const std::string &sValue);
+	bool GetPreferencesVar(const std::string &Key, int &nValue, std::string &sValue);
+	bool GetPreferencesVar(const std::string &Key, int &nValue);
+	bool GetPreferencesVar(const std::string &Key, std::string &sValue);
+
 	int GetLastBackupNo(const char *Key, int &nValue);
 	void SetLastBackupNo(const char *Key, const int nValue);
 

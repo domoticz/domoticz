@@ -219,16 +219,14 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 void CLogger::LogSequenceStart()
 {
 	m_bInSequenceMode=true;
-	m_sequencestring.clear();
-	m_sequencestring.str("");
+	m_sequencestring = std::stringstream();
 }
 
 void CLogger::LogSequenceEnd(const _eLogLevel level)
 {
 	m_bInSequenceMode=false;
 	LogNoLF(level,m_sequencestring.str().c_str());
-	m_sequencestring.clear();
-	m_sequencestring.str("");
+	m_sequencestring = std::stringstream();
 }
 
 void CLogger::LogSequenceAdd(const char* logline)

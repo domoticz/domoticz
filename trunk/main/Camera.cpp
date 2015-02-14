@@ -72,8 +72,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	std::stringstream szQuery;
 
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='" << CamID << "') ORDER BY ID";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)

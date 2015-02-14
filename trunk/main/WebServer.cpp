@@ -2744,8 +2744,7 @@ namespace http {
 					bool bDoAdd = true;
 					if (iUnique)
 					{
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==0)";
 						result2 = m_sql.query(szQuery.str());
 						bDoAdd = (result2.size() == 0);
@@ -2762,8 +2761,7 @@ namespace http {
 				}
 			}
 			//Add Scenes
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
 			result = m_sql.query(szQuery.str());
 			if (result.size() > 0)
@@ -2776,8 +2774,7 @@ namespace http {
 					bool bDoAdd = true;
 					if (iUnique)
 					{
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==" << sd[0] << ") AND (DevSceneType==1)";
 						result2 = m_sql.query(szQuery.str());
 						bDoAdd = (result2.size() == 0);
@@ -2968,8 +2965,7 @@ namespace http {
 				return;
 			aOrder = result[0][0];
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 
 			if (!bGoUp)
 			{
@@ -2995,12 +2991,10 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "ChangePlanOrder";
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "UPDATE Plans SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
 			result = m_sql.query(szQuery.str());
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "UPDATE Plans SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
 			result = m_sql.query(szQuery.str());
 		}
@@ -3028,8 +3022,7 @@ namespace http {
 				return;
 			aOrder = result[0][0];
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 
 			if (!bGoUp)
 			{
@@ -3055,12 +3048,10 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "ChangePlanOrder";
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
 			result = m_sql.query(szQuery.str());
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "UPDATE DeviceToPlansMap SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
 			result = m_sql.query(szQuery.str());
 		}
@@ -3925,8 +3916,7 @@ namespace http {
 					return;
 
 				//first check if it is not already a sub device
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << subidx << "') AND (ParentID =='" << idx << "')";
 				result = m_sql.query(szQuery.str());
 				if (result.size() == 0)
@@ -3958,14 +3948,12 @@ namespace http {
 				int level = atoi(m_pWebEm->FindValue("level").c_str());
 				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
 				//first check if this device is not the scene code!
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devidx << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
 				{
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM Scenes WHERE (ID==" << idx << ")";
 					result2 = m_sql.query(szQuery.str());
 					if (result2.size() > 0)
@@ -3984,8 +3972,7 @@ namespace http {
 					}
 				}
 				//first check if it is not already a sub device
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID FROM SceneDevices WHERE (DeviceRowID=='" << devidx << "') AND (SceneRowID =='" << idx << "')";
 				result = m_sql.query(szQuery.str());
 				if (result.size() == 0)
@@ -4034,8 +4021,7 @@ namespace http {
 				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
 				root["status"] = "OK";
 				root["title"] = "UpdateSceneDevice";
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << ", Hue=" << hue << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
@@ -4187,8 +4173,7 @@ namespace http {
 				aScene = result[0][0];
 				aOrder = result[0][1];
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 
 				if (!bGoUp)
 				{
@@ -4214,12 +4199,10 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ChangeSceneDeviceOrder";
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE SceneDevices SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
 				result = m_sql.query(szQuery.str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE SceneDevices SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
 				result = m_sql.query(szQuery.str());
 			}
@@ -4347,9 +4330,6 @@ namespace http {
 								bool bIsSubDevice = false;
 								std::vector<std::vector<std::string> > resultSD;
 								std::stringstream szQuerySD;
-
-								szQuerySD.clear();
-								szQuerySD.str("");
 								szQuerySD << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << sd[0] << "')";
 								resultSD = m_sql.query(szQuerySD.str());
 								if (resultSD.size() > 0)
@@ -4440,8 +4420,7 @@ namespace http {
 				}//end light/switches
 
 				//Add Scenes
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID, Name FROM Scenes ORDER BY Name";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
@@ -4547,8 +4526,7 @@ namespace http {
 				int activedelay = atoi(sactivedelay.c_str());
 
 				//first check if it is not already a Active Device
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID FROM CamerasActiveDevices WHERE (CameraRowID=='"
 					<< idx << "') AND (DevSceneType=="
 					<< activetype << ") AND (DevSceneRowID=='" << activeidx << "')  AND (DevSceneWhen==" << sactivewhen << ")";
@@ -5304,8 +5282,7 @@ namespace http {
 						m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 						//set name and switchtype
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
 						result = m_sql.query(szQuery.str());
 						if (result.size() < 1)
@@ -5315,8 +5292,7 @@ namespace http {
 						}
 						std::string ID = result[0][0];
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "UPDATE DeviceStatus SET Used=1, Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << ID << ")";
 						result = m_sql.query(szQuery.str());
 
@@ -5345,8 +5321,7 @@ namespace http {
 				m_sql.m_bAcceptNewHardware = bActEnabledState;
 
 				//set name and switchtype
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << hwdid << " AND DeviceID=='" << devid << "' AND Unit==" << sunitcode << " AND Type==" << dtype << " AND SubType==" << subtype << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() < 1)
@@ -5356,8 +5331,7 @@ namespace http {
 				}
 				std::string ID = result[0][0];
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET Used=1, Name='" << name << "', SwitchType=" << switchtype << " WHERE (ID == " << ID << ")";
 				result = m_sql.query(szQuery.str());
 
@@ -5367,8 +5341,7 @@ namespace http {
 					{
 						//this is a sub device for another light/switch
 						//first check if it is not already a sub device
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << ID << "') AND (ParentID =='" << maindeviceidx << "')";
 						result = m_sql.query(szQuery.str());
 						if (result.size() == 0)
@@ -5393,8 +5366,7 @@ namespace http {
 				if (idx == "")
 					return;
 				//First get Device Type/SubType
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() < 1)
@@ -5834,8 +5806,7 @@ namespace http {
 				if (roomid == 0)
 				{
 					//get device order 1
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx1 << ")";
 					result = m_sql.query(szQuery.str());
 					if (result.size() < 1)
@@ -5843,8 +5814,7 @@ namespace http {
 					Order1 = result[0][0];
 
 					//get device order 2
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT [Order] FROM DeviceStatus WHERE (ID == " << idx2 << ")";
 					result = m_sql.query(szQuery.str());
 					if (result.size() < 1)
@@ -5854,8 +5824,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "SwitchDeviceOrder";
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
 					{
 						szQuery << "UPDATE DeviceStatus SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
@@ -5866,8 +5835,7 @@ namespace http {
 					}
 					m_sql.query(szQuery.str());
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "UPDATE DeviceStatus SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
 					m_sql.query(szQuery.str());
 				}
@@ -5875,8 +5843,7 @@ namespace http {
 				{
 					//change order in a room
 					//get device order 1
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx1 << ") AND (PlanID==" << roomid << ")";
 					result = m_sql.query(szQuery.str());
 					if (result.size() < 1)
@@ -5884,8 +5851,7 @@ namespace http {
 					Order1 = result[0][0];
 
 					//get device order 2
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT [Order] FROM DeviceToPlansMap WHERE (DeviceRowID == " << idx2 << ") AND (PlanID==" << roomid << ")";
 					result = m_sql.query(szQuery.str());
 					if (result.size() < 1)
@@ -5895,8 +5861,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "SwitchDeviceOrder";
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
 					{
 						szQuery << "UPDATE DeviceToPlansMap SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ") AND (PlanID==" << roomid << ")";
@@ -5907,8 +5872,7 @@ namespace http {
 					}
 					m_sql.query(szQuery.str());
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "UPDATE DeviceToPlansMap SET [Order] = " << Order1 << " WHERE (DeviceRowID == " << idx2 << ") AND (PlanID==" << roomid << ")";
 					m_sql.query(szQuery.str());
 				}
@@ -5922,8 +5886,7 @@ namespace http {
 
 				std::string Order1, Order2;
 				//get device order 1
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx1 << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() < 1)
@@ -5931,8 +5894,7 @@ namespace http {
 				Order1 = result[0][0];
 
 				//get device order 2
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT [Order] FROM Scenes WHERE (ID == " << idx2 << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() < 1)
@@ -5942,8 +5904,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "SwitchSceneOrder";
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				if (atoi(Order1.c_str()) < atoi(Order2.c_str()))
 				{
 					szQuery << "UPDATE Scenes SET [Order] = [Order]+1 WHERE ([Order] >= " << Order1 << " AND [Order] < " << Order2 << ")";
@@ -5954,8 +5915,7 @@ namespace http {
 				}
 				m_sql.query(szQuery.str());
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE Scenes SET [Order] = " << Order1 << " WHERE (ID == " << idx2 << ")";
 				m_sql.query(szQuery.str());
 			}
@@ -6196,8 +6156,7 @@ namespace http {
 				sprintf(szTmp, "DELETE FROM Users WHERE (ID == %s)", idx.c_str());
 				result = m_sql.query(szTmp);
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "DELETE FROM SharedDevices WHERE (SharedUserID == " << idx << ")";
 				result = m_sql.query(szQuery.str()); //-V519
 
@@ -6209,8 +6168,7 @@ namespace http {
 				if (idx == "")
 					return;
 				//First get Device Type/SubType
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT Type, SubType FROM DeviceStatus WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() < 1)
@@ -6244,8 +6202,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ClearLightLog";
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "DELETE FROM LightingLog WHERE (DeviceRowID==" << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
@@ -6272,8 +6229,7 @@ namespace http {
 				if (bReceivedSwitch)
 				{
 					//check if used
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Name, Used, nValue FROM DeviceStatus WHERE (ID==" << m_sql.m_LastSwitchRowID << ")";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -6295,8 +6251,7 @@ namespace http {
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
@@ -6312,8 +6267,7 @@ namespace http {
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE Scenes SET Favorite=" << isfavorite << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
@@ -6360,9 +6314,7 @@ namespace http {
 
 				if (nValue >= 0)
 				{
-
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "UPDATE DeviceStatus SET nValue=" << nValue << " WHERE (ID == " << idx << ")";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0) {
@@ -6972,8 +6924,7 @@ namespace http {
 					return;
 				aOrder = result[0][0];
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 
 				if (!bGoUp)
 				{
@@ -6999,12 +6950,10 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ChangeFloorPlanOrder";
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE Floorplans SET [Order] = '" << oOrder << "' WHERE (ID='" << idx << "')";
 				result = m_sql.query(szQuery.str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE Floorplans SET [Order] = '" << aOrder << "' WHERE (ID='" << oID << "')";
 				result = m_sql.query(szQuery.str());
 			}
@@ -7014,8 +6963,7 @@ namespace http {
 				root["title"] = "GetUnusedFloorplanPlans";
 				int ii = 0;
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID, Name FROM Plans WHERE (FloorplanID==0) ORDER BY Name";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
@@ -7043,8 +6991,7 @@ namespace http {
 				std::stringstream szQuery;
 				int ii = 0;
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID, Name, Area FROM Plans WHERE (FloorplanID==" << idx << ") ORDER BY Name";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
@@ -7700,8 +7647,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
@@ -7739,8 +7685,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
@@ -7806,8 +7751,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
@@ -7861,8 +7805,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
@@ -7938,8 +7881,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
@@ -7981,8 +7923,7 @@ namespace http {
 
 			//Get All Hardware ID's/Names, need them later
 			std::map<int, _tHardwareListInt> _hardwareNames;
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT ID, Name, Enabled FROM Hardware";
 			result = m_sql.query(szQuery.str());
 			if (result.size() > 0)
@@ -8039,8 +7980,7 @@ namespace http {
 					_eUserRights urights = m_users[iUser].userrights;
 					if (urights != URIGHTS_ADMIN)
 					{
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << m_users[iUser].ID << ")";
 						result = m_sql.query(szQuery.str());
 						totUserDevices = (unsigned int)result.size();
@@ -8058,8 +7998,7 @@ namespace http {
 				if (bShowScenes)
 				{
 					//add scenes
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 
 					if (rowid != "")
 						szQuery << "SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM Scenes WHERE (ID==" << rowid << ")";
@@ -8133,8 +8072,7 @@ namespace http {
 				}
 			}
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			if (totUserDevices == 0)
 			{
 				//All
@@ -8155,8 +8093,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::string pID = result[0][0];
-							szQuery.clear();
-							szQuery.str("");
+							szQuery = std::stringstream();
 							szQuery << "SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='" << pID << "')";
 							result = m_sql.query(szQuery.str());
 							if (result.size() > 0)
@@ -8169,8 +8106,7 @@ namespace http {
 							}
 						}
 						bAllowDeviceToBeHidden = true;
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 					}
 					szQuery << "SELECT ID, DeviceID, Unit, Name, Used, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, LastUpdate, Favorite, SwitchType, HardwareID, AddjValue, AddjMulti, AddjValue2, AddjMulti2, LastLevel, CustomImage, StrParam1, StrParam2, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM DeviceStatus ORDER BY " << szOrderBy;
 				}
@@ -8195,8 +8131,7 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::string pID = result[0][0];
-							szQuery.clear();
-							szQuery.str("");
+							szQuery = std::stringstream();
 							szQuery << "SELECT DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=='" << pID << "')";
 							result = m_sql.query(szQuery.str());
 							if (result.size() > 0)
@@ -8210,8 +8145,7 @@ namespace http {
 						}
 						bAllowDeviceToBeHidden = true;
 					}
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType, A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue, A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2, A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2, A.Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM DeviceStatus as A, SharedDevices as B WHERE (B.DeviceRowID==a.ID) AND (B.SharedUserID==" << m_users[iUser].ID << ") ORDER BY " << szOrderBy;
 				}
 			}
@@ -8585,8 +8519,7 @@ namespace http {
 						std::vector<std::vector<std::string> > resultSD;
 						std::stringstream szQuerySD;
 
-						szQuerySD.clear();
-						szQuerySD.str("");
+						szQuerySD = std::stringstream();
 						szQuerySD << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << sd[0] << "')";
 						resultSD = m_sql.query(szQuerySD.str());
 						bIsSubDevice = (resultSD.size() > 0);
@@ -9108,8 +9041,7 @@ namespace http {
 
 							std::vector<std::vector<std::string> > result2;
 
-							szQuery.clear();
-							szQuery.str("");
+							szQuery = std::stringstream();
 							if (dSubType != sTypeRAINWU)
 							{
 								szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
@@ -9202,8 +9134,7 @@ namespace http {
 
 						std::vector<std::vector<std::string> > result2;
 						strcpy(szTmp, "0");
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
 						result2 = m_sql.query(szQuery.str());
 						if (result2.size() > 0)
@@ -9302,8 +9233,7 @@ namespace http {
 
 						std::vector<std::vector<std::string> > result2;
 						strcpy(szTmp, "0");
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
 						result2 = m_sql.query(szQuery.str());
 						if (result2.size() > 0)
@@ -9491,8 +9421,7 @@ namespace http {
 
 						std::vector<std::vector<std::string> > result2;
 						strcpy(szTmp, "0");
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT MIN(Value1), MIN(Value2), MIN(Value5), MIN(Value6) FROM MultiMeter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
 						result2 = m_sql.query(szQuery.str());
 						if (result2.size() > 0)
@@ -9550,8 +9479,7 @@ namespace http {
 
 						std::vector<std::vector<std::string> > result2;
 						strcpy(szTmp, "0");
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
 						result2 = m_sql.query(szQuery.str());
 						if (result2.size() > 0)
@@ -9670,8 +9598,7 @@ namespace http {
 
 							std::vector<std::vector<std::string> > result2;
 							strcpy(szTmp, "0");
-							szQuery.clear();
-							szQuery.str("");
+							szQuery = std::stringstream();
 							szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
 							result2 = m_sql.query(szQuery.str());
 							if (result2.size() > 0)
@@ -10080,8 +10007,7 @@ namespace http {
 
 							std::vector<std::vector<std::string> > result2;
 							strcpy(szTmp, "0");
-							szQuery.clear();
-							szQuery.str("");
+							szQuery = std::stringstream();
 							szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
 							result2 = m_sql.query(szQuery.str());
 							if (result2.size() > 0)
@@ -10321,8 +10247,7 @@ namespace http {
 			sprintf(ID, "%ld", nid);
 			
 			//get zone count
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (Type==" << (int)iSensorType << ")";
 			result = m_sql.query(szQuery.str());
 			
@@ -10662,8 +10587,7 @@ namespace http {
 
 						unsigned int totDevices = 0;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT COUNT(*) FROM DeviceToPlansMap WHERE (PlanID=='" << sd[0] << "')";
 						result2 = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -10686,8 +10610,7 @@ namespace http {
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result, result2, result3;
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Key, nValue, sValue FROM Preferences WHERE Key LIKE 'Floorplan%'";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 0)
@@ -10739,8 +10662,7 @@ namespace http {
 				}
 			}
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT ID, Name, ImageFile, ScaleFactor, [Order] FROM Floorplans ORDER BY [Order]";
 			result2 = m_sql.query(szQuery.str());
 			if (result2.size() > 0)
@@ -10759,8 +10681,7 @@ namespace http {
 
 					unsigned int totPlans = 0;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT COUNT(*) FROM Plans WHERE (FloorplanID=='" << sd[0] << "')";
 					result3 = m_sql.query(szQuery.str());
 					if (result3.size() > 0)
@@ -10848,8 +10769,7 @@ namespace http {
 					if (HardwareID != 0)
 					{
 						//Get learn code device name
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << HardwareID << ") AND (DeviceID=='" << DeviceID << "') AND (Unit==" << Unit << ")";
 						result2 = m_sql.query(szQuery.str());
 						if (result2.size() > 0)
@@ -11850,8 +11770,7 @@ namespace http {
 					);
 				m_sql.query(szTmp);
 				//Sanity Check, remove all SceneDevice that has this code
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "DELETE FROM SceneDevices WHERE (SceneRowID==" << idx << " AND DeviceRowID==" << devid << ")";
 				m_sql.query(szQuery.str()); //-V519
 			}
@@ -12110,8 +12029,7 @@ namespace http {
 			result = m_sql.query(szQuery.str());
 			if (result.size() > 0)
 			{
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 
 				int dType = atoi(result[0][0].c_str());
 				if (
@@ -12169,8 +12087,7 @@ namespace http {
 			//now delete the NEW device
 			m_sql.DeleteDevice(newidx);
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 
 			std::vector<std::string> sd = result[0];
 
@@ -12292,8 +12209,7 @@ namespace http {
 			int nDevices = static_cast<int>(strarray.size());
 			for (int ii = 0; ii < nDevices; ii++)
 			{
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('" << idx << "','" << strarray[ii] << "')";
 				result = m_sql.query(szQuery.str());
 			}
@@ -12372,8 +12288,7 @@ namespace http {
 			result=m_sql.query(szQuery.str());
 			if (result.size()<1)
 				return;
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			std::vector<std::string> sd=result[0];
 				
 			unsigned char dType=atoi(sd[0].c_str());
@@ -12401,8 +12316,7 @@ namespace http {
 				{
 					szQuery << "UPDATE DeviceStatus SET Used=" << used << ", sValue='" << szTmp << "' WHERE (ID == " << idx << ")";
 					m_sql.query(szQuery.str());
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 				}
 			}
 			if (name == "")
@@ -12420,8 +12334,7 @@ namespace http {
 
 			if (bHasstrParam1)
 			{
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "', Protected=" << iProtected << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
@@ -12502,24 +12415,21 @@ namespace http {
 
 			if (strunit != "")
 			{
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET Unit=" << strunit << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
 			//FIXME evohome ...we need the zone id to update the correct zone...but this should be ok as a generic call?
 			if (deviceid != "")
 			{
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET DeviceID='" << deviceid << "' WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
 			if (addjvalue != "")
 			{
 				double faddjvalue = atof(addjvalue.c_str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET AddjValue=" << faddjvalue << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
@@ -12528,16 +12438,14 @@ namespace http {
 				double faddjmulti = atof(addjmulti.c_str());
 				if (faddjmulti == 0)
 					faddjmulti = 1;
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET AddjMulti=" << faddjmulti << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
 			if (addjvalue2 != "")
 			{
 				double faddjvalue2 = atof(addjvalue2.c_str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET AddjValue2=" << faddjvalue2 << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
@@ -12546,8 +12454,7 @@ namespace http {
 				double faddjmulti2 = atof(addjmulti2.c_str());
 				if (faddjmulti2 == 0)
 					faddjmulti2 = 1;
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET AddjMulti2=" << faddjmulti2 << " WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
@@ -12575,8 +12482,7 @@ namespace http {
 				{
 					//this is a sub device for another light/switch
 					//first check if it is not already a sub device
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='" << idx << "') AND (ParentID =='" << maindeviceidx << "')";
 					result = m_sql.query(szQuery.str());
 					if (result.size() == 0)
@@ -12627,8 +12533,7 @@ namespace http {
 
 				int ii = 0;
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
@@ -12659,8 +12564,7 @@ namespace http {
 
 				int ii = 0;
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster WHERE (ID==" << idx << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
@@ -12725,14 +12629,12 @@ namespace http {
 				}
 				else {
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 
 					if (eventid == "") {
 						szQuery << "INSERT INTO EventMaster (Name, XMLStatement, Status) VALUES ('" << eventname << "','" << eventxml << "','" << eventStatus << "')";
 						m_sql.query(szQuery.str());
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT ID FROM EventMaster WHERE (Name == '" << eventname << "')";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -12744,8 +12646,7 @@ namespace http {
 					else {
 						szQuery << "UPDATE EventMaster SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Status ='" << eventStatus << "' WHERE (ID == '" << eventid << "')";
 						m_sql.query(szQuery.str());
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "DELETE FROM EventRules WHERE (EMID == '" << eventid << "')";
 						m_sql.query(szQuery.str());
 					}
@@ -12767,8 +12668,7 @@ namespace http {
 								actions = stdreplace(actions, "$", "#");
 							}
 							int sequenceNo = index + 1;
-							szQuery.clear();
-							szQuery.str("");
+							szQuery = std::stringstream();
 							szQuery << "INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('" << eventid << "','" << conditions << "','" << actions << "','" << sequenceNo << "')";
 							m_sql.query(szQuery.str());
 						}
@@ -12817,8 +12717,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			char szTmp[100];
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Key, nValue, sValue FROM Preferences";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 0)
@@ -13140,8 +13039,7 @@ namespace http {
 			std::stringstream szQuery;
 			char szTmp[100];
 			//First get Device Type/SubType
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Type, SubType, SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
@@ -13177,8 +13075,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "LightLog";
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT ROWID, nValue, sValue, Date FROM LightingLog WHERE (DeviceRowID==" << idx << ") ORDER BY Date DESC";
 			result = m_sql.query(szQuery.str());
 			if (result.size() > 0)
@@ -13249,8 +13146,7 @@ namespace http {
 			struct tm tm1;
 			localtime_r(&now, &tm1);
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "SELECT Type, SubType, SwitchType, AddjValue, AddjMulti FROM DeviceStatus WHERE (ID == " << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
@@ -13343,8 +13239,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Temperature, Chill, Humidity, Barometer, Date, SetPoint FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -13423,8 +13318,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Percentage, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -13445,8 +13339,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Speed, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -13471,8 +13364,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13589,8 +13481,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13612,8 +13503,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13648,8 +13538,7 @@ namespace http {
 						{
 							vdiv = 1000.0f;
 						}
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13680,8 +13569,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13703,8 +13591,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13726,8 +13613,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13750,8 +13636,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13781,8 +13666,7 @@ namespace http {
 
 						root["displaytype"] = displaytype;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value1, Value2, Value3, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13859,8 +13743,7 @@ namespace http {
 
 						root["displaytype"] = displaytype;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value1, Value2, Value3, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -13950,8 +13833,7 @@ namespace http {
 						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 							EnergyDivider *= 100.0f;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						int ii = 0;
 						szQuery << "SELECT Value,[Usage], Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
@@ -14098,8 +13980,7 @@ namespace http {
 						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 							EnergyDivider *= 100.0f;
 
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						int ii = 0;
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
@@ -14286,8 +14167,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -14314,8 +14194,7 @@ namespace http {
 					float LastValue = -1;
 					std::string LastDate = "";
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Total, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -14364,8 +14243,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Direction, Speed, Gust, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -14393,8 +14271,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Direction, Speed, Gust FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ") ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -14598,8 +14475,7 @@ namespace http {
 
 					sprintf(szDateStart, "%04d-%02d-%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					int ii = 0;
@@ -14619,8 +14495,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (dSubType != sTypeRAINWU)
 					{
 						szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
@@ -14704,8 +14579,7 @@ namespace http {
 					localtime_r(&later, &tm2);
 					sprintf(szDateStart, "%04d-%02d-%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					int ii = 0;
 					if (dType == pTypeP1Power)
 					{
@@ -14781,8 +14655,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (dType == pTypeP1Power)
 					{
 						szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
@@ -14961,8 +14834,7 @@ namespace http {
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					//Actual Year
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Temp_Avg, Date, SetPoint_Min, SetPoint_Max, SetPoint_Avg FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					int ii = 0;
@@ -15047,8 +14919,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), AVG(Temperature), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -15119,8 +14990,7 @@ namespace http {
 						ii++;
 					}
 					//Previous Year
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max, Humidity, Barometer, Temp_Avg, Date, SetPoint_Min, SetPoint_Max, SetPoint_Avg FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -15209,8 +15079,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Percentage_Min, Percentage_Max, Percentage_Avg, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					int ii = 0;
@@ -15229,8 +15098,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage) FROM Percentage WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -15248,8 +15116,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Speed_Min, Speed_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					int ii = 0;
@@ -15267,8 +15134,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT MIN(Speed), MAX(Speed) FROM Fan WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -15285,8 +15151,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					int ii = 0;
@@ -15303,8 +15168,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT MAX(Level) FROM UV WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -15316,8 +15180,7 @@ namespace http {
 						ii++;
 					}
 					//Previous Year
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -15338,8 +15201,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					int ii = 0;
@@ -15359,8 +15221,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (dSubType != sTypeRAINWU)
 					{
 						szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
@@ -15394,8 +15255,7 @@ namespace http {
 						ii++;
 					}
 					//Previous Year
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -15422,8 +15282,7 @@ namespace http {
 					int nValue = 0;
 					std::string sValue = "";
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT nValue, sValue FROM DeviceStatus WHERE (ID==" << idx << ")";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -15456,8 +15315,7 @@ namespace http {
 					//				else if (dType==pTypeRFXMeter)
 					//				EnergyDivider*=1000.0f;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					int ii = 0;
 					int iPrev = 0;
 					if (dType == pTypeP1Power)
@@ -15503,8 +15361,7 @@ namespace http {
 							}
 						}
 						//Previous Year
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -15977,8 +15834,7 @@ namespace http {
 							}
 						}
 						//Past Year
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -16036,8 +15892,7 @@ namespace http {
 						}
 					}
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (dType == pTypeP1Power)
 					{
 						szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
@@ -16262,8 +16117,7 @@ namespace http {
 
 					int ii = 0;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -16286,8 +16140,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -16370,8 +16223,7 @@ namespace http {
 						sendDew = true;
 					}
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (sgraphtype == "1")
 					{
 						// Need to get all values of the end date so 23:59:59 is appended to the date string
@@ -16512,8 +16364,7 @@ namespace http {
 						}
 
 						//add today (have to calculate it)
-						szQuery.clear();
-						szQuery.str("");
+						szQuery = std::stringstream();
 						szQuery << "SELECT MIN(Temperature), MAX(Temperature), MIN(Chill), MAX(Chill), MAX(Humidity), MAX(Barometer), MIN(DewPoint), AVG(Temperature), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
@@ -16583,8 +16434,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Level, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					int ii = 0;
@@ -16601,8 +16451,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT MAX(Level) FROM UV WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -16618,8 +16467,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Total, Rate, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					int ii = 0;
@@ -16636,8 +16484,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (dSubType != sTypeRAINWU)
 					{
 						szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
@@ -16695,8 +16542,7 @@ namespace http {
 					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 						EnergyDivider *= 100.0f;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					int ii = 0;
 					if (dType == pTypeP1Power)
 					{
@@ -16768,8 +16614,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					if (dType == pTypeP1Power)
 					{
 						szQuery << "SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID=" << idx << " AND Date>='" << szDateEnd << "')";
@@ -16868,8 +16713,7 @@ namespace http {
 
 					int ii = 0;
 
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT Direction, Speed_Min, Speed_Max, Gust_Min, Gust_Max, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)
@@ -16892,8 +16736,7 @@ namespace http {
 						}
 					}
 					//add today (have to calculate it)
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					szQuery << "SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateEnd << "') ORDER BY Date ASC";
 					result = m_sql.query(szQuery.str());
 					if (result.size() > 0)

@@ -346,8 +346,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			char szLastUpdate[40];
 			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "UPDATE DeviceStatus SET nValue=" << int(cmd) << ", sValue='" << szSValue << "', LastLevel = " << BrightnessLevel << ", LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
 			result = m_sql.query(szQuery.str());
 			return;
@@ -361,8 +360,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
 
 		//Set Name/Parameters
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", nValue=" << int(cmd) << ", sValue='" << szSValue << "', LastLevel=" << BrightnessLevel << " WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}
@@ -428,8 +426,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			char szLastUpdate[40];
 			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "UPDATE DeviceStatus SET LastLevel=" << BrightnessLevel << ", nValue=" << int(cmd) << ", sValue='" << szLevel << "', LastUpdate='" << szLastUpdate << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 			result = m_sql.query(szQuery.str());
 			return;
@@ -454,8 +451,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
 
 		//Set Name/Parameters
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", LastLevel=" << BrightnessLevel << ", nValue=" << int(cmd) << ", sValue='" << szLevel << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}

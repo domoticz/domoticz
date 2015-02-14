@@ -95,6 +95,7 @@ Version 2.0.xxxx (January xxth 2015)
 - Fixed: I2C, possible crash when no device connected
 - Implemented: Option for Dummy device to create Usage (Electric) Sensor
 - Implemented: S0 Meter, settings for meter 3,4 and 5
+- Changed: ZWave lights/dimmers can now be dimmed in percentage from 0..100 (Thanks to Gilles)
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

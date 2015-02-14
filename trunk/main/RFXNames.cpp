@@ -461,6 +461,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
+		{ pTypeLighting2, sTypeZWaveSwitch, "ZWave" },
 
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
@@ -686,6 +687,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting2, sTypeAC, "Status" },
 		{ pTypeLighting2, sTypeHEU, "Status" },
 		{ pTypeLighting2, sTypeANSLUT, "Status" },
+		{ pTypeLighting2, sTypeZWaveSwitch, "Status" },
 
 		{ pTypeLighting3, sTypeKoppla, "Status" },
 
@@ -1037,6 +1039,27 @@ void GetLightStatus(
 					lstatus=szTmp;
 				else
 					lstatus="Off";
+				break;
+			}
+			break;
+		case sTypeZWaveSwitch:
+			llevel = atoi(sValue.c_str());
+			bHaveDimmer = true;
+			maxDimLevel = 100;
+			switch (nValue)
+			{
+			case light2_sOff:
+				lstatus = "Off";
+				break;
+			case light2_sOn:
+				lstatus = "On";
+				break;
+			case light2_sSetLevel:
+				sprintf(szTmp, "Set Level: %d %%", llevel);
+				if (sValue != "0")
+					lstatus = szTmp;
+				else
+					lstatus = "Off";
 				break;
 			}
 			break;

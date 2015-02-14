@@ -308,8 +308,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		bool isWindSpeed = false;
 		bool isWindGust = false;
 
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 
 		switch (sitem.devType)
 		{
@@ -501,8 +500,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 				std::vector<std::vector<std::string> > result2;
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				if (sitem.subType != sTypeRAINWU)
 				{
 					szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
@@ -535,8 +533,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					rainmm = float(total_real);
 					isRain = true;
 					//Calculate Last Hour
-					szQuery.clear();
-					szQuery.str("");
+					szQuery = std::stringstream();
 					sprintf(szDate, "datetime('now','-%d hour', 'localtime')", 1);
 					if (sitem.subType != sTypeRAINWU)
 					{
@@ -579,8 +576,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 				std::vector<std::vector<std::string> > result2;
 				std::stringstream szQuery;
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
 				result2 = m_sql.query(szQuery.str());
 				if (result2.size()>0)
@@ -622,8 +618,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 				std::vector<std::vector<std::string> > result2;
 				std::stringstream szQuery;
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
 				result2 = m_sql.query(szQuery.str());
 				if (result2.size()>0)
@@ -2112,8 +2107,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		char szLastUpdate[40];
 		sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET nValue=" << nvalue << ", sValue='" << svalue << "', LastUpdate='" << szLastUpdate << "' WHERE (ID = " << idx << ")";
 		result = m_sql.query(szQuery.str());
 
