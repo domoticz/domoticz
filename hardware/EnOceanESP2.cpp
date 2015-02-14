@@ -1390,7 +1390,8 @@ bool CEnOceanESP2::ParseData()
 					if (result.size()<1)
 					{
 						//Add it to the database
-						szQuery = std::stringstream();
+						szQuery.clear();
+						szQuery.str("");
 						szQuery << "INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (" << m_HwdID << ",'" << szDeviceID << "'," << manufacturer << "," << profile << "," << ttype << ")";
 						result=m_sql.query(szQuery.str());
 					}

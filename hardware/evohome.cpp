@@ -162,7 +162,8 @@ bool CEvohome::StartHardware()
 			m_nControllerMode=atoi(sd[2].c_str());
 		}
 		
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << (int)pTypeEvohomeRelay << ") AND (Unit>=64) AND (Unit<96)";//we'll put our custom relays in this range
 		result = m_sql.query(szQuery.str());
 		m_RelayCheck.clear();
@@ -376,19 +377,24 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 		std::string OnAction(sd[6]);
 		if (OnAction.find("script://")!=std::string::npos)
 		{
-			s_strid = std::stringstream();
+			s_strid.clear();
+			s_strid.str("");
 			s_strid << ID;
 			boost::replace_all(OnAction, "{deviceid}", s_strid.str());
-			s_strid = std::stringstream();
+			s_strid.clear();
+			s_strid.str("");
 			s_strid << (int)tsen->EVOHOME2.zone;
 			boost::replace_all(OnAction, "{unit}", s_strid.str());
-			s_strid = std::stringstream();
+			s_strid.clear();
+			s_strid.str("");
 			s_strid << (int)tsen->EVOHOME2.mode;
 			boost::replace_all(OnAction, "{mode}", s_strid.str());
-			s_strid = std::stringstream();
-			s_strid << tsen->EVOHOME2.temperature/100.0f;
+			s_strid.clear();
+			s_strid.str("");
+			s_strid << tsen->EVOHOME2.temperature / 100.0f;
 			boost::replace_all(OnAction, "{setpoint}", s_strid.str());
-			s_strid = std::stringstream(); 
+			s_strid.clear();
+			s_strid.str("");
 			s_strid << (int)tsen->EVOHOME2.temperature;
 			boost::replace_all(OnAction, "{state}", s_strid.str());
 			boost::replace_all(OnAction, "{until}", CEvohomeDateTime::GetISODate(tsen->EVOHOME2));
@@ -556,7 +562,8 @@ void CEvohome::SendExternalSensor()
 		return;
 	
 	//FIXME no light level data available UV from WU is only thing vaguely close (on dev system) without a real sensor 
-	szQuery = std::stringstream();
+	szQuery.clear();
+	szQuery.str("");
 	szQuery << "SELECT sValue FROM DeviceStatus WHERE (Type==" << (int)pTypeUV << ")";
 	result = m_sql.query(szQuery.str());
 	if (result.size()>0)

@@ -172,11 +172,13 @@ void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
 		return; //Already exists
-	szQuery = std::stringstream();
+	szQuery.clear();
+	szQuery.str("");
 	szQuery << "INSERT INTO WOLNodes (HardwareID, Name, MacAddress) VALUES (" << m_HwdID << ",'" << Name << "','" << MACAddress << "')";
 	m_sql.query(szQuery.str());
 
-	szQuery = std::stringstream();
+	szQuery.clear();
+	szQuery.str("");
 	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << MACAddress << "')";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
@@ -188,8 +190,9 @@ void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
 
 	//Also add a light (push) device
-	szQuery = std::stringstream();
-		szQuery << 
+	szQuery.clear();
+	szQuery.str("");
+	szQuery <<
 		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
 		"VALUES (" << m_HwdID << ",'" << szID << "'," << int(1) << "," << pTypeLighting2 << "," <<sTypeAC << "," << int(STYPE_PushOn) << ",1, 12,255,'" << Name << "',1,' ')";
 	m_sql.query(szQuery.str());
@@ -206,7 +209,8 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string &
 	if (result.size()<1)
 		return false; //Not Found!?
 
-	szQuery = std::stringstream();
+	szQuery.clear();
+	szQuery.str("");
 
 	szQuery << "UPDATE WOLNodes SET Name='" << Name << "', MacAddress='" << MACAddress << "' WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
 	m_sql.query(szQuery.str());
@@ -215,8 +219,9 @@ bool CWOL::UpdateNode(const int ID, const std::string &Name, const std::string &
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
 
 	//Also update Light/Switch
-	szQuery = std::stringstream();
-	szQuery << 
+	szQuery.clear();
+	szQuery.str("");
+	szQuery <<
 		"UPDATE DeviceStatus SET Name='" << Name << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 	m_sql.query(szQuery.str());
 
@@ -230,7 +235,8 @@ void CWOL::RemoveNode(const int ID)
 	m_sql.query(szQuery.str());
 
 	//Also delete the switch
-	szQuery = std::stringstream();
+	szQuery.clear();
+	szQuery.str("");
 
 	char szID[40];
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
@@ -246,7 +252,8 @@ void CWOL::RemoveAllNodes()
 	m_sql.query(szQuery.str());
 
 	//Also delete the all switches
-	szQuery = std::stringstream();
+	szQuery.clear();
+	szQuery.str("");
 	szQuery << "DELETE FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ")";
 	m_sql.query(szQuery.str());
 }

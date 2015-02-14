@@ -217,7 +217,8 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
 
 		//Set Name
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}
@@ -309,7 +310,8 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
 
 		//Set Name
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}

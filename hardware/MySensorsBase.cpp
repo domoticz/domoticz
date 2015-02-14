@@ -314,7 +314,8 @@ void MySensorsBase::SendKwhMeter(const unsigned char NodeID, const int ChildID, 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -579,7 +580,8 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
 		m_sql.query(szQuery.str());
 	}

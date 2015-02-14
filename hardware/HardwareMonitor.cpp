@@ -112,10 +112,12 @@ void CHardwareMonitor::Init()
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('Motherboard',1, '" << HTYPE_System << "','',1,'','',0,0,0,0,0)";
 		m_sql.query(szQuery.str());
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "SELECT MAX(ID) FROM Hardware";
 		result=m_sql.query(szQuery.str());
 		if (result.size()>0)
@@ -126,8 +128,9 @@ void CHardwareMonitor::Init()
 		}
 
 		m_sql.query(szQuery.str());
-		szQuery = std::stringstream();
-		szQuery << "SELECT ID,Enabled FROM Hardware WHERE (Type==" <<HTYPE_System << ") AND (Name=='Motherboard') LIMIT 1";
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "SELECT ID,Enabled FROM Hardware WHERE (Type==" << HTYPE_System << ") AND (Name=='Motherboard') LIMIT 1";
 		result=m_sql.query(szQuery.str());
 	}
 	
@@ -191,7 +194,8 @@ void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, co
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -223,7 +227,8 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeCurrent) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -263,7 +268,8 @@ void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -295,7 +301,8 @@ void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Perce
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
 		result = m_sql.query(szQuery.str());
 
@@ -328,7 +335,8 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeFan) << ")";
 		result = m_sql.query(szQuery.str());
 

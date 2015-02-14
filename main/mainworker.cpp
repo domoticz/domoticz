@@ -384,7 +384,8 @@ bool MainWorker::RestartHardware(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery = std::stringstream();
+	szQuery.clear();
+	szQuery.str("");
 	szQuery << "SELECT Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout FROM Hardware WHERE (ID==" << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
@@ -4916,7 +4917,8 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 		return -1;
 	if(bNewDev)
 	{
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (ID == " << DevRowIdx << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -4970,7 +4972,8 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 		return -1;
 	if(bNewDev)
 	{
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (ID == " << DevRowIdx << ")";
 		result = m_sql.query(szQuery.str());
 	}
@@ -9413,7 +9416,8 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME2));
 		
 		//Pass across the current controller mode if we're going to update as per the hw device
-		szQuery = std::stringstream();
+		szQuery.clear();
+		szQuery.str("");
 		szQuery << "SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==" << HardwareID << ") AND (Unit==0)";
 		result = m_sql.query(szQuery.str()); //-V519
 		if (result.size() > 0)
@@ -9941,7 +9945,8 @@ void MainWorker::LoadSharedUsers()
 	std::vector<std::vector<std::string> >::const_iterator itt2;
 	std::stringstream szQuery;
 
-	szQuery = std::stringstream();
+	szQuery.clear();
+	szQuery.str("");
 	szQuery << "SELECT ID, Username, Password FROM USERS WHERE ((RemoteSharing==1) AND (Active==1))";
 	result=m_sql.query(szQuery.str());
 	if (result.size()>0)
@@ -9954,7 +9959,8 @@ void MainWorker::LoadSharedUsers()
 			suser.Password=sd[2];
 
 			//Get User Devices
-			szQuery = std::stringstream();
+			szQuery.clear();
+			szQuery.str("");
 			szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << sd[0] << ")";
 			result2=m_sql.query(szQuery.str());
 			if (result2.size()>0)
