@@ -24,7 +24,7 @@ const char *findTableIDSingle1 (STR_TABLE_SINGLE *t, unsigned long id)
 		t++;
 	}
 	return "Unknown";
-} 
+}
 
 const char *findTableIDSingle2 (STR_TABLE_SINGLE *t, unsigned long id)
 {
@@ -34,7 +34,7 @@ const char *findTableIDSingle2 (STR_TABLE_SINGLE *t, unsigned long id)
 		t++;
 	}
 	return "Unknown";
-} 
+}
 
 const char *findTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2)
 {
@@ -48,7 +48,7 @@ const char *findTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned 
 
 const char *RFX_Humidity_Status_Desc(const unsigned char status)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ humstat_normal, "Normal" },
 		{ humstat_comfort, "Comfortable" },
@@ -72,7 +72,7 @@ unsigned char Get_Humidity_Level(const unsigned char hlevel)
 
 const char *Security_Status_Desc(const unsigned char status)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ sStatusNormal, "Normal" },
 		{ sStatusNormalDelayed, "Normal Delayed" },
@@ -108,7 +108,7 @@ const char *Security_Status_Desc(const unsigned char status)
 
 const char *Timer_Type_Desc(const int tType)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ TTYPE_BEFORESUNRISE, "Before Sunrise" },
 		{ TTYPE_AFTERSUNRISE, "After Sunrise" },
@@ -123,7 +123,7 @@ const char *Timer_Type_Desc(const int tType)
 
 const char *Timer_Cmd_Desc(const int tType)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ TCMD_ON, "On" },
 		{ TCMD_OFF, "Off" },
@@ -134,7 +134,7 @@ const char *Timer_Cmd_Desc(const int tType)
 
 const char *Hardware_Type_Desc(int hType)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ HTYPE_RFXtrx315, "RFXCOM - RFXtrx315 USB 315MHz Transceiver" },
 		{ HTYPE_RFXtrx433, "RFXCOM - RFXtrx433 USB 433.92MHz Transceiver" },
@@ -187,7 +187,7 @@ const char *Hardware_Type_Desc(int hType)
 
 const char *Switch_Type_Desc(const _eSwitchType sType)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ STYPE_OnOff, "On/Off" },
 		{ STYPE_Doorbell, "Doorbell" },
@@ -213,7 +213,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 
 const char *Meter_Type_Desc(const _eMeterType sType)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ MTYPE_ENERGY, "Energy" },
 		{ MTYPE_GAS, "Gas" },
@@ -226,7 +226,7 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 
 const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ NTYPE_TEMPERATURE, "Temperature","T" },
 		{ NTYPE_HUMIDITY, "Humidity","H" },
@@ -248,7 +248,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_RPM, "RPM", "Z" },
 		{ NTYPE_DEWPOINT, "Dew Point", "D" },
 		{ NTYPE_SETPOINT, "Set Point", "N" },
-		
+
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -259,7 +259,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 
 const char *Notification_Type_Label(const int nType)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ NTYPE_TEMPERATURE, "degrees" },
 		{ NTYPE_HUMIDITY, "%%" },
@@ -288,7 +288,7 @@ const char *Notification_Type_Label(const int nType)
 
 const char *RFX_Forecast_Desc(const unsigned char Forecast)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ baroForecastNoInfo, "No Info" },
 		{ baroForecastSunny, "Sunny" },
@@ -302,7 +302,7 @@ const char *RFX_Forecast_Desc(const unsigned char Forecast)
 
 const char *RFX_WSForecast_Desc(const unsigned char Forecast)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ wsbaroforcast_heavy_snow,"Heavy Snow" },
 		{ wsbaroforcast_snow, "Snow" },
@@ -318,7 +318,7 @@ const char *RFX_WSForecast_Desc(const unsigned char Forecast)
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 {
-	STR_TABLE_SINGLE	Table[] = 
+	STR_TABLE_SINGLE	Table[] =
 	{
 		{ pTypeInterfaceControl, "Interface Control", "unknown" },
 		{ pTypeInterfaceMessage, "Interface Message", "unknown" },
@@ -388,7 +388,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType)
 {
-	STR_TABLE_ID1_ID2	Table[] = 
+	STR_TABLE_ID1_ID2	Table[] =
 	{
 		{ pTypeTEMP, sTypeTEMP1, "THR128/138, THC138" },
 		{ pTypeTEMP, sTypeTEMP2, "THC238/268, THN132, THWR288, THRN122, THN122, AW129/131" },
@@ -402,7 +402,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP, sTypeTEMP10, "TFA 30.3133" },
 		{ pTypeTEMP, sTypeTEMP11, "WT0122 Pool sensor" },
 		{ pTypeTEMP, sTypeTEMP_SYSTEM, "System" },
-		
+
 		{ pTypeHUM, sTypeHUM1, "LaCrosse TX3" },
 		{ pTypeHUM, sTypeHUM2, "LaCrosse WS2300" },
 
@@ -419,7 +419,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_HUM, sTypeTH11, "Oregon EW109" },
 		{ pTypeTEMP_HUM, sTypeTH12, "Imagintronix" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "LaCrosse TX3" },
-		
+
 
 		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "THB1 - BTHR918, BTHGN129" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "THB2 - BTHR918N, BTHR968" },
@@ -456,7 +456,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting1, sTypeEnergenie, "Energenie" },
 		{ pTypeLighting1, sTypeEnergenie5, "Energenie 5-gang" },
 		{ pTypeLighting1, sTypeGDR2, "COCO GDR2" },
-		
+
 
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
@@ -478,7 +478,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeAoke, "Aoke" },
 		{ pTypeLighting5, sTypeEurodomest, "Eurodomest" },
 		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo Appliance" },
-		
+
 
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
@@ -506,7 +506,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeSecurity1, sTypeMeiantech, "Meiantech/Atlantic/Aidebao" },
 		{ pTypeSecurity1, sTypeSA30, "Alecto SA30 smoke detector" },
 		{ pTypeSecurity1, sTypeDomoticzSecurity, "Security Panel" },
-		
+
 		{ pTypeCamera, sTypeNinja, "Meiantech" },
 
 		{ pTypeRemote, sTypeATI, "ATI Remote Wonder" },
@@ -514,7 +514,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRemote, sTypeMedion, "Medion Remote" },
 		{ pTypeRemote, sTypePCremote, "PC Remote" },
 		{ pTypeRemote, sTypeATIrw2, "ATI Remote Wonder II" },
-		
+
 		{ pTypeThermostat1, sTypeDigimax, "Digimax" },
 		{ pTypeThermostat1, sTypeDigimaxShort, "Digimax with short format" },
 
@@ -530,22 +530,22 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeDT, sTypeDT1, "RTGR328N" },
 
 		{ pTypeCURRENT, sTypeELEC1, "CM113, Electrisave" },
-		
+
 		{ pTypeENERGY, sTypeELEC2, "CM119 / CM160" },
 		{ pTypeENERGY, sTypeELEC3, "CM180" },
 		{ pTypeENERGY, sTypeZWaveUsage, "ZWave Usage" },
 
 		{ pTypeCURRENTENERGY, sTypeELEC4, "CM180i" },
-		
+
 		{ pTypeWEIGHT, sTypeWEIGHT1, "BWR102" },
 		{ pTypeWEIGHT, sTypeWEIGHT2, "GR101" },
-		
+
 		{ pTypeRFXSensor, sTypeRFXSensorTemp, "Temperature" },
 		{ pTypeRFXSensor, sTypeRFXSensorAD, "A/D" },
 		{ pTypeRFXSensor, sTypeRFXSensorVolt, "Voltage" },
 
 		{ pTypeRFXMeter, sTypeRFXMeterCount, "RFXMeter counter" },
-		
+
 		{ pTypeP1Power, sTypeP1Power, "Energy" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
 
@@ -560,7 +560,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeUsage, sTypeElectric, "Electric" },
 
 		{ pTypeTEMP_BARO, sTypeBMP085, "BMP085 I2C" },
-		
+
 		{ pTypeLux, sTypeLux, "Lux" },
 
 		{ pTypeGeneral, sTypeVisibility, "Visibility" },
@@ -594,11 +594,11 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBBQ, sTypeBBQ1, "Maverick ET-732" },
 
 		{ pTypePOWER, sTypeELEC5, "Revolt" },
-		
+
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "RGBW" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
-	
+
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
 
@@ -614,7 +614,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
 {
-	STR_TABLE_ID1_ID2	Table[] = 
+	STR_TABLE_ID1_ID2	Table[] =
 	{
 		{ pTypeTEMP, sTypeTEMP1, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP2, "Temperature" },
@@ -628,7 +628,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP, sTypeTEMP10, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP11, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP_SYSTEM, "Temperature" },
-		
+
 		{ pTypeHUM, sTypeHUM1, "Temperature,Humidity,Humidity Status" },
 		{ pTypeHUM, sTypeHUM2, "Humidity" },
 
@@ -645,7 +645,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP_HUM, sTypeTH11, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH12, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "Temperature,Humidity,Humidity Status" },
-		
+
 
 		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
 		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "Temperature,Humidity,Humidity Status,Barometer,Forecast" },
@@ -682,7 +682,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting1, sTypeEnergenie, "Status" },
 		{ pTypeLighting1, sTypeEnergenie5, "Status" },
 		{ pTypeLighting1, sTypeGDR2, "Status" },
-		
+
 
 		{ pTypeLighting2, sTypeAC, "Status" },
 		{ pTypeLighting2, sTypeHEU, "Status" },
@@ -730,7 +730,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeSecurity1, sTypeMeiantech, "Status" },
 		{ pTypeSecurity1, sTypeSA30, "Status" },
 		{ pTypeSecurity1, sTypeDomoticzSecurity, "Status" },
-		
+
 		{ pTypeCamera, sTypeNinja, "Not implemented" },
 
 		{ pTypeRemote, sTypeATI, "Status" },
@@ -738,7 +738,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeRemote, sTypeMedion, "Status" },
 		{ pTypeRemote, sTypePCremote, "Status" },
 		{ pTypeRemote, sTypeATIrw2, "Status" },
-		
+
 		{ pTypeThermostat1, sTypeDigimax, "Temperature,Set point,Mode,Status" },
 		{ pTypeThermostat1, sTypeDigimaxShort, "Temperature,Set point,Mode,Status" },
 
@@ -754,22 +754,22 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeDT, sTypeDT1, "?????" },
 
 		{ pTypeCURRENT, sTypeELEC1, "Current 1,Current 2,Current 3" },
-		
+
 		{ pTypeENERGY, sTypeELEC2, "Instant,Usage" },
 		{ pTypeENERGY, sTypeELEC3, "Instant,Usage" },
 		{ pTypeENERGY, sTypeZWaveUsage, "Instant,Usage" },
 
 		{ pTypeCURRENTENERGY, sTypeELEC4, "Current 1,Current 2,Current 3,Usage" },
-		
+
 		{ pTypeWEIGHT, sTypeWEIGHT1, "Weight" },
 		{ pTypeWEIGHT, sTypeWEIGHT2, "Weight" },
-		
+
 		{ pTypeRFXSensor, sTypeRFXSensorTemp, "Temperature" },
 		{ pTypeRFXSensor, sTypeRFXSensorAD, "Voltage" },
 		{ pTypeRFXSensor, sTypeRFXSensorVolt, "Voltage" },
 
 		{ pTypeRFXMeter, sTypeRFXMeterCount, "Counter" },
-		
+
 		{ pTypeP1Power, sTypeP1Power, "Usage 1,Usage 2,Delivery 1,Delivery 2,Usage current,Delivery current" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas usage" },
 
@@ -784,7 +784,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeUsage, sTypeElectric, "Usage" },
 
 		{ pTypeTEMP_BARO, sTypeBMP085, "Temperature,Barometer,Forecast,Altitude" },
-		
+
 		{ pTypeLux, sTypeLux, "Lux" },
 
 		{ pTypeGeneral, sTypeVisibility, "Visibility" },
@@ -818,7 +818,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBBQ, sTypeBBQ1, "Temperature 1,Temperature 2" },
 
 		{ pTypePOWER, sTypeELEC5, "Instant,Usage" },
-		
+
 		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
@@ -914,13 +914,13 @@ int Lookup_ZWave_Thermostat_Fan_Modes(const std::string &sMode)
 
 
 void GetLightStatus(
-		const unsigned char dType, 
-		const unsigned char dSubType, 
+		const unsigned char dType,
+		const unsigned char dSubType,
 		const _eSwitchType switchtype,
-		const unsigned char nValue, 
-		const std::string &sValue, 
-		std::string &lstatus, 
-		int &llevel, 
+		const unsigned char nValue,
+		const std::string &sValue,
+		std::string &lstatus,
+		int &llevel,
 		bool &bHaveDimmer,
 		int &maxDimLevel,
 		bool &bHaveGroupCmd)
@@ -1003,14 +1003,19 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeLighting2:
+		// Determine max dim level based on switch type
+		maxDimLevel=(dSubType != sTypeZWaveSwitch) ? 15 : 100;
+
+		// Calculate % that the light is currently on, taking the maxdimlevel into account.
+		llevel=(int)float((100.0f/float(maxDimLevel))*atof(sValue.c_str()));
+
+		// Fill in other parameters
 		switch (dSubType)
 		{
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
-			llevel = (int)float((100.0f / 15.0f)*atof(sValue.c_str()));
-			bHaveDimmer = true;
-			maxDimLevel=16;
+			bHaveDimmer=true;
 			bHaveGroupCmd=true;
 			switch (nValue)
 			{
@@ -1043,9 +1048,7 @@ void GetLightStatus(
 			}
 			break;
 		case sTypeZWaveSwitch:
-			llevel = atoi(sValue.c_str());
 			bHaveDimmer = true;
-			maxDimLevel = 100;
 			switch (nValue)
 			{
 			case light2_sOff:
@@ -1558,9 +1561,9 @@ void GetLightStatus(
 }
 
 bool GetLightCommand(
-	const unsigned char dType, 
-	const unsigned char dSubType, 
-	_eSwitchType switchtype, 
+	const unsigned char dType,
+	const unsigned char dSubType,
+	_eSwitchType switchtype,
 	std::string switchcmd,
 	unsigned char &cmd
 	)

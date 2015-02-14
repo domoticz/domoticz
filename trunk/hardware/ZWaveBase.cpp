@@ -268,42 +268,28 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.id3 = ID3;
 		lcmd.LIGHTING2.id4 = ID4;
 		lcmd.LIGHTING2.unitcode = unitcode;
-		int level = 100;
+
+		// Get device level to set
+		int level = pDevice->intvalue;
+
+		// Simple on/off device, make sure we only have 0 or 255
 		if (pDevice->devType == ZDTYPE_SWITCH_NORMAL)
-		{
-			//simple on/off device
-			if (pDevice->intvalue == 0)
-			{
-				level = 0;
-				lcmd.LIGHTING2.cmnd = light2_sOff;
-			}
-			else
-			{
-				level = 15;
-				lcmd.LIGHTING2.cmnd = light2_sOn;
-			}
-		}
+			level = (level == 0) ? 0 : 255;
+
+		// Now check the values
+		if (level == 0)
+			lcmd.LIGHTING2.cmnd = light2_sOff;
+		else if (level == 255)
+			lcmd.LIGHTING2.cmnd = light2_sOn;
 		else
 		{
-			//dimmer able device
-			if (pDevice->intvalue == 0)
-				level = 0;
-			if (pDevice->intvalue == 255)
-				level = 100;
-			else
-			{
-				level = pDevice->intvalue;
-				if (level > 100)
-					level = 100;
-			}
-			if (level == 0)
-				lcmd.LIGHTING2.cmnd = light2_sOff;
-			else if (level == 100)
-				lcmd.LIGHTING2.cmnd = light2_sOn;
-			else
-				lcmd.LIGHTING2.cmnd = light2_sSetLevel;
+			level = (level > 100) ? 100 : level;
+			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
 		}
-		lcmd.LIGHTING2.level = level;
+
+		// Update the lcmd with the correct level value.
+		lcmd.LIGHTING2.level=level;
+
 		lcmd.LIGHTING2.filler = 0;
 		lcmd.LIGHTING2.rssi = 12;
 
@@ -361,39 +347,26 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.id3=ID3;
 		lcmd.LIGHTING2.id4=ID4;
 		lcmd.LIGHTING2.unitcode=1;
-		int level=100;
-		if (pDevice->devType==ZDTYPE_SWITCH_NORMAL)
-		{
-			//simple on/off device
-			if (pDevice->intvalue==0)
-			{
-				level=0;
-				lcmd.LIGHTING2.cmnd=light2_sOff;
-			}
-			else
-			{
-				level=100;
-				lcmd.LIGHTING2.cmnd=light2_sOn;
-			}
-		}
+
+		// Get device level to set
+		int level = pDevice->intvalue;
+
+		// Simple on/off device, make sure we only have 0 or 255
+		if (pDevice->devType == ZDTYPE_SWITCH_NORMAL)
+			level = (level == 0) ? 0 : 255;
+
+		// Now check the values
+		if (level == 0)
+			lcmd.LIGHTING2.cmnd = light2_sOff;
+		else if (level == 255)
+			lcmd.LIGHTING2.cmnd = light2_sOn;
 		else
 		{
-			//dimmer able device
-			if (pDevice->intvalue==0)
-				level=0;
-			if (pDevice->intvalue==255)
-				level=100;
-			else
-			{
-				level = pDevice->intvalue;
-			}
-			if (level==0)
-				lcmd.LIGHTING2.cmnd=light2_sOff;
-			else if (level==100)
-				lcmd.LIGHTING2.cmnd=light2_sOn;
-			else
-				lcmd.LIGHTING2.cmnd=light2_sSetLevel;
+			level = (level > 100) ? 100 : level;
+			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
 		}
+
+		// Update the lcmd with the correct level value.
 		lcmd.LIGHTING2.level=level;
 		lcmd.LIGHTING2.filler=0;
 		lcmd.LIGHTING2.rssi=12;

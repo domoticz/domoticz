@@ -8717,16 +8717,29 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
+
+			// ZWave allows 0 (for "off"), 255 (for "on") and 0-99 (in case of dimmers). 
 			if (dSubType == sTypeZWaveSwitch)
 			{
-				if (level > 99)
-					level = 99;
+				// Only allow off/on for normal ZWave switches
+				if (switchtype == STYPE_OnOff)
+					level = (level == 0) ? 0 : 255;
+
+				// Set command based on level value
+				if (level == 0)
+					lcmd.LIGHTING2.cmnd = light2_sOff;
+				else if (level == 255)
+					lcmd.LIGHTING2.cmnd = light2_sOn;
+				else
+				{
+					// For dimmers we only allow level 0-99
+					level = (level > 99) ? 99 : level;
+					lcmd.LIGHTING2.cmnd = light2_sSetLevel;
+				}								
 			}
-			else
-			{
-				if (level > 15)
-					level = 15;
-			}
+			else 
+				level = (level > 15) ? 15 : level;
+
 			lcmd.LIGHTING2.level=(unsigned char)level;
 			lcmd.LIGHTING2.filler=0;
 			lcmd.LIGHTING2.rssi=7;
