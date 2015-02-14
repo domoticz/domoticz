@@ -1791,7 +1791,7 @@ html,body{
 		padding-bottom: 22px;
 }
 #copyright {
-	position: absolute;
+	position: fixed;
 	bottom: 0;
 	height: 22px;
 	left: 0;
