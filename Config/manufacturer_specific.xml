@@ -647,6 +647,7 @@
 		<Product type="0024" id="0001" name="Floor Thermostat"/>
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="0100" id="0004" name="ZME_WCD2 Double Paddle Wall Controller" config="zwave.me/ZME_WCD2.xml"/>
+		<Product type="0100" id="0102" name="ZME_KFOB-S 4 Button Key Fob"/>
 		<Product type="0100" id="0200" name="Smoke Detector"/>
 		<Product type="0100" id="0201" name="Smoke Detector"/>
 		<Product type="0200" id="0001" name="iTemp Temperature Sensor" config="zwave.me/iTemp.xml"/>
