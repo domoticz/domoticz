@@ -152,9 +152,7 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 	{
-		szQuery.clear();
-		szQuery.str("");
-
+		szQuery = std::stringstream();
 		szQuery << 
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
 			"VALUES (" << m_HwdID << ",'" << int(1) << "'," << int(Unit) << "," << pTypeLimitlessLights << "," <<int(m_LEDType) << ",12,255,'" << devname << "',0,' ')";

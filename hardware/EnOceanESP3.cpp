@@ -1065,8 +1065,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						if (result.size()<1)
 						{
 							//Add it to the database
-							szQuery.clear();
-							szQuery.str("");
+							szQuery = std::stringstream();
 							szQuery << "INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (" << m_HwdID << ",'" << szDeviceID << "'," << manufacturer << "," << profile << "," << ttype << ")";
 							m_sql.query(szQuery.str());
 						}

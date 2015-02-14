@@ -115,8 +115,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
 		m_sql.query(szQuery.str());
 	}
@@ -157,8 +156,7 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
 		m_sql.query(szQuery.str());
 	}
@@ -195,8 +193,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 		m_sql.query(szQuery.str());
 	}
@@ -228,8 +225,7 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePressure) << ")";
 		m_sql.query(szQuery.str());
 	}

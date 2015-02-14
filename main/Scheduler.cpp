@@ -110,8 +110,7 @@ void CScheduler::ReloadSchedules()
 			else
 			{
 				//not used? delete it
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "DELETE FROM Timers WHERE (DeviceRowID == " << sd[0] << ")";
 				m_sql.query(szQuery.str());
 			}
@@ -119,8 +118,7 @@ void CScheduler::ReloadSchedules()
 	}
 
 	//Add Scene Timers
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness, T1.[Date] FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID";
 	result = m_sql.query(szQuery.str());
 	if (result.size() > 0)
@@ -170,8 +168,7 @@ void CScheduler::ReloadSchedules()
 	}
 
 	//Add Setpoint Timers
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name, T1.[Date] FROM SetpointTimers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
 	result = m_sql.query(szQuery.str());
 	if (result.size() > 0)

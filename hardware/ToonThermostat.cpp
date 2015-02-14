@@ -206,8 +206,7 @@ void CToonThermostat::SendTempSensor(const unsigned char Idx, const float Temp, 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
 		result=m_sql.query(szQuery.str());
 	}
@@ -244,8 +243,7 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 		result=m_sql.query(szQuery.str());
 	}
@@ -304,8 +302,7 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
 		result = m_sql.query(szQuery.str());
 	}

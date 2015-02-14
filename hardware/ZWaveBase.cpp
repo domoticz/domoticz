@@ -217,8 +217,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
 
 		//Set Name
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}
@@ -250,7 +249,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		//Check if we already exist
 		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeZWaveSwitch << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 		if (result.size() > 0)
 			return; //Already in the system
@@ -261,14 +260,14 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		memset(&lcmd, 0, sizeof(RBUF));
 		lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
 		lcmd.LIGHTING2.packettype = pTypeLighting2;
-		lcmd.LIGHTING2.subtype = sTypeAC;
+		lcmd.LIGHTING2.subtype = sTypeZWaveSwitch;
 		lcmd.LIGHTING2.seqnbr = pDevice->sequence_number;
 		lcmd.LIGHTING2.id1 = ID1;
 		lcmd.LIGHTING2.id2 = ID2;
 		lcmd.LIGHTING2.id3 = ID3;
 		lcmd.LIGHTING2.id4 = ID4;
 		lcmd.LIGHTING2.unitcode = unitcode;
-		int level = 15;
+		int level = 100;
 		if (pDevice->devType == ZDTYPE_SWITCH_NORMAL)
 		{
 			//simple on/off device
@@ -289,17 +288,16 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 			if (pDevice->intvalue == 0)
 				level = 0;
 			if (pDevice->intvalue == 255)
-				level = 15;
+				level = 100;
 			else
 			{
-				float flevel = (15.0f / 100.0f)*float(pDevice->intvalue);
-				level = round(flevel);
-				if (level > 15)
-					level = 15;
+				level = pDevice->intvalue;
+				if (level > 100)
+					level = 100;
 			}
 			if (level == 0)
 				lcmd.LIGHTING2.cmnd = light2_sOff;
-			else if (level == 15)
+			else if (level == 100)
 				lcmd.LIGHTING2.cmnd = light2_sOn;
 			else
 				lcmd.LIGHTING2.cmnd = light2_sSetLevel;
@@ -311,8 +309,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
 
 		//Set Name
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}
@@ -355,14 +352,14 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		memset(&lcmd,0,sizeof(RBUF));
 		lcmd.LIGHTING2.packetlength=sizeof(lcmd.LIGHTING2)-1;
 		lcmd.LIGHTING2.packettype=pTypeLighting2;
-		lcmd.LIGHTING2.subtype=sTypeAC;
+		lcmd.LIGHTING2.subtype=sTypeZWaveSwitch;
 		lcmd.LIGHTING2.seqnbr=pDevice->sequence_number;
 		lcmd.LIGHTING2.id1=ID1;
 		lcmd.LIGHTING2.id2=ID2;
 		lcmd.LIGHTING2.id3=ID3;
 		lcmd.LIGHTING2.id4=ID4;
 		lcmd.LIGHTING2.unitcode=1;
-		int level=15;
+		int level=100;
 		if (pDevice->devType==ZDTYPE_SWITCH_NORMAL)
 		{
 			//simple on/off device
@@ -373,7 +370,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			}
 			else
 			{
-				level=15;
+				level=100;
 				lcmd.LIGHTING2.cmnd=light2_sOn;
 			}
 		}
@@ -383,17 +380,14 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			if (pDevice->intvalue==0)
 				level=0;
 			if (pDevice->intvalue==255)
-				level=15;
+				level=100;
 			else
 			{
-				float flevel=(15.0f/100.0f)*float(pDevice->intvalue);
-				level=round(flevel);
-				if (level>15)
-					level=15;
+				level = pDevice->intvalue;
 			}
 			if (level==0)
 				lcmd.LIGHTING2.cmnd=light2_sOff;
-			else if (level==15)
+			else if (level==100)
 				lcmd.LIGHTING2.cmnd=light2_sOn;
 			else
 				lcmd.LIGHTING2.cmnd=light2_sSetLevel;
@@ -839,7 +833,7 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				svalue=255;
 			else
 			{
-				float fvalue=(100.0f/15.0f)*float(pSen->LIGHTING2.level);
+				float fvalue=pSen->LIGHTING2.level;
 				if (fvalue>99.0f)
 					fvalue=99.0f; //99 is fully on
 				svalue=round(fvalue);

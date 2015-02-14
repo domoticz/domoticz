@@ -2887,10 +2887,8 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT ID FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
 	result = m_sql.query(szQuery.str());
-	szQuery.clear();
-	szQuery.str("");
-
-	std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
+	szQuery = std::stringstream();
+		std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
 
 	if (result.size() < 1)
 	{

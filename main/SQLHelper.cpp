@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 57
+#define DB_VERSION 58
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -1044,8 +1044,7 @@ bool CSQLHelper::OpenDatabase()
 			if (!result.empty())
 			{
 				int hwId = atoi(result[0][0].c_str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE DeviceStatus SET HardwareID=" << hwId << " WHERE (HardwareID=1000)";
 				m_sql.query(szQuery.str());
 			}
@@ -1080,15 +1079,13 @@ bool CSQLHelper::OpenDatabase()
 				if (pwd.size() != 32)
 				{
 					pHash = GenerateMD5Hash(base64_decode(pwd));
-					szQuery2.clear();
-					szQuery2.str("");
+					szQuery2 = std::stringstream();
 					szQuery2 << "UPDATE Preferences SET sValue='" << pHash << "' WHERE (Key='WebPassword')";
 					m_sql.query(szQuery2.str());
 				}
 			}
 
-			szQuery2.clear();
-			szQuery2.str("");
+			szQuery2 = std::stringstream();
 			szQuery2 << "SELECT sValue FROM Preferences WHERE (Key='SecPassword')";
 			result2 = m_sql.query(szQuery2.str());
 			if (result2.size() > 0)
@@ -1097,15 +1094,13 @@ bool CSQLHelper::OpenDatabase()
 				if (pwd.size() != 32)
 				{
 					pHash = GenerateMD5Hash(base64_decode(pwd));
-					szQuery2.clear();
-					szQuery2.str("");
+					szQuery2 = std::stringstream();
 					szQuery2 << "UPDATE Preferences SET sValue='" << pHash << "' WHERE (Key='SecPassword')";
 					m_sql.query(szQuery2.str());
 				}
 			}
 
-			szQuery2.clear();
-			szQuery2.str("");
+			szQuery2 = std::stringstream();
 			szQuery2 << "SELECT sValue FROM Preferences WHERE (Key='ProtectionPassword')";
 			result2 = m_sql.query(szQuery2.str());
 			if (result2.size() > 0)
@@ -1114,14 +1109,12 @@ bool CSQLHelper::OpenDatabase()
 				if (pwd.size() != 32)
 				{
 					pHash = GenerateMD5Hash(base64_decode(pwd));
-					szQuery2.clear();
-					szQuery2.str("");
+					szQuery2 = std::stringstream();
 					szQuery2 << "UPDATE Preferences SET sValue='" << pHash << "' WHERE (Key='ProtectionPassword')";
 					m_sql.query(szQuery2.str());
 				}
 			}
-			szQuery2.clear();
-			szQuery2.str("");
+			szQuery2 = std::stringstream();
 			szQuery2 << "SELECT ID, Password FROM Users";
 			result2 = m_sql.query(szQuery2.str());
 			for (itt = result2.begin(); itt != result2.end(); ++itt)
@@ -1131,15 +1124,13 @@ bool CSQLHelper::OpenDatabase()
 				if (pwd.size() != 32)
 				{
 					pHash = GenerateMD5Hash(base64_decode(pwd));
-					szQuery2.clear();
-					szQuery2.str("");
+					szQuery2 = std::stringstream();
 					szQuery2 << "UPDATE Users SET Password='" << pHash << "' WHERE (ID=" << sd[0] << ")";
 					m_sql.query(szQuery2.str());
 				}
 			}
 
-			szQuery2.clear();
-			szQuery2.str("");
+			szQuery2 = std::stringstream();
 			szQuery2 << "SELECT ID, Password FROM Hardware WHERE ([Type]==" << HTYPE_Domoticz << ")";
 			result2 = m_sql.query(szQuery2.str());
 			for (itt = result2.begin(); itt != result2.end(); ++itt)
@@ -1149,8 +1140,7 @@ bool CSQLHelper::OpenDatabase()
 				if (pwd.size() != 32)
 				{
 					pHash = GenerateMD5Hash(pwd);
-					szQuery2.clear();
-					szQuery2.str("");
+					szQuery2 = std::stringstream();
 					szQuery2 << "UPDATE Hardware SET Password='" << pHash << "' WHERE (ID=" << sd[0] << ")";
 					m_sql.query(szQuery2.str());
 				}
@@ -1176,9 +1166,25 @@ bool CSQLHelper::OpenDatabase()
 						<< sd[1] << ";" << sd[2] << ";"
 						<< sd[1] << ";" << sd[2] << ";"
 						<< sd[1] << ";" << sd[2];
-					szQuery2.clear();
-					szQuery2.str("");
+					szQuery2 = std::stringstream();
 					szQuery2 << "UPDATE Hardware SET Address='" << szAddress.str() << "', Mode1=0, Mode2=0, Mode3=0, Mode4=0 WHERE (ID=" << sd[0] << ")";
+					query(szQuery2.str());
+				}
+			}
+		}
+		if (dbversion < 58)
+		{
+			//Patch for new ZWave light sensor type
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			result = query("SELECT ID FROM Hardware WHERE ([Type] = 21) OR ([Type] = 21)");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					szQuery2 = std::stringstream();
+					szQuery2 << "UPDATE DeviceStatus SET SubType=" << sTypeZWaveSwitch << " WHERE ([Type]=" << pTypeLighting2 << ") AND (SubType=" << sTypeAC << ") AND (HardwareID=" << result[0][0] << ")";
 					query(szQuery2.str());
 				}
 			}
@@ -1270,8 +1276,7 @@ bool CSQLHelper::OpenDatabase()
         {
         	std::stringstream szQuery;
 
-        	szQuery.clear();
-        	szQuery.str("");
+			szQuery = std::stringstream();
         	szQuery << "SELECT ID,Mode1 FROM Hardware WHERE (Type=" << HTYPE_Rego6XX << ")";
         	result=query(szQuery.str());
         	if (result.size()>0)
@@ -2773,91 +2778,81 @@ bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::strin
 	return true;
 }
 
-void CSQLHelper::UpdatePreferencesVar(const char *Key, const char* sValue)
+void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const std::string &sValue)
 {
 	UpdatePreferencesVar(Key, 0, sValue);
 }
 
-void CSQLHelper::UpdatePreferencesVar(const char *Key, const int nValue)
+void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const int nValue)
 {
 	UpdatePreferencesVar(Key, nValue, "");
 }
 
-void CSQLHelper::UpdatePreferencesVar(const char *Key, const int nValue, const char* sValue)
+void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const int nValue, const std::string &sValue)
 {
 	if (!m_dbase)
 		return;
 
-	char szTmp[600];
-
-	unsigned long long ID=0;
+	std::stringstream sstr;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ROWID FROM Preferences WHERE (Key='%s')",Key);
-	result=query(szTmp);
-	if (result.size()==0)
+	sstr << "SELECT ROWID FROM Preferences WHERE (Key='" << Key << "')";
+	result = query(sstr.str());
+	if (result.size() == 0)
 	{
 		//Insert
-		sprintf(szTmp,
-			"INSERT INTO Preferences (Key, nValue, sValue) "
-			"VALUES ('%s','%d','%s')",
-			Key,
-			nValue,sValue);
-		result=query(szTmp);
+		sstr = std::stringstream();
+		sstr << "INSERT INTO Preferences (Key, nValue, sValue) VALUES ('" << Key << "','" << nValue << "','" << sValue << "')";
+		result = query(sstr.str());
 	}
 	else
 	{
 		//Update
-		std::stringstream s_str( result[0][0] );
-		s_str >> ID;
-
-		time_t now = time(0);
-		struct tm ltime;
-		localtime_r(&now,&ltime);
-
-		sprintf(szTmp,
-			"UPDATE Preferences SET Key='%s', nValue=%d, sValue='%s' "
-			"WHERE (ROWID = %llu)",
-			Key,
-			nValue,sValue,
-			ID);
-		result = query(szTmp);
+		sstr = std::stringstream();
+		sstr << "UPDATE Preferences SET Key='" << Key << "', nValue=" << nValue << ", sValue='" << sValue << "' WHERE (ROWID = " << result[0][0] << ")";
+		result = query(sstr.str());
 	}
 }
 
-bool CSQLHelper::GetPreferencesVar(const char *Key, std::string &sValue)
+bool CSQLHelper::GetPreferencesVar(const std::string &Key, std::string &sValue)
 {
 	if (!m_dbase)
 		return false;
 
-	char szTmp[200];
+	std::stringstream sstr;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT sValue FROM Preferences WHERE (Key='%s')",Key);
-	result=query(szTmp);
-	if (result.size()<1)
+	sstr << "SELECT sValue FROM Preferences WHERE (Key='" << Key << "')";
+	result = query(sstr.str());
+	if (result.size() < 1)
 		return false;
-	std::vector<std::string> sd=result[0];
-	sValue=sd[0];
+	std::vector<std::string> sd = result[0];
+	sValue = sd[0];
 	return true;
 }
 
-bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue, std::string &sValue)
+bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue, std::string &sValue)
 {
 	if (!m_dbase)
 		return false;
 
-	char szTmp[200];
+	std::stringstream sstr;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT nValue, sValue FROM Preferences WHERE (Key='%s')",Key);
-	result=query(szTmp);
-	if (result.size()<1)
+	sstr << "SELECT nValue, sValue FROM Preferences WHERE (Key='" << Key << "')";
+	result = query(sstr.str());
+	if (result.size() < 1)
 		return false;
-	std::vector<std::string> sd=result[0];
-	nValue=atoi(sd[0].c_str());
-	sValue=sd[1];
+	std::vector<std::string> sd = result[0];
+	nValue = atoi(sd[0].c_str());
+	sValue = sd[1];
 	return true;
+}
+
+bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue)
+{
+	std::string sValue;
+	return GetPreferencesVar(Key, nValue, sValue);
 }
 
 int CSQLHelper::GetLastBackupNo(const char *Key, int &nValue)
@@ -2913,13 +2908,6 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 			ID);
 		result = query(szTmp);
 	}
-}
-
-
-bool CSQLHelper::GetPreferencesVar(const char *Key, int &nValue)
-{
-	std::string sValue;
-	return GetPreferencesVar(Key, nValue, sValue);
 }
 
 void CSQLHelper::UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5)
@@ -3558,8 +3546,7 @@ bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &P
 	if (result.size()>0)
 		return false;//already there!
 
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, Priority) VALUES ('" << DevIdx << "','" << Param << "','" << Priority << "')";
 	result=query(szQuery.str());
 	return true;
@@ -3570,8 +3557,7 @@ bool CSQLHelper::RemoveDeviceNotifications(const std::string &DevIdx)
 	std::vector<std::vector<std::string> > result;
 
 	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "DELETE FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
 	result=query(szQuery.str());
 	return true;
@@ -3582,8 +3568,7 @@ bool CSQLHelper::RemoveNotification(const std::string &ID)
 	std::vector<std::vector<std::string> > result;
 
 	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "DELETE FROM Notifications WHERE (ID==" << ID << ")";
 	result=query(szQuery.str());
 	return true;
@@ -3599,8 +3584,7 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 	std::vector<std::vector<std::string> > result;
 
 	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "SELECT ID, Params, Priority, LastSend FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
@@ -3661,8 +3645,6 @@ bool CSQLHelper::HasNotifications(const unsigned long long DevIdx)
 	std::vector<std::vector<std::string> > result;
 
 	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
 	szQuery << "SELECT COUNT(*) FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
@@ -3687,8 +3669,6 @@ bool CSQLHelper::HasTimers(const unsigned long long Idx)
 	std::vector<std::vector<std::string> > result;
 
 	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
 	szQuery << "SELECT COUNT(*) FROM Timers WHERE (DeviceRowID==" << Idx << ") AND (TimerPlan==" << m_ActiveTimerPlan << ")";
 	result=query(szQuery.str());
 	if (result.size() != 0)
@@ -3698,8 +3678,7 @@ bool CSQLHelper::HasTimers(const unsigned long long Idx)
 		if (totaltimers > 0)
 			return true;
 	}
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "SELECT COUNT(*) FROM SetpointTimers WHERE (DeviceRowID==" << Idx << ") AND (TimerPlan==" << m_ActiveTimerPlan << ")";
 	result = query(szQuery.str());
 	if (result.size() != 0)
@@ -3727,8 +3706,6 @@ bool CSQLHelper::HasSceneTimers(const unsigned long long Idx)
 	std::vector<std::vector<std::string> > result;
 
 	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
 	szQuery << "SELECT COUNT(*) FROM SceneTimers WHERE (SceneRowID==" << Idx << ") AND (TimerPlan==" << m_ActiveTimerPlan << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
@@ -5899,8 +5876,6 @@ void CSQLHelper::CheckAndUpdateDeviceOrder()
 	std::stringstream szQuery;
 
 	//Get All ID's where Order=0
-	szQuery.clear();
-	szQuery.str("");
 	szQuery << "SELECT ROWID FROM DeviceStatus WHERE ([Order]==0)";
 	result=query(szQuery.str());
 	if (result.size()>0)
@@ -5910,8 +5885,7 @@ void CSQLHelper::CheckAndUpdateDeviceOrder()
 		{
 			std::vector<std::string> sd=*itt;
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "UPDATE DeviceStatus SET [Order] = (SELECT MAX([Order]) FROM DeviceStatus)+1 WHERE (ROWID == " << sd[0] << ")";
 			query(szQuery.str());
 		}
@@ -5924,8 +5898,6 @@ void CSQLHelper::CheckAndUpdateSceneDeviceOrder()
 	std::stringstream szQuery;
 
 	//Get All ID's where Order=0
-	szQuery.clear();
-	szQuery.str("");
 	szQuery << "SELECT ROWID FROM SceneDevices WHERE ([Order]==0)";
 	result=query(szQuery.str());
 	if (result.size()>0)
@@ -5935,8 +5907,7 @@ void CSQLHelper::CheckAndUpdateSceneDeviceOrder()
 		{
 			std::vector<std::string> sd=*itt;
 
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			szQuery << "UPDATE SceneDevices SET [Order] = (SELECT MAX([Order]) FROM SceneDevices)+1 WHERE (ROWID == " << sd[0] << ")";
 			query(szQuery.str());
 		}
@@ -5982,8 +5953,6 @@ bool CSQLHelper::DoesSceneByNameExits(const std::string &SceneName)
 	std::stringstream szQuery;
 
 	//Get All ID's where Order=0
-	szQuery.clear();
-	szQuery.str("");
 	szQuery << "SELECT ID FROM Scenes WHERE (Name=='" << SceneName << "')";
 	result=query(szQuery.str());
 	return (result.size()>0);
@@ -6033,8 +6002,7 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 	unsigned char orgValue=(unsigned char)atoi(result[0][0].c_str());
 	unsigned char newValue=orgValue;
 
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 
 	szQuery << "SELECT a.ID, a.DeviceID, a.Unit, a.Type, a.SubType, a.SwitchType, a.nValue, a.sValue FROM DeviceStatus AS a, SceneDevices as b WHERE (a.ID == b.DeviceRowID) AND (b.SceneRowID == " << Idx << ")";
 	result=query(szQuery.str());
@@ -6095,8 +6063,7 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 	if (newValue!=orgValue)
 	{
 		//Set new Scene status
-		szQuery.clear();
-		szQuery.str("");
+		szQuery = std::stringstream();
 
 		szQuery << "UPDATE Scenes SET nValue=" << int(newValue) << " WHERE (ID == " << Idx << ")";
 		result=query(szQuery.str());
@@ -6526,19 +6493,16 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd[0];
 			sstr >> ID1;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd[1];
 			sstr >> ID2;
 			if (ID2>ID1)
 			{
 				std::string szDate=sd[2];
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT date('" << szDate << "','+1 day')";
 				std::vector<std::vector<std::string> > result2;
 				result2=query(szQuery.str());
@@ -6546,12 +6510,10 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 				std::string szDateNew=result2[0][0];
 
 				//Check if Date+1 exists, if yes, remove current double value
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT RowID FROM " << TableName << " WHERE (Date='" << szDateNew << "') AND (RowID==" << sd[1] << ")";
 				result2=query(szQuery.str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				if (result2.size()>0)
 				{
 					//Delete row
@@ -6598,20 +6560,16 @@ void CSQLHelper::FixDaylightSaving()
 		{
 			std::vector<std::string> sd1=*itt;
 
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[0];
 			sstr >> ID1;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[1];
 			sstr >> ID2;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[2];
 			sstr >> Value1;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[3];
 			sstr >> Value2;
 			if (ID2>ID1)
@@ -6622,8 +6580,7 @@ void CSQLHelper::FixDaylightSaving()
 					ValueDest=Value2;
 
 				std::string szDate=sd1[4];
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT date('" << szDate << "','+1 day')";
 				std::vector<std::vector<std::string> > result2;
 				result2=query(szQuery.str());
@@ -6631,12 +6588,10 @@ void CSQLHelper::FixDaylightSaving()
 				std::string szDateNew=result2[0][0];
 
 				//Check if Date+1 exists, if yes, remove current double value
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT RowID FROM Meter_Calendar WHERE (Date='" << szDateNew << "') AND (RowID==" << sd1[1] << ")";
 				result2=query(szQuery.str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				if (result2.size()>0)
 				{
 					//Delete Row
@@ -6654,8 +6609,7 @@ void CSQLHelper::FixDaylightSaving()
 	}
 
 	//Last (but not least) MultiMeter_Calendar
-	szQuery.clear();
-	szQuery.str("");
+	szQuery = std::stringstream();
 	szQuery << "SELECT t.RowID, u.RowID, t.Value1, t.Value2, t.Value3, t.Value4, t.Value5, t.Value6, u.Value1, u.Value2, u.Value3, u.Value4, u.Value5, u.Value6, t.Date from MultiMeter_Calendar as t, MultiMeter_Calendar as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]";
 	result=query(szQuery.str());
 	if (result.size()>0)
@@ -6688,62 +6642,48 @@ void CSQLHelper::FixDaylightSaving()
 		{
 			std::vector<std::string> sd1=*itt;
 
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[0];
 			sstr >> ID1;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[1];
 			sstr >> ID2;
 
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[2];
 			sstr >> tValue1;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[3];
 			sstr >> tValue2;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[4];
 			sstr >> tValue3;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[5];
 			sstr >> tValue4;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[6];
 			sstr >> tValue5;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[7];
 			sstr >> tValue6;
 
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[8];
 			sstr >> uValue1;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[9];
 			sstr >> uValue2;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[10];
 			sstr >> uValue3;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[11];
 			sstr >> uValue4;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[12];
 			sstr >> uValue5;
-			sstr.clear();
-			sstr.str("");
+			sstr = std::stringstream();
 			sstr << sd1[13];
 			sstr >> uValue6;
 
@@ -6775,8 +6715,7 @@ void CSQLHelper::FixDaylightSaving()
 					ValueDest6=uValue6;
 
 				std::string szDate=sd1[14];
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT date('" << szDate << "','+1 day')";
 				std::vector<std::vector<std::string> > result2;
 				result2=query(szQuery.str());
@@ -6784,12 +6723,10 @@ void CSQLHelper::FixDaylightSaving()
 				std::string szDateNew=result2[0][0];
 
 				//Check if Date+1 exists, if yes, remove current double value
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT RowID FROM MultiMeter_Calendar WHERE (Date='" << szDateNew << "') AND (RowID==" << sd1[1] << ")";
 				result2=query(szQuery.str());
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				if (result2.size()>0)
 				{
 					//Delete Row
@@ -7113,16 +7050,14 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 			}
 
 			//All good, now lets add it to the database
-			szQuery.clear();
-			szQuery.str("");
+			szQuery = std::stringstream();
 			if (!bIsDuplicate)
 			{
 				szQuery << "INSERT INTO CustomImages (Base,Name, Description) VALUES ('" << IconBase << "', '" << IconName << "', '" << IconDesc << "')";
 				result = query(szQuery.str());
 
 				//Get our Database ROWID
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "SELECT ID FROM CustomImages WHERE Base='" << IconBase << "'";
 				result = query(szQuery.str());
 				if (result.size() == 0)
@@ -7158,8 +7093,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 				std::string TableField = iItt->first;
 				std::string IconFile = iItt->second;
 
-				szQuery.clear();
-				szQuery.str("");
+				szQuery = std::stringstream();
 				szQuery << "UPDATE CustomImages SET " << TableField << " = ? WHERE ID=" << RowID;
 
 				sqlite3_stmt *stmt = NULL;

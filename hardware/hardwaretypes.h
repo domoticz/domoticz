@@ -78,6 +78,7 @@
 //Z-Wave
 //#define pTypeENERGY 0x5A
 #define sTypeZWaveUsage 0xA0
+#define sTypeZWaveSwitch 0xA1
 
 //types for evohome
 #define pTypeEvohome 0x45 
