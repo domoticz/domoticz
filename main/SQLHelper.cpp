@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 58
+#define DB_VERSION 60
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -354,7 +354,9 @@ const char *sqlCreateSceneDevices =
 "[DeviceRowID] BIGINT NOT NULL, "
 "[Cmd] INTEGER DEFAULT 1, "
 "[Level] INTEGER DEFAULT 100, "
-"[Hue] INTEGER DEFAULT 0);";
+"[Hue] INTEGER DEFAULT 0, "
+"[OnDelay] INTEGER DEFAULT 0, "
+"[OffDelay] INTEGER DEFAULT 0);";
 
 const char *sqlCreateSceneDeviceTrigger =
 	"CREATE TRIGGER IF NOT EXISTS scenedevicesupdate AFTER INSERT ON SceneDevices\n"
@@ -1200,6 +1202,16 @@ bool CSQLHelper::OpenDatabase()
 					query(szQuery2.str());
 				}
 			}
+		}
+		if (dbversion < 59)
+		{
+			query("ALTER TABLE SceneDevices ADD COLUMN [Delay] INTEGER default 0");
+			
+		}
+		if (dbversion < 60)
+		{
+			query("ALTER TABLE SceneDevices ADD COLUMN [OnDelay] INTEGER default 0");
+			query("ALTER TABLE SceneDevices ADD COLUMN [OffDelay] INTEGER default 0");
 		}
 	}
 	else if (bNewInstall)

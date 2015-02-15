@@ -70,6 +70,8 @@
 								<th align="left" data-i18n="Name">Name</th>
 								<th align="right" width="100" id="CommandHeader" data-i18n="Command">Command</th>
 								<th align="right" width="70" data-i18n="Level">Level</th>
+								<th align="center" width="90" data-i18n="On Delay">On Delay</th>
+								<th align="center" width="90" data-i18n="Off Delay">Off Delay</th>
 								<th align="center" width="40" data-i18n="Order">Order</th>
 						</tr>
 				</thead>
@@ -130,6 +132,14 @@
 					<option value="100">100%</option>
 					</select>
 				</td>
+			</tr>
+			<tr  id="DelayOnDiv">
+				<td align="right" style="width:80px"><label for="ondelaytime"><span data-i18n="On Delay"></span>:</label></td>
+				<td><input type="text" id="ondelaytime" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds"></span>)</td>
+			</tr>
+			<tr  id="DelayOffDiv">
+				<td align="right" style="width:80px"><label for="offdelaytime"><span data-i18n="Off Delay"></span>:</label></td>
+				<td><input type="text" id="offdelaytime" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds"></span>)</td>
 			</tr>
 			<tr id="LedColor">
 				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
