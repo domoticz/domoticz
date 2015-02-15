@@ -493,7 +493,7 @@ void CScheduler::CheckSchedules()
 									ilevel = int(fLevel);
 								}
 							}
-							if (!m_mainworker.SwitchLight(itt->RowID, switchcmd, ilevel, itt->Hue))
+							if (!m_mainworker.SwitchLight(itt->RowID, switchcmd, ilevel, itt->Hue,false,0))
 							{
 								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %llu, Time: %s", itt->RowID, asctime(&ltime));
 							}

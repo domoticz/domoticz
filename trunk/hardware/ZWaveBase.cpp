@@ -219,7 +219,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		//Set Name
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
+		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "', SwitchType=7 WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}
 	else
@@ -295,10 +295,12 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
 
+		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
+
 		//Set Name
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
+		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "', SwitchType=" << SwitchType << " WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}
 }
@@ -808,10 +810,7 @@ void ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				svalue=255;
 			else
 			{
-				float fvalue=pSen->LIGHTING2.level;
-				if (fvalue>99.0f)
-					fvalue=99.0f; //99 is fully on
-				svalue=round(fvalue);
+				svalue = (pSen->LIGHTING2.level<99) ? pSen->LIGHTING2.level : 99;
 			}
 			SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 		}

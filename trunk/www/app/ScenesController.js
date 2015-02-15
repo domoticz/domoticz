@@ -186,9 +186,11 @@ define(['app'], function (app) {
 					}
 				}
 			});
-			
+			var ondelay=$("#scenecontent #ondelaytime").val();
+			var offdelay=$("#scenecontent #offdelaytime").val();
+
 			$.ajax({
-				 url: "json.htm?type=command&param=addscenedevice&idx=" + $.devIdx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&hue=" + hue,
+				 url: "json.htm?type=command&param=addscenedevice&idx=" + $.devIdx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&hue=" + hue + "&ondelay=" + ondelay+ "&offdelay=" + offdelay,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -363,11 +365,15 @@ define(['app'], function (app) {
 							"RealIdx": item.DevRealIdx,
 							"Level": item.Level,
 							"Hue": item.Hue,
+							"OnDelay": item.OnDelay,
+							"OffDelay": item.OffDelay,
 							"Order": item.Order,
 							"0": item.Name,
 							"1": commandbtns,
 							"2": levelstr,
-							"3": updownImg
+							"3": item.OnDelay,
+							"4": item.OffDelay,
+							"5": updownImg
 						} );
 				});
 			  }
@@ -388,14 +394,8 @@ define(['app'], function (app) {
 						
 						$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3");
 						
-						if ($.isScene==false) {
-							$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3-dis");
-							$('#scenecontent #delclr #updatedelete').hide();
-						}
-						else {
-							$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3");
-							$('#scenecontent #delclr #updatedelete').show();
-						}
+						$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3");
+						$('#scenecontent #delclr #updatedelete').show();
 						
 						var anSelected = fnGetSelected( oTable );
 						if ( anSelected.length !== 0 ) {
@@ -413,11 +413,11 @@ define(['app'], function (app) {
 								$("#scenecontent #combocommand").val(0);
 							}
 							OnSelChangeDevice();
-							var level=data["Level"];
-
-							$("#scenecontent #combolevel").val(level);
 							
+							var level=data["Level"];
+							$("#scenecontent #combolevel").val(level);
 							$('#scenecontent #Brightness').val(level&255);
+							
 							var hue=data["Hue"];
 							var sat=100;
 							if (hue==1000) {
@@ -434,6 +434,9 @@ define(['app'], function (app) {
 							$("#scenecontent #optionsWhite").prop('checked',!(sat==100));
 
 							$('#scenecontent #picker').colpickSetColor(cHSB);
+							
+							$("#scenecontent #ondelaytime").val(data["OnDelay"]);
+							$("#scenecontent #offdelaytime").val(data["OffDelay"]);
 						}
 				}
 			}); 
@@ -457,6 +460,8 @@ define(['app'], function (app) {
 			
 			var level=100;
 			var hue=0;
+			var ondelay=$("#scenecontent #ondelaytime").val();
+			var offdelay=$("#scenecontent #offdelaytime").val();
 
 			$.each($.LightsAndSwitches, function(i,item){
 				if (item.idx==DeviceIdx) {
@@ -478,7 +483,7 @@ define(['app'], function (app) {
 			});
 
 			$.ajax({
-				 url: "json.htm?type=command&param=updatescenedevice&idx=" + idx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&hue=" + hue,
+				 url: "json.htm?type=command&param=updatescenedevice&idx=" + idx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&hue=" + hue + "&ondelay=" + ondelay + "&offdelay=" + offdelay,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {

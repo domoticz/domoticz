@@ -8723,19 +8723,26 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			{
 				// Only allow off/on for normal ZWave switches
 				if (switchtype == STYPE_OnOff)
+				{
 					level = (level == 0) ? 0 : 255;
-
-				// Set command based on level value
-				if (level == 0)
-					lcmd.LIGHTING2.cmnd = light2_sOff;
-				else if (level == 255)
-					lcmd.LIGHTING2.cmnd = light2_sOn;
+					lcmd.LIGHTING2.cmnd = (lcmd.LIGHTING2.cmnd == light2_sOn) ? light2_sOn : light2_sOff;
+				}
 				else
 				{
-					// For dimmers we only allow level 0-99
-					level = (level > 99) ? 99 : level;
-					lcmd.LIGHTING2.cmnd = light2_sSetLevel;
-				}								
+					if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)
+					{
+						// Set command based on level value
+						if (level == 0)
+							lcmd.LIGHTING2.cmnd = light2_sOff;
+						else if (level == 255)
+							lcmd.LIGHTING2.cmnd = light2_sOn;
+						else
+						{
+							// For dimmers we only allow level 0-99
+							level = (level > 99) ? 99 : level;
+						}
+					}
+				}
 			}
 			else 
 				level = (level > 15) ? 15 : level;
@@ -9340,21 +9347,21 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	return true;
 }
 
-bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue, const std::string &ooc)
+bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue, const std::string &ooc, const int ExtraDelay)
 {
 	unsigned long long ID;
 	std::stringstream s_str(idx);
 	s_str >> ID;
 
-	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()), atoi(ooc.c_str())!=0);
+	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()), atoi(ooc.c_str())!=0, ExtraDelay);
 }
 
-bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcmd, int level, int hue, bool ooc)
+bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue FROM DeviceStatus WHERE (ID == " << idx << ")";
+	szQuery << "SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,Name FROM DeviceStatus WHERE (ID == " << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -9372,9 +9379,13 @@ bool MainWorker::SwitchLight(unsigned long long idx, const std::string &switchcm
 			return true;//FIXME no return code for already set
 	}
 	//Check if we have an On-Delay, if yes, add it to the tasker
-	if ((bIsOn)&&(iOnDelay != 0))
+	if (((bIsOn) && (iOnDelay != 0)) || ExtraDelay)
 	{
-		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iOnDelay, idx, switchcmd, level, hue, "Switch with On-Delay"));
+		if (ExtraDelay != 0)
+		{
+			_log.Log(LOG_NORM, "Delaying switch [%s] action for %d seconds", result[0][8].c_str(), ExtraDelay);
+		}
+		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iOnDelay + ExtraDelay, idx, switchcmd, level, hue, "Switch with Delay"));
 		return true;
 	}
 	else
@@ -9815,7 +9826,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	std::stringstream szQuery;
-	szQuery << "SELECT DeviceRowID, Cmd, Level, Hue FROM SceneDevices WHERE (SceneRowID == " << idx << ")  ORDER BY [Order] ASC";
+	szQuery << "SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == " << idx << ")  ORDER BY [Order] ASC";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -9827,6 +9838,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		int cmd=atoi(sd[1].c_str());
 		int level=atoi(sd[2].c_str());
 		int hue=atoi(sd[3].c_str());
+		int ondelay = atoi(sd[4].c_str());
+		int offdelay = atoi(sd[5].c_str());
 		std::vector<std::vector<std::string> > result2;
 		std::stringstream szQuery2;
 		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, Name FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
@@ -9890,12 +9903,13 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			int idx = atoi(sd[0].c_str());
 			if (switchtype != STYPE_PushOn)
 			{
-				SwitchLight(idx, intswitchcmd, ilevel, hue);
+				int delay = (intswitchcmd == "Off") ? offdelay : ondelay;
+				SwitchLight(idx, intswitchcmd, ilevel, hue, false, delay);
 				//SwitchLightInt(sd2,intswitchcmd,ilevel,hue,false);
 			}
 			else
 			{
-				SwitchLight(idx, "On", ilevel, hue);
+				SwitchLight(idx, "On", ilevel, hue, false, ondelay);
 				//SwitchLightInt(sd2,"On",ilevel,hue,false);
 			}
 			sleep_milliseconds(50);

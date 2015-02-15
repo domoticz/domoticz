@@ -989,6 +989,10 @@ namespace http {
 					password = GenerateMD5Hash(password);
 				}
 			}
+			else if (htype == HTYPE_S0SmartMeter)
+			{
+				address = "0;1000;0;1000;0;1000;0;1000;0;1000";
+			}
 
 			sprintf(szTmp,
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d,%d)",
@@ -3948,6 +3952,8 @@ namespace http {
 				std::string devidx = m_pWebEm->FindValue("devidx");
 				std::string isscene = m_pWebEm->FindValue("isscene");
 				int command = atoi(m_pWebEm->FindValue("command").c_str());
+				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
+				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
 
 				if (
 					(idx == "") ||
@@ -3996,22 +4002,26 @@ namespace http {
 					if (isscene == "true")
 					{
 						sprintf(szTmp,
-							"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level, Hue) VALUES ('%s','%s',%d,%d,%d)",
+							"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level, Hue, OnDelay, OffDelay) VALUES ('%s','%s',%d,%d,%d,%d,%d)",
 							devidx.c_str(),
 							idx.c_str(),
 							command,
 							level,
-							hue
+							hue,
+							ondelay,
+							offdelay
 							);
 					}
 					else
 					{
 						sprintf(szTmp,
-							"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level,Hue) VALUES ('%s','%s',%d,%d)",
+							"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level, Hue, OnDelay, OffDelay) VALUES ('%s','%s',%d,%d,%d,%d)",
 							devidx.c_str(),
 							idx.c_str(),
 							level,
-							hue
+							hue,
+							ondelay,
+							offdelay
 							);
 					}
 					result = m_sql.query(szTmp);
@@ -4023,11 +4033,12 @@ namespace http {
 				std::string devidx = m_pWebEm->FindValue("devidx");
 				std::string isscene = m_pWebEm->FindValue("isscene");
 				int command = atoi(m_pWebEm->FindValue("command").c_str());
+				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
+				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
 
 				if (
 					(idx == "") ||
-					(devidx == "") ||
-					(isscene != "true")
+					(devidx == "")
 					)
 					return;
 				int level = atoi(m_pWebEm->FindValue("level").c_str());
@@ -4036,7 +4047,7 @@ namespace http {
 				root["title"] = "UpdateSceneDevice";
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << ", Hue=" << hue << " WHERE (ID == " << idx << ")";
+				szQuery << "UPDATE SceneDevices SET Cmd=" << command << ", Level=" << level << ", Hue=" << hue << ", OnDelay=" << ondelay << ", OffDelay=" << offdelay << "  WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
 			else if (cparam == "deletescenedevice")
@@ -4124,7 +4135,7 @@ namespace http {
 
 				std::vector<std::vector<std::string> > result;
 				std::stringstream szQuery;
-				szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Hue FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]";
+				szQuery << "SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Hue, a.OnDelay, a.OffDelay FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='" << idx << "') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
 				{
@@ -4139,6 +4150,8 @@ namespace http {
 						root["result"][ii]["DevID"] = sd[2];
 						root["result"][ii]["DevRealIdx"] = sd[9];
 						root["result"][ii]["Order"] = atoi(sd[10].c_str());
+						root["result"][ii]["OnDelay"] = atoi(sd[12].c_str());
+						root["result"][ii]["OffDelay"] = atoi(sd[13].c_str());
 
 						unsigned char devType = atoi(sd[3].c_str());
 						unsigned char subType = atoi(sd[4].c_str());
@@ -6481,7 +6494,7 @@ namespace http {
 					}
 				}
 
-				if (m_mainworker.SwitchLight(idx,switchcmd,level,"-1",onlyonchange)==true)
+				if (m_mainworker.SwitchLight(idx,switchcmd,level,"-1",onlyonchange,0)==true)
 				{
 					root["status"] = "OK";
 					root["title"] = "SwitchLight";
@@ -6616,14 +6629,14 @@ namespace http {
 					dval = (255.0 / 360.0)*atof(hue.c_str());
 					int ival;
 					ival = round(dval);
-					m_mainworker.SwitchLight(ID, "Set Color", ival, -1);
+					m_mainworker.SwitchLight(ID, "Set Color", ival, -1,false,0);
 				}
 				else
 				{
-					m_mainworker.SwitchLight(ID, "Set White", 0, -1);
+					m_mainworker.SwitchLight(ID, "Set White", 0, -1,false,0);
 				}
 				sleep_milliseconds(100);
-				m_mainworker.SwitchLight(ID, "Set Brightness", (unsigned char)atoi(brightness.c_str()), -1);
+				m_mainworker.SwitchLight(ID, "Set Brightness", (unsigned char)atoi(brightness.c_str()), -1,false,0);
 			}
 			else if (cparam == "brightnessup")
 			{
@@ -6639,7 +6652,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Bright Up", 0, -1);
+				m_mainworker.SwitchLight(ID, "Bright Up", 0, -1,false,0);
 			}
 			else if (cparam == "brightnessdown")
 			{
@@ -6655,7 +6668,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Bright Down", 0, -1);
+				m_mainworker.SwitchLight(ID, "Bright Down", 0, -1,false,0);
 			}
 			else if (cparam == "discoup")
 			{
@@ -6671,7 +6684,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Disco Up", 0, -1);
+				m_mainworker.SwitchLight(ID, "Disco Up", 0, -1,false,0);
 			}
 			else if (cparam == "discodown")
 			{
@@ -6687,7 +6700,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Disco Down", 0, -1);
+				m_mainworker.SwitchLight(ID, "Disco Down", 0, -1,false,0);
 			}
 			else if (cparam == "speedup")
 			{
@@ -6703,7 +6716,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Speed Up", 0, -1);
+				m_mainworker.SwitchLight(ID, "Speed Up", 0, -1,false,0);
 			}
 			else if (cparam == "speeduplong")
 			{
@@ -6719,7 +6732,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, -1);
+				m_mainworker.SwitchLight(ID, "Speed Up Long", 0, -1,false,0);
 			}
 			else if (cparam == "speeddown")
 			{
@@ -6735,7 +6748,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Speed Down", 0, -1);
+				m_mainworker.SwitchLight(ID, "Speed Down", 0, -1,false,0);
 			}
 			else if (cparam == "warmer")
 			{
@@ -6751,7 +6764,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Warmer", 0, -1);
+				m_mainworker.SwitchLight(ID, "Warmer", 0, -1,false,0);
 			}
 			else if (cparam == "cooler")
 			{
@@ -6767,7 +6780,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Cooler", 0, -1);
+				m_mainworker.SwitchLight(ID, "Cooler", 0, -1,false,0);
 			}
 			else if (cparam == "fulllight")
 			{
@@ -6783,7 +6796,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Set Full", 0, -1);
+				m_mainworker.SwitchLight(ID, "Set Full", 0, -1,false,0);
 			}
 			else if (cparam == "nightlight")
 			{
@@ -6799,7 +6812,7 @@ namespace http {
 				s_strid << idx;
 				s_strid >> ID;
 
-				m_mainworker.SwitchLight(ID, "Set Night", 0, -1);
+				m_mainworker.SwitchLight(ID, "Set Night", 0, -1,false,0);
 			}
 			else if (cparam == "getfloorplanimages")
 			{
