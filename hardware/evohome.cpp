@@ -37,6 +37,8 @@
 
 #define RETRY_DELAY 30
 
+extern std::string szStartupFolder;
+
 std::ofstream *CEvohome::m_pEvoLog=NULL;
 #ifdef _DEBUG
 bool CEvohome::m_bDebug=true;
@@ -145,8 +147,18 @@ bool CEvohome::StartHardware()
 	}
 	else
 	{
-		if(m_bDebug && !m_pEvoLog)
-			m_pEvoLog=new std::ofstream((std::string(getenv("HOME"))+"/evoraw.log").c_str(), std::ios::out | std::ios::app);//will not work under windows..edit here to change debug log
+		if (m_bDebug && !m_pEvoLog)
+		{
+			try
+			{
+				std::string debug_file = szStartupFolder + "evoraw.log";
+				m_pEvoLog = new std::ofstream(debug_file.c_str(), std::ios::out | std::ios::app);
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "EvoHome: Could not open debug file!");
+			}
+		}
 		m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 		
 		std::stringstream szQuery;

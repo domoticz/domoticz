@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 760
+# ref 762
 
 CACHE:
 # CSS
@@ -35,6 +35,7 @@ secpanel/font/Digital.woff
 # Images
 favicon.ico
 css/images/bg-track.png
+css/images/close.png
 css/images/handle.png
 css/images/img01.jpg
 css/images/img02.jpg

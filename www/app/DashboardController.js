@@ -76,6 +76,20 @@ define(['app'], function (app) {
 			htm+='</ul></div></span>';
 			return htm;
 		}
+		SetColValue = function (idx,hue,brightness, isWhite)
+		{
+			clearInterval($.setColValue);
+			if (permissions.hasPermission("Viewer")) {
+				HideNotify();
+				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			$.ajax({
+				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + isWhite,
+				 async: false, 
+				 dataType: 'json'
+			});
+		}
 		
 		RefreshFavorites = function()
 		{
@@ -523,10 +537,20 @@ define(['app'], function (app) {
 													(item.Status == 'Group On')||
 													(item.Status.indexOf('Set ') == 0)
 												 ) {
-														img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+														if (item.SubType=="RGBW") {
+															img='<img src="images/dimmer48-on.png" onclick="ShowRGBWPopup(' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
+														}
+														else {
+															img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+														}
 											}
 											else {
-														img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+														if (item.SubType=="RGBW") {
+															img='<img src="images/dimmer48-off.png" onclick="ShowRGBWPopup(' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
+														}
+														else {
+															img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+														}
 											}
 										}
 										else if (item.SwitchType == "TPI") {
@@ -1964,10 +1988,20 @@ define(['app'], function (app) {
 												(item.Status == 'Group On')||
 												(item.Status.indexOf('Set ') == 0)
 											 ) {
-													xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													if (item.SubType=="RGBW") {
+														xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" onclick="ShowRGBWPopup(' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+													}
+													else {
+														xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													}
 										}
 										else {
-													xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													if (item.SubType=="RGBW") {
+														xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" onclick="ShowRGBWPopup(' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+													}
+													else {
+														xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													}
 										}
 									}
 									else if (item.SwitchType == "TPI") {
@@ -2032,7 +2066,11 @@ define(['app'], function (app) {
 												'\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
 												'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 									if (item.SwitchType == "Dimmer") {
-										xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
+										if (item.SubType=="RGBW") {
+										}
+										else {
+											xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
+										}
 									}
 									else if (item.SwitchType == "TPI") {
 										xhtm+='<td><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';

@@ -2371,6 +2371,9 @@ table.dataTable thead th, table.dataTable thead td {
 	background-size:   cover; 
 }
 
+.ui-close {position:absolute; top:4px; right:4px; width:30px; height:30px; cursor:pointer; background:url(images/close.png) no-repeat}
+.ui-close:hover {background-position:0 -30px}
+
 .ui-icon-Auto:after {
 }
 
