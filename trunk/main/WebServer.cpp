@@ -3138,6 +3138,12 @@ namespace http {
 				std::string machine = my_uname.machine;
 				std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 
+				if (machine == "armv6l")
+				{
+					//Seems like old arm systems can also use the new arm build
+					machine = "armv7l";
+				}
+
 				if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
 					szHistoryURL = "http://domoticz.sourceforge.net/beta/History.txt";
 				else
@@ -3726,6 +3732,12 @@ namespace http {
 			std::string machine = my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 
+			if (machine == "armv6l")
+			{
+				//Seems like old arm systems can also use the new arm build
+				machine = "armv7l";
+		}
+
 #ifdef DEBUG_DOWNLOAD
 			systemname = "linux";
 			machine = "armv7l";
@@ -3815,6 +3827,12 @@ namespace http {
 			std::string machine = my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
 
+			if (machine == "armv6l")
+			{
+				//Seems like old arm systems can also use the new arm build
+				machine = "armv7l";
+			}
+
 #ifdef DEBUG_DOWNLOAD
 			systemname = "linux";
 			machine = "armv7l";
@@ -3845,6 +3863,7 @@ namespace http {
 				return;
 #endif
 			}
+
 			if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
 				return;	//only Raspberry Pi/Ubuntu for now
 			root["status"] = "OK";
