@@ -1203,11 +1203,6 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-		if (dbversion < 59)
-		{
-			query("ALTER TABLE SceneDevices ADD COLUMN [Delay] INTEGER default 0");
-			
-		}
 		if (dbversion < 60)
 		{
 			query("ALTER TABLE SceneDevices ADD COLUMN [OnDelay] INTEGER default 0");
