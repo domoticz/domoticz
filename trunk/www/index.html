@@ -384,6 +384,29 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
+	<div id="rgbw_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
+		<div class="ui-close" onclick="CloseRGBWPopup()"></div>
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+			<tr id="LedColor">
+				<td>
+					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td align="left" style="width:200px">
+							<div id="popup_picker" width="100px" height="100px"></div>
+						</td>
+						<td align="left" style="vertical-align: center;">
+							<a id="popup_switch_on"><img src="images/pushon48.png" class="lcursor" height="48" width="48"></a><br>
+							<a id="popup_switch_off"><img src="images/pushoff48.png" class="lcursor" height="48" width="48"></a>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+		<div style="width:90%; left: 14px; bottom: 11px;" class="dimslider" id="slider" data-idx="popupslider" data-type="norm" data-maxlevel="100" data-isprotected="0" data-svalue="33"></div>
+		<br>
+		<br>
+	</div>
 	<div id="globaldaylog" style="display:none;">
 	  <h2 data-i18n="Day">Day</h2>
 	  <div id="globaldaygraph" style="height: 300px;"></div>

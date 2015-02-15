@@ -503,7 +503,7 @@ define(['app'], function (app) {
 						$("#lightcontent #optionRGB").prop('checked',!bIsWhite);
 						$("#lightcontent #optionWhite").prop('checked',bIsWhite);
 						clearInterval($.setColValue);
-						$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 400);
+						$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b, bIsWhite); }, 400);
 					}
 				}
 			});
@@ -839,7 +839,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		SetColValue = function (idx,hue,brightness)
+		SetColValue = function (idx,hue,brightness, isWhite)
 		{
 			clearInterval($.setColValue);
 			if (permissions.hasPermission("Viewer")) {
@@ -847,9 +847,8 @@ define(['app'], function (app) {
 				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
 				return;
 			}
-			var bIsWhite=$('#lightcontent #ledtable #optionWhite').is(":checked");
 			$.ajax({
-				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + bIsWhite,
+				 url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + isWhite,
 				 async: false, 
 				 dataType: 'json'
 			});
@@ -1031,7 +1030,7 @@ define(['app'], function (app) {
 						$("#lightcontent #optionRGB").prop('checked',!bIsWhite);
 						$("#lightcontent #optionWhite").prop('checked',bIsWhite);
 						clearInterval($.setColValue);
-						$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b); }, 400);
+						$.setColValue = setInterval(function() { SetColValue($.devIdx,hsb.h,hsb.b, bIsWhite); }, 400);
 					}
 				}
 			});
@@ -1541,10 +1540,20 @@ define(['app'], function (app) {
 											(item.Status == 'Group On')||
 											(item.Status.indexOf('Set ') == 0)
 										 ) {
-													img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+										if (item.SubType=="RGBW") {
+											img='<img src="images/dimmer48-on.png" onclick="ShowRGBWPopup(' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
+										}
+										else {
+											img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+										}
 									}
 									else {
-													img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+										if (item.SubType=="RGBW") {
+											img='<img src="images/dimmer48-off.png" onclick="ShowRGBWPopup(' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
+										}
+										else {
+											img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+										}
 									}
 					}
 					else if (item.SwitchType == "TPI") {
@@ -1955,10 +1964,20 @@ define(['app'], function (app) {
 									(item.Status == 'Group On')||
 									(item.Status.indexOf('Set ') == 0)
 								   ) {
-										xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+										if (item.SubType=="RGBW") {
+											xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" onclick="ShowRGBWPopup(' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
+										}
+										else {
+											xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',\'RefreshLights\',' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+										}
 									 }
 									 else {
-										xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+										if (item.SubType=="RGBW") {
+											xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" onclick="ShowRGBWPopup(' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
+										}
+										else {
+											xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+										}
 									 }
 							}
 							else if (item.SwitchType == "TPI") {
@@ -2016,7 +2035,11 @@ define(['app'], function (app) {
 						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 						'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {
-						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+						if (item.SubType=="RGBW") {
+						}
+						else {
+							xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+						}
 					}
 					else if (item.SwitchType == "TPI") {
 						xhtm+='<br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="relay" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"';
@@ -2581,7 +2604,18 @@ define(['app'], function (app) {
 			});
 
 			$(window).resize(function() { $scope.ResizeDimSliders(); });
+/*
+			$(document).mouseup(function (e)
+			{
+				var container = $("#rgbw_popup");
 
+				if (!container.is(e.target) // if the target of the click isn't the container...
+					&& container.has(e.target).length === 0) // ... nor a descendant of the container
+				{
+					container.hide();
+				}
+			});
+*/
 			$( "#dialog-addlightdevice" ).dialog({
 				  autoOpen: false,
 				  width: 400,

@@ -97,6 +97,7 @@ Version 2.0.xxxx (January xxth 2015)
 - Implemented: S0 Meter, settings for meter 3,4 and 5
 - Changed: ZWave lights/dimmers can now be dimmed in percentage from 0..100 (Thanks to Gilles)
 - Implemented: Scenes/Groups, additional On/Off delay option
+- Implemented: RGBW Popup to select color/on/off
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
