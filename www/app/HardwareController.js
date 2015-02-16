@@ -1703,7 +1703,7 @@ define(['app'], function (app) {
 				var Name = "";
 
 				$.ajax({
-				   url: "json.htm?type=bindevohome&idx=" + $.devIdx + "&type=" + devtype, 
+				   url: "json.htm?type=bindevohome&idx=" + $.devIdx + "&devtype=" + devtype, 
 				   async: false, 
 				   dataType: 'json',
 				   success: function(data) {
@@ -1947,8 +1947,8 @@ define(['app'], function (app) {
 							HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">' + $.i18n("Create Devices") + '</span>';
 						else
 						{
-							HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohomeRelay(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
-							HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohomeRelay(' + item.idx + ',\'' + item.Name + '\',\'OutdoorSensor\');">Outdoor Sensor</span>';
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'OutdoorSensor\');">Outdoor Sensor</span>';
 						}
 					}
 					else if (HwTypeStr.indexOf("Rego 6XX") >= 0)
