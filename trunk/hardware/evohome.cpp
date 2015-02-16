@@ -822,7 +822,7 @@ int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devT
 	if(nGatewayID==0)
 		return 0;
 		
-	if(nDevType!=CEvohomeID::devRelay)//Binding a relay to the HGI80
+	if(nDevType==CEvohomeID::devRelay)//Binding a relay to the HGI80
 	{
 		boost::unique_lock<boost::mutex> lock(m_mtxBindNotify);
 		m_nBindID=0;
@@ -1333,6 +1333,7 @@ void CEvohome::RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID)
 
 bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 {
+	//there is an interesting page on temperature control @ http://newton.ex.ac.uk/teaching/cdhw/Feedback/ControlTypes.html
 	char tag[] = "HEAT_DEMAND";
 	if (msg.payloadsize != 2){
 		Log(false,LOG_ERROR,"evohome: %s: Error decoding heat demand, unknown packet size: %d", tag, msg.payloadsize);
@@ -1343,12 +1344,15 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	std::string szSourceType("Unknown"), szDevType("Unknown");
 	if(msg.command==0x0008)
 	{
+		//Demand (0x0008 for relays) is handled as a % (i.e. nDemand/200*100) (200=0xc8) where 200/200 corresponds to 100% of the cycle period (start of period determined by 3B00 ACTUATOR_CHECK message)
+		//So where 100% is always on then 50% is half on half off per cycle i.e. 6 cycles per hour = 10 minutes per cycle with 5 mins on & 5 mins off etc,
+		//presumably there are some settings (0x1100) that give the number of cycles per hour which would determine the length of each period
 		if(msg.GetID(0)==GetControllerID())
 			szSourceType="Controller";
 		else if(msg.GetID(0)==GetGatewayID())
 			szSourceType="Gateway";
 	}
-	else if(msg.command==0x3150)
+	else if(msg.command==0x3150) //heat demand for zone is also a % (as above) of the proportional band (a temperature difference) so if the proportional band is 2 degrees and we are 1 degree from set point the demand is 50%
 		szSourceType="Zone";
 	
 	if(nDevNo==0xfc)//252...afaik this is also some sort of broadcast channel so maybe there is more to this device number than representing the boiler
@@ -1376,7 +1380,7 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 
 bool CEvohome::DecodeActuatorCheck(CEvohomeMsg &msg)
 {
-	char tag[] = "ACTUATOR_CHECK"; //don't think this alters the state and it doesn't always cause the actuators to announce themselves (so might be a sort of keep alive message)
+	char tag[] = "ACTUATOR_CHECK"; //this is used to synchronise time periods for each relay bound to a controller i.e. all relays get this message and use it to determine when to start each cycle (demand is just a % of the cycle length)
 	if (msg.payloadsize != 2){
 		Log(false,LOG_ERROR,"evohome: %s: Error decoding command, unknown packet size: %d", tag, msg.payloadsize);
 		return false;
@@ -1400,11 +1404,8 @@ bool CEvohome::DecodeActuatorState(CEvohomeMsg &msg)
 		return false;
 	}
 	int nDevNo = msg.payload[0];
-	int nDemand = msg.payload[1];
-	//a demand of 0xc8 (200) may have special meaning (probably immediate switch on but not sure how long it stays on for)
-	//I think the relays listen for the demand and generate a proportional on / off time for a given time slot
-	//presumably there are some settings (0x1100) that give it the appropriate time slots to use
-	//The relay does not appear to always announce its state - perhaps this message is considered informational rather than a requirement
+	int nDemand = msg.payload[1]; //(0 for off or 0xc8 i.e. 100% for on)
+	//The relay does not appear to always announce its state but this is probably due to the wireless signal and collisions etc
 	
 	Log(true,LOG_STATUS,"evohome: %s: ID:0x%06x (%s) DevNo 0x%02x: %d", tag, msg.GetID(0), msg.GetStrID(0).c_str(), nDevNo, nDemand);
 	RXRelay(static_cast<uint8_t>(0xFF),static_cast<uint8_t>(nDemand),msg.GetID(0));//devno is always 0 and therefore not valid

@@ -10411,7 +10411,7 @@ namespace http {
 			}
 
 			std::string idx = m_pWebEm->FindValue("idx");
-			std::string type = m_pWebEm->FindValue("type");
+			std::string type = m_pWebEm->FindValue("devtype");
 			int HwdID = atoi(idx.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HwdID);
 			if (pHardware == NULL)
@@ -13978,6 +13978,26 @@ namespace http {
 						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 							EnergyDivider *= 100.0f;
 
+						//First check if we had any usage in the short log, if not, its probably a meter without usage
+						szQuery.clear();
+						szQuery.str("");
+						bool bHaveUsage = true;
+						szQuery << "SELECT MIN([Usage]), MAX([Usage]) FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << ")";
+						result = m_sql.query(szQuery.str());
+						if (result.size() > 0)
+						{
+							std::stringstream s_str1(result[0][0]);
+							unsigned long long minValue;
+							s_str1 >> minValue;
+							std::stringstream s_str2(result[0][1]);
+							unsigned long long maxValue;
+							s_str2 >> maxValue;
+							if ((minValue == 0) && (maxValue == 0))
+							{
+								bHaveUsage = false;
+							}
+						}
+
 						szQuery.clear();
 						szQuery.str("");
 						int ii = 0;
@@ -13988,6 +14008,8 @@ namespace http {
 						std::string sMethod = m_pWebEm->FindValue("method");
 						if (sMethod.size() > 0)
 							method = atoi(sMethod.c_str());
+						if (bHaveUsage == false)
+							method = 0;
 						if (method != 0)
 						{
 							//realtime graph
