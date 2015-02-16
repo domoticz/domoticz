@@ -233,11 +233,11 @@ namespace OpenZWave
 		/**
 		 *  Lock the nodes so no other thread can modify them.
 		 */
-		void LockNodes();
+		//void LockNodes();
 		/**
 		 *  Release the lock on the nodes so other threads can modify them.
 		 */
-		void ReleaseNodes();
+		//void ReleaseNodes();
 
 		ControllerInterface			m_controllerInterfaceType;						// Specifies the controller's hardware interface
 		string					m_controllerPath;							// name or path used to open the controller hardware.

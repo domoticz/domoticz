@@ -52,7 +52,7 @@ namespace OpenZWave
 		 * \param _bWait Defaults to true.  Set this argument to false if the method should return
 		 * immediately, even if the lock is not available.
 		 * \return True if the lock was obtained.
-		 * \see Release
+		 * \see Unlock
 		 */
 		bool Lock( bool const _bWait = true );
 
@@ -63,11 +63,11 @@ namespace OpenZWave
 		 */
 		void Unlock();
 
-	protected:
 		/**
 		 * Used by the Wait class to test whether the mutex is free.
 		 */
 		virtual bool IsSignalled();
+	protected:
 
 		/**
 		 * Destructor.

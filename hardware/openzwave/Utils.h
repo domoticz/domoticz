@@ -28,6 +28,8 @@
 #ifndef _Utils_H
 #define _Utils_H
 
+#include "platform/Mutex.h"
+
 #include <string>
 #include <locale>
 #include <algorithm>
@@ -67,6 +69,41 @@ namespace OpenZWave
 	 * \return the trimmed string
 	 */
 	std::string &trim ( std::string &s );
+
+
+	struct LockGuard
+	{
+			LockGuard(Mutex* mutex) : _ref(mutex)
+			{
+				//std::cout << "Locking" << std::endl;
+				_ref->Lock();
+			};
+
+			~LockGuard()
+			{
+#if 0
+				if (_ref->IsSignalled())
+					std::cout << "Already Unlocked" << std::endl;
+				else
+					std::cout << "Unlocking" << std::endl;
+#endif
+				if (!_ref->IsSignalled())
+					_ref->Unlock();
+			}
+			void Unlock()
+			{
+//				std::cout << "Unlocking" << std::endl;
+				_ref->Unlock();
+			}
+		private:
+			LockGuard(const LockGuard&);
+			LockGuard& operator = ( LockGuard const& );
+
+
+			Mutex* _ref;
+	};
+
+
 
 } // namespace OpenZWave
 

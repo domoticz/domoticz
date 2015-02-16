@@ -4303,8 +4303,6 @@ void CSQLHelper::UpdateMeter()
 			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
 			time_t checktime=mktime(&ntime);
 
-			bool bSkipSameValue=true;
-
 			if (dType!=pTypeP1Gas)
 			{
 				if (now-checktime>=SensorTimeOut*60)
@@ -4335,7 +4333,6 @@ void CSQLHelper::UpdateMeter()
 				double fValue=atof(splitresults[1].c_str())*100;
 				sprintf(szTmp,"%.0f",fValue);
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if (dType==pTypePOWER)
 			{
@@ -4353,79 +4350,65 @@ void CSQLHelper::UpdateMeter()
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
 				CheckAndHandleNotification(hardwareID, DeviceID, Unit, dType, dSubType, NTYPE_USAGE, (float)nValue);
-				bSkipSameValue=false;
 			}
 			else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
 			{
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if ((dType==pTypeGeneral)&&(dSubType==sTypeVisibility))
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if ((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if (dType==pTypeLux)
 			{
 				double fValue=atof(sValue.c_str());
 				sprintf(szTmp,"%.0f",fValue);
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if (dType==pTypeWEIGHT)
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if (dType==pTypeRFXSensor)
 			{
 				double fValue=atof(sValue.c_str());
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if ((dType==pTypeGeneral)&&(dSubType==sTypeVoltage))
 			{
 				double fValue=atof(sValue.c_str())*1000.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypeCurrent))
 			{
 				double fValue = atof(sValue.c_str())*1000.0f;
 				sprintf(szTmp, "%d", int(fValue));
 				sValue = szTmp;
-				bSkipSameValue = false;
 			}
 			else if ((dType == pTypeGeneral) && (dSubType == sTypePressure))
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
-				bSkipSameValue=false;
 			}
 			else if (dType==pTypeUsage)
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
-			}
-			else if (dType == pTypeP1Gas)
-			{
-				bSkipSameValue = false;
 			}
 
 			unsigned long long MeterValue;
@@ -4435,20 +4418,6 @@ void CSQLHelper::UpdateMeter()
 			unsigned long long MeterUsage;
 			std::stringstream s_str3( susage );
 			s_str3 >> MeterUsage;
-
-			if (bSkipSameValue)
-			{
-				//if last value == actual value, then do not insert it
-				sprintf(szTmp,"SELECT Value FROM Meter WHERE (DeviceRowID=%llu) AND (Date>='%s') ORDER BY ROWID DESC LIMIT 1",ID,szDateToday);
-				result2=query(szTmp);
-				if (result2.size()>0)
-				{
-					std::vector<std::string> sd2=result2[0];
-					std::string sValueLast=sd2[0];
-					if (sValueLast==sValue)
-						continue; //skip same value
-				}
-			}
 
 			//insert record
 			sprintf(szTmp,
