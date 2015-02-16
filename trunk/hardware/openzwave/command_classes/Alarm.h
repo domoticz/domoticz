@@ -43,7 +43,7 @@ namespace OpenZWave
 		virtual ~Alarm(){}
 
 		/** \brief Get command class ID (1 byte) identifying this command class. */
-		static uint8 const StaticGetCommandClassId(){ return 0x71; }		
+		static uint8 const StaticGetCommandClassId(){ return 0x71; }
 		/** \brief Get a string containing the name of this command class. */
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_ALARM"; }
 
@@ -63,7 +63,7 @@ namespace OpenZWave
 		virtual void CreateVars( uint8 const _instance );
 
 	private:
-		Alarm( uint32 const _homeId, uint8 const _nodeId ): CommandClass( _homeId, _nodeId ){}
+		Alarm( uint32 const _homeId, uint8 const _nodeId );
 	};
 
 } // namespace OpenZWave

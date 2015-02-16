@@ -455,6 +455,7 @@
 		<Product type="0001" id="0004" name="PAN06-1 In Wall Dual Relay (1 Way) Switch Module"/>
 		<Product type="0001" id="0006" name="PAN08-1 In Wall Roller Shutter Controller"/>
 		<Product type="0002" id="0002" name="PSM02-1 Slim Multi-Sensor" config="philio/psm02.xml"/>
+		<Product type="0002" id="000d" name="PST02-1B Multi Sensor"/>
 	</Manufacturer>
 	<Manufacturer id="010e" name="Polycontrol">
 		<Product type="0003" id="0002" name="Danalock Circle/Square"/>
@@ -599,7 +600,7 @@
 		<Product type="0808" id="0808" name="TZ65D Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
 		<Product type="0101" id="0103" name="TZ68E On/Off Switch Socket"/>
 		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
-		<Product type="0202" id="0611" name="TZ67 Wall Plug Dimmer"/>
+		<Product type="0202" id="0611" name="TZ67 Wall Plug Dimmer" config="wenzhou/tz67.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0149" name="Widom">
 		<Product type="0012" id="0104" name="Universal Relay Switch"/>

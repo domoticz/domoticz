@@ -334,7 +334,7 @@ namespace OpenZWave
 		Driver::ControllerInterface GetControllerInterfaceType( uint32 const _homeId );
 
 		/**
-		 * \brief Obtain controller interface name
+		 * \brief Obtain controller interface path
 		 * \param _homeId The Home ID of the Z-Wave controller.
 		 */
 		string GetControllerPath( uint32 const _homeId );
@@ -380,6 +380,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		/**
 		 * \brief Enable the polling of a device's state.
 		 * \param _valueId The ID of the value to start polling.
+		 * \param _intensity, number of polling for one polling interval.
 		 * \return True if polling was enabled.
 		 */
 		bool EnablePoll( ValueID const &_valueId, uint8 const _intensity = 1 );

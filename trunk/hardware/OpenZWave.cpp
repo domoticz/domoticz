@@ -62,6 +62,11 @@ static const _tAlarmNameToIndexMapping AlarmToIndexMapping[] = {
 		{ "Flood",				0x2D },
 		{ "Alarm Level",		0x32 },
 		{ "Alarm Type",			0x33 },
+		{ "Access Control",		0x34 },
+		{ "Burglar",			0x35 },
+		{ "Power Management",	0x36 },
+		{ "System",				0x37 },
+		{ "Emergency",			0x38 },
 		{ "", 0 }
 };
 

@@ -829,7 +829,7 @@ typedef union tRBUF {
 #ifdef IS_BIG_ENDIAN
 		//BYTE	msg3;
 		BYTE	UNDECODEDenabled : 1;
-		BYTE	RFU6enabled : 1;
+		BYTE	IMAGINTRONIXenabled : 1;
 		BYTE	SXenabled : 1;
 		BYTE	RSLenabled : 1;
 		BYTE	LIGHTING4enabled : 1;
