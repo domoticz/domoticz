@@ -322,20 +322,16 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	COpenZWave::NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
 	if (!pNode)
 		return strState;
-	switch (pNode->eState)
+
+	if (Manager::Get()->IsNodeFailed(m_controllerID, nodeID))
 	{
-	case NTSATE_UNKNOWN:
-		strState = "Unknown";
-		break;
-	case NSTATE_AWAKE:
-		strState = "Awake";
-		break;
-	case NSTATE_SLEEP:
-		strState = "Sleep";
-		break;
-	case NSTATE_DEAD:
 		strState = "Dead";
-		break;
+	}
+	else {
+		if (Manager::Get()->IsNodeAwake(m_controllerID, nodeID))
+			strState = "Awake";
+		else
+			strState = "Sleeping";
 	}
 	return strState;
 }
