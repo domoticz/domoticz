@@ -337,6 +337,77 @@ int CTE923Tool::get_te923_lifedata( Te923DataSet_t *data )
 	return 0;
 }
 
+int CTE923Tool::get_te923_devstate( Te923DevSet_t *dev ) {
+	int ret;
+	int adr = 0x000098;
+	unsigned char buf[BUFLEN];
+	unsigned char readretries=0;
+	do
+	{
+		ret = read_from_te923( adr, (unsigned char*)&buf );
+		readretries++;
+	}
+	while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
+	if ( buf[0] != 0x5A )
+		return -1;
+	dev->SysVer = buf[5];
+	dev->BarVer = buf[1];
+	dev->UvVer = buf[2];
+	dev->RccVer = buf[3];
+	dev->WindVer = buf[4];
+	adr = 0x00004C;
+	readretries=0;
+	do
+	{
+		ret = read_from_te923( adr, (unsigned char*)&buf );
+		readretries++;
+	}
+	while (( ret <= 0 )&&(readretries<MAX_LOOP_RETRY));
+	if ( buf[0] != 0x5A )
+		return -1;
+	if (( buf[1] & 0x80 ) == 0x80 )
+		dev->batteryRain = true;
+	else
+		dev->batteryRain = false;
+
+	if (( buf[1] & 0x40 ) == 0x40 )
+		dev->batteryWind = true;
+	else
+		dev->batteryWind = false;
+
+	if (( buf[1] & 0x20 ) == 0x20 )
+		dev->batteryUV = true;
+	else
+		dev->batteryUV = false;
+
+	if (( buf[1] & 0x10 ) == 0x10 )
+		dev->battery[4] = true;
+	else
+		dev->battery[4] = false;
+
+	if (( buf[1] & 0x08 ) == 0x08 )
+		dev->battery[3] = true;
+	else
+		dev->battery[3] = false;
+
+	if (( buf[1] & 0x04 ) == 0x04 )
+		dev->battery[2] = true;
+	else
+		dev->battery[2] = false;
+
+	if (( buf[1] & 0x02 ) == 0x02 )
+		dev->battery[1] = true;
+	else
+		dev->battery[1] = false;
+
+	if (( buf[1] & 0x01 ) == 0x01 )
+		dev->battery[0] = true;
+	else
+		dev->battery[0] = false;
+	return 0;
+}
+
+
 int CTE923Tool::get_te923_memdata( Te923DataSet_t *data )
 {
 	int adr, ret;
@@ -489,7 +560,7 @@ void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 	strcat(szOutputBuffer,szTmp);
 }
 
-bool CTE923Tool::GetData(Te923DataSet_t *data)
+bool CTE923Tool::GetData(Te923DataSet_t *data, Te923DevSet_t *dev)
 {
 	if (m_device_handle==NULL)
 		return false;
@@ -497,6 +568,9 @@ bool CTE923Tool::GetData(Te923DataSet_t *data)
 	memset (data, 0, sizeof ( Te923DataSet_t ) );
 	//int ret=get_te923_memdata(data);
 	int ret=get_te923_lifedata( data );
+	if (ret==-1)
+		return false;
+	ret=get_te923_devstate( dev );
 	return (ret!=-1);
 	//printData( data, iText);
 }

@@ -96,13 +96,14 @@ void CTE923::WriteToHardware(const char *pdata, const unsigned char length)
 void CTE923::GetSensorDetails()
 {
 	Te923DataSet_t data;
+	Te923DevSet_t dev;
 #ifndef _DEBUG
 	CTE923Tool _te923tool;
 	if (!_te923tool.OpenDevice())
 	{
 		return;
 	}
-	if (!_te923tool.GetData(&data))
+	if (!_te923tool.GetData(&data,&dev))
 	{
 		//give it one more change!
 		_te923tool.CloseDevice();
@@ -113,7 +114,7 @@ void CTE923::GetSensorDetails()
 		{
 			return;
 		}
-		if (!_te923tool2.GetData(&data))
+		if (!_te923tool2.GetData(&data,&dev))
 		{
 			_log.Log(LOG_ERROR, "TE923: Could not read weather data!");
 			return;
@@ -168,6 +169,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.packetlength=sizeof(tsen.TEMP_HUM_BARO)-1;
 				tsen.TEMP_HUM_BARO.packettype=pTypeTEMP_HUM_BARO;
 				tsen.TEMP_HUM_BARO.subtype=sTypeTHBFloat;
+
 				tsen.TEMP_HUM_BARO.battery_level=9;
 				tsen.TEMP_HUM_BARO.rssi=12;
 				tsen.TEMP_HUM_BARO.id1=0;
@@ -194,7 +196,10 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
 				tsen.TEMP_HUM.packettype=pTypeTEMP_HUM;
 				tsen.TEMP_HUM.subtype=sTypeTH5;
-				tsen.TEMP_HUM.battery_level=9;
+				if (dev.battery[ii-1])
+					tsen.TEMP_HUM.battery_level=9;
+				else
+					tsen.TEMP_HUM.battery_level=0;
 				tsen.TEMP_HUM.rssi=12;
 				tsen.TEMP_HUM.id1=0;
 				tsen.TEMP_HUM.id2=ii;
@@ -218,7 +223,17 @@ void CTE923::GetSensorDetails()
 			tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
 			tsen.TEMP.packettype=pTypeTEMP;
 			tsen.TEMP.subtype=sTypeTEMP10;
-			tsen.TEMP.battery_level=9;
+			if (ii>0)
+			{
+				if (dev.battery[ii-1])
+					tsen.TEMP.battery_level=9;
+				else
+					tsen.TEMP.battery_level=0;
+			}
+			else
+			{
+				tsen.TEMP.battery_level=9;
+			}
 			tsen.TEMP.rssi=12;
 			tsen.TEMP.id1=0;
 			tsen.TEMP.id2=ii;
@@ -239,7 +254,17 @@ void CTE923::GetSensorDetails()
 			tsen.HUM.packetlength=sizeof(tsen.HUM)-1;
 			tsen.HUM.packettype=pTypeHUM;
 			tsen.HUM.subtype=sTypeHUM2;
-			tsen.HUM.battery_level=9;
+			if (ii>0)
+			{
+				if (dev.battery[ii-1])
+					tsen.HUM.battery_level=9;
+				else
+					tsen.HUM.battery_level=0;
+			}
+			else
+			{
+				tsen.HUM.battery_level=9;
+			}
 			tsen.HUM.rssi=12;
 			tsen.HUM.id1=0;
 			tsen.HUM.id2=ii;
@@ -259,7 +284,10 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.packetlength=sizeof(tsen.WIND)-1;
 		tsen.WIND.packettype=pTypeWIND;
 		tsen.WIND.subtype=sTypeWINDNoTemp;
-		tsen.WIND.battery_level=9;
+		if (dev.batteryWind)
+			tsen.WIND.battery_level=9;
+		else
+			tsen.WIND.battery_level=0;
 		tsen.WIND.rssi=12;
 		tsen.WIND.id1=0;
 		tsen.WIND.id2=1;
@@ -317,7 +345,10 @@ void CTE923::GetSensorDetails()
 		tsen.RAIN.packetlength=sizeof(tsen.RAIN)-1;
 		tsen.RAIN.packettype=pTypeRAIN;
 		tsen.RAIN.subtype=sTypeRAIN3;
-		tsen.RAIN.battery_level=9;
+		if (dev.batteryRain)
+			tsen.RAIN.battery_level=9;
+		else
+			tsen.RAIN.battery_level=0;
 		tsen.RAIN.rssi=12;
 		tsen.RAIN.id1=0;
 		tsen.RAIN.id2=1;
@@ -342,7 +373,10 @@ void CTE923::GetSensorDetails()
 		tsen.UV.packetlength=sizeof(tsen.UV)-1;
 		tsen.UV.packettype=pTypeUV;
 		tsen.UV.subtype=sTypeUV1;
-		tsen.UV.battery_level=9;
+		if (dev.batteryUV)
+			tsen.UV.battery_level=9;
+		else
+			tsen.UV.battery_level=0;
 		tsen.UV.rssi=12;
 		tsen.UV.id1=0;
 		tsen.UV.id2=1;
