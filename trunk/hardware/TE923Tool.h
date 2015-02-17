@@ -65,6 +65,7 @@ public:
 	struct usb_dev_handle *m_device_handle; 
 private:
 	int get_te923_lifedata( Te923DataSet_t *data );
+	int get_te923_devstate( Te923DevSet_t *dev );
 	int get_te923_memdata( Te923DataSet_t *data );
 	int read_from_te923( int adr, unsigned char *rbuf );
 	int decode_te923_data( unsigned char buf[], Te923DataSet_t *data );
