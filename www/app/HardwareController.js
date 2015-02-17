@@ -1310,7 +1310,7 @@ define(['app'], function (app) {
 					if (item.State == "Dead") {
 						status="failed";
 					}
-					else if (item.State == "Sleep") {
+					else if ((item.State == "Sleep")||(item.State == "Sleeping")) {
 						status="sleep";
 					}
 					else if (item.State == "Unknown") {
