@@ -34,6 +34,18 @@ typedef struct {
 	unsigned int __src;                     // source address of dataset (needed for dump)
 } Te923DataSet_t;
 
+typedef struct {
+	unsigned char SysVer;                   // program version system controller
+	unsigned char BarVer;                   // program version barometer
+	unsigned char UvVer;                    // program version UV sensor and ext. channels
+	unsigned char RccVer;                   // program version remote controlled clock and sunset 
+	unsigned char WindVer;                  // program version wind- rain sensor
+	bool battery[5];						// battery in sensor 1 till 5
+	bool batteryUV;							// battery in UV sensor
+	bool batteryWind;						// battery in wind sensor
+	bool batteryRain;						// battery in rain sensor
+} Te923DevSet_t;
+
 class CTE923Tool
 {
 public:
@@ -42,7 +54,7 @@ public:
 
 	bool OpenDevice();
 	void CloseDevice();
-	bool GetData(Te923DataSet_t *data);
+	bool GetData(Te923DataSet_t *data, Te923DevSet_t *dev);
 	void GetPrintData( Te923DataSet_t *data, char *szOutputBuffer);
 
 	bool m_bUSBIsInit;
