@@ -323,12 +323,12 @@ std::string COpenZWave::GetNodeStateString(const unsigned int homeID, const int 
 	if (!pNode)
 		return strState;
 
-	if (Manager::Get()->IsNodeFailed(m_controllerID, nodeID))
+	if (Manager::Get()->IsNodeFailed(homeID, nodeID))
 	{
 		strState = "Dead";
 	}
 	else {
-		if (Manager::Get()->IsNodeAwake(m_controllerID, nodeID))
+		if (Manager::Get()->IsNodeAwake(homeID, nodeID))
 			strState = "Awake";
 		else
 			strState = "Sleeping";
