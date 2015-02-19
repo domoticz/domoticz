@@ -35,11 +35,13 @@ function RefreshLog()
 				}
         $.each(data.result, function(i,item){
 					if (item.level==0) {
-						htmlcontent+='<span>';
+						htmlcontent+='<span class="lognorm">';
+					}
+					else if (item.level==1) {
+						htmlcontent+='<span class="logerror">';
 					}
 					else {
-						//htmlcontent+='<span class="logerror"> Error: ';
-						htmlcontent+='<span class="logerror">';
+						htmlcontent+='<span class="logstatus">';
 					}
 					var message=item.message.replace(/\n/gi,"<br>");
 					htmlcontent+=message;
