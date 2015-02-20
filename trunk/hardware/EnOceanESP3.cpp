@@ -362,6 +362,14 @@ CEnOceanESP3::CEnOceanESP3(const int ID, const std::string& devname, const int t
 	m_id_base=0;
 	m_receivestate=ERS_SYNCBYTE;
 	m_stoprequested=false;
+
+	//Test
+	//m_ReceivedPacketType = 0x01;
+	//m_DataSize = 0x0A;
+	//m_OptionalDataSize = 0x07;
+	//m_bufferpos = 0;
+	//m_buffer[m_bufferpos++] = 0xA5;
+	//ParseData();
 }
 
 CEnOceanESP3::~CEnOceanESP3()
@@ -1316,11 +1324,17 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.temperaturel=(BYTE)(at10);
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 					}
-					else if (szST=="TempHum.01")
+					else if (szST == "TempHum")
 					{
-						//(EPP A5-04-01)
-						float temp=GetValueRange(DATA_BYTE1,40);
-						float hum=GetValueRange(DATA_BYTE2,100);
+						//(EPP A5-04 01/02)
+						float ScaleMax = 0;
+						float ScaleMin = 0;
+						if (iType == 0x01) { ScaleMax = 0; ScaleMin = 40; }
+						else if (iType == 0x02) { ScaleMax = -20; ScaleMin = 60; }
+						else if (iType == 0x03) { ScaleMax = -20; ScaleMin = 60; } //10bit?
+
+						float temp = GetValueRange(DATA_BYTE1, ScaleMax, ScaleMin);
+						float hum = GetValueRange(DATA_BYTE2, 100);
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
 						tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;

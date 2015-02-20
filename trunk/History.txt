@@ -101,6 +101,7 @@ Version 2.0.xxxx (January xxth 2015)
 - Changed: kWh meters that do not provide current usage will now calculate the usage in the day graph
 - Updated: TE923, now supports battery levels (good/bad)
 - Changed: Status message color in log viewer
+- Implemented: EnOcean, added support for TempHum.02
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

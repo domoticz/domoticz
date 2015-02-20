@@ -169,6 +169,7 @@ const _t4BSLookup T4BSTable[]=
 
 	//A5-04: Temperature and Humidity Sensor
 	{ 0xA5, 0x04, 0x01, "Range 0C to +40C and 0% to 100%",																		"TempHum.01" },
+	{ 0xA5, 0x04, 0x02, "Range -20C to +60C and 0% to 100%",																	"TempHum.02" },
 
 	//A5-06: Light Sensor
 	{ 0xA5, 0x06, 0x01, "Range 300lx to 60.000lx",																				"LightSensor.01" },
@@ -1646,11 +1647,17 @@ bool CEnOceanESP2::ParseData()
 					tsen.TEMP.temperaturel=(BYTE)(at10);
 					sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 				}
-				else if (szST=="TempHum.01")
+				else if (szST=="TempHum")
 				{
-					//(EPP A5-04-01)
-					float temp=GetValueRange(pFrame->DATA_BYTE1,40);
-					float hum=GetValueRange(pFrame->DATA_BYTE2,100);
+					//(EPP A5-04 01/02)
+					float ScaleMax = 0;
+					float ScaleMin = 0;
+					if (iType == 0x01) { ScaleMax = 0; ScaleMin = 40; }
+					else if (iType == 0x02) { ScaleMax = -20; ScaleMin = 60; }
+					else if (iType == 0x03) { ScaleMax = -20; ScaleMin = 60; } //10bit?
+
+					float temp = GetValueRange(pFrame->DATA_BYTE1, ScaleMax, ScaleMin);
+					float hum = GetValueRange(pFrame->DATA_BYTE2, 100);
 					RBUF tsen;
 					memset(&tsen,0,sizeof(RBUF));
 					tsen.TEMP_HUM.packetlength=sizeof(tsen.TEMP_HUM)-1;
