@@ -2913,6 +2913,11 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 	m_sql.query(szQuery.str());
 }
 
+std::string COpenZWave::GetVersion()
+{
+	return m_pManager->getVersionAsString();
+}
+
 void COpenZWave::SetNodeName(const unsigned int homeID, const int nodeID, const std::string &Name)
 {
 	std::string NodeName = Name;

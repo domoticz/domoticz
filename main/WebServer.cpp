@@ -10973,6 +10973,7 @@ namespace http {
 						if (pHardware->HwdType == HTYPE_OpenZWave)
 						{
 							COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+							root["result"][ii]["version"] = pOZWHardware->GetVersion();
 							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
 						}
 					}

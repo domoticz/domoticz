@@ -85,6 +85,8 @@ public:
 	NodeInfo* GetNodeInfo( const unsigned int homeID, const int nodeID );
 	bool ApplyNodeConfig(const unsigned int homeID, const int nodeID, const std::string &svaluelist);
 
+	std::string GetVersion();
+
 	bool SetUserCodeEnrollmentMode();
 	bool GetNodeUserCodes(const unsigned int homeID, const int nodeID, Json::Value &root);
 	bool RemoveUserCode(const unsigned int homeID, const int nodeID, const int codeIndex);

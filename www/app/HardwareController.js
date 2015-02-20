@@ -1919,6 +1919,8 @@ define(['app'], function (app) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenZWave") >= 0) {
+						HwTypeStr+='<br>Version: ' + item.version;
+
 						if (typeof item.NodesQueried != 'undefined') {
 							var lblStatus="label-info";
 							if (item.NodesQueried != true) {
