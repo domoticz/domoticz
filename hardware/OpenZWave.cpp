@@ -2913,6 +2913,15 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 	m_sql.query(szQuery.str());
 }
 
+void COpenZWave::SetNodeName(const unsigned int homeID, const int nodeID, const std::string &Name)
+{
+	std::string NodeName = Name;
+	if (NodeName.size() > 16)
+		NodeName = NodeName.substr(0, 15);
+	stdreplace(NodeName, "\"", "_");
+	m_pManager->SetNodeName(homeID, nodeID, NodeName);
+}
+
 void COpenZWave::EnableDisableNodePolling()
 {
 	int intervalseconds = 60;

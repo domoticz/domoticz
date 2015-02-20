@@ -1773,15 +1773,18 @@ namespace http {
 				idx.c_str()
 				);
 			result = m_sql.query(szTmp);
-			sprintf(szTmp, "SELECT HardwareID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+			sprintf(szTmp, "SELECT HardwareID, HomeID, NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
 			result = m_sql.query(szTmp);
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
+				int homeID = atoi(result[0][1].c_str());
+				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->SetNodeName(homeID, nodeID, name);
 					pOZWHardware->EnableDisableNodePolling();
 				}
 			}

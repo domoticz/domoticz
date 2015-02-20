@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 765
+# ref 767
 
 CACHE:
 # CSS
@@ -248,6 +248,9 @@ images/remote48.png
 images/remove.png
 images/rename.png
 images/restart.png
+images/RGB.png
+images/RGB48_Off.png
+images/RGB48_On.png
 images/scale.png
 images/scale48.png
 images/scenes.png
