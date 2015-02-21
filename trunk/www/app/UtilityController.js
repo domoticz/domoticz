@@ -980,7 +980,7 @@ define(['app'], function (app) {
 					  status=item.Data;
 					}
 					else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-					  xhtm+='override.png" height="48" width="48"></td>\n';
+					  xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
 					  status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 					}
 					else if (item.Type == "Radiator 1") {
@@ -1526,6 +1526,10 @@ define(['app'], function (app) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
+			}
+			var popup=$("#setpoint_popup");
+			if (typeof popup != 'undefined') {
+				popup.hide();
 			}
 		}); 
 	} ]);

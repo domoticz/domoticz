@@ -1542,6 +1542,18 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("FloorplanInactiveOpacity", 5);
 	}
+	if (!GetPreferencesVar("TempHome", sValue))
+	{
+		UpdatePreferencesVar("TempHome", "20");
+	}
+	if (!GetPreferencesVar("TempAway", sValue))
+	{
+		UpdatePreferencesVar("TempAway", "15");
+	}
+	if (!GetPreferencesVar("TempComfort", sValue))
+	{
+		UpdatePreferencesVar("TempComfort", "22.0");
+	}
 
 	//Start background thread
 	if (!StartThread())

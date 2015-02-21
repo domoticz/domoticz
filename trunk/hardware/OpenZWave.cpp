@@ -442,11 +442,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 	switch (nType)
 	{
 	case OpenZWave::Notification::Type_DriverReady:
-	{
-		m_controllerID = _notification->GetHomeId();
-		m_controllerNodeId = _notification->GetNodeId();
-		_log.Log(LOG_STATUS, "OpenZWave: Driver Ready");
-	}
+		{
+			m_controllerID = _notification->GetHomeId();
+			m_controllerNodeId = _notification->GetNodeId();
+			_log.Log(LOG_STATUS, "OpenZWave: Driver Ready");
+		}
 		break;
 	case OpenZWave::Notification::Type_NodeNew:
 		_log.Log(LOG_STATUS, "OpenZWave: New Node added. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
@@ -507,6 +507,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_DriverReset:
 		m_bNeedSave = true;
+		m_nodes.clear();
+		m_controllerID = _notification->GetHomeId();
 		break;
 	case OpenZWave::Notification::Type_ValueAdded:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
@@ -653,6 +655,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_DriverFailed:
 		m_initFailed = true;
+		m_nodes.clear();
 		_log.Log(LOG_ERROR, "OpenZWave: Driver Failed!!");
 		break;
 	case OpenZWave::Notification::Type_DriverRemoved:
@@ -760,6 +763,7 @@ bool COpenZWave::OpenSerialConnector()
 	m_allNodesQueried = false;
 	m_updateTime = mytime(NULL);
 	CloseSerialConnector();
+	m_nodes.clear();
 	m_bNeedSave = false;
 	std::string ConfigPath = szStartupFolder + "Config/";
 	// Create the OpenZWave Manager.
