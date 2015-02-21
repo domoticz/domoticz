@@ -135,6 +135,7 @@ private:
 	void Cmd_ClearSceneTimers(Json::Value &root);
 	void Cmd_SetSceneCode(Json::Value &root);
 	void Cmd_RemoveSceneCode(Json::Value &root);
+	void Cmd_SetSetpoint(Json::Value &root);
 	void Cmd_AddSetpointTimer(Json::Value &root);
 	void Cmd_UpdateSetpointTimer(Json::Value &root);
 	void Cmd_DeleteSetpointTimer(Json::Value &root);

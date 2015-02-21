@@ -2998,11 +2998,11 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							xhtm+='override.png" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n';
+							xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						else if (item.SubType=="Smartwares") {
-							xhtm+='override.png" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n';
+							xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
@@ -3310,6 +3310,14 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			$(window).off("resize");
+			var popup=$("#rgbw_popup");
+			if (typeof popup != 'undefined') {
+				popup.hide();
+			}
+			popup=$("#setpoint_popup");
+			if (typeof popup != 'undefined') {
+				popup.hide();
+			}
 		}); 
 		
 	} ]);

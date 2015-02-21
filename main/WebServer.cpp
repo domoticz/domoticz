@@ -489,6 +489,7 @@ namespace http {
 			RegisterCommandCode("setscenecode", boost::bind(&CWebServer::Cmd_SetSceneCode, this, _1));
 			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
 
+			RegisterCommandCode("setsetpoint", boost::bind(&CWebServer::Cmd_SetSetpoint, this, _1));
 			RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1));
 			RegisterCommandCode("updatesetpointtimer", boost::bind(&CWebServer::Cmd_UpdateSetpointTimer, this, _1));
 			RegisterCommandCode("deletesetpointtimer", boost::bind(&CWebServer::Cmd_DeleteSetpointTimer, this, _1));
@@ -11415,6 +11416,38 @@ namespace http {
 			}
 		}
 
+		void CWebServer::Cmd_SetSetpoint(Json::Value &root)
+		{
+			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			int iUser = -1;
+			int urights = 3;
+			if (bHaveUser)
+			{
+				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+				if (iUser != -1)
+				{
+					urights = static_cast<int>(m_users[iUser].userrights);
+				}
+			}
+			if (urights < 1)
+				return;
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string setpoint = m_pWebEm->FindValue("setpoint");
+			if (
+				(idx == "") ||
+				(setpoint == "")
+				)
+				return;
+			root["status"] = "OK";
+			root["title"] = "SetSetpoint";
+			if (iUser != -1)
+			{
+				_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
+			}
+			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())));
+		}
+
 		void CWebServer::Cmd_AddSetpointTimer(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
@@ -12454,9 +12487,14 @@ namespace http {
 			{
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "', Protected=" << iProtected << " WHERE (ID == " << idx << ")";
+				szQuery << "UPDATE DeviceStatus SET StrParam1='" << strParam1 << "', StrParam2='" << strParam2 << "' WHERE (ID == " << idx << ")";
 				result = m_sql.query(szQuery.str());
 			}
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE DeviceStatus SET Protected=" << iProtected << " WHERE (ID == " << idx << ")";
+			result = m_sql.query(szQuery.str());
 
 			if (setPoint != "" || state!="")
 			{

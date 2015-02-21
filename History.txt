@@ -103,6 +103,7 @@ Version 2.0.xxxx (January xxth 2015)
 - Changed: Status message color in log viewer
 - Implemented: EnOcean, added support for TempHum.02
 - Implemented: Displaying OpenZWave version
+- Implemented: Setpoint Popup
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

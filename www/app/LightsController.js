@@ -2801,6 +2801,10 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			$(window).off("resize");
+			var popup=$("#rgbw_popup");
+			if (typeof popup != 'undefined') {
+				popup.hide();
+			}
 		}); 
 	} ]);
 });
