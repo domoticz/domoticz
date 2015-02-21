@@ -144,6 +144,7 @@ void OTGWTCP::Do_Work()
 				{
 					bFirstTime=false;
 					SendOutsideTemperature();
+					SendTime();
 					GetGatewayDetails();
 				}
 			}
@@ -157,6 +158,23 @@ void OTGWTCP::GetGatewayDetails()
 	char szCmd[10];
 	strcpy(szCmd,"PS=1\r\n");
 	write((const unsigned char*)&szCmd,strlen(szCmd));
+}
+
+void OTGWTCP::SendTime()
+{
+	time_t atime = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	int lday = 0;
+	if (ltime.tm_wday == 0)
+		lday = 7;
+	else
+		lday = ltime.tm_wday;
+
+	char szCmd[20];
+	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
+	WriteToHardware((const char*)&szCmd, strlen(szCmd));
 }
 
 void OTGWTCP::SendOutsideTemperature()

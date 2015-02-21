@@ -22,6 +22,7 @@ private:
 	bool StopHardware();
 	void GetGatewayDetails();
 	void SendOutsideTemperature();
+	void SendTime();
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

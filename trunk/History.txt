@@ -1,4 +1,4 @@
-Version 2.0.xxxx (January xxth 2015)
+Version 2.0.2283 (February 21th 2015)
 - Implemented: Icon scaling setting per floorplan
 - Updated: floorplan code to handle non-landscape images better
 - Fixed: Possible crash in Eventsystem (GetCurrentMeasurementStates) where string value was empty
@@ -104,6 +104,7 @@ Version 2.0.xxxx (January xxth 2015)
 - Implemented: EnOcean, added support for TempHum.02
 - Implemented: Displaying OpenZWave version
 - Implemented: Setpoint Popup
+- Implemented: OTGW sending current time/day
 
 Version 2.0.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher

@@ -20,6 +20,7 @@ private:
 	void StopPollerThread();
 	void GetGatewayDetails();
 	void SendOutsideTemperature();
+	void SendTime();
 	void Do_PollWork();
 	int m_retrycntr;
 	boost::shared_ptr<boost::thread> m_pollerthread;
