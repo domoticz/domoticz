@@ -150,6 +150,7 @@ private:
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);
 	void RType_LightLog(Json::Value &root);
+	void RType_TextLog(Json::Value &root);
 	void RType_Settings(Json::Value &root);
 	void RType_Events(Json::Value &root);
 	void RType_Hardware(Json::Value &root);

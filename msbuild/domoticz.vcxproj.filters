@@ -189,6 +189,9 @@
     <Filter Include="Devices\MQTT">
       <UniqueIdentifier>{3a449100-50ce-4b1e-96f5-5eab825f169c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Fritzbox">
+      <UniqueIdentifier>{d14cf5bb-9554-49ad-af57-52c584ed0130}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -612,6 +615,9 @@
     <ClInclude Include="..\MQTT\utf-8.h">
       <Filter>MQTT</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\FritzboxTCP.h">
+      <Filter>Devices\Fritzbox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -979,6 +985,9 @@
     </ClCompile>
     <ClCompile Include="..\MQTT\utf-8.c">
       <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\FritzboxTCP.cpp">
+      <Filter>Devices\Fritzbox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

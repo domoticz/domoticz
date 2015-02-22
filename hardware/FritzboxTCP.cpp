@@ -1,0 +1,315 @@
+#include "stdafx.h"
+#include "FritzboxTCP.h"
+#include "../main/Logger.h"
+#include "../main/Helper.h"
+#include <iostream>
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
+
+#include "../main/SQLHelper.h"
+extern CSQLHelper m_sql;
+#include "../hardware/hardwaretypes.h"
+
+#include <strstream>
+
+#define RETRY_DELAY 30
+
+/*
+For this to work you have to enable the CallMonitor on your Fritzbox.
+
+dial:
+#96*5* Enable
+#96*4* Disable
+
+Ausgehende Anrufe:
+datum;CALL;ConnectionID;Nebenstelle;GenutzteNummer;AngerufeneNummer;
+
+Eingehende Anrufe:
+datum;RING;ConnectionID;Anrufer-Nr;Angerufene-Nummer;
+
+Zustandegekommene Verbindung:
+datum;CONNECT;ConnectionID;Nebenstelle;Nummer;
+
+Ende der Verbindung:
+datum;DISCONNECT;ConnectionID;dauerInSekunden;
+
+
+*/
+
+FritzboxTCP::FritzboxTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+{
+	m_HwdID=ID;
+	m_bDoRestart=false;
+#if defined WIN32
+	int ret;
+	//Init winsock
+	WSADATA data;
+	WORD version; 
+
+	version = (MAKEWORD(2, 2)); 
+	ret = WSAStartup(version, &data); 
+	if (ret != 0) 
+	{  
+		ret = WSAGetLastError(); 
+
+		if (ret == WSANOTINITIALISED) 
+		{  
+			_log.Log(LOG_ERROR,"Fritzbox: Winsock could not be initialized!");
+		}
+	}
+#endif
+	m_stoprequested=false;
+	m_szIPAddress=IPAddress;
+	m_usIPPort=usIPPort;
+}
+
+FritzboxTCP::~FritzboxTCP(void)
+{
+#if defined WIN32
+	//
+	// Release WinSock
+	//
+	WSACleanup();
+#endif
+}
+
+bool FritzboxTCP::StartHardware()
+{
+	m_stoprequested=false;
+	m_bDoRestart=false;
+
+	//force connect the next first time
+	m_retrycntr=RETRY_DELAY;
+	m_bIsStarted=true;
+
+	//Start worker thread
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&FritzboxTCP::Do_Work, this)));
+	return (m_thread!=NULL);
+}
+
+bool FritzboxTCP::StopHardware()
+{
+	m_stoprequested=true;
+	try {
+		if (m_thread)
+		{
+			m_thread->join();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
+	if (isConnected())
+	{
+		try {
+			disconnect();
+		} catch(...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
+
+	m_bIsStarted=false;
+	return true;
+}
+
+void FritzboxTCP::OnConnect()
+{
+	_log.Log(LOG_STATUS,"Fritzbox: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	m_bDoRestart=false;
+	m_bIsStarted=true;
+	m_bufferpos=0;
+
+	sOnConnected(this);
+}
+
+void FritzboxTCP::OnDisconnect()
+{
+	_log.Log(LOG_STATUS,"Fritzbox: disconnected");
+}
+
+void FritzboxTCP::Do_Work()
+{
+	bool bFirstTime=true;
+
+	while (!m_stoprequested)
+	{
+		sleep_seconds(1);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			mytime(&m_LastHeartbeat);
+		}
+
+		if (bFirstTime)
+		{
+			bFirstTime=false;
+			connect(m_szIPAddress,m_usIPPort);
+		}
+		else
+		{
+			time_t atime=time(NULL);
+			if ((m_bDoRestart)&&(atime%30==0))
+			{
+				connect(m_szIPAddress,m_usIPPort);
+			}
+			update();
+		}
+	}
+	_log.Log(LOG_STATUS,"Fritzbox: TCP/IP Worker stopped...");
+} 
+
+void FritzboxTCP::OnData(const unsigned char *pData, size_t length)
+{
+	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	ParseData(pData,length);
+}
+
+void FritzboxTCP::OnError(const std::exception e)
+{
+	_log.Log(LOG_ERROR,"Fritzbox: Error: %s",e.what());
+}
+
+void FritzboxTCP::OnError(const boost::system::error_code& error)
+{
+	_log.Log(LOG_ERROR,"Fritzbox: Error: %s",error.message().c_str());
+}
+
+void FritzboxTCP::WriteToHardware(const char *pdata, const unsigned char length)
+{
+	if (!mIsConnected)
+	{
+		return;
+	}
+	write((const unsigned char*)pdata,length);
+}
+
+void FritzboxTCP::WriteInt(const std::string &sendStr)
+{
+	if (!mIsConnected)
+	{
+		return;
+	}
+	write(sendStr);
+}
+
+void FritzboxTCP::ParseData(const unsigned char *pData, int Len)
+{
+	int ii = 0;
+	while (ii < Len)
+	{
+		const unsigned char c = pData[ii];
+		if (c == 0x0d)
+		{
+			ii++;
+			continue;
+		}
+
+		if (c == 0x0a || m_bufferpos == sizeof(m_buffer) - 1)
+		{
+			// discard newline, close string, parse line and clear it.
+			if (m_bufferpos > 0) m_buffer[m_bufferpos] = 0;
+			ParseLine();
+			m_bufferpos = 0;
+		}
+		else
+		{
+			m_buffer[m_bufferpos] = c;
+			m_bufferpos++;
+		}
+		ii++;
+	}
+}
+
+void FritzboxTCP::ParseLine()
+{
+	if (m_bufferpos < 2)
+		return;
+	std::string sLine((char*)&m_buffer);
+
+	//_log.Log(LOG_STATUS, sLine.c_str());
+
+	std::vector<std::string> results;
+	StringSplit(sLine, ";", results);
+	if (results.size() < 4)
+		return; //invalid data
+
+	std::string Cmd = results[1];
+	std::stringstream sstr;
+	std::stringstream szQuery;
+	std::string devname;
+	unsigned long long devIdx;
+	std::vector<std::vector<std::string> > result;
+	if (Cmd == "CALL")
+	{
+		//Outgoing
+		//datum;CALL;ConnectionID;Nebenstelle;GenutzteNummer;AngerufeneNummer;
+		if (results.size() < 6)
+			return;
+		sstr << "Call From: " << results[4] << " to: " << results[5];
+		devIdx = m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		sstr.clear();
+		sstr.str("");
+		sstr << "Call ID: " << results[2] << " From: " << results[4] << " to: " << results[5];
+		szQuery << "INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('" << devIdx << "', '" << sstr.str() << "')";
+		m_sql.query(szQuery.str());
+	}
+	else if (Cmd == "RING")
+	{
+		//Incoming
+		//datum;RING;ConnectionID;Anrufer-Nr;Angerufene-Nummer;
+		if (results.size() < 5)
+			return;
+		sstr << "Received From: " << results[4] << " to: " << results[3];
+		devIdx=m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		sstr.clear();
+		sstr.str("");
+		sstr << "Received ID: " << results[2] << " From: " << results[4] << " to: " << results[3];
+		szQuery << "INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('" << devIdx << "', '" << sstr.str() << "')";
+		m_sql.query(szQuery.str());
+	}
+	else if (Cmd == "CONNECT")
+	{
+		//Connection made
+		//datum;CONNECT;ConnectionID;Nebenstelle;Nummer;
+		if (results.size() < 5)
+			return;
+
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeTextStatus) << ")";
+		result = m_sql.query(szQuery.str());
+		if (!result.empty())
+		{
+			szQuery.clear();
+			szQuery.str("");
+			std::string idx = result[0][0];
+			sstr << "Connected ID: " << results[2] << " Number: " << results[4];
+			szQuery << "INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('" << idx << "', '" << sstr.str() << "')";
+			m_sql.query(szQuery.str());
+		}
+	}
+	else if (Cmd == "DISCONNECT")
+	{
+		//Connection closed
+		//datum;DISCONNECT;ConnectionID;dauerInSekunden;
+		if (results.size() < 4)
+			return;
+		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeTextStatus) << ")";
+		result = m_sql.query(szQuery.str());
+		if (!result.empty())
+		{
+			szQuery.clear();
+			szQuery.str("");
+			std::string idx = result[0][0];
+			sstr << "Disconnect ID: " << results[2] << " Duration: " << results[3] << " seconds";
+			szQuery << "INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('" << idx << "', '" << sstr.str() << "')";
+			m_sql.query(szQuery.str());
+		}
+	}
+	else
+		return;
+}

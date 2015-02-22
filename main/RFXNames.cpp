@@ -180,6 +180,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
 		{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface" },
+		{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

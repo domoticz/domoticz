@@ -506,6 +506,7 @@ namespace http {
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
+			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1));
 			RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1));
 			RegisterRType("events", boost::bind(&CWebServer::RType_Events, this, _1));
 			RegisterRType("hardware", boost::bind(&CWebServer::RType_Hardware, this, _1));
@@ -912,7 +913,7 @@ namespace http {
 				{
 				}
 			}
-			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT)) {
+			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX)) {
 				//Lan
 				if (address == "")
 					return;
@@ -1062,7 +1063,7 @@ namespace http {
 			{
 				//USB/System
 			}
-			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT)){
+			else if ((htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || (htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX)){
 				//Lan
 				if (address == "")
 					return;
@@ -13290,6 +13291,42 @@ namespace http {
 						sprintf(szTmp, "%s", lstatus.c_str());
 					root["result"][ii]["Data"] = szTmp;
 
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::RType_TextLog(Json::Value &root)
+		{
+			unsigned long long idx = 0;
+			if (m_pWebEm->FindValue("idx") != "")
+			{
+				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				s_str >> idx;
+			}
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+
+			root["status"] = "OK";
+			root["title"] = "TextLog";
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT ROWID, sValue, Date FROM LightingLog WHERE (DeviceRowID==" << idx << ") ORDER BY Date DESC";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					std::string sValue = sd[1];
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Date"] = sd[2];
+					root["result"][ii]["Data"] = sd[1];
 					ii++;
 				}
 			}
