@@ -980,7 +980,7 @@ define(['app'], function (app) {
 					  status=item.Data;
 					}
 					else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-					  xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
+					  xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
 					  status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 					}
 					else if (item.Type == "Radiator 1") {

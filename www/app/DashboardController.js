@@ -538,7 +538,7 @@ define(['app'], function (app) {
 													(item.Status.indexOf('Set ') == 0)
 												 ) {
 														if (item.SubType=="RGBW") {
-															img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
+															img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
 														}
 														else {
 															img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
@@ -546,7 +546,7 @@ define(['app'], function (app) {
 											}
 											else {
 														if (item.SubType=="RGBW") {
-															img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
+															img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
 														}
 														else {
 															img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
@@ -1989,7 +1989,7 @@ define(['app'], function (app) {
 												(item.Status.indexOf('Set ') == 0)
 											 ) {
 													if (item.SubType=="RGBW") {
-														xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+														xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
 													}
 													else {
 														xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
@@ -1997,7 +1997,7 @@ define(['app'], function (app) {
 										}
 										else {
 													if (item.SubType=="RGBW") {
-														xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+														xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
 													}
 													else {
 														xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
@@ -2998,11 +2998,11 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
+							xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						else if (item.SubType=="Smartwares") {
-							xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
+							xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
 							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 						}
 						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {

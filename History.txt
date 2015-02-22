@@ -1,3 +1,6 @@
+Version 2.0.2284 (February 22th 2015)
+- Fixed: Firefox, RGBW/Setpoint popup
+
 Version 2.0.2283 (February 21th 2015)
 - Implemented: Icon scaling setting per floorplan
 - Updated: floorplan code to handle non-landscape images better
