@@ -10,7 +10,7 @@
 extern CSQLHelper m_sql;
 #include "../hardware/hardwaretypes.h"
 
-#include <strstream>
+#include <sstream>
 
 #define RETRY_DELAY 30
 
