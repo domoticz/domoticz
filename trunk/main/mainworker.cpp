@@ -59,6 +59,7 @@
 #include "../hardware/MySensorsSerial.h"
 #include "../hardware/MySensorsTCP.h"
 #include "../hardware/MQTT.h"
+#include "../hardware/FritzboxTCP.h"
 
 
 #ifdef WITH_GPIO
@@ -562,6 +563,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_MQTT:
 		//LAN
 		pHardware = new MQTT(ID, Address, Port);
+		break;
+	case HTYPE_FRITZBOX:
+		//LAN
+		pHardware = new FritzboxTCP(ID, Address, Port);
 		break;
 	case HTYPE_SolarEdgeTCP:
 		pHardware = new SolarEdgeTCP(ID, 22222,Address, Port);

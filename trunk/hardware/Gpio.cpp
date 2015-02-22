@@ -136,6 +136,7 @@ void interruptHandler15(void) { pushInterrupt(15); }
 void interruptHandler17(void) { pushInterrupt(17); }
 void interruptHandler18(void) { pushInterrupt(18); }
 
+void interruptHandler20(void) { pushInterrupt(20); }
 void interruptHandler21(void) { pushInterrupt(21); }
 void interruptHandler22(void) { pushInterrupt(22); }
 void interruptHandler23(void) { pushInterrupt(23); }
@@ -188,6 +189,7 @@ bool CGpio::StartHardware()
 				case 17: wiringPiISR(17, INT_EDGE_SETUP, &interruptHandler17); break;
 				case 18: wiringPiISR(18, INT_EDGE_SETUP, &interruptHandler18); break;
 
+				case 20: wiringPiISR(20, INT_EDGE_SETUP, &interruptHandler20); break;
 				case 21: wiringPiISR(21, INT_EDGE_SETUP, &interruptHandler21); break;
 				case 22: wiringPiISR(22, INT_EDGE_SETUP, &interruptHandler22); break;
 				case 23: wiringPiISR(23, INT_EDGE_SETUP, &interruptHandler23); break;

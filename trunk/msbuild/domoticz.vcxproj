@@ -120,6 +120,7 @@
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
     <ClInclude Include="..\hardware\evohome.h" />
     <ClInclude Include="..\hardware\ForecastIO.h" />
+    <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
@@ -260,6 +261,7 @@
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
     <ClCompile Include="..\hardware\evohome.cpp" />
     <ClCompile Include="..\hardware\ForecastIO.cpp" />
+    <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />

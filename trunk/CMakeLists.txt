@@ -183,6 +183,7 @@ hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/evohome.cpp
 hardware/ForecastIO.cpp
+hardware/FritzboxTCP.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
