@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 60
+#define DB_VERSION 61
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -1207,6 +1207,10 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE SceneDevices ADD COLUMN [OnDelay] INTEGER default 0");
 			query("ALTER TABLE SceneDevices ADD COLUMN [OffDelay] INTEGER default 0");
+		}
+		if (dbversion < 61)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
 		}
 	}
 	else if (bNewInstall)

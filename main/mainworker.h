@@ -128,6 +128,11 @@ private:
 
 	int m_ScheduleLastMinute;
 	int m_ScheduleLastHour;
+	//fix for hardware clock that sets time back/ford
+	time_t m_ScheduleLastMinuteTime;
+	time_t m_ScheduleLastHourTime;
+	time_t m_ScheduleLastDayTime;
+
 
 	boost::mutex m_devicemutex;
 	boost::mutex decodeRXMessageMutex;

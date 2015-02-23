@@ -117,6 +117,10 @@ m_LastSunriseSet("")
 	localtime_r(&atime,&ltime);
 	m_ScheduleLastMinute=ltime.tm_min;
 	m_ScheduleLastHour=ltime.tm_hour;
+	m_ScheduleLastMinuteTime = 0;
+	m_ScheduleLastHourTime = 0;
+	m_ScheduleLastDayTime = 0;
+
 	m_bHaveDownloadedDomoticzUpdate=false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
 	m_bDoDownloadDomoticzUpdate=false;
@@ -1045,51 +1049,63 @@ void MainWorker::Do_Work()
 
 		if (ltime.tm_min!=m_ScheduleLastMinute)
 		{
-			m_ScheduleLastMinute=ltime.tm_min;
-			//check for 5 minute schedule
-			if (ltime.tm_min%5==0)
+			if (atime - m_ScheduleLastMinuteTime > 30) //avoid RTC/NTP clock drifts
 			{
-				m_sql.Schedule5Minute();
-			}
-			std::string szPwdResetFile=szStartupFolder+"resetpwd";
-			if (file_exist(szPwdResetFile.c_str()))
-			{
-				m_webserver.ClearUserPasswords();
-				m_sql.UpdatePreferencesVar("WebUserName","");
-				m_sql.UpdatePreferencesVar("WebPassword","");
-				std::remove(szPwdResetFile.c_str());
+				m_ScheduleLastMinuteTime = atime;
+				m_ScheduleLastMinute = ltime.tm_min;
+				//check for 5 minute schedule
+				if (ltime.tm_min % 5 == 0)
+				{
+					m_sql.Schedule5Minute();
+				}
+				std::string szPwdResetFile = szStartupFolder + "resetpwd";
+				if (file_exist(szPwdResetFile.c_str()))
+				{
+					m_webserver.ClearUserPasswords();
+					m_sql.UpdatePreferencesVar("WebUserName", "");
+					m_sql.UpdatePreferencesVar("WebPassword", "");
+					std::remove(szPwdResetFile.c_str());
+				}
 			}
 		}
 		if (ltime.tm_hour!=m_ScheduleLastHour)
 		{
-			m_ScheduleLastHour=ltime.tm_hour;
-			GetSunSettings();
-			m_sql.CheckDeviceTimeout();
-			m_sql.CheckBatteryLow();
+			if (atime - m_ScheduleLastHourTime > 30 * 60) //avoid RTC/NTP clock drifts
+			{
+				m_ScheduleLastHourTime = atime;
+				m_ScheduleLastHour = ltime.tm_hour;
+				GetSunSettings();
+				m_sql.CheckDeviceTimeout();
+				m_sql.CheckBatteryLow();
 
-			//check for daily schedule
-			if (ltime.tm_hour==0)
-			{
-				m_sql.ScheduleDay();
-			}
-#ifdef WITH_OPENZWAVE
-			if (ltime.tm_hour == 4)
-			{
-				//Heal the OpenZWave network
-				boost::lock_guard<boost::mutex> l(m_devicemutex);
-				std::vector<CDomoticzHardwareBase*>::iterator itt;
-				for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+				//check for daily schedule
+				if (ltime.tm_hour == 0)
 				{
-					CDomoticzHardwareBase *pHardware = (*itt);
-					if (pHardware->HwdType == HTYPE_OpenZWave)
+					if (atime - m_ScheduleLastDayTime > 12 * 60 * 60)
 					{
-						COpenZWave *pZWave = (COpenZWave *)pHardware;
-						pZWave->NightlyNodeHeal();
+						m_ScheduleLastDayTime = atime;
+						m_sql.ScheduleDay();
 					}
 				}
-			}
+#ifdef WITH_OPENZWAVE
+				if (ltime.tm_hour == 4)
+				{
+					//Heal the OpenZWave network
+					boost::lock_guard<boost::mutex> l(m_devicemutex);
+					std::vector<CDomoticzHardwareBase*>::iterator itt;
+					for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+					{
+						CDomoticzHardwareBase *pHardware = (*itt);
+						if (pHardware->HwdType == HTYPE_OpenZWave)
+						{
+							COpenZWave *pZWave = (COpenZWave *)pHardware;
+							pZWave->NightlyNodeHeal();
+						}
+					}
+				}
 #endif
-			HandleAutomaticBackups();
+				HandleAutomaticBackups();
+			}
 		}
 		if (ltime.tm_sec % 30 == 0)
 		{
