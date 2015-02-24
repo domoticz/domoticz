@@ -2,7 +2,8 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Fritzbox Hardware type for caller ID (Beta!)
 - Changed: Avoiding possible RTC/NTP clock drifts
 - Changed: Transferring a device will now look internally which device is newer/older
-- Implemented:JSON API, option to 'Toggle' a switch state between On/Off
+- Implemented: JSON API, option to 'Toggle' a switch state between On/Off
+- Implemented: Warning when deleting a Blockly event
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
