@@ -226,6 +226,71 @@ void FritzboxTCP::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
+void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	double rlevel = (15.0 / 100)*Level;
+	int level = int(rlevel);
+
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+	result = m_sql.query(szQuery.str()); //-V519
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+	else
+	{
+		//check if we have a change, if not do not update it
+		int nvalue = atoi(result[0][1].c_str());
+		if ((!bOn) && (nvalue == 0))
+			return;
+		if ((bOn && (nvalue != 0)))
+		{
+			//Check Level
+			int slevel = atoi(result[0][2].c_str());
+			if (slevel == level)
+				return;
+		}
+	}
+
+	//Send as Lighting 2
+	tRBUF lcmd;
+	memset(&lcmd, 0, sizeof(RBUF));
+	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+	lcmd.LIGHTING2.packettype = pTypeLighting2;
+	lcmd.LIGHTING2.subtype = sTypeAC;
+	lcmd.LIGHTING2.id1 = 0;
+	lcmd.LIGHTING2.id2 = 0;
+	lcmd.LIGHTING2.id3 = 0;
+	lcmd.LIGHTING2.id4 = Idx;
+	lcmd.LIGHTING2.unitcode = SubUnit;
+	if (!bOn)
+	{
+		lcmd.LIGHTING2.cmnd = light2_sOff;
+	}
+	else
+	{
+		lcmd.LIGHTING2.cmnd = light2_sOn;
+	}
+	lcmd.LIGHTING2.level = level;
+	lcmd.LIGHTING2.filler = 0;
+	lcmd.LIGHTING2.rssi = 12;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+		m_sql.query(szQuery.str());
+	}
+}
+
 void FritzboxTCP::ParseLine()
 {
 	if (m_bufferpos < 2)
@@ -280,6 +345,8 @@ void FritzboxTCP::ParseLine()
 		if (results.size() < 5)
 			return;
 
+		UpdateSwitch(1, 1, true, 100, "Call");
+
 		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeTextStatus) << ")";
 		result = m_sql.query(szQuery.str());
 		if (!result.empty())
@@ -298,6 +365,9 @@ void FritzboxTCP::ParseLine()
 		//datum;DISCONNECT;ConnectionID;dauerInSekunden;
 		if (results.size() < 4)
 			return;
+
+		UpdateSwitch(1, 1, false, 100, "Call");
+
 		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeTextStatus) << ")";
 		result = m_sql.query(szQuery.str());
 		if (!result.empty())
@@ -310,6 +380,4 @@ void FritzboxTCP::ParseLine()
 			m_sql.query(szQuery.str());
 		}
 	}
-	else
-		return;
 }
