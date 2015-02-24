@@ -19,6 +19,7 @@ private:
 	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();
+	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
