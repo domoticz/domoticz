@@ -14,7 +14,14 @@
     <script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
     <script type="text/javascript" src="js/domoticzblocks_messages_en.js"></script>	
     <script type="text/javascript" src="js/domoticzblocks.js"></script>
-    <link rel="stylesheet" href="css/bootstrap.css">
+	<script src="js/jquery.i18n.js"></script>
+	<script src="js/jquery.i18n.messages.js"></script>
+	<script src="js/jquery.i18n.fallbacks.js"></script>
+	<script src="js/jquery.i18n.parser.js"></script>
+	<script src="js/jquery.i18n.emitter.js"></script>
+	<script src="js/jquery.i18n.language.js"></script>
+	<script type="text/javascript" src="js/bootbox.min.js"></script>
+	<link rel="stylesheet" href="css/bootstrap.css">
     <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
     <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css" />
     <link type="text/css" rel="stylesheet" href="css/style.css" />	
@@ -525,21 +532,25 @@
       function delete_block() {
         var id = document.getElementById("savedEvents").value;
         if ((id!=null)&&(id!="")) {
-	        $.ajax({
-			  	url: "json.htm?type=events&param=delete&event="+id, 
-			  	async: false, 
-			  	dataType: 'json',
-			  	success: function(data) {
-				  	if (typeof data != 'undefined') {
-				  		if (data.status=="OK") {
-				  			generate_noty('alert', '<b>Event Deleted<br>'+$("#blockName").val(), 2000);
-				  			Blockly.mainWorkspace.clear();
-					  		$("#blockName").val("");
-				  			load_blocks();
-				  		}
+			bootbox.confirm($.i18n("Are you sure to delete this Event?\n\nThis action can not be undone..."), function(result) {
+				if (result==true) {
+					$.ajax({
+						url: "json.htm?type=events&param=delete&event="+id, 
+						async: false, 
+						dataType: 'json',
+						success: function(data) {
+							if (typeof data != 'undefined') {
+								if (data.status=="OK") {
+									generate_noty('alert', '<b>Event Deleted<br>'+$("#blockName").val(), 2000);
+									Blockly.mainWorkspace.clear();
+									$("#blockName").val("");
+									load_blocks();
+								}
+							}
+						}
+					  });
 					}
-				}
-			  });
+				});
 		}
         else {
 			bootbox.alert("Nothing selected!")
@@ -709,6 +720,22 @@
 
 	$(document).ready(function() 
 	{
+		$.ajax({
+			 url: "json.htm?type=command&param=getlanguage",
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.language != 'undefined') {
+					SetLanguage(data.language);
+				}
+				else {
+					SetLanguage('en');
+				}
+			 },
+			 error: function(){
+			 }
+		});
+	
 		ResizeBlockyWindow();
 		//return;
 		$("#toolbox").css("font-color", "black");
