@@ -6517,7 +6517,28 @@ namespace http {
 						return;
 					}
 				}
-
+				if (switchcmd == "Toggle") {
+					//Request current state of switch
+					sprintf(szTmp,
+						"SELECT [Type],[SubType],SwitchType,nValue,sValue FROM DeviceStatus WHERE (ID = %s)", idx.c_str());
+					result = m_sql.query(szTmp);
+					if (result.size() > 0)
+					{
+						std::vector<std::string> sd = result[0];
+						unsigned char devType = (unsigned char)atoi(sd[0].c_str());
+						unsigned char subType = (unsigned char)atoi(sd[1].c_str());
+						_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
+						int nValue = atoi(sd[3].c_str());
+						std::string sValue = sd[4];
+						std::string lstatus = "";
+						int llevel = 0;
+						bool bHaveDimmer = false;
+						bool bHaveGroupCmd = false;
+						int maxDimLevel = 0;
+						GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
+					}
+				}
 				if (m_mainworker.SwitchLight(idx,switchcmd,level,"-1",onlyonchange,0)==true)
 				{
 					root["status"] = "OK";
@@ -12206,7 +12227,7 @@ namespace http {
 			}
 		}
 
-		//Will transfer NEW sensor log to OLD sensor,
+		//Will transfer Newest sensor log to OLD sensor,
 		//then set the HardwareID/DeviceID/Unit/Name/Type/Subtype/Unit for the OLD sensor to the NEW sensor ID/Type/Subtype/Unit
 		//then delete the NEW sensor
 		void CWebServer::RType_TransferDevice(Json::Value &root)
@@ -12221,6 +12242,50 @@ namespace http {
 
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
+
+			//Check which device is newer
+
+			time_t now = mytime(NULL);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			struct tm LastUpdateTime_A;
+			struct tm LastUpdateTime_B;
+
+			szQuery << "SELECT A.LastUpdate, B.LastUpdate FROM DeviceStatus as A, DeviceStatus as B WHERE (A.ID == " << sidx << ") AND (B.ID == " << newidx << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() < 1)
+				return;
+
+			std::string sLastUpdate_A = result[0][0];
+			std::string sLastUpdate_B = result[0][1];
+
+			LastUpdateTime_A.tm_isdst = tm1.tm_isdst;
+			LastUpdateTime_A.tm_year = atoi(sLastUpdate_A.substr(0, 4).c_str()) - 1900;
+			LastUpdateTime_A.tm_mon = atoi(sLastUpdate_A.substr(5, 2).c_str()) - 1;
+			LastUpdateTime_A.tm_mday = atoi(sLastUpdate_A.substr(8, 2).c_str());
+			LastUpdateTime_A.tm_hour = atoi(sLastUpdate_A.substr(11, 2).c_str());
+			LastUpdateTime_A.tm_min = atoi(sLastUpdate_A.substr(14, 2).c_str());
+			LastUpdateTime_A.tm_sec = atoi(sLastUpdate_A.substr(17, 2).c_str());
+
+			LastUpdateTime_B.tm_isdst = tm1.tm_isdst;
+			LastUpdateTime_B.tm_year = atoi(sLastUpdate_B.substr(0, 4).c_str()) - 1900;
+			LastUpdateTime_B.tm_mon = atoi(sLastUpdate_B.substr(5, 2).c_str()) - 1;
+			LastUpdateTime_B.tm_mday = atoi(sLastUpdate_B.substr(8, 2).c_str());
+			LastUpdateTime_B.tm_hour = atoi(sLastUpdate_B.substr(11, 2).c_str());
+			LastUpdateTime_B.tm_min = atoi(sLastUpdate_B.substr(14, 2).c_str());
+			LastUpdateTime_B.tm_sec = atoi(sLastUpdate_B.substr(17, 2).c_str());
+
+			time_t timeA = mktime(&LastUpdateTime_A);
+			time_t timeB = mktime(&LastUpdateTime_B);
+
+			if (timeA < timeB)
+			{
+				//Swap idx with newidx
+				sidx.swap(newidx);
+			}
+
+			szQuery.clear();
+			szQuery.str("");
 			szQuery << "SELECT HardwareID, DeviceID, Unit, Name, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue FROM DeviceStatus WHERE (ID == " << newidx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)

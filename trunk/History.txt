@@ -1,6 +1,8 @@
 Version 2.0.xxxx (xxxx 2015)
 - Implemented: Fritzbox Hardware type for caller ID (Beta!)
 - Changed: Avoiding possible RTC/NTP clock drifts
+- Changed: Transferring a device will now look internally which device is newer/older
+- Implemented:JSON API, option to 'Toggle' a switch state between On/Off
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
@@ -14,7 +16,7 @@ Version 2.0.2283 (February 21th 2015)
 - Fixed: OpenZWave, converted home_id to correct variable
 - Fixed: Blinds1, T6 DC160 should work now
 - Implemented: Dewpoint devices in Blockly
-- Updated: floorplan interface, german translation
+- Updated: floorplan interface, German translation
 - Fixed: Setting default security network key for openzwave
 - Implemented: Devices tab, CM180 log option
 - Implemented: Logging counter values for P1 meter (not displayed yet)
@@ -37,9 +39,9 @@ Version 2.0.2283 (February 21th 2015)
 - Changed: Renamed SMASpot to SBFSpot
 - Implemented: Automatic OpenZWave heal network command at 04:00am
 - Implemented: Thermostat Setpoint timers
-- Testing: Philips Hue native support (not ready yet!)
+- Implemented: Philips Hue native support
 - Changed: Dimmer value is now updating on screen
-- Changed: New patch for logitech harmony (thanks again!)
+- Changed: New patch for Logitech harmony (thanks again!)
 - Implemented: Text Sensor (update via udevice json call)
 - Implemented: Option for Dummy device to create Switch Sensor
 - Implemented: Changing color in scene/groups will now also change it on actual device (for preview)
@@ -68,8 +70,8 @@ Version 2.0.2283 (February 21th 2015)
 - Implemented: Alert Sensor (update via udevice json call)
 - Implemented: Roomplan selector on switches/utility tab
 - Changed: Date/Time notation in log to ISO-8601 (thanks to Ugo)
-- Changed: OpenZWave logging, more persistant with node id's (thanks to Ugo)
-- Implemented: Scene/Group, Blinds Percentage(+Inverted) can now set the percentage level
+- Changed: OpenZWave logging, more persistent with node id's (thanks to Ugo)
+- Implemented: Scene/Group, Blinds Percentage (+Inverted) can now set the percentage level
 - Fixed: Setpoint timers, 'when' selection
 - Implemented: ttyACM serial ports if available
 - Implemented: ZWave battery values for all sensor types that reports this
@@ -89,7 +91,7 @@ Version 2.0.2283 (February 21th 2015)
 - Implemented: PushAlot notification system (Thanks to Toni!)
 - Implemented: Previous Baro meter to month/year graph
 - Changed: Settings Page
-- Fixed: Windows Exit application from trayicon
+- Fixed: Windows Exit application from tray icon
 - Implemented: OTGW, added support for setting the Control Setpoint
 - Implemented: Wind Gust chart
 - Fixed: Dimmer slider resize

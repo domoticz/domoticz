@@ -1053,6 +1053,10 @@ void MainWorker::Do_Work()
 			{
 				m_ScheduleLastMinuteTime = atime;
 				m_ScheduleLastMinute = ltime.tm_min;
+
+				m_sql.CheckDeviceTimeout();
+				m_sql.CheckBatteryLow();
+
 				//check for 5 minute schedule
 				if (ltime.tm_min % 5 == 0)
 				{
@@ -1075,8 +1079,6 @@ void MainWorker::Do_Work()
 				m_ScheduleLastHourTime = atime;
 				m_ScheduleLastHour = ltime.tm_hour;
 				GetSunSettings();
-				m_sql.CheckDeviceTimeout();
-				m_sql.CheckBatteryLow();
 
 				//check for daily schedule
 				if (ltime.tm_hour == 0)
