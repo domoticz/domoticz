@@ -127,7 +127,7 @@ CRego6XXSerial::CRego6XXSerial(const int ID, const std::string& devname, const i
 
 CRego6XXSerial::~CRego6XXSerial()
 {
-	clearReadCallback();
+	StopHardware();
 }
 
 bool CRego6XXSerial::StartHardware()
@@ -142,8 +142,11 @@ bool CRego6XXSerial::StartHardware()
 
 bool CRego6XXSerial::StopHardware()
 {
-	m_stoprequested=true;
-	m_thread->join();
+	if (m_thread != NULL)
+	{
+		m_stoprequested = true;
+		m_thread->join();
+	}
     // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
     sleep_milliseconds(10);
 	if (isOpen())

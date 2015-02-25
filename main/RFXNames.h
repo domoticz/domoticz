@@ -99,6 +99,7 @@ enum _eHardwareTypes {
 	HTYPE_MySensorsTCP,			//42
 	HTYPE_MQTT,					//43
 	HTYPE_FRITZBOX,				//44
+	HTYPE_ETH8020,				//45
 	HTYPE_END
 };
 
