@@ -236,7 +236,7 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << SubUnit << ")";
 	result = m_sql.query(szQuery.str()); //-V519
 	if (result.size() < 1)
 	{
@@ -286,7 +286,7 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const
 		//Assign default name for device
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << SubUnit << ")";
 		m_sql.query(szQuery.str());
 	}
 }

@@ -60,6 +60,7 @@
 #include "../hardware/MySensorsTCP.h"
 #include "../hardware/MQTT.h"
 #include "../hardware/FritzboxTCP.h"
+#include "../hardware/ETH8020.h"
 
 
 #ifdef WITH_GPIO
@@ -586,6 +587,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_YouLess:
 		//LAN
 		pHardware = new CYouLess(ID, Address, Port, Password);
+		break;
+	case HTYPE_ETH8020:
+		//LAN
+		pHardware = new CETH8020(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_ECODEVICES:
 		//LAN

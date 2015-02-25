@@ -80,6 +80,7 @@ private:
 	friend class MySensorsTCP;
 	friend class MQTT;
 	friend class FritzboxTCP;
+	friend class CETH8020;
 
 	boost::mutex readQueueMutex;
 	virtual bool StartHardware()=0;

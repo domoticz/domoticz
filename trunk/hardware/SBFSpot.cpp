@@ -276,7 +276,6 @@ void CSBFSpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
 		result=m_sql.query(szQuery.str());
-
 	}
 }
 
