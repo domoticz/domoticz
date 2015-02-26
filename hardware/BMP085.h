@@ -7,19 +7,11 @@ class CBMP085 : public CDomoticzHardwareBase
 public:
 	CBMP085(const int ID);
 	~CBMP085();
-
-	int32_t bmp085_GetTemperature();
-	unsigned int bmp085_GetPressure();
-	bool bmp085_Calibration();
 	void WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
 	bool StopHardware();
 	void ReadSensorDetails();
-	int bmp085_i2c_Begin();
-	signed int bmp085_ReadUT();
-	unsigned int bmp085_ReadUP();
-	int32_t computeB5(int32_t UT);
 
 	//Forecast
 	int CalculateForecast(const float pressure);
@@ -37,8 +29,29 @@ private:
 	volatile bool m_stoprequested;
 	int m_waitcntr;
 
-	// Calibration values - These are stored in the BMP085
-	int16_t ac1, ac2, ac3, b1, b2, mb, mc, md;
-	uint16_t ac4, ac5, ac6;
-	int32_t b5;
+	int i2c_Open(const char *I2CBusName);
+	int bmp_ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead);
+	int bmp_WriteCmd(int fd, uint8_t devAction);
+	int bmp_Calibration(int fd);
+	int WaitForConversion(int fd);
+	int bmp_GetPressure(int fd, double *Pres);
+	int bmp_GetTemperature(int fd, double *Temp);
+
+	double   bmp_altitude(double p);
+	double   bmp_qnh(double p, double StationAlt);
+	double   ppl_DensityAlt(double PAlt, double Temp);
+
+	// Calibration values - These are stored in the BMP085/180
+	short int            bmp_ac1;
+	short int            bmp_ac2;
+	short int            bmp_ac3;
+	unsigned short int   bmp_ac4;
+	unsigned short int   bmp_ac5;
+	unsigned short int   bmp_ac6;
+	short int            bmp_b1;
+	short int            bmp_b2;
+	int                  bmp_b5;
+	short int            bmp_mb;
+	short int            bmp_mc;
+	short int            bmp_md;
 };
