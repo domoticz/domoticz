@@ -220,7 +220,6 @@ hardware/RFXComTCP.cpp
 hardware/S0MeterBase.cpp
 hardware/S0MeterSerial.cpp
 hardware/SBFSpot.cpp
-hardware/smbus.cpp
 hardware/SolarEdgeBase.cpp
 hardware/SolarEdgeTCP.cpp
 hardware/TCPProxy/tcpproxy_server.cpp

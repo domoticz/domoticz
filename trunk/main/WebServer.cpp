@@ -1123,6 +1123,9 @@ namespace http {
 				if (port == 0)
 					port = 80;
 			}
+			else if (htype == HTYPE_RaspberryGPIO) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
 					return;

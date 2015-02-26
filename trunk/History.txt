@@ -5,6 +5,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: JSON API, option to 'Toggle' a switch state between On/Off
 - Implemented: Warning when deleting a Blockly event
 - Implemented: Support for the ETH8020 relay board
+- Fixed: Updating hardware settings for GPIO
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
