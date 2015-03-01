@@ -107,7 +107,7 @@ public:
 	std::string m_szSerialPort;
 
 	P1Power   m_p1power;
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
 	bool StopHardware();

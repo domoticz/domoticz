@@ -36,7 +36,7 @@ public:
 	CGpio(const int ID);
 	~CGpio();
 
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	
 	static bool InitPins();
 	static std::vector<CGpioPin> GetPinList();

@@ -233,10 +233,11 @@ void OTGWSerial::SetSetpoint(const int idx, const float temp)
 	}
 }
 
-void OTGWSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool OTGWSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (isOpen()) {
-		write(pdata,length);
-	}
+	if (!isOpen())
+		return false;
+	write(pdata,length);
+	return true;
 }
 

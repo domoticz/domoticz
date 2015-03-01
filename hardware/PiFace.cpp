@@ -718,7 +718,7 @@ bool CPiFace::StopHardware()
     return true;
 }
 
-void CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
+bool CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
 {
   tRBUF *SendData=(tRBUF*) pdata;
   int mask=0x01;
@@ -734,28 +734,36 @@ void CPiFace::WriteToHardware(const char *pdata, const unsigned char length)
       PortType=(SendData->LIGHTING1.housecode);
         devId=(SendData->LIGHTING1.unitcode /10)&0x03;
       pinnr =(SendData->LIGHTING1.unitcode %10)&0x07;
-      if (PortType=='O')
-       {
-          //_log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, packetlength %d", SendData->LIGHTING1.housecode,SendData->LIGHTING1.packetlength );
-          CurrentLatchState = Read_MCP23S17_Register (devId, MCP23x17_OLATA) ;
-          //_log.Log(LOG_NORM,"PiFace: Read input state 0x%02X", m_OutputState[devId].Current);
+	  if (PortType == 'O')
+	  {
+		  //_log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, packetlength %d", SendData->LIGHTING1.housecode,SendData->LIGHTING1.packetlength );
+		  CurrentLatchState = Read_MCP23S17_Register(devId, MCP23x17_OLATA);
+		  //_log.Log(LOG_NORM,"PiFace: Read input state 0x%02X", m_OutputState[devId].Current);
 
-          OutputData = CurrentLatchState;
-          mask <<= pinnr;
+		  OutputData = CurrentLatchState;
+		  mask <<= pinnr;
 
-          if (SendData->LIGHTING1.cmnd == light1_sOff)
-             {
-              OutputData &= ~mask;
-             }
-             else OutputData |= mask;
+		  if (SendData->LIGHTING1.cmnd == light1_sOff)
+		  {
+			  OutputData &= ~mask;
+		  }
+		  else OutputData |= mask;
 
-          Write_MCP23S17_Register (devId, MCP23x17_GPIOA,OutputData) ;
-        //  _log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, devid %d, output %d, PrevOut 0x%02X, Set 0x%02X",PortType, devId, pinnr, CurrentLatchState,OutputData );
-        }
-          else _log.Log(LOG_ERROR,"Piface: wrong housecode %c",PortType);
-   }
-   else
-	   _log.Log(LOG_ERROR,"PiFace: WriteToHardware packet type %d or subtype %d unknown\n", SendData->LIGHTING1.packettype,SendData->LIGHTING1.subtype);
+		  Write_MCP23S17_Register(devId, MCP23x17_GPIOA, OutputData);
+		  //  _log.Log(LOG_NORM,"Piface: WriteToHardware housecode %c, devid %d, output %d, PrevOut 0x%02X, Set 0x%02X",PortType, devId, pinnr, CurrentLatchState,OutputData );
+	  }
+	  else
+	  {
+		  _log.Log(LOG_ERROR, "Piface: wrong housecode %c", PortType);
+		  return false;
+	  }
+  }
+  else
+  {
+	  _log.Log(LOG_ERROR, "PiFace: WriteToHardware packet type %d or subtype %d unknown\n", SendData->LIGHTING1.packettype, SendData->LIGHTING1.subtype);
+	  return false;
+  }
+  return true;
 }
 
 void CPiFace::Do_Work()

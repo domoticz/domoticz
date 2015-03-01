@@ -9,7 +9,7 @@ public:
 	CETH8020(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
 	~CETH8020(void);
 
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

@@ -141,26 +141,27 @@ void C1Wire::Do_Work()
 	}
 }
 
-void C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
+bool C1Wire::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pSen=(tRBUF*)pdata;
 
    if (!m_system)
-      return;//no 1-wire support
+      return false;//no 1-wire support
 
    if (pSen->ICMND.packettype==pTypeLighting2 && pSen->LIGHTING2.subtype==sTypeAC)
 	{
 		//light command
+		unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
+		deviceIdByteArray[0]=pSen->LIGHTING2.id1;
+		deviceIdByteArray[1]=pSen->LIGHTING2.id2;
+		deviceIdByteArray[2]=pSen->LIGHTING2.id3;
+		deviceIdByteArray[3]=pSen->LIGHTING2.id4;
 
-      unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
-      deviceIdByteArray[0]=pSen->LIGHTING2.id1;
-      deviceIdByteArray[1]=pSen->LIGHTING2.id2;
-      deviceIdByteArray[2]=pSen->LIGHTING2.id3;
-      deviceIdByteArray[3]=pSen->LIGHTING2.id4;
-
-      _t1WireDevice device;
-      m_system->SetLightState(ByteArrayToDeviceId(deviceIdByteArray),pSen->LIGHTING2.unitcode,pSen->LIGHTING2.cmnd==light2_sOn);
+		_t1WireDevice device;
+		m_system->SetLightState(ByteArrayToDeviceId(deviceIdByteArray),pSen->LIGHTING2.unitcode,pSen->LIGHTING2.cmnd==light2_sOn);
+		return true;
 	}
+   return false;
 }
 
 bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)

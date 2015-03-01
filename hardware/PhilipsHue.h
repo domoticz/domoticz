@@ -22,7 +22,7 @@ class CPhilipsHue : public CDomoticzHardwareBase
 public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username);
 	~CPhilipsHue(void);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
 private:
 	std::string m_IPAddress;

@@ -585,126 +585,127 @@ void CEnOceanESP3::readCallback(const char *data, size_t len)
 
 }
 
-void CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length)
+bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (m_id_base==0)
-		return;
-	if (isOpen()) {
-		RBUF *tsen=(RBUF*)pdata;
-		if (tsen->LIGHTING2.packettype!=pTypeLighting2)
-			return; //only allowed to control switches
+		return false;
+	if (!isOpen())
+		return false;
+	RBUF *tsen=(RBUF*)pdata;
+	if (tsen->LIGHTING2.packettype!=pTypeLighting2)
+		return false; //only allowed to control switches
 
-		unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
-		if ((sID<m_id_base)||(sID>m_id_base+129))
-		{
-			_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
-			return;
-		}
-
-		unsigned char buf[100];
-		buf[0]=0xa5;
-		buf[1]=0x2;
-		buf[2]=100;	//level
-		buf[3]=1;	//speed
-		buf[4]=0x09; // Dim Off
-
-		buf[5]=(sID >> 24) & 0xff;
-		buf[6]=(sID >> 16) & 0xff;
-		buf[7]=(sID >> 8) & 0xff;
-		buf[8]=sID & 0xff;
-
-		buf[9]=0x30; // status
-
-		unsigned char RockerID=0;
-		unsigned char Pressed=1;
-
-		if (tsen->LIGHTING2.unitcode < 10)
-		{
-			RockerID = tsen->LIGHTING2.unitcode - 1;
-		}
-		else
-			return;//double not supported yet!
-
-
-		//First we need to find out if this is a Dimmer switch,
-		//because they are threaded differently
-		bool bIsDimmer=false;
-		int LastLevel=0;
-		std::stringstream szQuery;
-		std::vector<std::vector<std::string> > result;
-		char szDeviceID[20];
-		sprintf(szDeviceID,"%08X",(unsigned int)sID);
-		szQuery << "SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "') AND (Unit==" << int(tsen->LIGHTING2.unitcode) << ")";
-		result=m_sql.query(szQuery.str());
-		if (result.size()>0)
-		{
-			_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
-			if (switchtype==STYPE_Dimmer)
-				bIsDimmer=true;
-			LastLevel=atoi(result[0][1].c_str());
-		}
-
-		int iLevel=tsen->LIGHTING2.level;
-		int cmnd=tsen->LIGHTING2.cmnd;
-		int orgcmd=cmnd;
-		if ((tsen->LIGHTING2.level==0)&&(!bIsDimmer))
-			cmnd=light2_sOff;
-		else
-		{
-			if (cmnd==light2_sOn)
-			{
-				iLevel=LastLevel;
-			}
-			else
-			{
-				//scale to 0 - 100 %
-				iLevel=tsen->LIGHTING2.level;
-				if (iLevel>15)
-					iLevel=15;
-				float fLevel=(100.0f/15.0f)*float(iLevel);
-				if (fLevel>99.0f)
-					fLevel=100.0f;
-				iLevel=int(fLevel);
-			}
-			cmnd=light2_sSetLevel;
-		}
-
-		if (cmnd!=light2_sSetLevel)
-		{
-			//On/Off
-			unsigned char UpDown = 1;
-			UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
-
-
-			buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
-			buf[9] = 0x30;
-
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
-
-			//Next command is send a bit later (button release)
-			buf[1] = 0;
-			buf[9] = 0x20;
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
-		}
-		else
-		{
-			//Send dim value
-
-			//Dim On DATA_BYTE0 = 0x09
-			//Dim Off DATA_BYTE0 = 0x08
-
-			buf[1]=2;
-			buf[2]=iLevel;
-			buf[3]=1;//very fast dimming
-
-			if ((iLevel==0)||(orgcmd==light2_sOff))
-				buf[4]=0x08; //Dim Off
-			else
-				buf[4]=0x09;//Dim On
-
-			sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
-		}
+	unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
+	if ((sID<m_id_base)||(sID>m_id_base+129))
+	{
+		_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+		return false;
 	}
+
+	unsigned char buf[100];
+	buf[0]=0xa5;
+	buf[1]=0x2;
+	buf[2]=100;	//level
+	buf[3]=1;	//speed
+	buf[4]=0x09; // Dim Off
+
+	buf[5]=(sID >> 24) & 0xff;
+	buf[6]=(sID >> 16) & 0xff;
+	buf[7]=(sID >> 8) & 0xff;
+	buf[8]=sID & 0xff;
+
+	buf[9]=0x30; // status
+
+	unsigned char RockerID=0;
+	unsigned char Pressed=1;
+
+	if (tsen->LIGHTING2.unitcode < 10)
+	{
+		RockerID = tsen->LIGHTING2.unitcode - 1;
+	}
+	else
+		return false;//double not supported yet!
+
+
+	//First we need to find out if this is a Dimmer switch,
+	//because they are threaded differently
+	bool bIsDimmer=false;
+	int LastLevel=0;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	char szDeviceID[20];
+	sprintf(szDeviceID,"%08X",(unsigned int)sID);
+	szQuery << "SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "') AND (Unit==" << int(tsen->LIGHTING2.unitcode) << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
+		if (switchtype==STYPE_Dimmer)
+			bIsDimmer=true;
+		LastLevel=atoi(result[0][1].c_str());
+	}
+
+	int iLevel=tsen->LIGHTING2.level;
+	int cmnd=tsen->LIGHTING2.cmnd;
+	int orgcmd=cmnd;
+	if ((tsen->LIGHTING2.level==0)&&(!bIsDimmer))
+		cmnd=light2_sOff;
+	else
+	{
+		if (cmnd==light2_sOn)
+		{
+			iLevel=LastLevel;
+		}
+		else
+		{
+			//scale to 0 - 100 %
+			iLevel=tsen->LIGHTING2.level;
+			if (iLevel>15)
+				iLevel=15;
+			float fLevel=(100.0f/15.0f)*float(iLevel);
+			if (fLevel>99.0f)
+				fLevel=100.0f;
+			iLevel=int(fLevel);
+		}
+		cmnd=light2_sSetLevel;
+	}
+
+	if (cmnd!=light2_sSetLevel)
+	{
+		//On/Off
+		unsigned char UpDown = 1;
+		UpDown = ((cmnd != light2_sOff) && (cmnd != light2_sGroupOff));
+
+
+		buf[1] = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
+		buf[9] = 0x30;
+
+		sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+
+		//Next command is send a bit later (button release)
+		buf[1] = 0;
+		buf[9] = 0x20;
+		sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+	}
+	else
+	{
+		//Send dim value
+
+		//Dim On DATA_BYTE0 = 0x09
+		//Dim Off DATA_BYTE0 = 0x08
+
+		buf[1]=2;
+		buf[2]=iLevel;
+		buf[3]=1;//very fast dimming
+
+		if ((iLevel==0)||(orgcmd==light2_sOff))
+			buf[4]=0x08; //Dim Off
+		else
+			buf[4]=0x09;//Dim On
+
+		sendFrameQueue(PACKET_RADIO,buf,10,NULL,0);
+	}
+	return true;
 }
 
 void CEnOceanESP3::SendDimmerTeachIn(const char *pdata, const unsigned char length)

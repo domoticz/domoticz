@@ -170,9 +170,10 @@ void RFXComTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR, "RFXCOM: Error: %s", error.message().c_str());
 }
 
-void RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!mIsConnected)
-		return;
+		return false;
 	write((const unsigned char*)pdata, length);
+	return true;
 }

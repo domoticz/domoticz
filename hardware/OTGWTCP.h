@@ -11,7 +11,7 @@ public:
 	OTGWTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5);
 	~OTGWTCP(void);
 	bool isConnected(){ return mIsConnected; };
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 public:
 	// signals

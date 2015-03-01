@@ -74,7 +74,7 @@ public:
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();
 	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
-	void WriteToHardware(const char *pdata, const unsigned char length) {};
+	bool WriteToHardware(const char *pdata, const unsigned char length) { return true; };
 	void DoDecodeMessage(const CTCPClient *pClient, const unsigned char *pRXCommand);
 private:
 	CTCPServerInt *m_pTCPServer;

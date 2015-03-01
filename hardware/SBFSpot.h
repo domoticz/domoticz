@@ -8,7 +8,7 @@ class CSBFSpot : public CDomoticzHardwareBase
 public:
 	CSBFSpot(const int ID, const std::string SBFConfigFile);
 	~CSBFSpot(void);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void ImportOldMonthData();
 private:
 	void SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname);

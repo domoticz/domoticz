@@ -11,7 +11,7 @@ public:
 	virtual ~C1Wire();
 
 	static bool Have1WireSystem();
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 
 private:
 	volatile bool m_stoprequested;

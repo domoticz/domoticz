@@ -139,8 +139,9 @@ void P1MeterSerial::readCallback(const char *data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-void P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool P1MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	return false;
 }
 
 void P1MeterSerial::Do_Work()

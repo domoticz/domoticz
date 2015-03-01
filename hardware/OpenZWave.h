@@ -97,6 +97,7 @@ public:
 	//Controller Commands
 	bool RequestNodeConfig(const unsigned int homeID, const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
+	bool HasNodeFailed(const int nodeID);
 	bool ReceiveConfigurationFromOtherController();
 	bool SendConfigurationToSecondaryController();
 	bool TransferPrimaryRole();
@@ -135,16 +136,14 @@ private:
 	void UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID);
 	void UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID);
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
-	void SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
-	void SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen);
+	bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
+	bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);
 	void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode);
 
 	unsigned char GetInstanceFromValueID(const OpenZWave::ValueID &vID);
-
-	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);
 
 	void StopHardwareIntern();
 

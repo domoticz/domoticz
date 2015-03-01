@@ -104,7 +104,7 @@ class CPiFace : public CDomoticzHardwareBase
 public:
 	CPiFace(const int ID);
 	~CPiFace();
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void CallBackSendEvent(const unsigned char *pEventPacket);
 	void CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinID, bool Interrupt_Enable);
 

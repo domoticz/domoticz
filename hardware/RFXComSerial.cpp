@@ -221,9 +221,10 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 }
 
 
-void RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (isOpen()) {
-		write(pdata,length);
-	}
+	if (!isOpen())
+		return false;
+	write(pdata,length);
+	return true;
 }

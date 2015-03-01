@@ -167,9 +167,9 @@ void CToonThermostat::Do_Work()
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker stopped...");
 }
 
-void CToonThermostat::WriteToHardware(const char *pdata, const unsigned char length)
+bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 void CToonThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)

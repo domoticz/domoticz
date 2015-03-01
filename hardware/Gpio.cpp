@@ -229,7 +229,7 @@ bool CGpio::StopHardware()
 }
 
 
-void CGpio::WriteToHardware(const char *pdata, const unsigned char length)
+bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pCmd=(tRBUF*) pdata;
 
@@ -249,11 +249,14 @@ void CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		else {
 			_log.Log(LOG_NORM,"GPIO: wrong housecode %d", static_cast<int>(housecode));
+			return false;
 		}
 	}
 	else {
 		_log.Log(LOG_NORM,"GPIO: WriteToHardware packet type %d or subtype %d unknown", pCmd->LIGHTING1.packettype, pCmd->LIGHTING1.subtype);
+		return false;
 	}
+	return true;
 }
 
 

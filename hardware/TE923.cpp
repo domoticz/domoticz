@@ -88,9 +88,9 @@ void CTE923::Do_Work()
 	_log.Log(LOG_STATUS,"TE923: Worker stopped...");
 }
 
-void CTE923::WriteToHardware(const char *pdata, const unsigned char length)
+bool CTE923::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return galse;
 }
 
 void CTE923::GetSensorDetails()

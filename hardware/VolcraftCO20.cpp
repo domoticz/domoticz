@@ -88,9 +88,9 @@ void CVolcraftCO20::Do_Work()
 	_log.Log(LOG_STATUS,"Voltcraft CO-20: Worker stopped...");
 }
 
-void CVolcraftCO20::WriteToHardware(const char *pdata, const unsigned char length)
+bool CVolcraftCO20::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 void CVolcraftCO20::GetSensorDetails()

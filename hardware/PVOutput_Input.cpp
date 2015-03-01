@@ -78,9 +78,9 @@ void CPVOutputInput::Do_Work()
 	_log.Log(LOG_STATUS,"PVOutput (Input): Worker stopped...");
 }
 
-void CPVOutputInput::WriteToHardware(const char *pdata, const unsigned char length)
+bool CPVOutputInput::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 void CPVOutputInput::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)

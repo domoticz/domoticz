@@ -74,9 +74,9 @@ void CWunderground::Do_Work()
 	_log.Log(LOG_STATUS,"Wunderground: Worker stopped...");
 }
 
-void CWunderground::WriteToHardware(const char *pdata, const unsigned char length)
+bool CWunderground::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 static std::string readWUndergroundTestFile( const char *path )

@@ -98,9 +98,9 @@ bool CDavisLoggerSerial::OpenSerialDevice()
 	return true;
 }
 
-void CDavisLoggerSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDavisLoggerSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 void CDavisLoggerSerial::Do_Work()

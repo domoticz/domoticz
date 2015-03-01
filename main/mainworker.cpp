@@ -1151,14 +1151,14 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 	WriteToHardware(HwdID, (const char*)&cmd,sizeof(cmd.ICMND));
 }
 
-void MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsigned char length)
+bool MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsigned char length)
 {
 	int hindex=FindDomoticzHardware(HwdID);
 	
 	if (hindex==-1)
-		return;
+		return false;
 
-	m_hardwaredevices[hindex]->WriteToHardware(pdata,length);
+	return m_hardwaredevices[hindex]->WriteToHardware(pdata,length);
 }
 
 void MainWorker::WriteMessageStart()
@@ -8610,7 +8610,8 @@ bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned cha
 	Response.ICMND.msg3=Mode3;
 	Response.ICMND.msg4=Mode4;
 	Response.ICMND.msg5=Mode5;
-	WriteToHardware(HardwareID,(const char*)&Response,sizeof(Response.ICMND));
+	if (!WriteToHardware(HardwareID, (const char*)&Response, sizeof(Response.ICMND)))
+		return false;
 	DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&Response);
 	//Save it also
 	SendCommand(HardwareID,cmdSAVE,"Save Settings");
@@ -8698,7 +8699,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING1.filler=0;
 			lcmd.LIGHTING1.rssi=7;
 
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING1));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING1)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -8790,7 +8792,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				pEnocean->SendDimmerTeachIn((const char*)&lcmd,sizeof(lcmd.LIGHTING1));
 			}
 			else
-				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING2));
+			{
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
+					return false;
+			}
 
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
@@ -8826,7 +8831,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				lcmd.LIGHTING4.pulseLow=pulsetimeing&0xFF;
 				lcmd.LIGHTING4.filler=0;
 				lcmd.LIGHTING4.rssi=7;
-				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING4));
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING4)))
+					return false;
 				if (!IsTesting) {
 					//send to internal for now (later we use the ACK)
 					DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -8881,17 +8887,24 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					//Special Case, turn off first
 					unsigned char oldCmd=lcmd.LIGHTING5.cmnd;
 					lcmd.LIGHTING5.cmnd=light5_sLivoloAllOff;
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+						return false;
 					lcmd.LIGHTING5.cmnd=oldCmd;
 				}
 				if (switchcmd=="Set Level")
 				{
 					//dim value we have to send multiple times
-					for (int iDim=0; iDim<level; iDim++)
-						WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+					for (int iDim = 0; iDim < level; iDim++)
+					{
+						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+							return false;
+					}
 				}
 				else
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+				{
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+						return false;
+				}
 			}
 			else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 			{
@@ -8910,7 +8923,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					//Special Case, turn off first
 					unsigned char oldCmd=lcmd.LIGHTING5.cmnd;
 					lcmd.LIGHTING5.cmnd=light5_sRGBoff;
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+						return false;
 					lcmd.LIGHTING5.cmnd=oldCmd;
 					sleep_milliseconds(100);
 				}
@@ -8918,7 +8932,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				{
 					//turn on
 					lcmd.LIGHTING5.cmnd=light5_sRGBon;
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+						return false;
 					sleep_milliseconds(100);
 
 					if (switchcmd=="Set Color")
@@ -8928,13 +8943,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 							double dval;
 							dval=(78.0/255.0)*float(oldlevel);
 							lcmd.LIGHTING5.cmnd=light5_sRGBcolormin+1+round(dval);
-							WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+							if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+								return false;
 						}
 					}
 				}
 			}
 			else
-				WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING5));
+			{
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+					return false;
+			}
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -8960,7 +8979,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				return false;
 			lcmd.LIGHTING6.filler=0;
 			lcmd.LIGHTING6.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.LIGHTING6));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING6)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9000,7 +9020,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					{
 						lcmd2.command=Limitless_SetColorToWhite;
 					}
-					WriteToHardware(HardwareID,(const char*)&lcmd2,sizeof(_tLimitlessLights));
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd2, sizeof(_tLimitlessLights)))
+						return false;
 					sleep_milliseconds(100);
 				}
 			}
@@ -9008,7 +9029,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.value=level;
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.command))
 				return false;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(_tLimitlessLights));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tLimitlessLights)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9034,9 +9056,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
 						return false;
 					//send it twice
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
+						return false;
 					sleep_milliseconds(500);
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
+						return false;
 					if (!IsTesting) {
 						//send to internal for now (later we use the ACK)
 						DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9050,7 +9074,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				{
 					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
 						return false;
-					WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.SECURITY1));
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
+						return false;
 					if (!IsTesting) {
 						//send to internal for now (later we use the ACK)
 						DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9074,7 +9099,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				return false;
 			lcmd.CURTAIN1.filler=0;
 
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.CURTAIN1));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CURTAIN1)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9110,7 +9136,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			level=15;
 			lcmd.BLINDS1.filler=0;
 			lcmd.BLINDS1.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.BLINDS1));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.BLINDS1)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9144,7 +9171,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			level=15;
 			lcmd.RFY.filler=0;
 			lcmd.RFY.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.RFY));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RFY)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9165,7 +9193,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.CHIME.sound=Unit;
 			lcmd.CHIME.filler=0;
 			lcmd.CHIME.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.CHIME));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9188,7 +9217,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 			lcmd.THERMOSTAT2.filler = 0;
 			lcmd.THERMOSTAT2.rssi = 7;
-			WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT2));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT2)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd);
@@ -9211,7 +9241,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			level=15;
 			lcmd.THERMOSTAT3.filler=0;
 			lcmd.THERMOSTAT3.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.THERMOSTAT3));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT3)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9231,7 +9262,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.REMOTE.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.REMOTE.toggle=0;
 			lcmd.REMOTE.rssi=7;
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.REMOTE));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.REMOTE)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9253,7 +9285,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			else
 				lcmd.EVOHOME3.demand=level;
 
-			WriteToHardware(HardwareID,(const char*)&lcmd,sizeof(lcmd.EVOHOME3));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.EVOHOME3)))
+				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
@@ -9280,7 +9313,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		lcmd.RADIATOR1.tempPoint5 = 0;
 		lcmd.RADIATOR1.filler = 0;
 		lcmd.RADIATOR1.rssi = 7;
-		WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1));
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1)))
+			return false;
 
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)
@@ -9565,7 +9599,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			StringSplit(szTemp, ".", strarray);
 			lcmd.RADIATOR1.temperature = (unsigned char)atoi(strarray[0].c_str());
 			lcmd.RADIATOR1.tempPoint5 = (unsigned char)atoi(strarray[1].c_str());
-			WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1));
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1)))
+				return false;
 		}
 		else
 		{
@@ -9577,7 +9612,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			tmeter.id4 = ID4;
 			tmeter.dunit = 1;
 			tmeter.temp = TempValue;
-			WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tThermostat));
+			if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tThermostat)))
+				return false;
 			if (pHardware->HwdType == HTYPE_Dummy)
 			{
 				//Also set it in the database, ad this devices does not send updates
@@ -9631,7 +9667,8 @@ bool MainWorker::SetClockInt(const std::vector<std::string> &sd, const std::stri
 		tmeter.subtype = sTypeZWaveClock;
 		tmeter.intval1 = ID;
 		tmeter.intval2 = (day*(24 * 60)) + (hour * 60) + minute;
-		WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice));
+		if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice)))
+			return false;
 	}
 #endif
 	return true;
@@ -9672,7 +9709,8 @@ bool MainWorker::SetZWaveThermostatModeInt(const std::vector<std::string> &sd, c
 		tmeter.subtype = sTypeZWaveThermostatMode;
 		tmeter.intval1 = ID;
 		tmeter.intval2 = tMode;
-		WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice));
+		if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice)))
+			return false;
 	}
 #endif
 	return true;
@@ -9699,7 +9737,8 @@ bool MainWorker::SetZWaveThermostatFanModeInt(const std::vector<std::string> &sd
 		tmeter.subtype = sTypeZWaveThermostatFanMode;
 		tmeter.intval1 = ID;
 		tmeter.intval2 = fMode;
-		WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice));
+		if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tGeneralDevice)))
+			return false;
 	}
 #endif
 	return true;

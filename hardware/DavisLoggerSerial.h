@@ -15,7 +15,7 @@ public:
 	~CDavisLoggerSerial(void);
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
 	bool StopHardware();

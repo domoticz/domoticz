@@ -6547,10 +6547,15 @@ namespace http {
 						switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
 					}
 				}
-				if (m_mainworker.SwitchLight(idx,switchcmd,level,"-1",onlyonchange,0)==true)
+				root["title"] = "SwitchLight";
+				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0) == true)
 				{
 					root["status"] = "OK";
-					root["title"] = "SwitchLight";
+				}
+				else
+				{
+					root["status"] = "ERROR";
+					root["message"] = "Error sending switch command, check device/hardware !";
 				}
 			} //(rtype=="switchlight")
 			else if (cparam == "switchscene")
@@ -8589,6 +8594,21 @@ namespace http {
 						//add light details
 						bHasTimers = m_sql.HasTimers(sd[0]);
 
+						bHaveTimeout = false;
+#ifdef WITH_OPENZWAVE
+						if (pHardware->HwdType == HTYPE_OpenZWave)
+						{
+							COpenZWave *pZWave = (COpenZWave*)pHardware;
+							unsigned long ID;
+							std::stringstream s_strid;
+							s_strid << std::hex << sd[1];
+							s_strid >> ID;
+							int nodeID = (ID & 0x0000FF00) >> 8;
+							bHaveTimeout = pZWave->HasNodeFailed(nodeID);
+						}
+#endif
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
 						std::string lstatus = "";
 						int llevel = 0;
 						bool bHaveDimmer = false;
@@ -8787,7 +8807,6 @@ namespace http {
 						else
 							sprintf(szData, "%s", lstatus.c_str());
 						root["result"][ii]["Data"] = szData;
-						root["result"][ii]["HaveTimeout"] = false;
 					}
 					else if (dType == pTypeSecurity1)
 					{

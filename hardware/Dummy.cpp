@@ -30,8 +30,8 @@ bool CDummy::StopHardware()
     return true;
 }
 
-void CDummy::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return true;
 }
 

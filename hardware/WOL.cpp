@@ -123,7 +123,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 	return true;
 }
 
-void CWOL::WriteToHardware(const char *pdata, const unsigned char length)
+bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pSen=(tRBUF*)pdata;
 
@@ -131,7 +131,7 @@ void CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 	//unsigned char subtype=pSen->ICMND.subtype;
 
 	if (packettype!=pTypeLighting2)
-		return;
+		return false;
 
 	int nodeID=(pSen->LIGHTING2.id3<<8)|pSen->LIGHTING2.id4;
 
@@ -142,14 +142,14 @@ void CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 	szQuery << "SELECT MacAddress FROM WOLNodes WHERE (ID==" << nodeID << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
-		return; //Not Found
+		return false; //Not Found
 
 	unsigned char tosend[102];
 	std::string mac_address=result[0][0];
 	if (!GenerateWOLPacket(tosend, mac_address))
 	{
 		_log.Log(LOG_ERROR,"WOL: Error creating magic packet");
-		return;
+		return false;
 	}
 
 	if (SendWOLPacket(tosend))
@@ -159,7 +159,9 @@ void CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 	else
 	{
 		_log.Log(LOG_ERROR,"WOL: Error sending notification to: %s",mac_address.c_str());
+		return false;
 	}
+	return true;
 }
 
 void CWOL::AddNode(const std::string &Name, const std::string &MACAddress)

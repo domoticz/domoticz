@@ -847,7 +847,7 @@ ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceInstance(const int nodeID, const 
 	return NULL;
 }
 
-void CRazberry::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
+bool CRazberry::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
 {
 	//Send command
 	std::stringstream sstr;
@@ -856,10 +856,12 @@ void CRazberry::SwitchLight(const int nodeID, const int instanceID, const int co
 		iValue=1;
 	sstr << "devices[" << nodeID << "].instances[" << instanceID << "].commandClasses[" << commandClass << "].Set(" << iValue << ")";
 	RunCMD(sstr.str());
+	return true;
 }
 
-void CRazberry::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen)
+bool CRazberry::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen)
 {
+	return false;
 }
 
 void CRazberry::SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)
@@ -927,4 +929,9 @@ bool CRazberry::RemoveFailedDevice(const int nodeID)
 bool CRazberry::CancelControllerCommand()
 {
 	return true;
+}
+
+bool CRazberry::HasNodeFailed(const int nodeID)
+{
+	return false;
 }

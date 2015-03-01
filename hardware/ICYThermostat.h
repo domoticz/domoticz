@@ -13,7 +13,7 @@ class CICYThermostat : public CDomoticzHardwareBase
 public:
 	CICYThermostat(const int ID, const std::string Username, const std::string Password);
 	~CICYThermostat(void);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 private:
 	void SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);

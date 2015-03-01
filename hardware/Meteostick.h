@@ -18,7 +18,7 @@ public:
 	Meteostick(const int ID, const std::string& devname, const unsigned int baud_rate);
     ~Meteostick();
 
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
 	bool StopHardware();

@@ -30,7 +30,7 @@ public:
 	CEnOceanESP3(const int ID, const std::string& devname, const int type);
 
     ~CEnOceanESP3();
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SendDimmerTeachIn(const char *pdata, const unsigned char length);
 	unsigned long m_id_base;
 private:

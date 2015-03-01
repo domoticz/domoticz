@@ -594,7 +594,7 @@ void MySensorsBase::SendCommand(const int NodeID, const int ChildID, const _eMes
 	WriteInt(sstr.str());
 }
 
-void MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
+bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pCmd = (tRBUF *)pdata;
 	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
@@ -635,8 +635,10 @@ void MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 		}
 		else {
 			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
+			return false;
 		}
 	}
+	return true;
 }
 
 

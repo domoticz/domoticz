@@ -236,11 +236,11 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR, "Mochad: Error: %s", error.message().c_str());
 }
 
-void MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	//RBUF *m_mochad = (RBUF *)pdata;
 	if (!mIsConnected)
-		return;
+		return false;
 	if (pdata[1] == pTypeInterfaceControl && pdata[2] == sTypeInterfaceCommand && pdata[4] == cmdSTATUS) {
 		sprintf (s_buffer,"ST\n");
 	} else if (pdata[1] == pTypeLighting1 && pdata[2] == sTypeX10 && pdata[6] == light1_sOn) {
@@ -253,9 +253,11 @@ void MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 //			case light1_sAllOn:
 //			case light1_sAllOff:
 		_log.Log(LOG_STATUS, "Mochad: Unknown command %d:%d:%d:%d", pdata[1],pdata[2],pdata[6]);
+		return false;
 	}
 //	_log.Log(LOG_STATUS, "Mochad: send '%s'", s_buffer);
 	write((const unsigned char *)s_buffer, strlen(s_buffer));
+	return true;
 }
 
 void MochadTCP::MatchLine()

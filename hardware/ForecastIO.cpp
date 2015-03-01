@@ -74,9 +74,9 @@ void CForecastIO::Do_Work()
 	_log.Log(LOG_STATUS,"ForecastIO Worker stopped...");
 }
 
-void CForecastIO::WriteToHardware(const char *pdata, const unsigned char length)
+bool CForecastIO::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 static std::string readForecastIOTestFile( const char *path )

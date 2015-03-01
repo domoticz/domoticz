@@ -72,7 +72,7 @@ CHarmonyHub::~CHarmonyHub(void)
 	Logout();
 }
 
-void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
+bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pCmd=(tRBUF*) pdata;
 	BYTE idx=0;
@@ -80,7 +80,7 @@ void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 	if(this->m_bIsChangingActivity)
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Command cannot be sent. Hub is changing activity");
-		return;
+		return false;
 	}
 	//activities can be switched on
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==1))
@@ -101,6 +101,7 @@ void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		if (SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND, sstr.str(), "") == 1)
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
+			return false;
 		}			
 		/*}
 		else
@@ -111,8 +112,10 @@ void CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		if(SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND, "PowerOff","") == 1)
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the poweroff command");
+			return false;
 		}			
 	}
+	return true;
 }
 
 void CHarmonyHub::Init()

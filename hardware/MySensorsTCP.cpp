@@ -152,13 +152,14 @@ void MySensorsTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR,"MySensors: Error: %s",error.message().c_str());
 }
 
-void MySensorsTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool MySensorsTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!mIsConnected)
 	{
-		return;
+		return false;
 	}
 	write((const unsigned char*)pdata,length);
+	return true;
 }
 
 void MySensorsTCP::WriteInt(const std::string &sendStr)

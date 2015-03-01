@@ -9,7 +9,7 @@ class CEcoDevices : public CDomoticzHardwareBase
 public:
 	CEcoDevices(const int ID, const std::string IPAddress, const unsigned short usIPPort);
 	~CEcoDevices(void);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool Login();
 	void Logout();

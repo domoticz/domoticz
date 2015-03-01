@@ -130,8 +130,9 @@ void SolarEdgeTCP::write(const char *data, size_t size)
 {
 }
 
-void SolarEdgeTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool SolarEdgeTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	return false;
 }
 
 void SolarEdgeTCP::OnUpstreamData(const unsigned char *pData, const size_t Len)
