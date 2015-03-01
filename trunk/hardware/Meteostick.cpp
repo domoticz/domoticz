@@ -22,6 +22,7 @@
 #define USE_868_Mhz
 #define RAIN_IN_MM
 
+
 //
 //Class Meteostick
 //
@@ -173,8 +174,9 @@ void Meteostick::readCallback(const char *data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-void Meteostick::WriteToHardware(const char *pdata, const unsigned char length)
+bool Meteostick::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	return false;
 }
 
 void Meteostick::ParseData(const unsigned char *pData, int Len)
@@ -300,12 +302,19 @@ void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, c
 		bDeviceExits = false;
 	}
 
-	//Calculate Altitude
-	double altitude = CalculateAltitudeFromPressure((double)Baro);
+	//Calculate Pressure
+	float altitude = 188.0f;	//Should be custom defined for each user
+
+	float dTempGradient = 0.0065f;
+	float dTempAtSea = (Temp - (-273.15f)) + dTempGradient * altitude;
+	float dBasis = 1 - dTempGradient * altitude / dTempAtSea;
+	float dExponent = 0.03416f / dTempGradient;
+	float dPressure = Baro / pow(dBasis,dExponent);
+
 	_tTempBaro tsensor;
 	tsensor.id1 = Idx;
 	tsensor.temp = Temp;
-	tsensor.baro = Baro;
+	tsensor.baro = dPressure;
 	tsensor.altitude = float(altitude);
 
 	//this is probably not good, need to take the rising/falling of the pressure into account?
@@ -373,16 +382,26 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	//this is not correct, why no wind temperature? and only chill?
 	tsen.WIND.chillh = 0;
 	tsen.WIND.chilll = 0;
-	tsen.WIND.temperatureh = 0;
-	tsen.WIND.temperaturel = 0;
-	tsen.WIND.tempsign = (Temp >= 0) ? 0 : 1;
-	tsen.WIND.chillsign = (Temp >= 0) ? 0 : 1;
-	int at10 = round(abs(Temp*10.0f));
-	tsen.WIND.temperatureh = (BYTE)(at10 / 256);
-	tsen.WIND.chillh = (BYTE)(at10 / 256);
-	at10 -= (tsen.WIND.chillh * 256);
-	tsen.WIND.temperaturel = (BYTE)(at10);
-	tsen.WIND.chilll = (BYTE)(at10);
+	//tsen.WIND.temperatureh = 0;
+	//tsen.WIND.temperaturel = 0;
+	//tsen.WIND.tempsign = (Temp >= 0) ? 0 : 1;
+	
+	float dWindSpeed = Speed * 3.6f;
+	float dWindChill = Temp;
+	if (dWindSpeed > 5 && Temp < 10)
+	{
+		float dBasis = dWindSpeed;
+		float dExponent = 0.16f;
+		float dWind = pow(dBasis,dExponent);
+		dWindChill = (13.12f + 0.6215f * Temp - 11.37f * dWind + 0.3965f * Temp * dWind);
+	}
+	dWindChill*=10.0f;
+	tsen.WIND.chillsign = (dWindChill >= 0) ? 0 : 1;
+	//tsen.WIND.temperatureh = (BYTE)(dWindChill / 256);
+	tsen.WIND.chillh = (BYTE)(dWindChill / 256);
+	dWindChill -= (tsen.WIND.chillh * 256);
+	//tsen.WIND.temperaturel = (BYTE)(dWindChill);
+	tsen.WIND.chilll = (BYTE)(dWindChill);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);
 

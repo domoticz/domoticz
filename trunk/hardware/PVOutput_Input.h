@@ -8,7 +8,7 @@ class CPVOutputInput : public CDomoticzHardwareBase
 public:
 	CPVOutputInput(const int ID, const std::string &SID, const std::string &Key);
 	~CPVOutputInput(void);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	void SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname);
 	bool GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal);

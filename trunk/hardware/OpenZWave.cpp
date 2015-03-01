@@ -604,13 +604,19 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			case OpenZWave::Notification::Code_Alive:
 				if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
 				{
+					bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 					nodeInfo->eState = NSTATE_AWAKE;
+					if (bWasDead)
+						ForceUpdateForNodeDevices(m_controllerID, _nodeID);
 				}
 				break;
 			case OpenZWave::Notification::Code_Timeout:
-#ifdef _DEBUG
+				if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
+				{
+					nodeInfo->eState = NSTATE_DEAD;
+					ForceUpdateForNodeDevices(m_controllerID, _nodeID);
+				}
 				_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
-#endif
 				break;
 			case OpenZWave::Notification::Code_NoOperation:
 				//Code_NoOperation send to node
@@ -952,10 +958,10 @@ bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo *pNode, const int inde
 	return false;
 }
 
-void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
+bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)
 {
 	if (m_pManager == NULL)
-		return;
+		return false;
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
 	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
@@ -968,39 +974,43 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		else {
 			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		}
-		return;
+		return false;
 	}
+	if (m_pManager->IsNodeFailed(m_controllerID, nodeID))
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
+	}
+
+	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0);
+	if (!pDevice)
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Internal Node Device not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
+	}
+
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	unsigned char svalue = (unsigned char)value;
 
-	bool bHaveSendSwitch = false;
-
-	bool bIsDimmer = (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, "Level", vID) == true);
-	if (bIsDimmer == false)
+	if (pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL)
 	{
+		//On/Off device
 		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true)
 		{
-			unsigned int _homeID = vID.GetHomeId();
-			unsigned char _nodeID = vID.GetNodeId();
-			if (m_pManager->IsNodeFailed(_homeID, _nodeID))
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent!");
-				return;
-			}
-
 			OpenZWave::ValueID::ValueType vType = vID.GetType();
-			_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command! HomeID: %u, NodeID: %d (0x%02x)",_homeID,_nodeID,_nodeID);
-			bHaveSendSwitch = true;
+			_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command! NodeID: %d (0x%02x)", nodeID, nodeID);
 			if (vType == OpenZWave::ValueID::ValueType_Bool)
 			{
 				if (svalue == 0) {
 					//Off
 					m_pManager->SetValue(vID, false);
+					pDevice->intvalue = 0;
 				}
 				else {
 					//On
 					m_pManager->SetValue(vID, true);
+					pDevice->intvalue = 255;
 				}
 			}
 			else
@@ -1008,127 +1018,57 @@ void COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 				if (svalue == 0) {
 					//Off
 					m_pManager->SetValue(vID, 0);
+					pDevice->intvalue = 0;
 				}
 				else {
 					//On
 					m_pManager->SetValue(vID, 255);
+					pDevice->intvalue = 255;
 				}
 			}
 		}
-		else if ((GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_BINARY, vID) == true) ||
-			(GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SENSOR_MULTILEVEL, vID) == true))
+		else
 		{
-			unsigned int _homeID = vID.GetHomeId();
-			unsigned char _nodeID = vID.GetNodeId();
-			if (m_pManager->IsNodeFailed(_homeID, _nodeID))
-			{
-				_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent!");
-				return;
-			}
-
-			OpenZWave::ValueID::ValueType vType = vID.GetType();
-			_log.Log(LOG_NORM, "OpenZWave: Domoticz has sent a Switch command!");
-			bHaveSendSwitch = true;
-			if (vType == OpenZWave::ValueID::ValueType_Bool)
-			{
-				if (svalue == 0) {
-					//Off
-					m_pManager->SetValue(vID, false);
-				}
-				else {
-					//On
-					m_pManager->SetValue(vID, true);
-				}
-			}
-			else
-			{
-				if (svalue == 0) {
-					//Off
-					m_pManager->SetValue(vID, 0);
-				}
-				else {
-					//On
-					m_pManager->SetValue(vID, 255);
-				}
-			}
-		}
-		else {
-
+			_log.Log(LOG_ERROR, "OpenZWave: Internal Node ValueID not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+			return false;
 		}
 	}
 	else
 	{
-		unsigned int _homeID = vID.GetHomeId();
-		unsigned char _nodeID = vID.GetNodeId();
-		if (m_pManager->IsNodeFailed(_homeID, _nodeID))
+		//dimmable light  device
+		if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, "Level", vID) == true)
 		{
-			_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent!");
-			return;
-		}
-
-		/*
-				if (vType == OpenZWave::ValueID::ValueType_Decimal)
-				{
-				float pastLevel;
-				if (m_pManager->GetValueAsFloat(vID,&pastLevel)==true)
-				{
-				if (svalue==pastLevel)
-				{
-				if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL,"Level",vID)==true);
-				}
-				}
-				}
-				*/
-		if ((svalue > 99) && (svalue != 255))
-			svalue = 99;
-		_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command!, Level: %d, HomeID: %u, NodeID: %d (0x%02x)", svalue,_homeID,_nodeID,_nodeID);
-		bHaveSendSwitch = true;
-		if (!m_pManager->SetValue(vID, svalue))
-		{
-			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! HomeID: %u, NodeID: %d (0x%02x)",_homeID,_nodeID,_nodeID);
-		}
-	}
-
-	//bHaveSendSwitch = false; //solves the state problem?
-
-	if (bHaveSendSwitch)
-	{
-		unsigned char commandclass = vID.GetCommandClassId();
-		unsigned char NodeID = vID.GetNodeId();
-
-		//unsigned char vInstance = vID.GetInstance();//(See note on top of this file) GetInstance();
-		//unsigned char vIndex = vID.GetIndex();
-
-		unsigned char instance = GetInstanceFromValueID(vID);
-
-		std::stringstream sstr;
-		sstr << int(NodeID) << ".instances." << int(instance) << ".commandClasses." << int(commandclass) << ".data";
-		std::string path = sstr.str();
-
-		_tZWaveDevice *pDevice = NULL;
-		std::map<std::string, _tZWaveDevice>::iterator itt;
-		for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
-		{
-			std::string::size_type loc = path.find(itt->second.string_id, 0);
-			if (loc != std::string::npos)
+			if ((svalue > 99) && (svalue != 255))
+				svalue = 99;
+			pDevice->intvalue = svalue;
+			_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command!, Level: %d, NodeID: %d (0x%02x)", svalue, nodeID, nodeID);
+			if (!m_pManager->SetValue(vID, svalue))
 			{
-				pDevice = &itt->second;
-				break;
+				_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! NodeID: %d (0x%02x)", nodeID, nodeID);
 			}
 		}
-		if (pDevice != NULL)
+		else
 		{
-			pDevice->intvalue = value;
+			_log.Log(LOG_ERROR, "OpenZWave: Internal Node ValueID not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+			return false;
 		}
-
 	}
 	m_updateTime = mytime(NULL);
+	return true;
 }
 
-void COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen)
+bool COpenZWave::HasNodeFailed(const int nodeID)
+{
+	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
+	if (!pNode)
+		return true;
+	return m_pManager->IsNodeFailed(m_controllerID, nodeID);
+}
+
+bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen)
 {
 	if (m_pManager == NULL)
-		return;
+		return false;
 	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
 	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
@@ -1141,7 +1081,12 @@ void COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 		else {
 			_log.Log(LOG_ERROR, "OpenZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		}
-		return;
+		return false;
+	}
+	if (m_pManager->IsNodeFailed(m_controllerID, nodeID))
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
@@ -1152,10 +1097,17 @@ void COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 	{
 		if (!m_pManager->SetValue(vID, colvalues, valuelen))
 		{
-			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! HomeID: %u, NodeID: %d (0x%02x)",m_controllerID,nodeID,nodeID);
+			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! NodeID: %d (0x%02x)",nodeID,nodeID);
+			return false;
 		}
 	}
+	else
+	{
+		_log.Log(LOG_ERROR, "OpenZWave: Internal Node ValueID not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
+	}
 	m_updateTime = mytime(NULL);
+	return true;
 }
 
 void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)
@@ -1166,7 +1118,10 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT, vID) == true)
 	{
-		m_pManager->SetValue(vID, value);
+		if (!m_pManager->SetValue(vID, value))
+		{
+			_log.Log(LOG_ERROR, "OpenZWave: Error setting Thermostat Setpoint Value! NodeID: %d (0x%02x)", nodeID, nodeID);
+		}
 	}
 	m_updateTime = mytime(NULL);
 }
@@ -1300,7 +1255,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Raw)
 			{
-				_device.devType = ZDTYPE_SWITCH_DIMMER;
 				_device.intvalue = 0;
 				InsertDevice(_device);
 				_device.label = "RGBW";
@@ -1321,24 +1275,22 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 			(vLabel == "Magnet open")
 			)
 		{
+			_device.devType = ZDTYPE_SWITCH_NORMAL;
 			if (m_pManager->GetValueAsBool(vID, &bValue) == true)
 			{
-				_device.devType = ZDTYPE_SWITCH_NORMAL;
 				if (bValue == true)
 					_device.intvalue = 255;
 				else
 					_device.intvalue = 0;
-				InsertDevice(_device);
 			}
 			else if (m_pManager->GetValueAsByte(vID, &byteValue) == true)
 			{
-				_device.devType = ZDTYPE_SWITCH_NORMAL;
 				if (byteValue == 0)
 					_device.intvalue = 0;
 				else
 					_device.intvalue = 255;
-				InsertDevice(_device);
 			}
+			InsertDevice(_device);
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_USER_CODE)
@@ -2230,7 +2182,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	}
 		break;
 	case ZDTYPE_SWITCH_DIMMER:
-	{
 		if (vLabel != "Level")
 			return;
 		if (vType != OpenZWave::ValueID::ValueType_Byte)
@@ -2242,7 +2193,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			return; //dont send same value
 		}
 		pDevice->intvalue = byteValue;
-	}
 		break;
 	case ZDTYPE_SENSOR_POWER:
 		if (
@@ -2399,7 +2349,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		pDevice->sequence_number = 1;
 	if (pDevice->bValidValue)
 		SendDevice2Domoticz(pDevice);
-
 }
 
 bool COpenZWave::IncludeDevice()
@@ -2718,18 +2667,6 @@ void COpenZWave::OnZWaveDeviceStatusUpdate(int _cs, int _err)
 		break;
 	}
 	_log.Log(LOG_STATUS, "OpenZWave: Device Response: %s", szLog.c_str());
-}
-
-bool COpenZWave::IsNodeRGBW(const unsigned int homeID, const int nodeID)
-{
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	result = m_sql.query(szQuery.str());
-	if (result.size() < 1)
-		return false;
-	std::string ProductDescription = result[0][0];
-	return (ProductDescription.find("FGRGBWM441") != std::string::npos);
 }
 
 void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, const int pollTime)

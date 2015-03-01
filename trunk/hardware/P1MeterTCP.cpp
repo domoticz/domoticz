@@ -199,8 +199,10 @@ void P1MeterTCP::write(const char *data, size_t size)
 {
 }
 
-void P1MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool P1MeterTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (isConnected())
-		write(pdata,length);
+	if (!isConnected())
+		return false;
+	write(pdata,length);
+	return true;
 }

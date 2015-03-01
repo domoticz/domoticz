@@ -14,7 +14,7 @@ public:
 	~CHardwareMonitor(void);
 	void StartHardwareMonitor();
 	void StopHardwareMonitor();
-	void WriteToHardware(const char *pdata, const unsigned char length) {};
+	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
 private:
 	bool m_bEnabled;
 	double m_lastquerytime;

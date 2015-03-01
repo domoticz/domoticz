@@ -9,7 +9,7 @@ class CToonThermostat : public CDomoticzHardwareBase
 public:
 	CToonThermostat(const int ID, const std::string &Username, const std::string &Password);
 	~CToonThermostat(void);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 	void SetProgramState(const int newState);
 private:

@@ -248,8 +248,12 @@ void DomoticzTCP::write(const char *data, size_t size)
 	send(m_socket,data,size,0);
 }
 
-void DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (isConnected())
-		write(pdata,length);
+	{
+		write(pdata, length);
+		return true;
+	}
+	return false;
 }

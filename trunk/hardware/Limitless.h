@@ -8,7 +8,7 @@ class CLimitLess : public CDomoticzHardwareBase
 public:
 	CLimitLess(const int ID, const int LedType, const std::string IPAddress, const unsigned short usIPPort);
 	~CLimitLess(void);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname);
 	unsigned char m_LEDType;

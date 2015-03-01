@@ -131,9 +131,9 @@ void CSBFSpot::Do_Work()
 	_log.Log(LOG_STATUS,"SBFSpot: Worker stopped...");
 }
 
-void CSBFSpot::WriteToHardware(const char *pdata, const unsigned char length)
+bool CSBFSpot::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 char *strftime_t (const char *format, const time_t rawtime)

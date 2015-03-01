@@ -331,22 +331,22 @@ std::string CEvohomeMsg::Encode()
 	return szRet;
 }
 
-void CEvohome::WriteToHardware(const char *pdata, const unsigned char length)
+bool CEvohome::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if(!pdata)
-		return;
+		return false;
 	REVOBUF *tsen=(REVOBUF*)pdata;
 	switch (pdata[1])
 	{
 		case pTypeEvohome:
 			if (length<sizeof(REVOBUF::_tEVOHOME1))
-				return;
+				return false;
 			if(!m_bScriptOnly)//This is a switch so the on action script will be run anyway
 				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdControllerMode).Add(ConvertMode(m_dczToEvoControllerMode,tsen->EVOHOME1.status)).Add((tsen->EVOHOME1.mode==1)?CEvohomeDateTime(tsen->EVOHOME1):CEvohomeDateTime()).Add(tsen->EVOHOME1.mode));
 			break;
 		case pTypeEvohomeZone:
 			if (length<sizeof(REVOBUF::_tEVOHOME2))
-				return;
+				return false;
 			if(!m_bScriptOnly)
 				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdSetpointOverride).Add((uint8_t)(tsen->EVOHOME2.zone-1)).Add(tsen->EVOHOME2.temperature).Add(ConvertMode(m_dczToEvoZoneMode,tsen->EVOHOME2.mode)).Add((uint16_t)0xFFFF).Add((uint8_t)0xFF).Add_if(CEvohomeDateTime(tsen->EVOHOME2),(tsen->EVOHOME2.mode==2)));
 			else
@@ -354,7 +354,7 @@ void CEvohome::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case pTypeEvohomeWater:
 			if (length<sizeof(REVOBUF::_tEVOHOME2))
-				return;
+				return false;
 			if(!m_bScriptOnly)
 				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdDHWState).Add((uint8_t)(tsen->EVOHOME2.zone-1)).Add((uint8_t)tsen->EVOHOME2.temperature).Add(ConvertMode(m_dczToEvoZoneMode,tsen->EVOHOME2.mode)).Add((uint16_t)0).Add((uint8_t)0).Add_if(CEvohomeDateTime(tsen->EVOHOME2),(tsen->EVOHOME2.mode==2)));
 			else
@@ -362,11 +362,12 @@ void CEvohome::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case pTypeEvohomeRelay:
 			if (length<sizeof(REVOBUF::_tEVOHOME3))
-				return;
+				return false;
 			if(!m_bScriptOnly)//Only supported by HGI80
 				SetRelayHeatDemand(tsen->EVOHOME3.devno,tsen->EVOHOME3.demand);
 			break;
 	}
+	return true;
 }
 
 void CEvohome::RunScript(const char *pdata, const unsigned char length)

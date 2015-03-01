@@ -237,11 +237,12 @@ void OTGWTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR,"OTGW: Error: %s",error.message().c_str());
 }
 
-void OTGWTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool OTGWTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!mIsConnected)
 	{
-		return;
+		return false;
 	}
 //	write(pdata,length,0);
+	return true;
 }

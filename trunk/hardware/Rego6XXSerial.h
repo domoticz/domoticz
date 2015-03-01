@@ -45,7 +45,7 @@ public:
 
 	Rego6XXTemp	    m_Rego6XXTemp;
 	Rego6XXStatus	m_Rego6XXValue;
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	void Init();
 	bool StartHardware();

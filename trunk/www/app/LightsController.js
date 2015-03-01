@@ -1606,6 +1606,20 @@ define(['app'], function (app) {
 												img='<img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 									}
 								}
+								
+								var nbackcolor="#D4E1EE";
+								if (item.HaveTimeout==true) {
+									nbackcolor="#DF2D3A";
+								}
+								else if (item.Protected==true) {
+									nbackcolor="#A4B1EE";
+								}
+
+								var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+								if (obackcolor!=nbackcolor) {
+									$(id + " #name").css( "background-color", nbackcolor );
+								}
+								
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
@@ -1765,7 +1779,10 @@ define(['app'], function (app) {
 					}
 					
 					var nbackcolor="#D4E1EE";
-					if (item.Protected==true) {
+					if (item.HaveTimeout==true) {
+						nbackcolor="#DF2D3A";
+					}
+					else if (item.Protected==true) {
 						nbackcolor="#A4B1EE";
 					}
 					

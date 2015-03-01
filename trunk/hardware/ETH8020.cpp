@@ -82,7 +82,7 @@ void CETH8020::Do_Work()
 	_log.Log(LOG_STATUS,"ETH8020: Worker stopped...");
 }
 
-void CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
+bool CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pSen = (tRBUF*)pdata;
 
@@ -95,7 +95,7 @@ void CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
 
 		int Relay = pSen->LIGHTING2.unitcode;
 		if (Relay > 20)
-			return;
+			return false;
 
 		std::stringstream szURL;
 
@@ -120,13 +120,16 @@ void CETH8020::WriteToHardware(const char *pdata, const unsigned char length)
 		if (!HTTPClient::GET(szURL.str(), sResult))
 		{
 			_log.Log(LOG_ERROR, "ETH8020: Error sending relay command to: %s", m_szIPAddress.c_str());
-			return;
+			return false;
 		}
 		if (sResult.find("Success") == std::string::npos)
 		{
 			_log.Log(LOG_ERROR, "ETH8020: Error sending relay command to: %s", m_szIPAddress.c_str());
+			return false;
 		}
+		return true;
 	}
+	return false;
 }
 
 void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)

@@ -8,7 +8,7 @@ public:
 	MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort);
 	~MQTT(void);
 	bool isConnected(){ return m_IsConnected; };
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void OnConnect();
 	void OnMQTTMessage(char *topicName, int topicLen,  void *pMessage);
 	void SendMessage(const std::string &Message);

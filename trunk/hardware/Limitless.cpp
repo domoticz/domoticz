@@ -275,7 +275,7 @@ void CLimitLess::Do_Work()
 	_log.Log(LOG_STATUS,"AppLamp: Worker stopped...");
 }
 
-void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
+bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	_tLimitlessLights *pLed=(_tLimitlessLights*)pdata;
 
@@ -537,4 +537,5 @@ void CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		sendto(m_RemoteSocket,(const char*)pCMD,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 		sleep_milliseconds(100);
 	}
+	return true;
 }

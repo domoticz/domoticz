@@ -157,7 +157,7 @@ public:
 	~MySensorsBase(void);
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);

@@ -363,18 +363,12 @@ void CRego6XXSerial::readCallback(const char *data, size_t len)
 	}
 }
 
-void CRego6XXSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool CRego6XXSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (isOpen()) {
-		write(pdata,length);
-		//std::cout << "Rego6XX Write: " ;
-        //for ( int i = 0; i < length; i++ )
-        //{
-        //    std::cout << std::hex << (unsigned short)((unsigned char)(*pdata)) << " ";
-        //    pdata++;
-        //}
-		//std::cout << std::dec << std::endl;
-	}
+	if (!isOpen())
+		return false;
+	write(pdata,length);
+	return true;
 }
 
 bool CRego6XXSerial::ParseData()

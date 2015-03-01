@@ -180,13 +180,14 @@ void FritzboxTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR,"Fritzbox: Error: %s",error.message().c_str());
 }
 
-void FritzboxTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool FritzboxTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!mIsConnected)
 	{
-		return;
+		return false;
 	}
 	write((const unsigned char*)pdata,length);
+	return true;
 }
 
 void FritzboxTCP::WriteInt(const std::string &sendStr)

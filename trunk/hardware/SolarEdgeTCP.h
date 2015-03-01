@@ -14,7 +14,7 @@ public:
 	~SolarEdgeTCP(void);
 
 	void write(const char *data, size_t size);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;

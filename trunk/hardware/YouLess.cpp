@@ -87,9 +87,9 @@ void CYouLess::Do_Work()
 	_log.Log(LOG_STATUS,"YouLess: Worker stopped...");
 }
 
-void CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
+bool CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 void CYouLess::GetMeterDetails()

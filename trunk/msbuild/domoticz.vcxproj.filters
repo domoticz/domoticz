@@ -372,9 +372,6 @@
     <ClInclude Include="..\hardware\BMP085.h">
       <Filter>Devices\I2C</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\smbus.h">
-      <Filter>Devices\I2C</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\EventSystem.h">
       <Filter>EventSystem</Filter>
     </ClInclude>
@@ -768,9 +765,6 @@
       <Filter>Devices\1-Wire</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\BMP085.cpp">
-      <Filter>Devices\I2C</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\smbus.cpp">
       <Filter>Devices\I2C</Filter>
     </ClCompile>
     <ClCompile Include="..\main\EventSystem.cpp">

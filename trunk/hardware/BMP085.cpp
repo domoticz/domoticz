@@ -123,9 +123,9 @@ bool CBMP085::StopHardware()
 	return true;
 }
 
-void CBMP085::WriteToHardware(const char *pdata, const unsigned char length)
+bool CBMP085::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 void CBMP085::Do_Work()

@@ -7,7 +7,7 @@ class CBMP085 : public CDomoticzHardwareBase
 public:
 	CBMP085(const int ID);
 	~CBMP085();
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();
 	bool StopHardware();

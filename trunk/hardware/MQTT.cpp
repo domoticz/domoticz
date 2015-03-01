@@ -313,12 +313,13 @@ void MQTT::SendMessage(const std::string &Message)
 	}
 }
 
-void MQTT::WriteToHardware(const char *pdata, const unsigned char length)
+bool MQTT::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!m_IsConnected)
 	{
-		return;
+		return false;
 	}
 //	write((const unsigned char*)pdata,length);
+	return true;
 }
 

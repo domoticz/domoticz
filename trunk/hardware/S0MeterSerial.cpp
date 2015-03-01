@@ -150,7 +150,8 @@ void S0MeterSerial::readCallback(const char *data, size_t len)
 	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
-void S0MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool S0MeterSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	return false;
 }
 

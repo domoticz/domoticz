@@ -80,7 +80,7 @@ class CHarmonyHub : public CDomoticzHardwareBase
 public:
 	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &userName, const std::string &password);
 	~CHarmonyHub(void);
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 
 private:
 	

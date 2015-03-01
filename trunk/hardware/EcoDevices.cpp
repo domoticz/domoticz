@@ -92,9 +92,9 @@ void CEcoDevices::Do_Work()
 	_log.Log(LOG_STATUS,"EcoDevices: Worker stopped...");
 }
 
-void CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
+bool CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return true;
 }
 
 void CEcoDevices::GetMeterDetails()

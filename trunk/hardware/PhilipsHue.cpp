@@ -107,7 +107,7 @@ void CPhilipsHue::Do_Work()
 	_log.Log(LOG_STATUS,"Philips Hue: Worker stopped...");
 }
 
-void CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
+bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pSen = (tRBUF*)pdata;
 
@@ -152,14 +152,14 @@ void CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 			LCmd = "Off";
 			svalue = 0;
 			SwitchLight(nodeID, LCmd, svalue);
-			return;
+			return true;
 		}
 		else if (pLed->command == Limitless_LedOn)
 		{
 			LCmd = "On";
 			svalue = 255;
 			SwitchLight(nodeID, LCmd, svalue);
-			return;
+			return true;
 		}
 		else if (pLed->command == Limitless_SetBrightnessLevel)
 		{
@@ -179,13 +179,13 @@ void CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 				svalue = round(fvalue);
 				SwitchLight(nodeID, LCmd, svalue);
 			}
-			return;
+			return true;
 		}
 		else if (pLed->command == Limitless_SetColorToWhite)
 		{
 			LCmd = "Set White";
 			SwitchLight(nodeID, LCmd, 0);
-			return;
+			return true;
 		}
 		else if (pLed->command == Limitless_SetRGBColour)
 		{
@@ -193,9 +193,10 @@ void CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 			LCmd = "Set Hue";
 			svalue = round(cHue);
 			SwitchLight(nodeID, LCmd, svalue);
-			return;
+			return true;
 		}
 	}
+	return true;
 }
 
 bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const int svalue)

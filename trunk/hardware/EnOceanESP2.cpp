@@ -1062,125 +1062,126 @@ void CEnOceanESP2::readCallback(const char *data, size_t len)
 	}
 }
 
-void CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length)
+bool CEnOceanESP2::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (m_id_base==0)
-		return;
-	if (isOpen()) {
+		return false;
+	if (!isOpen())
+		return false;
 
-		RBUF *tsen=(RBUF*)pdata;
-		if (tsen->LIGHTING2.packettype!=pTypeLighting2)
-			return; //only allowed to control switches
+	RBUF *tsen=(RBUF*)pdata;
+	if (tsen->LIGHTING2.packettype!=pTypeLighting2)
+		return false; //only allowed to control switches
 
-		enocean_data_structure iframe = create_base_frame();
-		iframe.H_SEQ_LENGTH=0x6B;//TX+Length
-		iframe.ORG = 0x05;
+	enocean_data_structure iframe = create_base_frame();
+	iframe.H_SEQ_LENGTH=0x6B;//TX+Length
+	iframe.ORG = 0x05;
 
-		unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
-		if ((sID<m_id_base)||(sID>m_id_base+129))
-		{
-			_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
-			return;
-		}
-
-		iframe.ID_BYTE3=(unsigned char)((sID&0xFF000000)>>24);//tsen->LIGHTING2.id1;
-		iframe.ID_BYTE2=(unsigned char)((sID&0x00FF0000)>>16);//tsen->LIGHTING2.id2;
-		iframe.ID_BYTE1=(unsigned char)((sID&0x0000FF00)>>8);//tsen->LIGHTING2.id3;
-		iframe.ID_BYTE0=(unsigned char)(sID&0x0000FF);//tsen->LIGHTING2.id4;
-
-		unsigned char RockerID=0;
-		unsigned char UpDown=1;
-		unsigned char Pressed=1;
-
-		if (tsen->LIGHTING2.unitcode<10)
-			RockerID=tsen->LIGHTING2.unitcode-1;
-		else
-			return;//double not supported yet!
-
-
-		//First we need to find out if this is a Dimmer switch,
-		//because they are threaded differently
-		bool bIsDimmer=false;
-		int LastLevel=0;
-		std::stringstream szQuery;
-		std::vector<std::vector<std::string> > result;
-		char szDeviceID[20];
-		sprintf(szDeviceID,"%08X",(unsigned int)sID);
-		szQuery << "SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "') AND (Unit==" << int(tsen->LIGHTING2.unitcode) << ")";
-		result=m_sql.query(szQuery.str());
-		if (result.size()>0)
-		{
-			_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
-			if (switchtype==STYPE_Dimmer)
-				bIsDimmer=true;
-			LastLevel=atoi(result[0][1].c_str());
-		}
-
-		int iLevel=tsen->LIGHTING2.level;
-		int cmnd=tsen->LIGHTING2.cmnd;
-		int orgcmd=cmnd;
-		if ((tsen->LIGHTING2.level==0)&&(!bIsDimmer))
-			cmnd=light2_sOff;
-		else
-		{
-			if (cmnd==light2_sOn)
-			{
-				iLevel=LastLevel;
-			}
-			else
-			{
-				//scale to 0 - 100 %
-				iLevel=tsen->LIGHTING2.level;
-				if (iLevel>15)
-					iLevel=15;
-				float fLevel=(100.0f/15.0f)*float(iLevel);
-				if (fLevel>99.0f)
-					fLevel=100.0f;
-				iLevel=int(fLevel);
-			}
-			cmnd=light2_sSetLevel;
-		}
-
-		if (cmnd!=light2_sSetLevel)
-		{
-			//On/Off
-			UpDown=((cmnd!=light2_sOff)&&(cmnd!=light2_sGroupOff));
-
-
-			iframe.DATA_BYTE3 = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
-			iframe.STATUS = 0x30;
-
-			iframe.CHECKSUM = enocean_calc_checksum(&iframe);
-
-			Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
-
-			//Next command is send a bit later (button release)
-			iframe.DATA_BYTE3 = 0;
-			iframe.STATUS = 0x20;
-			iframe.CHECKSUM = enocean_calc_checksum(&iframe);
-			Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
-		}
-		else
-		{
-			//Send dim value
-
-			//Dim On DATA_BYTE0 = 0x09
-			//Dim Off DATA_BYTE0 = 0x08
-
-			iframe.ORG = 0x07;
-			iframe.DATA_BYTE3=2;
-			iframe.DATA_BYTE2=iLevel;
-			iframe.DATA_BYTE1=1;//very fast dimming
-
-			if ((iLevel==0)||(orgcmd==light2_sOff))
-				iframe.DATA_BYTE0=0x08; //Dim Off
-			else
-				iframe.DATA_BYTE0=0x09;//Dim On
-
-			iframe.CHECKSUM = enocean_calc_checksum(&iframe);
-			Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
-		}
+	unsigned long sID=(tsen->LIGHTING2.id1<<24)|(tsen->LIGHTING2.id2<<16)|(tsen->LIGHTING2.id3<<8)|tsen->LIGHTING2.id4;
+	if ((sID<m_id_base)||(sID>m_id_base+129))
+	{
+		_log.Log(LOG_ERROR,"EnOcean: Can not switch with this DeviceID, use a switch created with our id_base!...");
+		return false;
 	}
+
+	iframe.ID_BYTE3=(unsigned char)((sID&0xFF000000)>>24);//tsen->LIGHTING2.id1;
+	iframe.ID_BYTE2=(unsigned char)((sID&0x00FF0000)>>16);//tsen->LIGHTING2.id2;
+	iframe.ID_BYTE1=(unsigned char)((sID&0x0000FF00)>>8);//tsen->LIGHTING2.id3;
+	iframe.ID_BYTE0=(unsigned char)(sID&0x0000FF);//tsen->LIGHTING2.id4;
+
+	unsigned char RockerID=0;
+	unsigned char UpDown=1;
+	unsigned char Pressed=1;
+
+	if (tsen->LIGHTING2.unitcode<10)
+		RockerID=tsen->LIGHTING2.unitcode-1;
+	else
+		return false;//double not supported yet!
+
+
+	//First we need to find out if this is a Dimmer switch,
+	//because they are threaded differently
+	bool bIsDimmer=false;
+	int LastLevel=0;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	char szDeviceID[20];
+	sprintf(szDeviceID,"%08X",(unsigned int)sID);
+	szQuery << "SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "') AND (Unit==" << int(tsen->LIGHTING2.unitcode) << ")";
+	result=m_sql.query(szQuery.str());
+	if (result.size()>0)
+	{
+		_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
+		if (switchtype==STYPE_Dimmer)
+			bIsDimmer=true;
+		LastLevel=atoi(result[0][1].c_str());
+	}
+
+	int iLevel=tsen->LIGHTING2.level;
+	int cmnd=tsen->LIGHTING2.cmnd;
+	int orgcmd=cmnd;
+	if ((tsen->LIGHTING2.level==0)&&(!bIsDimmer))
+		cmnd=light2_sOff;
+	else
+	{
+		if (cmnd==light2_sOn)
+		{
+			iLevel=LastLevel;
+		}
+		else
+		{
+			//scale to 0 - 100 %
+			iLevel=tsen->LIGHTING2.level;
+			if (iLevel>15)
+				iLevel=15;
+			float fLevel=(100.0f/15.0f)*float(iLevel);
+			if (fLevel>99.0f)
+				fLevel=100.0f;
+			iLevel=int(fLevel);
+		}
+		cmnd=light2_sSetLevel;
+	}
+
+	if (cmnd!=light2_sSetLevel)
+	{
+		//On/Off
+		UpDown=((cmnd!=light2_sOff)&&(cmnd!=light2_sGroupOff));
+
+
+		iframe.DATA_BYTE3 = (RockerID<<DB3_RPS_NU_RID_SHIFT) | (UpDown<<DB3_RPS_NU_UD_SHIFT) | (Pressed<<DB3_RPS_NU_PR_SHIFT);//0x30;
+		iframe.STATUS = 0x30;
+
+		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+
+		Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
+
+		//Next command is send a bit later (button release)
+		iframe.DATA_BYTE3 = 0;
+		iframe.STATUS = 0x20;
+		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+		Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
+	}
+	else
+	{
+		//Send dim value
+
+		//Dim On DATA_BYTE0 = 0x09
+		//Dim Off DATA_BYTE0 = 0x08
+
+		iframe.ORG = 0x07;
+		iframe.DATA_BYTE3=2;
+		iframe.DATA_BYTE2=iLevel;
+		iframe.DATA_BYTE1=1;//very fast dimming
+
+		if ((iLevel==0)||(orgcmd==light2_sOff))
+			iframe.DATA_BYTE0=0x08; //Dim Off
+		else
+			iframe.DATA_BYTE0=0x09;//Dim On
+
+		iframe.CHECKSUM = enocean_calc_checksum(&iframe);
+		Add2SendQueue((const char*)&iframe,sizeof(enocean_data_structure));
+	}
+	return true;
 }
 
 void CEnOceanESP2::SendDimmerTeachIn(const char *pdata, const unsigned char length)

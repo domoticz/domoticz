@@ -14,7 +14,7 @@ public:
 
 	bool Start();
 	bool Stop();
-	virtual void WriteToHardware(const char *pdata, const unsigned char length)=0;
+	virtual bool WriteToHardware(const char *pdata, const unsigned char length)=0;
 
 	void SetHeartbeatReceived();
 

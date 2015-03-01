@@ -90,9 +90,9 @@ void CICYThermostat::Do_Work()
 	_log.Log(LOG_STATUS,"ICYThermostat: Worker stopped...");
 }
 
-void CICYThermostat::WriteToHardware(const char *pdata, const unsigned char length)
+bool CICYThermostat::WriteToHardware(const char *pdata, const unsigned char length)
 {
-
+	return false;
 }
 
 void CICYThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)

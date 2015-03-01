@@ -614,6 +614,20 @@ define(['app'], function (app) {
 														img='<img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
 											}
 										}
+										
+										var nbackcolor="#D4E1EE";
+										if (item.HaveTimeout==true) {
+											nbackcolor="#DF2D3A";
+										}
+										else if (item.Protected==true) {
+											nbackcolor="#A4B1EE";
+										}
+
+										var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+										if (obackcolor!=nbackcolor) {
+											$(id + " #name").css( "background-color", nbackcolor );
+										}
+										
 										if ($(id + " #img").html()!=img) {
 											$(id + " #img").html(img);
 										}
@@ -1017,7 +1031,10 @@ define(['app'], function (app) {
 										}
 										
 										var nbackcolor="#D4E1EE";
-										if (item.Protected==true) {
+										if (item.HaveTimeout==true) {
+											nbackcolor="#DF2D3A";
+										}
+										else if (item.Protected==true) {
 											nbackcolor="#A4B1EE";
 										}
 										var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
@@ -1065,7 +1082,10 @@ define(['app'], function (app) {
 											img=EvohomeImg(item,'evomini');
 										
 											var nbackcolor="#D4E1EE";
-											if (item.Protected==true) {
+											if (item.HaveTimeout==true) {
+												nbackcolor="#DF2D3A";
+											}
+											else if (item.Protected==true) {
 												nbackcolor="#A4B1EE";
 											}
 											var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
@@ -1499,7 +1519,10 @@ define(['app'], function (app) {
 										xhtm+='\t    <table id="itemtablesmalldoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
 									}
 									var nbackcolor="#D4E1EE";
-									if (item.Protected==true) {
+									if (item.HaveTimeout==true) {
+										nbackcolor="#DF2D3A";
+									}
+									else if (item.Protected==true) {
 										nbackcolor="#A4B1EE";
 									}
 									
@@ -1591,7 +1614,10 @@ define(['app'], function (app) {
 					  bHaveAddedDevider=true;
 					}
 					var nbackcolor="#D4E1EE";
-					if (item.Protected==true) {
+					if (item.HaveTimeout==true) {
+						nbackcolor="#DF2D3A";
+					}
+					else if (item.Protected==true) {
 						nbackcolor="#A4B1EE";
 					}
 					
@@ -2558,7 +2584,10 @@ define(['app'], function (app) {
 												xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
 									var nbackcolor="#D4E1EE";
-									if (item.Protected==true) {
+									if (item.HaveTimeout==true) {
+										nbackcolor="#DF2D3A";
+									}
+									else if (item.Protected==true) {
 										nbackcolor="#A4B1EE";
 									}
 									
@@ -2701,7 +2730,10 @@ define(['app'], function (app) {
 													xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 										}
 										var nbackcolor="#D4E1EE";
-										if (item.Protected==true) {
+										if (item.HaveTimeout==true) {
+											nbackcolor="#DF2D3A";
+										}
+										else if (item.Protected==true) {
 											nbackcolor="#A4B1EE";
 										}
 										

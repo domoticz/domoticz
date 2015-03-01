@@ -384,6 +384,7 @@ bool Teleinfo::isCheckSumOk()
 	return (checksum == m_buffer[strlen((char*)m_buffer) - 1]);
 }
 
-void Teleinfo::WriteToHardware(const char *pdata, const unsigned char length)
+bool Teleinfo::WriteToHardware(const char *pdata, const unsigned char length)
 {
+	return false;
 }

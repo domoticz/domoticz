@@ -19,7 +19,7 @@ public:
 	~CYouLess(void);
 
 	YouLessMeter	m_meter;
-	void WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
