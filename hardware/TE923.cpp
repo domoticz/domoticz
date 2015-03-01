@@ -90,7 +90,7 @@ void CTE923::Do_Work()
 
 bool CTE923::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	return galse;
+	return false;
 }
 
 void CTE923::GetSensorDetails()
