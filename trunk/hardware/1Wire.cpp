@@ -120,23 +120,17 @@ bool C1Wire::StopHardware()
 
 void C1Wire::Do_Work()
 {
- 	time_t lastPollTime=mytime(NULL);
-   GetDeviceDetails();
+	int pCounter = Wire1_POLL_INTERVAL-2;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
+		HandleHBCounter(12);
 
-		if (mytime(NULL)-lastPollTime>=Wire1_POLL_INTERVAL)
+		pCounter++;
+		if (pCounter % Wire1_POLL_INTERVAL == 0)
 		{
 			GetDeviceDetails();
-			lastPollTime=mytime(NULL);
-		}
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
 		}
 	}
 }

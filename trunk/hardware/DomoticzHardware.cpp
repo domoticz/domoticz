@@ -20,6 +20,7 @@ CDomoticzHardwareBase::CDomoticzHardwareBase()
 	m_bSkipReceiveCheck = false;
 	m_bOutputLog = true;
 	m_iLastSendNodeBatteryValue = 255;
+	m_iHBCounter = 0;
 };
 
 CDomoticzHardwareBase::~CDomoticzHardwareBase()
@@ -28,6 +29,7 @@ CDomoticzHardwareBase::~CDomoticzHardwareBase()
 
 bool CDomoticzHardwareBase::Start()
 {
+	m_iHBCounter = 0;
 	return StartHardware();
 }
 
@@ -95,6 +97,7 @@ void CDomoticzHardwareBase::StopHeartbeatThread()
 void CDomoticzHardwareBase::Do_Heartbeat_Work()
 {
 	int secCounter = 0;
+	int hbCounter = 0;
 	while (!m_stopHeartbeatrequested)
 	{
 		sleep_milliseconds(200);
@@ -104,8 +107,8 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 		if (secCounter == 5)
 		{
 			secCounter = 0;
-			time_t atime = mytime(NULL);
-			if (atime % 12 == 0) {
+			hbCounter++;
+			if (hbCounter % 12 == 0) {
 				mytime(&m_LastHeartbeat);
 			}
 		}
@@ -115,4 +118,13 @@ void CDomoticzHardwareBase::Do_Heartbeat_Work()
 void CDomoticzHardwareBase::SetHeartbeatReceived()
 {
 	mytime(&m_LastHeartbeatReceive);
+}
+
+void CDomoticzHardwareBase::HandleHBCounter(const int iInterval)
+{
+	m_iHBCounter++;
+	if (m_iHBCounter % iInterval == 0)
+	{
+		SetHeartbeatReceived();
+	}
 }
