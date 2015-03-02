@@ -8596,15 +8596,18 @@ namespace http {
 
 						bHaveTimeout = false;
 #ifdef WITH_OPENZWAVE
-						if (pHardware->HwdType == HTYPE_OpenZWave)
+						if (pHardware != NULL)
 						{
-							COpenZWave *pZWave = (COpenZWave*)pHardware;
-							unsigned long ID;
-							std::stringstream s_strid;
-							s_strid << std::hex << sd[1];
-							s_strid >> ID;
-							int nodeID = (ID & 0x0000FF00) >> 8;
-							bHaveTimeout = pZWave->HasNodeFailed(nodeID);
+							if (pHardware->HwdType == HTYPE_OpenZWave)
+							{
+								COpenZWave *pZWave = (COpenZWave*)pHardware;
+								unsigned long ID;
+								std::stringstream s_strid;
+								s_strid << std::hex << sd[1];
+								s_strid >> ID;
+								int nodeID = (ID & 0x0000FF00) >> 8;
+								bHaveTimeout = pZWave->HasNodeFailed(nodeID);
+							}
 						}
 #endif
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;

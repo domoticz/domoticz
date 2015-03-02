@@ -16,11 +16,12 @@ public:
 	bool Stop();
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length)=0;
 
-	void SetHeartbeatReceived();
-
 	void EnableOutputLog(const bool bEnableLog);
 
 	bool IsStarted() { return m_bIsStarted; }
+
+	void SetHeartbeatReceived();
+
 	time_t m_LastHeartbeat;
 	time_t m_LastHeartbeatReceive;
 	bool m_bSkipReceiveCheck;
@@ -92,6 +93,8 @@ private:
 	void StartHeartbeatThread();
 	void StopHeartbeatThread();
 	void Do_Heartbeat_Work();
+	void HandleHBCounter(const int iInterval);
+	int m_iHBCounter;
 	boost::shared_ptr<boost::thread> m_Heartbeatthread;
 	volatile bool m_stopHeartbeatrequested;
 };
