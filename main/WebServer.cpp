@@ -127,19 +127,21 @@ struct _tGuiLanguage {
 
 static const _tGuiLanguage guiLanguage[] =
 {
-	{ "bg", "Bulgarian" },
 	{ "en", "English" },
-	{ "es", "Spanish" },
+	{ "bg", "Bulgarian" },
+	{ "cs", "Czech" },
 	{ "nl", "Dutch" },
 	{ "de", "German" },
 	{ "fr", "French" },
+	{ "fi", "Finnish" },
+	{ "it", "Italian" },
+	{ "no", "Norwegian" },
 	{ "pl", "Polish" },
 	{ "pt", "Portuguese" },
-	{ "it", "Italian" },
 	{ "ru", "Russian" },
 	{ "sk", "Slovak" },
+	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
-	{ "no", "Norwegian" },
 	{ "tr_TR", "Turkish" },
 
 	{ NULL, NULL }
@@ -12329,18 +12331,6 @@ namespace http {
 
 			//now delete the NEW device
 			m_sql.DeleteDevice(newidx);
-
-			szQuery.clear();
-			szQuery.str("");
-
-			std::vector<std::string> sd = result[0];
-
-			szQuery << "UPDATE DeviceStatus SET "
-				"HardwareID=" << sd[0] << ", DeviceID='" << sd[1] << "', Unit=" << sd[2] <<
-				", Name='" << sd[3] << "', Type=" << sd[4] << ", SubType=" << sd[5] <<
-				", SignalLevel=" << sd[6] << ", BatteryLevel=" << sd[7] <<
-				", nValue=" << sd[8] << ", sValue='" << sd[9] << "' WHERE (ID == " << sidx << ")";
-			m_sql.query(szQuery.str());
 
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
