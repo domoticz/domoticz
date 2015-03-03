@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 788
+# ref 789
 
 CACHE:
 # CSS
@@ -385,11 +385,14 @@ secpanel/sounds/wrong.ogg
 # Languages
 i18n/domoticz-ar.json
 i18n/domoticz-bg.json
+i18n/domoticz-cs.json
 i18n/domoticz-de.json
 i18n/domoticz-en.json
 i18n/domoticz-es.json
+i18n/domoticz-fi.json
 i18n/domoticz-fr.json
 i18n/domoticz-it.json
+i18n/domoticz-lt.json
 i18n/domoticz-nl.json
 i18n/domoticz-no.json
 i18n/domoticz-pl.json
