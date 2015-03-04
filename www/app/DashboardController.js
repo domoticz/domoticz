@@ -1133,7 +1133,8 @@ define(['app'], function (app) {
 							(item.SubType=="A/D")||
 							(item.SubType=="Thermostat Mode")||
 							(item.SubType=="Thermostat Fan Mode")||
-							(item.SubType=="Smartwares")
+							(item.SubType=="Smartwares")||
+							(item.SubType=="Sound Level")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -1171,7 +1172,8 @@ define(['app'], function (app) {
 											(item.SubType=="Current")||
 											(item.SubType=="Text")||
 											(item.SubType=="Pressure")||
-											(item.SubType=="A/D")
+											(item.SubType=="A/D")||
+											(item.SubType=="Sound Level")
 										) {
 									status+=item.Data;
 								}
@@ -1248,7 +1250,7 @@ define(['app'], function (app) {
 									status=item.Data;
 									bigtext=item.Data;
 								}
-								else if ((item.SubType=="Voltage")||(item.SubType=="Current")||(item.SubType=="A/D")||(item.SubType=="Pressure")) {
+								else if ((item.SubType=="Voltage")||(item.SubType=="Current")||(item.SubType=="A/D")||(item.SubType=="Pressure")||(item.SubType=="Sound Level")) {
 									status=item.Data;
 									bigtext=item.Data;
 								}
@@ -2790,7 +2792,8 @@ define(['app'], function (app) {
 							(item.SubType=="A/D")||
 							(item.SubType=="Thermostat Mode")||
 							(item.SubType=="Thermostat Fan Mode")||
-							(item.SubType=="Smartwares")
+							(item.SubType=="Smartwares")||
+							(item.SubType=="Sound Level")
 						) &&
 						(item.Favorite!=0)
 					  )
@@ -2856,7 +2859,8 @@ define(['app'], function (app) {
 									(item.SubType=="Current")||
 									(item.SubType=="Text")||
 									(item.SubType=="Pressure")||
-									(item.SubType=="A/D")
+									(item.SubType=="A/D")||
+									(item.SubType=="Sound Level")
 								) {
 							status=item.Data;
 						}
@@ -2946,7 +2950,8 @@ define(['app'], function (app) {
 								(item.SubType=="Voltage")||
 								(item.SubType=="Current")||
 								(item.SubType=="Pressure")||
-								(item.SubType=="A/D")
+								(item.SubType=="A/D")||
+								(item.SubType=="Sound Level")
 							) {
 							xhtm+=item.Data;
 						}
@@ -3039,6 +3044,10 @@ define(['app'], function (app) {
 						}
 						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
 							xhtm+='mode48.png" height="40" width="40"></td>\n';
+							status=item.Data;
+						}
+						else if (item.SubType=="Sound Level") {
+							xhtm+='Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						

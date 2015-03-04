@@ -4263,6 +4263,7 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR" //pTypeRFXSensor,sTypeRFXSensorVolt
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeVoltage
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeCurrent
+		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeSoundLevel
 		"(Type=%d AND SubType=%d)"	  //pTypeGeneral,sTypePressure
 		")",
 		pTypeRFXMeter,
@@ -4283,6 +4284,7 @@ void CSQLHelper::UpdateMeter()
 		pTypeRFXSensor,sTypeRFXSensorVolt,
 		pTypeGeneral, sTypeVoltage,
 		pTypeGeneral, sTypeCurrent,
+		pTypeGeneral, sTypeSoundLevel,
 		pTypeGeneral, sTypePressure
 		);
 	result=query(szTmp);
@@ -4384,7 +4386,13 @@ void CSQLHelper::UpdateMeter()
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 			}
-			else if (dType==pTypeLux)
+			else if ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
+			{
+				double fValue = atof(sValue.c_str())*10.0f;
+				sprintf(szTmp, "%d", int(fValue));
+				sValue = szTmp;
+			}
+			else if (dType == pTypeLux)
 			{
 				double fValue=atof(sValue.c_str());
 				sprintf(szTmp,"%.0f",fValue);
@@ -5042,7 +5050,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(!((devType == pTypeGeneral) && (subType == sTypeVoltage))) &&
 				(!((devType == pTypeGeneral) && (subType == sTypeCurrent))) &&
 				(!((devType == pTypeGeneral) && (subType == sTypePressure))) &&
-				(devType!=pTypeLux)&&
+				(!((devType == pTypeGeneral) && (subType == sTypeSoundLevel))) &&
+				(devType != pTypeLux) &&
 				(devType!=pTypeWEIGHT)&&
 				(devType!=pTypeUsage)
 				)
@@ -5089,7 +5098,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			}
 			else
 			{
-				//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage insert into MultiMeter_Calendar table
+				//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage/Lux/SoundLevel insert into MultiMeter_Calendar table
 				sprintf(szTmp,
 					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1,Value2,Value3,Value4,Value5,Value6, Date) "
 					"VALUES ('%llu', '%.2f','%.2f','%.2f','%.2f','%.2f','%.2f', '%s')",
@@ -5108,8 +5117,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				((devType != pTypeGeneral) && (subType != sTypeCurrent)) &&
 				((devType != pTypeGeneral) && (subType != sTypePressure)) &&
 				((devType!=pTypeGeneral)&&(subType!=sTypeSoilMoisture))&&
-				((devType!=pTypeGeneral)&&(subType!=sTypeLeafWetness))&&
-				(devType!=pTypeLux)&&
+				((devType != pTypeGeneral) && (subType != sTypeLeafWetness)) &&
+				((devType != pTypeGeneral) && (subType != sTypeSoundLevel)) &&
+				(devType != pTypeLux) &&
 				(devType!=pTypeWEIGHT)
 				)
 			{

@@ -8,7 +8,8 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Updating hardware settings for GPIO
 - Changed: Meteostick support (thanks to Devilsnet)
 - Changed: Handling timeout (dead node)/Awake status, also for switches in the Gui
-- Added: Finnish/Lithuanian/Czech language
+- Implemented: Finnish/Lithuanian/Czech language
+- Implemented: Sound Level sensor (dB)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

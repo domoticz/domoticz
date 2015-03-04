@@ -271,6 +271,9 @@ define(['app'], function (app) {
 				  else if (item.SubType == "Percentage") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowPercentageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
+				  else if (item.SubType=="Sound Level") {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
+				  }
 				  else if (item.Type.indexOf("Current")==0) {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowCurrentLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">';
 				  }

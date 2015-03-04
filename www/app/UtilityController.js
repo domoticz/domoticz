@@ -647,7 +647,7 @@ define(['app'], function (app) {
 							status=item.Data;
 							bigtext=item.Data;
 						}
-						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")||(item.SubType == "Pressure")) {
+						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")||(item.SubType == "Pressure")||(item.SubType == "Sound Level")) {
 							status=item.Data;
 							bigtext=item.Data;
 						}
@@ -893,7 +893,7 @@ define(['app'], function (app) {
 						else if (item.SubType == "Leaf Wetness") {
 						  xhtm+=item.Data;
 						}
-						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")||(item.SubType == "Pressure")) {
+						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")||(item.SubType == "Pressure")||(item.SubType == "Sound Level")) {
 						  xhtm+=item.Data;
 						}
 						else if (item.Type == "Lux") {
@@ -997,6 +997,10 @@ define(['app'], function (app) {
 					}
 					else if (item.SubType=="Thermostat Fan Mode") {
 					  xhtm+='mode48.png" height="48" width="48"></td>\n';
+					  status=item.Data;
+					}
+					else if (item.SubType == "Sound Level") {
+					  xhtm+='Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
 					if (typeof item.CounterDeliv != 'undefined') {
@@ -1152,6 +1156,12 @@ define(['app'], function (app) {
 					}
 				  }
 				  else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")) {
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+					if (permissions.hasPermission("Admin")) {
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+					}
+				  }
+				  else if ((item.Type == "General")&&(item.SubType == "Sound Level")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
