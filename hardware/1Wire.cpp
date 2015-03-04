@@ -29,8 +29,9 @@ C1Wire::C1Wire(const int ID) :
 	m_stoprequested(false),
    m_system(NULL)
 {
+	m_bSkipReceiveCheck = true;
    m_HwdID=ID;
-	DetectSystem();
+  DetectSystem();
 }
 
 C1Wire::~C1Wire()

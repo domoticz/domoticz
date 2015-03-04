@@ -10198,78 +10198,83 @@ void MainWorker::HeartbeatCheck()
 	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
 		CDomoticzHardwareBase *pHardware = (CDomoticzHardwareBase *)(*itt);
-		//Skip Dummy Hardware
-		bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_Domoticz) && (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT);
-		if (bDoCheck)
+		if (!pHardware->m_bSkipReceiveCheck)
 		{
-			//Check Thread Timeout
-			double diff = difftime(now, pHardware->m_LastHeartbeat);
-			//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
-			if (diff > 60)
+			//Skip Dummy Hardware
+			bool bDoCheck = (pHardware->HwdType != HTYPE_Dummy) && (pHardware->HwdType != HTYPE_Domoticz) && (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT);
+			if (bDoCheck)
 			{
-				char szTmp[100];
-				std::vector<std::vector<std::string> > result;
-				sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
-				result = m_sql.query(szTmp);
-				if (result.size() == 1)
+				//Check Thread Timeout
+				double diff = difftime(now, pHardware->m_LastHeartbeat);
+				//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
+				if (diff > 60)
 				{
-					std::vector<std::string> sd = result[0];
-					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), pHardware->m_HwdID);
+					char szTmp[100];
+					std::vector<std::vector<std::string> > result;
+					sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
+					result = m_sql.query(szTmp);
+					if (result.size() == 1)
+					{
+						std::vector<std::string> sd = result[0];
+						_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", sd[0].c_str(), pHardware->m_HwdID);
+					}
 				}
 			}
-		}
-		if ((!pHardware->m_bSkipReceiveCheck) && (pHardware->m_DataTimeout>0))
-		{
-			//Check Receive Timeout
-			double diff = difftime(now, pHardware->m_LastHeartbeatReceive);
-			if (diff > pHardware->m_DataTimeout)
+
+			if (pHardware->m_DataTimeout > 0)
 			{
-				char szTmp[100];
-				std::vector<std::vector<std::string> > result;
-				sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
-				result = m_sql.query(szTmp);
-				if (result.size() == 1)
+				//Check Receive Timeout
+				double diff = difftime(now, pHardware->m_LastHeartbeatReceive);
+				if (diff > pHardware->m_DataTimeout)
 				{
-					std::vector<std::string> sd = result[0];
+					char szTmp[100];
+					std::vector<std::vector<std::string> > result;
+					sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
+					result = m_sql.query(szTmp);
+					if (result.size() == 1)
+					{
+						std::vector<std::string> sd = result[0];
 
-					std::string sDataTimeout = "";
-					int totNum = 0;
-					if (pHardware->m_DataTimeout < 60) {
-						totNum = pHardware->m_DataTimeout;
-						sDataTimeout =  "Seconds";
-					}
-					else if (pHardware->m_DataTimeout < 3600) {
-						totNum  = pHardware->m_DataTimeout / 60;
-						if (totNum == 1) {
-							sDataTimeout = "Minute";
+						std::string sDataTimeout = "";
+						int totNum = 0;
+						if (pHardware->m_DataTimeout < 60) {
+							totNum = pHardware->m_DataTimeout;
+							sDataTimeout = "Seconds";
+						}
+						else if (pHardware->m_DataTimeout < 3600) {
+							totNum = pHardware->m_DataTimeout / 60;
+							if (totNum == 1) {
+								sDataTimeout = "Minute";
+							}
+							else {
+								sDataTimeout = "Minutes";
+							}
+						}
+						else if (pHardware->m_DataTimeout < 86400) {
+							totNum = pHardware->m_DataTimeout / 3600;
+							if (totNum == 1) {
+								sDataTimeout = "Hour";
+							}
+							else {
+								sDataTimeout = "Hours";
+							}
 						}
 						else {
-							sDataTimeout = "Minutes";
+							totNum = pHardware->m_DataTimeout / 60;
+							if (totNum == 1) {
+								sDataTimeout = "Day";
+							}
+							else {
+								sDataTimeout = "Days";
+							}
 						}
-					}
-					else if (pHardware->m_DataTimeout < 86400) {
-						totNum  = pHardware->m_DataTimeout / 3600;
-						if (totNum == 1) {
-							sDataTimeout = "Hour";
-						}
-						else {
-							sDataTimeout = "Hours";
-						}
-					}
-					else {
-						totNum = pHardware->m_DataTimeout / 60;
-						if (totNum == 1) {
-							sDataTimeout = "Day";
-						}
-						else {
-							sDataTimeout = "Days";
-						}
-					}
 
-					_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more then %d %s!....", sd[0].c_str(), pHardware->m_HwdID,totNum,sDataTimeout.c_str());
-					m_devicestorestart.push_back(pHardware->m_HwdID);
+						_log.Log(LOG_ERROR, "%s hardware (%d) nothing received for more then %d %s!....", sd[0].c_str(), pHardware->m_HwdID, totNum, sDataTimeout.c_str());
+						m_devicestorestart.push_back(pHardware->m_HwdID);
+					}
 				}
 			}
+
 		}
 	}
 }
