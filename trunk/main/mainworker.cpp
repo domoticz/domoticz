@@ -10205,7 +10205,7 @@ void MainWorker::HeartbeatCheck()
 			//Check Thread Timeout
 			double diff = difftime(now, pHardware->m_LastHeartbeat);
 			//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
-			if (diff > 20)
+			if (diff > 60)
 			{
 				char szTmp[100];
 				std::vector<std::vector<std::string> > result;
