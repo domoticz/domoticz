@@ -982,7 +982,9 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		return false;
 	}
 
-	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0);
+	_tZWaveDevice *pDevice = FindDevice(nodeID, instanceID, 0, ZWaveBase::ZDTYPE_SWITCH_DIMMER);
+	if (!pDevice)
+		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
 	{
 		_log.Log(LOG_ERROR, "OpenZWave: Internal Node Device not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
