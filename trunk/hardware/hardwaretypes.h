@@ -44,6 +44,7 @@
 #define sTypeZWaveThermostatFanMode	0x15
 #define sTypeAlert					0x16
 #define sTypeCurrent				0x17
+#define sTypeSoundLevel				0x18
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01

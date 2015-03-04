@@ -8052,7 +8052,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan) || (subType == sTypeTextStatus))
+	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan) || (subType == sTypeTextStatus) || (subType == sTypeSoundLevel))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
@@ -8146,6 +8146,14 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			return -1;
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_RPM, (float)pMeter->intval1);
 	}
+	else if (subType == sTypeSoundLevel)
+	{
+		sprintf(szTmp, "%d", pMeter->intval2);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_RPM, (float)pMeter->intval1);
+	}
 	else if (subType == sTypeZWaveClock)
 	{
 		int tintval = pMeter->intval2;
@@ -8204,6 +8212,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		case sTypeFan:
 			WriteMessage("subtype       = Fan");
 			sprintf(szTmp, "Speed = %d RPM", pMeter->intval2);
+			WriteMessage(szTmp);
+			break;
+		case sTypeSoundLevel:
+			WriteMessage("subtype       = Sound Level");
+			sprintf(szTmp, "Sound Level = %d dB", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeZWaveClock:

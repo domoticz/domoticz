@@ -5659,6 +5659,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
 					ii++;
 				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
 				if (dType == pTypeWEIGHT)
 				{
 					root["result"][ii]["val"] = NTYPE_USAGE;
@@ -8451,6 +8458,14 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypePressure))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
 								(dType != pTypeCURRENT) &&
 								(dType != pTypeCURRENTENERGY) &&
 								(dType != pTypeENERGY) &&
@@ -8459,13 +8474,6 @@ namespace http {
 								(dType != pTypeP1Gas) &&
 								(dType != pTypeYouLess) &&
 								(dType != pTypeAirQuality) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
-								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
 								(dType != pTypeLux) &&
 								(dType != pTypeUsage) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
@@ -9920,7 +9928,14 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Fan";
 							root["result"][ii]["TypeImg"] = "Fan";
-							root["result"][ii]["Type"] = "Fan";
+							root["result"][ii]["Type"] = "Speaker";
+						}
+						else if (dSubType == sTypeSoundLevel)
+						{
+							sprintf(szData, "%d dB", atoi(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "Speaker";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 						else if (dSubType == sTypeVoltage)
 						{
@@ -10634,6 +10649,11 @@ namespace http {
 			case 9:
 				//Current/Ampere
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeCURRENT, sTypeELEC1, 12, 255, 0, "0.0;0.0;0.0", devname);
+				bCreated = true;
+				break;
+			case 10:
+				//Sound Level
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeSoundLevel, 12, 255, 0, "65", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP:
@@ -13512,6 +13532,7 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel)) ||
 						(dType == pTypeLux) ||
 						(dType == pTypeWEIGHT) ||
 						(dType == pTypeUsage)
@@ -13827,7 +13848,8 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypePressure))
+						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
 						)
 					{//day
 						root["status"] = "OK";
@@ -15809,7 +15831,8 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypePressure))
+						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
 						)
 					{//month/year
 						root["status"] = "OK";
@@ -16351,7 +16374,8 @@ namespace http {
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
-						((dType == pTypeGeneral) && (dSubType == sTypePressure))
+						((dType == pTypeGeneral) && (dSubType == sTypePressure)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))
 						)
 					{
 						float vdiv = 10.0f;
