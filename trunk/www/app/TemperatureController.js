@@ -32,6 +32,7 @@ define(['app'], function (app) {
 			$("#dialog-edittempdevice #devicename").val(decodeURIComponent(name));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
 			$("#dialog-edittempdevice #tempcf").html($.myglobals.tempsign);
+			$("#dialog-edittempdevice" ).i18n();
 			$("#dialog-edittempdevice" ).dialog( "open" );
 		}
 
@@ -43,6 +44,7 @@ define(['app'], function (app) {
 			}
 			$.devIdx=idx;
 			$("#dialog-edittempdevicesmall #devicename").val(decodeURIComponent(name));
+			$("#dialog-edittempdevicesmall" ).i18n();
 			$("#dialog-edittempdevicesmall" ).dialog( "open" );
 		}
 		
@@ -74,6 +76,7 @@ define(['app'], function (app) {
 			$("#dialog-editsetpoint #until").datetimepicker();
 			if(until!="")
 				$("#dialog-editsetpoint #until").datetimepicker("setDate", (new Date(until)));
+			$("#dialog-editsetpoint" ).i18n();
 			$("#dialog-editsetpoint" ).dialog( "open" );
 		}
 		EditState = function(idx,name,state,mode,until,callback)
@@ -93,6 +96,7 @@ define(['app'], function (app) {
 			$("#dialog-editstate #until_state").datetimepicker();
 			if(until!="")
 				$("#dialog-editstate #until_state").datetimepicker("setDate", (new Date(until)));
+			$("#dialog-editstate" ).i18n();
 			$("#dialog-editstate" ).dialog( "open" );
 		}
 		EvoSetPointColor = function(item, sHeatMode, bkcolor){
@@ -1047,6 +1051,7 @@ define(['app'], function (app) {
 				  height: 200,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit Device"),
 				  buttons: {
 					  "Update": function() {
 						  var bValid = true;
@@ -1098,6 +1103,7 @@ define(['app'], function (app) {
 				  height: 230,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit Set Point"),
 				  buttons: {
 					  "Set": function() {
 						  var bValid = true;
@@ -1168,6 +1174,7 @@ define(['app'], function (app) {
 				  height: 230,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit State"),
 				  buttons: {
 					  "Set": function() {
 						  var bValid = true;
@@ -1224,6 +1231,7 @@ define(['app'], function (app) {
 				  height: 160,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit Device"),
 				  buttons: {
 					  "Update": function() {
 						  var bValid = true;

@@ -1137,6 +1137,7 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #combosubdevice").append(option);
 			});
 			$( "#dialog-addmanuallightdevice #comboswitchtype" ).val(0);
+			$( "#dialog-addmanuallightdevice" ).i18n();
 			$( "#dialog-addmanuallightdevice" ).dialog( "open" );
 		}
 
@@ -1186,6 +1187,7 @@ define(['app'], function (app) {
 					if ((bHaveFoundDevice == true) && (bIsUsed == false))
 					{
 						$.devIdx = deviceidx;
+						$( "#dialog-addlightdevice" ).i18n();
 						$( "#dialog-addlightdevice" ).dialog( "open" );
 					}
 					else {
@@ -1352,302 +1354,312 @@ define(['app'], function (app) {
 				}
 			  
 				$.each(data.result, function(i,item){
-							id="#lightcontent #" + item.idx;
-							var obj=$(id);
-							if (typeof obj != 'undefined') {
-								if ($(id + " #name").html()!=item.Name) {
-									$(id + " #name").html(item.Name);
+					id="#lightcontent #" + item.idx;
+					var obj=$(id);
+					if (typeof obj != 'undefined') {
+						if ($(id + " #name").html()!=item.Name) {
+							$(id + " #name").html(item.Name);
+						}
+						var isdimmer=false;
+						var img="";
+						var img2="";
+						var img3="";
+						if (item.SubType=="Security Panel") {
+							img='<a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a>';
+						}
+						else if (item.SubType=="Evohome") {
+							img=EvohomeImg(item);
+						}
+						else if (item.SwitchType == "X10 Siren") {
+							if (
+									(item.Status == 'On')||
+									(item.Status == 'Chime')||
+									(item.Status == 'Group On')||
+									(item.Status == 'All On')
+								 )
+							{
+											img='<img src="images/siren-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+							else {
+											img='<img src="images/siren-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+						}
+						else if (item.SwitchType == "Doorbell") {
+							img='<img src="images/doorbell48.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+						}
+						else if (item.SwitchType == "Push On Button") {
+							if (item.InternalState=="On") {
+								img='<img src="images/pushon48.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+							else {
+								img='<img src="images/push48.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+						}
+						else if (item.SwitchType == "Door Lock") {
+							if (item.InternalState=="Open") {
+								img='<img src="images/door48open.png" title="' + $.i18n("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+							else {
+								img='<img src="images/door48.png" title="' + $.i18n("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+						}
+						else if (item.SwitchType == "Push Off Button") {
+							img='<img src="images/pushoff48.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+						}
+						else if (item.SwitchType == "Contact") {
+							if (item.Status == 'Closed') {
+								img='<img src="images/contact48.png" height="48" width="48">';
+							}
+							else {
+								img='<img src="images/contact48_open.png" height="48" width="48">';
+							}
+						}
+						else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+							if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+								if (item.Status == 'Closed') {
+									img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 								}
-								var isdimmer=false;
-								var img="";
-								var img2="";
-								var img3="";
-								if (item.SubType=="Security Panel") {
-									img='<a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a>';
-								}
-								else if (item.SubType=="Evohome") {
-									img=EvohomeImg(item);
-								}
-								else if (item.SwitchType == "X10 Siren") {
-									if (
-											(item.Status == 'On')||
-											(item.Status == 'Chime')||
-											(item.Status == 'Group On')||
-											(item.Status == 'All On')
-										 )
-									{
-													img='<img src="images/siren-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-									}
-									else {
-													img='<img src="images/siren-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-									}
-								}
-								else if (item.SwitchType == "Doorbell") {
-									img='<img src="images/doorbell48.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-								}
-								else if (item.SwitchType == "Push On Button") {
-									if (item.InternalState=="On") {
-										img='<img src="images/pushon48.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-									}
-									else {
-										img='<img src="images/push48.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-									}
-								}
-								else if (item.SwitchType == "Door Lock") {
-									if (item.InternalState=="Open") {
-										img='<img src="images/door48open.png" title="' + $.i18n("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-									}
-									else {
-										img='<img src="images/door48.png" title="' + $.i18n("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-									}
-								}
-								else if (item.SwitchType == "Push Off Button") {
-									img='<img src="images/pushoff48.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-								}
-								else if (item.SwitchType == "Contact") {
-									if (item.Status == 'Closed') {
-										img='<img src="images/contact48.png" height="48" width="48">';
-									}
-									else {
-										img='<img src="images/contact48_open.png" height="48" width="48">';
-									}
-								}
-								else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-									if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
-										if (item.Status == 'Closed') {
-											img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-										else {
-											img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											img3='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-									}
-									else {
-										if (item.Status == 'Closed') {
-											img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											img2='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-										else {
-											img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											img2='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-									}
-								}
-								else if (item.SwitchType == "Blinds Inverted") {
-									if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
-										if (item.Status == 'Closed') {
-											img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-										else {
-											img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											img3='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-									}
-									else {
-										if (item.Status == 'Closed') {
-											img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											img2='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-										else {
-											img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											img2='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-									}
-								}
-								else if (item.SwitchType == "Blinds Percentage") {
-									if (item.Status == 'Closed') {
-										img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="40">';
-										img2='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="40">';
-									}
-									else {
-										img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="40">';
-										img2='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="40">';
-									}
-								}
-								else if (item.SwitchType == "Blinds Percentage Inverted") {
-									if (item.Status == 'Closed') {
-										img = '<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40">';
-										img2 = '<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40">';
-									}
-									else {
-										img = '<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40">';
-										img2 = '<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40">';
-									}
-								}
-								else if (item.SwitchType=="Smoke Detector") {
-										if (
-												(item.Status == 'Panic')||
-												(item.Status == 'On')
-											) {
-											img='<img src="images/smoke48on.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											$(id + ' #resetbtn').attr("class", "btnsmall-sel");
-										}
-										else {
-											img='<img src="images/smoke48off.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											$(id + ' #resetbtn').attr("class", "btnsmall-dis");
-										}
-
-								}
-								else if (item.Type == "Security") {
-									if (item.SubType.indexOf('remote') > 0) {
-										if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
-											img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">\n';
-										}
-										else {
-											img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">\n';
-										}
-									}
-									else if (item.SubType == "X10 security") {
-										if (item.Status.indexOf('Normal') >= 0) {
-											img+='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Normal Delayed")?"Alarm Delayed":"Alarm") + '\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-										else {
-											img+='<img src="images/Alarm48_On.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Alarm Delayed")?"Normal Delayed":"Normal") + '\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-									}
-									else if (item.SubType == "X10 security motion") {
-										if ((item.Status == "No Motion")) {
-											img+='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'Motion\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-										else {
-											img+='<img src="images/Alarm48_On.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-									}
-									else if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
-										img='<img src="images/Alarm48_On.png" height="48" width="48">';
-									}
-									else {
-										if (item.SubType.indexOf('Meiantech') >= 0) {
-											if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
-												img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											}
-											else {
-												img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystemMeiantech(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-											}
-										}
-										else {
-											img='<img src="images/security48.png" height="48" width="48">';
-										}
-									}
-								}
-					else if (item.SwitchType == "Dimmer") {
-									isdimmer=true;
-									if (
-											(item.Status == 'On')||
-											(item.Status == 'Chime')||
-											(item.Status == 'Group On')||
-											(item.Status.indexOf('Set ') == 0)
-										 ) {
-										if (item.SubType=="RGBW") {
-											img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
-										}
-										else {
-											img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-									}
-									else {
-										if (item.SubType=="RGBW") {
-											img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
-										}
-										else {
-											img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-										}
-									}
-					}
-					else if (item.SwitchType == "TPI") {
-									var RO=(item.Unit>100)?true:false;
-									isdimmer=true;
-									if (
-											(item.Status == 'On')
-										 ) {
-													img='<img src="images/Fireplace48_On.png" title="' + $.i18n(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor"')+' height="48" width="48">';
-									}
-									else {
-													img='<img src="images/Fireplace48_Off.png" title="' + $.i18n(RO?"Off":"Turn On") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor"') + ' height="48" width="48">';
-									}
-					}
-					else if (item.SwitchType == "Dusk Sensor") {
-									if (
-											(item.Status == 'On')
-										 ) {
-													img='<img src="images/uvdark.png" title="' + $.i18n("Nighttime") +'"  height="48" width="48">';
-									}
-									else {
-													img='<img src="images/uvsunny.png" title="' + $.i18n("Daytime") +'"  height="48" width="48">';
-									}
-					}            
-					else if (item.SwitchType == "Motion Sensor") {
-									if (
-											(item.Status == 'On')||
-											(item.Status == 'Chime')||
-											(item.Status == 'Group On')||
-											(item.Status.indexOf('Set ') == 0)
-										 ) {
-													img='<img src="images/motion48-on.png" height="48" width="48">';
-									}
-									else {
-													img='<img src="images/motion48-off.png" height="48" width="48">';
-									}
-					}
 								else {
-									if (
-											(item.Status == 'On')||
-											(item.Status == 'Chime')||
-											(item.Status == 'Group On')||
-											(item.Status.indexOf('Down')!=-1)||
-											(item.Status.indexOf('Up')!=-1)||
-											(item.Status.indexOf('Set ') == 0)
-										 ) {
-												img='<img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-									}
-									else {
-												img='<img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
-									}
-								}
-								
-								var nbackcolor="#D4E1EE";
-								if (item.HaveTimeout==true) {
-									nbackcolor="#DF2D3A";
-								}
-								else if (item.Protected==true) {
-									nbackcolor="#A4B1EE";
-								}
-
-								var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
-								if (obackcolor!=nbackcolor) {
-									$(id + " #name").css( "background-color", nbackcolor );
-								}
-								
-								if ($(id + " #img").html()!=img) {
-									$(id + " #img").html(img);
-								}
-								if (img2!="")
-								{
-									if ($(id + " #img2").html()!=img2) {
-										$(id + " #img2").html(img2);
-									}
-								}
-								if (img3!="")
-								{
-									if ($(id + " #img3").html()!=img3) {
-										$(id + " #img3").html(img3);
-									}
-								}
-								if (isdimmer==true) {
-									var dslider=$(id + " #slider");
-									if (typeof dslider != 'undefined') {
-										dslider.slider( "value", item.LevelInt+1 );
-									}
-								}
-								if ($(id + " #status").html()!=TranslateStatus(EvoGetStatusText(item))) {
-									$(id + " #status").html(TranslateStatus(EvoGetStatusText(item)));
-								}
-								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-									$(id + " #lastupdate").html(item.LastUpdate);
+									img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									img3='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 								}
 							}
+							else {
+								if (item.Status == 'Closed') {
+									img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									img2='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+								else {
+									img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									img2='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+							}
+						}
+						else if (item.SwitchType == "Blinds Inverted") {
+							if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)) {
+								if (item.Status == 'Closed') {
+									img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									img3='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+								else {
+									img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									img3='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+							}
+							else {
+								if (item.Status == 'Closed') {
+									img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									img2='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+								else {
+									img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									img2='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+							}
+						}
+						else if (item.SwitchType == "Blinds Percentage") {
+							if (item.Status == 'Closed') {
+								img='<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="40">';
+								img2='<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="40">';
+							}
+							else {
+								img='<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="40">';
+								img2='<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="40">';
+							}
+						}
+						else if (item.SwitchType == "Blinds Percentage Inverted") {
+							if (item.Status == 'Closed') {
+								img = '<img src="images/blindsopen48.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40">';
+								img2 = '<img src="images/blinds48sel.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40">';
+							}
+							else {
+								img = '<img src="images/blindsopen48sel.png" title="' + $.i18n("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40">';
+								img2 = '<img src="images/blinds48.png" title="' + $.i18n("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40">';
+							}
+						}
+						else if (item.SwitchType=="Smoke Detector") {
+								if (
+										(item.Status == 'Panic')||
+										(item.Status == 'On')
+									) {
+									img='<img src="images/smoke48on.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									$(id + ' #resetbtn').attr("class", "btnsmall-sel");
+								}
+								else {
+									img='<img src="images/smoke48off.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+									$(id + ' #resetbtn').attr("class", "btnsmall-dis");
+								}
+
+						}
+						else if (item.Type == "Security") {
+							if (item.SubType.indexOf('remote') > 0) {
+								if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
+									img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">\n';
+								}
+								else {
+									img+='<img src="images/remote48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystem(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">\n';
+								}
+							}
+						else if (item.SubType == "X10 security") {
+							if (item.Status.indexOf('Normal') >= 0) {
+								img+='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Normal Delayed")?"Alarm Delayed":"Alarm") + '\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+							else {
+								img+='<img src="images/Alarm48_On.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'' + ((item.Status == "Alarm Delayed")?"Normal Delayed":"Normal") + '\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+						}
+						else if (item.SubType == "X10 security motion") {
+							if ((item.Status == "No Motion")) {
+								img+='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'Motion\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+							else {
+								img+='<img src="images/Alarm48_On.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+						}
+						else if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
+							img='<img src="images/Alarm48_On.png" height="48" width="48">';
+						}
+						else {
+							if (item.SubType.indexOf('Meiantech') >= 0) {
+								if ((item.Status.indexOf('Arm') >= 0)||(item.Status.indexOf('Panic') >= 0)) {
+									img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+								else {
+									img='<img src="images/security48.png" title="' + $.i18n("Turn Alarm On") + '" onclick="ArmSystemMeiantech(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+							}
+							else {
+								img='<img src="images/security48.png" height="48" width="48">';
+							}
+						}
+					}
+					else if (item.SwitchType == "Dimmer") {
+						isdimmer=true;
+						if (
+								(item.Status == 'On')||
+								(item.Status == 'Chime')||
+								(item.Status == 'Group On')||
+								(item.Status.indexOf('Set ') == 0)
+							 ) {
+							if (item.SubType=="RGBW") {
+								img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
+							}
+							else {
+								img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+						}
+						else {
+							if (item.SubType=="RGBW") {
+								img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
+							}
+							else {
+								img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+							}
+						}
+					}
+					else if (item.SwitchType == "TPI") {
+						var RO=(item.Unit>100)?true:false;
+						isdimmer=true;
+						if (
+								(item.Status == 'On')
+							 ) {
+										img='<img src="images/Fireplace48_On.png" title="' + $.i18n(RO?"On":"Turn Off") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor"')+' height="48" width="48">';
+						}
+						else {
+										img='<img src="images/Fireplace48_Off.png" title="' + $.i18n(RO?"Off":"Turn On") + (RO?'"':'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor"') + ' height="48" width="48">';
+						}
+					}
+					else if (item.SwitchType == "Dusk Sensor") {
+						if (
+								(item.Status == 'On')
+							 ) {
+										img='<img src="images/uvdark.png" title="' + $.i18n("Nighttime") +'"  height="48" width="48">';
+						}
+						else {
+										img='<img src="images/uvsunny.png" title="' + $.i18n("Daytime") +'"  height="48" width="48">';
+						}
+					}            
+					else if (item.SwitchType == "Motion Sensor") {
+						if (
+								(item.Status == 'On')||
+								(item.Status == 'Chime')||
+								(item.Status == 'Group On')||
+								(item.Status.indexOf('Set ') == 0)
+							 ) {
+										img='<img src="images/motion48-on.png" height="48" width="48">';
+						}
+						else {
+										img='<img src="images/motion48-off.png" height="48" width="48">';
+						}
+					}
+					else {
+						if (
+							(item.Status == 'On')||
+							(item.Status == 'Chime')||
+							(item.Status == 'Group On')||
+							(item.Status.indexOf('Down')!=-1)||
+							(item.Status.indexOf('Up')!=-1)||
+							(item.Status.indexOf('Set ') == 0)
+						 ) {
+								if (item.Type == "Thermostat 3") {
+									img='<img src="images/' + item.Image + '48_On.png" onclick="ShowTherm3Popup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
+								}
+								else {
+									img='<img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+						}
+						else {
+								if (item.Type == "Thermostat 3") {
+									img='<img src="images/' + item.Image + '48_Off.png" onclick="ShowTherm3Popup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ');" class="lcursor" height="48" width="48">';
+								}
+								else {
+									img='<img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+						}
+					}
+								
+						var nbackcolor="#D4E1EE";
+						if (item.HaveTimeout==true) {
+							nbackcolor="#DF2D3A";
+						}
+						else if (item.Protected==true) {
+							nbackcolor="#A4B1EE";
+						}
+
+						var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+						if (obackcolor!=nbackcolor) {
+							$(id + " #name").css( "background-color", nbackcolor );
+						}
+						
+						if ($(id + " #img").html()!=img) {
+							$(id + " #img").html(img);
+						}
+						if (img2!="")
+						{
+							if ($(id + " #img2").html()!=img2) {
+								$(id + " #img2").html(img2);
+							}
+						}
+						if (img3!="")
+						{
+							if ($(id + " #img3").html()!=img3) {
+								$(id + " #img3").html(img3);
+							}
+						}
+						if (isdimmer==true) {
+							var dslider=$(id + " #slider");
+							if (typeof dslider != 'undefined') {
+								dslider.slider( "value", item.LevelInt+1 );
+							}
+						}
+						if ($(id + " #status").html()!=TranslateStatus(EvoGetStatusText(item))) {
+							$(id + " #status").html(TranslateStatus(EvoGetStatusText(item)));
+						}
+						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+					}
 				});
 			  }
 			 }
@@ -1795,7 +1807,6 @@ define(['app'], function (app) {
 					streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 					xhtm+=streamurl;
 				  }
-				  
 				  xhtm+='</td>\n';
 				  if (item.SubType=="Security Panel") {
 					xhtm+='\t      <td id="img"><a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a></td>\n';
@@ -2041,10 +2052,20 @@ define(['app'], function (app) {
 								(item.Status.indexOf('Up')!=-1)||
 								(item.Status.indexOf('Set ') == 0)
 							   ) {
-									xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+									if (item.Type == "Thermostat 3") {
+										xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="ShowTherm3Popup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+									}
+									else {
+										xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+									}
 								}
 								else {
-									xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+									if (item.Type == "Thermostat 3") {
+										xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="ShowTherm3Popup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+									}
+									else {
+										xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+									}
 								}
 						  }
 					xhtm+=
@@ -2621,24 +2642,14 @@ define(['app'], function (app) {
 			});
 
 			$(window).resize(function() { $scope.ResizeDimSliders(); });
-/*
-			$(document).mouseup(function (e)
-			{
-				var container = $("#rgbw_popup");
 
-				if (!container.is(e.target) // if the target of the click isn't the container...
-					&& container.has(e.target).length === 0) // ... nor a descendant of the container
-				{
-					container.hide();
-				}
-			});
-*/
 			$( "#dialog-addlightdevice" ).dialog({
 				  autoOpen: false,
 				  width: 400,
 				  height: 290,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Add Light/Switch Device"),
 				  buttons: {
 					  "Add Device": function() {
 						  var bValid = true;
@@ -2688,6 +2699,7 @@ define(['app'], function (app) {
 				  height: 480,
 				  modal: true,
 				  resizable: false,
+  				  title: $.i18n("Add Manual Light/Switch Device"),
 				  buttons: {
 					  "Add Device": function() {
 											var mParams=GetManualLightSettings(0);
@@ -2819,6 +2831,10 @@ define(['app'], function (app) {
 			}
 			$(window).off("resize");
 			var popup=$("#rgbw_popup");
+			if (typeof popup != 'undefined') {
+				popup.hide();
+			}
+			popup=$("#thermostat3_popup");
 			if (typeof popup != 'undefined') {
 				popup.hide();
 			}

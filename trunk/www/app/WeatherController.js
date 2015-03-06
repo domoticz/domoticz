@@ -32,6 +32,7 @@ define(['app'], function (app) {
 		  $.devIdx=idx;
 		  $("#dialog-editraindevice #devicename").val(decodeURIComponent(name));
 		  $("#dialog-editraindevice #multiply").val(addjmulti);
+		  $( "#dialog-editraindevice" ).i18n();
 		  $("#dialog-editraindevice" ).dialog( "open" );
 		}
 
@@ -44,6 +45,7 @@ define(['app'], function (app) {
 		  $.devIdx=idx;
 		  $("#dialog-editbarodevice #devicename").val(decodeURIComponent(name));
 		  $("#dialog-editbarodevice #adjustment").val(addjvalue);
+		  $("#dialog-editbarodevice" ).i18n();
 		  $("#dialog-editbarodevice" ).dialog( "open" );
 		}
 
@@ -56,6 +58,7 @@ define(['app'], function (app) {
 		  $.devIdx=idx;
 		  $("#dialog-editvisibilitydevice #devicename").val(decodeURIComponent(name));
 		  $("#dialog-editvisibilitydevice #combometertype").val(switchtype);
+		  $("#dialog-editvisibilitydevice" ).i18n();
 		  $("#dialog-editvisibilitydevice" ).dialog( "open" );
 		}
 
@@ -67,7 +70,8 @@ define(['app'], function (app) {
 			}
 		  $.devIdx=idx;
 		  $("#dialog-editweatherdevice #devicename").val(decodeURIComponent(name));
-		  $( "#dialog-editweatherdevice" ).dialog( "open" );
+		  $("#dialog-editweatherdevice" ).i18n();
+		  $("#dialog-editweatherdevice" ).dialog( "open" );
 		}
 
 		AddWeatherDevice = function()

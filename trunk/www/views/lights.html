@@ -126,7 +126,7 @@
 		</table>
 		<br>
 </div>
-<div id="dialog-addlightdevice" title="Add Light/Switch Device">
+<div id="dialog-addlightdevice">
     <form>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
@@ -153,19 +153,19 @@
 		</table>
     </form>
 </div>
-<div id="dialog-addmanuallightdevice" title="Add Manual Light/Switch Device">
+<div id="dialog-addmanuallightdevice">
     <form>
         <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:120px"><label for="name">Hardware: </label></td>
+          <td align="right" style="width:120px"><label for="combohardware"><span data-i18n="Hardware">Hardware</span>: </label></td>
           <td><select id="combohardware" style="width:260px" class="combobox ui-corner-all">
           </select></td>
         <tr>
         <tr>
-          <td align="right"><label for="name">Name: </label></td>
+          <td align="right"><label for="devicename"><span data-i18n="Device name">Device name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         <tr>
-          <td align="right"><label for="switchtype">Switch Type: </label></td>
+          <td align="right"><label for="comboswitchtype"><span data-i18n="Switch Type">Switch Type</span>: </label></td>
 					<td><select id="comboswitchtype" style="width:210px" class="combobox ui-corner-all">
 						<!--#embed switchtypes -->
 					</select></td>
@@ -175,7 +175,7 @@
 			<td></td>
 	    </tr>
 	    <tr>
-          <td align="right"><label>Type: </label></td>
+          <td align="right"><label><span data-i18n="Type">Type</span>: </label></td>
           <td>
 			<select id="combolighttype" style="width:170px" class="combobox ui-corner-all">
 						<option value="0">X10</option>
@@ -212,13 +212,13 @@
 		<div id="lighting1params">
 			<table class="display" id="lightparams1" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label>House Code:</label></td>
+					<td align="right" style="width:110px"><label><span data-i18n="House Code">House Code</span>:</label></td>
 					<td><select id="combohousecode" style="width:60px" class="combobox ui-corner-all">
 							</select>
 					</td>
 				</tr>
 				<tr>
-					<td align="right"><label>Unit Code:</label></td>
+					<td align="right"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
 					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
 							</select>
 					</td>
@@ -228,7 +228,7 @@
 		<div id="lighting2params">
 			<table class="display" id="lightparams2" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label>ID:</label></td>
+					<td align="right" style="width:110px"><label><span data-i18n="ID">ID</span>:</label></td>
 					<td>
 						<select id="combocmd1" style="width:60px" class="combobox ui-corner-all">
 								<option value="0">0</option>
@@ -242,7 +242,7 @@
 					</td>
 				</tr>
 				<tr id="lighting2paramsUnitCode">
-					<td align="right"><label>Unit Code:</label></td>
+					<td align="right"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
 					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
 							</select>
 					</td>
@@ -252,20 +252,20 @@
 		<div id="lighting3params">
 			<table class="display" id="lightparams3" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label>ID:</label></td>
+					<td align="right" style="width:110px"><label><span data-i18n="ID">ID</span>:</label></td>
 					<td>
 						<select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select>
 						<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
 					</td>
 				</tr>
 				<tr>
-					<td align="right"><label>Group Code:</label></td>
+					<td align="right"><label><span data-i18n="Group Code">Group Code</span>:</label></td>
 					<td>
 						<select id="combogroupcode" style="width:60px" class="combobox ui-corner-all"></select>
 					</td>
 				</tr>
 				<tr>
-					<td align="right"><label>Unit Code:</label></td>
+					<td align="right"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
 					<td>
 						<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
 					</td>
@@ -275,7 +275,7 @@
 		<div id="lightingparams_enocean">
 			<table class="display" id="lightparams_enocean" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label>ID:</label></td>
+					<td align="right" style="width:110px"><label><span data-i18n="ID">ID</span>:</label></td>
 					<td>
 						<select id="comboid" style="width:60px" class="combobox ui-corner-all"></select>
 					</td>
@@ -301,7 +301,7 @@
 		<div id="blindsparams">
 			<table class="display" id="blindparams" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label>ID:</label></td>
+					<td align="right" style="width:110px"><label><span data-i18n="ID">ID</span>:</label></td>
 					<td>
 						<select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select>
 						<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
@@ -310,7 +310,7 @@
 					</td>
 				</tr>
 				<tr id="blindparamsUnitCode">
-					<td align="right"><label>Unit Code:</label></td>
+					<td align="right"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
 					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select></td>
 				</tr>
 			</table>
@@ -318,21 +318,21 @@
 		<div id="he105params">
 			<table class="display" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label>Unit Code:</label></td>
+					<td align="right" style="width:110px"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
 					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select></td>
 				</tr>
 			</table>
 		</div>
 		<br>
-		<center><a class="btnstyle3" onclick="TestManualLight();">Test</a></center>
+		<center><a class="btnstyle3" onclick="TestManualLight();" data-i18n="Test">Test</a></center>
 		<br>
         <table class="display" id="howtable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right"><label>As: </label></td>
-          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
+          <td align="right"><label><span data-i18n="As">As</span>: </label></td>
+          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;<span data-i18n="Main Device">Main Device</span>&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;<span data-i18n="Sub/Slave Device">Sub/Slave Device</span></td>
         <tr>
 		<tr id="subdevice" style="display:none">
-			<td align="right" style="width:60px"><label>Device: </label></td>
+			<td align="right" style="width:60px"><label><span data-i18n="Device">Device</span>: </label></td>
 			<td>
 				<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
 				</select>
