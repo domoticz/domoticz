@@ -2157,6 +2157,14 @@ bool GetLightCommand(
 			{
 				cmd=thermostat3_sOff;
 			}
+			else if (switchcmd == "Up")
+			{
+				cmd = thermostat3_sUp;
+			}
+			else if (switchcmd == "Down")
+			{
+				cmd = thermostat3_sDown;
+			}
 			else
 			{
 				cmd=thermostat3_sOff;

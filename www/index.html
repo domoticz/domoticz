@@ -153,11 +153,11 @@ function CheckForUpdate(showdialog) {
 				$("#mUpdate").show();
 				$("#mCheckUpdate").hide();
 				if (showdialog) {
-					var bValid = false;
-					bValid=(confirm($.i18n("Update Available !... Update Now?"))==true);
-					if (bValid) {
-						SwitchLayout('Update');
-					}
+					bootbox.confirm($.i18n("Update Available !... Update Now?"), function(result) {
+						if (result==true) {
+							SwitchLayout('Update');
+						}
+					});
 				}
 				else {
 					var msgtxt=$.i18n('A new version of Domoticz is Available!...');
@@ -384,6 +384,22 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
+	<div id="thermostat3_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop" style="width: 160px;">
+		<div class="ui-close" onclick="CloseTherm3Popup()"></div>
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="left" style="vertical-align: center;">
+					<a id="popup_therm_on"><img src="images/pushon48.png" class="lcursor" height="48" width="48"></a>
+					<a id="popup_therm_off"><img src="images/pushoff48.png" class="lcursor" height="48" width="48"></a>
+				</td>
+			</tr>
+				<td align="left" style="vertical-align: center;">
+					<a id="popup_therm_up"><img src="images/Up48.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="ThermUp()"></a>
+					<a id="popup_therm_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" onclick="ThermDown()"></a>
+				</td>
+			<tr>		
+		</table>
+	</div> 
 	<div id="rgbw_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
 		<div class="ui-close" onclick="CloseRGBWPopup()"></div>
 		<table class="display" border="0" cellpadding="0" cellspacing="0">

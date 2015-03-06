@@ -395,6 +395,8 @@ define(['app'], function (app) {
 													(item.Status == 'On')||
 													(item.Status == 'Chime')||
 													(item.Status == 'Group On')||
+													(item.Status.indexOf('Down')!=-1)||
+													(item.Status.indexOf('Up')!=-1)||
 													(item.Status.indexOf('Set ') == 0)
 												 ) {
 														status=
@@ -608,10 +610,20 @@ define(['app'], function (app) {
 													(item.Status == 'Group On')||
 													(item.Status.indexOf('Set ') == 0)
 												 ) {
-														img='<img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+														if (item.Type == "Thermostat 3") {
+															img='<img src="images/' + item.Image + '48_On.png" onclick="ShowTherm3Popup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
+														}
+														else {
+															img='<img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+														}
 											}
 											else {
-														img='<img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+														if (item.Type == "Thermostat 3") {
+															img='<img src="images/' + item.Image + '48_Off.png" onclick="ShowTherm3Popup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
+														}
+														else {
+															img='<img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
+														}
 											}
 										}
 										
@@ -1827,6 +1839,8 @@ define(['app'], function (app) {
 												(item.Status == 'On')||
 												(item.Status == 'Chime')||
 												(item.Status == 'Group On')||
+												(item.Status.indexOf('Down')!=-1)||
+												(item.Status.indexOf('Up')!=-1)||
 												(item.Status.indexOf('Set ') == 0)
 											 ) {
 														status=
@@ -2084,10 +2098,20 @@ define(['app'], function (app) {
 												(item.Status.indexOf('Up')!=-1)||
 												(item.Status.indexOf('Set ') == 0)
 											 ) {
-													xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													if (item.Type == "Thermostat 3") {
+														xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="ShowTherm3Popup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													}
+													else {
+														xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													}
 										}
 										else {
-													xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													if (item.Type == "Thermostat 3") {
+														xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="ShowTherm3Popup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													}
+													else {
+														xhtm+='\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
+													}
 										}
 									}
 									xhtm+=
@@ -3356,6 +3380,10 @@ define(['app'], function (app) {
 				popup.hide();
 			}
 			popup=$("#setpoint_popup");
+			if (typeof popup != 'undefined') {
+				popup.hide();
+			}
+			popup=$("#thermostat3_popup");
 			if (typeof popup != 'undefined') {
 				popup.hide();
 			}

@@ -481,6 +481,7 @@ define(['app'], function (app) {
 			}
 		  $.devIdx=idx;
 		  $("#dialog-editutilitydevice #devicename").val(decodeURIComponent(name));
+		  $( "#dialog-editutilitydevice" ).i18n();
 		  $( "#dialog-editutilitydevice" ).dialog( "open" );
 		}
 
@@ -493,6 +494,7 @@ define(['app'], function (app) {
 		  $.devIdx=idx;
 		  $("#dialog-editmeterdevice #devicename").val(decodeURIComponent(name));
 		  $("#dialog-editmeterdevice #combometertype").val(switchtype);
+		  $("#dialog-editmeterdevice" ).i18n();
 		  $("#dialog-editmeterdevice" ).dialog( "open" );
 		}
 
@@ -508,6 +510,7 @@ define(['app'], function (app) {
 				$('#dialog-editsetpointdevice #protected').prop('checked',(isprotected==true));
 				$("#dialog-editsetpointdevice #setpoint").val(setpoint);
 				$("#dialog-editsetpointdevice #tempunit").html($.myglobals.tempsign);
+				$("#dialog-editsetpointdevice" ).i18n();
 				$("#dialog-editsetpointdevice" ).dialog( "open" );
 			});
 		}
@@ -526,6 +529,7 @@ define(['app'], function (app) {
 				$("#dialog-editthermostatclockdevice #comboclockday").val(parseInt(sarray[0]));
 				$("#dialog-editthermostatclockdevice #clockhour").val(sarray[1]);
 				$("#dialog-editthermostatclockdevice #clockminute").val(sarray[2]);
+				$("#dialog-editthermostatclockdevice" ).i18n();
 				$("#dialog-editthermostatclockdevice" ).dialog( "open" );
 			});
 		}
@@ -549,6 +553,7 @@ define(['app'], function (app) {
 				}
 				
 				$("#dialog-editthermostatmode #combomode").val(parseInt(actmode));
+				$("#dialog-editthermostatmode" ).i18n();
 				$("#dialog-editthermostatmode" ).dialog( "open" );
 			});
 		}
@@ -571,6 +576,7 @@ define(['app'], function (app) {
 				}
 				
 				$("#dialog-editthermostatmode #combomode").val(parseInt(actmode));
+				$("#dialog-editthermostatmode" ).i18n();
 				$("#dialog-editthermostatmode" ).dialog( "open" );
 			});
 		}
@@ -1278,6 +1284,7 @@ define(['app'], function (app) {
 				  height: 160,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit Device"),
 				  buttons: {
 					  "Update": function() {
 						  var bValid = true;
@@ -1328,6 +1335,7 @@ define(['app'], function (app) {
 				  height: 200,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit Device"),
 				  buttons: {
 					  "Update": function() {
 						  var bValid = true;
@@ -1371,10 +1379,11 @@ define(['app'], function (app) {
 
 			$( "#dialog-editsetpointdevice" ).dialog({
 				  autoOpen: false,
-				  width: 390,
+				  width: 410,
 				  height: 250,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit Device"),
 				  buttons: {
 					  "Update": function() {
 						  var bValid = true;
@@ -1422,9 +1431,10 @@ define(['app'], function (app) {
 			$( "#dialog-editthermostatclockdevice" ).dialog({
 				  autoOpen: false,
 				  width: 390,
-				  height: 320,
+				  height: 340,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit Device"),
 				  buttons: {
 					  "Update": function() {
 						  var bValid = true;
@@ -1474,10 +1484,11 @@ define(['app'], function (app) {
 
 			$( "#dialog-editthermostatmode" ).dialog({
 				  autoOpen: false,
-				  width: 390,
+				  width: 410,
 				  height: 260,
 				  modal: true,
 				  resizable: false,
+				  title: $.i18n("Edit Device"),
 				  buttons: {
 					  "Update": function() {
 						  var bValid = true;
