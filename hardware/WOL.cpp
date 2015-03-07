@@ -133,6 +133,9 @@ bool CWOL::WriteToHardware(const char *pdata, const unsigned char length)
 	if (packettype!=pTypeLighting2)
 		return false;
 
+	if (pSen->LIGHTING2.cmnd != light2_sOn) // only send WOL with ON command
+		return true;
+
 	int nodeID=(pSen->LIGHTING2.id3<<8)|pSen->LIGHTING2.id4;
 
 	std::stringstream szQuery;
