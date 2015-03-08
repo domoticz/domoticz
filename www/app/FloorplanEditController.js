@@ -495,7 +495,8 @@ define(['app'], function (app) {
 				"bJQueryUI": true,
 				"aLengthMenu": [[5, 10, 25, 100, -1], [5, 10, 25, 100, "All"]],
 				"iDisplayLength" : 5,
-				"sPaginationType": "full_numbers"
+				"sPaginationType": "full_numbers",
+				language: $.DataTableLanguage
 				} );
 
 			oTable = $('#plantable2').dataTable( {
@@ -522,6 +523,7 @@ define(['app'], function (app) {
 				"bJQueryUI": true,
 				"bFilter": false,
 				"bLengthChange": false,
+				language: $.DataTableLanguage,
 				"iDisplayLength" : 5 });
 
 			RefreshUnusedDevicesComboArray();

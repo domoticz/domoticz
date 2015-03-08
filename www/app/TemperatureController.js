@@ -1045,233 +1045,218 @@ define(['app'], function (app) {
 			$.devIdx=0;
 			$.LastUpdateTime=parseInt(0);
 			
+			var dialog_edittempdevice_buttons = {};
+			dialog_edittempdevice_buttons[$.i18n("Update")]=function() {
+				  var bValid = true;
+				  bValid = bValid && checkLength( $("#dialog-edittempdevice #edittable #devicename"), 2, 100 );
+				  if ( bValid ) {
+					  $( this ).dialog( "close" );
+					  var aValue=$("#dialog-edittempdevice #edittable #adjustment").val();
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) + '&addjvalue=' + aValue + '&used=true',
+						 async: false,
+						 dataType: 'json',
+						 success: function(data) {
+							ShowTemps();
+						 }
+					  });
+
+				  }
+			};
+			dialog_edittempdevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=false',
+						 async: false,
+						 dataType: 'json',
+						 success: function(data) {
+							ShowTemps();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_edittempdevice_buttons[$.i18n("Replace")]=function() {
+				  $( this ).dialog( "close" );
+				  ReplaceDevice($.devIdx,ShowTemps);
+			};
+			dialog_edittempdevice_buttons[$.i18n("Cancel")]=function() {
+				$( this ).dialog( "close" );
+			};
 			$( "#dialog-edittempdevice" ).dialog({
 				  autoOpen: false,
-				  width: 450,
-				  height: 200,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-edittempdevice #edittable #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  var aValue=$("#dialog-edittempdevice #edittable #adjustment").val();
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) + '&addjvalue=' + aValue + '&used=true',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowTemps();
-								 }
-							  });
-
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) + '&used=false',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowTemps();
-								 }
-							  });
-							}
-						});
-					  },
-					  "Replace": function() {
-						  $( this ).dialog( "close" );
-						  ReplaceDevice($.devIdx,ShowTemps);
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_edittempdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
 			});
+			
+			var dialog_editsetpoint_buttons = {};
+			dialog_editsetpoint_buttons[$.i18n("Set")]=function() {
+				  var bValid = true;
+				  bValid = bValid && checkLength( $("#dialog-editsetpoint #edittable #devicename"), 2, 100 );
+				  var setpoint=$("#dialog-editsetpoint #edittable #setpoint").val();
+				  if (setpoint<5 || setpoint>35){
+					bootbox.alert($.i18n('Set point must be between 5 and 35 degrees'));
+					return false;
+				  }
+				  var tUntil="";
+				  if($("#dialog-editsetpoint #edittable #until").val()!=""){
+					var selectedDate = $("#dialog-editsetpoint #edittable #until").datetimepicker('getDate');
+					var now = new Date();
+					if (selectedDate < now) {
+						bootbox.alert($.i18n('Temporary set point date / time must be in the future'));
+						return false;
+					}
+					tUntil=selectedDate.toISOString();
+				  }
+				  if ( bValid ) {
+					  $( this ).dialog( "close" );
+					 
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + '&setpoint=' + setpoint + '&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride')+'&until='+tUntil+'&used=true',
+						 async: false,
+						 dataType: 'json',
+						 success: function(data) {
+							ShowTemps();
+						 }
+					  });
+
+				  }
+			  };
+			dialog_editsetpoint_buttons[$.i18n("Cancel Override")]=function() {
+				  var bValid = true;
+				  bValid = bValid && checkLength( $("#dialog-editsetpoint #edittable #devicename"), 2, 100 );
+				  if ( bValid ) {
+					  $( this ).dialog( "close" );
+					  var aValue=$("#dialog-editsetpoint #edittable #setpoint").val();
+					  if(aValue<5) aValue=5;//These values will display but the controller will update back the currently scheduled setpoint in due course
+					  if(aValue>35) aValue=35;//These values will display but the controller will update back the currently scheduled setpoint in due course
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + '&setpoint=' + aValue + '&mode=Auto&used=true',
+						 async: false,
+						 dataType: 'json',
+						 success: function(data) {
+							ShowTemps();
+						 }
+					  });
+
+				  }
+			  };
+			dialog_editsetpoint_buttons[$.i18n("Cancel")]=function() {
+				$( this ).dialog( "close" );
+				ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
+			};
+			  
 			$( "#dialog-editsetpoint" ).dialog({
 				  autoOpen: false,
-				  width: 360,
-				  height: 230,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Set Point"),
-				  buttons: {
-					  "Set": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editsetpoint #edittable #devicename"), 2, 100 );
-						  var setpoint=$("#dialog-editsetpoint #edittable #setpoint").val();
-						  if (setpoint<5 || setpoint>35){
-							bootbox.alert($.i18n('Set point must be between 5 and 35 degrees'));
-							return false;
-						  }
-						  var tUntil="";
-						  if($("#dialog-editsetpoint #edittable #until").val()!=""){
-							var selectedDate = $("#dialog-editsetpoint #edittable #until").datetimepicker('getDate');
-							var now = new Date();
-							if (selectedDate < now) {
-								bootbox.alert($.i18n('Temporary set point date / time must be in the future'));
-								return false;
-							}
-							tUntil=selectedDate.toISOString();
-						  }
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							 
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + '&setpoint=' + setpoint + '&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride')+'&until='+tUntil+'&used=true',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowTemps();
-								 }
-							  });
-
-						  }
-					  },
-					  //on mobile small may be better so it might loook better to change 'Cancel Override' to 'Cancel' on those clients
-				          "Cancel Override": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editsetpoint #edittable #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  var aValue=$("#dialog-editsetpoint #edittable #setpoint").val();
-							  if(aValue<5) aValue=5;//These values will display but the controller will update back the currently scheduled setpoint in due course
-							  if(aValue>35) aValue=35;//These values will display but the controller will update back the currently scheduled setpoint in due course
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + '&setpoint=' + aValue + '&mode=Auto&used=true',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowTemps();
-								 }
-							  });
-
-						  }
-					  },
-					 //on mobile small may be better so it might loook better to change 'Cancel Override' to 'Cancel' on those clients...hence 'Cancel' will now be 'Back'
-					  "Back": function() {
-						  $( this ).dialog( "close" );
-						  ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
-					  }
-				  },
+				  buttons: dialog_editsetpoint_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 					ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
 				  }
 			});
+			
+			var dialog_editstate_buttons = {};
+
+			dialog_editstate_buttons[$.i18n("Set")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editstate #edittable #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  var aValue=$("#dialog-editstate #edittable #state").val();
+				  var tUntil="";
+				  if($("#dialog-editstate #edittable #until_state").val()!="")
+					tUntil=$("#dialog-editstate #edittable #until_state").datetimepicker('getDate').toISOString();
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) + '&state=' + aValue + '&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride')+'&until='+tUntil+'&used=true',
+					 async: false,
+					 dataType: 'json',
+					 success: function(data) {
+						ShowTemps();
+					 }
+				  });
+
+			  }
+			};
+			dialog_editstate_buttons[$.i18n("Cancel")]=function() {
+				$( this ).dialog( "close" );
+				ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
+			};
+			
 			$( "#dialog-editstate" ).dialog({
 				  autoOpen: false,
-				  width: 360,
-				  height: 230,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit State"),
-				  buttons: {
-					  "Set": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editstate #edittable #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  var aValue=$("#dialog-editstate #edittable #state").val();
-							  var tUntil="";
-							  if($("#dialog-editstate #edittable #until_state").val()!="")
-								tUntil=$("#dialog-editstate #edittable #until_state").datetimepicker('getDate').toISOString();
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) + '&state=' + aValue + '&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride')+'&until='+tUntil+'&used=true',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowTemps();
-								 }
-							  });
-
-						  }
-					  },
-					  //on mobile small may be better so it might loook better to change 'Cancel Override' to 'Cancel' on those clients
-				          "Cancel Override": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editstate #edittable #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  var aValue=$("#dialog-editstate #edittable #state").val();
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) + '&state=' + aValue + '&mode=Auto&used=true',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowTemps();
-								 }
-							  });
-
-						  }
-					  },
-					 //on mobile small may be better so it might loook better to change 'Cancel Override' to 'Cancel' on those clients...hence 'Cancel' will now be 'Back'
-					  "Back": function() {
-						  $( this ).dialog( "close" );
-						  ShowTemps();//going into the dialog removes the background timer refresh (see EditState)
-					  }
-				  },
+				  buttons: dialog_editstate_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 					ShowTemps();//going into the dialog removes the background timer refresh (see EditState)
 				  }
 			});
+			
+			var dialog_edittempdevicesmall_buttons = {};
+			dialog_edittempdevicesmall_buttons[$.i18n("Update")]=function() {
+				  var bValid = true;
+				  bValid = bValid && checkLength( $("#dialog-edittempdevicesmall #edittable #devicename"), 2, 100 );
+				  if ( bValid ) {
+					  $( this ).dialog( "close" );
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=true',
+						 async: false,
+						 dataType: 'json',
+						 success: function(data) {
+							ShowTemps();
+						 }
+					  });
+
+				  }
+			  };
+			dialog_edittempdevicesmall_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=false',
+						 async: false,
+						 dataType: 'json',
+						 success: function(data) {
+							ShowTemps();
+						 }
+					  });
+					}
+				});
+			  };
+			dialog_edittempdevicesmall_buttons[$.i18n("Replace")]=function() {
+			  $( this ).dialog( "close" );
+			  ReplaceDevice($.devIdx,ShowTemps);
+			};
+			dialog_edittempdevicesmall_buttons[$.i18n("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
 			$( "#dialog-edittempdevicesmall" ).dialog({
 				  autoOpen: false,
-				  width: 450,
-				  height: 160,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-edittempdevicesmall #edittable #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=true',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowTemps();
-								 }
-							  });
-
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=false',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowTemps();
-								 }
-							  });
-							}
-						});
-					  },
-					  "Replace": function() {
-						  $( this ).dialog( "close" );
-						  ReplaceDevice($.devIdx,ShowTemps);
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_edittempdevicesmall_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }

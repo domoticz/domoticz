@@ -615,7 +615,8 @@ define(['app'], function (app) {
 						  "bJQueryUI": true,
 						  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 						  "iDisplayLength" : 25,
-						  "sPaginationType": "full_numbers"
+						  "sPaginationType": "full_numbers",
+						  language: $.DataTableLanguage
 						} );
 			$("#scenecontent #devicename").val(decodeURIComponent(name));
 
@@ -1126,7 +1127,8 @@ define(['app'], function (app) {
 						  "bJQueryUI": true,
 						  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 						  "iDisplayLength" : 25,
-						  "sPaginationType": "full_numbers"
+						  "sPaginationType": "full_numbers",
+						  language: $.DataTableLanguage
 						} );
 			$('#timerparamstable #combotimehour >option').remove();
 			$('#timerparamstable #combotimemin >option').remove();
@@ -1210,6 +1212,13 @@ define(['app'], function (app) {
 							}
 							var img1="";
 							var img2="";
+							
+							var bigtext=TranslateStatusShort(item.Status);
+							if (item.UsedByCamera==true) {
+								var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
+								streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+								bigtext+="&nbsp;"+streamurl;
+							}
 
 							if (item.Type=="Scene") {
 								img1='<img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes,' + item.Protected +');" class="lcursor" height="48" width="48">';
@@ -1233,6 +1242,7 @@ define(['app'], function (app) {
 								}
 								if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
 									$(id + " #status").html(TranslateStatus(item.Status));
+									$(id + " #bigtext").html(bigtext);
 								}
 							}
 									
@@ -1324,12 +1334,13 @@ define(['app'], function (app) {
 						'\t    <tr>\n' +
 						'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
 						'\t      <td id="bigtext">';
+						var bigtext=TranslateStatusShort(item.Status);
 					  if (item.UsedByCamera==true) {
 						var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
 						streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
-						xhtm+=streamurl;
+						bigtext+="&nbsp;"+streamurl;
 					  }
-					  xhtm+='</td>\n';
+					  xhtm+=bigtext+'</td>\n';
 
 					if (item.Type=="Scene") {
 						xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';

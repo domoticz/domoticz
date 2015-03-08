@@ -539,203 +539,211 @@ define(['app'], function (app) {
 			$.devIdx=0;
 			$.LastUpdateTime=parseInt(0);
 			
+			var dialog_editweatherdevice_buttons = {};
+			dialog_editweatherdevice_buttons[$.i18n("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editweatherdevice #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowWeathers();
+					 }
+				  });
+				  
+			  }
+			};
+			dialog_editweatherdevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowWeathers();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editweatherdevice_buttons[$.i18n("Replace")]=function() {
+				  $( this ).dialog( "close" );
+				  ReplaceDevice($.devIdx,ShowWeathers);
+			};
+			dialog_editweatherdevice_buttons[$.i18n("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
+
 			$( "#dialog-editweatherdevice" ).dialog({
 				  autoOpen: false,
-				  width: 450,
-				  height: 180,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editweatherdevice #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=true',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowWeathers();
-								 }
-							  });
-							  
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowWeathers();
-								 }
-							  });
-							}
-						});
-					  },
-					  "Replace": function() {
-						  $( this ).dialog( "close" );
-						  ReplaceDevice($.devIdx,ShowWeathers);
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editweatherdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
 			}).i18n();
+			
+			var dialog_editraindevice_buttons = {};
+			
+			dialog_editraindevice_buttons[$.i18n("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editraindevice #edittable #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editraindevice #devicename").val()) + '&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() + '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowWeathers();
+					 }
+				  });
+				  
+			  }
+			};
+			dialog_editraindevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowWeathers();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editraindevice_buttons[$.i18n("Replace")]=function() {
+			  $( this ).dialog( "close" );
+			  ReplaceDevice($.devIdx,ShowWeathers);
+			};
+			dialog_editraindevice_buttons[$.i18n("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
+			
 			$( "#dialog-editraindevice" ).dialog({
 				  autoOpen: false,
-				  width: 450,
-				  height: 200,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editraindevice #edittable #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editraindevice #devicename").val()) + '&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() + '&used=true',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowWeathers();
-								 }
-							  });
-							  
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowWeathers();
-								 }
-							  });
-							}
-						});
-					  },
-					  "Replace": function() {
-						  $( this ).dialog( "close" );
-						  ReplaceDevice($.devIdx,ShowWeathers);
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editraindevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
 			}).i18n();
+			
+			var dialog_editbarodevice_buttons = {};
+			
+			dialog_editbarodevice_buttons[$.i18n("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editbarodevice #edittable #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  var aValue=$("#dialog-editbarodevice #edittable #adjustment").val();
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&addjvalue2=' + aValue + '&used=true',
+					 async: false,
+					 dataType: 'json',
+					 success: function(data) {
+						ShowWeathers();
+					 }
+				  });
+
+			  }
+			};
+			dialog_editbarodevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&used=false',
+						 async: false,
+						 dataType: 'json',
+						 success: function(data) {
+							ShowWeathers();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editbarodevice_buttons[$.i18n("Replace")]=function() {
+			  $( this ).dialog( "close" );
+			  ReplaceDevice($.devIdx,ShowWeathers);
+			};
+			dialog_editbarodevice_buttons[$.i18n("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
 			$( "#dialog-editbarodevice" ).dialog({
 				  autoOpen: false,
-				  width: 450,
-				  height: 200,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editbarodevice #edittable #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  var aValue=$("#dialog-editbarodevice #edittable #adjustment").val();
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&addjvalue2=' + aValue + '&used=true',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowWeathers();
-								 }
-							  });
-
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&used=false',
-								 async: false,
-								 dataType: 'json',
-								 success: function(data) {
-									ShowWeathers();
-								 }
-							  });
-							}
-						});
-					  },
-					  "Replace": function() {
-						  $( this ).dialog( "close" );
-						  ReplaceDevice($.devIdx,ShowWeathers);
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editbarodevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
 			}).i18n();
+			
+			var dialog_editvisibilitydevice_buttons = {};
+			dialog_editvisibilitydevice_buttons[$.i18n("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editvisibilitydevice #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() + '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowWeathers();
+					 }
+				  });
+				  
+			  }
+			};
+			dialog_editvisibilitydevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowWeathers();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editvisibilitydevice_buttons[$.i18n("Cancel")]=function() {
+				  $( this ).dialog( "close" );
+			};
+			
 			$( "#dialog-editvisibilitydevice" ).dialog({
 				  autoOpen: false,
-				  width: 370,
-				  height: 200,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editvisibilitydevice #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() + '&used=true',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowWeathers();
-								 }
-							  });
-							  
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&used=false',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowWeathers();
-								 }
-							  });
-							}
-						});
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editvisibilitydevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }

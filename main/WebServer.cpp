@@ -8720,6 +8720,7 @@ namespace http {
 						else if (switchtype == STYPE_PushOn)
 						{
 							root["result"][ii]["TypeImg"] = "push";
+							root["result"][ii]["Status"] = "";
 							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
 							root["result"][ii]["AddjValue"] = AddjValue;
 							root["result"][ii]["AddjMulti"] = AddjMulti;
@@ -8728,6 +8729,7 @@ namespace http {
 						}
 						else if (switchtype == STYPE_PushOff)
 						{
+							root["result"][ii]["Status"] = "";
 							root["result"][ii]["TypeImg"] = "pushoff";
 						}
 						else if (switchtype == STYPE_X10Siren)

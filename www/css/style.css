@@ -703,12 +703,6 @@ body table#itemtable tr td:first-child + td + td + td{
 	font-weight: bold;
 }
 
-body table#itemtable tr td:first-child + td + td + td:before{
-	content: " Status: ";
-	font-style: italic;
-	font-size: 90%;
-}
-
 /* Fifth column */
 body table#itemtable tr td:first-child + td + td + td + td{
 	font-size: 80%;
@@ -826,12 +820,6 @@ body table#itemtablenotype tr td:first-child + td + td img{
 body table#itemtablenotype tr td:first-child + td + td + td{
 	font-size: 90%;
 	font-weight: bold;
-}
-
-body table#itemtablenotype tr td:first-child + td + td + td:before{
-	content: " Status: ";
-	font-style: italic;
-	font-size: 90%;
 }
 
 /* Fifth column */
@@ -1190,12 +1178,6 @@ body table#itemtabledoubleicon tr td:first-child + td + td + td + td{
 	font-weight: bold;
 }
 
-body table#itemtabledoubleicon tr td:first-child + td + td + td + td:before{
-	content: " Status: ";
-	font-style: italic;
-	font-size: 90%;
-}
-
 /* Sixth column */
 body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td{
 	font-size: 80%;
@@ -1334,12 +1316,6 @@ body table#itemtabletrippleicon tr td:first-child + td + td + td + td img{
 body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td{
 	font-size: 90%;
 	font-weight: bold;
-}
-
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td:before{
-	content: " Status: ";
-	font-style: italic;
-	font-size: 90%;
 }
 
 /* Seventh column */

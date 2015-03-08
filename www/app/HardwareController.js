@@ -902,7 +902,8 @@ define(['app'], function (app) {
 			  "bJQueryUI": true,
 			  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 			  "iDisplayLength" : 25,
-			  "sPaginationType": "full_numbers"
+			  "sPaginationType": "full_numbers",
+			  language: $.DataTableLanguage
 			} );
 
 			$('#hardwarecontent #idx').val(idx);
@@ -1571,7 +1572,8 @@ define(['app'], function (app) {
 			  "bJQueryUI": true,
 			  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 			  "iDisplayLength" : 25,
-			  "sPaginationType": "full_numbers"
+			  "sPaginationType": "full_numbers",
+			  language: $.DataTableLanguage
 			} );
 			RefreshOpenZWaveUserCodesTable();
 		}
@@ -1602,7 +1604,8 @@ define(['app'], function (app) {
 			  "bJQueryUI": true,
 			  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 			  "iDisplayLength" : 25,
-			  "sPaginationType": "full_numbers"
+			  "sPaginationType": "full_numbers",
+			  language: $.DataTableLanguage
 			} );
 
 			$('#hardwarecontent #idx').val(idx);
@@ -2246,8 +2249,10 @@ define(['app'], function (app) {
 			  "bJQueryUI": true,
 			  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 			  "iDisplayLength" : 25,
-			  "sPaginationType": "full_numbers"
+			  "sPaginationType": "full_numbers",
+			  language: $.DataTableLanguage
 			} );
+
 
 			$("#hardwarecontent #hardwareparamstable #combotype").change(function() { 
 				UpdateHardwareParamControls();
@@ -2273,7 +2278,6 @@ define(['app'], function (app) {
 			$('#hardwareparamstable #combotype > option').each(function() {
 				 $.myglobals.HardwareTypesStr[$(this).val()]=$(this).text();
 			});
-			
 			//Get Serial devices
 			$("#hardwareparamsserial #comboserialport").html("");
 			$.ajax({
