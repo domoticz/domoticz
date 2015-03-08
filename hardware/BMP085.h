@@ -29,6 +29,9 @@ private:
 	volatile bool m_stoprequested;
 	int m_waitcntr;
 
+	std::string m_ActI2CBus;
+
+	bool i2c_test(const char *I2CBusName);
 	int i2c_Open(const char *I2CBusName);
 	int bmp_ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead);
 	int bmp_WriteCmd(int fd, uint8_t devAction);
