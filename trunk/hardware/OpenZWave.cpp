@@ -1028,6 +1028,21 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 					pDevice->intvalue = 255;
 				}
 			}
+			if (svalue == 0)
+			{
+				//Device is switched off, lets see if there is a power sensor for this device,
+				//and set its value to 0 as well
+				_tZWaveDevice *pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+				if (pPowerDevice == NULL)
+				{
+					pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
+				}
+				if (pPowerDevice != NULL)
+				{
+					pPowerDevice->floatValue = 0;
+					SendDevice2Domoticz(pPowerDevice);
+				}
+			}
 		}
 		else
 		{
@@ -1048,6 +1063,22 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 			{
 				_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! NodeID: %d (0x%02x)", nodeID, nodeID);
 			}
+			if (svalue == 0)
+			{
+				//Device is switched off, lets see if there is a power sensor for this device,
+				//and set its value to 0 as well
+				_tZWaveDevice *pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+				if (pPowerDevice == NULL)
+				{
+					pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
+				}
+				if (pPowerDevice != NULL)
+				{
+					pPowerDevice->floatValue = 0;
+					SendDevice2Domoticz(pPowerDevice);
+				}
+			}
+
 		}
 		else
 		{
