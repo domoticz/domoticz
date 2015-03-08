@@ -41,8 +41,6 @@ based on a 5 minute sample interval.  My method poles for conversion completion.
 
 and does not require smbus or wire libs
 
-Remember to set to correct I2CBus
-
 */
 
 #include "stdafx.h"
@@ -68,9 +66,6 @@ Remember to set to correct I2CBus
 
 #define sleepms(ms)  usleep((ms)*1000)
 
-#define I2CBus             "/dev/i2c-1"      //New Pi's
-//#define I2CBus             "/dev/i2c-0"    //Old, but not stale Pi's 
-
 // BMP085 & BMP180 Specific code
 #define BMPx8x_I2CADDR           0x77
 #define BMPx8x_CtrlMeas          0xF4
@@ -87,6 +82,11 @@ CBMP085::CBMP085(const int ID)
 {
 	m_stoprequested=false;
 	m_HwdID=ID;
+	m_ActI2CBus = "/dev/i2c-1";
+	if (!i2c_test(m_ActI2CBus.c_str()))
+	{
+		m_ActI2CBus = "/dev/i2c-0";
+	}
 }
 
 CBMP085::~CBMP085()
@@ -158,6 +158,21 @@ void CBMP085::Do_Work()
 		}
 	}
 	_log.Log(LOG_STATUS,"BMP085: Worker stopped...");
+}
+
+//returns true if it could be opened
+bool CBMP085::i2c_test(const char *I2CBusName)
+{
+#ifndef __arm__
+	return false;
+#else
+	int fd;
+	//Open port for reading and writing
+	if ((fd = open(I2CBusName, O_RDWR)) < 0)
+		return false;
+	close(fd);
+	return true;
+#endif
 }
 
 // Returns a file id for the port/bus
@@ -507,7 +522,7 @@ void CBMP085::ReadSensorDetails()
 	pressure = 1021.22;
 	altitude = 10.0;
 #else
-	int fd = i2c_Open(I2CBus);
+	int fd = i2c_Open(m_ActI2CBus.c_str());
 	if (fd < 0)
 		return;
 	if (bmp_Calibration(fd) < 0) {
