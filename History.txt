@@ -13,6 +13,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: ZWave Light dimming
 - Implemented: Mertik (Thermostat 3) Up/Down popup
 - Updated: More translation work done
+- Changed: OpenZWave, when a switch/dimmer is turned off, and this node has a Power/Energy sensor, their value is set to 0
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
