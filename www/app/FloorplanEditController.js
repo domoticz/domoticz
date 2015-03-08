@@ -810,7 +810,7 @@ define(['app'], function (app) {
 										if (objData != undefined) {
 											objData.setAttribute("xoffset", xoffset);
 											objData.setAttribute("yoffset", yoffset);
-											objData.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ')) scale(' + $("#floorplangroup").attr("scalefactor") + ')');
+											objData.setAttribute("transform", 'translate(' + xoffset + ',' + yoffset + ') scale(' + $("#floorplangroup").attr("scalefactor") + ')');
 										}
 										$('#floorplaneditcontent #delclractive #activeplanupdate').attr("class", "btnstyle3");
 										if ($.browser.mozilla) // nasty hack for FireFox.  FireFox forgets to display the icon once you start dragging so we need to remind it
