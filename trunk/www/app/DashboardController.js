@@ -154,6 +154,14 @@ define(['app'], function (app) {
 												var img2="";
 												var onclass="";
 												var offclass="";
+												
+												var bigtext=TranslateStatusShort(item.Status);
+												if (item.UsedByCamera==true) {
+													var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
+													streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+													bigtext+="&nbsp;"+streamurl;
+												}
+												
 												if (item.Status == 'On') {
 													onclass="transimg";
 													offclass="";
@@ -172,6 +180,7 @@ define(['app'], function (app) {
 												}
 												if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
 													$(id + " #status").html(TranslateStatus(item.Status));
+													$(id + " #bigtext").html(bigtext);
 												}
 												if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 													$(id + " #lastupdate").html(item.LastUpdate);
@@ -420,9 +429,18 @@ define(['app'], function (app) {
 										}
 									}
 									else {
+										//normal/compact dashboard
 										var img="";
 										var img2="";
 										var img3="";
+										
+										var bigtext=TranslateStatusShort(item.Status);
+										if (item.UsedByCamera==true) {
+											var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
+											streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+											bigtext+="&nbsp;"+streamurl;
+										}
+										
 										if (item.SwitchType == "Doorbell") {
 											img='<img src="images/doorbell48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
 										}
@@ -661,6 +679,7 @@ define(['app'], function (app) {
 										}
 										if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
 											$(id + " #status").html(TranslateStatus(item.Status));
+											$(id + " #bigtext").html(bigtext);
 										}
 										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);
@@ -1544,12 +1563,13 @@ define(['app'], function (app) {
 											'\t    <tr>\n' +
 											'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n'+
 											'\t      <td id="bigtext">';
+									  var bigtext=TranslateStatusShort(item.Status);
 									  if (item.UsedByCamera==true) {
 										var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
 										streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
-										xhtm+=streamurl;
+										bigtext+="&nbsp;"+streamurl;
 									  }
-									  xhtm+='</td>\n';
+									  xhtm+=bigtext+'</td>\n';
 									if (item.Type.indexOf('Scene')==0) {
 										xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites, ' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
 										xhtm+='\t      <td id="status">&nbsp;</td>\n';
@@ -1905,12 +1925,13 @@ define(['app'], function (app) {
 											'\t    <tr>\n' +
 											'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n'+
 											'\t      <td id="bigtext">';
-								  if (item.UsedByCamera==true) {
-									var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
-									streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
-									xhtm+=streamurl;
-								  }
-								  xhtm+='</td>\n';
+									var bigtext=TranslateStatusShort(item.Status);
+									if (item.UsedByCamera==true) {
+										var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
+										streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+										bigtext+="&nbsp;"+streamurl;
+									}
+									xhtm+=bigtext+'</td>\n';
 									if (item.SwitchType == "Doorbell") {
 										xhtm+='\t      <td id="img"><img src="images/doorbell48.png" title="' + $.i18n("Turn On") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
 									}

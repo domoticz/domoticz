@@ -525,7 +525,8 @@ define(['app'], function (app) {
 			  "bJQueryUI": true,
 			  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 			  "iDisplayLength" : 25,
-			  "sPaginationType": "full_numbers"
+			  "sPaginationType": "full_numbers",
+			  language: $.DataTableLanguage
 			} );
 			$('#timerparamstable #combotimehour >option').remove();
 			$('#timerparamstable #combotimemin >option').remove();
@@ -978,7 +979,8 @@ define(['app'], function (app) {
 				"bProcessing": true,
 				"bStateSave": true,
 				"bJQueryUI": true,
-				"sPaginationType": "full_numbers"
+				"sPaginationType": "full_numbers",
+				language: $.DataTableLanguage
 			});
 
 			var sat=100;
@@ -1364,6 +1366,14 @@ define(['app'], function (app) {
 						var img="";
 						var img2="";
 						var img3="";
+						
+						var bigtext=TranslateStatusShort(item.Status);
+						if (item.UsedByCamera==true) {
+							var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
+							streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+							bigtext+="&nbsp;"+streamurl;
+						}
+						
 						if (item.SubType=="Security Panel") {
 							img='<a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a>';
 						}
@@ -1655,6 +1665,7 @@ define(['app'], function (app) {
 						}
 						if ($(id + " #status").html()!=TranslateStatus(EvoGetStatusText(item))) {
 							$(id + " #status").html(TranslateStatus(EvoGetStatusText(item)));
+							$(id + " #bigtext").html(bigtext);
 						}
 						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 							$(id + " #lastupdate").html(item.LastUpdate);
@@ -1802,12 +1813,13 @@ define(['app'], function (app) {
 						'\t    <tr>\n' +
 						'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext">';
+				  var bigtext=TranslateStatusShort(item.Status);
 				  if (item.UsedByCamera==true) {
 					var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
 					streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
-					xhtm+=streamurl;
+					bigtext+="&nbsp;"+streamurl;
 				  }
-				  xhtm+='</td>\n';
+				  xhtm+=bigtext+'</td>\n';
 				  if (item.SubType=="Security Panel") {
 					xhtm+='\t      <td id="img"><a href="secpanel/"><img src="images/security48.png" class="lcursor" height="48" width="48"></a></td>\n';
 				  }

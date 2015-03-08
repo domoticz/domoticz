@@ -275,7 +275,7 @@ $(document).ready(function() {
 			bootbox.alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
 		}
 	}
-	
+
 	if (window.applicationCache) {
 			window.applicationCache.addEventListener('downloading', function(e)
 			{
@@ -337,44 +337,47 @@ $(document).ready(function() {
 
 	window.myglobals=$.myglobals;
 
+	var dialog_replacedevice_buttons = {};
+	
+	dialog_replacedevice_buttons[$.i18n("OK")]=function() {
+		  var bValid = true;
+		  $( this ).dialog( "close" );
+		  
+							var NewDeviceIdx=$("#dialog-replacedevice #newdevice option:selected").val();
+							if (typeof NewDeviceIdx == 'undefined') {
+								bootbox.alert($.i18n('No New Device Selected!'));
+								return ;
+							}
+							$.ajax({
+								 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
+								 async: false, 
+								 dataType: 'json',
+								 success: function(data) {
+									if (data.status == 'OK') {
+										$.backfunction();
+									}
+									else {
+										ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
+									}
+								 },
+								 error: function(){
+										HideNotify();
+										ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
+								 }     
+							});
+	};
+	dialog_replacedevice_buttons[$.i18n("Cancel")]=function() {
+		$( this ).dialog( "close" );
+	};
+
     $( "#dialog-replacedevice" ).dialog({
           autoOpen: false,
-          width: 380,
-          height: 180,
+          width: 'auto',
+          height: 'auto',
           modal: true,
           resizable: false,
-          buttons: {
-              "OK": function() {
-                  var bValid = true;
-                  $( this ).dialog( "close" );
-                  
-									var NewDeviceIdx=$("#dialog-replacedevice #newdevice option:selected").val();
-									if (typeof NewDeviceIdx == 'undefined') {
-										bootbox.alert($.i18n('No New Device Selected!'));
-										return ;
-									}
-									$.ajax({
-										 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
-										 async: false, 
-										 dataType: 'json',
-										 success: function(data) {
-											if (data.status == 'OK') {
-												$.backfunction();
-											}
-											else {
-												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
-											}
-										 },
-										 error: function(){
-												HideNotify();
-												ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
-										 }     
-									});
-              },
-              Cancel: function() {
-                  $( this ).dialog( "close" );
-              }
-          },
+          title: $.i18n("Replace Device"),
+          buttons: dialog_replacedevice_buttons,
           close: function() {
             $( this ).dialog( "close" );
           }

@@ -414,7 +414,8 @@ define(['app'], function (app) {
 			  "bJQueryUI": true,
 			  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 			  "iDisplayLength" : 25,
-			  "sPaginationType": "full_numbers"
+			  "sPaginationType": "full_numbers",
+			  language: $.DataTableLanguage
 			} );
 			$('#timerparamstable #combotimehour >option').remove();
 			$('#timerparamstable #combotimemin >option').remove();
@@ -1278,263 +1279,275 @@ define(['app'], function (app) {
 						 $.myglobals.TimerTypesStr.push($(this).text());
 			});
 
+			var dialog_editutilitydevice_buttons = {};
+			
+			dialog_editutilitydevice_buttons[$.i18n("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editutilitydevice #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowUtilities();
+					 }
+				  });
+				  
+			  }
+			};
+			dialog_editutilitydevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editutilitydevice_buttons[$.i18n("Replace")]=function() {
+				  $( this ).dialog( "close" );
+				  ReplaceDevice($.devIdx,ShowUtilities);
+			};
+			dialog_editutilitydevice_buttons[$.i18n("Cancel")]=function() {
+				  $( this ).dialog( "close" );
+			};
+			
 			$( "#dialog-editutilitydevice" ).dialog({
 				  autoOpen: false,
-				  width: 450,
-				  height: 160,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editutilitydevice #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=true',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-							  
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=false',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-							}
-						});
-					  },
-					  "Replace": function() {
-						  $( this ).dialog( "close" );
-						  ReplaceDevice($.devIdx,ShowUtilities);
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editutilitydevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
 			});
+			
+			var dialog_editmeterdevice_buttons = {};
+			
+			dialog_editmeterdevice_buttons[$.i18n("Update")]=function() {
+				  var bValid = true;
+				  bValid = bValid && checkLength( $("#dialog-editmeterdevice #devicename"), 2, 100 );
+				  if ( bValid ) {
+					  $( this ).dialog( "close" );
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + '&used=true',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					  
+				  }
+			};
+			dialog_editmeterdevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editmeterdevice_buttons[$.i18n("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
+
 			$( "#dialog-editmeterdevice" ).dialog({
 				  autoOpen: false,
-				  width: 370,
-				  height: 200,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editmeterdevice #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + '&used=true',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-							  
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&used=false',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-							}
-						});
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editmeterdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
 			});
+
+			var dialog_editsetpointdevice_buttons = {};
+			
+			dialog_editsetpointdevice_buttons[$.i18n("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editsetpointdevice #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx +
+					 '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
+					 '&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() + 
+					 '&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
+					 '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowUtilities();
+					 }
+				  });
+				  
+			  }
+			};
+			dialog_editsetpointdevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editsetpointdevice_buttons[$.i18n("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
 
 			$( "#dialog-editsetpointdevice" ).dialog({
 				  autoOpen: false,
-				  width: 410,
-				  height: 250,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editsetpointdevice #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx +
-								 '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
-								 '&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() + 
-								 '&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
-								 '&used=true',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-							  
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) + '&used=false',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-							}
-						});
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editsetpointdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
 			});
+			
+			var dialog_editthermostatclockdevice_buttons = {};
+			
+			dialog_editthermostatclockdevice_buttons[$.i18n("Update")]=function() {
+				  var bValid = true;
+				  bValid = bValid && checkLength( $("#dialog-editthermostatclockdevice #devicename"), 2, 100 );
+				  if ( bValid ) {
+					  $( this ).dialog( "close" );
+					  //bootbox.alert($.i18n('Clock will be set when device wakes up.'));
+					  bootbox.alert($.i18n('Setting the Clock is not finished yet!'));
+					  var daytimestr=$("#dialog-editthermostatclockdevice #comboclockday").val()+";"+$("#dialog-editthermostatclockdevice #clockhour").val()+";"+$("#dialog-editthermostatclockdevice #clockminute").val();
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx +
+						 '&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) +
+						 '&clock=' + encodeURIComponent(daytimestr) + 
+						 '&protected=' + $('#dialog-editthermostatclockdevice #protected').is(":checked") +
+						 '&used=true',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+				  }
+			};
+			dialog_editthermostatclockdevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editthermostatclockdevice_buttons[$.i18n("Cancel")]=function() {
+				  $( this ).dialog( "close" );
+			};
+			
 			$( "#dialog-editthermostatclockdevice" ).dialog({
 				  autoOpen: false,
-				  width: 390,
-				  height: 340,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editthermostatclockdevice #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  //bootbox.alert($.i18n('Clock will be set when device wakes up.'));
-							  bootbox.alert($.i18n('Setting the Clock is not finished yet!'));
-							  var daytimestr=$("#dialog-editthermostatclockdevice #comboclockday").val()+";"+$("#dialog-editthermostatclockdevice #clockhour").val()+";"+$("#dialog-editthermostatclockdevice #clockminute").val();
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx +
-								 '&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) +
-								 '&clock=' + encodeURIComponent(daytimestr) + 
-								 '&protected=' + $('#dialog-editthermostatclockdevice #protected').is(":checked") +
-								 '&used=true',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) + '&used=false',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-							}
-						});
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editthermostatclockdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
 			});
 
+			var dialog_editthermostatmode_buttons = {};
+			
+			dialog_editthermostatmode_buttons[$.i18n("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editthermostatmode #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  var modestr="";
+				  if ($.isFan==false) {
+					modestr="&tmode="+$("#dialog-editthermostatmode #combomode").val();
+				  }
+				  else {
+					modestr="&fmode="+$("#dialog-editthermostatmode #combomode").val();
+				  }
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx +
+					 '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) +
+					 modestr + 
+					 '&protected=' + $('#dialog-editthermostatmode #protected').is(":checked") +
+					 '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowUtilities();
+					 }
+				  });
+			  }
+			};
+			dialog_editthermostatmode_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editthermostatmode_buttons[$.i18n("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
+
 			$( "#dialog-editthermostatmode" ).dialog({
 				  autoOpen: false,
-				  width: 410,
-				  height: 260,
+				  width: 'auto',
+				  height: 'auto',
 				  modal: true,
 				  resizable: false,
 				  title: $.i18n("Edit Device"),
-				  buttons: {
-					  "Update": function() {
-						  var bValid = true;
-						  bValid = bValid && checkLength( $("#dialog-editthermostatmode #devicename"), 2, 100 );
-						  if ( bValid ) {
-							  $( this ).dialog( "close" );
-							  var modestr="";
-							  if ($.isFan==false) {
-								modestr="&tmode="+$("#dialog-editthermostatmode #combomode").val();
-							  }
-							  else {
-								modestr="&fmode="+$("#dialog-editthermostatmode #combomode").val();
-							  }
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx +
-								 '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) +
-								 modestr + 
-								 '&protected=' + $('#dialog-editthermostatmode #protected').is(":checked") +
-								 '&used=true',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-						  }
-					  },
-					  "Remove Device": function() {
-						$( this ).dialog( "close" );
-						bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
-							if (result==true) {
-							  $.ajax({
-								 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) + '&used=false',
-								 async: false, 
-								 dataType: 'json',
-								 success: function(data) {
-									ShowUtilities();
-								 }
-							  });
-							}
-						});
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_editthermostatmode_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }
