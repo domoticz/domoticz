@@ -84,6 +84,7 @@ std::string CGpioPin::ToString()
 			return m_label + " (NOT EXPORTED)";
 		}
 	}
+	return m_label + " Unknown!?";
 }
 
 #endif // WITH_GPIO

@@ -260,8 +260,10 @@ bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 		_log.Log(LOG_NORM,"GPIO: WriteToHardware packet type %d or subtype %d unknown", pCmd->LIGHTING1.packettype, pCmd->LIGHTING1.subtype);
 		return false;
 	}
-#endif
 	return true;
+#else
+	return false;
+#endif
 }
 
 
@@ -334,14 +336,17 @@ void CGpio::Do_Work()
  */
 bool CGpio::InitPins()
 {
-#ifndef WIN32
 	char buf[256];
 	bool exports[MAX_GPIO+1] = { false };
 	int gpioNumber;
 	FILE *cmd = NULL;
 	
 	// 1. List exports and parse the result
+#ifndef WIN32
 	cmd = popen("gpio exports", "r");
+#else
+	cmd = fopen("E:\\exports.txt", "r");
+#endif
 	while (fgets(buf, sizeof(buf), cmd) != 0) {
 		// Decode GPIO pin number from the output formatted as follows:
 		//
@@ -354,26 +359,35 @@ bool CGpio::InitPins()
 
 		std::string exportLine(buf);
 		//std::cout << "Processing line: " << exportLine;
-		
-		// check if not on header line
-		if (buf[4] == ':') {
-			buf[4] = '\0';
-			gpioNumber = atoi(buf);
+		std::vector<std::string> sresults;
+		StringSplit(exportLine, " :", sresults);
+		if (sresults.empty())
+			continue;
+		if (sresults[0] == "GPIO")
+			continue;
+		if (sresults.size() >= 4)
+		{
+			gpioNumber = atoi(sresults[0].c_str());
 			if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
 				exports[gpioNumber] = true;
-			} else {
+			}
+			else {
 				_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", buf);
 			}
 		}
 	}
-
-	if (pclose(cmd) != 0) {
-		_log.Log(LOG_ERROR, "GPIO: Error calling 'gpio exports'!");
-		return false;
-	}
+#ifndef WIN32
+	pclose(cmd);
+#else
+	fclose(cmd);
+#endif
 
 	// 2. List the full pin set and parse the result
+#ifndef WIN32
 	cmd = popen("gpio readall", "r");
+#else
+	cmd = fopen("E:\\readall.txt", "r");
+#endif
 	while (fgets(buf, sizeof(buf), cmd) != 0) {
 		// Decode IN and OUT lines from the output formatted as follows:
 		//
@@ -405,10 +419,13 @@ bool CGpio::InitPins()
 		
 		//std::cout << "Processing line: " << line;
 		StringSplit(line, "|", fields);
+		if (fields.size()<7)
+			continue;
+
 		//std::cout << "# fields: " << fields.size() << std::endl;
 		
 		// trim each field
-		for (int i = 0; i < fields.size(); i++) {
+		for (size_t i = 0; i < fields.size(); i++) {
 			fields[i]=stdstring_trim(fields[i]);
 			//std::cout << "fields[" << i << "] = '" << fields[i] << "'" << std::endl;
 		}
@@ -430,7 +447,7 @@ bool CGpio::InitPins()
 				gpioNumber = atoi(fields[1].c_str());
 				if ((gpioNumber >= 0) && (gpioNumber <= MAX_GPIO)) {
 					pins.push_back(CGpioPin(gpioNumber, "gpio" + fields[1] + " (" + fields[3] + ") on pin " + fields[6],
-							fields[4] == "IN", fields[4] == "OUT", exports[gpioNumber]));
+							(fields[4] == "IN"), (fields[4] == "OUT"), exports[gpioNumber]));
 				} else {
 					_log.Log(LOG_NORM, "GPIO: Ignoring unsupported pin '%s'", fields[1].c_str());
 				}
@@ -447,13 +464,11 @@ bool CGpio::InitPins()
 			}
 		}
 	}
-
-	if (pclose(cmd) != 0) {
-		_log.Log(LOG_ERROR, "GPIO: Error calling 'gpio readall'!");
-		pins.clear();
-		return false;
-	}
-
+#ifndef WIN32
+	pclose(cmd);
+#else
+	fclose(cmd);
+#endif
 	if (pins.size() > 0) {
 		std::sort(pins.begin(), pins.end());
 		// debug
@@ -462,10 +477,9 @@ bool CGpio::InitPins()
 		//	std::cout << "Pin " << pin.GetId() << " : " << pin.GetLabel() << ", " << pin.GetIsInput() << ", " << pin.GetIsOutput() << ", " << pin.GetIsExported() << std::endl;
 		//}
 	} else {
-		_log.Log(LOG_ERROR, "GPIO: Failed to detect any pins!");
+		_log.Log(LOG_ERROR, "GPIO: Failed to detect any pins, make sure you exported them!");
 		return false;
 	}
-#endif
 	return true;
 }
 
