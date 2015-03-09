@@ -46,7 +46,9 @@ Connection information:
 #ifdef WITH_GPIO
 #include "Gpio.h"
 #include "GpioPin.h"
-#include <wiringPi.h>
+#ifndef WIN32
+	#include <wiringPi.h>
+#endif
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
@@ -152,20 +154,21 @@ void interruptHandler31(void) { pushInterrupt(31); }
 
 bool CGpio::StartHardware()
 {
+#ifndef WIN32
 	// TODO make sure the WIRINGPI_CODES environment variable is set, otherwise WiringPi makes the program exit upon error
 	// Note : We're using the wiringPiSetupSys variant as it does not require root privilege
 	if (wiringPiSetupSys() != 0) {
 		_log.Log(LOG_ERROR, "GPIO: Error initializing wiringPi !");
 		return false;
 	}
-
+#endif
 	m_stoprequested=false;
 
 	//Start worker thread that will be responsible for interrupt handling
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Do_Work, this)));
 
 	m_bIsStarted=true;
-
+#ifndef WIN32
 	//Hook up interrupt call-backs for each input GPIO
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it) {
 		if (it->GetIsExported() && it->GetIsInput()) {
@@ -207,10 +210,10 @@ bool CGpio::StartHardware()
 			}
 		}
 	}
-
+	_log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
+#endif
 	sOnConnected(this);
 
-	_log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
 	return (m_thread!=NULL);
 }
 
@@ -231,6 +234,7 @@ bool CGpio::StopHardware()
 
 bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 {
+#ifndef WIN32
 	tRBUF *pCmd=(tRBUF*) pdata;
 
 	if ((pCmd->LIGHTING1.packettype == pTypeLighting1) && (pCmd->LIGHTING1.subtype == sTypeIMPULS)) {
@@ -256,11 +260,13 @@ bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 		_log.Log(LOG_NORM,"GPIO: WriteToHardware packet type %d or subtype %d unknown", pCmd->LIGHTING1.packettype, pCmd->LIGHTING1.subtype);
 		return false;
 	}
+#endif
 	return true;
 }
 
 
 void CGpio::ProcessInterrupt(int gpioId) {
+#ifndef WIN32
 	_log.Log(LOG_NORM, "GPIO: Processing interrupt for GPIO %d...", gpioId);
 
 	// Read GPIO data
@@ -281,6 +287,7 @@ void CGpio::ProcessInterrupt(int gpioId) {
 	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket);
 
 	_log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d.", gpioId);
+#endif
 }
 
 void CGpio::Do_Work()
@@ -291,6 +298,7 @@ void CGpio::Do_Work()
 	_log.Log(LOG_NORM,"GPIO: Worker started...");
 
 	while (!m_stoprequested) {
+#ifndef WIN32
 		boost::mutex::scoped_lock lock(interruptQueueMutex);
 		if (!interruptCondition.timed_wait(lock, duration)) {
 			//_log.Log(LOG_NORM, "GPIO: Updating heartbeat");
@@ -308,10 +316,13 @@ void CGpio::Do_Work()
 			break;
 		}
 
-    		if (interruptNumber != NO_INTERRUPT) {
-    			CGpio::ProcessInterrupt(interruptNumber);
-    			interruptNumber = NO_INTERRUPT;
+    	if (interruptNumber != NO_INTERRUPT) {
+    		CGpio::ProcessInterrupt(interruptNumber);
+    		interruptNumber = NO_INTERRUPT;
 		}
+#else
+		sleep_milliseconds(100);
+#endif
 	}
 	_log.Log(LOG_NORM,"GPIO: Worker stopped...");
 }
@@ -323,6 +334,7 @@ void CGpio::Do_Work()
  */
 bool CGpio::InitPins()
 {
+#ifndef WIN32
 	char buf[256];
 	bool exports[MAX_GPIO+1] = { false };
 	int gpioNumber;
@@ -453,7 +465,7 @@ bool CGpio::InitPins()
 		_log.Log(LOG_ERROR, "GPIO: Failed to detect any pins!");
 		return false;
 	}
-
+#endif
 	return true;
 }
 

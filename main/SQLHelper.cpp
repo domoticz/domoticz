@@ -2244,7 +2244,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
 
-			if (((bIsLightSwitchOn) && (llevel != 0)) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+			if (((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255)) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
 				//update level for device
 				sprintf(szTmp,

@@ -33,7 +33,6 @@ public:
 	char * DisplaySwitchTypesCombo();
 	char * DisplayMeterTypesCombo();
 	char * DisplayTimerTypesCombo();
-	char * DisplayHardwareTypesCombo();
 	char * DisplayLanguageCombo();
 	std::string GetJSonPage();
 	std::string GetAppCache();
@@ -74,6 +73,7 @@ private:
 	void Cmd_GetLanguage(Json::Value &root);
 	void Cmd_GetThemes(Json::Value &root);
 	void Cmd_LoginCheck(Json::Value &root);
+	void Cmd_GetHardwareTypes(Json::Value &root);
 	void Cmd_AddHardware(Json::Value &root);
 	void Cmd_UpdateHardware(Json::Value &root);
 	void Cmd_DeleteHardware(Json::Value &root);

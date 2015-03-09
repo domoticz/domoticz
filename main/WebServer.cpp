@@ -356,11 +356,6 @@ namespace http {
 				&CWebServer::DisplayMeterTypesCombo,
 				this));
 
-			m_pWebEm->RegisterIncludeCode("hardwaretypes",
-				boost::bind(
-				&CWebServer::DisplayHardwareTypesCombo,
-				this));
-
 			m_pWebEm->RegisterIncludeCode("timertypes",
 				boost::bind(
 				&CWebServer::DisplayTimerTypesCombo,	// member function
@@ -426,6 +421,8 @@ namespace http {
 			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1));
 			RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1), true);
 
+			
+			RegisterCommandCode("gethardwaretypes", boost::bind(&CWebServer::Cmd_GetHardwareTypes, this, _1));
 			RegisterCommandCode("addhardware", boost::bind(&CWebServer::Cmd_AddHardware, this, _1));
 			RegisterCommandCode("updatehardware", boost::bind(&CWebServer::Cmd_UpdateHardware, this, _1));
 			RegisterCommandCode("deletehardware", boost::bind(&CWebServer::Cmd_DeleteHardware, this, _1));
@@ -872,6 +869,67 @@ namespace http {
 					root["user"] = m_pWebEm->m_actualuser;
 					root["rights"] = m_pWebEm->m_actualuser_rights;
 				}
+			}
+		}
+
+		void CWebServer::Cmd_GetHardwareTypes(Json::Value &root)
+		{
+			root["status"] = "OK";
+			root["title"] = "GetHardwareTypes";
+			std::map<std::string, int> _htypes;
+			for (int ii = 0; ii < HTYPE_END; ii++)
+			{
+				bool bDoAdd = true;
+#ifndef _DEBUG
+#ifdef WIN32
+				if (
+					(ii == HTYPE_RaspberryBMP085)
+					)
+				{
+					bDoAdd = false;
+				}
+				else
+				{
+#ifndef WITH_LIBUSB
+					if (
+						(ii == HTYPE_VOLCRAFTCO20) ||
+						(ii == HTYPE_TE923)
+						)
+					{
+						bDoAdd = false;
+					}
+#endif
+
+				}
+#endif
+#endif
+#ifndef WITH_OPENZWAVE
+				if (ii == HTYPE_OpenZWave)
+					bDoAdd = false;
+#endif
+#ifndef WITH_GPIO
+				if (
+					(ii == HTYPE_RaspberryGPIO)
+					)
+				{
+					bDoAdd = false;
+				}
+#endif
+				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
+					bDoAdd = false;
+
+				if (bDoAdd)
+					_htypes[Hardware_Type_Desc(ii)] = ii;
+			}
+			//return a sorted hardware list
+			std::map<std::string, int>::const_iterator itt;
+			int ii = 0;
+			for (itt = _htypes.begin(); itt != _htypes.end(); ++itt)
+			{
+				root["result"][ii]["idx"] = itt->second;
+				root["result"][ii]["name"] = itt->first;
+				ii++;
+
 			}
 		}
 
@@ -7289,66 +7347,6 @@ namespace http {
 			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::DisplayHardwareTypesCombo()
-		{
-			m_retstr = "";
-			std::map<std::string, int> _htypes;
-			char szTmp[200];
-			for (int ii = 0; ii < HTYPE_END; ii++)
-			{
-				bool bDoAdd = true;
-#ifndef _DEBUG
-#ifdef WIN32
-				if (
-					(ii == HTYPE_RaspberryBMP085)
-					)
-				{
-					bDoAdd = false;
-				}
-				else
-				{
-#ifndef WITH_LIBUSB
-					if (
-						(ii == HTYPE_VOLCRAFTCO20) ||
-						(ii == HTYPE_TE923)
-						)
-					{
-						bDoAdd = false;
-					}
-#endif
-
-				}
-#endif
-#endif
-#ifndef WITH_OPENZWAVE
-				if (ii == HTYPE_OpenZWave)
-					bDoAdd = false;
-#endif
-#ifndef WITH_GPIO
-				if (
-					(ii == HTYPE_RaspberryGPIO)
-					)
-				{
-					bDoAdd = false;
-				}
-#endif
-				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
-					bDoAdd = false;
-
-				if (bDoAdd)
-					_htypes[Hardware_Type_Desc(ii)] = ii;
-			}
-			//return a sorted hardware list
-			std::map<std::string, int>::const_iterator itt;
-			for (itt = _htypes.begin(); itt != _htypes.end(); ++itt)
-			{
-				sprintf(szTmp, "<option value=\"%d\">%s</option>\n", itt->second, itt->first.c_str());
-				m_retstr += szTmp;
-
-			}
-			return (char*)m_retstr.c_str();
-		}
-
 		char * CWebServer::DisplayTimerTypesCombo()
 		{
 			m_retstr = "";
@@ -13392,7 +13390,7 @@ namespace http {
 					root["result"][ii]["Status"] = lstatus;
 					root["result"][ii]["Level"] = llevel;
 
-					if (llevel != 0)
+					if ((llevel != 0) && (llevel != 255))
 						sprintf(szTmp, "%s, Level: %d %%", lstatus.c_str(), llevel);
 					else
 						sprintf(szTmp, "%s", lstatus.c_str());

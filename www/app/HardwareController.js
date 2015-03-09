@@ -41,7 +41,7 @@ define(['app'], function (app) {
 			var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 			
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
+			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("GPIO") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
 			{
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -2275,9 +2275,27 @@ define(['app'], function (app) {
 				SerialPortStr : [],
 				SelectedHardwareIdx: 0
 			};
+			
+			//Get hardware types
+			$("#hardwareparamstable #combotype").html("");
+			$.ajax({
+			 url: "json.htm?type=command&param=gethardwaretypes",
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					$.each(data.result, function(i,item) {
+						var option = $('<option />');
+						option.attr('value', item.idx).text(item.name);
+						$("#hardwareparamstable #combotype").append(option);
+					});
+				}
+			 }
+			});
 			$('#hardwareparamstable #combotype > option').each(function() {
 				 $.myglobals.HardwareTypesStr[$(this).val()]=$(this).text();
 			});
+			
 			//Get Serial devices
 			$("#hardwareparamsserial #comboserialport").html("");
 			$.ajax({
