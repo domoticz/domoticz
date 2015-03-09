@@ -149,7 +149,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_DavisVantage, "Davis Vantage Weather Station USB" },
 		{ HTYPE_VOLCRAFTCO20, "Volcraft CO-20 USB air quality sensor" },
 		{ HTYPE_1WIRE, "1-Wire (System)" },
-		{ HTYPE_RaspberryBMP085, "BMP085 Temp+Baro I2C sensor" },
+		{ HTYPE_RaspberryBMP085, "BMP085/180 Temp+Baro I2C sensor" },
 		{ HTYPE_Wunderground, "Weather Underground" },
 		{ HTYPE_ForecastIO, "Forecast IO (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },

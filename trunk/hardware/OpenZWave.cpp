@@ -1124,8 +1124,6 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 
-	bool bHaveSendSwitch = false;
-
 	if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, "Color", vID) == true)
 	{
 		if (!m_pManager->SetValue(vID, colvalues, valuelen))

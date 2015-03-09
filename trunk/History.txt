@@ -5,7 +5,6 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: JSON API, option to 'Toggle' a switch state between On/Off
 - Implemented: Warning when deleting a Blockly event
 - Implemented: Support for the ETH8020 relay board
-- Fixed: Updating hardware settings for GPIO
 - Changed: Meteostick support (thanks to Devilsnet)
 - Changed: Handling timeout (dead node)/Awake status, also for switches in the Gui
 - Implemented: Finnish/Lithuanian/Czech language
@@ -14,6 +13,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Mertik (Thermostat 3) Up/Down popup
 - Updated: More translation work done
 - Changed: OpenZWave, when a switch/dimmer is turned off, and this node has a Power/Energy sensor, their value is set to 0
+- Fixed: Updating hardware settings for GPIO
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

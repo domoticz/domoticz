@@ -100,7 +100,7 @@ void MySensorsSerial::Do_Work()
 		}
 
 	}
-	_log.Log(LOG_STATUS, "RFXCOM: Serial Worker stopped...");
+	_log.Log(LOG_STATUS, "MySensors: Serial Worker stopped...");
 }
 
 bool MySensorsSerial::OpenSerialDevice()

@@ -295,7 +295,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 			lcmd.LIGHTING2.cmnd = light2_sOn;
 		else
 		{
-			level = (level > 100) ? 100 : level;
+			level = (level > 99) ? 99 : level;
 			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
 		}
 
