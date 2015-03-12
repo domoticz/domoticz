@@ -82,20 +82,39 @@ private:
 	friend class MQTT;
 	friend class FritzboxTCP;
 	friend class CETH8020;
+	friend class CRFLink;
 
-	boost::mutex readQueueMutex;
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
 	bool onRFXMessage(const unsigned char *pBuffer, const size_t Len);
-	unsigned char m_rxbuffer[RX_BUFFER_SIZE];
-	bool m_bIsStarted;
 	//Heartbeat thread for classes that can not provide this themselves
 	void StartHeartbeatThread();
 	void StopHeartbeatThread();
 	void Do_Heartbeat_Work();
 	void HandleHBCounter(const int iInterval);
+
+	//Sensor Helpers
+	void SendTempSensor			(const int NodeID,					  const int BatteryLevel, const float temperature);
+	void SendHumiditySensor		(const int NodeID,					  const int BatteryLevel, const int humidity);
+	void SendBaroSensor			(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
+	void SendTempHumSensor		(const int NodeID,					  const int BatteryLevel, const float temperature, const int humidity);
+	void SendTempHumBaroSensor	(const int NodeID,					  const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast);
+	void SendKwhMeter			(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);
+	void SendLuxSensor			(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux);
+	void SendAirQualitySensor	(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality);
+	void SendUsageSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float Usage);
+	void SendSwitch				(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
+	void SendVoltageSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
+	void SendPercentageSensor	(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
+	void SendRainSensor			(const int NodeID,					  const int BatteryLevel, const int RainCounter);
+	void SendWind				(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp);
+
 	int m_iHBCounter;
 	boost::shared_ptr<boost::thread> m_Heartbeatthread;
 	volatile bool m_stopHeartbeatrequested;
+	boost::mutex readQueueMutex;
+	unsigned char m_rxbuffer[RX_BUFFER_SIZE];
+	bool m_bIsStarted;
+
 };
 

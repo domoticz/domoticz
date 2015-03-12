@@ -26,7 +26,7 @@
 #define sTypeThermTemperature	0x02
 
 
-#define pTypeGeneral		0xF3
+#define pTypeGeneral				0xF3
 #define sTypeVisibility				0x01
 #define sTypeSolarRadiation			0x02
 #define sTypeSoilMoisture			0x03
@@ -45,6 +45,65 @@
 #define sTypeAlert					0x16
 #define sTypeCurrent				0x17
 #define sTypeSoundLevel				0x18
+#define sTypeSwitch					0x19
+
+//General Switch
+#define pTypeGeneralSwitch			0xF4
+#define sSwitchTypeX10				0x00
+#define sSwitchTypeARC				0x01
+#define sSwitchTypeAB400D			0x02
+#define sSwitchTypeWaveman			0x03
+#define sSwitchTypeEMW200			0x04
+#define sSwitchTypeIMPULS			0x05
+#define sSwitchTypeRisingSun		0x06
+#define sSwitchTypePhilips			0x07
+#define sSwitchTypeEnergenie		0x08
+#define sSwitchTypeEnergenie5		0x09
+#define sSwitchTypeGDR2				0x0A
+#define sSwitchTypeAC				0x0B
+#define sSwitchTypeHEU				0x0C
+#define sSwitchTypeANSLUT			0x0D
+#define sSwitchTypeKambrook			0x0E
+#define sSwitchTypeKoppla			0x0F
+#define sSwitchTypePT2262			0x10
+#define sSwitchTypeLightwaveRF		0x11
+#define sSwitchTypeEMW100			0x12
+#define sSwitchTypeBBSB				0x13
+#define sSwitchTypeMDREMOTE			0x14
+#define sSwitchTypeRSL				0x15
+#define sSwitchTypeLivolo			0x16
+#define sSwitchTypeTRC02			0x17
+#define sSwitchTypeAoke				0x18
+#define sSwitchTypeTRC02_2			0x19
+#define sSwitchTypeEurodomest		0x1A
+#define sSwitchTypeLivoloAppliance	0x1B
+#define sSwitchTypeBlyss			0x1C
+#define sSwitchTypeByronSX			0x1D
+#define sSwitchTypeByronMP001		0x1E
+#define sSwitchTypeSelectPlus		0x1F
+#define sSwitchTypeSelectPlus3		0x20
+//Switch commands
+#define gswitch_sOff				0x00
+#define gswitch_sOn					0x01
+#define gswitch_sSetLevel			0x02
+#define gswitch_sGroupOff			0x03
+#define gswitch_sGroupOn			0x04
+#define gswitch_sSetGroupLevel		0x05
+#define gswitch_sDim				0x06
+#define gswitch_sBright				0x07
+#define gswitch_sSound0				0x08
+#define gswitch_sSound1				0x09
+#define gswitch_sSound2				0x0A
+#define gswitch_sSound3				0x0B
+#define gswitch_sSound4				0x0C
+#define gswitch_sSound5				0x0D
+#define gswitch_sSound6				0x0E
+#define gswitch_sSound7				0x0F
+#define gswitch_sSound8				0x10
+#define gswitch_sStop				0x11
+#define gswitch_sProgram			0x12
+
+//--------------
 
 #define pTypeLux		0xF6
 #define sTypeLux		0x01
@@ -250,6 +309,32 @@ typedef struct _tGeneralDevice {
 		intval2=0;
 	}
 } GeneralDevice;
+
+typedef struct _tGeneralSwitch {
+	unsigned char len;
+	unsigned char type;
+	unsigned char subtype;
+	int			  id;
+	int			  unitcode;
+	unsigned char cmnd;
+	unsigned char level;
+	unsigned char rssi;
+	unsigned char battery_level;
+	unsigned char seqnbr;
+	int			  reserved_int;
+	float		  reserved_float;
+	_tGeneralSwitch()
+	{
+		len = sizeof(_tGeneralSwitch) - 1;
+		type = pTypeGeneralSwitch;
+		subtype = sSwitchTypeAC;
+		id = 1;
+		unitcode = 1;
+		seqnbr = 0;
+		reserved_int = 0;
+		reserved_float = 0;
+	}
+} GeneralSwitch;
 
 typedef struct _tP1Power {
 	unsigned char len;

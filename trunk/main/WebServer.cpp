@@ -881,6 +881,10 @@ namespace http {
 			{
 				bool bDoAdd = true;
 #ifndef _DEBUG
+				if (ii == HTYPE_RFLINK)
+				{
+					bDoAdd = false;
+				}
 #ifdef WIN32
 				if (
 					(ii == HTYPE_RaspberryBMP085)
@@ -966,7 +970,7 @@ namespace http {
 			int mode4 = 0;
 			int mode5 = 0;
 			int port = atoi(sport.c_str());
-			if ((htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) || (htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_MySensorsUSB))
+			if ((htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) || (htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK))
 			{
 				//USB
 				if ((htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433))
@@ -1118,7 +1122,7 @@ namespace http {
 			if (
 				(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) ||
 				(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
-				(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_System) || (htype == HTYPE_MySensorsUSB)
+				(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_System) || (htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK)
 				)
 			{
 				//USB/System
@@ -4445,6 +4449,7 @@ namespace http {
 						case pTypeThermostat3:
 						case pTypeRemote:
 						case pTypeRadiator1:
+						case pTypeGeneralSwitch:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -4522,6 +4527,7 @@ namespace http {
 							case pTypeThermostat2:
 							case pTypeThermostat3:
 							case pTypeRemote:
+							case pTypeGeneralSwitch:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -5526,7 +5532,8 @@ namespace http {
 					(dType == pTypeChime) ||
 					(dType == pTypeThermostat2) ||
 					(dType == pTypeThermostat3) ||
-					(dType == pTypeRemote)||
+					(dType == pTypeRemote) ||
+					(dType == pTypeGeneralSwitch) ||
 					((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
 					)
 				{
@@ -6345,7 +6352,8 @@ namespace http {
 					(dType != pTypeChime) &&
 					(dType != pTypeThermostat2) &&
 					(dType != pTypeThermostat3) &&
-					(dType != pTypeRemote)&&
+					(dType != pTypeRemote) &&
+					(dType != pTypeGeneralSwitch) &&
 					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
 					)
 					return; //no light device! we should not be here!
@@ -8406,6 +8414,7 @@ namespace http {
 								(dType != pTypeThermostat2) &&
 								(dType != pTypeThermostat3) &&
 								(dType != pTypeRemote) &&
+								(dType != pTypeGeneralSwitch) &&
 								(dType != pTypeChime) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
 								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
@@ -8596,6 +8605,7 @@ namespace http {
 						(dType == pTypeThermostat2) ||
 						(dType == pTypeThermostat3) ||
 						(dType == pTypeRemote)||
+						(dType == pTypeGeneralSwitch) ||
 						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
 						)
 					{
@@ -13346,6 +13356,7 @@ namespace http {
 				(dType != pTypeThermostat2) &&
 				(dType != pTypeThermostat3) &&
 				(dType != pTypeRemote)&&
+				(dType != pTypeGeneralSwitch) &&
 				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
 				)
 				return; //no light device! we should not be here!

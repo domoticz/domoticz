@@ -195,6 +195,9 @@
     <Filter Include="Devices\ETH8020">
       <UniqueIdentifier>{152cd50f-9b45-4583-a9da-eacb112ede21}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\RFLink">
+      <UniqueIdentifier>{90b48d9f-626f-4961-bf0c-c11623888086}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -621,6 +624,9 @@
     <ClInclude Include="..\hardware\ETH8020.h">
       <Filter>Devices\ETH8020</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\RFLink.h">
+      <Filter>Devices\RFLink</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -991,6 +997,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\ETH8020.cpp">
       <Filter>Devices\ETH8020</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFLink.cpp">
+      <Filter>Devices\RFLink</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

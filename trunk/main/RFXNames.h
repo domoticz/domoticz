@@ -100,6 +100,7 @@ enum _eHardwareTypes {
 	HTYPE_MQTT,					//43
 	HTYPE_FRITZBOX,				//44
 	HTYPE_ETH8020,				//45
+	HTYPE_RFLINK,				//46
 	HTYPE_END
 };
 
