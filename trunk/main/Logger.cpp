@@ -12,6 +12,7 @@
 
 
 #define MAX_LOG_LINE_BUFFER 100
+#define MAX_LOG_LINE_LENGTH 2048
 
 extern bool g_bRunAsDaemon;
 extern bool g_bUseSyslog;
@@ -74,9 +75,9 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		return;
 
 	va_list argList;
-	char cbuffer[1024];
+	char cbuffer[MAX_LOG_LINE_LENGTH];
 	va_start(argList, logline);
-	vsnprintf(cbuffer, 1024, logline, argList);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
 
 	char szDate[100];
@@ -164,9 +165,9 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 		return;
 
 	va_list argList;
-	char cbuffer[1024];
+	char cbuffer[MAX_LOG_LINE_LENGTH];
 	va_start(argList, logline);
-	vsnprintf(cbuffer, 1024, logline, argList);
+	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
 
 	std::string message=cbuffer;
