@@ -1656,6 +1656,7 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting5:
 					case pTypeLighting6:
 					case pTypeLimitlessLights:
+					case pTypeGeneralSwitch:
 						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
 						break;
 					case pTypeSecurity1:
@@ -1921,7 +1922,8 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	case pTypeThermostat2:
 	case pTypeThermostat3:
 	case pTypeRemote:
-		bIsLightSwitch=true;
+	case pTypeGeneralSwitch:
+		bIsLightSwitch = true;
 		break;
 	case pTypeRadiator1:
 		bIsLightSwitch = (subType == sTypeSmartwaresSwitchRadiator);
@@ -2030,6 +2032,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 					case pTypeRadiator1:
 						newnValue = Radiator1_sNight;
 						break;
+					case pTypeGeneralSwitch:
+						newnValue = gswitch_sOff;
+						break;
 					default:
 						continue;
 					}
@@ -2103,6 +2108,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				break;
 			case pTypeRadiator1:
 				newnValue = Radiator1_sNight;
+				break;
+			case pTypeGeneralSwitch:
+				newnValue = gswitch_sOff;
 				break;
 			default:
 				continue;
@@ -2214,6 +2222,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeThermostat2:
 	case pTypeThermostat3:
 	case pTypeRemote:
+	case pTypeGeneralSwitch:
 		//Add Lighting log
 		m_LastSwitchID=ID;
 		m_LastSwitchRowID=ulID;
@@ -2382,6 +2391,10 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							break;
 						case pTypeRadiator1:
 							cmd = Radiator1_sNight;
+							bAdd2DelayQueue = true;
+							break;
+						case pTypeGeneralSwitch:
+							cmd = gswitch_sOff;
 							bAdd2DelayQueue = true;
 							break;
 						}
@@ -6315,6 +6328,13 @@ void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char su
 	query(szTmp);
 }
 
+void CSQLHelper::GeneralSwitchGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
+{
+	char szTmp[100];
+	sprintf(szTmp, "UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%s') And (Type==%d) And (SubType==%d)", GroupCmd, ID.c_str(), pTypeGeneralSwitch, subType);
+	query(szTmp);
+}
+
 void CSQLHelper::SetUnitsAndScale()
 {
 	//Wind
@@ -6455,7 +6475,7 @@ void CSQLHelper::CheckDeviceTimeout()
 	std::vector<std::vector<std::string> > result;
 	char szTmp[300];
 	sprintf(szTmp,
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -6472,7 +6492,8 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeChime,
 		pTypeThermostat2,
 		pTypeThermostat3,
-		pTypeRemote
+		pTypeRemote,
+		pTypeGeneralSwitch
 		);
 	result=query(szTmp);
 	if (result.size()<1)

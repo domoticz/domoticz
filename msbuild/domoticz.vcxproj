@@ -146,6 +146,7 @@
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\Razberry.h" />
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
+    <ClInclude Include="..\hardware\RFLink.h" />
     <ClInclude Include="..\hardware\S0MeterBase.h" />
     <ClInclude Include="..\hardware\S0MeterSerial.h" />
     <ClInclude Include="..\hardware\SBFSpot.h" />
@@ -289,6 +290,7 @@
     <ClCompile Include="..\hardware\PiFace.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
     <ClCompile Include="..\hardware\Razberry.cpp" />
+    <ClCompile Include="..\hardware\RFLink.cpp" />
     <ClCompile Include="..\hardware\S0MeterBase.cpp" />
     <ClCompile Include="..\hardware\S0MeterSerial.cpp" />
     <ClCompile Include="..\hardware\SBFSpot.cpp" />

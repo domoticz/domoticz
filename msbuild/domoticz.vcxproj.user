@@ -3,6 +3,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\..\..\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-sslwww 443</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-sslwww 443 -log D:\domoticz.log</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

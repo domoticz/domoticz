@@ -61,6 +61,7 @@
 #include "../hardware/MQTT.h"
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
+#include "../hardware/RFLink.h"
 
 
 #ifdef WITH_GPIO
@@ -453,6 +454,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EnOceanESP3:
 	case HTYPE_Meteostick:
 	case HTYPE_EVOHOME_SERIAL:
+	case HTYPE_RFLINK:
 	{
 			//USB/Serial
 #if defined WIN32
@@ -535,7 +537,11 @@ bool MainWorker::AddHardwareFromParams(
 			{
 				pHardware = new CEvohome(ID,szSerialPort);
 			}
-		}
+			else if (Type == HTYPE_RFLINK)
+			{
+				pHardware = new CRFLink(ID, szSerialPort);
+			}
+	}
 		break;
 	case HTYPE_RFXLAN:
 		//LAN
@@ -1287,6 +1293,13 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=0;
 	}
+	else if (devType == pTypeGeneralSwitch)
+	{
+		const _tGeneralSwitch *pSwitch = (const _tGeneralSwitch*)pResponse;
+		sprintf(szTmp, "%08X", pSwitch->id);
+		ID = szTmp;
+		Unit = pSwitch->unitcode;
+	}
 	else
 		return -1;
 
@@ -1391,6 +1404,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			case pTypeThermostat2:
 			case pTypeThermostat3:
 			case pTypeRadiator1:
+			case pTypeGeneralSwitch:
 				//we received a control message from a domoticz client,
 				//and should actually perform this command ourself switch
 				DeviceRowIdx = PerformRealActionFromDomoticzClient(pRXCommand, &pOrgHardware);
@@ -1582,6 +1596,9 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			break;
 		case pTypeLimitlessLights:
 			DeviceRowIdx = decode_LimitlessLights(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeGeneralSwitch:
+			DeviceRowIdx = decode_GeneralSwitch(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
@@ -8255,6 +8272,38 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	return DevRowIdx;
 }
 
+unsigned long long MainWorker::decode_GeneralSwitch(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	const _tGeneralSwitch *pSwitch = (const _tGeneralSwitch*)pResponse;
+	unsigned char devType = pSwitch->type;
+	unsigned char subType = pSwitch->subtype;
+
+	sprintf(szTmp, "%08X", pSwitch->id);
+	std::string ID = szTmp;
+	unsigned char Unit = pSwitch->unitcode;
+	unsigned char cmnd = pSwitch->cmnd;
+	unsigned char level = pSwitch->level;
+	unsigned char SignalLevel = pSwitch->rssi;
+
+	sprintf(szTmp, "%d", level);
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
+	unsigned char check_cmnd = cmnd;
+	if ((cmnd == gswitch_sGroupOff) || (cmnd == gswitch_sGroupOn))
+		check_cmnd = (cmnd == gswitch_sGroupOff) ? gswitch_sOff : gswitch_sOn;
+	CheckSceneCode(HwdID, ID.c_str(), Unit, devType, subType, check_cmnd, szTmp);
+
+	if ((cmnd == gswitch_sGroupOff) || (cmnd == gswitch_sGroupOn))
+	{
+		//set the status of all lights with the same code to on/off
+		m_sql.GeneralSwitchGroupCmd(ID, subType, (cmnd == gswitch_sGroupOff) ? gswitch_sOff : gswitch_sOn);
+	}
+
+	return DevRowIdx;
+}
+
 //BBQ sensor has two temperature sensors, add them as two temperature devices
 unsigned long long MainWorker::decode_BBQ(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
@@ -9333,6 +9382,27 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			//send to internal for now (later we use the ACK)
 			lcmd.RADIATOR1.subtype = sTypeSmartwaresSwitchRadiator;
 			DecodeRXMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd);
+		}
+		return true;
+	case pTypeGeneralSwitch:
+		{
+			_tGeneralSwitch gswitch;
+			gswitch.type = dType;
+			gswitch.subtype = dSubType;
+			gswitch.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+			gswitch.id = ID;
+			gswitch.unitcode = Unit;
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd))
+				return false;
+			level = (level > 99) ? 99 : level;
+			gswitch.level = (unsigned char)level;
+			gswitch.rssi = 7;
+			if (!WriteToHardware(HardwareID, (const char*)&gswitch, sizeof(_tGeneralSwitch)))
+				return false;
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex], (const unsigned char *)&gswitch);
+			}
 		}
 		return true;
 	}

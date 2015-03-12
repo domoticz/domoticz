@@ -182,6 +182,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface" },
 		{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface" },
 		{ HTYPE_ETH8020, "ETH8020 Relay board with LAN interface" },
+		{ HTYPE_RFLINK, "RFLink Gateway USB" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -380,7 +381,8 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeEvohomeZone, "Heating" , "evohome" },
 		{ pTypeEvohomeWater, "Heating" , "evohome" },
 		{ pTypeEvohomeRelay, "Heating" , "evohome" },
-		{  0,NULL,NULL }
+		{ pTypeGeneralSwitch, "Light/Switch", "lightbulb" },
+		{ 0, NULL, NULL }
 	};
 	if (snum==1)
 		return findTableIDSingle1 (Table, i);
@@ -610,6 +612,39 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Hot Water" },
 		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Relay" },
 
+		{ pTypeGeneralSwitch, sSwitchTypeX10, "X10" },
+		{ pTypeGeneralSwitch, sSwitchTypeARC, "ARC" },
+		{ pTypeGeneralSwitch, sSwitchTypeAB400D, "ELRO AB400" },
+		{ pTypeGeneralSwitch, sSwitchTypeWaveman, "Waveman" },
+		{ pTypeGeneralSwitch, sSwitchTypeEMW200, "EMW200" },
+		{ pTypeGeneralSwitch, sSwitchTypeIMPULS, "Impuls" },
+		{ pTypeGeneralSwitch, sSwitchTypeRisingSun, "RisingSun" },
+		{ pTypeGeneralSwitch, sSwitchTypePhilips, "Philips" },
+		{ pTypeGeneralSwitch, sSwitchTypeEnergenie, "Energenie" },
+		{ pTypeGeneralSwitch, sSwitchTypeEnergenie5, "Energenie 5-gang" },
+		{ pTypeGeneralSwitch, sSwitchTypeGDR2, "COCO GDR2" },
+		{ pTypeGeneralSwitch, sSwitchTypeAC, "AC" },
+		{ pTypeGeneralSwitch, sSwitchTypeHEU, "HomeEasy EU" },
+		{ pTypeGeneralSwitch, sSwitchTypeANSLUT, "Anslut" },
+		{ pTypeGeneralSwitch, sSwitchTypeKoppla, "Ikea Koppla" },
+		{ pTypeGeneralSwitch, sSwitchTypePT2262, "PT2262" },
+		{ pTypeGeneralSwitch, sSwitchTypeLightwaveRF, "LightwaveRF" },
+		{ pTypeGeneralSwitch, sSwitchTypeEMW100, "EMW100" },
+		{ pTypeGeneralSwitch, sSwitchTypeBBSB, "BBSB new" },
+		{ pTypeGeneralSwitch, sSwitchTypeMDREMOTE, "MDRemote" },
+		{ pTypeGeneralSwitch, sSwitchTypeRSL, "Conrad RSL" },
+		{ pTypeGeneralSwitch, sSwitchTypeLivolo, "Livolo" },
+		{ pTypeGeneralSwitch, sSwitchTypeTRC02, "TRC02 (RGB)" },
+		{ pTypeGeneralSwitch, sSwitchTypeTRC02_2, "TRC02_2 (RGB)" },
+		{ pTypeGeneralSwitch, sSwitchTypeAoke, "Aoke" },
+		{ pTypeGeneralSwitch, sSwitchTypeEurodomest, "Eurodomest" },
+		{ pTypeGeneralSwitch, sSwitchTypeLivoloAppliance, "Livolo Appliance" },
+		{ pTypeGeneralSwitch, sSwitchTypeBlyss, "Blyss" },
+		{ pTypeGeneralSwitch, sSwitchTypeByronSX, "ByronSX" },
+		{ pTypeGeneralSwitch, sSwitchTypeByronMP001, "Byron MP001" },
+		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus, "SelectPlus" },
+		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus3, "SelectPlus3" },
+
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -833,6 +868,39 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
 		{ pTypeEvohomeRelay, sTypeEvohomeRelay, "Status" },
+
+		{ pTypeGeneralSwitch, sSwitchTypeX10, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeARC, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeAB400D, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeWaveman, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeEMW200, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeIMPULS, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeRisingSun, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypePhilips, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeEnergenie, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeEnergenie5, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeGDR2, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeAC, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeHEU, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeANSLUT, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeKoppla, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypePT2262, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeLightwaveRF, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeEMW100, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeBBSB, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeMDREMOTE, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeRSL, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeLivolo, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeTRC02, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeTRC02_2, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeAoke, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeEurodomest, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeLivoloAppliance, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeBlyss, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeByronSX, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeByronMP001, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus, "Status" },
+		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus3, "Status" },
 
 		{  0,0,NULL }
 	};
@@ -1277,6 +1345,91 @@ void GetLightStatus(
 				lstatus="Group On";
 				break;
 			}
+		}
+		break;
+	case pTypeGeneralSwitch:
+		maxDimLevel = 100;
+
+		// Calculate % that the light is currently on, taking the maxdimlevel into account.
+		llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
+
+		// Fill in other parameters
+		switch (dSubType)
+		{
+		case sTypeAC:
+		case sTypeHEU:
+		case sTypeANSLUT:
+			bHaveDimmer = true;
+			bHaveGroupCmd = true;
+			break;
+		}
+		switch (nValue)
+		{
+		case gswitch_sOff:
+			lstatus = "Off";
+			break;
+		case gswitch_sOn:
+			lstatus = "On";
+			break;
+		case gswitch_sSetLevel:
+			sprintf(szTmp, "Set Level: %d %%", llevel);
+			if (sValue != "0")
+				lstatus = szTmp;
+			else
+				lstatus = "Off";
+			break;
+		case gswitch_sGroupOff:
+			lstatus = "Group Off";
+			break;
+		case gswitch_sGroupOn:
+			lstatus = "Group On";
+			break;
+		case gswitch_sSetGroupLevel:
+			sprintf(szTmp, "Set Group Level: %d %%", atoi(sValue.c_str()));
+			if (sValue != "0")
+				lstatus = szTmp;
+			else
+				lstatus = "Group Off";
+			break;
+		case gswitch_sDim:
+			lstatus = "Dim";
+			break;
+		case gswitch_sBright:
+			lstatus = "Bright";
+			break;
+		case gswitch_sSound0:
+			lstatus = "Sound 0";
+			break;
+		case gswitch_sSound1:
+			lstatus = "Sound 1";
+			break;
+		case gswitch_sSound2:
+			lstatus = "Sound 2";
+			break;
+		case gswitch_sSound3:
+			lstatus = "Sound 3";
+			break;
+		case gswitch_sSound4:
+			lstatus = "Sound 4";
+			break;
+		case gswitch_sSound5:
+			lstatus = "Sound 5";
+			break;
+		case gswitch_sSound6:
+			lstatus = "Sound 6";
+			break;
+		case gswitch_sSound7:
+			lstatus = "Sound 7";
+			break;
+		case gswitch_sSound8:
+			lstatus = "Sound 8";
+			break;
+		case gswitch_sStop:
+			lstatus = "Stop";
+			break;
+		case gswitch_sProgram:
+			lstatus = "Program";
+			break;
 		}
 		break;
 	case pTypeLimitlessLights:
@@ -1799,6 +1952,128 @@ bool GetLightCommand(
 		}
 		else
 			return false;
+		break;
+	case pTypeGeneralSwitch:
+		if (switchtype == STYPE_Doorbell)
+		{
+			if ((switchcmd == "On") || (switchcmd == "Group On"))
+			{
+				cmd = gswitch_sGroupOn;
+				return true;
+			}
+			//no other combinations for the door switch
+			return false;
+		}
+		else if (switchtype == STYPE_X10Siren)
+		{
+			if ((switchcmd == "On") || (switchcmd == "Group On"))
+			{
+				cmd = gswitch_sGroupOn;
+				return true;
+			}
+			else if ((switchcmd == "Off") || (switchcmd == "Group Off"))
+			{
+				cmd = gswitch_sGroupOff;
+				return true;
+			}
+			return false;
+		}
+
+		if (switchcmd == "Off")
+		{
+			cmd = gswitch_sOff;
+			return true;
+		}
+		if (switchcmd == "On")
+		{
+			cmd = gswitch_sOn;
+			return true;
+		}
+		if (switchcmd == "Set Level")
+		{
+			cmd = gswitch_sSetLevel;
+			return true;
+		}
+		if (switchcmd == "Group Off")
+		{
+			cmd = gswitch_sGroupOff;
+			return true;
+		}
+		if (switchcmd == "Group On")
+		{
+			cmd = gswitch_sGroupOn;
+			return true;
+		}
+		if (switchcmd == "Set Group Level")
+		{
+			cmd = gswitch_sSetGroupLevel;
+			return true;
+		}
+		if (switchcmd == "Dim")
+		{
+			cmd = gswitch_sDim;
+			return true;
+		}
+		if (switchcmd == "Bright")
+		{
+			cmd = gswitch_sBright;
+			return true;
+		}
+		if (switchcmd == "Sound 0")
+		{
+			cmd = gswitch_sSound0;
+			return true;
+		}
+		if (switchcmd == "Sound 1")
+		{
+			cmd = gswitch_sSound1;
+			return true;
+		}
+		if (switchcmd == "Sound 2")
+		{
+			cmd = gswitch_sSound2;
+			return true;
+		}
+		if (switchcmd == "Sound 3")
+		{
+			cmd = gswitch_sSound3;
+			return true;
+		}
+		if (switchcmd == "Sound 4")
+		{
+			cmd = gswitch_sSound4;
+			return true;
+		}
+		if (switchcmd == "Sound 5")
+		{
+			cmd = gswitch_sSound5;
+			return true;
+		}
+		if (switchcmd == "Sound 6")
+		{
+			cmd = gswitch_sSound6;
+			return true;
+		}
+		if (switchcmd == "Sound 7")
+		{
+			cmd = gswitch_sSound7;
+			return true;
+		}
+		if (switchcmd == "Sound 8")
+		{
+			cmd = gswitch_sSound8;
+			return true;
+		}
+		if (switchcmd == "Stop")
+		{
+			cmd = gswitch_sStop;
+			return true;
+		}
+		if (switchcmd == "Program")
+		{
+			cmd = gswitch_sProgram;
+			return true;
+		}
 		break;
 	case pTypeLimitlessLights:
 		if (switchcmd=="Off")

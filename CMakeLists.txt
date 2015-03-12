@@ -215,6 +215,7 @@ hardware/PiFace.cpp
 hardware/PVOutput_Input.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
+hardware/RFLink.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
 hardware/S0MeterBase.cpp
