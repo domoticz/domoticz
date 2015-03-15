@@ -16,6 +16,13 @@
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
 
+#define bmpbaroforecast_stable			0x00
+#define bmpbaroforecast_sunny			0x01
+#define bmpbaroforecast_cloudy			0x02
+#define bmpbaroforecast_unstable		0x03
+#define bmpbaroforecast_thunderstorm	0x04
+#define bmpbaroforecast_unknown			0x05
+
 #define pTypeLimitlessLights	0xF1
 #define sTypeLimitlessRGBW		0x01
 #define sTypeLimitlessRGB		0x02
@@ -46,6 +53,7 @@
 #define sTypeCurrent				0x17
 #define sTypeSoundLevel				0x18
 #define sTypeSwitch					0x19
+#define sTypeBaro					0x1A
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4

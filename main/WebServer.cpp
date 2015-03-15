@@ -5717,6 +5717,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
 					ii++;
 				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
 				if (dType == pTypeLux)
 				{
 					root["result"][ii]["val"] = NTYPE_USAGE;
@@ -8450,6 +8457,7 @@ namespace http {
 								(dType != pTypeTEMP_BARO) &&
 								(dType != pTypeUV) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeVisibility))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeBaro))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)))
 								)
 								continue;
@@ -9103,11 +9111,8 @@ namespace http {
 							double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
 							root["result"][ii]["Temp"] = tvalue;
 							int forecast = atoi(strarray[2].c_str());
-							if (forecast != baroForecastNoInfo)
-							{
-								root["result"][ii]["Forecast"] = forecast;
-								root["result"][ii]["ForecastStr"] = RFX_Forecast_Desc(forecast);
-							}
+							root["result"][ii]["Forecast"] = forecast;
+							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
 							root["result"][ii]["Barometer"] = atof(strarray[1].c_str());
 
 							sprintf(szData, "%.1f %c, %.1f hPa",
@@ -9986,6 +9991,22 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Pressure"] = atof(sValue.c_str());
 						}
+						else if (dSubType == sTypeBaro)
+						{
+							sprintf(szData, "%.1f hPa", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["TypeImg"] = "gauge";
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+
+							std::vector<std::string> tstrarray;
+							StringSplit(sValue, ";", tstrarray);
+
+							root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
+							int forecast = atoi(tstrarray[1].c_str());
+							root["result"][ii]["Forecast"] = forecast;
+							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
+
+						}
 						else if (dSubType == sTypeZWaveClock)
 						{
 							std::vector<std::string> tstrarray;
@@ -10664,6 +10685,11 @@ namespace http {
 			case 10:
 				//Sound Level
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeSoundLevel, 12, 255, 0, "65", devname);
+				bCreated = true;
+				break;
+			case 11:
+				//Barometer (hPa)
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeBaro, 12, 255, 0, "1021.34;0", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP:
@@ -13592,6 +13618,7 @@ namespace http {
 								(dType == pTypeThermostat1) ||
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
+								((dType == pTypeGeneral) && (dSubType == sTypeBaro)) ||
 								((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
 								(dType == pTypeEvohomeZone) ||
 								(dType == pTypeEvohomeWater)
@@ -13614,7 +13641,8 @@ namespace http {
 							}
 							if (
 								(dType == pTypeTEMP_HUM_BARO) ||
-								(dType == pTypeTEMP_BARO)
+								(dType == pTypeTEMP_BARO)||
+								((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								)
 							{
 								if (dType == pTypeTEMP_HUM_BARO)
@@ -13628,6 +13656,11 @@ namespace http {
 										root["result"][ii]["ba"] = sd[3];
 								}
 								else if (dType == pTypeTEMP_BARO)
+								{
+									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
+									root["result"][ii]["ba"] = szTmp;
+								}
+								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
 									sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
 									root["result"][ii]["ba"] = szTmp;
@@ -15228,7 +15261,8 @@ namespace http {
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
 								((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
-								(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
+								(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)||
+								((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								)
 							{
 								bool bOK = true;
@@ -15262,7 +15296,8 @@ namespace http {
 							}
 							if (
 								(dType == pTypeTEMP_HUM_BARO) ||
-								(dType == pTypeTEMP_BARO)
+								(dType == pTypeTEMP_BARO)||
+								((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								)
 							{
 								if (dType == pTypeTEMP_HUM_BARO)
@@ -15276,6 +15311,11 @@ namespace http {
 										root["result"][ii]["ba"] = sd[5];
 								}
 								else if (dType == pTypeTEMP_BARO)
+								{
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									root["result"][ii]["ba"] = szTmp;
+								}
+								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
 									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
 									root["result"][ii]["ba"] = szTmp;
@@ -15335,7 +15375,8 @@ namespace http {
 						}
 						if (
 							(dType == pTypeTEMP_HUM_BARO) ||
-							(dType == pTypeTEMP_BARO)
+							(dType == pTypeTEMP_BARO)||
+							((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 							)
 						{
 							if (dType == pTypeTEMP_HUM_BARO)
@@ -15349,6 +15390,11 @@ namespace http {
 									root["result"][ii]["ba"] = sd[5];
 							}
 							else if (dType == pTypeTEMP_BARO)
+							{
+								sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+								root["result"][ii]["ba"] = szTmp;
+							}
+							else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 							{
 								sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
 								root["result"][ii]["ba"] = szTmp;
@@ -15420,7 +15466,8 @@ namespace http {
 							}
 							if (
 								(dType == pTypeTEMP_HUM_BARO) ||
-								(dType == pTypeTEMP_BARO)
+								(dType == pTypeTEMP_BARO)||
+								((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								)
 							{
 								if (dType == pTypeTEMP_HUM_BARO)
@@ -15434,6 +15481,11 @@ namespace http {
 										root["resultprev"][iPrev]["ba"] = sd[5];
 								}
 								else if (dType == pTypeTEMP_BARO)
+								{
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									root["resultprev"][iPrev]["ba"] = szTmp;
+								}
+								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
 									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
 									root["resultprev"][iPrev]["ba"] = szTmp;
@@ -16610,7 +16662,11 @@ namespace http {
 					{
 						sendHum = true;
 					}
-					if ((sgraphBaro == "true") && ((dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO)))
+					if ((sgraphBaro == "true") && (
+						(dType == pTypeTEMP_HUM_BARO) || 
+						(dType == pTypeTEMP_BARO) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+						))
 					{
 						sendBaro = true;
 					}
@@ -16666,6 +16722,11 @@ namespace http {
 											root["result"][ii]["ba"] = sd[3];
 									}
 									else if (dType == pTypeTEMP_BARO)
+									{
+										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
+										root["result"][ii]["ba"] = szTmp;
+									}
+									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 									{
 										sprintf(szTmp, "%.1f", atof(sd[3].c_str()) / 10.0f);
 										root["result"][ii]["ba"] = szTmp;
@@ -16737,6 +16798,11 @@ namespace http {
 										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
 										root["result"][ii]["ba"] = szTmp;
 									}
+									else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+									{
+										sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+										root["result"][ii]["ba"] = szTmp;
+									}
 								}
 								if (sendDew)
 								{
@@ -16804,6 +16870,11 @@ namespace http {
 										root["result"][ii]["ba"] = sd[5];
 								}
 								else if (dType == pTypeTEMP_BARO)
+								{
+									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
+									root["result"][ii]["ba"] = szTmp;
+								}
+								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
 								{
 									sprintf(szTmp, "%.1f", atof(sd[5].c_str()) / 10.0f);
 									root["result"][ii]["ba"] = szTmp;

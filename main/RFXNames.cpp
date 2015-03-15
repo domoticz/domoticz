@@ -319,6 +319,21 @@ const char *RFX_WSForecast_Desc(const unsigned char Forecast)
 	return findTableIDSingle1 (Table, Forecast);
 }
 
+const char *BMP_Forecast_Desc(const unsigned char Forecast)
+{
+	STR_TABLE_SINGLE	Table[] =
+	{
+		{ bmpbaroforecast_stable, "Stable" },
+		{ bmpbaroforecast_sunny, "Sunny" },
+		{ bmpbaroforecast_cloudy, "Cloudy" },
+		{ bmpbaroforecast_unstable, "Unstable" },
+		{ bmpbaroforecast_thunderstorm, "Thunderstorm" },
+		{ bmpbaroforecast_unknown, "Unknown" },
+		{ 0, NULL, NULL }
+	};
+	return findTableIDSingle1(Table, Forecast);
+}
+
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 {
 	STR_TABLE_SINGLE	Table[] =
@@ -577,6 +592,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeVoltage, "Voltage" },
 		{ pTypeGeneral, sTypeCurrent, "Current" },
 		{ pTypeGeneral, sTypePressure, "Pressure" },
+		{ pTypeGeneral, sTypeBaro, "Barometer" },
 		{ pTypeGeneral, sTypeSetPoint, "Setpoint" },
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
 		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },
@@ -835,6 +851,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeVoltage, "Voltage" },
 		{ pTypeGeneral, sTypeCurrent, "Current" },
 		{ pTypeGeneral, sTypePressure, "Pressure" },
+		{ pTypeGeneral, sTypeBaro, "Barometer" },
 		{ pTypeGeneral, sTypeSetPoint, "Temperature" },
 		{ pTypeGeneral, sTypeTemperature, "Temperature" },
 		{ pTypeGeneral, sTypeZWaveClock, "Thermostat Clock" },

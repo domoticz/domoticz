@@ -231,7 +231,7 @@ bool CCameraHandler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
 		int ret=system(nvcmd.c_str());
 		if (ret != 0)
 		{
-			_log.Log(LOG_ERROR, "Error executing uvcapture command. returned: %d", ret);
+			_log.Log(LOG_ERROR, "Error executing uvccapture command. returned: %d", ret);
 			return false;
 		}
 		//If all went correct, we should have our file

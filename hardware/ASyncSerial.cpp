@@ -279,8 +279,15 @@ void AsyncSerial::writeEnd(const boost::system::error_code& error)
                 pimpl->writeBufferSize),
                 boost::bind(&AsyncSerial::writeEnd, this, boost::asio::placeholders::error));
     } else {
-        setErrorStatus(true);
-        doClose();
+		try
+		{
+			setErrorStatus(true);
+			doClose();
+		}
+		catch (...)
+		{
+			
+		}
     }
 }
 

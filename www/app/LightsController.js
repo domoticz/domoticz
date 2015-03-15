@@ -1556,7 +1556,7 @@ define(['app'], function (app) {
 								img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
 							}
 							else {
-								img='<img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								img='<img src="images/Dimmer48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
 						}
 						else {
@@ -1564,7 +1564,7 @@ define(['app'], function (app) {
 								img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
 							}
 							else {
-								img='<img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								img='<img src="images/Dimmer48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
 						}
 					}
@@ -2008,7 +2008,7 @@ define(['app'], function (app) {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 										else {
-											xhtm+='\t      <td id="img"><img src="images/dimmer48-on.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',\'RefreshLights\',' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/Dimmer48_On.png" title="' + $.i18n("Turn Off") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',\'RefreshLights\',' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 									 }
 									 else {
@@ -2016,7 +2016,7 @@ define(['app'], function (app) {
 											xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
 										}
 										else {
-											xhtm+='\t      <td id="img"><img src="images/dimmer48-off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/Dimmer48_Off.png" title="' + $.i18n("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
 										}
 									 }
 							}
@@ -2244,7 +2244,7 @@ define(['app'], function (app) {
 					if (typeof obj != 'undefined') {
 						var img="";
 						var status="";
-						var imgname="dimmer48-o";
+						var imgname="Dimmer48_O";
 						if (dtype=="relay")
 							imgname="Fireplace48_O"
 						if (fPercentage==0)

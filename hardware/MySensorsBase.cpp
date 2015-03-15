@@ -199,15 +199,6 @@ void MySensorsBase::SendHumiditySensor(const unsigned char NodeID, const int Chi
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);
 }
 
-void MySensorsBase::SendBaroSensor(const unsigned char NodeID, const int ChildID, const float pressure)
-{
-	_tGeneralDevice gdevice;
-	gdevice.intval1 = (NodeID << 8) | ChildID;
-	gdevice.subtype = sTypePressure;
-	gdevice.floatval1 = pressure;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
-}
-
 void MySensorsBase::SendTempHumSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity)
 {
 	RBUF tsen;
@@ -397,7 +388,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 			}
 		}
 		else
-			SendBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
+			SendBaroSensor(pSensor->nodeID, pSensor->childID, 255, pSensor->floatValue,0);
 	}
 	break;
 	case V_TRIPPED:
@@ -485,10 +476,21 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		break;
 	case V_FORECAST:
 	{
-		std::stringstream sstr;
-		sstr << pSensor->nodeID;
-		std::string devname;
-		m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, 255, 0, pSensor->stringValue.c_str(), devname);
+		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
+		if (pSensorBaro)
+		{
+			if (pSensorBaro->bValidValue)
+			{
+				SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, 255, pSensorBaro->floatValue, pSensor->intvalue);
+			}
+		}
+		else
+		{
+			std::stringstream sstr;
+			sstr << pSensor->nodeID;
+			std::string devname;
+			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, 255, 0, pSensor->stringValue.c_str(), devname);
+		}
 	}
 	break;
 	}
@@ -836,13 +838,19 @@ void MySensorsBase::ParseLine()
 		case V_FORECAST:
 			pSensor->stringValue = payload;
 			//	Whether forecast.One of "stable", "sunny", "cloudy", "unstable", "thunderstorm" or "unknown"
-			pSensor->intvalue = baroForecastNoInfo;
-			if (pSensor->stringValue == "sunny")
-				pSensor->intvalue = baroForecastSunny;
+			pSensor->intvalue = bmpbaroforecast_unknown;
+			if (pSensor->stringValue == "stable")
+				pSensor->intvalue = bmpbaroforecast_stable;
+			else if (pSensor->stringValue == "sunny")
+				pSensor->intvalue = bmpbaroforecast_sunny;
 			else if (pSensor->stringValue == "cloudy")
-				pSensor->intvalue = baroForecastCloudy;
+				pSensor->intvalue = bmpbaroforecast_cloudy;
+			else if (pSensor->stringValue == "unstable")
+				pSensor->intvalue = bmpbaroforecast_unstable;
 			else if (pSensor->stringValue == "thunderstorm")
-				pSensor->intvalue = baroForecastRain;
+				pSensor->intvalue = bmpbaroforecast_thunderstorm;
+			else if (pSensor->stringValue == "unknown")
+				pSensor->intvalue = bmpbaroforecast_unknown;
 			bHaveValue = true;
 			break;
 		default:
