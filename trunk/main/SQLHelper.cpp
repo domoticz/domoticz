@@ -1450,8 +1450,13 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if (!GetPreferencesVar("UVCParams", sValue))
 	{
-		UpdatePreferencesVar("UVCParams", "- -S80 -B128 -C128 -G80 -x800 -y600 -q100"); //width/height/time2wait
+		UpdatePreferencesVar("UVCParams", "-S80 -B128 -C128 -G80 -x800 -y600 -q100"); //width/height/time2wait
 	}
+	if (sValue == "- -S80 -B128 -C128 -G80 -x800 -y600 -q100")
+	{
+		UpdatePreferencesVar("UVCParams", "-S80 -B128 -C128 -G80 -x800 -y600 -q100"); //fix a bug
+	}
+
 	nValue = 1;
 	if (!GetPreferencesVar("AcceptNewHardware", nValue))
 	{
@@ -3857,7 +3862,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -3871,7 +3876,8 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeEvohomeZone,
 		pTypeEvohomeWater,
 		pTypeGeneral,sTypeSystemTemp,
-		pTypeThermostat,sTypeThermSetpoint
+		pTypeThermostat,sTypeThermSetpoint,
+		pTypeGeneral, sTypeBaro
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -3997,8 +4003,16 @@ void CSQLHelper::UpdateTemperatureLog()
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeGeneral:
-				if (dSubType==sTypeSystemTemp)
+				if (dSubType == sTypeSystemTemp)
+				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
+				}
+				else if (dSubType == sTypeBaro)
+				{
+					if (splitresults.size() != 2)
+						continue;
+					barometer = int(atof(splitresults[0].c_str())*10.0f);
+				}
 				break;
 			}
 			//insert record
@@ -4441,7 +4455,7 @@ void CSQLHelper::UpdateMeter()
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 			}
-			else if (dType==pTypeUsage)
+			else if (dType == pTypeUsage)
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
@@ -5129,7 +5143,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				((devType != pTypeGeneral) && (subType != sTypeVoltage)) &&
 				((devType != pTypeGeneral) && (subType != sTypeCurrent)) &&
 				((devType != pTypeGeneral) && (subType != sTypePressure)) &&
-				((devType!=pTypeGeneral)&&(subType!=sTypeSoilMoisture))&&
+				((devType != pTypeGeneral) && (subType != sTypeSoilMoisture)) &&
 				((devType != pTypeGeneral) && (subType != sTypeLeafWetness)) &&
 				((devType != pTypeGeneral) && (subType != sTypeSoundLevel)) &&
 				(devType != pTypeLux) &&

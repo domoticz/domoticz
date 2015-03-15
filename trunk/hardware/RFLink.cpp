@@ -319,7 +319,7 @@ bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
 	std::stringstream sstr;
 	//10;NewKaku;00c142;1;ON;     => protocol;address;button number;action (ON/OFF/ALLON/ALLOFF/15 -11-15 for dim level)
 
-	sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << (pSwitch->unitcode-1) << ";" << switchcmnd << ";\n";
+	sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd << ";\n";
 
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
@@ -444,7 +444,9 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	bool bHaveTemp = false; float temp = 0;
 	bool bHaveHum = false; int humidity = 0;
+	bool bHaveHumStatus = false; int humstatus = 0;
 	bool bHaveBaro = false; float baro = 0;
+	int baroforecast = 0;
 	bool bHaveRain = false; int raincounter = 0;
 
 	bool bHaveWindDir = false; int windir = 0;
@@ -476,11 +478,20 @@ bool CRFLink::ParseLine(const std::string &sLine)
 			bHaveHum = true;
 			humidity = RFLinkGetIntStringValue(results[ii]);
 		}
+		else if (results[ii].find("HSTATUS") != std::string::npos)
+		{
+			bHaveHumStatus = true;
+			humstatus = RFLinkGetIntStringValue(results[ii]);
+		}
 		else if (results[ii].find("BARO") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveBaro = true;
 			baro = float(iTemp);
+		}
+		else if (results[ii].find("BFORECAST") != std::string::npos)
+		{
+			baroforecast = RFLinkGetIntStringValue(results[ii]);
 		}
 		else if (results[ii].find("RAIN") != std::string::npos)
 		{
@@ -543,7 +554,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveTemp&&bHaveHum&&bHaveBaro)
 	{
-		SendTempHumBaroSensor(ID, BatteryLevel, temp, humidity, baro, 0);
+		SendTempHumBaroSensor(ID, BatteryLevel, temp, humidity, baro, baroforecast);
 	}
 	else if (bHaveTemp&&bHaveHum)
 	{
@@ -559,7 +570,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	}
 	else if (bHaveBaro)
 	{
-		SendBaroSensor(Node_ID, Child_ID, BatteryLevel, baro);
+		SendBaroSensor(Node_ID, Child_ID, BatteryLevel, baro, baroforecast);
 	}
 	else if (bHaveRain)
 	{

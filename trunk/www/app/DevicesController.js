@@ -190,7 +190,7 @@ define(['app'], function (app) {
 							var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="'+item.idx+'" />';
 				  var TypeImg=item.TypeImg;
 				  var itemImage='<img src="images/' + TypeImg + '.png">';
-				  if (TypeImg.indexOf("lightbulb")==0) {
+				  if ((TypeImg.indexOf("lightbulb")==0)||(TypeImg.indexOf("dimmer")==0)) {
 									if (
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
@@ -201,19 +201,6 @@ define(['app'], function (app) {
 									}
 									else {
 													itemImage='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
-									}
-				  }
-				  else if (TypeImg.indexOf("dimmer")==0) {
-									if (
-											(item.Status == 'On')||
-											(item.Status == 'Chime')||
-											(item.Status == 'Group On')||
-											(item.Status.indexOf('Set ') == 0)
-										 ) {
-													itemImage='<img src="images/dimmer.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
-									}
-									else {
-													itemImage='<img src="images/dimmeroff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 									}
 				  }
 				  else if (TypeImg.indexOf("motion")==0) {

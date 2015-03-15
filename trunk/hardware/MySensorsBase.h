@@ -166,7 +166,6 @@ private:
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 	void SendTempSensor(const unsigned char NodeID, const int ChildID, const float temperature);
 	void SendHumiditySensor(const unsigned char NodeID, const int ChildID, const float humidity);
-	void SendBaroSensor(const unsigned char NodeID, const int ChildID, const float pressure);
 	void SendTempHumSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity);
 	void SendTempHumBaroSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity, const float pressure, int forecast);
 	void SendKwhMeter(const unsigned char NodeID, const int ChildID, const double musage, const double mtotal, const std::string &defaultname);

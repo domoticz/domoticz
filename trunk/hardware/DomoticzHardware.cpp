@@ -170,11 +170,12 @@ void CDomoticzHardwareBase::SendHumiditySensor(const int NodeID, const int Batte
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);
 }
 
-void CDomoticzHardwareBase::SendBaroSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure)
+void CDomoticzHardwareBase::SendBaroSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const int forecast)
 {
 	_tGeneralDevice gdevice;
 	gdevice.intval1 = (NodeID << 8) | ChildID;
-	gdevice.subtype = sTypePressure;
+	gdevice.intval2 = forecast;
+	gdevice.subtype = sTypeBaro;
 	gdevice.floatval1 = pressure;
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 }
@@ -554,4 +555,13 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 	}
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);
+}
+
+void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure)
+{
+	_tGeneralDevice gdevice;
+	gdevice.intval1 = (NodeID << 8) | ChildID;
+	gdevice.subtype = sTypePressure;
+	gdevice.floatval1 = pressure;
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 }

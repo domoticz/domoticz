@@ -1868,9 +1868,9 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 						WriteMessage("ByronSX           disabled");
 
 					if (pResponse->IRESPONSE.IMAGINTRONIXenabled)
-						WriteMessage("IMAGINTRONIXenabled    enabled");
+						WriteMessage("IMAGINTRONIX      enabled");
 					else
-						WriteMessage("IMAGINTRONIXenabled    disabled");
+						WriteMessage("IMAGINTRONIX      disabled");
 				}
 				break;
 			case cmdSAVE:
@@ -8069,7 +8069,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan) || (subType == sTypeTextStatus) || (subType == sTypeSoundLevel))
+	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan) || (subType == sTypeTextStatus) || (subType == sTypeSoundLevel) || (subType == sTypeBaro))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
@@ -8134,6 +8134,14 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	else if (subType == sTypeCurrent)
 	{
 		sprintf(szTmp, "%.3f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+	}
+	else if (subType == sTypeBaro)
+	{
+		sprintf(szTmp, "%.02f;%d", pMeter->floatval1,pMeter->intval2);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
@@ -8223,7 +8231,12 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			break;
 		case sTypePressure:
 			WriteMessage("subtype       = Pressure");
-			sprintf(szTmp,"Voltage = %.1f bar", pMeter->floatval1);
+			sprintf(szTmp,"Pressure = %.1f bar", pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeBaro:
+			WriteMessage("subtype       = Barometric Pressure");
+			sprintf(szTmp, "Pressure = %.1f hPa", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeFan:

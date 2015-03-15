@@ -96,7 +96,7 @@ private:
 	//Sensor Helpers
 	void SendTempSensor			(const int NodeID,					  const int BatteryLevel, const float temperature);
 	void SendHumiditySensor		(const int NodeID,					  const int BatteryLevel, const int humidity);
-	void SendBaroSensor			(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
+	void SendBaroSensor			(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const int forecast);
 	void SendTempHumSensor		(const int NodeID,					  const int BatteryLevel, const float temperature, const int humidity);
 	void SendTempHumBaroSensor	(const int NodeID,					  const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast);
 	void SendKwhMeter			(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);
@@ -107,7 +107,8 @@ private:
 	void SendVoltageSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
 	void SendPercentageSensor	(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
 	void SendRainSensor			(const int NodeID,					  const int BatteryLevel, const int RainCounter);
-	void SendWind				(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp);
+	void SendWind				(const int NodeID,					  const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp);
+	void SendPressureSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
 
 	int m_iHBCounter;
 	boost::shared_ptr<boost::thread> m_Heartbeatthread;

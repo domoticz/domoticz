@@ -14,6 +14,9 @@ Version 2.0.xxxx (xxxx 2015)
 - Updated: More translation work done
 - Changed: OpenZWave, when a switch/dimmer is turned off, and this node has a Power/Energy sensor, their value is set to 0
 - Fixed: Updating hardware settings for GPIO
+- Fixed: UVC camera default parameters where incorrect
+- Fixed: Fritzbox received from/to where switched
+- Changed: MySensors pressure sensor will now be reported as Barometer
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

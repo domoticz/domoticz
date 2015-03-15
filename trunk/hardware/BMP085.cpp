@@ -560,19 +560,22 @@ void CBMP085::ReadSensorDetails()
 		switch (forecast)
 		{
 		case FC_BMP085_STABLE:			//Stable weather
-			//m_LastSendForecast = baroForecastCloudy;
+			m_LastSendForecast = bmpbaroforecast_stable;
 			break;
 		case FC_BMP085_SUNNY:			//Slowly rising HP stable good weather (Clear/Sunny)
-			m_LastSendForecast = baroForecastSunny;
+			m_LastSendForecast = bmpbaroforecast_sunny;
 			break;
 		case FC_BMP085_CLOUDY_RAIN:		//Slowly falling Low Pressure System, stable rainy weather (Cloudy/Rain)
-			m_LastSendForecast = baroForecastRain;
+			m_LastSendForecast = bmpbaroforecast_cloudy;
 			break;
 		case FC_BMP085_UNSTABLE:		//Quickly rising HP, not stable weather
+			m_LastSendForecast = bmpbaroforecast_unstable;
 			break;
 		case FC_BMP085_THUNDERSTORM:	//Quickly falling LP, Thunderstorm, not stable (Thunderstorm)
+			m_LastSendForecast = bmpbaroforecast_thunderstorm;
 			break;
 		case FC_BMP085_UNKNOWN:			//
+			m_LastSendForecast = bmpbaroforecast_unknown;
 			break;
 		}
 	}

@@ -47,7 +47,11 @@ void CLogger::SetOutputFile(const char *OutputFile)
 		return;
 
 	try {
+#ifdef _DEBUG
+		m_outputfile.open(OutputFile, std::ios::out | std::ios::trunc);
+#else
 		m_outputfile.open(OutputFile, std::ios::out | std::ios::app);
+#endif
 	} catch(...)
 	{
 		std::cerr << "Error opening output log file..." << std::endl;
