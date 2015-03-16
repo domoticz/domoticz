@@ -1465,6 +1465,7 @@ define(['app'], function (app) {
 							}
 						}
 						$("#hardwarecontent #configuration").html(szConfig);
+						$("#hardwarecontent #configuration").i18n();
 					}
 				}
 			}); 

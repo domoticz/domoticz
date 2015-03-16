@@ -27,7 +27,8 @@ define(['app'], function (app) {
 			if (name!='Unknown') {
 				$( "#dialog-addlightdevicedev #devicename" ).val(name);
 			}
-			$( "#dialog-addlightdevicedev" ).dialog( "open" );
+			$("#dialog-addlightdevicedev").i18n();
+			$("#dialog-addlightdevicedev" ).dialog( "open" );
 		}
 
 		RemoveDevice = function(idx)
@@ -380,77 +381,74 @@ define(['app'], function (app) {
 			$.devIdx=0;
 			$.LightsAndSwitches = [];
 					
+			var dialog_adddevice_buttons = {};
+			dialog_adddevice_buttons[$.i18n("Add Device")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-adddevice #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-adddevice #devicename").val() + '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowDevices();
+					 }
+				  });
+			  }
+			};
+			dialog_adddevice_buttons[$.i18n("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
+
 				$( "#dialog-adddevice" ).dialog({
 					  autoOpen: false,
-					  width: 420,
-					  height: 170,
+					  width: 'auto',
+					  height: 'auto',
 					  modal: true,
 					  resizable: false,
-					  buttons: {
-						  "Add Device": function() {
-							  var bValid = true;
-							  bValid = bValid && checkLength( $("#dialog-adddevice #devicename"), 2, 100 );
-							  if ( bValid ) {
-								  $( this ).dialog( "close" );
-								  $.ajax({
-									 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-adddevice #devicename").val() + '&used=true',
-									 async: false, 
-									 dataType: 'json',
-									 success: function(data) {
-										ShowDevices();
-									 }
-								  });
-								  
-							  }
-						  },
-						  Cancel: function() {
-							  $( this ).dialog( "close" );
-						  }
-					  },
-					  close: function() {
-						$( this ).dialog( "close" );
-					  }
+					  title: $.i18n("Add Device"),
+					  buttons: dialog_adddevice_buttons
 				});
+
+			var dialog_addlightdevicedev_buttons = {};
+			dialog_addlightdevicedev_buttons[$.i18n("Add Device")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-addlightdevicedev #devicename"), 2, 100 );
+			  var bIsSubDevice=$("#dialog-addlightdevicedev #lighttable #how_2").is(":checked");
+			  var MainDeviceIdx="";
+			  if (bIsSubDevice)
+			  {
+					var MainDeviceIdx=$("#dialog-addlightdevicedev #combosubdevice option:selected").val();
+					if (typeof MainDeviceIdx == 'undefined') {
+						bootbox.alert($.i18n('No Main Device Selected!'));
+						return;
+					}
+			  }
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addlightdevicedev #devicename").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowDevices();
+					 }
+				  });
+			  }
+			};
+			dialog_addlightdevicedev_buttons[$.i18n("Cancel")]=function() {
+				$( this ).dialog( "close" );
+			};
 
 				$( "#dialog-addlightdevicedev" ).dialog({
 					  autoOpen: false,
-					  width: 360,
-					  height: 226,
+					  width: 'auto',
+					  height: 'auto',
 					  modal: true,
 					  resizable: false,
-					  buttons: {
-						  "Add Device": function() {
-							  var bValid = true;
-							  bValid = bValid && checkLength( $("#dialog-addlightdevicedev #devicename"), 2, 100 );
-							  var bIsSubDevice=$("#dialog-addlightdevicedev #lighttable #how_2").is(":checked");
-							  var MainDeviceIdx="";
-							  if (bIsSubDevice)
-							  {
-									var MainDeviceIdx=$("#dialog-addlightdevicedev #combosubdevice option:selected").val();
-									if (typeof MainDeviceIdx == 'undefined') {
-										bootbox.alert($.i18n('No Main Device Selected!'));
-										return;
-									}
-							  }
-							  if ( bValid ) {
-								  $( this ).dialog( "close" );
-								  $.ajax({
-									 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addlightdevicedev #devicename").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
-									 async: false, 
-									 dataType: 'json',
-									 success: function(data) {
-										ShowDevices();
-									 }
-								  });
-							  }
-						  },
-						  Cancel: function() {
-							  $( this ).dialog( "close" );
-						  }
-					  },
-					  close: function() {
-						$( this ).dialog( "close" );
-					  }
+					  title: $.i18n("Add Light/Switch Device"),
+					  buttons: dialog_addlightdevicedev_buttons
 				});
 						
 			$("#dialog-addlightdevicedev #lighttable #how_1").click(function() {
