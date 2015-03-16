@@ -2705,6 +2705,35 @@ define(['app'], function (app) {
 					EnableDisableSubDevices("#dialog-addlightdevice #subdevice",true);
 				});
 
+			var dialog_addmanuallightdevice_buttons = {};
+			dialog_addmanuallightdevice_buttons[$.i18n("Add Device")]=function() {
+				var mParams=GetManualLightSettings(0);
+				if (mParams=="") {
+					return;
+				}
+				$.pDialog=$( this );
+				$.ajax({
+					 url: "json.htm?type=command&param=addswitch"+mParams, 
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						if (typeof data.status != 'undefined') {
+							if (data.status == 'OK')
+							{
+								$.pDialog.dialog( "close" );
+								ShowLights();
+							}
+							else {
+								ShowNotify(data.message, 3000,true);
+							}
+						}
+					 }
+				});
+			};
+			dialog_addmanuallightdevice_buttons[$.i18n("Cancel")]=function() {
+				$( this ).dialog( "close" );
+			};
+
 			$( "#dialog-addmanuallightdevice" ).dialog({
 				  autoOpen: false,
 				  width: 440,
@@ -2712,35 +2741,7 @@ define(['app'], function (app) {
 				  modal: true,
 				  resizable: false,
   				  title: $.i18n("Add Manual Light/Switch Device"),
-				  buttons: {
-					  "Add Device": function() {
-											var mParams=GetManualLightSettings(0);
-											if (mParams=="") {
-												return;
-											}
-											$.pDialog=$( this );
-											$.ajax({
-												 url: "json.htm?type=command&param=addswitch"+mParams, 
-												 async: false, 
-												 dataType: 'json',
-												 success: function(data) {
-													if (typeof data.status != 'undefined') {
-														if (data.status == 'OK')
-														{
-															$.pDialog.dialog( "close" );
-															ShowLights();
-														}
-														else {
-															ShowNotify(data.message, 3000,true);
-														}
-													}
-												 }
-											});
-					  },
-					  Cancel: function() {
-						  $( this ).dialog( "close" );
-					  }
-				  },
+				  buttons: dialog_addmanuallightdevice_buttons,
 				  open: function() {
 						RefreshHardwareComboArray();
 						
