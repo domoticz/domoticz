@@ -686,7 +686,7 @@ define(['app'], function (app) {
 					  status+=' (' + $.i18n(item.HumidityStatus) + ')';
 					}
 					if (typeof item.Barometer != 'undefined') {
-					  status+='<br>Barometer: ' + item.Barometer + ' hPa';
+					  status+='<br>' + $.i18n('Barometer') + ': ' + item.Barometer + ' hPa';
 					}
 					if (typeof item.ForecastStr != 'undefined') {
 					  status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
@@ -926,7 +926,7 @@ define(['app'], function (app) {
 								xhtm+=' (' + $.i18n(item.HumidityStatus) + ')';
 							}
 							if (typeof item.Barometer != 'undefined') {
-								xhtm+='<br>Barometer: ' + item.Barometer + ' hPa';
+								xhtm+='<br>' + $.i18n('Barometer') + ': ' + item.Barometer + ' hPa';
 							}
 							if (typeof item.ForecastStr != 'undefined') {
 								xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);

@@ -486,6 +486,19 @@ define(['app'], function (app) {
 		  $( "#dialog-editutilitydevice" ).dialog( "open" );
 		}
 
+		EditDistanceDevice = function(idx,name,switchtype)
+		{
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+		  $.devIdx=idx;
+		  $("#dialog-editdistancedevice #devicename").val(decodeURIComponent(name));
+		  $("#dialog-editdistancedevice #combometertype").val(switchtype);
+		  $("#dialog-editdistancedevice" ).i18n();
+		  $("#dialog-editdistancedevice" ).dialog( "open" );
+		}
+
 		EditMeterDevice = function(idx,name,switchtype)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
@@ -654,7 +667,7 @@ define(['app'], function (app) {
 							status=item.Data;
 							bigtext=item.Data;
 						}
-						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")||(item.SubType == "Pressure")||(item.SubType == "Sound Level")) {
+						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "Distance")||(item.SubType == "A/D")||(item.SubType == "Pressure")||(item.SubType == "Sound Level")) {
 							status=item.Data;
 							bigtext=item.Data;
 						}
@@ -900,7 +913,7 @@ define(['app'], function (app) {
 						else if (item.SubType == "Leaf Wetness") {
 						  xhtm+=item.Data;
 						}
-						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")||(item.SubType == "Pressure")||(item.SubType == "Sound Level")) {
+						else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "Distance")||(item.SubType == "A/D")||(item.SubType == "Pressure")||(item.SubType == "Sound Level")) {
 						  xhtm+=item.Data;
 						}
 						else if (item.Type == "Lux") {
@@ -956,6 +969,10 @@ define(['app'], function (app) {
 					}
 					else if (item.SubType == "Leaf Wetness") {
 					  xhtm+='leaf48.png" height="48" width="48"></td>\n';
+					  status=item.Data;
+					}
+					else if (item.SubType == "Distance") {
+					  xhtm+='visibility48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
 					else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")) {
@@ -1150,6 +1167,12 @@ define(['app'], function (app) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
+				  else if ((item.Type == "General")&&(item.SubType == "Distance")) {
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'DistanceGeneral\');" data-i18n="Log">Log</a> ';
+					if (permissions.hasPermission("Admin")) {
+						xhtm+='<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+					}
+				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Current")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'CurrentGeneral\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
@@ -1332,9 +1355,57 @@ define(['app'], function (app) {
 					$( this ).dialog( "close" );
 				  }
 			});
+
+			var dialog_editdistancedevice_buttons = {};
+			dialog_editdistancedevice_buttons[$.i18n("Update")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-editdistancedevice #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) + '&switchtype=' + $("#dialog-editdistancedevice #combometertype").val() + '&used=true',
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowUtilities();
+					 }
+				  });
+				  
+			  }
+			};
+			dialog_editdistancedevice_buttons[$.i18n("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) + '&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editdistancedevice_buttons[$.i18n("Cancel")]=function() {
+				  $( this ).dialog( "close" );
+			};
 			
+			$( "#dialog-editdistancedevice" ).dialog({
+				  autoOpen: false,
+				  width: 'auto',
+				  height: 'auto',
+				  modal: true,
+				  resizable: false,
+				  title: $.i18n("Edit Device"),
+				  buttons: dialog_editdistancedevice_buttons,
+				  close: function() {
+					$( this ).dialog( "close" );
+				  }
+			}).i18n();
+
 			var dialog_editmeterdevice_buttons = {};
-			
 			dialog_editmeterdevice_buttons[$.i18n("Update")]=function() {
 				  var bValid = true;
 				  bValid = bValid && checkLength( $("#dialog-editmeterdevice #devicename"), 2, 100 );

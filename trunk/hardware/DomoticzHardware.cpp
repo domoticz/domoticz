@@ -180,6 +180,15 @@ void CDomoticzHardwareBase::SendBaroSensor(const int NodeID, const int ChildID, 
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 }
 
+void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance)
+{
+	_tGeneralDevice gdevice;
+	gdevice.intval1 = (NodeID << 8) | ChildID;
+	gdevice.subtype = sTypeDistance;
+	gdevice.floatval1 = distance;
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+}
+
 void CDomoticzHardwareBase::SendTempHumSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity)
 {
 	RBUF tsen;

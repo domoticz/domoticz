@@ -405,11 +405,11 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		break;
 	case V_DIMMER:
 		//	Dimmer value. 0 - 100 %
-	{
-		int level = pSensor->intvalue;
-		UpdateSwitch(pSensor->nodeID, pSensor->childID, (level != 0), level, "Light");
-	}
-	break;
+		{
+			int level = pSensor->intvalue;
+			UpdateSwitch(pSensor->nodeID, pSensor->childID, (level != 0), level, "Light");
+		}
+		break;
 	case V_LIGHT_LEVEL:
 		{
 			_tLightMeter lmeter;
@@ -465,6 +465,9 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 				SendKwhMeter(pSensor->nodeID, pSensor->childID, 0, pSensor->floatValue, "Meter");
 			}
 		}
+		break;
+	case V_DISTANCE:
+		SendDistanceSensor(pSensor->nodeID, pSensor->childID, 0, pSensor->floatValue);
 		break;
 	case V_FLOW:
 		//Flow of water in meter
@@ -587,6 +590,30 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
 		m_sql.query(szQuery.str());
 	}
+}
+
+bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue)
+{
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+	result = m_sql.query(szQuery.str()); //-V519
+	if (result.size() < 1)
+		return false;
+	int nvalue = atoi(result[0][1].c_str());
+	if (sub_type == V_LIGHT)
+	{
+		sSwitchValue = (nvalue == light2_sOn) ? "1" : "0";
+		return true;
+	}
+
+	int slevel = atoi(result[0][2].c_str());
+	std::stringstream sstr;
+	sstr << int(slevel * 100 / 15);
+	sSwitchValue = sstr.str();
+	return true;
 }
 
 void MySensorsBase::SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload)
@@ -810,6 +837,10 @@ void MySensorsBase::ParseLine()
 			pSensor->floatValue = (float)atof(payload.c_str());
 			bHaveValue = true;
 			break;
+		case V_DISTANCE:
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
+			break;
 		case V_FLOW:
 			//Flow of water in meter
 			while (1==0);
@@ -890,6 +921,10 @@ void MySensorsBase::ParseLine()
 			sub_type = V_PRESSURE;
 			bDoAdd = true;
 			break;
+//		case S_LIGHT:
+	//		sub_type = V_LIGHT;
+		//	bDoAdd = true;
+			//break;
 		}
 		if (!bDoAdd)
 			return;
@@ -923,10 +958,13 @@ void MySensorsBase::ParseLine()
 	else if (message_type == MT_Req)
 	{
 		//Request a variable
+		std::string tmpstr;
 		switch (sub_type)
 		{
 		case V_LIGHT:
-			SendCommand(node_id, child_sensor_id, message_type, sub_type, "1");
+		case V_DIMMER:
+			if (GetSwitchValue(node_id, child_sensor_id, sub_type, tmpstr))
+				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;
 		case V_VAR1:
 		case V_VAR2:

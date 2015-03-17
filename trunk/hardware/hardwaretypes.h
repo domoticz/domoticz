@@ -54,6 +54,7 @@
 #define sTypeSoundLevel				0x18
 #define sTypeSwitch					0x19
 #define sTypeBaro					0x1A
+#define sTypeDistance				0x1B
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4

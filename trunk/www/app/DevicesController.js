@@ -301,6 +301,9 @@ define(['app'], function (app) {
 				  else if (item.SubType == "Visibility") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'Visibility\');">';
 				  }
+				  else if (item.SubType == "Distance") {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.i18n('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'Distance\');">';
+				  }
 				  else {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';
 				  }

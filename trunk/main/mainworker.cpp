@@ -8069,7 +8069,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan) || (subType == sTypeTextStatus) || (subType == sTypeSoundLevel) || (subType == sTypeBaro))
+	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan) || (subType == sTypeTextStatus) || (subType == sTypeSoundLevel) || (subType == sTypeBaro) || (subType == sTypeDistance))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
@@ -8085,7 +8085,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 
 	unsigned long long DevRowIdx=0;
 
-	if (subType==sTypeVisibility)
+	if (subType == sTypeVisibility)
 	{
 		sprintf(szTmp,"%.1f",pMeter->floatval1);
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
@@ -8097,11 +8097,27 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		if (meterType==1)
 		{
 			//miles
-			fValue*=0.6214f;//convert to miles
+			fValue*=0.6214f;
 		}
 		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, fValue);
 	}
-	else if (subType==sTypeSolarRadiation)
+	else if (subType == sTypeDistance)
+	{
+		sprintf(szTmp, "%.1f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
+		int meterType = 0;
+		m_sql.GetMeterType(HwdID, ID.c_str(), Unit, devType, subType, meterType);
+		float fValue = pMeter->floatval1;
+		if (meterType == 1)
+		{
+			//inches
+			fValue *= 0.393701f;
+		}
+		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, fValue);
+	}
+	else if (subType == sTypeSolarRadiation)
 	{
 		sprintf(szTmp,"%.1f",pMeter->floatval1);
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
@@ -8202,6 +8218,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		case sTypeVisibility:
 			WriteMessage("subtype       = Visibility");
 			sprintf(szTmp,"Visibility = %.1f km", pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeDistance:
+			WriteMessage("subtype       = Distance");
+			sprintf(szTmp, "Distance = %.1f cm", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeSolarRadiation:
