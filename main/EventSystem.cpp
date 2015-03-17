@@ -452,6 +452,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
+				if (sitem.subType == sTypeDistance)
+				{
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					isUtility = true;
+				}
 				else if (sitem.subType == sTypeSolarRadiation)
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));

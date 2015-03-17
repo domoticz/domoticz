@@ -5689,6 +5689,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
 					ii++;
 				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
 				if ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))
 				{
 					root["result"][ii]["val"] = NTYPE_USAGE;
@@ -8481,6 +8488,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) &&
 								(dType != pTypeCURRENT) &&
 								(dType != pTypeCURRENTENERGY) &&
 								(dType != pTypeENERGY) &&
@@ -9888,6 +9896,24 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "visibility";
 							root["result"][ii]["SwitchTypeVal"] = metertype;
 						}
+						else if (dSubType == sTypeDistance)
+						{
+							float vis = static_cast<float>(atof(sValue.c_str()));
+							if (metertype == 0)
+							{
+								//km
+								sprintf(szTmp, "%.1f cm", vis);
+							}
+							else
+							{
+								//miles
+								sprintf(szTmp, "%.1f in", vis*0.6214f);
+							}
+							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["TypeImg"] = "visibility";
+							root["result"][ii]["SwitchTypeVal"] = metertype;
+						}
 						else if (dSubType == sTypeSolarRadiation)
 						{
 							float radiation = static_cast<float>(atof(sValue.c_str()));
@@ -10690,6 +10716,16 @@ namespace http {
 			case 11:
 				//Barometer (hPa)
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeBaro, 12, 255, 0, "1021.34;0", devname);
+				bCreated = true;
+				break;
+			case 12:
+				//Visibility (km)
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeVisibility, 12, 255, 0, "10.3", devname);
+				bCreated = true;
+				break;
+			case 13:
+				//Distance (cm)
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeDistance, 12, 255, 0, "123.4", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP:
@@ -13561,6 +13597,7 @@ namespace http {
 						(dType == pTypeCURRENTENERGY) ||
 						(dType == pTypeAirQuality) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness)) ||
@@ -13889,6 +13926,7 @@ namespace http {
 					}
 					else if (
 						((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
@@ -15891,6 +15929,7 @@ namespace http {
 					}
 					else if (
 						((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||
@@ -16434,6 +16473,7 @@ namespace http {
 					}
 					else if (
 						((dType == pTypeGeneral) && (dSubType == sTypeVisibility)) ||
+						((dType == pTypeGeneral) && (dSubType == sTypeDistance)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeVoltage)) ||
 						((dType == pTypeGeneral) && (dSubType == sTypeCurrent)) ||

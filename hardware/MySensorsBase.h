@@ -170,6 +170,8 @@ private:
 	void SendTempHumBaroSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity, const float pressure, int forecast);
 	void SendKwhMeter(const unsigned char NodeID, const int ChildID, const double musage, const double mtotal, const std::string &defaultname);
 
+	bool GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
+
 	void LoadDevicesFromDatabase();
 	void Add2Database(const int nodeID, const std::string &SketchName, const std::string &SketchVersion);
 	void DatabaseUpdateSketchName(const int nodeID, const std::string &SketchName);

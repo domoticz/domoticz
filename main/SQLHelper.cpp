@@ -4291,6 +4291,7 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeVoltage
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeCurrent
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeSoundLevel
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeDistance
 		"(Type=%d AND SubType=%d)"	  //pTypeGeneral,sTypePressure
 		")",
 		pTypeRFXMeter,
@@ -4312,6 +4313,7 @@ void CSQLHelper::UpdateMeter()
 		pTypeGeneral, sTypeVoltage,
 		pTypeGeneral, sTypeCurrent,
 		pTypeGeneral, sTypeSoundLevel,
+		pTypeGeneral, sTypeDistance,
 		pTypeGeneral, sTypePressure
 		);
 	result=query(szTmp);
@@ -4407,7 +4409,13 @@ void CSQLHelper::UpdateMeter()
 				sprintf(szTmp,"%d",int(fValue));
 				sValue=szTmp;
 			}
-			else if ((dType==pTypeGeneral)&&(dSubType==sTypeSolarRadiation))
+			else if ((dType == pTypeGeneral) && (dSubType == sTypeDistance))
+			{
+				double fValue = atof(sValue.c_str())*10.0f;
+				sprintf(szTmp, "%d", int(fValue));
+				sValue = szTmp;
+			}
+			else if ((dType == pTypeGeneral) && (dSubType == sTypeSolarRadiation))
 			{
 				double fValue=atof(sValue.c_str())*10.0f;
 				sprintf(szTmp,"%d",int(fValue));
@@ -5071,7 +5079,8 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				(devType!=pTypeAirQuality)&&
 				(devType!=pTypeRFXSensor)&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
-				(!((devType==pTypeGeneral)&&(subType==sTypeSolarRadiation)))&&
+				(!((devType == pTypeGeneral) && (subType == sTypeDistance))) &&
+				(!((devType == pTypeGeneral) && (subType == sTypeSolarRadiation))) &&
 				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
 				(!((devType==pTypeGeneral)&&(subType==sTypeLeafWetness)))&&
 				(!((devType == pTypeGeneral) && (subType == sTypeVoltage))) &&
@@ -5138,8 +5147,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			if (
 				(devType!=pTypeAirQuality)&&
 				(devType!=pTypeRFXSensor)&&
-				((devType!=pTypeGeneral)&&(subType!=sTypeVisibility))&&
-				((devType!=pTypeGeneral)&&(subType!=sTypeSolarRadiation))&&
+				((devType != pTypeGeneral) && (subType != sTypeVisibility)) &&
+				((devType != pTypeGeneral) && (subType != sTypeDistance)) &&
+				((devType != pTypeGeneral) && (subType != sTypeSolarRadiation)) &&
 				((devType != pTypeGeneral) && (subType != sTypeVoltage)) &&
 				((devType != pTypeGeneral) && (subType != sTypeCurrent)) &&
 				((devType != pTypeGeneral) && (subType != sTypePressure)) &&

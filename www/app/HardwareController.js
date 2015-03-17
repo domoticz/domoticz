@@ -2015,6 +2015,7 @@ define(['app'], function (app) {
 						"Username": item.Username,
 						"Password": item.Password,
 						"Enabled": item.Enabled,
+						"Name": item.Name,
 						"Mode1": item.Mode1,
 						"Mode2": item.Mode2,
 						"Mode3": item.Mode3,
@@ -2022,13 +2023,16 @@ define(['app'], function (app) {
 						"Mode5": item.Mode5,
 						"Type" : HwTypeStrOrg,
 						"IntPort": item.Port,
+						"Address": item.Address,
+						"Port": SerialName,
 						"DataTimeout": item.DataTimeout,
-						"0": item.Name,
-						"1": enabledstr,
-						"2": HwTypeStr,
-						"3": item.Address,
-						"4": SerialName,
-						"5": sDataTimeout
+						"0": item.idx,
+						"1": item.Name,
+						"2": enabledstr,
+						"3": HwTypeStr,
+						"4": item.Address,
+						"5": SerialName,
+						"6": sDataTimeout
 					} );
 				});
 			  }
@@ -2056,7 +2060,7 @@ define(['app'], function (app) {
 						$.myglobals.SelectedTimerIdx=idx;
 						$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + ")");
 						$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
-						$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["0"]);
+						$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["Name"]);
 						$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));
 
 						$('#hardwarecontent #hardwareparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
@@ -2071,12 +2075,12 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
 						}
 						else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
-							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
-							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 						}
 						else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
-							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
-							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
 						else if ((data["Type"].indexOf("Underground") >= 0)||(data["Type"].indexOf("Forecast") >= 0)) {
@@ -2087,8 +2091,8 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
 						}
 						else if (data["Type"].indexOf("Philips Hue") >= 0) {
-							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["3"]);
-							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["4"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
 						}
 						if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)||(data["Type"].indexOf("ETH8020") >= 0)) {
