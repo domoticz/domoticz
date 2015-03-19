@@ -3,7 +3,7 @@ define(['app'], function (app) {
 
 		DeleteHardware = function(idx)
 		{
-			bootbox.confirm($.i18n("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deletehardware&idx=" + idx,
@@ -14,7 +14,7 @@ define(['app'], function (app) {
 						 },
 						 error: function(){
 								HideNotify();
-								ShowNotify($.i18n('Problem deleting hardware!'), 2500, true);
+								ShowNotify($.t('Problem deleting hardware!'), 2500, true);
 						 }     
 					});
 				}
@@ -26,13 +26,13 @@ define(['app'], function (app) {
 			var name=$("#hardwarecontent #hardwareparamstable #hardwarename").val();
 			if (name=="")
 			{
-				ShowNotify($.i18n('Please enter a Name!'), 2500, true);
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
 				return;
 			}
 
 			var hardwaretype=$("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
 			if (typeof hardwaretype == 'undefined') {
-				ShowNotify($.i18n('Unknown device selected!'), 2500, true);
+				ShowNotify($.t('Unknown device selected!'), 2500, true);
 				return;
 			}
 			
@@ -56,7 +56,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -65,7 +65,7 @@ define(['app'], function (app) {
 				var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
 				if (typeof serialport == 'undefined')
 				{
-					ShowNotify($.i18n('No serial port selected!'), 2500, true);
+					ShowNotify($.t('No serial port selected!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -82,7 +82,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -91,18 +91,18 @@ define(['app'], function (app) {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
 				{
-					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port=$("#hardwarecontent #divremote #tcpport").val();
 				if (port=="")
 				{
-					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if(!intRegex.test(port)) {
-					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}		
 				$.ajax({
@@ -120,7 +120,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -129,18 +129,18 @@ define(['app'], function (app) {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
 				{
-					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port=$("#hardwarecontent #divremote #tcpport").val();
 				if (port=="")
 				{
-					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if(!intRegex.test(port)) {
-					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}
 				var password=$("#hardwarecontent #divlogin #password").val();		
@@ -160,7 +160,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -169,18 +169,18 @@ define(['app'], function (app) {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
 				{
-					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port=$("#hardwarecontent #divremote #tcpport").val();
 				if (port=="")
 				{
-					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if(!intRegex.test(port)) {
-					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}		
 				var username=$("#hardwarecontent #divlogin #username").val();
@@ -202,7 +202,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -211,23 +211,23 @@ define(['app'], function (app) {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
 				{
-					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port=$("#hardwarecontent #divremote #tcpport").val();
 				if (port=="")
 				{
-					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if(!intRegex.test(port)) {
-					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}		
 				var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
 				if (username == "") {
-					ShowNotify($.i18n('Please enter a username!'), 2500, true);
+					ShowNotify($.t('Please enter a username!'), 2500, true);
 					return;
 				}
 				
@@ -247,7 +247,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -256,13 +256,13 @@ define(['app'], function (app) {
 				var apikey=$("#hardwarecontent #divunderground #apikey").val();
 				if (apikey=="")
 				{
-					ShowNotify($.i18n('Please enter an API Key!'), 2500, true);
+					ShowNotify($.t('Please enter an API Key!'), 2500, true);
 					return;
 				}
 				var location=$("#hardwarecontent #divunderground #location").val();
 				if (location=="")
 				{
-					ShowNotify($.i18n('Please enter an Location!'), 2500, true);
+					ShowNotify($.t('Please enter an Location!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -281,7 +281,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -290,7 +290,7 @@ define(['app'], function (app) {
 				var configlocation=$("#hardwarecontent #divlocation #location").val();
 				if (configlocation=="")
 				{
-					ShowNotify($.i18n('Please enter an Location!'), 2500, true);
+					ShowNotify($.t('Please enter an Location!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -308,7 +308,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -331,7 +331,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					},
 					error: function () {
-						ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
 				});
 			}
@@ -342,13 +342,13 @@ define(['app'], function (app) {
 			var name=$("#hardwarecontent #hardwareparamstable #hardwarename").val();
 			if (name=="")
 			{
-				ShowNotify($.i18n('Please enter a Name!'), 2500, true);
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
 				return false;
 			}
 
 			var hardwaretype=$("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
 			if (typeof hardwaretype == 'undefined') {
-				ShowNotify($.i18n('Unknown device selected!'), 2500, true);
+				ShowNotify($.t('Unknown device selected!'), 2500, true);
 				return;
 			}
 			
@@ -357,7 +357,7 @@ define(['app'], function (app) {
 			
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 			if (text.indexOf("Motherboard") >= 0) {
-				ShowNotify($.i18n('This device is maintained by the system. Please do not add it manually.'), 3000, true);
+				ShowNotify($.t('This device is maintained by the system. Please do not add it manually.'), 3000, true);
 				return;
 			}
 
@@ -371,7 +371,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -380,7 +380,7 @@ define(['app'], function (app) {
 				var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
 				if (typeof serialport == 'undefined')
 				{
-					ShowNotify($.i18n('No serial port selected!'), 2500, true);
+					ShowNotify($.t('No serial port selected!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -391,7 +391,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -400,18 +400,18 @@ define(['app'], function (app) {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
 				{
-					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port=$("#hardwarecontent #divremote #tcpport").val();
 				if (port=="")
 				{
-					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if(!intRegex.test(port)) {
-					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}		
 				$.ajax({
@@ -422,7 +422,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -431,18 +431,18 @@ define(['app'], function (app) {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
 				{
-					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port=$("#hardwarecontent #divremote #tcpport").val();
 				if (port=="")
 				{
-					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if(!intRegex.test(port)) {
-					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}
 				var password=$("#hardwarecontent #divlogin #password").val();
@@ -454,7 +454,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -463,24 +463,24 @@ define(['app'], function (app) {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
 				{
-					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port=$("#hardwarecontent #divremote #tcpport").val();
 				if (port=="")
 				{
-					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if(!intRegex.test(port)) {
-					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}		
 				var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
 
 				if (username == "") {
-					ShowNotify($.i18n('Please enter a username!'), 2500, true);
+					ShowNotify($.t('Please enter a username!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -491,7 +491,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -500,30 +500,30 @@ define(['app'], function (app) {
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
 				{
-					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port=$("#hardwarecontent #divremote #tcpport").val();
 				if (port=="")
 				{
-					ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
 				}
 				var intRegex = /^\d+$/;
 				if(!intRegex.test(port)) {
-					ShowNotify($.i18n('Please enter an Valid Port!'), 2500, true);
+					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}		
 				var username=$("#hardwarecontent #divlogin #username").val();
 				var password = $("#hardwarecontent #divlogin #password").val();
 
 				if ((text.indexOf("Harmony") >= 0) && (username == "")) {
-					ShowNotify($.i18n('Please enter a username!'), 2500, true);
+					ShowNotify($.t('Please enter a username!'), 2500, true);
 					return;
 				}
 
 				if ((text.indexOf("Harmony") >= 0) && (password == "")) {
-					ShowNotify($.i18n('Please enter a password!'), 2500, true);
+					ShowNotify($.t('Please enter a password!'), 2500, true);
 					return;
 				}
 				
@@ -535,7 +535,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -544,13 +544,13 @@ define(['app'], function (app) {
 				var apikey=$("#hardwarecontent #divunderground #apikey").val();
 				if (apikey=="")
 				{
-					ShowNotify($.i18n('Please enter an API Key!'), 2500, true);
+					ShowNotify($.t('Please enter an API Key!'), 2500, true);
 					return;
 				}
 				var location=$("#hardwarecontent #divunderground #location").val();
 				if (location=="")
 				{
-					ShowNotify($.i18n('Please enter an Location!'), 2500, true);
+					ShowNotify($.t('Please enter an Location!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -561,7 +561,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -570,7 +570,7 @@ define(['app'], function (app) {
 				var configlocation=$("#hardwarecontent #divlocation #location").val();
 				if (configlocation=="")
 				{
-					ShowNotify($.i18n('Please enter an Location!'), 2500, true);
+					ShowNotify($.t('Please enter an Location!'), 2500, true);
 					return;
 				}
 				$.ajax({
@@ -586,7 +586,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating hardware!'), 2500, true);
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -608,7 +608,7 @@ define(['app'], function (app) {
 						RefreshHardwareTable();
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem adding hardware!'), 2500, true);
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					 }     
 				});
 			}
@@ -714,13 +714,13 @@ define(['app'], function (app) {
 			var name=$("#hardwarecontent #nodeparamstable #nodename").val();
 			if (name=="")
 			{
-				ShowNotify($.i18n('Please enter a Name!'), 2500, true);
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
 				return;
 			}
 			var mac=$("#hardwarecontent #nodeparamstable #nodemac").val();
 			if (mac=="")
 			{
-				ShowNotify($.i18n('Please enter a MAC Address!'), 2500, true);
+				ShowNotify($.t('Please enter a MAC Address!'), 2500, true);
 				return;
 			}
 
@@ -735,7 +735,7 @@ define(['app'], function (app) {
 					RefreshWOLNodeTable();
 				 },
 				 error: function(){
-					ShowNotify($.i18n('Problem Adding Node!'), 2500, true);
+					ShowNotify($.t('Problem Adding Node!'), 2500, true);
 				 }     
 			});
 		}
@@ -745,7 +745,7 @@ define(['app'], function (app) {
 			if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
 				return;
 			}
-			bootbox.confirm($.i18n("Are you sure to remove this Node?"), function(result) {
+			bootbox.confirm($.t("Are you sure to remove this Node?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=wolremovenode" +
@@ -757,7 +757,7 @@ define(['app'], function (app) {
 							RefreshWOLNodeTable();
 						 },
 						 error: function(){
-							ShowNotify($.i18n('Problem Deleting Node!'), 2500, true);
+							ShowNotify($.t('Problem Deleting Node!'), 2500, true);
 						 }     
 					});
 				}
@@ -766,7 +766,7 @@ define(['app'], function (app) {
 
 		WOLClearNodes = function()
 		{
-			bootbox.confirm($.i18n("Are you sure to delete ALL Nodes?\n\nThis action can not be undone!"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete ALL Nodes?\n\nThis action can not be undone!"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=wolclearnodes" +
@@ -790,13 +790,13 @@ define(['app'], function (app) {
 			var name=$("#hardwarecontent #nodeparamstable #nodename").val();
 			if (name=="")
 			{
-				ShowNotify($.i18n('Please enter a Name!'), 2500, true);
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
 				return;
 			}
 			var mac=$("#hardwarecontent #nodeparamstable #nodemac").val();
 			if (mac=="")
 			{
-				ShowNotify($.i18n('Please enter a MAC Address!'), 2500, true);
+				ShowNotify($.t('Please enter a MAC Address!'), 2500, true);
 				return;
 			}
 
@@ -812,7 +812,7 @@ define(['app'], function (app) {
 					RefreshWOLNodeTable();
 				 },
 				 error: function(){
-					ShowNotify($.i18n('Problem Updating Node!'), 2500, true);
+					ShowNotify($.t('Problem Updating Node!'), 2500, true);
 				 }     
 			});
 		}
@@ -923,7 +923,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent #idx').val(idx);
 			$('#hardwarecontent #btnimportolddata').click(function (e) {
 				e.preventDefault();
-				bootbox.alert($.i18n('Importing old data, this could take a while!<br>You should automaticly return on the Dashboard'));
+				bootbox.alert($.t('Importing old data, this could take a while!<br>You should automaticly return on the Dashboard'));
 				$.post("sbfspotimportolddata.webem", $("#hardwarecontent #sbfspot").serialize(), function(data) {
 					SwitchLayout('Dashboard');
 				});
@@ -1026,7 +1026,7 @@ define(['app'], function (app) {
 			if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
 				return;
 			}
-			bootbox.confirm($.i18n("Are you sure to remove this Node?"), function(result) {
+			bootbox.confirm($.t("Are you sure to remove this Node?"), function(result) {
 				if (result==true) {
 				  $.ajax({
 					url: "json.htm?type=command&param=deletezwavenode" +
@@ -1034,7 +1034,7 @@ define(['app'], function (app) {
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
-						bootbox.alert($.i18n('Node marked for Delete. This could take some time!'));
+						bootbox.alert($.t('Node marked for Delete. This could take some time!'));
 						RefreshOpenZWaveNodeTable();
 					 }
 				  });
@@ -1050,7 +1050,7 @@ define(['app'], function (app) {
 			var name=$("#hardwarecontent #nodeparamstable #nodename").val();
 			if (name=="")
 			{
-				ShowNotify($.i18n('Please enter a Name!'), 2500, true);
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
 				return;
 			}
 
@@ -1066,7 +1066,7 @@ define(['app'], function (app) {
 					RefreshOpenZWaveNodeTable();
 				 },
 				 error: function(){
-					ShowNotify($.i18n('Problem updating Node!'), 2500, true);
+					ShowNotify($.t('Problem updating Node!'), 2500, true);
 				 }     
 			});
 		}
@@ -1079,11 +1079,11 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Configuration requested from Node. If the Node is asleep, this could take a while!'));
+					bootbox.alert($.t('Configuration requested from Node. If the Node is asleep, this could take a while!'));
 					RefreshOpenZWaveNodeTable();
 				 },
 				 error: function(){
-						ShowNotify($.i18n('Problem requesting Node Configuration!'), 2500, true);
+						ShowNotify($.t('Problem requesting Node Configuration!'), 2500, true);
 				 }     
 			});
 		}
@@ -1124,10 +1124,10 @@ define(['app'], function (app) {
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
-						bootbox.alert($.i18n('Configuration send to node. If the node is asleep, this could take a while!'));
+						bootbox.alert($.t('Configuration send to node. If the node is asleep, this could take a while!'));
 					 },
 					 error: function(){
-							ShowNotify($.i18n('Problem updating Node Configuration!'), 2500, true);
+							ShowNotify($.t('Problem updating Node Configuration!'), 2500, true);
 					 }     
 				});
 			}
@@ -1140,7 +1140,7 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Inclusion mode Started. You have 20 seconds to include the device...!'));
+					bootbox.alert($.t('Inclusion mode Started. You have 20 seconds to include the device...!'));
 				 }
 			});
 		}
@@ -1151,7 +1151,7 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Exclusion mode Started. You have 20 seconds to exclude the device...!'));
+					bootbox.alert($.t('Exclusion mode Started. You have 20 seconds to exclude the device...!'));
 				 }
 			});
 		}
@@ -1163,20 +1163,20 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Soft resetting controller device...!'));
+					bootbox.alert($.t('Soft resetting controller device...!'));
 				 }
 			});
 		}
 		ZWaveHardResetNode = function()
 		{
-			bootbox.confirm($.i18n("Are you sure you want to hard reset the controller?\n(All associated nodes will be removed)"), function(result) {
+			bootbox.confirm($.t("Are you sure you want to hard reset the controller?\n(All associated nodes will be removed)"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=zwavehardreset&idx=" + $.devIdx,
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
-							bootbox.alert($.i18n('Hard resetting controller device...!'));
+							bootbox.alert($.t('Hard resetting controller device...!'));
 						 }
 					});
 				}
@@ -1192,7 +1192,7 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Initiating network heal...!'));
+					bootbox.alert($.t('Initiating network heal...!'));
 				 }
 			});
 		}
@@ -1204,7 +1204,7 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Initiating node heal...!'));
+					bootbox.alert($.t('Initiating node heal...!'));
 				 }
 			});
 		} 
@@ -1217,7 +1217,7 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Initiating Receive Configuration...!'));
+					bootbox.alert($.t('Initiating Receive Configuration...!'));
 				 }
 			});
 		}
@@ -1229,21 +1229,21 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Initiating Send Configuration...!'));
+					bootbox.alert($.t('Initiating Send Configuration...!'));
 				 }
 			});
 		}
 
 		ZWaveTransferPrimaryRole = function()
 		{
-			bootbox.confirm($.i18n("Are you sure you want to transfer the primary role?"), function(result) {
+			bootbox.confirm($.t("Are you sure you want to transfer the primary role?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=zwavetransferprimaryrole&idx=" + $.devIdx,
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
-							bootbox.alert($.i18n('Initiating Transfer Primary Role...!'));
+							bootbox.alert($.t('Initiating Transfer Primary Role...!'));
 						 }
 					});
 				}
@@ -1258,13 +1258,12 @@ define(['app'], function (app) {
 				 dataType: 'json',
 				 success: function(data) {
 					if (data.status == 'OK') {
-						var topologywindow = '<center><span data-i18n="ZWave Network Information">ZWave Network Information</span></center><p><p><iframe src="../zwavetopology.html?hwid='+$.devIdx+'" name="topoframe" frameBorder="0" height="'+window.innerHeight*0.7+'" width="100%"/>';
 						noty({
-							text: topologywindow,
+							text: '<center>' + $.t('ZWave Network Information') + '</center><p><p><iframe src="../zwavetopology.html?hwid='+$.devIdx+'" name="topoframe" frameBorder="0" height="'+window.innerHeight*0.7+'" width="100%"/>',
 							type: 'alert',
 							modal: true,
 							buttons: [
-								{addClass: 'btn btn-primary', text: $.i18n("Close"), onClick: function($noty) 
+								{addClass: 'btn btn-primary', text: $.t("Close"), onClick: function($noty) 
 									{$noty.close();
 													
 									}
@@ -1272,7 +1271,7 @@ define(['app'], function (app) {
 						});
 					}
 					else {
-						ShowNotify($.i18n('Error communicating with zwave controller!'), 2500, true);
+						ShowNotify($.t('Error communicating with zwave controller!'), 2500, true);
 					}
 				 }
 			});
@@ -1318,7 +1317,7 @@ define(['app'], function (app) {
 						status="unknown";
 					}
 					var statusImg='<img src="images/' + status + '.png" />';
-					var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" class="lcursor" title="'+$.i18n("Heal node")+'" />';
+					var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" class="lcursor" title="'+$.t("Heal node")+'" />';
 					
 					var nodeStr = addLeadingZeros(item.NodeID,3) + " (0x" + addLeadingZeros(item.NodeID.toString(16),2) + ")";
 					var addId = oTable.fnAddData( {
@@ -1443,7 +1442,7 @@ define(['app'], function (app) {
 									if (item.units!="") {
 										szConfig+=' (' + item.units + ')';
 									}
-									szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
+									szConfig+=" (" + $.t("actual") + ": " + item.value + ")";
 								}
 								else {
 									szConfig+="<b>"+item.index+". "+item.label+":</b> ";
@@ -1451,7 +1450,7 @@ define(['app'], function (app) {
 									if (item.units!="") {
 										szConfig+=' (' + item.units + ')';
 									}
-									szConfig+=" (" + $.i18n("actual") + ": " + item.value + ")";
+									szConfig+=" (" + $.t("actual") + ": " + item.value + ")";
 								}
 								szConfig+="<br /><br />";
 								if (item.help!="") {
@@ -1480,14 +1479,14 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('User Code Enrollment started. You have 30 seconds to include the new key...!'));
+					bootbox.alert($.t('User Code Enrollment started. You have 30 seconds to include the new key...!'));
 				 }
 			});
 		}
 
 		RemoveUserCode = function(index)
 		{
-			bootbox.confirm($.i18n("Are you sure to delete this User Code?"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete this User Code?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=zwaveremoveusercode&idx=" + $.nodeIdx +"&codeindex=" + index,
@@ -1498,7 +1497,7 @@ define(['app'], function (app) {
 						 },
 						 error: function(){
 								HideNotify();
-								ShowNotify($.i18n('Problem deleting User Code!'), 2500, true);
+								ShowNotify($.t('Problem deleting User Code!'), 2500, true);
 						 }     
 					});
 				}
@@ -1697,9 +1696,9 @@ define(['app'], function (app) {
 		{
 			$.devIdx=idx;
 			if(devtype=="Relay")
-				ShowNotify($.i18n('Hold bind button on relay...'));
+				ShowNotify($.t('Hold bind button on relay...'));
 			else
-				ShowNotify($.i18n('Binding Domoticz outdoor temperature device to evohome controller...'));
+				ShowNotify($.t('Binding Domoticz outdoor temperature device to evohome controller...'));
 
 			setTimeout(function() {
 				var bNewDevice = false;
@@ -1726,15 +1725,15 @@ define(['app'], function (app) {
 					if ((bNewDevice == true) && (bIsUsed == false))
 					{
 						if(devtype=="Relay")
-							ShowNotify($.i18n('Relay bound, and can be found in the devices tab!'));
+							ShowNotify($.t('Relay bound, and can be found in the devices tab!'));
 						else
-							ShowNotify($.i18n('Domoticz outdoor temperature device has been bound to evohome controller'));
+							ShowNotify($.t('Domoticz outdoor temperature device has been bound to evohome controller'));
 					}
 					else {
 						if (bIsUsed == true)
-							ShowNotify($.i18n('Already used by') + ':<br>"' + Name +'"', 3500, true);
+							ShowNotify($.t('Already used by') + ':<br>"' + Name +'"', 3500, true);
 						else
-							ShowNotify($.i18n('Timeout...<br>Please try again!'), 2500, true);
+							ShowNotify($.t('Timeout...<br>Please try again!'), 2500, true);
 					}
 				}, 200);
 			}, 600);
@@ -1756,7 +1755,7 @@ define(['app'], function (app) {
 						  
 							var SensorType=$("#dialog-createevohomesensor #sensortype option:selected").val();
 							if (typeof SensorType == 'undefined') {
-								bootbox.alert($.i18n('No Sensor Type Selected!'));
+								bootbox.alert($.t('No Sensor Type Selected!'));
 								return ;
 							}
 							$.ajax({
@@ -1765,15 +1764,15 @@ define(['app'], function (app) {
 								 dataType: 'json',
 								 success: function(data) {
 									if (data.status == 'OK') {
-										ShowNotify($.i18n('Sensor Created, and can be found in the devices tab!'), 2500);
+										ShowNotify($.t('Sensor Created, and can be found in the devices tab!'), 2500);
 									}
 									else {
-										ShowNotify($.i18n('Problem creating Sensor!'), 2500, true);
+										ShowNotify($.t('Problem creating Sensor!'), 2500, true);
 									}
 								 },
 								 error: function(){
 										HideNotify();
-										ShowNotify($.i18n('Problem creating Sensor!'), 2500, true);
+										ShowNotify($.t('Problem creating Sensor!'), 2500, true);
 								 }     
 							});
 					  },
@@ -1806,7 +1805,7 @@ define(['app'], function (app) {
 						  
 							var SensorType=$("#dialog-createsensor #sensortype option:selected").val();
 							if (typeof SensorType == 'undefined') {
-								bootbox.alert($.i18n('No Sensor Type Selected!'));
+								bootbox.alert($.t('No Sensor Type Selected!'));
 								return ;
 							}
 							$.ajax({
@@ -1815,15 +1814,15 @@ define(['app'], function (app) {
 								 dataType: 'json',
 								 success: function(data) {
 									if (data.status == 'OK') {
-										ShowNotify($.i18n('Sensor Created, and can be found in the devices tab!'), 2500);
+										ShowNotify($.t('Sensor Created, and can be found in the devices tab!'), 2500);
 									}
 									else {
-										ShowNotify($.i18n('Problem creating Sensor!'), 2500, true);
+										ShowNotify($.t('Problem creating Sensor!'), 2500, true);
 									}
 								 },
 								 error: function(){
 										HideNotify();
-										ShowNotify($.i18n('Problem creating Sensor!'), 2500, true);
+										ShowNotify($.t('Problem creating Sensor!'), 2500, true);
 								 }     
 							});
 					  },
@@ -1907,20 +1906,20 @@ define(['app'], function (app) {
 						}
 					}
 
-					var enabledstr=$.i18n("No");
+					var enabledstr=$.t("No");
 					if (item.Enabled=="true") {
-						enabledstr=$.i18n("Yes");
+						enabledstr=$.t("Yes");
 					}
 					if (HwTypeStr.indexOf("RFXCOM") >= 0)
 					{
 						HwTypeStr+='<br>Firmware version: ' + item.Mode2;
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.i18n("Set Mode") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Limitless") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Set Mode") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenZWave") >= 0) {
 						HwTypeStr+='<br>Version: ' + item.version;
@@ -1930,27 +1929,27 @@ define(['app'], function (app) {
 							if (item.NodesQueried != true) {
 								lblStatus="label-important";
 							}
-							HwTypeStr+=' <span class="label ' + lblStatus + ' lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
+							HwTypeStr+=' <span class="label ' + lblStatus + ' lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
 						}
 					}
 					else if (HwTypeStr.indexOf("SBFSpot") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Wake-on-LAN") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.i18n("Setup") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Dummy") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.i18n("Create Virtual Sensors") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Evohome") >= 0) {
 						if(HwTypeStr.indexOf("script") >= 0)
-							HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">' + $.i18n("Create Devices") + '</span>';
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Devices") + '</span>';
 						else
 						{
 							HwTypeStr+=' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
@@ -1977,36 +1976,36 @@ define(['app'], function (app) {
 					
 					var sDataTimeout="";
 					if (item.DataTimeout==0) {
-						sDataTimeout=$.i18n("Disabled");
+						sDataTimeout=$.t("Disabled");
 					}
 					else if (item.DataTimeout<60) {
-						sDataTimeout=item.DataTimeout + " " + $.i18n("Seconds");
+						sDataTimeout=item.DataTimeout + " " + $.t("Seconds");
 					}
 					else if (item.DataTimeout<3600) {
 						var minutes=item.DataTimeout/60;
 						if (minutes==1) {
-							sDataTimeout=minutes + " " + $.i18n("Minute");
+							sDataTimeout=minutes + " " + $.t("Minute");
 						}
 						else {
-							sDataTimeout=minutes + " " + $.i18n("Minutes");
+							sDataTimeout=minutes + " " + $.t("Minutes");
 						}
 					}
 					else if (item.DataTimeout<=86400) {
 						var hours=item.DataTimeout/3600;
 						if (hours==1) {
-							sDataTimeout=hours + " " + $.i18n("Hour");
+							sDataTimeout=hours + " " + $.t("Hour");
 						}
 						else {
-							sDataTimeout=hours + " " + $.i18n("Hours");
+							sDataTimeout=hours + " " + $.t("Hours");
 						}
 					}
 					else {
 						var days=item.DataTimeout/86400;
 						if (days==1) {
-							sDataTimeout=days + " " + $.i18n("Day");
+							sDataTimeout=days + " " + $.t("Day");
 						}
 						else {
-							sDataTimeout=days + " " + $.i18n("Days");
+							sDataTimeout=days + " " + $.t("Days");
 						}
 					}
 							
@@ -2111,13 +2110,13 @@ define(['app'], function (app) {
 			var address=$("#hardwarecontent #divremote #tcpaddress").val();
 			if (address=="")
 			{
-				ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+				ShowNotify($.t('Please enter an Address!'), 2500, true);
 				return;
 			}
 			var port=$("#hardwarecontent #divremote #tcpport").val();
 			if (port=="")
 			{
-				ShowNotify($.i18n('Please enter an Port!'), 2500, true);
+				ShowNotify($.t('Please enter an Port!'), 2500, true);
 				return;
 			}
 			var username=$("#hardwarecontent #hardwareparamsphilipshue #username").val();
@@ -2134,11 +2133,11 @@ define(['app'], function (app) {
 						return;
 					}
 					$("#hardwarecontent #hardwareparamsphilipshue #username").val(data.username)
-					ShowNotify($.i18n('Registration successful!'),2500);
+					ShowNotify($.t('Registration successful!'),2500);
 				 },
 				 error: function(){
 						HideNotify();
-						ShowNotify($.i18n('Problem registrating with the Philips Hue bridge!'), 2500, true);
+						ShowNotify($.t('Problem registrating with the Philips Hue bridge!'), 2500, true);
 				 }     
 			});
 		}

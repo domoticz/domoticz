@@ -5,7 +5,7 @@ define(['app'], function (app) {
 		{
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 
@@ -76,7 +76,7 @@ define(['app'], function (app) {
 
 		AddWeatherDevice = function()
 		{
-		  bootbox.alert($.i18n('Please use the devices tab for this.'));
+		  bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
 		RefreshWeathers = function()
@@ -125,7 +125,7 @@ define(['app'], function (app) {
 									img='<img src="images/baro48.png" height="48" width="48">';
 									bigtext=item.Barometer + ' hPa';
 									if (typeof item.ForecastStr != 'undefined') {
-										status=item.Barometer + ' hPa, ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
+										status=item.Barometer + ' hPa, ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
 									}
 									else
 									{
@@ -155,7 +155,7 @@ define(['app'], function (app) {
 									status=item.UVI + ' UVI';
 									bigtext=item.UVI + ' UVI';
 									if (typeof item.Temp!= 'undefined') {
-										status+=', ' + $.i18n('Temp') + ': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign;
+										status+=', ' + $.t('Temp') + ': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign;
 									}
 								}
 								if (typeof item.Radiation != 'undefined') {
@@ -167,10 +167,10 @@ define(['app'], function (app) {
 									img='<img src="images/Wind' + item.DirectionStr + '.png" height="48" width="48">';
 									status=item.Direction + ' ' + item.DirectionStr;
 									if (typeof item.Speed != 'undefined') {
-										status+=', ' + $.i18n('Speed') +': ' + item.Speed + ' ' + $.myglobals.windsign;
+										status+=', ' + $.t('Speed') +': ' + item.Speed + ' ' + $.myglobals.windsign;
 									}
 									if (typeof item.Gust != 'undefined') {
-										status+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+										status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 									status+='<br>\n';
 									bigtext=item.DirectionStr;
@@ -181,12 +181,12 @@ define(['app'], function (app) {
 										bigtext+=  ' / ' + item.Gust + ' ' + $.myglobals.windsign;
 									}
 									if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
-										status+=$.i18n('Temp') + ': ' + item.Temp + '\u00B0 ' +  $.myglobals.tempsign + ', ';
-										status+=$.i18n('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+										status+=$.t('Temp') + ': ' + item.Temp + '\u00B0 ' +  $.myglobals.tempsign + ', ';
+										status+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
 									}
 									else {
 										if (typeof item.Chill != 'undefined') {
-											status+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+											status+=$.t('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
 										}
 									}
 								}
@@ -359,7 +359,7 @@ define(['app'], function (app) {
 								xhtm+='baro48.png" height="48" width="48"></td>\n' +
 									  '\t      <td id="status">' + item.Barometer + ' hPa';
 								if (typeof item.ForecastStr != 'undefined') {
-									xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
+									xhtm+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
 								}
 								if (typeof item.Altitude != 'undefined') {
 									xhtm+=', Altitude: ' + item.Altitude + ' meter';
@@ -385,7 +385,7 @@ define(['app'], function (app) {
 								xhtm+='uv48.png" height="48" width="48"></td>\n' +
 								'\t      <td id="status">' + item.UVI + ' UVI';
 								if (typeof item.Temp!= 'undefined') {
-									xhtm+=', ' + $.i18n('Temp') +': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign;
+									xhtm+=', ' + $.t('Temp') +': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign;
 								}
 							}
 							else if (typeof item.Radiation != 'undefined') {
@@ -398,19 +398,19 @@ define(['app'], function (app) {
 								xhtm+='Wind' + item.DirectionStr + '.png" height="48" width="48"></td>\n' +
 								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
 								if (typeof item.Speed != 'undefined') {
-									xhtm+=', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 								}
 								if (typeof item.Gust != 'undefined') {
-									xhtm+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 								xhtm+='<br>\n';
 								if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
-									xhtm+=$.i18n('Temp') +': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign + ', ';
-									xhtm+=$.i18n('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+									xhtm+=$.t('Temp') +': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign + ', ';
+									xhtm+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
 								}
 								else  {
 									if (typeof item.Chill != 'undefined') {
-										xhtm+=$.i18n('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+										xhtm+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
 									}
 								}
 							}
@@ -420,11 +420,11 @@ define(['app'], function (app) {
 									'\t      <td>';
 				  if (item.Favorite == 0) {
 					xhtm+=      
-						  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=      
-						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 
 				  if (typeof item.Barometer != 'undefined') {
@@ -486,7 +486,7 @@ define(['app'], function (app) {
 		  }
 		  if (htmlcontent == '')
 		  {
-			htmlcontent='<h2>' + $.i18n('No Weather sensors found or added in the system...') + '</h2>';
+			htmlcontent='<h2>' + $.t('No Weather sensors found or added in the system...') + '</h2>';
 		  }
 		  $('#modal').hide();
 		  $('#weathercontent').html(tophtm+htmlcontent);
@@ -540,7 +540,7 @@ define(['app'], function (app) {
 			$.LastUpdateTime=parseInt(0);
 			
 			var dialog_editweatherdevice_buttons = {};
-			dialog_editweatherdevice_buttons[$.i18n("Update")]=function() {
+			dialog_editweatherdevice_buttons[$.t("Update")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editweatherdevice #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -556,9 +556,9 @@ define(['app'], function (app) {
 				  
 			  }
 			};
-			dialog_editweatherdevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editweatherdevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
@@ -571,11 +571,11 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editweatherdevice_buttons[$.i18n("Replace")]=function() {
+			dialog_editweatherdevice_buttons[$.t("Replace")]=function() {
 				  $( this ).dialog( "close" );
 				  ReplaceDevice($.devIdx,ShowWeathers);
 			};
-			dialog_editweatherdevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editweatherdevice_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};
 
@@ -585,7 +585,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editweatherdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -594,7 +594,7 @@ define(['app'], function (app) {
 			
 			var dialog_editraindevice_buttons = {};
 			
-			dialog_editraindevice_buttons[$.i18n("Update")]=function() {
+			dialog_editraindevice_buttons[$.t("Update")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editraindevice #edittable #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -610,9 +610,9 @@ define(['app'], function (app) {
 				  
 			  }
 			};
-			dialog_editraindevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editraindevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
@@ -625,11 +625,11 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editraindevice_buttons[$.i18n("Replace")]=function() {
+			dialog_editraindevice_buttons[$.t("Replace")]=function() {
 			  $( this ).dialog( "close" );
 			  ReplaceDevice($.devIdx,ShowWeathers);
 			};
-			dialog_editraindevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editraindevice_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};
 			
@@ -639,7 +639,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editraindevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -648,7 +648,7 @@ define(['app'], function (app) {
 			
 			var dialog_editbarodevice_buttons = {};
 			
-			dialog_editbarodevice_buttons[$.i18n("Update")]=function() {
+			dialog_editbarodevice_buttons[$.t("Update")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editbarodevice #edittable #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -665,9 +665,9 @@ define(['app'], function (app) {
 
 			  }
 			};
-			dialog_editbarodevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editbarodevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&used=false',
@@ -680,11 +680,11 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editbarodevice_buttons[$.i18n("Replace")]=function() {
+			dialog_editbarodevice_buttons[$.t("Replace")]=function() {
 			  $( this ).dialog( "close" );
 			  ReplaceDevice($.devIdx,ShowWeathers);
 			};
-			dialog_editbarodevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editbarodevice_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};
 			$( "#dialog-editbarodevice" ).dialog({
@@ -693,7 +693,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editbarodevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -701,7 +701,7 @@ define(['app'], function (app) {
 			}).i18n();
 			
 			var dialog_editvisibilitydevice_buttons = {};
-			dialog_editvisibilitydevice_buttons[$.i18n("Update")]=function() {
+			dialog_editvisibilitydevice_buttons[$.t("Update")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editvisibilitydevice #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -717,9 +717,9 @@ define(['app'], function (app) {
 				  
 			  }
 			};
-			dialog_editvisibilitydevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editvisibilitydevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&used=false',
@@ -732,7 +732,7 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editvisibilitydevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editvisibilitydevice_buttons[$.t("Cancel")]=function() {
 				  $( this ).dialog( "close" );
 			};
 			
@@ -742,7 +742,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editvisibilitydevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );

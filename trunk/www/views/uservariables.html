@@ -49,7 +49,7 @@
 
 function DeleteVariable(idx)
 {
-	bootbox.confirm($.i18n("Are you sure you want to remove this variable?"), function(result) {
+	bootbox.confirm($.t("Are you sure you want to remove this variable?"), function(result) {
 		if (result==true) {
 			$.ajax({
 				url: "json.htm?type=command&param=deleteuservariable&idx=" + idx,
@@ -72,7 +72,7 @@ function AddLink(type)
 	var uservariablevalue = $('#uservariablesedittable #uservariablevalue').val();
 	
 	if((type=="a") && (jQuery.inArray(uservariablename,$.varNames) != -1)){
-		ShowNotify($.i18n('Variable name already exists!'), 2500, true);
+		ShowNotify($.t('Variable name already exists!'), 2500, true);
 	}
 	else {
 		if (type == "a") {
@@ -89,19 +89,19 @@ function AddLink(type)
 			 success: function(data) {
 				if (typeof data != 'undefined') {
 					if (data.status=="OK") {
-						bootbox.alert($.i18n('User variable saved'));
+						bootbox.alert($.t('User variable saved'));
 						RefreshUserVariablesTable();
 						$('#uservariablesedittable #uservariablename').val("");
 						$('#uservariablesedittable #uservariablevalue').val("");
 						$('#uservariablesedittable #uservariabletype').val("0");
 					}
 					else {
-						ShowNotify($.i18n(data.status), 2500, true);
+						ShowNotify($.t(data.status), 2500, true);
 					}
 				}
 			 },
 			 error: function(){
-					ShowNotify($.i18n('Problem saving user variable!'), 2500, true);
+					ShowNotify($.t('Problem saving user variable!'), 2500, true);
 			 }     
 		});
 	}
@@ -130,22 +130,22 @@ function RefreshUserVariablesTable()
 			var typeWording;
 			switch( item.Type ) {
 				case "0" :
-					typeWording = $.i18n('Integer');
+					typeWording = $.t('Integer');
 					break;
 				case "1" :
-					typeWording = $.i18n('Float');
+					typeWording = $.t('Float');
 					break;
 				case "2" :
-					typeWording = $.i18n('String');
+					typeWording = $.t('String');
 					break;					
 				case "3" :
-					typeWording = $.i18n('Date');
+					typeWording = $.t('Date');
 					break;				
 				case "4" :
-					typeWording = $.i18n('Time');
+					typeWording = $.t('Time');
 					break;
 				case "5" :
-					typeWording = $.i18n('DateTime');
+					typeWording = $.t('DateTime');
 					break;
 				default:
 					typeWording = "undefined";

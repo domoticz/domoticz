@@ -64,12 +64,7 @@
         <link type="text/css" rel="stylesheet" href="css/jquery-ui-timepicker-addon.css" />
         <link type="text/css" rel="stylesheet" href="acttheme/custom.css" />
         <script src="js/jquery-1.11.2.min.js"></script>
-		<script src="js/jquery.i18n.js"></script>
-		<script src="js/jquery.i18n.messages.js"></script>
-		<script src="js/jquery.i18n.fallbacks.js"></script>
-		<script src="js/jquery.i18n.parser.js"></script>
-		<script src="js/jquery.i18n.emitter.js"></script>
-		<script src="js/jquery.i18n.language.js"></script>
+		<script src="js/i18next-1.8.0.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
 		<script src="js/bootbox.min.js"></script>
         <script src="js/jquery-ui-1.10.3.custom.min.js"></script>
@@ -99,7 +94,7 @@
 
 function NotifyCacheRefresh()
 {
-	$.cachenoty=generate_noty('information', '<b>' + $.i18n('Browser Cache is being refreshed') + '...</b><br>' + $.i18n('Please standby') + '...', false);
+	$.cachenoty=generate_noty('information', '<b>' + 'Browser Cache is being refreshed' + '...</b><br>' + 'Please standby' + '...', false);
 	$.cachecount=0
 	$.cachetotal=0
 }
@@ -153,16 +148,16 @@ function CheckForUpdate(showdialog) {
 				$("#mUpdate").show();
 				$("#mCheckUpdate").hide();
 				if (showdialog) {
-					bootbox.confirm($.i18n("Update Available !... Update Now?"), function(result) {
+					bootbox.confirm($.t("Update Available !... Update Now?"), function(result) {
 						if (result==true) {
 							SwitchLayout('Update');
 						}
 					});
 				}
 				else {
-					var msgtxt=$.i18n('A new version of Domoticz is Available!...');
-					msgtxt+='<br>' + $.i18n('Version') + ': <b>' + data.Revision + '</b>, ' + $.i18n('Latest Changes') + ': <b><a class="norm-link" onclick="ShowLatestHistory();">' + $.i18n('Click Here') + '</a></b>';
-					msgtxt+='<br><center><a class="btn btn-danger" onclick="SwitchLayout(\'Update\');">' + $.i18n('Update Now') + '</a></center>';
+					var msgtxt=$.t('A new version of Domoticz is Available!...');
+					msgtxt+='<br>' + $.t('Version') + ': <b>' + data.Revision + '</b>, ' + $.t('Latest Changes') + ': <b><a class="norm-link" onclick="ShowLatestHistory();">' + $.t('Click Here') + '</a></b>';
+					msgtxt+='<br><center><a class="btn btn-danger" onclick="SwitchLayout(\'Update\');">' + $.t('Update Now') + '</a></center>';
 					generate_noty('success', msgtxt, false);
 				}
 				return true;
@@ -181,7 +176,7 @@ function CheckForUpdate(showdialog) {
 					$("#mCheckUpdate").show();
 				}
 				if (showdialog) {
-					bootbox.alert($.i18n("No Update Available !..."));
+					bootbox.alert($.t("No Update Available !..."));
 				}
 				return false;
 			}
@@ -190,7 +185,7 @@ function CheckForUpdate(showdialog) {
 				$("#mUpdate").hide();
 				$("#mCheckUpdate").show();
 				if (showdialog) {
-					bootbox.alert($.i18n("Error communicating to server!"));
+					bootbox.alert($.t("Error communicating to server!"));
 				}
 				return false;
 		 }     
@@ -207,7 +202,7 @@ function ReplaceDevice(idx,backfunction)
 		 success: function(data) {
 				if (typeof data.result == 'undefined') 
 				{
-					bootbox.alert($.i18n('No devices to Transfer too!'));
+					bootbox.alert($.t('No devices to Transfer too!'));
 					return;
 				}
 				$("#dialog-replacedevice #newdevice").html("");
@@ -272,7 +267,7 @@ $(document).ready(function() {
 	if ( browser.msie ) {
 		var bVersion=parseFloat(browser.version);
 		if (bVersion < 10.0) {
-			bootbox.alert($.i18n('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
+			bootbox.alert($.t('This Application is is designed for Internet Explorer version 10+!\nPlease upgrade your browser!'));
 		}
 	}
 
@@ -307,7 +302,7 @@ $(document).ready(function() {
 			
 			window.applicationCache.addEventListener('error', function(e)
 			{
-				var errText = $.i18n('Browser Cache refresh failed.');
+				var errText = 'Browser Cache refresh failed.';
 				errText += (typeof($.cachecount) != 'undefined') ? '<br>Loaded ' + $.cachecount + ' of ' + $.cachetotal + ' files' : '';
 				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
 				ClearNotifyCacheRefresh();
@@ -339,13 +334,13 @@ $(document).ready(function() {
 
 	var dialog_replacedevice_buttons = {};
 	
-	dialog_replacedevice_buttons[$.i18n("OK")]=function() {
+	dialog_replacedevice_buttons["OK"]=function() {
 		  var bValid = true;
 		  $( this ).dialog( "close" );
 		  
 							var NewDeviceIdx=$("#dialog-replacedevice #newdevice option:selected").val();
 							if (typeof NewDeviceIdx == 'undefined') {
-								bootbox.alert($.i18n('No New Device Selected!'));
+								bootbox.alert($.t('No New Device Selected!'));
 								return ;
 							}
 							$.ajax({
@@ -357,16 +352,16 @@ $(document).ready(function() {
 										$.backfunction();
 									}
 									else {
-										ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
+										ShowNotify($.t('Problem Transfering Device!'), 2500, true);
 									}
 								 },
 								 error: function(){
 										HideNotify();
-										ShowNotify($.i18n('Problem Transfering Device!'), 2500, true);
+										ShowNotify($.t('Problem Transfering Device!'), 2500, true);
 								 }     
 							});
 	};
-	dialog_replacedevice_buttons[$.i18n("Cancel")]=function() {
+	dialog_replacedevice_buttons["Cancel"]=function() {
 		$( this ).dialog( "close" );
 	};
 
@@ -376,7 +371,7 @@ $(document).ready(function() {
           height: 'auto',
           modal: true,
           resizable: false,
-          title: $.i18n("Replace Device"),
+          title: "Replace Device",
           buttons: dialog_replacedevice_buttons,
           close: function() {
             $( this ).dialog( "close" );

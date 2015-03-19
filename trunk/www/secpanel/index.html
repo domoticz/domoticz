@@ -7,12 +7,7 @@
 	<link href="css/style.less" rel="stylesheet/less" />
 	<script src="js/less.js"></script>
 	<script src="../js/jquery-1.11.2.min.js"></script>
-	<script src="../js/jquery.i18n.js"></script>
-	<script src="../js/jquery.i18n.messages.js"></script>
-	<script src="../js/jquery.i18n.fallbacks.js"></script>
-	<script src="../js/jquery.i18n.parser.js"></script>
-	<script src="../js/jquery.i18n.emitter.js"></script>
-	<script src="../js/jquery.i18n.language.js"></script>
+	<script src="../js/i18next-1.8.0.min.js"></script> 
 	<script src="../js/domoticz.js"></script>
 	<script src="../js/md5.js"></script>
 	<script type="text/javascript">
@@ -221,7 +216,7 @@
 				if (setzone==1) zonedisplay='* ZONE 1 *';
 				if (setzone==2) zonedisplay='* ZONE 2 *';
 				if (setzone==3) zonedisplay='* ZONE 3 *';
-				$('#digitdisplay').val($.i18n(zonedisplay));
+				$('#digitdisplay').val($.t(zonedisplay));
 
 				var elements = document.getElementsByClassName('digit');
 				for(var i=0; i<elements.length; i++) {
@@ -236,7 +231,7 @@
 			if (typeof(zonearray) != "undefined") {
 				if (CheckZoneClear(zonearray)) {
 					beep('error');
-					$('#digitdisplay').val($.i18n('* ZONE OPEN *'));
+					$('#digitdisplay').val($.t('* ZONE OPEN *'));
 					// CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer(); AddDigit('+seccode+');', 2000);
 					CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 3000);
 					return;
@@ -249,7 +244,7 @@
 				success: function(data) {
 					if (data.status != "OK") {
 						if (data.message=="WRONG CODE") {
-							$('#digitdisplay').val($.i18n('* WRONG CODE *'));
+							$('#digitdisplay').val($.t('* WRONG CODE *'));
 							CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 2000);
 							$('#password').val("");
 							beep('error');

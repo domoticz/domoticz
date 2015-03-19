@@ -11,12 +11,7 @@
         <link type="text/css" rel="stylesheet" href="css/style.css" />
         <link type="text/css" rel="stylesheet" href="css/colpick.css" />
         <script src="js/jquery-1.11.2.min.js"></script>
-		<script src="js/jquery.i18n.js"></script>
-		<script src="js/jquery.i18n.messages.js"></script>
-		<script src="js/jquery.i18n.fallbacks.js"></script>
-		<script src="js/jquery.i18n.parser.js"></script>
-		<script src="js/jquery.i18n.emitter.js"></script>
-		<script src="js/jquery.i18n.language.js"></script>
+		<script src="js/i18next-1.8.0.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
 		<script src="js/bootbox.min.js"></script>
         <script src="js/jquery-ui-1.10.3.custom.min.js"></script>
@@ -39,14 +34,14 @@
 		
 		function removeNodeFromGroup(node,group,removenode) {
 			var hwid=getParameter("hwid");
-			bootbox.confirm($.i18n("Are you sure you want to remove this node from the group?"), function(result) {
+			bootbox.confirm($.t("Are you sure you want to remove this node from the group?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=zwaveremovegroupnode&idx=" + hwid + "&node="+node+"&group="+group+"&removenode="+removenode,
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
-							bootbox.alert($.i18n('Groups updated!'));
+							bootbox.alert($.t('Groups updated!'));
 							$("#grouptable").empty();
 							drawGroupTable();
 						 }
@@ -57,11 +52,11 @@
 		function addNodeToGroup(node,group) {
 			var hwid=getParameter("hwid");
 			bootbox.dialog({
-			  message: $.i18n("Please enter the node to add to this group:")+"<input type='text' id='add_node'></input>",
+			  message: $.t("Please enter the node to add to this group:")+"<input type='text' id='add_node'></input>",
 			  title: "Add node",
 			  buttons: {
 				main: {
-				  label: $.i18n("Save"),
+				  label: $.t("Save"),
 				  className: "btn-primary",
 				  callback: function() {
 					var addnode = $("#add_node").val();
@@ -74,7 +69,7 @@
 				  }
 				},
 				 nothanks: {
-					 label: $.i18n("Cancel"),
+					 label: $.t("Cancel"),
 					 className: "btn-cancel",
 					 callback: function() {
 					 }
@@ -84,7 +79,7 @@
 		}
 		
 		function redrawGroupTable()  {
-			bootbox.alert($.i18n('Groups updated. It can take a while before changes are visible.'));
+			bootbox.alert($.t('Groups updated. It can take a while before changes are visible.'));
 			$("#grouptable").empty();
 			drawGroupTable();
 		}
@@ -104,10 +99,10 @@
 								var maxgroups = data.result.MaxNoOfGroups; 
 								thead = $('<thead></thead>');
 								trow = $('<tr></tr>');
-								$('<th></th>').text("Node").appendTo(trow); 
-								$('<th></th>').text("Name").appendTo(trow); 
+								$('<th></th>').text($.t("Node")).appendTo(trow); 
+								$('<th></th>').text($.t("Name")).appendTo(trow); 
 								for (var i = 0; i < maxgroups; i++) {
-									$('<th></th>').text("Group "+(i+1)).appendTo(trow); 
+									$('<th></th>').text($.t("Group")+" " +(i+1)).appendTo(trow); 
 								}
 								trow.appendTo(thead);
 								thead.appendTo(grouptable);

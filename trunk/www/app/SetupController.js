@@ -21,7 +21,7 @@ define(['app'], function (app) {
 				 dataType: 'json',
 				 success: function(data) {
 					SwitchLayout('Log');
-					var msg=$.i18n('Allowing new sensors for ') + minutes + ' ' + $.i18n('Minutes');
+					var msg=$.t('Allowing new sensors for ') + minutes + ' ' + $.t('Minutes');
 					ShowNotify(msg, 3000);
 				 }
 			});
@@ -31,38 +31,38 @@ define(['app'], function (app) {
 		{
 		  var ProwlAPI=$("#prowltable #apikey").val();
 		  if (ProwlAPI=="") {
-			ShowNotify($.i18n('Please enter the API key!...'), 3500, true);
+			ShowNotify($.t('Please enter the API key!...'), 3500, true);
 			return;
 		  }
 		  var url="http://api.prowlapp.com/publicapi/add?apikey=" + ProwlAPI + "&priority=0&application=Domoticz&event=Test Message&description=This is a test message!";
 		  $.get(url, function(data) {
 		  });  
-		  ShowNotify($.i18n('Notification send!<br>Should arrive at your device soon...'), 3000);
+		  ShowNotify($.t('Notification send!<br>Should arrive at your device soon...'), 3000);
 		}
 
 		$scope.TestNMANotification= function()
 		{
 		  var NMAAPI=$("#nmatable #apikey").val();
 		  if (NMAAPI=="") {
-			ShowNotify($.i18n('Please enter the API key!...'), 3500, true);
+			ShowNotify($.t('Please enter the API key!...'), 3500, true);
 			return;
 		  }
 		  var url="http://www.notifymyandroid.com/publicapi/notify?apikey=" + NMAAPI + "&priority=0&application=Domoticz&event=Test Message&description=This is a test message!";
 		  $.get(url, function(data) {
 		  });  
-		  ShowNotify($.i18n('Notification send!<br>Should arrive at your device soon...'), 3000);
+		  ShowNotify($.t('Notification send!<br>Should arrive at your device soon...'), 3000);
 		}
 
 		$scope.TestPushoverNotification= function()
 		{
 		  var POAPI=$("#pushovertable #apikey").val();
 		  if (POAPI=="") {
-			ShowNotify($.i18n('Please enter the API key!...'), 3500, true);
+			ShowNotify($.t('Please enter the API key!...'), 3500, true);
 			return;
 		  }
 		  var POUSERID=$("#pushovertable #pouserid").val();
 		  if (POUSERID=="") {
-			ShowNotify($.i18n('Please enter the user id!...'), 3500, true);
+			ShowNotify($.t('Please enter the user id!...'), 3500, true);
 			return;
 		  }
 			$.ajax({
@@ -72,17 +72,17 @@ define(['app'], function (app) {
 				success: function(data) {
 					if (data.status != "OK") {
 						HideNotify();
-						ShowNotify($.i18n('Problem sending notification, please check credentials!'), 3000, true);
+						ShowNotify($.t('Problem sending notification, please check credentials!'), 3000, true);
 						return;
 					}
 					else {
 						HideNotify();
-						ShowNotify($.i18n('Notification send!<br>Should arrive at your device soon...'), 3000);
+						ShowNotify($.t('Notification send!<br>Should arrive at your device soon...'), 3000);
 					}
 				},
 				error: function(){
 					HideNotify();
-					ShowNotify($.i18n('Problem sending notification, please check credentials!'), 3000, true);
+					ShowNotify($.t('Problem sending notification, please check credentials!'), 3000, true);
 				}
 			});
 		  
@@ -92,7 +92,7 @@ define(['app'], function (app) {
 		{
 		  var PushAlotAPI=$("#pushalottable #palapikey").val();
 		  if (PushAlotAPI=="") {
-			ShowNotify($.i18n('Please enter the API key!...'), 3500, true);
+			ShowNotify($.t('Please enter the API key!...'), 3500, true);
 			return;
 		  }
 			$.ajax({
@@ -102,17 +102,17 @@ define(['app'], function (app) {
 				success: function(data) {
 					if (data.status != "OK") {
 						HideNotify();
-						ShowNotify($.i18n('Problem sending notification, please check the API key!'), 3000, true);
+						ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
 						return;
 					}
 					else {
 						HideNotify();
-						ShowNotify($.i18n('Notification sent!<br>Should arrive at your device soon...'), 3000);
+						ShowNotify($.t('Notification sent!<br>Should arrive at your device soon...'), 3000);
 					}
 				},
 				error: function(){
 					HideNotify();
-					ShowNotify($.i18n('Problem sending notification, please check the API key!'), 3000, true);
+					ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
 				}
 			});
 		}
@@ -121,12 +121,12 @@ define(['app'], function (app) {
 		{
 			var EmailServer=$("#emailtable #EmailServer").val();
 			if (EmailServer=="") {
-				ShowNotify($.i18n('Invalid Email Settings...'), 2000, true);
+				ShowNotify($.t('Invalid Email Settings...'), 2000, true);
 				return;
 			}
 			var EmailPort=$("#emailtable #EmailPort").val();
 			if (EmailPort=="") {
-				ShowNotify($.i18n('Invalid Email Settings...'), 2000, true);
+				ShowNotify($.t('Invalid Email Settings...'), 2000, true);
 				return;
 			}
 			var EmailFrom=$("#emailtable #EmailFrom").val();
@@ -134,11 +134,11 @@ define(['app'], function (app) {
 			var EmailUsername=$("#emailtable #EmailUsername").val();
 			var EmailPassword=$("#emailtable #EmailPassword").val();
 			if ((EmailFrom=="")||(EmailTo=="")) {
-				ShowNotify($.i18n('Invalid Email From/To Settings...'), 2000, true);
+				ShowNotify($.t('Invalid Email From/To Settings...'), 2000, true);
 				return;
 			}
 			if ((EmailUsername!="")&&(EmailPassword=="")) {
-				ShowNotify($.i18n('Please enter an Email Password...'), 2000, true);
+				ShowNotify($.t('Please enter an Email Password...'), 2000, true);
 				return;
 			}
 			$.ajax({
@@ -154,17 +154,17 @@ define(['app'], function (app) {
 				success: function(data) {
 					if (data.status != "OK") {
 						HideNotify();
-						ShowNotify($.i18n('Problem sending Email, please check credentials!'), 2500, true);
+						ShowNotify($.t('Problem sending Email, please check credentials!'), 2500, true);
 						return;
 					}
 					else {
 						HideNotify();
-						ShowNotify($.i18n('An Email has been delivered<br>Please check your inbox!'), 2500);
+						ShowNotify($.t('An Email has been delivered<br>Please check your inbox!'), 2500);
 					}
 				},
 				error: function(){
 					HideNotify();
-					ShowNotify($.i18n('Problem sending Email, please check credentials!'), 2500, true);
+					ShowNotify($.t('Problem sending Email, please check credentials!'), 2500, true);
 				}
 			});
 		}
@@ -188,7 +188,7 @@ define(['app'], function (app) {
 			var suntext="";
 		  if (sunRise!="")
 		  {
-			suntext='<br>' + $.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet + '<br><br>\n';
+			suntext='<br>' + $.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet + '<br><br>\n';
 			$("#sunriseset").html(suntext);
 		  }
 		  
@@ -440,7 +440,7 @@ define(['app'], function (app) {
 			  ( isNaN(Latitude)||isNaN(Longitude) )
 			)
 		  {
-			ShowNotify($.i18n('Invalid Location Settings...'), 2000, true);
+			ShowNotify($.t('Invalid Location Settings...'), 2000, true);
 			return;
 		  }
 		  
@@ -453,7 +453,7 @@ define(['app'], function (app) {
 		  {
 			var EmailPort=$("#emailtable #EmailPort").val();
 			if (EmailPort=="") {
-				ShowNotify($.i18n('Please enter an Email Port...'), 2000, true);
+				ShowNotify($.t('Please enter an Email Port...'), 2000, true);
 				return;
 			}
 			var EmailFrom=$("#emailtable #EmailFrom").val();
@@ -461,11 +461,11 @@ define(['app'], function (app) {
 			var EmailUsername=$("#emailtable #EmailUsername").val();
 			var EmailPassword=$("#emailtable #EmailPassword").val();
 			if ((EmailFrom=="")||(EmailTo=="")) {
-				ShowNotify($.i18n('Invalid Email From/To Settings...'), 2000, true);
+				ShowNotify($.t('Invalid Email From/To Settings...'), 2000, true);
 				return;
 			}
 			if ((EmailUsername!="")&&(EmailPassword=="")) {
-				ShowNotify($.i18n('Please enter an Email Password...'), 2000, true);
+				ShowNotify($.t('Please enter an Email Password...'), 2000, true);
 				return;
 			}
 		  }
@@ -473,7 +473,7 @@ define(['app'], function (app) {
 		  var popupDelay=$("#floorplanoptionstable #FloorplanPopupDelay").val();
 		  if (popupDelay != "") {
 			if (!$.isNumeric(popupDelay)) {
-				ShowNotify($.i18n('Popup Delay can only contain numbers...'), 2000, true);
+				ShowNotify($.t('Popup Delay can only contain numbers...'), 2000, true);
 				return;
 			}
 		  }
@@ -525,7 +525,7 @@ define(['app'], function (app) {
 							$( this ).dialog( "close" );
 						  } else
 						  {
-							bootbox.alert($.i18n('Please enter a Latitude and Longitude!...'), 3500, true);
+							bootbox.alert($.t('Please enter a Latitude and Longitude!...'), 3500, true);
 						  }
 					  },
 					  Cancel: function() {
@@ -538,7 +538,7 @@ define(['app'], function (app) {
 								var address = $( '#dialog-findlatlong #address' ).val();
 								if (address=="")
 								{
-									bootbox.alert($.i18n('Please enter a Address to search for!...'), 3500, true);
+									bootbox.alert($.t('Please enter a Address to search for!...'), 3500, true);
 									return false;
 								}
 								geocoder = new google.maps.Geocoder();
@@ -547,7 +547,7 @@ define(['app'], function (app) {
 											$( '#dialog-findlatlong #latitude' ).val(results[0].geometry.location.lat().toFixed(6));
 											$( '#dialog-findlatlong #longitude' ).val(results[0].geometry.location.lng().toFixed(6));
 									} else {
-										bootbox.alert($.i18n('Geocode was not successful for the following reason') + ': ' +status);
+										bootbox.alert($.t('Geocode was not successful for the following reason') + ': ' +status);
 									}
 								});
 								return false;

@@ -3,7 +3,7 @@ define(['app'], function (app) {
 
 		DeleteSetpointTimer = function(idx)
 		{
-			bootbox.confirm($.i18n("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
+			bootbox.confirm($.t("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deletesetpointtimer&idx=" + idx,
@@ -14,7 +14,7 @@ define(['app'], function (app) {
 						 },
 						 error: function(){
 								HideNotify();
-								ShowNotify($.i18n('Problem deleting timer!'), 2500, true);
+								ShowNotify($.t('Problem deleting timer!'), 2500, true);
 						 }     
 					});
 				}
@@ -23,7 +23,7 @@ define(['app'], function (app) {
 
 		ClearSetpointTimers = function()
 		{
-			bootbox.confirm($.i18n("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=clearsetpointtimers&idx=" + $.devIdx,
@@ -34,7 +34,7 @@ define(['app'], function (app) {
 						 },
 						 error: function(){
 								HideNotify();
-								ShowNotify($.i18n('Problem clearing timers!'), 2500, true);
+								ShowNotify($.t('Problem clearing timers!'), 2500, true);
 						 }     
 					});
 				}
@@ -84,7 +84,7 @@ define(['app'], function (app) {
 			var tsettings=GetSetpointTimerSettings();
 			if (tsettings.timertype==5) {
 				if (tsettings.date=="") {
-					ShowNotify($.i18n('Please select a Date!'), 2500, true);
+					ShowNotify($.t('Please select a Date!'), 2500, true);
 					return;
 				}
 				//Check if date/time is valid
@@ -92,13 +92,13 @@ define(['app'], function (app) {
 				var checkDate = new Date(pickedDate.getFullYear(), pickedDate.getMonth(), pickedDate.getDate(), tsettings.hour, tsettings.min, 0, 0);
 				var nowDate = new Date();
 				if (checkDate<nowDate) {
-					ShowNotify($.i18n('Invalid Date selected!'), 2500, true);
+					ShowNotify($.t('Invalid Date selected!'), 2500, true);
 					return;
 				}
 			}
 			else if (tsettings.days==0)
 			{
-				ShowNotify($.i18n('Please select some days!'), 2500, true);
+				ShowNotify($.t('Please select some days!'), 2500, true);
 				return;
 			}
 			$.ajax({
@@ -117,7 +117,7 @@ define(['app'], function (app) {
 				 },
 				 error: function(){
 						HideNotify();
-						ShowNotify($.i18n('Problem updating timer!'), 2500, true);
+						ShowNotify($.t('Problem updating timer!'), 2500, true);
 				 }     
 			});
 		}
@@ -127,7 +127,7 @@ define(['app'], function (app) {
 			var tsettings=GetSetpointTimerSettings();
 			if (tsettings.timertype==5) {
 				if (tsettings.date=="") {
-					ShowNotify($.i18n('Please select a Date!'), 2500, true);
+					ShowNotify($.t('Please select a Date!'), 2500, true);
 					return;
 				}
 				//Check if date/time is valid
@@ -135,13 +135,13 @@ define(['app'], function (app) {
 				var checkDate = new Date(pickedDate.getFullYear(), pickedDate.getMonth(), pickedDate.getDate(), tsettings.hour, tsettings.min, 0, 0);
 				var nowDate = new Date();
 				if (checkDate<nowDate) {
-					ShowNotify($.i18n('Invalid Date selected!'), 2500, true);
+					ShowNotify($.t('Invalid Date selected!'), 2500, true);
 					return;
 				}
 			}
 			else if (tsettings.days==0)
 			{
-				ShowNotify($.i18n('Please select some days!'), 2500, true);
+				ShowNotify($.t('Please select some days!'), 2500, true);
 				return;
 			}
 			$.ajax({
@@ -160,7 +160,7 @@ define(['app'], function (app) {
 				 },
 				 error: function(){
 						HideNotify();
-						ShowNotify($.i18n('Problem adding timer!'), 2500, true);
+						ShowNotify($.t('Problem adding timer!'), 2500, true);
 				 }     
 			});
 		}
@@ -456,7 +456,7 @@ define(['app'], function (app) {
 		{
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 
@@ -597,7 +597,7 @@ define(['app'], function (app) {
 
 		AddUtilityDevice = function()
 		{
-		  bootbox.alert($.i18n('Please use the devices tab for this.'));
+		  bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
 		RefreshUtilities = function()
@@ -635,7 +635,7 @@ define(['app'], function (app) {
 								bigtext=item.CounterToday;
 							}
 							else {
-								status=item.Counter + ', ' + $.i18n("Today") + ': ' + item.CounterToday;
+								status=item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 							}
 						}
 						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
@@ -644,7 +644,7 @@ define(['app'], function (app) {
 						else if (item.Type == "Energy") {
 							status=item.Data;
 							if (typeof item.CounterToday != 'undefined') {
-								status+=', ' + $.i18n("Today") + ': ' + item.CounterToday;
+								status+=', ' + $.t("Today") + ': ' + item.CounterToday;
 							}
 						}
 						else if (item.SubType == "Percentage") {
@@ -713,7 +713,7 @@ define(['app'], function (app) {
 						}
 						if (typeof item.CounterDeliv != 'undefined') {
 							if (item.CounterDeliv!=0) {
-								status+='<br>' + $.i18n("Return") + ': ' + item.CounterDeliv + ', ' + $.i18n("Today") + ': ' + item.CounterDelivToday;
+								status+='<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
 								if (item.UsageDeliv.charAt(0) != 0) {
 									bigtext='-' + item.UsageDeliv;
 								}
@@ -937,7 +937,7 @@ define(['app'], function (app) {
 						status=item.Counter;
 					  }
 					  else {
-						status=item.Counter + ', ' + $.i18n("Today") + ': ' + item.CounterToday;
+						status=item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 					  }
 					}
 					else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
@@ -948,7 +948,7 @@ define(['app'], function (app) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					  if (typeof item.CounterToday != 'undefined') {
-						status+=', ' + $.i18n("Today") + ': ' + item.CounterToday;
+						status+=', ' + $.t("Today") + ': ' + item.CounterToday;
 					  }
 					}
 					else if (item.Type == "Air Quality") {
@@ -1029,7 +1029,7 @@ define(['app'], function (app) {
 					}
 					if (typeof item.CounterDeliv != 'undefined') {
 						if (item.CounterDeliv!=0) {
-							status+='<br>' + $.i18n("Return") + ': ' + item.CounterDeliv + ', ' + $.i18n("Today") + ': ' + item.CounterDelivToday;
+							status+='<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
 						}
 					}
 					xhtm+=      
@@ -1039,11 +1039,11 @@ define(['app'], function (app) {
 						'\t      <td>';
 				  if (item.Favorite == 0) {
 					xhtm+=      
-						  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=      
-						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 
 				  if (typeof item.Counter != 'undefined') {
@@ -1227,7 +1227,7 @@ define(['app'], function (app) {
 		  }
 		  if (htmlcontent == '')
 		  {
-			htmlcontent='<h2>' + $.i18n('No Utility sensors found or added in the system...') + '</h2>';
+			htmlcontent='<h2>' + $.t('No Utility sensors found or added in the system...') + '</h2>';
 		  }
 		  $('#modal').hide();
 		  $('#utilitycontent').html(tophtm+htmlcontent);
@@ -1304,7 +1304,7 @@ define(['app'], function (app) {
 
 			var dialog_editutilitydevice_buttons = {};
 			
-			dialog_editutilitydevice_buttons[$.i18n("Update")]=function() {
+			dialog_editutilitydevice_buttons[$.t("Update")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editutilitydevice #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -1320,9 +1320,9 @@ define(['app'], function (app) {
 				  
 			  }
 			};
-			dialog_editutilitydevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editutilitydevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=false',
@@ -1335,11 +1335,11 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editutilitydevice_buttons[$.i18n("Replace")]=function() {
+			dialog_editutilitydevice_buttons[$.t("Replace")]=function() {
 				  $( this ).dialog( "close" );
 				  ReplaceDevice($.devIdx,ShowUtilities);
 			};
-			dialog_editutilitydevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editutilitydevice_buttons[$.t("Cancel")]=function() {
 				  $( this ).dialog( "close" );
 			};
 			
@@ -1349,7 +1349,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editutilitydevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -1357,7 +1357,7 @@ define(['app'], function (app) {
 			});
 
 			var dialog_editdistancedevice_buttons = {};
-			dialog_editdistancedevice_buttons[$.i18n("Update")]=function() {
+			dialog_editdistancedevice_buttons[$.t("Update")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editdistancedevice #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -1373,9 +1373,9 @@ define(['app'], function (app) {
 				  
 			  }
 			};
-			dialog_editdistancedevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editdistancedevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) + '&used=false',
@@ -1388,7 +1388,7 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editdistancedevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editdistancedevice_buttons[$.t("Cancel")]=function() {
 				  $( this ).dialog( "close" );
 			};
 			
@@ -1398,7 +1398,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editdistancedevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -1406,7 +1406,7 @@ define(['app'], function (app) {
 			}).i18n();
 
 			var dialog_editmeterdevice_buttons = {};
-			dialog_editmeterdevice_buttons[$.i18n("Update")]=function() {
+			dialog_editmeterdevice_buttons[$.t("Update")]=function() {
 				  var bValid = true;
 				  bValid = bValid && checkLength( $("#dialog-editmeterdevice #devicename"), 2, 100 );
 				  if ( bValid ) {
@@ -1422,9 +1422,9 @@ define(['app'], function (app) {
 					  
 				  }
 			};
-			dialog_editmeterdevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editmeterdevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&used=false',
@@ -1437,7 +1437,7 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editmeterdevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editmeterdevice_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};
 
@@ -1447,7 +1447,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editmeterdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -1456,7 +1456,7 @@ define(['app'], function (app) {
 
 			var dialog_editsetpointdevice_buttons = {};
 			
-			dialog_editsetpointdevice_buttons[$.i18n("Update")]=function() {
+			dialog_editsetpointdevice_buttons[$.t("Update")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editsetpointdevice #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -1476,9 +1476,9 @@ define(['app'], function (app) {
 				  
 			  }
 			};
-			dialog_editsetpointdevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editsetpointdevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) + '&used=false',
@@ -1491,7 +1491,7 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editsetpointdevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editsetpointdevice_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};
 
@@ -1501,7 +1501,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editsetpointdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -1510,13 +1510,13 @@ define(['app'], function (app) {
 			
 			var dialog_editthermostatclockdevice_buttons = {};
 			
-			dialog_editthermostatclockdevice_buttons[$.i18n("Update")]=function() {
+			dialog_editthermostatclockdevice_buttons[$.t("Update")]=function() {
 				  var bValid = true;
 				  bValid = bValid && checkLength( $("#dialog-editthermostatclockdevice #devicename"), 2, 100 );
 				  if ( bValid ) {
 					  $( this ).dialog( "close" );
-					  //bootbox.alert($.i18n('Clock will be set when device wakes up.'));
-					  bootbox.alert($.i18n('Setting the Clock is not finished yet!'));
+					  //bootbox.alert($.t('Clock will be set when device wakes up.'));
+					  bootbox.alert($.t('Setting the Clock is not finished yet!'));
 					  var daytimestr=$("#dialog-editthermostatclockdevice #comboclockday").val()+";"+$("#dialog-editthermostatclockdevice #clockhour").val()+";"+$("#dialog-editthermostatclockdevice #clockminute").val();
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx +
@@ -1532,9 +1532,9 @@ define(['app'], function (app) {
 					  });
 				  }
 			};
-			dialog_editthermostatclockdevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editthermostatclockdevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) + '&used=false',
@@ -1547,7 +1547,7 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editthermostatclockdevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_editthermostatclockdevice_buttons[$.t("Cancel")]=function() {
 				  $( this ).dialog( "close" );
 			};
 			
@@ -1557,7 +1557,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editthermostatclockdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -1566,7 +1566,7 @@ define(['app'], function (app) {
 
 			var dialog_editthermostatmode_buttons = {};
 			
-			dialog_editthermostatmode_buttons[$.i18n("Update")]=function() {
+			dialog_editthermostatmode_buttons[$.t("Update")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editthermostatmode #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -1592,9 +1592,9 @@ define(['app'], function (app) {
 				  });
 			  }
 			};
-			dialog_editthermostatmode_buttons[$.i18n("Remove Device")]=function() {
+			dialog_editthermostatmode_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) + '&used=false',
@@ -1607,7 +1607,7 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_editthermostatmode_buttons[$.i18n("Cancel")]=function() {
+			dialog_editthermostatmode_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};
 
@@ -1617,7 +1617,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_editthermostatmode_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );

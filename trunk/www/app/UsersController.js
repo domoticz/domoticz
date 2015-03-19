@@ -3,7 +3,7 @@ define(['app'], function (app) {
 
 		DeleteUser = function(idx)
 		{
-			bootbox.confirm($.i18n("Are you sure you want to delete this User?"), function(result) {
+			bootbox.confirm($.t("Are you sure you want to delete this User?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deleteuser&idx=" + idx,
@@ -14,7 +14,7 @@ define(['app'], function (app) {
 						 },
 						 error: function(){
 								HideNotify();
-								ShowNotify($.i18n('Problem deleting User!'), 2500, true);
+								ShowNotify($.t('Problem deleting User!'), 2500, true);
 						 }     
 					});
 				}
@@ -29,13 +29,13 @@ define(['app'], function (app) {
 			csettings.username=$("#usercontent #userparamstable #username").val();
 			if (csettings.username=="")
 			{
-				ShowNotify($.i18n('Please enter a Username!'), 2500, true);
+				ShowNotify($.t('Please enter a Username!'), 2500, true);
 				return;
 			}
 			csettings.password=$("#usercontent #userparamstable #userpassword").val();
 			if (csettings.password=="")
 			{
-				ShowNotify($.i18n('Please enter a Password!'), 2500, true);
+				ShowNotify($.t('Please enter a Password!'), 2500, true);
 				return;
 			}
 			if (csettings.password.length!=32) {
@@ -90,7 +90,7 @@ define(['app'], function (app) {
 					RefreshUserTable();
 				 },
 				 error: function(){
-					ShowNotify($.i18n('Problem updating User!'), 2500, true);
+					ShowNotify($.t('Problem updating User!'), 2500, true);
 				 }     
 			});
 		}
@@ -106,7 +106,7 @@ define(['app'], function (app) {
 					ShowUsers();
 				 },
 				 error: function(){
-					ShowNotify($.i18n('Problem setting User Devices!'), 2500, true);
+					ShowNotify($.t('Problem setting User Devices!'), 2500, true);
 				 }     
 			});
 		}
@@ -170,7 +170,7 @@ define(['app'], function (app) {
 					RefreshUserTable();
 				 },
 				 error: function(){
-					ShowNotify($.i18n('Problem adding User!'), 2500, true);
+					ShowNotify($.t('Problem adding User!'), 2500, true);
 				 }     
 			});		
 		}
@@ -194,26 +194,26 @@ define(['app'], function (app) {
 				
 			  if (typeof data.result != 'undefined') {
 				$.each(data.result, function(i,item){
-					var enabledstr=$.i18n("No");
+					var enabledstr=$.t("No");
 					if (item.Enabled=="true") {
-						enabledstr=$.i18n("Yes");
+						enabledstr=$.t("Yes");
 					}
 					var rightstr="rights";
 					if (item.Rights==0) {
-						rightstr=$.i18n("Viewer");
+						rightstr=$.t("Viewer");
 					}
 					else if (item.Rights==1) {
-						rightstr=$.i18n("User");
+						rightstr=$.t("User");
 					}
 					else {
-						rightstr=$.i18n("Admin");
+						rightstr=$.t("Admin");
 					}
 					
-					var sharedstr=$.i18n("No");
+					var sharedstr=$.t("No");
 					if (item.RemoteSharing==true) {
-						sharedstr=$.i18n('Yes');
+						sharedstr=$.t('Yes');
 					}
-					var devicesstr='<span class="label label-info lcursor" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');">' + $.i18n('Set Devices') +'</span>';
+					var devicesstr='<span class="label label-info lcursor" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');">' + $.t('Set Devices') +'</span>';
 					var addId = oTable.fnAddData( {
 						"DT_RowId": item.idx,
 						"Enabled": item.Enabled,

@@ -5,7 +5,7 @@ define(['app'], function (app) {
 		{
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 			if (typeof $scope.mytimer != 'undefined') {
@@ -59,7 +59,7 @@ define(['app'], function (app) {
 		{
 			//HeatingOff does not apply to dhw
 			if (mode=="HeatingOff"){
-				bootbox.alert($.i18n('Can\'t change zone when the heating is off'));
+				bootbox.alert($.t('Can\'t change zone when the heating is off'));
 				return false;
 			}
 			if (typeof $scope.mytimer != 'undefined') {
@@ -131,7 +131,7 @@ define(['app'], function (app) {
 		
 		AddTempDevice = function()
 		{
-		  bootbox.alert($.i18n('Please use the devices tab for this.'));
+		  bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
 
@@ -202,7 +202,7 @@ define(['app'], function (app) {
 			  chart.addSeries(
 				{
 				  id: 'humidity'+deviceid,
-				  name: devicename+':'+$.i18n('Humidity'),
+				  name: devicename+':'+$.t('Humidity'),
 				  yAxis: 1
 				}
 			  );
@@ -215,7 +215,7 @@ define(['app'], function (app) {
 			  chart.addSeries(
 				{
 				  id: 'chill'+deviceid,
-				  name: devicename+':'+$.i18n('Chill'),
+				  name: devicename+':'+$.t('Chill'),
 				  yAxis: 0
 				}
 			  );
@@ -226,7 +226,7 @@ define(['app'], function (app) {
 				chart.addSeries(
 				  {
 					id: 'chillmin'+deviceid,
-					name: devicename+':'+$.i18n('Chill')+'_min',
+					name: devicename+':'+$.t('Chill')+'_min',
 					yAxis: 0
 				  }
 				);
@@ -240,7 +240,7 @@ define(['app'], function (app) {
 			  chart.addSeries(
 				{
 				  id: 'temperature'+deviceid,
-				  name: devicename+':'+$.i18n('Temperature'),
+				  name: devicename+':'+$.t('Temperature'),
 				  yAxis: 0
 				}
 			  );
@@ -250,7 +250,7 @@ define(['app'], function (app) {
 				chart.addSeries(
 				  {
 					id: 'temperaturemin'+deviceid,
-					name: devicename+':'+$.i18n('Temperature')+'_min',
+					name: devicename+':'+$.t('Temperature')+'_min',
 					yAxis: 0
 				  }
 				);
@@ -265,7 +265,7 @@ define(['app'], function (app) {
 			  chart.addSeries(
 				{
 				  id: 'setpoint'+deviceid,
-				  name: devicename+':'+$.i18n('SetPoint'),
+				  name: devicename+':'+$.t('SetPoint'),
 				  yAxis: 0
 				}
 			  );
@@ -275,7 +275,7 @@ define(['app'], function (app) {
 				chart.addSeries(
 				  {
 					id: 'setpointmin'+deviceid,
-					name: devicename+':'+$.i18n('SetPoint')+'_min',
+					name: devicename+':'+$.t('SetPoint')+'_min',
 					yAxis: 0
 				  }
 				);
@@ -285,7 +285,7 @@ define(['app'], function (app) {
 				chart.addSeries(
 				  {
 					id: 'setpointmax'+deviceid,
-					name: devicename+':'+$.i18n('SetPoint')+'_max',
+					name: devicename+':'+$.t('SetPoint')+'_max',
 					yAxis: 0
 				  }
 				);
@@ -299,7 +299,7 @@ define(['app'], function (app) {
 			  chart.addSeries(
 				{
 				  id: 'dewpoint'+deviceid,
-				  name: devicename+':'+$.i18n('Dew Point'),
+				  name: devicename+':'+$.t('Dew Point'),
 				  yAxis: 0
 				}
 			  );
@@ -312,7 +312,7 @@ define(['app'], function (app) {
 			  chart.addSeries(
 				{
 				  id: 'baro'+deviceid,
-				  name: devicename+':'+$.i18n('Barometer'),
+				  name: devicename+':'+$.t('Barometer'),
 				  yAxis: 2
 				}
 			  );
@@ -505,7 +505,7 @@ define(['app'], function (app) {
 						   }
 				  },
 				  title: {
-					   text: $.i18n('Humidity') +' %',
+					   text: $.t('Humidity') +' %',
 					   style: {
 						  color: 'white'
 					   }
@@ -521,7 +521,7 @@ define(['app'], function (app) {
 						   }
 				  },
 				  title: {
-					   text: $.i18n('Pressure') + ' (hPa)',
+					   text: $.t('Pressure') + ' (hPa)',
 					   style: {
 						  color: 'white'
 					   }
@@ -532,8 +532,8 @@ define(['app'], function (app) {
 				  formatter: function() {
 						var unit = '';
 						var baseName = this.series.name.split(':')[1];
-						if (baseName==$.i18n("Humidity")) {unit = '%'} else {unit = '\u00B0 ' + $.myglobals.tempsign};
-						return $.i18n(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
+						if (baseName==$.t("Humidity")) {unit = '%'} else {unit = '\u00B0 ' + $.myglobals.tempsign};
+						return $.t(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
 				  }
 			  },
 			  legend: {
@@ -645,19 +645,19 @@ define(['app'], function (app) {
 							tUntil=item.Until;
 						if (typeof item.SetPoint != 'undefined'){
 							bigtext+=' ('+item.SetPoint + '\u00B0)';
-							status+=', '+$.i18n('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
+							status+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
 							setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
 						}
 						if (typeof item.State != 'undefined'){
 							bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
-							status+=', '+$.i18n('State') + ': ' + item.State;
+							status+=', '+$.t('State') + ': ' + item.State;
 							setonclick='EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.State + '\', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
 						}
 						if(sHeatMode!="Auto")
 							bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
-						status+=', '+$.i18n('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
+						status+=', '+$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
 						if (tUntil!=""){
-							status+=', '+$.i18n('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+							status+=', '+$.t('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
 						}
 						bHaveBefore=true;
 					}
@@ -669,7 +669,7 @@ define(['app'], function (app) {
 						if (status!="") {
 							status+=', ';
 						}
-						status+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+						status+=$.t('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
 						bHaveBefore=true;
 					}
 					var bHaveHumidity=false;
@@ -678,27 +678,27 @@ define(['app'], function (app) {
 										status+=', ';
 										bigtext+=' / ';
 									}
-					  status+=$.i18n('Humidity') + ': ' + item.Humidity + ' %';
+					  status+=$.t('Humidity') + ': ' + item.Humidity + ' %';
 					  bigtext+=item.Humidity + '%';
 					  bHaveHumidity=true;
 					}
 					if (typeof item.HumidityStatus != 'undefined') {
-					  status+=' (' + $.i18n(item.HumidityStatus) + ')';
+					  status+=' (' + $.t(item.HumidityStatus) + ')';
 					}
 					if (typeof item.Barometer != 'undefined') {
-					  status+='<br>' + $.i18n('Barometer') + ': ' + item.Barometer + ' hPa';
+					  status+='<br>' + $.t('Barometer') + ': ' + item.Barometer + ' hPa';
 					}
 					if (typeof item.ForecastStr != 'undefined') {
-					  status+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
+					  status+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
 					}
 					if (typeof item.Direction != 'undefined') {
-					  status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+					  status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 					  if (typeof item.Gust != 'undefined') {
-						status+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+						status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 					  }
 					}
 					if (typeof item.DewPoint != 'undefined') {
-						status+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
+						status+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
 					}
 
 					var nbackcolor="#D4E1EE";
@@ -895,15 +895,15 @@ define(['app'], function (app) {
 							}
 							if (item.SubType=="Zone" || item.SubType=="Hot Water") {
 								if (typeof item.SetPoint != 'undefined'){
-									xhtm+=', '+$.i18n('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
+									xhtm+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
 								}
 								if (typeof item.State != 'undefined'){
-									xhtm+=', '+$.i18n('State') + ': ' + item.State;
+									xhtm+=', '+$.t('State') + ': ' + item.State;
 								}
-								xhtm+=', '+$.i18n('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
+								xhtm+=', '+$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
 								if (typeof item.Until != 'undefined'){
 									tUntil=item.Until;
-									xhtm+=', '+$.i18n('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+									xhtm+=', '+$.t('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
 								}
 								bHaveBefore=true;
 							}
@@ -911,7 +911,7 @@ define(['app'], function (app) {
 								if (typeof item.Temp != 'undefined') {
 									xhtm+=', ';
 								}
-								xhtm+=$.i18n('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+								xhtm+=$.t('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
 								bHaveBefore=true;
 							}
 							var bHaveHumidity=false;
@@ -919,26 +919,26 @@ define(['app'], function (app) {
 								if (bHaveBefore==true) {
 									xhtm+=', ';
 								}
-								xhtm+=$.i18n('Humidity') + ': ' + item.Humidity + ' %';
+								xhtm+=$.t('Humidity') + ': ' + item.Humidity + ' %';
 								bHaveHumidity=true;
 							}
 							if (typeof item.HumidityStatus != 'undefined') {
-								xhtm+=' (' + $.i18n(item.HumidityStatus) + ')';
+								xhtm+=' (' + $.t(item.HumidityStatus) + ')';
 							}
 							if (typeof item.Barometer != 'undefined') {
-								xhtm+='<br>' + $.i18n('Barometer') + ': ' + item.Barometer + ' hPa';
+								xhtm+='<br>' + $.t('Barometer') + ': ' + item.Barometer + ' hPa';
 							}
 							if (typeof item.ForecastStr != 'undefined') {
-								xhtm+=', ' + $.i18n('Prediction') + ': ' + $.i18n(item.ForecastStr);
+								xhtm+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
 							}
 							if (typeof item.Direction != 'undefined') {
-								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', ' + $.i18n('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 								if (typeof item.Gust != 'undefined') {
-									xhtm+=', ' + $.i18n('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 							}
 							if (typeof item.DewPoint != 'undefined') {
-								xhtm+="<br>"+$.i18n("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
+								xhtm+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
 							}
 							xhtm+=
 									'</td>\n' +
@@ -946,11 +946,11 @@ define(['app'], function (app) {
 									'\t      <td>';
 				  if (item.Favorite == 0) {
 					xhtm+=
-						  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=
-						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  xhtm+=
 						'<a class="btnsmall" onclick="ShowTempLog(\'#tempcontent\',\'ShowTemps\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
@@ -991,7 +991,7 @@ define(['app'], function (app) {
 		  }
 		  if (htmlcontent == '')
 		  {
-			htmlcontent='<h2>' + $.i18n('No Temperature sensors found or added in the system...') + '</h2>';
+			htmlcontent='<h2>' + $.t('No Temperature sensors found or added in the system...') + '</h2>';
 		  }
 		  $('#modal').hide();
 		  $('#tempcontent').html(tophtm+htmlcontent);
@@ -1046,7 +1046,7 @@ define(['app'], function (app) {
 			$.LastUpdateTime=parseInt(0);
 			
 			var dialog_edittempdevice_buttons = {};
-			dialog_edittempdevice_buttons[$.i18n("Update")]=function() {
+			dialog_edittempdevice_buttons[$.t("Update")]=function() {
 				  var bValid = true;
 				  bValid = bValid && checkLength( $("#dialog-edittempdevice #edittable #devicename"), 2, 100 );
 				  if ( bValid ) {
@@ -1063,9 +1063,9 @@ define(['app'], function (app) {
 
 				  }
 			};
-			dialog_edittempdevice_buttons[$.i18n("Remove Device")]=function() {
+			dialog_edittempdevice_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=false',
@@ -1078,11 +1078,11 @@ define(['app'], function (app) {
 					}
 				});
 			};
-			dialog_edittempdevice_buttons[$.i18n("Replace")]=function() {
+			dialog_edittempdevice_buttons[$.t("Replace")]=function() {
 				  $( this ).dialog( "close" );
 				  ReplaceDevice($.devIdx,ShowTemps);
 			};
-			dialog_edittempdevice_buttons[$.i18n("Cancel")]=function() {
+			dialog_edittempdevice_buttons[$.t("Cancel")]=function() {
 				$( this ).dialog( "close" );
 			};
 			$( "#dialog-edittempdevice" ).dialog({
@@ -1091,7 +1091,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_edittempdevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -1099,12 +1099,12 @@ define(['app'], function (app) {
 			});
 			
 			var dialog_editsetpoint_buttons = {};
-			dialog_editsetpoint_buttons[$.i18n("Set")]=function() {
+			dialog_editsetpoint_buttons[$.t("Set")]=function() {
 				  var bValid = true;
 				  bValid = bValid && checkLength( $("#dialog-editsetpoint #edittable #devicename"), 2, 100 );
 				  var setpoint=$("#dialog-editsetpoint #edittable #setpoint").val();
 				  if (setpoint<5 || setpoint>35){
-					bootbox.alert($.i18n('Set point must be between 5 and 35 degrees'));
+					bootbox.alert($.t('Set point must be between 5 and 35 degrees'));
 					return false;
 				  }
 				  var tUntil="";
@@ -1112,7 +1112,7 @@ define(['app'], function (app) {
 					var selectedDate = $("#dialog-editsetpoint #edittable #until").datetimepicker('getDate');
 					var now = new Date();
 					if (selectedDate < now) {
-						bootbox.alert($.i18n('Temporary set point date / time must be in the future'));
+						bootbox.alert($.t('Temporary set point date / time must be in the future'));
 						return false;
 					}
 					tUntil=selectedDate.toISOString();
@@ -1131,7 +1131,7 @@ define(['app'], function (app) {
 
 				  }
 			  };
-			dialog_editsetpoint_buttons[$.i18n("Cancel Override")]=function() {
+			dialog_editsetpoint_buttons[$.t("Cancel Override")]=function() {
 				  var bValid = true;
 				  bValid = bValid && checkLength( $("#dialog-editsetpoint #edittable #devicename"), 2, 100 );
 				  if ( bValid ) {
@@ -1150,7 +1150,7 @@ define(['app'], function (app) {
 
 				  }
 			  };
-			dialog_editsetpoint_buttons[$.i18n("Cancel")]=function() {
+			dialog_editsetpoint_buttons[$.t("Cancel")]=function() {
 				$( this ).dialog( "close" );
 				ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
 			};
@@ -1161,7 +1161,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Set Point"),
+				  title: $.t("Edit Set Point"),
 				  buttons: dialog_editsetpoint_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -1171,7 +1171,7 @@ define(['app'], function (app) {
 			
 			var dialog_editstate_buttons = {};
 
-			dialog_editstate_buttons[$.i18n("Set")]=function() {
+			dialog_editstate_buttons[$.t("Set")]=function() {
 			  var bValid = true;
 			  bValid = bValid && checkLength( $("#dialog-editstate #edittable #devicename"), 2, 100 );
 			  if ( bValid ) {
@@ -1191,7 +1191,7 @@ define(['app'], function (app) {
 
 			  }
 			};
-			dialog_editstate_buttons[$.i18n("Cancel")]=function() {
+			dialog_editstate_buttons[$.t("Cancel")]=function() {
 				$( this ).dialog( "close" );
 				ShowTemps();//going into the dialog removes the background timer refresh (see EditSetPoint)
 			};
@@ -1202,7 +1202,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit State"),
+				  title: $.t("Edit State"),
 				  buttons: dialog_editstate_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
@@ -1211,7 +1211,7 @@ define(['app'], function (app) {
 			});
 			
 			var dialog_edittempdevicesmall_buttons = {};
-			dialog_edittempdevicesmall_buttons[$.i18n("Update")]=function() {
+			dialog_edittempdevicesmall_buttons[$.t("Update")]=function() {
 				  var bValid = true;
 				  bValid = bValid && checkLength( $("#dialog-edittempdevicesmall #edittable #devicename"), 2, 100 );
 				  if ( bValid ) {
@@ -1227,9 +1227,9 @@ define(['app'], function (app) {
 
 				  }
 			  };
-			dialog_edittempdevicesmall_buttons[$.i18n("Remove Device")]=function() {
+			dialog_edittempdevicesmall_buttons[$.t("Remove Device")]=function() {
 				$( this ).dialog( "close" );
-				bootbox.confirm($.i18n("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=false',
@@ -1242,11 +1242,11 @@ define(['app'], function (app) {
 					}
 				});
 			  };
-			dialog_edittempdevicesmall_buttons[$.i18n("Replace")]=function() {
+			dialog_edittempdevicesmall_buttons[$.t("Replace")]=function() {
 			  $( this ).dialog( "close" );
 			  ReplaceDevice($.devIdx,ShowTemps);
 			};
-			dialog_edittempdevicesmall_buttons[$.i18n("Cancel")]=function() {
+			dialog_edittempdevicesmall_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};
 			$( "#dialog-edittempdevicesmall" ).dialog({
@@ -1255,7 +1255,7 @@ define(['app'], function (app) {
 				  height: 'auto',
 				  modal: true,
 				  resizable: false,
-				  title: $.i18n("Edit Device"),
+				  title: $.t("Edit Device"),
 				  buttons: dialog_edittempdevicesmall_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );

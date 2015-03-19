@@ -20,7 +20,7 @@ define(['app'], function (app) {
 			}
 			else {
 				$("#updatecontent #divprogress").hide();
-				$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...");
+				$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
 			}
 		}
 
@@ -65,7 +65,7 @@ define(['app'], function (app) {
 				 timeout: 20000,
 				 dataType: 'json',
 				 success: function(data) {
-					$scope.topText = $.i18n("Restarting System (This could take some time...)");
+					$scope.topText = $.t("Restarting System (This could take some time...)");
 					//var val = $( "#progressbar" ).progressbar( "value" ) || 0;
 					//$( "#progressbar" ).progressbar( "value", 90 );
 				 },
@@ -83,7 +83,7 @@ define(['app'], function (app) {
 			var val = $( "#progressbar" ).progressbar( "value" ) || 0;
 			if (val == 100) {
 				$("#updatecontent #divprogress").hide();
-				$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...");
+				$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
 				return;
 			}
 			$.ajax({
@@ -98,7 +98,7 @@ define(['app'], function (app) {
 									$scope.mytimer = undefined;
 								}
 								$( "#progressbar" ).progressbar( "value",0);
-								$scope.topText = $.i18n("Updating system...");
+								$scope.topText = $.t("Updating system...");
 								$scope.mytimer=$interval(function() {
 									$scope.progressupdatesystem();
 								}, 200);
@@ -109,7 +109,7 @@ define(['app'], function (app) {
 						else {
 							$.StopProgress=true;
 							$("#updatecontent #divprogress").hide();
-							$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...");
+							$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
 						}
 					}
 					else {
@@ -121,7 +121,7 @@ define(['app'], function (app) {
 				 error: function(){
 					$.StopProgress=true;
 					$("#updatecontent #divprogress").hide();
-					$scope.topText = $.i18n("Error while downloading Update,<br>check your internet connection or try again later !...");
+					$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
 				 }     
 			});
 		}
@@ -138,7 +138,7 @@ define(['app'], function (app) {
 				 dataType: 'json',
 				 success: function(data) {
 					if (data.HaveUpdate == true) {
-						$scope.topText = $.i18n("Update Available... Downloading Update !...");
+						$scope.topText = $.t("Update Available... Downloading Update !...");
 						$.ajax({
 							 url: "json.htm?type=command&param=downloadupdate",
 							 async: false, 
@@ -155,20 +155,20 @@ define(['app'], function (app) {
 									}, 2000);
 								}
 								else {
-									$scope.topText = $.i18n("Could not start download,<br>check your internet connection or try again later !...");
+									$scope.topText = $.t("Could not start download,<br>check your internet connection or try again later !...");
 								}
 							 },
 							 error: function(){
-								$scope.topText = $.i18n("Error communicating with Server !...");
+								$scope.topText = $.t("Error communicating with Server !...");
 							 }
 						});
 					}
 					else {
-						$scope.topText = $.i18n("No Update Available !...");
+						$scope.topText = $.t("No Update Available !...");
 					}
 				 },
 				 error: function(){
-					$scope.topText = $.i18n("Error communicating with Server !...");
+					$scope.topText = $.t("Error communicating with Server !...");
 				 }     
 			});
 		}
@@ -178,8 +178,8 @@ define(['app'], function (app) {
 		function init()
 		{
 			$.StopProgress=false;
-			$scope.topText = $.i18n("Checking for updates....");
-			$scope.bottomText = $.i18n("Do not poweroff the system while updating !...");
+			$scope.topText = $.t("Checking for updates....");
+			$scope.bottomText = $.t("Do not poweroff the system while updating !...");
 			var progressbar = $( "#progressbar" );
 			progressLabel = $( ".progress-label" );
 			progressbar.height(22);

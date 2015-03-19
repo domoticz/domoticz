@@ -120,7 +120,7 @@ define(['app'], function (app) {
 
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 		  $.ajax({
@@ -234,7 +234,7 @@ define(['app'], function (app) {
 		}
 
 		DeleteFloorplan = function(idx) {
-			bootbox.confirm($.i18n("Are you sure you want to delete this Floorplan?"), function(result) {
+			bootbox.confirm($.t("Are you sure you want to delete this Floorplan?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deletefloorplan&idx=" + idx,
@@ -269,7 +269,7 @@ define(['app'], function (app) {
 			}
 			csettings.scalefactor=$("#dialog-add-edit-floorplan #scalefactor").val();
 			if (!$.isNumeric(csettings.scalefactor)) {
-				ShowNotify($.i18n('Icon Scale can only contain numbers...'), 2000, true);
+				ShowNotify($.t('Icon Scale can only contain numbers...'), 2000, true);
 				return;
 			}
 			return csettings;
@@ -715,7 +715,7 @@ define(['app'], function (app) {
 
 		ConfirmNoUpdate = function(param, yesFunc) {
 			if ($('#floorplaneditcontent #delclractive #activeplanupdate').attr("class") == "btnstyle3") {
-				bootbox.confirm($.i18n("You have unsaved changes, do you want to continue?"), 
+				bootbox.confirm($.t("You have unsaved changes, do you want to continue?"), 
 					function(result) {
 						if (result==true) {
 							yesFunc(param);
@@ -727,7 +727,7 @@ define(['app'], function (app) {
 		}
 
 		DeleteFloorplanPlan = function(planidx) {
-			bootbox.confirm($.i18n("Are you sure to delete this Plan from the Floorplan?"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete this Plan from the Floorplan?"), function(result) {
 
 				if (result==true) {
 						$.ajax({
