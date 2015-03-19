@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 808
+# ref 814
 
 CACHE:
 # CSS
@@ -381,7 +381,6 @@ secpanel/sounds/wrong.mp3
 secpanel/sounds/wrong.ogg
 
 # Languages
-i18n/domoticz-ar.json
 i18n/domoticz-bg.json
 i18n/domoticz-cs.json
 i18n/domoticz-de.json
@@ -398,7 +397,7 @@ i18n/domoticz-pt.json
 i18n/domoticz-ru.json
 i18n/domoticz-sk.json
 i18n/domoticz-sv.json
-i18n/domoticz-vi.json
+i18n/domoticz-tr.json
 
 # Scripts
 app/app.js
@@ -457,18 +456,13 @@ js/highcharts-more.js
 js/highcharts-ng.min.js
 js/highcharts.js
 js/html5shiv.js
+js/i18next-1.8.0.min.js
 js/jquery-1.11.2.min.js
 js/jquery-migrate-1.2.1.min.js
 js/jquery-ui-1.10.3.custom.min.js
 js/jquery-ui.min.js
 js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js
-js/jquery.i18n.emitter.js
-js/jquery.i18n.fallbacks.js
-js/jquery.i18n.js
-js/jquery.i18n.language.js
-js/jquery.i18n.messages.js
-js/jquery.i18n.parser.js
 js/jquery.isotope.min.js
 js/jquery.jeditable.mini.js
 js/jquery.ui.touch-punch.min.js

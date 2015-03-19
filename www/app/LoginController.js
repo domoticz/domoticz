@@ -22,7 +22,7 @@ define(['app'], function (app) {
 							return;
 						}
 						else {
-							ShowNotify($.i18n('Incorrect Username/Password!'), 2500, true);
+							ShowNotify($.t('Incorrect Username/Password!'), 2500, true);
 						}
 						return;
 					}
@@ -48,7 +48,7 @@ define(['app'], function (app) {
 						return;
 					}
 					else {
-						ShowNotify($.i18n('Incorrect Username/Password!'), 2500, true);
+						ShowNotify($.t('Incorrect Username/Password!'), 2500, true);
 					}
 				}
 			});
@@ -77,13 +77,13 @@ define(['app'], function (app) {
 			var $inputs = $('#login :input');
 			$inputs.each(function() {
 				if ($(this).attr("id")!="submit") {
-					$(this).attr("placeholder",$.i18n($(this).attr("placeholder")));
+					$(this).attr("placeholder",$.t($(this).attr("placeholder")));
 				}
 				else {
-					$(this).attr("value",$.i18n("Login"));
+					$(this).attr("value",$.t("Login"));
 				}
 			});
-			$("#remembermelbl").text($.i18n("Remember me"));
+			$("#remembermelbl").text($.t("Remember me"));
 		};
 	} ]);
 });

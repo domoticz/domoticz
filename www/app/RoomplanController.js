@@ -5,7 +5,7 @@ define(['app'], function (app) {
 		{
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 		  $.ajax({
@@ -21,7 +21,7 @@ define(['app'], function (app) {
 		{
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 		  $.ajax({
@@ -90,7 +90,7 @@ define(['app'], function (app) {
 
 		DeletePlan = function(idx)
 		{
-			bootbox.confirm($.i18n("Are you sure you want to delete this Plan?"), function(result) {
+			bootbox.confirm($.t("Are you sure you want to delete this Plan?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deleteplan&idx=" + idx,
@@ -449,7 +449,7 @@ define(['app'], function (app) {
 
 		DeleteActiveDevice = function(idx)
 		{
-			bootbox.confirm($.i18n("Are you sure to delete this Active Device?\n\nThis action can not be undone..."), function(result) {
+			bootbox.confirm($.t("Are you sure to delete this Active Device?\n\nThis action can not be undone..."), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deleteplandevice&idx=" + idx,
@@ -466,7 +466,7 @@ define(['app'], function (app) {
 
 		ClearActiveDevices = function()
 		{
-			bootbox.confirm($.i18n("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!"), function(result) {
 				if (result==true) {
 					$.ajax({
 							url: "json.htm?type=command&param=deleteallplandevices&idx=" + $.devIdx,

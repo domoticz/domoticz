@@ -79,24 +79,24 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Fibaro link settings saved'));
+					bootbox.alert($.t('Fibaro link settings saved'));
 				 },
 				 error: function(){
-						ShowNotify($.i18n('Problem saving Fibaro link settings!'), 2500, true);
+						ShowNotify($.t('Problem saving Fibaro link settings!'), 2500, true);
 				 }     
 			});
 		}
 
 		DeleteLink = function(idx)
 		{
-			bootbox.confirm($.i18n("Are you sure you want to remove this link?"), function(result) {
+			bootbox.confirm($.t("Are you sure you want to remove this link?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						url: "json.htm?type=command&param=deletefibarolink&idx=" + idx,
 						async: false, 
 						dataType: 'json',
 						success: function(data) {
-							//bootbox.alert($.i18n('Link deleted!'));
+							//bootbox.alert($.t('Link deleted!'));
 							RefreshLinkTable();
 						}
 					});
@@ -148,11 +148,11 @@ define(['app'], function (app) {
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
-					bootbox.alert($.i18n('Fibaro link saved'));
+					bootbox.alert($.t('Fibaro link saved'));
 					RefreshLinkTable();
 				 },
 				 error: function(){
-						ShowNotify($.i18n('Problem saving Fibaro link!'), 2500, true);
+						ShowNotify($.t('Problem saving Fibaro link!'), 2500, true);
 				 }     
 			});
 		}
@@ -181,7 +181,7 @@ define(['app'], function (app) {
 					}
 				},
 				error: function(){
-					ShowNotify($.i18n('Problem retrieving Fibaro link settings!'), 2500, true);
+					ShowNotify($.t('Problem retrieving Fibaro link settings!'), 2500, true);
 				}
 			});
 		}
@@ -200,7 +200,7 @@ define(['app'], function (app) {
 			  if (typeof data.result != 'undefined') {
 				$.each(data.result, function(i,item){
 					var option = document.createElement("option");
-					option.text = $.i18n(item.Wording);
+					option.text = $.t(item.Wording);
 					option.value = item.Value;
 					select.appendChild(option);
 				});
@@ -225,21 +225,21 @@ define(['app'], function (app) {
 			 success: function(data) {   
 			  if (typeof data.result != 'undefined') {
 				$.each(data.result, function(i,item){
-					var enabled = $.i18n('No');
-					var includeUnit = $.i18n('No');
+					var enabled = $.t('No');
+					var includeUnit = $.t('No');
 					if (item.Enabled == 1)
-						enabled = $.i18n('Yes');
+						enabled = $.t('Yes');
 					if (item.IncludeUnit == 1)
-						includeUnit = $.i18n('Yes');
-					var TargetType = $.i18n('Global variable');
+						includeUnit = $.t('Yes');
+					var TargetType = $.t('Global variable');
 					if (item.TargetType==1) 
-						TargetType = $.i18n('Virtual device');
+						TargetType = $.t('Virtual device');
 					if (item.TargetType==2) {
-						TargetType = $.i18n('Scene');	
+						TargetType = $.t('Scene');	
 						includeUnit = "-";
 					}
 					if (item.TargetType==3) {
-						TargetType = $.i18n('Reboot');	
+						TargetType = $.t('Reboot');	
 						includeUnit = "-";
 					}
 					if (item.TargetDevice == 0)
@@ -248,26 +248,26 @@ define(['app'], function (app) {
 					
 					if (item.TargetType==2) {
 						if (item.Delimitedvalue == 0) {
-							DelimitedValue = $.i18n('Off');
+							DelimitedValue = $.t('Off');
 						}
 						else if (item.Delimitedvalue == 1) {
-							DelimitedValue = $.i18n('On');
+							DelimitedValue = $.t('On');
 						}
 					}
 					else if (item.TargetType==3) {
 						if (item.Delimitedvalue == 0) {
-							DelimitedValue = $.i18n('Off');
+							DelimitedValue = $.t('Off');
 						}
 						else if (item.Delimitedvalue == 1) {
-							DelimitedValue = $.i18n('On');
+							DelimitedValue = $.t('On');
 						}
 					}
 					else {
 						if (item.Delimitedvalue == 0) {
-							DelimitedValue = $.i18n('Status');
+							DelimitedValue = $.t('Status');
 						}
 						else {
-							DelimitedValue = $.i18n(GetDeviceValueOptionWording(item.DeviceID,item.Delimitedvalue));
+							DelimitedValue = $.t(GetDeviceValueOptionWording(item.DeviceID,item.Delimitedvalue));
 						}
 					}
 					var addId = oTable.fnAddData( {

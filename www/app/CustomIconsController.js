@@ -14,13 +14,13 @@ define(['app'], function (app) {
 			.success(function(data){
 				if (data.status!="OK") {
 					HideNotify();
-					ShowNotify($.i18n('Error uploading Iconset') + ": " + data.error, 5000, true);
+					ShowNotify($.t('Error uploading Iconset') + ": " + data.error, 5000, true);
 				}
 				$scope.RefreshIconList();
 			})
 			.error(function(data){
 				HideNotify();
-				ShowNotify($.i18n('Error uploading Iconset'), 5000, true);
+				ShowNotify($.t('Error uploading Iconset'), 5000, true);
 			});
 		}
 		
@@ -28,7 +28,7 @@ define(['app'], function (app) {
 			var file = $scope.myFile;
 			if (typeof file == 'undefined') {
 				HideNotify();
-				ShowNotify($.i18n('Choose a File first!'), 2500, true);
+				ShowNotify($.t('Choose a File first!'), 2500, true);
 				return;
 			}
 			$scope.uploadFileToUrl(file, "uploadcustomicon");
@@ -55,7 +55,7 @@ define(['app'], function (app) {
 		}
 		
 		$scope.DeleteIcon = function() {
-			bootbox.confirm($.i18n("Are you sure to delete this Icon?"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete this Icon?"), function(result) {
 				if (result==true) {
 					$.ajax({
 							url: "json.htm?type=command&param=deletecustomicon&idx=" + $scope.selectedIcon.idx,

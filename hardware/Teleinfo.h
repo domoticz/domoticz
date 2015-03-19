@@ -85,24 +85,6 @@ class Teleinfo : public CDomoticzHardwareBase, AsyncSerial
 public:
 
 	Teleinfo(const int ID, const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE);
-
-	/**
-	* Opens a serial device.
-	* \param devname serial device name, example "/dev/ttyAMA0" or "COM1"
-	* \param baud_rate serial baud rate, default 1200
-	* \param opt_parity serial parity, default even
-	* \param opt_csize serial character size, default 7bit
-	* \param opt_flow serial flow control, default none
-	* \param opt_stop serial stop bits, default 1
-	* \throws boost::system::system_error if cannot open the
-	* serial device
-	*/
-	Teleinfo(const std::string& devname, unsigned int baud_rate = TELEINFO_BAUD_RATE,
-		boost::asio::serial_port_base::parity opt_parity = boost::asio::serial_port_base::parity(TELEINFO_PARITY),
-		boost::asio::serial_port_base::character_size opt_csize = boost::asio::serial_port_base::character_size(TELEINFO_CARACTER_SIZE),
-		boost::asio::serial_port_base::flow_control opt_flow = boost::asio::serial_port_base::flow_control(TELEINFO_FLOW_CONTROL),
-		boost::asio::serial_port_base::stop_bits opt_stop = boost::asio::serial_port_base::stop_bits(TELEINFO_STOP_BITS));
-
 	~Teleinfo();
 	std::string m_szSerialPort;
 

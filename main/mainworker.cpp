@@ -152,7 +152,9 @@ void MainWorker::StopDomoticzHardware()
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
 		(*itt)->Stop();
+		delete (*itt);
 	}
+	m_hardwaredevices.clear();
 }
 
 void MainWorker::GetAvailableWebThemes()

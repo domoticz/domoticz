@@ -180,7 +180,7 @@ define(['app'], function (app) {
 				$scope.FloorplanResize();
 			}
 			else {
-				$.cachenoty=generate_noty('warning', '<b>'+$.i18n('Fullscreen mode is disabled')+'</b>', 3000);
+				$.cachenoty=generate_noty('warning', '<b>'+$.t('Fullscreen mode is disabled')+'</b>', 3000);
 			}
 		}
 		

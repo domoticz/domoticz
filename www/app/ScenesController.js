@@ -11,7 +11,7 @@ define(['app'], function (app) {
 
 			$("#scenecontent #removecode").addClass("disabled");
 			$("#scenecontent #learncode").addClass("btn-success");
-			$("#scenecontent #learncode").html($.i18n("Learn Code"));
+			$("#scenecontent #learncode").html($.t("Learn Code"));
 
 			$("#scenecontent #learndevicename").html("");
 
@@ -26,7 +26,7 @@ define(['app'], function (app) {
 
 		LearnCode = function()
 		{
-		  ShowNotify($.i18n('Press button on Remote...'));
+		  ShowNotify($.t('Press button on Remote...'));
 		  
 		  setTimeout(function() {
 			var bHaveFoundDevice = false;
@@ -64,7 +64,7 @@ define(['app'], function (app) {
 
 						$("#scenecontent #removecode").addClass("btn-danger");
 						$("#scenecontent #learncode").addClass("btn-warning");
-						$("#scenecontent #learncode").html($.i18n("Change Code"));
+						$("#scenecontent #learncode").html($.t("Change Code"));
 						
 						$("#scenecontent #learndevicename").html("( " + Name + " )");
 						
@@ -77,7 +77,7 @@ define(['app'], function (app) {
 						});
 			  }
 			  else {
-				 ShowNotify($.i18n('Timeout...<br>Please try again!'), 2500, true);
+				 ShowNotify($.t('Timeout...<br>Please try again!'), 2500, true);
 			  }
 			}, 200);
 			}, 600);
@@ -90,7 +90,7 @@ define(['app'], function (app) {
 
 		DeleteScene = function()
 		{
-			bootbox.confirm($.i18n("Are you sure to remove this Scene?"), function(result) {
+			bootbox.confirm($.t("Are you sure to remove this Scene?"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=deletescene&idx=" + $.devIdx,
@@ -114,24 +114,24 @@ define(['app'], function (app) {
 				
 				if (onaction!="") {
 					if ( (onaction.indexOf("http://") !=0) && (onaction.indexOf("script://") !=0) ) {
-						bootbox.alert($.i18n("Invalid ON Action!"));
+						bootbox.alert($.t("Invalid ON Action!"));
 						return;
 					}
 					else {
 						if (checkLength( $("#scenecontent #onaction"), 10, 500 )==false) {
-							bootbox.alert($.i18n("Invalid ON Action!"));
+							bootbox.alert($.t("Invalid ON Action!"));
 							return;
 						}
 					}
 				}
 				if (offaction!="") {
 					if ( (offaction.indexOf("http://") !=0) && (offaction.indexOf("script://") !=0) ) {
-						bootbox.alert($.i18n("Invalid Off Action!"));
+						bootbox.alert($.t("Invalid Off Action!"));
 						return;
 					}
 					else {
 						if (checkLength( $("#scenecontent #offaction"), 10, 500 )==false) {
-							bootbox.alert($.i18n("Invalid Off Action!"));
+							bootbox.alert($.t("Invalid Off Action!"));
 							return;
 						}
 					}
@@ -160,7 +160,7 @@ define(['app'], function (app) {
 		{
 			var DeviceIdx=$("#scenecontent #combodevice option:selected").val();
 			if (typeof DeviceIdx == 'undefined') {
-				bootbox.alert($.i18n('No Device Selected!'));
+				bootbox.alert($.t('No Device Selected!'));
 				return ;
 			}
 
@@ -198,12 +198,12 @@ define(['app'], function (app) {
 						RefreshDeviceTable($.devIdx);
 					}
 					else {
-						ShowNotify($.i18n('Problem adding Device!'), 2500, true);
+						ShowNotify($.t('Problem adding Device!'), 2500, true);
 					}
 				 },
 				 error: function(){
 						HideNotify();
-						ShowNotify($.i18n('Problem adding Device!'), 2500, true);
+						ShowNotify($.t('Problem adding Device!'), 2500, true);
 				 }     
 			});
 		}
@@ -211,7 +211,7 @@ define(['app'], function (app) {
 		ClearDevices = function()
 		{
 			var bValid = false;
-			bootbox.confirm($.i18n("Are you sure to delete ALL Devices?\n\nThis action can not be undone!"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete ALL Devices?\n\nThis action can not be undone!"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deleteallscenedevices&idx=" + $.devIdx,
@@ -229,7 +229,7 @@ define(['app'], function (app) {
 		{
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 
@@ -251,7 +251,7 @@ define(['app'], function (app) {
 		{
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 		  $.ajax({
@@ -269,7 +269,7 @@ define(['app'], function (app) {
 			clearInterval($.setColValue);
 			if (permissions.hasPermission("Viewer")) {
 				HideNotify();
-				ShowNotify($.i18n('You do not have permission to do that!'), 2500, true);
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 			var bIsWhite=$('#scenecontent #ledtable #optionsWhite').is(":checked");
@@ -310,18 +310,18 @@ define(['app'], function (app) {
 						var commandbtns;
 						if ($.isScene==false) {
 							if (item.IsOn==true) {
-								commandbtns='<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
+								commandbtns='<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.t('ON') + '</button> <button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.t('OFF') + '</button>';
 							}
 							else {
-								commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.i18n('ON') + '</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.i18n('OFF') + '</button>';
+								commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.t('ON') + '</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.t('OFF') + '</button>';
 							}
 						}
 						else {
 							if (item.IsOn==true) {
-								commandbtns='<button class="btn btn-mini btn-info" type="button">' + $.i18n('ON') + '</button> <button class="btn btn-mini" type="button">' + $.i18n('OFF') + '</button>';
+								commandbtns='<button class="btn btn-mini btn-info" type="button">' + $.t('ON') + '</button> <button class="btn btn-mini" type="button">' + $.t('OFF') + '</button>';
 							}
 							else {
-								commandbtns='<button class="btn btn-mini" type="button">' + $.i18n('ON') + '</button> <button class="btn btn-mini btn-info" type="button">' + $.i18n('OFF') + '</button>';
+								commandbtns='<button class="btn btn-mini" type="button">' + $.t('ON') + '</button> <button class="btn btn-mini btn-info" type="button">' + $.t('OFF') + '</button>';
 							}
 						}
 						var updownImg="";
@@ -448,11 +448,11 @@ define(['app'], function (app) {
 		{
 			var DeviceIdx=$("#scenecontent #combodevice option:selected").val();
 			if (typeof DeviceIdx == 'undefined') {
-				bootbox.alert($.i18n('No Device Selected!'));
+				bootbox.alert($.t('No Device Selected!'));
 				return ;
 			}
 			if (DeviceIdx!=devidx) {
-				bootbox.alert($.i18n('Device change not allowed!'));
+				bootbox.alert($.t('Device change not allowed!'));
 				return ;
 			}
 
@@ -491,19 +491,19 @@ define(['app'], function (app) {
 						RefreshDeviceTable($.devIdx);
 					}
 					else {
-						ShowNotify($.i18n('Problem updating Device!'), 2500, true);
+						ShowNotify($.t('Problem updating Device!'), 2500, true);
 					}
 				 },
 				 error: function(){
 					HideNotify();
-					ShowNotify($.i18n('Problem updating Device!'), 2500, true);
+					ShowNotify($.t('Problem updating Device!'), 2500, true);
 				 }     
 			});
 		}
 
 		DeleteDevice = function(idx)
 		{
-			bootbox.confirm($.i18n("Are you sure to delete this Device?\n\nThis action can not be undone..."), function(result) {
+			bootbox.confirm($.t("Are you sure to delete this Device?\n\nThis action can not be undone..."), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deletescenedevice&idx=" + idx,
@@ -576,12 +576,12 @@ define(['app'], function (app) {
 		  if (bIsScene==true) {
 			$("#scenecontent #combotype").val(0);
 			$("#scenecontent #CommandDiv").show();
-			$("#scenecontent #CommandHeader").html($.i18n("Command"));
+			$("#scenecontent #CommandHeader").html($.t("Command"));
 		  }
 		  else {
 			$("#scenecontent #combotype").val(1);
 			$("#scenecontent #CommandDiv").hide();
-			$("#scenecontent #CommandHeader").html($.i18n("State"));
+			$("#scenecontent #CommandHeader").html($.t("State"));
 		  }
 
 			$('#scenecontent #picker').colpick({
@@ -647,13 +647,13 @@ define(['app'], function (app) {
 			if (havecode==0) {
 					$("#scenecontent #removecode").addClass("disabled");
 					$("#scenecontent #learncode").addClass("btn-success");
-					$("#scenecontent #learncode").html($.i18n("Learn Code"));
+					$("#scenecontent #learncode").html($.t("Learn Code"));
 					$("#scenecontent #learndevicename").html("");
 			}
 			else {
 					$("#scenecontent #removecode").addClass("btn-danger");
 					$("#scenecontent #learncode").addClass("btn-warning");
-					$("#scenecontent #learncode").html($.i18n("Change Code"));
+					$("#scenecontent #learncode").html($.t("Change Code"));
 					$("#scenecontent #learndevicename").html("( " + learndevicename + " )");
 			}
 
@@ -704,7 +704,7 @@ define(['app'], function (app) {
 
 		ClearTimers = function()
 		{
-			bootbox.confirm($.i18n("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function(result) {
+			bootbox.confirm($.t("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=clearscenetimers&idx=" + $.devIdx,
@@ -715,7 +715,7 @@ define(['app'], function (app) {
 						 },
 						 error: function(){
 								HideNotify();
-								ShowNotify($.i18n('Problem clearing timers!'), 2500, true);
+								ShowNotify($.t('Problem clearing timers!'), 2500, true);
 						 }     
 					});
 				}
@@ -724,7 +724,7 @@ define(['app'], function (app) {
 
 		DeleteTimer = function(idx)
 		{
-			bootbox.confirm($.i18n("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
+			bootbox.confirm($.t("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
 				if (result==true) {
 					$.ajax({
 						 url: "json.htm?type=command&param=deletescenetimer&idx=" + idx,
@@ -735,7 +735,7 @@ define(['app'], function (app) {
 						 },
 						 error: function(){
 								HideNotify();
-								ShowNotify($.i18n('Problem deleting timer!'), 2500, true);
+								ShowNotify($.t('Problem deleting timer!'), 2500, true);
 						 }     
 					});
 				}
@@ -793,7 +793,7 @@ define(['app'], function (app) {
 			var tsettings=GetTimerSettings();
 			if (tsettings.timertype==5) {
 				if (tsettings.date=="") {
-					ShowNotify($.i18n('Please select a Date!'), 2500, true);
+					ShowNotify($.t('Please select a Date!'), 2500, true);
 					return;
 				}
 				//Check if date/time is valid
@@ -801,13 +801,13 @@ define(['app'], function (app) {
 				var checkDate = new Date(pickedDate.getFullYear(), pickedDate.getMonth(), pickedDate.getDate(), tsettings.hour, tsettings.min, 0, 0);
 				var nowDate = new Date();
 				if (checkDate<nowDate) {
-					ShowNotify($.i18n('Invalid Date selected!'), 2500, true);
+					ShowNotify($.t('Invalid Date selected!'), 2500, true);
 					return;
 				}
 			}
 			else if (tsettings.days==0)
 			{
-				ShowNotify($.i18n('Please select some days!'), 2500, true);
+				ShowNotify($.t('Please select some days!'), 2500, true);
 				return;
 			}
 			$.ajax({
@@ -828,7 +828,7 @@ define(['app'], function (app) {
 				 },
 				 error: function(){
 						HideNotify();
-						ShowNotify($.i18n('Problem updating timer!'), 2500, true);
+						ShowNotify($.t('Problem updating timer!'), 2500, true);
 				 }     
 			});
 		}
@@ -838,7 +838,7 @@ define(['app'], function (app) {
 			var tsettings=GetTimerSettings();
 			if (tsettings.timertype==5) {
 				if (tsettings.date=="") {
-					ShowNotify($.i18n('Please select a Date!'), 2500, true);
+					ShowNotify($.t('Please select a Date!'), 2500, true);
 					return;
 				}
 				//Check if date/time is valid
@@ -846,13 +846,13 @@ define(['app'], function (app) {
 				var checkDate = new Date(pickedDate.getFullYear(), pickedDate.getMonth(), pickedDate.getDate(), tsettings.hour, tsettings.min, 0, 0);
 				var nowDate = new Date();
 				if (checkDate<nowDate) {
-					ShowNotify($.i18n('Invalid Date selected!'), 2500, true);
+					ShowNotify($.t('Invalid Date selected!'), 2500, true);
 					return;
 				}
 			}
 			else if (tsettings.days==0)
 			{
-				ShowNotify($.i18n('Please select some days!'), 2500, true);
+				ShowNotify($.t('Please select some days!'), 2500, true);
 				return;
 			}
 			$.ajax({
@@ -873,7 +873,7 @@ define(['app'], function (app) {
 				 },
 				 error: function(){
 						HideNotify();
-						ShowNotify($.i18n('Problem adding timer!'), 2500, true);
+						ShowNotify($.t('Problem adding timer!'), 2500, true);
 				 }     
 			});
 		}
@@ -974,11 +974,11 @@ define(['app'], function (app) {
 						"Active": active,
 						"Random": rEnabled,
 						"OrgDayString": DayStr,
-						"0": $.i18n(active),
-						"1": $.i18n($.myglobals.TimerTypesStr[item.Type]),
+						"0": $.t(active),
+						"1": $.t($.myglobals.TimerTypesStr[item.Type]),
 						"2": item.Date,
 						"3": item.Time,
-						"4": $.i18n(rEnabled),
+						"4": $.t(rEnabled),
 						"5": tCommand,
 						"6": DayStr
 					} );
@@ -1085,7 +1085,7 @@ define(['app'], function (app) {
 		  
 		  if (sunRise!="")
 		  {
-			htmlcontent+=$.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet + '<br><br>\n';
+			htmlcontent+=$.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet + '<br><br>\n';
 		  }
 		  
 		  htmlcontent+=$('#edittimers').html();
@@ -1215,7 +1215,7 @@ define(['app'], function (app) {
 							
 							var bigtext=TranslateStatusShort(item.Status);
 							if (item.UsedByCamera==true) {
-								var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
+								var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
 								streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 								bigtext+="&nbsp;"+streamurl;
 							}
@@ -1336,7 +1336,7 @@ define(['app'], function (app) {
 						'\t      <td id="bigtext">';
 						var bigtext=TranslateStatusShort(item.Status);
 					  if (item.UsedByCamera==true) {
-						var streamimg='<img src="images/webcam.png" title="' + $.i18n('Stream Video') +'" height="16" width="16">';
+						var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
 						streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 						bigtext+="&nbsp;"+streamurl;
 					  }
@@ -1364,15 +1364,15 @@ define(['app'], function (app) {
 					}
 					xhtm+=
 						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-						'\t      <td id="type">' + $.i18n(item.Type) +'</td>\n';
+						'\t      <td id="type">' + $.t(item.Type) +'</td>\n';
 					xhtm+='\t      <td>';
 				  if (item.Favorite == 0) {
 					xhtm+=      
-						  '<img src="images/nofavorite.png" title="' + $.i18n('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  else {
 					xhtm+=      
-						  '<img src="images/favorite.png" title="' + $.i18n('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
+						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
@@ -1403,7 +1403,7 @@ define(['app'], function (app) {
 		  }
 		  if (htmlcontent == '')
 		  {
-			htmlcontent='<h2>' + $.i18n('No Scenes defined yet...') + '</h2>';
+			htmlcontent='<h2>' + $.t('No Scenes defined yet...') + '</h2>';
 		  }
 		  $('#scenecontent').html(tophtm+htmlcontent); //tophtm+htmlcontent
 		  $('#scenecontent').i18n();
@@ -1470,9 +1470,9 @@ define(['app'], function (app) {
 						height: 200,
 						modal: true,
 						resizable: false,
-						title: $.i18n("Add Scene"),
+						title: $.t("Add Scene"),
 						buttons: [{
-									text: $.i18n("Add Scene"),
+									text: $.t("Add Scene"),
 									click: function() {
 											var bValid = true;
 											bValid = bValid && checkLength( $("#dialog-addscene #scenename"), 2, 100 );
@@ -1501,7 +1501,7 @@ define(['app'], function (app) {
 											}
 										}
 								  }, {
-									text: $.i18n("Cancel"),
+									text: $.t("Cancel"),
 									click: function() {
 										$( this ).dialog( "close" );
 									}

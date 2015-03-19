@@ -425,15 +425,15 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						var sunSet=data.Sunset;
 						var ServerTime=data.ServerTime;
 						var month=ServerTime.split(' ')[0];
-						ServerTime=ServerTime.replace(month,$.i18n(month));
+						ServerTime=ServerTime.replace(month,$.t(month));
 						
 						var suntext;
 						var bIsMobile=$.myglobals.ismobile;
 						if (bIsMobile == true) {
-							suntext=$.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet;
+							suntext=$.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet;
 						}
 						else {
-							suntext=ServerTime + ', ' + $.i18n('SunRise') + ': ' + sunRise + ', ' + $.i18n('SunSet') + ': ' + sunSet;
+							suntext=ServerTime + ', ' + $.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet;
 						}
 						$("#timesun").html(suntext);
 					}

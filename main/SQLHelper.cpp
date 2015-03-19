@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 61
+#define DB_VERSION 62
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -1211,6 +1211,19 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 61)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
+		}
+		if (dbversion < 62)
+		{
+			//Fix for Teleinfo hardware, where devices where created with Hardware_ID=0
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			result = query("SELECT ID FROM Hardware WHERE ([Type] = 19)");
+			if (result.size() > 0)
+			{
+				int TeleInfoHWID = atoi(result[0][0].c_str());
+				szQuery2 << "UPDATE DeviceStatus SET HardwareID=" << TeleInfoHWID << " WHERE ([HardwareID]=0)";
+				query(szQuery2.str());
+			}
 		}
 	}
 	else if (bNewInstall)
