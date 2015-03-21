@@ -20,6 +20,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Distance Sensor (cm/inches)
 - Changed Javascript translation system to I18Next
 - Fixed: TeleInfo (TDF) Hardware ID
+- Changed: Air Quality (CO-2) sensor class
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

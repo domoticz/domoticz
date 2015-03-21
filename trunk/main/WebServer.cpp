@@ -13386,7 +13386,6 @@ namespace http {
 			}
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
-			char szTmp[100];
 			//First get Device Type/SubType
 			szQuery.clear();
 			szQuery.str("");
@@ -13462,12 +13461,7 @@ namespace http {
 					root["result"][ii]["Date"] = sd[3];
 					root["result"][ii]["Status"] = lstatus;
 					root["result"][ii]["Level"] = llevel;
-
-					if ((llevel != 0) && (llevel != 255))
-						sprintf(szTmp, "%s, Level: %d %%", lstatus.c_str(), llevel);
-					else
-						sprintf(szTmp, "%s", lstatus.c_str());
-					root["result"][ii]["Data"] = szTmp;
+					root["result"][ii]["Data"] = lstatus;
 
 					ii++;
 				}
