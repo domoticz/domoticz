@@ -998,7 +998,10 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 	if (pDevice->devType == ZWaveBase::ZDTYPE_SWITCH_NORMAL)
 	{
 		//On/Off device
-		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true)
+		bool bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
+		if (!bFound)
+			bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_DOOR_LOCK, vID) == true);
+		if (bFound)
 		{
 			OpenZWave::ValueID::ValueType vType = vID.GetType();
 			_log.Log(LOG_NORM, "OpenZWave: Domoticz has send a Switch command! NodeID: %d (0x%02x)", nodeID, nodeID);
@@ -1046,7 +1049,7 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "OpenZWave: Internal Node ValueID not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+			_log.Log(LOG_ERROR, "OpenZWave: Internal Node ValueID not found! NodeID: %d (0x%02x), instanceID: %d", nodeID, nodeID, instanceID);
 			return false;
 		}
 	}
@@ -1745,6 +1748,24 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 		}
 		_log.Log(LOG_STATUS, "OpenZWave: Unhandled class: 0x%02X (%s), NodeID: %d (0x%02x), Index: %d, Instance: %d", commandclass, cclassStr(commandclass), NodeID, NodeID, vOrgIndex, vOrgInstance);
 	}
+	else if (commandclass == COMMAND_CLASS_DOOR_LOCK)
+	{
+		if (
+			(vLabel == "Locked") ||
+			(vLabel == "Unlocked")
+			)
+		{
+			_device.devType = ZDTYPE_SWITCH_NORMAL;
+			if (m_pManager->GetValueAsBool(vID, &bValue) == true)
+			{
+				if (bValue == true)
+					_device.intvalue = 255;
+				else
+					_device.intvalue = 0;
+				InsertDevice(_device);
+			}
+		}
+	}
 	else
 	{
 		//Unhandled
@@ -2181,7 +2202,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				(vLabel == "Motion Sensor") ||
 				(vLabel == "Door/Window Sensor") ||
 				(vLabel == "Tamper Sensor") ||
-				(vLabel == "Magnet open")
+				(vLabel == "Magnet open") ||
+				(vLabel == "Locked") ||
+				(vLabel == "Unlocked")
 				)
 			{
 				int intValue = 0;
