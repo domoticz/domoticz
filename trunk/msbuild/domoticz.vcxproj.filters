@@ -363,9 +363,6 @@
     <ClInclude Include="..\hardware\VolcraftCO20.h">
       <Filter>Devices\VolcraftCO20</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\VolcraftCO20Tool.h">
-      <Filter>Devices\VolcraftCO20</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\1Wire.h">
       <Filter>Devices\1-Wire</Filter>
     </ClInclude>
@@ -762,9 +759,6 @@
       <Filter>Devices\Davis</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\VolcraftCO20.cpp">
-      <Filter>Devices\VolcraftCO20</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\VolcraftCO20Tool.cpp">
       <Filter>Devices\VolcraftCO20</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\1Wire.cpp">

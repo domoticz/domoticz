@@ -351,8 +351,9 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLimitlessLights, "Lighting Limitless/Applamp" , "lightbulb" },
 		{ pTypeCurtain, "Curtain" , "blinds" },
 		{ pTypeBlinds, "Blinds" , "blinds" },
-		{ pTypeSecurity1, "Security" , "security" },
-		{ pTypeCamera, "Camera" , "unknown" },
+		{ pTypeSecurity1, "Security", "security" },
+		{ pTypeSecurity2, "Security", "security" },
+		{ pTypeCamera, "Camera", "unknown" },
 		{ pTypeRemote, "Remote & IR" , "unknown" },
 		{ pTypeThermostat1, "Thermostat 1" , "temperature" },
 		{ pTypeThermostat2, "Thermostat 2" , "temperature" },
@@ -458,6 +459,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeWIND, sTypeWIND4, "TFA" },
 		{ pTypeWIND, sTypeWIND5, "UPM WDS500" },
 		{ pTypeWIND, sTypeWIND6, "LaCrosse WS2300" },
+		{ pTypeWIND, sTypeWIND7, "Alecto WS4500" },
 		{ pTypeWIND, sTypeWINDNoTemp, "Weather Station" },
 
 		{ pTypeUV, sTypeUV1, "UVN128,UV138" },
@@ -513,6 +515,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeBlinds, sTypeBlindsT6, "T6 DC106" },
 		{ pTypeBlinds, sTypeBlindsT7, "Forest" },
 		{ pTypeBlinds, sTypeBlindsT8, "Chamberlain CS4330CN" },
+		{ pTypeBlinds, sTypeBlindsT9, "Sunpery" },
+		{ pTypeBlinds, sTypeBlindsT10, "Dolat DLM-1" },
 
 		{ pTypeSecurity1, sTypeSecX10, "X10 security" },
 		{ pTypeSecurity1, sTypeSecX10M, "X10 security motion" },
@@ -525,6 +529,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeSecurity1, sTypeMeiantech, "Meiantech/Atlantic/Aidebao" },
 		{ pTypeSecurity1, sTypeSA30, "Alecto SA30 smoke detector" },
 		{ pTypeSecurity1, sTypeDomoticzSecurity, "Security Panel" },
+
+		{ pTypeSecurity2, sTypeSec2Classic, "KeeLoq" },
 
 		{ pTypeCamera, sTypeNinja, "Meiantech" },
 
@@ -542,6 +548,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Mertik G6R-H4T1" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
+		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Mertik G6R-H4TD" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },
@@ -610,6 +617,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeChime, sTypeByronMP001, "Byron MP001" },
 		{ pTypeChime, sTypeSelectPlus, "SelectPlus" },
 		{ pTypeChime, sTypeSelectPlus3, "SelectPlus3" },
+		{ pTypeChime, sTypeEnvivo, "Envivo" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Alecto WS1200" },
 
@@ -720,6 +728,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeWIND, sTypeWIND4, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND5, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND6, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWIND7, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 
 		{ pTypeUV, sTypeUV1, "UV,Temperature" },
@@ -773,6 +782,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeBlinds, sTypeBlindsT6, "Status" },
 		{ pTypeBlinds, sTypeBlindsT7, "Status" },
 		{ pTypeBlinds, sTypeBlindsT8, "Status" },
+		{ pTypeBlinds, sTypeBlindsT9, "Status" },
+		{ pTypeBlinds, sTypeBlindsT10, "Status" },
 
 		{ pTypeSecurity1, sTypeSecX10, "Status" },
 		{ pTypeSecurity1, sTypeSecX10M, "Status" },
@@ -802,6 +813,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Status" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Status" },
+		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Status" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Status" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Status" },
@@ -870,6 +882,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeChime, sTypeByronMP001, "Status" },
 		{ pTypeChime, sTypeSelectPlus, "Status" },
 		{ pTypeChime, sTypeSelectPlus3, "Status" },
+		{ pTypeChime, sTypeEnvivo, "Status" },
 
 		{ pTypeTEMP_RAIN, sTypeTR1, "Temperature,Total rain" },
 

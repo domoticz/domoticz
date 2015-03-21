@@ -27,6 +27,21 @@ portions of this file.
 */
 
 /*
+SDK version 8.02
+	Blinds Dolat added
+	Mertik G6R_H4TD added
+
+SDK version 8.01
+	Blinds Sunpery changed
+
+SDK version 8.00
+	Security2 - KeeLoq added
+	Envivo Chime added
+	msg6 - mode bits added
+	sTypeUselectplus added
+	Blinds Sunpery added
+	TH14,RAIN7,WIND7 - Alecto WS4500 added
+
 SDK version 7.02/7.03
 	msg3_RFU changed to msg3_IMAGINTRONIX
 	IRESPONSE.RFU6enabled changed to IRESPONSE.IMAGINTRONIXenabled
@@ -315,6 +330,15 @@ SDK version 4.9
 #define msg5_ATI 0x40
 #define msg5_VISONIC 0x80
 
+#define msg6_KeeLoq 0x01
+#define msg6_RFU1 0x02
+#define msg6_RFU2 0x04
+#define msg6_RFU3 0x08
+#define msg6_RFU4 0x10
+#define msg6_RFU5 0x20
+#define msg6_RFU6 0x40
+#define msg6_RFU7 0x80
+
 #define pTypeRecXmitMessage 0x02
 #define sTypeReceiverLockError 0x00
 #define sTypeTransmitterResponse 0x01
@@ -342,6 +366,7 @@ SDK version 4.9
 #define sTypeUfineoffset 0x12
 #define sTypeUrgb 0x13
 #define sTypeUrfy 0x14
+#define sTypeUselectplus 0x15
 
 //types for Lighting
 #define pTypeLighting1 0x10
@@ -472,6 +497,7 @@ SDK version 4.9
 #define sTypeByronMP001 0x1
 #define sTypeSelectPlus 0x2
 #define sTypeSelectPlus3 0x3
+#define sTypeEnvivo 0x4
 #define chime_sound0 0x1
 #define chime_sound1 0x3
 #define chime_sound2 0x5
@@ -509,6 +535,8 @@ SDK version 4.9
 #define sTypeBlindsT6 0x6	//DC106, YOOHA, Rohrmotor24 RMF
 #define sTypeBlindsT7 0x7	//Forest
 #define sTypeBlindsT8 0x8	//Chamberlain CS4330CN
+#define sTypeBlindsT9 0x9	//Sunpery
+#define sTypeBlindsT10 0x10	//Dolat DLM-1
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
@@ -520,6 +548,15 @@ SDK version 4.9
 #define blinds_sChangeDirection 0x7
 #define blinds_sLeft 0x8
 #define blinds_sRight 0x9
+#define blinds_s9ChangeDirection 0x6
+#define blinds_s9ImA = 0x7
+#define blinds_s9ImCenter = 0x8
+#define blinds_s9ImB = 0x9
+#define blinds_s9EraseCurrentCh = 0xA
+#define blinds_s9EraseAllCh = 0xB
+#define blinds_s10LearnMaster = 0x4
+#define blinds_s10EraseCurrentCh = 0x5
+#define blinds_s10ChangeDirection = 0x6
 
 //types for RFY
 #define pTypeRFY 0x1A
@@ -590,6 +627,10 @@ SDK version 4.9
 #define sStatusMotionTamper 0x84
 #define sStatusNoMotionTamper 0x85
 
+//types for Security2
+#define pTypeSecurity2 0x21
+#define sTypeSec2Classic 0x0
+
 //types for Camera
 #define pTypeCamera 0x28
 #define sTypeNinja 0x0		//X10 Ninja/Robocam
@@ -637,6 +678,7 @@ SDK version 4.9
 #define pTypeThermostat3 0x42
 #define sTypeMertikG6RH4T1 0x0	//Mertik G6R-H4T1
 #define sTypeMertikG6RH4TB 0x1	//Mertik G6R-H4TB
+#define sTypeMertikG6RH4TD 0x2	//Mertik G6R-H4TD
 #define thermostat3_sOff 0x0
 #define thermostat3_sOn 0x1
 #define thermostat3_sUp 0x2
@@ -703,6 +745,7 @@ SDK version 4.9
 #define sTypeTH11 0xB   //EW109
 #define sTypeTH12 0xC   //Imagintronix
 #define sTypeTH13 0xD   //Alecto WS1700 and compatibles
+#define sTypeTH14 0xE   //Alecto
 
 //types for barometric
 #define pTypeBARO 0x53
@@ -725,6 +768,7 @@ SDK version 4.9
 #define sTypeRAIN4 0x4   //UPM
 #define sTypeRAIN5 0x5   //WS2300
 #define sTypeRAIN6 0x6   //TX5
+#define sTypeRAIN7 0x7   //Alecto
 
 //types for wind
 #define pTypeWIND 0x56
@@ -734,6 +778,7 @@ SDK version 4.9
 #define sTypeWIND4 0x4   //TFA
 #define sTypeWIND5 0x5   //UPM
 #define sTypeWIND6 0x6   //WS2300
+#define sTypeWIND7 0x7   //Alecto WS4500
 
 //types for uv
 #define pTypeUV 0x57
@@ -1173,6 +1218,44 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} SECURITY1;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	id4;
+		BYTE	id5;
+		BYTE	id6;
+		BYTE	id7;
+		BYTE	id8;
+		BYTE	id9;
+		BYTE	id10;
+		BYTE	id11;
+		BYTE	id12;
+		BYTE	id13;
+		BYTE	id14;
+		BYTE	id15;
+		BYTE	id16;
+		BYTE	id17;
+		BYTE	id18;
+		BYTE	id19;
+		BYTE	id20;
+		BYTE	id21;
+		BYTE	id22;
+		BYTE	id23;
+		BYTE	id24;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+#endif
+	} SECURITY2;
 
 	struct {
 		BYTE	packetlength;

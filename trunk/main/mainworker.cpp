@@ -2293,6 +2293,9 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 		case sTypeWIND6:
 			WriteMessage("subtype       = WIND6 - LaCrosse WS2300");
 			break;
+		case sTypeWIND7:
+			WriteMessage("subtype       = WIND7 - Alecto WS4500");
+			break;
 		case sTypeWINDNoTemp:
 			WriteMessage("subtype       = Weather Station");
 			break;
@@ -4387,6 +4390,13 @@ unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardwa
 			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 			WriteMessage(szTmp);
 			break;
+		case sTypeEnvivo:
+			WriteMessage("subtype       = Envivo");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			WriteMessage(szTmp);
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CHIME.packettype, pResponse->CHIME.subtype);
 			WriteMessage(szTmp);
@@ -4598,7 +4608,7 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pTypeBlinds;
 	unsigned char subType=pResponse->BLINDS1.subtype;
 
-	if ((subType == sTypeBlindsT6) || (subType == sTypeBlindsT7))
+	if ((subType == sTypeBlindsT6) || (subType == sTypeBlindsT7) || (subType == sTypeBlindsT9) || (subType == sTypeBlindsT10))
 	{
 		sprintf(szTmp, "%02X%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3, pResponse->BLINDS1.id4);
 	}
@@ -4649,6 +4659,12 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 			break;
 		case sTypeBlindsT8:
 			WriteMessage("subtype       = Chamberlain CS4330CN");
+			break;
+		case sTypeBlindsT9:
+			WriteMessage("subtype       = Sunpery");
+			break;
+		case sTypeBlindsT10:
+			WriteMessage("subtype       = Dolat DLM-1");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
@@ -6660,6 +6676,9 @@ unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *p
 			break;
 		case sTypeMertikG6RH4TB:
 			WriteMessage("subtype       = Mertik G6R-H4TB");
+			break;
+		case sTypeMertikG6RH4TD:
+			WriteMessage("subtype       = Mertik G6R-H4TD");
 			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT3.packettype, pResponse->THERMOSTAT3.subtype);
@@ -9213,7 +9232,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.BLINDS1.packettype=dType;
 			lcmd.BLINDS1.subtype=dSubType;
 
-			if ((dSubType == sTypeBlindsT6) || (dSubType == sTypeBlindsT7))
+			if ((dSubType == sTypeBlindsT6) || (dSubType == sTypeBlindsT7) || (dSubType == sTypeBlindsT9) || (dSubType == sTypeBlindsT10))
 			{
 				lcmd.BLINDS1.id1 = ID1;
 				lcmd.BLINDS1.id2 = ID2;

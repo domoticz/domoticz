@@ -158,7 +158,6 @@
     <ClInclude Include="..\hardware\Teleinfo.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
-    <ClInclude Include="..\hardware\VolcraftCO20Tool.h" />
     <ClInclude Include="..\hardware\WOL.h" />
     <ClInclude Include="..\hardware\Wunderground.h" />
     <ClInclude Include="..\hardware\ZWaveBase.h" />
@@ -302,7 +301,6 @@
     <ClCompile Include="..\hardware\Teleinfo.cpp" />
     <ClCompile Include="..\hardware\ToonThermostat.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
-    <ClCompile Include="..\hardware\VolcraftCO20Tool.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />
     <ClCompile Include="..\hardware\Wunderground.cpp" />
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
