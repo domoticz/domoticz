@@ -24,9 +24,16 @@ struct _tRFLinkStringIntHelper
 
 const _tRFLinkStringIntHelper rfswitches[] =
 {
-	{ "NewKaku", sSwitchTypeAC },
-	{ "Kaku", sSwitchTypeARC },
-	{ "HomeEasy", sSwitchTypeHEU },
+	{ "NewKaku", sSwitchTypeAC },            // p4
+	{ "Kaku", sSwitchTypeARC },              // p2
+	{ "HomeEasy", sSwitchTypeHEU },          // p15
+	{ "FA500", sSwitchTypePT2262 },          // p3
+	{ "Eurodomest", sSwitchTypeEurodomest }, // p5
+	{ "Blyss", sSwitchTypeBlyss },           // p6
+	{ "Conrad", sSwitchTypeRSL },            // p7
+	{ "Kambrook", sSwitchTypeKambrook },     // p8
+	{ "SelectPlus", sSwitchTypeSelectPlus }, // p70
+	{ "Byron", sSwitchTypeByronSX },         // p72
 	{ "", -1 }
 };
 
@@ -448,6 +455,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	bool bHaveBaro = false; float baro = 0;
 	int baroforecast = 0;
 	bool bHaveRain = false; int raincounter = 0;
+	bool bHaveLux = false; float lux = 0;
 
 	bool bHaveWindDir = false; int windir = 0;
 	bool bHaveWindSpeed = false; float windspeed = 0;
@@ -497,6 +505,12 @@ bool CRFLink::ParseLine(const std::string &sLine)
 		{
 			bHaveRain = true;
 			raincounter = RFLinkGetHexStringValue(results[ii]);
+		}
+		else if (results[ii].find("UV") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveLux = true;
+			lux = float(iTemp);
 		}
 		else if (results[ii].find("BAT") != std::string::npos)
 		{
@@ -571,6 +585,10 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	else if (bHaveBaro)
 	{
 		SendBaroSensor(Node_ID, Child_ID, BatteryLevel, baro, baroforecast);
+	}
+	else if (bHaveLux)
+	{
+		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux);
 	}
 	else if (bHaveRain)
 	{
