@@ -51,7 +51,7 @@ define(['app'], function (app) {
 			return strstatus;
 		}
 		
-		EvoGetStatusText = function(item){
+		GetLightStatusText = function(item){
 			if(item.SubType=="Evohome")
 				return EvoDisplayTextMode(item.Status);
 			else
@@ -100,7 +100,6 @@ define(['app'], function (app) {
 		  var id="";
 
 			$rootScope.RefreshTimeAndSun();
-		  
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
 			 async: false,
@@ -178,8 +177,7 @@ define(['app'], function (app) {
 												if ($(id + " #img2").html()!=img2) {
 													$(id + " #img2").html(img2);
 												}
-												if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
-													$(id + " #status").html(TranslateStatus(item.Status));
+												if ($(id + " #bigtext").html()!=TranslateStatus(item.Status)) {
 													$(id + " #bigtext").html(bigtext);
 												}
 												if ($(id + " #lastupdate").html()!=item.LastUpdate) {
@@ -677,8 +675,7 @@ define(['app'], function (app) {
 												dslider.slider( "value", item.LevelInt+1 );
 											}
 										}
-										if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
-											$(id + " #status").html(TranslateStatus(item.Status));
+										if ($(id + " #bigtext").html()!=bigtext) {
 											$(id + " #bigtext").html(bigtext);
 										}
 										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
@@ -754,32 +751,29 @@ define(['app'], function (app) {
 										var bigtext="";
 										var bHaveBefore=false;
 										if (typeof item.Temp != 'undefined') {
-												 status+=item.Temp + '&deg; ' + $.myglobals.tempsign;
 												 bigtext=item.Temp + '\u00B0';
-												 bHaveBefore=true;
 										}
 										if (typeof item.Chill != 'undefined') {
-											if (bHaveBefore) {
-												status+=', ';
+											if (bigtext!="") {
 												bigtext+=' / ';
 											}
-											status+=$.t('Chill') + ': ' + item.Chill + '&deg; ' + $.myglobals.tempsign;
 											bigtext+=item.Chill + '\u00B0';
-											bHaveBefore=true;
 										}
 										if (typeof item.Humidity != 'undefined') {
-											if (bHaveBefore==true) {
-												status+=', ';
+											if (bigtext!="") {
 												bigtext+=' / ';
 											}
-											status+=$.t('Humidity') + ': ' + item.Humidity + ' %';
 											bigtext+=item.Humidity + '%';
 										}
 										if (typeof item.HumidityStatus != 'undefined') {
-											status+=' (' + $.t(item.HumidityStatus) + ')';
+											status+=$.t(item.HumidityStatus);
+											bHaveBefore=true;
 										}
 										if (typeof item.DewPoint != 'undefined') {
-											status+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $.myglobals.tempsign;
+											if (bHaveBefore==true) {
+												status+=", ";
+											}
+											status+=$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $.myglobals.tempsign;
 										}
 									
 										var nbackcolor="#D4E1EE";
@@ -1000,8 +994,8 @@ define(['app'], function (app) {
 											}
 										}
 									
-										if ($(id + " #status").html()!=tmpStatus) {
-											$(id + " #status").html(tmpStatus);
+										if ($(id + " #bigtext").html()!=tmpStatus) {
+											$(id + " #bigtext").html(tmpStatus);
 										}
 									}
 									else {
@@ -1076,8 +1070,8 @@ define(['app'], function (app) {
 										if ($(id + " #img").html()!=img) {
 											$(id + " #img").html(img);
 										}
-										if ($(id + " #status").html()!=TranslateStatus(item.Status)) {
-											$(id + " #status").html(TranslateStatus(item.Status));
+										if ($(id + " #bigtext").html()!=TranslateStatus(item.Status)) {
+											$(id + " #bigtext").html(TranslateStatus(item.Status));
 										}
 										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);
@@ -1127,8 +1121,8 @@ define(['app'], function (app) {
 											if ($(id + " #img").html()!=img) {
 												$(id + " #img").html(img);
 											}
-											if ($(id + " #status").html()!=TranslateStatus(EvoDisplayTextMode(item.Status))) {
-												$(id + " #status").html(TranslateStatus(EvoDisplayTextMode(item.Status)));
+											if ($(id + " #bigtext").html()!=TranslateStatus(EvoDisplayTextMode(item.Status))) {
+												$(id + " #bigtext").html(TranslateStatus(EvoDisplayTextMode(item.Status)));
 											}
 											if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 												$(id + " #lastupdate").html(item.LastUpdate);
@@ -1574,7 +1568,7 @@ define(['app'], function (app) {
 									  xhtm+=bigtext+'</td>\n';
 									if (item.Type.indexOf('Scene')==0) {
 										xhtm+='<td id="img1"><img src="images/push48.png" title="Activate" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites, ' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-										xhtm+='\t      <td id="status">&nbsp;</td>\n';
+										xhtm+='\t      <td id="status"></td>\n';
 									}
 									else {
 										var onclass="";
@@ -1589,7 +1583,7 @@ define(['app'], function (app) {
 										}
 										xhtm+='<td id="img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t("Turn On") +'" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshFavorites, ' + item.Protected + ');" height="40" width="40"></td>\n';
 										xhtm+='<td id="img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t("Turn Off") +'" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshFavorites, ' + item.Protected + ');" height="40" width="40"></td>\n';
-										xhtm+='\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n';
+										xhtm+='\t      <td id="status"></td>\n';
 									}
 									xhtm+='\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 									xhtm+=
@@ -2138,7 +2132,7 @@ define(['app'], function (app) {
 										}
 									}
 									xhtm+=
-												'\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
+												'\t      <td id="status"></td>\n' +
 												'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 									if (item.SwitchType == "Dimmer") {
 										if (item.SubType=="RGBW") {
@@ -2306,28 +2300,15 @@ define(['app'], function (app) {
 									xhtm+='" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n' +
 											'\t      <td id="status">';
 									var bHaveBefore=false;
-									if (typeof item.Temp != 'undefined') {
-											 xhtm+=item.Temp + '&deg; ' + $.myglobals.tempsign;
-											 bHaveBefore=true;
-									}
-									if (typeof item.Chill != 'undefined') {
-										if (bHaveBefore) {
-											xhtm+=', ';
-										}
-										xhtm+=$.t('Chill') + ': ' + item.Chill + '&deg; ' + $.myglobals.tempsign;
+									if (typeof item.HumidityStatus != 'undefined') {
+										xhtm+=$.t(item.HumidityStatus);
 										bHaveBefore=true;
 									}
-									if (typeof item.Humidity != 'undefined') {
+									if (typeof item.DewPoint != 'undefined') {
 										if (bHaveBefore==true) {
 											xhtm+=', ';
 										}
-										xhtm+=$.t('Humidity') + ': ' + item.Humidity + ' %';
-									}
-									if (typeof item.HumidityStatus != 'undefined') {
-										xhtm+=' (' + $.t(item.HumidityStatus) + ')';
-									}
-									if (typeof item.DewPoint != 'undefined') {
-										xhtm+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $.myglobals.tempsign;
+										xhtm+=$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $.myglobals.tempsign;
 									}
 									xhtm+=
 											'</td>\n' +
@@ -2643,7 +2624,7 @@ define(['app'], function (app) {
 									xhtm+=
 												'\t    <tr>\n' +
 												'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
-												'\t      <td id="bigtext"></td>\n';
+												'\t      <td id="bigtext">' + TranslateStatusShort(item.Status) + '</td>\n';
 
 									if (item.SubType=="Security Panel") {
 										xhtm+='\t      <td id="img"><a href="secpanel/"><img src="images/security48.png" class="lcursor" height="40" width="40"></a></td>\n';
@@ -2698,7 +2679,7 @@ define(['app'], function (app) {
 										xhtm+='\t      <td id="img"><img src="images/security48.png" height="40" width="40"></td>\n';
 									}
 									xhtm+=
-												'\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n' +
+												'\t      <td id="status"></td>\n' +
 												'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 												'\t    </tr>\n' +
 												'\t    </table>\n' +
@@ -3291,15 +3272,15 @@ define(['app'], function (app) {
 							}
 							else {
 								img='<img src="images/'+imgname+'n.png" title="' + $.t("Turn Off") +'" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites,' + isProtected +');" class="lcursor" height="40" width="40">';
-								status='' + $.t("Set Level") +': ' + fPercentage + " %";
+								status=fPercentage + " %";
 							}
 							if (dtype!="blinds") {
 								if ($(id + " #img").html()!=img) {
 									$(id + " #img").html(img);
 								}
 							}
-							if ($(id + " #status").html()!=status) {
-								$(id + " #status").html(status);
+							if ($(id + " #bigtext").html()!=status) {
+								$(id + " #bigtext").html(status);
 							}
 						}
 					}

@@ -8570,11 +8570,15 @@ namespace http {
 
 					sprintf(szData, "%04X", (unsigned int)atoi(sd[1].c_str()));
 					if (
+						(dType == pTypeTEMP) ||
 						(dType == pTypeTEMP_BARO) ||
 						(dType == pTypeTEMP_HUM) ||
 						(dType == pTypeTEMP_HUM_BARO) ||
 						(dType == pTypeBARO) ||
 						(dType == pTypeHUM) ||
+						(dType == pTypeWIND) ||
+						(dType == pTypeCURRENT) ||
+						(dType == pTypeCURRENTENERGY) ||
 						(dType == pTypeENERGY)
 						)
 					{

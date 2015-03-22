@@ -164,154 +164,6 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	}
 }
 
-void MySensorsBase::SendTempSensor(const unsigned char NodeID, const int ChildID, const float temperature)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-	tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
-	tsen.TEMP.packettype = pTypeTEMP;
-	tsen.TEMP.subtype = sTypeTEMP5;
-	tsen.TEMP.battery_level = 9;
-	tsen.TEMP.rssi = 12;
-	tsen.TEMP.id1 = (BYTE)0;
-	tsen.TEMP.id2 = (BYTE)NodeID;
-	tsen.TEMP.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(abs(temperature*10.0f));
-	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP.temperatureh * 256);
-	tsen.TEMP.temperaturel = (BYTE)(at10);
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
-}
-
-void MySensorsBase::SendHumiditySensor(const unsigned char NodeID, const int ChildID, const float humidity)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-	tsen.HUM.packetlength = sizeof(tsen.HUM) - 1;
-	tsen.HUM.packettype = pTypeHUM;
-	tsen.HUM.subtype = sTypeHUM1;
-	tsen.HUM.battery_level = 9;
-	tsen.HUM.rssi = 12;
-	tsen.HUM.id1 = (BYTE)0;
-	tsen.HUM.id2 = (BYTE)NodeID;
-	tsen.HUM.humidity = (BYTE)round(humidity);
-	tsen.HUM.humidity_status = Get_Humidity_Level(tsen.HUM.humidity);
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);
-}
-
-void MySensorsBase::SendTempHumSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-	tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
-	tsen.TEMP_HUM.packettype = pTypeTEMP_HUM;
-	tsen.TEMP_HUM.subtype = sTypeTH5;
-	tsen.TEMP_HUM.battery_level = 9;
-	tsen.TEMP_HUM.rssi = 12;
-	tsen.TEMP_HUM.id1 = 0;
-	tsen.TEMP_HUM.id2 = NodeID;
-
-	tsen.TEMP_HUM.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(abs(temperature*10.0f));
-	tsen.TEMP_HUM.temperatureh = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP_HUM.temperatureh * 256);
-	tsen.TEMP_HUM.temperaturel = (BYTE)(at10);
-	tsen.TEMP_HUM.humidity = (BYTE)humidity;
-	tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
-}
-
-void MySensorsBase::SendTempHumBaroSensor(const unsigned char NodeID, const int ChildID, const float temperature, const float humidity, const float pressure, int forecast)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-	tsen.TEMP_HUM_BARO.packetlength = sizeof(tsen.TEMP_HUM_BARO) - 1;
-	tsen.TEMP_HUM_BARO.packettype = pTypeTEMP_HUM_BARO;
-	tsen.TEMP_HUM_BARO.subtype = sTypeTHB1;
-	tsen.TEMP_HUM_BARO.battery_level = 9;
-	tsen.TEMP_HUM_BARO.rssi = 12;
-	tsen.TEMP_HUM_BARO.id1 = 0;
-	tsen.TEMP_HUM_BARO.id2 = NodeID;
-
-	tsen.TEMP_HUM_BARO.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(abs(temperature*10.0f));
-	tsen.TEMP_HUM_BARO.temperatureh = (BYTE)(at10 / 256);
-	at10 -= (tsen.TEMP_HUM_BARO.temperatureh * 256);
-	tsen.TEMP_HUM_BARO.temperaturel = (BYTE)(at10);
-	tsen.TEMP_HUM_BARO.humidity = (BYTE)humidity;
-	tsen.TEMP_HUM_BARO.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-
-	int ab10 = round(pressure);
-	tsen.TEMP_HUM_BARO.baroh = (BYTE)(ab10 / 256);
-	ab10 -= (tsen.TEMP_HUM_BARO.baroh * 256);
-	tsen.TEMP_HUM_BARO.barol = (BYTE)(ab10);
-
-	tsen.TEMP_HUM_BARO.forecast = (BYTE)forecast;
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);
-}
-
-void MySensorsBase::SendKwhMeter(const unsigned char NodeID, const int ChildID, const double musage, const double mtotal, const std::string &defaultname)
-{
-	int Idx = (NodeID * 256) + ChildID;
-	bool bDeviceExits = true;
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result = m_sql.query(szQuery.str());
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-
-	tsen.ENERGY.packettype = pTypeENERGY;
-	tsen.ENERGY.subtype = sTypeELEC2;
-	tsen.ENERGY.packetlength = sizeof(tsen.ENERGY) - 1;
-	tsen.ENERGY.id1 = NodeID;
-	tsen.ENERGY.id2 = ChildID;
-	tsen.ENERGY.count = 1;
-	tsen.ENERGY.rssi = 12;
-
-	tsen.ENERGY.battery_level = 9;
-
-	unsigned long long instant = (unsigned long long)(musage*1000.0);
-	tsen.ENERGY.instant1 = (unsigned char)(instant / 0x1000000);
-	instant -= tsen.ENERGY.instant1 * 0x1000000;
-	tsen.ENERGY.instant2 = (unsigned char)(instant / 0x10000);
-	instant -= tsen.ENERGY.instant2 * 0x10000;
-	tsen.ENERGY.instant3 = (unsigned char)(instant / 0x100);
-	instant -= tsen.ENERGY.instant3 * 0x100;
-	tsen.ENERGY.instant4 = (unsigned char)(instant);
-
-	double total = (mtotal*1000.0)*223.666;
-	tsen.ENERGY.total1 = (unsigned char)(total / 0x10000000000ULL);
-	total -= tsen.ENERGY.total1 * 0x10000000000ULL;
-	tsen.ENERGY.total2 = (unsigned char)(total / 0x100000000ULL);
-	total -= tsen.ENERGY.total2 * 0x100000000ULL;
-	tsen.ENERGY.total3 = (unsigned char)(total / 0x1000000);
-	total -= tsen.ENERGY.total3 * 0x1000000;
-	tsen.ENERGY.total4 = (unsigned char)(total / 0x10000);
-	total -= tsen.ENERGY.total4 * 0x10000;
-	tsen.ENERGY.total5 = (unsigned char)(total / 0x100);
-	total -= tsen.ENERGY.total5 * 0x100;
-	tsen.ENERGY.total6 = (unsigned char)(total);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-		result = m_sql.query(szQuery.str());
-	}
-}
-
 void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor)
 {
 	m_iLastSendNodeBatteryValue = 255;
@@ -319,6 +171,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 	{
 		m_iLastSendNodeBatteryValue = pSensor->batValue;
 	}
+	int cNode = (pSensor->nodeID << 8) | pSensor->childID;
 
 	switch (pSensor->devType)
 	{
@@ -334,61 +187,66 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 				_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
 				if (pSensorForecast)
 					forecast = pSensorForecast->intvalue;
-				SendTempHumBaroSensor(pSensor->nodeID, 1, pSensor->floatValue, pSensorHum->floatValue, pSensorBaro->floatValue, forecast);
+				SendTempHumBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue, pSensorHum->intvalue, pSensorBaro->floatValue, forecast);
 			}
 		}
 		else if (pSensorHum) {
 			if (pSensorHum->bValidValue)
 			{
-				SendTempHumSensor(pSensor->nodeID, 1, pSensor->floatValue, pSensorHum->floatValue);
+				SendTempHumSensor(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue);
 			}
 		}
 		else
-			SendTempSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
+		{
+			SendTempSensor(cNode, pSensor->batValue, pSensor->floatValue);
+		}
 	}
 	break;
 	case V_HUM:
 	{
 		_tMySensorSensor *pSensorTemp = FindSensor(pSensor->nodeID, V_TEMP);
 		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
+		int forecast = baroForecastNoInfo;
+		_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
+		if (pSensorForecast)
+			forecast = pSensorForecast->intvalue;
 		if (pSensorTemp && pSensorBaro)
 		{
 			if (pSensorTemp->bValidValue && pSensorBaro->bValidValue)
 			{
-				int forecast = baroForecastNoInfo;
-				_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
-				if (pSensorForecast)
-					forecast = pSensorForecast->intvalue;
-				SendTempHumBaroSensor(pSensor->nodeID, 1, pSensorTemp->floatValue, pSensor->floatValue, pSensorBaro->floatValue, forecast);
+				SendTempHumBaroSensor(pSensorTemp->nodeID, pSensorTemp->childID, pSensorTemp->floatValue, pSensor->intvalue, pSensorBaro->floatValue, forecast);
 			}
 		}
 		else if (pSensorTemp) {
 			if (pSensorTemp->bValidValue)
 			{
-				SendTempHumSensor(pSensor->nodeID, 1, pSensorTemp->floatValue, pSensor->floatValue);
+				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
+				SendTempHumSensor(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue);
 			}
 		}
 		else
-			SendHumiditySensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue);
+		{
+			SendHumiditySensor(cNode, pSensor->batValue, pSensor->intvalue);
+		}
 	}
 	break;
 	case V_PRESSURE:
 	{
 		_tMySensorSensor *pSensorTemp = FindSensor(pSensor->nodeID, V_TEMP);
 		_tMySensorSensor *pSensorHum = FindSensor(pSensor->nodeID, V_HUM);
+		int forecast = baroForecastNoInfo;
+		_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
+		if (pSensorForecast)
+			forecast = pSensorForecast->intvalue;
 		if (pSensorTemp && pSensorHum)
 		{
 			if (pSensorTemp->bValidValue && pSensorHum->bValidValue)
 			{
-				int forecast = baroForecastNoInfo;
-				_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
-				if (pSensorForecast)
-					forecast = pSensorForecast->intvalue;
-				SendTempHumBaroSensor(pSensor->nodeID, 1, pSensorTemp->floatValue, pSensorHum->floatValue, pSensor->floatValue, forecast);
+				SendTempHumBaroSensor(pSensorTemp->nodeID, pSensorTemp->childID, pSensorTemp->floatValue, pSensorHum->intvalue, pSensor->floatValue, forecast);
 			}
 		}
 		else
-			SendBaroSensor(pSensor->nodeID, pSensor->childID, 255, pSensor->floatValue,0);
+			SendBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue, 0);
 	}
 	break;
 	case V_TRIPPED:
@@ -419,7 +277,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 			lmeter.id4 = pSensor->nodeID;
 			lmeter.dunit = pSensor->childID;
 			lmeter.fLux = pSensor->floatValue;
-			lmeter.battery_level = 255;
+			lmeter.battery_level = pSensor->batValue;
 			if (pSensor->hasBattery)
 				lmeter.battery_level = pSensor->batValue;
 			sDecodeRXMessage(this, (const unsigned char *)&lmeter);
@@ -441,7 +299,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		{
 			_tMySensorSensor *pSensorKwh = FindSensor(pSensor->nodeID, V_KWH);
 			if (pSensorKwh) {
-				SendKwhMeter(pSensor->nodeID, 1, pSensor->floatValue/1000.0f, pSensorKwh->floatValue, "Meter");
+				SendKwhMeter(pSensorKwh->nodeID, pSensorKwh->childID, pSensorKwh->batValue, pSensor->floatValue / 1000.0f, pSensorKwh->floatValue, "Meter");
 			}
 			else {
 				_tUsageMeter umeter;
@@ -459,10 +317,10 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		{
 			_tMySensorSensor *pSensorWatt = FindSensor(pSensor->nodeID, V_WATT);
 			if (pSensorWatt) {
-				SendKwhMeter(pSensor->nodeID, 1, pSensorWatt->floatValue/1000.0f, pSensor->floatValue, "Meter");
+				SendKwhMeter(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensorWatt->floatValue / 1000.0f, pSensor->floatValue, "Meter");
 			}
 			else {
-				SendKwhMeter(pSensor->nodeID, pSensor->childID, 0, pSensor->floatValue, "Meter");
+				SendKwhMeter(pSensor->nodeID, pSensor->childID, pSensor->batValue, 0, pSensor->floatValue, "Meter");
 			}
 		}
 		break;
@@ -484,7 +342,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		{
 			if (pSensorBaro->bValidValue)
 			{
-				SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, 255, pSensorBaro->floatValue, pSensor->intvalue);
+				SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, pSensorBaro->floatValue, pSensor->intvalue);
 			}
 		}
 		else
@@ -492,7 +350,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 			std::stringstream sstr;
 			sstr << pSensor->nodeID;
 			std::string devname;
-			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, 255, 0, pSensor->stringValue.c_str(), devname);
+			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, pSensor->batValue, 0, pSensor->stringValue.c_str(), devname);
 		}
 	}
 	break;
@@ -695,7 +553,7 @@ void MySensorsBase::ParseLine()
 
 	std::string retMessage;
 	std::stringstream sstr;
-//	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());
+	//_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());
 
 	if (message_type == MT_Internal)
 	{
@@ -796,7 +654,7 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_HUM:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
 			break;
 		case V_PRESSURE:
