@@ -1360,7 +1360,7 @@ define(['app'], function (app) {
 
 						xhtm+='<td id="img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
 						xhtm+='<td id="img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected +');" height="48" width="48"></td>\n';
-						xhtm+='\t      <td id="status">' + TranslateStatus(item.Status) + '</td>\n';
+						xhtm+='\t      <td id="status">&nbsp;</td>\n';
 					}
 					xhtm+=
 						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +

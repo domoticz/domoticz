@@ -573,7 +573,6 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  var id="";
-
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&lastupdate="+$.LastUpdateTime,
 			 async: false,
@@ -626,7 +625,6 @@ define(['app'], function (app) {
 					var status="";
 					var bigtext="";
 					var setonclick="";
-					var bHaveTemperature=false;
 					var bHaveBefore=false;
 					//Evohome...
 					var sHeatMode="";
@@ -634,10 +632,7 @@ define(['app'], function (app) {
 						sHeatMode=item.Status;
 					}
 					if (typeof item.Temp != 'undefined') {
-						 status+=item.Temp + '\u00B0 ' + $.myglobals.tempsign;
 						 bigtext=item.Temp + '\u00B0';
-						 bHaveTemperature=true;
-						 bHaveBefore=true;
 					}
 					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
 						var tUntil="";
@@ -666,39 +661,39 @@ define(['app'], function (app) {
 							bigtext+=' / ';
 						}
 						bigtext+=item.Chill + '\u00B0';
-						if (status!="") {
-							status+=', ';
-						}
-						status+=$.t('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
-						bHaveBefore=true;
 					}
-					var bHaveHumidity=false;
 					if (typeof item.Humidity != 'undefined') {
-									if (bHaveBefore==true) {
-										status+=', ';
-										bigtext+=' / ';
-									}
-					  status+=$.t('Humidity') + ': ' + item.Humidity + ' %';
-					  bigtext+=item.Humidity + '%';
-					  bHaveHumidity=true;
+						if (bigtext!="") {
+							bigtext+=' / ';
+						}
+						bigtext+=item.Humidity + '%';
 					}
 					if (typeof item.HumidityStatus != 'undefined') {
-					  status+=' (' + $.t(item.HumidityStatus) + ')';
+					  status+=$.t(item.HumidityStatus);
+					  bHaveBefore=true;
 					}
 					if (typeof item.Barometer != 'undefined') {
-					  status+='<br>' + $.t('Barometer') + ': ' + item.Barometer + ' hPa';
+						if (bHaveBefore==true) {
+							status+=', ';
+						}
+						status+=$.t('Barometer') + ': ' + item.Barometer + ' hPa';
+						bHaveBefore=true;
 					}
 					if (typeof item.ForecastStr != 'undefined') {
-					  status+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
+					  status+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr) + '<br>';
+					  bHaveBefore=false;
 					}
 					if (typeof item.Direction != 'undefined') {
-					  status+='<br>' + item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+					  status+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 					  if (typeof item.Gust != 'undefined') {
 						status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 					  }
 					}
 					if (typeof item.DewPoint != 'undefined') {
-						status+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
+						if (bHaveBefore==true) {
+							status+=', ';
+						}
+						status+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
 					}
 
 					var nbackcolor="#D4E1EE";
@@ -886,13 +881,7 @@ define(['app'], function (app) {
 					}
 							xhtm+='" height="48" width="48"></td>\n' +
 									'\t      <td id="status">';
-							var bHaveTemperature=false;
 							var bHaveBefore=false;
-							if (typeof item.Temp != 'undefined') {
-									 xhtm+=item.Temp + '\u00B0 ' + $.myglobals.tempsign;
-									 bHaveTemperature=true;
-									 bHaveBefore=true;
-							}
 							if (item.SubType=="Zone" || item.SubType=="Hot Water") {
 								if (typeof item.SetPoint != 'undefined'){
 									xhtm+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
@@ -907,38 +896,31 @@ define(['app'], function (app) {
 								}
 								bHaveBefore=true;
 							}
-							if (typeof item.Chill != 'undefined') {
-								if (typeof item.Temp != 'undefined') {
-									xhtm+=', ';
-								}
-								xhtm+=$.t('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+							if (typeof item.HumidityStatus != 'undefined') {
+								xhtm+=$.t(item.HumidityStatus);
 								bHaveBefore=true;
 							}
-							var bHaveHumidity=false;
-							if (typeof item.Humidity != 'undefined') {
+							if (typeof item.Barometer != 'undefined') {
 								if (bHaveBefore==true) {
 									xhtm+=', ';
 								}
-								xhtm+=$.t('Humidity') + ': ' + item.Humidity + ' %';
-								bHaveHumidity=true;
-							}
-							if (typeof item.HumidityStatus != 'undefined') {
-								xhtm+=' (' + $.t(item.HumidityStatus) + ')';
-							}
-							if (typeof item.Barometer != 'undefined') {
-								xhtm+='<br>' + $.t('Barometer') + ': ' + item.Barometer + ' hPa';
+								xhtm+=$.t('Barometer') + ': ' + item.Barometer + ' hPa';
 							}
 							if (typeof item.ForecastStr != 'undefined') {
-								xhtm+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
+								xhtm+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr) + '<br>';
+								bHaveBefore=false;
 							}
 							if (typeof item.Direction != 'undefined') {
-								xhtm+='<br>' + item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+								xhtm+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
 								if (typeof item.Gust != 'undefined') {
 									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
 								}
 							}
 							if (typeof item.DewPoint != 'undefined') {
-								xhtm+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
+								if (bHaveBefore==true) {
+									xhtm+=', ';
+								}
+								xhtm+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
 							}
 							xhtm+=
 									'</td>\n' +
