@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 62
+#define DB_VERSION 63
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -137,12 +137,6 @@ const char *sqlCreateTemperature_Calendar =
 "[SetPoint_Max] FLOAT DEFAULT 0, "
 "[SetPoint_Avg] FLOAT DEFAULT 0, "
 "[Date] DATE NOT NULL);";
-
-const char *sqlCreateTempVars =
-"CREATE TABLE IF NOT EXISTS [TempVars] ("
-"[Key] VARCHAR(200) NOT NULL, "
-"[nValue] INTEGER DEFAULT 0, "
-"[sValue] VARCHAR(200));";
 
 const char *sqlCreateTimers =
 "CREATE TABLE IF NOT EXISTS [Timers] ("
@@ -523,6 +517,14 @@ const char *sqlCreateMySensors =
 	" [SketchName] VARCHAR(100) DEFAULT Unknown,"
 	" [SketchVersion] VARCHAR(40) DEFAULT(1.0));";
 
+const char *sqlCreateMySensorsVariables =
+"CREATE TABLE IF NOT EXISTS [MySensorsVars]("
+" [HardwareID] INTEGER NOT NULL,"
+" [NodeID] INTEGER NOT NULL,"
+" [ChildID] INTEGER NOT NULL,"
+" [VarID] INTEGER NOT NULL,"
+" [Value] VARCHAR(100) NOT NULL);";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -597,7 +599,6 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateRain_Calendar);
 	query(sqlCreateTemperature);
 	query(sqlCreateTemperature_Calendar);
-	//query(sqlCreateTempVars);
 	query(sqlCreateTimers);
 	query(sqlCreateSetpointTimers);
 	query(sqlCreateUV);
@@ -640,6 +641,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFloorplanOrderTrigger);
 	query(sqlCreateCustomImages);
 	query(sqlCreateMySensors);
+	query(sqlCreateMySensorsVariables);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{
@@ -1224,6 +1226,10 @@ bool CSQLHelper::OpenDatabase()
 				szQuery2 << "UPDATE DeviceStatus SET HardwareID=" << TeleInfoHWID << " WHERE ([HardwareID]=0)";
 				query(szQuery2.str());
 			}
+		}
+		if (dbversion < 63)
+		{
+			query("DROP TABLE IF EXISTS [TempVars]");
 		}
 	}
 	else if (bNewInstall)
@@ -6983,7 +6989,7 @@ std::string CSQLHelper::CheckUserVariable(const int vartype, const std::string &
 			return "Not a valid integer";
 		}
 	}
-	if (vartype == 1) {
+	else if (vartype == 1) {
 		//float 
 		std::istringstream iss(varvalue);
 		float f;
@@ -6993,7 +6999,7 @@ std::string CSQLHelper::CheckUserVariable(const int vartype, const std::string &
 			return "Not a valid float";
 		}
 	}
-	if (vartype == 3) {
+	else if (vartype == 3) {
 		//date  
 		int d, m, y;
 		if (!CheckDate(varvalue, d, m, y))
@@ -7001,10 +7007,13 @@ std::string CSQLHelper::CheckUserVariable(const int vartype, const std::string &
 			return "Not a valid date notation (DD/MM/YYYY)";
 		}
 	}
-	if (vartype == 4) {
+	else if (vartype == 4) {
 		//time
 		if (!CheckTime(varvalue))
 			return "Not a valid time notation (HH:MM)";
+	}
+	else if (vartype == 5) {
+		return "OK";
 	}
 	return "OK";
 }

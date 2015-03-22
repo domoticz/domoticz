@@ -22,6 +22,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: TeleInfo (TDF) Hardware ID
 - Changed: Air Quality (CO-2) sensor class
 - Implemented: MySensors Water meter
+- Implemented: MySensors, Saving/Loading VAR values
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

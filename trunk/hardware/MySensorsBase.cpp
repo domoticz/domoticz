@@ -528,6 +528,45 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 	return true;
 }
 
+void MySensorsBase::UpdateVar(const int NodeID, const int ChildID, const int VarID, const std::string &svalue)
+{
+	std::stringstream sstr;
+
+	std::vector<std::vector<std::string> > result;
+	sstr << "SELECT ROWID FROM MySensorsVars WHERE (HardwareID=" << m_HwdID << ") AND (NodeID=" << NodeID << ") AND (NodeID=" << NodeID << ") AND (ChildID=" << ChildID << ") AND (VarID=" << VarID << ")";
+	result = m_sql.query(sstr.str());
+	if (result.size() == 0)
+	{
+		//Insert
+		sstr.clear();
+		sstr.str("");
+		sstr << "INSERT INTO MySensorsVars (HardwareID, NodeID, ChildID, VarID, [Value]) VALUES (" << m_HwdID << ", " << NodeID << "," << ChildID << ", " << VarID << ",'" << svalue << "')";
+		result = m_sql.query(sstr.str());
+	}
+	else
+	{
+		//Update
+		sstr.clear();
+		sstr.str("");
+		sstr << "UPDATE MySensorsVars SET [Value]='" << svalue << "' WHERE (ROWID = " << result[0][0] << ")";
+		result = m_sql.query(sstr.str());
+	}
+
+}
+
+bool MySensorsBase::GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue)
+{
+	std::stringstream sstr;
+
+	std::vector<std::vector<std::string> > result;
+	sstr << "SELECT [Value] FROM MySensorsVars WHERE (HardwareID=" << m_HwdID << ") AND (NodeID=" << NodeID << ") AND (NodeID=" << NodeID << ") AND (ChildID=" << ChildID << ") AND (VarID=" << VarID << ")";
+	result = m_sql.query(sstr.str());
+	if (result.size() < 1)
+		return false;
+	std::vector<std::string> sd = result[0];
+	sValue = sd[0];
+	return true;
+}
 
 void MySensorsBase::ParseLine()
 {
@@ -668,7 +707,7 @@ void MySensorsBase::ParseLine()
 		case V_VAR3:
 		case V_VAR4:
 		case V_VAR5:
-			//_log.Log(LOG_STATUS, "MySensors: Custom vars ignored! Node: %d, Child: %d, Payload: %s", node_id, child_sensor_id, payload.c_str());
+			UpdateVar(node_id, child_sensor_id, sub_type, payload);
 			break;
 		case V_TRIPPED:
 			//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
@@ -833,6 +872,9 @@ void MySensorsBase::ParseLine()
 		case V_VAR4:
 		case V_VAR5:
 			//cant send back a custom variable
+			tmpstr = "";
+			if (GetVar(node_id, child_sensor_id, sub_type, tmpstr)==true)
+				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;
 		default:
 			while (1==0);
