@@ -8579,7 +8579,9 @@ namespace http {
 						(dType == pTypeWIND) ||
 						(dType == pTypeCURRENT) ||
 						(dType == pTypeCURRENTENERGY) ||
-						(dType == pTypeENERGY)
+						(dType == pTypeENERGY) ||
+						(dType == pTypeRFXMeter) ||
+						(dType == pTypeRFXSensor)
 						)
 					{
 						root["result"][ii]["ID"] = szData;
@@ -9373,12 +9375,12 @@ namespace http {
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.02f m3", fvalue / GasDivider);
+							sprintf(szTmp, "%.03f m3", fvalue / GasDivider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.02f m3", fvalue / WaterDivider);
+							sprintf(szTmp, "%.03f m3", fvalue / WaterDivider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;

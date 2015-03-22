@@ -325,7 +325,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		}
 		break;
 	case V_DISTANCE:
-		SendDistanceSensor(pSensor->nodeID, pSensor->childID, 0, pSensor->floatValue);
+		SendDistanceSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
 		break;
 	case V_FLOW:
 		//Flow of water in meter
@@ -333,7 +333,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		break;
 	case V_VOLUME:
 		//Water Volume
-		while (1==0);
+		SendMeterSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
 		break;
 	case V_FORECAST:
 	{
@@ -553,7 +553,9 @@ void MySensorsBase::ParseLine()
 
 	std::string retMessage;
 	std::stringstream sstr;
-	//_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());
+#ifdef _DEBUG
+	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());
+#endif
 
 	if (message_type == MT_Internal)
 	{
@@ -705,7 +707,8 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_VOLUME:
 			//Water Volume
-			while (1==0);
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
 			break;
 		case V_WIND:
 			while (1==0);

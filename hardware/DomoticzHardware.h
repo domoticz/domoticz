@@ -109,7 +109,8 @@ private:
 	void SendRainSensor			(const int NodeID,					  const int BatteryLevel, const int RainCounter);
 	void SendWind				(const int NodeID,					  const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp);
 	void SendPressureSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
-	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance);
+	void SendDistanceSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float distance);
+	void SendMeterSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue);
 
 	int m_iHBCounter;
 	boost::shared_ptr<boost::thread> m_Heartbeatthread;
