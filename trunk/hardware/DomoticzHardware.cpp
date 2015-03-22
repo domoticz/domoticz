@@ -327,6 +327,26 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 	}
 }
 
+void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue)
+{
+	unsigned long counter = (unsigned long)(metervalue*1000.0f);
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.RFXMETER.packetlength = sizeof(tsen.RFXMETER) - 1;
+	tsen.RFXMETER.packettype = pTypeRFXMeter;
+	tsen.RFXMETER.subtype = sTypeRFXMeterCount;
+	tsen.RFXMETER.rssi = 12;
+	tsen.RFXMETER.id1 = (BYTE)NodeID;
+	tsen.RFXMETER.id2 = (BYTE)ChildID;
+
+	tsen.RFXMETER.count1 = (BYTE)((counter & 0xFF000000) >> 24);
+	tsen.RFXMETER.count2 = (BYTE)((counter & 0x00FF0000) >> 16);
+	tsen.RFXMETER.count3 = (BYTE)((counter & 0x0000FF00) >> 8);
+	tsen.RFXMETER.count4 = (BYTE)(counter & 0x000000FF);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+}
+
+
 void CDomoticzHardwareBase::SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux)
 {
 	_tLightMeter lmeter;
