@@ -183,6 +183,9 @@ private:
 	void InsertSensor(_tMySensorSensor device);
 	void UpdateNodeBatteryLevel(const int nodeID, const int Level);
 
+	void UpdateVar(const int NodeID, const int ChildID, const int VarID, const std::string &svalue);
+	bool GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue);
+
 	std::map<int, _tMySensorNode> m_nodes;
 
 	static const int readBufferSize=1028;
