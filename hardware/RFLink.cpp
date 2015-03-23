@@ -34,6 +34,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Kambrook", sSwitchTypeKambrook },     // p8
 	{ "SelectPlus", sSwitchTypeSelectPlus }, // p70
 	{ "Byron", sSwitchTypeByronSX },         // p72
+    { "X10", sSwitchTypeX10 },               // p9
 	{ "", -1 }
 };
 
