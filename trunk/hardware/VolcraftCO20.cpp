@@ -161,6 +161,10 @@ static int read_one_sensor (struct usb_device *dev, uint16_t &value)
 	if (ret == 0) {
 		ret = usb_interrupt_read(devh, 0x0081/*endpoint*/,
 			usb_io_buf, 0x10/*len*/, 1000/*msec*/);
+		if (ret == 0) {
+			//give up!
+			goto out_unlock;
+		}
 	}
 
 	/* Prepare value from first read.  */
@@ -188,10 +192,15 @@ static int get_voc_value(int vendor, int product, uint16_t &voc)
 	int ret = 0;
 
 	for (bus = usb_get_busses(); bus; bus = bus->next)
+	{
 		for (dev = bus->devices; dev; dev = dev->next)
-			if (dev->descriptor.idVendor == vendor
-				&& dev->descriptor.idProduct == product)
+		{
+			if (dev->descriptor.idVendor == vendor && dev->descriptor.idProduct == product)
+			{
 				ret |= read_one_sensor(dev,voc);
+			}
+		}
+	}
 
 	return ret;
 }
