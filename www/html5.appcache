@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 819
+# ref 821
 
 CACHE:
 # CSS
@@ -145,6 +145,7 @@ images/doorbell.png
 images/doorbell48.png
 images/down.png
 images/Down48.png
+images/Down48_2.png
 images/edit.png
 images/expand16.png
 images/empty16.png
@@ -274,6 +275,7 @@ images/spacer.gif
 images/Speaker.png
 images/Speaker48_Off.png
 images/Speaker48_On.png
+images/Stop48.png
 images/switch.png
 images/temp-0-5.png
 images/temp-10-15.png
@@ -292,6 +294,7 @@ images/TV48_On.png
 images/unknown.png
 images/up.png
 images/Up48.png
+images/Up48_2.png
 images/users.png
 images/utility.png
 images/uv.png

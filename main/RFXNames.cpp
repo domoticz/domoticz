@@ -2472,6 +2472,18 @@ bool GetLightCommand(
 			{
 				cmd = thermostat3_sDown;
 			}
+			else if (switchcmd == "Run Up")
+			{
+				cmd = thermostat3_sRunUp;
+			}
+			else if (switchcmd == "Run Down")
+			{
+				cmd = thermostat3_sRunDown;
+			}
+			else if (switchcmd == "Stop")
+			{
+				cmd = thermostat3_sStop;
+			}
 			else
 			{
 				cmd=thermostat3_sOff;

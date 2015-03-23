@@ -871,10 +871,10 @@ void MySensorsBase::ParseLine()
 		case V_VAR3:
 		case V_VAR4:
 		case V_VAR5:
-			//cant send back a custom variable
+			//send back a previous stored custom variable
 			tmpstr = "";
-			if (GetVar(node_id, child_sensor_id, sub_type, tmpstr)==true)
-				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+			GetVar(node_id, child_sensor_id, sub_type, tmpstr);
+			SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;
 		default:
 			while (1==0);
