@@ -881,10 +881,6 @@ namespace http {
 			{
 				bool bDoAdd = true;
 #ifndef _DEBUG
-				if (ii == HTYPE_RFLINK)
-				{
-					bDoAdd = false;
-				}
 #ifdef WIN32
 				if (
 					(ii == HTYPE_RaspberryBMP085)
