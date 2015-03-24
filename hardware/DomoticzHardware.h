@@ -111,6 +111,7 @@ private:
 	void SendPressureSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
 	void SendDistanceSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float distance);
 	void SendMeterSensor		(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue);
+	void SenUVSensor			(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI);
 
 	int m_iHBCounter;
 	boost::shared_ptr<boost::thread> m_Heartbeatthread;

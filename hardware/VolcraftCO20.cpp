@@ -201,7 +201,6 @@ static int get_voc_value(int vendor, int product, uint16_t &voc)
 			}
 		}
 	}
-
 	return ret;
 }
 

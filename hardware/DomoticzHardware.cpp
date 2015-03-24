@@ -343,7 +343,7 @@ void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID,
 	tsen.RFXMETER.count2 = (BYTE)((counter & 0x00FF0000) >> 16);
 	tsen.RFXMETER.count3 = (BYTE)((counter & 0x0000FF00) >> 8);
 	tsen.RFXMETER.count4 = (BYTE)(counter & 0x000000FF);
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
 }
 
 
@@ -464,8 +464,10 @@ void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const int ChildI
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
+	int dID = (NodeID << 8) | ChildID;
+
 	char szTmp[30];
-	sprintf(szTmp, "%08X", (unsigned int)NodeID);
+	sprintf(szTmp, "%08X", dID);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
 	result = m_sql.query(szQuery.str());
@@ -478,7 +480,7 @@ void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const int ChildI
 	gDevice.subtype = sTypeVoltage;
 	gDevice.id = ChildID;
 	gDevice.floatval1 = Volt;
-	gDevice.intval1 = static_cast<int>(NodeID);
+	gDevice.intval1 = dID;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -593,4 +595,20 @@ void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int Child
 	gdevice.subtype = sTypePressure;
 	gdevice.floatval1 = pressure;
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+}
+
+void CDomoticzHardwareBase::SenUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI)
+{
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.UV.packetlength = sizeof(tsen.UV) - 1;
+	tsen.UV.packettype = pTypeUV;
+	tsen.UV.subtype = sTypeUV1;
+	tsen.UV.battery_level = BatteryLevel;
+	tsen.UV.rssi = 12;
+	tsen.UV.id1 = (unsigned char)NodeID;
+	tsen.UV.id2 = (unsigned char)ChildID;
+
+	tsen.UV.uv = (BYTE)round(UVI * 10);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);
 }
