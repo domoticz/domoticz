@@ -166,6 +166,7 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 
 void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor)
 {
+	std::string devname;
 	m_iLastSendNodeBatteryValue = 255;
 	if (pSensor->hasBattery)
 	{
@@ -257,6 +258,10 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		//Armed status of a security sensor. 1 = Armed, 0 = Bypassed
 		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Security Sensor");
 		break;
+	case V_LOCK_STATUS:
+		//Lock status. 1 = Locked, 0 = Unlocked
+		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Lock Sensor");
+		break;
 	case V_LIGHT:
 		//	Light status. 0 = off 1 = on
 		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue != 0), 100, "Light");
@@ -335,6 +340,13 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		//Water Volume
 		SendMeterSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
 		break;
+	case V_VOLTAGE:
+		devname = "Voltage";
+		SendVoltageSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue, devname);
+		break;
+	case V_UV:
+		SenUVSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
+		break;
 	case V_FORECAST:
 	{
 		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
@@ -349,7 +361,6 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		{
 			std::stringstream sstr;
 			sstr << pSensor->nodeID;
-			std::string devname;
 			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, pSensor->batValue, 0, pSensor->stringValue.c_str(), devname);
 		}
 	}
@@ -714,6 +725,14 @@ void MySensorsBase::ParseLine()
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
 			break;
+		case V_ARMED:
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_LOCK_STATUS:
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
 		case V_LIGHT:
 			//	Light status. 0 = off 1 = on
 			pSensor->intvalue = atoi(payload.c_str());
@@ -782,6 +801,14 @@ void MySensorsBase::ParseLine()
 				pSensor->intvalue = bmpbaroforecast_thunderstorm;
 			else if (pSensor->stringValue == "unknown")
 				pSensor->intvalue = bmpbaroforecast_unknown;
+			bHaveValue = true;
+			break;
+		case V_VOLTAGE:
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_UV:
+			pSensor->floatValue = (float)atof(payload.c_str());
 			bHaveValue = true;
 			break;
 		default:
