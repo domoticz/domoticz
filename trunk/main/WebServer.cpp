@@ -4367,7 +4367,8 @@ namespace http {
 						case HTYPE_EVOHOME_SCRIPT:
 						case HTYPE_EVOHOME_SERIAL:
 						case HTYPE_RaspberryGPIO:
-							root["result"][ii]["idx"] = ID;
+						case HTYPE_RFLINK:
+                        root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
 							break;
