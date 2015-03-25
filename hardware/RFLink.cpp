@@ -599,6 +599,14 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	{
 		SendWind(ID, BatteryLevel, windir, windspeed, windgust, windtemp, windchill, bHaveWindTemp);
 	}
+	else if (bHaveWindDir && bHaveWindGust)
+	{
+		SendWind(ID, BatteryLevel, windir, windspeed, windgust, windtemp, windchill, bHaveWindTemp);
+	}
+	else if (bHaveWindSpeed)
+	{
+		SendWind(ID, BatteryLevel, windir, windspeed, windgust, windtemp, windchill, bHaveWindTemp);
+	}
 	else if (bHaveSwitch && bHaveSwitchCmd)
 	{
 		std::string switchType = results[2];
