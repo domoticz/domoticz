@@ -138,6 +138,13 @@ void CForecastIO::GetMeterDetails()
 		_log.Log(LOG_ERROR,"ForecastIO: Invalid data received, or unknown location!");
 		return;
 	}
+	/*
+	std::string tmpstr2 = root.toStyledString();
+	FILE *fOut = fopen("E:\\forecastio.json", "wb+");
+	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
+	fclose(fOut);
+	*/
+
 	std::string tmpstr;
 	float temp;
 	int humidity=0;
@@ -280,7 +287,7 @@ void CForecastIO::GetMeterDetails()
 	}
 	if (root["currently"]["windSpeed"].empty()==false)
 	{
-		if (root["currently"]["windSpeed"]!="N/A")
+		if ((root["currently"]["windSpeed"] != "N/A") && (root["currently"]["windSpeed"] != "--"))
 		{
 			float temp_wind_mph = static_cast<float>(atof(root["currently"]["windSpeed"].asString().c_str()));
 			if (temp_wind_mph!=-9999.00f)
@@ -293,7 +300,7 @@ void CForecastIO::GetMeterDetails()
 	}
 	if (root["currently"]["windGust"].empty()==false)
 	{
-		if (root["currently"]["windGust"]!="N/A")
+		if ((root["currently"]["windGust"] != "N/A") && (root["currently"]["windGust"] != "--"))
 		{
 			float temp_wind_gust_mph = static_cast<float>(atof(root["currently"]["windGust"].asString().c_str()));
 			if (temp_wind_gust_mph!=-9999.00f)
@@ -306,7 +313,7 @@ void CForecastIO::GetMeterDetails()
 	}
 	if (root["currently"]["apparentTemperature"].empty()==false)
 	{
-		if (root["currently"]["apparentTemperature"]!="N/A")
+		if ((root["currently"]["apparentTemperature"] != "N/A") && (root["currently"]["apparentTemperature"] != "--"))
 		{
 			wind_chill = static_cast<float>(atof(root["currently"]["apparentTemperature"].asString().c_str()));
 			//Convert to celcius
@@ -369,7 +376,7 @@ void CForecastIO::GetMeterDetails()
 	//UV
 	if (root["currently"]["UV"].empty()==false)
 	{
-		if (root["currently"]["UV"]!="N/A")
+		if ((root["currently"]["UV"] != "N/A") && (root["currently"]["UV"] != "--"))
 		{
 			float UV = static_cast<float>(atof(root["currently"]["UV"].asString().c_str()));
 			if ((UV<16)&&(UV>=0))
@@ -393,7 +400,7 @@ void CForecastIO::GetMeterDetails()
 	//Rain
 	if (root["currently"]["precipIntensity"].empty()==false)
 	{
-		if (root["currently"]["precipIntensity"]!="N/A")
+		if ((root["currently"]["precipIntensity"] != "N/A") && (root["currently"]["precipIntensity"] != "--"))
 		{
 			float RainCount = static_cast<float>(atof(root["currently"]["precipIntensity"].asString().c_str()))*25.4f; //inches to mm
 			if ((RainCount!=-9999.00f)&&(RainCount>=0.00f))
@@ -413,7 +420,7 @@ void CForecastIO::GetMeterDetails()
 
 				if (root["currently"]["precip_1hr_metric"].empty()==false)
 				{
-					if (root["currently"]["precip_1hr_metric"]!="N/A")
+					if ((root["currently"]["precip_1hr_metric"] != "N/A") && (root["currently"]["precip_1hr_metric"] != "--"))
 					{
 						float rainrateph = static_cast<float>(atof(root["currently"]["precip_1hr_metric"].asString().c_str()));
 						if (rainrateph!=-9999.00f)
@@ -440,7 +447,7 @@ void CForecastIO::GetMeterDetails()
 	//Visibility
 	if (root["currently"]["visibility"].empty()==false)
 	{
-		if (root["currently"]["visibility"]!="N/A")
+		if ((root["currently"]["visibility"] != "N/A") && (root["currently"]["visibility"] != "--"))
 		{
 			float visibility = static_cast<float>(atof(root["currently"]["visibility"].asString().c_str()))*1.60934f; //miles to km
 			if (visibility>=0)
@@ -455,7 +462,7 @@ void CForecastIO::GetMeterDetails()
 	//Solar Radiation
 	if (root["currently"]["ozone"].empty()==false)
 	{
-		if (root["currently"]["ozone"]!="N/A")
+		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
 			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));	//this is in dobson units, need to convert to Watt/m2? (2.69×(10^20) ?
 			if (radiation>=0.0f)

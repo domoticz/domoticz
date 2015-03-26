@@ -132,16 +132,41 @@ void CWunderground::GetMeterDetails()
 		_log.Log(LOG_ERROR,"WUnderground: Invalid data received!");
 		return;
 	}
-	if (root["current_observation"].empty()==true)
+
+	bool bValid = true;
+	if (root["response"].empty() == true)
 	{
-		_log.Log(LOG_ERROR,"WUnderground: Invalid data received, or unknown location!");
+		bValid = false;
+	}
+	else if (!root["response"]["error"].empty())
+	{
+		bValid = false;
+		if (!root["response"]["error"]["description"].empty())
+		{
+			_log.Log(LOG_ERROR, "WUnderground: Error: %s", root["response"]["error"]["description"].asString().c_str());
+			return;
+		}
+	}
+	else if (root["current_observation"].empty()==true)
+	{
+		bValid = false;
 		return;
 	}
-
-//	std::string tmpstr2 = root.toStyledString();
-//	FILE *fOut = fopen("E:\\underground.json", "wb+");
-//	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
-//	fclose(fOut);
+	else if (root["current_observation"]["temp_c"].empty() == true)
+	{
+		bValid = false;
+	}
+	if (!bValid)
+	{
+		_log.Log(LOG_ERROR, "WUnderground: Invalid data received, or no data returned!");
+		return;
+	}
+	/*
+	std::string tmpstr2 = root.toStyledString();
+	FILE *fOut = fopen("E:\\underground.json", "wb+");
+	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
+	fclose(fOut);
+	*/
 
 	std::string tmpstr;
 	int pos;
@@ -150,8 +175,6 @@ void CWunderground::GetMeterDetails()
 	int barometric=0;
 	int barometric_forcast=baroForecastNoInfo;
 
-	if (root["current_observation"].empty() == true)
-		return; ///ehhh
 
 	temp=root["current_observation"]["temp_c"].asFloat();
 
@@ -294,7 +317,7 @@ void CWunderground::GetMeterDetails()
 	}
 	if (root["current_observation"]["wind_mph"].empty()==false)
 	{
-		if (root["current_observation"]["wind_mph"]!="N/A")
+		if ((root["current_observation"]["wind_mph"] != "N/A") && (root["current_observation"]["wind_mph"] != "--"))
 		{
 			float temp_wind_mph = static_cast<float>(atof(root["current_observation"]["wind_mph"].asString().c_str()));
 			if (temp_wind_mph!=-9999.00f)
@@ -307,7 +330,7 @@ void CWunderground::GetMeterDetails()
 	}
 	if (root["current_observation"]["wind_gust_mph"].empty()==false)
 	{
-		if (root["current_observation"]["wind_gust_mph"]!="N/A")
+		if ((root["current_observation"]["wind_gust_mph"] != "N/A") && (root["current_observation"]["wind_gust_mph"] != "--"))
 		{
 			float temp_wind_gust_mph = static_cast<float>(atof(root["current_observation"]["wind_gust_mph"].asString().c_str()));
 			if (temp_wind_gust_mph!=-9999.00f)
@@ -320,7 +343,7 @@ void CWunderground::GetMeterDetails()
 	}
 	if (root["current_observation"]["feelslike_c"].empty()==false)
 	{
-		if (root["current_observation"]["feelslike_c"]!="N/A")
+		if ((root["current_observation"]["feelslike_c"] != "N/A") && (root["current_observation"]["feelslike_c"] != "--"))
 		{
 			wind_chill = static_cast<float>(atof(root["current_observation"]["feelslike_c"].asString().c_str()));
 		}
@@ -383,7 +406,7 @@ void CWunderground::GetMeterDetails()
 	{
 		if (root["current_observation"]["UV"].empty() == false)
 		{
-			if (root["current_observation"]["UV"] != "N/A")
+			if ((root["current_observation"]["UV"] != "N/A") && (root["current_observation"]["UV"] != "--"))
 			{
 				float UV = static_cast<float>(atof(root["current_observation"]["UV"].asString().c_str()));
 				if ((UV < 16) && (UV >= 0))
@@ -408,7 +431,7 @@ void CWunderground::GetMeterDetails()
 	//Rain
 	if (root["current_observation"]["precip_today_metric"].empty() == false)
 	{
-		if (root["current_observation"]["precip_today_metric"] != "N/A")
+		if ((root["current_observation"]["precip_today_metric"] != "N/A") && (root["current_observation"]["precip_today_metric"] != "--"))
 		{
 			float RainCount = static_cast<float>(atof(root["current_observation"]["precip_today_metric"].asString().c_str()));
 			if ((RainCount != -9999.00f) && (RainCount >= 0.00f))
@@ -428,7 +451,7 @@ void CWunderground::GetMeterDetails()
 
 				if (root["current_observation"]["precip_1hr_metric"].empty() == false)
 				{
-					if (root["current_observation"]["precip_1hr_metric"] != "N/A")
+					if ((root["current_observation"]["precip_1hr_metric"] != "N/A") && (root["current_observation"]["precip_1hr_metric"] != "--"))
 					{
 						float rainrateph = static_cast<float>(atof(root["current_observation"]["precip_1hr_metric"].asString().c_str()));
 						if (rainrateph != -9999.00f)
@@ -455,7 +478,7 @@ void CWunderground::GetMeterDetails()
 	//Visibility
 	if (root["current_observation"]["visibility_km"].empty() == false)
 	{
-		if (root["current_observation"]["visibility_km"] != "N/A")
+		if ((root["current_observation"]["visibility_km"] != "N/A") && (root["current_observation"]["visibility_km"] != "--"))
 		{
 			float visibility = static_cast<float>(atof(root["current_observation"]["visibility_km"].asString().c_str()));
 			if (visibility >= 0)
@@ -471,7 +494,7 @@ void CWunderground::GetMeterDetails()
 	//Solar Radiation
 	if (root["current_observation"]["solarradiation"].empty() == false)
 	{
-		if (root["current_observation"]["solarradiation"] != "N/A")
+		if ((root["current_observation"]["solarradiation"] != "N/A") && (root["current_observation"]["solarradiation"] != "--"))
 		{
 			float radiation = static_cast<float>(atof(root["current_observation"]["solarradiation"].asString().c_str()));
 			if (radiation >= 0.0f)

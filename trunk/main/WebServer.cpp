@@ -10779,6 +10779,10 @@ namespace http {
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeLux, sTypeLux, 10, 255, 0, "0", devname);
 				bCreated = true;
 				break;
+			case pTypeP1Power:
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Power, sTypeP1Power, 10, 255, 0, "0;0;0;0;0;0", devname);
+				bCreated = true;
+				break;
 			}
 			if (bCreated)
 			{
