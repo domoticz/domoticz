@@ -33,6 +33,7 @@ CEcoDevices::CEcoDevices(const int ID, const std::string IPAddress, const unsign
 	m_p1power.len = sizeof(P1Power)-1;
 	m_p1power.type = pTypeP1Power;
 	m_p1power.subtype = sTypeP1Power;
+	m_p1power.ID = 1;
 	Init();
 }
 
