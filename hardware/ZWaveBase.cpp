@@ -341,6 +341,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
+	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+
 	m_iLastSendNodeBatteryValue = 255;
 	if (pDevice->hasBattery)
 	{
@@ -406,8 +408,6 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		//ID3 = pDevice->instanceID;
 		//ID4 = pDevice->indexID;
 		//but current users gets new devices in this case
-
-		unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
 
 		char szID[10];
 		sprintf(szID, "%08x", (unsigned int)lID);
@@ -759,6 +759,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		m_p1gas.type = pTypeP1Gas;
 		m_p1gas.subtype = sTypeP1Gas;
 		m_p1gas.gasusage = (unsigned long)(pDevice->floatValue * 1000);
+		m_p1gas.ID = lID;
 		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)

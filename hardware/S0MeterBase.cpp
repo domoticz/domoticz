@@ -22,6 +22,10 @@ S0MeterBase::S0MeterBase(void)
 	for (ii = 0; ii < max_s0_meters; ii++)
 	{
 		m_meters[ii].m_volume_total = 0;
+		m_meters[ii].m_CurrentUsage = 0;
+		m_meters[ii].m_value_buffer_total = 0;
+		m_meters[ii].m_value_buffer_write_pos = 0;
+		m_meters[ii].m_PacketsSinceLastPulseChange = 0;
 		m_meters[ii].m_last_values[0] = 0;
 		m_meters[ii].m_last_values[1] = 0;
 		m_meters[ii].m_last_values[2] = 0;
@@ -41,7 +45,11 @@ void S0MeterBase::ReloadLastTotals()
 	for (ii=0; ii<max_s0_meters; ii++)
 	{
 		m_meters[ii].m_volume_total=0;
-		m_meters[ii].m_last_values[0]=0;
+		m_meters[ii].m_CurrentUsage = 0;
+		m_meters[ii].m_value_buffer_total = 0;
+		m_meters[ii].m_value_buffer_write_pos = 0;
+		m_meters[ii].m_PacketsSinceLastPulseChange = 0;
+		m_meters[ii].m_last_values[0] = 0;
 		m_meters[ii].m_last_values[1]=0;
 		m_meters[ii].m_last_values[2]=0;
 		m_meters[ii].m_last_values[3]=0;
@@ -138,12 +146,12 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 	}
 	else if (meterype==MTYPE_GAS)
 	{
-		//can only be one gas meter...
 		P1Gas	m_p1gas;
 		m_p1gas.len=sizeof(P1Gas)-1;
 		m_p1gas.type=pTypeP1Gas;
 		m_p1gas.subtype=sTypeP1Gas;
 		m_p1gas.gasusage=(unsigned long)(mtotal*1000.0);
+		m_p1gas.ID = ID;
 		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);//decode message
 	}
 	else
@@ -166,7 +174,6 @@ void S0MeterBase::SendMeter(unsigned char ID, double musage, double mtotal)
 		tsen.RFXMETER.count3 = (BYTE)((counterA & 0x0000FF00) >> 8);
 		tsen.RFXMETER.count4 = (BYTE)(counterA & 0x000000FF);
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
-
 	}
 }
 
@@ -193,7 +200,7 @@ void S0MeterBase::ParseLine()
 	}
 	if (results.size()<4)
 	{
-		_log.Log(LOG_ERROR,"S0 Meter: Invalid Data received!");
+		_log.Log(LOG_ERROR,"S0 Meter: Invalid Data received! %s",sLine.c_str());
 		return;
 	}
 	int totmeters=(results.size()-4)/3;
@@ -206,24 +213,46 @@ void S0MeterBase::ParseLine()
 	int roffset=4;
 	for (int ii=0; ii<totmeters; ii++)
 	{
+		m_meters[ii].m_PacketsSinceLastPulseChange++;
+
 		double s0_pulse=atof(results[roffset+1].c_str());
 		double s0_volume=( s0_pulse / m_meters[ii].m_pulse_per_unit);
-		//Calculate average here (5 values)
-		double s0_act_watt=s0_volume*(3600.0/s0_pulse_interval);
-		if (s0_act_watt < 200)
+
+		if (s0_pulse != 0)
 		{
-			double s0_watt_hour = (s0_act_watt + m_meters[ii].m_last_values[0] + m_meters[ii].m_last_values[1] + m_meters[ii].m_last_values[2] + m_meters[ii].m_last_values[3])*0.2;
-			m_meters[ii].m_last_values[0] = m_meters[ii].m_last_values[1];
-			m_meters[ii].m_last_values[1] = m_meters[ii].m_last_values[2];
-			m_meters[ii].m_last_values[2] = m_meters[ii].m_last_values[3];
-			m_meters[ii].m_last_values[3] = s0_act_watt;
+			double pph = ((double)m_meters[ii].m_pulse_per_unit) / 1000; // Pulses per (watt) hour
+			double ActualUsage = ((3600.0 / double(m_meters[ii].m_PacketsSinceLastPulseChange*s0_pulse_interval) / pph) * s0_pulse);
+			m_meters[ii].m_PacketsSinceLastPulseChange = 0;
 
-			m_meters[ii].m_volume_total += s0_volume;
-			//_log.Log(LOG_NORM,"S0 Meter: M1-Int=%0.3f, M1-Tot=%0.3f",s0_m1_watt_hour,m_s0_m1_volume_total);
+			m_meters[ii].m_last_values[m_meters[ii].m_value_buffer_write_pos] = ActualUsage;
+			m_meters[ii].m_value_buffer_write_pos = (m_meters[ii].m_value_buffer_write_pos + 1) % 5;
 
-			if (m_meters[ii].m_volume_total != 0) {
-				SendMeter(ii + 1, s0_watt_hour, m_meters[ii].m_volume_total);
+			if (m_meters[ii].m_value_buffer_total < 5)
+				m_meters[ii].m_value_buffer_total++;
+
+			//Calculate Average
+			double vTotal = 0;
+			for (int iBuf = 0; iBuf < m_meters[ii].m_value_buffer_total; iBuf++)
+				vTotal += m_meters[ii].m_last_values[iBuf];
+			m_meters[ii].m_CurrentUsage = vTotal / double(m_meters[ii].m_value_buffer_total);
+
+
+			_log.Log(LOG_STATUS, "S0 Meter: M%d, Watt: %.3f", ii + 1, m_meters[ii].m_CurrentUsage);
+		}
+		else
+		{
+			if (m_meters[ii].m_PacketsSinceLastPulseChange > 5 * 6)
+			{
+				//No pulses received for a long time, consider no usage
+				m_meters[ii].m_PacketsSinceLastPulseChange = 0;
+				m_meters[ii].m_last_values[0] = 0;
+				m_meters[ii].m_value_buffer_total = 0;
+				m_meters[ii].m_value_buffer_write_pos = 0;
 			}
+		}
+
+		if (m_meters[ii].m_volume_total != 0) {
+			SendMeter(ii + 1, m_meters[ii].m_CurrentUsage/1000.0f, m_meters[ii].m_volume_total);
 		}
 		roffset+=3;
 	}

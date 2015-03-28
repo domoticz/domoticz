@@ -355,6 +355,14 @@ typedef struct _tP1Power {
 	unsigned long powerdeliv2;
 	unsigned long usagecurrent;
 	unsigned long delivcurrent;
+	int ID;
+	_tP1Power()
+	{
+		len = sizeof(_tP1Power) - 1;
+		type = pTypeP1Power;
+		subtype = sTypeP1Power;
+		ID = 1;
+	}
 } P1Power;
 
 typedef struct _tP1Gas {
@@ -362,6 +370,14 @@ typedef struct _tP1Gas {
 	unsigned char type;
 	unsigned char subtype;
 	unsigned long gasusage;
+	int ID;
+	_tP1Gas()
+	{
+		len = sizeof(_tP1Gas) - 1;
+		type = pTypeP1Gas;
+		subtype = sTypeP1Gas;
+		ID = 1;
+	}
 } P1Gas;
 
 typedef struct _tLimitlessLights {
