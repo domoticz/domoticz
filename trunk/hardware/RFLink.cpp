@@ -587,15 +587,18 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	{
 		SendBaroSensor(Node_ID, Child_ID, BatteryLevel, baro, baroforecast);
 	}
-	else if (bHaveLux)
+
+	if (bHaveLux)
 	{
 		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux);
 	}
-	else if (bHaveRain)
+
+	if (bHaveRain)
 	{
 		SendRainSensor(ID, BatteryLevel, raincounter);
 	}
-	else if (bHaveWindDir && bHaveWindSpeed && bHaveWindGust && bHaveWindChill)
+
+	if (bHaveWindDir && bHaveWindSpeed && bHaveWindGust && bHaveWindChill)
 	{
 		SendWind(ID, BatteryLevel, windir, windspeed, windgust, windtemp, windchill, bHaveWindTemp);
 	}
@@ -607,14 +610,11 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	{
 		SendWind(ID, BatteryLevel, windir, windspeed, windgust, windtemp, windchill, bHaveWindTemp);
 	}
-	else if (bHaveSwitch && bHaveSwitchCmd)
+
+	if (bHaveSwitch && bHaveSwitchCmd)
 	{
 		std::string switchType = results[2];
 		SendSwitchInt(ID, switchunit, BatteryLevel, switchType, switchcmd, switchlevel);
-	}
-	else
-	{
-		_log.Log(LOG_STATUS, "RFLink: Unsupported sensor, please report: %s", sLine.c_str());
 	}
 
     return true;

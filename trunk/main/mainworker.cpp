@@ -7680,9 +7680,16 @@ unsigned long long MainWorker::decode_P1MeterPower(const CDomoticzHardwareBase *
 {
 	char szTmp[200];
 	const _tP1Power *p1Power=(const _tP1Power*)pResponse;
+
+	if (p1Power->len != sizeof(_tP1Power) - 1)
+		return -1;
+
 	unsigned char devType=p1Power->type;
 	unsigned char subType=p1Power->subtype;
-	std::string ID="1";
+	std::string ID;
+	sprintf(szTmp, "%d", p1Power->ID);
+	ID = szTmp;
+
 	unsigned char Unit=subType;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
@@ -7739,10 +7746,15 @@ unsigned long long MainWorker::decode_P1MeterGas(const CDomoticzHardwareBase *pH
 {
 	char szTmp[200];
 	const _tP1Gas *p1Gas=(const _tP1Gas*)pResponse;
+	if (p1Gas->len != sizeof(_tP1Gas) - 1)
+		return -1;
+
 	unsigned char devType=p1Gas->type;
 	unsigned char subType=p1Gas->subtype;
-	std::string ID="1";
-	unsigned char Unit=subType;
+	std::string ID;
+	sprintf(szTmp, "%d", p1Gas->ID);
+	ID = szTmp;
+	unsigned char Unit = subType;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
@@ -9231,6 +9243,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.BLINDS1.packetlength=sizeof(lcmd.BLINDS1)-1;
 			lcmd.BLINDS1.packettype=dType;
 			lcmd.BLINDS1.subtype=dSubType;
+			lcmd.BLINDS1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 
 			if ((dSubType == sTypeBlindsT6) || (dSubType == sTypeBlindsT7) || (dSubType == sTypeBlindsT9) || (dSubType == sTypeBlindsT10))
 			{
@@ -9246,8 +9259,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				lcmd.BLINDS1.id3 = ID4;
 				lcmd.BLINDS1.id4 = 0;
 			}
-			lcmd.BLINDS1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.BLINDS1.unitcode=Unit;
+			switch (dSubType)
+			{
+			case sTypeBlindsT6:
+			case sTypeBlindsT7:
+			case sTypeBlindsT9:
+				lcmd.BLINDS1.unitcode = ((ID4 & 0x0F) << 4) + Unit;
+				break;
+			default:
+				lcmd.BLINDS1.unitcode = Unit;
+				break;
+			}
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd))
 				return false;
 			level=15;

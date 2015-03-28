@@ -629,6 +629,11 @@ define(['app'], function (app) {
 						var img="";
 						var status="";
 						var bigtext="";
+						
+						if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
+							bigtext=item.Usage;
+						}
+						
 						if (typeof item.Counter != 'undefined') {
 							if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 								status=item.Counter;
@@ -743,6 +748,9 @@ define(['app'], function (app) {
 						if ($(id + " #status").html()!=status) {
 							$(id + " #bigtext").html(bigtext);
 							$(id + " #status").html(status);
+						}
+						if ($(id + " #bigtext").html()!=bigtext) {
+							$(id + " #bigtext").html(bigtext);
 						}
 						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 							$(id + " #lastupdate").html(item.LastUpdate);

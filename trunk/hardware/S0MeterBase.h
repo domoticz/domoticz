@@ -7,8 +7,12 @@ class S0MeterBase : public CDomoticzHardwareBase
 	struct _tS0Meter{
 		int m_type;
 		double m_pulse_per_unit;
-		double m_last_values[4];
+		int m_value_buffer_total;
+		int m_value_buffer_write_pos;
+		double m_last_values[5];
 		double m_volume_total;
+		double m_CurrentUsage;
+		int m_PacketsSinceLastPulseChange;
 	};
 	friend class S0MeterSerial;
 public:

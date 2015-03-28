@@ -5044,8 +5044,6 @@ namespace http {
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
-						if ((lighttype != 206) && (lighttype != 207))
-							return; //only blinds1 T6/T7 for now
 						dtype = pTypeBlinds;
 						subtype = lighttype-200;
 						std::string id = m_pWebEm->FindValue("id");
@@ -5360,8 +5358,6 @@ namespace http {
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
-						if ((lighttype != 206) && (lighttype != 207))
-							return; //only blinds1 T6/T7 for now
 						dtype = pTypeBlinds;
 						subtype = lighttype-200;
 						std::string id = m_pWebEm->FindValue("id");
@@ -14285,6 +14281,7 @@ namespace http {
 							if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								EnergyDivider /= 100.0f;
 						}
+						root["method"] = method;
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						float FirstValue = 0;
