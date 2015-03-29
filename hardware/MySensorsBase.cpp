@@ -800,10 +800,12 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_LIGHT_LEVEL:
 			pSensor->floatValue = (float)atof(payload.c_str());
+			/*
 			//convert percentage to 1000 scale
 			pSensor->floatValue = (1000.0f / 100.0f)*pSensor->floatValue;
 			if (pSensor->floatValue > 1000.0f)
 				pSensor->floatValue = 1000.0f;
+			*/
 			bHaveValue = true;
 			break;
 		case V_FORECAST:
