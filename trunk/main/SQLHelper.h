@@ -2,11 +2,11 @@
 
 #include <vector>
 #include <string>
+#include "RFXNames.h"
 #include "../httpclient/UrlEncode.h"
 #include <map>
 
 struct sqlite3;
-enum _eNotificationTypes;
 
 struct _tNotification
 {
