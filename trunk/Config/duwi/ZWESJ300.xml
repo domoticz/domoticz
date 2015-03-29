@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Taken from http://www.uk-automation.co.uk/pdf/DUW_blind.pdf -->
+<!-- Duwi: ZW ESJ Blind Control -->
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="short" index="0" genre="config" label="Running time" units="">
+			<Help>Continuous operation. 0x01-0x7F: 1-127 seconds in 1-second steps. 0x80-0xFE: 130-1390 seconds (0xFE) in 10 second-steps. 0xFF: 120 seconds (default;</Help>
+		</Value>
+		<Value type="list" index="1" genre="config" label="Stop-functionality" units="" min="0" max="1" value="1" size="1">
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled (default)" value="1" />
+		</Value>
+	</CommandClass>
+
+</Product>

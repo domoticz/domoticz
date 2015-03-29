@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
-  <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
-  <CommandClass id="113" action="remove" />
-  
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="byte" genre="config" instance="1" index="1" label="No communication light" min="1" max="255" value="2">

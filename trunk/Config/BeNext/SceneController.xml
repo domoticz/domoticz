@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--http://benext.eu/static/manual/scenecontroller.pdf-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <CommandClass id="91" action="add" scenecount="16" />
+  <!-- Configuration -->
+  <CommandClass id="112">
+
+    <Value type="byte" genre="config" instance="1" index="1" label="Set to Default" value="-1">
+      <Help>Set all configuration values to default values (factory settings).</Help>
+    </Value>
+    
+    <Value type="byte" genre="config" instance="1" index="16" label="Double press time" value="20">
+      <Help>The time that a user has to activate the double button pressed scene, if time is passed then the single pressed button scene is notified.</Help>
+    </Value>
+
+  </CommandClass>
+  
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="8" label="Group 1: All CENTRAL_SCENE_NOTIFICATION messages are sent to the nodes in this group." auto="false"/>      
+    </Associations>
+  </CommandClass>
+
+</Product>
