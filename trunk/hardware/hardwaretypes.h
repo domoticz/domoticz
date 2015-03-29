@@ -22,6 +22,7 @@
 #define bmpbaroforecast_unstable		0x03
 #define bmpbaroforecast_thunderstorm	0x04
 #define bmpbaroforecast_unknown			0x05
+#define bmpbaroforecast_rain			0x06 //when forecast was cloudy and pressure is below 1010 we have 50%+ change of rain
 
 #define pTypeLimitlessLights	0xF1
 #define sTypeLimitlessRGBW		0x01

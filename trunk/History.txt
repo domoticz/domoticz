@@ -28,7 +28,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: RFXCom, support for Blinds T9/T10
 - Changed: P1 Electra/Gas meters now have an ID, update all your domoticz instances !
 - Changed: S0 Meter, actual usage calculation
-- Fixed: Closing Voltcraft device handle
+- Fixed: Closing Voltcraft usb device handle after reading
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

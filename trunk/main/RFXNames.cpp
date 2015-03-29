@@ -329,6 +329,7 @@ const char *BMP_Forecast_Desc(const unsigned char Forecast)
 		{ bmpbaroforecast_unstable, "Unstable" },
 		{ bmpbaroforecast_thunderstorm, "Thunderstorm" },
 		{ bmpbaroforecast_unknown, "Unknown" },
+		{ bmpbaroforecast_rain, "Cloudy/Rain" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1(Table, Forecast);

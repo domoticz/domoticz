@@ -568,6 +568,11 @@ void CBMP085::ReadSensorDetails()
 			break;
 		case FC_BMP085_CLOUDY_RAIN:		//Slowly falling Low Pressure System, stable rainy weather (Cloudy/Rain)
 			m_LastSendForecast = bmpbaroforecast_cloudy;
+			if (m_LastSendForecast == bmpbaroforecast_cloudy)
+			{
+				if (pressure < 1010)
+					m_LastSendForecast = bmpbaroforecast_rain;
+			}
 			break;
 		case FC_BMP085_UNSTABLE:		//Quickly rising HP, not stable weather
 			if (m_LastForecast == bmpbaroforecast_unknown)
