@@ -181,6 +181,8 @@ out_unlock:
 		ret = -5;
 	}
 out:
+	if (devh)
+		usb_close (devh);
 	return ret;
 }
 

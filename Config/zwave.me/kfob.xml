@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
-	<!-- COMMAND_CLASS_SCENE_ACTIVATION. KFob can be configured to send scene commands but does not advertise it -->
-	<CommandClass id="43" action="add" getsupported="false"/>
-	
 	<!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="list" index="1" genre="config" label="Button 1 and 3 pair mode" units="" min="0" max="255" value="1" size="1">
@@ -91,6 +88,9 @@
 			<Item label="Broadcast" value="2"/>
 		</Value>
 	</CommandClass>
+
+	<!-- COMMAND_CLASS_SCENE_ACTIVATION. KFob can be configured to send scene commands but does not advertise it -->
+	<CommandClass id="43" action="add" getsupported="false"/>
 
 	<!-- COMMAND_CLASS_MULTI_CHANNEL_V2
 	<CommandClass id="96" version="2"/>

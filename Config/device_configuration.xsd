@@ -58,6 +58,7 @@
    <xs:attribute name='action' type='xs:string' use='optional'/>
    <xs:attribute name='base' type='xs:string' use='optional'/>
    <xs:attribute name='override_precision' type='xs:string' use='optional'/>
+   <xs:attribute name='scenecount' type='xs:string' use='optional'/>
    <xs:attribute name='create_vars' use='optional'>
     <xs:simpleType>
      <xs:restriction base='xs:string'>

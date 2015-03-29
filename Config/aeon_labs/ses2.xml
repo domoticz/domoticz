@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- This device doesn't respond to Basic Messages (that are secured) -->
-  <CommandClass id="38" action="remove" />
+  <CommandClass id="32" action="remove" />
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value type="list" index="1" genre="config" label="Report type" units="" min="0" max="1" size="1" value="0">

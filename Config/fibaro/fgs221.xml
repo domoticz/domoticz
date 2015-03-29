@@ -11,12 +11,11 @@
       <Item label="ALL ON active / ALL OFF active" value="255" />
     </Value>
     
-    <Value type="list" genre="config" instance="1" index="3" label="Enable/Disable OFF-delay" value="0" size="1">
-      <Help>Activate/Deactivate Automatic turning off relay after set time</Help>
-      <Item label="Auto OFF disabled for both relays" value="0" />
-      <Item label="Auto OFF active only for relay 1" value="1" />
-      <Item label="Auto OFF active only for relay 2" value="2" />
-      <Item label="Auto OFF active for both relays" value="3" />
+    <Value type="list" genre="config" instance="1" index="3" label="Auto off relay after specified time" value="0" size="1">
+      <Help>Auto off relay after specified time, with the possibility of manual override - immediate Off after button push.
+      Default value: 0 Manual override disabled</Help>
+      <Item label="Manual override disabled" value="0" />
+      <Item label="Manual override enabled" value="1" />
     </Value>
     
     <Value type="byte" genre="config" instance="1" index="4" label="Relay 1: OFF-delay time (10ms)" value="20" size="2">

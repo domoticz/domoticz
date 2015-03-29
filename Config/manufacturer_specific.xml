@@ -190,7 +190,7 @@
 		<Product type="0011" id="0002" name="HAN02 In-wall Remote Module"/>
 		<Product type="0101" id="0001" name="SP103 PIR Motion Sensor" config="everspring/sp103.xml"/>
 		<Product type="0104" id="0001" name="AN145 Lamp Screw In Module" config="everspring/an145.xml"/>
-		<Product type="0202" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>		
+		<Product type="0202" id="0001" name="SM103 Door/Window Sensor" config="everspring/sm103.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0116" name="Chromagic Technologies Corporation">
 		<Product type="0001" id="0001" name="HSCP02 Motion Detector"/>
@@ -258,6 +258,7 @@
     		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
     		<Product type="0900" id="4000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
     		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
+		<Product type="0c02" id="1002" name="FGSD002 Smoke Sensor" config="fibaro/fgsd002.xml" />
   	</Manufacturer>
 	<Manufacturer id="0138" name="First Alert">
     		<Product type="0001" id="0002" name="ZCombo Smoke and Carbon Monoxide Detector" />
@@ -443,7 +444,7 @@
 	<Manufacturer id="0096" name="NorthQ">
 		<Product type="0001" id="0001" name="NQ-92021 Power Reader" config="northq/nq92021.xml"/>
 		<Product type="0001" id="0002" name="NQ-9021 Power Reader"/>
-		<Product type="0010" id="0001" name="NQ-9121 Gas Reader" config="northq/nq9121.xml"/>
+		<Product type="0010" id="0001" name="NQ-9121 Gas Meter"/>
 	</Manufacturer>
 	<Manufacturer id="0040" name="Novar EDS">
 	</Manufacturer>
@@ -458,7 +459,8 @@
 		<Product type="0002" id="000d" name="PST02-1B Multi Sensor"/>
 	</Manufacturer>
 	<Manufacturer id="010e" name="Polycontrol">
-		<Product type="0003" id="0002" name="Danalock Circle/Square"/>
+		<Product type="0002" id="0001" name="Danalock Keypad" config="polycontrol/keypad.xml"/>
+		<Product type="0003" id="0002" name="Danalock Circle/Square" config="polycontrol/doorlock.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0154" name="Popp">
 		<Product type="1100" id="0001" name="123601 Plug-in Switch" config="popp/123601.xml" />

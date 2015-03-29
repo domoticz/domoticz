@@ -30,9 +30,9 @@
       <Item label="Mode 3: Z-Wave chip is always on to request e.g. version or manufacturer id." value="3"/>
     </Value>
 
-    <Value type="byte" genre="config" instance="1" index="6" label="RFID circuit startup time" value="100">
-      <Help>The time (*10 ms) that the RFID circuit is started after home or away is pressed (default 100 = 100*10ms=1s)</Help>
-    </Value>
+	<Value type="byte" genre="config" instance="1" index="6" label="RFID circuit startup time" value="100">
+		<Help>The time (*10 ms) that the RFID circuit is started after home or away is pressed (default 100 = 100*10ms=1s)</Help>
+	</Value>
 
   </CommandClass>
   

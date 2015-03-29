@@ -11,6 +11,11 @@
 	Color Temperature
       </Help>
     </Value>
+    <Value type="byte" index="2" genre="config" label="Shock Sensor" units="" min="0" max="32" value="10">
+      <Help>
+        Shock sensor : 0=Maximum sensitivity ; 32=minimum sensitivity 
+      </Help>
+    </Value>
   </CommandClass>
 
   <!-- SwitchAll Command Class doesn't seem to respond at least on version 1.05 -->
