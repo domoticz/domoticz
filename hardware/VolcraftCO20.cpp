@@ -72,6 +72,7 @@ void CVolcraftCO20::Do_Work()
 		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter%12==0)
+		{
 			mytime(&m_LastHeartbeat);
 		}
 
