@@ -1,10 +1,8 @@
 #pragma once
 
+#include "RFXNames.h"
 #include <string>
 #include <vector>
-
-enum _eTimerType;
-enum _eTimerCommand;
 
 struct tScheduleItem
 {
