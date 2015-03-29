@@ -78,7 +78,6 @@ void CVolcraftCO20::Do_Work()
 		if (sec_counter%VolcraftCO20_POLL_INTERVAL==0)
 		{
 			GetSensorDetails();
-			m_LastPollTime=mytime(NULL);
 		}
 	}
 	_log.Log(LOG_STATUS,"Voltcraft CO-20: Worker stopped...");
