@@ -262,7 +262,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 			}
 		}
 		else
-			SendBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue, 0);
+			SendBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue, forecast);
 	}
 	break;
 	case V_TRIPPED:
@@ -369,7 +369,13 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		{
 			if (pSensorBaro->bValidValue)
 			{
-				SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, pSensorBaro->floatValue, pSensor->intvalue);
+				int forecast = pSensor->intvalue;
+				if (forecast == bmpbaroforecast_cloudy)
+				{
+					if (pSensor->floatValue < 1010)
+						forecast = bmpbaroforecast_rain;
+				}
+				SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, pSensorBaro->floatValue, forecast);
 			}
 		}
 		else
