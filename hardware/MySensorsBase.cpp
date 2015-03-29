@@ -216,6 +216,11 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
 		if (pSensorForecast)
 			forecast = pSensorForecast->intvalue;
+		if (forecast == bmpbaroforecast_cloudy)
+		{
+			if (pSensorBaro->floatValue < 1010)
+				forecast = bmpbaroforecast_rain;
+		}
 		if (pSensorTemp && pSensorBaro)
 		{
 			if (pSensorTemp->bValidValue && pSensorBaro->bValidValue)
@@ -244,6 +249,11 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
 		if (pSensorForecast)
 			forecast = pSensorForecast->intvalue;
+		if (forecast == bmpbaroforecast_cloudy)
+		{
+			if (pSensor->floatValue < 1010)
+				forecast = bmpbaroforecast_rain;
+		}
 		if (pSensorTemp && pSensorHum)
 		{
 			if (pSensorTemp->bValidValue && pSensorHum->bValidValue)
