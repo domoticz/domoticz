@@ -249,6 +249,8 @@ void S0MeterBase::ParseLine()
 			}
 		}
 
+		m_meters[ii].m_volume_total += s0_volume;
+
 		if (m_meters[ii].m_volume_total != 0) {
 			SendMeter(ii + 1, m_meters[ii].m_CurrentUsage/1000.0f, m_meters[ii].m_volume_total);
 		}
