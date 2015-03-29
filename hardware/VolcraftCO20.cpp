@@ -29,21 +29,14 @@ CVolcraftCO20::CVolcraftCO20(const int ID)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
-	Init();
 }
 
 CVolcraftCO20::~CVolcraftCO20(void)
 {
 }
 
-void CVolcraftCO20::Init()
-{
-	m_LastPollTime=mytime(NULL)-VolcraftCO20_POLL_INTERVAL+2;
-}
-
 bool CVolcraftCO20::StartHardware()
 {
-	Init();
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CVolcraftCO20::Do_Work, this)));
 	m_bIsStarted=true;
@@ -73,20 +66,16 @@ bool CVolcraftCO20::StopHardware()
 void CVolcraftCO20::Do_Work()
 {
 	time_t atime;
+	int sec_counter=VolcraftCO20_POLL_INTERVAL-5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		atime=mytime(NULL);
-
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
+		sec_counter++;
+		if (sec_counter%12==0)
 			mytime(&m_LastHeartbeat);
 		}
 
-		if (atime-m_LastPollTime>=VolcraftCO20_POLL_INTERVAL)
+		if (sec_counter%VolcraftCO20_POLL_INTERVAL==0)
 		{
 			GetSensorDetails();
 			m_LastPollTime=mytime(NULL);
