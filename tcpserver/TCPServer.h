@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../main/RFXNames.h"
 #include "../hardware/DomoticzHardware.h"
 #include "TCPClient.h"
 #include <set>
