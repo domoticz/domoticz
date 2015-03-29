@@ -1,7 +1,8 @@
 #pragma once
 
 #include <boost/signals2.hpp>
-#include "../main/RFXNames.h"
+
+enum _eHardwareTypes;
 
 //Base class with functions all notification systems should have
 #define RX_BUFFER_SIZE 40
