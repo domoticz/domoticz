@@ -235,7 +235,9 @@ void S0MeterBase::ParseLine()
 			for (int iBuf = 0; iBuf < m_meters[ii].m_value_buffer_total; iBuf++)
 				vTotal += m_meters[ii].m_last_values[iBuf];
 			m_meters[ii].m_CurrentUsage = vTotal / double(m_meters[ii].m_value_buffer_total);
-			//_log.Log(LOG_STATUS, "S0 Meter: M%d, Watt: %.3f", ii + 1, m_meters[ii].m_CurrentUsage);
+#ifdef _DEBUG
+			_log.Log(LOG_STATUS, "S0 Meter: M%d, Watt: %.3f", ii + 1, m_meters[ii].m_CurrentUsage);
+#endif
 		}
 		else
 		{

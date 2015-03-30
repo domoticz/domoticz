@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 63
+#define DB_VERSION 64
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -1231,6 +1231,11 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("DROP TABLE IF EXISTS [TempVars]");
 		}
+		if (dbversion < 64)
+		{
+			FixDaylightSaving();
+		}
+
 	}
 	else if (bNewInstall)
 	{
