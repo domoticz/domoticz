@@ -12,10 +12,18 @@ struct _tWindCalculationStruct
 	double m_last_direction;
 	bool m_bHaveLastDirection;
 
+	int m_MaxSpeed;
+	int m_MaxGust;
+
+	int m_MinSpeed;
+	int m_MinGust;
+
 	//constructor
 	_tWindCalculationStruct();
 
 	void Init();
-	double AddValueAndReturnAvarage(double degree);
+	double AddValueAndReturnAvarage(const double degree);
+	void SetSpeedGust(const int Speed, const int Gust);
+	void GetMMSpeedGust(int &MinSpeed, int &MaxSpeed, int &MinGust, int &MaxGust);
 	double CalculateAvarage();
 };

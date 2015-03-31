@@ -24,6 +24,11 @@ void _tWindCalculationStruct::Init()
 	m_history_fifo.clear();
 	m_bHaveLastDirection=false;
 	m_last_direction = 0;
+
+	m_MaxSpeed = -1;
+	m_MaxGust = -1;
+	m_MinSpeed = -1;
+	m_MinGust = -1;
 }
 
 double _tWindCalculationStruct::AddValueAndReturnAvarage(double degree)
@@ -94,3 +99,35 @@ double _tWindCalculationStruct::CalculateAvarage()
 	return highpos*WIND_DEGREE_RESOLUTION;
 }
 
+void _tWindCalculationStruct::SetSpeedGust(const int Speed, const int Gust)
+{
+	if ((Speed > m_MaxSpeed) || (m_MaxSpeed == -1))
+	{
+		m_MaxSpeed = Speed;
+	}
+	if ((Gust > m_MaxGust) || (m_MaxGust == -1))
+	{
+		m_MaxGust = Gust;
+	}
+	if ((Speed < m_MinSpeed) || (m_MinSpeed == -1))
+	{
+		m_MinSpeed = Speed;
+	}
+	if ((Gust < m_MinGust) || (m_MinGust == -1))
+	{
+		m_MinGust = Gust;
+	}
+}
+
+//Get min/max and reset
+void _tWindCalculationStruct::GetMMSpeedGust(int &MinSpeed, int &MaxSpeed, int &MinGust, int &MaxGust)
+{
+	MinSpeed = m_MinSpeed;
+	MaxSpeed = m_MaxSpeed;
+	MinGust = m_MinGust;
+	MaxGust = m_MaxGust;
+	m_MaxSpeed = -1;
+	m_MaxGust = -1;
+	m_MinSpeed = -1;
+	m_MinGust = -1;
+}

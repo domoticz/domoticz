@@ -243,7 +243,8 @@ define(['app'], function (app) {
 				  if (
 						(item.Type.indexOf("Light")==0)||
 						(item.Type.indexOf("Chime")==0)||
-						(item.Type.indexOf("Security")==0)
+						(item.Type.indexOf("Security")==0)||
+						(item.Type.indexOf("RFY")==0)
 					 )
 				  {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
@@ -303,6 +304,12 @@ define(['app'], function (app) {
 				  }
 				  else if (item.SubType == "Distance") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'Distance\');">';
+				  }
+				  else if (item.SubType == "Barometer") {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowBaroLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+				  }
+				  else if (item.SubType == "Text") {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTextLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
 				  else {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';

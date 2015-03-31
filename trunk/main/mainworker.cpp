@@ -2188,6 +2188,8 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 		intSpeed = intGust;
 	}
 
+	m_wind_calculator[windID].SetSpeedGust(intSpeed, intGust);
+
 	float temp=0,chill=0;
 	if (pResponse->WIND.subtype == sTypeWIND4)
 	{
