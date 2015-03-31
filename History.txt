@@ -31,6 +31,8 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Closing Voltcraft usb device handle after reading
 - Implemented: BMP085/MySensors forecast Cloudy/Rain when pressure is <1010 hPa and original forecast was Cloudy
 - Implemented: Hungarian language support (big thanks to Isty1974!)
+- Implemented: Devices tab, Barometer/Text log option
+- Changed: Wind sensor, now using max speed/gust in short log
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

@@ -113,6 +113,8 @@ public:
 	tcp::server::CTCPServer m_sharedserver;
 	std::string m_LastSunriseSet;
 	std::vector<std::string> m_webthemes;
+	std::map<unsigned short, _tWindCalculationStruct> m_wind_calculator;
+
 private:
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
@@ -151,8 +153,6 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::mutex m_mutex;
-
-	std::map<unsigned short,_tWindCalculationStruct> m_wind_calculator;
 
 	bool StartThread();
 	void Do_Work();

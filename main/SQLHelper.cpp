@@ -4145,7 +4145,7 @@ void CSQLHelper::UpdateWindLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
+	sprintf(szTmp,"SELECT ID,DeviceID, Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
 	result=query(szTmp);
 	if (result.size()>0)
 	{
@@ -4157,13 +4157,18 @@ void CSQLHelper::UpdateWindLog()
 			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
-			unsigned char dType=atoi(sd[1].c_str());
-			unsigned char dSubType=atoi(sd[2].c_str());
-			int nValue=atoi(sd[3].c_str());
-			std::string sValue=sd[4];
+
+			unsigned short DeviceID;
+			std::stringstream s_str2(sd[1]);
+			s_str2 >> DeviceID;
+
+			unsigned char dType=atoi(sd[2].c_str());
+			unsigned char dSubType=atoi(sd[3].c_str());
+			int nValue=atoi(sd[4].c_str());
+			std::string sValue=sd[5];
 
 			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[5];
+			std::string sLastUpdate=sd[6];
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
 			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -4182,8 +4187,21 @@ void CSQLHelper::UpdateWindLog()
 				continue; //impossible
 
 			float direction = static_cast<float>(atof(splitresults[0].c_str()));
-			int speed=atoi(splitresults[2].c_str());
-			int gust=atoi(splitresults[3].c_str());
+
+			int speed = atoi(splitresults[2].c_str());
+			int gust = atoi(splitresults[3].c_str());
+
+			std::map<unsigned short, _tWindCalculationStruct>::iterator itt = m_mainworker.m_wind_calculator.find(DeviceID);
+			if (itt != m_mainworker.m_wind_calculator.end())
+			{
+				int speed_max, gust_max, speed_min, gust_min;
+				itt->second.GetMMSpeedGust(speed_min, speed_max, gust_min, gust_max);
+				if (speed_max != -1)
+					speed = speed_max;
+				if (gust_max != -1)
+					gust = gust_max;
+			}
+
 
 			//insert record
 			sprintf(szTmp,
