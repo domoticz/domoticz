@@ -23,6 +23,7 @@ S0MeterBase::S0MeterBase(void)
 	{
 		m_meters[ii].m_counter_start = 0;
 		m_meters[ii].total_pulses = 0;
+		m_meters[ii].first_total_pulses_received = 0;
 		m_meters[ii].m_CurrentUsage = 0;
 		m_meters[ii].m_value_buffer_total = 0;
 		m_meters[ii].m_value_buffer_write_pos = 0;
@@ -47,6 +48,7 @@ void S0MeterBase::ReloadLastTotals()
 	{
 		m_meters[ii].m_counter_start=0;
 		m_meters[ii].total_pulses = 0;
+		m_meters[ii].first_total_pulses_received = 0;
 		m_meters[ii].m_CurrentUsage = 0;
 		m_meters[ii].m_value_buffer_total = 0;
 		m_meters[ii].m_value_buffer_write_pos = 0;
@@ -250,12 +252,16 @@ void S0MeterBase::ParseLine()
 				m_meters[ii].m_last_values[0] = 0;
 				m_meters[ii].m_value_buffer_total = 0;
 				m_meters[ii].m_value_buffer_write_pos = 0;
+				m_meters[ii].m_CurrentUsage = 0;
 			}
 		}
 
 		if (m_meters[ii].total_pulses != 0)
 		{
-			double counter_value = m_meters[ii].m_counter_start + (((double)m_meters[ii].total_pulses / ((double)m_meters[ii].m_pulse_per_unit)));
+			if (m_meters[ii].first_total_pulses_received == 0)
+				m_meters[ii].first_total_pulses_received = m_meters[ii].total_pulses;
+
+			double counter_value = m_meters[ii].m_counter_start + (((double)(m_meters[ii].total_pulses - m_meters[ii].first_total_pulses_received) / ((double)m_meters[ii].m_pulse_per_unit)));
 			SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, counter_value);
 		}
 
