@@ -525,6 +525,11 @@ const char *sqlCreateMySensorsVariables =
 " [VarID] INTEGER NOT NULL,"
 " [Value] VARCHAR(100) NOT NULL);";
 
+const char *sqlCreateToonDevices =
+"CREATE TABLE IF NOT EXISTS [ToonDevices]("
+" [HardwareID] INTEGER NOT NULL,"
+" [UUID] VARCHAR(100) NOT NULL);";
+
 extern std::string szStartupFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -642,6 +647,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateCustomImages);
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
+	query(sqlCreateToonDevices);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{

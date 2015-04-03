@@ -622,12 +622,17 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	}
 
 	// Determine the file extension.
-	std::size_t last_slash_pos = request_path.find_last_of("/");
-	std::size_t last_dot_pos = request_path.find_last_of(".");
 	std::string extension;
-	if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
+	if (req.uri.find("json.htm") != std::string::npos)
+		extension = "json";
+	else
 	{
-		extension = request_path.substr(last_dot_pos + 1);
+		std::size_t last_slash_pos = request_path.find_last_of("/");
+		std::size_t last_dot_pos = request_path.find_last_of(".");
+		if (last_dot_pos != std::string::npos && last_dot_pos > last_slash_pos)
+		{
+			extension = request_path.substr(last_dot_pos + 1);
+		}
 	}
 
 	m_ActualRequest = req;

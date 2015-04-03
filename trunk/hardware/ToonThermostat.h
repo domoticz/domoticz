@@ -17,6 +17,13 @@ private:
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
 
+	bool GetUUIDIdx(const std::string &UUID, int &idx);
+	bool AddUUID(const std::string &UUID, int &idx);
+	bool GetUUIDFromIdx(const int idx, std::string &UUID);
+
+	bool SwitchLight(const std::string &UUID, const int SwitchState);
+	bool SwitchAll(const int SwitchState);
+
 	bool Login();
 	void Logout();
 	std::string GetRandom();

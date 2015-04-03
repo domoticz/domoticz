@@ -99,6 +99,7 @@ bool C1Wire::StartHardware()
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&C1Wire::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
+	StartHeartbeatThread();
 	return (m_thread!=NULL);
 }
 
@@ -115,7 +116,7 @@ bool C1Wire::StopHardware()
       delete m_system;
       m_system=NULL;
    }
-
+   StopHeartbeatThread();
    return true;
 }
 
@@ -125,8 +126,6 @@ void C1Wire::Do_Work()
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-
-		HandleHBCounter(12);
 
 		pCounter++;
 		if (pCounter % Wire1_POLL_INTERVAL == 0)
