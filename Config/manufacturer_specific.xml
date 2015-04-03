@@ -39,6 +39,8 @@
 		<Product type="0001" id="0003" name="Minimote" config="aeon_labs/minimote.xml"/>
 		<Product type="0001" id="0007" name="Z-Stick S2 Lite"/>
 		<Product type="0001" id="0016" name="Key Fob" config="aeon_labs/keyfob.xml"/>
+		<Product type="0001" id="005a" name="Z-Stick Gen5"/>
+		<Product type="0001" id="005c" name="Z-Stick Lite Gen5"/>
 		<Product type="0002" id="0001" name="Z-Stick S2"/>
 		<Product type="0002" id="0004" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
 		<Product type="0002" id="0005" name="Multi Sensor" config="aeon_labs/alms.xml"/>
@@ -224,6 +226,7 @@
 		<Product type="0501" id="1002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0501" id="4002" name="FGBS001 Universal Binary Sensor" config="fibaro/fgbs001.xml" />
 		<Product type="0100" id="0104" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
+		<Product type="0100" id="0106" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="0107" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="0109" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />
 		<Product type="0100" id="100a" name="FGD211 Universal Dimmer 500W" config="fibaro/fgd211.xml" />

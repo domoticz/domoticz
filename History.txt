@@ -33,6 +33,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Hungarian language support (big thanks to Isty1974!)
 - Implemented: Devices tab, Barometer/Text log option
 - Changed: Wind sensor, now using max speed/gust in short log
+- Implemented: 'Toon' zwave switches support
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
