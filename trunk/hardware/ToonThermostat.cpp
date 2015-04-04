@@ -570,8 +570,8 @@ bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char len
 		return false; //later add RGB support, if someone can provide access
 
 	int node_id = pCmd->LIGHTING2.id4;
-	if (node_id == 113)
-		return false; //we can not turn on/off the internal flame
+	if ((node_id == 113) || (node_id == 114) || (node_id == 115))
+		return false; //we can not turn on/off the internal status
 
 	int state = 0;
 	int light_command = pCmd->LIGHTING2.cmnd;
@@ -689,16 +689,39 @@ void CToonThermostat::GetMeterDetails()
 			//1=heating
 			//2=hot water
 			//3=pre-heating
+			int burnerInfo = 0;
+
 			if (root["thermostatInfo"]["burnerInfo"].isString())
 			{
-				std::string sBurnerInfo = root["thermostatInfo"]["burnerInfo"].asString();
-				int burnerInfo = atoi(sBurnerInfo.c_str());
-				UpdateSwitch(113, burnerInfo != 0, "FlameOn");
+				burnerInfo = atoi(root["thermostatInfo"]["burnerInfo"].asString().c_str());
 			}
 			else if (root["thermostatInfo"]["burnerInfo"].isInt())
 			{
-				int burnerInfo = root["thermostatInfo"]["burnerInfo"].asInt();
-				UpdateSwitch(113, burnerInfo != 0, "FlameOn");
+				burnerInfo = root["thermostatInfo"]["burnerInfo"].asInt();
+			}
+			if (burnerInfo == 1)
+			{
+				UpdateSwitch(113, true, "HeatingOn");
+				UpdateSwitch(114, false, "TapwaterOn");
+				UpdateSwitch(115, false, "PreheatOn");
+			}
+			else if (burnerInfo == 2)
+			{
+				UpdateSwitch(113, false, "HeatingOn");
+				UpdateSwitch(114, true, "TapwaterOn");
+				UpdateSwitch(115, false, "PreheatOn");
+			}
+			else if (burnerInfo == 3)
+			{
+				UpdateSwitch(113, false, "HeatingOn");
+				UpdateSwitch(114, false, "TapwaterOn");
+				UpdateSwitch(115, true, "PreheatOn");
+			}
+			else
+			{
+				UpdateSwitch(113, false, "HeatingOn");
+				UpdateSwitch(114, false, "TapwaterOn");
+				UpdateSwitch(115, false, "PreheatOn");
 			}
 		}
 	}

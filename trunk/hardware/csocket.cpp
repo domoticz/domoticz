@@ -61,6 +61,8 @@ void csocket::close()
 #else
         ::close(m_socket);
 #endif
+		m_socketState = CLOSED;
+		m_socket = 0;
     }
 }
 csocket::~csocket()

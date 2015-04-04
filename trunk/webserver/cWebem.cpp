@@ -1325,7 +1325,6 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	myWebem->m_actsessionid = "";
 
 	bool bCheckAuthentication = myWebem->IsPageOverride(req, rep);
-
 	if (req.uri.find("json.htm") != std::string::npos)
 	{
 		if (req.uri.find("dologout") != std::string::npos)
@@ -1359,7 +1358,8 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 				return;
 		}
 	}
-	else {
+	else 
+	{
 		if (bCheckAuthentication)
 		{
 			if (!CheckAuthentication(sHost, req, rep))
