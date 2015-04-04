@@ -908,56 +908,61 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 	}
 
 #ifdef ENABLE_PYTHON
-	std::stringstream python_DirT;
+	try
+	{
+		std::stringstream python_DirT;
 #ifdef WIN32
-	python_DirT << szStartupFolder << "scripts\\python\\";
+		python_DirT << szStartupFolder << "scripts\\python\\";
 #else
-	python_DirT << szStartupFolder << "scripts/python/";
+		python_DirT << szStartupFolder << "scripts/python/";
 #endif
 
-	std::string python_Dir = python_DirT.str();
+		std::string python_Dir = python_DirT.str();
 
-	if ((lDir = opendir(python_Dir.c_str())) != NULL)
-	{
-		while ((ent = readdir(lDir)) != NULL)
+		if ((lDir = opendir(python_Dir.c_str())) != NULL)
 		{
-			std::string filename = ent->d_name;
-			if (ent->d_type == DT_REG)
+			while ((ent = readdir(lDir)) != NULL)
 			{
-				if ((filename.length() < 4) || (filename.compare(filename.length() - 3, 3, ".py") != 0))
+				std::string filename = ent->d_name;
+				if (ent->d_type == DT_REG)
 				{
-					//_log.Log(LOG_STATUS,"ignore file not .lua: %s",filename.c_str());
-				}
-				else if (filename.find("_demo.py") == std::string::npos) //skip demo python files
-				{
-					if ((reason == "device") && (filename.find("_device_") != std::string::npos))
+					if ((filename.length() < 4) || (filename.compare(filename.length() - 3, 3, ".py") != 0))
 					{
-						EvaluatePython(reason, python_Dir + filename, DeviceID, devname, nValue, sValue, nValueWording, 0);
+						//_log.Log(LOG_STATUS,"ignore file not .lua: %s",filename.c_str());
 					}
-					else if ((reason == "time") && (filename.find("_time_") != std::string::npos))
+					else if (filename.find("_demo.py") == std::string::npos) //skip demo python files
 					{
-						EvaluatePython(reason, python_Dir + filename);
-					}
-					else if ((reason == "security") && (filename.find("_security_") != std::string::npos))
-					{
-						EvaluatePython(reason, python_Dir + filename);
-					}
-					else if ((reason == "uservariable") && (filename.find("_variable_") != std::string::npos))
-					{
-						EvaluatePython(reason, python_Dir + filename, varId);
+						if ((reason == "device") && (filename.find("_device_") != std::string::npos))
+						{
+							EvaluatePython(reason, python_Dir + filename, DeviceID, devname, nValue, sValue, nValueWording, 0);
+						}
+						else if ((reason == "time") && (filename.find("_time_") != std::string::npos))
+						{
+							EvaluatePython(reason, python_Dir + filename);
+						}
+						else if ((reason == "security") && (filename.find("_security_") != std::string::npos))
+						{
+							EvaluatePython(reason, python_Dir + filename);
+						}
+						else if ((reason == "uservariable") && (filename.find("_variable_") != std::string::npos))
+						{
+							EvaluatePython(reason, python_Dir + filename, varId);
+						}
 					}
 				}
 			}
+			closedir(lDir);
 		}
-		closedir(lDir);
+		else {
+			_log.Log(LOG_ERROR, "Error accessing python script directory %s", lua_Dir.c_str());
+		}
 	}
-	else {
-		_log.Log(LOG_ERROR, "Error accessing lua script directory %s", lua_Dir.c_str());
+	catch (...)
+	{
 	}
+#endif
 
 	EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording, varId);
-
-#endif
 }
 
 void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)

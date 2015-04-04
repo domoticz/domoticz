@@ -266,36 +266,32 @@ ENDIF(WIN32)
 
 FIND_PACKAGE(PythonLibs)
 IF(PYTHONLIBS_FOUND)
-  #dirty hack to link against the static lib
-  STRING(REGEX REPLACE ".so" ".a" PYTHON_LIBRARIES ${PYTHON_LIBRARIES})
-  MESSAGE(STATUS "Python libraries found at: ${PYTHON_LIBRARIES}")
-  MESSAGE(STATUS "Python includes found at: ${PYTHON_INCLUDE_PATH}")
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+	#dirty hack to link against the static lib
+	STRING(REGEX REPLACE ".so" ".a" PYTHON_LIBRARIES ${PYTHON_LIBRARIES})
+	MESSAGE(STATUS "Python libraries found at: ${PYTHON_LIBRARIES}")
+	MESSAGE(STATUS "Python includes found at: ${PYTHON_INCLUDE_PATH}")
+	INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+
+	FIND_PACKAGE(PythonInterp)
+	IF(PYTHONINTERP_FOUND)
+		MESSAGE(STATUS "Python interpreter found at: ${PYTHON_EXECUTABLE}")
+		INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+		LIST(APPEND ADDITIONAL_LIBS ${PYTHON_LIBRARIES})
+		MESSAGE(STATUS "Python as scripting languages: ENABLED")
+		IF(PYTHONLIBS_FOUND)
+		add_definitions(-DENABLE_PYTHON)
+		add_definitions(-DPYTHON_EXE=${PYTHON_EXECUTABLE})
+		target_link_libraries(domoticz ${PYTHON_LIBRARIES} util)
+		ELSE()
+		MESSAGE(STATUS "Python as scripting languages: DISABLED")
+		ENDIF(PYTHONLIBS_FOUND)
+
+	else()
+		MESSAGE(STATUS "Python not found on your system, to enable python support, install 'python-dev'")
+	ENDIF(PYTHONINTERP_FOUND)
 else()
   MESSAGE(STATUS "Python not found on your system, to enable python support, install 'python-dev'")
 ENDIF(PYTHONLIBS_FOUND)
-
-FIND_PACKAGE(PythonInterp)
-IF(PYTHONINTERP_FOUND)
-  MESSAGE(STATUS "Python interpreter found at: ${PYTHON_EXECUTABLE}")
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-  LIST(APPEND ADDITIONAL_LIBS ${PYTHON_LIBRARIES})
-  MESSAGE(STATUS "Python as scripting languages: ENABLED")
-  IF(PYTHONLIBS_FOUND)
-    add_definitions(-DENABLE_PYTHON)
-    add_definitions(-DPYTHON_EXE=${PYTHON_EXECUTABLE})
-    target_link_libraries(domoticz ${PYTHON_LIBRARIES} util)
-  ELSE()
-    MESSAGE(STATUS "Python as scripting languages: DISABLED")
-  ENDIF(PYTHONLIBS_FOUND)
-
-else()
-  MESSAGE(STATUS "Python not found on your system, to enable python support, install 'python-dev'")
-ENDIF(PYTHONINTERP_FOUND)
-
-
-
-
 
 option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
