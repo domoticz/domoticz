@@ -23,7 +23,16 @@ extern "C" {
 #include "../lua/src/lua.h"    
 #include "../lua/src/lualib.h"
 #include "../lua/src/lauxlib.h"
+#ifdef ENABLE_PYTHON
+#include <Python.h>
+#endif
 }
+
+#ifdef ENABLE_PYTHON
+#include <boost/python.hpp>
+using namespace boost::python;
+#endif
+
 
 extern std::string szStartupFolder;
 
@@ -898,9 +907,57 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 		_log.Log(LOG_ERROR, "Error accessing lua script directory %s", lua_Dir.c_str());
 	}
 
+#ifdef ENABLE_PYTHON
+	std::stringstream python_DirT;
+#ifdef WIN32
+	python_DirT << szStartupFolder << "scripts\\python\\";
+#else
+	python_DirT << szStartupFolder << "scripts/python/";
+#endif
+
+	std::string python_Dir = python_DirT.str();
+
+	if ((lDir = opendir(python_Dir.c_str())) != NULL)
+	{
+		while ((ent = readdir(lDir)) != NULL)
+		{
+			std::string filename = ent->d_name;
+			if (ent->d_type == DT_REG)
+			{
+				if ((filename.length() < 4) || (filename.compare(filename.length() - 3, 3, ".py") != 0))
+				{
+					//_log.Log(LOG_STATUS,"ignore file not .lua: %s",filename.c_str());
+				}
+				else if (filename.find("_demo.py") == std::string::npos) //skip demo python files
+				{
+					if ((reason == "device") && (filename.find("_device_") != std::string::npos))
+					{
+						EvaluatePython(reason, python_Dir + filename, DeviceID, devname, nValue, sValue, nValueWording, 0);
+					}
+					else if ((reason == "time") && (filename.find("_time_") != std::string::npos))
+					{
+						EvaluatePython(reason, python_Dir + filename);
+					}
+					else if ((reason == "security") && (filename.find("_security_") != std::string::npos))
+					{
+						EvaluatePython(reason, python_Dir + filename);
+					}
+					else if ((reason == "uservariable") && (filename.find("_variable_") != std::string::npos))
+					{
+						EvaluatePython(reason, python_Dir + filename, varId);
+					}
+				}
+			}
+		}
+		closedir(lDir);
+	}
+	else {
+		_log.Log(LOG_ERROR, "Error accessing lua script directory %s", lua_Dir.c_str());
+	}
+
 	EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording, varId);
 
-
+#endif
 }
 
 void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
@@ -1428,6 +1485,220 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 	}
 	return actionsDone;
 }
+
+#ifdef ENABLE_PYTHON
+
+void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long varId)
+{
+	EvaluatePython(reason, filename, 0, "", 0, "", "", varId);
+}
+
+void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename)
+{
+	EvaluatePython(reason, filename, 0, "", 0, "", "", 0);
+}
+
+
+static int numargs=0;
+
+/* Return the number of arguments of the application command line */
+static PyObject*
+PyDomoticz_log(PyObject *self, PyObject *args)
+{
+	char* msg;
+	int type;
+    if(!PyArg_ParseTuple(args, "is", &type, &msg))
+        return NULL;
+	_log.Log((_eLogLevel)type, msg);
+	Py_INCREF(Py_None);
+    return Py_None;
+	
+}
+
+static PyMethodDef DomoticzMethods[] = {
+    {"log", PyDomoticz_log, METH_VARARGS,  "log to Domoticz."},
+    {NULL, NULL, 0, NULL}
+};
+
+
+// from https://gist.github.com/octavifs/5362297
+
+template <class K, class V>
+boost::python::dict toPythonDict(std::map<K, V> map) {
+    typename std::map<K, V>::iterator iter;
+	boost::python::dict dictionary;
+	for (iter = map.begin(); iter != map.end(); ++iter) {
+		dictionary[iter->first] = iter->second;
+	}
+	return dictionary;
+}
+
+// this should be filled in by the preprocessor
+const char * Python_exe = "PYTHON_EXE";
+
+void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+{
+	//_log.Log(LOG_NORM, "Already scheduled this event, skipping");
+	//_log.Log(LOG_STATUS, "EventSystem script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
+
+	std::stringstream python_DirT;
+
+#ifdef WIN32
+	python_DirT << szStartupFolder << "scripts\\python\\";
+#else
+	python_DirT << szStartupFolder << "scripts/python/";
+#endif
+	std::string python_Dir = python_DirT.str();
+	if(!Py_IsInitialized()) {
+		Py_SetProgramName((char*)Python_exe); // will this cast lead to problems ?
+		Py_Initialize();
+		Py_InitModule("domoticz_", DomoticzMethods);
+		// TODO: may have a small memleak, remove references in destructor
+		PyObject* sys = PyImport_ImportModule("sys");
+		PyObject *path = PyObject_GetAttrString(sys, "path");
+		PyList_Append(path, PyString_FromString(python_Dir.c_str()));
+		
+		bool (CEventSystem::*ScheduleEventMethod)(std::string ID, const std::string &Action, const std::string &eventName) = &CEventSystem::ScheduleEvent;
+		class_<CEventSystem, boost::noncopyable >("Domoticz", no_init)
+			.def("command", ScheduleEventMethod)
+			;
+	}
+
+	FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+	object main_module = import("__main__");
+	object main_namespace = dict(main_module.attr("__dict__")).copy();
+
+
+	try {
+		object domoticz_module = import("domoticz");
+		object reloader = import("reloader");
+		reloader.attr("_check_reload")();
+
+		//object alldevices = dict();
+		object devices = domoticz_module.attr("devices");
+		object domoticz_namespace = domoticz_module.attr("__dict__");
+		
+		domoticz_namespace["event_system"] = ptr(this);
+
+		main_namespace["changed_device_name"] = str(devname);
+		domoticz_namespace["changed_device_name"] = str(devname);
+
+		typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
+		for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++)
+		{
+			_tDeviceStatus sitem = iterator->second;
+			object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
+			devices[sitem.deviceName] = deviceStatus;
+		}
+		main_namespace["domoticz"] = ptr(this);
+		main_namespace["__file__"] = filename;
+
+		if (reason == "device")
+		{
+			main_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
+			domoticz_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
+		}
+		
+		
+		int intRise = getSunRiseSunSetMinutes("Sunrise");
+		int intSet = getSunRiseSunSetMinutes("Sunset");
+		time_t now = time(0);
+		struct tm ltime;
+		localtime_r(&now, &ltime);
+		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+		bool dayTimeBool = false;
+		bool nightTimeBool = false;
+		if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+			dayTimeBool = true;
+		}
+		else {
+			nightTimeBool = true;
+		}
+		main_namespace["is_daytime"] = dayTimeBool;
+		main_namespace["is_nighttime"] = nightTimeBool;
+		main_namespace["sunrise_in_minutes"] = intRise;
+		main_namespace["sunset_in_minutes"] = intSet;
+		
+		domoticz_namespace["is_daytime"] = dayTimeBool;
+		domoticz_namespace["is_nighttime"] = nightTimeBool;
+		domoticz_namespace["sunrise_in_minutes"] = intRise;
+		domoticz_namespace["sunset_in_minutes"] = intSet;
+		
+		//main_namespace["timeofday"] = ... 		// not sure how to set this
+
+
+		/*std::string secstatusw = "";
+		m_sql.GetPreferencesVar("SecStatus", secstatus);
+		if (secstatus == 1) {
+			secstatusw = "Armed Home";
+		}
+		else if (secstatus == 2) {
+			secstatusw = "Armed Away";
+		}
+		else {
+			secstatusw = "Disarmed";
+		}
+		main_namespace["Security"] = secstatusw;*/
+		
+		// put variables in user_variables dict, but also in the namespace
+		object user_variables = dict();
+		typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
+		for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
+			_tUserVariable uvitem = iterator->second;
+			//user_variables[uvitem.variableName] = uvitem;
+			if (uvitem.variableType == 0)  {
+				//Integer
+				main_namespace[uvitem.variableName] = atoi(uvitem.variableValue.c_str());
+				user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
+			}
+			else if (uvitem.variableType == 1)  {
+				//Float
+				main_namespace[uvitem.variableName] = atof(uvitem.variableValue.c_str());
+				user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
+			}
+			else {
+				//String,Date,Time
+				main_namespace[uvitem.variableName] = uvitem.variableValue;
+				user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
+			}
+		}
+		
+		domoticz_namespace["user_variables"] = user_variables;
+		main_namespace["user_variables"] = user_variables;
+		main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);
+		main_namespace["otherdevices_dewpoint"] = toPythonDict(m_dewValuesByName);
+		main_namespace["otherdevices_barometer"] = toPythonDict(m_baroValuesByName);
+		main_namespace["otherdevices_utility"] = toPythonDict(m_utilityValuesByName);
+		main_namespace["otherdevices_rain"] = toPythonDict(m_rainValuesByName);
+		main_namespace["otherdevices_rain_lasthour"] = toPythonDict(m_rainLastHourValuesByName);
+		main_namespace["otherdevices_uv"] = toPythonDict(m_uvValuesByName);
+		main_namespace["otherdevices_winddir"] = toPythonDict(m_winddirValuesByName);
+		main_namespace["otherdevices_windspeed"] = toPythonDict(m_windspeedValuesByName);
+		main_namespace["otherdevices_windgust"] = toPythonDict(m_windgustValuesByName);
+		
+	
+		object ignored = exec_file(str(filename), main_namespace);
+	} catch(...) {
+
+		PyObject *exc,*val,*tb;    
+		PyErr_Fetch(&exc,&val,&tb);
+		boost::python::handle<> hexc(exc), hval(boost::python::allow_null(val)), htb(boost::python::allow_null(tb));
+		boost::python::object traceback(boost::python::import("traceback"));
+
+		boost::python::object format_exception(traceback.attr("format_exception"));
+		boost::python::object formatted_list = format_exception(hexc, hval, htb);
+		boost::python::object formatted = boost::python::str("\n").join(formatted_list);
+
+		object traceback_module = import("traceback");
+		std::string formatted_str = extract<std::string>(formatted);
+		//PyErr_Print();
+		PyErr_Clear();
+		_log.Log(LOG_ERROR, "%s",formatted_str.c_str());
+	}
+	fclose(PythonScriptFile);
+	//Py_Finalize();
+}
+#endif // ENABLE_PYTHON
 
 void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long varId)
 {
