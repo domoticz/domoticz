@@ -35,6 +35,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Changed: Wind sensor, now using max speed/gust in short log
 - Implemented: 'Toon' zwave switches support
 - Implemented: Support for Python scripts (thanks to Maarten!)
+- Changed: Inverted open/close for BlindsT10
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

@@ -1597,10 +1597,16 @@ void GetLightStatus(
 		switch (nValue)
 		{
 		case blinds_sOpen:
-			lstatus="Off";
+			if (dSubType == sTypeBlindsT10)
+				lstatus = "On";
+			else
+				lstatus = "Off";
 			break;
 		case blinds_sClose:
-			lstatus="On";
+			if (dSubType == sTypeBlindsT10)
+				lstatus = "Off";
+			else
+				lstatus = "On";
 			break;
 		case blinds_sStop:
 			lstatus="Stop";
@@ -2298,11 +2304,17 @@ bool GetLightCommand(
 		{
 			if (switchcmd=="On")
 			{
-				cmd=blinds_sClose;
+				if (dSubType == sTypeBlindsT10)
+					cmd = blinds_sOpen;
+				else
+					cmd = blinds_sClose;
 			}
 			else if (switchcmd=="Off")
 			{
-				cmd=blinds_sOpen;
+				if (dSubType == sTypeBlindsT10)
+					cmd = blinds_sClose;
+				else
+					cmd = blinds_sOpen;
 			}
 			else
 			{
