@@ -99,12 +99,13 @@ define(['app'], function (app) {
 			}
 		  var id="";
 
-			$rootScope.RefreshTimeAndSun();
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=all&used=true&order=Name&plan="+window.myglobals.LastPlanSelected+"&lastupdate="+$scope.LastUpdateTime,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
+				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+
 			  if (typeof data.result != 'undefined') {
 				$.DashboardType=data.DashboardType;
 			  

@@ -1349,12 +1349,14 @@ define(['app'], function (app) {
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
+				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+
 			  if (typeof data.result != 'undefined') {
 
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-			  
+				
 				$.each(data.result, function(i,item){
 					id="#lightcontent #" + item.idx;
 					var obj=$(id);
@@ -1674,7 +1676,6 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-			$rootScope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshLights();
 			}, 10000);
@@ -1768,6 +1769,7 @@ define(['app'], function (app) {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
+
 				$.each(data.result, function(i,item){
 				  if (j % 3 == 0)
 				  {
@@ -2205,7 +2207,7 @@ define(['app'], function (app) {
 				}
 			}
 			$rootScope.RefreshTimeAndSun();
-			
+
 			//Create Dimmer Sliders
 			$('#lightcontent .dimslider').slider({
 				//Config

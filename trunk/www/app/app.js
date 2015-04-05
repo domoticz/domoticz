@@ -413,6 +413,22 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
         });
         permissions.setPermissions(permissionList);
         
+        $rootScope.SetTimeAndSun = function(sunRise, sunSet, ServerTime)
+        {
+			var month=ServerTime.split(' ')[0];
+			ServerTime=ServerTime.replace(month,$.t(month));
+			
+			var suntext;
+			var bIsMobile=$.myglobals.ismobile;
+			if (bIsMobile == true) {
+				suntext=$.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet;
+			}
+			else {
+				suntext=ServerTime + ', ' + $.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet;
+			}
+			$("#timesun").html(suntext);
+        }
+        
 		$rootScope.RefreshTimeAndSun = function(placeholder) {
 			if (typeof $("#timesun") != 'undefined') {
 				$http({
@@ -421,21 +437,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				 dataType: 'json'
 				}).success(function(data) {
 					if (typeof data.Sunrise != 'undefined') {
-						var sunRise=data.Sunrise;
-						var sunSet=data.Sunset;
-						var ServerTime=data.ServerTime;
-						var month=ServerTime.split(' ')[0];
-						ServerTime=ServerTime.replace(month,$.t(month));
-						
-						var suntext;
-						var bIsMobile=$.myglobals.ismobile;
-						if (bIsMobile == true) {
-							suntext=$.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet;
-						}
-						else {
-							suntext=ServerTime + ', ' + $.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet;
-						}
-						$("#timesun").html(suntext);
+						$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
 					}
 				});
 			}

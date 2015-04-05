@@ -733,13 +733,13 @@ void CToonThermostat::GetMeterDetails()
 
 	if (root["powerUsage"].empty() == false)
 	{
-		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
-		m_p1power.powerusage2 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
+		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
+		m_p1power.powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
 
 		if (root["powerUsage"]["meterReadingProdu"].empty() == false)
 		{
-			m_p1power.powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
-			m_p1power.powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
+			m_p1power.powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
+			m_p1power.powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
 		}
 
 		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
