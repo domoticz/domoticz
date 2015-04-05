@@ -613,6 +613,9 @@ define(['app'], function (app) {
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
+
+				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+
 			  if (typeof data.result != 'undefined') {
 			  
 				if (typeof data.ActTime != 'undefined') {
@@ -766,7 +769,6 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-			$rootScope.RefreshTimeAndSun();
 			$scope.mytimer=$interval(function() {
 				RefreshUtilities();
 			}, 10000);

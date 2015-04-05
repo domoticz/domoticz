@@ -711,6 +711,7 @@
 	{
 		$("#blocklyDiv").css("width", $(window).width()-250);
 		$("#blocklyDiv").css("height", $(window).height()-20);
+		$("#savedEvents").css("height", $(window).height()-260);
 	}
 
 	$(document).ready(function() 
@@ -825,26 +826,25 @@
 					<div id="blocklyDiv"></div>
 				</td>
 				<td style="width:200px" valign="top">
-					<label for="blockName">Event name: </label><br>
-					<input type="input" id="blockName" name="blockName" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+					<label for="blockName">Event name:</label><br>
+					<input type="input" id="blockName" name="blockName" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
 					<p>
-					<label for="eventActive">Event active: </label>
+					<label for="eventActive">Event active:</label>
 					<input type="checkbox" id="eventActive" name="eventActive"/>
+					</p>
 					<p>
 					<a class="btnstyle3" href="javascript:save_block()">Save</a>
 					<a class="btnstyle3" href="javascript:new_block()">New</a>
+					</p>
 					<p>
-					<label for="savedEvents">Saved events: </label><br>
-					<select size="10" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);">> 
-					</select>
-					<br/><a class="btnstyle3" style="width: 80%" href="javascript:delete_block()">Delete selected</a>
-					<br/><a class="btnstyle3" style="width: 80%" href="javascript:show_states()">Show current states</a>
-					<br/>
-					<!--<a class="btnstyle3" href="javascript:block_export()">Export</a>
-					<a class="btnstyle3" href="javascript:block_import()">Import</a>-->
-					<!--<br/><textarea id="blockDebug" width="100em" height="100em"></textarea>-->
-					<br/><div id="blockId" style="display:none;"/>
-					
+					<label for="savedEvents">Saved events:</label><br>
+					<select size="20" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);"></select>
+					</p>
+					<p>
+					<a class="btnstyle3" style="width: 80%" href="javascript:delete_block()">Delete selected</a>
+					<a class="btnstyle3" style="width: 80%" href="javascript:show_states()">Show current states</a>
+					</p>
+					<div id="blockId" style="display:none;"/>
 				</td>
 			</tr>
 			</table>

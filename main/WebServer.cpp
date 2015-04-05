@@ -930,7 +930,6 @@ namespace http {
 				root["result"][ii]["idx"] = itt->second;
 				root["result"][ii]["name"] = itt->first;
 				ii++;
-
 			}
 		}
 
@@ -7727,6 +7726,12 @@ namespace http {
 
 			m_sql.UpdatePreferencesVar("SecOnDelay", atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
 
+			int sensortimeout = atoi(m_pWebEm->FindValue("SensorTimeout").c_str());
+			if (sensortimeout < 10)
+				sensortimeout = 10;
+			m_sql.UpdatePreferencesVar("SensorTimeout", sensortimeout);
+			
+
 			int nValue = 0;
 			nValue = atoi(m_pWebEm->FindValue("FloorplanPopupDelay").c_str());
 			m_sql.UpdatePreferencesVar("FloorplanPopupDelay", nValue);
@@ -8106,6 +8111,19 @@ namespace http {
 
 			char szData[100];
 			char szTmp[300];
+
+			if (!m_mainworker.m_LastSunriseSet.empty())
+			{
+				std::vector<std::string> strarray;
+				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
+				if (strarray.size() == 2)
+				{
+					strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					root["ServerTime"] = szTmp;
+					root["Sunrise"] = strarray[0];
+					root["Sunset"] = strarray[1];
+				}
+			}
 
 			char szOrderBy[50];
 			if (order == "")
@@ -12855,6 +12873,12 @@ namespace http {
 			}
 		}
 
+		struct _tSortedEventsInt
+		{
+			std::string ID;
+			std::string eventstatus;
+		};
+
 		void CWebServer::RType_Events(Json::Value &root)
 		{
 			//root["status"]="OK";
@@ -12876,11 +12900,9 @@ namespace http {
 			if (cparam == "list")
 			{
 				root["title"] = "ListEvents";
+				root["status"] = "OK";
 
-				int ii = 0;
-
-				szQuery.clear();
-				szQuery.str("");
+				std::map<std::string, _tSortedEventsInt> _levents;
 				szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
@@ -12891,15 +12913,23 @@ namespace http {
 						std::vector<std::string> sd = *itt;
 						std::string ID = sd[0];
 						std::string Name = sd[1];
-						//std::string XMLStatement=sd[2];
 						std::string eventStatus = sd[3];
-						root["result"][ii]["id"] = ID;
-						root["result"][ii]["name"] = Name;
-						root["result"][ii]["eventstatus"] = eventStatus;
+						_tSortedEventsInt eitem;
+						eitem.ID = ID;
+						eitem.eventstatus = eventStatus;
+						_levents[Name] = eitem;
+					}
+					//return a sorted event list
+					std::map<std::string, _tSortedEventsInt>::const_iterator itt2;
+					int ii = 0;
+					for (itt2 = _levents.begin(); itt2 != _levents.end(); ++itt2)
+					{
+						root["result"][ii]["name"] = itt2->first;
+						root["result"][ii]["id"] = itt2->second.ID;
+						root["result"][ii]["eventstatus"] = itt2->second.eventstatus;
 						ii++;
 					}
 				}
-				root["status"] = "OK";
 			}
 			else if (cparam == "load")
 			{
@@ -13373,6 +13403,10 @@ namespace http {
 				{
 					root["FloorplanInactiveOpacity"] = nValue;
 				}
+				else if (Key == "SensorTimeout")
+				{
+					root["SensorTimeout"] = nValue;
+				}
 				else if (Key == "WebTheme")
 				{
 					root["WebTheme"] = sValue;
@@ -13565,9 +13599,13 @@ namespace http {
 				else if (sensor == "counter")
 				{
 					if ((dType == pTypeP1Power) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY))
+					{
 						dbasetable = "MultiMeter";
+					}
 					else
+					{
 						dbasetable = "Meter";
+					}
 				}
 				else if ((sensor == "wind") || (sensor == "winddir"))
 					dbasetable = "Wind";
@@ -13776,8 +13814,12 @@ namespace http {
 							long long lastUsage1, lastUsage2, lastDeliv1, lastDeliv2;
 							time_t lastTime = 0;
 
+							long long firstUsage1, firstUsage2, firstDeliv1, firstDeliv2;
+
 							int nMeterType = 0;
 							m_sql.GetPreferencesVar("SmartMeterType", nMeterType);
+
+							int lastDay = 0;
 
 							for (itt = result.begin(); itt != result.end(); ++itt)
 							{
@@ -13798,7 +13840,7 @@ namespace http {
 									std::string stime = sd[6];
 									struct tm ntime;
 									time_t atime;
-									ntime.tm_isdst = 0;
+									ntime.tm_isdst = -1;
 									ntime.tm_year = atoi(stime.substr(0, 4).c_str()) - 1900;
 									ntime.tm_mon = atoi(stime.substr(5, 2).c_str()) - 1;
 									ntime.tm_mday = atoi(stime.substr(8, 2).c_str());
@@ -13806,6 +13848,15 @@ namespace http {
 									ntime.tm_min = atoi(stime.substr(14, 2).c_str());
 									ntime.tm_sec = atoi(stime.substr(17, 2).c_str());
 									atime = mktime(&ntime);
+
+									if (lastDay != ntime.tm_mday)
+									{
+										lastDay = ntime.tm_mday;
+										firstUsage1 = actUsage1;
+										firstUsage2 = actUsage2;
+										firstDeliv1 = actDeliv1;
+										firstDeliv2 = actDeliv2;
+									}
 
 									if (bHaveFirstValue)
 									{
@@ -13845,11 +13896,54 @@ namespace http {
 										root["result"][ii]["r1"] = szTmp;
 										sprintf(szTmp, "%ld", curDeliv2);
 										root["result"][ii]["r2"] = szTmp;
+
+										long pUsage1 = (long)(actUsage1 - firstUsage1);
+										long pUsage2 = (long)(actUsage2 - firstUsage2);
+
+										sprintf(szTmp, "%ld", pUsage1 + pUsage2);
+										root["result"][ii]["eu"] = szTmp;
+										if (bHaveDeliverd)
+										{
+											long pDeliv1 = (long)(actDeliv1 - firstDeliv1);
+											long pDeliv2 = (long)(actDeliv2 - firstDeliv2);
+											sprintf(szTmp, "%ld", pDeliv1 + pDeliv2);
+											root["result"][ii]["eg"] = szTmp;
+										}
+
 										ii++;
 									}
 									else
 									{
 										bHaveFirstValue = true;
+										if ((ntime.tm_hour != 0) && (ntime.tm_min != 0))
+										{
+											atime -= 24 * 60 * 60;
+											struct tm ltime;
+											localtime_r(&atime, &ltime);
+											int year = ltime.tm_year+1900;
+											int mon = ltime.tm_mon+1;
+											int day = ltime.tm_mday;
+											sprintf(szTmp, "%04d-%02d-%02d", year, mon, day);
+											szQuery.clear();
+											szQuery.str("");
+											szQuery << "SELECT Counter1, Counter2, Counter3, Counter4 FROM Multimeter_Calendar WHERE (DeviceRowID==" << idx << ") AND (Date=='" << szTmp << "')";
+											std::vector<std::vector<std::string> > result2;
+											result2 = m_sql.query(szQuery.str());
+											if (!result2.empty())
+											{
+												std::vector<std::string> sd = result2[0];
+												std::stringstream s_str1(sd[0]);
+												s_str1 >> firstUsage1;
+												std::stringstream s_str2(sd[1]);
+												s_str2 >> firstDeliv1;
+												std::stringstream s_str3(sd[2]);
+												s_str3 >> firstUsage2;
+												std::stringstream s_str4(sd[3]);
+												s_str4 >> firstDeliv2;
+												lastDay = ntime.tm_mday;
+											}
+										}
+
 									}
 									lastUsage1 = actUsage1;
 									lastUsage2 = actUsage2;

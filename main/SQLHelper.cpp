@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 64
+#define DB_VERSION 65
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -1241,6 +1241,66 @@ bool CSQLHelper::OpenDatabase()
 		{
 			FixDaylightSaving();
 		}
+		if (dbversion < 65)
+		{
+			//Patch for Toon, reverse counters
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string> > result2;
+			std::vector<std::vector<std::string> > result3;
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			std::vector<std::vector<std::string> >::const_iterator itt2;
+			std::vector<std::vector<std::string> >::const_iterator itt3;
+			szQuery << "SELECT ID FROM HARDWARE WHERE([Type]==" << HTYPE_TOONTHERMOSTAT << ")";
+			result = query(szQuery.str());
+			for (itt = result.begin(); itt != result.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+				int hwid = atoi(sd[0].c_str());
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT ID FROM DeviceStatus WHERE (Type=" << pTypeP1Power << ") AND (HardwareID=" << hwid << ")";
+				result2 = query(szQuery.str());
+				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+				{
+					std::vector<std::string> sd = *itt2;
+
+					//First the shortlog
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ROWID, Value1, Value2, Value3, Value4, Value5, Value6 FROM MultiMeter WHERE (DeviceRowID==" << sd[0] << ")";
+					result3 = m_sql.query(szQuery.str());
+					for (itt3 = result3.begin(); itt3 != result3.end(); ++itt3)
+					{
+						std::vector<std::string> sd = *itt3;
+						//value1 = powerusage1;
+						//value2 = powerdeliv1;
+						//value5 = powerusage2;
+						//value6 = powerdeliv2;
+						//value3 = usagecurrent;
+						//value4 = delivcurrent;
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "UPDATE MultiMeter SET Value1=" << sd[5] << ", Value2=" << sd[6] << ", Value5=" << sd[1] << ", Value6=" << sd[2] << " WHERE (ROWID=" << sd[0] << ")";
+						query(szQuery.str());
+					}
+					//Next for the calendar
+					szQuery.clear();
+					szQuery.str("");
+					szQuery << "SELECT ROWID, Value1, Value2, Value3, Value4, Value5, Value6, Counter1, Counter2, Counter3, Counter4 FROM MultiMeter_Calendar WHERE (DeviceRowID==" << sd[0] << ")";
+					result3 = m_sql.query(szQuery.str());
+					for (itt3 = result3.begin(); itt3 != result3.end(); ++itt3)
+					{
+						std::vector<std::string> sd = *itt3;
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "UPDATE MultiMeter_Calendar SET Value1=" << sd[5] << ", Value2=" << sd[6] << ", Value5=" << sd[1] << ", Value6=" << sd[2] << ", Counter1=" << sd[9] << ", Counter2=" << sd[10] << ", Counter3=" << sd[7] << ", Counter4=" << sd[8] << " WHERE (ROWID=" << sd[0] << ")";
+						query(szQuery.str());
+					}
+				}
+			}
+		}
 
 	}
 	else if (bNewInstall)
@@ -1302,7 +1362,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if (!GetPreferencesVar("SensorTimeout", nValue))
 	{
-		UpdatePreferencesVar("SensorTimeout", 3600);
+		UpdatePreferencesVar("SensorTimeout", 60);
 	}
 	if (!GetPreferencesVar("SensorTimeoutNotification", nValue))
 	{

@@ -287,6 +287,9 @@ define(['app'], function (app) {
 			  if (typeof data.RandomTimerFrame != 'undefined') {
 				$("#randomtable #RandomSpread").val(data.RandomTimerFrame );
 			  }
+			  if (typeof data.SensorTimeout != 'undefined') {
+				$("#timeouttable #SensorTimeout").val(data.SensorTimeout );
+			  }
 			  if (typeof data.ElectricVoltage!= 'undefined') {
 				$("#owl113table #ElectricVoltage").val(data.ElectricVoltage);
 			  }
