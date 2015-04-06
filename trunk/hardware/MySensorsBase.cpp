@@ -193,7 +193,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 					if (pSensorBaro->floatValue < 1010)
 						forecast = bmpbaroforecast_rain;
 				}
-				SendTempHumBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->floatValue, pSensorHum->intvalue, pSensorBaro->floatValue, forecast);
+				SendTempHumBaroSensor(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue, pSensorBaro->floatValue, forecast);
 			}
 		}
 		else if (pSensorHum) {
@@ -225,7 +225,8 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		{
 			if (pSensorTemp->bValidValue && pSensorBaro->bValidValue)
 			{
-				SendTempHumBaroSensor(pSensorTemp->nodeID, pSensorTemp->childID, pSensorTemp->floatValue, pSensor->intvalue, pSensorBaro->floatValue, forecast);
+				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
+				SendTempHumBaroSensor(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue, pSensorBaro->floatValue, forecast);
 			}
 		}
 		else if (pSensorTemp) {
@@ -258,7 +259,8 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		{
 			if (pSensorTemp->bValidValue && pSensorHum->bValidValue)
 			{
-				SendTempHumBaroSensor(pSensorTemp->nodeID, pSensorTemp->childID, pSensorTemp->floatValue, pSensorHum->intvalue, pSensor->floatValue, forecast);
+				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
+				SendTempHumBaroSensor(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensorHum->intvalue, pSensor->floatValue, forecast);
 			}
 		}
 		else

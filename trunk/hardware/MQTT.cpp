@@ -182,10 +182,18 @@ void MQTT::OnConnect()
 void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 {
 	MQTTAsync_message *message = (MQTTAsync_message*)pMessage;
-
+	if (message->payloadlen < 1)
+		return;
+	std::string topic = std::string(topicName, topicName + topicLen);
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
-	_log.Log(LOG_STATUS, "MQTT: Message: %s", qMessage.c_str());
+	_log.Log(LOG_STATUS, "MQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
+
+	if (topic.find("MyMQTT/") != std::string::npos)
+	{
+		//MySensors message
+		_log.Log(LOG_STATUS, "MQTT: MySensors message received!");
+	}
 
 	MQTTAsync_freeMessage(&message);
 	MQTTAsync_free(topicName);
