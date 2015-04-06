@@ -14552,7 +14552,7 @@ namespace http {
 										{
 											struct tm ntime;
 											time_t atime;
-											ntime.tm_isdst = 0;
+											ntime.tm_isdst = -1;
 											ntime.tm_year = atoi(actDateTimeHour.substr(0, 4).c_str()) - 1900;
 											ntime.tm_mon = atoi(actDateTimeHour.substr(5, 2).c_str()) - 1;
 											ntime.tm_mday = atoi(actDateTimeHour.substr(8, 2).c_str());
@@ -14610,7 +14610,7 @@ namespace http {
 									std::string stime = sd[1];
 									struct tm ntime;
 									time_t atime;
-									ntime.tm_isdst = 0;
+									ntime.tm_isdst = -1;
 									ntime.tm_year = atoi(stime.substr(0, 4).c_str()) - 1900;
 									ntime.tm_mon = atoi(stime.substr(5, 2).c_str()) - 1;
 									ntime.tm_mday = atoi(stime.substr(8, 2).c_str());
