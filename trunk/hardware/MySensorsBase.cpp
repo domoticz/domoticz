@@ -427,7 +427,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit==" << SubUnit << ")";
 	result = m_sql.query(szQuery.str()); //-V519
 	if (result.size() < 1)
 	{
@@ -477,7 +477,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 		//Assign default name for device
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit==" << SubUnit << ")";
 		m_sql.query(szQuery.str());
 	}
 }
@@ -488,7 +488,7 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit==" << SubUnit << ")";
 	result = m_sql.query(szQuery.str()); //-V519
 	if (result.size() < 1)
 		return false;
@@ -871,10 +871,10 @@ void MySensorsBase::ParseLine()
 			sub_type = V_PRESSURE;
 			bDoAdd = true;
 			break;
-//		case S_LIGHT:
-	//		sub_type = V_LIGHT;
-		//	bDoAdd = true;
-			//break;
+		case S_LIGHT:
+			sub_type = V_LIGHT;
+			bDoAdd = true;
+			break;
 		}
 		if (!bDoAdd)
 			return;
@@ -904,6 +904,17 @@ void MySensorsBase::ParseLine()
 		pSensor->lastreceived = mytime(NULL);
 		pSensor->devType = (_eSetType)sub_type;
 		pSensor->bValidValue = false;
+
+		if (sub_type == V_LIGHT)
+		{
+			//Check if switch is already in the system, if not add it
+			std::string sSwitchValue;
+			if (!GetSwitchValue(node_id, child_sensor_id, sub_type, sSwitchValue))
+			{
+				//Add it to the system
+				UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
+			}
+		}
 	}
 	else if (message_type == MT_Req)
 	{
