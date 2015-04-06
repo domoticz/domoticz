@@ -39,6 +39,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Changed: Swapped counters for 'Toon', usage/delivery 1 and 2 where inverted
 - Implemented: P1 Meter, Energy Used/Generated in graph
 - Implemented: Option to specify sensor timeout (default 60 minutes)
+- Fixed: MySensors, now supports multiple light child id's
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
