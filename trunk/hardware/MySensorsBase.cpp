@@ -184,7 +184,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		{
 			if (pSensorHum->bValidValue && pSensorBaro->bValidValue)
 			{
-				int forecast = baroForecastNoInfo;
+				int forecast = bmpbaroforecast_unknown;
 				_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
 				if (pSensorForecast)
 					forecast = pSensorForecast->intvalue;
@@ -193,7 +193,41 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 					if (pSensorBaro->floatValue < 1010)
 						forecast = bmpbaroforecast_rain;
 				}
-				SendTempHumBaroSensor(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue, pSensorBaro->floatValue, forecast);
+
+				//We are using the TempHumBaro Float type now, convert the forecast
+				int nforecast = wsbaroforcast_some_clouds;
+				float pressure = pSensorBaro->floatValue;
+				if (pressure <= 980)
+					nforecast = wsbaroforcast_heavy_rain;
+				else if (pressure <= 995)
+				{
+					if (pSensor->floatValue > 1)
+						nforecast = wsbaroforcast_rain;
+					else
+						nforecast = wsbaroforcast_snow;
+					break;
+				}
+				else if (pressure >= 1029)
+					nforecast = wsbaroforcast_sunny;
+				switch (forecast)
+				{
+				case bmpbaroforecast_sunny:
+					nforecast = wsbaroforcast_sunny;
+					break;
+				case bmpbaroforecast_cloudy:
+					nforecast = wsbaroforcast_cloudy;
+					break;
+				case bmpbaroforecast_thunderstorm:
+					nforecast = wsbaroforcast_heavy_rain;
+					break;
+				case bmpbaroforecast_rain:
+					if (pSensor->floatValue>1)
+						nforecast = wsbaroforcast_rain;
+					else
+						nforecast = wsbaroforcast_snow;
+					break;
+				}
+				SendTempHumBaroSensorFloat(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue, pSensorBaro->floatValue, nforecast);
 			}
 		}
 		else if (pSensorHum) {
@@ -212,7 +246,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 	{
 		_tMySensorSensor *pSensorTemp = FindSensor(pSensor->nodeID, V_TEMP);
 		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
-		int forecast = baroForecastNoInfo;
+		int forecast = bmpbaroforecast_unknown;
 		_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
 		if (pSensorForecast)
 			forecast = pSensorForecast->intvalue;
@@ -226,7 +260,41 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 			if (pSensorTemp->bValidValue && pSensorBaro->bValidValue)
 			{
 				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
-				SendTempHumBaroSensor(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue, pSensorBaro->floatValue, forecast);
+
+				//We are using the TempHumBaro Float type now, convert the forecast
+				int nforecast = wsbaroforcast_some_clouds;
+				float pressure = pSensorBaro->floatValue;
+				if (pressure <= 980)
+					nforecast = wsbaroforcast_heavy_rain;
+				else if (pressure <= 995)
+				{
+					if (pSensorTemp->floatValue > 1)
+						nforecast = wsbaroforcast_rain;
+					else
+						nforecast = wsbaroforcast_snow;
+					break;
+				}
+				else if (pressure >= 1029)
+					nforecast = wsbaroforcast_sunny;
+				switch (forecast)
+				{
+				case bmpbaroforecast_sunny:
+					nforecast = wsbaroforcast_sunny;
+					break;
+				case bmpbaroforecast_cloudy:
+					nforecast = wsbaroforcast_cloudy;
+					break;
+				case bmpbaroforecast_thunderstorm:
+					nforecast = wsbaroforcast_heavy_rain;
+					break;
+				case bmpbaroforecast_rain:
+					if (pSensorTemp->floatValue > 1)
+						nforecast = wsbaroforcast_rain;
+					else
+						nforecast = wsbaroforcast_snow;
+					break;
+				}
+				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue, pSensorBaro->floatValue, nforecast);
 			}
 		}
 		else if (pSensorTemp) {
@@ -246,7 +314,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 	{
 		_tMySensorSensor *pSensorTemp = FindSensor(pSensor->nodeID, V_TEMP);
 		_tMySensorSensor *pSensorHum = FindSensor(pSensor->nodeID, V_HUM);
-		int forecast = baroForecastNoInfo;
+		int forecast = bmpbaroforecast_unknown;
 		_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
 		if (pSensorForecast)
 			forecast = pSensorForecast->intvalue;
@@ -260,7 +328,40 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 			if (pSensorTemp->bValidValue && pSensorHum->bValidValue)
 			{
 				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
-				SendTempHumBaroSensor(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensorHum->intvalue, pSensor->floatValue, forecast);
+				//We are using the TempHumBaro Float type now, convert the forecast
+				int nforecast = wsbaroforcast_some_clouds;
+				float pressure = pSensor->floatValue;
+				if (pressure <= 980)
+					nforecast = wsbaroforcast_heavy_rain;
+				else if (pressure <= 995)
+				{
+					if (pSensorTemp->floatValue > 1)
+						nforecast = wsbaroforcast_rain;
+					else
+						nforecast = wsbaroforcast_snow;
+					break;
+				}
+				else if (pressure >= 1029)
+					nforecast = wsbaroforcast_sunny;
+				switch (forecast)
+				{
+				case bmpbaroforecast_sunny:
+					nforecast = wsbaroforcast_sunny;
+					break;
+				case bmpbaroforecast_cloudy:
+					nforecast = wsbaroforcast_cloudy;
+					break;
+				case bmpbaroforecast_thunderstorm:
+					nforecast = wsbaroforcast_heavy_rain;
+					break;
+				case bmpbaroforecast_rain:
+					if (pSensorTemp->floatValue > 1)
+						nforecast = wsbaroforcast_rain;
+					else
+						nforecast = wsbaroforcast_snow;
+					break;
+				}
+				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensorHum->intvalue, pSensor->floatValue, nforecast);
 			}
 		}
 		else

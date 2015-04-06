@@ -233,6 +233,35 @@ void CDomoticzHardwareBase::SendTempHumBaroSensor(const int NodeID, const int Ba
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);
 }
 
+void CDomoticzHardwareBase::SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast)
+{
+	RBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.TEMP_HUM_BARO.packetlength = sizeof(tsen.TEMP_HUM_BARO) - 1;
+	tsen.TEMP_HUM_BARO.packettype = pTypeTEMP_HUM_BARO;
+	tsen.TEMP_HUM_BARO.subtype = sTypeTHBFloat;
+	tsen.TEMP_HUM_BARO.battery_level = 9;
+	tsen.TEMP_HUM_BARO.rssi = 12;
+	tsen.TEMP_HUM_BARO.id1 = (NodeID & 0xFF00) >> 8;
+	tsen.TEMP_HUM_BARO.id2 = NodeID & 0xFF;
+
+	tsen.TEMP_HUM_BARO.tempsign = (temperature >= 0) ? 0 : 1;
+	int at10 = round(abs(temperature*10.0f));
+	tsen.TEMP_HUM_BARO.temperatureh = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP_HUM_BARO.temperatureh * 256);
+	tsen.TEMP_HUM_BARO.temperaturel = (BYTE)(at10);
+	tsen.TEMP_HUM_BARO.humidity = (BYTE)humidity;
+	tsen.TEMP_HUM_BARO.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+
+	int ab10 = round(pressure*10.0f);
+	tsen.TEMP_HUM_BARO.baroh = (BYTE)(ab10 / 256);
+	ab10 -= (tsen.TEMP_HUM_BARO.baroh * 256);
+	tsen.TEMP_HUM_BARO.barol = (BYTE)(ab10);
+	tsen.TEMP_HUM_BARO.forecast = forecast;
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);//decode message
+}
+
 void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance)
 {
 	_tGeneralDevice gdevice;
