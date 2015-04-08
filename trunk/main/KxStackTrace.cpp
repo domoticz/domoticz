@@ -91,7 +91,7 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
 				end_offset = p;
 		}
 
-		if (begin_name && end_offset && (begin_name &lt; end_offset))
+		if (begin_name && end_offset && (begin_name < end_offset))
 		{
 			*begin_name++ = '\0';
 			*end_offset++ = '\0';
