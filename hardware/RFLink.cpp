@@ -330,9 +330,10 @@ bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
 			fvalue = 15.0f; //99 is fully on
 		int svalue = round(fvalue);        
 		//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
-        char buffer[10] = {0};
+        char buffer[50] = {0};
         int number_base = 10;
-        switchcmnd = itoa( (int)svalue, buffer, number_base);
+		sprintf(buffer, "%d", svalue);
+		switchcmnd = buffer;
     }    
     
 	if (switchcmnd.empty())
