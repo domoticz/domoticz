@@ -129,7 +129,7 @@ static inline void printStackTrace( FILE *out = stderr, unsigned int max_frames 
 	free(symbollist);
 }
 
-void abortHandler(int signum)
+void abortHandler(int signum, siginfo_t* si, void* unused)
 {
 	// associate each signal with a signal name string.
 	const char* name = NULL;
