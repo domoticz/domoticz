@@ -8,6 +8,7 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <stdlib.h>
 #include <boost/bind.hpp>
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
