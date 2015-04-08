@@ -40,7 +40,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: P1 Meter, Energy Used/Generated in graph
 - Implemented: Option to specify sensor timeout (default 60 minutes)
 - Fixed: MySensors, now supports multiple light child id's
-- Fixed: P1 Gas, hour shift dua DST
+- Fixed: P1 Gas, shortlog graph hour shift duo DST
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

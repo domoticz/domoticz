@@ -16,6 +16,91 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseTable[] =
+{
+	{ V_TEMP, "V_TEMP" },
+	{ V_HUM, "V_HUM" },
+	{ V_LIGHT, "V_LIGHT" },
+	{ V_DIMMER, "V_DIMMER" },
+	{ V_PRESSURE, "V_PRESSURE" },
+	{ V_FORECAST, "V_FORECAST" },
+	{ V_RAIN, "V_RAIN" },
+	{ V_RAINRATE, "V_RAINRATE" },
+	{ V_WIND, "V_WIND" },
+	{ V_GUST, "V_GUST" },
+	{ V_DIRECTION, "V_DIRECTION" },
+	{ V_UV, "V_UV" },
+	{ V_WEIGHT, "V_WEIGHT" },
+	{ V_DISTANCE, "V_DISTANCE" },
+	{ V_IMPEDANCE, "V_IMPEDANCE" },
+	{ V_ARMED, "V_ARMED" },
+	{ V_TRIPPED, "V_TRIPPED" },
+	{ V_WATT, "V_WATT" },
+	{ V_KWH, "V_KWH" },
+	{ V_SCENE_ON, "V_SCENE_ON" },
+	{ V_SCENE_OFF, "V_SCENE_OFF" },
+	{ V_HEATER, "V_HEATER" },
+	{ V_HEATER_SW, "V_HEATER_SW" },
+	{ V_LIGHT_LEVEL, "V_LIGHT_LEVEL" },
+	{ V_VAR1, "V_VAR1" },
+	{ V_VAR2, "V_VAR2" },
+	{ V_VAR3, "V_VAR3" },
+	{ V_VAR4, "V_VAR4" },
+	{ V_VAR5, "V_VAR5" },
+	{ V_UP, "V_UP" },
+	{ V_DOWN, "V_DOWN" },
+	{ V_STOP, "V_STOP" },
+	{ V_IR_SEND, "V_IR_SEND" },
+	{ V_IR_RECEIVE, "V_IR_RECEIVE" },
+	{ V_FLOW, "V_FLOW" },
+	{ V_VOLUME, "V_VOLUME" },
+	{ V_LOCK_STATUS, "V_LOCK_STATUS" },
+	{ V_DUST_LEVEL, "V_DUST_LEVEL" },
+	{ V_VOLTAGE, "V_VOLTAGE" },
+	{ V_CURRENT, "V_CURRENT" },
+	{ V_TEMP, NULL }
+};
+
+bool MySensorsBase::GetReverseValueLookup(const std::string &ValueString, _eSetType &retSetType)
+{
+	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReverseTable;
+	while (pTable->stringType != NULL)
+	{
+		if (pTable->stringType == ValueString)
+		{
+			retSetType = (_eSetType)pTable->SType;
+			return true;
+		}
+		pTable++;
+	}
+	return false;
+}
+
+const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseTypeTable[] =
+{
+	{ MT_Presentation, "Present" },
+	{ MT_Set, "Set" },
+	{ MT_Req, "Req" },
+	{ MT_Internal, "Internal" },
+	{ MT_Stream, "Stream" },
+	{ MT_Presentation, NULL }
+};
+
+bool MySensorsBase::GetReverseTypeLookup(const std::string &ValueString, _eMessageType &retSetType)
+{
+	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReverseTypeTable;
+	while (pTable->stringType != NULL)
+	{
+		if (pTable->stringType == ValueString)
+		{
+			retSetType = (_eMessageType)pTable->SType;
+			return true;
+		}
+		pTable++;
+	}
+	return false;
+}
+
 MySensorsBase::MySensorsBase(void)
 {
 	m_bufferpos = 0;

@@ -1,14 +1,13 @@
 #pragma once
 
-#include "DomoticzHardware.h"
+#include "MySensorsBase.h"
 
-class MQTT : public CDomoticzHardwareBase
+class MQTT : public MySensorsBase
 {
 public:
 	MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort);
 	~MQTT(void);
 	bool isConnected(){ return m_IsConnected; };
-	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void OnConnect();
 	void OnMQTTMessage(char *topicName, int topicLen,  void *pMessage);
 	void SendMessage(const std::string &Message);
@@ -22,6 +21,8 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	bool ConnectInt(const std::string &IPAddress, const unsigned short usIPPort);
+	void WriteInt(const std::string &sendStr);
+	void ProcessMySensorsMessage(const std::string &MySensorsMessage);
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
