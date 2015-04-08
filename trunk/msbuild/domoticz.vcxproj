@@ -174,6 +174,7 @@
     <ClInclude Include="..\main\dirent_windows.h" />
     <ClInclude Include="..\main\EventSystem.h" />
     <ClInclude Include="..\main\GZipHelper.h" />
+    <ClInclude Include="..\main\KxStackTrace.h" />
     <ClInclude Include="..\main\localtime_r.h" />
     <ClInclude Include="..\hardware\P1MeterBase.h" />
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
@@ -312,6 +313,7 @@
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
     <ClCompile Include="..\main\DataPush.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
+    <ClCompile Include="..\main\KxStackTrace.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />
     <ClCompile Include="..\hardware\P1MeterBase.cpp" />
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />

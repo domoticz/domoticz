@@ -153,6 +153,7 @@ main/Camera.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
 main/Helper.cpp
+main/KxStackTrace.cpp
 main/localtime_r.cpp
 main/Logger.cpp
 main/mainworker.cpp

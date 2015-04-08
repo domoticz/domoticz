@@ -198,6 +198,9 @@
     <Filter Include="Devices\RFLink">
       <UniqueIdentifier>{90b48d9f-626f-4961-bf0c-c11623888086}</UniqueIdentifier>
     </Filter>
+    <Filter Include="StackTrace">
+      <UniqueIdentifier>{f6879fcd-67c2-4fda-82a1-fa8420022f63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -624,6 +627,9 @@
     <ClInclude Include="..\hardware\RFLink.h">
       <Filter>Devices\RFLink</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\KxStackTrace.h">
+      <Filter>StackTrace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -994,6 +1000,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\RFLink.cpp">
       <Filter>Devices\RFLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\KxStackTrace.cpp">
+      <Filter>StackTrace</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

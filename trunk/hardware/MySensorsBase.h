@@ -6,6 +6,7 @@ class MySensorsBase : public CDomoticzHardwareBase
 {
 	friend class MySensorsSerial;
 	friend class MySensorsTCP;
+	friend class MQTT;
 public:
 	enum _eMessageType
 	{
@@ -109,6 +110,12 @@ public:
 		I_GATEWAY_READY = 14,			// Send by gateway to controller when startup is complete.
 	};
 
+	struct _tMySensorsReverseTypeLookup
+	{
+		int SType;
+		const char *stringType;
+	};
+
 	struct _tMySensorSensor
 	{
 		int nodeID;
@@ -158,6 +165,8 @@ public:
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool GetReverseValueLookup(const std::string &ValueString, _eSetType &retSetType);
+	bool GetReverseTypeLookup(const std::string &ValueString, _eMessageType &retSetType);
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);
@@ -191,5 +200,8 @@ private:
 	static const int readBufferSize=1028;
 	unsigned char m_buffer[readBufferSize];
 	int m_bufferpos;
+
+	static const _tMySensorsReverseTypeLookup m_MySenserReverseTable[];
+	static const _tMySensorsReverseTypeLookup m_MySenserReverseTypeTable[];
 };
 
