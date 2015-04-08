@@ -301,6 +301,8 @@ void CRFLink::readCallback(const char *data, size_t len)
 
 }
 
+#define round(a) ( int ) ( a + .5 )
+
 bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!isOpen())
@@ -317,6 +319,21 @@ bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
 		return false;
 	}
 	std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pSwitch->cmnd);
+    
+    // check setlevel command
+    if (pSwitch->cmnd == gswitch_sSetLevel) {
+       	//_log.Log(LOG_ERROR, "RFLink: pswitchlevel: %d",  pSwitch->level);
+        // Get device level to set
+		float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
+		if (fvalue > 15.0f)
+			fvalue = 15.0f; //99 is fully on
+		int svalue = round(fvalue);        
+		//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
+        char buffer[10] = {0};
+        int number_base = 10;
+        switchcmnd = itoa( (int)svalue, buffer, number_base);
+    }    
+    
 	if (switchcmnd.empty())
 	{
 		_log.Log(LOG_ERROR, "RFLink: trying to send unknown switch command: %d", pSwitch->cmnd);
