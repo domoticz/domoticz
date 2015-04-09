@@ -10044,12 +10044,13 @@ namespace http {
 
 							std::vector<std::string> tstrarray;
 							StringSplit(sValue, ";", tstrarray);
-
-							root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
-							int forecast = atoi(tstrarray[1].c_str());
-							root["result"][ii]["Forecast"] = forecast;
-							root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
-
+							if (tstrarray.size() > 1)
+							{
+								root["result"][ii]["Barometer"] = atof(tstrarray[0].c_str());
+								int forecast = atoi(tstrarray[1].c_str());
+								root["result"][ii]["Forecast"] = forecast;
+								root["result"][ii]["ForecastStr"] = BMP_Forecast_Desc(forecast);
+							}
 						}
 						else if (dSubType == sTypeZWaveClock)
 						{

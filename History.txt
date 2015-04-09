@@ -42,6 +42,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: MySensors, now supports multiple light child id's
 - Fixed: P1 Gas, shortlog graph hour shift duo DST
 - Fixed: Update UserVariable from json
+- Fixed: Not handling invalid barometer svalues (duo invalid json call)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
