@@ -78,7 +78,7 @@ bool MySensorsBase::GetReverseValueLookup(const std::string &ValueString, _eSetT
 
 const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseTypeTable[] =
 {
-	{ MT_Presentation, "Present" },
+	{ MT_Presentation, "Presentation" },
 	{ MT_Set, "Set" },
 	{ MT_Req, "Req" },
 	{ MT_Internal, "Internal" },
