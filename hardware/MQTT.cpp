@@ -182,8 +182,6 @@ void MQTT::OnConnect()
 void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 {
 	MQTTAsync_message *message = (MQTTAsync_message*)pMessage;
-	if (message->payloadlen < 1)
-		return;
 	std::string topic = std::string(topicName, topicName + topicLen);
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
@@ -200,6 +198,8 @@ void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 	}
 
 	//Todo, support others?
+	if (message->payloadlen < 1)
+		return;
 }
 
 void mqtt_connlost(void *context, char *cause)
@@ -302,7 +302,7 @@ void mqtt_onSend(void* context, MQTTAsync_successData* response)
 //	MQTT *pClient = (MQTT*)context;
 }
 
-void MQTT::SendMessage(const std::string &Message)
+void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 {
 	if (!m_IsConnected)
 	{
@@ -319,7 +319,7 @@ void MQTT::SendMessage(const std::string &Message)
 	pubmsg.qos = QOS;
 	pubmsg.retained = 0;
 
-	if (MQTTAsync_sendMessage(m_mqtt_client, TOPIC, &pubmsg, &opts) != MQTTASYNC_SUCCESS)
+	if (MQTTAsync_sendMessage(m_mqtt_client, Topic.c_str(), &pubmsg, &opts) != MQTTASYNC_SUCCESS)
 	{
 		_log.Log(LOG_STATUS, "MQTT: Failed to send message: %s", Message.c_str());
 	}
@@ -327,7 +327,8 @@ void MQTT::SendMessage(const std::string &Message)
 
 void MQTT::WriteInt(const std::string &sendStr)
 {
-	SendMessage(sendStr);
+	_log.Log(LOG_STATUS, "MQTT: sending not implemented yet!: %s", sendStr.c_str());
+	//SendMessage(sendStr);
 }
 
 void MQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
@@ -340,7 +341,14 @@ void MQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
 	int ChildID = atoi(results[2].c_str());
 	std::string CmdType = results[3];
 	std::string ValueType = results[4];
-	std::string Payload = results[5];
+	std::string Payload = "";
+	int tplstrs = results.size() - 5;
+	for (int ii = 0; ii < tplstrs; ii++)
+	{
+		Payload += results[5+ii];
+		if (ii != tplstrs - 1)
+			Payload += "/";
+	}
 	//Make MySensors serial Message
 	_eMessageType messageType;
 	if (!GetReverseTypeLookup(CmdType, messageType))
@@ -349,15 +357,40 @@ void MQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
 		return;
 	}
 
-	_eSetType SubType;
-	if (!GetReverseValueLookup(ValueType, SubType))
+	int iSubType = 0;
+
+	if (messageType == MySensorsBase::MT_Set)
 	{
-		_log.Log(LOG_STATUS, "MQTT: Unsupported MySensors value, please report: %s", ValueType.c_str());
+		_eSetType SubType;
+		if (!GetReverseValueLookup(ValueType, SubType))
+		{
+			_log.Log(LOG_STATUS, "MQTT: Unsupported MySensors value, please report: %s", ValueType.c_str());
+			return;
+		}
+		iSubType = (int)SubType;
+	}
+	else if (messageType == MySensorsBase::MT_Presentation)
+	{
+		_ePresentationType SubType;
+		if (!GetReversePresentationLookup(ValueType, SubType))
+		{
+			_log.Log(LOG_STATUS, "MQTT: Unsupported MySensors presentation type, please report: %s", ValueType.c_str());
+			return;
+		}
+		iSubType = (int)SubType;
+	}
+	else if (messageType == MySensorsBase::MT_Internal)
+	{
+		iSubType = atoi(ValueType.c_str());
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "MQTT: Unsupported MySensors message type, please report: %s", CmdType.c_str());
 		return;
 	}
 
 	std::stringstream sstr;
-	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";0;" << SubType << ";" << Payload;
+	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";0;" << iSubType << ";" << Payload;
 
 	m_bufferpos = sstr.str().size();
 	memcpy(&m_buffer, sstr.str().c_str(), m_bufferpos);
