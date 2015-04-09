@@ -10,7 +10,7 @@ public:
 	bool isConnected(){ return m_IsConnected; };
 	void OnConnect();
 	void OnMQTTMessage(char *topicName, int topicLen,  void *pMessage);
-	void SendMessage(const std::string &Message);
+	void SendMessage(const std::string &Topic, const std::string &Message);
 	bool m_bDoRestart;
 	bool m_disc_finished;
 	bool m_IsConnected;

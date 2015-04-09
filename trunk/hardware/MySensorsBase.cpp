@@ -16,7 +16,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseTable[] =
+const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseValueTable[] =
 {
 	{ V_TEMP, "V_TEMP" },
 	{ V_HUM, "V_HUM" },
@@ -58,12 +58,12 @@ const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserRever
 	{ V_DUST_LEVEL, "V_DUST_LEVEL" },
 	{ V_VOLTAGE, "V_VOLTAGE" },
 	{ V_CURRENT, "V_CURRENT" },
-	{ V_TEMP, NULL }
+	{ 0, NULL }
 };
 
 bool MySensorsBase::GetReverseValueLookup(const std::string &ValueString, _eSetType &retSetType)
 {
-	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReverseTable;
+	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReverseValueTable;
 	while (pTable->stringType != NULL)
 	{
 		if (pTable->stringType == ValueString)
@@ -75,6 +75,53 @@ bool MySensorsBase::GetReverseValueLookup(const std::string &ValueString, _eSetT
 	}
 	return false;
 }
+
+const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReversePresentationTable[] =
+{
+	{ S_DOOR, "S_DOOR" },
+	{ S_MOTION, "S_MOTION" },
+	{ S_SMOKE, "S_SMOKE" },
+	{ S_LIGHT, "S_LIGHT" },
+	{ S_DIMMER, "S_DIMMER" },
+	{ S_COVER, "S_COVER" },
+	{ S_TEMP, "S_TEMP" },
+	{ S_HUM, "S_HUM" },
+	{ S_BARO, "S_BARO" },
+	{ S_WIND, "S_WIND" },
+	{ S_RAIN, "S_RAIN" },
+	{ S_UV, "S_UV" },
+	{ S_WEIGHT, "S_WEIGHT" },
+	{ S_POWER, "S_POWER" },
+	{ S_HEATER, "S_HEATER" },
+	{ S_DISTANCE, "S_DISTANCE" },
+	{ S_LIGHT_LEVEL, "S_LIGHT_LEVEL" },
+	{ S_ARDUINO_NODE, "S_ARDUINO_NODE" },
+	{ S_ARDUINO_RELAY, "S_ARDUINO_RELAY" },
+	{ S_LOCK, "S_LOCK" },
+	{ S_IR, "S_IR" },
+	{ S_WATER, "S_WATER" },
+	{ S_AIR_QUALITY, "S_AIR_QUALITY" },
+	{ S_CUSTOM, "S_CUSTOM" },
+	{ S_DUST, "S_DUST" },
+	{ S_SCENE_CONTROLLER, "S_SCENE_CONTROLLER" },
+	{ 0, NULL }
+};
+
+bool MySensorsBase::GetReversePresentationLookup(const std::string &ValueString, _ePresentationType &retSetType)
+{
+	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReversePresentationTable;
+	while (pTable->stringType != NULL)
+	{
+		if (pTable->stringType == ValueString)
+		{
+			retSetType = (_ePresentationType)pTable->SType;
+			return true;
+		}
+		pTable++;
+	}
+	return false;
+}
+
 
 const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseTypeTable[] =
 {
