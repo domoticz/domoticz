@@ -1639,7 +1639,7 @@ namespace http {
 				std::stringstream szQuery;
 				std::vector<std::vector<std::string> > result;
 				szQuery << "SELECT ID FROM UserVariables WHERE Name='" << variablename << "'";
-				result = m_sql.GetUserVariables();
+				result = m_sql.query(szQuery.str());
 				if (result.empty())
 					return;
 				idx = result[0][0];
