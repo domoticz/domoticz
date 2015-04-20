@@ -323,7 +323,6 @@ bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
     
     // check setlevel command
     if (pSwitch->cmnd == gswitch_sSetLevel) {
-       	//_log.Log(LOG_ERROR, "RFLink: pswitchlevel: %d",  pSwitch->level);
         // Get device level to set
 		float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
 		if (fvalue > 15.0f)
@@ -331,7 +330,6 @@ bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
 		int svalue = round(fvalue);        
 		//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
         char buffer[50] = {0};
-        int number_base = 10;
 		sprintf(buffer, "%d", svalue);
 		switchcmnd = buffer;
     }    
@@ -365,6 +363,17 @@ bool CRFLink::SendSwitchInt(const int ID, const int switchunit, const int Batter
 	}
 
 	int cmnd = GetGeneralRFLinkFromString(rfswitchcommands, switchcmd);
+
+	int svalue=level;
+	if (cmnd==-1) {
+		if (switchcmd.compare(0, 9, "SETLEVEL=") ){
+		cmnd=gswitch_sSetLevel;
+        std::string str2 = switchcmd.substr(10);
+        svalue=atoi(str2.c_str()); 
+	  	//_log.Log(LOG_STATUS, "RFLink: %d level: %d", cmnd, svalue);
+		}
+    }
+    
 	if (cmnd==-1)
 	{
 		_log.Log(LOG_ERROR, "RFLink: Unhandled switch command: %s", switchcmd.c_str());
@@ -376,7 +385,7 @@ bool CRFLink::SendSwitchInt(const int ID, const int switchunit, const int Batter
 	gswitch.id = ID;
 	gswitch.unitcode = switchunit;
 	gswitch.cmnd = cmnd;
-	gswitch.level = level;
+    gswitch.level = svalue; //level;
 	gswitch.battery_level = BatteryLevel;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
@@ -432,7 +441,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	int RFLink_ID = atoi(results[0].c_str());
 	if (RFLink_ID != 20)
 	{
-		return false; //only accept RDLink->Master messages
+		return false; //only accept RFLink->Master messages
 	}
 
 #ifdef ENABLE_LOGGING
@@ -452,7 +461,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 			//write("10;RFDEBUG=ON;\n");
 
 			//Enable Undecoded DEBUG
-			write("10;RFUDEBUG=ON;\n");
+			//write("10;RFUDEBUG=ON;\n");
 			return true;
 		}
 	}
