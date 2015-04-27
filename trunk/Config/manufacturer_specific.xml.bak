@@ -62,7 +62,7 @@
 		<Product type="0003" id="0013" name="Micro Smart Energy Dimmer"/>
 		<Product type="0003" id="004b" name="Smart Energy Switch v2" config="aeon_labs/ses2.xml"/>
 		<Product type="0004" id="0025" name="Z-Wave Repeater"/>
-		<Product type="0004" id="0050" name="DSD31 Siren Gen5" config="aeon_labs/dsd31.xml"/>
+		<Product type="0004" id="0050" name="Siren Gen5"/>
 	</Manufacturer>
         <Manufacturer id="0111" name="Airline Mechanical">
                 <Product type="8200" id="0200" name="ZDS-100"/>
@@ -150,9 +150,6 @@
 	<Manufacturer id="0031" name="Destiny Networks">
 	</Manufacturer>
 	<Manufacturer id="0050" name="Digital 5">
-	</Manufacturer>
-	<Manufacturer id="0184" name="Dragon Tech">
-		<Product type="4447" id="3034" name="In Wall Dimmer" config="dragontech/wd-100.xml" />
 	</Manufacturer>
 	<Manufacturer id="0012" name="E Housekeeper">
 		<Product type="0001" id="0001" name="Switchkeeper Plug-in Appliance Module"/>
@@ -463,7 +460,6 @@
 		<Product type="0001" id="0006" name="PAN08-1 In Wall Roller Shutter Controller"/>
 		<Product type="0002" id="0002" name="PSM02-1 Slim Multi-Sensor" config="philio/psm02.xml"/>
 		<Product type="0002" id="000d" name="PST02-1B Multi Sensor"/>
-		<Product type="0002" id="000e" name="PST02-1C Slim Multi Sensor" config="philio/pst02-1c.xml"/>
 	</Manufacturer>
 	<Manufacturer id="010e" name="Polycontrol">
 		<Product type="0002" id="0001" name="Danalock Keypad" config="polycontrol/keypad.xml"/>
@@ -605,15 +601,14 @@
 	</Manufacturer>
 	<Manufacturer id="0118" name="Wenzhou TKB Control System">
 		<Product type="0001" id="0001" name="TZ88 Smart Energy Plug-in Switch" config="wenzhou/tz88.xml"/>
-		<Product type="0002" id="0001" name="SM103 Door/Window Sensor" config="wenzhou/sm103.xml"/>
 		<Product type="0002" id="0002" name="TSP01 3 in 1 PIR Motion Sensor" config="wenzhou/tsp01.xml" />
 		<Product type="0808" id="0808" name="TZ65D Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
 		<Product type="0101" id="0103" name="TZ68E On/Off Switch Socket"/>
 		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
 		<Product type="0202" id="0611" name="TZ67 Wall Plug Dimmer" config="wenzhou/tz67.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0149" name="wiDom">
-		<Product type="0012" id="0104" name="UBS104 Universal Relay Switch" config="widom/UBS104.xml"/>
+	<Manufacturer id="0149" name="Widom">
+		<Product type="0012" id="0104" name="Universal Relay Switch"/>
 	</Manufacturer>
 	<Manufacturer id="004c" name="Woodward Labs">
 	</Manufacturer>
