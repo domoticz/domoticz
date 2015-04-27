@@ -353,6 +353,9 @@ bool MainWorker::GetSunSettings()
 	{
 		m_LastSunriseSet = riseset;
 		_log.Log(LOG_NORM, "Sunrise: %s SunSet:%s", sunrise.c_str(), sunset.c_str());
+
+		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
+		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
 	}
 	m_scheduler.SetSunRiseSetTimers(sunrise, sunset);
 	return true;

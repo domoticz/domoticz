@@ -190,10 +190,10 @@ void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 
 	_log.Log(LOG_STATUS, "MQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 
-	if (topic.find("MyMQTT/") != std::string::npos)
+	if (topic.find("MyMQTT") != std::string::npos)
 	{
 		//MySensors message
-		ProcessMySensorsMessage(topic + "/" + qMessage);
+		ProcessMySensorsMessage(qMessage);
 		return;
 	}
 
@@ -327,73 +327,17 @@ void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 
 void MQTT::WriteInt(const std::string &sendStr)
 {
-	_log.Log(LOG_STATUS, "MQTT: sending not implemented yet!: %s", sendStr.c_str());
-	//SendMessage(sendStr);
+	if (sendStr.size() < 2)
+		return;
+	//string the return and the end
+	std::string sMessage = std::string(sendStr.begin(), sendStr.begin() + sendStr.size()-1);
+	SendMessage("MyMQTT", sMessage);
 }
 
 void MQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
 {
-	std::vector<std::string> results;
-	StringSplit(MySensorsMessage, "/", results);
-	if (results.size() < 6)
-		return; //invalid data
-	int NodeID = atoi(results[1].c_str());
-	int ChildID = atoi(results[2].c_str());
-	std::string CmdType = results[3];
-	std::string ValueType = results[4];
-	std::string Payload = "";
-	int tplstrs = results.size() - 5;
-	for (int ii = 0; ii < tplstrs; ii++)
-	{
-		Payload += results[5+ii];
-		if (ii != tplstrs - 1)
-			Payload += "/";
-	}
-	//Make MySensors serial Message
-	_eMessageType messageType;
-	if (!GetReverseTypeLookup(CmdType, messageType))
-	{
-		_log.Log(LOG_STATUS, "MQTT: Unsupported MySensors type, please report: %s", CmdType.c_str());
-		return;
-	}
-
-	int iSubType = 0;
-
-	if (messageType == MySensorsBase::MT_Set)
-	{
-		_eSetType SubType;
-		if (!GetReverseValueLookup(ValueType, SubType))
-		{
-			_log.Log(LOG_STATUS, "MQTT: Unsupported MySensors value, please report: %s", ValueType.c_str());
-			return;
-		}
-		iSubType = (int)SubType;
-	}
-	else if (messageType == MySensorsBase::MT_Presentation)
-	{
-		_ePresentationType SubType;
-		if (!GetReversePresentationLookup(ValueType, SubType))
-		{
-			_log.Log(LOG_STATUS, "MQTT: Unsupported MySensors presentation type, please report: %s", ValueType.c_str());
-			return;
-		}
-		iSubType = (int)SubType;
-	}
-	else if (messageType == MySensorsBase::MT_Internal)
-	{
-		iSubType = atoi(ValueType.c_str());
-	}
-	else
-	{
-		_log.Log(LOG_STATUS, "MQTT: Unsupported MySensors message type, please report: %s", CmdType.c_str());
-		return;
-	}
-
-	std::stringstream sstr;
-	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";0;" << iSubType << ";" << Payload;
-
-	m_bufferpos = sstr.str().size();
-	memcpy(&m_buffer, sstr.str().c_str(), m_bufferpos);
+	m_bufferpos = MySensorsMessage.size();
+	memcpy(&m_buffer, MySensorsMessage.c_str(), m_bufferpos);
 	m_buffer[m_bufferpos] = 0;
 	ParseLine();
 }
