@@ -259,59 +259,17 @@ add_dependencies(domoticz revisiontag)
 
 ## Link libraries
 
-IF(WIN32)
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ELSE(WIN32)
-    SET(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
-ENDIF(WIN32)
-
-FIND_PACKAGE(PythonLibs)
-IF(PYTHONLIBS_FOUND)
-	#dirty hack to link against the static lib
-	#STRING(REGEX REPLACE ".so" ".a" PYTHON_LIBRARIES ${PYTHON_LIBRARIES})
-	MESSAGE(STATUS "Python libraries found at: ${PYTHON_LIBRARIES}")
-	MESSAGE(STATUS "Python includes found at: ${PYTHON_INCLUDE_PATH}")
-	INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-
-	FIND_PACKAGE(PythonInterp)
-	IF(PYTHONINTERP_FOUND)
-		MESSAGE(STATUS "Python interpreter found at: ${PYTHON_EXECUTABLE}")
-		INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-		LIST(APPEND ADDITIONAL_LIBS ${PYTHON_LIBRARIES})
-		MESSAGE(STATUS "Python as scripting languages: ENABLED")
-		IF(PYTHONLIBS_FOUND)
-		add_definitions(-DENABLE_PYTHON)
-		add_definitions(-DPYTHON_EXE=${PYTHON_EXECUTABLE})
-		target_link_libraries(domoticz ${PYTHON_LIBRARIES} util)
-		ELSE()
-		MESSAGE(STATUS "Python as scripting languages: DISABLED")
-		ENDIF(PYTHONLIBS_FOUND)
-	else()
-		MESSAGE(STATUS "Python not found on your system, to enable python support, install 'python-dev'")
-	ENDIF(PYTHONINTERP_FOUND)
-else()
-  MESSAGE(STATUS "Python not found on your system, to enable python support, install 'python-dev'")
-ENDIF(PYTHONLIBS_FOUND)
-
 option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
-set(Boost_libraries_used thread date_time system)
-IF(PYTHONLIBS_FOUND)
-	SET(Boost_libraries_used ${Boost_libraries_used} python)
-ENDIF(PYTHONLIBS_FOUND)
-
-find_package(Boost REQUIRED COMPONENTS ${Boost_libraries_used})
-
+find_package(Boost REQUIRED COMPONENTS thread date_time system)
 if(USE_STATIC_BOOST)
    message(STATUS "Linking against boost static libraries")
 else(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 endif(USE_STATIC_BOOST)
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(domoticz ${Boost_LIBRARIES})
 
 FIND_PACKAGE(ZLIB)
 IF(ZLIB_FOUND)
@@ -331,8 +289,6 @@ IF(CURL_FOUND)
 else()
   MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
 ENDIF(CURL_FOUND)
-
-
 
 find_path(LIBUSB_INCLUDE_DIR usb.h
    HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
