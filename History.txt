@@ -46,6 +46,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Greek language support, big thanks to George!!
 - RFLink: disabled debug, corrected support for KAKU door/window sensors and dim values
 - Fixed: Sunset/Sunrise update in blocky events (thanks to pj-r!)
+- Fixed: Compiling under ubuntu (issue 'rm CMakeCache.txt' first)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
