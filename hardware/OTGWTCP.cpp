@@ -8,7 +8,7 @@
 
 #define RETRY_DELAY 30
 
-OTGWTCP::OTGWTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5)
+OTGWTCP::OTGWTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
@@ -33,7 +33,7 @@ OTGWTCP::OTGWTCP(const int ID, const std::string IPAddress, const unsigned short
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
-	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5);
+	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
 }
 
 OTGWTCP::~OTGWTCP(void)

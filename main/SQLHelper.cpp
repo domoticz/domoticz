@@ -26,7 +26,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 65
+#define DB_VERSION 66
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -233,6 +233,7 @@ const char *sqlCreateHardware =
 "[Mode3] CHAR DEFAULT 0, "
 "[Mode4] CHAR DEFAULT 0, "
 "[Mode5] CHAR DEFAULT 0, "
+"[Mode6] CHAR DEFAULT 0, "
 "[DataTimeout] INTEGER DEFAULT 0);";
 
 const char *sqlCreateUsers =
@@ -1301,7 +1302,10 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-
+		if (dbversion < 66)
+		{
+			query("ALTER TABLE Hardware ADD COLUMN [Mode6] CHAR default 0");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -1397,7 +1401,7 @@ bool CSQLHelper::OpenDatabase()
             {
                 if(atoi(result[0][1].c_str()) != nValue)
                 {
-                    UpdateRFXCOMHardwareDetails(atoi(result[0][0].c_str()), nValue, 0, 0, 0, 0);
+					UpdateRFXCOMHardwareDetails(atoi(result[0][0].c_str()), nValue, 0, 0, 0, 0, 0);
                 }
             }
 		    UpdatePreferencesVar("Rego6XXType", 0); // Set to zero to avoid another copy
@@ -2011,6 +2015,7 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	case pTypeLighting6:
 	case pTypeLimitlessLights:
 	case pTypeSecurity1:
+	case pTypeSecurity2:
 	case pTypeCurtain:
 	case pTypeBlinds:
 	case pTypeRFY:
@@ -2109,6 +2114,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 					case pTypeSecurity1:
 						newnValue=sStatusNormal;
 						break;
+					case pTypeSecurity2:
+						newnValue = 0;// sStatusNormal;
+						break;
 					case pTypeCurtain:
 						newnValue=curtain_sOpen;
 						break;
@@ -2185,6 +2193,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				break;
 			case pTypeSecurity1:
 				newnValue=sStatusNormal;
+				break;
+			case pTypeSecurity2:
+				newnValue = 0;// sStatusNormal;
 				break;
 			case pTypeCurtain:
 				newnValue=curtain_sOpen;
@@ -2308,6 +2319,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeLighting6:
 	case pTypeLimitlessLights:
 	case pTypeSecurity1:
+	case pTypeSecurity2:
 	case pTypeEvohome:
 	case pTypeEvohomeRelay:
 	case pTypeCurtain:
@@ -3056,10 +3068,10 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	}
 }
 
-void CSQLHelper::UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5)
+void CSQLHelper::UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5, const int msg6)
 {
 	std::stringstream szQuery;
-	szQuery << "UPDATE Hardware SET Mode1=" << msg1 << ", Mode2=" << msg2 << ", Mode3=" << msg3 <<", Mode4=" << msg4 <<", Mode5=" << msg5 << " WHERE (ID == " << HardwareID << ")";
+	szQuery << "UPDATE Hardware SET Mode1=" << msg1 << ", Mode2=" << msg2 << ", Mode3=" << msg3 << ", Mode4=" << msg4 << ", Mode5=" << msg5 << ", Mode6=" << msg6 << " WHERE (ID == " << HardwareID << ")";
 	query(szQuery.str());
 }
 

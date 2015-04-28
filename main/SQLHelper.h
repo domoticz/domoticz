@@ -190,7 +190,7 @@ public:
 
 	void DeleteDataPoint(const char *ID, const std::string &Date);
 
-	void UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5);
+	void UpdateRFXCOMHardwareDetails(const int HardwareID, const int msg1, const int msg2, const int msg3, const int msg4, const int msg5, const int msg6);
 
 	void UpdatePreferencesVar(const std::string &Key, const std::string &sValue);
 	void UpdatePreferencesVar(const std::string &Key, const int nValue);

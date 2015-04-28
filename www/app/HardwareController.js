@@ -21,7 +21,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		UpdateHardware= function(idx,Mode1,Mode2,Mode3,Mode4,Mode5)
+		UpdateHardware= function(idx,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 			var name=$("#hardwarecontent #hardwareparamstable #hardwarename").val();
 			if (name=="")
@@ -49,7 +49,7 @@ define(['app'], function (app) {
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
 						"&datatimeout=" + datatimeout +
-						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -75,7 +75,7 @@ define(['app'], function (app) {
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
 						"&datatimeout=" + datatimeout +
-						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -113,7 +113,7 @@ define(['app'], function (app) {
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
 						"&datatimeout=" + datatimeout +
-						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -153,7 +153,7 @@ define(['app'], function (app) {
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
 						"&datatimeout=" + datatimeout +
-						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -195,7 +195,7 @@ define(['app'], function (app) {
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
 						"&datatimeout=" + datatimeout +
-						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -240,7 +240,7 @@ define(['app'], function (app) {
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
 						"&datatimeout=" + datatimeout +
-						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -274,7 +274,7 @@ define(['app'], function (app) {
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
 						"&datatimeout=" + datatimeout +
-						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -301,7 +301,7 @@ define(['app'], function (app) {
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
 						"&datatimeout=" + datatimeout +
-						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+						"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -324,7 +324,7 @@ define(['app'], function (app) {
 					   "&enabled=" + bEnabled +
 					   "&idx=" + idx +
 					   "&datatimeout=" + datatimeout +
-					   "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5,
+					   "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -614,7 +614,7 @@ define(['app'], function (app) {
 			}
 		}
 
-		EditRFXCOMMode = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditRFXCOMMode = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 			cursordefault();
 			var htmlcontent = '';
@@ -628,8 +628,8 @@ define(['app'], function (app) {
 				SetRFXCOMMode();
 			});
 
-
 			$('#hardwarecontent #idx').val(idx);
+			$('#hardwarecontent #Keeloq').prop('checked',((Mode6 & 0x01)!=0));
 			$('#hardwarecontent #undecon').prop('checked',((Mode3 & 0x80)!=0));
 			$('#hardwarecontent #X10').prop('checked',((Mode5 & 0x01)!=0));
 			$('#hardwarecontent #ARC').prop('checked',((Mode5 & 0x02)!=0));
@@ -657,6 +657,7 @@ define(['app'], function (app) {
 
 			$('#hardwarecontent #defaultbutton').click(function (e) {
 				e.preventDefault();
+				$('#hardwarecontent #Keeloq').prop('checked',false);
 				$('#hardwarecontent #undecon').prop('checked',false);
 				$('#hardwarecontent #X10').prop('checked',true);
 				$('#hardwarecontent #ARC').prop('checked',true);
@@ -684,7 +685,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		EditRego6XXType = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditRego6XXType = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 			cursordefault();
 			var htmlcontent = '';
@@ -880,7 +881,7 @@ define(['app'], function (app) {
 		  $('#modal').hide();
 		}
 
-		EditWOL = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditWOL = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 			$.devIdx=idx;
 			cursordefault();
@@ -911,7 +912,7 @@ define(['app'], function (app) {
 			RefreshWOLNodeTable();
 		}
 
-		EditSBFSpot = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditSBFSpot = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 			$.devIdx=idx;
 			cursordefault();
@@ -930,7 +931,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		EditP1USB = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditP1USB = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 			$.devIdx=idx;
 			cursordefault();
@@ -1003,7 +1004,7 @@ define(['app'], function (app) {
 			}
 		}
 
-		EditLimitlessType = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditLimitlessType = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 			cursordefault();
 			var htmlcontent = '';
@@ -1578,7 +1579,7 @@ define(['app'], function (app) {
 			RefreshOpenZWaveUserCodesTable();
 		}
 
-		EditOpenZWave = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditOpenZWave = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 			$.devIdx=idx;
 			$.devName=name;
@@ -1620,7 +1621,7 @@ define(['app'], function (app) {
 		  });
 		}
 
-		EditOpenTherm = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5)
+		EditOpenTherm = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
 		{
 		//Mode1=Outside Temperature Sensor DeviceIdx, 0=Not Using
 			$.devIdx=idx;
@@ -1913,13 +1914,13 @@ define(['app'], function (app) {
 					if (HwTypeStr.indexOf("RFXCOM") >= 0)
 					{
 						HwTypeStr+='<br>Firmware version: ' + item.Mode2;
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Set Mode") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Limitless") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Set Mode") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditLimitlessType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenZWave") >= 0) {
 						HwTypeStr+='<br>Version: ' + item.version;
@@ -1929,20 +1930,20 @@ define(['app'], function (app) {
 							if (item.NodesQueried != true) {
 								lblStatus="label-important";
 							}
-							HwTypeStr+=' <span class="label ' + lblStatus + ' lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
+							HwTypeStr+=' <span class="label ' + lblStatus + ' lcursor" onclick="EditOpenZWave(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 						}
 					}
 					else if (HwTypeStr.indexOf("SBFSpot") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Wake-on-LAN") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">' + $.t("Setup") + '</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 					}
 					else if (HwTypeStr.indexOf("Dummy") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="CreateDummySensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Virtual Sensors") + '</span>';
@@ -1971,7 +1972,7 @@ define(['app'], function (app) {
 						{
 							HwTypeStr+='637 multi language';
 						}
-						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ');">Change Type</span>';
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">Change Type</span>';
 					}
 					
 					var sDataTimeout="";
@@ -2020,6 +2021,7 @@ define(['app'], function (app) {
 						"Mode3": item.Mode3,
 						"Mode4": item.Mode4,
 						"Mode5": item.Mode5,
+						"Mode6": item.Mode6,
 						"Type" : HwTypeStrOrg,
 						"IntPort": item.Port,
 						"Address": item.Address,
@@ -2057,7 +2059,7 @@ define(['app'], function (app) {
 						var data = oTable.fnGetData( anSelected[0] );
 						var idx= data["DT_RowId"];
 						$.myglobals.SelectedTimerIdx=idx;
-						$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + ")");
+						$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")");
 						$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
 						$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["Name"]);
 						$("#hardwarecontent #hardwareparamstable #combotype").val(jQuery.inArray(data["Type"], $.myglobals.HardwareTypesStr));

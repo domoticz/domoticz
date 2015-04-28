@@ -398,7 +398,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout FROM Hardware WHERE (ID==" << idx << ")";
+	szQuery << "SELECT Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID==" << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -415,9 +415,10 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode3=atoi(sd[9].c_str());
 	int Mode4=atoi(sd[10].c_str());
 	int Mode5 = atoi(sd[11].c_str());
-	int DataTimeout= atoi(sd[12].c_str());
+	int Mode6 = atoi(sd[12].c_str());
+	int DataTimeout = atoi(sd[13].c_str());
 
-	return AddHardwareFromParams(atoi(idx.c_str()),Name,(senabled=="true")?true:false,htype,address,port,username,password,Mode1,Mode2,Mode3,Mode4,Mode5,DataTimeout);
+	return AddHardwareFromParams(atoi(idx.c_str()),Name,(senabled=="true")?true:false,htype,address,port,username,password,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6,DataTimeout);
 }
 
 bool MainWorker::AddHardwareFromParams(
@@ -432,6 +433,7 @@ bool MainWorker::AddHardwareFromParams(
 	int Mode3,
 	int Mode4,
 	int Mode5,
+	int Mode6,
 	int DataTimeout
 	)
 {
@@ -514,7 +516,7 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type == HTYPE_OpenThermGateway)
 			{
-				pHardware = new OTGWSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5);
+				pHardware = new OTGWSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 			}
 			else if (Type==HTYPE_TeleinfoMeter)
 			{
@@ -570,7 +572,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_OpenThermGatewayTCP:
 		//LAN
-		pHardware = new OTGWTCP(ID, Address, Port, Mode1, Mode2, Mode3, Mode4, Mode5);
+		pHardware = new OTGWTCP(ID, Address, Port, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_MySensorsTCP:
 		//LAN
@@ -697,7 +699,7 @@ bool MainWorker::Start()
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout FROM Hardware ORDER BY ID ASC";
+	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
 	result=m_sql.query(szQuery.str());
 	//std::string revfile;
 	//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=Started&amp;idgoal=3",revfile);
@@ -722,8 +724,9 @@ bool MainWorker::Start()
 			int mode3=atoi(sd[10].c_str());
 			int mode4=atoi(sd[11].c_str());
 			int mode5 = atoi(sd[12].c_str());
-			int DataTimeout = atoi(sd[13].c_str());
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, Username, Password, mode1, mode2, mode3, mode4, mode5, DataTimeout);
+			int mode6 = atoi(sd[13].c_str());
+			int DataTimeout = atoi(sd[14].c_str());
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout);
 		}
 	}
 	m_datapush.UpdateActive();
@@ -1274,7 +1277,13 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID=szTmp;
 		Unit=0;
 	}
-	else if (devType==pTypeChime)
+	else if (devType == pTypeSecurity2)
+	{
+		sprintf(szTmp, "%02X%02X%02X%02X%02X%02X%02X%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
+		ID = szTmp;
+		Unit = 0;
+	}
+	else if (devType == pTypeChime)
 	{
 		sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 		ID = szTmp;
@@ -1404,6 +1413,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			case pTypeBlinds:
 			case pTypeRFY:
 			case pTypeSecurity1:
+			case pTypeSecurity2:
 			case pTypeChime:
 			case pTypeThermostat:
 			case pTypeThermostat2:
@@ -1471,6 +1481,9 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			break;
 		case pTypeSecurity1:
 			DeviceRowIdx = decode_Security1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeSecurity2:
+			DeviceRowIdx = decode_Security2(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeEvohome:
 			DeviceRowIdx = decode_evohome1(pHardware, HwdID, (tRBUF *)pRXCommand);
@@ -1711,7 +1724,7 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 						break;
 					}
 
-					m_sql.UpdateRFXCOMHardwareDetails(HwdID,pResponse->IRESPONSE.msg1,pResponse->IRESPONSE.msg2,pResponse->ICMND.msg3,pResponse->ICMND.msg4,pResponse->ICMND.msg5);
+					m_sql.UpdateRFXCOMHardwareDetails(HwdID, pResponse->IRESPONSE.msg1, pResponse->IRESPONSE.msg2, pResponse->ICMND.msg3, pResponse->ICMND.msg4, pResponse->ICMND.msg5, pResponse->ICMND.msg6);
 
 					switch (pResponse->IRESPONSE.msg1)
 					{
@@ -1754,7 +1767,7 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 					}
 					sprintf(szTmp,"Firmware version  = %d", pResponse->IRESPONSE.msg2);
 					WriteMessage(szTmp);
-					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg6,pResponse->IRESPONSE.msg7);
+					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
 					WriteMessage(szTmp);
 
 					if (pResponse->IRESPONSE.UNDECODEDenabled)
@@ -1876,6 +1889,11 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 						WriteMessage("IMAGINTRONIX      enabled");
 					else
 						WriteMessage("IMAGINTRONIX      disabled");
+
+					if (pResponse->IRESPONSE.KEELOQenabled)
+						WriteMessage("KEELOQ            enabled");
+					else
+						WriteMessage("KEELOQ            disabled");
 				}
 				break;
 			case cmdSAVE:
@@ -5342,6 +5360,55 @@ unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
+unsigned long long MainWorker::decode_Security2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	unsigned char devType = pTypeSecurity2;
+	unsigned char subType = pResponse->SECURITY2.subtype;
+	std::string ID;
+	sprintf(szTmp, "%02X%02X%02X%02X%02X%02X%02X%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;// pResponse->SECURITY2.cmnd;
+	unsigned char SignalLevel = pResponse->SECURITY2.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(pHardware, false, pResponse->SECURITY2.battery_level & 0x0F);
+
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
+	CheckSceneCode(HwdID, ID.c_str(), Unit, devType, subType, cmnd, "");
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		WriteMessageStart();
+		switch (pResponse->SECURITY2.subtype)
+		{
+		case sTypeSec2Classic:
+			WriteMessage("subtype       = Keeloq Classic");
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->SECURITY2.packettype, pResponse->SECURITY2.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->SECURITY2.seqnbr);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "id1-8         = %02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
+		WriteMessage(szTmp);
+
+		if ((pResponse->SECURITY2.battery_level & 0xF) == 0)
+			WriteMessage("battery level = Low");
+		else
+			WriteMessage("battery level = OK");
+
+		sprintf(szTmp, "Signal level  = %d", pResponse->SECURITY2.rssi);
+		WriteMessage(szTmp);
+		WriteMessageEnd();
+	}
+	return DevRowIdx;
+}
+
 //not in dbase yet
 unsigned long long MainWorker::decode_Camera1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
@@ -8727,7 +8794,7 @@ unsigned long long MainWorker::decode_FS20(const CDomoticzHardwareBase *pHardwar
 	return -1;
 }
 
-bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1,const unsigned char Mode2,const unsigned char Mode3,const unsigned char Mode4,const unsigned char Mode5)
+bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6)
 {
 	int hindex=FindDomoticzHardware(HardwareID);
 	if (hindex==-1)
@@ -8744,6 +8811,7 @@ bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned cha
 	Response.ICMND.msg3=Mode3;
 	Response.ICMND.msg4=Mode4;
 	Response.ICMND.msg5=Mode5;
+	Response.ICMND.msg6=Mode6;
 	if (!WriteToHardware(HardwareID, (const char*)&Response, sizeof(Response.ICMND)))
 		return false;
 	DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&Response);
@@ -9220,6 +9288,25 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			return true;
 		}
 		break;
+	case pTypeSecurity2:
+	{
+		tRBUF lcmd;
+		lcmd.SECURITY2.packetlength = sizeof(lcmd.SECURITY2) - 1;
+		lcmd.SECURITY2.packettype = dType;
+		lcmd.SECURITY2.subtype = dSubType;
+		lcmd.SECURITY2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.SECURITY2.id1 = ID2;
+		lcmd.SECURITY2.id2 = ID3;
+		lcmd.SECURITY2.id3 = ID4;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY2)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			DecodeRXMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd);
+		}
+		return true;
+	}
+	break;
 	case pTypeCurtain:
 		{
 			tRBUF lcmd;
