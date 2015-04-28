@@ -966,6 +966,7 @@ namespace http {
 			int mode3 = 0;
 			int mode4 = 0;
 			int mode5 = 0;
+			int mode6 = 0;
 			int port = atoi(sport.c_str());
 			if ((htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) || (htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK))
 			{
@@ -1058,7 +1059,7 @@ namespace http {
 			}
 
 			sprintf(szTmp,
-				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d,%d)",
+				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d,%d,%d)",
 				name.c_str(),
 				(senabled == "true") ? 1 : 0,
 				htype,
@@ -1066,7 +1067,7 @@ namespace http {
 				port,
 				username.c_str(),
 				password.c_str(),
-				mode1, mode2, mode3, mode4, mode5,
+				mode1, mode2, mode3, mode4, mode5, mode6,
 				iDataTimeout
 				);
 			result = m_sql.query(szTmp);
@@ -1079,7 +1080,7 @@ namespace http {
 				std::vector<std::string> sd = result[0];
 				int ID = atoi(sd[0].c_str());
 
-				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, iDataTimeout);
+				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout);
 			}
 		}
 
@@ -1199,6 +1200,7 @@ namespace http {
 			int mode3 = atoi(m_pWebEm->FindValue("Mode3").c_str());
 			int mode4 = atoi(m_pWebEm->FindValue("Mode4").c_str());
 			int mode5 = atoi(m_pWebEm->FindValue("Mode5").c_str());
+			int mode6 = atoi(m_pWebEm->FindValue("Mode6").c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
@@ -1214,7 +1216,7 @@ namespace http {
 			}
 
 			sprintf(szTmp,
-				"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, DataTimeout=%d WHERE (ID == %s)",
+				"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == %s)",
 				name.c_str(),
 				(senabled == "true") ? 1 : 0,
 				htype,
@@ -1222,7 +1224,7 @@ namespace http {
 				port,
 				username.c_str(),
 				password.c_str(),
-				mode1, mode2, mode3, mode4, mode5,
+				mode1, mode2, mode3, mode4, mode5, mode6,
 				iDataTimeout,
 				idx.c_str()
 				);
@@ -1241,7 +1243,7 @@ namespace http {
 			{
 				//re-add the device in our system
 				int ID = atoi(idx.c_str());
-				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, iDataTimeout);
+				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout);
 			}
 		}
 
@@ -4437,6 +4439,7 @@ namespace http {
 						case pTypeLighting6:
 						case pTypeLimitlessLights:
 						case pTypeSecurity1:
+						case pTypeSecurity2:
 						case pTypeEvohome:
 						case pTypeEvohomeRelay:	
 						case pTypeCurtain:
@@ -4516,6 +4519,7 @@ namespace http {
 							case pTypeLighting6:
 							case pTypeLimitlessLights:
 							case pTypeSecurity1:
+							case pTypeSecurity2:
 							case pTypeEvohome:
 							case pTypeEvohomeRelay:
 							case pTypeCurtain:
@@ -5518,6 +5522,7 @@ namespace http {
 					(dType == pTypeLighting6) ||
 					(dType == pTypeLimitlessLights) ||
 					(dType == pTypeSecurity1) ||
+					(dType == pTypeSecurity2) ||
 					(dType == pTypeEvohome) ||
 					(dType == pTypeEvohomeRelay) ||
 					(dType == pTypeCurtain) ||
@@ -6352,6 +6357,7 @@ namespace http {
 					(dType != pTypeLighting6) &&
 					(dType != pTypeLimitlessLights) &&
 					(dType != pTypeSecurity1) &&
+					(dType != pTypeSecurity2) &&
 					(dType != pTypeEvohome) &&
 					(dType != pTypeEvohomeRelay) &&
 					(dType != pTypeCurtain) &&
@@ -7798,7 +7804,7 @@ namespace http {
 
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
@@ -7811,7 +7817,7 @@ namespace http {
 
 			if (currentMode1 != newMode1)
 			{
-				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
+				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0, 0);
 				m_mainworker.RestartHardware(idx);
 			}
 
@@ -7837,7 +7843,7 @@ namespace http {
 
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
@@ -7847,6 +7853,7 @@ namespace http {
 			unsigned char Mode3 = atoi(result[0][2].c_str());
 			unsigned char Mode4 = atoi(result[0][3].c_str());
 			unsigned char Mode5 = atoi(result[0][4].c_str());
+			unsigned char Mode6 = atoi(result[0][5].c_str());
 
 			tRBUF Response;
 			Response.ICMND.msg1 = Mode1;
@@ -7854,6 +7861,7 @@ namespace http {
 			Response.ICMND.msg3 = Mode3;
 			Response.ICMND.msg4 = Mode4;
 			Response.ICMND.msg5 = Mode5;
+			Response.ICMND.msg6 = Mode6;
 
 			Response.IRESPONSE.UNDECODEDenabled = (m_pWebEm->FindValue("undecon") == "on") ? 1 : 0;
 			Response.IRESPONSE.X10enabled = (m_pWebEm->FindValue("X10") == "on") ? 1 : 0;
@@ -7879,8 +7887,9 @@ namespace http {
 			Response.IRESPONSE.RSLenabled = (m_pWebEm->FindValue("RSL") == "on") ? 1 : 0;
 			Response.IRESPONSE.SXenabled = (m_pWebEm->FindValue("ByronSX") == "on") ? 1 : 0;
 			Response.IRESPONSE.IMAGINTRONIXenabled = (m_pWebEm->FindValue("ImaginTronix") == "on") ? 1 : 0;
+			Response.IRESPONSE.KEELOQenabled = (m_pWebEm->FindValue("Keeloq") == "on") ? 1 : 0;
 
-			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.msg1, Response.ICMND.msg2, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5);
+			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.msg1, Response.ICMND.msg2, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
 
 			return (char*)m_retstr.c_str();
 		}
@@ -7904,7 +7913,7 @@ namespace http {
 
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
@@ -7916,7 +7925,7 @@ namespace http {
 
 			if (currentMode1 != newMode1)
 			{
-				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0);
+				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0, 0);
 			}
 
 			return (char*)m_retstr.c_str();
@@ -7959,7 +7968,7 @@ namespace http {
 
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
@@ -7969,7 +7978,8 @@ namespace http {
 			int Mode3 = 0;
 			int Mode4 = 0;
 			int Mode5 = 0;
-			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5);
+			int Mode6 = 0;
+			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 
 			m_mainworker.RestartHardware(idx);
 
@@ -8036,7 +8046,7 @@ namespace http {
 
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE (ID=" << idx << ")";
+			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
@@ -8045,7 +8055,7 @@ namespace http {
 			int Mode2 = atoi(result[0][1].c_str());
 			int Mode3 = atoi(result[0][2].c_str());
 			int Mode4 = atoi(result[0][3].c_str());
-			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0);
+			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0, 0);
 
 			m_mainworker.RestartHardware(idx);
 
@@ -8432,6 +8442,7 @@ namespace http {
 								(dType != pTypeLighting6) &&
 								(dType != pTypeLimitlessLights) &&
 								(dType != pTypeSecurity1) &&
+								(dType != pTypeSecurity2) &&
 								(dType != pTypeEvohome) &&
 								(dType != pTypeEvohomeRelay) &&
 								(dType != pTypeCurtain) &&
@@ -8905,6 +8916,30 @@ namespace http {
 							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 
+						sprintf(szData, "%s", lstatus.c_str());
+						root["result"][ii]["Data"] = szData;
+						root["result"][ii]["HaveTimeout"] = false;
+					}
+					else if (dType == pTypeSecurity2)
+					{
+						std::string lstatus = "";
+						int llevel = 0;
+						bool bHaveDimmer = false;
+						bool bHaveGroupCmd = false;
+						int maxDimLevel = 0;
+
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+
+						root["result"][ii]["Status"] = lstatus;
+						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
+						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
+						root["result"][ii]["SwitchType"] = "Security";
+						root["result"][ii]["SwitchTypeVal"] = switchtype; //was 0?;
+						root["result"][ii]["TypeImg"] = "security";
+						root["result"][ii]["StrParam1"] = strParam1;
+						root["result"][ii]["StrParam2"] = strParam2;
+						root["result"][ii]["Protected"] = (iProtected != 0);
 						sprintf(szData, "%s", lstatus.c_str());
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = false;
@@ -11111,7 +11146,7 @@ namespace http {
 
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, DataTimeout FROM Hardware ORDER BY ID ASC";
+			szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
 			result = m_sql.query(szQuery.str());
 			if (result.size() > 0)
 			{
@@ -11134,7 +11169,8 @@ namespace http {
 					root["result"][ii]["Mode3"] = atoi(sd[10].c_str());
 					root["result"][ii]["Mode4"] = atoi(sd[11].c_str());
 					root["result"][ii]["Mode5"] = atoi(sd[12].c_str());
-					root["result"][ii]["DataTimeout"] = atoi(sd[13].c_str());
+					root["result"][ii]["Mode6"] = atoi(sd[13].c_str());
+					root["result"][ii]["DataTimeout"] = atoi(sd[14].c_str());
 
 #ifdef WITH_OPENZWAVE
 					//Special case for openzwave (status for nodes queried)
@@ -13447,6 +13483,7 @@ namespace http {
 				(dType != pTypeLighting6) &&
 				(dType != pTypeLimitlessLights) &&
 				(dType != pTypeSecurity1) &&
+				(dType != pTypeSecurity2) &&
 				(dType != pTypeEvohome) &&
 				(dType != pTypeEvohomeRelay) &&
 				(dType != pTypeCurtain) &&

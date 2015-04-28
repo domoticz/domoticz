@@ -20,13 +20,13 @@
 //
 //Class OTGWSerial
 //
-OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5)
+OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequestedpoller=false;
-	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5);
+	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5, Mode6);
 }
 
 OTGWSerial::~OTGWSerial()

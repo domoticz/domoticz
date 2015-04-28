@@ -8,7 +8,7 @@
 class OTGWTCP: public OTGWBase, ASyncTCP
 {
 public:
-	OTGWTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5);
+	OTGWTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
 	~OTGWTCP(void);
 	bool isConnected(){ return mIsConnected; };
 	bool WriteToHardware(const char *pdata, const unsigned char length);

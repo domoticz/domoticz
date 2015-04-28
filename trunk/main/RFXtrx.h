@@ -901,6 +901,16 @@ typedef union tRBUF {
 		BYTE	ACenabled : 1;
 		BYTE	ARCenabled : 1;
 		BYTE	X10enabled : 1; //note: keep this order
+
+		//BYTE	msg6;
+		BYTE	MSG6Reserved7 : 1;
+		BYTE	MSG6Reserved6 : 1;
+		BYTE	MSG6Reserved5 : 1;
+		BYTE	MSG6Reserved4 : 1;
+		BYTE	MSG6Reserved3 : 1;
+		BYTE	MSG6Reserved2 : 1;
+		BYTE	MSG6Reserved1 : 1;
+		BYTE	KEELOQenabled : 1;
 #else
 		//BYTE	msg3;
 		BYTE	AEenabled : 1;
@@ -931,9 +941,17 @@ typedef union tRBUF {
 		BYTE	OREGONenabled : 1;
 		BYTE	ATIenabled : 1;
 		BYTE	VISONICenabled : 1;
-#endif
 
-		BYTE	msg6;
+		//BYTE	msg6;
+		BYTE	KEELOQenabled : 1;
+		BYTE	MSG6Reserved1 : 1;
+		BYTE	MSG6Reserved2 : 1;
+		BYTE	MSG6Reserved3 : 1;
+		BYTE	MSG6Reserved4 : 1;
+		BYTE	MSG6Reserved5 : 1;
+		BYTE	MSG6Reserved6 : 1;
+		BYTE	MSG6Reserved7 : 1;
+#endif
 		BYTE	msg7;
 		BYTE	msg8;
 		BYTE	msg9;

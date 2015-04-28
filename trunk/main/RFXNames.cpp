@@ -798,6 +798,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeSecurity1, sTypeSA30, "Status" },
 		{ pTypeSecurity1, sTypeDomoticzSecurity, "Status" },
 
+		{ pTypeSecurity2, sTypeSec2Classic, "Status" },
+
 		{ pTypeCamera, sTypeNinja, "Not implemented" },
 
 		{ pTypeRemote, sTypeATI, "Status" },
@@ -1568,6 +1570,15 @@ void GetLightStatus(
 			break;
 		}
 		break;
+	case pTypeSecurity2:
+		llevel = 0;
+		switch (nValue)
+		{
+		case 0:
+			lstatus = "Normal";
+			break;
+		}
+		break;
 	case pTypeRego6XXValue:
 		switch (nValue)
 		{
@@ -2282,6 +2293,10 @@ bool GetLightCommand(
 				return true;
 			}
 		}
+		break;
+	case pTypeSecurity2:
+		cmd = 0;
+		return true;
 		break;
 	case pTypeCurtain:
 		{

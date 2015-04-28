@@ -114,7 +114,7 @@ void CHardwareMonitor::Init()
 	{
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5) VALUES ('Motherboard',1, '" << HTYPE_System << "','',1,'','',0,0,0,0,0)";
+		szQuery << "INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, '" << HTYPE_System << "','',1,'','',0,0,0,0,0,0)";
 		m_sql.query(szQuery.str());
 		szQuery.clear();
 		szQuery.str("");
@@ -124,7 +124,7 @@ void CHardwareMonitor::Init()
 		{
 			std::vector<std::string> sd=result[0];
 			m_HwdID=atoi(sd[0].c_str());
-			m_mainworker.AddHardwareFromParams(m_HwdID, "Motherboard", 1, HTYPE_System, "", 1, "", "", 0, 0, 0, 0, 0, 0);
+			m_mainworker.AddHardwareFromParams(m_HwdID, "Motherboard", 1, HTYPE_System, "", 1, "", "", 0, 0, 0, 0, 0, 0, 0);
 		}
 
 		m_sql.query(szQuery.str());

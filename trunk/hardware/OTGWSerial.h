@@ -6,7 +6,7 @@
 class OTGWSerial: public AsyncSerial, public OTGWBase
 {
 public:
-	OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5);
+	OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
     ~OTGWSerial();
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
