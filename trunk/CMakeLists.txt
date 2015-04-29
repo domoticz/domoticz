@@ -234,7 +234,7 @@ hardware/Wunderground.cpp
 hardware/YouLess.cpp
 hardware/ZWaveBase.cpp
 notifications/NotificationBase.cpp
-notifications/NotificationCollection.cpp
+notifications/NotificationHelper.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationNma.cpp
 notifications/NotificationPushover.cpp
