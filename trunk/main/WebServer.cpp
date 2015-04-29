@@ -14849,28 +14849,31 @@ namespace http {
 							totalvalues++;
 						}
 
-						for (int jj = 0; jj < 7; jj++)
+						if (totalvalues>0)
 						{
-							root["result_speed"][jj]["label"] = szLegendLabels[jj];
-							
-							for (ii = 0; ii < 16; ii++)
+							for (int jj = 0; jj < 7; jj++)
 							{
-								float svalue = (100.0f / totalvalues)*wdirtabletemp[ii][jj];
-								wdirtable[jj][ii] = svalue;
-								sprintf(szTmp, "%.2f", svalue);
-								root["result_speed"][jj]["sp"][ii] = szTmp;
+								root["result_speed"][jj]["label"] = szLegendLabels[jj];
+
+								for (ii = 0; ii < 16; ii++)
+								{
+									float svalue = (100.0f / totalvalues)*wdirtabletemp[ii][jj];
+									wdirtable[jj][ii] = svalue;
+									sprintf(szTmp, "%.2f", svalue);
+									root["result_speed"][jj]["sp"][ii] = szTmp;
+								}
 							}
-						}
-						ii = 0;
-						for (idir = 0; idir < 360 + 1; idir++)
-						{
-							if (_directions[idir] != 0)
+							ii = 0;
+							for (idir = 0; idir < 360 + 1; idir++)
 							{
-								root["result"][ii]["dig"] = idir;
-								float percentage = (float(100.0 / float(totalvalues))*float(_directions[idir]));
-								sprintf(szTmp, "%.2f", percentage);
-								root["result"][ii]["div"] = szTmp;
-								ii++;
+								if (_directions[idir] != 0)
+								{
+									root["result"][ii]["dig"] = idir;
+									float percentage = (float(100.0 / float(totalvalues))*float(_directions[idir]));
+									sprintf(szTmp, "%.2f", percentage);
+									root["result"][ii]["div"] = szTmp;
+									ii++;
+								}
 							}
 						}
 					}
