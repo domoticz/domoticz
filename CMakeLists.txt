@@ -153,7 +153,6 @@ main/Camera.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
 main/Helper.cpp
-main/KxStackTrace.cpp
 main/localtime_r.cpp
 main/Logger.cpp
 main/mainworker.cpp
@@ -234,6 +233,14 @@ hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
 hardware/ZWaveBase.cpp
+notifications/NotificationBase.cpp
+notifications/NotificationCollection.cpp
+notifications/NotificationProwl.cpp
+notifications/NotificationNma.cpp
+notifications/NotificationPushover.cpp
+notifications/NotificationPushalot.cpp
+notifications/NotificationEmail.cpp
+notifications/NotificationSMS.cpp
 smtpclient/SMTPClient.cpp
 tcpserver/TCPClient.cpp
 tcpserver/TCPServer.cpp

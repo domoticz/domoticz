@@ -28,6 +28,7 @@
 #include "Helper.h"
 #include "WebServer.h"
 #include "SQLHelper.h"
+#include "../notifications/NotificationHelper.h"
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
@@ -93,6 +94,7 @@ MainWorker m_mainworker;
 CLogger _log;
 http::server::CWebServer m_webserver;
 CSQLHelper m_sql;
+CNotificationHelper m_notifications;
 std::string logfile = "";
 bool m_bDontCacheHTMLPages = true;
 bool g_bStopApplication = false;

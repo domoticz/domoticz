@@ -174,7 +174,6 @@
     <ClInclude Include="..\main\dirent_windows.h" />
     <ClInclude Include="..\main\EventSystem.h" />
     <ClInclude Include="..\main\GZipHelper.h" />
-    <ClInclude Include="..\main\KxStackTrace.h" />
     <ClInclude Include="..\main\localtime_r.h" />
     <ClInclude Include="..\hardware\P1MeterBase.h" />
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
@@ -205,6 +204,14 @@
     <ClInclude Include="..\MQTT\Thread.h" />
     <ClInclude Include="..\MQTT\Tree.h" />
     <ClInclude Include="..\MQTT\utf-8.h" />
+    <ClInclude Include="..\notifications\NotificationBase.h" />
+    <ClInclude Include="..\notifications\NotificationHelper.h" />
+    <ClInclude Include="..\notifications\NotificationEmail.h" />
+    <ClInclude Include="..\notifications\NotificationNma.h" />
+    <ClInclude Include="..\notifications\NotificationProwl.h" />
+    <ClInclude Include="..\notifications\NotificationPushalot.h" />
+    <ClInclude Include="..\notifications\NotificationPushover.h" />
+    <ClInclude Include="..\notifications\NotificationSMS.h" />
     <ClInclude Include="..\webserver\net_skeleton.h" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
@@ -313,7 +320,6 @@
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
     <ClCompile Include="..\main\DataPush.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
-    <ClCompile Include="..\main\KxStackTrace.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />
     <ClCompile Include="..\hardware\P1MeterBase.cpp" />
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
@@ -456,6 +462,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
     </ClCompile>
+    <ClCompile Include="..\notifications\NotificationBase.cpp" />
+    <ClCompile Include="..\notifications\NotificationHelper.cpp" />
+    <ClCompile Include="..\notifications\NotificationEmail.cpp" />
+    <ClCompile Include="..\notifications\NotificationNma.cpp" />
+    <ClCompile Include="..\notifications\NotificationProwl.cpp" />
+    <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
+    <ClCompile Include="..\notifications\NotificationPushover.cpp" />
+    <ClCompile Include="..\notifications\NotificationSMS.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />
     <ClCompile Include="..\tcpserver\TCPClient.cpp" />
     <ClCompile Include="..\tcpserver\TCPServer.cpp" />

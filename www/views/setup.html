@@ -306,7 +306,7 @@
 									<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="apikey" name="ProwlAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestProwlNotification()">Test</button></td>
+										<td><input type="input" id="ProwlAPI" name="ProwlAPI" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('prowl')">Test</button></td>
 									</tr>
 									</table>
 									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
@@ -317,7 +317,7 @@
 									<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="apikey" name="NMAAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNMANotification()">Test</button></td>
+										<td><input type="input" id="NMAAPI" name="NMAAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('nma')">Test</button></td>
 									</tr>
 									</table>
 									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.notifymyandroid.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
@@ -329,12 +329,12 @@
 									<h2><span data-i18n="Pushover (Android/iOs)"></span>:</h2>
 									<table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:40px"><label for="pouserid"><span data-i18n="User ID"></span>: </label></td>
-										<td><input type="input" id="pouserid" name="PushoverUserID" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
+										<td align="right" style="width:40px"><label for="PushoverUser"><span data-i18n="User ID"></span>: </label></td>
+										<td><input type="input" id="PushoverUser" name="PushoverUser" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
 									</tr>
 									<tr>
-										<td align="right" style="width:80px"><label for="poapikey"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="apikey" name="PushoverAPIKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestPushoverNotification()">Test</button></td>
+										<td align="right" style="width:80px"><label for="PushoverAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="PushoverAPI" name="PushoverAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushover')">Test</button></td>
 									</tr>
 									</table>
 									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span data-i18n="Here"></span></a><br>
@@ -344,11 +344,24 @@
 									<h2><span data-i18n="Pushalot (Windows/Windows Phone)"></span>:</h2>
 									<table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="palapikey"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="palapikey" name="PushALotAPIKey" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestPushAlotNotification()">Test</button></td>
+										<td align="right" style="width:80px"><label for="PushALotAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="PushALotAPI" name="PushALotAPI" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushalot')">Test</button></td>
 									</tr>
 									</table>
 									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="SMS">SMS</span>:</h2>
+									<table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="SMSApiKey"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="SMSApiKey" name="SMSApiKey" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('chimitsms')">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.chimit.nl/domoticz.php" target="_blank"><span data-i18n="Here"></span></a><br>
 									<br>
 								</div>
 							</div>
@@ -460,15 +473,15 @@
 							</tr>
 							<tr>
 								<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
-								<td><input type="password" id="EmailPassword" name="EmailPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestEmailNotification()">Test</button></td>
+								<td><input type="password" id="EmailPassword" name="EmailPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('email')">Test</button></td>
 							</tr>
 							<tr>
 								<td></td>
-								<td><input type="checkbox" id="useemailinnotificationsalerts" name="useemailinnotificationsalerts"/> <span data-i18n="Send Email Notification Alerts"></span></td>
+								<td><input type="checkbox" id="UseEmailInNotifications" name="UseEmailInNotifications"/> <span data-i18n="Send Email Notification Alerts"></span></td>
 							</tr>
 							<tr>
 								<td></td>
-								<td><input type="checkbox" id="checkEmailAsAttachment" name="EmailAsAttachment"/> <span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></td>
+								<td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"/> <span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></td>
 							</tr>
 							</table>
 						</section>

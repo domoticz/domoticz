@@ -10,6 +10,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "localtime_r.h"
 #include "SQLHelper.h"
+#include "../notifications/NotificationHelper.h"
 //#include <codecvt>
 //#include <locale>
 
@@ -2433,7 +2434,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 
 void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority, const std::string &Sound)
 {
-	m_sql.SendNotificationEx(Subject, Body, Priority, Sound);
+	m_notifications.SendMessageEx(NOTIFYALL, Subject, Body, Priority, Sound, true);
 }
 
 void CEventSystem::OpenURL(const std::string &URL)

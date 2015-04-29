@@ -12,11 +12,6 @@
 #include "../tcpserver/TCPServer.h"
 #include "DataPush.h"
 
-#if !defined WIN32
-	#include "KxStackTrace.h"
-#endif
-
-
 enum eVerboseLevel
 {
 	EVBL_None,
@@ -124,9 +119,6 @@ private:
 	void HandleAutomaticBackups();
 	unsigned long long PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware);
 	std::string m_LastDeviceName;
-#if !defined WIN32
-	KxStackTrace  mStackTrace;
-#endif
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
 

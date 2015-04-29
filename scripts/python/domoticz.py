@@ -92,9 +92,16 @@ class Device(object):
 		self.s_value = s_value
 		self.last_update_string = last_update
 		# from http://stackoverflow.com/questions/127803/how-to-parse-iso-formatted-date-in-python
-		self.last_update = datetime.datetime(*map(int, re.split('[^\d]', self.last_update_string)[:]))
-		if str(self.last_update_string) != str(self.last_update):
-			log("Error paring date:", self.last_update_string, " parsed as",  str(self.last_update))
+		if self.last_update_string:
+			# from http://stackoverflow.com/questions/127803/how-to-parse-iso-formatted-date-in-python
+			try:
+				self.last_update = datetime.datetime(*map(int, re.split('[^\d]', self.last_update_string)[:]))
+				if str(self.last_update_string) != str(self.last_update):
+					log("Error parsing date:", self.last_update_string, " parsed as",  str(self.last_update))
+			except:
+				log("Exception while parsing date:", self.last_update_string)
+		else:
+			self.last_update = None
 
 	def last_update_was_ago(self, **kwargs):
 		"""Arguments can be: days[, seconds[, microseconds[, milliseconds[, minutes[, hours[, weeks]"""
@@ -123,7 +130,6 @@ class Device(object):
 			command(self.name, "%s AFTER %d" % (action, after), __file__)
 		else:
 			command(self.name, action, __file__)
-
 
 
 

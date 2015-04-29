@@ -63,6 +63,8 @@
 #include "../hardware/ETH8020.h"
 #include "../hardware/RFLink.h"
 
+// load notifications configuration
+#include "../notifications/NotificationHelper.h"
 
 #ifdef WITH_GPIO
 	#include "../hardware/Gpio.h"
@@ -734,6 +736,8 @@ bool MainWorker::Start()
 	if (m_bStartHardware==false)
 		m_bStartHardware=true;
 #endif
+	// load notifications configuration
+	m_notifications.LoadConfig();
 	if (!StartThread())
 		return false;
 	return true;

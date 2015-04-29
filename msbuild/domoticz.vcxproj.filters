@@ -198,8 +198,8 @@
     <Filter Include="Devices\RFLink">
       <UniqueIdentifier>{90b48d9f-626f-4961-bf0c-c11623888086}</UniqueIdentifier>
     </Filter>
-    <Filter Include="StackTrace">
-      <UniqueIdentifier>{f6879fcd-67c2-4fda-82a1-fa8420022f63}</UniqueIdentifier>
+    <Filter Include="Notifications">
+      <UniqueIdentifier>{9af22faa-3a82-4f76-83cf-db0aacc27e8a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -627,8 +627,29 @@
     <ClInclude Include="..\hardware\RFLink.h">
       <Filter>Devices\RFLink</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\KxStackTrace.h">
-      <Filter>StackTrace</Filter>
+    <ClInclude Include="..\notifications\NotificationBase.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationEmail.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationNma.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationProwl.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationPushalot.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationPushover.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationSMS.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationHelper.h">
+      <Filter>Notifications</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1001,8 +1022,29 @@
     <ClCompile Include="..\hardware\RFLink.cpp">
       <Filter>Devices\RFLink</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\KxStackTrace.cpp">
-      <Filter>StackTrace</Filter>
+    <ClCompile Include="..\notifications\NotificationBase.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationEmail.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationNma.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationProwl.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationPushalot.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationPushover.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationSMS.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationHelper.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
