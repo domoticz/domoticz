@@ -14849,7 +14849,6 @@ namespace http {
 							totalvalues++;
 						}
 
-						totalvalues = 0;
 						for (int jj = 0; jj < 7; jj++)
 						{
 							root["result_speed"][jj]["label"] = szLegendLabels[jj];
