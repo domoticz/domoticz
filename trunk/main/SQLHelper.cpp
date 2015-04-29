@@ -16,6 +16,7 @@
 #include "unzip.h"
 #include "mainstructs.h"
 #include <boost/lexical_cast.hpp>
+#include "../notifications/NotificationHelper.h"
 
 #ifndef WIN32
 	#include <sys/stat.h>
@@ -2631,309 +2632,6 @@ void CSQLHelper::GetAddjustment2(const int HardwareID, const char* ID, const uns
 	}
 }
 
-bool CSQLHelper::SendNotification(const std::string &EventID, const std::string &Message, const int Priority)
-{
-	int nValue;
-	std::string sValue;
-	std::string sResult;
-
-#if defined WIN32
-	//Make a system tray message
-	ShowSystemTrayNotification(Message.c_str());
-#endif
-	//check if prowl enabled
-	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
-	{
-		sValue=stdstring_trim(sValue);
-		if (sValue!="")
-		{
-			//send message to Prowl
-			std::stringstream sPostData;
-			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << Message << "&description=" << Message << "&priority=" << Priority;
-			std::vector<std::string> ExtraHeaders;
-			if (!HTTPClient::POST("https://api.prowlapp.com/publicapi/add",sPostData.str(),ExtraHeaders,sResult))
-			{
-				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
-			}
-			else
-			{
-				_log.Log(LOG_STATUS,"Notification sent (Prowl)");
-			}
-		}
-	}
-	//check if NMA enabled
-	if (GetPreferencesVar("NMAAPI",nValue,sValue))
-	{
-		sValue=stdstring_trim(sValue);
-		if (sValue!="")
-		{
-			//send message to NMA
-			std::stringstream sPostData;
-			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << Message << "&description=" << Message << "&priority=" << Priority;
-			std::vector<std::string> ExtraHeaders;
-			if (!HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult))
-			{
-				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
-			}
-			else
-			{
-				_log.Log(LOG_STATUS,"Notification sent (NMA)");
-			}
-		}
-	}
-
-	//Check if push over is enabled
-	if (GetPreferencesVar("PushoverAPI",nValue,sValue))
-	{
-		if (sValue!="")
-		{
-			std::string poApiKey=stdstring_trim(sValue);
-			if (GetPreferencesVar("PushoverUser",nValue,sValue))
-			{
-				if (sValue!="")
-				{
-					char sPostData[300];
-					int poPriority = Priority;
-					sprintf(sPostData,"token=%s&user=%s&priority=%d&title=%s&message=%s",poApiKey.c_str(),sValue.c_str(),poPriority,Message.c_str(),Message.c_str());
-					if (poPriority == 2) {
-						sprintf(sPostData,"%s&retry=300&expire=3600",sPostData); // retry every 5 minutes, one hour long
-					}
-					std::vector<std::string> ExtraHeaders;
-					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,ExtraHeaders,sResult))
-					{
-						_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
-					}
-					else
-					{
-						_log.Log(LOG_STATUS,"Notification sent (Pushover)");
-					}
-				}
-			}
-		}
-	}
-
-	//check if PushALot enabled
-	if (GetPreferencesVar("PushALotAPI", nValue, sValue))
-	{
-		sValue = stdstring_trim(sValue);
-		if (sValue != "")
-		{
-			//send message to PushAlot
-			std::stringstream sPostData;
-			std::string IsImportant;
-			std::string IsSilent;
-
-			// map priority to PushAlot 'IsSilent' & 'IsImportant'
-			switch (Priority) {
-			case -2: // Fall through to -1
-			case -1:
-				IsImportant = "False";
-				IsSilent = "True";
-				break;
-			case 2: // Fall through to 1
-			case 1:
-				IsImportant = "True";
-				IsSilent = "False";
-				break;
-			default:
-				IsImportant = "False";
-				IsSilent = "False";
-				break;
-			}
-
-			sPostData << "AuthorizationToken=" << sValue << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Body=" << CURLEncode::URLEncode(Message);
-			std::vector<std::string> ExtraHeaders;
-			if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
-			{
-				_log.Log(LOG_ERROR, "Error sending PushALot Notification!");
-			}
-			else
-			{
-				_log.Log(LOG_STATUS, "Notification sent (PushALot)");
-			}
-		}
-	}
-
-	//check if Email enabled
-	if (GetPreferencesVar("UseEmailInNotifications", nValue))
-	{
-		if (nValue==1)
-		{
-			if (GetPreferencesVar("EmailServer",nValue,sValue))
-			{
-				if (sValue!="")
-				{
-					std::string szBody;
-					szBody=
-						"<html>\n"
-						"<body>\n"
-						"<b>" + CURLEncode::URLDecode(Message) + "</b>\n"
-						"</body>\n"
-						"</html>\n";
-
-					AddTaskItem(_tTaskItem::SendEmail(1,CURLEncode::URLDecode(Message),szBody));
-				}
-			}
-		}
-	}
-	return true;
-}
-
-bool CSQLHelper::SendNotificationEx(const std::string &Subject, const std::string &Body, const int Priority,const std::string &Sound)
-{
-	int nValue;
-	std::string sValue;
-	std::string sResult;
-
-#if defined WIN32
-	//Make a system tray message
-	ShowSystemTrayNotification(Subject.c_str());
-#endif
-
-	std::string notimessage=Body;
-	notimessage=stdreplace(notimessage,"<br>"," ");
-
-	//check if prowl enabled
-	if (GetPreferencesVar("ProwlAPI",nValue,sValue))
-	{
-		sValue=stdstring_trim(sValue);
-		if (sValue!="")
-		{
-			//send message to Prowl
-			std::stringstream sPostData;
-			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << CURLEncode::URLEncode(Subject) << "&description=" << CURLEncode::URLEncode(notimessage) << "&priority=" << Priority;
-			std::vector<std::string> ExtraHeaders;
-			if (!HTTPClient::POST("https://api.prowlapp.com/publicapi/add",sPostData.str(),ExtraHeaders,sResult))
-			{
-				_log.Log(LOG_ERROR,"Error sending Prowl Notification!");
-			}
-			else
-			{
-				_log.Log(LOG_STATUS,"Notification sent (Prowl)");
-			}
-		}
-	}
-	//check if NMA enabled
-	if (GetPreferencesVar("NMAAPI",nValue,sValue))
-	{
-		sValue=stdstring_trim(sValue);
-		if (sValue!="")
-		{
-			//send message to NMA
-			std::stringstream sPostData;
-			sPostData << "apikey=" << sValue << "&application=Domoticz&event=" << CURLEncode::URLEncode(Subject) << "&description=" << CURLEncode::URLEncode(notimessage) << "&priority=" << Priority;
-			std::vector<std::string> ExtraHeaders;
-			if (!HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult))
-			{
-				_log.Log(LOG_ERROR,"Error sending NMA Notification!");
-			}
-			else
-			{
-				_log.Log(LOG_STATUS,"Notification sent (NMA)");
-			}
-		}
-	}
-	if (GetPreferencesVar("PushoverAPI",nValue,sValue))
-	{
-		if (sValue!="")
-		{
-			std::string poApiKey=stdstring_trim(sValue);
-			if (GetPreferencesVar("PushoverUser",nValue,sValue))
-			{
-				if (sValue!="")
-				{
-					char sPostData[300];
-					int poPriority = Priority;
-					sprintf(sPostData, "token=%s&user=%s&priority=%d&title=%s&message=%s", poApiKey.c_str(), sValue.c_str(), poPriority, CURLEncode::URLEncode(Subject).c_str(), CURLEncode::URLEncode(notimessage).c_str());
-					std::string poSound = Sound;
-					if (poSound!="") {
-						sprintf(sPostData,"%s&sound=%s",sPostData,poSound.c_str() ) ;
-					}
-					if (poPriority == 2) {
-						sprintf(sPostData,"%s&retry=300&expire=3600",sPostData); // retry every 5 minutes, one hour long
-					}
-					std::vector<std::string> ExtraHeaders;
-					if (!HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData,ExtraHeaders,sResult))
-					{
-						_log.Log(LOG_ERROR,"Error sending Pushover Notification!");
-					}
-					else
-					{
-						_log.Log(LOG_STATUS,"Notification sent (Pushover)");
-					}
-				}
-			}
-		}
-	}
-
-	//check if PushALot enabled
-	if (GetPreferencesVar("PushALotAPI", nValue, sValue))
-	{
-		sValue = stdstring_trim(sValue);
-		if (sValue != "")
-		{
-			//send message to PushAlot
-			std::stringstream sPostData;
-			std::string IsImportant;
-			std::string IsSilent;
-
-			// map priority to PushAlot 'IsSilent' & 'IsImportant'
-			switch (Priority) {
-				case -2: // Fall through to -1
-				case -1:
-					IsImportant = "False";
-					IsSilent = "True";
-					break;
-				case 2: // Fall through to 1
-				case 1:
-					IsImportant = "True";
-					IsSilent = "False";
-					break;
-				default:
-					IsImportant = "False";
-					IsSilent = "False";
-					break;
-			}
-
-			sPostData << "AuthorizationToken=" << sValue << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Title=" << CURLEncode::URLEncode(Subject) << "&Body=" << CURLEncode::URLEncode(notimessage);
-
-			std::vector<std::string> ExtraHeaders;
-			if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
-			{
-				_log.Log(LOG_ERROR, "Error sending PushALot Notification!");
-			}
-			else
-			{
-				_log.Log(LOG_STATUS, "Notification sent (PushALot)");
-			}
-		}
-	}
-
-	//check if Email enabled
-	if (GetPreferencesVar("UseEmailInNotifications", nValue))
-	{
-		if (nValue==1)
-		{
-			if (GetPreferencesVar("EmailServer",nValue,sValue))
-			{
-				if (sValue!="")
-				{
-					std::string szBody;
-					szBody=
-						"<html>\n"
-						"<body>\n"
-						"<b>" + CURLEncode::URLDecode(Body) + "</b>\n"
-						"</body>\n"
-						"</html>\n";
-
-					AddTaskItem(_tTaskItem::SendEmail(1,CURLEncode::URLDecode(Subject),szBody));
-				}
-			}
-		}
-	}
-	return true;
-}
-
 void CSQLHelper::UpdatePreferencesVar(const std::string &Key, const std::string &sValue)
 {
 	UpdatePreferencesVar(Key, 0, sValue);
@@ -3185,7 +2883,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
+				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3259,7 +2957,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
+				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3394,7 +3092,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
+				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3500,7 +3198,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
+				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3601,7 +3299,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 			}
 			if (bSendNotification)
 			{
-				SendNotification("", CURLEncode::URLEncode(msg), itt->Priority);
+				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -6662,7 +6360,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		if (bDoSend)
 		{
 			sprintf(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
-			SendNotification("", CURLEncode::URLEncode(szTmp), 1);
+			m_notifications.SendMessageEx(NOTIFYALL, std::string(""), szTmp, 1, std::string(""), true);
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
 	}

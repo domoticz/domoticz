@@ -46,6 +46,7 @@
 #include "../msbuild/WindowsHelper.h"
 #include "dirent_windows.h"
 #endif
+#include "../notifications/NotificationHelper.h"
 
 #include "mainstructs.h"
 
@@ -3393,8 +3394,9 @@ namespace http {
 				)
 				return;
 			//Add to queue
-			m_sql.SendNotificationEx(subject, body, 0, "");
-			root["status"] = "OK";
+			if (m_notifications.SendMessage(NOTIFYALL, subject, body,false)) {
+				root["status"] = "OK";
+			}
 			root["title"] = "SendNotification";
 		}
 
@@ -4702,90 +4704,15 @@ namespace http {
 				result = m_sql.query(szTmp);
 				m_mainworker.m_cameras.ReloadCameras();
 			}
-			else if (cparam == "testpushover")
+			else if (cparam == "testnotification")
 			{
-				std::string poapi = CURLEncode::URLDecode(m_pWebEm->FindValue("poapi"));
-				std::string pouser = CURLEncode::URLDecode(m_pWebEm->FindValue("pouser"));
-				if ((poapi == "") || (pouser == ""))
-					return;
+				std::string notification_Title = "Domoticz test";
+				std::string notification_Message = "Domoticz test message!";
+				std::string subsystem = m_pWebEm->FindValue("subsystem");
 
-				root["title"] = "Test Pushover";
-				char sPostData[300];
-				std::string sResult;
-				std::string poTitle = "Domoticz test";
-				std::string poMessage = "Domoticz test message!";
-				sprintf(sPostData, "token=%s&user=%s&priority=0&title=%s&message=%s", poapi.c_str(), pouser.c_str(), poTitle.c_str(), poMessage.c_str());
-				std::vector<std::string> ExtraHeaders;
-				if (!HTTPClient::POST("https://api.pushover.net/1/messages.json", sPostData, ExtraHeaders, sResult))
-				{
-					_log.Log(LOG_ERROR, "Error sending Pushover Notification!");
-				}
-				else
-				{
-					_log.Log(LOG_STATUS, "Notification sent (Pushover)");
+				m_notifications.ConfigFromGetvars(m_pWebEm, false);
+				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message,false)) {
 					root["status"] = "OK";
-				}
-			}
-			else if (cparam == "testpushalot")
-			{
-				std::string palapi = CURLEncode::URLDecode(m_pWebEm->FindValue("palapi"));
-				if (palapi == "")
-					return;
-
-				root["title"] = "Test PushALot";
-				std::stringstream sPostData;
-				std::string sResult;
-				std::string palTitle = "Domoticz test";
-				std::string palMessage = "Domoticz test message!";
-				std::vector<std::string> ExtraHeaders;
-				sPostData << "AuthorizationToken=" << palapi << "&IsImportant=False&IsSilent=False&Source=Domoticz&Title=" << CURLEncode::URLEncode(palTitle) << "&Body=" << CURLEncode::URLEncode(palMessage);
-
-				if (!HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult))
-				{
-					_log.Log(LOG_ERROR, "Error sending PushALot Notification!");
-				}
-				else
-				{
-					_log.Log(LOG_STATUS, "Notification sent (PushALot)");
-					root["status"] = "OK";
-				}
-			}
-			else if (cparam == "testemail")
-			{
-				std::string EmailFrom = m_pWebEm->FindValue("EmailFrom");
-				std::string EmailTo = m_pWebEm->FindValue("EmailTo");
-				std::string EmailServer = m_pWebEm->FindValue("EmailServer");
-				std::string EmailUsername = m_pWebEm->FindValue("EmailUsername");
-				std::string EmailPassword = m_pWebEm->FindValue("EmailPassword");
-				std::string sEmailPort = m_pWebEm->FindValue("EmailPort");
-
-				if (
-					(EmailFrom == "") ||
-					(EmailTo == "") ||
-					(EmailServer == "") ||
-					(sEmailPort == "")
-					)
-					return;
-				int EmailPort = atoi(sEmailPort.c_str());
-				std::string szBody;
-				szBody =
-					"<html>\n"
-					"<body>\n"
-					"<b>If you received this, then your email settings worked!</b>\n"
-					"</body>\n"
-					"</html>\n";
-
-				SMTPClient sclient;
-				sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-				sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
-				sclient.SetCredentials(CURLEncode::URLDecode(EmailUsername), CURLEncode::URLDecode(EmailPassword));
-				sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
-				sclient.SetSubject(CURLEncode::URLDecode("Test email message from Domoticz!"));
-				sclient.SetHTMLBody(szBody);
-				bool bRet = sclient.SendEmail();
-				if (bRet == true) {
-					root["status"] = "OK";
-					root["title"] = "TestEmail";
 				}
 			}
 			else if (cparam == "testswitch")
@@ -7488,16 +7415,7 @@ namespace http {
 				m_sql.UpdatePreferencesVar("Location", LatLong.c_str());
 				m_mainworker.GetSunSettings();
 			}
-			std::string ProwlAPI = m_pWebEm->FindValue("ProwlAPIKey");
-			m_sql.UpdatePreferencesVar("ProwlAPI", CURLEncode::URLDecode(ProwlAPI).c_str());
-			std::string NMAAPI = m_pWebEm->FindValue("NMAAPIKey");
-			m_sql.UpdatePreferencesVar("NMAAPI", CURLEncode::URLDecode(NMAAPI).c_str());
-			std::string PushoverAPI = m_pWebEm->FindValue("PushoverAPIKey");
-			m_sql.UpdatePreferencesVar("PushoverAPI", CURLEncode::URLDecode(PushoverAPI).c_str());
-			std::string PushoverUser = m_pWebEm->FindValue("PushoverUserID");
-			m_sql.UpdatePreferencesVar("PushoverUser", CURLEncode::URLDecode(PushoverUser).c_str());
-			std::string PushALotAPI = m_pWebEm->FindValue("PushALotAPIKey");
-			m_sql.UpdatePreferencesVar("PushALotAPI", CURLEncode::URLDecode(PushALotAPI).c_str());
+			m_notifications.ConfigFromGetvars(m_pWebEm, true);
 			std::string DashboardType = m_pWebEm->FindValue("DashboardType");
 			m_sql.UpdatePreferencesVar("DashboardType", atoi(DashboardType.c_str()));
 			std::string MobileType = m_pWebEm->FindValue("MobileType");
@@ -7617,15 +7535,6 @@ namespace http {
 			m_sql.UpdatePreferencesVar("CostGas", int(CostGas*10000.0f));
 			m_sql.UpdatePreferencesVar("CostWater", int(CostWater*10000.0f));
 
-			m_sql.UpdatePreferencesVar("EmailFrom", CURLEncode::URLDecode(m_pWebEm->FindValue("EmailFrom")).c_str());
-			m_sql.UpdatePreferencesVar("EmailTo", CURLEncode::URLDecode(m_pWebEm->FindValue("EmailTo")).c_str());
-			m_sql.UpdatePreferencesVar("EmailServer", m_pWebEm->FindValue("EmailServer").c_str());
-			m_sql.UpdatePreferencesVar("EmailPort", atoi(m_pWebEm->FindValue("EmailPort").c_str()));
-			std::string suseemailinnotificationsalerts = m_pWebEm->FindValue("useemailinnotificationsalerts");
-			m_sql.UpdatePreferencesVar("UseEmailInNotifications", (suseemailinnotificationsalerts == "on" ? 1 : 0));
-			std::string sEmailAsAttachment = m_pWebEm->FindValue("EmailAsAttachment");
-			m_sql.UpdatePreferencesVar("EmailAsAttachment", (sEmailAsAttachment == "on" ? 1 : 0));
-
 			int rnOldvalue = 0;
 			int rnvalue = 0;
 
@@ -7639,14 +7548,6 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
 			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
-
-			std::string EmailUsername = CURLEncode::URLDecode(m_pWebEm->FindValue("EmailUsername"));
-			std::string EmailPassword = CURLEncode::URLDecode(m_pWebEm->FindValue("EmailPassword"));
-			EmailUsername = base64_encode((const unsigned char*)EmailUsername.c_str(), EmailUsername.size());
-			EmailPassword = base64_encode((const unsigned char*)EmailPassword.c_str(), EmailPassword.size());
-
-			m_sql.UpdatePreferencesVar("EmailUsername", EmailUsername.c_str());
-			m_sql.UpdatePreferencesVar("EmailPassword", EmailPassword.c_str());
 
 			std::string EnableTabFloorplans = m_pWebEm->FindValue("EnableTabFloorplans");
 			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
@@ -13165,25 +13066,14 @@ namespace http {
 						root["Location"]["Longitude"] = strarray[1];
 					}
 				}
-				else if (Key == "ProwlAPI")
-				{
-					root["ProwlAPI"] = sValue;
-				}
-				else if (Key == "NMAAPI")
-				{
-					root["NMAAPI"] = sValue;
-				}
-				else if (Key == "PushoverAPI")
-				{
-					root["PushoverAPI"] = sValue;
-				}
-				else if (Key == "PushoverUser")
-				{
-					root["PushoverUser"] = sValue;
-				}
-				else if (Key == "PushALotAPI")
-				{
-					root["PushALotAPI"] = sValue;
+				/* RK: notification settings */
+				if (m_notifications.IsInConfig(Key)) {
+					if (sValue == "" && nValue > 0) {
+						root[Key] = nValue;
+					}
+					else {
+						root[Key] = sValue;
+					}
 				}
 				else if (Key == "DashboardType")
 				{
@@ -13276,38 +13166,6 @@ namespace http {
 				{
 					sprintf(szTmp, "%.4f", (float)(nValue) / 10000.0f);
 					root["CostWater"] = szTmp;
-				}
-				else if (Key == "EmailFrom")
-				{
-					root["EmailFrom"] = sValue;
-				}
-				else if (Key == "EmailTo")
-				{
-					root["EmailTo"] = sValue;
-				}
-				else if (Key == "EmailServer")
-				{
-					root["EmailServer"] = sValue;
-				}
-				else if (Key == "EmailPort")
-				{
-					root["EmailPort"] = nValue;
-				}
-				else if (Key == "EmailUsername")
-				{
-					root["EmailUsername"] = base64_decode(sValue);
-				}
-				else if (Key == "EmailPassword")
-				{
-					root["EmailPassword"] = sValue;
-				}
-				else if (Key == "UseEmailInNotifications")
-				{
-					root["UseEmailInNotifications"] = nValue;
-				}
-				else if (Key == "EmailAsAttachment")
-				{
-					root["EmailAsAttachment"] = nValue;
 				}
 				else if (Key == "ActiveTimerPlan")
 				{

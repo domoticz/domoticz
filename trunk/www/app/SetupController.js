@@ -27,76 +27,85 @@ define(['app'], function (app) {
 			});
 		}
 
-		$scope.TestProwlNotification = function()
+		$scope.TestNotification = function(subsystem)
 		{
-		  var ProwlAPI=$("#prowltable #apikey").val();
-		  if (ProwlAPI=="") {
-			ShowNotify($.t('Please enter the API key!...'), 3500, true);
-			return;
-		  }
-		  var url="http://api.prowlapp.com/publicapi/add?apikey=" + ProwlAPI + "&priority=0&application=Domoticz&event=Test Message&description=This is a test message!";
-		  $.get(url, function(data) {
-		  });  
-		  ShowNotify($.t('Notification send!<br>Should arrive at your device soon...'), 3000);
-		}
-
-		$scope.TestNMANotification= function()
-		{
-		  var NMAAPI=$("#nmatable #apikey").val();
-		  if (NMAAPI=="") {
-			ShowNotify($.t('Please enter the API key!...'), 3500, true);
-			return;
-		  }
-		  var url="http://www.notifymyandroid.com/publicapi/notify?apikey=" + NMAAPI + "&priority=0&application=Domoticz&event=Test Message&description=This is a test message!";
-		  $.get(url, function(data) {
-		  });  
-		  ShowNotify($.t('Notification send!<br>Should arrive at your device soon...'), 3000);
-		}
-
-		$scope.TestPushoverNotification= function()
-		{
-		  var POAPI=$("#pushovertable #apikey").val();
-		  if (POAPI=="") {
-			ShowNotify($.t('Please enter the API key!...'), 3500, true);
-			return;
-		  }
-		  var POUSERID=$("#pushovertable #pouserid").val();
-		  if (POUSERID=="") {
-			ShowNotify($.t('Please enter the user id!...'), 3500, true);
-			return;
-		  }
-			$.ajax({
-				url: "json.htm?type=command&param=testpushover&poapi="+POAPI+"&pouser="+POUSERID,
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						HideNotify();
-						ShowNotify($.t('Problem sending notification, please check credentials!'), 3000, true);
-						return;
-					}
-					else {
-						HideNotify();
-						ShowNotify($.t('Notification send!<br>Should arrive at your device soon...'), 3000);
-					}
-				},
-				error: function(){
-					HideNotify();
-					ShowNotify($.t('Problem sending notification, please check credentials!'), 3000, true);
+			var extraparams = "";
+			switch (subsystem) {
+			case "chimitsms":
+				var SMSAPI=$("#smstable #SMSApiKey").val();
+				if (SMSAPI=="") {
+					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+					return;
 				}
-			});
-		  
-		}
-
-		$scope.TestPushAlotNotification = function()
-		{
-		  var PushAlotAPI=$("#pushalottable #palapikey").val();
-		  if (PushAlotAPI=="") {
-			ShowNotify($.t('Please enter the API key!...'), 3500, true);
-			return;
-		  }
+				extraparams = "SMSApiKey=" + SMSAPI;
+				break;
+			case "prowl":
+				var ProwlAPI=$("#prowltable #apikey").val();
+				if (ProwlAPI=="") {
+					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+					return;
+				}
+				extraparams = "ProwlAPI=" + ProwlAPI;
+				break;
+			case "nma":
+				var NMAAPI=$("#nmatable #apikey").val();
+				if (NMAAPI=="") {
+					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+					return;
+				}
+				extraparams = "NMAAPI=" + NMAAPI;
+				break;
+			case "pushover":
+				var POAPI=$("#pushovertable #apikey").val();
+				if (POAPI=="") {
+					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+					return;
+				}
+				var POUSERID=$("#pushovertable #pouserid").val();
+				if (POUSERID=="") {
+					ShowNotify($.t('Please enter the user id!...'), 3500, true);
+					return;
+				}
+				extraparams = "POAPI=" + POAPI + "&POUSERID=" + POUSERID;
+				break;
+			case "pushalot":
+				var PushAlotAPI=$("#pushalottable #palapikey").val();
+				if (PushAlotAPI=="") {
+					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+					return;
+				}
+				extraparams = "PushAlotAPI=" + PushAlotAPI;
+				break;
+			case "email":
+				var EmailServer=$("#emailtable #EmailServer").val();
+				if (EmailServer=="") {
+					ShowNotify($.t('Invalid Email Settings...'), 2000, true);
+					return;
+				}
+				var EmailPort=$("#emailtable #EmailPort").val();
+				if (EmailPort=="") {
+					ShowNotify($.t('Invalid Email Settings...'), 2000, true);
+					return;
+				}
+				var EmailFrom=$("#emailtable #EmailFrom").val();
+				var EmailTo=$("#emailtable #EmailTo").val();
+				var EmailUsername=$("#emailtable #EmailUsername").val();
+				var EmailPassword=$("#emailtable #EmailPassword").val();
+				if ((EmailFrom=="")||(EmailTo=="")) {
+					ShowNotify($.t('Invalid Email From/To Settings...'), 2000, true);
+					return;
+				}
+				if ((EmailUsername!="")&&(EmailPassword=="")) {
+					ShowNotify($.t('Please enter an Email Password...'), 2000, true);
+					return;
+				}
+				extraparams = "EmailServer=" + EmailServer + "&EmailPort=" + EmailPort + "&EmailFrom=" + EmailFrom + "&EmailTo=" + EmailTo + "&EmailUsername=" + EmailUsername + "&EmailPassword=" + EmailPassword;
+				break;
+			default:
+				return;
+			}
 			$.ajax({
-				url: "json.htm?type=command&param=testpushalot&palapi="+PushAlotAPI,
+				url: "json.htm?type=command&param=testnotification&subsystem=" + subsystem + "&" + extraparams,
 				async: false,
 				dataType: 'json',
 				success: function(data) {
@@ -113,58 +122,6 @@ define(['app'], function (app) {
 				error: function(){
 					HideNotify();
 					ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
-				}
-			});
-		}
-
-		$scope.TestEmailNotification = function()
-		{
-			var EmailServer=$("#emailtable #EmailServer").val();
-			if (EmailServer=="") {
-				ShowNotify($.t('Invalid Email Settings...'), 2000, true);
-				return;
-			}
-			var EmailPort=$("#emailtable #EmailPort").val();
-			if (EmailPort=="") {
-				ShowNotify($.t('Invalid Email Settings...'), 2000, true);
-				return;
-			}
-			var EmailFrom=$("#emailtable #EmailFrom").val();
-			var EmailTo=$("#emailtable #EmailTo").val();
-			var EmailUsername=$("#emailtable #EmailUsername").val();
-			var EmailPassword=$("#emailtable #EmailPassword").val();
-			if ((EmailFrom=="")||(EmailTo=="")) {
-				ShowNotify($.t('Invalid Email From/To Settings...'), 2000, true);
-				return;
-			}
-			if ((EmailUsername!="")&&(EmailPassword=="")) {
-				ShowNotify($.t('Please enter an Email Password...'), 2000, true);
-				return;
-			}
-			$.ajax({
-				url: "json.htm?type=command&param=testemail"+
-					"&EmailFrom="+EmailFrom+
-					"&EmailTo="+EmailTo+
-					"&EmailServer="+EmailServer+
-					"&EmailPort="+EmailPort+
-					"&EmailUsername="+EmailUsername+
-					"&EmailPassword="+EmailPassword, 
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						HideNotify();
-						ShowNotify($.t('Problem sending Email, please check credentials!'), 2500, true);
-						return;
-					}
-					else {
-						HideNotify();
-						ShowNotify($.t('An Email has been delivered<br>Please check your inbox!'), 2500);
-					}
-				},
-				error: function(){
-					HideNotify();
-					ShowNotify($.t('Problem sending Email, please check credentials!'), 2500, true);
 				}
 			});
 		}
@@ -222,19 +179,22 @@ define(['app'], function (app) {
 				$("#locationtable #Longitude").val(data.Location.Longitude);
 			  }
 			  if (typeof data.ProwlAPI != 'undefined') {
-				$("#prowltable #apikey").val(data.ProwlAPI);
+				$("#prowltable #ProwlAPI").val(data.ProwlAPI);
 			  }
 			  if (typeof data.NMAAPI != 'undefined') {
-				$("#nmatable #apikey").val(data.NMAAPI);
+				$("#nmatable #NMAAPI").val(data.NMAAPI);
 			  }
 			  if (typeof data.PushoverAPI != 'undefined') {
-				$("#pushovertable #apikey").val(data.PushoverAPI);
+				$("#pushovertable #PushoverAPI").val(data.PushoverAPI);
 			  }
 			  if (typeof data.PushoverUser != 'undefined') {
-				$("#pushovertable #pouserid").val(data.PushoverUser);
+				$("#pushovertable #PushoverUser").val(data.PushoverUser);
 			  }
 			  if (typeof data.PushALotAPI != 'undefined') {
-				$("#pushalottable #palapikey").val(data.PushALotAPI);
+				$("#pushalottable #PushALotAPI").val(data.PushALotAPI);
+			  }
+			  if (typeof data.SMSApiKey != 'undefined') {
+				$("#smstable #SMSApiKey").val(data.SMSApiKey);
 			  }
 			  if (typeof data.LightHistoryDays != 'undefined') {
 				$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
@@ -321,16 +281,16 @@ define(['app'], function (app) {
 				$("#emailtable #EmailPort").val(data.EmailPort);
 			  }
 			  if (typeof data.EmailUsername!= 'undefined') {
-				$("#emailtable #EmailUsername").val(data.EmailUsername);
+				$("#emailtable #EmailUsername").val(atob(data.EmailUsername));
 			  }
 			  if (typeof data.EmailPassword!= 'undefined') {
 				$("#emailtable #EmailPassword").val(atob(data.EmailPassword));
 			  }
 			  if (typeof data.UseEmailInNotifications != 'undefined') {
-				$("#emailtable #useemailinnotificationsalerts").prop('checked',data.UseEmailInNotifications==1);
+				$("#emailtable #UseEmailInNotifications").prop('checked',data.UseEmailInNotifications==1);
 			  }
 			  if (typeof data.EmailAsAttachment != 'undefined') {
-				$("#emailtable #checkEmailAsAttachment").prop('checked',data.EmailAsAttachment==1);
+				$("#emailtable #EmailAsAttachment").prop('checked',data.EmailAsAttachment==1);
 			  }
 			  if (typeof data.ActiveTimerPlan != 'undefined') {
 				$("#timerplantable #comboTimerplan").val(data.ActiveTimerPlan);

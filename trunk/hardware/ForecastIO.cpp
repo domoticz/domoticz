@@ -191,7 +191,6 @@ void CForecastIO::GetMeterDetails()
 				barometric_forcast=baroForecastRain;
 			}
 		}
-
 	}
 
 	if (barometric!=0)
@@ -221,7 +220,6 @@ void CForecastIO::GetMeterDetails()
 		tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
 		
 		tsen.TEMP_HUM_BARO.forecast=barometric_forcast;
-
 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);//decode message
 	}
