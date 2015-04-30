@@ -4,8 +4,9 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 
-CNotificationSMS::CNotificationSMS() : CNotificationBase(std::string("clickatell"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY)
+CNotificationSMS::CNotificationSMS() : CNotificationBase(std::string("clickatell"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
+	SetupConfig(std::string("ClickatellEnabled"), &m_IsEnabled);
 	SetupConfigBase64(std::string("ClickatellAPI"), _clickatellApi);
 	SetupConfigBase64(std::string("ClickatellUser"), _clickatellUser);
 	SetupConfigBase64(std::string("ClickatellPassword"), _clickatellPassword);

@@ -11,7 +11,8 @@ typedef std::map<std::string, int* >::iterator it_conf_type_int;
 
 CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options):
 _subsystemid(subsystemid),
-_options(options)
+_options(options),
+m_IsEnabled(1)
 {
 }
 
@@ -42,6 +43,9 @@ void CNotificationBase::LoadConfig()
 			_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter->first + std::string(": Not Found!")).c_str());
 			continue;
 		}
+		if (_options & OPTIONS_URL_PARAMS) {
+			Value = CURLEncode::URLEncode(Value);
+		}
 		*(iter->second) = Value;
 	}
 	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); iter2++) {
@@ -58,7 +62,11 @@ void CNotificationBase::LoadConfig()
 			_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter3->first + std::string(": Not Found!")).c_str());
 			continue;
 		}
-		*(iter3->second) = base64_decode(Value);
+		Value = base64_decode(Value);
+		if (_options & OPTIONS_URL_PARAMS) {
+			Value = CURLEncode::URLEncode(Value);
+		}
+		*(iter3->second) = Value;
 	}
 }
 
@@ -72,6 +80,11 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 	if (!IsConfigured()) {
 		// subsystem not configured, skip
 		return false;
+	}
+	if (bFromNotification)
+	{
+		if (!m_IsEnabled)
+			return true; //not enabled
 	}
 
 	std::string fSubject = Subject;
@@ -89,7 +102,7 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 	if (_options & OPTIONS_URL_BODY) {
 		fText = CURLEncode::URLEncode(fText);
 	}
-
+	
 	bool bRet = SendMessageImplementation(fSubject, fText, Priority, Sound, bFromNotification);
 	if (bRet) {
 		_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
@@ -103,8 +116,12 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 void CNotificationBase::SetConfigValue(const std::string &Key, const std::string &Value)
 {
 	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); iter++) {
+		std::string fValue = Value;
+		if (_options & OPTIONS_URL_PARAMS) {
+			fValue = CURLEncode::URLEncode(Value);
+		}
 		if (Key == iter->first) {
-			*(iter->second) = Value;
+			*(iter->second) = fValue;
 		}
 	}
 	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); iter2++) {
@@ -113,8 +130,12 @@ void CNotificationBase::SetConfigValue(const std::string &Key, const std::string
 		}
 	}
 	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); iter3++) {
+		std::string fValue = Value;
+		if (_options & OPTIONS_URL_PARAMS) {
+			fValue = CURLEncode::URLEncode(Value);
+		}
 		if (Key == iter3->first) {
-			*(iter3->second) = Value;
+			*(iter3->second) = fValue;
 		}
 	}
 }

@@ -2,8 +2,9 @@
 #include "NotificationPushalot.h"
 #include "../httpclient/HTTPClient.h"
 
-CNotificationPushalot::CNotificationPushalot() : CNotificationBase(std::string("pushalot"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY)
+CNotificationPushalot::CNotificationPushalot() : CNotificationBase(std::string("pushalot"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
+	SetupConfig(std::string("PushALotEnabled"), &m_IsEnabled);
 	SetupConfig(std::string("PushALotAPI"), _apikey);
 }
 

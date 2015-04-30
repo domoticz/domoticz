@@ -32,11 +32,11 @@ define(['app'], function (app) {
 			var extraparams = "";
 			switch (subsystem) {
 			case "clickatell":
-				var ClickatellAPI=$("#smstable #ClickatellAPI").val();
-				var ClickatellUser=$("#smstable #ClickatellUser").val();
-				var ClickatellPassword=$("#smstable #ClickatellPassword").val();
-				var ClickatellTo=$("#smstable #ClickatellTo").val();
-				var ClickatellFrom=$("#smstable #ClickatellFrom").val();
+				var ClickatellAPI=encodeURIComponent($("#smstable #ClickatellAPI").val());
+				var ClickatellUser=encodeURIComponent($("#smstable #ClickatellUser").val());
+				var ClickatellPassword=encodeURIComponent($("#smstable #ClickatellPassword").val());
+				var ClickatellTo=encodeURIComponent($("#smstable #ClickatellTo").val());
+				var ClickatellFrom=encodeURIComponent($("#smstable #ClickatellFrom").val());
 				if (ClickatellAPI=="" || ClickatellUser=="" || ClickatellPassword=="" || ClickatellTo=="" || ClickatellFrom=="") {
 					ShowNotify($.t('All Clickatell fields are required!...'), 3500, true);
 					return;
@@ -44,7 +44,7 @@ define(['app'], function (app) {
 				extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellUser=" + ClickatellUser + "&ClickatellPassword=" + ClickatellPassword + "&ClickatellTo=" + ClickatellTo + "&ClickatellFrom=" + ClickatellFrom;
 				break;
 			case "prowl":
-				var ProwlAPI=$("#prowltable #apikey").val();
+				var ProwlAPI=encodeURIComponent($("#prowltable #apikey").val());
 				if (ProwlAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
@@ -52,7 +52,7 @@ define(['app'], function (app) {
 				extraparams = "ProwlAPI=" + ProwlAPI;
 				break;
 			case "nma":
-				var NMAAPI=$("#nmatable #apikey").val();
+				var NMAAPI=encodeURIComponent($("#nmatable #apikey").val());
 				if (NMAAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
@@ -60,12 +60,12 @@ define(['app'], function (app) {
 				extraparams = "NMAAPI=" + NMAAPI;
 				break;
 			case "pushover":
-				var POAPI=$("#pushovertable #apikey").val();
+				var POAPI=encodeURIComponent($("#pushovertable #apikey").val());
 				if (POAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
 				}
-				var POUSERID=$("#pushovertable #pouserid").val();
+				var POUSERID=encodeURIComponent($("#pushovertable #pouserid").val());
 				if (POUSERID=="") {
 					ShowNotify($.t('Please enter the user id!...'), 3500, true);
 					return;
@@ -73,7 +73,7 @@ define(['app'], function (app) {
 				extraparams = "POAPI=" + POAPI + "&POUSERID=" + POUSERID;
 				break;
 			case "pushalot":
-				var PushAlotAPI=$("#pushalottable #palapikey").val();
+				var PushAlotAPI=encodeURIComponent($("#pushalottable #palapikey").val());
 				if (PushAlotAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
@@ -81,20 +81,20 @@ define(['app'], function (app) {
 				extraparams = "PushAlotAPI=" + PushAlotAPI;
 				break;
 			case "email":
-				var EmailServer=$("#emailtable #EmailServer").val();
+				var EmailServer=encodeURIComponent($("#emailtable #EmailServer").val());
 				if (EmailServer=="") {
 					ShowNotify($.t('Invalid Email Settings...'), 2000, true);
 					return;
 				}
-				var EmailPort=$("#emailtable #EmailPort").val();
+				var EmailPort=encodeURIComponent($("#emailtable #EmailPort").val());
 				if (EmailPort=="") {
 					ShowNotify($.t('Invalid Email Settings...'), 2000, true);
 					return;
 				}
-				var EmailFrom=$("#emailtable #EmailFrom").val();
-				var EmailTo=$("#emailtable #EmailTo").val();
-				var EmailUsername=$("#emailtable #EmailUsername").val();
-				var EmailPassword=$("#emailtable #EmailPassword").val();
+				var EmailFrom=encodeURIComponent($("#emailtable #EmailFrom").val());
+				var EmailTo=encodeURIComponent($("#emailtable #EmailTo").val());
+				var EmailUsername=encodeURIComponent($("#emailtable #EmailUsername").val());
+				var EmailPassword=encodeURIComponent($("#emailtable #EmailPassword").val());
 				if ((EmailFrom=="")||(EmailTo=="")) {
 					ShowNotify($.t('Invalid Email From/To Settings...'), 2000, true);
 					return;
@@ -182,11 +182,20 @@ define(['app'], function (app) {
 				$("#locationtable #Latitude").val(data.Location.Latitude);
 				$("#locationtable #Longitude").val(data.Location.Longitude);
 			  }
+			  if (typeof data.ProwlEnabled != 'undefined') {
+  				$("#prowltable #ProwlEnabled").prop('checked',data.ProwlEnabled==1);
+			  }
 			  if (typeof data.ProwlAPI != 'undefined') {
 				$("#prowltable #ProwlAPI").val(data.ProwlAPI);
 			  }
+			  if (typeof data.NMAEnabled != 'undefined') {
+  				$("#nmatable #NMAEnabled").prop('checked',data.NMAEnabled==1);
+			  }
 			  if (typeof data.NMAAPI != 'undefined') {
 				$("#nmatable #NMAAPI").val(data.NMAAPI);
+			  }
+			  if (typeof data.PushoverEnabled != 'undefined') {
+  				$("#pushovertable #PushoverEnabled").prop('checked',data.PushoverEnabled==1);
 			  }
 			  if (typeof data.PushoverAPI != 'undefined') {
 				$("#pushovertable #PushoverAPI").val(data.PushoverAPI);
@@ -194,8 +203,14 @@ define(['app'], function (app) {
 			  if (typeof data.PushoverUser != 'undefined') {
 				$("#pushovertable #PushoverUser").val(data.PushoverUser);
 			  }
+			  if (typeof data.PushALotEnabled != 'undefined') {
+  				$("#pushalottable #PushALotEnabled").prop('checked',data.PushALotEnabled==1);
+			  }
 			  if (typeof data.PushALotAPI != 'undefined') {
 				$("#pushalottable #PushALotAPI").val(data.PushALotAPI);
+			  }
+			  if (typeof data.ClickatellEnabled != 'undefined') {
+  				$("#smstable #ClickatellEnabled").prop('checked',data.ClickatellEnabled==1);
 			  }
 			  if (typeof data.ClickatellAPI != 'undefined') {
 				$("#smstable #ClickatellAPI").val(atob(data.ClickatellAPI));

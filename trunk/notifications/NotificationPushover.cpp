@@ -2,8 +2,9 @@
 #include "NotificationPushover.h"
 #include "../httpclient/HTTPClient.h"
 
-CNotificationPushover::CNotificationPushover() : CNotificationBase(std::string("pushover"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY)
+CNotificationPushover::CNotificationPushover() : CNotificationBase(std::string("pushover"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
+	SetupConfig(std::string("PushoverEnabled"), &m_IsEnabled);
 	SetupConfig(std::string("PushoverAPI"), _apikey);
 	SetupConfig(std::string("PushoverUser"), _apiuser);
 }
