@@ -14709,7 +14709,6 @@ namespace http {
 					{
 						std::vector<std::vector<std::string> >::const_iterator itt;
 						std::map<int, int> _directions;
-						float wdirtable[17][8];
 						int wdirtabletemp[17][8];
 						std::string szLegendLabels[7];
 						int ii = 0;
@@ -14723,7 +14722,6 @@ namespace http {
 						{
 							for (int jj = 0; jj < 8; jj++)
 							{
-								wdirtable[ii][jj] = 0;
 								wdirtabletemp[ii][jj] = 0;
 							}
 						}
@@ -14860,7 +14858,6 @@ namespace http {
 								{
 									svalue = (100.0f / totalvalues)*wdirtabletemp[ii][jj];
 								}
-								wdirtable[jj][ii] = svalue;
 								sprintf(szTmp, "%.2f", svalue);
 								root["result_speed"][jj]["sp"][ii] = szTmp;
 							}

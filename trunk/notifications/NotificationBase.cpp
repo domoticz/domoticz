@@ -9,10 +9,10 @@
 typedef std::map<std::string, std::string* >::iterator it_conf_type;
 typedef std::map<std::string, int* >::iterator it_conf_type_int;
 
-CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options)
+CNotificationBase::CNotificationBase(const std::string &subsystemid, const int options):
+_subsystemid(subsystemid),
+_options(options)
 {
-	_subsystemid = subsystemid;
-	_options = options;
 }
 
 CNotificationBase::~CNotificationBase()
@@ -40,7 +40,7 @@ void CNotificationBase::LoadConfig()
 		std::string Value;
 		if (!m_sql.GetPreferencesVar(iter->first, Value)) {
 			_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter->first + std::string(": Not Found!")).c_str());
-			return;
+			continue;
 		}
 		*(iter->second) = Value;
 	}
@@ -48,7 +48,7 @@ void CNotificationBase::LoadConfig()
 		int Value;
 		if (!m_sql.GetPreferencesVar(iter2->first, Value)) {
 			_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter2->first + std::string(": Not Found!")).c_str());
-			return;
+			continue;
 		}
 		*(iter2->second) = Value;
 	}
@@ -56,7 +56,7 @@ void CNotificationBase::LoadConfig()
 		std::string Value;
 		if (!m_sql.GetPreferencesVar(iter3->first, Value)) {
 			_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter3->first + std::string(": Not Found!")).c_str());
-			return;
+			continue;
 		}
 		*(iter3->second) = base64_decode(Value);
 	}
@@ -84,10 +84,10 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 		fText = MakeHtml(Text);
 	}
 	if (_options & OPTIONS_URL_SUBJECT) {
-		fSubject = CURLEncode::URLEncode(Subject);
+		fSubject = CURLEncode::URLEncode(fSubject);
 	}
 	if (_options & OPTIONS_URL_BODY) {
-		fText = CURLEncode::URLEncode(Text);
+		fText = CURLEncode::URLEncode(fText);
 	}
 
 	bool bRet = SendMessageImplementation(fSubject, fText, Priority, Sound, bFromNotification);
@@ -95,7 +95,7 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 		_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
 	}
 	else {
-		_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
+		_log.Log(LOG_ERROR, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
 	}
 	return bRet;
 }
@@ -208,11 +208,11 @@ std::string CNotificationBase::MakeHtml(const std::string &txt)
 {
 	std::string sRet = txt;
 
-	stdreplace(sRet, "&", "&amp;");
-	stdreplace(sRet, "\"", "&quot;");
-	stdreplace(sRet, "'", "&apos;");
-	stdreplace(sRet, "<", "&lt;");
-	stdreplace(sRet, ">", "&gt;");
-	stdreplace(sRet, "\r\n", "<br/>");
+	sRet = stdreplace(sRet, "&", "&amp;");
+	sRet = stdreplace(sRet, "\"", "&quot;");
+	sRet = stdreplace(sRet, "'", "&apos;");
+	sRet = stdreplace(sRet, "<", "&lt;");
+	sRet = stdreplace(sRet, ">", "&gt;");
+	sRet = stdreplace(sRet, "\r\n", "<br/>");
 	return sRet;
 }

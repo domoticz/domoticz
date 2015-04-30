@@ -31,13 +31,17 @@ define(['app'], function (app) {
 		{
 			var extraparams = "";
 			switch (subsystem) {
-			case "chimitsms":
-				var SMSAPI=$("#smstable #SMSApiKey").val();
-				if (SMSAPI=="") {
-					ShowNotify($.t('Please enter the API key!...'), 3500, true);
+			case "clickatell":
+				var ClickatellAPI=$("#smstable #ClickatellAPI").val();
+				var ClickatellUser=$("#smstable #ClickatellUser").val();
+				var ClickatellPassword=$("#smstable #ClickatellPassword").val();
+				var ClickatellTo=$("#smstable #ClickatellTo").val();
+				var ClickatellFrom=$("#smstable #ClickatellFrom").val();
+				if (ClickatellAPI=="" || ClickatellUser=="" || ClickatellPassword=="" || ClickatellTo=="" || ClickatellFrom=="") {
+					ShowNotify($.t('All Clickatell fields are required!...'), 3500, true);
 					return;
 				}
-				extraparams = "SMSApiKey=" + SMSAPI;
+				extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellUser=" + ClickatellUser + "&ClickatellPassword=" + ClickatellPassword + "&ClickatellTo=" + ClickatellTo + "&ClickatellFrom=" + ClickatellFrom;
 				break;
 			case "prowl":
 				var ProwlAPI=$("#prowltable #apikey").val();
@@ -193,8 +197,20 @@ define(['app'], function (app) {
 			  if (typeof data.PushALotAPI != 'undefined') {
 				$("#pushalottable #PushALotAPI").val(data.PushALotAPI);
 			  }
-			  if (typeof data.SMSApiKey != 'undefined') {
-				$("#smstable #SMSApiKey").val(data.SMSApiKey);
+			  if (typeof data.ClickatellAPI != 'undefined') {
+				$("#smstable #ClickatellAPI").val(atob(data.ClickatellAPI));
+			  }
+			  if (typeof data.ClickatellUser != 'undefined') {
+				$("#smstable #ClickatellUser").val(atob(data.ClickatellUser));
+			  }
+			  if (typeof data.ClickatellPassword != 'undefined') {
+				$("#smstable #ClickatellPassword").val(atob(data.ClickatellPassword));
+			  }
+			  if (typeof data.ClickatellTo != 'undefined') {
+				$("#smstable #ClickatellTo").val(atob(data.ClickatellTo));
+			  }
+			  if (typeof data.ClickatellFrom != 'undefined') {
+				$("#smstable #ClickatellFrom").val(atob(data.ClickatellFrom));
 			  }
 			  if (typeof data.LightHistoryDays != 'undefined') {
 				$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
