@@ -3394,7 +3394,7 @@ namespace http {
 				)
 				return;
 			//Add to queue
-			if (m_notifications.SendMessage(NOTIFYALL, subject, body,false)) {
+			if (m_notifications.SendMessage(NOTIFYALL, subject, body, false)) {
 				root["status"] = "OK";
 			}
 			root["title"] = "SendNotification";
@@ -4714,6 +4714,8 @@ namespace http {
 				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message,false)) {
 					root["status"] = "OK";
 				}
+				/* we need to reload the config, because the values that were set were only for testing */
+				m_notifications.LoadConfig();
 			}
 			else if (cparam == "testswitch")
 			{

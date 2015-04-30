@@ -39,9 +39,9 @@ function SendNotification()
 	if (typeof csettings == 'undefined') {
 		return;
 	}
-
+	
 	$.ajax({
-		 url: "json.htm?type=command&param=sendnotification&subject=" + csettings.subject + "&body=" + csettings.body,
+		 url: "json.htm?type=command&param=sendnotification&subject=" + encodeURIComponent(csettings.subject) + "&body=" + encodeURIComponent(csettings.body),
 		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {

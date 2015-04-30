@@ -2,8 +2,9 @@
 #include "NotificationProwl.h"
 #include "../httpclient/HTTPClient.h"
 
-CNotificationProwl::CNotificationProwl() : CNotificationBase(std::string("prowl"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY)
+CNotificationProwl::CNotificationProwl() : CNotificationBase(std::string("prowl"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
+	SetupConfig(std::string("ProwlEnabled"), &m_IsEnabled);
 	SetupConfig(std::string("ProwlAPI"), _apikey);
 }
 

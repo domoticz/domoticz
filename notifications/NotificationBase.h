@@ -6,6 +6,7 @@
 #define OPTIONS_URL_BODY 2
 #define OPTIONS_HTML_SUBJECT 4
 #define OPTIONS_HTML_BODY 8
+#define OPTIONS_URL_PARAMS 16
 
 class CNotificationBase {
 	friend class CNotificationHelper;
@@ -28,6 +29,8 @@ protected:
 	virtual bool SendMessageImplementation(const std::string &Subject, const std::string &Text, const int Priority, const std::string &Sound, const bool bFromNotification) = 0;
 	void LoadConfig();
 	std::string MakeHtml(const std::string &txt);
+
+	int m_IsEnabled;
 private:
 	std::string _subsystemid;
 	std::map<std::string, std::string* > _configValues;

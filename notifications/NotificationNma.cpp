@@ -2,8 +2,9 @@
 #include "NotificationNma.h"
 #include "../httpclient/HTTPClient.h"
 
-CNotificationNma::CNotificationNma() : CNotificationBase(std::string("nma"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY)
+CNotificationNma::CNotificationNma() : CNotificationBase(std::string("nma"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
+	SetupConfig(std::string("NMAEnabled"), &m_IsEnabled);
 	SetupConfig(std::string("NMAAPI"), _apikey);
 }
 

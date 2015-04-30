@@ -305,8 +305,12 @@
 									<h2><span data-i18n="Prowl (iPhone/iPad)"></span>:</h2>
 									<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="ProwlAPI" name="ProwlAPI" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('prowl')">Test</button></td>
+										<td align="right" style="width:80px"><label for="ProwlEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="ProwlEnabled" name="ProwlEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="ProwlAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="ProwlAPI" name="ProwlAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('prowl')">Test</button></td>
 									</tr>
 									</table>
 									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
@@ -316,7 +320,11 @@
 									<h2><span data-i18n="NMA (Android)"></span>:</h2>
 									<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="apikey"><span data-i18n="API Key"></span>: </label></td>
+										<td align="right" style="width:80px"><label for="NMAEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="NMAEnabled" name="NMAEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="NMAAPI"><span data-i18n="API Key"></span>: </label></td>
 										<td><input type="input" id="NMAAPI" name="NMAAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('nma')">Test</button></td>
 									</tr>
 									</table>
@@ -329,11 +337,15 @@
 									<h2><span data-i18n="Pushover (Android/iOs)"></span>:</h2>
 									<table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:40px"><label for="PushoverUser"><span data-i18n="User ID"></span>: </label></td>
+										<td align="right" style="width:80px"><label for="PushoverEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="PushoverEnabled" name="PushoverEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="PushoverUser"><span data-i18n="User ID"></span>: </label></td>
 										<td><input type="input" id="PushoverUser" name="PushoverUser" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
 									</tr>
 									<tr>
-										<td align="right" style="width:80px"><label for="PushoverAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td align="right"><label for="PushoverAPI"><span data-i18n="API Key"></span>: </label></td>
 										<td><input type="input" id="PushoverAPI" name="PushoverAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushover')">Test</button></td>
 									</tr>
 									</table>
@@ -344,8 +356,12 @@
 									<h2><span data-i18n="Pushalot (Windows/Windows Phone)"></span>:</h2>
 									<table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="PushALotAPI"><span data-i18n="API Key"></span>: </label></td>
-										<td><input type="input" id="PushALotAPI" name="PushALotAPI" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushalot')">Test</button></td>
+										<td align="right" style="width:80px"><label for="PushALotEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="PushALotEnabled" name="PushALotEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="PushALotAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="PushALotAPI" name="PushALotAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushalot')">Test</button></td>
 									</tr>
 									</table>
 									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span data-i18n="Here"></span></a><br>
@@ -357,24 +373,32 @@
 									<h2><span data-i18n="Clickatell SMS API">Clickatell SMS Api:</span></h2>
 									<table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="ClickatellAPI"><span data-i18n="API Key">API Key</span>: </label></td>
+										<td align="right" style="width:80px"><label for="ClickatellEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="ClickatellAPI"><span data-i18n="API Key">API Key</span>: </label></td>
 										<td><input type="input" id="ClickatellAPI" name="ClickatellAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 									</tr>
 									<tr>
-										<td align="right" style="width:80px"><label for="ClickatellUser"><span data-i18n="User ID"></span>: </label></td>
+										<td align="right"><label for="ClickatellUser"><span data-i18n="User ID"></span>: </label></td>
 										<td><input type="input" id="ClickatellUser" name="ClickatellUser" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 									</tr>
 									<tr>
-										<td align="right" style="width:80px"><label for="ClickatellPassword"><span data-i18n="Password"></span>: </label></td>
+										<td align="right"><label for="ClickatellPassword"><span data-i18n="Password"></span>: </label></td>
 										<td><input type="password" id="ClickatellPassword" name="ClickatellPassword" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 									</tr>
 									<tr>
-										<td align="right" style="width:80px"><label for="ClickatellFrom"><span data-i18n="From"></span>: </label></td>
+										<td align="right"<label for="ClickatellFrom"><span data-i18n="From"></span>: </label></td>
 										<td><input type="input" id="ClickatellFrom" name="ClickatellFrom" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 									</tr>
 									<tr>
-										<td align="right" style="width:80px"><label for="ClickatellTo"><span data-i18n="To"></span>: </label></td>
+										<td align="right"><label for="ClickatellTo"><span data-i18n="To"></span>: </label></td>
 										<td><input type="input" id="ClickatellTo" name="ClickatellTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('clickatell')">Test</button></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><span data-i18n="(Separate by a semicolon, For Example"></span>: +3123456789;+44567890)</td>
 									</tr>
 									</table>
 									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.clickatell.com/" target="_blank"><span data-i18n="Here"></span></a><br>

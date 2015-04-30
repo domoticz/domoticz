@@ -513,6 +513,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	myNameValues.clear();
 	m_lastRequestPath=request_path;
 
+	request_path = req.uri; // we need the raw request string to parse the get-request
 	int paramPos=request_path.find_first_of('?');
 	if (paramPos!=std::string::npos)
 	{
@@ -547,7 +548,10 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 				value.replace( p, 1, " " );
 			}
 
-			myNameValues.insert( std::pair< std::string,std::string > ( name, value ) );
+			// now, url-decode only the value
+			std::string decoded;
+			request_handler::url_decode(value, decoded);
+			myNameValues.insert( std::pair< std::string,std::string > ( name, decoded ) );
 			p = q+1;
 		}
 

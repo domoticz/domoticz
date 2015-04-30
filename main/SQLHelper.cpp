@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 66
+#define DB_VERSION 67
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -1306,6 +1306,15 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 66)
 		{
 			query("ALTER TABLE Hardware ADD COLUMN [Mode6] CHAR default 0");
+		}
+		if (dbversion < 67)
+		{
+			//Enable all notification systems
+			UpdatePreferencesVar("NMAEnabled", 1);
+			UpdatePreferencesVar("ProwlEnabled", 1);
+			UpdatePreferencesVar("PushALotEnabled", 1);
+			UpdatePreferencesVar("PushoverEnabled", 1);
+			UpdatePreferencesVar("ClickatellEnabled", 1);
 		}
 	}
 	else if (bNewInstall)
