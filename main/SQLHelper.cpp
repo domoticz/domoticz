@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 67
+#define DB_VERSION 68
 
 extern http::server::CWebServer m_webserver;
 extern std::string szWWWFolder;
@@ -216,6 +216,8 @@ const char *sqlCreateNotifications =
 "[ID] INTEGER PRIMARY KEY, "
 "[DeviceRowID] BIGINT(10) NOT NULL, "
 "[Params] VARCHAR(100), "
+"[CustomMessage] VARCHAR(300) DEFAULT (''), "
+"[ActiveSystems] VARCHAR(200) DEFAULT (''), "
 "[Priority] INTEGER default 0, "
 "[LastSend] DATETIME DEFAULT 0);";
 
@@ -1315,6 +1317,11 @@ bool CSQLHelper::OpenDatabase()
 			UpdatePreferencesVar("PushALotEnabled", 1);
 			UpdatePreferencesVar("PushoverEnabled", 1);
 			UpdatePreferencesVar("ClickatellEnabled", 1);
+		}
+		if (dbversion < 68)
+		{
+			query("ALTER TABLE Notifications ADD COLUMN [CustomMessage] VARCHAR(300) DEFAULT ('')");
+			query("ALTER TABLE Notifications ADD COLUMN [ActiveSystems] VARCHAR(300) DEFAULT ('')");
 		}
 	}
 	else if (bNewInstall)
@@ -2892,7 +2899,9 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			}
 			if (bSendNotification)
 			{
-				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
+				if (!itt->CustomMessage.empty())
+					msg = itt->CustomMessage;
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2966,7 +2975,9 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 			}
 			if (bSendNotification)
 			{
-				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
+				if (!itt->CustomMessage.empty())
+					msg = itt->CustomMessage;
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3101,7 +3112,9 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 			}
 			if (bSendNotification)
 			{
-				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
+				if (!itt->CustomMessage.empty())
+					msg = itt->CustomMessage;
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3207,7 +3220,9 @@ bool CSQLHelper::CheckAndHandleNotification(
 			}
 			if (bSendNotification)
 			{
-				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
+				if (!itt->CustomMessage.empty())
+					msg = itt->CustomMessage;
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3308,7 +3323,9 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 			}
 			if (bSendNotification)
 			{
-				m_notifications.SendMessageEx(NOTIFYALL, std::string(""), msg, itt->Priority, std::string(""), true);
+				if (!itt->CustomMessage.empty())
+					msg=itt->CustomMessage;
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3396,7 +3413,7 @@ void CSQLHelper::TouchNotification(const unsigned long long ID)
 	query(szTmp);
 }
 
-bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &Param, const int Priority)
+bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority)
 {
 	if (!m_dbase)
 		return false;
@@ -3413,7 +3430,7 @@ bool CSQLHelper::AddNotification(const std::string &DevIdx, const std::string &P
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, Priority) VALUES ('" << DevIdx << "','" << Param << "','" << Priority << "')";
+	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, ActiveSystems, Priority) VALUES ('" << DevIdx << "','" << Param << "','" << CustomMessage << "','" << ActiveSystems << "','" << Priority << "')";
 	result=query(szQuery.str());
 	return true;
 }
@@ -3454,7 +3471,7 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, Params, Priority, LastSend FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
+	szQuery << "SELECT ID, Params, CustomMessage, ActiveSystems, Priority, LastSend FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
 	result=query(szQuery.str());
 	if (result.size()==0)
 		return ret;
@@ -3472,10 +3489,12 @@ std::vector<_tNotification> CSQLHelper::GetNotifications(const unsigned long lon
 		std::stringstream s_str( sd[0] );
 		s_str >> notification.ID;
 
-		notification.Params=sd[1];
-		notification.Priority=atoi(sd[2].c_str());
+		notification.Params = sd[1];
+		notification.CustomMessage = sd[2];
+		notification.ActiveSystems = sd[3];
+		notification.Priority = atoi(sd[4].c_str());
 
-		std::string stime=sd[3];
+		std::string stime=sd[5];
 		if (stime=="0")
 		{
 			notification.LastSend=0;
@@ -6369,7 +6388,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		if (bDoSend)
 		{
 			sprintf(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
-			m_notifications.SendMessageEx(NOTIFYALL, std::string(""), szTmp, 1, std::string(""), true);
+			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, 1, std::string(""), true);
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
 	}
