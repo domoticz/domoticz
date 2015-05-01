@@ -40,7 +40,7 @@ void CNotificationBase::LoadConfig()
 	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); iter++) {
 		std::string Value;
 		if (!m_sql.GetPreferencesVar(iter->first, Value)) {
-			_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter->first + std::string(": Not Found!")).c_str());
+			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter->first + std::string(": Not Found!")).c_str());
 			continue;
 		}
 		if (_options & OPTIONS_URL_PARAMS) {
@@ -51,7 +51,7 @@ void CNotificationBase::LoadConfig()
 	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); iter2++) {
 		int Value;
 		if (!m_sql.GetPreferencesVar(iter2->first, Value)) {
-			_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter2->first + std::string(": Not Found!")).c_str());
+			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter2->first + std::string(": Not Found!")).c_str());
 			continue;
 		}
 		*(iter2->second) = Value;
@@ -59,7 +59,7 @@ void CNotificationBase::LoadConfig()
 	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); iter3++) {
 		std::string Value;
 		if (!m_sql.GetPreferencesVar(iter3->first, Value)) {
-			_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter3->first + std::string(": Not Found!")).c_str());
+			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter3->first + std::string(": Not Found!")).c_str());
 			continue;
 		}
 		Value = base64_decode(Value);

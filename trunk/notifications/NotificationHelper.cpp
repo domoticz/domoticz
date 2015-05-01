@@ -90,11 +90,14 @@ void CNotificationHelper::LoadConfig()
 		tot++;
 		iter->second->LoadConfig();
 		if (iter->second->IsConfigured()) {
-			if (active==0)
-				logline << " " << iter->first;
-			else
-				logline << ", " << iter->first;
-			active++;
+			if (iter->second->m_IsEnabled)
+			{
+				if (active == 0)
+					logline << " " << iter->first;
+				else
+					logline << ", " << iter->first;
+				active++;
+			}
 		}
 	}
 	logline << " (" << active << "/" << tot << ")";

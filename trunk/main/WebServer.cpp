@@ -5805,6 +5805,8 @@ namespace http {
 				std::string stype = m_pWebEm->FindValue("ttype");
 				std::string swhen = m_pWebEm->FindValue("twhen");
 				std::string svalue = m_pWebEm->FindValue("tvalue");
+				std::string scustommessage = m_pWebEm->FindValue("tmsg");
+				std::string sactivesystems = m_pWebEm->FindValue("tsystems");
 				std::string spriority = m_pWebEm->FindValue("tpriority");
 				if ((stype == "") || (swhen == "") || (svalue == "") || (spriority == ""))
 					return;
@@ -5825,7 +5827,7 @@ namespace http {
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				bool bOK = m_sql.AddNotification(idx, szTmp, priority);
+				bool bOK = m_sql.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority);
 				if (bOK) {
 					root["status"] = "OK";
 					root["title"] = "AddNotification";
@@ -5841,6 +5843,8 @@ namespace http {
 				std::string stype = m_pWebEm->FindValue("ttype");
 				std::string swhen = m_pWebEm->FindValue("twhen");
 				std::string svalue = m_pWebEm->FindValue("tvalue");
+				std::string scustommessage = m_pWebEm->FindValue("tmsg");
+				std::string sactivesystems = m_pWebEm->FindValue("tsystems");
 				std::string spriority = m_pWebEm->FindValue("tpriority");
 				if ((stype == "") || (swhen == "") || (svalue == "") || (spriority == ""))
 					return;
@@ -5866,7 +5870,7 @@ namespace http {
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				m_sql.AddNotification(devidx, szTmp, priority);
+				m_sql.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority);
 			}
 			else if (cparam == "deletenotification")
 			{
@@ -12415,6 +12419,8 @@ namespace http {
 					}
 					root["result"][ii]["Params"] = sParams;
 					root["result"][ii]["Priority"] = itt->Priority;
+					root["result"][ii]["CustomMessage"] = itt->CustomMessage;
+					root["result"][ii]["ActiveSystems"] = itt->ActiveSystems;
 					ii++;
 				}
 			}
