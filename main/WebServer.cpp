@@ -3806,6 +3806,7 @@ namespace http {
 
 			std::string forced = m_pWebEm->FindValue("forced");
 			bool bIsForced = (forced == "true");
+
 			std::string systemname = my_uname.sysname;
 			std::string machine = my_uname.machine;
 			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
@@ -3831,6 +3832,20 @@ namespace http {
 			}
 			else
 			{
+				time_t atime = mytime(NULL);
+				if (!bIsForced)
+				{
+					if (atime - m_LastUpdateCheck < 12 * 3600)
+					{
+						root["status"] = "OK";
+						root["title"] = "CheckForUpdate";
+						root["HaveUpdate"] = false;
+						root["IsSupported"] = true;
+						return;
+					}
+				}
+				m_LastUpdateCheck = atime;
+
 				int nValue = 0;
 				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 				if (nValue == 1)
