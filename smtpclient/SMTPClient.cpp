@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "SMTPClient.h"
-#if defined WIN32
-#include "../curl/curl.h"
-#else
 #include <curl/curl.h>
-#endif
 #include "../main/Helper.h"
 #include <sstream>
 
