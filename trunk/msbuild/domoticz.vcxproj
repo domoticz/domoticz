@@ -53,7 +53,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;WITH_OPENZWAVE;OPENZWAVE_USEDLL;NS_ENABLE_SSL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_55_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_55_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -77,7 +77,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;WITH_OPENZWAVE;_CONSOLE;NS_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_55_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_55_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -104,12 +104,24 @@
     <None Include="..\INSTALL.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\hardware\1Wire.h" />
-    <ClInclude Include="..\hardware\1Wire\1WireByKernel.h" />
-    <ClInclude Include="..\hardware\1Wire\1WireByOWFS.h" />
-    <ClInclude Include="..\hardware\1Wire\1WireCommon.h" />
-    <ClInclude Include="..\hardware\1Wire\1WireForWindows.h" />
-    <ClInclude Include="..\hardware\1Wire\1WireSystem.h" />
+    <ClInclude Include="..\hardware\1Wire.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireByKernel.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireByOWFS.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireCommon.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireForWindows.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\1Wire\1WireSystem.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\hardware\ASyncTCP.h" />
     <ClInclude Include="..\hardware\BMP085.h" />
     <ClInclude Include="..\hardware\csocket.h" />
@@ -253,11 +265,21 @@
   <ItemGroup>
     <ClCompile Include="..\hardware\1Wire.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\hardware\1Wire\1WireByKernel.cpp" />
-    <ClCompile Include="..\hardware\1Wire\1WireByOWFS.cpp" />
-    <ClCompile Include="..\hardware\1Wire\1WireCommon.cpp" />
-    <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp" />
+    <ClCompile Include="..\hardware\1Wire\1WireByKernel.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire\1WireByOWFS.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire\1WireCommon.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\BMP085.cpp" />

@@ -3202,7 +3202,7 @@ namespace http {
 			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 			bool bIsBetaChannel = (nValue != 0);
 
-			std::string szHistoryURL = "http://domoticz.sourceforge.net/History.txt";
+			std::string szHistoryURL = "http://www.domoticz.com/download.php?channel=stable&type=history";
 			if (bIsBetaChannel)
 			{
 				utsname my_uname;
@@ -3222,9 +3222,9 @@ namespace http {
 				}
 
 				if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
-					szHistoryURL = "http://domoticz.sourceforge.net/beta/History.txt";
+					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history";
 				else
-					szHistoryURL = "http://domoticz.sourceforge.net/beta/history_" + systemname + "_" + machine + ".txt";
+					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine" + machine;
 			}
 			if (!HTTPClient::GET(szHistoryURL, historyfile))
 			{
@@ -3837,12 +3837,12 @@ namespace http {
 				{
 					m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 					bool bIsBetaChannel = (nValue != 0);
-					std::string szURL = "http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
-					std::string szHistoryURL = "http://domoticz.sourceforge.net/history_" + systemname + "_" + machine + ".txt";
+					std::string szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + systemname + "&machine=" + machine;
+					std::string szHistoryURL = "http://www.domoticz.com/download.php?channel=stable&type=history&system=" + systemname + "&machine" + machine;
 					if (bIsBetaChannel)
 					{
-						szURL = "http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
-						szHistoryURL = "http://domoticz.sourceforge.net/beta/history_" + systemname + "_" + machine + ".txt";
+						szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + systemname + "&machine=" + machine;
+						szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine" + machine;
 					}
 					std::string revfile;
 
@@ -3918,15 +3918,11 @@ namespace http {
 
 			if (!bIsBetaChannel)
 			{
-				//szURL="http://domoticz.sourceforge.net/svnversion.h";
-				szURL = "http://domoticz.sourceforge.net/version_" + systemname + "_" + machine + ".h";
-				//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=2",revfile);
+				szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + systemname + "&machine=" + machine;
 			}
 			else
 			{
-				//szURL="http://domoticz.sourceforge.net/beta/svnversion.h";
-				szURL = "http://domoticz.sourceforge.net/beta/version_" + systemname + "_" + machine + ".h";
-				//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=DownloadNewVersion&amp;idgoal=1",revfile);
+				szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + systemname + "&machine=" + machine;
 			}
 			if (!HTTPClient::GET(szURL, revfile))
 				return;
@@ -3946,9 +3942,9 @@ namespace http {
 				return;	//only Raspberry Pi/Ubuntu for now
 			root["status"] = "OK";
 			root["title"] = "DownloadUpdate";
-			std::string downloadURL = "http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
+			std::string downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine" + machine;
 			if (bIsBetaChannel)
-				downloadURL = "http://domoticz.sourceforge.net/beta/domoticz_" + systemname + "_" + machine + ".tgz";
+				downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine" + machine;
 			m_mainworker.GetDomoticzUpdate(downloadURL);
 		}
 

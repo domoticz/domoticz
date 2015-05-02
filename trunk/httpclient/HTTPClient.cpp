@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "HTTPClient.h"
-#if defined WIN32
-	#include "../curl/curl.h"
-#else
-	#include <curl/curl.h>
-#endif
+#include <curl/curl.h>
 
 #include <iostream>
 #include <fstream>
