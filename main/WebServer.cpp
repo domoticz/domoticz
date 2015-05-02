@@ -3224,7 +3224,7 @@ namespace http {
 				if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
 					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history";
 				else
-					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine" + machine;
+					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
 			}
 			if (!HTTPClient::GET(szHistoryURL, historyfile))
 			{
@@ -3838,11 +3838,11 @@ namespace http {
 					m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 					bool bIsBetaChannel = (nValue != 0);
 					std::string szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + systemname + "&machine=" + machine;
-					std::string szHistoryURL = "http://www.domoticz.com/download.php?channel=stable&type=history&system=" + systemname + "&machine" + machine;
+					std::string szHistoryURL = "http://www.domoticz.com/download.php?channel=stable&type=history&system=" + systemname + "&machine=" + machine;
 					if (bIsBetaChannel)
 					{
 						szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + systemname + "&machine=" + machine;
-						szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine" + machine;
+						szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
 					}
 					std::string revfile;
 
@@ -3942,9 +3942,9 @@ namespace http {
 				return;	//only Raspberry Pi/Ubuntu for now
 			root["status"] = "OK";
 			root["title"] = "DownloadUpdate";
-			std::string downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine" + machine;
+			std::string downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine=" + machine;
 			if (bIsBetaChannel)
-				downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine" + machine;
+				downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine=" + machine;
 			m_mainworker.GetDomoticzUpdate(downloadURL);
 		}
 
