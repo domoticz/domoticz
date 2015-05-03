@@ -143,7 +143,7 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}
-				var password=$("#hardwarecontent #divlogin #password").val();		
+				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + 
 						"&address=" + address + 
@@ -184,7 +184,7 @@ define(['app'], function (app) {
 					return;
 				}		
 				var username=$("#hardwarecontent #divlogin #username").val();
-				var password=$("#hardwarecontent #divlogin #password").val();
+				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 						"&address=" + address + 
@@ -314,7 +314,7 @@ define(['app'], function (app) {
 			}
 			else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("PVOutput") >= 0)) {
 				var username = $("#hardwarecontent #divlogin #username").val();
-				var password = $("#hardwarecontent #divlogin #password").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					   "&port=1" +
@@ -445,7 +445,7 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
 					return;
 				}
-				var password=$("#hardwarecontent #divlogin #password").val();
+				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
 					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&password=" + password + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
@@ -515,7 +515,7 @@ define(['app'], function (app) {
 					return;
 				}		
 				var username=$("#hardwarecontent #divlogin #username").val();
-				var password = $("#hardwarecontent #divlogin #password").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 
 				if ((text.indexOf("Harmony") >= 0) && (username == "")) {
 					ShowNotify($.t('Please enter a username!'), 2500, true);
@@ -593,7 +593,7 @@ define(['app'], function (app) {
 			else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("PVOutput") >= 0))
 			{
 				var username=$("#hardwarecontent #divlogin #username").val();
-				var password=$("#hardwarecontent #divlogin #password").val();
+				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
 					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					 "&port=1" + 

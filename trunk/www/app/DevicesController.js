@@ -398,7 +398,7 @@ define(['app'], function (app) {
 			  if ( bValid ) {
 				  $( this ).dialog( "close" );
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-adddevice #devicename").val() + '&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-adddevice #devicename").val()) + '&used=true',
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -438,7 +438,7 @@ define(['app'], function (app) {
 			  if ( bValid ) {
 				  $( this ).dialog( "close" );
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + $("#dialog-addlightdevicedev #devicename").val() + '&used=true&maindeviceidx=' + MainDeviceIdx,
+					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-addlightdevicedev #devicename").val()) + '&used=true&maindeviceidx=' + MainDeviceIdx,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
