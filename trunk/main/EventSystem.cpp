@@ -1463,7 +1463,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 						priority = aParam[2];
 						sound = aParam[3];
 					}
-					SendEventNotification(subject, body, atoi(priority.c_str()), sound);
+					SendEventNotification(subject, body, std::string(""), atoi(priority.c_str()), sound);
 					actionsDone = true;
 				}
 				else if (devNameNoQuotes == "SendEmail") {
@@ -2293,7 +2293,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			priority = aParam[2];
 			sound = aParam[3];
 		}
-		SendEventNotification(subject, body, atoi(priority.c_str()), sound);
+		SendEventNotification(subject, body, std::string(""), atoi(priority.c_str()), sound);
 		scriptTrue = true;
 	}
 	else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {
@@ -2432,9 +2432,9 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	}
 }
 
-void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body, const int Priority, const std::string &Sound)
+void CEventSystem::SendEventNotification(const std::string &Subject, const std::string &Body, const std::string &ExtraData, const int Priority, const std::string &Sound)
 {
-	m_notifications.SendMessageEx(NOTIFYALL, Subject, Body, Priority, Sound, true);
+	m_notifications.SendMessageEx(NOTIFYALL, Subject, Body, ExtraData, Priority, Sound, true);
 }
 
 void CEventSystem::OpenURL(const std::string &URL)

@@ -1674,6 +1674,13 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("TempComfort", "22.0");
 	}
+	if (!GetPreferencesVar("HTTPURL", sValue))
+	{
+		sValue = "https://www.somegateway.com/pushurl.php?username=#FIELD1&password=#FIELD2&apikey=#FIELD3&from=#FIELD4&to=#TO&message=#MESSAGE";
+		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
+		m_sql.UpdatePreferencesVar("HTTPURL", sencoded);
+	}
+
 
 	//Start background thread
 	if (!StartThread())
@@ -2901,7 +2908,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2977,7 +2984,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3114,7 +3121,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3222,7 +3229,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3325,7 +3332,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg=itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -6388,7 +6395,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		if (bDoSend)
 		{
 			sprintf(szTmp,"Sensor Timeout: %s, Last Received: %s",sd[1].c_str(),sd[2].c_str());
-			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, 1, std::string(""), true);
+			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
 			m_timeoutlastsend[ulID]=stoday.tm_mday;
 		}
 	}

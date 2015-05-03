@@ -8,8 +8,8 @@ class CNotificationHelper {
 public:
 	CNotificationHelper();
 	~CNotificationHelper();
-	bool SendMessage(const std::string subsystem, const std::string Subject, const std::string Text, const bool bFromNotification);
-	bool SendMessageEx(const std::string subsystem, const std::string Subject, const std::string Text, int Priority, const std::string Sound, const bool bFromNotification);
+	bool SendMessage(const std::string subsystem, const std::string Subject, const std::string Text, const std::string &ExtraData, const bool bFromNotification);
+	bool SendMessageEx(const std::string subsystem, const std::string Subject, const std::string Text, const std::string &ExtraData, int Priority, const std::string Sound, const bool bFromNotification);
 	void LoadConfig();
 	void ConfigFromGetvars(http::server::cWebem *m_pWebEm, const bool save);
 	bool IsInConfig(const std::string &Key);
