@@ -59,6 +59,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: notifications, option to send to specific systems
 - Fixed: hardware setup, passwords containing specials characters
 - Fixed: devices tab, adding device with names containing specials characters
+- Implemented: Basic Auth, log message when a wrong username/password is provided (thanks to pj-r)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

@@ -1283,6 +1283,9 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 	{
 		if (!authorize(req, rep))
 		{
+			if (m_failcounter > 0) {
+				_log.Log(LOG_ERROR, "Webserver: Failed authentication attempt, ignoring client request (remote addresses: %s)", sHost.c_str());
+			}
 			if (m_failcounter > 2)
 			{
 				m_failcounter = 0;
