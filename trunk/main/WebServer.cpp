@@ -3957,10 +3957,19 @@ namespace http {
 				return;	//only Raspberry Pi/Ubuntu for now
 			root["status"] = "OK";
 			root["title"] = "DownloadUpdate";
-			std::string downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine=" + machine;
-			if (bIsBetaChannel)
+			std::string downloadURL;
+			std::string checksumURL;
+			if (!bIsBetaChannel)
+			{
+				downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine=" + machine;
+				checksumURL = "http://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + systemname + "&machine=" + machine;
+			}
+			else
+			{
 				downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine=" + machine;
-			m_mainworker.GetDomoticzUpdate(downloadURL);
+				checksumURL = "http://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + systemname + "&machine=" + machine;
+			}
+			m_mainworker.GetDomoticzUpdate(downloadURL, checksumURL);
 		}
 
 		void CWebServer::Cmd_DownloadReady(Json::Value &root)

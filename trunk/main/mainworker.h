@@ -104,7 +104,7 @@ public:
 
 	bool m_bIgnoreUsernamePassword;
 
-	void GetDomoticzUpdate(const std::string &UpdateURL);
+	void GetDomoticzUpdate(const std::string &UpdateURL, const std::string &ChecksumURL);
 	bool m_bHaveDownloadedDomoticzUpdate;
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
 
@@ -139,6 +139,7 @@ private:
 	boost::mutex decodeRXMessageMutex;
 
 	std::string m_szDomoticzUpdateURL;
+	std::string m_szDomoticzUpdateChecksumURL;
 	bool m_bDoDownloadDomoticzUpdate;
 	bool m_bStartHardware;
 	unsigned char m_hardwareStartCounter;

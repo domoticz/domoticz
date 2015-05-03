@@ -809,9 +809,10 @@ bool MainWorker::StartThread()
 #define HEX( x ) \
 	std::setw(2) << std::setfill('0') << std::hex << std::uppercase << (int)( x )
 
-void MainWorker::GetDomoticzUpdate(const std::string &UpdateURL)
+void MainWorker::GetDomoticzUpdate(const std::string &UpdateURL, const std::string &ChecksumURL)
 {
 	m_szDomoticzUpdateURL=UpdateURL;
+	m_szDomoticzUpdateChecksumURL = ChecksumURL;
 	m_bHaveDownloadedDomoticzUpdate=false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
 	m_bDoDownloadDomoticzUpdate=true;
@@ -1003,10 +1004,10 @@ void MainWorker::Do_Work()
 		if (m_bDoDownloadDomoticzUpdate)
 		{
 			m_bDoDownloadDomoticzUpdate=false;
+
 			//First download the checksum file
 			std::string outfile = szStartupFolder + "update.tgz.sha256sum";
-			std::string checksumfile = m_szDomoticzUpdateURL + ".sha256sum";
-			m_bHaveDownloadedDomoticzUpdateSuccessFull=HTTPClient::GETBinaryToFile(checksumfile.c_str(), outfile.c_str());
+			m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
 			if (m_bHaveDownloadedDomoticzUpdateSuccessFull)
 			{
 				//Next download the actual update
