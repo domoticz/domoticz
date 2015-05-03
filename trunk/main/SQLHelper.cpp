@@ -2908,7 +2908,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2984,7 +2984,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3121,7 +3121,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3229,7 +3229,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3332,7 +3332,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg=itt->CustomMessage;
-				m_notifications.SendMessageEx(NOTIFYALL, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}

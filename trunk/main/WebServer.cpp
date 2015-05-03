@@ -12419,6 +12419,17 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Notifications";
 
+			int ii = 0;
+
+			//Add known notification systems
+			std::map<std::string, CNotificationBase*>::const_iterator ittNotifiers;
+			for (ittNotifiers = m_notifications.m_notifiers.begin(); ittNotifiers != m_notifications.m_notifiers.end(); ++ittNotifiers)
+			{
+				root["notifiers"][ii]["name"] = ittNotifiers->first;
+				root["notifiers"][ii]["description"] = ittNotifiers->first;
+				ii++;
+			}
+
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
 			{
@@ -12429,7 +12440,7 @@ namespace http {
 			if (notifications.size() > 0)
 			{
 				std::vector<_tNotification>::const_iterator itt;
-				int ii = 0;
+				ii = 0;
 				for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 				{
 					root["result"][ii]["idx"] = itt->ID;
