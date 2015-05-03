@@ -56,6 +56,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Option to supply custom notification messages
 - Changed: Moved curl folder to windows libraries folder (windows compiler, download the new WindowsLibraries.zip)
 - Implemented: 'Custom HTTP' notification system
+- Implemented: notifications, option to send to specific systems
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

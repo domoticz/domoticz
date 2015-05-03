@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 #include "NotificationHelper.h"
 #include "NotificationProwl.h"
 #include "NotificationNma.h"
@@ -8,6 +9,7 @@
 #include "NotificationEmail.h"
 #include "NotificationSMS.h"
 #include "NotificationHTTP.h"
+#include <map>
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
@@ -29,30 +31,43 @@ CNotificationHelper::CNotificationHelper()
 
 CNotificationHelper::~CNotificationHelper()
 {
-	for (it_noti_type iter = _notifiers.begin(); iter != _notifiers.end(); iter++) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); iter++) {
 		delete iter->second;
 	}
 }
 
 void CNotificationHelper::AddNotifier(CNotificationBase *notifier)
 {
-	_notifiers[notifier->GetSubsystemId()] = notifier;
+	m_notifiers[notifier->GetSubsystemId()] = notifier;
 }
 
-bool CNotificationHelper::SendMessage(const std::string subsystem, const std::string Subject, const std::string Text, const std::string &ExtraData, const bool bFromNotification)
+bool CNotificationHelper::SendMessage(const std::string subsystems, const std::string Subject, const std::string Text, const std::string &ExtraData, const bool bFromNotification)
 {
-	return SendMessageEx(subsystem, Subject, Text, ExtraData, 0, std::string(""), bFromNotification);
+	return SendMessageEx(subsystems, Subject, Text, ExtraData, 0, std::string(""), bFromNotification);
 }
 
-bool CNotificationHelper::SendMessageEx(const std::string subsystem, const std::string Subject, const std::string Text, const std::string &ExtraData, int Priority, const std::string Sound, const bool bFromNotification)
+bool CNotificationHelper::SendMessageEx(const std::string subsystems, const std::string Subject, const std::string Text, const std::string &ExtraData, int Priority, const std::string Sound, const bool bFromNotification)
 {
 	bool bRet = false;
 #if defined WIN32
 	//Make a system tray message
 	ShowSystemTrayNotification(Subject.c_str());
 #endif
-	for (it_noti_type iter = _notifiers.begin(); iter != _notifiers.end(); iter++) {
-		if ((subsystem == "" || subsystem == iter->first) && iter->second->IsConfigured()) {
+	std::vector<std::string> sResult;
+	StringSplit(subsystems, ";", sResult);
+
+	std::map<std::string, int> ActiveSystems;
+
+	std::vector<std::string>::const_iterator itt;
+	for (itt = sResult.begin(); itt != sResult.end(); ++itt)
+	{
+		ActiveSystems[*itt] = 1;
+	}
+
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); iter++) {
+		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
+		if (ActiveSystems.empty() || (ittSystem!=ActiveSystems.end() && iter->second->IsConfigured())) 
+		{
 			bRet |= iter->second->SendMessageEx(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
@@ -61,21 +76,21 @@ bool CNotificationHelper::SendMessageEx(const std::string subsystem, const std::
 
 void CNotificationHelper::SetConfigValue(const std::string &key, const std::string &value)
 {
-	for (it_noti_type iter = _notifiers.begin(); iter != _notifiers.end(); iter++) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); iter++) {
 		iter->second->SetConfigValue(key, value);
 	}
 }
 
 void CNotificationHelper::ConfigFromGetvars(http::server::cWebem *webEm, const bool save)
 {
-	for (it_noti_type iter = _notifiers.begin(); iter != _notifiers.end(); iter++) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); iter++) {
 		iter->second->ConfigFromGetvars(webEm, save);
 	}
 }
 
 bool CNotificationHelper::IsInConfig(const std::string &Key)
 {
-	for (it_noti_type iter = _notifiers.begin(); iter != _notifiers.end(); iter++) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); iter++) {
 		if (iter->second->IsInConfig(Key)) {
 			return true;
 		}
@@ -88,7 +103,7 @@ void CNotificationHelper::LoadConfig()
 	int tot = 0, active = 0;
 	std::stringstream logline;
 	logline << "Active notification subsystems:";
-	for (it_noti_type iter = _notifiers.begin(); iter != _notifiers.end(); iter++) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); iter++) {
 		tot++;
 		iter->second->LoadConfig();
 		if (iter->second->IsConfigured()) {
