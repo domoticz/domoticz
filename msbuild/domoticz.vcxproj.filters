@@ -651,6 +651,9 @@
     <ClInclude Include="..\notifications\NotificationHelper.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationHTTP.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1044,6 +1047,9 @@
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationHelper.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationHTTP.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>

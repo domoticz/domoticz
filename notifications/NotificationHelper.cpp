@@ -7,6 +7,7 @@
 #include "NotificationPushalot.h"
 #include "NotificationEmail.h"
 #include "NotificationSMS.h"
+#include "NotificationHTTP.h"
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
@@ -22,6 +23,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationPushalot());
 	AddNotifier(new CNotificationEmail());
 	AddNotifier(new CNotificationSMS());
+	AddNotifier(new CNotificationHTTP());
 	/* more notifiers can be added here */
 }
 
@@ -37,12 +39,12 @@ void CNotificationHelper::AddNotifier(CNotificationBase *notifier)
 	_notifiers[notifier->GetSubsystemId()] = notifier;
 }
 
-bool CNotificationHelper::SendMessage(const std::string subsystem, const std::string Subject, const std::string Text, const bool bFromNotification)
+bool CNotificationHelper::SendMessage(const std::string subsystem, const std::string Subject, const std::string Text, const std::string &ExtraData, const bool bFromNotification)
 {
-	return SendMessageEx(subsystem, Subject, Text, 0, std::string(""),bFromNotification);
+	return SendMessageEx(subsystem, Subject, Text, ExtraData, 0, std::string(""), bFromNotification);
 }
 
-bool CNotificationHelper::SendMessageEx(const std::string subsystem, const std::string Subject, const std::string Text, int Priority, const std::string Sound, const bool bFromNotification)
+bool CNotificationHelper::SendMessageEx(const std::string subsystem, const std::string Subject, const std::string Text, const std::string &ExtraData, int Priority, const std::string Sound, const bool bFromNotification)
 {
 	bool bRet = false;
 #if defined WIN32
@@ -51,7 +53,7 @@ bool CNotificationHelper::SendMessageEx(const std::string subsystem, const std::
 #endif
 	for (it_noti_type iter = _notifiers.begin(); iter != _notifiers.end(); iter++) {
 		if ((subsystem == "" || subsystem == iter->first) && iter->second->IsConfigured()) {
-			bRet |= iter->second->SendMessageEx(Subject, Text, Priority, Sound, bFromNotification);
+			bRet |= iter->second->SendMessageEx(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
 	return bRet;

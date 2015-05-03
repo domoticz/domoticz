@@ -3394,7 +3394,7 @@ namespace http {
 				)
 				return;
 			//Add to queue
-			if (m_notifications.SendMessage(NOTIFYALL, subject, body, false)) {
+			if (m_notifications.SendMessage(NOTIFYALL, subject, body, std::string(""), false)) {
 				root["status"] = "OK";
 			}
 			root["title"] = "SendNotification";
@@ -4731,7 +4731,7 @@ namespace http {
 				std::string subsystem = m_pWebEm->FindValue("subsystem");
 
 				m_notifications.ConfigFromGetvars(m_pWebEm, false);
-				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message,false)) {
+				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message, std::string(""), false)) {
 					root["status"] = "OK";
 				}
 				/* we need to reload the config, because the values that were set were only for testing */

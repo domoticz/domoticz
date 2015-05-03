@@ -43,6 +43,19 @@ define(['app'], function (app) {
 				}
 				extraparams = "ClickatellAPI=" + ClickatellAPI + "&ClickatellUser=" + ClickatellUser + "&ClickatellPassword=" + ClickatellPassword + "&ClickatellTo=" + ClickatellTo + "&ClickatellFrom=" + ClickatellFrom;
 				break;
+			case "http":
+				var HTTPField1=encodeURIComponent($("#httptable #HTTPField1").val());
+				var HTTPField2=encodeURIComponent($("#httptable #HTTPField2").val());
+				var HTTPField3=encodeURIComponent($("#httptable #HTTPField3").val());
+				var HTTPField4=encodeURIComponent($("#httptable #HTTPField4").val());
+				var HTTPTo=encodeURIComponent($("#httptable #HTTPTo").val());
+				var HTTPURL=encodeURIComponent($("#httptable #HTTPURL").val());
+				if (HTTPURL=="") {
+					ShowNotify($.t('Please specify the base URL!...'), 3500, true);
+					return;
+				}
+				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL;
+				break;
 			case "prowl":
 				var ProwlAPI=encodeURIComponent($("#prowltable #apikey").val());
 				if (ProwlAPI=="") {
@@ -227,6 +240,29 @@ define(['app'], function (app) {
 			  if (typeof data.ClickatellFrom != 'undefined') {
 				$("#smstable #ClickatellFrom").val(atob(data.ClickatellFrom));
 			  }
+			  
+			  if (typeof data.HTTPEnabled != 'undefined') {
+  				$("#httptable #HTTPEnabled").prop('checked',data.HTTPEnabled==1);
+			  }
+			  if (typeof data.HTTPField1 != 'undefined') {
+				$("#httptable #HTTPField1").val(atob(data.HTTPField1));
+			  }
+			  if (typeof data.HTTPField2 != 'undefined') {
+				$("#httptable #HTTPField2").val(atob(data.HTTPField2));
+			  }
+			  if (typeof data.HTTPField3 != 'undefined') {
+				$("#httptable #HTTPField3").val(atob(data.HTTPField3));
+			  }
+			  if (typeof data.HTTPField4 != 'undefined') {
+				$("#httptable #HTTPField4").val(atob(data.HTTPField4));
+			  }
+			  if (typeof data.HTTPTo != 'undefined') {
+				$("#httptable #HTTPTo").val(atob(data.HTTPTo));
+			  }
+			  if (typeof data.HTTPURL != 'undefined') {
+				$("#httptable #HTTPURL").val(atob(data.HTTPURL));
+			  }
+			  
 			  if (typeof data.LightHistoryDays != 'undefined') {
 				$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
 			  }

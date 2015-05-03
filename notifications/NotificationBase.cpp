@@ -70,12 +70,12 @@ void CNotificationBase::LoadConfig()
 	}
 }
 
-bool CNotificationBase::SendMessage(const std::string &Subject, const std::string &Text, const bool bFromNotification)
+bool CNotificationBase::SendMessage(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const bool bFromNotification)
 {
-	return SendMessageEx(Subject, Text, 0, std::string(""),bFromNotification);
+	return SendMessageEx(Subject, Text, std::string(""), 0, std::string(""), bFromNotification);
 }
 
-bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::string &Text, const int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
 	if (!IsConfigured()) {
 		// subsystem not configured, skip
@@ -103,7 +103,7 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 		fText = CURLEncode::URLEncode(fText);
 	}
 	
-	bool bRet = SendMessageImplementation(fSubject, fText, Priority, Sound, bFromNotification);
+	bool bRet = SendMessageImplementation(fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
 	if (bRet) {
 		_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
 	}

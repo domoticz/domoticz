@@ -234,12 +234,13 @@ hardware/Wunderground.cpp
 hardware/YouLess.cpp
 hardware/ZWaveBase.cpp
 notifications/NotificationBase.cpp
+notifications/NotificationEmail.cpp
 notifications/NotificationHelper.cpp
-notifications/NotificationProwl.cpp
+notifications/NotificationHTTP.cpp
 notifications/NotificationNma.cpp
+notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
 notifications/NotificationPushalot.cpp
-notifications/NotificationEmail.cpp
 notifications/NotificationSMS.cpp
 smtpclient/SMTPClient.cpp
 tcpserver/TCPClient.cpp

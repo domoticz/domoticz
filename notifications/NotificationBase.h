@@ -13,8 +13,8 @@ class CNotificationBase {
 protected:
 	CNotificationBase(const std::string &subsystemid, const int options = OPTIONS_NONE);
 	~CNotificationBase();
-	bool SendMessage(const std::string &Subject, const std::string &Text, const bool bFromNotification);
-	bool SendMessageEx(const std::string &Subject, const std::string &Text, const int Priority, const std::string &Sound, const bool bFromNotification);
+	bool SendMessage(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const bool bFromNotification);
+	bool SendMessageEx(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification);
 	void SetConfigValue(const std::string &Key, const std::string &Value);
 	std::string GetSubsystemId();
 	bool IsInConfig(const std::string &Key);
@@ -26,7 +26,7 @@ protected:
 	void SetupConfig(const std::string &Key, std::string& Value);
 	void SetupConfig(const std::string &Key, int *Value);
 	void SetupConfigBase64(const std::string &Key, std::string& Value);
-	virtual bool SendMessageImplementation(const std::string &Subject, const std::string &Text, const int Priority, const std::string &Sound, const bool bFromNotification) = 0;
+	virtual bool SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification) = 0;
 	void LoadConfig();
 	std::string MakeHtml(const std::string &txt);
 

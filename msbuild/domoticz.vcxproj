@@ -219,6 +219,7 @@
     <ClInclude Include="..\notifications\NotificationBase.h" />
     <ClInclude Include="..\notifications\NotificationHelper.h" />
     <ClInclude Include="..\notifications\NotificationEmail.h" />
+    <ClInclude Include="..\notifications\NotificationHTTP.h" />
     <ClInclude Include="..\notifications\NotificationNma.h" />
     <ClInclude Include="..\notifications\NotificationProwl.h" />
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
@@ -487,6 +488,7 @@
     <ClCompile Include="..\notifications\NotificationBase.cpp" />
     <ClCompile Include="..\notifications\NotificationHelper.cpp" />
     <ClCompile Include="..\notifications\NotificationEmail.cpp" />
+    <ClCompile Include="..\notifications\NotificationHTTP.cpp" />
     <ClCompile Include="..\notifications\NotificationNma.cpp" />
     <ClCompile Include="..\notifications\NotificationProwl.cpp" />
     <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
