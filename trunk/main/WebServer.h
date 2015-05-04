@@ -25,7 +25,7 @@ public:
 	};
 	CWebServer(void);
 	~CWebServer(void);
-	bool StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const bool bIgnoreUsernamePassword);
+	bool StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file = "", const std::string &secure_cert_passphrase = "");
 	void StopServer();
 	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication=false);
 	void RegisterRType(const char* idname, webserver_response_function ResponseFunction);
@@ -220,12 +220,9 @@ private:
 	int m_ZW_Hwidx;
 #endif	
 	boost::shared_ptr<boost::thread> m_thread;
-	boost::shared_ptr<boost::thread> m_secure_thread;
-	bool m_stop_secure_thread;
 	std::map < std::string, webserver_response_function > m_webcommands;
 	std::map < std::string, webserver_response_function > m_webrtypes;
 	void Do_Work();
-	void Do_Secure_Work();
 	std::string m_retstr;
 	std::wstring m_wretstr;
 	time_t m_LastUpdateCheck;

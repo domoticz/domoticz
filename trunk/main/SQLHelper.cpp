@@ -11,7 +11,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
-#include "WebServer.h"
+#include "WebServerHelper.h"
 #include "../webserver/Base64.h"
 #include "unzip.h"
 #include "mainstructs.h"
@@ -29,7 +29,7 @@
 
 #define DB_VERSION 68
 
-extern http::server::CWebServer m_webserver;
+extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
 
 const char *sqlCreateDeviceStatus =
@@ -1869,6 +1869,7 @@ void CSQLHelper::Do_Work()
 						}
 						GetPreferencesVar("EmailUsername",nValue,EmailUsername);
 						GetPreferencesVar("EmailPassword",nValue,EmailPassword);
+
 						GetPreferencesVar("EmailPort", EmailPort);
 
 						SMTPClient sclient;
@@ -7000,7 +7001,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 					ErrorMessage = "Icon File: " + IconFile + " is not present";
 					if (iTotalAdded>0)
 					{
-						m_webserver.ReloadCustomSwitchIcons();
+						m_webservers.ReloadCustomSwitchIcons();
 					}
 					return false;
 				}
@@ -7024,7 +7025,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 					ErrorMessage = "Error adding new row to database!";
 					if (iTotalAdded > 0)
 					{
-						m_webserver.ReloadCustomSwitchIcons();
+						m_webservers.ReloadCustomSwitchIcons();
 					}
 					return false;
 				}
@@ -7062,7 +7063,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 					ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
 					if (iTotalAdded > 0)
 					{
-						m_webserver.ReloadCustomSwitchIcons();
+						m_webservers.ReloadCustomSwitchIcons();
 					}
 					return false;
 				}
@@ -7074,7 +7075,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 					ErrorMessage = "Could not extract File: " + IconFile16;
 					if (iTotalAdded > 0)
 					{
-						m_webserver.ReloadCustomSwitchIcons();
+						m_webservers.ReloadCustomSwitchIcons();
 					}
 					return false;
 				}
@@ -7084,7 +7085,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 					free(pFBuf);
 					if (iTotalAdded > 0)
 					{
-						m_webserver.ReloadCustomSwitchIcons();
+						m_webservers.ReloadCustomSwitchIcons();
 					}
 					return false;
 				}
@@ -7096,7 +7097,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 						ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
 						if (iTotalAdded > 0)
 						{
-							m_webserver.ReloadCustomSwitchIcons();
+							m_webservers.ReloadCustomSwitchIcons();
 						}
 						return false;
 					}
@@ -7107,6 +7108,6 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 			}
 		}
 	}
-	m_webserver.ReloadCustomSwitchIcons();
+	m_webservers.ReloadCustomSwitchIcons();
 	return true;
 }

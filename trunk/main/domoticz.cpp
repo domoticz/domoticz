@@ -26,7 +26,7 @@
 #include "CmdLine.h"
 #include "Logger.h"
 #include "Helper.h"
-#include "WebServer.h"
+#include "WebServerHelper.h"
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 
@@ -48,6 +48,7 @@ const char *szHelp=
 #ifdef NS_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
+	"\t-sslpass passphrase for private key in certificate\n"
 #endif
 #if defined WIN32
 	"\t-wwwroot file_path (for example D:\\www)\n"
@@ -92,7 +93,7 @@ std::string szAppVersion="???";
 
 MainWorker m_mainworker;
 CLogger _log;
-http::server::CWebServer m_webserver;
+http::server::CWebServerHelper m_webservers;
 CSQLHelper m_sql;
 CNotificationHelper m_notifications;
 std::string logfile = "";
@@ -519,6 +520,16 @@ int main(int argc, char**argv)
 		}
 		std::string ca_cert = cmdLine.GetSafeArgument("-sslcert", 0, "./server_cert.pem");
 		m_mainworker.SetSecureWebserverCert(ca_cert);
+	}
+	if (cmdLine.HasSwitch("-sslpass"))
+	{
+		if (cmdLine.GetArgumentCount("-sslpass") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a passphrase for your certificate file");
+			return 1;
+		}
+		std::string ca_passphrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
+		m_mainworker.SetSecureWebserverPass(ca_passphrase);
 	}
 	
 #endif

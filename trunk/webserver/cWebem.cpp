@@ -47,9 +47,11 @@ Webem constructor
 cWebem::cWebem(
 	   const std::string& address,
 	   const std::string& port,
-	   const std::string& doc_root ) :
+	   const std::string& doc_root,
+	   const std::string& secure_cert_file,
+	   const std::string& secure_cert_passphrase) :
 myRequestHandler( doc_root,this ), myPort( port ),
-myServer( address, port, myRequestHandler ),
+myServer( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase ),
 m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
 m_actsessionid(""),
@@ -664,6 +666,12 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			}
 			extraheaders=1;
 		}
+		bool keepAlive = false;
+		std::string KeepAliveStr = req.get_req_header(&req, "Connection");
+		if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
+			keepAlive = true;
+			extraheaders += 2;
+		}
 
 		if (!boost::algorithm::starts_with(strMimeType, "image"))
 		{
@@ -677,10 +685,16 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			rep.headers[2].value = "no-cache";
 			rep.headers[3].name = "Pragma";
 			rep.headers[3].value = "no-cache";
+			if (keepAlive) {
+				rep.headers[4].name = "Connection";
+				rep.headers[4].value = KeepAliveStr; // RK, todo: Keep-Alive or "Close"
+				rep.headers[5].name = KeepAliveStr;
+				rep.headers[5].value = "max=20, timeout=10";
+			}
 			if (m_outputfilename != "")
 			{
-				rep.headers[4].name = "Content-Disposition";
-				rep.headers[4].value = "attachment; filename=" + m_outputfilename;
+				rep.headers[extraheaders + 3].name = "Content-Disposition";
+				rep.headers[extraheaders + 3].value = "attachment; filename=" + m_outputfilename;
 			}
 		}
 		else
@@ -692,10 +706,16 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			rep.headers[1].value = strMimeType;
 			rep.headers[2].name = "Cache-Control";
 			rep.headers[2].value = "max-age=3600, public";
+			if (keepAlive) {
+				rep.headers[3].name = "Connection";
+				rep.headers[3].value = "Keep-Alive"; // RK, todo: Keep-Alive or "Close"
+				rep.headers[4].name = "Keep-Alive";
+				rep.headers[4].value = "max=20, timeout=10";
+			}
 			if (m_outputfilename != "")
 			{
-				rep.headers[3].name = "Content-Disposition";
-				rep.headers[3].value = "attachment; filename=" + m_outputfilename;
+				rep.headers[extraheaders + 2].name = "Content-Disposition";
+				rep.headers[extraheaders + 2].value = "attachment; filename=" + m_outputfilename;
 			}
 		}
 		return true;
@@ -708,9 +728,16 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 	cUTF utf( pfunW->second( ) );
 
+	int extraheaders = 0;
+	bool keepAlive = false;
+	std::string KeepAliveStr = req.get_req_header(&req, "Connection");
+	if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
+		keepAlive = true;
+		extraheaders += 2;
+	}
 	rep.status = reply::ok;
 	rep.content.append(utf.get8(), strlen(utf.get8()));
-	rep.headers.resize(4);
+	rep.headers.resize(4 + extraheaders);
 	rep.headers[0].name = "Content-Length";
 	rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
 	rep.headers[1].name = "Content-Type";
@@ -720,6 +747,12 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	rep.headers[2].value = "no-cache";
 	rep.headers[3].name = "Pragma";
 	rep.headers[3].value = "no-cache";
+	if (keepAlive) {
+		rep.headers[4].name = "Connection";
+		rep.headers[4].value = KeepAliveStr;
+		rep.headers[5].name = KeepAliveStr;
+		rep.headers[5].value = "max=20, timeout=10";
+	}
 	return true;
 }
 

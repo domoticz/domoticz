@@ -45,6 +45,7 @@ public:
 	void SetSecureWebserverPort(const std::string &Port);
 	std::string GetSecureWebserverPort();
 	void SetSecureWebserverCert(const std::string &CertFile);
+	void SetSecureWebserverPass(const std::string &passphrase);
 
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 
@@ -149,6 +150,7 @@ private:
 	std::string m_webserverport;
 	std::string m_secure_webserverport;
 	std::string m_secure_web_cert_file;
+	std::string m_secure_web_passphrase;
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;

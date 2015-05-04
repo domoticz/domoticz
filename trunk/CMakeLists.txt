@@ -161,6 +161,7 @@ main/Scheduler.cpp
 main/SQLHelper.cpp
 main/SunRiseSet.cpp
 main/WebServer.cpp
+main/WebServerHelper.cpp
 main/WindCalculation.cpp
 main/DataPush.cpp
 httpclient/HTTPClient.cpp
@@ -250,7 +251,6 @@ webserver/connection.cpp
 webserver/connection_manager.cpp
 webserver/cWebem.cpp
 webserver/mime_types.cpp
-webserver/net_skeleton.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp

@@ -35,9 +35,6 @@
 #include "Logger.h"
 #include "SQLHelper.h"
 #include <algorithm>
-#ifdef NS_ENABLE_SSL
-#include "../webserver/net_skeleton.h"
-#endif
 
 #ifndef WIN32
 #include <sys/utsname.h>
@@ -54,69 +51,6 @@
 
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
-#ifdef NS_ENABLE_SSL
-std::string ssl_list_conn;
-std::string ssl_recv_conn;
-ns_mgr *secure_www_wrapper = NULL;
-
-static void secure_www_ev_handler(struct ns_connection *nc, enum ns_event ev, void *p) {
-	const char *target_addr = (const char *)nc->mgr->user_data;
-	struct ns_connection *pc = (struct ns_connection *) nc->connection_data;
-	struct iobuf *io = &nc->recv_iobuf;
-
-	(void)p;
-	switch (ev) {
-	case NS_ACCEPT:
-		// Create a connection to the target, and interlink both connections
-		nc->connection_data = ns_connect(nc->mgr, target_addr, nc);
-		if (nc->connection_data == NULL) {
-			nc->flags |= NSF_CLOSE_IMMEDIATELY;
-		}
-		break;
-
-	case NS_CLOSE:
-		// If either connection closes, unlink them and schedule closing
-		if (pc != NULL) {
-			pc->flags |= NSF_FINISHED_SENDING_DATA;
-			pc->connection_data = NULL;
-		}
-		nc->connection_data = NULL;
-		break;
-
-	case NS_RECV:
-		// Forward arrived data to the other connection, and discard from buffer
-		if (pc != NULL) {
-			ns_send(pc, io->buf, io->len);
-			iobuf_remove(io, io->len);
-		}
-		break;
-
-	default:
-		break;
-	}
-}
-
-void *secure_www_wrapper_init(const char *local_addr, const char *target_addr, const char **err_msg)
-{
-	struct ns_mgr *mgr = (struct ns_mgr *) calloc(1, sizeof(mgr[0]));
-	*err_msg = NULL;
-
-	if (mgr == NULL) {
-		*err_msg = "malloc failed";
-	}
-	else {
-		ns_mgr_init(mgr, (void *)target_addr, secure_www_ev_handler);
-		if (ns_bind(mgr, local_addr, NULL) == NULL) {
-			*err_msg = "ns_bind() failed: bad listening_port";
-			ns_mgr_free(mgr);
-			free(mgr);
-			mgr = NULL;
-		}
-	}
-
-	return mgr;
-}
-#endif
 
 extern std::string szAppVersion;
 extern bool m_bDontCacheHTMLPages;
@@ -194,18 +128,6 @@ namespace http {
 			}
 
 			_log.Log(LOG_STATUS, "WebServer stopped...");
-		}
-		void CWebServer::Do_Secure_Work()
-		{
-#ifdef NS_ENABLE_SSL
-			while (!m_stop_secure_thread)
-			{
-				ns_mgr_poll(secure_www_wrapper, 1000);
-			}
-			ns_mgr_free(secure_www_wrapper);
-			free(secure_www_wrapper);
-			_log.Log(LOG_STATUS, "Secure WebServer stopped...");
-#endif
 		}
 
 		void CWebServer::ReloadCustomSwitchIcons()
@@ -305,7 +227,7 @@ namespace http {
 			}
 		}
 
-		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const bool bIgnoreUsernamePassword)
+		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
 		{
 			StopServer();
 			ReloadCustomSwitchIcons();
@@ -316,10 +238,10 @@ namespace http {
 				m_pWebEm = new http::server::cWebem(
 					listenaddress.c_str(),						// address
 					listenport.c_str(),							// port
-					serverpath.c_str());
+					serverpath.c_str(), secure_cert_file, secure_cert_passphrase);
 			}
-			catch (...) {
-				_log.Log(LOG_ERROR, "Failed to start the web server");
+ 			catch (std::exception& e) {
+				_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
 				if (atoi(listenport.c_str()) < 1024)
 					_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
 				else
@@ -588,41 +510,16 @@ namespace http {
 			//Start normal worker thread
 			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
 
-#ifdef NS_ENABLE_SSL
-			if (!secure_listenport.empty())
-			{
-				const char *err_msg;
-				ssl_list_conn = "ssl://" + secure_listenport + ":" + secure_cert_file;
-				ssl_recv_conn = "127.0.0.1:" + listenport;
-				if ((secure_www_wrapper = (ns_mgr*)secure_www_wrapper_init(ssl_list_conn.c_str(), ssl_recv_conn.c_str(), &err_msg)) == NULL) {
-					_log.Log(LOG_ERROR, "Failed to start secure web-server");
-				}
-				else {
-					//Start secure worker thread
-					_log.Log(LOG_STATUS, "Secure Webserver started on port: %s", secure_listenport.c_str());
-					m_stop_secure_thread = false;
-					m_secure_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Secure_Work, this)));
-				}
-			}
-#endif
 			return (m_thread != NULL);
 		}
 
 		void CWebServer::StopServer()
 		{
-			m_stop_secure_thread = true;
 			try
 			{
 				if (m_pWebEm == NULL)
 					return;
 				m_pWebEm->Stop();
-#ifdef NS_ENABLE_SSL
-				m_stop_secure_thread = true;
-				if (m_secure_thread)
-				{
-					m_secure_thread->join();
-				}
-#endif
 			}
 			catch (...)
 			{
