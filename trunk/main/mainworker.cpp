@@ -764,7 +764,7 @@ bool MainWorker::Stop()
 
 		m_stoprequested = true;
 		m_thread->join();
-		m_thread = NULL;
+		m_thread.reset();
 	}
 	return true;
 }
