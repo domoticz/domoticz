@@ -55,6 +55,9 @@ struct reply
   /// not be changed until the write operation has completed.
   std::vector<boost::asio::const_buffer> to_buffers();
 
+  // reset the reply, so we can re-use it during long-lived connections
+  void reset();
+
   /// Get a stock reply.
   static reply stock_reply(status_type status);
 };

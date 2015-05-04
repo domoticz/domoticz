@@ -4,7 +4,7 @@
 #include "SunRiseSet.h"
 #include "localtime_r.h"
 #include "Logger.h"
-#include "WebServer.h"
+#include "WebServerHelper.h"
 #include "SQLHelper.h"
 
 #include "../httpclient/HTTPClient.h"
@@ -94,7 +94,7 @@
 extern std::string szStartupFolder;
 extern std::string szWWWFolder;
 
-extern http::server::CWebServer m_webserver;
+extern http::server::CWebServerHelper m_webservers;
 
 namespace tcp {
 namespace server {
@@ -114,6 +114,7 @@ m_LastSunriseSet("")
 	m_webserverport="8080";
 	m_secure_webserverport = "";
 	m_secure_web_cert_file = "./server_cert.pem";
+	m_secure_web_passphrase = "";
 	m_bIgnoreUsernamePassword=false;
 
 	time_t atime=mytime(NULL);
@@ -391,6 +392,11 @@ std::string MainWorker::GetSecureWebserverPort()
 void MainWorker::SetSecureWebserverCert(const std::string &CertFile)
 {
 	m_secure_web_cert_file = CertFile;
+}
+
+void MainWorker::SetSecureWebserverPass(const std::string &passphrase)
+{
+	m_secure_web_passphrase = passphrase;
 }
 
 
@@ -748,7 +754,7 @@ bool MainWorker::Stop()
 {
 	if (m_thread)
 	{
-		m_webserver.StopServer();
+		m_webservers.StopServers();
 		_log.Log(LOG_STATUS, "Stopping all hardware...");
 		StopDomoticzHardware();
 		m_scheduler.StopScheduler();
@@ -758,6 +764,7 @@ bool MainWorker::Stop()
 
 		m_stoprequested = true;
 		m_thread->join();
+		m_thread = NULL;
 	}
 	return true;
 }
@@ -765,7 +772,7 @@ bool MainWorker::Stop()
 bool MainWorker::StartThread()
 {
 	//Start WebServer
-	if (!m_webserver.StartServer("0.0.0.0", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_bIgnoreUsernamePassword))
+	if (!m_webservers.StartServers("0.0.0.0", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword))
 	{
         return false;
 	}
@@ -773,12 +780,12 @@ bool MainWorker::StartThread()
 	int nValue=0;
 	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
 	{
-		m_webserver.SetAuthenticationMethod(nValue);
+		m_webservers.SetAuthenticationMethod(nValue);
 	}
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
 	{
-		m_webserver.SetWebTheme(sValue);
+		m_webservers.SetWebTheme(sValue);
 	}
 
 	//Start Scheduler
@@ -1089,7 +1096,7 @@ void MainWorker::Do_Work()
 				std::string szPwdResetFile = szStartupFolder + "resetpwd";
 				if (file_exist(szPwdResetFile.c_str()))
 				{
-					m_webserver.ClearUserPasswords();
+					m_webservers.ClearUserPasswords();
 					m_sql.UpdatePreferencesVar("WebUserName", "");
 					m_sql.UpdatePreferencesVar("WebPassword", "");
 					std::remove(szPwdResetFile.c_str());

@@ -7,7 +7,7 @@ CNotificationEmail::CNotificationEmail() : CNotificationBase(std::string("email"
 	SetupConfig(std::string("EmailFrom"), _EmailFrom);
 	SetupConfig(std::string("EmailTo"), _EmailTo);
 	SetupConfig(std::string("EmailServer"), _EmailServer);
-	SetupConfig(std::string("EmailPort"), _EmailPort);
+	SetupConfig(std::string("EmailPort"), &_EmailPort);
 	SetupConfigBase64(std::string("EmailUsername"), _EmailUsername);
 	SetupConfigBase64(std::string("EmailPassword"), _EmailPassword);
 	SetupConfig(std::string("UseEmailInNotifications"), &_UseEmailInNotifications);
@@ -35,7 +35,7 @@ bool CNotificationEmail::SendMessageImplementation(const std::string &Subject, c
 	if (_EmailUsername != "" && _EmailPassword != "") {
 		sclient.SetCredentials(_EmailUsername.c_str(), _EmailPassword.c_str());
 	}
-	sclient.SetServer(_EmailServer.c_str(), atoi(_EmailPort.c_str()));
+	sclient.SetServer(_EmailServer.c_str(), _EmailPort);
 	sclient.SetSubject(Subject.c_str());
 	sclient.SetHTMLBody(HtmlBody.c_str());
 	bool bRet=sclient.SendEmail();
@@ -44,5 +44,5 @@ bool CNotificationEmail::SendMessageImplementation(const std::string &Subject, c
 
 bool CNotificationEmail::IsConfigured()
 {
-	return (_EmailFrom != "" && _EmailTo != "" && _EmailServer != "" && atoi(_EmailPort.c_str()) != 0);
+	return (_EmailFrom != "" && _EmailTo != "" && _EmailServer != "" && _EmailPort != 0);
 }

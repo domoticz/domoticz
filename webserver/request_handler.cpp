@@ -242,18 +242,23 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 
   }
 #endif
-  if (!bHaveLoadedgzip)
-	rep.headers.resize(2);
-  else
-	rep.headers.resize(3);
+  int nrheaders = 4;
+  if (bHaveLoadedgzip) {
+	nrheaders++;
+  }
+  rep.headers.resize(nrheaders);
   rep.headers[0].name = "Content-Length";
   rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
   rep.headers[1].name = "Content-Type";
   rep.headers[1].value = mime_types::extension_to_type(extension);
+  rep.headers[2].name = "Connection";
+  rep.headers[2].value = "Keep-Alive"; // RK, todo: Keep-Alive or "Close"
+  rep.headers[3].name = "Keep-Alive";
+  rep.headers[3].value = "max=20, timeout=10";
   if (bHaveLoadedgzip)
   {
-	  rep.headers[2].name = "Content-Encoding";
-	  rep.headers[2].value = "gzip";
+	  rep.headers[4].name = "Content-Encoding";
+	  rep.headers[4].value = "gzip";
   }
 }
 

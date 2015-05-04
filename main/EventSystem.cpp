@@ -11,8 +11,6 @@
 #include "localtime_r.h"
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
-//#include <codecvt>
-//#include <locale>
 
 #ifdef WIN32
 #include "dirent_windows.h"

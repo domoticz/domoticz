@@ -540,9 +540,6 @@
     <ClInclude Include="..\main\unzip_stream.h">
       <Filter>zip\Main</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\net_skeleton.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\MySensorsBase.h">
       <Filter>Devices\MySensors</Filter>
     </ClInclude>
@@ -653,6 +650,9 @@
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationHTTP.h">
       <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebServerHelper.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -941,9 +941,6 @@
     <ClCompile Include="..\main\DataPush.cpp">
       <Filter>Devices\FibaroLink</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\net_skeleton.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\MySensorsBase.cpp">
       <Filter>Devices\MySensors</Filter>
     </ClCompile>
@@ -1051,6 +1048,9 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationHTTP.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHelper.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
