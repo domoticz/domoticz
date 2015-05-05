@@ -119,6 +119,16 @@ namespace http {
 					if (m_pWebEm)
 						m_pWebEm->Run();
 				}
+				catch (std::exception& e)
+				{
+					if (!m_bDoStop)
+					{
+						_log.Log(LOG_ERROR, "WebServer stopped by exception, starting again..., %s",e.what());
+						if (m_pWebEm)
+							m_pWebEm->Stop();
+						continue;
+					}
+				}
 				catch (...)
 				{
 					if (!m_bDoStop)
