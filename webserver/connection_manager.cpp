@@ -18,46 +18,66 @@
 namespace http {
 namespace server {
 
+#define CONNECTION_SESSION_TIMEOUT 10*60
+
+connection_manager::connection_manager()
+{
+	last_timeout_check_ = time(NULL);
+}
+
 void connection_manager::start(connection_ptr c)
 {
-  connections_.insert(c);
-  std::string s = c->socket().remote_endpoint().address().to_string();
+	boost::lock_guard<boost::mutex> l(m_mutex);
+	connections_.insert(c);
+	std::string s = c->socket().remote_endpoint().address().to_string();
 
-  if (connectedips_.find(s)==connectedips_.end())
-  {
-	  //ok, this could get a very long list when running for years
-	  connectedips_.insert(s);
-	  _log.Log(LOG_STATUS,"Incoming connection from: %s", s.c_str());
-  }
+	time_t atime = time(NULL);
+	std::map<std::string, time_t>::iterator itt = connectedips_.find(s);
+	if (itt==connectedips_.end())
+	{
+		connectedips_[s] = atime;
+		_log.Log(LOG_STATUS,"Incoming connection from: %s", s.c_str());
+	}
+	else
+	{
+		if (atime - connectedips_[s] > 2 * 60)
+		{
+			_log.Log(LOG_STATUS, "Incoming connection from: %s", s.c_str());
+		}
+		connectedips_[s]=atime;
+	}
 
-  c->start();
+	//Cleanup old connections
+	if (atime - last_timeout_check_ > 60)
+	{
+		last_timeout_check_ = atime;
+		itt = connectedips_.begin();
+		while (itt != connectedips_.end())
+		{
+			if (atime - itt->second > CONNECTION_SESSION_TIMEOUT)
+			{
+				itt = connectedips_.erase(itt);
+			}
+			else
+				++itt;
+		}
+	}
+
+	c->start();
 }
 
 void connection_manager::stop(connection_ptr c)
 {
+	boost::lock_guard<boost::mutex> l(m_mutex);
 	connections_.erase(c);
 	c->stop();
 }
 
 void connection_manager::stop_all()
 {
-  std::for_each(connections_.begin(), connections_.end(),
-      boost::bind(&connection::stop, _1));
-  connections_.clear();
-}
-
-void connection_manager::check_timeouts()
-{
-	time_t atime=mytime(NULL);
-	std::set<connection_ptr>::const_iterator itt;
-	for (itt=connections_.begin(); itt!=connections_.end(); ++itt)
-	{
-		if (atime-(*itt)->m_lastresponse>20*60)
-		{
-			stop(*itt);
-			itt=connections_.begin();
-		}
-	}
+	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::for_each(connections_.begin(), connections_.end(),
+		boost::bind(&connection::stop, _1));
 }
 
 } // namespace server

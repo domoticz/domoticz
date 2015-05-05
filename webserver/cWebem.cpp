@@ -664,7 +664,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 				extension = m_outputfilename.substr(last_dot_pos + 1);
 				strMimeType=mime_types::extension_to_type(extension);
 			}
-			extraheaders=1;
+			extraheaders++;
 		}
 		bool keepAlive = false;
 		std::string KeepAliveStr = req.get_req_header(&req, "Connection");
@@ -673,49 +673,49 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			extraheaders += 2;
 		}
 
+		int iHeader = 0;
 		if (!boost::algorithm::starts_with(strMimeType, "image"))
 		{
 			rep.headers.resize(4 + extraheaders);
-			rep.headers[0].name = "Content-Length";
-			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-			rep.headers[1].name = "Content-Type";
-			rep.headers[1].value = strMimeType;
-			rep.headers[1].value += ";charset=UTF-8"; //ISO-8859-1
-			rep.headers[2].name = "Cache-Control";
-			rep.headers[2].value = "no-cache";
-			rep.headers[3].name = "Pragma";
-			rep.headers[3].value = "no-cache";
+			rep.headers[iHeader].name = "Content-Length";
+			rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
+			rep.headers[iHeader].name = "Content-Type";
+			rep.headers[iHeader++].value = strMimeType + ";charset=UTF-8"; //ISO-8859-1;
+			rep.headers[iHeader].name = "Cache-Control";
+			rep.headers[iHeader++].value = "no-cache";
+			rep.headers[iHeader].name = "Pragma";
+			rep.headers[iHeader++].value = "no-cache";
 			if (keepAlive) {
-				rep.headers[4].name = "Connection";
-				rep.headers[4].value = KeepAliveStr; // RK, todo: Keep-Alive or "Close"
-				rep.headers[5].name = KeepAliveStr;
-				rep.headers[5].value = "max=20, timeout=10";
+				rep.headers[iHeader].name = "Connection";
+				rep.headers[iHeader++].value = KeepAliveStr; // RK, todo: Keep-Alive or "Close"
+				rep.headers[iHeader].name = "Keep-Alive";
+				rep.headers[iHeader++].value = "max=20, timeout=" + boost::lexical_cast<std::string>(req.timeout);
 			}
 			if (m_outputfilename != "")
 			{
-				rep.headers[extraheaders + 3].name = "Content-Disposition";
-				rep.headers[extraheaders + 3].value = "attachment; filename=" + m_outputfilename;
+				rep.headers[iHeader].name = "Content-Disposition";
+				rep.headers[iHeader++].value = "attachment; filename=" + m_outputfilename;
 			}
 		}
 		else
 		{
 			rep.headers.resize(3 + extraheaders);
-			rep.headers[0].name = "Content-Length";
-			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-			rep.headers[1].name = "Content-Type";
-			rep.headers[1].value = strMimeType;
-			rep.headers[2].name = "Cache-Control";
-			rep.headers[2].value = "max-age=3600, public";
+			rep.headers[iHeader].name = "Content-Length";
+			rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
+			rep.headers[iHeader].name = "Content-Type";
+			rep.headers[iHeader++].value = strMimeType;
+			rep.headers[iHeader].name = "Cache-Control";
+			rep.headers[iHeader++].value = "max-age=3600, public";
 			if (keepAlive) {
-				rep.headers[3].name = "Connection";
-				rep.headers[3].value = "Keep-Alive"; // RK, todo: Keep-Alive or "Close"
-				rep.headers[4].name = "Keep-Alive";
-				rep.headers[4].value = "max=20, timeout=10";
+				rep.headers[iHeader].name = "Connection";
+				rep.headers[iHeader++].value = KeepAliveStr; // RK, todo: Keep-Alive or "Close"
+				rep.headers[iHeader].name = "Keep-Alive";
+				rep.headers[iHeader++].value = "max=20, timeout=" + boost::lexical_cast<std::string>(req.timeout);
 			}
 			if (m_outputfilename != "")
 			{
-				rep.headers[extraheaders + 2].name = "Content-Disposition";
-				rep.headers[extraheaders + 2].value = "attachment; filename=" + m_outputfilename;
+				rep.headers[iHeader].name = "Content-Disposition";
+				rep.headers[iHeader++].value = "attachment; filename=" + m_outputfilename;
 			}
 		}
 		return true;
@@ -750,8 +750,8 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	if (keepAlive) {
 		rep.headers[4].name = "Connection";
 		rep.headers[4].value = KeepAliveStr;
-		rep.headers[5].name = KeepAliveStr;
-		rep.headers[5].value = "max=20, timeout=10";
+		rep.headers[5].name = "Keep-Alive";
+		rep.headers[5].value = "max=20, timeout" + boost::lexical_cast<std::string>(req.timeout);
 	}
 	return true;
 }

@@ -58,13 +58,17 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
+  /// Returns is the connection is secure (ssl)
+  bool IsSecure() { return secure_; };
+
   /// Last user interaction
   time_t m_lastresponse;
 
   /// read timeout timer
   boost::asio::deadline_timer timer_;
   void handle_timeout(const boost::system::error_code& error);
-
+  //Host EndPoint
+  std::string host_endpoint_;
 private:
   /// Handle completion of a read operation.
   void handle_read_plain(const boost::system::error_code& e, std::size_t bytes_transferred);
@@ -82,8 +86,6 @@ private:
 
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
-  //Host EndPoint
-  std::string host_endpoint_;
 
   /// If this is a keep-alive connection or not
   bool keepalive_;
