@@ -1,210 +1,72 @@
 
-Logging started 2015-04-04 11:30:53.889 
+Logging started 2015-05-05 15:44:58.262 
 
-2015-04-04 11:30:53.890 Always, OpenZwave Version 3.1.0 Starting Up
-2015-04-04 11:30:53.892 Info, mgr,     Added driver for controller \\.\COM32
-2015-04-04 11:30:53.892 Info,   Opening controller \\.\COM32
-2015-04-04 11:30:53.893 Info,     Trying to open serial port \\.\COM32 (Attempt 1)
-2015-04-04 11:30:53.895 Info,     Serial port \\.\COM32 opened (attempt 1)
-2015-04-04 11:30:53.896 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_GET_VERSION: 0x01, 0x03, 0x00, 0x15, 0xe9
-2015-04-04 11:30:53.897 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_MEMORY_GET_ID: 0x01, 0x03, 0x00, 0x20, 0xdc
-2015-04-04 11:30:53.898 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_GET_CONTROLLER_CAPABILITIES: 0x01, 0x03, 0x00, 0x05, 0xf9
-2015-04-04 11:30:53.900 Detail, contrlr, Queuing (Command) FUNC_ID_SERIAL_API_GET_CAPABILITIES: 0x01, 0x03, 0x00, 0x07, 0xfb
-2015-04-04 11:30:53.900 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_GET_SUC_NODE_ID: 0x01, 0x03, 0x00, 0x56, 0xaa
-2015-04-04 11:30:53.901 Detail, 
-2015-04-04 11:30:53.902 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x15) - FUNC_ID_ZW_GET_VERSION: 0x01, 0x03, 0x00, 0x15, 0xe9
-2015-04-04 11:30:53.907 Detail, contrlr,   Received: 0x01, 0x10, 0x01, 0x15, 0x5a, 0x2d, 0x57, 0x61, 0x76, 0x65, 0x20, 0x33, 0x2e, 0x39, 0x39, 0x00, 0x01, 0x95
-2015-04-04 11:30:53.910 Info, Raw: 0x01, 0x15, 0x5a, 0x2d, 0x57, 0x61, 0x76, 0x65, 0x20, 0x33
-2015-04-04 11:30:53.911 Detail, 
-2015-04-04 11:30:53.911 Info, contrlr, Received reply to FUNC_ID_ZW_GET_VERSION:
-2015-04-04 11:30:53.912 Info, contrlr,     Static Controller library, version Z-Wave 3.99
-2015-04-04 11:30:53.913 Detail, Node045,   Expected reply was received
-2015-04-04 11:30:53.914 Detail, Node045,   Message transaction complete
-2015-04-04 11:30:53.914 Detail, 
-2015-04-04 11:30:53.914 Detail, contrlr, Removing current message
-2015-04-04 11:30:53.915 Detail, 
-2015-04-04 11:30:53.915 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x20) - FUNC_ID_ZW_MEMORY_GET_ID: 0x01, 0x03, 0x00, 0x20, 0xdc
-2015-04-04 11:30:53.918 Detail, contrlr,   Received: 0x01, 0x08, 0x01, 0x20, 0xd3, 0xcf, 0x12, 0x9c, 0x01, 0x45
-2015-04-04 11:30:53.919 Info, Raw: 0x01, 0x20, 0xd3, 0xcf, 0x12, 0x9c, 0x01, 0x45, 0x00, 0x00
-2015-04-04 11:30:53.919 Detail, 
-2015-04-04 11:30:53.920 Info, contrlr, Received reply to FUNC_ID_ZW_MEMORY_GET_ID. Home ID = 0xd3cf129c.  Our node ID = 1
-2015-04-04 11:30:53.920 Detail, Node207,   Expected reply was received
-2015-04-04 11:30:53.921 Detail, Node207,   Message transaction complete
-2015-04-04 11:30:53.921 Detail, 
-2015-04-04 11:30:53.922 Detail, contrlr, Removing current message
-2015-04-04 11:30:53.922 Detail, 
-2015-04-04 11:30:53.923 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x05) - FUNC_ID_ZW_GET_CONTROLLER_CAPABILITIES: 0x01, 0x03, 0x00, 0x05, 0xf9
-2015-04-04 11:30:53.925 Detail, contrlr,   Received: 0x01, 0x04, 0x01, 0x05, 0x08, 0xf7
-2015-04-04 11:30:53.925 Info, Raw: 0x01, 0x05, 0x08, 0xf7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:53.926 Detail, 
-2015-04-04 11:30:53.926 Info, contrlr, Received reply to FUNC_ID_ZW_GET_CONTROLLER_CAPABILITIES:
-2015-04-04 11:30:53.926 Info, contrlr,     There is no SUC ID Server (SIS) in this network.
-2015-04-04 11:30:53.927 Info, contrlr,     The PC controller is a primary controller.
-2015-04-04 11:30:53.927 Detail, Node247,   Expected reply was received
-2015-04-04 11:30:53.928 Detail, Node247,   Message transaction complete
-2015-04-04 11:30:53.928 Detail, 
-2015-04-04 11:30:53.928 Detail, contrlr, Removing current message
-2015-04-04 11:30:53.929 Detail, 
-2015-04-04 11:30:53.929 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x07) - FUNC_ID_SERIAL_API_GET_CAPABILITIES: 0x01, 0x03, 0x00, 0x07, 0xfb
-2015-04-04 11:30:53.933 Detail, contrlr,   Received: 0x01, 0x2b, 0x01, 0x07, 0x0e, 0x08, 0x01, 0x09, 0x10, 0x01, 0x01, 0x05, 0xfe, 0x81, 0xfe, 0x88, 0xcf, 0x1f, 0x00, 0x00, 0xfb, 0x9f, 0x7d, 0xa0, 0x67, 0x00, 0x80, 0x80, 0x00, 0x80, 0x86, 0x00, 0x00, 0x00, 0xe0, 0x73, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x60, 0x00, 0x00, 0x35
-2015-04-04 11:30:53.934 Info, Raw: 0x01, 0x07, 0x0e, 0x08, 0x01, 0x09, 0x10, 0x01, 0x01, 0x05
-2015-04-04 11:30:53.934 Detail, 
-2015-04-04 11:30:53.935 Info, contrlr,  Received reply to FUNC_ID_SERIAL_API_GET_CAPABILITIES
-2015-04-04 11:30:53.935 Info, contrlr,     Serial API Version:   14.8
-2015-04-04 11:30:53.936 Info, contrlr,     Manufacturer ID:      0x0109
-2015-04-04 11:30:53.936 Info, contrlr,     Product Type:         0x1001
-2015-04-04 11:30:53.937 Info, contrlr,     Product ID:           0x0105
-2015-04-04 11:30:53.937 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_GET_RANDOM: 0x01, 0x04, 0x00, 0x1c, 0x20, 0xc7
-2015-04-04 11:30:53.938 Detail, contrlr, Queuing (Command) FUNC_ID_SERIAL_API_GET_INIT_DATA: 0x01, 0x03, 0x00, 0x02, 0xfe
-2015-04-04 11:30:53.938 Detail, contrlr, Queuing (Command) FUNC_ID_SERIAL_API_SET_TIMEOUTS: 0x01, 0x05, 0x00, 0x06, 0x64, 0x0f, 0x97
-2015-04-04 11:30:53.939 Detail, contrlr, Queuing (Command) FUNC_ID_SERIAL_API_APPL_NODE_INFORMATION: 0x01, 0x07, 0x00, 0x03, 0x01, 0x02, 0x01, 0x00, 0xf9
-2015-04-04 11:30:53.939 Detail, Node008,   Expected reply was received
-2015-04-04 11:30:53.940 Detail, Node008,   Message transaction complete
-2015-04-04 11:30:53.940 Detail, 
-2015-04-04 11:30:53.941 Detail, contrlr, Removing current message
-2015-04-04 11:30:53.941 Detail, 
-2015-04-04 11:30:53.942 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x56) - FUNC_ID_ZW_GET_SUC_NODE_ID: 0x01, 0x03, 0x00, 0x56, 0xaa
-2015-04-04 11:30:53.944 Detail, contrlr,   Received: 0x01, 0x04, 0x01, 0x56, 0x00, 0xac
-2015-04-04 11:30:53.944 Info, Raw: 0x01, 0x56, 0x00, 0xac, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:53.944 Detail, 
-2015-04-04 11:30:53.945 Info, contrlr, Received reply to GET_SUC_NODE_ID.  Node ID = 0
-2015-04-04 11:30:53.945 Info, Controller Does not Support SUC - Cannot Setup Controller as SUC Node
-2015-04-04 11:30:53.946 Detail, Node172,   Expected reply was received
-2015-04-04 11:30:53.946 Detail, Node172,   Message transaction complete
-2015-04-04 11:30:53.947 Detail, 
-2015-04-04 11:30:53.947 Detail, contrlr, Removing current message
-2015-04-04 11:30:53.948 Detail, 
-2015-04-04 11:30:53.948 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x1c) - FUNC_ID_ZW_GET_RANDOM: 0x01, 0x04, 0x00, 0x1c, 0x20, 0xc7
-2015-04-04 11:30:54.004 Detail, contrlr,   Received: 0x01, 0x25, 0x01, 0x1c, 0x01, 0x20, 0x05, 0x67, 0xac, 0x81, 0x95, 0x7f, 0xf4, 0x2a, 0x69, 0xa3, 0x3e, 0xd2, 0x6e, 0x20, 0xd7, 0xde, 0xa1, 0x4a, 0x36, 0xbd, 0xe0, 0xa5, 0x0d, 0xf9, 0x64, 0x62, 0x16, 0x9e, 0x05, 0x93, 0xcb, 0x81, 0x7f
-2015-04-04 11:30:54.005 Info, Raw: 0x01, 0x1c, 0x01, 0x20, 0x05, 0x67, 0xac, 0x81, 0x95, 0x7f
-2015-04-04 11:30:54.005 Detail, 
-2015-04-04 11:30:54.006 Info, contrlr, Received reply to FUNC_ID_ZW_GET_RANDOM: true
-2015-04-04 11:30:54.006 Detail, Node032,   Expected reply was received
-2015-04-04 11:30:54.007 Detail, Node032,   Message transaction complete
-2015-04-04 11:30:54.007 Detail, 
-2015-04-04 11:30:54.007 Detail, contrlr, Removing current message
-2015-04-04 11:30:54.008 Detail, 
-2015-04-04 11:30:54.008 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x02) - FUNC_ID_SERIAL_API_GET_INIT_DATA: 0x01, 0x03, 0x00, 0x02, 0xfe
-2015-04-04 11:30:54.107 Detail, contrlr,   Received: 0x01, 0x25, 0x01, 0x02, 0x05, 0x00, 0x1d, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0xc7
-2015-04-04 11:30:54.109 Info, Raw: 0x01, 0x02, 0x05, 0x00, 0x1d, 0x03, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:54.110 Detail, 
-2015-04-04 11:30:54.110 Info, mgr,     Driver with Home ID of 0xd3cf129c is now ready.
-2015-04-04 11:30:54.111 Info, 
-2015-04-04 11:30:54.130 Info, contrlr, Received reply to FUNC_ID_SERIAL_API_GET_INIT_DATA:
-2015-04-04 11:30:54.131 Info, contrlr,     Node 001 - Known
-2015-04-04 11:30:54.131 Detail, Node001, AdvanceQueries queryPending=0 queryRetries=0 queryStage=Probe1 live=1
-2015-04-04 11:30:54.132 Detail, Node001, QueryStage_Probe1
-2015-04-04 11:30:54.132 Detail, Node001, QueryStage_Associations
-2015-04-04 11:30:54.133 Detail, Node001, QueryStage_Neighbors
-2015-04-04 11:30:54.133 Detail, contrlr, Requesting routing info (neighbor list) for Node 1
-2015-04-04 11:30:54.134 Detail, Node001, Queuing (Command) Get Routing Info (Node=1): 0x01, 0x07, 0x00, 0x80, 0x01, 0x00, 0x00, 0x03, 0x7a
-2015-04-04 11:30:54.134 Detail, Node001, Queuing (Query) Query Stage Complete (Neighbors)
-2015-04-04 11:30:54.135 Info, contrlr,     Node 002 - Known
-2015-04-04 11:30:54.135 Detail, Node002, AdvanceQueries queryPending=0 queryRetries=0 queryStage=Probe live=1
-2015-04-04 11:30:54.136 Detail, Node002, QueryStage_Probe
-2015-04-04 11:30:54.136 Info, Node002, NoOperation::Set - Routing=true
-2015-04-04 11:30:54.137 Detail, Node002, Queuing (NoOp) NoOperation_Set (Node=2): 0x01, 0x09, 0x00, 0x13, 0x02, 0x02, 0x00, 0x00, 0x25, 0x0a, 0xca
-2015-04-04 11:30:54.138 Detail, Node002, Queuing (Query) Query Stage Complete (Probe)
-2015-04-04 11:30:54.138 Detail,   Expected reply was received
-2015-04-04 11:30:54.139 Detail,   Message transaction complete
-2015-04-04 11:30:54.139 Detail, 
-2015-04-04 11:30:54.140 Detail, contrlr, Removing current message
-2015-04-04 11:30:54.157 Detail, 
-2015-04-04 11:30:54.158 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x06) - FUNC_ID_SERIAL_API_SET_TIMEOUTS: 0x01, 0x05, 0x00, 0x06, 0x64, 0x0f, 0x97
-2015-04-04 11:30:54.160 Detail, contrlr,   Received: 0x01, 0x05, 0x01, 0x06, 0x64, 0x0f, 0x96
-2015-04-04 11:30:54.160 Info, Raw: 0x01, 0x06, 0x64, 0x0f, 0x96, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:54.161 Detail, 
-2015-04-04 11:30:54.161 Info, contrlr, Received reply to FUNC_ID_SERIAL_API_SET_TIMEOUTS
-2015-04-04 11:30:54.162 Detail, Node015,   Expected reply was received
-2015-04-04 11:30:54.162 Detail, Node015,   Message transaction complete
-2015-04-04 11:30:54.162 Detail, 
-2015-04-04 11:30:54.163 Detail, contrlr, Removing current message
-2015-04-04 11:30:54.163 Detail, 
-2015-04-04 11:30:54.164 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x00) - FUNC_ID_SERIAL_API_APPL_NODE_INFORMATION: 0x01, 0x07, 0x00, 0x03, 0x01, 0x02, 0x01, 0x00, 0xf9
-2015-04-04 11:30:54.165 Detail, contrlr, Removing current message
-2015-04-04 11:30:54.166 Detail, 
-2015-04-04 11:30:54.166 Info, Node001, Sending (Command) message (Callback ID=0x00, Expected Reply=0x80) - Get Routing Info (Node=1): 0x01, 0x07, 0x00, 0x80, 0x01, 0x00, 0x00, 0x03, 0x7a
-2015-04-04 11:30:54.171 Detail, Node001,   Received: 0x01, 0x20, 0x01, 0x80, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5c
-2015-04-04 11:30:54.172 Info, Raw: 0x01, 0x80, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:54.172 Detail, 
-2015-04-04 11:30:54.173 Info, Node001, Received reply to FUNC_ID_ZW_GET_ROUTING_INFO
-2015-04-04 11:30:54.173 Info, Node001,     Neighbors of this node are:
-2015-04-04 11:30:54.173 Info, Node001,     Node 2
-2015-04-04 11:30:54.174 Detail,   Expected reply was received
-2015-04-04 11:30:54.174 Detail,   Message transaction complete
-2015-04-04 11:30:54.175 Detail, 
-2015-04-04 11:30:54.175 Detail, Node001, Removing current message
-2015-04-04 11:30:54.175 Detail, 
-2015-04-04 11:30:54.176 Info, Node002, Sending (NoOp) message (Callback ID=0x0a, Expected Reply=0x13) - NoOperation_Set (Node=2): 0x01, 0x09, 0x00, 0x13, 0x02, 0x02, 0x00, 0x00, 0x25, 0x0a, 0xca
-2015-04-04 11:30:54.187 Detail, Node002,   Received: 0x01, 0x04, 0x01, 0x13, 0x01, 0xe8
-2015-04-04 11:30:54.187 Info, Raw: 0x01, 0x13, 0x01, 0xe8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:54.188 Detail, Node002,   ZW_SEND_DATA delivered to Z-Wave stack
-2015-04-04 11:30:54.474 Detail, Node002,   Received: 0x01, 0x05, 0x00, 0x13, 0x0a, 0x01, 0xe2
-2015-04-04 11:30:54.475 Info, Raw: 0x00, 0x13, 0x0a, 0x01, 0xe2, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:54.476 Detail, Node002,   ZW_SEND_DATA Request with callback ID 0x0a received (expected 0x0a)
-2015-04-04 11:30:54.476 Info, Node002, WARNING: ZW_SEND_DATA failed. No ACK received - device may be asleep.
-2015-04-04 11:30:54.477 Warning, Node002, WARNING: Device is not a sleeping node.
-2015-04-04 11:30:54.477 Info, Node002, QueryStageRetry stage Probe requested stage Probe max 3 retries 0 pending 1
-2015-04-04 11:30:54.478 Detail, Node001,   Expected callbackId was received
-2015-04-04 11:30:54.478 Detail, Node001,   Expected reply was received
-2015-04-04 11:30:54.479 Detail, Node001,   Message transaction complete
-2015-04-04 11:30:54.479 Detail, 
-2015-04-04 11:30:54.479 Detail, Node002, Removing current message
-2015-04-04 11:30:54.480 Detail, Node001, Query Stage Complete (Neighbors)
-2015-04-04 11:30:54.480 Detail, Node001, AdvanceQueries queryPending=0 queryRetries=0 queryStage=Session live=1
-2015-04-04 11:30:54.481 Detail, Node001, QueryStage_Session
-2015-04-04 11:30:54.481 Detail, Node001, QueryStage_Dynamic
-2015-04-04 11:30:54.482 Detail, Node001, QueryStage_Configuration
-2015-04-04 11:30:54.482 Detail, Node001, QueryStage_Complete
-2015-04-04 11:30:54.482 Warning, CheckCompletedNodeQueries m_allNodesQueried=0 m_awakeNodesQueried=0
-2015-04-04 11:30:54.483 Warning, CheckCompletedNodeQueries all=0, deadFound=0 sleepingOnly=0
-2015-04-04 11:30:54.483 Detail, Node002, Query Stage Complete (Probe)
-2015-04-04 11:30:54.484 Detail, Node002, AdvanceQueries queryPending=0 queryRetries=1 queryStage=Probe live=1
-2015-04-04 11:30:54.484 Detail, Node002, QueryStage_Probe
-2015-04-04 11:30:54.484 Info, Node002, NoOperation::Set - Routing=true
-2015-04-04 11:30:54.485 Detail, Node002, Queuing (NoOp) NoOperation_Set (Node=2): 0x01, 0x09, 0x00, 0x13, 0x02, 0x02, 0x00, 0x00, 0x25, 0x0b, 0xcb
-2015-04-04 11:30:54.485 Detail, Node002, Queuing (Query) Query Stage Complete (Probe)
-2015-04-04 11:30:54.486 Detail, 
-2015-04-04 11:30:54.486 Info, Node002, Sending (NoOp) message (Callback ID=0x0b, Expected Reply=0x13) - NoOperation_Set (Node=2): 0x01, 0x09, 0x00, 0x13, 0x02, 0x02, 0x00, 0x00, 0x25, 0x0b, 0xcb
-2015-04-04 11:30:54.497 Detail, Node002,   Received: 0x01, 0x04, 0x01, 0x13, 0x01, 0xe8
-2015-04-04 11:30:54.497 Info, Raw: 0x01, 0x13, 0x01, 0xe8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:54.498 Detail, Node002,   ZW_SEND_DATA delivered to Z-Wave stack
-2015-04-04 11:30:54.724 Detail, Node002,   Received: 0x01, 0x05, 0x00, 0x13, 0x0b, 0x01, 0xe3
-2015-04-04 11:30:54.726 Info, Raw: 0x00, 0x13, 0x0b, 0x01, 0xe3, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:54.727 Detail, Node002,   ZW_SEND_DATA Request with callback ID 0x0b received (expected 0x0b)
-2015-04-04 11:30:54.728 Info, Node002, WARNING: ZW_SEND_DATA failed. No ACK received - device may be asleep.
-2015-04-04 11:30:54.729 Warning, Node002, WARNING: Device is not a sleeping node.
-2015-04-04 11:30:54.730 Info, Node002, QueryStageRetry stage Probe requested stage Probe max 3 retries 1 pending 1
-2015-04-04 11:30:54.731 Detail, Node001,   Expected callbackId was received
-2015-04-04 11:30:54.732 Detail, Node001,   Expected reply was received
-2015-04-04 11:30:54.733 Detail, Node001,   Message transaction complete
-2015-04-04 11:30:54.734 Detail, 
-2015-04-04 11:30:54.734 Detail, Node002, Removing current message
-2015-04-04 11:30:54.736 Detail, Node002, Query Stage Complete (Probe)
-2015-04-04 11:30:54.736 Detail, Node002, AdvanceQueries queryPending=0 queryRetries=2 queryStage=Probe live=1
-2015-04-04 11:30:54.737 Detail, Node002, QueryStage_Probe
-2015-04-04 11:30:54.738 Info, Node002, NoOperation::Set - Routing=true
-2015-04-04 11:30:54.739 Detail, Node002, Queuing (NoOp) NoOperation_Set (Node=2): 0x01, 0x09, 0x00, 0x13, 0x02, 0x02, 0x00, 0x00, 0x25, 0x0c, 0xcc
-2015-04-04 11:30:54.740 Detail, Node002, Queuing (Query) Query Stage Complete (Probe)
-2015-04-04 11:30:54.741 Detail, 
-2015-04-04 11:30:54.741 Info, Node002, Sending (NoOp) message (Callback ID=0x0c, Expected Reply=0x13) - NoOperation_Set (Node=2): 0x01, 0x09, 0x00, 0x13, 0x02, 0x02, 0x00, 0x00, 0x25, 0x0c, 0xcc
-2015-04-04 11:30:54.753 Detail, Node002,   Received: 0x01, 0x04, 0x01, 0x13, 0x01, 0xe8
-2015-04-04 11:30:54.754 Info, Raw: 0x01, 0x13, 0x01, 0xe8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:54.755 Detail, Node002,   ZW_SEND_DATA delivered to Z-Wave stack
-2015-04-04 11:30:55.025 Detail, Node002,   Received: 0x01, 0x05, 0x00, 0x13, 0x0c, 0x01, 0xe4
-2015-04-04 11:30:55.027 Info, Raw: 0x00, 0x13, 0x0c, 0x01, 0xe4, 0x00, 0x00, 0x00, 0x00, 0x00
-2015-04-04 11:30:55.028 Detail, Node002,   ZW_SEND_DATA Request with callback ID 0x0c received (expected 0x0c)
-2015-04-04 11:30:55.029 Info, Node002, WARNING: ZW_SEND_DATA failed. No ACK received - device may be asleep.
-2015-04-04 11:30:55.030 Warning, Node002, WARNING: Device is not a sleeping node.
-2015-04-04 11:30:55.031 Error, Node002, ERROR: node presumed dead
-2015-04-04 11:30:55.032 Warning, CheckCompletedNodeQueries m_allNodesQueried=0 m_awakeNodesQueried=0
-2015-04-04 11:30:55.033 Warning, CheckCompletedNodeQueries all=1, deadFound=1 sleepingOnly=1
-2015-04-04 11:30:55.033 Info,          Node query processing complete except for dead nodes.
-2015-04-04 11:30:55.034 Info, Node002, QueryStageRetry stage Probe requested stage Probe max 3 retries 2 pending 1
-2015-04-04 11:30:55.035 Detail, Node001,   Expected callbackId was received
-2015-04-04 11:30:55.036 Detail, Node001,   Expected reply was received
-2015-04-04 11:30:55.037 Detail, Node001,   Message transaction complete
-2015-04-04 11:30:55.038 Detail, 
-2015-04-04 11:30:55.039 Detail, Node002, Removing current message
-2015-04-04 11:30:55.041 Detail, Node002, Query Stage Complete (Probe)
-2015-04-04 11:30:55.042 Detail, Node002, AdvanceQueries queryPending=0 queryRetries=0 queryStage=Probe live=0
+2015-05-05 15:44:58.262 Always, OpenZwave Version 3.1.0 Starting Up
+2015-05-05 15:44:58.262 Info, mgr,     Added driver for controller COM1
+2015-05-05 15:44:58.262 Info,   Opening controller COM1
+2015-05-05 15:44:58.262 Info,     Trying to open serial port COM1 (Attempt 1)
+2015-05-05 15:44:58.278 Info,     Serial port COM1 opened (attempt 1)
+2015-05-05 15:44:58.278 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_GET_VERSION: 0x01, 0x03, 0x00, 0x15, 0xe9
+2015-05-05 15:44:58.278 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_MEMORY_GET_ID: 0x01, 0x03, 0x00, 0x20, 0xdc
+2015-05-05 15:44:58.278 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_GET_CONTROLLER_CAPABILITIES: 0x01, 0x03, 0x00, 0x05, 0xf9
+2015-05-05 15:44:58.278 Detail, contrlr, Queuing (Command) FUNC_ID_SERIAL_API_GET_CAPABILITIES: 0x01, 0x03, 0x00, 0x07, 0xfb
+2015-05-05 15:44:58.278 Detail, contrlr, Queuing (Command) FUNC_ID_ZW_GET_SUC_NODE_ID: 0x01, 0x03, 0x00, 0x56, 0xaa
+2015-05-05 15:44:58.278 Detail, 
+2015-05-05 15:44:58.278 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x15) - FUNC_ID_ZW_GET_VERSION: 0x01, 0x03, 0x00, 0x15, 0xe9
+2015-05-05 15:44:59.292 Detail, 
+2015-05-05 15:44:59.292 Info, contrlr, Sending (Command) message (Attempt 2, Callback ID=0x00, Expected Reply=0x15) - FUNC_ID_ZW_GET_VERSION: 0x01, 0x03, 0x00, 0x15, 0xe9
+2015-05-05 15:45:00.337 Detail, 
+2015-05-05 15:45:00.337 Info, contrlr, Sending (Command) message (Attempt 3, Callback ID=0x00, Expected Reply=0x15) - FUNC_ID_ZW_GET_VERSION: 0x01, 0x03, 0x00, 0x15, 0xe9
+2015-05-05 15:45:01.351 Error, contrlr, ERROR: Dropping command, expected response not received after 3 attempt(s)
+2015-05-05 15:45:01.351 Detail, contrlr, Removing current message
+2015-05-05 15:45:01.351 Detail, 
+2015-05-05 15:45:01.351 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x20) - FUNC_ID_ZW_MEMORY_GET_ID: 0x01, 0x03, 0x00, 0x20, 0xdc
+2015-05-05 15:45:02.365 Detail, 
+2015-05-05 15:45:02.365 Info, contrlr, Sending (Command) message (Attempt 2, Callback ID=0x00, Expected Reply=0x20) - FUNC_ID_ZW_MEMORY_GET_ID: 0x01, 0x03, 0x00, 0x20, 0xdc
+2015-05-05 15:45:03.379 Detail, 
+2015-05-05 15:45:03.379 Info, contrlr, Sending (Command) message (Attempt 3, Callback ID=0x00, Expected Reply=0x20) - FUNC_ID_ZW_MEMORY_GET_ID: 0x01, 0x03, 0x00, 0x20, 0xdc
+2015-05-05 15:45:04.393 Error, contrlr, ERROR: Dropping command, expected response not received after 3 attempt(s)
+2015-05-05 15:45:04.393 Detail, contrlr, Removing current message
+2015-05-05 15:45:04.393 Detail, 
+2015-05-05 15:45:04.393 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x05) - FUNC_ID_ZW_GET_CONTROLLER_CAPABILITIES: 0x01, 0x03, 0x00, 0x05, 0xf9
+2015-05-05 15:45:05.394 Detail, 
+2015-05-05 15:45:05.394 Info, contrlr, Sending (Command) message (Attempt 2, Callback ID=0x00, Expected Reply=0x05) - FUNC_ID_ZW_GET_CONTROLLER_CAPABILITIES: 0x01, 0x03, 0x00, 0x05, 0xf9
+2015-05-05 15:45:06.408 Detail, 
+2015-05-05 15:45:06.408 Info, contrlr, Sending (Command) message (Attempt 3, Callback ID=0x00, Expected Reply=0x05) - FUNC_ID_ZW_GET_CONTROLLER_CAPABILITIES: 0x01, 0x03, 0x00, 0x05, 0xf9
+2015-05-05 15:45:07.422 Error, contrlr, ERROR: Dropping command, expected response not received after 3 attempt(s)
+2015-05-05 15:45:07.422 Detail, contrlr, Removing current message
+2015-05-05 15:45:07.422 Detail, 
+2015-05-05 15:45:07.422 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x07) - FUNC_ID_SERIAL_API_GET_CAPABILITIES: 0x01, 0x03, 0x00, 0x07, 0xfb
+2015-05-05 15:45:08.436 Detail, 
+2015-05-05 15:45:08.436 Info, contrlr, Sending (Command) message (Attempt 2, Callback ID=0x00, Expected Reply=0x07) - FUNC_ID_SERIAL_API_GET_CAPABILITIES: 0x01, 0x03, 0x00, 0x07, 0xfb
+2015-05-05 15:45:09.450 Detail, 
+2015-05-05 15:45:09.450 Info, contrlr, Sending (Command) message (Attempt 3, Callback ID=0x00, Expected Reply=0x07) - FUNC_ID_SERIAL_API_GET_CAPABILITIES: 0x01, 0x03, 0x00, 0x07, 0xfb
+2015-05-05 15:45:10.464 Error, contrlr, ERROR: Dropping command, expected response not received after 3 attempt(s)
+2015-05-05 15:45:10.464 Detail, contrlr, Removing current message
+2015-05-05 15:45:10.464 Detail, 
+2015-05-05 15:45:10.464 Info, contrlr, Sending (Command) message (Callback ID=0x00, Expected Reply=0x56) - FUNC_ID_ZW_GET_SUC_NODE_ID: 0x01, 0x03, 0x00, 0x56, 0xaa
+2015-05-05 15:45:11.478 Detail, 
+2015-05-05 15:45:11.478 Info, contrlr, Sending (Command) message (Attempt 2, Callback ID=0x00, Expected Reply=0x56) - FUNC_ID_ZW_GET_SUC_NODE_ID: 0x01, 0x03, 0x00, 0x56, 0xaa
+2015-05-05 15:45:12.478 Detail, 
+2015-05-05 15:45:12.478 Info, contrlr, Sending (Command) message (Attempt 3, Callback ID=0x00, Expected Reply=0x56) - FUNC_ID_ZW_GET_SUC_NODE_ID: 0x01, 0x03, 0x00, 0x56, 0xaa
+2015-05-05 15:45:13.479 Error, contrlr, ERROR: Dropping command, expected response not received after 3 attempt(s)
+2015-05-05 15:45:13.480 Detail, contrlr, Removing current message
+2015-05-05 15:45:44.068 Always, ***************************************************************************
+2015-05-05 15:45:44.068 Always, *********************  Cumulative Network Statistics  *********************
+2015-05-05 15:45:44.068 Always, *** General
+2015-05-05 15:45:44.068 Always, Driver run time: . .  . 0 days, 0 hours, 0 minutes
+2015-05-05 15:45:44.068 Always, Frames processed: . . . . . . . . . . . . . . . . . . . . 0
+2015-05-05 15:45:44.068 Always, Total messages successfully received: . . . . . . . . . . 0
+2015-05-05 15:45:44.068 Always, Total Messages successfully sent: . . . . . . . . . . . . 15
+2015-05-05 15:45:44.068 Always, ACKs received from controller:  . . . . . . . . . . . . . 0
+2015-05-05 15:45:44.068 Always, *** Errors
+2015-05-05 15:45:44.068 Always, Unsolicited messages received while waiting for ACK:  . . 0
+2015-05-05 15:45:44.068 Always, Reads aborted due to timeouts:  . . . . . . . . . . . . . 0
+2015-05-05 15:45:44.068 Always, Bad checksum errors:  . . . . . . . . . . . . . . . . . . 0
+2015-05-05 15:45:44.068 Always, CANs received from controller:  . . . . . . . . . . . . . 0
+2015-05-05 15:45:44.083 Always, NAKs received from controller:  . . . . . . . . . . . . . 0
+2015-05-05 15:45:44.083 Always, Out of frame data flow errors:  . . . . . . . . . . . . . 0
+2015-05-05 15:45:44.083 Always, Messages retransmitted: . . . . . . . . . . . . . . . . . 10
+2015-05-05 15:45:44.083 Always, Messages dropped and not delivered: . . . . . . . . . . . 5
+2015-05-05 15:45:44.083 Always, ***************************************************************************
+2015-05-05 15:45:44.083 Warning, WARNING: Tried to write driver config with no home ID set

@@ -172,8 +172,12 @@ void connection::handle_read_secure(const boost::system::error_code& error, std:
 			boost::asio::async_write(*sslsocket_, reply_.to_buffers(),
 				boost::bind(&connection::handle_write_secure, shared_from_this(),
 				boost::asio::placeholders::error));
+			keepalive_ = false;
     		const char *pConnection = request_.get_req_header(&request_, "Connection");
-			keepalive_ = boost::iequals(pConnection, "Keep-Alive");
+			if (pConnection)
+			{
+				keepalive_ = boost::iequals(pConnection, "Keep-Alive");
+			}
 		}
 		else if (!result)
 		{
@@ -269,8 +273,12 @@ void connection::handle_read_plain(const boost::system::error_code& error, std::
 			boost::asio::async_write(*socket_, reply_.to_buffers(),
 				boost::bind(&connection::handle_write_plain, shared_from_this(),
 				boost::asio::placeholders::error));
+			keepalive_ = false;
     		const char *pConnection = request_.get_req_header(&request_, "Connection");
-			keepalive_ = boost::iequals(pConnection, "Keep-Alive");
+			if (pConnection)
+			{
+				keepalive_ = boost::iequals(pConnection, "Keep-Alive");
+			}
 		}
 		else if (!result)
 		{
