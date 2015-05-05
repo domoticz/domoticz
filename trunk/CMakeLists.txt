@@ -106,15 +106,6 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO()
 
-find_path(SQLITE3_INCLUDE_DIR sqlite3.h)
-find_library(SQLITE3_LIBRARY sqlite3)
-if(NOT SQLITE3_INCLUDE_DIR)
-  message(SEND_ERROR "Failed to find sqlite3.h")
-endif()
-if(NOT SQLITE3_LIBRARY)
-  message(SEND_ERROR "Failed to find the sqlite3 library")
-endif()
-
 FIND_PROGRAM(SVN_EXECUTABLE svn
   DOC "subversion command line client")
 
@@ -244,6 +235,7 @@ notifications/NotificationPushover.cpp
 notifications/NotificationPushalot.cpp
 notifications/NotificationSMS.cpp
 smtpclient/SMTPClient.cpp
+sqlite/sqlite3.c
 tcpserver/TCPClient.cpp
 tcpserver/TCPServer.cpp
 webserver/Base64.cpp
@@ -415,7 +407,7 @@ else()
   message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
 ENDIF(RaspberryPi)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${SQLITE3_LIBRARY} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt ${CMAKE_DL_LIBS})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt ${CMAKE_DL_LIBS})
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 

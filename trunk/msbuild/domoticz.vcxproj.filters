@@ -201,6 +201,9 @@
     <Filter Include="Notifications">
       <UniqueIdentifier>{9af22faa-3a82-4f76-83cf-db0aacc27e8a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SQLite">
+      <UniqueIdentifier>{63d66a0f-1455-45ce-8e5a-8678aafbe57a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -284,9 +287,6 @@
     </ClInclude>
     <ClInclude Include="..\webserver\header.hpp">
       <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sqlite\sqlite3.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\appversion.h">
       <Filter>Header Files</Filter>
@@ -653,6 +653,9 @@
     </ClInclude>
     <ClInclude Include="..\main\WebServerHelper.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sqlite\sqlite3.h">
+      <Filter>SQLite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1051,6 +1054,9 @@
     </ClCompile>
     <ClCompile Include="..\main\WebServerHelper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sqlite\sqlite3.c">
+      <Filter>SQLite</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
