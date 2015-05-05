@@ -19,7 +19,7 @@ bool CNotificationPushover::SendMessageImplementation(const std::string &Subject
 	std::string sResult;
 	std::stringstream sPostData;
 
-	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << Text << "&message=" << Text;
+	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << Subject << "&message=" << Text;
 
 	if (Priority == 2) {
 		sPostData << "&retry=300&expire=3600";
