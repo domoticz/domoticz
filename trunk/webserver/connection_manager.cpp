@@ -56,7 +56,7 @@ void connection_manager::start(connection_ptr c)
 		{
 			if (atime - itt->second > CONNECTION_SESSION_TIMEOUT)
 			{
-				itt = connectedips_.erase(itt);
+				connectedips_.erase(itt++); //C++03 fix
 			}
 			else
 				++itt;
