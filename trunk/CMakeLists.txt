@@ -12,6 +12,12 @@ get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
 get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
     DEFINITION MQTT_LIBRARIES)
 
+add_subdirectory (sqlite)
+get_directory_property (CMAKE_SQLite_INCLUDES DIRECTORY sqlite
+    DEFINITION SQLite_INCLUDE_DIRS)
+get_directory_property (CMAKE_SQLite_LIBRARIES DIRECTORY sqlite
+    DEFINITION SQLite_LIBRARIES)
+
 project(domoticz)
 
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL 
@@ -235,7 +241,6 @@ notifications/NotificationPushover.cpp
 notifications/NotificationPushalot.cpp
 notifications/NotificationSMS.cpp
 smtpclient/SMTPClient.cpp
-sqlite/sqlite3.c
 tcpserver/TCPClient.cpp
 tcpserver/TCPServer.cpp
 webserver/Base64.cpp
@@ -407,7 +412,7 @@ else()
   message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
 ENDIF(RaspberryPi)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt ${CMAKE_DL_LIBS})
+target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
