@@ -246,10 +246,13 @@ void request_handler::handle_request(const std::string &sHost, const request& re
   int nrheaders = 2;
 
   bool keepAlive = false;
-  std::string KeepAliveStr = req.get_req_header(&req, "Connection");
-  if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
-	  keepAlive = true;
-	  nrheaders += 2;
+  const char *KeepAliveStr = req.get_req_header(&req, "Connection");
+  if (KeepAliveStr)
+  {
+	  if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
+		  keepAlive = true;
+		  nrheaders += 2;
+	  }
   }
 
   if (bHaveLoadedgzip) {

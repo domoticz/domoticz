@@ -667,10 +667,13 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			extraheaders++;
 		}
 		bool keepAlive = false; 
-		std::string KeepAliveStr = req.get_req_header(&req, "Connection");
-		if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
-			keepAlive = true;
-			extraheaders += 2;
+		const char * KeepAliveStr = req.get_req_header(&req, "Connection");
+		if (KeepAliveStr != NULL)
+		{
+			if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
+				keepAlive = true;
+				extraheaders += 2;
+			}
 		}
 
 		int iHeader = 0;
@@ -730,10 +733,13 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 	int extraheaders = 0;
 	bool keepAlive = false;
-	std::string KeepAliveStr = req.get_req_header(&req, "Connection");
-	if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
-		keepAlive = true;
-		extraheaders += 2;
+	const char *KeepAliveStr = req.get_req_header(&req, "Connection");
+	if (KeepAliveStr)
+	{
+		if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
+			keepAlive = true;
+			extraheaders += 2;
+		}
 	}
 	rep.status = reply::ok;
 	rep.content.append(utf.get8(), strlen(utf.get8()));
