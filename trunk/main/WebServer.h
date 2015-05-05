@@ -228,6 +228,7 @@ private:
 	time_t m_LastUpdateCheck;
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;
+	bool m_bDoStop;
 };
 
 } //server

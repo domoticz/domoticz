@@ -21,11 +21,11 @@ namespace http {
 namespace server {
 
 // this is the constructor for plain connections
-connection::connection(boost::asio::io_service& io_service,
-    connection_manager& manager, request_handler& handler, int timeout)
+connection::connection(boost::asio::io_service& io_service, connection_manager& manager, request_handler& handler, int timeout)
   : connection_manager_(manager),
     request_handler_(handler),
-	timer_(io_service, boost::posix_time::seconds( timeout ))
+	timeout_(timeout),
+	timer_(io_service, boost::posix_time::seconds( timeout+3 ))
 {
 	secure_ = false;
 	keepalive_ = false;
@@ -38,11 +38,11 @@ connection::connection(boost::asio::io_service& io_service,
 
 #ifdef NS_ENABLE_SSL
 // this is the constructor for secure connections
-connection::connection(boost::asio::io_service& io_service,
-    connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context)
+connection::connection(boost::asio::io_service& io_service, connection_manager& manager, request_handler& handler, int timeout, boost::asio::ssl::context& context)
   : connection_manager_(manager),
     request_handler_(handler),
-	timer_(io_service, boost::posix_time::seconds( timeout ))
+	timeout_(timeout),
+	timer_(io_service, boost::posix_time::seconds( timeout+3 ))
 {
 	secure_ = true;
 	keepalive_ = false;
@@ -96,9 +96,10 @@ void connection::stop()
 
 void connection::handle_timeout(const boost::system::error_code& error)
 {
-		if (error != boost::asio::error::operation_aborted) {
-			connection_manager_.stop(shared_from_this());
-		}
+	if (error != boost::asio::error::operation_aborted) 
+	{
+		connection_manager_.stop(shared_from_this());
+	}
 }
 
 #ifdef NS_ENABLE_SSL
@@ -131,8 +132,18 @@ void connection::read_more_secure()
 void connection::handle_read_secure(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
 	// data read, no need for timeouts (RK, note: race condition)
-	timer_.cancel();
-    if (!error && bytes_transferred > 0)
+	// data read, no need for timeouts (RK, note: race condition)
+	if (timer_.expires_from_now(boost::posix_time::seconds(timeout_)) > 0)
+	{
+		// We managed to cancel the timer. Start new asynchronous wait.
+		timer_.async_wait(boost::bind(&connection::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
+	}
+	else
+	{
+		// Too late, timer has already expired!
+		timer_.cancel();
+	}
+	if (!error && bytes_transferred > 0)
     {
 		// ensure written bytes in the buffer
 		_buf.commit(bytes_transferred);
@@ -156,6 +167,7 @@ void connection::handle_read_secure(const boost::system::error_code& error, std:
 			size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
 			_buf.consume(sizeread);
 			reply_.reset();
+			request_.timeout = timeout_;
 			request_handler_.handle_request(host_endpoint_, request_, reply_);
 			boost::asio::async_write(*sslsocket_, reply_.to_buffers(),
 				boost::bind(&connection::handle_write_secure, shared_from_this(),
@@ -218,7 +230,16 @@ void connection::read_more_plain()
 void connection::handle_read_plain(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
 	// data read, no need for timeouts (RK, note: race condition)
-	timer_.cancel();
+	if (timer_.expires_from_now(boost::posix_time::seconds(timeout_)) > 0)
+	{
+		// We managed to cancel the timer. Start new asynchronous wait.
+		timer_.async_wait(boost::bind(&connection::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
+	}
+	else
+	{
+		// Too late, timer has already expired!
+		timer_.cancel();
+	}
     if (!error && bytes_transferred > 0)
     {
 		// ensure written bytes in the buffer
@@ -243,6 +264,7 @@ void connection::handle_read_plain(const boost::system::error_code& error, std::
 			size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
 			_buf.consume(sizeread);
 			reply_.reset();
+			request_.timeout = timeout_;
 			request_handler_.handle_request(host_endpoint_, request_, reply_);
 			boost::asio::async_write(*socket_, reply_.to_buffers(),
 				boost::bind(&connection::handle_write_plain, shared_from_this(),

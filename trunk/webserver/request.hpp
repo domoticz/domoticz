@@ -30,6 +30,7 @@ public:
   int content_length;				// the expected length of the contents
   std::string content;				// the contents
   bool keep_alive;
+  int timeout;
 
   static int mg_strcasecmp(const char *s1, const char *s2)
   {

@@ -92,6 +92,7 @@ namespace http {
 		CWebServer::CWebServer(void)
 		{
 			m_pWebEm = NULL;
+			m_bDoStop = false;
 			m_LastUpdateCheck = 0;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
@@ -111,7 +112,7 @@ namespace http {
 
 		void CWebServer::Do_Work()
 		{
-			while (1 == 1)
+			while (!m_bDoStop)
 			{
 				try
 				{
@@ -120,9 +121,13 @@ namespace http {
 				}
 				catch (...)
 				{
-					_log.Log(LOG_ERROR, "WebServer stopped by exception, starting again...");
-					m_pWebEm->Stop();
-					continue;
+					if (!m_bDoStop)
+					{
+						_log.Log(LOG_ERROR, "WebServer stopped by exception, starting again...");
+						if (m_pWebEm)
+							m_pWebEm->Stop();
+						continue;
+					}
 				}
 				break;
 			}
@@ -508,6 +513,7 @@ namespace http {
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
 
 			//Start normal worker thread
+			m_bDoStop = false;
 			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
 
 			return (m_thread != NULL);
@@ -515,6 +521,7 @@ namespace http {
 
 		void CWebServer::StopServer()
 		{
+			m_bDoStop = true;
 			try
 			{
 				if (m_pWebEm == NULL)

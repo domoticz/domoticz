@@ -6,6 +6,8 @@
 #include <boost/bind.hpp>
 #include "server.hpp"
 
+#define SOCKET_TIMEOUT 20
+
 namespace http {
 namespace server {
 
@@ -18,9 +20,8 @@ server::server(const std::string& address, const std::string& port,
     context_(io_service_, boost::asio::ssl::context::sslv23),
 #endif
     request_handler_( user_request_handler),
-	timeout_(20), // default read timeout in seconds
-    new_connection_(new connection(io_service_,
-          connection_manager_, request_handler_, timeout_))
+	timeout_(SOCKET_TIMEOUT), // default read timeout in seconds
+	new_connection_(new connection(io_service_, connection_manager_, request_handler_, SOCKET_TIMEOUT))
 {
   secure_ = (certificatefile != "");
   // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
