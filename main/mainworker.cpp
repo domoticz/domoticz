@@ -1458,6 +1458,9 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeInterfaceMessage:
 			DeviceRowIdx = decode_InterfaceMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
+		case pTypeInterfaceControl:
+			DeviceRowIdx = decode_InterfaceControl(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
 		case pTypeRecXmitMessage:
 			DeviceRowIdx = decode_RecXmitMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
@@ -1953,6 +1956,68 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 			WriteMessage(szTmp);
 			sprintf(szTmp, "Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
 			WriteMessage(szTmp);
+		}
+		break;
+	}
+	WriteMessageEnd();
+	return -1;
+}
+
+unsigned long long MainWorker::decode_InterfaceControl(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	unsigned char devType = pTypeInterfaceControl;
+	char szTmp[100];
+	WriteMessageStart();
+	switch (pResponse->IRESPONSE.subtype)
+	{
+	case sTypeInterfaceCommand:
+		WriteMessage("subtype           = Interface Command");
+		sprintf(szTmp, "Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		WriteMessage(szTmp);
+		switch (pResponse->IRESPONSE.cmnd)
+		{
+		case cmdRESET:
+			WriteMessage("reset the receiver/transceiver");
+			break;
+		case cmdSTATUS:
+			WriteMessage("return firmware versions and configuration of the interface");
+			break;
+		case cmdSETMODE:
+			WriteMessage("set configuration of the interface");
+			break;
+		case cmdSAVE:
+			WriteMessage("save receiving modes of the receiver/transceiver in non-volatile memory");
+			break;
+		case cmdStartRec:
+			WriteMessage("start RFXtrx receiver");
+			break;
+		case cmd310:
+			WriteMessage("select 310MHz in the 310/315 transceiver");
+			break;
+		case cmd315:
+			WriteMessage("select 315MHz in the 310/315 transceiver");
+			break;
+		case cmd800:
+			WriteMessage("select 868.00MHz ASK in the 868 transceiver");
+			break;
+		case cmd800F:
+			WriteMessage("select 868.00MHz FSK in the 868 transceiver");
+			break;
+		case cmd830:
+			WriteMessage("select 868.30MHz ASK in the 868 transceiver");
+			break;
+		case cmd830F:
+			WriteMessage("select 868.30MHz FSK in the 868 transceiver");
+			break;
+		case cmd835:
+			WriteMessage("select 868.35MHz ASK in the 868 transceiver");
+			break;
+		case cmd835F:
+			WriteMessage("select 868.35MHz FSK in the 868 transceiver");
+			break;
+		case cmd895:
+			WriteMessage("select 868.95MHz in the 868 transceiver");
+			break;
 		}
 		break;
 	}
