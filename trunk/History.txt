@@ -62,6 +62,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Basic Auth, log message when a wrong username/password is provided (thanks to pj-r)
 - Implemented: WebServer, keep-alive, big thanks to chimit!!!!
 - Fixed: Email Port, please check your email settings if the port is still correct
+- Fixed: Gui display problem when going from Scenes to the Devices table
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

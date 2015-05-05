@@ -294,7 +294,7 @@ define(['app'], function (app) {
 			$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3-dis");
 			$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3-dis");
 
-		  var oTable = $('#scenecontent #devicestable').dataTable();
+		  var oTable = $('#scenecontent #scenedevicestable').dataTable();
 		  oTable.fnClearTable();
 		  
 		  $.ajax({
@@ -380,15 +380,15 @@ define(['app'], function (app) {
 			 }
 		  });
 			/* Add a click handler to the rows - this could be used as a callback */
-			$("#scenecontent #devicestable tbody").off();
-			$("#scenecontent #devicestable tbody").on( 'click', 'tr', function () {
+			$("#scenecontent #scenedevicestable tbody").off();
+			$("#scenecontent #scenedevicestable tbody").on( 'click', 'tr', function () {
 				if ( $(this).hasClass('row_selected') ) {
 						$(this).removeClass('row_selected');
 						$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3-dis");
 						$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3-dis");
 				}
 				else {
-						var oTable = $('#scenecontent #devicestable').dataTable();
+						var oTable = $('#scenecontent #scenedevicestable').dataTable();
 						oTable.$('tr.row_selected').removeClass('row_selected');
 						$(this).addClass('row_selected');
 						
@@ -601,7 +601,7 @@ define(['app'], function (app) {
 				}
 			});
 
-		  oTable = $('#scenecontent #devicestable').dataTable( {
+		  oTable = $('#scenecontent #scenedevicestable').dataTable( {
 						  "sDom": '<"H"lfrC>t<"F"ip>',
 						  "oTableTools": {
 							"sRowSelect": "single",

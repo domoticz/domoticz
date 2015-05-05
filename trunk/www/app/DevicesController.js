@@ -110,7 +110,6 @@ define(['app'], function (app) {
 					filter=$.DevicesFilter;
 				}
 			}
-		  $('#modal').show();
 		  
 		  RefreshLightSwitchesComboArray();
 		  
@@ -176,7 +175,7 @@ define(['app'], function (app) {
 				language: $.DataTableLanguage
 			} );
 
-			var mTable = $('#devicescontent #devices');
+		  var mTable = $('#devicescontent #devices');
 		  var oTable = mTable.dataTable();
 		  oTable.fnClearTable();
 		  
@@ -345,8 +344,6 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-		  $('#modal').hide();
-		  return false;
 		}
 
 		EnableDisableSubDevices = function(bEnabled)
@@ -411,15 +408,15 @@ define(['app'], function (app) {
 			  $( this ).dialog( "close" );
 			};
 
-				$( "#dialog-adddevice" ).dialog({
-					  autoOpen: false,
-					  width: 'auto',
-					  height: 'auto',
-					  modal: true,
-					  resizable: false,
-					  title: $.t("Add Device"),
-					  buttons: dialog_adddevice_buttons
-				});
+			$( "#dialog-adddevice" ).dialog({
+				  autoOpen: false,
+				  width: 'auto',
+				  height: 'auto',
+				  modal: true,
+				  resizable: false,
+				  title: $.t("Add Device"),
+				  buttons: dialog_adddevice_buttons
+			});
 
 			var dialog_addlightdevicedev_buttons = {};
 			dialog_addlightdevicedev_buttons[$.t("Add Device")]=function() {
