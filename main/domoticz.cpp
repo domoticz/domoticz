@@ -26,7 +26,7 @@
 #include "CmdLine.h"
 #include "Logger.h"
 #include "Helper.h"
-#include "WebServerHelper.h"
+#include "../main/WebServer.h"
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 
@@ -48,7 +48,7 @@ const char *szHelp=
 #ifdef NS_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
-	"\t-sslpass passphrase for private key in certificate\n"
+//	"\t-sslpass passphrase for private key in certificate\n"
 #endif
 #if defined WIN32
 	"\t-wwwroot file_path (for example D:\\www)\n"
@@ -93,7 +93,7 @@ std::string szAppVersion="???";
 
 MainWorker m_mainworker;
 CLogger _log;
-http::server::CWebServerHelper m_webservers;
+http::server::CWebServer m_webserver;
 CSQLHelper m_sql;
 CNotificationHelper m_notifications;
 std::string logfile = "";

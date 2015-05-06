@@ -651,11 +651,11 @@
     <ClInclude Include="..\notifications\NotificationHTTP.h">
       <Filter>Notifications</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\WebServerHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sqlite\sqlite3.h">
       <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\net_skeleton.h">
+      <Filter>Webserver</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1052,11 +1052,11 @@
     <ClCompile Include="..\notifications\NotificationHTTP.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\WebServerHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sqlite\sqlite3.c">
       <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\net_skeleton.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

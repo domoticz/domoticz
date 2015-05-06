@@ -13,7 +13,6 @@
 #include <sstream>
 #include <string>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 #include "mime_types.hpp"
 #include "reply.hpp"
 #include "request.hpp"
@@ -243,38 +242,18 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 
   }
 #endif
-  int nrheaders = 2;
-
-  bool keepAlive = false;
-  const char *KeepAliveStr = req.get_req_header(&req, "Connection");
-  if (KeepAliveStr)
-  {
-	  if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
-		  keepAlive = true;
-		  nrheaders += 2;
-	  }
-  }
-
-  if (bHaveLoadedgzip) {
-	nrheaders++;
-  }
-  rep.headers.resize(nrheaders);
-  int iHeader = 0;
-  rep.headers[iHeader].name = "Content-Length";
-  rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-  rep.headers[iHeader].name = "Content-Type";
-  rep.headers[iHeader++].value = mime_types::extension_to_type(extension);
-  if (keepAlive)
-  {
-	  rep.headers[iHeader].name = "Connection";
-	  rep.headers[iHeader++].value = KeepAliveStr; // RK, todo: Keep-Alive or "Close"
-	  rep.headers[iHeader].name = "Keep-Alive";
-	  rep.headers[iHeader++].value = "max=20, timeout=" + boost::lexical_cast<std::string>(req.timeout);
-  }
+  if (!bHaveLoadedgzip)
+	rep.headers.resize(2);
+  else
+	rep.headers.resize(3);
+  rep.headers[0].name = "Content-Length";
+  rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+  rep.headers[1].name = "Content-Type";
+  rep.headers[1].value = mime_types::extension_to_type(extension);
   if (bHaveLoadedgzip)
   {
-	  rep.headers[iHeader].name = "Content-Encoding";
-	  rep.headers[iHeader++].value = "gzip";
+	  rep.headers[2].name = "Content-Encoding";
+	  rep.headers[2].value = "gzip";
   }
 }
 

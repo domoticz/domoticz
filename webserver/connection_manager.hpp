@@ -12,7 +12,6 @@
 #define HTTP_CONNECTION_MANAGER_HPP
 
 #include <set>
-#include <map>
 #include <boost/noncopyable.hpp>
 #include "connection.hpp"
 
@@ -25,7 +24,6 @@ class connection_manager
   : private boost::noncopyable
 {
 public:
-	connection_manager();
   /// Add the specified connection to the manager and start it.
   void start(connection_ptr c);
 
@@ -34,14 +32,14 @@ public:
 
   /// Stop all connections.
   void stop_all();
-private:
-	boost::mutex m_mutex;
-	/// The managed connections.
-	std::set<connection_ptr> connections_;
-	std::map<std::string,time_t> connectedips_;
-	/// Last timeout checktime
-	time_t last_timeout_check_;
 
+  /// Check for timeouts
+  void check_timeouts();
+
+private:
+  /// The managed connections.
+  std::set<connection_ptr> connections_;
+  std::set<std::string> connectedips_;
 };
 
 } // namespace server

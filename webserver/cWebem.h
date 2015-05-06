@@ -137,9 +137,7 @@ namespace http {
 			cWebem(
 				const std::string& address,
 				const std::string& port,
-				const std::string& doc_root,
-				const std::string& secure_cert_file,
-				const std::string& secure_cert_passphrase);
+				const std::string& doc_root );
 
 			void Run();
 			void Stop();
@@ -223,7 +221,7 @@ namespace http {
 			std::multimap  < std::string, std::string> myNameValues;
 			/// request handler specialized to handle webem requests
 			cWebemRequestHandler myRequestHandler;
-			/// boost::asio web server (RK: plain or secure)
+			/// boost::asio web server
 			server myServer;
 			/// port server is listening on
 			std::string myPort;

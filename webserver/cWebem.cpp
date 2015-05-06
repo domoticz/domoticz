@@ -47,11 +47,9 @@ Webem constructor
 cWebem::cWebem(
 	   const std::string& address,
 	   const std::string& port,
-	   const std::string& doc_root,
-	   const std::string& secure_cert_file,
-	   const std::string& secure_cert_passphrase) :
+	   const std::string& doc_root ) :
 myRequestHandler( doc_root,this ), myPort( port ),
-myServer( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase ),
+myServer( address, port, myRequestHandler ),
 m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
 m_actsessionid(""),
@@ -664,61 +662,40 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 				extension = m_outputfilename.substr(last_dot_pos + 1);
 				strMimeType=mime_types::extension_to_type(extension);
 			}
-			extraheaders++;
-		}
-		bool keepAlive = false; 
-		const char * KeepAliveStr = req.get_req_header(&req, "Connection");
-		if (KeepAliveStr != NULL)
-		{
-			if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
-				keepAlive = true;
-				extraheaders += 2;
-			}
+			extraheaders=1;
 		}
 
-		int iHeader = 0;
 		if (!boost::algorithm::starts_with(strMimeType, "image"))
 		{
 			rep.headers.resize(4 + extraheaders);
-			rep.headers[iHeader].name = "Content-Length";
-			rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-			rep.headers[iHeader].name = "Content-Type";
-			rep.headers[iHeader++].value = strMimeType + ";charset=UTF-8"; //ISO-8859-1;
-			rep.headers[iHeader].name = "Cache-Control";
-			rep.headers[iHeader++].value = "no-cache";
-			rep.headers[iHeader].name = "Pragma";
-			rep.headers[iHeader++].value = "no-cache";
-			if (keepAlive) {
-				rep.headers[iHeader].name = "Connection";
-				rep.headers[iHeader++].value = KeepAliveStr; // RK, todo: Keep-Alive or "Close"
-				rep.headers[iHeader].name = "Keep-Alive";
-				rep.headers[iHeader++].value = "max=20, timeout=" + boost::lexical_cast<std::string>(req.timeout);
-			}
+			rep.headers[0].name = "Content-Length";
+			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+			rep.headers[1].name = "Content-Type";
+			rep.headers[1].value = strMimeType;
+			rep.headers[1].value += ";charset=UTF-8"; //ISO-8859-1
+			rep.headers[2].name = "Cache-Control";
+			rep.headers[2].value = "no-cache";
+			rep.headers[3].name = "Pragma";
+			rep.headers[3].value = "no-cache";
 			if (m_outputfilename != "")
 			{
-				rep.headers[iHeader].name = "Content-Disposition";
-				rep.headers[iHeader++].value = "attachment; filename=" + m_outputfilename;
+				rep.headers[4].name = "Content-Disposition";
+				rep.headers[4].value = "attachment; filename=" + m_outputfilename;
 			}
 		}
 		else
 		{
 			rep.headers.resize(3 + extraheaders);
-			rep.headers[iHeader].name = "Content-Length";
-			rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-			rep.headers[iHeader].name = "Content-Type";
-			rep.headers[iHeader++].value = strMimeType;
-			rep.headers[iHeader].name = "Cache-Control";
-			rep.headers[iHeader++].value = "max-age=3600, public";
-			if (keepAlive) {
-				rep.headers[iHeader].name = "Connection";
-				rep.headers[iHeader++].value = KeepAliveStr; // RK, todo: Keep-Alive or "Close"
-				rep.headers[iHeader].name = "Keep-Alive";
-				rep.headers[iHeader++].value = "max=20, timeout=" + boost::lexical_cast<std::string>(req.timeout);
-			}
+			rep.headers[0].name = "Content-Length";
+			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+			rep.headers[1].name = "Content-Type";
+			rep.headers[1].value = strMimeType;
+			rep.headers[2].name = "Cache-Control";
+			rep.headers[2].value = "max-age=3600, public";
 			if (m_outputfilename != "")
 			{
-				rep.headers[iHeader].name = "Content-Disposition";
-				rep.headers[iHeader++].value = "attachment; filename=" + m_outputfilename;
+				rep.headers[3].name = "Content-Disposition";
+				rep.headers[3].value = "attachment; filename=" + m_outputfilename;
 			}
 		}
 		return true;
@@ -731,34 +708,18 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 	cUTF utf( pfunW->second( ) );
 
-	int extraheaders = 0;
-	bool keepAlive = false;
-	const char *KeepAliveStr = req.get_req_header(&req, "Connection");
-	if (KeepAliveStr)
-	{
-		if (boost::iequals(KeepAliveStr, "Keep-Alive")) {
-			keepAlive = true;
-			extraheaders += 2;
-		}
-	}
 	rep.status = reply::ok;
 	rep.content.append(utf.get8(), strlen(utf.get8()));
-	int iHeader = 0;
-	rep.headers.resize(4 + extraheaders);
-	rep.headers[iHeader].name = "Content-Length";
-	rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-	rep.headers[iHeader].name = "Content-Type";
-	rep.headers[iHeader++].value = mime_types::extension_to_type(extension) + ";charset=UTF-8";;
-	rep.headers[iHeader].name = "Cache-Control";
-	rep.headers[iHeader++].value = "no-cache";
-	rep.headers[iHeader].name = "Pragma";
-	rep.headers[iHeader++].value = "no-cache";
-	if (keepAlive) {
-		rep.headers[iHeader].name = "Connection";
-		rep.headers[iHeader++].value = KeepAliveStr;
-		rep.headers[iHeader].name = "Keep-Alive";
-		rep.headers[iHeader++].value = "max=20, timeout" + boost::lexical_cast<std::string>(req.timeout);
-	}
+	rep.headers.resize(4);
+	rep.headers[0].name = "Content-Length";
+	rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+	rep.headers[1].name = "Content-Type";
+	rep.headers[1].value = mime_types::extension_to_type(extension);
+	rep.headers[1].value += ";charset=UTF-8";
+	rep.headers[2].name = "Cache-Control";
+	rep.headers[2].value = "no-cache";
+	rep.headers[3].name = "Pragma";
+	rep.headers[3].value = "no-cache";
 	return true;
 }
 
