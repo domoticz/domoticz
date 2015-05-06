@@ -248,6 +248,7 @@ webserver/connection.cpp
 webserver/connection_manager.cpp
 webserver/cWebem.cpp
 webserver/mime_types.cpp
+webserver/net_skeleton.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp

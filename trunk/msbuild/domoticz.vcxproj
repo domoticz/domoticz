@@ -199,7 +199,6 @@
     <ClInclude Include="..\main\unzip.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
-    <ClInclude Include="..\main\WebServerHelper.h" />
     <ClInclude Include="..\MQTT\Clients.h" />
     <ClInclude Include="..\MQTT\Heap.h" />
     <ClInclude Include="..\MQTT\LinkedList.h" />
@@ -230,6 +229,7 @@
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
+    <ClInclude Include="..\webserver\net_skeleton.h" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
@@ -368,7 +368,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\main\SunRiseSet.cpp" />
-    <ClCompile Include="..\main\WebServerHelper.cpp" />
     <ClCompile Include="..\main\WindCalculation.cpp" />
     <ClCompile Include="..\MQTT\Clients.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
@@ -513,6 +512,7 @@
     <ClCompile Include="..\webserver\connection_manager.cpp" />
     <ClCompile Include="..\webserver\cWebem.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
+    <ClCompile Include="..\webserver\net_skeleton.cpp" />
     <ClCompile Include="..\webserver\reply.cpp" />
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />
