@@ -158,7 +158,6 @@ main/Scheduler.cpp
 main/SQLHelper.cpp
 main/SunRiseSet.cpp
 main/WebServer.cpp
-main/WebServerHelper.cpp
 main/WindCalculation.cpp
 main/DataPush.cpp
 httpclient/HTTPClient.cpp
