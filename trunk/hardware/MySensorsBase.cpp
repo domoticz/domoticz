@@ -918,9 +918,14 @@ void MySensorsBase::ParseLine()
 			_log.Log(LOG_NORM, "MySensors: Gateway Ready...");
 			break;
 		case I_TIME:
-			//send time in seconds from 1970
-			sstr << time(NULL);
-			SendCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
+			//send time in seconds from 1970 with timezone offset
+			{
+				time_t atime = mytime(NULL);
+				struct tm ltime;
+				localtime_r(&atime, &ltime);
+				sstr << mktime(&ltime);
+				SendCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
+			}
 			break;
 		default:
 			while (1==0);
