@@ -66,6 +66,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Pushover/NMA now use the subject again
 - Implemented: RFXCom pTypeInterfaceControl messages
 - Changed: MySensors time request now returns localtime
+- Fixed: Setting correct folder permissions on the backup folder
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
