@@ -497,6 +497,15 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		rep = reply::stock_reply(reply::bad_request);
 		return false;
 	}
+
+	m_lastRequestPath = request_path;
+
+	int paramPos = request_path.find_first_of('?');
+	if (paramPos != std::string::npos)
+	{
+		request_path = request_path.substr(0,paramPos);
+	}
+
 	// Request path must be absolute and not contain "..".
 	if (request_path.empty() || request_path[0] != '/'
 		|| request_path.find("..") != std::string::npos)
@@ -511,10 +520,9 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		request_path += "index.html";
 	}
 	myNameValues.clear();
-	m_lastRequestPath=request_path;
 
 	request_path = req.uri; // we need the raw request string to parse the get-request
-	int paramPos=request_path.find_first_of('?');
+	paramPos=request_path.find_first_of('?');
 	if (paramPos!=std::string::npos)
 	{
 		std::string params=request_path.substr(paramPos+1);

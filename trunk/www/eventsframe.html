@@ -446,9 +446,7 @@
 		    else if ($(this).attr('type') == 'open_url') {
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
 		    	var urlText = $(urlBlock).find("title[name='TEXT']")[0];
-		    	var urlNoAmpersands =  $(urlText).text().replace(/\&/g, '~amp~');
-		    	urlNoAmpersands =  urlNoAmpersands.replace(/\,/g, '~comma~');
-		    	var setString = 'commandArray["OpenURL"]="'+urlNoAmpersands+'"';
+		    	var setString = 'commandArray["OpenURL"]="'+$(urlText).text()+'"';
 	        	setArray.push(setString);		      	
 		    }
 			else if ($(this).attr('type') == 'writetolog') {
@@ -505,7 +503,7 @@
 				  	if (typeof data.result != 'undefined') {
 				  		if (data.status=="OK") {
 				  			var xmltemp = data.result[0].xmlstatement;
-				  			var xml = Blockly.Xml.textToDom(xmltemp.replace(/\~amp~/g, '&'));
+				  			var xml = Blockly.Xml.textToDom(xmltemp);
 					  		Blockly.mainWorkspace.clear();
 					  		Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
 					  		$("#blockName").val(data.result[0].name);
@@ -613,7 +611,6 @@
       		if (doSave) {
       		   var blockXml  = Blockly.Xml.domToText( xml );
       		   var logicArray = parseXml(xml);
-      		   blockXml = blockXml.replace(/\&/g, '~amp~');
       		   if (typeof(logicArray)=='string') {
       		   	var answerparts = logicArray.split(':');
       		   	if (answerparts[0]=="err") {
@@ -626,7 +623,7 @@
       	    		var isActive = 0;
       	    		if ($('#eventActive').is(':checked')) {isActive = 1};
       	    		$.ajax({
-	      	    		url : "json.htm?type=events&param=create&name="+blockName+"&xml="+blockXml+"&logicarray="+JSON.stringify(logicArray)+"&eventid="+id+"&eventstatus="+isActive, 
+	      	    		url : "json.htm?type=events&param=create&name="+encodeURIComponent(blockName)+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(JSON.stringify(logicArray))+"&eventid="+id+"&eventstatus="+isActive, 
 	      	    		async: false, 
 	      	    		dataType: 'json',
 	      	    		success: function(data) {
