@@ -67,6 +67,8 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: RFXCom pTypeInterfaceControl messages
 - Changed: MySensors time request now returns localtime
 - Fixed: Setting correct folder permissions on the backup folder
+- Changed: MySensors, Battery level now applied to correct NodeID
+- Fixed: Blockly, now escaping strings/xml
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

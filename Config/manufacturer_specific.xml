@@ -463,6 +463,7 @@
 		<Product type="0001" id="0004" name="PAN06-1 In Wall Dual Relay (1 Way) Switch Module"/>
 		<Product type="0001" id="0006" name="PAN08-1 In Wall Roller Shutter Controller"/>
 		<Product type="0002" id="0002" name="PSM02-1 Slim Multi-Sensor" config="philio/psm02.xml"/>
+		<Product type="0002" id="000c" name="PST02-A 4 in 1 Multi-Sensor" config="philio/pst02.xml"/>
 		<Product type="0002" id="000d" name="PST02-1B Multi Sensor"/>
 		<Product type="0002" id="000e" name="PST02-1C Slim Multi Sensor" config="philio/pst02-1c.xml"/>
 	</Manufacturer>
@@ -559,6 +560,9 @@
 	</Manufacturer>
 	<Manufacturer id="0047" name="Somfy">
 	</Manufacturer>
+	<Manufacturer id="166" name="Swiid">
+		<Product type="100" id="100" name="SwiidInter" config="swiid/swiidinter.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0009" name="Sylvania">
 	</Manufacturer>
 	<Manufacturer id="0012" name="Tell It Online">
@@ -593,6 +597,10 @@
 		<Product type="2200" id="9100" name="Vitrum I BS Wireless On-off" config="vitrum/vitrumBS.xml"/>
 		<Product type="2200" id="9200" name="Vitrum II BS Wireless On-off" config="vitrum/vitrumBS.xml"/>
 		<Product type="2200" id="9400" name="Vitrum IV BS Wireless On-off" config="vitrum/vitrumBS.xml"/>
+		<Product type="4400" id="6400" name="Vitrum IV EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
+		<Product type="3400" id="6400" name="Vitrum IV EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
+		<Product type="1400" id="6600" name="Vitrum VI EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
+		<Product type="1400" id="6100" name="Vitrum I EU Wireless On-off" config="vitrum/vitrumBS.xml"/>
 	</Manufacturer>
 	<Manufacturer id="004a" name="Visualize">
 	</Manufacturer>

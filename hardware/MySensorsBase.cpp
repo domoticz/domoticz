@@ -283,16 +283,15 @@ MySensorsBase::_tMySensorSensor* MySensorsBase::FindSensor(const int nodeID, _eS
 
 void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 {
-	std::map<int, _tMySensorNode>::iterator ittNode;
-	for (ittNode = m_nodes.begin(); ittNode != m_nodes.end(); ++ittNode)
+	std::map<int, _tMySensorNode>::iterator ittNode = m_nodes.find(nodeID);
+	if (ittNode == m_nodes.end())
+		return; //Not found
+	_tMySensorNode *pNode = &ittNode->second;
+	std::vector<_tMySensorSensor>::iterator itt;
+	for (itt = pNode->m_sensors.begin(); itt != pNode->m_sensors.end(); ++itt)
 	{
-		_tMySensorNode *pNode = &ittNode->second;
-		std::vector<_tMySensorSensor>::iterator itt;
-		for (itt = pNode->m_sensors.begin(); itt != pNode->m_sensors.end(); ++itt)
-		{
-			itt->hasBattery = true;
-			itt->batValue = Level;
-		}
+		itt->hasBattery = true;
+		itt->batValue = Level;
 	}
 }
 
