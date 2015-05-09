@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Aeon Labs Panic Button Gen5 -->
+  <!-- Basic and SwitchMultiLevel are for when the KeyFob is in Group Mode.
+  You should configure the device to operate in Scene Mode instead if you
+  wish to integrate it with your application -->
+  <CommandClass id="32" action="remove" />
+  <CommandClass id="38" action="remove" />
+  
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+     <Value type="list" index="250" genre="config" label="Mode" units="" min="0" max="1" size="1" value="1">
+      <Help>Enable selective Group Mode or Scene Mode when the Panic Button is in Use mode</Help>
+      <Item label="Group" value="0" />
+      <Item label="Scene" value="1" />
+    </Value>
+     
+    <Value type="button" index="255" genre="config" label="Reset configuration" units="" write_only="true" value="0">
+      <Help>Reset configuration set up to default setting</Help>
+    </Value>
+  </CommandClass>
+
+  <!-- COMMAND_CLASS_ASSOCIATION -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Lifeline" auto="true" />
+    </Associations>
+  </CommandClass>
+
+</Product>

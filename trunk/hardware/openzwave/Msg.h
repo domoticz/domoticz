@@ -32,10 +32,12 @@
 #include <string>
 #include <string.h>
 #include "Defs.h"
+//#include "Driver.h"
 
 namespace OpenZWave
 {
 	class CommandClass;
+	class Driver;
 
 	/** \brief Message object to be passed to and from devices on the Z-Wave network.
 	 */
@@ -105,8 +107,8 @@ namespace OpenZWave
 		 */
 		string GetLogText()const{ return m_logText; }
 
-		uint32 GetLength()const{ return m_length; }
-		uint8* GetBuffer(){ return m_buffer; }
+		uint32 GetLength()const{ return m_encrypted == true ? m_length + 20 + 6 : m_length; }
+		uint8* GetBuffer();
 		string GetAsString();
 
 		uint8 GetSendAttempts()const{ return m_sendAttempts; }
@@ -143,7 +145,33 @@ namespace OpenZWave
 
 		}
 
+		bool isEncrypted() {
+			return m_encrypted;
+		}
+		void setEncrypted() {
+			m_encrypted = true;
+		}
+		bool isNonceRecieved() {
+			return m_noncerecvd;
+		}
+		void setNonce(uint8 nonce[8]) {
+			memcpy(m_nonce, nonce, 8);
+			m_noncerecvd = true;
+			UpdateCallbackId();
+		}
+		void clearNonce() {
+			memset((m_nonce), '\0', 8);
+			m_noncerecvd = false;
+		}
+		void SetHomeId(uint32 homeId) { m_homeId = homeId; };
+
+		/** Returns a pointer to the driver (interface with a Z-Wave controller)
+		 *  associated with this node.
+		*/
+		Driver* GetDriver()const;
 	private:
+
+
 		void MultiEncap();					// Encapsulate the data inside a MultiInstance/Multicommand message
 
 		string			m_logText;
@@ -155,6 +183,7 @@ namespace OpenZWave
 		uint8			m_expectedCommandClassId;
 		uint8			m_length;
 		uint8			m_buffer[256];
+		uint8			e_buffer[256];
 
 		uint8			m_targetNodeId;
 		uint8			m_sendAttempts;
@@ -164,6 +193,10 @@ namespace OpenZWave
 		uint8			m_endPoint;			// Endpoint to use if the message must be wrapped in a multiInstance or multiChannel command class
 		uint8			m_flags;
 
+		bool			m_encrypted;
+		bool			m_noncerecvd;
+		uint8			m_nonce[8];
+		uint32			m_homeId;
 		static uint8		s_nextCallbackId;		// counter to get a unique callback id
 	};
 

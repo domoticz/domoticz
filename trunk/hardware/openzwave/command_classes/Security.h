@@ -37,31 +37,28 @@ namespace OpenZWave
 	/** \brief Implements COMMAND_CLASS_SECURITY (0x98), a Z-Wave device command class.
 	 */
 
-	typedef struct SecurityPayload {
-		uint8 m_length;
-		uint8 m_part;
-		uint8 m_data[32];
-		string logmsg;
-	} SecurityPayload;
 
-	/* This should probably go into its own file, but its so simple... and only the Security Command Class uses it currently
-	 */
-
-	class Timer {
-	public:
-		Timer() {
-			this->Reset();
-		};
-		virtual ~Timer() {};
-		void Reset() {
-			start = clock();
-		}
-		inline uint64 GetMilliseconds() {
-            return (uint64 )(((clock() - start) / (double)CLOCKS_PER_SEC) / 1000);
-		}
-	private:
-		clock_t start;
+	enum SecurityCmd
+	{
+		SecurityCmd_SupportedGet			= 0x02,
+		SecurityCmd_SupportedReport			= 0x03,
+		SecurityCmd_SchemeGet				= 0x04,
+		SecurityCmd_SchemeReport			= 0x05,
+		SecurityCmd_NetworkKeySet			= 0x06,
+		SecurityCmd_NetworkKeyVerify		= 0x07,
+		SecurityCmd_SchemeInherit			= 0x08,
+		SecurityCmd_NonceGet				= 0x40,
+		SecurityCmd_NonceReport				= 0x80,
+		SecurityCmd_MessageEncap			= 0x81,
+		SecurityCmd_MessageEncapNonceGet	= 0xc1
 	};
+
+	enum SecurityScheme
+	{
+		SecurityScheme_Zero					= 0x00,
+	};
+
+
 
 	class Security: public CommandClass
 	{
@@ -72,6 +69,7 @@ namespace OpenZWave
 		static uint8 const StaticGetCommandClassId(){ return 0x98; }
 		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_SECURITY"; }
 		bool Init();
+		bool ExchangeNetworkKeys();
 		// From CommandClass
 		virtual uint8 const GetCommandClassId()const{ return StaticGetCommandClassId(); }
 		virtual string const GetCommandClassName()const{ return StaticGetCommandClassName(); }
@@ -88,27 +86,7 @@ namespace OpenZWave
 		bool RequestState( uint32 const _requestFlags, uint8 const _instance, Driver::MsgQueue const _queue);
 		bool RequestValue( uint32 const _requestFlags, uint8 const _index, uint8 const _instance, Driver::MsgQueue const _queue);
 		bool HandleSupportedReport(uint8 const* _data, uint32 const _length);
-		void SendNonceReport();
-		void RequestNonce();
-		bool GenerateAuthentication( uint8 const* _data, uint32 const _length, uint8 const _sendingNode, uint8 const _receivingNode, uint8 *iv, uint8* _authentication);
-		bool DecryptMessage( uint8 const* _data, uint32 const _length );
-		bool EncryptMessage( uint8 const* _nonce );
-		void QueuePayload( SecurityPayload * _payload );
-		bool createIVFromPacket_inbound(uint8 const* _data, uint8 *iv);
-		bool createIVFromPacket_outbound(uint8 const* _data, uint8 *iv);
-		void SetupNetworkKey();
 
-		Mutex *m_queueMutex;
-		list<SecurityPayload *>      m_queue;         // Messages waiting to be sent when the device wakes up
-		bool m_waitingForNonce;
-		uint8 m_sequenceCounter;
-		Timer m_nonceTimer;
-		uint8 currentNonce[8];
-		bool m_networkkeyset;
-
-		aes_encrypt_ctx *AuthKey;
-		aes_encrypt_ctx *EncryptKey;
-		uint8 *nk;
 		bool m_schemeagreed;
 		bool m_secured;
 

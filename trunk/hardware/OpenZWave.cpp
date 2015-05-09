@@ -403,6 +403,40 @@ void OnDeviceStatusUpdate(OpenZWave::Driver::ControllerState cs, OpenZWave::Driv
 	pClass->OnZWaveDeviceStatusUpdate(cs, err);
 }
 
+const char *COpenZWave::GetControllerErrorStr(OpenZWave::Driver::ControllerError err)
+{
+	switch (err) {
+	case Driver::ControllerError_None:
+		return "None";
+	case Driver::ControllerError_ButtonNotFound:
+		return "Button Not Found";
+	case Driver::ControllerError_NodeNotFound:
+		return "Node Not Found";
+	case Driver::ControllerError_NotBridge:
+		return "Not a Bridge";
+	case Driver::ControllerError_NotPrimary:
+		return "Not Primary Controller";
+	case Driver::ControllerError_IsPrimary:
+		return "Is Primary Controller";
+	case Driver::ControllerError_NotSUC:
+		return "Not Static Update Controller";
+	case Driver::ControllerError_NotSecondary:
+		return "Not Secondary Controller";
+	case Driver::ControllerError_NotFound:
+		return "Not Found";
+	case Driver::ControllerError_Busy:
+		return "Controller Busy";
+	case Driver::ControllerError_Failed:
+		return "Failed";
+	case Driver::ControllerError_Disabled:
+		return "Disabled";
+	case Driver::ControllerError_Overflow:
+		return "Overflow";
+	default:
+		return "Unknown error";
+	}
+}
+
 //-----------------------------------------------------------------------------
 // <OnNotification>
 // Callback that is triggered when a value, group or node changes
@@ -707,6 +741,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_EssentialNodeQueriesComplete:
 		//The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages.
+		break;
+	case OpenZWave::Notification::Type_ControllerCommand:
+		//When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
+		//Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState
+		//Not handled
 		break;
 	default:
 		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID,_nodeID);

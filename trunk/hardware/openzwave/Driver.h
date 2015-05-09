@@ -38,6 +38,7 @@
 #include "platform/Event.h"
 #include "platform/Mutex.h"
 #include "platform/TimeStamp.h"
+#include "aes/aescpp.h"
 
 namespace OpenZWave
 {
@@ -71,6 +72,7 @@ namespace OpenZWave
 		friend class SceneActivation;
 		friend class WakeUp;
 		friend class Security;
+		friend class Msg;
 
 	//-----------------------------------------------------------------------------
 	//	Controller Interfaces
@@ -191,7 +193,7 @@ namespace OpenZWave
 
 
 		uint32 GetHomeId()const{ return m_homeId; }
-		uint8 GetNodeId()const{ return m_nodeId; }
+		uint8 GetControllerNodeId()const{ return m_Controller_nodeId; }
 		uint8 GetSUCNodeId()const{ return m_SUCNodeId; }
 		uint16 GetManufacturerId()const{ return m_manufacturerId; }
 		uint16 GetProductType()const{ return m_productType; }
@@ -257,7 +259,7 @@ namespace OpenZWave
 		uint8					m_initVersion;								// Version of the Serial API used by the controller.
 		uint8					m_initCaps;									// Set of flags indicating the serial API capabilities (See IsSlave, HasTimerSupport, IsPrimaryController and IsStaticUpdateController above).
 		uint8					m_controllerCaps;							// Set of flags indicating the controller's capabilities (See IsInclusionController above).
-		uint8					m_nodeId;									// Z-Wave Controller's own node ID.
+		uint8					m_Controller_nodeId;									// Z-Wave Controller's own node ID.
 		Node*					m_nodes[256];								// Array containing all the node objects.
 		Mutex*					m_nodeMutex;								// Serializes access to node data
 
@@ -379,9 +381,12 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 *  stages--Node::QueryStage_None).  This function will send Notification::Type_NodeAdded
 		 *  and Notification::Type_NodeRemoved messages to identify these modifications.
 		 *  \param _nodeId The node ID of the node to create and query.
+		 *  \param newNode If this is a new Node added to the network, or we are just creating when we reload.
+		 *  \param _protocolInfo if this is called via a AddNode command, then this would be the Device Classes, and CommandClass list
+		 *  \param _length The length of the _protocolInfo field
 		 *  \see Notification::Type_NodeAdded, Notification::Type_NodeRemoved, Node::QueryStage_None,
 		 */
-		void InitNode( uint8 const _nodeId, bool newNode = false );
+		void InitNode( uint8 const _nodeId, bool newNode = false, bool secure = false, uint8 const *_protocolInfo = NULL, uint8 const _length = 0);
 
 		void InitAllNodes();												// Delete all nodes and fetch the data from the Z-Wave network again.
 
@@ -527,48 +532,14 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 			bool					m_controllerAdded;
 			uint8					m_controllerCommandNode;
 			uint8					m_controllerCommandArg;
+			uint8					m_controllerDeviceProtocolInfo[254];
+			uint8 					m_controllerDeviceProtocolInfoLength;
 		};
 
 		ControllerCommandItem*			m_currentControllerCommand;
 
 		void DoControllerCommand();
-		void UpdateControllerState( ControllerState const _state, ControllerError const _error = ControllerError_None )
-		{
-			if( m_currentControllerCommand != NULL )
-			{
-				if( _state != m_currentControllerCommand->m_controllerState )
-				{
-					m_currentControllerCommand->m_controllerStateChanged = true;
-					m_currentControllerCommand->m_controllerState = _state;
-					switch( _state )
-					{
-						case ControllerState_Error:
-						case ControllerState_Cancel:
-						case ControllerState_Failed:
-						case ControllerState_Sleeping:
-						case ControllerState_NodeFailed:
-						case ControllerState_NodeOK:
-						case ControllerState_Completed:
-						{
-							m_currentControllerCommand->m_controllerCommandDone = true;
-							m_sendMutex->Lock();
-							m_queueEvent[MsgQueue_Controller]->Set();
-							m_sendMutex->Unlock();
-							break;
-						}
-						default:
-						{
-							break;
-						}
-					}
-
-				}
-				if( _error != ControllerError_None )
-				{
-					m_currentControllerCommand->m_controllerReturnError = _error;
-				}
-			}
-		}
+		void UpdateControllerState( ControllerState const _state, ControllerError const _error = ControllerError_None );
 
 		uint8					m_SUCNodeId;
 
@@ -847,8 +818,23 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 	//-----------------------------------------------------------------------------
 	//	Security Command Class Related (Version 1.1)
 	//-----------------------------------------------------------------------------
+	public:
+		aes_encrypt_ctx *GetAuthKey();
+		aes_encrypt_ctx *GetEncKey();
+		bool isNetworkKeySet();
+
 	private:
+		bool initNetworkKeys(bool newnode);
 		uint8 *GetNetworkKey();
+		bool SendEncryptedMessage();
+		bool SendNonceRequest(string logmsg);
+		void SendNonceKey(uint8 nodeId, uint8 *nonce);
+		aes_encrypt_ctx *AuthKey;
+		aes_encrypt_ctx *EncryptKey;
+		uint8 m_nonceReportSent;
+		uint8 m_nonceReportSentAttempt;
+		bool m_inclusionkeySet;
+
 	};
 
 } // namespace OpenZWave

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aeon Labs Multi Sensor -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="2" genre="config" label="Wake up 10 minutes on Power On" min="0" max="1" value="0" size="1">
+			<Help>Stay awake for 10 minutes after batteries are inserted</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="short" index="3" genre="config" label="On time" units="seconds" min="1" max="15300" value="240">
+			<Help>How long should the device associated to multi sensor keep state On before sending it Off command (if the value is bigger than 255, the value would be rounded to next integer in minutes)</Help>
+		</Value>
+		<Value type="list" index="4" genre="config" label="Enable Motion Sensor" min="0" max="1" value="1" size="1">
+			<Help>Enable Motion Sensor</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled" value="1" /> 			
+		</Value>
+		<Value type="list" index="5" genre="config" label="Command Options" min="1" max="2" value="1" size="1">
+			<Help>Which commands to send when PIR motion sensor triggered
+			OZW Ideal Value is Binary Sensor Report</Help>
+			<Item label="Basic Set (default) " value="1" />
+			<Item label="Binary Sensor Report" value="2" />  
+		</Value>
+		<Value type="list" index="40" genre="config" label="Reporting Threshold" min="0" max="1" value="0" size="1">
+			<Help>Enable/disable the selective reporting only when measurements reach a certain threshold or percentage 
+			set in the threshold settings.  This is used to reduce network
+			traffic.</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled" value="1" /> 			
+		</Value>
+		<Value type="short" index="41" genre="config" label="Temperature Reporting Threshold" units="%" min="0" max="39321" value="256" size="2">
+			<Help>Threshold change in temperature to induce an automatic report.  
+			Note: 
+			1. When the unit is Celsius, threshold=Value. 
+			2. When the unit is Fahrenheit, threshold=Value*1.8. The accuracy is 0.1. 
+			3. The high byte is the part of integer, the low byte is the fractional part. 
+			</Help>
+		</Value>
+		<Value type="short" index="42" genre="config" label="Humidity Reporting Threshold" units="%" min="0" max="39321" value="1280" size="2">
+			<Help>Threshold change in humidity to induce an automatic report. 
+			Note: 
+			The accuracy is 0.1. 
+			The high byte is the part of integer, the low byte is the fractional part. 
+			</Help>
+		</Value>
+		<Value type="short" index="43" genre="config" label="Luminance Reporting Threshold" units="LUX" min="0" max="65535" value="25600" size="2">
+			<Help>Threshold change in luminance to induce an automatic report. </Help>
+		</Value>
+		<Value type="short" index="44" genre="config" label="Battery Reporting Threshold" units="%" min="0" max="39321" value="1280" size="2">
+			<Help>Threshold change in battery level to induce an  automatic report. 
+			Note: 
+			The accuracy is 0.1. 
+			The high byte is the part of integer, the low byte is the fractional part.  
+			</Help>
+		</Value>
+		<Value type="list" index="46" genre="config" label="Low Temp Alarm" min="0" max="1" value="0" size="1">
+			<Help>Enable/disable to send the alarm report of low temperature(Less than 15 Degress C)
+			</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled" value="1" /> 			
+		</Value>
+		<Value type="int" index="101" genre="config" label="Group 1 Reports" value="255">
+			<Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+		</Value>
+		<Value type="int" index="102" genre="config" label="Group 2 Reports" value="0">
+			<Help>Which reports need to send automatically in timing intervals for group 2. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+		</Value>
+		<Value type="int" index="103" genre="config" label="Group 3 Reports" value="0">
+			<Help>Which reports need to send automatically in timing intervals for group 3. Bitsets: 0 -> Battery report, 5 -> Temperature, 6 -> Humidity, 7 -> Luminosity</Help>
+		</Value>
+		<Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" min="1" max="2678400" value="1800">
+			<Help>The interval of sending report group 1. 1 to 2678400 seconds</Help>
+		</Value>
+		<Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" min="1" max="2678400" value="1800">
+			<Help>The interval of sending report group 2. 1 to 2678400 seconds</Help>
+		</Value>
+		<Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" min="1" max="2678400" value="1800">
+			<Help>The interval of sending report group 3. 1 to 2678400 seconds</Help>
+		</Value>
+		<Value type="list" index="252" genre="config" label="Enable/disable Lock Configuration" units="" min="0" max="1" value="0" size="1">
+			<Help>
+				Enable/disable Lock Configuration
+			</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
+		</Value>
+		<Value type="button" index="255" genre="config" label="Reset to default" write_only="true" value="0" >
+			<Help>Reset to factory defaults.</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- the Device Doesn't support Get for Alarm Class -->
+	<CommandClass id="113" getsupported="false"/>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="LifeLine" auto="true"/>
+		</Associations>
+	</CommandClass>
+
+</Product>

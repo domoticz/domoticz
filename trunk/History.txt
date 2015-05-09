@@ -69,6 +69,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Setting correct folder permissions on the backup folder
 - Changed: MySensors, Battery level now applied to correct NodeID
 - Fixed: Blockly, now escaping strings/xml
+- Changed: Now using OpenZWave security branch
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

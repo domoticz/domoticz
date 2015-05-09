@@ -152,6 +152,8 @@ private:
 	bool OpenSerialConnector();
 	void CloseSerialConnector();
 
+	const char *GetControllerErrorStr(OpenZWave::Driver::ControllerError err);
+
 	void WriteControllerConfig();
 	time_t m_LastControllerConfigWrite;
 
