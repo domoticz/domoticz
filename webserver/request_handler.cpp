@@ -95,6 +95,12 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 	  return;
   }
 
+  int paramPos = request_path.find_first_of('?');
+  if (paramPos != std::string::npos)
+  {
+	  request_path = request_path.substr(0, paramPos);
+  }
+
   // Request path must be absolute and not contain "..".
   if (request_path.empty() || request_path[0] != '/'
       || request_path.find("..") != std::string::npos)
@@ -114,13 +120,6 @@ void request_handler::handle_request(const std::string &sHost, const request& re
   else if (request_path.find("/acttheme/") == 0)
   {
 	  request_path = myWebem->actTheme + request_path.substr(9);
-  }
-
-  size_t paramPos=request_path.find_first_of('?');
-  if (paramPos!=std::string::npos)
-  {
-	  //std::string params = request_path.substr(paramPos + 1);
-	  request_path=request_path.substr(0,paramPos);
   }
 
   // Determine the file extension.
