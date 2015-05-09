@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Aeon Labs Heavy Duty Smart Switch -->
+  <Protocol refreshonnodeinfoframe="false"/>
+
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="list" index="3" genre="config" label="Current Overload Protection" size="1" value="0">
+      <Help>
+      Current Overload Protection. Load will be closed when
+      the Current more than 39.5A and the time more than 5
+      seconds
+      </Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+    </Value>
+    <Value type="list" index="20" genre="config" label="LED Mode" size="1" value="0">
+      <Help>LED status after power on</Help>
+      <Item label="Last Status" value="0"/>
+      <Item label="On" value="1"/>
+      <Item label="Off" value="2"/>
+    </Value>
+    <Value type="list" index="80" genre="config" label="Notification status" units="" size="1" value="0">
+      <Help>
+	Enables automatic notifications to associated devices whenever there is a state change.
+      </Help>
+      <Item label="None" value="0" />
+      <Item label="Hail" value="1" />
+      <Item label="Basic" value="2" />
+    </Value>
+    <Value type="bool" index="90" genre="config" label="Enable Wattage Reports" units="" value="0">
+      <Help>
+	Enable/disable Wattage threshold and percent.
+      </Help>
+    </Value>
+    <Value type="short" index="91" genre="config" label="Wattage threshold" units="watts" min="0" max="32000" value="50">
+      <Help>
+	The minimum change in wattage for a report to be sent.
+      </Help>
+    </Value>
+    <Value type="byte" index="92" genre="config" label="Wattage threshold percent" units="%" min="0" max="99" value="10">
+      <Help>
+	Minimum change in percent of wattage to send a report.
+      </Help>
+    </Value>
+    <Value type="button" index="100" genre="config" label="Default Group Reports" units="" write_only="true" value="0" affects="101,102,103">
+      <Help>
+	Set report types for groups 1, 2 and 3 to default. Reverts to 0
+	after set.
+      </Help>
+    </Value>
+    <Value type="int" index="101" genre="config" label="Report type G1" units="" value="8">
+      <Help>
+	Defines the type of report sent for reporting group 1. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC (KWH)
+		     bit 2 MRC (watt)
+		     bit 1 MSRC (Current)
+		     bit 0 MRC (Voltage)
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value type="int" index="102" genre="config" label="Report type G2" units="" value="0">
+      <Help>
+	Defines the type of report sent for reporting group 2. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC (KWH)
+		     bit 2 MRC (watt)
+		     bit 1 MSRC (Current)
+		     bit 0 MRC (Voltage)
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value type="int" index="103" genre="config" label="Report type G3" units="" value="0">
+      <Help>
+	Defines the type of report sent for reporting group 3. 2 is multisensor report. 4 is meter report for watts. 8 is meter report for kilowatts.
+	 Value 1 (msb) Reserved
+	 Value 2 Reserved
+	 Value 3 Reserved
+	 Value 4 (lsb) bits 7-4 reserved
+                     bit 3 MRC (KWH)
+		     bit 2 MRC (watt)
+		     bit 1 MSRC (Current)
+		     bit 0 MRC (Voltage)
+
+	The MRC(KWH) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(KWh) automatically.
+
+	The MRC(Watt) flag signals that Report Group 1 send(1) or don't send(0)
+	Meter Report Command(wattage) automatically.
+
+	The MSRC flag signals that Report Group 1 send(1) or don't send(0)
+	Multilevel Sensor Report Command(wattage) automatically.
+      </Help>
+    </Value>
+    <Value type="button" index="110" genre="config" label="Default Group Time" units="" write_only="true" value="0" affects="111,112,113">
+      <Help>
+	Set time interval for sending reports for groups 1, 2 and 3 to default.
+      </Help>
+    </Value>
+    <Value type="int" index="111" genre="config" label="Send interval G1" units="seconds" min="0" max="65535" value="600">
+      <Help>
+	Defines the time interval when the defined report for group 1 is sent.
+      </Help>
+    </Value>
+    <Value type="int" index="112" genre="config" label="Send interval G2" units="seconds" min="0" max="65535" value="600">
+      <Help>
+	Defines the time interval when the defined report for group 2 is sent.
+      </Help>
+    </Value>
+    <Value type="int" index="113" genre="config" label="Send interval G3" units="seconds" min="0" max="65535" value="600">
+      <Help>
+	Defines the time interval when the defined report for group 3 is sent.
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
+      <Help>Lock/ unlock all configuration parameters</Help>
+      <Item label="Unlock" value="0"/>
+      <Item label="Lock" value="1"/>
+    </Value>
+    <Value type="button" index="255" genre="config" label="Reset device" units="" write_only="true" value="0">
+      <Help>
+	Reset to the default configuration.
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="5" label="LifeLine" auto="true" />
+      <Group index="2" max_associations="5" label="Reports" auto="true" />
+    </Associations>
+  </CommandClass>
+</Product>
+

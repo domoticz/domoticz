@@ -56,7 +56,6 @@ namespace OpenZWave
 		virtual bool SetValue( Value const& _value );
 		virtual void SetValueBasic( uint8 const _instance, uint8 const _value );
 
-
 	protected:
 		virtual void CreateVars( uint8 const _instance );
 

@@ -39,15 +39,20 @@
 		<Product type="0001" id="0003" name="Minimote" config="aeon_labs/minimote.xml"/>
 		<Product type="0001" id="0007" name="Z-Stick S2 Lite"/>
 		<Product type="0001" id="0016" name="Key Fob" config="aeon_labs/keyfob.xml"/>
+		<Product type="0001" id="0058" name="ZW088 Key Fob Gen5" config="aeon_labs/keyfob2.xml"/>
 		<Product type="0001" id="005a" name="Z-Stick Gen5"/>
 		<Product type="0001" id="005c" name="Z-Stick Lite Gen5"/>
+		<Product type="0001" id="0026" name="Panic Button" config="aeon_labs/panicbtn.xml"/>
 		<Product type="0002" id="0001" name="Z-Stick S2"/>
 		<Product type="0002" id="0004" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
 		<Product type="0002" id="0005" name="Multi Sensor" config="aeon_labs/alms.xml"/>
 		<Product type="0002" id="0009" name="Home Energy Meter" config="aeon_labs/hem.xml"/>
 		<Product type="0002" id="001c" name="Home Energy Meter G2" config="aeon_labs/hemg2.xml"/>
 		<Product type="0002" id="001d" name="Door/Window Sensor" config="aeon_labs/doorwindow.xml"/>
+		<Product type="0002" id="002d" name="Water Sensor" config="aeon_labs/watersensor.xml" />
 		<Product type="0002" id="0036" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor.xml"/>
+		<Product type="0002" id="004a" name="Multi Sensor Gen5" config="aeon_labs/multisensor_gen5.xml"/>
+		<Product type="0002" id="0059" name="Recessed Door Sensor" config="aeon_labs/recessed_doorsensor_gen5.xml"/>
 		<Product type="0003" id="0006" name="Smart Energy Switch" config="aeon_labs/ses.xml"/>
 		<Product type="0003" id="0008" name="Smart Energy Illuminator"/>
 		<Product type="0003" id="000a" name="Smart Energy 220V Utility Switch"/>
@@ -59,10 +64,17 @@
 		<Product type="0003" id="001a" name="Micro Switch (2nd Edition)"/>
 		<Product type="0003" id="001b" name="Micro Smart Energy Illuminator G2"/>
 		<Product type="0003" id="0012" name="Micro Smart Energy Switch G2" config="aeon_labs/ses.xml" />
-		<Product type="0003" id="0013" name="Micro Smart Energy Dimmer"/>
+		<Product type="0003" id="0013" name="Micro Smart Energy Dimmer v2" config="aeon_labs/msesv2.xml" />
 		<Product type="0003" id="004b" name="Smart Energy Switch v2" config="aeon_labs/ses2.xml"/>
+		<Product type="0003" id="004e" name="Heavy Duty Smart Switch Gen5" config="aeon_labs/hdss_gen5.xml" />
 		<Product type="0004" id="0025" name="Z-Wave Repeater"/>
 		<Product type="0004" id="0050" name="DSD31 Siren Gen5" config="aeon_labs/dsd31.xml"/>
+        <!-- US-market products start with type prefix "01" -->
+		<Product type="0102" id="0059" name="Recessed Door Sensor Gen5" config="aeon_labs/recessed_doorsensor_gen5.xml"/>
+        <!-- AU-market products start with type prefix "02" -->
+		<Product type="0202" id="0059" name="Recessed Door Sensor Gen5" config="aeon_labs/recessed_doorsensor_gen5.xml"/>
+		
+
 	</Manufacturer>
         <Manufacturer id="0111" name="Airline Mechanical">
                 <Product type="8200" id="0200" name="ZDS-100"/>

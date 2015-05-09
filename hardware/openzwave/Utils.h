@@ -29,6 +29,7 @@
 #define _Utils_H
 
 #include "platform/Mutex.h"
+#include "platform/Log.h"
 
 #include <string>
 #include <locale>
@@ -70,6 +71,9 @@ namespace OpenZWave
 	 */
 	std::string &trim ( std::string &s );
 
+
+	void PrintHex(std::string prefix, uint8_t const *data, uint32 const length);
+	string PktToString(uint8 const *data, uint32 const length);
 
 	struct LockGuard
 	{
