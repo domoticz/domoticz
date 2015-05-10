@@ -1681,10 +1681,10 @@ bool CSQLHelper::OpenDatabase()
 		m_sql.UpdatePreferencesVar("HTTPURL", sencoded);
 	}
 
-
 	//Start background thread
 	if (!StartThread())
 		return false;
+
 	return true;
 }
 
@@ -6326,6 +6326,44 @@ void CSQLHelper::CheckBatteryLow()
 	if (iBatteryLowLevel==0)
 		return;//disabled
 
+	std::vector<std::vector<std::string> > result;
+	char szTmp[300];
+	sprintf(szTmp,"SELECT ID,Name, BatteryLevel FROM DeviceStatus WHERE (Used!=0 AND BatteryLevel<%d AND BatteryLevel!=255)", iBatteryLowLevel);
+	result = query(szTmp);
+	if (result.size() < 1)
+		return;
+
+	time_t now = mytime(NULL);
+	struct tm stoday;
+	localtime_r(&now, &stoday);
+
+	unsigned long long ulID;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+
+	//check if last batterylow_notification is not sent today and if true, send notification
+	for (itt = result.begin(); itt != result.end(); ++itt)
+	{
+		std::vector<std::string> sd = *itt;
+		std::stringstream s_str(sd[0]);
+		s_str >> ulID;
+		bool bDoSend = true;
+		std::map<unsigned long long, int>::const_iterator sitt;
+		sitt = m_batterylowlastsend.find(ulID);
+		if (sitt != m_batterylowlastsend.end())
+		{
+			bDoSend = (stoday.tm_mday != sitt->second);
+		}
+		if (bDoSend)
+		{
+			int batlevel = atoi(sd[2].c_str());
+			if (batlevel==0)
+				sprintf(szTmp, "Batter Low: %s (Level: Low)", sd[1].c_str());
+			else
+				sprintf(szTmp, "Batter Low: %s (Level: %d %%)", sd[1].c_str(), batlevel);
+			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
+			m_batterylowlastsend[ulID] = stoday.tm_mday;
+		}
+	}
 }
 
 //Executed every hour

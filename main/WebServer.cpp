@@ -7715,7 +7715,14 @@ namespace http {
 			if (sensortimeout < 10)
 				sensortimeout = 10;
 			m_sql.UpdatePreferencesVar("SensorTimeout", sensortimeout);
-			
+
+			int batterylowlevel = atoi(m_pWebEm->FindValue("BatterLowLevel").c_str());
+			if (batterylowlevel > 100)
+				batterylowlevel = 100;
+			m_sql.GetPreferencesVar("BatteryLowNotification", rnOldvalue);
+			m_sql.UpdatePreferencesVar("BatteryLowNotification", batterylowlevel);
+			if ((rnOldvalue != batterylowlevel) && (batterylowlevel!=0))
+				m_sql.CheckBatteryLow();
 
 			int nValue = 0;
 			nValue = atoi(m_pWebEm->FindValue("FloorplanPopupDelay").c_str());
@@ -13392,6 +13399,10 @@ namespace http {
 				else if (Key == "SensorTimeout")
 				{
 					root["SensorTimeout"] = nValue;
+				}
+				else if (Key == "BatteryLowNotification")
+				{
+					root["BatterLowLevel"] = nValue;
 				}
 				else if (Key == "WebTheme")
 				{

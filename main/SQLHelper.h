@@ -348,7 +348,8 @@ private:
 	sqlite3			*m_dbase;
 	std::string		m_dbase_name;
 	unsigned char	m_sensortimeoutcounter;
-	std::map<unsigned long long,int> m_timeoutlastsend;
+	std::map<unsigned long long, int> m_timeoutlastsend;
+	std::map<unsigned long long, int> m_batterylowlastsend;
 	bool			m_bAcceptHardwareTimerActive;
 	int				m_iAcceptHardwareTimerCounter;
 	bool			m_bPreviousAcceptNewHardware;
