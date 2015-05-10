@@ -538,17 +538,20 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		}
 		break;
 	case V_DUST_LEVEL:
-	{
-		_tAirQualityMeter meter;
-		meter.len = sizeof(_tAirQualityMeter) - 1;
-		meter.type = pTypeAirQuality;
-		meter.subtype = sTypeVoltcraft;
-		meter.airquality = pSensor->intvalue;
-		meter.id1 = pSensor->nodeID;
-		meter.id2 = pSensor->childID;
-		sDecodeRXMessage(this, (const unsigned char *)&meter);
-	}
-	break;
+		{
+			_tAirQualityMeter meter;
+			meter.len = sizeof(_tAirQualityMeter) - 1;
+			meter.type = pTypeAirQuality;
+			meter.subtype = sTypeVoltcraft;
+			meter.airquality = pSensor->intvalue;
+			meter.id1 = pSensor->nodeID;
+			meter.id2 = pSensor->childID;
+			sDecodeRXMessage(this, (const unsigned char *)&meter);
+		}
+		break;
+	case V_RAIN:
+		SendRainSensor(cNode, pSensor->batValue, pSensor->intvalue);
+		break;
 	case V_WATT:
 		{
 			_tMySensorSensor *pSensorKwh = FindSensor(pSensor->nodeID, V_KWH);
@@ -1004,6 +1007,10 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_DUST_LEVEL:
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_RAIN:
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
 			break;
