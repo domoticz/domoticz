@@ -15896,7 +15896,7 @@ namespace http {
 					if (dType == pTypeP1Power)
 					{
 						//Actual Year
-						szQuery << "SELECT Value1,Value2,Value5,Value6, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+						szQuery << "SELECT Value1,Value2,Value5,Value6, Date, Counter1, Counter2, Counter3, Counter4 FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
 						{
@@ -15907,6 +15907,11 @@ namespace http {
 								std::vector<std::string> sd = *itt;
 
 								root["result"][ii]["d"] = sd[4].substr(0, 16);
+
+								double counter_1 = atof(sd[5].c_str());
+								double counter_2 = atof(sd[6].c_str());
+								double counter_3 = atof(sd[7].c_str());
+								double counter_4 = atof(sd[8].c_str());
 
 								std::string szUsage1 = sd[0];
 								std::string szDeliv1 = sd[1];
@@ -15928,6 +15933,25 @@ namespace http {
 								root["result"][ii]["r1"] = szTmp;
 								sprintf(szTmp, "%.3f", fDeliv_2 / EnergyDivider);
 								root["result"][ii]["r2"] = szTmp;
+
+								if (counter_1 != 0)
+								{
+									sprintf(szTmp, "%.3f", (counter_1 - fUsage_1) / EnergyDivider);
+								}
+								else
+								{
+									strcpy(szTmp, "0");
+								}
+								root["result"][ii]["c1"] = szTmp;
+								if (counter_3 != 0)
+								{
+									sprintf(szTmp, "%.3f", (counter_3 - fUsage_2) / EnergyDivider);
+								}
+								else
+								{
+									strcpy(szTmp, "0");
+								}
+								root["result"][ii]["c3"] = szTmp;
 								ii++;
 							}
 							if (bHaveDeliverd)
@@ -16381,7 +16405,7 @@ namespace http {
 							}
 						}
 						//Actual Year
-						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
+						szQuery << "SELECT Value, Date, Counter FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStart << "' AND Date<='" << szDateEnd << "') ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
 						{
@@ -16390,31 +16414,49 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
+								root["result"][ii]["d"] = sd[1].substr(0, 16);
+
 								std::string szValue = sd[0];
+
+								double fcounter = atof(sd[2].c_str());
+
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-									szValue = szTmp;
+									root["result"][ii]["v"] = szTmp;
+									if (fcounter != 0)
+										sprintf(szTmp, "%.3f", (fcounter - atof(szValue.c_str())) / EnergyDivider);
+									else
+										strcpy(szTmp, "0");
+									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_GAS:
 									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
-									szValue = szTmp;
+									root["result"][ii]["v"] = szTmp;
+									if (fcounter != 0)
+										sprintf(szTmp, "%.2f", (fcounter - atof(szValue.c_str())) / GasDivider);
+									else
+										strcpy(szTmp, "0");
+									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
-									szValue = szTmp;
+									root["result"][ii]["v"] = szTmp;
+									if (fcounter != 0)
+										sprintf(szTmp, "%.2f", (fcounter - atof(szValue.c_str())) / WaterDivider);
+									else
+										strcpy(szTmp, "0");
+									root["result"][ii]["c"] = szTmp;
 									break;
 								}
-								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								root["result"][ii]["v"] = szValue;
 								ii++;
 							}
 						}
 						//Past Year
 						szQuery.clear();
 						szQuery.str("");
-						szQuery << "SELECT Value, Date FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
+						szQuery << "SELECT Value, Date, Counter FROM " << dbasetable << " WHERE (DeviceRowID==" << idx << " AND Date>='" << szDateStartPrev << "' AND Date<='" << szDateEndPrev << "') ORDER BY Date ASC";
 						result = m_sql.query(szQuery.str());
 						if (result.size() > 0)
 						{
@@ -16423,24 +16465,24 @@ namespace http {
 							{
 								std::vector<std::string> sd = *itt;
 
+								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
+
 								std::string szValue = sd[0];
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-									szValue = szTmp;
+									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_GAS:
 									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
-									szValue = szTmp;
+									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
-									szValue = szTmp;
+									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								}
-								root["resultprev"][iPrev]["d"] = sd[1].substr(0, 16);
-								root["resultprev"][iPrev]["v"] = szValue;
 								iPrev++;
 							}
 						}
@@ -16670,25 +16712,30 @@ namespace http {
 							total_real = total_max - total_min;
 							sprintf(szTmp, "%llu", total_real);
 
+							root["result"][ii]["d"] = szDateEnd;
+
 							std::string szValue = szTmp;
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-								szValue = szTmp;
+								root["result"][ii]["v"] = szTmp;
+								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider);
+								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_GAS:
 								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
-								szValue = szTmp;
+								root["result"][ii]["v"] = szTmp;
+								sprintf(szTmp, "%.2f", (atof(sValue.c_str()) - atof(szValue.c_str())) / GasDivider);
+								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_WATER:
 								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
-								szValue = szTmp;
+								root["result"][ii]["v"] = szTmp;
+								sprintf(szTmp, "%.2f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
+								root["result"][ii]["c"] = szTmp;
 								break;
 							}
-
-							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["v"] = szValue;
 							ii++;
 						}
 					}
