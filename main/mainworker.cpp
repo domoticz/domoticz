@@ -9774,7 +9774,7 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 	{
 		if (ExtraDelay != 0)
 		{
-			_log.Log(LOG_NORM, "Delaying switch [%s] action for %d seconds", result[0][8].c_str(), ExtraDelay);
+			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", result[0][8].c_str(), switchcmd.c_str(), ExtraDelay);
 		}
 		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iOnDelay + ExtraDelay, idx, switchcmd, level, hue, "Switch with Delay"));
 		return true;
@@ -10167,8 +10167,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	std::string offaction="";
 
 	//Get Scene Name
-	sprintf(szTmp, "SELECT Name, SceneType, OnAction, OffAction FROM Scenes WHERE (ID == %llu)",
-		idx);
+	sprintf(szTmp, "SELECT Name, SceneType, OnAction, OffAction FROM Scenes WHERE (ID == %llu)", idx);
 	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
@@ -10219,6 +10218,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		}
 	}
 
+	_log.Log(LOG_NORM, "Activating Scene/Group: %s", Name.c_str());
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	std::stringstream szQuery;
@@ -10248,13 +10248,14 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			unsigned char Unit=atoi(sd2[2].c_str());
 			unsigned char dType=atoi(sd2[3].c_str());
 			unsigned char dSubType=atoi(sd2[4].c_str());
+			std::string DeviceName = sd2[8];
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd2[5].c_str());
 
 			//Check if this device will not activate a scene
 			int hwID=atoi(sd2[0].c_str());
 			if (DoesDeviceActiveAScene(hwID,sd2[1],Unit,dType,dSubType))
 			{
-				_log.Log(LOG_ERROR,"Skipping sensor '%s' because this triggers another scene!",sd2[8].c_str());
+				_log.Log(LOG_ERROR, "Skipping sensor '%s' because this triggers another scene!", DeviceName.c_str());
 				continue;
 			}
 
@@ -10276,7 +10277,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			else
 				GetLightStatus(dType, dSubType, switchtype,rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
-			_log.Log(LOG_NORM,"Activating Scene/Group: %s (%s)",Name.c_str(),intswitchcmd.c_str());
+			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), intswitchcmd.c_str());
 
 			int ilevel=maxDimLevel-1;
 
@@ -10301,6 +10302,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			{
 				int delay = (intswitchcmd == "Off") ? offdelay : ondelay;
 				SwitchLight(idx, intswitchcmd, ilevel, hue, false, delay);
+				if ((intswitchcmd != "Off") && (offdelay > 0))
+				{
+					//switch with on delay, and off delay
+					SwitchLight(idx, "Off", ilevel, hue, false, ondelay+offdelay);
+				}
 				//SwitchLightInt(sd2,intswitchcmd,ilevel,hue,false);
 			}
 			else
