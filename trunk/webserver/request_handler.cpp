@@ -242,17 +242,22 @@ void request_handler::handle_request(const std::string &sHost, const request& re
   }
 #endif
   if (!bHaveLoadedgzip)
-	rep.headers.resize(2);
-  else
 	rep.headers.resize(3);
-  rep.headers[0].name = "Content-Length";
-  rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
-  rep.headers[1].name = "Content-Type";
-  rep.headers[1].value = mime_types::extension_to_type(extension);
+  else
+	rep.headers.resize(4);
+  
+  int iHeader = 0;
+
+  rep.headers[iHeader].name = "Content-Length";
+  rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
+  rep.headers[iHeader].name = "Content-Type";
+  rep.headers[iHeader++].value = mime_types::extension_to_type(extension);
+  rep.headers[iHeader].name = "Access-Control-Allow-Origin";
+  rep.headers[iHeader++].value = "*";
   if (bHaveLoadedgzip)
   {
-	  rep.headers[2].name = "Content-Encoding";
-	  rep.headers[2].value = "gzip";
+	  rep.headers[iHeader].name = "Content-Encoding";
+	  rep.headers[iHeader++].value = "gzip";
   }
 }
 

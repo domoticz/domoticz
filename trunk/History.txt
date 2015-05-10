@@ -75,6 +75,8 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Scene/Group, now possible to add same device multiple times, as long as the ondelay is different
 - Implemented: Scene/Group devices now supports both on and off delays (off = ondelay + offdelay)
 - Changed: General Graph, min value is now calculated dynamically
+- Implemented: CORS browser support
+- Implemented: Settings, Battery Low check
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

@@ -317,6 +317,9 @@ define(['app'], function (app) {
 			  if (typeof data.SensorTimeout != 'undefined') {
 				$("#timeouttable #SensorTimeout").val(data.SensorTimeout );
 			  }
+			  if (typeof data.BatterLowLevel != 'undefined') {
+				$("#batterytable #BatterLowLevel").val(data.BatterLowLevel );
+			  }
 			  if (typeof data.ElectricVoltage!= 'undefined') {
 				$("#owl113table #ElectricVoltage").val(data.ElectricVoltage);
 			  }
