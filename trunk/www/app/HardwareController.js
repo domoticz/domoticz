@@ -65,8 +65,13 @@ define(['app'], function (app) {
 				var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
 				if (typeof serialport == 'undefined')
 				{
-					ShowNotify($.t('No serial port selected!'), 2500, true);
-					return;
+					if (bEnabled==true) {
+						ShowNotify($.t('No serial port selected!'), 2500, true);
+						return;
+					}
+					else {
+						serialport="";
+					}
 				}
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +

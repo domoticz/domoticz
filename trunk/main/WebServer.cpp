@@ -1128,15 +1128,18 @@ namespace http {
 			if (
 				(name == "") ||
 				(senabled == "") ||
-				(shtype == "") ||
-				(sport == "")
+				(shtype == "")
 				)
 				return;
+
+			bool bEnabled = (senabled == "true") ? true : false;
 
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
 			int iDataTimeout = atoi(sdatatimeout.c_str());
 
 			int port = atoi(sport.c_str());
+
+			bool bIsSerial = false;
 
 			if (
 				(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) ||
@@ -1145,6 +1148,12 @@ namespace http {
 				)
 			{
 				//USB/System
+				bIsSerial = true;
+				if (bEnabled)
+				{
+					if (sport.empty())
+						return; //need to have a serial port
+				}
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || 
@@ -1236,26 +1245,38 @@ namespace http {
 				}
 			}
 
-			sprintf(szTmp,
-				"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == %s)",
-				name.c_str(),
-				(senabled == "true") ? 1 : 0,
-				htype,
-				address.c_str(),
-				port,
-				username.c_str(),
-				password.c_str(),
-				mode1, mode2, mode3, mode4, mode5, mode6,
-				iDataTimeout,
-				idx.c_str()
-				);
+			if ((bIsSerial) && (!bEnabled) && (sport.empty()))
+			{
+				//just disable the device
+				sprintf(szTmp,
+					"UPDATE Hardware SET Enabled=%d WHERE (ID == %s)",
+					(bEnabled == true) ? 1 : 0,
+					idx.c_str()
+					);
+			}
+			else
+			{
+				sprintf(szTmp,
+					"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == %s)",
+					name.c_str(),
+					(bEnabled == true) ? 1 : 0,
+					htype,
+					address.c_str(),
+					port,
+					username.c_str(),
+					password.c_str(),
+					mode1, mode2, mode3, mode4, mode5, mode6,
+					iDataTimeout,
+					idx.c_str()
+					);
+			}
 			result = m_sql.query(szTmp);
 
 			//Special case for internal system monitoring
 			if (htype == HTYPE_System)
 			{
 				m_mainworker.m_hardwaremonitor.StopHardwareMonitor();
-				if (senabled == "true")
+				if (bEnabled)
 				{
 					m_mainworker.m_hardwaremonitor.StartHardwareMonitor();
 				}
@@ -1264,7 +1285,7 @@ namespace http {
 			{
 				//re-add the device in our system
 				int ID = atoi(idx.c_str());
-				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout);
+				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout);
 			}
 		}
 
@@ -1431,21 +1452,25 @@ namespace http {
 			std::string username = m_pWebEm->FindValue("username");
 			std::string password = m_pWebEm->FindValue("password");
 			std::string linkactive = m_pWebEm->FindValue("linkactive");
+			std::string isversion4 = m_pWebEm->FindValue("isversion4");
 			std::string debugenabled = m_pWebEm->FindValue("debugenabled");
 			if (
 				(remote == "") ||
 				(username == "") ||
 				(password == "") ||
 				(linkactive == "") ||
+				(isversion4 == "") ||
 				(debugenabled == "")
 				)
 				return;
 			int ilinkactive = atoi(linkactive.c_str());
+			int iisversion4 = atoi(isversion4.c_str());
 			int idebugenabled = atoi(debugenabled.c_str());
 			m_sql.UpdatePreferencesVar("FibaroIP", remote.c_str());
 			m_sql.UpdatePreferencesVar("FibaroUsername", username.c_str());
 			m_sql.UpdatePreferencesVar("FibaroPassword", password.c_str());
 			m_sql.UpdatePreferencesVar("FibaroActive", ilinkactive);
+			m_sql.UpdatePreferencesVar("FibaroVersion4", iisversion4);
 			m_sql.UpdatePreferencesVar("FibaroDebug", idebugenabled);
 			m_mainworker.m_datapush.UpdateActive();
 			root["status"] = "OK";
@@ -1461,6 +1486,12 @@ namespace http {
 			}
 			else {
 				root["FibaroActive"] = 0;
+			}
+			if (m_sql.GetPreferencesVar("FibaroVersion4", nValue)) {
+				root["FibaroVersion4"] = nValue;
+			}
+			else {
+				root["FibaroVersion4"] = 0;
 			}
 			if (m_sql.GetPreferencesVar("FibaroDebug", nValue)) {
 				root["FibaroDebug"] = nValue;
