@@ -693,7 +693,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			m_dewValuesByID[sitem.ID] = dewpoint;
 		}
 		if (isHum) {
-			//sprintf(szTmp,"%d",humidity);
+			//_log.Log(LOG_STATUS, "%s (%d)", sitem.deviceName.c_str(),humidity);
 			m_humValuesByName[sitem.deviceName] = humidity;
 			m_humValuesByID[sitem.ID] = humidity;
 		}

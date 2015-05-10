@@ -68,6 +68,11 @@ define(['app'], function (app) {
 			{
 				linkactive = 1;
 			}
+			var isversion4 = 0;	
+			if ($('#fibaroremote #fibaroisversion4').is(":checked"))
+			{
+				isversion4 = 1;
+			}
 			var debugenabled = 0;
 			if ($('#fibaroremote #debugenabled').is(":checked"))
 			{
@@ -75,7 +80,7 @@ define(['app'], function (app) {
 			}
 			$.ajax({
 				 url: "json.htm?type=command&param=savefibarolinkconfig" +
-					"&remote=" + cleanurl + "&username=" + username + "&password=" + password + "&linkactive=" + linkactive + "&debugenabled=" + debugenabled,
+					"&remote=" + encodeURIComponent(cleanurl) + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&linkactive=" + linkactive + "&isversion4=" + isversion4 + "&debugenabled=" + debugenabled,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -172,6 +177,10 @@ define(['app'], function (app) {
 							$('#fibaroremote #fibarolinkenabled').prop('checked', false);
 							if (data.FibaroActive) {
 								$('#fibaroremote #fibarolinkenabled').prop('checked', true);
+							}
+							$('#fibaroremote #fibaroisversion4').prop('checked', false);
+							if (data.FibaroVersion4) {
+								$('#fibaroremote #fibaroisversion4').prop('checked', true);
 							}
 							$('#fibaroremote #debugenabled').prop('checked', false);
 							if (data.FibaroDebug) {
