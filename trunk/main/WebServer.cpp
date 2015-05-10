@@ -4157,10 +4157,10 @@ namespace http {
 						}
 					}
 				}
-				//first check if it is not already a sub device
+				//first check if it is not already a part of this scene/group (with the same OnDelay)
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT ID FROM SceneDevices WHERE (DeviceRowID=='" << devidx << "') AND (SceneRowID =='" << idx << "')";
+				szQuery << "SELECT ID FROM SceneDevices WHERE (DeviceRowID=='" << devidx << "') AND (SceneRowID =='" << idx << "') AND (OnDelay == " << ondelay << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() == 0)
 				{
