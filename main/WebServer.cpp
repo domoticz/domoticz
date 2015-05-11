@@ -12953,7 +12953,16 @@ namespace http {
 						_tSortedEventsInt eitem;
 						eitem.ID = ID;
 						eitem.eventstatus = eventStatus;
+						if (_levents.find(Name) != _levents.end())
+						{
+							//Duplicate event name, add the ID
+							szQuery.clear();
+							szQuery.str("");
+							szQuery << Name << " (" << ID << ")";
+							Name = szQuery.str();
+						}
 						_levents[Name] = eitem;
+
 					}
 					//return a sorted event list
 					std::map<std::string, _tSortedEventsInt>::const_iterator itt2;
@@ -13038,7 +13047,7 @@ namespace http {
 				if (!parsingSuccessful)
 				{
 
-					_log.Log(LOG_ERROR, "Webserver eventparser: Invalid data received!");
+					_log.Log(LOG_ERROR, "Webserver event parser: Invalid data received!");
 
 				}
 				else {

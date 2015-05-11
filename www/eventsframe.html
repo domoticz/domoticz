@@ -592,16 +592,16 @@
       	if (blockName) { 
       		var exists = false; 
       		var doSave = false;
-      		$('#savedEvents  option').each(function(){
+      		$('#savedEvents option').each(function(){
 	      		if (this.text == blockName) {
 		      		exists = true;
+					id=this.value;
 		      	}
 		     });
 		     if (exists) {
 			 	var answer = confirm("Overwrite "+blockName+"?")
 			    if (answer){
 					doSave = true;
-					id = $("#blockId").html();
 				}
 				else{
 					doSave = false;
