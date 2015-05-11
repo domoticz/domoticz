@@ -79,6 +79,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Settings, Battery Low check
 - Implemented: Counters in P1 Electra/Gas month reports per day
 - Implemented: MySensors, V_RAIN
+- Implemented: MySensors, V_WIND/V_GUST/V_DIRECTION
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

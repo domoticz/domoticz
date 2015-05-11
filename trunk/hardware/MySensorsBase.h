@@ -186,6 +186,8 @@ private:
 
 	void SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor);
 
+	void MakeAndSendWindSensor(const int nodeID);
+
 	_tMySensorNode* FindNode(const int nodeID);
 	_tMySensorNode* InsertNode(const int nodeID);
 	void RemoveNode(const int nodeID);
