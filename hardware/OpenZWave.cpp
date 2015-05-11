@@ -826,6 +826,13 @@ bool COpenZWave::OpenSerialConnector()
 	//Set network key for security devices
 	std::string sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
 	m_sql.GetPreferencesVar("ZWaveNetworkKey", sValue);
+	std::vector<std::string> splitresults;
+	StringSplit(sValue, ",", splitresults);
+	if (splitresults.size() != 16)
+	{
+		sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
+		m_sql.UpdatePreferencesVar("ZWaveNetworkKey", sValue);
+	}
 	OpenZWave::Options::Get()->AddOptionString("NetworkKey", sValue, false);
 
 	OpenZWave::Options::Get()->Lock();
@@ -3218,6 +3225,12 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 
 		std::string sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
 		m_sql.GetPreferencesVar("ZWaveNetworkKey", sValue);
+		std::vector<std::string> splitresults;
+		StringSplit(sValue, ",", splitresults);
+		if (splitresults.size() != 16)
+		{
+			sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
+		}
 		root["result"][index]["config"][ivalue]["value"] = sValue;
 
 		root["result"][index]["config"][ivalue]["index"] = 4;
@@ -3401,8 +3414,17 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 				m_sql.GetPreferencesVar("ZWaveNetworkKey", old_networkkey);
 				if (old_networkkey != networkkey)
 				{
-					m_sql.UpdatePreferencesVar("ZWaveNetworkKey", networkkey.c_str());
-					bRestartOpenZWave = true;
+					std::vector<std::string> splitresults;
+					StringSplit(networkkey, ",", splitresults);
+					if (splitresults.size() != 16)
+					{
+						networkkey = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
+					}
+					if (old_networkkey != networkkey)
+					{
+						m_sql.UpdatePreferencesVar("ZWaveNetworkKey", networkkey.c_str());
+						bRestartOpenZWave = true;
+					}
 				}
 			}
 		}
