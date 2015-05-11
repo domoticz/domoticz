@@ -295,6 +295,59 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	}
 }
 
+void MySensorsBase::MakeAndSendWindSensor(const int nodeID)
+{
+	bool bHaveTemp = false;
+	int ChildID = 0;
+
+	float fWind = 0;
+	float fGust = 0;
+	float fTemp = 0;
+	float fChill = 0;
+	int iDirection = 0;
+	int iBatteryLevel = 255;
+
+	_tMySensorSensor *pSensor;
+	pSensor = FindSensor(nodeID, V_WIND);
+	if (!pSensor)
+		return;
+	if (!pSensor->bValidValue)
+		return;
+	fWind = fGust = pSensor->floatValue;
+	ChildID = pSensor->childID;
+	iBatteryLevel = pSensor->batValue;
+
+	pSensor = FindSensor(nodeID, V_DIRECTION);
+	if (!pSensor)
+		return;
+	if (!pSensor->bValidValue)
+		return;
+	iDirection = pSensor->intvalue;
+
+	pSensor = FindSensor(nodeID, V_GUST);
+	if (pSensor)
+	{
+		if (!pSensor->bValidValue)
+			return;
+		fGust = pSensor->floatValue;
+	}
+
+	pSensor = FindSensor(nodeID, V_TEMP);
+	if (pSensor)
+	{
+		if (!pSensor->bValidValue)
+			return;
+		bHaveTemp = true;
+		fTemp = fChill = pSensor->floatValue;
+		if ((fTemp < 10.0) && (fWind >= 1.4))
+		{
+			fChill = 13.12f + 0.6215f*fTemp - 11.37f*pow(fWind*3.6f, 0.16f) + 0.3965f*fTemp*pow(fWind*3.6f, 0.16f);
+		}
+	}
+	int cNode = (nodeID << 8) | ChildID;
+	SendWind(cNode, iBatteryLevel, iDirection, fWind, fGust, fTemp, fChill, bHaveTemp);
+}
+
 void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor)
 {
 	std::string devname;
@@ -600,29 +653,34 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		SenUVSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
 		break;
 	case V_FORECAST:
-	{
-		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
-		if (pSensorBaro)
 		{
-			if (pSensorBaro->bValidValue)
+			_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
+			if (pSensorBaro)
 			{
-				int forecast = pSensor->intvalue;
-				if (forecast == bmpbaroforecast_cloudy)
+				if (pSensorBaro->bValidValue)
 				{
-					if (pSensor->floatValue < 1010)
-						forecast = bmpbaroforecast_rain;
+					int forecast = pSensor->intvalue;
+					if (forecast == bmpbaroforecast_cloudy)
+					{
+						if (pSensor->floatValue < 1010)
+							forecast = bmpbaroforecast_rain;
+					}
+					SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, pSensorBaro->floatValue, forecast);
 				}
-				SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, pSensorBaro->floatValue, forecast);
+			}
+			else
+			{
+				std::stringstream sstr;
+				sstr << pSensor->nodeID;
+				m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, pSensor->batValue, 0, pSensor->stringValue.c_str(), devname);
 			}
 		}
-		else
-		{
-			std::stringstream sstr;
-			sstr << pSensor->nodeID;
-			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, pSensor->batValue, 0, pSensor->stringValue.c_str(), devname);
-		}
-	}
-	break;
+		break;
+	case V_WIND:
+	case V_GUST:
+	case V_DIRECTION:
+		MakeAndSendWindSensor(pSensor->nodeID);
+		break;
 	}
 }
 
@@ -1036,13 +1094,16 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_WIND:
-			while (1==0);
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
 			break;
 		case V_GUST:
-			while (1==0);
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
 			break;
 		case V_DIRECTION:
-			while (1==0);
+			pSensor->intvalue = round(atof(payload.c_str()));
+			bHaveValue = true;
 			break;
 		case V_LIGHT_LEVEL:
 			pSensor->floatValue = (float)atof(payload.c_str());

@@ -2282,7 +2282,7 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 	if (pResponse->WIND.subtype == sTypeWIND6)
 	{
 		//LaCrosse WS2300
-		//This sensor is only reporting gust, speed=hust
+		//This sensor is only reporting gust, speed=gust
 		intSpeed = intGust;
 	}
 
