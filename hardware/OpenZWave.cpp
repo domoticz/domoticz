@@ -750,10 +750,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			//Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState
 			OpenZWave::Driver::ControllerCommand ccmd = (OpenZWave::Driver::ControllerCommand) _notification->GetEvent();
 			OpenZWave::Driver::ControllerState cstate = (OpenZWave::Driver::ControllerState)_notification->GetNotification();
-			if ((ccmd != OpenZWave::Driver::ControllerCommand_None) && (cstate != OpenZWave::Driver::ControllerState_Normal))
-			{
-				_asm nop;
-			}
+			//if ((ccmd != OpenZWave::Driver::ControllerCommand_None) && (cstate != OpenZWave::Driver::ControllerState_Normal))
+			//{
+			//	_asm nop;
+			//}
 		}
 	
 		break;
