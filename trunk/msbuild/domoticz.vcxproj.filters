@@ -204,6 +204,9 @@
     <Filter Include="SQLite">
       <UniqueIdentifier>{63d66a0f-1455-45ce-8e5a-8678aafbe57a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\KMTronic">
+      <UniqueIdentifier>{401dcf9b-b8c2-49b9-9a03-67746e942b13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -657,6 +660,15 @@
     <ClInclude Include="..\webserver\net_skeleton.h">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\KMTronicBase.h">
+      <Filter>Devices\KMTronic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\KMTronicSerial.h">
+      <Filter>Devices\KMTronic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\KMTronicTCP.h">
+      <Filter>Devices\KMTronic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1057,6 +1069,15 @@
     </ClCompile>
     <ClCompile Include="..\webserver\net_skeleton.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\KMTronicBase.cpp">
+      <Filter>Devices\KMTronic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\KMTronicSerial.cpp">
+      <Filter>Devices\KMTronic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\KMTronicTCP.cpp">
+      <Filter>Devices\KMTronic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

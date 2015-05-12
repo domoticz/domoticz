@@ -39,7 +39,7 @@ private:
 
 	void RunCMD(const std::string &cmd);
 	void StopHardwareIntern();
-	bool IncludeDevice();
+	bool IncludeDevice(const bool bSecure);
 	bool ExcludeDevice(const int nodeID);
 	bool RemoveFailedDevice(const int nodeID);
 	bool CancelControllerCommand();

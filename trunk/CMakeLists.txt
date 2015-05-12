@@ -187,6 +187,9 @@ hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
 hardware/ICYThermostat.cpp
+hardware/KMTronicBase.cpp
+hardware/KMTronicSerial.cpp
+hardware/KMTronicTCP.cpp
 hardware/Limitless.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
