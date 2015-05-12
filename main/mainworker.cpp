@@ -62,6 +62,8 @@
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
 #include "../hardware/RFLink.h"
+#include "../hardware/KMTronicSerial.h"
+#include "../hardware/KMTronicTCP.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -464,6 +466,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OpenThermGateway:
 	case HTYPE_TeleinfoMeter:
 	case HTYPE_MySensorsUSB:
+	case HTYPE_KMTronicUSB:
 	case HTYPE_OpenZWave:
 	case HTYPE_EnOceanESP2:
 	case HTYPE_EnOceanESP3:
@@ -533,6 +536,10 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type == HTYPE_MySensorsUSB)
 			{
 				pHardware = new MySensorsSerial(ID, szSerialPort);
+			}
+			else if (Type == HTYPE_KMTronicUSB)
+			{
+				pHardware = new KMTronicSerial(ID, szSerialPort);
 			}
 			else if (Type == HTYPE_OpenZWave)
 			{
@@ -612,6 +619,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_ETH8020:
 		//LAN
 		pHardware = new CETH8020(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_KMTronicTCP:
+		//LAN
+		pHardware = new KMTronicTCP(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_ECODEVICES:
 		//LAN

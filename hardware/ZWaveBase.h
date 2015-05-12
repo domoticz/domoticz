@@ -129,7 +129,7 @@ private:
 	virtual std::string GetSupportedThermostatModes(const unsigned long ID) = 0;
 	virtual std::string GetSupportedThermostatFanModes(const unsigned long ID) = 0;
 	virtual void StopHardwareIntern() = 0;
-	virtual bool IncludeDevice()=0;
+	virtual bool IncludeDevice(const bool bSecure) = 0;
 	virtual bool ExcludeDevice(const int nodeID)=0;
 	virtual bool RemoveFailedDevice(const int nodeID)=0;
 	virtual bool CancelControllerCommand()=0;

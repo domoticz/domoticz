@@ -91,7 +91,7 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
-			else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1)
+			else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("KMTronic") == -1)
 			{
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
@@ -169,7 +169,7 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
-			else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("ETH8020") >= 0))
+			else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("ETH8020") >= 0) || (text.indexOf("KMTronic") >= 0))
 			{
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
@@ -400,7 +400,7 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
-			else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1)
+			else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("KMTronic") == -1)
 			{
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
@@ -500,7 +500,7 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
-			else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("ETH8020") >= 0))
+			else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("ETH8020") >= 0) || (text.indexOf("KMTronic") >= 0))
 			{
 				var address=$("#hardwarecontent #divremote #tcpaddress").val();
 				if (address=="")
@@ -2101,7 +2101,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
 						}
-						if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)||(data["Type"].indexOf("ETH8020") >= 0)) {
+						if ((data["Type"].indexOf("Domoticz") >= 0)||(data["Type"].indexOf("ICY") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("Toon") >= 0)||(data["Type"].indexOf("PVOutput") >= 0)||(data["Type"].indexOf("ETH8020") >= 0)||(data["Type"].indexOf("KMTronic") >= 0)) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
@@ -2236,7 +2236,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divlogin").hide();
 				$("#hardwarecontent #divunderground").hide();
 			}
-			if (text.indexOf("ETH8020") >= 0) {
+			if ((text.indexOf("ETH8020") >= 0)||(text.indexOf("KMTronic Gateway with LAN") >= 0)) {
 				$("#hardwarecontent #divlogin").show();
 			}
 		}

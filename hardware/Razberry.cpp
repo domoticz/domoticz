@@ -911,7 +911,7 @@ void CRazberry::RunCMD(const std::string &cmd)
 	}
 }
 
-bool CRazberry::IncludeDevice()
+bool CRazberry::IncludeDevice(const bool bSecure)
 {
 	return false;
 }

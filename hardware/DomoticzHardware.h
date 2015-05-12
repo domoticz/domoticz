@@ -84,6 +84,9 @@ private:
 	friend class FritzboxTCP;
 	friend class CETH8020;
 	friend class CRFLink;
+	friend class KMTronicBase;
+	friend class KMTronicSerial;
+	friend class KMTronicTCP;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;

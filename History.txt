@@ -83,6 +83,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Blockly, possible saving of 'ghost' events
 - Implemented: Sanity check for OpenZWave NetworkKey Length
 - Implemented: OTGW, MsgID=14 and MsgID=17 (if reported)
+- Implemented: KMTronic USB/WEB relay hardware
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
