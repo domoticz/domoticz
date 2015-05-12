@@ -1960,12 +1960,14 @@ namespace http {
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
 				return;
+			std::string ssecure = m_pWebEm->FindValue("secure");
+			bool bSecure = (ssecure == "true");
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 				m_sql.AllowNewHardwareTimer(5);
-				pOZWHardware->IncludeDevice();
+				pOZWHardware->IncludeDevice(bSecure);
 				root["status"] = "OK";
 				root["title"] = "ZWaveInclude";
 			}

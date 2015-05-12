@@ -102,7 +102,7 @@ public:
 	bool SendConfigurationToSecondaryController();
 	bool TransferPrimaryRole();
 	bool CancelControllerCommand();
-	bool IncludeDevice();
+	bool IncludeDevice(const bool bSecure);
 	bool ExcludeDevice(const int nodeID);
 	bool SoftResetDevice();
 	bool HardResetDevice();

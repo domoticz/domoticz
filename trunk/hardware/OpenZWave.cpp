@@ -517,6 +517,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			m_nodes.push_back(nodeInfo);
 			m_LastIncludedNode = _nodeID;
 			AddNode(_homeID, _nodeID, &nodeInfo);
+			m_bControllerCommandInProgress = false;
 			m_bNeedSave = true;
 		}
 		break;
@@ -533,6 +534,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 					break;
 				}
 			}
+			m_bControllerCommandInProgress = false;
 			m_bNeedSave = true;
 		}
 		break;
@@ -743,9 +745,17 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		//The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages.
 		break;
 	case OpenZWave::Notification::Type_ControllerCommand:
-		//When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
-		//Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState
-		//Not handled
+		{
+			//When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
+			//Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState
+			OpenZWave::Driver::ControllerCommand ccmd = (OpenZWave::Driver::ControllerCommand) _notification->GetEvent();
+			OpenZWave::Driver::ControllerState cstate = (OpenZWave::Driver::ControllerState)_notification->GetNotification();
+			if ((ccmd != OpenZWave::Driver::ControllerCommand_None) && (cstate != OpenZWave::Driver::ControllerState_Normal))
+			{
+				_asm nop;
+			}
+		}
+	
 		break;
 	default:
 		_log.Log(LOG_STATUS, "OpenZWave: Received unhandled notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", nType, _homeID, _nodeID,_nodeID);
@@ -2451,7 +2461,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		SendDevice2Domoticz(pDevice);
 }
 
-bool COpenZWave::IncludeDevice()
+bool COpenZWave::IncludeDevice(const bool bSecure)
 {
 	if (m_pManager == NULL)
 		return false;
@@ -2460,7 +2470,8 @@ bool COpenZWave::IncludeDevice()
 	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
-	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_AddDevice, OnDeviceStatusUpdate, this, true);
+	m_pManager->AddNode(m_controllerID, bSecure);
+	//m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_AddDevice, OnDeviceStatusUpdate, this, true);
 	_log.Log(LOG_STATUS, "OpenZWave: Node Include command initiated...");
 	return true;
 }
@@ -2473,7 +2484,8 @@ bool COpenZWave::ExcludeDevice(const int nodeID)
 	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
-	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveDevice, OnDeviceStatusUpdate, this, true);
+	m_pManager->RemoveNode(m_controllerID);
+	//m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveDevice, OnDeviceStatusUpdate, this, true);
 	_log.Log(LOG_STATUS, "OpenZWave: Node Exclude command initiated...");
 
 	return true;
