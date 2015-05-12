@@ -295,9 +295,17 @@ void OTGWBase::ParseLine()
 		_status.Control_setpoint=static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
 		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
+		if (_status.Maximum_relative_modulation_level != 0)
+		{
+			SendPercentageSensor(idx - 1, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
+		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
 		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.Room_Setpoint, "Room Setpoint");
 		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
+		if (_status.Relative_modulation_level != 0)
+		{
+			SendPercentageSensor(idx - 1, 1, 255, _status.Relative_modulation_level, "Relative modulation level");
+		}
 		_status.CH_water_pressure = static_cast<float>(atof(results[idx++].c_str()));
 		if (_status.CH_water_pressure!=0)
 		{

@@ -53,6 +53,7 @@ private:
 	friend class CBMP085;
 	friend class CPiFace;
 	friend class S0MeterSerial;
+	friend class OTGWBase;
 	friend class OTGWSerial;
 	friend class OTGWTCP;
 	friend class Teleinfo;
