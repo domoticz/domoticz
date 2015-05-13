@@ -84,6 +84,8 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Sanity check for OpenZWave NetworkKey Length
 - Implemented: OTGW, MsgID=14 and MsgID=17 (if reported)
 - Implemented: KMTronic USB/WEB relay hardware
+- Fixed: User Editor, updating a user could result in random password change
+- Implemented: Devices Tab, option to rename device
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

@@ -521,6 +521,8 @@ namespace http {
 
 			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1));
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
+			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
+
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -11305,7 +11307,7 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
 					root["result"][ii]["Username"] = base64_decode(sd[2]);
-					root["result"][ii]["Password"] = base64_decode(sd[3]);
+					root["result"][ii]["Password"] = sd[3];
 					root["result"][ii]["Rights"] = atoi(sd[4].c_str());
 					root["result"][ii]["RemoteSharing"] = atoi(sd[5].c_str());
 					root["result"][ii]["TabsEnabled"] = atoi(sd[6].c_str());
@@ -12354,9 +12356,32 @@ namespace http {
 					break;
 				}
 			}
-
-
 			ReloadCustomSwitchIcons();
+		}
+
+		void CWebServer::Cmd_RenameDevice(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sname = m_pWebEm->FindValue("name");
+			if (
+				(sidx == "")||
+				(sname == "")
+				)
+				return;
+			int idx = atoi(sidx.c_str());
+			root["status"] = "OK";
+			root["title"] = "RenameDevice";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "UPDATE DeviceStatus SET Name='" << sname << "' WHERE (ID == " << idx << ")";
+			result = m_sql.query(szQuery.str());
 		}
 
 		void CWebServer::RType_GetTransfers(Json::Value &root)

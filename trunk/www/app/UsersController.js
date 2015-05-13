@@ -40,6 +40,7 @@ define(['app'], function (app) {
 			}
 			if (csettings.password.length!=32) {
 				csettings.password=md5.createHash(csettings.password);
+				alert(csettings.password.length);
 			}
 			csettings.rights=$("#usercontent #userparamstable #comborights").val();
 			csettings.bEnableSharing=$('#usercontent #userparamstable #enablesharing').is(":checked");
