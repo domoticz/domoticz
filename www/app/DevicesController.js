@@ -11,6 +11,16 @@ define(['app'], function (app) {
 			$("#dialog-adddevice").dialog( "open" );
 		}
 
+		RenameDevice = function(idx,itemname)
+		{
+			$.devIdx = idx;
+			if (name!='Unknown') {
+				$( "#dialog-renamedevice #devicename" ).val(itemname);
+			}
+			$("#dialog-renamedevice").i18n();
+			$("#dialog-renamedevice").dialog( "open" );
+		}
+
 		AddLightDeviceDev = function (idx, name)
 		{
 			$.devIdx = idx;
@@ -226,18 +236,20 @@ define(['app'], function (app) {
 				  }
 				  if ((item.Used!=0)&&(item.Name.charAt(0)!="$")) {
 					itemSubIcons+='<img src="images/remove.png" title="' + $.t('Remove Device') +'" onclick="RemoveDevice(' + item.idx +')">';
+					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Name + '\')">';
 				  }
 				  else {
-								if (
-										(item.Type.indexOf("Light")==0)||
-										(item.Type.indexOf("Security")==0)
-									 )
-								{
-									itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Light/Switch Device') + '" onclick="AddLightDeviceDev(' + item.idx +',\'' + item.Name + '\')">';
-								}
-								else {
-									itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + item.Name + '\')">';
-								}
+					if (
+							(item.Type.indexOf("Light")==0)||
+							(item.Type.indexOf("Security")==0)
+						 )
+					{
+						itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Light/Switch Device') + '" onclick="AddLightDeviceDev(' + item.idx +',\'' + item.Name + '\')">';
+					}
+					else {
+						itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + item.Name + '\')">';
+					}
+					itemSubIcons+='<img src="images/empty16.png">';
 				  }
 				  if (
 						(item.Type.indexOf("Light")==0)||
@@ -416,6 +428,36 @@ define(['app'], function (app) {
 				  resizable: false,
 				  title: $.t("Add Device"),
 				  buttons: dialog_adddevice_buttons
+			});
+
+			var dialog_renamedevice_buttons = {};
+			dialog_renamedevice_buttons[$.t("Rename Device")]=function() {
+			  var bValid = true;
+			  bValid = bValid && checkLength( $("#dialog-renamedevice #devicename"), 2, 100 );
+			  if ( bValid ) {
+				  $( this ).dialog( "close" );
+				  $.ajax({
+					 url: "json.htm?type=command&param=renamedevice&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-renamedevice #devicename").val()),
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						ShowDevices();
+					 }
+				  });
+			  }
+			};
+			dialog_renamedevice_buttons[$.t("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
+
+			$( "#dialog-renamedevice" ).dialog({
+				  autoOpen: false,
+				  width: 'auto',
+				  height: 'auto',
+				  modal: true,
+				  resizable: false,
+				  title: $.t("Rename Device"),
+				  buttons: dialog_renamedevice_buttons
 			});
 
 			var dialog_addlightdevicedev_buttons = {};
