@@ -1908,7 +1908,33 @@ void CSQLHelper::Do_Work()
             {
 				m_mainworker.SwitchScene(itt->_idx, itt->_command.c_str());
             }
-            
+			else if (itt->_ItemType == TITEM_SET_VARIABLE)
+			{
+				std::vector<std::vector<std::string> > result;
+				std::stringstream s_str;
+				s_str << "SELECT Name, ValueType FROM UserVariables WHERE (ID == " << itt->_idx << ")";
+				result = query(s_str.str());
+				if (result.size() > 0)
+				{
+					std::vector<std::string> sd = result[0];
+					s_str.clear();
+					s_str.str("");
+					s_str << itt->_idx;
+					std::string updateResult = m_sql.UpdateUserVariable(s_str.str(), sd[0], sd[1], itt->_sValue, (itt->_nValue==0)?false:true);
+					if (updateResult != "OK") {
+						_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+					}
+					else
+					{
+						_log.Log(LOG_STATUS, "Set UserVariable %s = %s", sd[0].c_str(), itt->_sValue.c_str());
+					}
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "Variable not found!");
+				}
+			}
+
 			++itt;
 		}
 		_items2do.clear();

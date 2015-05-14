@@ -43,6 +43,7 @@ enum _eTaskItemType
 	TITEM_SWITCHCMD_SCENE,
 	TITEM_GETURL,
 	TITEM_SEND_EMAIL_TO,
+	TITEM_SET_VARIABLE,
 };
 
 struct _tTaskItem
@@ -159,6 +160,17 @@ struct _tTaskItem
 
 		return tItem;
 	}
+	static _tTaskItem SetVariable(const int DelayTime, const unsigned long long idx, const std::string &varvalue, const bool eventtrigger)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_SET_VARIABLE;
+		tItem._DelayTime = DelayTime;
+		tItem._idx = idx;
+		tItem._sValue = varvalue;
+		tItem._nValue = (eventtrigger==true)?1:0;
+		return tItem;
+	}
+	
 };
 
 class CSQLHelper
