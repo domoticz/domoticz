@@ -352,6 +352,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			).success(function(data) {
 				if (data.status == "OK") {
 					$( "#appversion" ).text("V" + data.version);
+					if (data.haveupdate == true)
+					{
+						ShowUpdateNotification(data.revision);
+					}
 				}
 			}).error(function(data) {
 			});
