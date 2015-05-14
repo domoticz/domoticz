@@ -6840,6 +6840,9 @@ unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *p
 		case sTypeMertikG6RH4TD:
 			WriteMessage("subtype       = Mertik G6R-H4TD");
 			break;
+		case sTypeMertikG6RH4S:
+			WriteMessage("subtype       = Mertik G6R-H4S");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT3.packettype, pResponse->THERMOSTAT3.subtype);
 			WriteMessage(szTmp);

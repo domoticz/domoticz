@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Philio: PST02-A 4 in 1 Multi-Sensor -->
 <Product xmlns="http://code.google.com/p/open-zwave/">
- 
+
+   <!-- COMMAND_CLASS_SWITCH_ALL SwitchAllCmd_Get not supported -->
+  <CommandClass id="113" getsupported="false" />
+
   <!-- Configuration Parameters -->
   <CommandClass id="112">
 
