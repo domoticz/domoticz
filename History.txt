@@ -88,6 +88,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Events/Lua, User Variable can now be set after XX seconds
 - Implemented: OpenZWave, option to include device secure (only use for ZWave+ devices)
 - Implemented: OpenZWave security, added support for the Philio PST02-1A door contact
+- Changed: Better new update notification when launching browser
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

@@ -234,6 +234,9 @@ private:
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
+
+	bool m_bHaveUpdate;
+	int m_iRevision;
 };
 
 } //server

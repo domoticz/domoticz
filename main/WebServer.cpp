@@ -163,6 +163,8 @@ namespace http {
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
+			m_bHaveUpdate=false;
+			m_iRevision=0;
 		}
 
 
@@ -3215,6 +3217,11 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
 			root["version"] = szAppVersion;
+
+			int nValue = 1;
+			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+			root["haveupdate"] = (nValue==1)?m_bHaveUpdate:false;
+			root["revision"] = m_iRevision;
 		}
 
 		void CWebServer::Cmd_GetAuth(Json::Value &root)
@@ -3951,8 +3958,10 @@ namespace http {
 						else
 							m_LastUpdateCheck = atime;
 					}
+					m_bHaveUpdate = bHaveUpdate;
+					m_iRevision = atoi(strarray[2].c_str());
 					root["HaveUpdate"] = bHaveUpdate;
-					root["Revision"] = atoi(strarray[2].c_str());
+					root["Revision"] = m_iRevision;
 					root["HistoryURL"] = szHistoryURL;
 					root["ActVersion"] = version;
 				}
