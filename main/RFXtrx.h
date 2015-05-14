@@ -27,9 +27,15 @@ portions of this file.
 */
 
 /*
+SDK version 8.03A
+	Thermostat3 - Mertik G6R-H4S added
+
+SDK version 8.03
+	Subtype for Dolat blinds corrected, was 0x10 changed to 0xA
+
 SDK version 8.02
 	Blinds Dolat added
-	Mertik G6R_H4TD added
+	Thermostat3 - Mertik G6R_H4TD added
 
 SDK version 8.01
 	Blinds Sunpery changed
@@ -679,6 +685,7 @@ SDK version 4.9
 #define sTypeMertikG6RH4T1 0x0	//Mertik G6R-H4T1
 #define sTypeMertikG6RH4TB 0x1	//Mertik G6R-H4TB
 #define sTypeMertikG6RH4TD 0x2	//Mertik G6R-H4TD
+#define sTypeMertikG6RH4S 0x3	//Mertik G6R-H4S
 #define thermostat3_sOff 0x0
 #define thermostat3_sOn 0x1
 #define thermostat3_sUp 0x2
@@ -902,15 +909,15 @@ typedef union tRBUF {
 		BYTE	ARCenabled : 1;
 		BYTE	X10enabled : 1; //note: keep this order
 
-		//BYTE	msg6;
-		BYTE	MSG6Reserved7 : 1;
-		BYTE	MSG6Reserved6 : 1;
-		BYTE	MSG6Reserved5 : 1;
-		BYTE	MSG6Reserved4 : 1;
-		BYTE	MSG6Reserved3 : 1;
-		BYTE	MSG6Reserved2 : 1;
-		BYTE	MSG6Reserved1 : 1;
-		BYTE	KEELOQenabled : 1;
+		//BYTE    msg6;
+        BYTE    MSG6Reserved7 : 1;
+        BYTE    MSG6Reserved6 : 1;
+        BYTE    MSG6Reserved5 : 1;
+        BYTE    MSG6Reserved4 : 1;
+        BYTE    MSG6Reserved3 : 1;
+        BYTE    MSG6Reserved2 : 1;
+        BYTE    MSG6Reserved1 : 1;
+        BYTE    KEELOQenabled : 1;
 #else
 		//BYTE	msg3;
 		BYTE	AEenabled : 1;
@@ -942,16 +949,17 @@ typedef union tRBUF {
 		BYTE	ATIenabled : 1;
 		BYTE	VISONICenabled : 1;
 
-		//BYTE	msg6;
-		BYTE	KEELOQenabled : 1;
-		BYTE	MSG6Reserved1 : 1;
-		BYTE	MSG6Reserved2 : 1;
-		BYTE	MSG6Reserved3 : 1;
-		BYTE	MSG6Reserved4 : 1;
-		BYTE	MSG6Reserved5 : 1;
-		BYTE	MSG6Reserved6 : 1;
-		BYTE	MSG6Reserved7 : 1;
+        //BYTE	msg6;
+        BYTE    KEELOQenabled : 1;
+        BYTE    MSG6Reserved1 : 1;
+        BYTE    MSG6Reserved2 : 1;
+        BYTE    MSG6Reserved3 : 1;
+        BYTE    MSG6Reserved4 : 1;
+        BYTE    MSG6Reserved5 : 1;
+        BYTE    MSG6Reserved6 : 1;
+        BYTE    MSG6Reserved7 : 1;
 #endif
+
 		BYTE	msg7;
 		BYTE	msg8;
 		BYTE	msg9;

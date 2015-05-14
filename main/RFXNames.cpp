@@ -552,6 +552,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeThermostat3, sTypeMertikG6RH4T1, "Mertik G6R-H4T1" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TB, "Mertik G6R-H4TB" },
 		{ pTypeThermostat3, sTypeMertikG6RH4TD, "Mertik G6R-H4TD" },
+		{ pTypeThermostat3, sTypeMertikG6RH4S, "Mertik G6R-H4S" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },

@@ -2,9 +2,6 @@
 <!-- Philio: PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 
-	<!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
-	<CommandClass id="113" action="remove" />
-
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="short" instance="1" index="1" genre="config" label="Watt meter report period" min="1" max="32000" value="720">
