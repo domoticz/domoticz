@@ -273,9 +273,6 @@
 			var conditionstring = "("+conditionA+" "+locOperand+" "+conditionB+")";
 			return conditionstring; 
 		}
-  
-
-	    	
 	    
 	    var ifBlock = $($(xml).find("value[name='IF"+pairId+"']")[0]).children('block:first');
 
@@ -306,7 +303,7 @@
       		var compareString = parseSecurityStatus(ifBlock);
       		boolString += compareString;
       	}      	
-      	
+
       	var setArray = [];
       	var doBlock = $($(xml).find("statement[name='DO"+pairId+"']")[0]);
  	      $(doBlock).find('block').each (function(){ 
@@ -357,14 +354,29 @@
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var titleB = $(valueB).find("title")[0];
 	        	var blockB = $(valueB).children("block:first");
-		        if ((blockB.attr("type")=="logic_states") && ($(titleB).attr("name") == "State")) {
+	        	
+	        	var blockBType=blockB.attr("type");
+	        	var titleBName=$(titleB).attr("name");
+
+		        if ((blockBType=="logic_states") && (titleBName == "State")) {
 	        		setString += '="'+$(titleB).text()+' AFTER '+ $(titleC).text()+'"'; 
 	        		setArray.push(setString);
 	        	}        	
-	        	else if ((blockB.attr("type")=="logic_setlevel") && ($(titleB).attr("name") == "NUM")) {
+	        	else if ((blockBType=="logic_setlevel") && (titleBName == "NUM")) {
 	        		setString += '="Set Level '+$(titleB).text()+' AFTER '+ $(titleC).text()+'"'; 
 	        		setArray.push(setString);
 	        	}
+		        else if ((blockBType=="math_number") && (titleBName == "NUM")) {
+					if (blockA.attr("type").indexOf("uservariables") >= 0) { 
+						var setString = "commandArray[Variable:"+$(titleA).text()+"]";
+						var valueB = $(this).find("value[name='B']")[0];
+						var titleB = $(valueB).find("title")[0];
+						var blockB = $(valueB).children("block:first");
+						setString += '="'+$(titleB).text()+'"'; 
+						setString += ' AFTER '+ $(titleC).text()+'"'; 
+						setArray.push(setString);
+					}
+	        	}        	
 		    }
 	      	else if ($(this).attr('type') == 'logic_setdelayed') {
 		   		var valueA = $(this).find("value[name='A']")[0];

@@ -11,7 +11,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Sound Level sensor (dB)
 - Fixed: ZWave Light dimming
 - Implemented: Mertik (Thermostat 3) Up/Down popup
-- Updated: More translation work done
+- Changed: More translation work done
 - Changed: OpenZWave, when a switch/dimmer is turned off, and this node has a Power/Energy sensor, their value is set to 0
 - Fixed: Updating hardware settings for GPIO
 - Fixed: UVC camera default parameters where incorrect
@@ -48,7 +48,6 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Sunset/Sunrise update in blocky events (thanks to pj-r!)
 - Fixed: Compiling under ubuntu (issue 'rm CMakeCache.txt' first)
 - Implemented: RFXCom, mode6 (Keeloq protocol) support
-- Removed: StackTrace
 - Changed: Notification system (big thanks to chimit!)
 - Implemented: SMS Notifications
 - Solved: Wind Graph generation could cause a crash
@@ -86,20 +85,23 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: KMTronic USB/WEB relay hardware
 - Fixed: User Editor, updating a user could result in random password change
 - Implemented: Devices Tab, option to rename device
+- Implemented: Events/Lua, User Variable can now be set after XX seconds
+- Implemented: OpenZWave, option to include device secure (only use for ZWave+ devices)
+- Implemented: OpenZWave security, added support for the Philio PST02-1A door contact
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
 
 Version 2.0.2283 (February 21th 2015)
 - Implemented: Icon scaling setting per floorplan
-- Updated: floorplan code to handle non-landscape images better
+- Changed: floorplan code to handle non-landscape images better
 - Fixed: Possible crash in Eventsystem (GetCurrentMeasurementStates) where string value was empty
 - Implemented: Manual add Blinds T6 type (DC106, YOOHA, Rohrmotor24 RMF)
 - Fixed: Pushover notification setup in settings (could contain invalid characters)
 - Fixed: OpenZWave, converted home_id to correct variable
 - Fixed: Blinds1, T6 DC160 should work now
 - Implemented: Dewpoint devices in Blockly
-- Updated: floorplan interface, German translation
+- Changed: floorplan interface, German translation
 - Fixed: Setting default security network key for openzwave
 - Implemented: Devices tab, CM180 log option
 - Implemented: Logging counter values for P1 meter (not displayed yet)
@@ -191,7 +193,7 @@ Version 2.0.2283 (February 21th 2015)
 - Implemented: Scenes/Groups, additional On/Off delay option
 - Implemented: RGBW Popup to select color/on/off
 - Changed: kWh meters that do not provide current usage will now calculate the usage in the day graph
-- Updated: TE923, now supports battery levels (good/bad)
+- Changed: TE923, now supports battery levels (good/bad)
 - Changed: Status message color in log viewer
 - Implemented: EnOcean, added support for TempHum.02
 - Implemented: Displaying OpenZWave version
@@ -795,7 +797,7 @@ Version 1.0.484 (April 28th 2013)
 - Changed: Better day value calculation for meter devices
 - Implemented: Raspberry Pi onboard temperature sensor
 - Fixed: Meter value dupplication checked now performed for actual day
-- Updated: Charts Library
+- Updated: HighCharts Library
 - Implemented: Option to delete data point from sensor by Shift-Left click on month/year graph point
 - Implemented: Push On Button switch type (sends an OFF command)
 - Implemented: Added support for short term data in the custom temperature graph

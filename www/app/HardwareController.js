@@ -1139,10 +1139,10 @@ define(['app'], function (app) {
 			}
 		}
 
-		ZWaveIncludeNode = function()
+		ZWaveIncludeNode = function(isSecure)
 		{
 			$.ajax({
-				 url: "json.htm?type=command&param=zwaveinclude&idx=" + $.devIdx,
+				 url: "json.htm?type=command&param=zwaveinclude&idx=" + $.devIdx + "&secure=" + isSecure,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {

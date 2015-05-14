@@ -1427,22 +1427,36 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			}
 			else if (isVariable)
 			{
-
-				std::vector<std::vector<std::string> > result;
-				char szTmp[300];
-				sprintf(szTmp, "SELECT Name, ValueType FROM UserVariables WHERE (ID == '%s')",
-					variableNo.c_str()
-					);
-				result = m_sql.query(szTmp);
-				if (result.size()>0)
+				int afterTimerSeconds = 0;
+				size_t aFind = doWhat.find(" AFTER ");
+				if ((aFind > 0) && (aFind != std::string::npos)) {
+					std::string delayString = doWhat.substr(aFind + 7);
+					std::string newAction = doWhat.substr(0, aFind - 1);
+					afterTimerSeconds = atoi(delayString.c_str());
+					doWhat = newAction;
+				}
+				if (afterTimerSeconds == 0)
 				{
-					std::vector<std::string> sd = result[0];
-					std::string updateResult = m_sql.UpdateUserVariable(variableNo, sd[0], sd[1], doWhat, false);
-					if (updateResult != "OK") {
-						_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+					std::vector<std::vector<std::string> > result;
+					char szTmp[300];
+					sprintf(szTmp, "SELECT Name, ValueType FROM UserVariables WHERE (ID == '%s')", variableNo.c_str());
+					result = m_sql.query(szTmp);
+					if (result.size() > 0)
+					{
+						std::vector<std::string> sd = result[0];
+						std::string updateResult = m_sql.UpdateUserVariable(variableNo, sd[0], sd[1], doWhat, false);
+						if (updateResult != "OK") {
+							_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+						}
 					}
 				}
-
+				else
+				{
+					int DelayTime = 1 + afterTimerSeconds;
+					_tTaskItem tItem;
+					tItem = _tTaskItem::SetVariable(DelayTime, (const unsigned long long)atol(variableNo.c_str()), doWhat, false);
+					m_sql.AddTaskItem(tItem);
+				}
 			}
 			else {
 				std::string devNameNoQuotes = deviceName.substr(1, deviceName.size() - 2);
@@ -2326,19 +2340,39 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		std::vector<std::vector<std::string> > result;
 		char szTmp[300];
 
-		sprintf(szTmp, "SELECT ID, ValueType FROM UserVariables WHERE (Name == '%s')",
-			variableName.c_str()
-			);
+		int afterTimerSeconds = 0;
+		size_t aFind = variableValue.find(" AFTER ");
+		if ((aFind > 0) && (aFind != std::string::npos)) {
+			std::string delayString = variableValue.substr(aFind + 7);
+			std::string newAction = variableValue.substr(0, aFind);
+			afterTimerSeconds = atoi(delayString.c_str());
+			variableValue = newAction;
+		}
+		sprintf(szTmp, "SELECT ID, ValueType FROM UserVariables WHERE (Name == '%s')", variableName.c_str());
 		result = m_sql.query(szTmp);
-		if (result.size()>0)
+		if (result.size() > 0)
 		{
 			std::vector<std::string> sd = result[0];
-			std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
-			if (updateResult != "OK") {
-				_log.Log(LOG_ERROR, "Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
+			if (afterTimerSeconds == 0)
+			{
+				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
+				if (updateResult != "OK") {
+					_log.Log(LOG_ERROR, "Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
+				}
 			}
+			else
+			{
+				int DelayTime = 1 + afterTimerSeconds;
+				unsigned long long idx;
+				std::stringstream sstr;
+				sstr << sd[0];
+				sstr >> idx;
+				_tTaskItem tItem;
+				tItem = _tTaskItem::SetVariable(DelayTime, idx, variableValue, false);
+				m_sql.AddTaskItem(tItem);
+			}
+			scriptTrue = true;
 		}
-		scriptTrue = true;
 	}
 	else
 	{

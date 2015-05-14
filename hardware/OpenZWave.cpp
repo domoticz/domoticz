@@ -1981,6 +1981,9 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 	unsigned char instance = GetInstanceFromValueID(vID);
 
+	unsigned char vOrgInstance = vID.GetInstance();
+	unsigned char vOrgIndex = vID.GetIndex();
+
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
 	std::string vLabel = m_pManager->GetValueLabel(vID);
@@ -2058,6 +2061,20 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		instance = GetIndexFromAlarm(vLabel);
 		if (instance == 0)
 			return;
+		if (vLabel == "Alarm Level")
+		{
+			//Alarm Level
+			if (byteValue == 0)
+			{
+				//Secure
+				_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Secure");
+			}
+			else
+			{
+				//Tamper
+				_log.Log(LOG_STATUS, "OpenZWave: Alarm Level: Tamper");
+			}
+		}
 	}
 
 	time_t atime = mytime(NULL);
@@ -2230,9 +2247,28 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	{
 		if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
 		{
+			/*
+			_log.Log(LOG_STATUS, "------------------------------------");
+			_log.Log(LOG_STATUS, "Label: %s", vLabel.c_str());
+			_log.Log(LOG_STATUS, "vOrgIndex: %d (0x%02x)", vOrgIndex, vOrgIndex);
+			_log.Log(LOG_STATUS, "vOrgInstance: %d (0x%02x)", vOrgInstance, vOrgInstance);
+			_log.Log(LOG_STATUS, "byteValue: %d (0x%02x)", byteValue, byteValue);
+			_log.Log(LOG_STATUS, "------------------------------------");
+*/
 			//Alarm sensors
 			int nintvalue = 0;
-			if (byteValue == 0)
+
+			if (byteValue == 0x16)
+			{
+				//Door Open
+				nintvalue = 255;
+			}
+			else if (byteValue == 0x17)
+			{
+				//Door Closed
+				nintvalue = 0;
+			}
+			else if (byteValue == 0)
 				nintvalue = 0;
 			else
 				nintvalue = 255;
