@@ -326,6 +326,10 @@ namespace http {
 		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const bool bIgnoreUsernamePassword)
 		{
 			StopServer();
+
+			if (listenport.empty())
+				return true;
+
 			ReloadCustomSwitchIcons();
 
 			if (m_pWebEm != NULL)
@@ -344,6 +348,8 @@ namespace http {
 					_log.Log(LOG_ERROR, "check if no other application is using port: %s", listenport.c_str());
 				return false;
 			}
+			_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
+
 			m_pWebEm->SetDigistRealm("Domoticz.com");
 
 			if (!bIgnoreUsernamePassword)
