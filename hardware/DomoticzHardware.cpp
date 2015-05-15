@@ -522,6 +522,36 @@ void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const int ChildI
 	}
 }
 
+void CDomoticzHardwareBase::SendCurrentSensor(const int NodeID, const int BatteryLevel, const float Current1, const float Current2, const float Current3, const std::string &defaultname)
+{
+	tRBUF tsen;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.CURRENT.packetlength = sizeof(tsen.CURRENT) - 1;
+	tsen.CURRENT.packettype = pTypeCURRENT;
+	tsen.CURRENT.subtype = sTypeELEC1;
+	tsen.CURRENT.rssi = 12;
+	tsen.CURRENT.id1 = (NodeID & 0xFF00) >> 8;
+	tsen.CURRENT.id2 = NodeID & 0xFF;
+	tsen.CURRENT.battery_level = BatteryLevel;
+
+	int at10 = round(abs(Current1*10.0f));
+	tsen.CURRENT.ch1h = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.CURRENT.ch1l = (BYTE)(at10);
+
+	at10 = round(abs(Current2*10.0f));
+	tsen.CURRENT.ch2h = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.CURRENT.ch2l = (BYTE)(at10);
+
+	at10 = round(abs(Current3*10.0f));
+	tsen.CURRENT.ch3h = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.CURRENT.ch3l = (BYTE)(at10);
+
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT);
+}
+
 void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname)
 {
 	bool bDeviceExits = true;

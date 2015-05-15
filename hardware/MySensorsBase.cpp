@@ -652,6 +652,10 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 	case V_UV:
 		SenUVSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
 		break;
+	case V_CURRENT:
+		devname = "Current";
+		SendCurrentSensor(cNode, pSensor->batValue, pSensor->floatValue, 0, 0, devname);
+		break;
 	case V_FORECAST:
 		{
 			_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
@@ -1138,6 +1142,10 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_UV:
+			pSensor->floatValue = (float)atof(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_CURRENT:
 			pSensor->floatValue = (float)atof(payload.c_str());
 			bHaveValue = true;
 			break;
