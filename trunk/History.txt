@@ -90,6 +90,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: OpenZWave security, added support for the Philio PST02-1A door contact
 - Changed: Better new update notification when launching browser
 - Implemented: MySensors, V_CURRENT
+- Updated: HarmoneyHub class (Thanks to Jan)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
