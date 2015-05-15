@@ -626,7 +626,9 @@ namespace http {
 				}
 			}
 #endif
-
+			//Check for update
+			Json::Value root;
+			Cmd_CheckForUpdate(root);
 			return (m_thread != NULL);
 		}
 

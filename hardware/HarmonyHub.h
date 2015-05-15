@@ -115,7 +115,7 @@ private:
 	bool StopHardware();
 	void Do_Work();
 
-	int HarmonyWebServiceLogin(const std::string strUserEmail, const std::string strPassword, std::string& m_szAuthorizationToken);
+	bool HarmonyWebServiceLogin(const std::string strUserEmail, const std::string strPassword, std::string& m_szAuthorizationToken);
 	int ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket);
 	int StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword);
 	int SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken);
@@ -123,7 +123,4 @@ private:
 	bool CheckIfChanging( std::string& strData);
 	int ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	int ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
-	int ParseControlGroup(const std::string& strControlGroup, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
-	int ParseConfiguration(const std::string& strConfiguration, std::map< std::string, std::string >& mapActivities, std::vector< Device >& vecDevices);
-
 };
