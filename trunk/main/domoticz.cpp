@@ -498,6 +498,8 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-www", 0, "8080");
+		if (wwwport == "0")
+			wwwport.clear();//HTTP server disabled
 		m_mainworker.SetWebserverPort(wwwport);
 	}
 #ifdef NS_ENABLE_SSL

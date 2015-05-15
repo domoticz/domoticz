@@ -782,12 +782,14 @@ bool MainWorker::Stop()
 
 bool MainWorker::StartThread()
 {
-	//Start WebServer
-	if (!m_webserver.StartServer("0.0.0.0", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_bIgnoreUsernamePassword))
+	if (!m_webserverport.empty())
 	{
-		return false;
+		//Start WebServer
+		if (!m_webserver.StartServer("0.0.0.0", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_bIgnoreUsernamePassword))
+		{
+			return false;
+		}
 	}
-	_log.Log(LOG_STATUS, "Webserver started on port: %s", m_webserverport.c_str());
 	int nValue=0;
 	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
 	{
