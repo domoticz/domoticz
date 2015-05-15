@@ -8074,7 +8074,7 @@ namespace http {
 			bool Enabled;
 		} tHardwareList;
 
-		void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate)
+		void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const bool bSkipUserCheck)
 		{
 			std::vector<std::vector<std::string> > result;
 			std::stringstream szQuery;
@@ -8153,24 +8153,28 @@ namespace http {
 
 			unsigned char tempsign = m_sql.m_tempsign[0];
 
-			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			bool bHaveUser = false;
 			int iUser = -1;
 			unsigned int totUserDevices = 0;
 			bool bShowScenes = true;
-			if (bHaveUser)
+			if (!bSkipUserCheck)
 			{
-				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
-				if (iUser != -1)
+				bHaveUser = (m_pWebEm->m_actualuser != "");
+				if (bHaveUser)
 				{
-					_eUserRights urights = m_users[iUser].userrights;
-					if (urights != URIGHTS_ADMIN)
+					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					if (iUser != -1)
 					{
-						szQuery.clear();
-						szQuery.str("");
-						szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << m_users[iUser].ID << ")";
-						result = m_sql.query(szQuery.str());
-						totUserDevices = (unsigned int)result.size();
-						bShowScenes = (m_users[iUser].ActiveTabs&(1 << 1))!=0;
+						_eUserRights urights = m_users[iUser].userrights;
+						if (urights != URIGHTS_ADMIN)
+						{
+							szQuery.clear();
+							szQuery.str("");
+							szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << m_users[iUser].ID << ")";
+							result = m_sql.query(szQuery.str());
+							totUserDevices = (unsigned int)result.size();
+							bShowScenes = (m_users[iUser].ActiveTabs&(1 << 1)) != 0;
+						}
 					}
 				}
 			}
@@ -11220,7 +11224,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Devices";
 
-			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate);
+			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate, false);
 
 			root["WindScale"] = m_sql.m_windscale*10.0f;
 			root["WindSign"] = m_sql.m_windsign;

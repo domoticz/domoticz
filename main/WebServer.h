@@ -64,7 +64,7 @@ public:
 	void SetWebTheme(const std::string &themename);
 	std::vector<_tWebUserPassword> m_users;
 	//JSon
-	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate);
+	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const bool bSkipUserCheck);
 private:
 	void HandleCommand(const std::string &cparam, Json::Value &root);
 	void HandleRType(const std::string &rtype, Json::Value &root);
