@@ -93,6 +93,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Updated: HarmoneyHub class (Thanks to Jan)
 - Fixed: HTTP Notification
 - Changed: HTTP Notification, can now handle both HTTP and Scripts
+- Changed: Logitech Harmony Hub code
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

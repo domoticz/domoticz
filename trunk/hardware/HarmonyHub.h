@@ -97,6 +97,7 @@ private:
 	volatile bool m_stoprequested;
 	bool m_bDoLogin;
 	bool m_bIsChangingActivity;
+	std::string m_hubSwVersion;
 	boost::shared_ptr<boost::thread> m_thread;
 	char m_databuffer[BUFFER_SIZE];	
 	std::string m_szResultString;
@@ -120,7 +121,7 @@ private:
 	int StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword);
 	int SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken);
 	int SubmitCommand(csocket* m_commandcsocket, const std::string& m_szAuthorizationToken, const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary);
-	bool CheckIfChanging( std::string& strData);
+	bool CheckIfChanging(const std::string& strData);
 	int ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	int ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
 };
