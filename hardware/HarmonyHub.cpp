@@ -129,6 +129,7 @@ void CHarmonyHub::Init()
 	m_szCurActivityID="";
 	m_usCommandsMissed=0;
 	m_bIsChangingActivity=false;
+	m_hubSwVersion = "";
 }
 
 bool CHarmonyHub::StartHardware()
@@ -153,6 +154,7 @@ bool CHarmonyHub::StopHardware()
 	if (!m_bDoLogin)
 		Logout();
 	m_bIsChangingActivity=false;
+	m_hubSwVersion = "";
 	return true;
 }
 
@@ -244,7 +246,7 @@ bool CHarmonyHub::Login()
 			{
 				// Authorization Token found worked.  
 				// Bypass authorization through Logitech's servers.
-				_log.Log(LOG_STATUS,"Harmony Hub: Authentication succesfull");
+				_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
 				return true;
 			}
 
@@ -275,9 +277,10 @@ bool CHarmonyHub::Login()
 		{
 			// Authorization Token found worked.  
 			// Bypass authorization through Logitech's servers.
-			_log.Log(LOG_STATUS,"Harmony Hub: Authentication succesfull");
+			_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
 			return true;
 		}
+		_log.Log(LOG_ERROR, "Harmony Hub: Authentication unsuccessful");
 		return false;
 	}
 	return false;
@@ -329,11 +332,6 @@ bool CHarmonyHub::UpdateActivities()
 	}
 
 	std::map< std::string, std::string> mapActivities;
-	/*
-	FILE *fOut = fopen("E:\\result.json", "wb+");
-	fwrite(m_szResultString.c_str(), 1, m_szResultString.size(), fOut);
-	fclose(fOut);
-	*/
 
 	Json::Reader jReader;
 	Json::Value root;
@@ -645,8 +643,6 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 	sendData.append(m_szAuthorizationToken.c_str());
 	sendData.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
 
-	std::string strIdentityTokenTag = "identity=";
-
 	authorizationcsocket->write(sendData.c_str(), sendData.size());
 
 	memset(m_databuffer, 0, BUFFER_SIZE);
@@ -674,6 +670,8 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 		strData.append(m_databuffer);
 		authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
 	};
+
+	std::string strIdentityTokenTag = "identity=";
 
 	// Parse the session authorization token from the response
 	int pos = (int)strData.find(strIdentityTokenTag);
@@ -749,14 +747,6 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 
 	m_commandcsocket->write(sendData.c_str(), sendData.size());
 
-	//memset(m_databuffer, 0, BUFFER_SIZE);
-	//m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-	//strData = m_databuffer; /* <- Expect: strData  == <iq/> */
-
-	/*std::string iqTag = "<iq/>";
-	D = (int)strData.find(iqTag);*/
-	//if(pos<=0)
-	//	return 1; //error parsing the result
 	bool bIsDataReadable = true;
 	m_commandcsocket->canRead(&bIsDataReadable,0.4f);
 	while(bIsDataReadable)
@@ -765,46 +755,22 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 		if(memset(m_databuffer, 0, BUFFER_SIZE)>0)
 		{
 			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-			strData.append(m_databuffer);
-			m_commandcsocket->canRead(&bIsDataReadable,0.4f);
+			std::string szNewData = std::string(m_databuffer);
+			if (!szNewData.empty())
+			{
+				strData.append(m_databuffer);
+				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+			}
+			else
+				bIsDataReadable = false;
 		}
 		else
 			bIsDataReadable=false;
 	}
-	/*
-	static unsigned long fcounter = 1;
-	char szFileName[200];
-	sprintf(szFileName, "E:\\command_out_%05ld.raw", fcounter++);
-	FILE *fOut = fopen(szFileName, "wb+");
-	fwrite(strData.c_str(), 1, strData.size(), fOut);
-	fclose(fOut);
-	*/
+	if (strData.empty())
+		return 1;
 
 	CheckIfChanging(strData);
-	//m_commandcsocket->canRead(&bIsDataReadable,1.0f);
-
-	/*if(bIsDataReadable == false && strData == "<iq/>")
-	{
-	bIsDataReadable = true;
-	}*/
-
-	//if(strCommand != "issue_device_command")
-	//{
-	//	/*while(bIsDataReadable)
-	//	{
-	//		memset(m_databuffer, 0, BUFFER_SIZE);
-	//		m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-	//		if(strlen(m_databuffer)==0)
-	//			return 1;
-	//		strData.append(m_databuffer);
-	//		m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
-	//	}*/
-	//	//check for the presence of startactivity or activityfinished
-	//	//strData.find("startActivityFinished")!=0 || 
-	//	CheckIfChanging(strData);
-
-	//}
-
 
 	if (strCommand == GET_CURRENT_ACTIVITY_COMMAND || strCommand == GET_CURRENT_ACTIVITY_COMMAND_RAW)
 	{
@@ -824,7 +790,7 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 		{
 			//No valid response received
 			if (m_bIsChangingActivity)
-				m_szResultString = m_szCurActivityID; //changing, so no repsonse from HH
+				m_szResultString = m_szCurActivityID; //changing, so no response from HH
 			else
 				return 1;
 		}
@@ -841,9 +807,14 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 		{
 			memset(m_databuffer, 0, BUFFER_SIZE);
 			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-
-			strData.append(m_databuffer);
-			m_commandcsocket->canRead(&bIsDataReadable,0.4f);
+			std::string szNewData = std::string(m_databuffer);
+			if (!szNewData.empty())
+			{
+				strData.append(m_databuffer);
+				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+			}
+			else
+				bIsDataReadable = false;
 		}
 
 		pos = strData.find("<![CDATA[");
@@ -863,56 +834,127 @@ int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_s
 	return 0;
 }
 
-bool CHarmonyHub::CheckIfChanging(std::string& strData)
+bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 {
-	//strdata might contain both, so can return when both checks are done
-	bool newVal=m_bIsChangingActivity;
-	//int lastDetect=0;
-	//bool isFound=true;
-	int isChanging = (int)strData.rfind("connect.stateDigest?notify");
-	int finishedChanging =(int)strData.rfind("startActivityFinished");
-	if(finishedChanging > isChanging)
-		newVal=false;
-	else if(isChanging > finishedChanging)
-		newVal =true;
-	/*while(isFound)
-	{
-	isFound=false;
-	int tempDetect= strData.find("connect.stateDigest?notify",lastDetect);
-	if(tempDetect!=std::string::npos)
-	{
-	lastDetect = tempDetect;
-	newVal=true;
-	isFound=true;
-	}
+	//activityStatus
+	// 0 = Hub is off
+	// 1 = Activity is starting
+	// 2 = Activity is started
+	// 3 = Hub is turning off
 
-	tempDetect = strData.find("startActivityFinished",lastDetect);
-	if(tempDetect!=std::string::npos)
+	bool bIsChanging = m_bIsChangingActivity;
+	std::string LastActivity = m_szCurActivityID;
+
+	std::string szData = strData;
+	int pos;
+
+	while (!szData.empty())
 	{
-	lastDetect = tempDetect;
-	newVal=false;
-	isFound=true;
-	}		
-	}*/
-	if(newVal != m_bIsChangingActivity)
+		size_t apos = szData.find("</message>");
+		if (apos == std::string::npos)
+			break;
+
+		std::string szResponse = szData.substr(0, apos);
+		szData = szData.substr(apos + 10);
+
+		if (szResponse.find("getCurrentActivity") != std::string::npos)
+			continue; //dont want you
+
+		if (szResponse.find("startActivityFinished") != std::string::npos)
+		{
+			bIsChanging = false;
+			/* for later when we using a ping, and catch activities here
+			pos = szResponse.find("<![CDATA[");
+			if (pos == std::string::npos)
+				continue;
+			szResponse = szResponse.substr(pos + 9);
+
+			pos = szResponse.find("]]>");
+			if (pos == std::string::npos)
+				continue;
+			szResponse = szResponse.substr(0, pos);
+
+			pos = szResponse.find("activityId=");
+			if (pos == std::string::npos)
+				continue;
+			szResponse = szResponse.substr(pos + 11);
+
+			pos = szResponse.find(":");
+			if (pos == std::string::npos)
+				continue;
+			szResponse = szResponse.substr(0, pos);
+
+			LastActivity = szResponse;
+			*/
+			continue;
+		}
+
+		pos = szResponse.find("<![CDATA[");
+		if (pos == std::string::npos)
+			continue;
+
+		szResponse = szResponse.substr(pos + 9);
+		pos = szResponse.find("]]>");
+		if (pos == std::string::npos)
+			continue;
+
+		szResponse = szResponse.substr(0, pos);
+
+		Json::Reader jReader;
+		Json::Value root;
+		bool ret = jReader.parse(szResponse, root);
+		if (!ret)
+			continue;
+
+		if (root["activityStatus"].empty())
+			continue;
+
+		int activityStatus = root["activityStatus"].asInt();
+		if (!root["hubSwVersion"].empty())
+		{
+			std::string hubSwVersion = root["hubSwVersion"].asString();
+			if (hubSwVersion != m_hubSwVersion)
+			{
+				m_hubSwVersion = hubSwVersion;
+				_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_hubSwVersion.c_str());
+			}
+		}
+		bIsChanging = (activityStatus == 1);
+		if (activityStatus == 2)
+		{
+			if (!root["activityId"].empty())
+			{
+				/* for later when we using a ping, and catch activities here
+				LastActivity = root["activityId"].asString();
+				*/
+			}
+		}
+		else if (activityStatus == 3)
+		{
+			//Power Off
+			LastActivity = "-1";
+		}
+	}
+	
+	if (bIsChanging != m_bIsChangingActivity)
 	{
-		m_bIsChangingActivity=newVal;
-		if(newVal)
-			_log.Log(LOG_STATUS,"Harmony Hub: Changing activity");
+		m_bIsChangingActivity = bIsChanging;
+		if (m_bIsChangingActivity)
+			_log.Log(LOG_STATUS, "Harmony Hub: Changing activity");
 		else
-			_log.Log(LOG_STATUS,"Harmony Hub: Finished changing activity");
-		return true;
+			_log.Log(LOG_STATUS, "Harmony Hub: Finished changing activity");
 	}
-
-	return false;
-	/*
-	if((strData.find("startActivityFinished",changeDetect) != std::string::npos)&&m_bIsChangingActivity)
+	if (m_szCurActivityID != LastActivity)
 	{
-	m_bIsChangingActivity=false;
-	_log.Log(LOG_STATUS,"Harmony Hub: Finished changing activity");
-	retVal = true;
+		if (!m_szCurActivityID.empty())
+		{
+			//need to set the old activity to off
+			CheckSetActivity(m_szCurActivityID, false);
+		}
+		CheckSetActivity(LastActivity, true);
+		m_szCurActivityID = LastActivity;
 	}
-	return retVal;*/
+	return true;
 }
 
 int CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID)
