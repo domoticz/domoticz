@@ -128,7 +128,12 @@ define(['app'], function (app) {
 				success: function(data) {
 					if (data.status != "OK") {
 						HideNotify();
-						ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
+						if (subsystem=="http") {
+							ShowNotify($.t('Problem Sending Notification'), 3000, true);
+						}
+						else {
+							ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
+						}
 						return;
 					}
 					else {
