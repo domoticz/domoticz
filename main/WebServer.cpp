@@ -3951,24 +3951,13 @@ namespace http {
 					root["IsSupported"] = true;
 
 					int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
-					bool bHaveUpdate = (version < atoi(strarray[2].c_str()));
+					m_iRevision = atoi(strarray[2].c_str());
+					m_bHaveUpdate = (version < m_iRevision);
 #ifdef DEBUG_DOWNLOAD
-					bHaveUpdate = true;
+					m_bHaveUpdate = true;
 					bIsForced = true;
 #endif
-					if ((bHaveUpdate) && (!bIsForced))
-					{
-						time_t atime = mytime(NULL);
-						if (atime - m_LastUpdateCheck < 12 * 3600)
-						{
-							bHaveUpdate = false;
-						}
-						else
-							m_LastUpdateCheck = atime;
-					}
-					m_bHaveUpdate = bHaveUpdate;
-					m_iRevision = atoi(strarray[2].c_str());
-					root["HaveUpdate"] = bHaveUpdate;
+					root["HaveUpdate"] = m_bHaveUpdate;
 					root["Revision"] = m_iRevision;
 					root["HistoryURL"] = szHistoryURL;
 					root["ActVersion"] = version;
