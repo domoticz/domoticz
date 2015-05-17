@@ -51,8 +51,7 @@ Cleanup: GizMoCuz (And still not done!)
 #define START_ACTIVITY_COMMAND						"start_activity"
 #define GET_CURRENT_ACTIVITY_COMMAND				"get_current_activity_id"
 #define GET_CURRENT_ACTIVITY_COMMAND_RAW			"get_current_activity_id_raw"
-#define HARMONY_POLL_INTERVAL_SECONDS				1	//the get activity poll time
-#define HARMONY_POLL_FETCH_ACTIVITY_SECONDS			60  //fetch the list of activities every x seconds...
+#define HARMONY_PING_INTERVAL_SECONDS				30	//the get activity poll time
 #define HARMONY_RETRY_LOGIN_SECONDS					60  //fetch the list of activities every x seconds...
 
 #define MAX_MISS_COMMANDS							5	//max commands to miss (when executing a command, the harmony commands may fail)
@@ -102,7 +101,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		//result = m_sql.query(szQuery.str());
 		//if (result.size() > 0) //should be there since it is switched on
 		//{
-		if (SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND, sstr.str(), "") == 1)
+		if (SubmitCommand(START_ACTIVITY_COMMAND, sstr.str(), "") == 1)
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
 			return false;
@@ -113,9 +112,9 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
 	{
-		if(SubmitCommand(m_commandcsocket, m_szAuthorizationToken, START_ACTIVITY_COMMAND, "PowerOff","") == 1)
+		if(SubmitCommand(START_ACTIVITY_COMMAND, "PowerOff","") == 1)
 		{
-			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the poweroff command");
+			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the power-off command");
 			return false;
 		}			
 	}
@@ -127,7 +126,6 @@ void CHarmonyHub::Init()
 	m_stoprequested = false;
 	m_bDoLogin = true;
 	m_szCurActivityID="";
-	m_usCommandsMissed=0;
 	m_bIsChangingActivity=false;
 	m_hubSwVersion = "";
 }
@@ -163,63 +161,94 @@ void CHarmonyHub::Do_Work()
 {
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started..."); 
 	//start with getting the activities
-	unsigned short checkAct=HARMONY_POLL_FETCH_ACTIVITY_SECONDS /  HARMONY_POLL_INTERVAL_SECONDS;
+
+	int scounter = 0;
+	int mcounter = 0;
+	bool bFirstTime = true;
 
 	while (!m_stoprequested)
 	{
-		sleep_seconds(HARMONY_POLL_INTERVAL_SECONDS);
-		checkAct++;
+		sleep_milliseconds(500);
 
-		//check the active activity
-		unsigned short checkLogin=HARMONY_RETRY_LOGIN_SECONDS /  HARMONY_POLL_INTERVAL_SECONDS;
-		while(m_bDoLogin && !m_stoprequested)
+		if (m_stoprequested)
+			break;
+
+		mcounter++;
+		if (mcounter<2)
+			continue;
+		mcounter = 0;
+
+		scounter++;
+
+		if (scounter % 12 == 0)
 		{
-			if (HARMONY_RETRY_LOGIN_SECONDS  <= checkLogin)
+			mytime(&m_LastHeartbeat);
+		}
+
+		if (m_bDoLogin)
+		{
+			if ((scounter%HARMONY_RETRY_LOGIN_SECONDS == 0) || (bFirstTime))
 			{
-				checkLogin=0;
+				bFirstTime = false;
 				if(Login() && SetupCommandSocket())
 				{
 					m_bDoLogin=false;
-					break;
+					if (!UpdateCurrentActivity())
+					{
+						Logout();
+						m_bDoLogin = true;
+					}
+					else
+					{
+						if (!UpdateActivities())
+						{
+							Logout();
+							m_bDoLogin = true;
+						}
+					}
 				}
 			}
-			else
-			{
-				mytime(&m_LastHeartbeat);
-				sleep_seconds(1);
-				checkLogin++;
-			}			
+			continue;
 		}
 
-		//extra check after sleep if we must not quit right away
-		if(m_stoprequested)
-			break;
-
-		//check/update the active activity
-		if(!UpdateCurrentActivity())
-			m_usCommandsMissed++;
-		else
-			m_usCommandsMissed=0;
-
-
-		//check for activities change. Update our heartbeat too.
-		if (HARMONY_POLL_FETCH_ACTIVITY_SECONDS /  HARMONY_POLL_INTERVAL_SECONDS <= checkAct) {
-			if(!UpdateActivities())
-				m_usCommandsMissed++;
-			else
-				m_usCommandsMissed=0;
-			checkAct=0;
-		}
-		//and set the heartbeat while we're at it
-		mytime(&m_LastHeartbeat);
-
-		if(m_usCommandsMissed>=MAX_MISS_COMMANDS)
+		if (scounter % HARMONY_PING_INTERVAL_SECONDS == 0)
 		{
-			Logout();
-			_log.Log(LOG_STATUS,"Harmony Hub: Too many commands missed. Resetting connection.");
-			//m_bDoLogin=true;	//re login
+			//Ping the server
+			if (!SendPing())
+			{
+				_log.Log(LOG_STATUS, "Harmony Hub: Error pinging server.. Resetting connection.");
+				Logout();
+				continue;
+			}
+			continue;
 		}
+		bool bIsDataReadable = true;
+		m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+		if (bIsDataReadable)
+		{
+			boost::lock_guard<boost::mutex> lock(m_mutex);
+			std::string strData;
+			while (bIsDataReadable)
+			{
+				if (memset(m_databuffer, 0, BUFFER_SIZE) > 0)
+				{
+					m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+					std::string szNewData = std::string(m_databuffer);
+					if (!szNewData.empty())
+					{
+						strData.append(m_databuffer);
+						m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+					}
+					else
+						bIsDataReadable = false;
+				}
+				else
+					bIsDataReadable = false;
+			}
+			if (!strData.empty())
+				CheckIfChanging(strData);
 
+		}
 	}
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
 }
@@ -290,7 +319,6 @@ void CHarmonyHub::Logout()
 {
 	if(m_commandcsocket)
 		delete m_commandcsocket;
-	m_usCommandsMissed=0;
 	m_commandcsocket = NULL;
 	m_bIsChangingActivity=false;
 	m_bDoLogin=true;
@@ -325,7 +353,7 @@ bool CHarmonyHub::SetupCommandSocket()
 
 bool CHarmonyHub::UpdateActivities()
 {
-	if(SubmitCommand(m_commandcsocket, m_szAuthorizationToken, GET_CONFIG_COMMAND_RAW, "", "") == 1)
+	if(SubmitCommand(GET_CONFIG_COMMAND_RAW, "", "") == 1)
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Get activities failed");
 		return false;
@@ -367,7 +395,7 @@ bool CHarmonyHub::UpdateActivities()
 
 bool CHarmonyHub::UpdateCurrentActivity()
 {
-	if(SubmitCommand(m_commandcsocket, m_szAuthorizationToken, GET_CURRENT_ACTIVITY_COMMAND_RAW, "", "") == 1)
+	if(SubmitCommand(GET_CURRENT_ACTIVITY_COMMAND_RAW, "", "") == 1)
 	{
 		//_log.Log(LOG_ERROR,"Harmony Hub: Get current activity failed");
 		return false;
@@ -694,8 +722,56 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 	return 0;
 }
 
+bool CHarmonyHub::SendPing()
+{
+	boost::lock_guard<boost::mutex> lock(m_mutex);
+	if (m_commandcsocket == NULL || m_szAuthorizationToken.size() == 0)
+	{
+		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
+		return false;
+	}
+	std::string strData;
+	std::string sendData;
 
-int CHarmonyHub::SubmitCommand(csocket* m_commandcsocket, const std::string& m_szAuthorizationToken, const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary)
+	// GENERATE A LOGIN ID REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN 
+	sendData = "<iq type=\"get\" id=\"";
+	sendData.append(CONNECTION_ID);
+	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
+	sendData.append(m_szAuthorizationToken.c_str());
+	sendData.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
+
+	m_commandcsocket->write(sendData.c_str(), sendData.size());
+
+
+	bool bIsDataReadable = true;
+	m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+	while (bIsDataReadable)
+	{
+		if (memset(m_databuffer, 0, BUFFER_SIZE) > 0)
+		{
+			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+			std::string szNewData = std::string(m_databuffer);
+			if (!szNewData.empty())
+			{
+				strData.append(m_databuffer);
+				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+			}
+			else
+				bIsDataReadable = false;
+		}
+		else
+			bIsDataReadable = false;
+	}
+	if (strData.empty())
+		return false;
+	if (strData.find("errorcode='200'")!=std::string::npos)
+	{
+		CheckIfChanging(strData);
+	}
+	return true;
+}
+
+int CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	int pos;
@@ -863,7 +939,6 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 		if (szResponse.find("startActivityFinished") != std::string::npos)
 		{
 			bIsChanging = false;
-			/* for later when we using a ping, and catch activities here
 			pos = szResponse.find("<![CDATA[");
 			if (pos == std::string::npos)
 				continue;
@@ -885,7 +960,6 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 			szResponse = szResponse.substr(0, pos);
 
 			LastActivity = szResponse;
-			*/
 			continue;
 		}
 
@@ -924,9 +998,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 		{
 			if (!root["activityId"].empty())
 			{
-				/* for later when we using a ping, and catch activities here
 				LastActivity = root["activityId"].asString();
-				*/
 			}
 		}
 		else if (activityStatus == 3)

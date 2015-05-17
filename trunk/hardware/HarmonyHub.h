@@ -93,7 +93,6 @@ private:
 
     csocket * m_commandcsocket;
 	unsigned short m_usIPPort;
-	unsigned short m_usCommandsMissed;
 	volatile bool m_stoprequested;
 	bool m_bDoLogin;
 	bool m_bIsChangingActivity;
@@ -120,8 +119,9 @@ private:
 	int ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket);
 	int StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword);
 	int SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken);
-	int SubmitCommand(csocket* m_commandcsocket, const std::string& m_szAuthorizationToken, const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary);
+	int SubmitCommand(const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary);
 	bool CheckIfChanging(const std::string& strData);
+	bool SendPing();
 	int ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	int ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
 };
