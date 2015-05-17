@@ -442,6 +442,34 @@
 									</table>
 								</div>
 							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Kodi Media Player"></span>:</h2>
+									<table class="display" id="koditable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:80px"><label for="KodiEnabled"><span data-i18n="Enabled"></span>: </label></td>
+											<td><input type="checkbox" id="KodiEnabled" name="KodiEnabled"/></td>
+										</tr>
+										<tr>
+											<td align="right"><label for="KodiIPAddress"><span data-i18n="IP Address"></span>: </label></td>
+											<td>
+												<input type="input" id="KodiIPAddress" name="KodiIPAddress" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<label for="KodiPort"><span data-i18n="Port"></span>: </label>
+												<input type="input" id="KodiPort" name="KodiPort" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<label for="KodiTimeToLive"><span data-i18n="Hops"></span>: </label>
+												<input type="input" id="KodiTimeToLive" name="KodiTimeToLive" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+											</td>
+											<td>
+												<button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('kodi')">Test</button>
+											</td>
+										</tr>
+									</table>
+									<span data-i18n="Test with default settings before changing. Learn about Kodi"></span> <a class="norm-link" href="http://kodi.tv/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+								<div class="span6">
+								</div>
+							</div>
 							<h2><span data-i18n="Notification Intervals"></span>:</h2>
 							<table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
 							<tr>

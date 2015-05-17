@@ -118,6 +118,12 @@ define(['app'], function (app) {
 				}
 				extraparams = "EmailServer=" + EmailServer + "&EmailPort=" + EmailPort + "&EmailFrom=" + EmailFrom + "&EmailTo=" + EmailTo + "&EmailUsername=" + EmailUsername + "&EmailPassword=" + EmailPassword;
 				break;
+			case "kodi":
+				if ($("#koditable #KodiIPAddress").val() == "") $("#koditable #KodiIPAddress").val("224.0.0.1");
+				if (($("#koditable #KodiPort").val() == "") || !$.isNumeric($("#koditable #KodiPort").val())) $("#koditable #KodiPort").val("9777");
+				if (($("#koditable #KodiTimeToLive").val() == "") || !$.isNumeric($("#koditable #KodiTimeToLive").val())) $("#koditable #KodiTimeToLive").val("1");
+				extraparams = 'KodiIPAddress=' + $("#koditable #KodiIPAddress").val() + '&KodiPort=' + $("#koditable #KodiPort").val() + "&KodiTimeToLive=" + $("#koditable #KodiTimeToLive").val();
+				break;
 			default:
 				return;
 			}
@@ -128,7 +134,7 @@ define(['app'], function (app) {
 				success: function(data) {
 					if (data.status != "OK") {
 						HideNotify();
-						if (subsystem=="http") {
+						if ((subsystem=="http") || (subsystem=="kodi")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
 						}
 						else {
@@ -268,6 +274,22 @@ define(['app'], function (app) {
 				$("#httptable #HTTPURL").val(atob(data.HTTPURL));
 			  }
 			  
+			  if (typeof data.KodiEnabled != 'undefined') {
+  				$("#koditable #KodiEnabled").prop('checked',data.KodiEnabled==1);
+			  }
+			  $("#koditable #KodiIPAddress").val("224.0.0.1");
+			  if (typeof data.KodiIPAddress != 'undefined') {
+				$("#koditable #KodiIPAddress").val(data.KodiIPAddress);
+			  }
+			  $("#koditable #KodiPort").val("9777");
+			  if (typeof data.KodiPort != 'undefined') {
+				$("#koditable #KodiPort").val(data.KodiPort);
+			  }
+			  $("#koditable #KodiTimeToLive").val("1");
+			  if (typeof data.KodiTimeToLive != 'undefined') {
+				$("#koditable #KodiTimeToLive").val(data.KodiTimeToLive);
+			  }
+
 			  if (typeof data.LightHistoryDays != 'undefined') {
 				$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
 			  }
