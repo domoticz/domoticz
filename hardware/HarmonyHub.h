@@ -116,12 +116,12 @@ private:
 	void Do_Work();
 
 	bool HarmonyWebServiceLogin(const std::string strUserEmail, const std::string strPassword, std::string& m_szAuthorizationToken);
-	int ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket);
-	int StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword);
-	int SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken);
-	int SubmitCommand(const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary);
+	bool ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket);
+	bool StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword);
+	bool SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken);
+	bool SubmitCommand(const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary);
 	bool CheckIfChanging(const std::string& strData);
 	bool SendPing();
-	int ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
-	int ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
+	bool ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
+	bool ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
 };

@@ -101,7 +101,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		//result = m_sql.query(szQuery.str());
 		//if (result.size() > 0) //should be there since it is switched on
 		//{
-		if (SubmitCommand(START_ACTIVITY_COMMAND, sstr.str(), "") == 1)
+		if (!SubmitCommand(START_ACTIVITY_COMMAND, sstr.str(), ""))
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
 			return false;
@@ -112,7 +112,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
 	{
-		if(SubmitCommand(START_ACTIVITY_COMMAND, "PowerOff","") == 1)
+		if(!SubmitCommand(START_ACTIVITY_COMMAND, "PowerOff",""))
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the power-off command");
 			return false;
@@ -262,14 +262,14 @@ bool CHarmonyHub::Login()
 		if(m_szAuthorizationToken.size() > 0)
 		{
 			csocket authorizationcsocket;
-			if(ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket) == 1)
+			if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
 			{
 				_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub");
 				//printf("ERROR : %s\n", errorString.c_str());
 				return false;
 			}
 
-			if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken) == 0)
+			if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken)==true)
 			{
 				// Authorization Token found worked.  
 				// Bypass authorization through Logitech's servers.
@@ -293,14 +293,14 @@ bool CHarmonyHub::Login()
 		//printf("\nLogin Authorization Token is: %s\n\n", m_szAuthorizationToken.c_str());
 
 		csocket authorizationcsocket;
-		if(ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket) == 1)
+		if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub");
 			//printf("ERROR : %s\n", errorString.c_str());
 			return false;
 		}
 
-		if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken) == 0)
+		if(SwapAuthorizationToken(&authorizationcsocket, m_szAuthorizationToken)==true)
 		{
 			// Authorization Token found worked.  
 			// Bypass authorization through Logitech's servers.
@@ -331,7 +331,7 @@ bool CHarmonyHub::SetupCommandSocket()
 	m_commandcsocket = new csocket();
 
 
-	if(ConnectToHarmony(m_harmonyAddress, m_usIPPort,m_commandcsocket) == 1)
+	if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort,m_commandcsocket))
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Cannot setup command socket to Harmony Hub");
 		return false;
@@ -341,7 +341,7 @@ bool CHarmonyHub::SetupCommandSocket()
 	//strUserName.append("@connect.logitech.com/gatorade.");
 	std::string  strPassword = m_szAuthorizationToken;
 
-	if(StartCommunication(m_commandcsocket, strUserName, strPassword) == 1)
+	if(!StartCommunication(m_commandcsocket, strUserName, strPassword))
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Start communication failed");
 		return false;
@@ -351,7 +351,7 @@ bool CHarmonyHub::SetupCommandSocket()
 
 bool CHarmonyHub::UpdateActivities()
 {
-	if(SubmitCommand(GET_CONFIG_COMMAND_RAW, "", "") == 1)
+	if(!SubmitCommand(GET_CONFIG_COMMAND_RAW, "", ""))
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Get activities failed");
 		return false;
@@ -393,7 +393,7 @@ bool CHarmonyHub::UpdateActivities()
 
 bool CHarmonyHub::UpdateCurrentActivity()
 {
-	if(SubmitCommand(GET_CURRENT_ACTIVITY_COMMAND_RAW, "", "") == 1)
+	if(!SubmitCommand(GET_CURRENT_ACTIVITY_COMMAND_RAW, "", ""))
 	{
 		//_log.Log(LOG_ERROR,"Harmony Hub: Get current activity failed");
 		return false;
@@ -580,12 +580,12 @@ bool CHarmonyHub::HarmonyWebServiceLogin(const std::string strUserEmail, const s
 	return true;
 }
 
-int CHarmonyHub::ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket)
+bool CHarmonyHub::ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket)
 {
 	if(strHarmonyIPAddress.size() == 0 || harmonyPortNumber == 0 || harmonyPortNumber > 65535)
 	{
 		//errorString = "ConnectToHarmony : Empty Harmony IP Address or Port";
-		return 1;
+		return false;
 	}
 
 	harmonyCommunicationcsocket->connect(strHarmonyIPAddress.c_str(), harmonyPortNumber);
@@ -593,18 +593,18 @@ int CHarmonyHub::ConnectToHarmony(const std::string &strHarmonyIPAddress, const 
 	if (harmonyCommunicationcsocket->getState() != csocket::CONNECTED)
 	{
 		//errorString = "ConnectToHarmony : Unable to connect to specified IP Address on specified Port";
-		return 1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
-int CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword)
+bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword)
 {
 	if(communicationcsocket == NULL || strUserName.size() == 0 || strPassword.size() == 0)
 	{
 		//errorString = "StartCommunication : Invalid communication parameter(s) provided";
-		return 1;
+		return false;
 	} 
 
 	// Start communication
@@ -631,7 +631,7 @@ int CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::st
 	if(strData != "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>")
 	{
 		//errorString = "StartCommunication : connection error";
-		return 1;
+		return false;
 	} 
 
 	data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
@@ -642,21 +642,21 @@ int CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::st
 
 	strData = m_databuffer; /* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='057a30bd' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
 
-	return 0;
+	return true;
 }
 
-int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken)
+bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken)
 {
 	if(authorizationcsocket == NULL || m_szAuthorizationToken.size() == 0)
 	{
 		//errorString = "SwapAuthorizationToken : NULL csocket or empty authorization token provided";
-		return 1;
+		return false;
 	}
 
-	if(StartCommunication(authorizationcsocket, "guest", "gatorade.") != 0)
+	if(!StartCommunication(authorizationcsocket, "guest", "gatorade."))
 	{
 		//errorString = "SwapAuthorizationToken : Communication failure";
-		return 1;
+		return false;
 	}
 
 	std::string strData;
@@ -679,7 +679,7 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 	if(strData.find("<iq/>") != 0)
 	{
 		//errorString = "SwapAuthorizationToken : Invalid Harmony response";
-		return 1;  
+		return false;  
 	}
 
 	bool bIsDataReadable = false;
@@ -704,7 +704,7 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 	if(pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a session authorization token";
-		return 1;  
+		return false;  
 	}
 
 	m_szAuthorizationToken = strData.substr(pos + strIdentityTokenTag.size());
@@ -713,11 +713,11 @@ int CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::stri
 	if(pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a valid session authorization token";
-		return 1;  
+		return false;  
 	}
 	m_szAuthorizationToken = m_szAuthorizationToken.substr(0, pos);
 
-	return 0;
+	return true;
 }
 
 bool CHarmonyHub::SendPing()
@@ -725,7 +725,6 @@ bool CHarmonyHub::SendPing()
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	if (m_commandcsocket == NULL || m_szAuthorizationToken.size() == 0)
 	{
-		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
 		return false;
 	}
 	std::string strData;
@@ -766,14 +765,14 @@ bool CHarmonyHub::SendPing()
 	return (strData.find("errorcode='200'") != std::string::npos);
 }
 
-int CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary)
+bool CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	int pos;
 	if(m_commandcsocket== NULL || m_szAuthorizationToken.size() == 0)
 	{
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
-		return 1;
+		return false;
 
 	}
 
@@ -839,7 +838,7 @@ int CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string s
 			bIsDataReadable=false;
 	}
 	if (strData.empty())
-		return 1;
+		return false;
 
 	CheckIfChanging(strData);
 
@@ -854,7 +853,7 @@ int CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string s
 			{
 				strData = strData.substr(0, pos);
 				m_szResultString = strData;
-				return 0;
+				return true;
 			}
 		}
 		else
@@ -863,7 +862,7 @@ int CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string s
 			if (m_bIsChangingActivity)
 				m_szResultString = m_szCurActivityID; //changing, so no response from HH
 			else
-				return 1;
+				return false;
 		}
 	}
 	else if (strCommand == GET_CONFIG_COMMAND || strCommand == GET_CONFIG_COMMAND_RAW)
@@ -890,7 +889,7 @@ int CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string s
 
 		pos = strData.find("<![CDATA[");
 		if (pos == std::string::npos)
-			return 1;
+			return false;
 		strData=strData.substr(pos + 9);
 		pos = strData.find("]]>");
 		if (pos != std::string::npos)
@@ -902,7 +901,7 @@ int CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string s
 	{
 		m_szResultString = "";
 	}
-	return 0;
+	return true;
 }
 
 bool CHarmonyHub::CheckIfChanging(const std::string& strData)
@@ -1024,7 +1023,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 	return true;
 }
 
-int CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID)
+bool CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID)
 {
 	Action a;
 	const std::string commandTag = "\\\"command\\\":\\\"";
@@ -1041,7 +1040,7 @@ int CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>& 
 	std::string commandDeviceID = strAction.substr(deviceIDStart + deviceIdTag.size(), deviceIDEnd - deviceIDStart - deviceIdTag.size());
 	if(commandDeviceID != strDeviceID)
 	{
-		return 1;
+		return false;
 	}
 
 	int nameStart = deviceIDEnd + nameTag.size();
@@ -1057,16 +1056,16 @@ int CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>& 
 	a.m_strLabel = strAction.substr(labelStart, labelEnd - labelStart);
 
 	vecDeviceActions.push_back(a);
-	return 0;
+	return true;
 }
 
-int CHarmonyHub::ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID)
+bool CHarmonyHub::ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID)
 {
 	Function f;
 	int functionNameEnd = strFunction.find("\",\"function\":[{");
 	if(functionNameEnd == std::string::npos)
 	{
-		return 1;
+		return false;
 	}
 
 	f.m_strName = strFunction.substr(0, functionNameEnd);
@@ -1080,7 +1079,7 @@ int CHarmonyHub::ParseFunction(const std::string& strFunction, std::vector<Funct
 		int actionEnd = strFunction.find(labelTag, actionStart);
 		if(actionEnd == std::string::npos)
 		{
-			return 1;
+			return false;
 		}
 		actionEnd = strFunction.find("\"}", actionEnd + labelTag.size());
 
@@ -1092,6 +1091,6 @@ int CHarmonyHub::ParseFunction(const std::string& strFunction, std::vector<Funct
 
 	vecDeviceFunctions.push_back(f);
 
-	return 0;
+	return true;
 }
 
