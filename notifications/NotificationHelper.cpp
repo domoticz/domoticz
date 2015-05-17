@@ -9,6 +9,7 @@
 #include "NotificationEmail.h"
 #include "NotificationSMS.h"
 #include "NotificationHTTP.h"
+#include "NotificationKodi.h"
 #include <map>
 
 #if defined WIN32
@@ -26,6 +27,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationEmail());
 	AddNotifier(new CNotificationSMS());
 	AddNotifier(new CNotificationHTTP());
+	AddNotifier(new CNotificationKodi());
 	/* more notifiers can be added here */
 }
 
