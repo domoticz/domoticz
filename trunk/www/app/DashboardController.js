@@ -1254,6 +1254,7 @@ define(['app'], function (app) {
 								}
 								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
 									status=item.Data;
+									bigtext=item.Data;
 								}
 								else if (item.Type == "Energy") {
 									status=item.Data;
@@ -2983,7 +2984,8 @@ define(['app'], function (app) {
 								(item.SubType=="Current")||
 								(item.SubType=="Pressure")||
 								(item.SubType=="A/D")||
-								(item.SubType=="Sound Level")
+								(item.SubType=="Sound Level")||
+								((item.Type == "Current") || (item.Type == "Current/Energy"))
 							) {
 							xhtm+=item.Data;
 						}
