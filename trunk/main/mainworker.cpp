@@ -64,6 +64,7 @@
 #include "../hardware/RFLink.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
+#include "../hardware/SolarMaxTCP.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -600,6 +601,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_FRITZBOX:
 		//LAN
 		pHardware = new FritzboxTCP(ID, Address, Port);
+		break;
+	case HTYPE_SOLARMAXTCP:
+		//LAN
+		pHardware = new SolarMaxTCP(ID, Address, Port);
 		break;
 	case HTYPE_SolarEdgeTCP:
 		pHardware = new SolarEdgeTCP(ID, 22222,Address, Port);

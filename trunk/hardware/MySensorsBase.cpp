@@ -422,7 +422,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		}
 		else
 		{
-			SendTempSensor(cNode, pSensor->batValue, pSensor->floatValue);
+			SendTempSensor(cNode, pSensor->batValue, pSensor->floatValue,"Temp");
 		}
 	}
 	break;

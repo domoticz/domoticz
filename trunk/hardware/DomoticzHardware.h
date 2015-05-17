@@ -87,6 +87,7 @@ private:
 	friend class KMTronicBase;
 	friend class KMTronicSerial;
 	friend class KMTronicTCP;
+	friend class SolarMaxTCP;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
@@ -98,7 +99,7 @@ private:
 	void HandleHBCounter(const int iInterval);
 
 	//Sensor Helpers
-	void SendTempSensor(const int NodeID, const int BatteryLevel, const float temperature);
+	void SendTempSensor(const int NodeID, const int BatteryLevel, const float temperature, const std::string &defaultname);
 	void SendHumiditySensor(const int NodeID, const int BatteryLevel, const int humidity);
 	void SendBaroSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const int forecast);
 	void SendTempHumSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity);
