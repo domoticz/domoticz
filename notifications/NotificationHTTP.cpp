@@ -51,8 +51,8 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		destURL = stdreplace(destURL, "#FIELD3", _HTTPField3);
 		destURL = stdreplace(destURL, "#FIELD4", _HTTPField4);
 		destURL = stdreplace(destURL, "#TO", _HTTPTo);
-		destURL = stdreplace(destURL, "#SUBJECT", Subject);
-		destURL = stdreplace(destURL, "#MESSAGE", Text);
+		destURL = stdreplace(destURL, "#SUBJECT", CURLEncode::URLDecode(Subject));
+		destURL = stdreplace(destURL, "#MESSAGE", CURLEncode::URLDecode(Text));
 
 		std::string scriptname = "";
 		std::string scriptparams = "";

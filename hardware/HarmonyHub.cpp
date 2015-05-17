@@ -20,8 +20,7 @@ SOFTWARE.
 ===========
 Original source code from: http://sourceforge.net/projects/harmonyhubcontrol/
 Intergration in Domoticz done by: Jan ten Hove
-Cleanup: GizMoCuz (And still not done!)
-
+Cleanup and changes: GizMoCuz
 */
 
 
@@ -667,7 +666,7 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 	sendData.append(CONNECTION_ID);
 	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">token=");
 	sendData.append(m_szAuthorizationToken.c_str());
-	sendData.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
+	sendData.append(":name=foo#iOS8.3.0#iPhone</oa></iq>");
 
 	authorizationcsocket->write(sendData.c_str(), sendData.size());
 
@@ -735,7 +734,7 @@ bool CHarmonyHub::SendPing()
 	sendData.append(CONNECTION_ID);
 	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
 	sendData.append(m_szAuthorizationToken.c_str());
-	sendData.append(":name=foo#iOS6.0.1#iPhone</oa></iq>");
+	sendData.append(":name=foo#iOS8.3.0#iPhone</oa></iq>");
 
 	m_commandcsocket->write(sendData.c_str(), sendData.size());
 
