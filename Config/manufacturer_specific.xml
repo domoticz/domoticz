@@ -672,6 +672,10 @@
 		<Product type="2014" id="1401" name="ZL7101 Plug-in Dimmer Module"/>
 		<Product type="2017" id="1717" name="ZL7432 In-Wall Switch, Dual Relay"/>
 		<Product type="3001" id="0104" name="ZM1602 Main Operated Siren"/>
+		<Product type="2001" id="0101" name="ZD2102 US Door/Window Sensor" config="vision/zd2102.xml"/>
+		<Product type="2001" id="0102" name="ZD2102 AU Door/Window Sensor" config="vision/zd2102.xml"/>
+		<Product type="2001" id="0104" name="ZD2102 JP Door/Window Sensor" config="vision/zd2102.xml"/>
+		<Product type="2001" id="0105" name="ZD2102 EU Door/Window Sensor" config="vision/zd2102.xml"/>		
 	</Manufacturer>
 	<Manufacturer id="0115" name="Z-Wave.Me">
 		<Product type="0001" id="0001" name="Z-Wave USB Stick"/>

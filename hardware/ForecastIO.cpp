@@ -114,12 +114,20 @@ void CForecastIO::GetMeterDetails()
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
 	sURL << "https://api.forecast.io/forecast/" << m_APIKey << "/" << szLoc;
-	bool bret;
-	std::string szURL=sURL.str();
-	bret=HTTPClient::GET(szURL,sResult);
-	if (!bret)
+	try
 	{
-		_log.Log(LOG_ERROR,"ForecastIO: Error getting http data!");
+		bool bret;
+		std::string szURL = sURL.str();
+		bret = HTTPClient::GET(szURL, sResult);
+		if (!bret)
+		{
+			_log.Log(LOG_ERROR, "ForecastIO: Error getting http data!");
+			return;
+		}
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "ForecastIO: Error getting http data!");
 		return;
 	}
 
