@@ -5,7 +5,7 @@
 #include "../httpclient/UrlEncode.h"
 #include "../main/SQLHelper.h"
 
-CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
+CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), OPTIONS_NONE)
 {
 	SetupConfig(std::string("HTTPEnabled"), &m_IsEnabled);
 	SetupConfigBase64(std::string("HTTPField1"), _HTTPField1);
