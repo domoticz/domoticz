@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "localtime_r.h"
 
-time_t m_lasttime=0;
+time_t m_lasttime=time(NULL);
 
 #ifndef localtime_r
 struct tm *localtime_r(const time_t *timep, struct tm *result)
