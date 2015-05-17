@@ -145,8 +145,6 @@ bool MySensorsSerial::OpenSerialDevice()
 	//infile.open("D:\\MySensors.txt");
 	infile.open("D:\\log-gw.txt");
 
-	std::string orgstr;
-
 	if (!infile.is_open())
 		return false;
 	while (!infile.eof())
@@ -160,7 +158,7 @@ bool MySensorsSerial::OpenSerialDevice()
 			StringSplit(sLine, " ", results);
 			if (results.size() >= 7)
 			{
-				orgstr = sLine;
+				//std::string orgstr = sLine;
 				sLine = "";
 				sLine += results[2] + ";";
 				sLine += results[3] + ";";

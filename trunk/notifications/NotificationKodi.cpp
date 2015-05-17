@@ -18,9 +18,8 @@ CNotificationKodi::~CNotificationKodi()
 {
 }
 
-const char* CNotificationKodi::IconFile(const std::string &ExtraData)
+std::string CNotificationKodi::IconFile(const std::string &ExtraData)
 {
-	std::stringstream logline;
 #ifdef WIN32
 	std::string	szImageFile = szWWWFolder  + "\\images\\logo.png";
 #else
@@ -31,15 +30,10 @@ const char* CNotificationKodi::IconFile(const std::string &ExtraData)
 
 	if (!file_exist(szImageFile.c_str()))
 	{
-		logline << "File does not exist: " << szImageFile;
-		_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
-		return (const char*)NULL;
+		_log.Log(LOG_ERROR, "File does not exist: %s", szImageFile.c_str());
+		return std::string("");
 	}
-
-	logline << "Kodi Notification Image: " << szImageFile;
-	_log.Log(LOG_NORM, std::string(logline.str()).c_str());
-	
-	return szImageFile.c_str();
+	return szImageFile;
 }
 
 bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
@@ -76,7 +70,7 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 	logline << "Kodi Notification (" << _IPAddress << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text;
 	_log.Log(LOG_NORM, std::string(logline.str()).c_str());
 
-	CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, IconFile(ExtraData));
+	CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, IconFile(ExtraData).c_str());
 	if (!packet.Send(_Sock, _Address)) {
 		logline << "Error sending notification: " << _IPAddress << ":" << _Port;
 		_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
