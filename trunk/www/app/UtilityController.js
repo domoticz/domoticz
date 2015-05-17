@@ -638,7 +638,7 @@ define(['app'], function (app) {
 						}
 						
 						if (typeof item.Counter != 'undefined') {
-							if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
+							if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")|| (item.SubType == "Counter Incremental")) {
 								status=item.Counter;
 								bigtext=item.CounterToday;
 							}
@@ -905,7 +905,7 @@ define(['app'], function (app) {
 								xhtm+='-' + item.UsageDeliv;
 							}
 						}
-						else if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
+						else if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")|| (item.SubType == "Counter Incremental")) {
 						  xhtm+=item.CounterToday;
 						}
 						else if (item.Type == "Air Quality") {

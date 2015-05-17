@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "../main/Logger.h"
 #include "NotificationKodi.h"
-#include "Helper.h"
+#include "../main/Helper.h"
+#include "xmbcclient.h"
 
 extern std::string szWWWFolder;
 
@@ -53,7 +54,7 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 	_Sock = -1;
 	if (bMulticast) {
 		_Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-		setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, &_TTL, sizeof(_TTL));
+		setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, (const char*)&_TTL, sizeof(_TTL));
 	}
 	else {
 		_Sock = socket(AF_INET, SOCK_DGRAM, 0);

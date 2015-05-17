@@ -2,6 +2,7 @@
     <table class="display" id="uservariablestable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
             <tr>
+                <th width="30" align="left">Idx</th>
                 <th width="120" align="left" data-i18n="Variable name">Variable name</th>
 			    <th width="60" align="left" data-i18n="Variable type">Variable type</th>
                 <th width="120" align="left" data-i18n="Current value">Current value</th>
@@ -153,10 +154,11 @@ function RefreshUserVariablesTable()
 			var addId = oTable.fnAddData( {
 				"DT_RowId": item.idx,
 				"DT_ItemType": item.Type,
-				"0": item.Name,
-				"1": typeWording,
-				"2": item.Value,
-				"3": item.LastUpdate
+                                "0": item.idx,
+                                "1": item.Name,
+                                "2": typeWording,
+                                "3": item.Value,
+                                "4": item.LastUpdate
 			} );
         });
 	  }
@@ -189,9 +191,9 @@ function ShowUserVariables()
 					$.userVariableIdx=idx;	
 					$("#uservariablesedittable #uservariableupdate").attr("href", "javascript:AddLink('u')");
 					$("#uservariablesedittable #uservariabledelete").attr("href", "javascript:DeleteVariable(" + idx + ")");
-					$("#uservariablesedittable #uservariablename").val(data["0"]);
+					$("#uservariablesedittable #uservariablename").val(data["1"]);
 					$("#uservariablesedittable #uservariabletype").val(data["DT_ItemType"]);
-					$("#uservariablesedittable #uservariablevalue").val(data["2"]);
+					$("#uservariablesedittable #uservariablevalue").val(data["3"]);
 				}
 		});
 	  },    

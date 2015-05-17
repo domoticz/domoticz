@@ -3593,7 +3593,6 @@ namespace http {
 				}
 			}
 
-
 			std::string devname = "Unknown";
 			m_sql.UpdateValue(
 				iHWID,
@@ -5648,6 +5647,7 @@ namespace http {
 				}
 				if (
 					((dType == pTypeRFXMeter) && (dSubType == sTypeRFXMeterCount)) ||
+                    ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental)) ||
 					(dType == pTypeYouLess) ||
 					((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
 					)
@@ -8521,6 +8521,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) &&
+                                (!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
 								(dType != pTypeCURRENT) &&
 								(dType != pTypeCURRENTENERGY) &&
 								(dType != pTypeENERGY) &&
@@ -9442,6 +9443,105 @@ namespace http {
 							break;
 						}
 					}
+                    else if (dType == pTypeGeneral && dSubType == sTypeCounterIncremental)
+                    {
+                        float EnergyDivider = 1000.0f;
+                        float GasDivider = 100.0f;
+                        float WaterDivider = 100.0f;
+                        int tValue;
+                        if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+                        {
+                                EnergyDivider = float(tValue);
+                        }
+                        if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+                        {
+                                GasDivider = float(tValue);
+                        }
+                        if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+                        {
+                                WaterDivider = float(tValue);
+                        }
+
+                        //get value of today
+                        time_t now = mytime(NULL);
+                        struct tm tm1;
+                        localtime_r(&now, &tm1);
+
+                        struct tm ltime;
+                        ltime.tm_isdst = tm1.tm_isdst;
+                        ltime.tm_hour = 0;
+                        ltime.tm_min = 0;
+                        ltime.tm_sec = 0;
+                        ltime.tm_year = tm1.tm_year;
+                        ltime.tm_mon = tm1.tm_mon;
+                        ltime.tm_mday = tm1.tm_mday;
+
+                        char szDate[40];
+                        sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+                        std::vector<std::vector<std::string> > result2;
+                        strcpy(szTmp, "0");
+                        szQuery.clear();
+                        szQuery.str("");
+                        szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sd[0] << " AND Date>='" << szDate << "')";
+                        result2 = m_sql.query(szQuery.str());
+                        if (result2.size() > 0)
+                        {
+                            std::vector<std::string> sd2 = result2[0];
+
+                            unsigned long long total_min, total_max, total_real;
+
+                            std::stringstream s_str1(sd2[0]);
+                            s_str1 >> total_min;
+                            std::stringstream s_str2(sd2[1]);
+                            s_str2 >> total_max;
+                            total_real = total_max - total_min;
+                            sprintf(szTmp, "%llu", total_real);
+
+                            float musage = 0;
+                            switch (metertype)
+                            {
+                            case MTYPE_ENERGY:
+                                    musage = float(total_real) / EnergyDivider;
+                                    sprintf(szTmp, "%.03f kWh", musage);
+                                    break;
+                            case MTYPE_GAS:
+                                    musage = float(total_real) / GasDivider;
+                                    sprintf(szTmp, "%.03f m3", musage);
+                                    break;
+                            case MTYPE_WATER:
+                                    musage = float(total_real) / WaterDivider;
+                                    sprintf(szTmp, "%.03f m3", musage);
+                                    break;
+                            case MTYPE_COUNTER:
+                                    sprintf(szTmp, "%llu", total_real);
+                                    break;
+                            }
+                        }
+                        root["result"][ii]["Counter"] = sValue;
+                        root["result"][ii]["CounterToday"] = szTmp;
+                        root["result"][ii]["SwitchTypeVal"] = metertype;
+                        root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+                        float fvalue = static_cast<float>(atof(sValue.c_str()));
+                        switch (metertype)
+                        {
+                        case MTYPE_ENERGY:
+                                sprintf(szTmp, "%.03f kWh", fvalue / EnergyDivider);
+                                root["result"][ii]["Data"] = szTmp;
+                                root["result"][ii]["Counter"] = szTmp;
+                                break;
+                        case MTYPE_GAS:
+                                sprintf(szTmp, "%.03f m3", fvalue / GasDivider);
+                                root["result"][ii]["Data"] = szTmp;
+                                root["result"][ii]["Counter"] = szTmp;
+                                break;
+                        case MTYPE_WATER:
+                                sprintf(szTmp, "%.03f m3", fvalue / WaterDivider);
+                                root["result"][ii]["Data"] = szTmp;
+                                root["result"][ii]["Counter"] = szTmp;
+                                break;
+                        }
+                    }
 					else if (dType == pTypeYouLess)
 					{
 						float EnergyDivider = 1000.0f;
@@ -10789,6 +10889,10 @@ namespace http {
 			case 13:
 				//Distance (cm)
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeDistance, 12, 255, 0, "123.4", devname);
+				bCreated = true;
+				break;
+			case 14: //Counter Incremental
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeCounterIncremental, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP:

@@ -237,12 +237,12 @@ notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
+notifications/NotificationKodi.cpp
 notifications/NotificationNma.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
 notifications/NotificationPushalot.cpp
 notifications/NotificationSMS.cpp
-notifications/NotificationKodi.cpp
 smtpclient/SMTPClient.cpp
 tcpserver/TCPClient.cpp
 tcpserver/TCPServer.cpp

@@ -669,6 +669,9 @@
     <ClInclude Include="..\hardware\KMTronicTCP.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationKodi.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1078,6 +1081,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\KMTronicTCP.cpp">
       <Filter>Devices\KMTronic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationKodi.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

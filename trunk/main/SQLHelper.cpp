@@ -2350,13 +2350,28 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		struct tm ltime;
 		localtime_r(&now,&ltime);
 
-		sprintf(szTmp,
-			"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
-			"WHERE (ID = %llu)",
-			signallevel,batterylevel,
-			nValue,sValue,
-			ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
-			ulID);
+        //~ use different update queries based on the device type
+        if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
+        {
+			sprintf(szTmp,
+				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue= nValue + %d, sValue= sValue + '%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
+				"WHERE (ID = %llu)",
+				signallevel,batterylevel,
+				nValue,sValue,
+				ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				ulID);
+        }
+		else
+		{
+			sprintf(szTmp,
+				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
+				"WHERE (ID = %llu)",
+				signallevel, batterylevel,
+				nValue, sValue,
+				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+				ulID);
+		}
+
 		result = query(szTmp);
 	}
 
@@ -4182,7 +4197,8 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeCurrent
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeSoundLevel
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeDistance
-		"(Type=%d AND SubType=%d)"	  //pTypeGeneral,sTypePressure
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypePressure
+		"(Type=%d AND SubType=%d)"     //pTypeGeneral,sTypeCounterIncremental
 		")",
 		pTypeRFXMeter,
 		pTypeP1Gas,
@@ -4204,7 +4220,8 @@ void CSQLHelper::UpdateMeter()
 		pTypeGeneral, sTypeCurrent,
 		pTypeGeneral, sTypeSoundLevel,
 		pTypeGeneral, sTypeDistance,
-		pTypeGeneral, sTypePressure
+		pTypeGeneral, sTypePressure,
+		pTypeGeneral, sTypeCounterIncremental
 		);
 	result=query(szTmp);
 	if (result.size()>0)
@@ -4330,6 +4347,12 @@ void CSQLHelper::UpdateMeter()
 				sValue=szTmp;
 			}
 			else if (dType==pTypeRFXSensor)
+			{
+				double fValue=atof(sValue.c_str());
+				sprintf(szTmp,"%d",int(fValue));
+				sValue=szTmp;
+			}
+			else if ((dType==pTypeGeneral) && (dSubType == sTypeCounterIncremental))
 			{
 				double fValue=atof(sValue.c_str());
 				sprintf(szTmp,"%d",int(fValue));

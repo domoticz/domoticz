@@ -144,7 +144,7 @@ public:
   static unsigned int GetUniqueIdentifier()
   {
     static time_t id = time(NULL);
-    return id;
+	return (unsigned int)id;
   }
 
   static void Clean()
@@ -310,7 +310,7 @@ public:
 
     m_Payload.push_back('\0');
 
-    m_Payload.push_back(m_IconType);
+    m_Payload.push_back((const char)m_IconType);
 
     m_Payload.push_back(0);
     m_Payload.push_back('\0');
@@ -345,11 +345,11 @@ public:
     if (file.is_open())
     {
       size = file.tellg();
-      m_IconData = new char [size];
+      m_IconData = new char[(unsigned int)size];
       file.seekg (0, std::ios::beg);
       file.read (m_IconData, size);
       file.close();
-      m_IconSize = size;
+      m_IconSize = (unsigned int)size;
     }
     else
     {
@@ -396,7 +396,7 @@ public:
 
     m_Payload.push_back('\0');
 
-    m_Payload.push_back(m_IconType);
+    m_Payload.push_back((unsigned char)m_IconType);
 
     for (int i = 0; i < 4; i++)
       m_Payload.push_back(0);
@@ -435,11 +435,11 @@ public:
     if (file.is_open())
     {
       size = file.tellg();
-      m_IconData = new char [size];
+      m_IconData = new char[(unsigned int)size];
       file.seekg (0, std::ios::beg);
       file.read (m_IconData, size);
       file.close();
-      m_IconSize = size;
+      m_IconSize = (unsigned int)size;
     }
     else
       m_IconType = ICON_NONE;
