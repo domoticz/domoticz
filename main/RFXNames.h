@@ -103,6 +103,7 @@ enum _eHardwareTypes {
 	HTYPE_RFLINK,				//46
 	HTYPE_KMTronicUSB,			//47
 	HTYPE_KMTronicTCP,			//48
+	HTYPE_SOLARMAXTCP,			//49
 	HTYPE_END
 };
 

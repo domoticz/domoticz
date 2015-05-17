@@ -207,6 +207,9 @@
     <Filter Include="Devices\KMTronic">
       <UniqueIdentifier>{401dcf9b-b8c2-49b9-9a03-67746e942b13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\SolarMax">
+      <UniqueIdentifier>{9a6a8770-2ce3-4d71-bc5b-6e2023e55429}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -672,6 +675,9 @@
     <ClInclude Include="..\notifications\NotificationKodi.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\SolarMaxTCP.h">
+      <Filter>Devices\SolarMax</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1084,6 +1090,9 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationKodi.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\SolarMaxTCP.cpp">
+      <Filter>Devices\SolarMax</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

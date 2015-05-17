@@ -16,7 +16,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}; 			
 			if (permissionList.rights>=0) {
 				EnableDisableTabs();
-				CheckForUpdate(false);
+				//CheckForUpdate(false);
 			}
 			$rootScope.$broadcast('permissionsChanged')
 		  },

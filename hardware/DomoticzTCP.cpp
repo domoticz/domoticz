@@ -2,8 +2,6 @@
 #include "DomoticzTCP.h"
 #include "../main/Logger.h"
 #include "../main/Helper.h"
-//#include <boost/bind.hpp>
-//#include <boost/asio.hpp>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
