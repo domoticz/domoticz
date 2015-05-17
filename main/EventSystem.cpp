@@ -431,7 +431,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isUtility = true;
 			break;
 		case pTypeENERGY:
-			if (splitresults.size()==2)
+			if (splitresults.size() == 2)
 				utilityval = static_cast<float>(atof(splitresults[1].c_str()));
 			else
 				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
@@ -454,44 +454,108 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isUtility = true;
 			break;
 		case pTypeGeneral:
+		{
+			if (sitem.subType == sTypeVisibility)
 			{
-				if (sitem.subType == sTypeVisibility)
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			if (sitem.subType == sTypeDistance)
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			else if (sitem.subType == sTypeSolarRadiation)
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			else if (sitem.subType == sTypePercentage)
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			else if (sitem.subType == sTypeVoltage)
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			else if (sitem.subType == sTypeCurrent)
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			else if (sitem.subType == sTypeSetPoint)
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			else if (sitem.subType == sTypeCounterIncremental)
+			{
+				//get value of today
+				time_t now = mytime(NULL);
+				struct tm tm1;
+				localtime_r(&now, &tm1);
+
+				struct tm ltime;
+				ltime.tm_isdst = tm1.tm_isdst;
+				ltime.tm_hour = 0;
+				ltime.tm_min = 0;
+				ltime.tm_sec = 0;
+				ltime.tm_year = tm1.tm_year;
+				ltime.tm_mon = tm1.tm_mon;
+				ltime.tm_mday = tm1.tm_mday;
+
+				char szDate[40];
+				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+				std::vector<std::vector<std::string> > result2;
+				std::stringstream szQuery;
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
+				result2 = m_sql.query(szQuery.str());
+				if (result2.size() > 0)
 				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				if (sitem.subType == sTypeDistance)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeSolarRadiation)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypePercentage)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeVoltage)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeCurrent)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeSetPoint)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					std::vector<std::string> sd2 = result2[0];
+
+					unsigned long long total_min, total_max, total_real;
+
+					std::stringstream s_str1(sd2[0]);
+					s_str1 >> total_min;
+					std::stringstream s_str2(sd2[1]);
+					s_str2 >> total_max;
+					total_real = total_max - total_min;
+
+					char szTmp[100];
+					sprintf(szTmp, "%llu", total_real);
+
+					float musage = 0;
+					_eMeterType metertype = (_eMeterType)sitem.switchtype;
+					switch (metertype)
+					{
+					case MTYPE_ENERGY:
+						musage = float(total_real) / EnergyDivider;
+						sprintf(szTmp, "%.03f kWh", musage);
+						break;
+					case MTYPE_GAS:
+						musage = float(total_real) / GasDivider;
+						sprintf(szTmp, "%.02f m3", musage);
+						break;
+					case MTYPE_WATER:
+						musage = float(total_real) / WaterDivider;
+						sprintf(szTmp, "%.02f m3", musage);
+						break;
+					case MTYPE_COUNTER:
+						sprintf(szTmp, "%llu", total_real);
+						break;
+					}
+					utilityval = static_cast<float>(atof(szTmp));
 					isUtility = true;
 				}
 			}
-			break;
+		}
+		break;
 		case pTypeRAIN:
 			if (splitresults.size() == 2)
 			{

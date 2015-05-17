@@ -1,6 +1,5 @@
 #pragma once
 #include "NotificationBase.h"
-#include "xmbcclient.h"
 
 class CNotificationKodi : public CNotificationBase {
 public:
