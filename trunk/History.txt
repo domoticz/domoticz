@@ -99,6 +99,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: SolarMax inverter with Lan interface
 - Implemented: Current sensors now also display actual state in caption
 - Changed: Logitech Harmony Hub code
+- Fixed: HTTP Notification (Script) stop url encoding subject/message
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
