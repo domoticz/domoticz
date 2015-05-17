@@ -218,7 +218,6 @@ void CHarmonyHub::Do_Work()
 			{
 				_log.Log(LOG_STATUS, "Harmony Hub: Error pinging server.. Resetting connection.");
 				Logout();
-				continue;
 			}
 			continue;
 		}
@@ -247,7 +246,6 @@ void CHarmonyHub::Do_Work()
 			}
 			if (!strData.empty())
 				CheckIfChanging(strData);
-
 		}
 	}
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
@@ -764,11 +762,8 @@ bool CHarmonyHub::SendPing()
 	}
 	if (strData.empty())
 		return false;
-	if (strData.find("errorcode='200'")!=std::string::npos)
-	{
-		CheckIfChanging(strData);
-	}
-	return true;
+	CheckIfChanging(strData);
+	return (strData.find("errorcode='200'") != std::string::npos);
 }
 
 int CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary)
