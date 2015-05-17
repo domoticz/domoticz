@@ -173,7 +173,7 @@ void CDomoticzHardwareBase::SendTempSensor(const int NodeID, const int BatteryLe
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP5) << ")";
-		result = m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 
 }
@@ -376,7 +376,7 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-		result = m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -542,7 +542,7 @@ void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const int ChildI
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
-		result = m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -595,7 +595,7 @@ void CDomoticzHardwareBase::SendCurrentSensor(const int NodeID, const int Batter
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeCURRENT) << ") AND (Subtype==" << int(sTypeELEC1) << ")";
-		result = m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -628,7 +628,7 @@ void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int Chi
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-		result = m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 }
 

@@ -834,12 +834,12 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				light_command = light2_sOn;
 			}
 
-			if ((pCmd->LIGHTING2.cmnd == light2_sOn) || (pCmd->LIGHTING2.cmnd == light2_sOff))
+			if ((light_command == light2_sOn) || (light_command == light2_sOff))
 			{
-				std::string lState = (pCmd->LIGHTING2.cmnd == light2_sOn) ? "1" : "0";
+				std::string lState = (light_command == light2_sOn) ? "1" : "0";
 				SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
 			}
-			else if (pCmd->LIGHTING2.cmnd == light2_sSetLevel)
+			else if (light_command == light2_sSetLevel)
 			{
 				float fvalue = (100.0f / 15.0f)*float(pCmd->LIGHTING2.level);
 				if (fvalue > 100.0f)
@@ -880,7 +880,7 @@ void MySensorsBase::UpdateVar(const int NodeID, const int ChildID, const int Var
 		sstr.clear();
 		sstr.str("");
 		sstr << "UPDATE MySensorsVars SET [Value]='" << svalue << "' WHERE (ROWID = " << result[0][0] << ")";
-		result = m_sql.query(sstr.str());
+		m_sql.query(sstr.str());
 	}
 
 }
@@ -921,7 +921,6 @@ void MySensorsBase::ParseLine()
 	if (results.size()>=6)
 		payload=results[5];
 
-	std::string retMessage;
 	std::stringstream sstr;
 #ifdef _DEBUG
 	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());

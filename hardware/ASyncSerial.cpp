@@ -42,7 +42,7 @@ class AsyncSerialImpl: private boost::noncopyable
 {
 public:
     AsyncSerialImpl(): io(), port(io), backgroundThread(), open(false),
-            error(false) {}
+		error(false), writeBufferSize(0) {}
 
     boost::asio::io_service io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
