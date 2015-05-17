@@ -9729,6 +9729,8 @@ namespace http {
 
 						unsigned long long powerusage = powerusage1 + powerusage2;
 						unsigned long long powerdeliv = powerdeliv1 + powerdeliv2;
+						if (powerdeliv < 2)
+							powerdeliv = 0;
 
 						float musage = 0;
 
@@ -9884,10 +9886,24 @@ namespace http {
 							m_sql.GetPreferencesVar("CM113DisplayType", displaytype);
 							m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
+							double val1 = atof(strarray[0].c_str());
+							double val2 = atof(strarray[1].c_str());
+							double val3 = atof(strarray[2].c_str());
+
 							if (displaytype == 0)
-								sprintf(szData, "%.1f A, %.1f A, %.1f A", atof(strarray[0].c_str()), atof(strarray[1].c_str()), atof(strarray[2].c_str()));
+							{
+								if ((val2 == 0) && (val3 == 0))
+									sprintf(szData, "%.1f A", val1);
+								else
+									sprintf(szData, "%.1f A, %.1f A, %.1f A", val1, val2, val3);
+							}
 							else
-								sprintf(szData, "%d Watt, %d Watt, %d Watt", int(atof(strarray[0].c_str())*voltage), int(atof(strarray[1].c_str())*voltage), int(atof(strarray[2].c_str())*voltage));
+							{
+								if ((val2 == 0) && (val3 == 0))
+									sprintf(szData, "%d Watt, %d Watt, %d Watt", int(val1*voltage), int(val2*voltage), int(val3*voltage));
+								else
+									sprintf(szData, "%d Watt", int(val1*voltage));
+							}
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["displaytype"] = displaytype;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;

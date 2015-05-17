@@ -648,6 +648,7 @@ define(['app'], function (app) {
 						}
 						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 						  status=item.Data;
+						  bigtext=item.Data;
 						}
 						else if (item.Type == "Energy") {
 							status=item.Data;
@@ -909,6 +910,9 @@ define(['app'], function (app) {
 						  xhtm+=item.CounterToday;
 						}
 						else if (item.Type == "Air Quality") {
+						  xhtm+=item.Data;
+						}
+						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
 						  xhtm+=item.Data;
 						}
 						else if (item.SubType == "Percentage") {
