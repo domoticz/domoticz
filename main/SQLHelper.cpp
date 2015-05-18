@@ -1691,8 +1691,6 @@ bool CSQLHelper::OpenDatabase()
 		m_sql.UpdatePreferencesVar("HTTPURL", sencoded);
 	}
 
-	CleanupShortLog();
-
 	//Start background thread
 	if (!StartThread())
 		return false;
