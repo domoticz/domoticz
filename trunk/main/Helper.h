@@ -30,3 +30,5 @@ double ConvertTemperature(const double tValue, const unsigned char tSign);
 std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
 
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
+
+void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue = 100.0);

@@ -511,6 +511,47 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, cons
 	}
 }
 
+void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const double Level, const bool bIsRGBW, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	int level = int(Level);
+
+	int dID = (NodeID << 8) | ChildID;
+
+	char szIdx[10];
+	sprintf(szIdx, "%08X", dID);
+
+	int subType = (bIsRGBW == true) ? sTypeLimitlessRGBW : sTypeLimitlessRGB;
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Type==" << int(pTypeLimitlessLights) << ") AND (Subtype==" << subType << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+	//Send as LimitlessLight
+	_tLimitlessLights lcmd;
+	lcmd.id = dID;
+	lcmd.subtype = subType;
+	if (level == 0)
+		lcmd.command = Limitless_LedOff;
+	else
+		lcmd.command = Limitless_LedOn;
+	lcmd.value = level;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Type==" << int(pTypeLimitlessLights) << ") AND (Subtype==" << subType << ")";
+		m_sql.query(szQuery.str());
+	}
+}
+
 void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname)
 {
 	bool bDeviceExits = true;

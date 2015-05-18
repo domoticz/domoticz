@@ -58,6 +58,14 @@ const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserRever
 	{ V_DUST_LEVEL, "V_DUST_LEVEL" },
 	{ V_VOLTAGE, "V_VOLTAGE" },
 	{ V_CURRENT, "V_CURRENT" },
+	{ V_RGB, "V_RGB" },
+	{ V_RGBW, "V_RGBW" },
+	{ V_ID, "V_ID" },
+	{ V_LIGHT_LEVEL_LUX, "V_LIGHT_LEVEL_LUX" },
+	{ V_UNIT_PREFIX, "V_UNIT_PREFIX" },
+	{ V_SOUND_DB, "V_SOUND_DB" },
+	{ V_VIBRATION_HZ, "V_VIBRATION_HZ" },
+	{ V_ENCODER_VALUE, "V_ENCODER_VALUE" },
 	{ 0, NULL }
 };
 
@@ -575,6 +583,14 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 			UpdateSwitch(pSensor->nodeID, pSensor->childID, (level != 0), level, "Light");
 		}
 		break;
+	case V_RGB:
+		//RRGGBB
+		SendRGBWSwitch(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->intvalue, false, "RGB Light");
+		break;
+	case V_RGBW:
+		//RRGGBBWW
+		SendRGBWSwitch(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->intvalue, true, "RGBW Light");
+		break;
 	case V_LIGHT_LEVEL:
 		{
 			_tLightMeter lmeter;
@@ -797,6 +813,11 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 		sSwitchValue = (nvalue == light2_sOn) ? "1" : "0";
 		return true;
 	}
+	else if ((sub_type == V_RGB) || (sub_type == V_RGBW))
+	{
+		sSwitchValue = (nvalue == Limitless_LedOn) ? "1" : "0";
+		return true;
+	}
 
 	int slevel = atoi(result[0][2].c_str());
 	std::stringstream sstr;
@@ -852,6 +873,40 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 		}
 		else {
+			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
+			return false;
+		}
+	}
+	else if (pCmd->LIGHTING2.packettype == pTypeLimitlessLights)
+	{
+		//RGW/RGBW command
+		_tLimitlessLights *pLed = (_tLimitlessLights *)pdata;
+		unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
+		unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
+		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
+		unsigned char ID4 = (unsigned char)pLed->id & 0x000000FF;
+
+		int node_id = (ID1 << 8) | ID2;
+		int child_sensor_id = (ID3 << 8) | ID4;
+
+		if (_tMySensorNode *pNode = FindNode(node_id))
+		{
+			std::string szRGB = "000000";
+			int light_command = pLed->command;
+			if (light_command == Limitless_SetRGBColour)
+			{
+				int red, green, blue;
+				float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
+				hue2rgb(cHue, red, green, blue, 255.0);
+				char szTmp[20];
+				sprintf(szTmp, "%02X%02X%02X", red, green, blue);
+				szRGB = szTmp;
+				bool bIsRGBW = (FindSensor(pNode, child_sensor_id, V_RGBW)!=NULL);
+				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW==true)?V_RGBW:V_RGB, szRGB);
+			}
+		}
+		else
+		{
 			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
 			return false;
 		}
@@ -1062,6 +1117,14 @@ void MySensorsBase::ParseLine()
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
 			break;
+		case V_RGB:
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_RGBW:
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
 		case V_DIMMER:
 			//	Dimmer value. 0 - 100 %
 			pSensor->intvalue = atoi(payload.c_str());
@@ -1189,6 +1252,14 @@ void MySensorsBase::ParseLine()
 			sub_type = V_LIGHT;
 			bDoAdd = true;
 			break;
+		case S_RGB_LIGHT:
+			sub_type = V_RGBW; //should this be RGB/RGBW
+			bDoAdd = true;
+			break;
+		case S_COLOR_SENSOR:
+			sub_type = V_RGB;
+			bDoAdd = true;
+			break;
 		}
 		if (!bDoAdd)
 			return;
@@ -1219,14 +1290,17 @@ void MySensorsBase::ParseLine()
 		pSensor->devType = (_eSetType)sub_type;
 		pSensor->bValidValue = false;
 
-		if (sub_type == V_LIGHT)
+		if ((sub_type == V_LIGHT) || (sub_type == V_RGB) || (sub_type == V_RGBW))
 		{
 			//Check if switch is already in the system, if not add it
 			std::string sSwitchValue;
 			if (!GetSwitchValue(node_id, child_sensor_id, sub_type, sSwitchValue))
 			{
 				//Add it to the system
-				UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
+				if (sub_type == V_LIGHT)
+					UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
+				else
+					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, (sub_type == V_RGBW), (sub_type == V_RGBW) ? "RGBW Light" : "RGB Light");
 			}
 		}
 	}
@@ -1238,6 +1312,8 @@ void MySensorsBase::ParseLine()
 		{
 		case V_LIGHT:
 		case V_DIMMER:
+		case V_RGB:
+		case V_RGBW:
 			if (GetSwitchValue(node_id, child_sensor_id, sub_type, tmpstr))
 				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;

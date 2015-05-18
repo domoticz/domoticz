@@ -44,7 +44,15 @@ public:
 		S_AIR_QUALITY=22,		// Air quality sensor e.g.MQ - 2
 		S_CUSTOM=23,			// Use this for custom sensors where no other fits.
 		S_DUST=24,				// Dust level sensor
-		S_SCENE_CONTROLLER=25	// Scene controller device
+		S_SCENE_CONTROLLER=25,	// Scene controller device
+		S_RGB_LIGHT=26,			// Send data using V_RGB or V_RGBW 
+		S_COLOR_SENSOR=27,		// Send data using V_RGB
+		S_MULTIMETER=28,		// V_VOLTAGE, V_CURRENT, V_IMPEDANCE 
+		S_SPRINKLER=29,			// V_TRIPPED, V_ARMED
+		S_WATER_LEAK=30,		// V_TRIPPED, V_ARMED
+		S_SOUND=31,				// V_TRIPPED, V_ARMED, V_SOUND_DB
+		S_VIBRATION=32,			// V_TRIPPED, V_ARMED, V_VIBRATION_HZ 
+		S_ROTARY_ENCODER=33,	// V_ENCODER_VALUE
 	};
 
 	enum _eSetType
@@ -89,6 +97,14 @@ public:
 		V_DUST_LEVEL = 37,	//	Dust level
 		V_VOLTAGE = 38,		//	Voltage level
 		V_CURRENT = 39,		//	Current level
+		V_RGB = 40, 		// S_RGB_LIGHT, S_COLOR_SENSOR.  (RRGGBB)
+		V_RGBW = 41,		// S_RGB_LIGHT (RRGGBBWW)
+		V_ID = 42,			// Used for reporting the sensor internal ids (E.g. DS1820b). 
+		V_LIGHT_LEVEL_LUX = 43,  // S_LIGHT, Light level in lux
+		V_UNIT_PREFIX = 44, // Allows sensors to send in a string representing the 
+		V_SOUND_DB = 45,	// S_SOUND sound level in db
+		V_VIBRATION_HZ = 46, // S_VIBRATION vibration i Hz
+		V_ENCODER_VALUE = 47, // S_ROTARY_ENCODER. Rotary encoder value. 
 	};
 
 	enum _eInternalType
