@@ -1691,6 +1691,8 @@ bool CSQLHelper::OpenDatabase()
 		m_sql.UpdatePreferencesVar("HTTPURL", sencoded);
 	}
 
+	CleanupShortLog();
+
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -5586,28 +5588,36 @@ void CSQLHelper::CleanupShortLog()
 
 	    sprintf(szDateStr,"datetime('now','-%d day', 'localtime')",n5MinuteHistoryDays);
 
-	    sprintf(szTmp,"DELETE FROM Temperature WHERE (Date<%s)",szDateStr);
+		std::vector<std::vector<std::string> > result;
+		std::string szHelper = "SELECT " + std::string(szDateStr);
+		result = query(szHelper);
+		if (result.size() < 1)
+			return;
+		std::string finalDateTime = result[0][0].c_str();
+		//_log.Log(LOG_STATUS, "Cleaning up shortlog older then %s", finalDateTime.c_str());
+
+		sprintf(szTmp, "DELETE FROM Temperature WHERE (Date<'%s')", finalDateTime.c_str());
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Rain WHERE (Date<%s)",szDateStr);
+		sprintf(szTmp, "DELETE FROM Rain WHERE (Date<'%s')", finalDateTime.c_str());
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Wind WHERE (Date<%s)",szDateStr);
+		sprintf(szTmp, "DELETE FROM Wind WHERE (Date<'%s')", finalDateTime.c_str());
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM UV WHERE (Date<%s)",szDateStr);
+		sprintf(szTmp, "DELETE FROM UV WHERE (Date<'%s')", finalDateTime.c_str());
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM Meter WHERE (Date<%s)",szDateStr);
+		sprintf(szTmp, "DELETE FROM Meter WHERE (Date<'%s')", finalDateTime.c_str());
 	    query(szTmp);
 
-	    sprintf(szTmp,"DELETE FROM MultiMeter WHERE (Date<%s)",szDateStr);
+		sprintf(szTmp, "DELETE FROM MultiMeter WHERE (Date<'%s')", finalDateTime.c_str());
 	    query(szTmp);
 
-		sprintf(szTmp,"DELETE FROM Percentage WHERE (Date<%s)",szDateStr);
+		sprintf(szTmp, "DELETE FROM Percentage WHERE (Date<'%s')", finalDateTime.c_str());
 		query(szTmp);
 	
-		sprintf(szTmp,"DELETE FROM Fan WHERE (Date<%s)",szDateStr);
+		sprintf(szTmp, "DELETE FROM Fan WHERE (Date<'%s')", finalDateTime.c_str());
 		query(szTmp);
 	}
 }
