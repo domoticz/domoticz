@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+	<!-- COMMAND_CLASS_THERMOSTAT_SETPOINT get is not supported -->
+	<CommandClass id="67" base="0" getsupported="false"/>
+
+	<!-- The thermostat does not properly report its operating modes -->
+	<CommandClass id="64" name="COMMAND_CLASS_THERMOSTAT_MODE" version="1" request_flags="4" create_vars="true">
+		<Value type="list" genre="user" instance="1" index="0" label="Mode" units="" read_only="false" write_only="false" min="0" max="0" value="0">
+			<Item label="Off" value="0" />
+			<Item label="Heat" value="1" />
+			<Item label="Cool" value="2" />
+			<Item label="Resume" value="5" />
+			<Item label="Fan Only" value="6" />
+			<Item label="Dry Air" value="8" />
+			<Item label="Auto Changeover" value="10" />
+		</Value>
+		<SupportedModes>
+			<Mode index="0" label="Off" />
+			<Mode index="1" label="Heat" />
+			<Mode index="2" label="Cool" />
+			<Mode index="5" label="Resume" />
+			<Mode index="6" label="Fan Only" />
+			<Mode index="8" label="Dry Air" />
+			<Mode index="10" label="Auto Changeover" />
+		</SupportedModes>
+	</CommandClass>
+  
+	<CommandClass id="112">
+		<Value type="int" index="25" genre="config" label="Indicate a location for IR code  learning and start learning" min="0" max="22" value="0">
+			<Help>In case none of the code on the code list works for the targeted air conditioner, user can use IR code learning function. See manual at section &quot;IR Code Learning&quot; for a description of the procedure. Value 0-22</Help>
+		</Value>
+		<Value type="int" index="26" genre="config" label="Learning status register" value="0">
+			<Help>Note: The status value 0x01 and 0x04 will be reset to 0 when the ZXT-120 receive a get command to this parameter. Value 1  idle - this IR channel is idle (default). Value 2  OK - the latest learning process successful and completed. Value 3  Learning - the ZXT- 120 is busy processing previous learning request. Value 4  Failed - the latest learning request failed.</Help>
+		</Value>
+		<Value type="int" index="27" genre="config" label="IR code number for built-in  code library" value="0">
+			<Help>Look up the code list of ZXT-120 according to your AC brand.</Help>
+		</Value>
+		<Value type="int" index="28" genre="config" label="External IR Emitter power  level" value="0">
+			<Help>Value 0 normal power mode. Value 255 high power mode (default)</Help>
+		</Value>
+		<Value type="int" index="32" genre="config" label="Surround IR control" value="0">
+			<Help>Value 0 disable Surround IR Emitters. value 255 enable Surround IR Emitters (default).</Help>
+		</Value>
+		<Value type="int" index="33" genre="config" label="Surround IR control" value="0">
+			<Help>Value 0 SWING OFF. Value 255 SWING AUTO (Default).</Help>
+		</Value>
+	</CommandClass>
+
+</Product>

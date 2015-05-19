@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneWireDomoticzService", "OneWireDomoticzService\OneWireDomoticzService.csproj", "{42AA774B-13E6-4333-897E-D3D98443E306}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ServiceInstaller", "Installer\Installer.vdproj", "{0A40F2A9-AB28-487B-A82F-2411DEAB95A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{42AA774B-13E6-4333-897E-D3D98443E306}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42AA774B-13E6-4333-897E-D3D98443E306}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42AA774B-13E6-4333-897E-D3D98443E306}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42AA774B-13E6-4333-897E-D3D98443E306}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A40F2A9-AB28-487B-A82F-2411DEAB95A7}.Debug|Any CPU.ActiveCfg = Debug
+		{0A40F2A9-AB28-487B-A82F-2411DEAB95A7}.Debug|Any CPU.Build.0 = Debug
+		{0A40F2A9-AB28-487B-A82F-2411DEAB95A7}.Release|Any CPU.ActiveCfg = Release
+		{0A40F2A9-AB28-487B-A82F-2411DEAB95A7}.Release|Any CPU.Build.0 = Release
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

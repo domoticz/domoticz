@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="4" genre="config" label="Orientation" units="" min="0" max="1" value="0">
+		  <Help>
+		     The orientation of the ON/OFF on the rocker switch can be inverted by changing the configuration item from 0 to 1
+		  </Help>
+		</Value>
+		<Value type="byte" index="9" genre="config" label="Levels" units="" min="1" max="99" value="1">
+		  <Help>
+		    indicates the number of levels the lighting will change when the timer runs out
+		  </Help>
+		</Value>
+		<Value type="byte" index="10" genre="config" label="duration" units="10 ms" min="1" max="255" value="3">
+		  <Help>
+		    indicates the time duration of each level.  The resolution is 10 miliseconds.  for example, a default value of 3 means the timer runs out every 30 milliseconds.
+		  </Help>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+        		<Group index="1" max_associations="5" label="Group #1 for lifeline communications. Max associations=5.  Lifeline association only supports the manual reset event." auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

@@ -1,0 +1,22 @@
+<div id="iconsmain">
+	<h3 data-i18n="Custom Icons">Custom Icons</h3>
+	<div class="iconcell iconlist" style="height: 270px; width: 604px;">
+		<div class="iconlistitem" data-ng-repeat="icon in iconset | orderBy:['name']" ng-class="{iconlistitemselected: icon.selected }" ng-click="OnIconSelected(icon)">
+			<img ng-src="{{icon.IconFile48On}}">
+			 <h3>{{icon.Title}}</h3>
+			 <p>{{icon.Description}}</p>
+		</div>
+	</div>
+	<button type="button" class="btn btn-danger" ng-click="DeleteIcon()" ng-disabled="selectedIcon.length==0" data-i18n="Delete">Delete</button>
+	<br>
+	<br>
+	<div>
+		<dl>
+		<dt><label for="fileupload"><span data-i18n="Add New Icon Set">Add New Icon Set</span>:</label></dt>
+		<dd>
+			<input name="fileupload" id="fileupload" maxlength="409600" value="" class="inputbox autowidth" file-model="myFile" type="file" accept=".zip"/>
+			<button class="btn btn-info" ng-click="UploadIconSet()" data-i18n="Upload">Upload</button>
+		</dd>
+		</dl>
+	</div>
+</div>

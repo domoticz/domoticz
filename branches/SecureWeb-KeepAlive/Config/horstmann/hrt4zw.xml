@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- The thermostat does not properly report its operating modes -->
+  <CommandClass id="64">
+    <SupportedModes>
+      <Mode index="0" label="Off" />
+      <Mode index="1" label="Heat" />
+    </SupportedModes>
+  </CommandClass>
+
+  <!-- This thermostat's setpoint descriptions are 0 based, not 1 -->
+  <CommandClass id="67" base="0" />
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" index="1" genre="config" label="Enable Temperature sensor reading" value="0">
+      <Help>
+        0-127 = Disabled.
+        128-255 = Enabled.
+      </Help>
+    </Value>
+    <Value type="byte" index="2" genre="config" label="Temperature Scale"  value="0">
+      <Help>
+        0-127 = Celsius.
+        128-255 = Fahrenheit.
+      </Help>
+    </Value>
+    <Value type="byte" index="3" genre="config" label="Temperature Delta T" value="10">
+      <Help>
+        Delta T in steps of 0.1 degree.
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <!-- Groups and attributes based on http://www.pepper1.net/zwavedb/device/59 -->
+    <Associations num_groups="1">
+      <Group index="1" max_associations="4" label="Thermostat Mode Set" auto="true"/>
+      <Group index="2" max_associations="4" label="Binary Switch Set" auto="true"/>
+      <Group index="3" max_associations="4" label="Unsolicited Battery Level Reports" auto="true"/>
+      <Group index="4" max_associations="4" label="Thermostat Set Point Reports" auto="true"/>
+      <Group index="5" max_associations="4" label="Unsolicited Sensor Multilevel Reports" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

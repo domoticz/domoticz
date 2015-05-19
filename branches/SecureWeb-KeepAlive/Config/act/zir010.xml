@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="17" genre="config" label="Mode" value="0" size="1">
+			<Help>
+				The ZIR010 can be configured to operate in 1 of 3 modes.
+				Those modes are:
+				Lighting Mode (factory default)
+				Alarm Mode
+				Sensor Mode
+				To change the mode of operation:
+				For Lighting Mode: Send a value of 0 to Configuration Parameter #17.
+				For Alarm Mode: Send a value of 1 to Configuration Parameter #17.
+				For Sensor Mode: Send a value of 2 to Configuration Parameter # 17.
+				Information reproduced from: http://www.pepper1.net/zwavedb/uploads/resources/bdf086a9388325a2fb8b8aa298e24e512faec65d.pdf
+			</Help>
+			<Item label="Lighting" value="0" />
+			<Item label="Alarm" value="1" />
+			<Item label="Sensor" value="2" />
+		</Value>
+		<Value type="byte" index="18" genre="config" label="Off/Idle Delay" units="minutes" min="0" max="255" value="1">
+			<Help>
+				The configuration parameter that can be used to adjust the amount of delay before the OFF or IDLE command is transmitted is Configuration Parameter # 18.
+				This parameter can be configured with the value of 0 through 255.
+				Where 0 means no delay and 255 means 255 minutes of delay.
+				Default appears to be 1 min.
+				Information reproduced from: http://www.pepper1.net/zwavedb/uploads/resources/bdf086a9388325a2fb8b8aa298e24e512faec65d.pdf
+			</Help>
+		</Value>
+		<Value type="list" index="19" genre="config" label="Unsolicited Commands" value="1" size="1">
+			<Help>
+				The ZIR010 can be disabled from sending commands unsolicited without removing associated devices by
+				setting Configuration Parameter # 19 to 0 (when asked for number of bytes, select 1).
+				Setting it back to 1 will re-enable the ZIR010.
+				Information reproduced from: http://www.pepper1.net/zwavedb/uploads/resources/bdf086a9388325a2fb8b8aa298e24e512faec65d.pdf
+			</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="byte" index="22" genre="config" label="Awake Time" units="seconds" min="15" max="45" value="30">
+			<Help>
+				The time the ZIR010 stays awake can be adjusted from 15 seconds to 45 seconds by sending a value of 15
+				to 45 to the ZIR010 using Configuration Parameter # 22 (when asked for the number of bytes, select 1).
+				This awake time period starts over every time the ZIR010 receives a command or request.
+				Defaults to 30 seconds.
+				Information reproduced from: http://www.pepper1.net/zwavedb/uploads/resources/bdf086a9388325a2fb8b8aa298e24e512faec65d.pdf
+			</Help>
+		</Value>
+	</CommandClass>
+	
+	<!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="5" label="Motion" auto="true"/>
+			<Group index="2" max_associations="5" label="Tamper" />
+			<Group index="3" max_associations="5" label="Battery" auto="true" />
+		</Associations>
+	</CommandClass>
+</Product>
+

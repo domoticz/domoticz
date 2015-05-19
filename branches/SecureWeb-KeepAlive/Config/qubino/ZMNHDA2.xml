@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Qubino: ZMNHDA2 Flush Dimmer -->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Input 1 switch type" size="1" min="0" max="1" value="1">
+			<Help/>
+			<Item label="Mono-stable switch type (push button)" value="0" />
+			<Item label="Bi-stable switch type" value="1" />
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="2" label="Input 2 contact type" size="1" min="0" max="1" value="0">
+			<Help>Default value 0.</Help>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value>
+	
+		<Value type="list" genre="config" instance="1" index="3" label="Input 3 contact type" size="1" min="0" max="1" value="0">
+			<Help>Default value 0.</Help>
+			<Item label="NO (normaly open) input type" value="0"/>
+			<Item label="NC (normaly close) input type" value="1"/>
+		</Value> 
+	
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
+			<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system. Default value 0.</Help>
+			<Item label="ALL ON active, ALL OFF active" value="255" />
+			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
+			<Item label="ALL ON is not active ALL OFF active" value="1" />
+			<Item label="ALL ON active ALL OFF is not active" value="2" />
+		</Value>
+	
+		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the relay after a power failure" size="1" min="0" max="1" value="0">
+			<Help>Default value 0.</Help>
+			<Item label="Flush dimmer module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
+			<Item label="Flush dimmer module does not save the state after a power failure, it returns to off position" value="1" />
+		</Value>
+	
+ 		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change" size="1" min="0" max="100" value="5">
+			<Help>Set value from 0 - 100 (0% - 100%). 0 - Reporting Disabled. 1 - 100 = 1% - 100% Reporting enabled. Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%. Default value 5.</Help>
+			</Value>
+	
+		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="65535" value="300">
+			<Help>Set value means time interval (0 - 65535) in seconds, when power report is send. 0 - Reporting Disabled. 1 - 65535 = 1 second - 65535 seconds. Reporting enabled. Power report is send with time interval set by entered value. Default value 300 (power report in Watts is send each 300s).</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="60" label="Minimum dimming value" min="1" max="98" value="1">
+			<Help>1 - 98 = 1% - 98%, step is 1%. Minimum dimming values is set by entered value. Default value 1 (Minimum dimming value is 1%).</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="61" label="Maximum dimming value" min="2" max="99" value="99">
+			<Help>2 - 99 = 2% - 99%, step is 1%. Maximum dimming values is set by entered value. Default value 99 (Maximum dimming value is 99%).</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="65" label="Dimming time (soft on/off)" min="1" max="255" value="100">
+			<Help>Set value means time of moving the Dimmer between min. and max. dimming values by short press of push button I1 or controlled through. 1- 255 = 10mseconds - 2550mseconds (2,55s), step is 10mseconds. Default value 100 (Dimming time between min. and max. dimming values is 1s).</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="66" label="Dimming time when key pressed" min="1" max="255" value="3">
+			<Help>Time of moving the Dimmer between min. and max dimming values by continues hold of push button I1. 1- 255 = 1 second - 255 seconds. Default value 3 (Dimming time between min. and max. dimming values is 3s).</Help>
+		</Value>
+
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="4">
+			<Group index="1" max_associations="5" label="Multilevel" auto="true"/>
+			<Group index="2" max_associations="5" label="Input I2 state" auto="true" />
+			<Group index="3" max_associations="5" label="Input I3 state" auto="true"/>		
+			<Group index="4" max_associations="1" label="Default reporting" auto="true"/>
+		</Associations>
+	</CommandClass>
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
+
+</Product>

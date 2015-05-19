@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="bool" index="29" genre="config" label="Load Sense" units="" min="0" max="1" />
+	</CommandClass>
+</Product>

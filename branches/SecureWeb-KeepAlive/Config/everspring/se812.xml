@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EVERSPRING SE812 SIREN -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters not supported -->
+	<!-- Wakeup doesn't respond -->
+	<CommandClass id="132" create_vars="false" />
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Reports" auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

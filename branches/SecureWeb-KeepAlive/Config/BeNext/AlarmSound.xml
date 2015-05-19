@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- COMMAND_CLASS_ALARM AlarmCmd_Get not supported -->
+  <CommandClass id="113" getsupported="false" />
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Set to Default" value="-1">
+			<Help>Set all configuration values to default values (factory settings)</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="2" label="Destination routine enabled" value="255">
+			<Help>Enables an internal routine that periodically checks the Z-Wave device in assocication group 2</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Destination routine success time" value="60">
+			<Help>Configure the time that the AlarmSound sends a new frame when previous frame was send successful</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="4" label="Destination routine failed time" value="240">
+			<Help>Configure the time that the AlarmSound sends a few frame when previous frame was send not successful</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="5" label="Temperature calibration offset (byte 1)" value="0">
+			<Help>A (signed) offset to calibrate the onboard temperature sensor</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="6" label="Temperature calibration offset (byte 2)" value="0">
+			<Help>A (signed) offset to calibrate the onboard temperature sensor</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="7" label="Select index sound/light mode" value="1">
+			<Help>The index of the sound mode when a switch binary/basic set frame is received</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="8" label="Power offline sound/light mode" value="6">
+			<Help>The index of the sound mode when the AlarmSound will start when it is unplugged</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="9" label="Error sound/light mode" value="5">
+			<Help>The index of the sound mode when the AlarmSound will play when it is unable to reach the device in association group 2</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="10" label="Sound/Light index 1" value="-1">
+			<Help>Params 10 until 27 are the values to configure the sound and light thtat are played when index 1 is selected</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="28" label="Sound/Light index 2" value="-1">
+			<Help>Params 28 until 45 are the values to configure the sound and light thtat are played when index 2 is selected</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="46" label="Sound/Light index 3" value="-1">
+			<Help>Params 46 until 63 are the values to configure the sound and light thtat are played when index 3 is selected</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="64" label="Sound/Light index 4" value="-1">
+			<Help>Params 64 until 81 are the values to configure the sound and light thtat are played when index 4 is selected</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="82" label="Sound/Light index 5" value="-1">
+			<Help>Params 82 until 99 are the values to configure the sound and light thtat are played when index 5 is selected</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="100" label="Sound/Light index 6" value="-1">
+			<Help>Params 100 until 117 are the values to configure the sound and light thtat are played when index 6 is selected</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="1" label="Group 1" auto="false"/>
+			<Group index="2" max_associations="1" label="Group 2" auto="false"/>
+		</Associations>
+	</CommandClass>
+</Product>

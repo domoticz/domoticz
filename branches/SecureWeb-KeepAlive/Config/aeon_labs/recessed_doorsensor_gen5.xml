@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aeon Labs Recessed Door Sensor -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration -->
+    <!-- Alarm CC isn't supported on this device -->
+    <CommandClass id="113" action="remove"/>
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Sensor Binary Report Toggle" min="0" max="1" value="0">
+            <Help>Which value of the Sensor Binary Report will be sent when 
+            the magnet switch to open/close.</Help>
+            <Item label="Normal" value="0"/>
+            <Item label="Inverse" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="3" label="Basic Set Toggle" min="0" max="1" value="0">
+            <Help>Which value of the Basic Set will be sent when the magnet 
+            switch to open/close.
+            </Help>
+            <Item label="Normal" value="0"/>
+            <Item label="Inverse" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="101" label="Low Battery Check Enable" min="0" max="1" value="0">
+            <Help>Enable/disable the function of low battery checking, when 
+            the current voltage is less than the warning voltage, it will 
+            send the Battery Low Warning Report. 
+            </Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="111" label="Low Battery Check Interval" min="0" max="4294967295" value="86640">
+            <Help>This parameter is available when the low battery checking
+                  function is activated or the device was waked up by other
+                  actions (i.e. the z-wave button trigger, magnet switch
+                  trigger and the Wake Up Interval Set timeout trigger).
+                  The Recessed Door Sensor will check the battery power
+                  when it was wake up as other ways. For example: the
+                  z-wave button trigger, magnet switch trigger and the
+                  Wake Up Interval Set timeout trigger.
+              Default setting: 86640
+            </Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="121" label="Report Type to Send" min="0" max="256" value="16">
+            <Help>To set which command will be sent to the associated nodes 
+            when the magnet switch is triggered.
+            	Bitsets:
+                4 -> Sensor Binary
+                8 -> Basic Set
+              Default setting: 0x100 (Basic Set)
+              OZW Ideal Setting: 0x10 (Sensor Binary Report)
+            </Help>
+        </Value>
+	<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" value="0">
+		<Help>Lock/ unlock all configuration parameters</Help>
+		<Item label="Unlock" value="0"/>
+		<Item label="Lock" value="1"/>
+	</Value>
+        <Value type="short" index="254" genre="config" label="Device Tag" units="" min="0" max="65535" value="0">
+			<Help>Device Tag</Help>
+		</Value>
+	<Value type="button" index="255" genre="config" label="Reset To Factory Defaults" write_only="true" value="0" >
+		<Help>Reset to factory defaults.</Help>
+	</Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+      <Associations num_groups="2">
+        <Group index="1" max_associations="5" label="LifeLine" auto="true"/>
+        <Group index="2" max_associations="5" label="Battery" auto="true"/>
+      </Associations>
+    </CommandClass>    
+</Product>

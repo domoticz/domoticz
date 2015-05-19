@@ -1,0 +1,183 @@
+#include "stdafx.h"
+#include "KMTronicTCP.h"
+#include "../main/Logger.h"
+#include "../main/Helper.h"
+#include <iostream>
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
+#include "../httpclient/HTTPClient.h"
+
+#define KMTRONIC_POLL_INTERVAL 10
+
+KMTronicTCP::KMTronicTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password)
+{
+	m_HwdID=ID;
+	m_stoprequested=false;
+	m_szIPAddress=IPAddress;
+	m_usIPPort=usIPPort;
+	m_Username = username;
+	m_Password = password;
+}
+
+KMTronicTCP::~KMTronicTCP(void)
+{
+}
+
+void KMTronicTCP::Init()
+{
+	m_PollCounter = KMTRONIC_POLL_INTERVAL - 2;
+}
+
+bool KMTronicTCP::StartHardware()
+{
+	Init();
+	//Start worker thread
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&KMTronicTCP::Do_Work, this)));
+	m_bIsStarted = true;
+	sOnConnected(this);
+	_log.Log(LOG_STATUS, "KMTronic: Started");
+	return (m_thread != NULL);
+}
+
+bool KMTronicTCP::StopHardware()
+{
+	if (m_thread != NULL)
+	{
+		assert(m_thread);
+		m_stoprequested = true;
+		m_thread->join();
+	}
+	m_bIsStarted = false;
+	return true;
+}
+
+void KMTronicTCP::Do_Work()
+{
+	while (!m_stoprequested)
+	{
+		sleep_seconds(1);
+
+		time_t atime = mytime(NULL);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+
+		if (ltime.tm_sec % 12 == 0) {
+			mytime(&m_LastHeartbeat);
+		}
+
+		m_PollCounter++;
+		if (m_PollCounter >= KMTRONIC_POLL_INTERVAL)
+		{
+			GetMeterDetails();
+			m_PollCounter = 0;
+		}
+	}
+	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker stopped...");
+} 
+
+bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
+{
+	tRBUF *pSen = (tRBUF*)pdata;
+
+	unsigned char packettype = pSen->ICMND.packettype;
+	unsigned char subtype = pSen->ICMND.subtype;
+
+	if (packettype == pTypeLighting2)
+	{
+		//light command
+
+		int Relay = pSen->LIGHTING2.id4;
+		if (Relay > Max_KMTronic_Relais)
+			return false;
+
+		std::stringstream szURL;
+
+		if (m_Password.empty())
+		{
+			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort;
+		}
+		else
+		{
+			szURL << "http://" << m_Username << ":" << m_Password << "@" << m_szIPAddress << ":" << m_usIPPort;
+		}
+
+		if (pSen->LIGHTING2.cmnd == light2_sOff)
+		{
+			szURL << "/relays.cgi?relay=" << Relay;
+		}
+		else
+		{
+			szURL << "/relays.cgi?relay=" << Relay;
+		}
+		std::string sResult;
+		if (!HTTPClient::GET(szURL.str(), sResult))
+		{
+			_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
+
+bool KMTronicTCP::WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn)
+{
+	return true;
+}
+
+void KMTronicTCP::GetMeterDetails()
+{
+	std::string sResult;
+	std::stringstream szURL;
+
+	if (m_Password.empty())
+	{
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort;
+	}
+	else
+	{
+		szURL << "http://" << m_Username << ":" << m_Password << "@" << m_szIPAddress << ":" << m_usIPPort;
+	}
+
+	szURL << "/relays.cgi";
+
+	if (!HTTPClient::GET(szURL.str(), sResult))
+	{
+		_log.Log(LOG_ERROR, "KMTronic: Error connecting to: %s", m_szIPAddress.c_str());
+		return;
+	}
+	std::vector<std::string> results;
+	StringSplit(sResult, "\r\n", results);
+	if (results.size()<8)
+	{
+		_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
+		return;
+	}
+	size_t ii,jj;
+	std::string tmpstr;
+	for (ii = 1; ii < results.size(); ii++)
+	{
+		tmpstr = results[ii];
+		if (tmpstr.find("Status:") != std::string::npos)
+		{
+			tmpstr = tmpstr.substr(strlen("Status:"));
+			std::vector<std::string> results2;
+			StringSplit(tmpstr, " ", results2);
+			if (results2.size() < 2)
+			{
+				_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
+				return;
+			}
+			for (jj = 0; jj < results2.size(); jj++)
+			{
+				bool bIsOn = (results2[jj] != "0");
+				std::stringstream sstr;
+				sstr << "Relay " << (jj + 1);
+				SendSwitch(jj + 1, 1, 255, bIsOn, (bIsOn)?100:0, sstr.str());
+			}
+			return;
+		}
+	}
+	_log.Log(LOG_ERROR, "KMTronic: Invalid data received");
+}

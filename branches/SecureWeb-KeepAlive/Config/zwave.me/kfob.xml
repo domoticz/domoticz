@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Button 1 and 3 pair mode" units="" min="0" max="255" value="1" size="1">
+			<Help>In separate mode button 1 works with group 1, button 3 with groups 3. Click is On, Hold is dimming Up, Double click is Off, Click-Hold is dimming Down. In pair button 1/3 are Up/Down correspondingly. Click is On/Off, Hold is dimming Up/Down. Single clicks works with group 1, double click with group 3.</Help>
+			<Item label="Separately" value="0"/>
+			<Item label="In pair without double clicks (default)" value="1"/>
+			<Item label="In pair with double clicks" value="2"/>
+		</Value>
+		<Value type="list" index="2" genre="config" label="Modes for Button 2 and 4" units="" min="0" max="255" value="1" size="1">
+			<Help>In separate mode button 2 works with group 2, button 4 with groups 4. Click is On, Hold is dimming Up, Double click is Off, Click-Hold is dimming Down. In pair button 2/4 are Up/Down correspondingly. Click is On/Off, Hold is dimming Up/Down. Single clicks works with group 2, double click with group 4.</Help>
+			<Item label="Separately" value="0"/>
+			<Item label="In pair without double clicks (default)" value="1"/>
+			<Item label="In pair with double clicks" value="2"/>
+		</Value>
+		<Value type="list" index="11" genre="config" label="Action on group 1" units="" min="0" max="6" value="1" size="1">
+			<Help>In Switch On/Off only mode On command is sent on Dim Up, Off on Dim Down. In Scenes mode the scene ID sent is (10 * group + ActionID), where ActionID is: 1 = On, 2 = Off, 3 = Dim Up Start, 4 = Dim Down Start, 5 = Dim Up Stop, 6 = Dim Down Stop</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene Activation" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>
+			<Item label="Control devices in proximity" value="6"/>
+		</Value>
+		<Value type="list" index="12" genre="config" label="Action on group 2" units="" min="0" max="6" value="1" size="1">
+			<Help>In Switch On/Off only mode On command is sent on Dim Up, Off on Dim Down. In Scenes mode the scene ID sent is (10 * group + ActionID), where ActionID is: 1 = On, 2 = Off, 3 = Dim Up Start, 4 = Dim Down Start, 5 = Dim Up Stop, 6 = Dim Down Stop</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene Activation" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>
+			<Item label="Control devices in proximity" value="6"/>
+		</Value>
+		<Value type="list" index="13" genre="config" label="Action on group 3" units="" min="0" max="6" value="1" size="1">
+			<Help>In Switch On/Off only mode On command is sent on Dim Up, Off on Dim Down. In Scenes mode the scene ID sent is (10 * group + ActionID), where ActionID is: 1 = On, 2 = Off, 3 = Dim Up Start, 4 = Dim Down Start, 5 = Dim Up Stop, 6 = Dim Down Stop</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene Activation" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>
+			<Item label="Control devices in proximity" value="6"/>
+		</Value>
+		<Value type="list" index="14" genre="config" label="Action on group 4" units="" min="0" max="6" value="1" size="1">
+			<Help>In Switch On/Off only mode On command is sent on Dim Up, Off on Dim Down. In Scenes mode the scene ID sent is (10 * group + ActionID), where ActionID is: 1 = On, 2 = Off, 3 = Dim Up Start, 4 = Dim Down Start, 5 = Dim Up Stop, 6 = Dim Down Stop</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel) (default)" value="1"/>
+			<Item label="Switch On/Off only (send Basic Set)" value="2"/>
+			<Item label="Switch All" value="3"/>
+			<Item label="Send Scene Activation" value="4"/>
+			<Item label="Send Preconfigured Scenes" value="5"/>
+			<Item label="Control devices in proximity" value="6"/>
+		</Value>
+		<Value type="byte" index="20" genre="config" label="Typical click timeout" units="ms" min="1" max="100" value="50" size="1">
+			<Help> Typical time used to differentiate click, hold and double clicks 1-100 in 10 ms units (default is 50, that is equivalent to 500 ms)</Help>
+		</Value>
+		<Value type="list" index="11" genre="config" label="Send the following Switch All commands" units="" min="1" max="255" value="1" size="1">
+			<Help>Send the following Switch All ON/OFF commands</Help>
+			<Item label="Switch Off only (default)" value="1"/>
+			<Item label="Switch On only" value="2"/>
+			<Item label="Switch On and Off" value="255"/>
+		</Value>
+		<Value type="list" index="22" genre="config" label="Invert buttons" units="" min="0" max="1" value="0" size="1">
+			<Help>Invert meaning of On/Dim up and Off/Dim down in pairs of buttons. This applies only to pairs in grouped mode. Buttons 1 and 2 will become Off/Dim down, buttons 3 and 4 On/Dim up.</Help>
+			<Item label="No (default)" value="0"/>
+			<Item label="Yes" value="1"/>
+		</Value>
+		<Value type="list" index="24" genre="config" label="LED confirmation mode" units="" min="0" max="2" value="2" size="1">
+			<Help>To save batteries LED confirmation can be disabled.</Help>
+			<Item label="No confirmations" value="0"/>
+			<Item label="Confirm button press" value="1"/>
+			<Item label="Confirm button press and delivery (default)" value="2"/>
+		</Value>
+		<!--Only on KFOB2 --> 
+		<Value type="list" index="25" genre="config" label="Blocks wake up even when wake up interval is set" units="" min="0" max="1" value="0" size="1">
+			<Help>If the KFOB wakes up and there is no controller nearby, several unsuccessful communication attempts will drain battery</Help>
+			<Item label="Wakeup is blocked (default)" value="0"/>
+			<Item label="Wakeup is possible if configured accordingly." value="1"/>
+		</Value>
+		<Value type="list" index="30" genre="config" label="Send unsolicited Battery Report on Wake Up" units="" min="0" max="2" value="0" size="1">
+			<Help/>
+			<Item label="No (default)" value="0"/>
+			<Item label="To same node as wakeup notification" value="1"/>
+			<Item label="Broadcast" value="2"/>
+		</Value>
+	</CommandClass>
+
+	<!-- COMMAND_CLASS_SCENE_ACTIVATION. KFob can be configured to send scene commands but does not advertise it -->
+	<CommandClass id="43" action="add" getsupported="false"/>
+
+	<!-- COMMAND_CLASS_MULTI_CHANNEL_V2
+	<CommandClass id="96" version="2"/>
+		-->
+
+	<!--COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2
+	<CommandClass id="142" version="2"/>
+	-->
+
+	<!-- COMMAND_CLASS_ASSOCIATION -->
+	<CommandClass id="133">
+		<Associations num_groups="4">
+			<Group index="1" max_associations="8" label="Controlled by button 1 or single clicks of buttons 1 and 3" auto="false"/>
+			<Group index="2" max_associations="8" label="Controlled by button 2 or single clicks of buttons 2 and 4" auto="false"/>
+			<Group index="3" max_associations="8" label="Controlled by button 3 or double clicks of buttons 1 and 3" auto="false"/>
+			<Group index="4" max_associations="8" label="Controlled by button 4 or double clicks of buttons 2 and 4" auto="false"/>
+		</Associations>
+	</CommandClass>
+
+</Product>

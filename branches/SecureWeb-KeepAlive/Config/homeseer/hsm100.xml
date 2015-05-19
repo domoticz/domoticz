@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="0" genre="config" label="Unidentified Parameter" units="" min="0" max="255" value="5">
+			<Help>
+				Parameter #0 is undocumented: let us know if you know what it does!
+				Attributes (type, units, min and max) are wild guesses, except default value.
+			</Help>
+		</Value>
+		<Value type="byte" index="1" genre="config" label="Sensitivity" units="" min="0" max="255" value="200">
+			<Help>
+				Sensitivity sets the amount of motion required for the device to
+				detect motion. A higher value makes it more sensitive and a
+				lower value makes it less sensitive. Note that values above 200
+				are not recommended when the device is battery operated.
+				Recommended values:
+				10 = Pet Immune.
+				100 = Medium sensitivity for hallways.
+				200(default) = Highly sensitive for rooms where people are sitting still.
+			</Help>
+		</Value>
+		<Value type="byte" index="2" genre="config" label="On Time" units="minutes" min="0" max="255" value="20">
+			<Help>
+				On Time sets the number of minutes that the lights stay on when
+				motion has not been detected.
+				A value of 0 On Time is a special mode where the lights are
+				constantly sent a command to turn them on whenever motion is
+				detected. The device will NOT turn the lights off in this mode.
+				Note that this mode will significantly shorten battery life.
+				Recommended values:
+				5 min for hallways.
+				20 min for an office environment.
+				60 min for a library or other room where someone may be sitting
+				still for a long time.
+				This may be inaccurate, but default for Homeseer HSM100 may actually be 3 minutes, instead of 20?				
+			</Help>
+		</Value>
+		<Value type="list" index="3" genre="config" label="LED ON/OFF" units="" min="" max="" size="1" value="255">
+			<Help>
+				LED ON/OFF turns the LED on or off. A slight improvement in
+				battery life is obtained by turning the LED off. Setting LED
+				ON/OFF to zero will turn the LED off and 255 turns it on.
+				Default is On (255).
+			</Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="byte" index="4" genre="config" label="Light Threshold" units="%" min="0" max="100" value="100">
+			<Help>
+				Light Threshold is the percentage of light in the room above
+				which the lights will not be turned on. Light Threshold is often
+				used in room with a lot of natural daylight. Setting Light
+				Threshold to a value of 50% will cause the device to not turn the
+				lights on when the natural light in the room is already at the 50%
+				value. This feature only prevents the lights from coming on when
+				motion is first detected and the light level in the room is already
+				above Light Threshold. It will not turn the lights off when the
+				amount of natural light in the room increases. It will
+				automatically turn on the lights in a room that has motion in it
+				and that the amount of natural light has dropped below Light
+				Threshold.
+				A value of 100% turns off this feature (default).
+				Recommended values:
+				Usually a value between 40% and 60% will prevent the lights
+				from coming on in a reasonably well light room and will turn
+				them on as it is getting dark. Some experimentation is required
+				with each room to determine the proper setting.				
+			</Help>
+		</Value>
+		<Value type="byte" index="5" genre="config" label="Stay Awake" units="" min="0" max="255" value="0">
+			<Help>
+				Setting Stay Awake to a non-zero value will cause the device to
+				always be awake. NOTE: this mode should NOT be used when
+				the device is battery powered! Batteries will only last a few days
+				in this mode.
+				Stay Awake is NOT set to the factory default (0) when the device
+				is Excluded (reset) from the Z-Wave network.
+				Setting Stay Awake to a non-zero value will cause the Z-Wave
+				Listening Bit to be set. The device will become a routing node in
+				the Z-Wave Mesh-Network when the Listening Bit is set.
+				To properly have the device included in the routing tables, set
+				Stay Awake to a non-zero value, then reset the device (Exclude
+				from the network), then add it back to the network. The new
+				routing information will be used now that the listening bit is set.
+				Defaults to 0.
+			</Help>
+		</Value>
+		<Value type="byte" index="6" genre="config" label="On Value" units="" min="0" max="255" value="255">
+			<Help>
+				On Value is the value sent by the Z-Wave BASIC_SET
+				command when motion is detected.
+				A value of 0 will turn the lights off (not recommended).
+				A value between 1 and 100 will set the dim level to between 1%
+				and 100%.
+				A value of 255 will turn the light on (default).
+				NB! According to the manual, the value should not be set between 101-254 (inclusive).
+			</Help>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="96" mapping="endpoints" />
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="4" label="Motion" auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

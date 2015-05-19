@@ -1,0 +1,22 @@
+/*
+Default Simple Blue theme for Domoticz
+*/
+body {
+background-image: -webkit-gradient(
+	linear,
+	left top,
+	left bottom,
+	color-stop(0, #120B8F),
+	color-stop(0.5, #4E89E6),
+	color-stop(1, #120B8F)
+);
+background-image: -o-linear-gradient(bottom, #120B8F 0%, #4E89E6 50%, #120B8F 100%);
+background-image: -moz-linear-gradient(bottom, #120B8F 0%, #4E89E6 50%, #120B8F 100%);
+background-image: -webkit-linear-gradient(bottom, #120B8F 0%, #4E89E6 50%, #120B8F 100%);
+background-image: -ms-linear-gradient(bottom, #120B8F 0%, #4E89E6 50%, #120B8F 100%);
+background-image: linear-gradient(to bottom, #120B8F 0%, #4E89E6 50%, #120B8F 100%)
+}
+
+.warning-text {
+	color: yellow;
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Popp: 123601 Plug-in Switch -->
+
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Led mode" size="1">
+			<Help>Set LED indication mode</Help>
+			<Item label="Show switch state (Default)" value="1" />
+			<Item label="Disabled" value="0" />
+			<Item label="Night mode (inverted switch state)" value="2" />
+			<Item label="Operated by Indicator Command Class" value="3" />
+		</Value>
+	
+		<Value type="short" genre="config" instance="1" index="2" label="Automatically switch off after" size="2" min="1" max="65535" value="0">
+			<Help>If not zero, automatically switch off after a user defined time. Unit: Sec, Min: 0, Max: 65535, Default: 0</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="3" label="What to do on RF off command" size="1">
+			<Help>Defines how to interpret RF Off command. Can be used in conjunction with Auto Off function: Ignore - to switch on the light by motion detectors and switch it off after some amount of time: in case of multiple motion detectors each would try to switch the light off that would break logics; Switch on - to switch on the light on both On and Off paddle press on the remote and switch it off after some amount of time. Button off click will still work (if button operations are not disabled).</Help>
+			<Item label="Switch off (Default)" value="0" />
+			<Item label="Ignore" value="1" />
+			<Item label="Switch on" value="2" />
+			<Item label="Switch on if load is off else switch off" value="3" />
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="5" label="Restore switch state after power cycle" size="1">
+			<Help>Defines if the switch should restore switch state to the last state prior to device power off (power cycle).</Help>
+			<Item label="Yes (Default)" value="1" />
+			<Item label="No, turn off" value="0" />		
+		</Value>
+		
+	</CommandClass>
+
+	<!-- Association Groups -->
+	
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Group 1" auto="true"/>
+		</Associations>
+	</CommandClass>
+
+</Product>
+

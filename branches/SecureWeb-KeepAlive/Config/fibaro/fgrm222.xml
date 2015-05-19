@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration -->
+  <CommandClass id="112">
+	<!-- Protection -->
+    <Value type="list" genre="config" instance="1" index="1" label="Local Protection" value="0" size="1">
+      <Help>Once the Local Protection is activated, the module stops responding to S1 and S2 push buttons. SCENE ID and association commands will not be sent as well. The only exception is the B-button. Menu and Z-Wave network inclusion, after the B-button or S1 push button triple click, are still active.</Help>
+      <Item label="No protection. Roller Shutter responds to push buttons" value="0" />
+      <Item label="Not supported" value="1" />
+      <Item label="Local protection active. Roller Shutter does not respond to push buttons" value="2" />      
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="2" label="RF Protection (radio protection)" value="0" size="1">
+      <Help>Once the RF Protection is activated, the module stops responding to command frames setting the blind position. It's still possible however to configure the device (advanced configuration parameters, protection modes) and checking it's current state through polling (position, power, energy).</Help>
+      <Item label="No protection. Roller Shutter responds to command frames" value="0" />
+      <Item label="RF Protection active. Roller Shutter does not respond to the Z-Wave control frames" value="1" />
+      <Item label="Not supported" value="2" />      
+    </Value>
+	
+	<!-- GENERAL SETTINGS -->
+	<Value type="list" genre="config" instance="1" index="3" label="Reports type" value="0" size="1">
+      <Help>Parameters value shoud be set to 1 if the module operates in Venetian Blind mode.
+	  Defauld setting: 0</Help>
+      <Item label="Blind position reports sent to the main controller using Z-Wave Command Class" value="0" />
+      <Item label="Blind position reports sent to the main controller using Fibar Command Class" value="1" />      
+    </Value>	
+    
+    <Value type="list" genre="config" instance="1" index="10" label="Roller Shutter operating modes" value="0" size="1">
+      <Help>Default settng: 1</Help>
+      <Item label="0 - Roller Blind Mode, without positioning" value="0"/>
+      <Item label="1 - Roller Blind Mode, with positioning" value="1"/>
+	  <Item label="2 - Venetian Blind Mode, with positioning" value="2"/>
+	  <Item label="3 - Gate Mode, without positioning" value="3"/>
+	  <Item label="4 - Gate Mode, with positioning" value="4"/>
+    </Value>
+	
+	<Value type="short" genre="config" instance="1" index="12" label="In Venetian Blind mode the parameter determines time of full turn of the lamellas" value="150" min="0" max="65535">
+      <Help>In Venetian Blind mode (parameter 10 set to 2) the parameter determines time of full turn of the lamellas.
+	  In Gate Mode (parameter 10 set to 3 or 4) the parameter defines the COUNTDOWN time, i.e. the time period after which an open gate starts closing. 
+	  In any other operating mode the parameter value is irrelevant. Value of 0 means the gate will not close automatically
+	  Available settings: 0-65535 (0 - 655,35s)
+	  Default setting: 150 (1,5 s)</Help>      
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="13" label="Set lamellas back to previous position" value="1" size="1">
+      <Help>In Venetian Blind Mode (parameter 10 set to 2) the parameter influences lamellas positioning in various situations. In any other operating mode the parameter value is irrelevant.
+	  Default settng: 1</Help>
+      <Item label="0 - Lamellas return to previously set position only in case of the main controller operation" value="0"/>
+      <Item label="1 - Lamellas return to previously set position in case of the main controller operation, momentary switch operation, or when the limit switch is reached" value="1"/>
+	  <Item label="2 - Lamellas return to previously set position in case of the main controller operation, momentary switch operation, when the limit switch is reached or after receiving a STOP control frame (Switch Multilevel Stop)." value="2"/>
+    </Value>
+    
+    <Value type="list" genre="config" instance="1" index="14" label="Switch type" value="0" size="1">
+      <Help>The parameter settings are relevant for Roller Blind Mode and Venetian Blind Mode (parameter 10 set to 0, 1, 2).</Help>
+      <Item label="Momentary switches" value="0"/>
+      <Item label="Toggle switches" value="1"/>
+      <Item label="Single, momentary switch." value="2"/>
+    </Value>
+	
+	<Value type="byte" genre="config" instance="1" index="17" label="In Roller Blind Mode or Venetian Blind mode the parameter determines when the Roller Shutter relays are turned off after reaching a limit switch" value="10"  min="0" max="255">
+      <Help>In Roller Blind Mode or Venetian Blind mode (parameter 10 set to 0, 1, 2) the parameter determines when the Roller Shutter relays are turned off after reaching a limit switch.
+	  In Gate Mode (parameter 10 set to 3 or 4) the parameter determines a time period after which a gate will start closing after a S2 contact has been disconnected. In this mode, time to turn off the Roller Shutter relays after reaching a limit switch is set to 3 seconds and cannot be modified.
+	  Value of 0 means the gate will note close automatically.
+	  Available settings: 0 - 255 (0,1-25,5s).
+	  Default setting: 10 (1s).</Help>      
+    </Value>
+	
+	<Value type="byte" genre="config" instance="1" index="18" label="Motor operation detection" value="10" min="0" max="255">
+      <Help>Power threshold to be interpreted as reaching a limit switch.
+	  Available settings: 0 - 255 (1-255 W)
+	  The value of 0 means reaching a limit switch will not be detected
+	  Default setting: 10 (10W).</Help>      
+    </Value>
+    
+    <Value type="short" genre="config" instance="1" index="22" label="Motor operation time" value="240" min="0" max="65535">
+      <Help>Time period for the motor to continue operation.
+	  Available settings: 0 - 65535 (0 - 65535s)
+	  The value of 0 means the function is disabled.
+	  Default setting: 240 (240s. - 4 minutes)</Help>      
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="29" label="Forced Roller Shutter calibration" value="0" size="1">
+      <Help>By modifying the parameters setting from 0 to 1 a Roller Shutter enters the calibration mode. The parameter relevant only if a Roller Shutter is set to work in positioning mode (parameter 10 set to 1, 2 or 4).</Help>
+	  <Item label="Default" value="0"/>
+      <Item label="Start calibration process" value="1"/>	  
+    </Value>
+	
+	<!-- ALARM SETTINGS -->
+    <Value type="list" genre="config" instance="1" index="30" label="Response to general alarm" value="2" size="1">
+      <Help>Default setting: 2-Close blind</Help>
+      <Item label="No reaction" value="0"/>
+      <Item label="Open blind" value="1"/>
+      <Item label="Close blind" value="2"/>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="31" label="Response to flooding alarm" value="0" size="1">
+      <Help>Default setting: 0-No reaction</Help>
+      <Item label="No reaction" value="0"/>
+      <Item label="Open blind" value="1"/>
+      <Item label="Close blind" value="2"/>
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="32" label="Response to smoke, CO or CO2 alarm" value="1" size="1">
+      <Help>Default setting: 1-Open blind</Help>
+      <Item label="No reaction" value="0"/>
+      <Item label="Open blind" value="1"/>
+      <Item label="Close blind" value="2"/>
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="33" label="Response to temperature alarm" value="1" size="1">
+      <Help>Default setting: 1-Open blind</Help>
+      <Item label="No reaction" value="0"/>
+      <Item label="Open blind" value="1"/>
+      <Item label="Close blind" value="2"/>
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="35" label="Managing lamellas in response to alarm" value="1" size="1">
+      <Help>In Venetian Blind Mode (parameter 10 set to 2), the parameter determines how the lamellas will react upon alarm detection. In any other modes, the parameter value is not relevant.
+	  Default setting: 1 Set lamellas to their extreme position</Help>
+      <Item label="Do not change lamellas position - lamellas return to the last set position" value="0"/>
+      <Item label="Set lamellas to their extreme position" value="1"/>      
+    </Value>
+	
+	<!-- POWER AND ENERGY REPORTS SETTINGS -->
+	<Value type="byte" genre="config" instance="1" index="40" label="Power reports" value="10"  min="0" max="100">
+      <Help>Power level change that will result in new power value report being sent. The parameter defines a change that needs to occur in order to trigger the report. The value is a percentage of the previous report.
+	  Power report threshold available settings: 1-100 (1-100%).
+	  Value of 0 means the reports are turned off.
+	  Default setting: 10 (10%).</Help>      
+    </Value>
+	
+	<Value type="short" genre="config" instance="1" index="42" label="Periodic power or energy reports" value="3600" min="1" max="65534">
+      <Help>The parameter defines a time period between consecutive reports.
+	  Available settings: 1-65534 (1-65534 seconds)
+	  Value of 0 means the reports are turned off.
+	  Default setting: 3600 (3600 seconds / 60 minutes).</Help>      
+    </Value>
+	
+	<Value type="byte" genre="config" instance="1" index="43" label="Energy reports" value="10" min="1" max="254">
+      <Help>Energy level change which will result in new energy value report being sent. The parameter defines a change that needs to occur in order to trigger the report.
+	  Energy threshold available settings: 1-254 (0,01 - 2,54kWh).
+	  Value of 0 means the reports are turned off.
+	  Default setting 10 (0,1kWh).</Help>      
+    </Value>
+	
+	<Value type="list" genre="config" instance="1" index="44" label="Self-measurement." value="1" size="1">
+      <Help>A Roller Shutter may include power and energy used by itself in reports sent to the main controller
+	  Default setting: 0-Self-measurement inactive</Help>
+      <Item label="Self-measurement inactive" value="0"/>
+      <Item label="Self-measurement active" value="1"/>      
+    </Value>
+    
+	<!-- SCENES AND ASSOCIATIONS SETTINGS -->
+    <Value type="list" genre="config" instance="1" index="50" label="Scenes / Associations activation" value="0" size="1">
+      <Help>Parameter determines whether scenes or associations are activated by the switch keys.
+	  Default setting: 0-Associations activation
+      </Help>
+      <Item label="Associations activation" value="0"/>
+      <Item label="Scenes activation" value="1"/>
+    </Value>    
+  </CommandClass>
+  <!--
+  <CommandClass id="96" mapping="endpoints" />
+  -->
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="16" label="Group 1" auto="false"/>
+      <Group index="2" max_associations="16" label="Group 2" auto="false" />
+      <Group index="3" max_associations="1" label="Device Status" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

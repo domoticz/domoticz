@@ -1,0 +1,38 @@
+#!/bin/sh
+cd $1
+if [ -f update.tgz.sha256sum ];
+then
+  #Check archive against checksum!
+  valid=$(sha256sum -c update.tgz.sha256sum | grep update.tgz | cut -d':' -f2 | tr -d ' ')
+  if [ $valid != "OK" ]
+  then
+	echo "Archive checksum mismatch !";
+	exit 1;
+  fi
+fi 
+
+tar xfz update.tgz
+rm update.tgz
+rm update.tgz.sha256sum
+
+lowercase(){
+    echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
+}
+
+OS=`lowercase \`uname -s\``
+MACH=`uname -m`
+
+# Restart on OSX
+if [ ${OS} = "darwin" ]; then
+  launchctl unload /System/Library/LaunchAgents/com.domoticz.server.plist
+  echo "Please standby ... (waiting 15 seconds)"
+  sleep 15
+  launchctl load /System/Library/LaunchAgents/com.domoticz.server.plist
+else
+  sudo service domoticz.sh stop
+  systemctl stop domoticz.service
+  echo "please standby... (waiting 15 seconds)"
+  sleep 15
+  sudo service domoticz.sh start
+  systemctl start domoticz.service
+fi

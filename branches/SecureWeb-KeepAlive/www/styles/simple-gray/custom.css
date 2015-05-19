@@ -1,0 +1,28 @@
+/*
+Default Simple Gray theme for Domoticz
+*/
+body {
+background: #606c88; /* Old browsers */
+background: -moz-linear-gradient(top,  #606c88 0%, #3f4c6b 100%) fixed; /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#606c88), color-stop(100%,#3f4c6b)) fixed; /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  #606c88 0%,#3f4c6b 100%) fixed; /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  #606c88 0%,#3f4c6b 100%) fixed; /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  #606c88 0%,#3f4c6b 100%) fixed; /* IE10+ */
+background: linear-gradient(to bottom,  #606c88 0%,#3f4c6b 100%) fixed; /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#606c88', endColorstr='#3f4c6b',GradientType=0 ); /* IE6-9 */
+}
+
+#copyright p {
+	font-family: 'Abel', sans-serif;
+	font-size: 1.125em;
+	color: #AAAAAA;
+}
+
+#copyright a {
+	color: #A3A4D3;
+	text-decoration: none;
+}
+
+.warning-text {
+	color: yellow;
+}

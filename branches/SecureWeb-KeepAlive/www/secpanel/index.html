@@ -1,0 +1,462 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta name="mobile-web-app-capable" content="yes">
+	<title>Domoticz Security Panel</title>
+	<link href="css/style.less" rel="stylesheet/less" />
+	<script src="js/less.js"></script>
+	<script src="../js/jquery-1.11.2.min.js"></script>
+	<script src="../js/i18next-1.8.0.min.js"></script> 
+	<script src="../js/domoticz.js"></script>
+	<script src="../js/md5.js"></script>
+	<script type="text/javascript">
+		function ShowError(error) {
+			if (error=="NoConnect") {
+				$('#digitdisplay').val("no connect");
+			}
+			else if (error=="NoOkData") {
+				$('#digitdisplay').val("no ok data");
+			}
+			else if (error=="NoSettingsData") {
+				$('#digitdisplay').val("no settings");
+			}
+			else {
+				$('#digitdisplay').val("unkown err");
+			}
+			RefreshTimer=setTimeout('SetRefreshTimer();', 60000);
+		}
+
+		function ShowStatus() {
+			$.ajax({
+				url: "../json.htm?type=command&param=getsecstatus",
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (data.status != "OK") {
+						ShowError('NoOkData');
+						return;
+					}
+					else {
+						var displaytext="";
+						if (data.secstatus==0) displaytext="DISARMED";
+						else if (data.secstatus==1) displaytext="ARM HOME";
+						else if (data.secstatus==2) displaytext="ARM AWAY";
+						else displaytext="UNKNOWN";
+						$('#digitdisplay').val("* "+displaytext+" *");
+					}
+				},
+				error: function(){
+					ShowError('NoConnect');
+					return;
+				}
+			});
+			if (1==2) {
+				var elements = document.getElementsByClassName('digit');
+				for(var i=0; i<elements.length; i++) {
+					elements[i].setAttribute('onClick','AddDigit('+(i+1)+');');
+				}
+				document.getElementById('setall').setAttribute('onClick','beep();');
+			}
+			$('#password').val("");
+		}
+
+		function SetRefreshTimer() {
+			if (typeof(RefreshTimer) != "undefined") {
+				RefreshTimer=clearTimeout(RefreshTimer);
+			}
+			$.ajax({
+				url: "../json.htm?type=command&param=getuservariables",
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (data.status != "OK") {
+						ShowError('NoOkData');
+						return;
+					}
+					else {
+						if (typeof(data.result) != "undefined") {
+							$.each(data.result, function(i,item) {
+								if (item.Name=='secpanel-autorefresh') {
+									var timer=item.Value*1000;
+									RefreshTimer=setTimeout('ShowStatus(); SetRefreshTimer();', timer);
+								}
+								else {
+									RefreshTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 60000);
+								}
+							});
+						}
+					}
+				},
+				error: function(){
+					ShowError('NoConnect');
+					return;
+				}
+			});
+		}
+		
+		var CountdownTimer = 0;
+		function countdown() {
+			if (timer > 1) {
+				timer = timer - 1;
+				beep('set');
+				$('#digitdisplay').val('Arm Delay: '+timer);
+			}
+			else {
+				clearInterval(CountdownTimer);
+				beep('in');
+				ShowStatus();
+				SetRefreshTimer();
+			}
+		}
+
+		function ArmDelay() {
+			var secondelay=0;
+			$.ajax({
+				url: "../json.htm?type=settings",
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (data.status != "OK") {
+						ShowError('NoOkData');
+						return;
+					}
+					else {
+						if (typeof(data.SecOnDelay) != "undefined") {
+							secondelay=data.SecOnDelay;
+						}
+					}
+				},
+				error: function(){
+					ShowError('NoConnect');
+					return;
+				}
+			});
+			return secondelay;
+		}
+
+		// custom function for zone clear check, searches idx for switches starting with 'alarm zone'
+		function ZoneIdx() {
+			var idxnumbers=[];
+			$.ajax({
+				url: "../json.htm?type=command&param=getlightswitches",
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (data.status != "OK") {
+						ShowError('NoOkData');
+						return;
+					}
+					else {
+						if (typeof(data.result) != "undefined") {
+							$.each(data.result, function(i,item) {
+								if (item.Name.toLowerCase().indexOf('alarm zone')==0) idxnumbers[idxnumbers.length]=item.idx;
+							});
+						}
+					}
+				},
+				error: function(){
+					ShowError('NoConnect');
+					return;
+				}
+			});
+			return idxnumbers;
+		}
+		var zones=ZoneIdx();
+
+		// check if provided zone idx number(s) is/are clear
+		function CheckZoneClear(zonearray) {
+			var openzone=false;
+			if (typeof(zonearray) != "undefined") {
+				$.each(zonearray, function(i,item) {
+					$.ajax({
+						url: "../json.htm?type=devices&rid="+item,
+						async: false, 
+						dataType: 'json',
+						success: function(data) {
+							if (data.status != "OK") {
+								ShowError('NoOkData');
+								return;
+							}
+							else {
+								if (typeof(data.result) != "undefined") {
+									$.each(data.result, function(j,zone) {
+										if (zone.Status=='On') openzone=true;
+									});
+								}
+								return openzone;
+							}
+						},
+						error: function(){
+							ShowError('NoConnect');
+							return;
+						}
+					});
+				});
+			}
+			return openzone;
+		}
+
+		function SetSecStatus(status, zonearray, seccode, setzone) {
+			if (typeof(seccode) == "undefined") seccode=$('#password').val();
+			if (isNaN(seccode)) {
+				beep('error');
+				return;
+			}
+			if (typeof(RefreshTimer) != "undefined") RefreshTimer=clearTimeout(RefreshTimer);
+			if (typeof(CodeSetTimer) != "undefined") CodeSetTimer=clearTimeout(CodeSetTimer);
+
+			// if (status==1 || status==2) {
+			if (1==2) {
+				beep();
+				if (typeof(setzone) == "undefined") {
+					var zonedisplay='* ALL ZONES *';
+				}
+				if (setzone=="all") zonedisplay='* ALL ZONES *';
+				if (setzone==1) zonedisplay='* ZONE 1 *';
+				if (setzone==2) zonedisplay='* ZONE 2 *';
+				if (setzone==3) zonedisplay='* ZONE 3 *';
+				$('#digitdisplay').val($.t(zonedisplay));
+
+				var elements = document.getElementsByClassName('digit');
+				for(var i=0; i<elements.length; i++) {
+					elements[i].setAttribute('onClick','SetSecStatus('+status+', zones, '+seccode+', '+(i+1)+');');
+				}
+				document.getElementById('setall').setAttribute('onClick','SetSecStatus('+status+', zones, '+seccode+', \'all\');');
+
+				CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 10000);
+				return;
+			}
+
+			if (typeof(zonearray) != "undefined") {
+				if (CheckZoneClear(zonearray)) {
+					beep('error');
+					$('#digitdisplay').val($.t('* ZONE OPEN *'));
+					// CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer(); AddDigit('+seccode+');', 2000);
+					CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 3000);
+					return;
+				}
+			}
+			$.ajax({
+				url: "../json.htm?type=command&param=setsecstatus&secstatus=" + status + "&seccode=" + md5(seccode),
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (data.status != "OK") {
+						if (data.message=="WRONG CODE") {
+							$('#digitdisplay').val($.t('* WRONG CODE *'));
+							CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 2000);
+							$('#password').val("");
+							beep('error');
+							// $('#digitdisplay').css('background', 'red');
+						}
+						else {
+							ShowError('NoOkData');
+							return;
+						}
+						return;
+					}
+					else {
+						ShowStatus();
+						if (status==1 || status==2) {
+							timer=ArmDelay();
+							if (timer>0) {
+								CountdownTimer = setInterval("countdown();", 1000);
+								beep('set');
+							}
+							else {
+								beep('in');
+							}
+						}
+						else {
+							SetRefreshTimer();
+							beep('out');
+						}
+					}
+				},
+				error: function(){
+					ShowError('NoConnect');
+					return;
+				}
+			});
+		}
+
+		function AddDigit(digit) {
+			beep(); 
+			if (typeof(CodeSetTimer) != "undefined") {
+				CodeSetTimer=clearTimeout(CodeSetTimer);
+			}
+			if (typeof(RefreshTimer) != "undefined") {
+				RefreshTimer=clearTimeout(RefreshTimer);
+			}
+			if (typeof(CountdownTimer) != "undefined") {
+				CountdownTimer=clearInterval(CountdownTimer)
+				$('#digitdisplay').val("");
+			}
+			CodeSetTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 10000);
+
+			var orgtext=$('#password').val();
+			if (isNaN(orgtext)) orgtext="";
+
+			var newtext=orgtext+digit;
+			var codeinput="";
+			for(var i=0; i<newtext.length; i++) {
+				codeinput=codeinput+'#';
+			}
+
+			$('#digitdisplay').val(codeinput);
+			$('#password').val(newtext);
+			
+			
+		}
+				
+		var contextClass = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.oAudioContext || window.msAudioContext);
+		// firefox & ie fix
+		if (contextClass && (navigator.userAgent.toLowerCase().indexOf('firefox') <= -1) && (navigator.userAgent.toLowerCase().indexOf('msie') <= -1)) {
+
+			var context1 = new webkitAudioContext();
+			oscillator1 = context1.createOscillator();
+			oscillator1.type = 'square';
+			oscillator1.frequency.value = 1600;
+			
+			var context2 = new webkitAudioContext();
+			oscillator2 = context2.createOscillator();
+			oscillator2.type = 'square';
+			oscillator2.frequency.value = 2000;
+
+			var context3 = new webkitAudioContext();
+			oscillator3 = context3.createOscillator();
+			oscillator3.type = 'square';
+			oscillator3.frequency.value = 1800;
+
+			var volume1 = context1.createGain();
+			volume1.gain.value = 0;
+
+			var volume2 = context2.createGain();
+			volume2.gain.value = 0;
+
+			var volume3 = context3.createGain();
+			volume3.gain.value = 0;
+
+			oscillator1.connect(volume1);
+			oscillator2.connect(volume2);
+			oscillator3.connect(volume3);
+			volume1.connect(context1.destination);
+			volume2.connect(context2.destination);
+			volume3.connect(context3.destination);
+			oscillator1.noteOn(0);
+			oscillator2.noteOn(0);
+			oscillator3.noteOn(0);
+		}
+		else contextClass="";
+
+		function beep(tone) {
+			if (contextClass) {
+				var frequency;
+				if (tone=="error") {
+					volume1.gain.value = 0.1;
+					setTimeout("volume1.gain.value = 0;", 200)
+				}
+				else if (tone=="set") {
+					volume2.gain.value = 0.1;
+					setTimeout("volume2.gain.value = 0;", 200)
+				}
+				else if (tone=="in") {
+					setTimeout("volume1.gain.value = 0.1;", 0)
+					setTimeout("volume1.gain.value = 0;", 200)
+					setTimeout("volume3.gain.value = 0.1;", 200)
+					setTimeout("volume3.gain.value = 0;", 400)
+					setTimeout("volume2.gain.value = 0.1;", 400)
+					setTimeout("volume2.gain.value = 0;", 600)
+				}
+				else if (tone=="out") {
+					setTimeout("volume2.gain.value = 0.1;", 0)
+					setTimeout("volume2.gain.value = 0;", 200)
+					setTimeout("volume3.gain.value = 0.1;", 200)
+					setTimeout("volume3.gain.value = 0;", 400)
+					setTimeout("volume1.gain.value = 0.1;", 400)
+					setTimeout("volume1.gain.value = 0;", 600)
+				}
+				else {
+					volume3.gain.value = 0.1;
+					setTimeout("volume3.gain.value = 0;", 200)
+				}
+			}
+			else {
+			var snd='';
+				if (tone=="error") {
+					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*750)*127+128); }
+				}
+				else if (tone=="set") {
+					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*850)*127+128); }
+				}
+				else {
+					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*800)*127+128); }
+				}
+				snd = new Audio('data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAA\BAAEARKwAAESsAAABAAgAZGF0YREr'+btoa('\0\0'+snd));
+				snd.play();
+			}
+
+		}
+		$(document).ready(function() {
+			$.ajax({
+				 url: "../json.htm?type=command&param=getlanguage",
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					if (typeof data.language != 'undefined') {
+						SetLanguage(data.language);
+					}
+					else {
+						SetLanguage('en');
+					}
+				 },
+				 error: function(){
+				 }
+			});
+			ShowStatus();
+			SetRefreshTimer();
+		});
+	</script>
+</head>
+<body>
+	<div id="main">
+		<div class="main-border">
+			<div id="keypad">
+				<div class="keypad-header">
+					<div class="title" onClick="javascript:main.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);"><p>Domoticz Security Panel</p></div>
+				</div>
+				<form name="keypadinput">
+					<input type="text" id="digitdisplay" value="" name="digitdisplay" disabled="disabled"/>
+					<input type="hidden" id="password" value="" name="password"/>
+					<ul class="keypad-keys">
+						<li class="digit" onClick="javascript:AddDigit('1');">1</li>
+						<li class="digit" onClick="javascript:AddDigit('2');">2</li>
+						<li class="digit" onClick="javascript:AddDigit('3');">3</li>
+						<li class="disarm" onClick="javascript:SetSecStatus(0);">Disarm</li>
+					</ul>
+					<ul class="keypad-keys">
+						<li class="digit" onClick="javascript:AddDigit('4');">4</li>
+						<li class="digit" onClick="javascript:AddDigit('5');">5</li>
+						<li class="digit" onClick="javascript:AddDigit('6');">6</li>
+						<li class="arm" onClick="javascript:SetSecStatus(1, zones);">Arm Home</li>
+					</ul>
+					<ul class="keypad-keys">
+						<li class="digit" onClick="javascript:AddDigit('7');">7</li>
+						<li class="digit" onClick="javascript:AddDigit('8');">8</li>
+						<li class="digit" onClick="javascript:AddDigit('9');">9</li>
+						<li class="arm" onClick="javascript:SetSecStatus(2, zones);">Arm Away</li>
+					</ul>
+					<ul class="keypad-keys">
+						<li style="visibility: hidden;"></li>
+						<li class="digit" onClick="javascript:AddDigit('0');">0</li>
+						<!--<li id="setall" onClick="javascript:beep();">All</li>-->
+						<li style="visibility: hidden;"></li>
+						<li class="btnclear" onClick="javascript:beep(); ShowStatus();">Cancel</li>
+					</ul>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

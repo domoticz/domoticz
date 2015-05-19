@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112" name="COMMAND_CLASS_CONFIGURATION">
+		<Value type="byte" index="0" genre="config" label="Basic Set Level" units="" min="0" max="99" value="99">
+			<Help>
+				When Basic Set Command is sent where contains a value, the receiver will
+				take it for consideration; for instance, if a lamp module is received the Basic
+				Set command of which value is decisive as to how bright of dim level of lamp
+				module shall be.
+			</Help>
+		</Value>
+		<Value type="byte" index="1" genre="config" label="Off Delay" units="seconds" min="0" max="127" value="0">
+			<Help>
+				The Configuration parameter that can be used to adjust the amount of delay
+				before the OFF command is transmitted as Configuration Parameter #2.
+				This parameter can be configured with the value of 0 through 127, where 0
+				means send OFF command immediately and 127 means 127 seconds of
+				delay
+			</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- COMMAND_CLASS_SENSOR_BINARY. -->
+	<CommandClass id="48" name="COMMAND_CLASS_SENSOR_BINARY">
+		<Value type="bool" index="0" genre="user" label="Magnet open" units="" read_only="true" write_only="false" min="0" max="255" value="">
+			<Help>
+				Magnets to be opened/closed
+			</Help>
+		</Value>
+	</CommandClass>	
+
+	<!-- COMMAND_CLASS_ALARM. -->
+	<CommandClass id="113" name="COMMAND_CLASS_ALARM">
+		<Instance index="1" />
+		<Instance index="2" />
+		<Value type="byte" genre="user" instance="1" index="0" label="Power Applied" value="2">
+			<Help>
+				Once the power has been applied, Alarm Report Command will be sent to
+				Nodes in Grouping 1 to confirm the power applied status for HSM02.
+			</Help>
+		</Value>
+		<Value type="byte" genre="user" instance="1" index="1" label="low battery" value="255">
+			<Help>
+				When HSM02 automatically wakes up, it will check the battery usage. When
+				low battery is detected, Alarm Report Command will be sent to Nodes in
+				Grouping 1, afterward, LED will light up for 1 sec to remind user when HSM02 is
+				triggered due to open or close incidents.
+			</Help>
+		</Value>
+		<Value type="byte" genre="user" instance="2" index="0" label="Tamper event" value="17">
+			<Help>
+				Grouping 1, afterward, LED will light up for 1 sec to remind user when HSM02 is
+				triggered due to open or close incidents.
+			</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- COMMAND_CLASS_BATTERY. -->
+	<CommandClass id="128" name="COMMAND_CLASS_BATTERY">
+		<Value type="byte" genre="user" index="0" label="Battery Check" units="%" min="20" max="100" value="">
+			<Help>
+				The users can also enquire the battery status of the unit by sending
+				BATTERY_GET command via Z-Wave Controller. Once the unit receives the
+				command, it will return BATTERY_REPORT command. The unit will send
+				Battery_Level = 255 (0xFF) command to the Z-Wave Controller to inform that
+				the unit is in low battery status.
+			</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- COMMAND_CLASS_WAKE_UP. -->
+	<CommandClass id="132" name="COMMAND_CLASS_WAKE_UP" version="1" create_vars="true">
+		<Instance index="1" />
+		<Value type="int" genre="system" instance="1" index="0" label="Wake-up Interval" units="Seconds" read_only="false" write_only="false" min="60" max="1005696000" value="" />
+	</CommandClass>
+
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Alarm Reports" auto="true">
+<!-- Once the power has been applied, Alarm Report Command will be sent to Nodes in Grouping 1 to confirm the power applied status for HSM02. -->
+			</Group>
+			<Group index="2" max_associations="5" label="Basic level" auto="false">
+<!-- However, the BASIC_SET command will be also sent to the nodes of Grouping 2. For instance, a lamp module will be turned off after receiving the BASIC_SET command. -->
+			</Group>
+		</Associations>
+	</CommandClass>
+
+</Product>
+

@@ -1,0 +1,6 @@
+<OneWireDomoticzServiceConfig>
+  <!-- Supported adapter names are : {DS9097E}, {DS9097U_DS948X}, {DS9490}, NetAdapter  -->
+  <adapter name="{DS9490}" port="USB1"/>
+  <!-- A way to change the TCP port used to dial with Domoticz. Need Domoticz update accordingly. Default value is 1664. -->
+  <domoticz TcpPort="1664"/>
+</OneWireDomoticzServiceConfig>

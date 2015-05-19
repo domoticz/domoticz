@@ -1,0 +1,199 @@
+@font-face {
+	font-family: "OpenSans";
+	font-style: normal;
+	src: url('fonts/OpenSans.ttf');
+	src: local('OpenSans'), url('fonts/OpenSans.ttf') format('truetype');
+}
+@font-face {
+	font-family: "DroidSans";
+	font-style: normal;
+	src: url('fonts/DroidSans.ttf');
+	src: local('DroidSans'), url('fonts/DroidSans.ttf') format('truetype');
+}
+body {
+	background: #202020 url(images/imgbg.jpg) repeat !important;
+}
+#appversion:after {
+  content: " ElementMedia Light v0.1";
+  display: none;
+}
+
+#status:before {
+ content: "Status op dit moment:  " !important;
+ font-weight: normal;
+}
+
+body table#itemtablesmall tr td:first-child + td + td + td + td:before, 
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:before,
+body table#itemtable tr td:first-child + td + td + td + td:before ,
+body table#itemtablenotype tr td:first-child + td + td + td + td:before,
+body table#itemtablenostatus tr td:first-child + td + td + td + td:before,
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td:before,
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before,
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td:before,
+body table#mobileitem tr td:first-child + td + td + td + td:before{
+ content: "Last turned on: " !important;
+}
+
+body table#itemtablesmall tr td:first-child + td + td + td + td:before, 
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:before,
+body table#itemtable tr td:first-child + td + td + td + td:before ,
+body table#itemtablenotype tr td:first-child + td + td + td + td:before,
+body table#itemtablenostatus tr td:first-child + td + td + td + td:before,
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td:before,
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before,
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td:before,
+body table#mobileitem tr td:first-child + td + td + td + td:before{
+ content: "Type:"
+}
+ 
+.navbar .nav {margin: 0 !important;}
+
+.ui-corner-all, .ui-corner-bottom, .ui-corner-right, .ui-corner-br {
+border-radius: 0px !important;
+}
+
+#comboroom, #combofloorplan {
+	background: #eee;
+	font-family: Open Sans, sans-serif;
+	width: 240px;
+    height: 34px;
+    overflow: hidden;
+    background: #eee;
+    border: 1px solid #eee;
+}
+
+#room {
+font-family: Open Sans, sans-serif;
+}
+
+#copyright {
+	display: none !important;
+}
+
+.navbar-inverse .navbar-inner {
+	padding: 10px !important;
+}
+
+.bannercontent {
+	padding-top: 80px !important;
+}
+
+.navbar .nav li a {
+    text-decoration: none;
+    text-transform: none;
+    border: 0px !important;
+    font-family: Open Sans,sans-serif;
+    padding: 10px;
+    font-weight: normal !important;
+    text-align: center;
+    color: #FFF;
+    background-color: #565656;
+    background-image: none;
+}
+
+#timesun , 
+#room, 
+.room{
+    background-color: #eee;
+	color: #666 !important;
+    float: left !important;
+    padding: 5px !important;
+    margin-left: -7px !important;
+    margin-top: -29px !important;
+    z-index: 1031;
+    position: fixed;
+    border-bottom-left-radius: 15px;
+	border-bottom-right-radius: 15px;
+	border-color: #eee;
+	font-size: 9px;
+	/* Voor nu even niet */
+	display: none;
+	}
+	
+.brand h2{
+	padding:0 !important; 	width: 227px; font-size:12px
+}
+
+h2{
+	margin-left: -10px;
+	font-family: Open Sans,sans-serif;
+	text-decoration: none;
+	text-transform: none;
+	font-size: 1.5em;
+	font-weight: 200;
+	color: #0D161F;
+	background-color: #EEE;
+	padding: 10px;
+	border-top-right-radius: 15px;
+	border-bottom-right-radius: 15px;
+}
+
+body table#itemtablesmall tbody tr,
+body table#itemtablesmalldoubleicon tbody tr
+body table#itemtable tbody tr,
+body table#itemtablenotype tbody tr,
+body table#itemtablenostatus tbody tr,
+body table#itemtabletrippleicon tbody tr,
+body table#itemtablesmalldoubleicon tbody tr,
+body table#itemtablesmalltrippleicon tbody tr,
+body table#mobileitem tbody tr{
+	padding-bottom: 15px !important;
+}
+
+body table#itemtablesmall tbody tr td:first-child,
+body table#itemtablesmalldoubleicon tbody tr td:first-child ,
+body table#itemtable tr td:first-child,
+body table#itemtablenostatus tr td:first-child,
+body table#itemtabledoubleicon tr td:first-child ,
+body table#itemtablenotype tr td:first-child ,
+body table#itemtabletrippleicon tr td:first-child ,
+body table#itemtablesmalltrippleicon tr td:first-child ,
+body table#mobileitem tr td:first-child{
+    display: block;
+    width: 100% !important;
+    height: 20px !important;
+    padding: 5px;
+    border-style: none;
+    border-radius: 0px !important;
+    color: #0D161F;
+    background-color: #F1F5FA;
+	font-family: Droid Sans,sans-serif !important;
+	margin-top: -5px;
+	margin-left: -5px;
+}
+
+#name {
+	background-color: #e9eaec !important;
+}
+
+.navbar .nav .dropdown-menu {
+    border: 0px !important;
+    font-family: Open Sans,sans-serif;
+    padding: 4px;
+    background-color: #565656;
+    background-image: none;
+}
+
+.navbar .nav li a:hover {
+	background-color: #444343 !important;
+	 background-image: none !important;
+}
+
+.btnsmall {
+	background: #169FE6 !important;
+	color: #eee;
+	font-family: Droid Sans,sans-serif !important;
+}
+
+.btnsmall:hover {
+color: #eee;
+-webkit-box-shadow: 0px 5px 5px 0px rgba(50, 50, 50, 0.3);
+-moz-box-shadow:    0px 5px 5px 0px rgba(50, 50, 50, 0.3);
+box-shadow:         0px 5px 5px 0px rgba(50, 50, 50, 0.3);
+}
+
+/* Row Fix */
+.bannav{
+width: 99.5% !important;
+}

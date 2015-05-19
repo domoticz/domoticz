@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EVERSPRING SF812 SMOKE DETECTOR -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters not supported -->
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<!-- Groups and attributes based on http://www.pepper1.net/zwavedb/uploads/resources/fdeac2e16823d1f80c667ca4cc3ae32253ef4713.pdf -->
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Reports" auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

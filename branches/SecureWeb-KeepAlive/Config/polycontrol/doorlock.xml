@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+
+<!-- Polycontrol: Danalock DoorLock Square  -->
+
+	<!-- COMMAND_CLASS_BASIC does not respond to requests -->
+	<CommandClass id="32" setasreport="true"/>
+
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Invert Lock Direction" min="0" max="1" value="0">
+			<Help>0=The motor goes clockwise when unlatched; 1= The motor goes counterclockwise when unlatched</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="2" label="Lock Speed" min="1" max="5" value="5">
+			<Help>1=Slowest ... 5=Fastest, accepts values between 1 and 5</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Lock Mode" min="0" max="1" value="1">
+			<Help>0=Stepper motor mode wave drive (Power Saving); 1=Stepper motor mode full drive(Normal)</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="4" label="Lock Turn Degrees" min="1" max="100" value="9">
+			<Help>Factor 10 turn degree( 1 = degrees, 9 = 90 degres, etc. )</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="5" label="Lock Normal Close Time" min="0" max="60" value="0">
+			<Help>How many seconds from the lock has been unlatched to it automatically close again. If 0 then it's disabled</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="6" label="Lock Sound" min="0" max="1" value="1">
+			<Help>Enable or Disable the beep sound from latch or unlatch operations( 0 = Disable, 1 = Enable )</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="7" label="Battery Type" min="0" max="1" value="0">
+			<Help>Set the type of battery that powers the device. This affect the returned battery state. 0 = 3.6V, 1=3.0V</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="8" label="Battery Alarm Percent" min="0" max="100" value="0">
+		<Help>When the battery level is equal to, or under this value, the device will notify with a beep sound after latch or unlatch</Help>
+		</Value>
+	</CommandClass>
+
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Group 1" auto="true" write_only="true"/>
+		</Associations>
+	</CommandClass>
+
+</Product>

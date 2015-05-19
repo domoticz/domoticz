@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="short" index="1" genre="config" label="Pulse factor" units="pulses" min="1" max="65535"  value="1024">
+      <Help>How many pulses are counted per 10 kWh.</Help>
+    </Value>
+    
+    <Value type="list" index="2" genre="config" label="Sensor type" units="" min="1" max="2" value="2" size="1">
+      <Help>Defines the type of sensor.</Help>
+      <Item label="Pulse Meter" value="1"/>
+      <Item label="Rotating Wheel" value="2"/>
+    </Value>
+
+    <Value type="byte" index="3" genre="config" label="IR Listen period" units="" min="0" max="127" value="0">
+      <Help>Additional time for feedback measurement.Should always be 0.</Help>
+    </Value>
+
+    <Value type="byte" index="4" genre="config" label="IR Pulse Width" units="" min="0" max="127" value="50">
+      <Help>Adjusts transmit signal so received signal will in average be equal to this values. Auto calibration might select another value than this.</Help>
+    </Value>
+
+    <Value type="byte" index="5" genre="config" label="Poll / Wake up frequency" units="seconds" min="1" max="50" value="20" >
+      <Help>Wake device up this many times per second. This value also controls number of measurements per second on mechanical meters.</Help>
+    </Value>
+
+    <Value type="int" index="8" genre="config" label="Wake up interval" units="seconds" min="1" max="32767" value="900" read_only="true" >
+      <Help>Do not use. Set this value using WAKE_UP_INTERVAL_SET instead.</Help>
+    </Value>
+
+    <Value type="int" index="9" genre="config" label="Pulse count" units="pulses/kWh" min="0" max="2147483647" value="0" >
+      <Help>Current pulse count in device (pulse count / pulse factor = kWh).</Help>
+    </Value>
+
+    <Value type="int" index="10" genre="config" label="Keep alive period" units="pulses/kWh" min="0" max="32767" value="60" >
+      <Help>How many 'ticks' before going back to sleep in normal wakeup mode.</Help>
+    </Value>
+
+    <Value type="int" index="11" genre="config" label="Real-time mode" units="pulses/kWh" min="0" max="32767" value="0" >
+      <Help>Set this to enter real-time mode from remote. Contains seconds * poll frequency before going back to sleep. If you press the button once this value will be set.</Help>
+    </Value>
+
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <!--<CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="1" label="Report" auto="true" />
+    </Associations>
+  </CommandClass>-->
+
+</Product>
+
