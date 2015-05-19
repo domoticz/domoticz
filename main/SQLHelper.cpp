@@ -1926,7 +1926,7 @@ void CSQLHelper::Do_Work()
 					}
 					else
 					{
-						_log.Log(LOG_STATUS, "Set UserVariable %s = %s", sd[0].c_str(), itt->_sValue.c_str());
+						_log.Log(LOG_STATUS, "Set UserVariable %s = %s", sd[0].c_str(), CURLEncode::URLDecode(itt->_sValue).c_str());
 					}
 				}
 				else
@@ -6831,7 +6831,7 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 	sprintf(szTmp, "INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%s','%d','%s')",
 		varname.c_str(),
 		typei,
-		varvalue.c_str()
+		CURLEncode::URLDecode(varvalue.c_str()).c_str()
 		);
 	result = query(szTmp);
 
@@ -6883,7 +6883,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		"UPDATE UserVariables SET Name='%s', ValueType='%d', Value='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %s)",
 		varname.c_str(),
 		typei,
-		varvalue.c_str(),
+		CURLEncode::URLDecode(varvalue.c_str()).c_str(),
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		idx.c_str()
 		);
