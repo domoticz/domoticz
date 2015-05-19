@@ -138,7 +138,7 @@
 				if ($(titleB).attr("name") == "TEXT") {
 					compareString = "variable["+$(titleA).text()+"]";
 					compareString += locOperand;
-					compareString += '"'+$(titleB).text()+'"'; 
+					compareString += '"'+encodeURIComponent($(titleB).text())+'"'; 
 				}
 				else if ($(titleB).attr("name") == "NUM") {
 					compareString = "variable["+$(titleA).text()+"]";
@@ -316,7 +316,7 @@
 					var valueB = $(this).find("value[name='B']")[0];
 					var titleB = $(valueB).find("title")[0];
 					var blockB = $(valueB).children("block:first");
-					setString += '="'+$(titleB).text()+'"'; 
+					setString += '="'+encodeURIComponent($(titleB).text())+'"'; 
 					setArray.push(setString);
 								
 				}
@@ -357,7 +357,6 @@
 	        	
 	        	var blockBType=blockB.attr("type");
 	        	var titleBName=$(titleB).attr("name");
-
 		        if ((blockBType=="logic_states") && (titleBName == "State")) {
 	        		setString += '="'+$(titleB).text()+' AFTER '+ $(titleC).text()+'"'; 
 	        		setArray.push(setString);
@@ -376,7 +375,18 @@
 						setString += ' AFTER '+ $(titleC).text()+'"'; 
 						setArray.push(setString);
 					}
-	        	}        	
+	        	}
+		        else if ((blockBType=="text") && (titleBName == "TEXT")) {
+					if (blockA.attr("type").indexOf("uservariables") >= 0) { 
+						var setString = "commandArray[Variable:"+$(titleA).text()+"]";
+						var valueB = $(this).find("value[name='B']")[0];
+						var titleB = $(valueB).find("title")[0];
+						var blockB = $(valueB).children("block:first");
+						setString += '="'+encodeURIComponent($(titleB).text())+'"'; 
+						setString += ' AFTER '+ $(titleC).text()+'"'; 
+						setArray.push(setString);
+					}
+	        	}
 		    }
 	      	else if ($(this).attr('type') == 'logic_setdelayed') {
 		   		var valueA = $(this).find("value[name='A']")[0];
