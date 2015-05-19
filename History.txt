@@ -72,7 +72,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Changed: Now possible to disable serial hardware when usb port is not available
 - Changed: FibaroLink/Datapush, support for V4 firmware
 - Implemented: Scene/Group, now possible to add same device multiple times, as long as the ondelay is different
-- Implemented: Scene/Group devices now supports both on and off delays (off = ondelay + offdelay)
+- Implemented: Scene devices now supports both on and off delays (off = ondelay + offdelay)
 - Changed: General Graph, min value is now calculated dynamically
 - Implemented: CORS browser support
 - Implemented: Settings, Battery Low check

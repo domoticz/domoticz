@@ -10323,12 +10323,14 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			{
 				int delay = (intswitchcmd == "Off") ? offdelay : ondelay;
 				SwitchLight(idx, intswitchcmd, ilevel, hue, false, delay);
-				if ((intswitchcmd != "Off") && (offdelay > 0))
+				if (scenetype == 0)
 				{
-					//switch with on delay, and off delay
-					SwitchLight(idx, "Off", ilevel, hue, false, ondelay+offdelay);
+					if ((intswitchcmd != "Off") && (offdelay > 0))
+					{
+						//switch with on delay, and off delay
+						SwitchLight(idx, "Off", ilevel, hue, false, ondelay + offdelay);
+					}
 				}
-				//SwitchLightInt(sd2,intswitchcmd,ilevel,hue,false);
 			}
 			else
 			{
