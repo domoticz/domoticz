@@ -64,6 +64,7 @@
 #include "../hardware/RFLink.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
+#include "../hardware/KMTronic433.h"
 #include "../hardware/SolarMaxTCP.h"
 
 // load notifications configuration
@@ -468,6 +469,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_TeleinfoMeter:
 	case HTYPE_MySensorsUSB:
 	case HTYPE_KMTronicUSB:
+	case HTYPE_KMTronic433:
 	case HTYPE_OpenZWave:
 	case HTYPE_EnOceanESP2:
 	case HTYPE_EnOceanESP3:
@@ -541,6 +543,10 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type == HTYPE_KMTronicUSB)
 			{
 				pHardware = new KMTronicSerial(ID, szSerialPort);
+			}
+			else if (Type == HTYPE_KMTronic433)
+			{
+				pHardware = new KMTronic433(ID, szSerialPort);
 			}
 			else if (Type == HTYPE_OpenZWave)
 			{

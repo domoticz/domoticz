@@ -173,8 +173,11 @@ void KMTronicTCP::GetMeterDetails()
 			{
 				bool bIsOn = (results2[jj] != "0");
 				std::stringstream sstr;
-				sstr << "Relay " << (jj + 1);
-				SendSwitch(jj + 1, 1, 255, bIsOn, (bIsOn)?100:0, sstr.str());
+				int iRelay = (jj + 1);
+				sstr << "Relay " << iRelay;
+				SendSwitch(iRelay, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+				if (iRelay > m_TotRelais)
+					m_TotRelais = iRelay;
 			}
 			return;
 		}

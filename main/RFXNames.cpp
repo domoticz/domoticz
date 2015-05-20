@@ -186,6 +186,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronicUSB, "KMTronic Gateway USB" },
 		{ HTYPE_KMTronicTCP, "KMTronic Gateway with LAN interface" },
 		{ HTYPE_SOLARMAXTCP, "SolarMax via LAN interface" },
+		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

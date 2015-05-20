@@ -87,6 +87,7 @@ private:
 	friend class KMTronicBase;
 	friend class KMTronicSerial;
 	friend class KMTronicTCP;
+	friend class KMTronic433;
 	friend class SolarMaxTCP;
 
 	virtual bool StartHardware()=0;
@@ -110,6 +111,7 @@ private:
 	void SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality);
 	void SendUsageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Usage);
 	void SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
+	void SendSwitchIfNotExists(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
 	void SendRGBWSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const double Level, const bool bIsRGBW, const std::string &defaultname);
 	void SendVoltageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
 	void SendCurrentSensor(const int NodeID, const int BatteryLevel, const float Current1, const float Current2, const float Current3, const std::string &defaultname);

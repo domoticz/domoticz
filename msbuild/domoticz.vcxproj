@@ -142,6 +142,7 @@
     <ClInclude Include="..\hardware\GpioPin.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
+    <ClInclude Include="..\hardware\KMTronic433.h" />
     <ClInclude Include="..\hardware\KMTronicBase.h" />
     <ClInclude Include="..\hardware\KMTronicSerial.h" />
     <ClInclude Include="..\hardware\KMTronicTCP.h" />
@@ -307,6 +308,7 @@
     <ClCompile Include="..\hardware\GpioPin.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
+    <ClCompile Include="..\hardware\KMTronic433.cpp" />
     <ClCompile Include="..\hardware\KMTronicBase.cpp" />
     <ClCompile Include="..\hardware\KMTronicSerial.cpp" />
     <ClCompile Include="..\hardware\KMTronicTCP.cpp" />

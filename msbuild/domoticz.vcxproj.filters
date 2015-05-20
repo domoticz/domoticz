@@ -678,6 +678,9 @@
     <ClInclude Include="..\hardware\SolarMaxTCP.h">
       <Filter>Devices\SolarMax</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\KMTronic433.h">
+      <Filter>Devices\KMTronic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1093,6 +1096,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp">
       <Filter>Devices\SolarMax</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\KMTronic433.cpp">
+      <Filter>Devices\KMTronic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
