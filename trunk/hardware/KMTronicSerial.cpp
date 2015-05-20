@@ -35,7 +35,7 @@ bool KMTronicSerial::StartHardware()
 	m_bDoInitialQuery = true;
 	m_iQueryState = 0;
 
-	m_retrycntr = RETRY_DELAY; //will force reconnect first thing
+	m_retrycntr = RETRY_DELAY-2; //will force reconnect first thing
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&KMTronicSerial::Do_Work, this)));
@@ -180,7 +180,53 @@ void KMTronicSerial::GetRelayStates()
 	unsigned char SendBuf[3];
 	int ii;
 
-	//First check if we are the 4/8 version
+	m_TotRelais = 0;
+
+	//First check if we are the USB 4/8 version
+	SendBuf[0] = 0xFF;
+	SendBuf[1] = 0x09;
+	SendBuf[2] = 0x00;
+
+	//Check if we have the 485 boards (max 6)
+	bool bIs485 = false;
+	for (int iBoard = 0; iBoard < 6; iBoard++)
+	{
+		SendBuf[1] = 0xA1 + iBoard;
+		if (WriteInt(SendBuf, 3, true))
+		{
+			bIs485 = true;
+			if (m_buffer[1] == 0xA1 + iBoard)
+			{
+				m_bufferpos -= 2;
+				if (m_bufferpos > Max_KMTronic_Relais)
+					m_bufferpos = Max_KMTronic_Relais;
+				for (ii = 0; ii < 8; ii++)
+				{
+					bool bIsOn = (m_buffer[2 + ii] == 1);
+					if (m_bRelaisStatus[ii] != bIsOn)
+					{
+						m_bRelaisStatus[ii] = bIsOn;
+					}
+					std::stringstream sstr;
+					int iRelay = (iBoard * 8) + ii + 1;
+					sstr << "Board" << int(iBoard + 1) << " - " << int(ii + 1);
+					SendSwitch(iRelay, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+					_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
+					if (iRelay > m_TotRelais)
+						m_TotRelais = iRelay;
+				}
+			}
+		}
+	}
+	if (bIs485)
+	{
+		//It could be that maybe one of the boards is turned off for various reasons,
+		//for this, we assume we have all 6 boards available
+		m_TotRelais = 48;
+		return;
+	}
+
+	//Check if we are the USB 4/8 version
 	SendBuf[0] = 0xFF;
 	SendBuf[1] = 0x09;
 	SendBuf[2] = 0x00;
@@ -189,7 +235,8 @@ void KMTronicSerial::GetRelayStates()
 	{
 		if (m_bufferpos > Max_KMTronic_Relais)
 			m_bufferpos = Max_KMTronic_Relais;
-		for (ii = 0; ii < m_bufferpos; ii++)
+		m_TotRelais = m_bufferpos;
+		for (ii = 0; ii < m_TotRelais; ii++)
 		{
 			bool bIsOn = (m_buffer[ii] == 1);
 			if (m_bRelaisStatus[ii] != bIsOn)
@@ -197,11 +244,17 @@ void KMTronicSerial::GetRelayStates()
 				m_bRelaisStatus[ii] = bIsOn;
 			}
 			std::stringstream sstr;
-			sstr << "Relay " << (ii + 1);
-			SendSwitch(ii + 1, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+			int iRelay = (ii + 1);
+			sstr << "Relay " << iRelay;
+			SendSwitch(iRelay, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+			_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
+			if (iRelay > m_TotRelais)
+				m_TotRelais = iRelay;
 		}
 		return;
 	}
+
+	//Check if we can get status of the 1/2 board
 	SendBuf[0] = 0xFF;
 	SendBuf[2] = 0x03;
 	for (ii = 0; ii < Max_KMTronic_Relais; ii++)
@@ -219,22 +272,18 @@ void KMTronicSerial::GetRelayStates()
 						m_bRelaisStatus[ii] = bIsOn;
 					}
 					std::stringstream sstr;
-					sstr << "Relay " << (ii+1);
-					SendSwitch(ii + 1, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+					int iRelay = ii + 1;
+					sstr << "Relay " << iRelay;
+					SendSwitch(iRelay, 1, 255, bIsOn, (bIsOn) ? 100 : 0, sstr.str());
+					_log.Log(LOG_STATUS, "KMTronic: %s = %s", sstr.str().c_str(), (bIsOn) ? "On" : "Off");
+					if (iRelay > m_TotRelais)
+						m_TotRelais = iRelay;
 				}
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "KMTronic: Invalid data received!");
 			}
-		}
-		else
-		{
-			if (m_TotRelais == 0)
-			{
-				m_TotRelais = ii;
-			}
-			return;
 		}
 	}
 }

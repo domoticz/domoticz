@@ -69,7 +69,7 @@ bool KMTronicBase::WriteToHardware(const char *pdata, const unsigned char length
 		//Light command
 
 		int node_id = pCmd->LIGHTING2.id4;
-		if (node_id > Max_KMTronic_Relais)
+		if (node_id > m_TotRelais)
 			return false;
 
 		if ((pCmd->LIGHTING2.cmnd == light2_sOn) || (pCmd->LIGHTING2.cmnd == light2_sOff))

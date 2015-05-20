@@ -1004,7 +1004,7 @@ namespace http {
 			if (
 				(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) ||
 				(htype == HTYPE_OpenThermGateway) || (htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-				(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK) || (htype == HTYPE_KMTronicUSB)
+				(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
 				)
 			{
 				//USB
@@ -1165,7 +1165,7 @@ namespace http {
 				(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) ||
 				(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
 				(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_System) ||
-				(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK) || (htype == HTYPE_KMTronicUSB)
+				(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
 				)
 			{
 				//USB/System

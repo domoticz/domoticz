@@ -437,6 +437,30 @@ void CDomoticzHardwareBase::SendUsageSensor(const int NodeID, const int ChildID,
 	sDecodeRXMessage(this, (const unsigned char *)&umeter);
 }
 
+void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+	double rlevel = (15.0 / 100)*Level;
+	int level = int(rlevel);
+
+	//make device ID
+	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
+	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);
+	unsigned char ID3 = (unsigned char)((NodeID & 0xFF00) >> 8);
+	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
+
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ")";
+	result = m_sql.query(szQuery.str()); //-V519
+	if (result.size() < 1)
+	{
+		SendSwitch(NodeID, ChildID, BatteryLevel, bOn, Level, defaultname);
+	}
+}
+
 void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
 {
 	bool bDeviceExits = true;

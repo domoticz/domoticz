@@ -188,6 +188,7 @@ hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
 hardware/ICYThermostat.cpp
 hardware/KMTronicBase.cpp
+hardware/KMTronic433.cpp
 hardware/KMTronicSerial.cpp
 hardware/KMTronicTCP.cpp
 hardware/Limitless.cpp

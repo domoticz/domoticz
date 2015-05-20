@@ -104,6 +104,7 @@ enum _eHardwareTypes {
 	HTYPE_KMTronicUSB,			//47
 	HTYPE_KMTronicTCP,			//48
 	HTYPE_SOLARMAXTCP,			//49
+	HTYPE_KMTronic433,			//50
 	HTYPE_END
 };
 
