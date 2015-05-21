@@ -11,13 +11,13 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include "../json/json.h"
-#include "../main/WebServer.h"
+#include "../main/WebServerHelper.h"
 
 #include <ctime>
 
 #define round(a) ( int ) ( a + .5 )
 
-extern http::server::CWebServer m_webserver;
+extern http::server::CWebServerHelper m_webservers;
 
 OTGWBase::OTGWBase(void)
 {
@@ -359,7 +359,7 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << m_OutsideTemperatureIdx;
-	m_webserver.GetJSonDevices(tempjson, "", "temp","ID",sstr.str(),"","",true,0,true);
+	m_webservers.GetJSonDevices(tempjson, "", "temp","ID",sstr.str(),"","",true,0,true);
 
 	size_t tsize=tempjson.size();
 	if (tsize<1)

@@ -35,7 +35,7 @@ public:
   /// input has been consumed.
   template <typename InputIterator>
   boost::tuple<boost::tribool, InputIterator> parse(request& req,
-      InputIterator begin, InputIterator end)
+      InputIterator& begin, InputIterator end)
   {
 	  while ( begin != end)
 	  {

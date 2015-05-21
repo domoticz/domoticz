@@ -660,9 +660,6 @@
     <ClInclude Include="..\sqlite\sqlite3.h">
       <Filter>SQLite</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\net_skeleton.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\KMTronicBase.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
@@ -677,6 +674,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\SolarMaxTCP.h">
       <Filter>Devices\SolarMax</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebServerHelper.h">
+      <Filter>Webserver</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\KMTronic433.h">
       <Filter>Devices\KMTronic</Filter>
@@ -1079,9 +1079,6 @@
     <ClCompile Include="..\sqlite\sqlite3.c">
       <Filter>SQLite</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\net_skeleton.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\KMTronicBase.cpp">
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
@@ -1099,6 +1096,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\KMTronic433.cpp">
       <Filter>Devices\KMTronic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHelper.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

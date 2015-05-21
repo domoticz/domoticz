@@ -241,10 +241,15 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 
   }
 #endif
+  int ExtraHeaders = 0;
+  if (req.keep_alive)
+  {
+	  ExtraHeaders += 2;
+  }
   if (!bHaveLoadedgzip)
-	rep.headers.resize(3);
+	  rep.headers.resize(3 + ExtraHeaders);
   else
-	rep.headers.resize(4);
+	  rep.headers.resize(4 + ExtraHeaders);
   
   int iHeader = 0;
 
@@ -254,6 +259,13 @@ void request_handler::handle_request(const std::string &sHost, const request& re
   rep.headers[iHeader++].value = mime_types::extension_to_type(extension);
   rep.headers[iHeader].name = "Access-Control-Allow-Origin";
   rep.headers[iHeader++].value = "*";
+  if (req.keep_alive)
+  {
+	  rep.headers[iHeader].name = "Connection";
+	  rep.headers[iHeader++].value = "Keep-Alive";
+	  rep.headers[iHeader].name = "Keep-Alive";
+	  rep.headers[iHeader++].value = "max=20, timeout=10";
+  }
   if (bHaveLoadedgzip)
   {
 	  rep.headers[iHeader].name = "Content-Encoding";
