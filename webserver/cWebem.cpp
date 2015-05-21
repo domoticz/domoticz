@@ -47,9 +47,11 @@ Webem constructor
 cWebem::cWebem(
 	   const std::string& address,
 	   const std::string& port,
-	   const std::string& doc_root ) :
+	   const std::string& doc_root,
+	   const std::string& secure_cert_file,
+	   const std::string& secure_cert_passphrase) :
 myRequestHandler( doc_root,this ), myPort( port ),
-myServer( address, port, myRequestHandler ),
+myServer( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase ),
 m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
 m_actsessionid(""),
@@ -672,6 +674,9 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			}
 			extraheaders=1;
 		}
+		if (req.keep_alive) {
+			extraheaders += 2;
+		}
 
 		int iHeader = 0;
 		if (!boost::algorithm::starts_with(strMimeType, "image"))
@@ -688,6 +693,12 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			rep.headers[iHeader++].value = "no-cache";
 			rep.headers[iHeader].name = "Access-Control-Allow-Origin";
 			rep.headers[iHeader++].value = "*";
+			if (req.keep_alive) {
+				rep.headers[iHeader].name = "Connection";
+				rep.headers[iHeader++].value = "Keep-Alive";
+				rep.headers[iHeader].name = "Keep-Alive";
+				rep.headers[iHeader++].value = "max=20, timeout=10";
+			}
 			if (m_outputfilename != "")
 			{
 				rep.headers[iHeader].name = "Content-Disposition";
@@ -703,6 +714,12 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 			rep.headers[iHeader++].value = strMimeType;
 			rep.headers[iHeader].name = "Cache-Control";
 			rep.headers[iHeader++].value = "max-age=3600, public";
+			if (req.keep_alive) {
+				rep.headers[iHeader].name = "Connection";
+				rep.headers[iHeader++].value = "Keep-Alive";
+				rep.headers[iHeader].name = "Keep-Alive";
+				rep.headers[iHeader++].value = "max=20, timeout=10";
+			}
 			if (m_outputfilename != "")
 			{
 				rep.headers[iHeader].name = "Content-Disposition";
@@ -719,9 +736,14 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 	cUTF utf( pfunW->second( ) );
 
+	int extraheaders = 0;
+	if (req.keep_alive) {
+		extraheaders += 2;
+	}
+
 	rep.status = reply::ok;
 	rep.content.append(utf.get8(), strlen(utf.get8()));
-	rep.headers.resize(5);
+	rep.headers.resize(5 + extraheaders);
 
 	int iHeader = 0;
 	rep.headers[iHeader].name = "Content-Length";
@@ -735,6 +757,12 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	rep.headers[iHeader++].value = "no-cache";
 	rep.headers[iHeader].name = "Access-Control-Allow-Origin";
 	rep.headers[iHeader++].value = "*";
+	if (req.keep_alive) {
+		rep.headers[iHeader].name = "Connection";
+		rep.headers[iHeader++].value = "Keep-Alive";
+		rep.headers[iHeader].name = "Keep-Alive";
+		rep.headers[iHeader++].value = "max=20, timeout=10";
+	}
 	return true;
 }
 

@@ -29,6 +29,8 @@ public:
   std::vector<header> headers;
   int content_length;				// the expected length of the contents
   std::string content;				// the contents
+  bool keep_alive;					// send Keep-Alive header
+
 
   static int mg_strcasecmp(const char *s1, const char *s2)
   {
