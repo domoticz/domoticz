@@ -134,8 +134,6 @@ function CheckForUpdate(showdialog) {
 		 success: function(data) {
 			var urights=data.statuscode;
 			var bDisplayLogout=false;
-			$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
-			$.AllowWidgetOrdering=data["AllowWidgetOrdering"];
 			if (urights!=3) {
 				bDisplayLogout=true;
 			}
@@ -252,8 +250,7 @@ $(document).ready(function() {
 		LastPlanSelected: 0,
 		Latitude: "",
 		Longitude: "",
-		DashboardType: 0,
-		dontcache: true
+		DashboardType: 0
 	};
 	
 	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
@@ -783,21 +780,21 @@ $(document).ready(function() {
                 <div class="container">
 					<a class="brand hidden-phone" href="#Dashboard"><h1>Domoticz</h1> <h2 id="appversion">*</h2></a>
                         <ul class="nav" id="appnavbar">
-                            <li ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
-                            <li class="divider-vertical clFloorplans"></li>
-								<li ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
-                            <li class="divider-vertical clLightSwitches"></li>
-								<li ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
-                            <li class="divider-vertical clScenes"></li>
-								<li ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
-                            <li class="divider-vertical clTemperature"></li>
-								<li ng-class="{'current_page_item':getClass('/Temperature')}" class="clTemperature"><a id="cTemperature" href="#Temperature"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
-                            <li class="divider-vertical clWeather"></li>
-								<li ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
-                            <li class="divider-vertical clUtility"></li>
-								<li ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
-                            <li class="divider-vertical clcustommenu" style="display:none;"></li>
-                            <li class="dropdown clcustommenu" style="display:none;">
+                            <li ng-show="{{config.EnableTabDashboard}}" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
+                            <li ng-show="{{config.EnableTabFloorplans}}" class="divider-vertical clFloorplans"></li>
+							<li ng-show="{{config.EnableTabFloorplans}}" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
+                            <li ng-show="{{config.EnableTabLights}}" class="divider-vertical clLightSwitches"></li>
+							<li ng-show="{{config.EnableTabLights}}" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
+                            <li ng-show="{{config.EnableTabScenes}}" class="divider-vertical clScenes"></li>
+							<li ng-show="{{config.EnableTabScenes}}" ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
+                            <li ng-show="{{config.EnableTabTemp}}" class="divider-vertical clTemperature"></li>
+							<li ng-show="{{config.EnableTabTemp}}" ng-class="{'current_page_item':getClass('/Temperature')}" class="clTemperature"><a id="cTemperature" href="#Temperature"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
+                            <li ng-show="{{config.EnableTabWeather}}" class="divider-vertical clWeather"></li>
+							<li ng-show="{{config.EnableTabWeather}}" ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
+                            <li ng-show="{{config.EnableTabUtility}}" class="divider-vertical clUtility"></li>
+							<li ng-show="{{config.EnableTabUtility}}" ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
+                            <li ng-show="{{config.EnableTabCustom}}" class="divider-vertical clcustommenu" style="display:none;"></li>
+                            <li ng-show="{{config.EnableTabCustom}}" class="dropdown clcustommenu" style="display:none;">
                                 <a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
                                 <ul class="dropdown-menu pull-right" id="custommenu"></ul>
 							</li>

@@ -613,11 +613,9 @@ define(['app'], function (app) {
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
-
 				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
 
-			  if (typeof data.result != 'undefined') {
-			  
+			if (typeof data.result != 'undefined') {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
@@ -812,7 +810,6 @@ define(['app'], function (app) {
 		  });
 		  
 		  var bHaveAddedDevider = false;
-			var bAllowWidgetReorder=true;
 
 		var suntext='<div id="timesun" />\n';
 
@@ -841,26 +838,10 @@ define(['app'], function (app) {
 			 dataType: 'json',
 			 success: function(data) {
 			  if (typeof data.result != 'undefined') {
-
-				$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
-				if (typeof data.WindScale != 'undefined') {
-					$.myglobals.windscale=parseFloat(data.WindScale);
-				}
-				if (typeof data.WindSign != 'undefined') {
-					$.myglobals.windsign=data.WindSign;
-				}
-				if (typeof data.TempScale != 'undefined') {
-					$.myglobals.tempscale=parseFloat(data.TempScale);
-				}
-				if (typeof data.TempSign != 'undefined') {
-					$.myglobals.tempsign=data.TempSign;
-				}
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
 				
-				bAllowWidgetReorder=data.AllowWidgetOrdering;
-
 				$.each(data.result, function(i,item){
 				  if (i % 3 == 0)
 				  {
@@ -1261,8 +1242,7 @@ define(['app'], function (app) {
 					ShowUtilities();
 				});
 			}
-
-			if (bAllowWidgetReorder==true) {
+			if ($scope.config.AllowWidgetOrdering==true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint==false) {
 						$("#utilitycontent .span4").draggable({

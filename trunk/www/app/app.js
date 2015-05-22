@@ -2,7 +2,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5']);
 
 		isOnline=false;
-
 		dashboardType=1;
 
 	  app.factory('permissions', function ($rootScope) {
@@ -14,10 +13,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			{
 				userrights : permissionList.rights
 			}; 			
-			if (permissionList.rights>=0) {
-				EnableDisableTabs();
-				//CheckForUpdate(false);
-			}
 			$rootScope.$broadcast('permissionsChanged')
 		  },
 		  hasPermission: function (permission) {
@@ -347,6 +342,109 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		};
 		permissions.setPermissions(permissionList);					
 
+		$rootScope.yahoo=false;
+		$rootScope.config={
+				EnableTabDashboard: true,
+				EnableTabFloorplans: false,
+				EnableTabLights: true,
+				EnableTabScenes: true,
+				EnableTabTemp: true,
+				EnableTabWeather: true,
+				EnableTabUtility: true,
+				EnableTabCustom: true,
+				AllowWidgetOrdering: true,
+				FiveMinuteHistoryDays: 1,
+				DashboardType : 1,
+				Latitude : "52.216485",
+				Longitude : "5.169528",
+				MobileType : 0,
+				TempScale : 1.0,
+				TempSign : "C",
+				WindScale : 3.600000143051148,
+				WindSign : "km/h",
+				language : "en"
+				};
+		//Get Config
+		$.ajax({
+		 url: "json.htm?type=command&param=getconfig",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			isOnline = true;
+			if (data.status == "OK") {
+				$rootScope.config.AllowWidgetOrdering=data.AllowWidgetOrdering;
+				$rootScope.config.FiveMinuteHistoryDays=data.FiveMinuteHistoryDays;
+				$rootScope.config.DashboardType=data.DashboardType;
+				$rootScope.config.Latitude=data.Latitude;
+				$rootScope.config.Longitude=data.Longitude;
+				$rootScope.config.MobileType=data.MobileType;
+				$rootScope.config.TempScale=data.TempScale;
+				$rootScope.config.TempSign=data.TempSign;
+				$rootScope.config.WindScale=data.WindScale;
+				$rootScope.config.WindSign=data.WindSign;
+				$rootScope.config.language=data.language;
+				$rootScope.config.EnableTabDashboard=data.result.EnableTabDashboard,
+				$rootScope.config.EnableTabFloorplans=data.result.EnableTabFloorplans;
+				$rootScope.config.EnableTabLights=data.result.EnableTabLights;
+				$rootScope.config.EnableTabScenes=data.result.EnableTabScenes;
+				$rootScope.config.EnableTabTemp=data.result.EnableTabTemp;
+				$rootScope.config.EnableTabWeather=data.result.EnableTabWeather;
+				$rootScope.config.EnableTabUtility=data.result.EnableTabUtility;
+				$rootScope.config.EnableTabCustom=data.result.EnableTabCustom;
+				
+				SetLanguage(data.language);
+				
+				//Ver bad (Old code!), should be changed soon!
+				$.FiveMinuteHistoryDays = $rootScope.config.FiveMinuteHistoryDays;
+				
+				$.myglobals.ismobileint=false;
+				if (typeof data.MobileType != 'undefined') {
+					if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
+						$.myglobals.ismobile=true;
+						$.myglobals.ismobileint=true;
+					}
+					if (data.MobileType!=0) {
+						if(!(/iPhone/i.test(navigator.userAgent) )) {
+							$.myglobals.ismobile=false;
+						}
+					}
+				}
+				
+				$.myglobals.DashboardType=data.DashboardType;
+				
+				if (typeof data.WindScale != 'undefined') {
+					$.myglobals.windscale=parseFloat(data.WindScale);
+				}
+				if (typeof data.WindSign != 'undefined') {
+					$.myglobals.windsign=data.WindSign;
+				}
+				if (typeof data.TempScale != 'undefined') {
+					$.myglobals.tempscale=parseFloat(data.TempScale);
+				}
+				if (typeof data.TempSign != 'undefined') {
+					$.myglobals.tempsign=data.TempSign;
+				}
+
+				if (typeof data.result.templates!= 'undefined') {
+					var customHTML="";
+					$.each(data.result.templates, function(i,item)
+					{
+						var cFile=item;
+						var cName=cFile.charAt(0).toUpperCase() + cFile.slice(1);
+						var cURL="templates/"+cFile;
+						customHTML+='<li><a href="javascript:SwitchLayout(\'' + cURL + '\')">' + cName + '</a></li>';
+					});
+					if (customHTML!="") {
+						$("#custommenu").html(customHTML);
+					}
+				}
+			}
+		 },
+		 error: function() {
+			isOnline=false;
+		 }
+		});
+		
 		$http({
 			url: "json.htm?type=command&param=getversion"}
 			).success(function(data) {

@@ -112,7 +112,7 @@ private:
 	void Cmd_GetAuth(Json::Value &root);
 	void Cmd_GetActualHistory(Json::Value &root);
 	void Cmd_GetNewHistory(Json::Value &root);
-	void Cmd_GetActiveTabs(Json::Value &root);
+	void Cmd_GetConfig(Json::Value &root);
 	void Cmd_SendNotification(Json::Value &root);
 	void Cmd_EmailCameraSnapshot(Json::Value &root);
 	void Cmd_UpdateDevice(Json::Value &root);

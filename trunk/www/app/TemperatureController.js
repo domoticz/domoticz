@@ -581,24 +581,9 @@ define(['app'], function (app) {
 				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
 				
 			  if (typeof data.result != 'undefined') {
-			  
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-			  
-				if (typeof data.WindScale != 'undefined') {
-					$.myglobals.windscale=parseFloat(data.WindScale);
-				}
-				if (typeof data.WindSign != 'undefined') {
-					$.myglobals.windsign=data.WindSign;
-				}
-				if (typeof data.TempScale != 'undefined') {
-					$.myglobals.tempscale=parseFloat(data.TempScale);
-				}
-				if (typeof data.TempSign != 'undefined') {
-					$.myglobals.tempsign=data.TempSign;
-				}
-			  
 				$.each(data.result, function(i,item){
 							id="#tempcontent #" + item.idx;
 							var obj=$(id);
@@ -753,9 +738,6 @@ define(['app'], function (app) {
 
 		  var htmlcontent = '';
 		  var bHaveAddedDevider = false;
-			var bAllowWidgetReorder=true;
-
-
 		  var tophtm=
 				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 				'\t<tr>\n' +
@@ -764,7 +746,7 @@ define(['app'], function (app) {
 				'\t  </td>\n' +
 				'\t  <td align="right">\n' +
 				'\t    <a class="btnstyle" onclick="ShowCustomTempLog();" data-i18n="Custom Graph">Custom Graph</a>\n';
-		  if ($.myglobals.Latitude!="") {
+		  if ($scope.config.Latitude!="") {
 			tophtm+=
 				'\t    <a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>\n';
 		  }
@@ -782,26 +764,9 @@ define(['app'], function (app) {
 			 dataType: 'json',
 			 success: function(data) {
 			  if (typeof data.result != 'undefined') {
-
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-			  
-				$.FiveMinuteHistoryDays=data["5MinuteHistoryDays"];
-				if (typeof data.WindScale != 'undefined') {
-					$.myglobals.windscale=parseFloat(data.WindScale);
-				}
-				if (typeof data.WindSign != 'undefined') {
-					$.myglobals.windsign=data.WindSign;
-				}
-				if (typeof data.TempScale != 'undefined') {
-					$.myglobals.tempscale=parseFloat(data.TempScale);
-				}
-				if (typeof data.TempSign != 'undefined') {
-					$.myglobals.tempsign=data.TempSign;
-				}
-				bAllowWidgetReorder=data.AllowWidgetOrdering;
-
 				$.each(data.result, function(i,item){
 				  if (i % 3 == 0)
 				  {
@@ -981,7 +946,7 @@ define(['app'], function (app) {
 
 			$rootScope.RefreshTimeAndSun();
 			
-			if (bAllowWidgetReorder==true) {
+			if ($scope.config.AllowWidgetOrdering==true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint==false) {
 						$("#tempcontent .span4").draggable({

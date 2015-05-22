@@ -53,7 +53,6 @@ extern std::string szStartupFolder;
 extern std::string szWWWFolder;
 
 extern std::string szAppVersion;
-extern bool m_bDontCacheHTMLPages;
 
 struct _tGuiLanguage {
 	const char* szShort;
@@ -410,7 +409,7 @@ namespace http {
 			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1));
 			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1));
 			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1));
-			RegisterCommandCode("getactivetabs", boost::bind(&CWebServer::Cmd_GetActiveTabs, this, _1));
+			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1),true);
 			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1));
 			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1));
 			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1));
@@ -3136,8 +3135,6 @@ namespace http {
 			root["rights"] = m_pWebEm->m_actualuser_rights;
 
 			int nValue = 0;
-			m_sql.GetPreferencesVar("DashboardType", nValue);
-			root["DashboardType"] = nValue;
 		}
 
 		void CWebServer::Cmd_GetActualHistory(Json::Value &root)
@@ -3221,7 +3218,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetActiveTabs(Json::Value &root)
+		void CWebServer::Cmd_GetConfig(Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetActiveTabs";
@@ -3251,18 +3248,25 @@ namespace http {
 			}
 
 			nValue = 0;
-			m_sql.GetPreferencesVar("DashboardType", nValue);
-			root["DashboardType"] = nValue;
+			int iDashboardType = 0;
+			m_sql.GetPreferencesVar("DashboardType", iDashboardType);
+			root["DashboardType"] = iDashboardType;
 			m_sql.GetPreferencesVar("MobileType", nValue);
 			root["MobileType"] = nValue;
 
+			nValue = 1;
+			m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
+			root["FiveMinuteHistoryDays"] = nValue;
+
+			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
 			root["WindScale"] = m_sql.m_windscale*10.0f;
 			root["WindSign"] = m_sql.m_windsign;
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
-			root["dontcachehtml"] = m_bDontCacheHTMLPages;
 
+			std::string Latitude = "1";
+			std::string Longitude = "1";
 			if (m_sql.GetPreferencesVar("Location", nValue, sValue))
 			{
 				std::vector<std::string> strarray;
@@ -3270,16 +3274,14 @@ namespace http {
 
 				if (strarray.size() == 2)
 				{
-					std::string Latitude = strarray[0];
-					std::string Longitude = strarray[1];
-					if (Latitude != "")
-					{
-						root["Latitude"] = Latitude;
-						root["Longitude"] = Longitude;
-					}
+					Latitude = strarray[0];
+					Longitude = strarray[1];
 				}
 			}
+			root["Latitude"] = Latitude;
+			root["Longitude"] = Longitude;
 
+			int bEnableTabDashboard = 1;
 			int bEnableTabFloorplans = 1;
 			int bEnableTabLight = 1;
 			int bEnableTabScenes = 1;
@@ -3290,15 +3292,6 @@ namespace http {
 
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-
-			//Get count of floorplans
-			int totFloorplans = 0;
-			result = m_sql.query("SELECT COUNT(*) FROM Floorplans");
-			if (result.size() > 0)
-			{
-				totFloorplans = atoi(result[0][0].c_str());
-			}
-			root["TotFloorplans"] = totFloorplans;
 
 			if ((UserID != 0) && (UserID != 10000))
 			{
@@ -3326,14 +3319,19 @@ namespace http {
 				m_sql.GetPreferencesVar("EnableTabUtility", bEnableTabUtility);
 				m_sql.GetPreferencesVar("EnableTabCustom", bEnableTabCustom);
 			}
-
-			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans;
-			root["result"]["EnableTabLights"] = bEnableTabLight;
-			root["result"]["EnableTabScenes"] = bEnableTabScenes;
-			root["result"]["EnableTabTemp"] = bEnableTabTemp;
-			root["result"]["EnableTabWeather"] = bEnableTabWeather;
-			root["result"]["EnableTabUtility"] = bEnableTabUtility;
-			root["result"]["EnableTabCustom"] = bEnableTabCustom;
+			if (iDashboardType == 3)
+			{
+				//Floorplan , no need to show a tab floorplan
+				bEnableTabFloorplans = 0;
+			}
+			root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
+			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
+			root["result"]["EnableTabLights"] = bEnableTabLight != 0;
+			root["result"]["EnableTabScenes"] = bEnableTabScenes != 0;
+			root["result"]["EnableTabTemp"] = bEnableTabTemp != 0;
+			root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
+			root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
+			root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
 
 			if (bEnableTabCustom)
 			{
@@ -3770,9 +3768,6 @@ namespace http {
 					urights = static_cast<int>(m_users[iUser].userrights);
 			}
 			root["statuscode"] = urights;
-			int nValue = 1;
-			m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
-			root["5MinuteHistoryDays"] = nValue;
 
 			utsname my_uname;
 			if (uname(&my_uname) < 0)
@@ -7993,18 +7988,6 @@ namespace http {
 
 			root["ActTime"] = static_cast<int>(now);
 
-			int nValue = 0;
-			m_sql.GetPreferencesVar("DashboardType", nValue);
-			root["DashboardType"] = nValue;
-			m_sql.GetPreferencesVar("MobileType", nValue);
-			root["MobileType"] = nValue;
-
-			nValue = 1;
-			m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
-			root["5MinuteHistoryDays"] = nValue;
-
-			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
-
 			char szData[100];
 			char szTmp[300];
 
@@ -11224,11 +11207,6 @@ namespace http {
 
 			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate, false);
 
-			root["WindScale"] = m_sql.m_windscale*10.0f;
-			root["WindSign"] = m_sql.m_windsign;
-			root["TempScale"] = m_sql.m_tempscale;
-			root["TempSign"] = m_sql.m_tempsign;
-			root["dontcachehtml"] = m_bDontCacheHTMLPages;
 			int nValue;
 			std::string sValue;
 			if (m_sql.GetPreferencesVar("Location", nValue, sValue))

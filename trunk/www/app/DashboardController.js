@@ -107,24 +107,9 @@ define(['app'], function (app) {
 				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
 
 			  if (typeof data.result != 'undefined') {
-				$.DashboardType=data.DashboardType;
-			  
-				if (typeof data.WindScale != 'undefined') {
-					$.myglobals.windscale=parseFloat(data.WindScale);
-				}
-				if (typeof data.WindSign != 'undefined') {
-					$.myglobals.windsign=data.WindSign;
-				}
-				if (typeof data.TempScale != 'undefined') {
-					$.myglobals.tempscale=parseFloat(data.TempScale);
-				}
-				if (typeof data.TempSign != 'undefined') {
-					$.myglobals.tempsign=data.TempSign;
-				}
 				if (typeof data.ActTime != 'undefined') {
 					$scope.LastUpdateTime=parseInt(data.ActTime);
 				}
-
 				$.each(data.result, function(i,item){
 								//Scenes
 								if (((item.Type.indexOf('Scene') == 0)||(item.Type.indexOf('Group') == 0))&&(item.Favorite!=0))
@@ -132,7 +117,7 @@ define(['app'], function (app) {
 									id="#dashcontent #scene_" + item.idx;
 									var obj=$(id);
 									if (typeof obj != 'undefined') {
-										if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+										if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 											var status="";
 											if (item.Type.indexOf('Group')==0) {
 												if (item.Status == 'Off') {
@@ -198,7 +183,7 @@ define(['app'], function (app) {
 								id="#dashcontent #light_" + item.idx;
 								var obj=$(id);
 								if (typeof obj != 'undefined') {
-									if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var status=TranslateStatus(item.Status) + " ";
 										if (item.SwitchType == "Doorbell") {
 											status+='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.t("Ring") +'</button>';
@@ -698,13 +683,13 @@ define(['app'], function (app) {
 								var obj=$(id);
 								if (typeof obj != 'undefined') {
 									var vname=item.Name;
-									if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
 									}
 									if ($(id + " #name").html()!=vname) {
 										$(id + " #name").html(vname);
 									}
-									if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var status="";
 										var bHaveBefore=false;
 										if (typeof item.Temp != 'undefined') {
@@ -821,7 +806,7 @@ define(['app'], function (app) {
 									if ($(id + " #name").html()!=item.Name) {
 										$(id + " #name").html(item.Name);
 									}
-									if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var status="";
 										if (typeof item.Rain != 'undefined') {
 											status=item.Rain + ' mm';
@@ -981,7 +966,7 @@ define(['app'], function (app) {
 									if ($(id + " #name").html()!=item.Name) {
 										$(id + " #name").html(item.Name);
 									}
-									if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var tmpStatus=TranslateStatus(item.Status);
 										if (item.SubType=="Security Panel") {
 											tmpStatus+=' <a href="secpanel/"><img src="images/security48.png" class="lcursor" height="16" width="16"></a>';
@@ -1092,7 +1077,7 @@ define(['app'], function (app) {
 									if ($(id + " #name").html()!=item.Name) {
 										$(id + " #name").html(item.Name);
 									}
-									if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var img="";
 										if (item.SubType=="Evohome") {
 											img+=EvohomeImg(item,'evomobile');
@@ -1172,10 +1157,10 @@ define(['app'], function (app) {
 							if ($(id + " #name").html()!=item.Name) {
 								$(id + " #name").html(item.Name);
 							}
-							if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+							if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status="";
 								if (typeof item.Counter != 'undefined') {
-									if ($.DashboardType==0) {
+									if ($scope.config.DashboardType==0) {
 										status+='' + $.t("Usage") + ': ' + item.CounterToday;
 									}
 									else {
@@ -1215,7 +1200,7 @@ define(['app'], function (app) {
 									status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
 								}
 								if (typeof item.Usage != 'undefined') {
-									if ($.DashboardType==0) {
+									if ($scope.config.DashboardType==0) {
 										status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 									}
 									else {
@@ -1224,7 +1209,7 @@ define(['app'], function (app) {
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
 									if (item.CounterDeliv!=0) {
-										if ($.DashboardType==0) {
+										if ($scope.config.DashboardType==0) {
 											status+='<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
 											status+='<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
 										}
@@ -1317,7 +1302,7 @@ define(['app'], function (app) {
 								if (typeof item.Usage != 'undefined') {
 									bigtext=item.Usage;
 									if (item.Type != "P1 Smart Meter") {
-										if ($.DashboardType==0) {
+										if ($scope.config.DashboardType==0) {
 											//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 											if (typeof item.CounterToday != 'undefined') {
 												status+='<br>' + $.t("Today") + ': ' + item.CounterToday;
@@ -1337,7 +1322,7 @@ define(['app'], function (app) {
 											bigtext='-' + item.UsageDeliv;
 										}
 										status+='<br>';
-										if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+										if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 											status+='R: ' + item.CounterDelivToday;
 										}
 										else {
@@ -1399,9 +1384,7 @@ define(['app'], function (app) {
 		  var totdevices=0;
 		  var jj=0;
 		  var bHaveAddedDevider = false;
-		  var bAllowWidgetReorder = true;
-		  
-			var htmlcontent = "";
+		var htmlcontent = "";
 
 			var bShowRoomplan=false;
 			$.RoomPlans = [];
@@ -1437,35 +1420,18 @@ define(['app'], function (app) {
 				if (typeof data.ActTime != 'undefined') {
 					$scope.LastUpdateTime=parseInt(data.ActTime);
 				}
-				$.DashboardType=data.DashboardType;
-				if ($.DashboardType==3) {
+				if ($scope.config.DashboardType==3) {
 					$window.location = '/#Floorplans';
 					return;
 				}
 			 
-				bAllowWidgetReorder=data.AllowWidgetOrdering;
 				var rowItems=3;
-				if ($.DashboardType==1) {
+				if ($scope.config.DashboardType==1) {
 					rowItems=4;
 				}
-				if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 					rowItems=1000;
 				}
-				$.myglobals.DashboardType=$.DashboardType;
-
-				if (typeof data.WindScale != 'undefined') {
-					$.myglobals.windscale=parseFloat(data.WindScale);
-				}
-				if (typeof data.WindSign != 'undefined') {
-					$.myglobals.windsign=data.WindSign;
-				}
-				if (typeof data.TempScale != 'undefined') {
-					$.myglobals.tempscale=parseFloat(data.TempScale);
-				}
-				if (typeof data.TempSign != 'undefined') {
-					$.myglobals.tempsign=data.TempSign;
-				}
-
 			  if (typeof data.result != 'undefined') {
 						//Scenes
 						
@@ -1486,7 +1452,7 @@ define(['app'], function (app) {
 					if (jj == 0)
 					{
 					  //first time
-					  if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					  if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										htmlcontent+='\t    <table class="mobileitem">\n';
 										htmlcontent+='\t    <thead>\n';
 										htmlcontent+='\t    <tr>\n';
@@ -1511,7 +1477,7 @@ define(['app'], function (app) {
 					}
 					
 					var xhtm="";
-								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									xhtm+=
 											'\t    <tr id="scene_' + item.idx +'">\n' +
 											'\t      <td id="name">' + item.Name;
@@ -1536,10 +1502,10 @@ define(['app'], function (app) {
 												'\t    </tr>\n';
 								}
 								else {
-									if ($.DashboardType==0) {
+									if ($scope.config.DashboardType==0) {
 										xhtm='\t<div class="span4 movable" id="scene_' + item.idx +'">\n';
 									}
-									else if ($.DashboardType==1) {
+									else if ($scope.config.DashboardType==1) {
 										xhtm='\t<div class="span3 movable" id="scene_' + item.idx +'">\n';
 									}
 									xhtm+='\t  <section>\n';
@@ -1602,7 +1568,7 @@ define(['app'], function (app) {
 				  //close previous devider
 				  htmlcontent+='</div>\n';
 				}
-				if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							htmlcontent+='\t    </table>\n';
 				}
 				
@@ -1619,7 +1585,7 @@ define(['app'], function (app) {
 					if (jj == 0)
 					{
 					  //first time
-					  if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					  if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										if (htmlcontent!="") {
 											htmlcontent+='<br>';
 										}
@@ -1654,7 +1620,7 @@ define(['app'], function (app) {
 					}
 					
 					var xhtm="";
-								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									xhtm+=
 											'\t    <tr id="light_' + item.idx +'">\n' +
 											'\t      <td id="name">' + item.Name;
@@ -1901,10 +1867,10 @@ define(['app'], function (app) {
 									}
 								}
 								else {
-									if ($.DashboardType==0) {
+									if ($scope.config.DashboardType==0) {
 										xhtm='\t<div class="span4 movable" id="light_' + item.idx +'">\n';
 									}
-									else if ($.DashboardType==1) {
+									else if ($scope.config.DashboardType==1) {
 										xhtm='\t<div class="span3 movable" id="light_' + item.idx +'">\n';
 									}
 									xhtm+='\t  <section>\n';
@@ -2166,7 +2132,7 @@ define(['app'], function (app) {
 				  //close previous devider
 				  htmlcontent+='</div>\n';
 				}
-				if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							htmlcontent+='\t    </table>\n';
 				}
 
@@ -2183,7 +2149,7 @@ define(['app'], function (app) {
 					if (jj == 0)
 					{
 					  //first time
-					  if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					  if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										if (htmlcontent!="") {
 											htmlcontent+='<br>';
 										}
@@ -2210,7 +2176,7 @@ define(['app'], function (app) {
 					  bHaveAddedDevider=true;
 					}
 					var xhtm="";
-								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
 
 									xhtm+=
@@ -2246,10 +2212,10 @@ define(['app'], function (app) {
 												'\t    </tr>\n';
 								}
 								else {
-									if ($.DashboardType==0) {
+									if ($scope.config.DashboardType==0) {
 										xhtm='\t<div class="span4 movable" id="temp_' + item.idx +'">\n';
 									}
-									else if ($.DashboardType==1) {
+									else if ($scope.config.DashboardType==1) {
 										xhtm='\t<div class="span3 movable" id="temp_' + item.idx +'">\n';
 									}
 									xhtm+='\t  <section>\n';
@@ -2328,7 +2294,7 @@ define(['app'], function (app) {
 				  //close previous devider
 				  htmlcontent+='</div>\n';
 				}
-				if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							htmlcontent+='\t    </table>\n';
 				}
 
@@ -2345,7 +2311,7 @@ define(['app'], function (app) {
 					if (jj == 0)
 					{
 					  //first time
-					  if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					  if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										if (htmlcontent!="") {
 											htmlcontent+='<br>';
 										}
@@ -2372,7 +2338,7 @@ define(['app'], function (app) {
 					  bHaveAddedDevider=true;
 					}
 					var xhtm="";
-								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									xhtm+=
 											'\t    <tr id="weather_' + item.idx +'">\n' +
 											'\t      <td id="name">' + item.Name + '</td>\n';
@@ -2419,10 +2385,10 @@ define(['app'], function (app) {
 												'\t    </tr>\n';
 								}
 								else {
-									if ($.DashboardType==0) {
+									if ($scope.config.DashboardType==0) {
 										xhtm='\t<div class="span4 movable" id="weather_' + item.idx +'">\n';
 									}
-									else if ($.DashboardType==1) {
+									else if ($scope.config.DashboardType==1) {
 										xhtm='\t<div class="span3 movable" id="weather_' + item.idx +'">\n';
 									}
 									xhtm+='\t  <section>\n';
@@ -2538,7 +2504,7 @@ define(['app'], function (app) {
 				  //close previous devider
 				  htmlcontent+='</div>\n';
 				}
-				if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							htmlcontent+='\t    </table>\n';
 				}
 
@@ -2552,7 +2518,7 @@ define(['app'], function (app) {
 					if (jj == 0)
 					{
 					  //first time
-					  if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					  if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										if (htmlcontent!="") {
 											htmlcontent+='<br>';
 										}
@@ -2579,7 +2545,7 @@ define(['app'], function (app) {
 					  bHaveAddedDevider=true;
 					}
 					var xhtm="";
-								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									xhtm+=
 											'\t    <tr id="security_' + item.idx +'">\n' +
 											'\t      <td id="name">' + item.Name + '</td>\n';
@@ -2602,17 +2568,17 @@ define(['app'], function (app) {
 									xhtm+='</td>\n\t    </tr>\n';
 								}
 								else {
-									if ($.DashboardType==0) {
+									if ($scope.config.DashboardType==0) {
 										xhtm='\t<div class="span4 movable" id="security_' + item.idx +'">\n';
 									}
-									else if ($.DashboardType==1) {
+									else if ($scope.config.DashboardType==1) {
 										xhtm='\t<div class="span3 movable" id="security_' + item.idx +'">\n';
 									}
 									xhtm+='\t  <section>\n';
-									if ($.DashboardType==0) {
+									if ($scope.config.DashboardType==0) {
 												xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
-									else if ($.DashboardType==1) {
+									else if ($scope.config.DashboardType==1) {
 												xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
 									var nbackcolor="#D4E1EE";
@@ -2696,7 +2662,7 @@ define(['app'], function (app) {
 				  //close previous devider
 				  htmlcontent+='</div>\n';
 				}
-				if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							htmlcontent+='\t    </table>\n';
 				}
 				
@@ -2710,7 +2676,7 @@ define(['app'], function (app) {
 					if (jj == 0)
 					{
 					  //first time
-					  if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					  if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										if (htmlcontent!="") {
 											htmlcontent+='<br>';
 										}
@@ -2737,7 +2703,7 @@ define(['app'], function (app) {
 					  bHaveAddedDevider=true;
 					}
 					var xhtm="";
-								if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									if (item.SubType=="Evohome") {
 										xhtm+=
 											'\t    <tr id="evohome_' + item.idx +'">\n' +
@@ -2748,17 +2714,17 @@ define(['app'], function (app) {
 								}
 								else {
 									if (item.SubType=="Evohome") {
-										if ($.DashboardType==0) {
+										if ($scope.config.DashboardType==0) {
 											xhtm='\t<div class="span4 movable" id="evohome_' + item.idx +'">\n';
 										}
-										else if ($.DashboardType==1) {
+										else if ($scope.config.DashboardType==1) {
 											xhtm='\t<div class="span3 movable" id="evohome_' + item.idx +'">\n';
 										}
 										xhtm+='\t  <section>\n';
-										if ($.DashboardType==0) {
+										if ($scope.config.DashboardType==0) {
 													xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 										}
-										else if ($.DashboardType==1) {
+										else if ($scope.config.DashboardType==1) {
 													xhtm+='\t    <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 										}
 										var nbackcolor="#D4E1EE";
@@ -2791,7 +2757,7 @@ define(['app'], function (app) {
 				  //close previous devider
 				  htmlcontent+='</div>\n';
 				}
-				if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							htmlcontent+='\t    </table>\n';
 				}
 				
@@ -2833,7 +2799,7 @@ define(['app'], function (app) {
 					if (jj == 0)
 					{
 					  //first time
-					  if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					  if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										if (htmlcontent!="") {
 											htmlcontent+='<br>';
 										}
@@ -2860,13 +2826,13 @@ define(['app'], function (app) {
 					  bHaveAddedDevider=true;
 					}
 					var xhtm="";
-					if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+					if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 						xhtm+=
 								'\t    <tr id="utility_' + item.idx +'">\n' +
 								'\t      <td id="name">' + item.Name + '</td>\n';
 						var status="";
 						if (typeof item.Counter != 'undefined') {
-							if ($.DashboardType==0) {
+							if ($scope.config.DashboardType==0) {
 								status='' + $.t("Usage") + ': ' + item.CounterToday;
 							}
 							else {
@@ -2909,7 +2875,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						if (typeof item.Usage != 'undefined') {
-							if ($.DashboardType==0) {
+							if ($scope.config.DashboardType==0) {
 								status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 							}
 							else {
@@ -2918,7 +2884,7 @@ define(['app'], function (app) {
 						}
 						if (typeof item.CounterDeliv != 'undefined') {
 							if (item.CounterDeliv!=0) {
-								if ($.DashboardType==0) {
+								if ($scope.config.DashboardType==0) {
 									status+='<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
 									status+='<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
 								}
@@ -2933,10 +2899,10 @@ define(['app'], function (app) {
 									'\t    </tr>\n';
 					}
 					else {
-						if ($.DashboardType==0) {
+						if ($scope.config.DashboardType==0) {
 							xhtm='\t<div class="span4 movable" id="utility_' + item.idx +'">\n';
 						}
-						else if ($.DashboardType==1) {
+						else if ($scope.config.DashboardType==1) {
 							xhtm='\t<div class="span3 movable" id="utility_' + item.idx +'">\n';
 						}
 						xhtm+='\t  <span>\n';
@@ -3091,7 +3057,7 @@ define(['app'], function (app) {
 						
 						if (typeof item.Usage != 'undefined') {
 							if (item.Type!="P1 Smart Meter") {
-								if ($.DashboardType==0) {
+								if ($scope.config.DashboardType==0) {
 									//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 									if (typeof item.CounterToday != 'undefined') {
 										status+='<br>' + $.t("Today") + ': ' + item.CounterToday;
@@ -3128,7 +3094,7 @@ define(['app'], function (app) {
 				  //close previous devider
 				  htmlcontent+='</div>\n';
 				}
-				if (($.DashboardType==2)||(window.myglobals.ismobile==true)) {
+				if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							htmlcontent+='\t    </table>\n';
 				}
 
@@ -3250,7 +3216,7 @@ define(['app'], function (app) {
 							TxtOn="Open";
 							TxtOff="Close";
 						}
-						if (($.myglobals.DashboardType==2)||(window.myglobals.ismobile==true)) {
+						if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 							if (fPercentage==0)
 							{
 								status='<button class="btn btn-mini" type="button">' + $.t(TxtOn) +'</button> ' +
@@ -3299,8 +3265,7 @@ define(['app'], function (app) {
 			});
 			$scope.ResizeDimSliders();
 
-			var bAllowReorder=bAllowWidgetReorder;
-			if (bAllowReorder==true) {
+			if ($scope.config.AllowWidgetOrdering==true) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint==false) {
 						$("#dashcontent .movable").draggable({

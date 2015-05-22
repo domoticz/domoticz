@@ -764,20 +764,6 @@ define(['app'], function (app) {
 							if (typeof data.ActTime != 'undefined') {
 								window.myglobals.LastUpdate = data.ActTime;
 							}
-
-							if (typeof data.WindScale != 'undefined') {
-								$.myglobals.windscale=parseFloat(data.WindScale);
-							}
-							if (typeof data.WindSign != 'undefined') {
-								$.myglobals.windsign=data.WindSign;
-							}
-							if (typeof data.TempScale != 'undefined') {
-								$.myglobals.tempscale=parseFloat(data.TempScale);
-							}
-							if (typeof data.TempSign != 'undefined') {
-								$.myglobals.tempsign=data.TempSign;
-							}
-
 							// insert devices into the document
 							if (typeof data.result != 'undefined') {
 								$.each(data.result, function(i,item) {

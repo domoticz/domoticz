@@ -255,20 +255,6 @@ define(['app'], function (app) {
 					if (typeof data.ActTime != 'undefined') {
 						$scope.lastUpdateTime = data.ActTime;
 					}
-					
-					if (typeof data.WindScale != 'undefined') {
-						$.myglobals.windscale=parseFloat(data.WindScale);
-					}
-					if (typeof data.WindSign != 'undefined') {
-						$.myglobals.windsign=data.WindSign;
-					}
-					if (typeof data.TempScale != 'undefined') {
-						$.myglobals.tempscale=parseFloat(data.TempScale);
-					}
-					if (typeof data.TempSign != 'undefined') {
-						$.myglobals.tempsign=data.TempSign;
-					}
-
 					// update devices that already exist in the DOM
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function(i,item) {
@@ -309,20 +295,6 @@ define(['app'], function (app) {
 					if ((typeof data.ActTime != 'undefined') && ($scope.lastUpdateTime == 0)) {
 						$scope.lastUpdateTime = data.ActTime;
 					}
-
-					if (typeof data.WindScale != 'undefined') {
-						$.myglobals.windscale=parseFloat(data.WindScale);
-					}
-					if (typeof data.WindSign != 'undefined') {
-						$.myglobals.windsign=data.WindSign;
-					}
-					if (typeof data.TempScale != 'undefined') {
-						$.myglobals.tempscale=parseFloat(data.TempScale);
-					}
-					if (typeof data.TempSign != 'undefined') {
-						$.myglobals.tempsign=data.TempSign;
-					}
-					
 					// insert devices into the document
 					var dev;
 					if (typeof data.result != 'undefined') {
