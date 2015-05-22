@@ -69,7 +69,6 @@ const char *szHelp=
 	"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
 	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
-	"\t-nocache (do not cache HTML pages (for editing)\n"
 #ifndef WIN32
 	"\t-daemon (run as background daemon)\n"
 	"\t-syslog (use syslog as log output)\n"
@@ -97,7 +96,6 @@ http::server::CWebServerHelper m_webservers;
 CSQLHelper m_sql;
 CNotificationHelper m_notifications;
 std::string logfile = "";
-bool m_bDontCacheHTMLPages = true;
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
@@ -615,10 +613,6 @@ int main(int argc, char**argv)
 		bStartWebBrowser = false;
 	}
 #endif
-	if (cmdLine.HasSwitch("-nocache"))
-	{
-		m_bDontCacheHTMLPages = false;
-	}
 #ifndef WIN32
 	if (cmdLine.HasSwitch("-daemon"))
 	{
