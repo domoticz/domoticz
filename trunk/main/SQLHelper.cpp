@@ -5582,11 +5582,25 @@ void CSQLHelper::CleanupShortLog()
         }
 
 		char szDateStr[40];
+		std::vector<std::vector<std::string> > result;
+		sprintf(szDateStr, "datetime('now','-%d day', 'localtime')", n5MinuteHistoryDays);
+
+		std::stringstream sstr;
+		sstr << "SELECT " << szDateStr << " , datetime('now', 'localtime')";
+		result = query(sstr.str());
+		if (result.size() < 1)
+			return;
+		if (result[0][0] == result[0][1])
+		{
+			_log.Log(LOG_ERROR, "Skipping cleanup, invalid value returned from SQLite (no problem, we do this in 5 minutes again!)");
+			return;
+		}
+
 		char szTmp[200];
 
-	    sprintf(szDateStr,"datetime('now','-%d day', 'localtime')",n5MinuteHistoryDays);
+		sprintf(szDateStr, "datetime('now','-%d day', 'localtime')", n5MinuteHistoryDays);
 
-		std::vector<std::vector<std::string> > result;
+
 		std::string szHelper = "SELECT " + std::string(szDateStr);
 		result = query(szHelper);
 		if (result.size() < 1)
