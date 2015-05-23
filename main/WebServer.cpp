@@ -3221,7 +3221,7 @@ namespace http {
 		void CWebServer::Cmd_GetConfig(Json::Value &root)
 		{
 			root["status"] = "OK";
-			root["title"] = "GetActiveTabs";
+			root["title"] = "GetConfig";
 
 			bool bHaveUser = (m_pWebEm->m_actualuser != "");
 			int urights = 3;
