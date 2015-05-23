@@ -53,7 +53,7 @@ server::server(const std::string& address, const std::string& port,
 	context_.use_private_key_file(certificatefile, boost::asio::ssl::context::pem);
 
 	//Check if certificate contains DH parameters
-	std::ifstream ifs(certificatefile);
+	std::ifstream ifs(certificatefile.c_str());
 	std::string content((std::istreambuf_iterator<char>(ifs)),
 		(std::istreambuf_iterator<char>()));
 	if (content.find("BEGIN DH PARAMETERS")!=std::string::npos)
