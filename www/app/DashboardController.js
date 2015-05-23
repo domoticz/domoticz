@@ -693,14 +693,14 @@ define(['app'], function (app) {
 										var status="";
 										var bHaveBefore=false;
 										if (typeof item.Temp != 'undefined') {
-												 status+=item.Temp + '&deg; ' + $.myglobals.tempsign;
+												 status+=item.Temp + '&deg; ' + $scope.config.TempSign;
 												 bHaveBefore=true;
 										}
 										if (typeof item.Chill != 'undefined') {
 											if (status!="") {
 												status+=', ';
 											}
-											status+=$.t('Chill') + ': ' + item.Chill + '&deg; ' + $.myglobals.tempsign;
+											status+=$.t('Chill') + ': ' + item.Chill + '&deg; ' + $scope.config.TempSign;
 											bHaveBefore=true;
 										}
 										if (typeof item.Humidity != 'undefined') {
@@ -713,7 +713,7 @@ define(['app'], function (app) {
 											status+=' (' + $.t(item.HumidityStatus) + ')';
 										}
 										if (typeof item.DewPoint != 'undefined') {
-											status+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $.myglobals.tempsign;
+											status+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 										}
 									}
 									else {
@@ -759,7 +759,7 @@ define(['app'], function (app) {
 											if (bHaveBefore==true) {
 												status+=", ";
 											}
-											status+=$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $.myglobals.tempsign;
+											status+=$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 										}
 									
 										var nbackcolor="#D4E1EE";
@@ -829,10 +829,10 @@ define(['app'], function (app) {
 											img='<img src="images/Wind' + item.DirectionStr + '.png" height="40" width="40">';
 											status=item.Direction + ' ' + item.DirectionStr;
 											if (typeof item.Speed != 'undefined') {
-												status+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+												status+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 											}
 											if (typeof item.Gust != 'undefined') {
-												status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+												status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 											}
 										}
 										else if (typeof item.Barometer != 'undefined') {
@@ -874,7 +874,7 @@ define(['app'], function (app) {
 											status=item.UVI + ' UVI';
 											bigtext=item.UVI + ' UVI';
 											if (typeof item.Temp!= 'undefined') {
-												status+=', Temp: ' + item.Temp + '&deg; ' + $.myglobals.tempsign;
+												status+=', Temp: ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 											}
 										}
 										else if (typeof item.Radiation != 'undefined') {
@@ -886,27 +886,27 @@ define(['app'], function (app) {
 											img='<img src="images/Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40">';
 											status=item.Direction + ' ' + item.DirectionStr;
 											if (typeof item.Speed != 'undefined') {
-												status+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+												status+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 											}
 											if (typeof item.Gust != 'undefined') {
-												status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+												status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 											}
 											status+='<br>\n';
 											if (typeof item.Temp != 'undefined') {
-												status+=$.t('Temp') + ': ' + item.Temp + '&deg; ' + $.myglobals.tempsign;
+												status+=$.t('Temp') + ': ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 											}
 											if (typeof item.Chill != 'undefined') {
 												if (typeof item.Temp != 'undefined') {
 													status+=', ';
 												}
-												status+=$.t('Chill') +': ' + item.Chill + '&deg; ' + $.myglobals.tempsign;
+												status+=$.t('Chill') +': ' + item.Chill + '&deg; ' + $scope.config.TempSign;
 											}
 											bigtext=item.DirectionStr;
 											if (typeof item.Speed != 'undefined') {
-												bigtext+=' / ' + item.Speed + ' ' + $.myglobals.windsign;
+												bigtext+=' / ' + item.Speed + ' ' + $scope.config.WindSign;
 											}
 											else if (typeof item.Gust != 'undefined') {
-												bigtext+=' / ' + item.Gust + ' ' + $.myglobals.windsign;
+												bigtext+=' / ' + item.Gust + ' ' + $scope.config.WindSign;
 											}
 										}
 										else if (typeof item.Barometer != 'undefined') {
@@ -1194,10 +1194,10 @@ define(['app'], function (app) {
 									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-									status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+									status+=item.Data + '\u00B0 ' + $scope.config.TempSign;
 								}
 								else if (item.SubType=="Smartwares") {
-									status+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+									status+=item.Data + '\u00B0 ' + $scope.config.TempSign;
 								}
 								if (typeof item.Usage != 'undefined') {
 									if ($scope.config.DashboardType==0) {
@@ -1288,12 +1288,12 @@ define(['app'], function (app) {
 									bigtext=item.Data;
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-									status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
-									bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+									status=item.Data + '\u00B0 ' + $scope.config.TempSign;
+									bigtext=item.Data + '\u00B0 ' + $scope.config.TempSign;
 								}
 								else if (item.SubType=="Smartwares") {
-									status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
-									bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+									status=item.Data + '\u00B0 ' + $scope.config.TempSign;
+									bigtext=item.Data + '\u00B0 ' + $scope.config.TempSign;
 								}
 								else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
 									status=item.Data;
@@ -1433,15 +1433,7 @@ define(['app'], function (app) {
 					rowItems=1000;
 				}
 			  if (typeof data.result != 'undefined') {
-						//Scenes
-						
-				if (typeof data.WindScale != 'undefined') {
-					$.myglobals.windscale=parseFloat(data.WindScale);
-				}
-				if (typeof data.WindSign != 'undefined') {
-					$.myglobals.windsign=data.WindSign;
-				}
-						
+				//Scenes
 				jj=0;
 				bHaveAddedDevider = false;
 				$.each(data.result, function(i,item) {
@@ -2185,14 +2177,14 @@ define(['app'], function (app) {
 									var status="";
 									var bHaveBefore=false;
 									if (typeof item.Temp != 'undefined') {
-											 status+=item.Temp + '&deg; ' + $.myglobals.tempsign;
+											 status+=item.Temp + '&deg; ' + $scope.config.TempSign;
 											 bHaveBefore=true;
 									}
 									if (typeof item.Chill != 'undefined') {
 										if (bHaveBefore) {
 											status+=', ';
 										}
-										status+=$.t('Chill') +': ' + item.Chill + '&deg; ' + $.myglobals.tempsign;
+										status+=$.t('Chill') +': ' + item.Chill + '&deg; ' + $scope.config.TempSign;
 										bHaveBefore=true;
 									}
 									if (typeof item.Humidity != 'undefined') {
@@ -2205,7 +2197,7 @@ define(['app'], function (app) {
 										status+=' (' + $.t(item.HumidityStatus) + ')';
 									}
 									if (typeof item.DewPoint != 'undefined') {
-										status+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $.myglobals.tempsign;
+										status+="<br>"+$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 									}
 									xhtm+=
 												'\t      <td id="status">' + status + '</td>\n' +
@@ -2276,7 +2268,7 @@ define(['app'], function (app) {
 										if (bHaveBefore==true) {
 											xhtm+=', ';
 										}
-										xhtm+=$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $.myglobals.tempsign;
+										xhtm+=$.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 									}
 									xhtm+=
 											'</td>\n' +
@@ -2363,10 +2355,10 @@ define(['app'], function (app) {
 									else if (typeof item.Direction != 'undefined') {
 										status=item.Direction + ' ' + item.DirectionStr;
 										if (typeof item.Speed != 'undefined') {
-											status+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+											status+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 										}
 										if (typeof item.Gust != 'undefined') {
-											status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+											status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 										}
 									}
 									else if (typeof item.Barometer != 'undefined') {
@@ -2426,10 +2418,10 @@ define(['app'], function (app) {
 									else if (typeof item.Direction != 'undefined') {
 										xhtm+=item.DirectionStr;
 										if (typeof item.Speed != 'undefined') {
-											xhtm+=' / ' + item.Speed + ' ' + $.myglobals.windsign;
+											xhtm+=' / ' + item.Speed + ' ' + $scope.config.WindSign;
 										}
 										else if (typeof item.Gust != 'undefined') {
-											xhtm+=' / ' + item.Gust + ' ' + $.myglobals.windsign;
+											xhtm+=' / ' + item.Gust + ' ' + $scope.config.WindSign;
 										}
 									}
 									xhtm+='</td>\n';
@@ -2451,7 +2443,7 @@ define(['app'], function (app) {
 										xhtm+='uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n' +
 										'\t      <td id="status">' + item.UVI + ' UVI';
 										if (typeof item.Temp!= 'undefined') {
-											xhtm+=', Temp: ' + item.Temp + '&deg; ' + $.myglobals.tempsign;
+											xhtm+=', Temp: ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 										}
 									}
 									else if (typeof item.Radiation != 'undefined') {
@@ -2462,20 +2454,20 @@ define(['app'], function (app) {
 										xhtm+='Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n' +
 										'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
 										if (typeof item.Speed != 'undefined') {
-											xhtm+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+											xhtm+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 										}
 										if (typeof item.Gust != 'undefined') {
-											xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+											xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 										}
 										xhtm+='<br>\n';
 										if (typeof item.Temp != 'undefined') {
-											xhtm+=$.t('Temp') + ': ' + item.Temp + '&deg; ' + $.myglobals.tempsign;
+											xhtm+=$.t('Temp') + ': ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 										}
 										if (typeof item.Chill != 'undefined') {
 											if (typeof item.Temp != 'undefined') {
 												xhtm+=', ';
 											}
-											xhtm+=$.t('Chill') + ': ' + item.Chill + '&deg; ' + $.myglobals.tempsign;
+											xhtm+=$.t('Chill') + ': ' + item.Chill + '&deg; ' + $scope.config.TempSign;
 										}
 									}
 									else if (typeof item.Barometer != 'undefined') {
@@ -2866,10 +2858,10 @@ define(['app'], function (app) {
 							status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						else if (item.SubType=="Smartwares") {
-							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
 							status=item.Data;
@@ -2956,10 +2948,10 @@ define(['app'], function (app) {
 							xhtm+=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							xhtm+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							xhtm+=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						else if (item.SubType=="Smartwares") {
-							xhtm+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							xhtm+=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						xhtm+='</td>\n';
 						xhtm+='\t      <td id="img"><img src="images/';
@@ -3040,11 +3032,11 @@ define(['app'], function (app) {
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
-							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						else if (item.SubType=="Smartwares") {
 							xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ');" height="40" width="40"></td>\n';
-							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
 							xhtm+='mode48.png" height="40" width="40"></td>\n';
@@ -3345,6 +3337,7 @@ define(['app'], function (app) {
 		{
 			$(window).resize(function() { $scope.ResizeDimSliders(); });
 			$scope.LastUpdateTime=parseInt(0);
+			$scope.MakeGlobalConfig();
 			ShowFavorites();
 		};
 		

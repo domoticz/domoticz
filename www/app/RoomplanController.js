@@ -485,6 +485,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			$scope.MakeGlobalConfig();
 		  ShowPlans();
 		};
 		$scope.$on('$destroy', function(){

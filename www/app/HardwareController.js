@@ -2286,6 +2286,7 @@ define(['app'], function (app) {
 				SerialPortStr : [],
 				SelectedHardwareIdx: 0
 			};
+			$scope.MakeGlobalConfig();
 			
 			//Get hardware types
 			$("#hardwareparamstable #combotype").html("");

@@ -559,6 +559,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
+		  $scope.MakeGlobalConfig();
 		  $scope.MakeScrollLink("#idsystem","#system");
 		  $scope.MakeScrollLink("#idloghistory","#loghistory");
 		  $scope.MakeScrollLink("#idnotifications","#notifications");

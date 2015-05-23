@@ -11206,25 +11206,6 @@ namespace http {
 			root["title"] = "Devices";
 
 			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate, false);
-
-			int nValue;
-			std::string sValue;
-			if (m_sql.GetPreferencesVar("Location", nValue, sValue))
-			{
-				std::vector<std::string> strarray;
-				StringSplit(sValue, ";", strarray);
-
-				if (strarray.size() == 2)
-				{
-					std::string Latitude = strarray[0];
-					std::string Longitude = strarray[1];
-					if (Latitude != "")
-					{
-						root["Latitude"] = Latitude;
-						root["Longitude"] = Longitude;
-					}
-				}
-			}
 		}
 
 		void CWebServer::RType_Cameras(Json::Value &root)

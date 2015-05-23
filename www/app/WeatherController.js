@@ -144,7 +144,7 @@ define(['app'], function (app) {
 						status=item.UVI + ' UVI';
 						bigtext=item.UVI + ' UVI';
 						if (typeof item.Temp!= 'undefined') {
-							status+=', ' + $.t('Temp') + ': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign;
+							status+=', ' + $.t('Temp') + ': ' + item.Temp + '\u00B0 ' + $scope.config.TempSign;
 						}
 					}
 					if (typeof item.Radiation != 'undefined') {
@@ -156,26 +156,26 @@ define(['app'], function (app) {
 						img='<img src="images/Wind' + item.DirectionStr + '.png" height="48" width="48">';
 						status=item.Direction + ' ' + item.DirectionStr;
 						if (typeof item.Speed != 'undefined') {
-							status+=', ' + $.t('Speed') +': ' + item.Speed + ' ' + $.myglobals.windsign;
+							status+=', ' + $.t('Speed') +': ' + item.Speed + ' ' + $scope.config.WindSign;
 						}
 						if (typeof item.Gust != 'undefined') {
-							status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+							status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 						}
 						status+='<br>\n';
 						bigtext=item.DirectionStr;
 						if (typeof item.Speed != 'undefined') {
-							bigtext+=  ' / ' + item.Speed + ' ' + $.myglobals.windsign;
+							bigtext+=  ' / ' + item.Speed + ' ' + $scope.config.WindSign;
 						}
 						else if (typeof item.Gust != 'undefined') {
-							bigtext+=  ' / ' + item.Gust + ' ' + $.myglobals.windsign;
+							bigtext+=  ' / ' + item.Gust + ' ' + $scope.config.WindSign;
 						}
 						if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
-							status+=$.t('Temp') + ': ' + item.Temp + '\u00B0 ' +  $.myglobals.tempsign + ', ';
-							status+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+							status+=$.t('Temp') + ': ' + item.Temp + '\u00B0 ' +  $scope.config.TempSign + ', ';
+							status+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $scope.config.TempSign;
 						}
 						else {
 							if (typeof item.Chill != 'undefined') {
-								status+=$.t('Chill') + ': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+								status+=$.t('Chill') + ': ' + item.Chill + '\u00B0 ' + $scope.config.TempSign;
 							}
 						}
 					}
@@ -312,10 +312,10 @@ define(['app'], function (app) {
 								xhtm+=item.DirectionStr;
 							}
 							if (typeof item.Speed != 'undefined') {
-								xhtm+=' / ' + item.Speed + ' ' + $.myglobals.windsign;
+								xhtm+=' / ' + item.Speed + ' ' + $scope.config.WindSign;
 							}
 							else if (typeof item.Gust != 'undefined') {
-								xhtm+=' / ' + item.Gust + ' ' + $.myglobals.windsign;
+								xhtm+=' / ' + item.Gust + ' ' + $scope.config.WindSign;
 							}
 							xhtm+='</td>\n';
 							xhtm+='\t      <td id="img"><img src="images/';
@@ -350,7 +350,7 @@ define(['app'], function (app) {
 								xhtm+='uv48.png" height="48" width="48"></td>\n' +
 								'\t      <td id="status">' + item.UVI + ' UVI';
 								if (typeof item.Temp!= 'undefined') {
-									xhtm+=', ' + $.t('Temp') +': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign;
+									xhtm+=', ' + $.t('Temp') +': ' + item.Temp + '\u00B0 ' + $scope.config.TempSign;
 								}
 							}
 							else if (typeof item.Radiation != 'undefined') {
@@ -363,19 +363,19 @@ define(['app'], function (app) {
 								xhtm+='Wind' + item.DirectionStr + '.png" height="48" width="48"></td>\n' +
 								'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
 								if (typeof item.Speed != 'undefined') {
-									xhtm+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 								}
 								if (typeof item.Gust != 'undefined') {
-									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 								}
 								xhtm+='<br>\n';
 								if ((typeof item.Temp != 'undefined')&&(typeof item.Chill != 'undefined')) {
-									xhtm+=$.t('Temp') +': ' + item.Temp + '\u00B0 ' + $.myglobals.tempsign + ', ';
-									xhtm+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+									xhtm+=$.t('Temp') +': ' + item.Temp + '\u00B0 ' + $scope.config.TempSign + ', ';
+									xhtm+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $scope.config.TempSign;
 								}
 								else  {
 									if (typeof item.Chill != 'undefined') {
-										xhtm+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $.myglobals.tempsign;
+										xhtm+=$.t('Chill') +': ' + item.Chill + '\u00B0 ' + $scope.config.TempSign;
 									}
 								}
 							}
@@ -503,6 +503,7 @@ define(['app'], function (app) {
 			//global var
 			$.devIdx=0;
 			$.LastUpdateTime=parseInt(0);
+			$scope.MakeGlobalConfig();
 			
 			var dialog_editweatherdevice_buttons = {};
 			dialog_editweatherdevice_buttons[$.t("Update")]=function() {

@@ -399,6 +399,7 @@ define(['app'], function (app) {
 			//global var
 			$.devIdx=0;
 			$.LightsAndSwitches = [];
+			$scope.MakeGlobalConfig();
 					
 			var dialog_adddevice_buttons = {};
 			dialog_adddevice_buttons[$.t("Add Device")]=function() {

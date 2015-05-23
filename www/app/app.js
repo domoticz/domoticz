@@ -342,7 +342,40 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		};
 		permissions.setPermissions(permissionList);					
 
-		$rootScope.yahoo=false;
+		$rootScope.MakeGlobalConfig = function()
+		{
+			//Ver bad (Old code!), should be changed soon!
+			$.FiveMinuteHistoryDays = $rootScope.config.FiveMinuteHistoryDays;
+			
+			$.myglobals.ismobileint=false;
+			if (typeof $rootScope.config.MobileType != 'undefined') {
+				if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
+					$.myglobals.ismobile=true;
+					$.myglobals.ismobileint=true;
+				}
+				if ($rootScope.config.MobileType!=0) {
+					if(!(/iPhone/i.test(navigator.userAgent) )) {
+						$.myglobals.ismobile=false;
+					}
+				}
+			}
+			
+			$.myglobals.DashboardType=$rootScope.config.DashboardType;
+			
+			if (typeof $rootScope.config.WindScale != 'undefined') {
+				$.myglobals.windscale=parseFloat($rootScope.config.WindScale);
+			}
+			if (typeof $rootScope.config.WindSign != 'undefined') {
+				$.myglobals.windsign=$rootScope.config.WindSign;
+			}
+			if (typeof $rootScope.config.TempScale != 'undefined') {
+				$.myglobals.tempscale=parseFloat($rootScope.config.TempScale);
+			}
+			if (typeof $rootScope.config.TempSign != 'undefined') {
+				$.myglobals.tempsign=$rootScope.config.TempSign;
+			}
+		}
+
 		$rootScope.config={
 				EnableTabDashboard: true,
 				EnableTabFloorplans: false,
@@ -394,36 +427,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				
 				SetLanguage(data.language);
 				
-				//Ver bad (Old code!), should be changed soon!
-				$.FiveMinuteHistoryDays = $rootScope.config.FiveMinuteHistoryDays;
-				
-				$.myglobals.ismobileint=false;
-				if (typeof data.MobileType != 'undefined') {
-					if( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
-						$.myglobals.ismobile=true;
-						$.myglobals.ismobileint=true;
-					}
-					if (data.MobileType!=0) {
-						if(!(/iPhone/i.test(navigator.userAgent) )) {
-							$.myglobals.ismobile=false;
-						}
-					}
-				}
-				
-				$.myglobals.DashboardType=data.DashboardType;
-				
-				if (typeof data.WindScale != 'undefined') {
-					$.myglobals.windscale=parseFloat(data.WindScale);
-				}
-				if (typeof data.WindSign != 'undefined') {
-					$.myglobals.windsign=data.WindSign;
-				}
-				if (typeof data.TempScale != 'undefined') {
-					$.myglobals.tempscale=parseFloat(data.TempScale);
-				}
-				if (typeof data.TempSign != 'undefined') {
-					$.myglobals.tempsign=data.TempSign;
-				}
+				$rootScope.MakeGlobalConfig();
 
 				if (typeof data.result.templates!= 'undefined') {
 					var customHTML="";

@@ -4,6 +4,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			$scope.MakeGlobalConfig();
 		};
 	} ]);
 });

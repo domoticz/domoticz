@@ -394,6 +394,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			$scope.MakeGlobalConfig();
 			//Get devices
 			$("#fibaromain #devicename").html("");
 			$.ajax({
