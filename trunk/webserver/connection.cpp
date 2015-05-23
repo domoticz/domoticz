@@ -112,6 +112,10 @@ void connection::handle_handshake(const boost::system::error_code& error)
 			// handshake completed, start reading
 			read_more_secure();
 		}
+		else
+		{
+			connection_manager_.stop(shared_from_this());
+		}
   }
 }
 

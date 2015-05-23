@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include <boost/bind.hpp>
 #include "server.hpp"
+#include <fstream>
 
 namespace http {
 namespace server {
@@ -19,10 +20,21 @@ server::server(const std::string& address, const std::string& port,
 #endif
     request_handler_( user_request_handler),
 	timeout_(20), // default read timeout in seconds
-    new_connection_(new connection(io_service_,
-          connection_manager_, request_handler_, timeout_))
+	secure_(false)
 {
-  secure_ = (certificatefile != "");
+#ifdef NS_ENABLE_SSL
+	secure_ = (certificatefile != "");
+#endif
+  if (!secure_)
+  {
+	  new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_));
+  }
+  else
+  {
+#ifdef NS_ENABLE_SSL
+	  new_connection_.reset(new connection(io_service_, connection_manager_, request_handler_, timeout_,context_));
+#endif
+  }
   // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
   boost::asio::ip::tcp::resolver resolver(io_service_);
   boost::asio::ip::tcp::resolver::query query(address, port);
@@ -39,8 +51,13 @@ server::server(const std::string& address, const std::string& port,
 		| boost::asio::ssl::context::single_dh_use);
 	context_.use_certificate_chain_file(certificatefile);
 	context_.use_private_key_file(certificatefile, boost::asio::ssl::context::pem);
-	// we won't use a separate diffie hellman file (commented out)
-	// context_.use_tmp_dh_file("dh512.pem");
+
+	//Check if certificate contains DH parameters
+	std::ifstream ifs(certificatefile);
+	std::string content((std::istreambuf_iterator<char>(ifs)),
+		(std::istreambuf_iterator<char>()));
+	if (content.find("BEGIN DH PARAMETERS")!=std::string::npos)
+		context_.use_tmp_dh_file(certificatefile);
 #endif
   }
   // bind to our port

@@ -450,11 +450,11 @@ bool CRFLink::ParseLine(const std::string &sLine)
 #endif
 
 	std::string Sensor_ID = results[1];
-	std::string Name_ID = results[2];
-	if (results.size() == 3)
+	if (results.size() >2)
 	{
 		//Status reply
-		if (Name_ID.find("Nodo RadioFrequencyLink")!=std::string::npos)
+		std::string Name_ID = results[2];
+		if (Name_ID.find("Nodo RadioFrequencyLink") != std::string::npos)
 		{
 			_log.Log(LOG_STATUS, "RFLink: Controller Initialized!...");
 			//Enable DEBUG
