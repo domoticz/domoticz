@@ -4,6 +4,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			$scope.MakeGlobalConfig();
 			var htmlcontent = '';
 			htmlcontent+='<iframe class="cIFrameLarge" id="IMain" src="http://forecast.io/#/f/' + $scope.config.Latitude + ',' + $scope.config.Longitude + '"></iframe>';
 			$('#maincontent').html(htmlcontent);

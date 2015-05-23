@@ -31,7 +31,7 @@ define(['app'], function (app) {
 			$.devIdx=idx;
 			$("#dialog-edittempdevice #devicename").val(decodeURIComponent(name));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
-			$("#dialog-edittempdevice #tempcf").html($.myglobals.tempsign);
+			$("#dialog-edittempdevice #tempcf").html($scope.config.TempSign);
 			$("#dialog-edittempdevice" ).i18n();
 			$("#dialog-edittempdevice" ).dialog( "open" );
 		}
@@ -482,7 +482,7 @@ define(['app'], function (app) {
 			  yAxis: [{ //temp label
 				  labels:  {
 						   formatter: function() {
-								return this.value +'\u00B0 ' + $.myglobals.tempsign;
+								return this.value +'\u00B0 ' + $scope.config.TempSign;
 						   },
 						   style: {
 							  color: 'white'
@@ -532,7 +532,7 @@ define(['app'], function (app) {
 				  formatter: function() {
 						var unit = '';
 						var baseName = this.series.name.split(':')[1];
-						if (baseName==$.t("Humidity")) {unit = '%'} else {unit = '\u00B0 ' + $.myglobals.tempsign};
+						if (baseName==$.t("Humidity")) {unit = '%'} else {unit = '\u00B0 ' + $scope.config.TempSign};
 						return $.t(Highcharts.dateFormat('%A',this.x)) + '<br/>' + Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x) +'<br/>'+ this.series.name + ': ' + this.y + unit ;
 				  }
 			  },
@@ -627,7 +627,7 @@ define(['app'], function (app) {
 							tUntil=item.Until;
 						if (typeof item.SetPoint != 'undefined'){
 							bigtext+=' ('+item.SetPoint + '\u00B0)';
-							status+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
+							status+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
 							setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
 						}
 						if (typeof item.State != 'undefined'){
@@ -671,16 +671,16 @@ define(['app'], function (app) {
 					  bHaveBefore=false;
 					}
 					if (typeof item.Direction != 'undefined') {
-					  status+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+					  status+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 					  if (typeof item.Gust != 'undefined') {
-						status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+						status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 					  }
 					}
 					if (typeof item.DewPoint != 'undefined') {
 						if (bHaveBefore==true) {
 							status+=', ';
 						}
-						status+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
+						status+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $scope.config.TempSign;
 					}
 
 					var nbackcolor="#D4E1EE";
@@ -849,7 +849,7 @@ define(['app'], function (app) {
 							var bHaveBefore=false;
 							if (item.SubType=="Zone" || item.SubType=="Hot Water") {
 								if (typeof item.SetPoint != 'undefined'){
-									xhtm+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $.myglobals.tempsign;
+									xhtm+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
 								}
 								if (typeof item.State != 'undefined'){
 									xhtm+=', '+$.t('State') + ': ' + item.State;
@@ -876,16 +876,16 @@ define(['app'], function (app) {
 								bHaveBefore=false;
 							}
 							if (typeof item.Direction != 'undefined') {
-								xhtm+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $.myglobals.windsign;
+								xhtm+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 								if (typeof item.Gust != 'undefined') {
-									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $.myglobals.windsign;
+									xhtm+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 								}
 							}
 							if (typeof item.DewPoint != 'undefined') {
 								if (bHaveBefore==true) {
 									xhtm+=', ';
 								}
-								xhtm+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $.myglobals.tempsign;
+								xhtm+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $scope.config.TempSign;
 							}
 							xhtm+=
 									'</td>\n' +
@@ -991,6 +991,8 @@ define(['app'], function (app) {
 			//global var
 			$.devIdx=0;
 			$.LastUpdateTime=parseInt(0);
+			
+			$scope.MakeGlobalConfig();
 			
 			var dialog_edittempdevice_buttons = {};
 			dialog_edittempdevice_buttons[$.t("Update")]=function() {

@@ -523,7 +523,7 @@ define(['app'], function (app) {
 				$("#dialog-editsetpointdevice #devicename").val(decodeURIComponent(name));
 				$('#dialog-editsetpointdevice #protected').prop('checked',(isprotected==true));
 				$("#dialog-editsetpointdevice #setpoint").val(setpoint);
-				$("#dialog-editsetpointdevice #tempunit").html($.myglobals.tempsign);
+				$("#dialog-editsetpointdevice #tempunit").html($scope.config.TempSign);
 				$("#dialog-editsetpointdevice" ).i18n();
 				$("#dialog-editsetpointdevice" ).dialog( "open" );
 			});
@@ -698,12 +698,12 @@ define(['app'], function (app) {
 							bigtext=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
-							bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
+							bigtext=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						else if (item.Type == "Radiator 1") {
-							status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
-							bigtext=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
+							bigtext=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						else if (item.SubType=="Thermostat Clock") {
 						  status=item.Data;
@@ -921,7 +921,7 @@ define(['app'], function (app) {
 						  xhtm+=item.Data;
 						}
 						else if (item.Type == "Thermostat") {
-						  xhtm+=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+						  xhtm+=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
 						xhtm+='</td>\n';
 				  xhtm+='\t      <td id="img"><img src="images/';
@@ -1000,11 +1000,11 @@ define(['app'], function (app) {
 					}
 					else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 					  xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
-					  status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+					  status=item.Data + '\u00B0 ' + $scope.config.TempSign;
 					}
 					else if (item.Type == "Radiator 1") {
 					  xhtm+='override.png" height="48" width="48"></td>\n';
-					  status=item.Data + '\u00B0 ' + $.myglobals.tempsign;
+					  status=item.Data + '\u00B0 ' + $scope.config.TempSign;
 					}
 					else if (item.SubType=="Thermostat Clock") {
 					  xhtm+='clock48.png" height="48" width="48"></td>\n';
@@ -1287,6 +1287,7 @@ define(['app'], function (app) {
 			//global var
 			$.devIdx=0;
 			$.LastUpdateTime=parseInt(0);
+			$scope.MakeGlobalConfig();
 
 			$.myglobals = {
 				TimerTypesStr : [],

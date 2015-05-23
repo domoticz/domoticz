@@ -318,6 +318,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			$scope.MakeGlobalConfig();
 			//Get devices
 			$("#userdevices #userdevicestable #devices").html("");
 			$.ajax({

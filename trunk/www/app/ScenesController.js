@@ -1456,6 +1456,7 @@ define(['app'], function (app) {
 				SelectedTimerIdx: 0
 			};
 			$.LightsAndSwitches = [];
+			$scope.MakeGlobalConfig();
 
 			$('#timerparamstable #combotype > option').each(function() {
 						 $.myglobals.TimerTypesStr.push($(this).text());

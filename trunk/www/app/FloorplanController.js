@@ -495,6 +495,7 @@ define(['app'], function (app) {
 		function init()
 		{
 			try {
+				$scope.MakeGlobalConfig();
 				ShowFloorplans();
 			}
 			catch(err) {

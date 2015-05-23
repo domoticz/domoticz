@@ -839,6 +839,7 @@ define(['app'], function (app) {
 		function init()
 		{
 			Device.initialise();
+			$scope.MakeGlobalConfig();
 			ShowFloorplans();
 			$("#floorplanimage").on("click", function ( event ) {FloorplanClick(event);});
 			$("#roompolyarea").on("click", function ( event ) {PolyClick(event);});
