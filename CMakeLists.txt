@@ -214,6 +214,7 @@ hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
 hardware/PhilipsHue.cpp
 hardware/PiFace.cpp
+hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
