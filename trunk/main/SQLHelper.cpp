@@ -2874,7 +2874,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 	std::stringstream s_str( result[0][0] );
 	s_str >> ulID;
 	std::string devicename=result[0][1];
-
+	std::string szExtraData = "|Name=" + devicename + "|";
 	std::vector<_tNotification> notifications=GetNotifications(ulID);
 	if (notifications.size()==0)
 		return false;
@@ -2915,6 +2915,13 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			if ((ntype==signtemp)&&(bHaveTemp))
 			{
 				//temperature
+				if (temp > 30.0) szExtraData+="Image=temp-gt-30|";
+				else if (temp > 25.0) szExtraData+="Image=temp-25-30|";
+				else if (temp > 20.0) szExtraData+="Image=temp-20-25|";
+				else if (temp > 15.0) szExtraData+="Image=temp-15-20|";
+				else if (temp > 10.0) szExtraData+="Image=temp-10-15|";
+				else if (temp > 5.0) szExtraData+="Image=temp-5-10|";
+				else szExtraData+="Image=temp48|";
 				if (bWhenIsGreater)
 				{
 					if (temp>svalue)
@@ -2937,6 +2944,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			else if ((ntype==signhum)&&(bHaveHumidity))
 			{
 				//humanity
+				szExtraData+="Image=moisture48|";
 				if (bWhenIsGreater)
 				{
 					if (humidity>svalue)
@@ -2960,7 +2968,7 @@ bool CSQLHelper::CheckAndHandleTempHumidityNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -2992,7 +3000,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 	std::stringstream s_str( result[0][0] );
 	s_str >> ulID;
 	std::string devicename=result[0][1];
-
+	std::string szExtraData = "|Name=" + devicename + "|Image=temp-0-5|";
 	std::vector<_tNotification> notifications=GetNotifications(ulID);
 	if (notifications.size()==0)
 		return false;
@@ -3036,7 +3044,7 @@ bool CSQLHelper::CheckAndHandleDewPointNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3069,7 +3077,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 	std::stringstream s_str( result[0][0] );
 	s_str >> ulID;
 	std::string devicename=result[0][1];
-
+	std::string szExtraData = "|Name=" + devicename + "|Image=current48|";
 	std::vector<_tNotification> notifications=GetNotifications(ulID);
 	if (notifications.size()==0)
 		return false;
@@ -3173,7 +3181,7 @@ bool CSQLHelper::CheckAndHandleAmpere123Notification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3205,14 +3213,14 @@ bool CSQLHelper::CheckAndHandleNotification(
 	pvalue=szTmp;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	sprintf(szTmp,"SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()==0)
 		return false;
 	std::stringstream s_str( result[0][0] );
 	s_str >> ulID;
 	std::string devicename=result[0][1];
-
+	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][2] + "|";
 	std::vector<_tNotification> notifications=GetNotifications(ulID);
 	if (notifications.size()==0)
 		return false;
@@ -3281,7 +3289,7 @@ bool CSQLHelper::CheckAndHandleNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg = itt->CustomMessage;
-				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
@@ -3305,7 +3313,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 	unsigned long long ulID=0;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp,"SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
+	sprintf(szTmp,"SELECT ID, Name, SwitchType, CustomImage FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID.c_str(), unit, devType, subType);
 	result=query(szTmp);
 	if (result.size()==0)
 		return false;
@@ -3313,7 +3321,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 	s_str >> ulID;
 	std::string devicename=result[0][1];
 	_eSwitchType switchtype=(_eSwitchType)atoi(result[0][2].c_str());
-
+	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][2] + "|CustomImage=" + result[0][3] + "|";
 	std::vector<_tNotification> notifications=GetNotifications(ulID);
 	if (notifications.size()==0)
 		return false;
@@ -3346,14 +3354,19 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 				msg=devicename;
 				if (ntype==NTYPE_SWITCH_ON)
 				{
+					szExtraData += "Status=On|";
 					switch (switchtype)
 					{
 					case STYPE_Doorbell:
 						msg+=" pressed";
 						break;
 					case STYPE_Contact:
+						msg+=" Open";
+						szExtraData+="Image=contact48_open|";
+						break;
 					case STYPE_DoorLock:
 						msg+=" Open";
+						szExtraData+="Image=door48open|";
 						break;
 					case STYPE_Motion:
 						msg+=" movement detected";
@@ -3368,6 +3381,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 				 
 				}
 				else {
+					szExtraData += "Status=Off|";
 					switch (switchtype)
 					{
 					case STYPE_DoorLock:
@@ -3384,7 +3398,7 @@ bool CSQLHelper::CheckAndHandleSwitchNotification(
 			{
 				if (!itt->CustomMessage.empty())
 					msg=itt->CustomMessage;
-				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, std::string(""), itt->Priority, std::string(""), true);
+				m_notifications.SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
 				TouchNotification(itt->ID);
 			}
 		}
