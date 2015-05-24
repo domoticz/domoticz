@@ -1720,8 +1720,6 @@ define(['app'], function (app) {
 		  });
 		  
 		  var bHaveAddedDevider = false;
-			var bAllowWidgetReorder=true;
-
 			var suntext='<div id="timesun" />\n';
 
 		  var tophtm="";
@@ -1764,8 +1762,6 @@ define(['app'], function (app) {
 			  htmlcontent+=EvohomeAddJS();
 
 			  if (typeof data.result != 'undefined') {
-				bAllowWidgetReorder=data.AllowWidgetOrdering;
-
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
@@ -2175,7 +2171,7 @@ define(['app'], function (app) {
 				});
 			}
 
-			if (bAllowWidgetReorder==true) {
+			if ($scope.config.AllowWidgetOrdering==true) {
 				if (permissions.hasPermission("Admin")) {
 				  if (window.myglobals.ismobileint==false) {
 						$("#lightcontent .span4").draggable({

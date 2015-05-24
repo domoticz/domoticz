@@ -105,6 +105,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Changed: RFLink controller initialisation detection (reported by gkroone)
 - Implemented: Native 'Ping' (System Alive Checker)
 - Changed: Serial Port names (now always as string)
+- Implemented: Mobile Phone icon
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
