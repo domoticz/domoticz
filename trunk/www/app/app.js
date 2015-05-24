@@ -388,14 +388,15 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				AllowWidgetOrdering: true,
 				FiveMinuteHistoryDays: 1,
 				DashboardType : 1,
-				Latitude : "52.216485",
-				Longitude : "5.169528",
-				MobileType : 0,
-				TempScale : 1.0,
-				TempSign : "C",
-				WindScale : 3.600000143051148,
-				WindSign : "km/h",
-				language : "en"
+				Latitude: "52.216485",
+				Longitude: "5.169528",
+				MobileType: 0,
+				TempScale: 1.0,
+				TempSign: "C",
+				WindScale: 3.600000143051148,
+				WindSign: "km/h",
+				language: "en",
+				HaveUpdate: false
 				};
 		//Get Config
 		$.ajax({
@@ -448,19 +449,26 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			isOnline=false;
 		 }
 		});
-		
-		$http({
-			url: "json.htm?type=command&param=getversion"}
-			).success(function(data) {
-				if (data.status == "OK") {
-					$( "#appversion" ).text("V" + data.version);
-					if (data.haveupdate == true)
-					{
-						ShowUpdateNotification(data.revision);
-					}
+
+		$.ajax({
+		 url: "json.htm?type=command&param=getversion",
+		 async: false, 
+		 dataType: 'json',
+		 success: function(data) {
+			isOnline = true;
+			if (data.status == "OK") {
+				$( "#appversion" ).text("V" + data.version);
+				$rootScope.config.HaveUpdate=data.haveupdate;
+				if (data.haveupdate == true)
+				{
+					ShowUpdateNotification(data.revision);
 				}
-			}).error(function(data) {
-			});
+			}
+		 },
+		 error: function() {
+			isOnline=false;
+		 }
+		});
 		
 		$.ajax({
 		 url: "json.htm?type=command&param=getauth",

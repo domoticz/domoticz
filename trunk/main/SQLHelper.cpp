@@ -5596,54 +5596,38 @@ void CSQLHelper::CleanupShortLog()
         }
 
 		char szDateStr[40];
-		std::vector<std::vector<std::string> > result;
-		sprintf(szDateStr, "datetime('now','-%d day', 'localtime')", n5MinuteHistoryDays);
-
-		std::stringstream sstr;
-		sstr << "SELECT " << szDateStr << " , datetime('now', 'localtime')";
-		result = query(sstr.str());
-		if (result.size() < 1)
-			return;
-		if (result[0][0] == result[0][1])
-		{
-			_log.Log(LOG_ERROR, "Skipping cleanup, invalid value returned from SQLite (no problem, we do this in 5 minutes again!)");
-			return;
-		}
-
 		char szTmp[200];
 
-		sprintf(szDateStr, "datetime('now','-%d day', 'localtime')", n5MinuteHistoryDays);
+		time_t clear_time = mytime(NULL) - (n5MinuteHistoryDays * 24 * 3600);
+		struct tm ltime;
+		localtime_r(&clear_time, &ltime);
 
+		sprintf(szDateStr, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-		std::string szHelper = "SELECT " + std::string(szDateStr);
-		result = query(szHelper);
-		if (result.size() < 1)
-			return;
-		std::string finalDateTime = result[0][0].c_str();
-		//_log.Log(LOG_STATUS, "Cleaning up shortlog older then %s", finalDateTime.c_str());
+		//_log.Log(LOG_STATUS, "Cleaning up shortlog older then %s", szDateStr);
 
-		sprintf(szTmp, "DELETE FROM Temperature WHERE (Date<'%s')", finalDateTime.c_str());
+		sprintf(szTmp, "DELETE FROM Temperature WHERE (Date<'%s')", szDateStr);
 	    query(szTmp);
 
-		sprintf(szTmp, "DELETE FROM Rain WHERE (Date<'%s')", finalDateTime.c_str());
+		sprintf(szTmp, "DELETE FROM Rain WHERE (Date<'%s')", szDateStr);
 	    query(szTmp);
 
-		sprintf(szTmp, "DELETE FROM Wind WHERE (Date<'%s')", finalDateTime.c_str());
+		sprintf(szTmp, "DELETE FROM Wind WHERE (Date<'%s')", szDateStr);
 	    query(szTmp);
 
-		sprintf(szTmp, "DELETE FROM UV WHERE (Date<'%s')", finalDateTime.c_str());
+		sprintf(szTmp, "DELETE FROM UV WHERE (Date<'%s')", szDateStr);
 	    query(szTmp);
 
-		sprintf(szTmp, "DELETE FROM Meter WHERE (Date<'%s')", finalDateTime.c_str());
+		sprintf(szTmp, "DELETE FROM Meter WHERE (Date<'%s')", szDateStr);
 	    query(szTmp);
 
-		sprintf(szTmp, "DELETE FROM MultiMeter WHERE (Date<'%s')", finalDateTime.c_str());
+		sprintf(szTmp, "DELETE FROM MultiMeter WHERE (Date<'%s')", szDateStr);
 	    query(szTmp);
 
-		sprintf(szTmp, "DELETE FROM Percentage WHERE (Date<'%s')", finalDateTime.c_str());
+		sprintf(szTmp, "DELETE FROM Percentage WHERE (Date<'%s')", szDateStr);
 		query(szTmp);
 	
-		sprintf(szTmp, "DELETE FROM Fan WHERE (Date<'%s')", finalDateTime.c_str());
+		sprintf(szTmp, "DELETE FROM Fan WHERE (Date<'%s')", szDateStr);
 		query(szTmp);
 	}
 }
