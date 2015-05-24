@@ -89,6 +89,7 @@ private:
 	friend class KMTronicTCP;
 	friend class KMTronic433;
 	friend class SolarMaxTCP;
+	friend class CPinger;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;

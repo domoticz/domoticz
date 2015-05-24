@@ -10,6 +10,8 @@
 #include <dirent.h>
 #endif
 
+#include "../../main/Helper.h"
+
 #ifdef _DEBUG
 #ifdef WIN32
 #define OWFS_Base_Dir "E:\\w1\\1wire\\uncached"
@@ -145,7 +147,8 @@ std::string C1WireByOWFS::readRawData(const std::string& filename) const
         std::string sLine;
         getline(file, sLine);
         file.close();
-        return sLine;
+		if (is_number(sLine))
+			return sLine;
     }
     return "";
 }
@@ -220,7 +223,7 @@ float C1WireByOWFS::GetHumidity(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/humidity"));
    if (readValue.empty())
-      return 0.0;
+	   return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
 }
 
@@ -228,7 +231,7 @@ float C1WireByOWFS::GetPressure(const _t1WireDevice& device) const
 {
    std::string readValue=readRawData(std::string(device.filename+"/B1-R1-A/pressure"));
    if (readValue.empty())
-      return 0.0;
+	   return -1000.0;
    return static_cast<float>(atof(readValue.c_str()));
 }
 
@@ -287,7 +290,7 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
    case _4k_EEPROM_with_PIO:
         // Caution : read value correspond to voltage level, inverted from the transistor state
         // We have to invert the read value
-      return readValue!="1";
+      return (readValue!="1");
    case microlan_coupler:
       {
          // 1 = Unconditionally off (non-conducting)
@@ -296,7 +299,7 @@ bool C1WireByOWFS::GetLightState(const _t1WireDevice& device,int unit) const
          if (iValue!=1 && iValue!=2)
             return false;
          else
-            return iValue==2;
+            return (iValue==2);
       }
    }
    return false;
@@ -317,7 +320,7 @@ unsigned long C1WireByOWFS::GetCounter(const _t1WireDevice& device,int unit) con
    if (readValue.empty())
       readValue=readRawData(std::string(device.filename+"/counters.").append(1,'A'+unit));
    if (readValue.empty())
-      return 0;
+	   return 0;
    return (unsigned long)atol(readValue.c_str());
 }
 
@@ -344,7 +347,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
 
    std::string readValue=readRawData(fileName);
    if (readValue.empty())
-      return 0;
+	   return -1000.0;
    return static_cast<int>((atof(readValue.c_str())*1000.0));
 }
 
@@ -355,7 +358,7 @@ float C1WireByOWFS::GetIlluminescence(const _t1WireDevice& device) const
    if (readValue.empty())
       readValue=readRawData(std::string(device.filename+"/S3-R1-A/illumination"));
    if (readValue.empty())
-      return 0;
+	   return -1000.0;
    return (float)(atof(readValue.c_str())*1000.0);
 }
 

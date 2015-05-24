@@ -20,7 +20,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -61,7 +61,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_55_0/Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>./Windows Libraries/Curl/libcurl_imp.lib;./Windows Libraries/openssl/ssleay32.lib;./Windows Libraries/openssl/libeay32.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaved.lib;./Windows Libraries/ZLib/zlib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./Windows Libraries/Curl/libcurl_imp.lib;./Windows Libraries/openssl/ssleay32.lib;./Windows Libraries/openssl/libeay32.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaveD.lib;./Windows Libraries/ZLib/zlib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PreBuildEvent>
@@ -163,6 +163,7 @@
     <ClInclude Include="..\hardware\OTGWTCP.h" />
     <ClInclude Include="..\hardware\PhilipsHue.h" />
     <ClInclude Include="..\hardware\PiFace.h" />
+    <ClInclude Include="..\hardware\Pinger.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
     <ClInclude Include="..\hardware\Razberry.h" />
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
@@ -332,6 +333,7 @@
     <ClCompile Include="..\hardware\OTGWTCP.cpp" />
     <ClCompile Include="..\hardware\PhilipsHue.cpp" />
     <ClCompile Include="..\hardware\PiFace.cpp" />
+    <ClCompile Include="..\hardware\Pinger.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
     <ClCompile Include="..\hardware\Razberry.cpp" />
     <ClCompile Include="..\hardware\RFLink.cpp" />

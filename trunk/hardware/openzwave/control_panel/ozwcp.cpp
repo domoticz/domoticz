@@ -69,7 +69,7 @@ const char *cmode = "";
 int32 debug = false;
 bool MyNode::nodechanged = false;
 list<uint8> MyNode::removed;
-extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 
 //static Webserver *wserver;
 
@@ -1139,7 +1139,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 		}
 	}
 	char fntemp[200];
-	sprintf(fntemp, "%sozwcp.poll.XXXXXX.xml", szStartupFolder.c_str());
+	sprintf(fntemp, "%sozwcp.poll.XXXXXX.xml", szUserDataFolder.c_str());
 	doc.SaveFile(fntemp);
 
 	std::string retstring = "";
@@ -1399,7 +1399,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 		i++;
 	}
 	char fntemp[200];
-	sprintf(fntemp, "%sozwcp.topo.XXXXXX", szStartupFolder.c_str());
+	sprintf(fntemp, "%sozwcp.topo.XXXXXX", szUserDataFolder.c_str());
 	doc.SaveFile(fntemp);
 
 	std::string retstring = "";
@@ -1525,7 +1525,7 @@ std::string COpenZWaveControlPanel::GetCPStats()
 	}
 
 	char fntemp[200];
-	sprintf(fntemp, "%sozwcp.stat.XXXXXX", szStartupFolder.c_str());
+	sprintf(fntemp, "%sozwcp.stat.XXXXXX", szUserDataFolder.c_str());
 	doc.SaveFile(fntemp);
 
 	std::string retstring = "";

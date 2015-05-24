@@ -45,7 +45,7 @@ define(['app'], function (app) {
 			{
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-						"&port=1&name=" + name + 
+						"&port=1&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
 						"&datatimeout=" + datatimeout +
@@ -76,7 +76,7 @@ define(['app'], function (app) {
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 						"&port=" + serialport + 
-						"&name=" + name + 
+						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
 						"&datatimeout=" + datatimeout +
@@ -114,7 +114,7 @@ define(['app'], function (app) {
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + 
 						"&address=" + address + 
 						"&port=" + port + 
-						"&name=" + name + 
+						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
 						"&datatimeout=" + datatimeout +
@@ -153,7 +153,7 @@ define(['app'], function (app) {
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + 
 						"&address=" + address + 
 						"&port=" + port + 
-						"&name=" + name + 
+						"&name=" + encodeURIComponent(name) + 
 						"&password=" + password +
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
@@ -194,9 +194,9 @@ define(['app'], function (app) {
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 						"&address=" + address + 
 						"&port=" + port + 
-						"&username=" + username + 
-						"&password=" + password + 
-						"&name=" + name + 
+						"&username=" + encodeURIComponent(username) + 
+						"&password=" + encodeURIComponent(password) + 
+						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
 						"&datatimeout=" + datatimeout +
@@ -240,8 +240,8 @@ define(['app'], function (app) {
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 						"&address=" + address + 
 						"&port=" + port + 
-						"&username=" + username + 
-						"&name=" + name + 
+						"&username=" + encodeURIComponent(username) + 
+						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
 						"&datatimeout=" + datatimeout +
@@ -273,9 +273,9 @@ define(['app'], function (app) {
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 						"&port=1" + 
-						"&username=" + apikey + 
-						"&password=" + location +
-						"&name=" + name + 
+						"&username=" + encodeURIComponent(apikey) + 
+						"&password=" + encodeURIComponent(location) +
+						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
 						"&datatimeout=" + datatimeout +
@@ -302,7 +302,7 @@ define(['app'], function (app) {
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 						"&port=1" + 
 						"&username=" + encodeURIComponent(configlocation) + 
-						"&name=" + name + 
+						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
 						"&datatimeout=" + datatimeout +
@@ -323,9 +323,9 @@ define(['app'], function (app) {
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					   "&port=1" +
-					   "&username=" + username +
-					   "&password=" + password +
-					   "&name=" + name +
+					   "&username=" + encodeURIComponent(username) +
+					   "&password=" + encodeURIComponent(password) +
+					   "&name=" + encodeURIComponent(name) +
 					   "&enabled=" + bEnabled +
 					   "&idx=" + idx +
 					   "&datatimeout=" + datatimeout +
@@ -366,10 +366,10 @@ define(['app'], function (app) {
 				return;
 			}
 
-			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("GPIO") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
+			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("GPIO") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
 			{
 				$.ajax({
-					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -389,7 +389,7 @@ define(['app'], function (app) {
 					return;
 				}
 				$.ajax({
-					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -420,7 +420,7 @@ define(['app'], function (app) {
 					return;
 				}		
 				$.ajax({
-					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -452,7 +452,7 @@ define(['app'], function (app) {
 				}
 				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
-					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + name + "&password=" + password + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&name=" + encodeURIComponent(name) + "&password=" + encodeURIComponent(password) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -489,7 +489,7 @@ define(['app'], function (app) {
 					return;
 				}
 				$.ajax({
-					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -533,7 +533,7 @@ define(['app'], function (app) {
 				}
 				
 				$.ajax({
-					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + username + "&password=" + password + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -559,7 +559,7 @@ define(['app'], function (app) {
 					return;
 				}
 				$.ajax({
-					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1" + "&username=" + apikey + "&password=" + location + "&name=" + name + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1" + "&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -582,7 +582,7 @@ define(['app'], function (app) {
 					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 						"&port=1" + 
 						"&username=" + encodeURIComponent(configlocation) + 
-						"&name=" + name + 
+						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled +
 						"&datatimeout=" + datatimeout,
 					 async: false, 
@@ -602,9 +602,9 @@ define(['app'], function (app) {
 				$.ajax({
 					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					 "&port=1" + 
-					 "&username=" + username + 
-					 "&password=" + password + 
-					 "&name=" + name + 
+					 "&username=" + encodeURIComponent(username) + 
+					 "&password=" + encodeURIComponent(password) + 
+					 "&name=" + encodeURIComponent(name) + 
 					 "&enabled=" + bEnabled +
 					 "&datatimeout=" + datatimeout,
 					 async: false, 
@@ -733,7 +733,7 @@ define(['app'], function (app) {
 			$.ajax({
 				 url: "json.htm?type=command&param=woladdnode" +
 					"&idx=" + $.devIdx +
-					"&name=" + name + 
+					"&name=" + encodeURIComponent(name) + 
 					"&mac=" + mac,
 				 async: false, 
 				 dataType: 'json',
@@ -810,7 +810,7 @@ define(['app'], function (app) {
 				 url: "json.htm?type=command&param=wolupdatenode" +
 					"&idx=" + $.devIdx +
 					"&nodeid=" + nodeid +
-					"&name=" + name + 
+					"&name=" + encodeURIComponent(name) + 
 					"&mac=" + mac,
 				 async: false, 
 				 dataType: 'json',
@@ -915,6 +915,208 @@ define(['app'], function (app) {
 			$('#hardwarecontent #idx').val(idx);
 			
 			RefreshWOLNodeTable();
+		}
+
+		AddPingerNode = function()
+		{
+			var name=$("#hardwarecontent #ipnodeparamstable #nodename").val();
+			if (name=="")
+			{
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
+				return;
+			}
+			var ip=$("#hardwarecontent #ipnodeparamstable #nodeip").val();
+			if (ip=="")
+			{
+				ShowNotify($.t('Please enter a IP Address!'), 2500, true);
+				return;
+			}
+
+			$.ajax({
+				 url: "json.htm?type=command&param=pingeraddnode" +
+					"&idx=" + $.devIdx +
+					"&name=" + encodeURIComponent(name) + 
+					"&ip=" + ip,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshPingerNodeTable();
+				 },
+				 error: function(){
+					ShowNotify($.t('Problem Adding Node!'), 2500, true);
+				 }     
+			});
+		}
+
+		PingerDeleteNode = function(nodeid)
+		{
+			if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
+				return;
+			}
+			bootbox.confirm($.t("Are you sure to remove this Node?"), function(result) {
+				if (result==true) {
+					$.ajax({
+						 url: "json.htm?type=command&param=pingerremovenode" +
+							"&idx=" + $.devIdx +
+							"&nodeid=" + nodeid,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							RefreshPingerNodeTable();
+						 },
+						 error: function(){
+							ShowNotify($.t('Problem Deleting Node!'), 2500, true);
+						 }     
+					});
+				}
+			});
+		}
+
+		PingerClearNodes = function()
+		{
+			bootbox.confirm($.t("Are you sure to delete ALL Nodes?\n\nThis action can not be undone!"), function(result) {
+				if (result==true) {
+					$.ajax({
+						 url: "json.htm?type=command&param=pingerclearnodes" +
+							"&idx=" + $.devIdx,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							RefreshPingerNodeTable();
+						 }     
+					});
+				}
+			});
+		}
+
+		PingerUpdateNode = function(nodeid)
+		{
+			if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
+				return;
+			}
+			
+			var name=$("#hardwarecontent #ipnodeparamstable #nodename").val();
+			if (name=="")
+			{
+				ShowNotify($.t('Please enter a Name!'), 2500, true);
+				return;
+			}
+			var ip=$("#hardwarecontent #ipnodeparamstable #nodeip").val();
+			if (ip=="")
+			{
+				ShowNotify($.t('Please enter a IP Address!'), 2500, true);
+				return;
+			}
+
+			$.ajax({
+				 url: "json.htm?type=command&param=pingerupdatenode" +
+					"&idx=" + $.devIdx +
+					"&nodeid=" + nodeid +
+					"&name=" + encodeURIComponent(name) + 
+					"&ip=" + ip,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshPingerNodeTable();
+				 },
+				 error: function(){
+					ShowNotify($.t('Problem Updating Node!'), 2500, true);
+				 }     
+			});
+		}
+
+		RefreshPingerNodeTable = function()
+		{
+		  $('#modal').show();
+			$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+			$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+			$("#hardwarecontent #ipnodeparamstable #nodename").val("");
+			$("#hardwarecontent #ipnodeparamstable #nodeip").val("");
+
+		  var oTable = $('#ipnodestable').dataTable();
+		  oTable.fnClearTable();
+
+		  $.ajax({
+			 url: "json.htm?type=command&param=pingergetnodes&idx="+$.devIdx,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+			  if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item){
+					var addId = oTable.fnAddData( {
+						"DT_RowId": item.idx,
+						"Name": item.Name,
+						"IP": item.IP,
+						"0": item.idx,
+						"1": item.Name,
+						"2": item.IP
+					} );
+				});
+			  }
+			 }
+		  });
+
+			/* Add a click handler to the rows - this could be used as a callback */
+			$("#ipnodestable tbody").off();
+			$("#ipnodestable tbody").on( 'click', 'tr', function () {
+				$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+				if ( $(this).hasClass('row_selected') ) {
+					$(this).removeClass('row_selected');
+					$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+					$("#hardwarecontent #ipnodeparamstable #nodename").val("");
+					$("#hardwarecontent #ipnodeparamstable #nodeip").val("");
+				}
+				else {
+					var oTable = $('#ipnodestable').dataTable();
+					oTable.$('tr.row_selected').removeClass('row_selected');
+					$(this).addClass('row_selected');
+					$('#updelclr #nodeupdate').attr("class", "btnstyle3");
+					var anSelected = fnGetSelected( oTable );
+					if ( anSelected.length !== 0 ) {
+						var data = oTable.fnGetData( anSelected[0] );
+						var idx= data["DT_RowId"];
+						$.myglobals.SelectedTimerIdx=idx;
+						$("#updelclr #nodeupdate").attr("href", "javascript:PingerUpdateNode(" + idx + ")");
+						$('#updelclr #nodedelete').attr("class", "btnstyle3");
+						$("#updelclr #nodedelete").attr("href", "javascript:PingerDeleteNode(" + idx + ")");
+						$("#hardwarecontent #ipnodeparamstable #nodename").val(data["1"]);
+						$("#hardwarecontent #ipnodeparamstable #nodeip").val(data["2"]);
+					}
+				}
+			}); 
+
+		  $('#modal').hide();
+		}
+
+		EditPinger = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
+		{
+			$.devIdx=idx;
+			cursordefault();
+			var htmlcontent = '';
+			htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+			htmlcontent+=$('#pinger').html();
+			$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+			$('#hardwarecontent').i18n();
+
+			var oTable = $('#ipnodestable').dataTable( {
+			  "sDom": '<"H"lfrC>t<"F"ip>',
+			  "oTableTools": {
+				"sRowSelect": "single",
+			  },
+			  "aaSorting": [[ 0, "desc" ]],
+			  "bSortClasses": false,
+			  "bProcessing": true,
+			  "bStateSave": true,
+			  "bJQueryUI": true,
+			  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+			  "iDisplayLength" : 25,
+			  "sPaginationType": "full_numbers",
+			  language: $.DataTableLanguage
+			} );
+
+			$('#hardwarecontent #idx').val(idx);
+			
+			RefreshPingerNodeTable();
 		}
 
 		EditSBFSpot = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
@@ -1064,7 +1266,7 @@ define(['app'], function (app) {
 			$.ajax({
 				 url: "json.htm?type=command&param=updatezwavenode" +
 					"&idx=" + idx +
-					"&name=" + name + 
+					"&name=" + encodeURIComponent(name) + 
 					"&EnablePolling=" + bEnablePolling,
 				 async: false, 
 				 dataType: 'json',
@@ -1947,6 +2149,9 @@ define(['app'], function (app) {
 					else if (HwTypeStr.indexOf("Wake-on-LAN") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditWOL(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 					}
+					else if (HwTypeStr.indexOf("System Alive") >= 0) {
+						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditPinger(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
+					}
 					else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
 						HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
 					}
@@ -2073,7 +2278,7 @@ define(['app'], function (app) {
 						$('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
 						UpdateHardwareParamControls();
-						if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0) ||(data["Type"].indexOf("PiFace") >= 0))
+						if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0)||(data["Type"].indexOf("System Alive") >= 0) ||(data["Type"].indexOf("PiFace") >= 0))
 						{
 							//nothing to be set
 						}
@@ -2131,7 +2336,7 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=registerhue" +
 					"&ipaddress=" +address +
 					"&port=" + port +
-					"&username=" + username,
+					"&username=" + encodeURIComponent(username),
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -2159,7 +2364,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divlocation").hide();
 			$("#hardwarecontent #divphilipshue").hide();
 
-			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0))
+			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
 			{
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").hide();

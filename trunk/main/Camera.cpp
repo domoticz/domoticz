@@ -11,7 +11,7 @@
 
 #define CAMERA_POLL_INTERVAL 30
 
-extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 
 CCameraHandler::CCameraHandler(void)
 {
@@ -179,7 +179,7 @@ bool CCameraHandler::TakeRaspberrySnapshot(std::vector<unsigned char> &camimage)
 	std::string raspparams="-w 800 -h 600 -t 1";
 	m_sql.GetPreferencesVar("RaspCamParams", raspparams);
 
-	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
+	std::string OutputFileName = szUserDataFolder + "tempcam.jpg";
 
 	std::string raspistillcmd="raspistill " + raspparams + " -o " + OutputFileName;
 	std::remove(OutputFileName.c_str());
@@ -221,7 +221,7 @@ bool CCameraHandler::TakeUVCSnapshot(std::vector<unsigned char> &camimage)
 	std::string uvcparams="-S80 -B128 -C128 -G80 -x800 -y600 -q100";
 	m_sql.GetPreferencesVar("UVCParams", uvcparams);
 	
-	std::string OutputFileName=szStartupFolder + "tempcam.jpg";
+	std::string OutputFileName = szUserDataFolder + "tempcam.jpg";
 	std::string nvcmd="uvccapture " + uvcparams+ " -o" + OutputFileName;
 	std::remove(OutputFileName.c_str());
 

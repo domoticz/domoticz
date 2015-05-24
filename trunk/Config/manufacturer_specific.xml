@@ -112,6 +112,7 @@
 		<Product type="001e" id="0001" name="1Pole Switch" config="BeNext/1poleswitch.xml"/>
 		<Product type="001f" id="0001" name="2Pole Switch" config="BeNext/2poleswitch.xml"/>
 		<Product type="0020" id="0001" name="Energy Switch" config="BeNext/EnergySwitch.xml"/>
+		<Product type="0021" id="0100" name="Heating Control" config="BeNext/HeatingControl.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002c" name="BeSafer">
 	</Manufacturer>

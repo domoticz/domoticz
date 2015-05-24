@@ -105,6 +105,7 @@ enum _eHardwareTypes {
 	HTYPE_KMTronicTCP,			//48
 	HTYPE_SOLARMAXTCP,			//49
 	HTYPE_KMTronic433,			//50
+	HTYPE_Pinger,				//51
 	HTYPE_END
 };
 

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 897
+# ref 899
 
 CACHE:
 # CSS
@@ -175,6 +175,9 @@ images/Harddisk48_Off.png
 images/Harddisk48_On.png
 images/hardware.png
 images/heal.png
+images/Heating.png
+images/Heating48_Off.png
+images/Heating48_On.png
 images/hold.png
 images/hold_mini.png
 images/house.png
