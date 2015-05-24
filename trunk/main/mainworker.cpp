@@ -411,7 +411,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID==" << idx << ")";
+	szQuery << "SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID==" << idx << ")";
 	result=m_sql.query(szQuery.str());
 	if (result.size()<1)
 		return false;
@@ -421,33 +421,34 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	_eHardwareTypes htype=(_eHardwareTypes)atoi(sd[2].c_str());
 	std::string address=sd[3];
 	unsigned short port=(unsigned short)atoi(sd[4].c_str());
-	std::string username=sd[5];
-	std::string password=sd[6];
-	int Mode1=atoi(sd[7].c_str());
-	int Mode2=atoi(sd[8].c_str());
-	int Mode3=atoi(sd[9].c_str());
-	int Mode4=atoi(sd[10].c_str());
-	int Mode5 = atoi(sd[11].c_str());
-	int Mode6 = atoi(sd[12].c_str());
-	int DataTimeout = atoi(sd[13].c_str());
+	std::string serialport = sd[5];
+	std::string username=sd[6];
+	std::string password=sd[7];
+	int Mode1=atoi(sd[8].c_str());
+	int Mode2=atoi(sd[9].c_str());
+	int Mode3=atoi(sd[10].c_str());
+	int Mode4=atoi(sd[11].c_str());
+	int Mode5 = atoi(sd[12].c_str());
+	int Mode6 = atoi(sd[13].c_str());
+	int DataTimeout = atoi(sd[14].c_str());
 
-	return AddHardwareFromParams(atoi(idx.c_str()),Name,(senabled=="true")?true:false,htype,address,port,username,password,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6,DataTimeout);
+	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout);
 }
 
 bool MainWorker::AddHardwareFromParams(
-	int ID,
-	std::string Name,
-	bool Enabled,
-	_eHardwareTypes Type,
-	std::string Address, unsigned short Port, 
-	std::string Username, std::string Password, 
-	int Mode1,
-	int Mode2, 
-	int Mode3,
-	int Mode4,
-	int Mode5,
-	int Mode6,
-	int DataTimeout
+	const int ID,
+	const std::string &Name,
+	const bool Enabled,
+	const _eHardwareTypes Type,
+	const std::string &Address, const unsigned short Port, const std::string &SerialPort,
+	const std::string &Username, const std::string &Password,
+	const int Mode1,
+	const int Mode2,
+	const int Mode3,
+	const int Mode4,
+	const int Mode5,
+	const int Mode6,
+	const int DataTimeout
 	)
 {
 	RemoveDomoticzHardware(ID);
@@ -455,7 +456,6 @@ bool MainWorker::AddHardwareFromParams(
 	if (!Enabled)
 		return true;
 
-	char szSerialPort[100];
 	CDomoticzHardwareBase *pHardware=NULL;
 
 	switch (Type)
@@ -479,97 +479,78 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_RFLINK:
 	{
 			//USB/Serial
-#if defined WIN32
-			sprintf(szSerialPort,"COM%d",Port);
-#else
-			bool bUseDirectPath=false;
-			std::vector<std::string> serialports=GetSerialPorts(bUseDirectPath);
-			if (bUseDirectPath)
-			{
-				if (Port>=serialports.size())
-				{
-					_log.Log(LOG_ERROR,"Serial Port out of range!...");
-					return false;
-				}
-				strcpy(szSerialPort,serialports[Port].c_str());
-			}
-			else
-			{
-				sprintf(szSerialPort,"/dev/ttyUSB%d",Port);
-			}
-#endif
 			if (
 				(Type==HTYPE_RFXtrx315)||
 				(Type==HTYPE_RFXtrx433)
 				)
 			{
-				pHardware = new RFXComSerial(ID,szSerialPort,38400);
+				pHardware = new RFXComSerial(ID, SerialPort, 38400);
 			}
 			else if (Type==HTYPE_P1SmartMeter)
 			{
 				int baudrate=9600;
 				if (Mode1==1)
 					baudrate=115200;
-				pHardware = new P1MeterSerial(ID,szSerialPort,baudrate);
+				pHardware = new P1MeterSerial(ID,SerialPort,baudrate);
 			}
 			else if (Type==HTYPE_Rego6XX)
 			{
-				pHardware = new CRego6XXSerial(ID,szSerialPort, Mode1);
+				pHardware = new CRego6XXSerial(ID,SerialPort, Mode1);
 			}
 			else if (Type==HTYPE_DavisVantage)
 			{
-				pHardware = new CDavisLoggerSerial(ID,szSerialPort, 19200);
+				pHardware = new CDavisLoggerSerial(ID,SerialPort, 19200);
 			}
 			else if (Type==HTYPE_S0SmartMeter)
 			{
 				int baudrate=9600;
-				pHardware = new S0MeterSerial(ID,szSerialPort, baudrate, Address);
+				pHardware = new S0MeterSerial(ID,SerialPort, baudrate, Address);
 			}
 			else if (Type == HTYPE_Meteostick)
 			{
-				pHardware = new Meteostick(ID, szSerialPort, 115200);
+				pHardware = new Meteostick(ID, SerialPort, 115200);
 			}
 			else if (Type == HTYPE_OpenThermGateway)
 			{
-				pHardware = new OTGWSerial(ID,szSerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+				pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 			}
 			else if (Type==HTYPE_TeleinfoMeter)
 			{
-				pHardware = new Teleinfo(ID, szSerialPort);
+				pHardware = new Teleinfo(ID, SerialPort);
 			}
 			else if (Type == HTYPE_MySensorsUSB)
 			{
-				pHardware = new MySensorsSerial(ID, szSerialPort);
+				pHardware = new MySensorsSerial(ID, SerialPort);
 			}
 			else if (Type == HTYPE_KMTronicUSB)
 			{
-				pHardware = new KMTronicSerial(ID, szSerialPort);
+				pHardware = new KMTronicSerial(ID, SerialPort);
 			}
 			else if (Type == HTYPE_KMTronic433)
 			{
-				pHardware = new KMTronic433(ID, szSerialPort);
+				pHardware = new KMTronic433(ID, SerialPort);
 			}
 			else if (Type == HTYPE_OpenZWave)
 			{
 #ifdef WITH_OPENZWAVE
-				pHardware = new COpenZWave(ID, szSerialPort);
+				pHardware = new COpenZWave(ID, SerialPort);
 #endif
 			}
 			else if (Type==HTYPE_EnOceanESP2)
 			{
-				pHardware = new CEnOceanESP2(ID,szSerialPort, Mode1);
+				pHardware = new CEnOceanESP2(ID,SerialPort, Mode1);
 			}
 			else if (Type==HTYPE_EnOceanESP3)
 			{
-				pHardware = new CEnOceanESP3(ID,szSerialPort, Mode1);
+				pHardware = new CEnOceanESP3(ID,SerialPort, Mode1);
 			}
 			else if (Type==HTYPE_EVOHOME_SERIAL)
 			{
-				pHardware = new CEvohome(ID,szSerialPort);
+				pHardware = new CEvohome(ID,SerialPort);
 			}
 			else if (Type == HTYPE_RFLINK)
 			{
-				pHardware = new CRFLink(ID, szSerialPort);
+				pHardware = new CRFLink(ID, SerialPort);
 			}
 	}
 		break;
@@ -619,9 +600,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_LimitlessLights:
 		//LAN
 		{
-			if (Mode1==0)
-				Mode1=1;
-			pHardware = new CLimitLess(ID, Mode1,Address, Port);
+			int rmode1 = Mode1;
+			if (rmode1 == 0)
+				rmode1 = 1;
+			pHardware = new CLimitLess(ID, rmode1, Address, Port);
 		}
 		break;
 	case HTYPE_YouLess:
@@ -697,7 +679,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CDummy(ID);
 		break;
 	case HTYPE_EVOHOME_SCRIPT:
-		pHardware = new CEvohome(ID);
+		pHardware = new CEvohome(ID,"");
 		break;
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
@@ -734,7 +716,7 @@ bool MainWorker::Start()
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
+	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
 	result=m_sql.query(szQuery.str());
 	//std::string revfile;
 	//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=Started&amp;idgoal=3",revfile);
@@ -751,17 +733,18 @@ bool MainWorker::Start()
 			bool Enabled=(sEnabled=="1")?true:false;
 			_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[3].c_str());
 			std::string Address=sd[4];
-			unsigned short Port=(unsigned short)atoi(sd[5].c_str());
-			std::string Username=sd[6];
-			std::string Password=sd[7];
-			int mode1=atoi(sd[8].c_str());
-			int mode2=atoi(sd[9].c_str());
-			int mode3=atoi(sd[10].c_str());
-			int mode4=atoi(sd[11].c_str());
-			int mode5 = atoi(sd[12].c_str());
-			int mode6 = atoi(sd[13].c_str());
-			int DataTimeout = atoi(sd[14].c_str());
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout);
+			unsigned short Port = (unsigned short)atoi(sd[5].c_str());
+			std::string SerialPort = sd[6];
+			std::string Username = sd[7];
+			std::string Password=sd[8];
+			int mode1=atoi(sd[9].c_str());
+			int mode2=atoi(sd[10].c_str());
+			int mode3=atoi(sd[11].c_str());
+			int mode4=atoi(sd[12].c_str());
+			int mode5 = atoi(sd[13].c_str());
+			int mode6 = atoi(sd[14].c_str());
+			int DataTimeout = atoi(sd[15].c_str());
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout);
 		}
 	}
 	m_datapush.UpdateActive();

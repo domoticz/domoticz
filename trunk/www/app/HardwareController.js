@@ -1,6 +1,8 @@
 define(['app'], function (app) {
 	app.controller('HardwareController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
+		$scope.SerialPortStr=[];
+		
 		DeleteHardware = function(idx)
 		{
 			bootbox.confirm($.t("Are you sure to delete this Hardware?\n\nThis action can not be undone...\nAll Devices attached will be removed!"), function(result) {
@@ -41,7 +43,7 @@ define(['app'], function (app) {
 			var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 			
 			var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("GPIO") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
+			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("GPIO") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
 			{
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -62,7 +64,7 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("USB") >= 0)
 			{
-				var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
+				var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
 				if (typeof serialport == 'undefined')
 				{
 					if (bEnabled==true) {
@@ -75,7 +77,7 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
-						"&port=" + serialport + 
+						"&port=" + encodeURIComponent(serialport) + 
 						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
@@ -382,14 +384,14 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("USB") >= 0)
 			{
-				var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").val();
+				var serialport=$("#hardwarecontent #divserial #comboserialport option:selected").text();
 				if (typeof serialport == 'undefined')
 				{
 					ShowNotify($.t('No serial port selected!'), 2500, true);
 					return;
 				}
 				$.ajax({
-					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + serialport + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + encodeURIComponent(serialport) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -2074,6 +2076,7 @@ define(['app'], function (app) {
 					}
 				
 					var SerialName="Unknown!?";
+					var intport=0;
 					if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0) ||(HwTypeStr.indexOf("Harmony") >= 0)||(HwTypeStr.indexOf("Philips Hue") >= 0))
 					{
 						SerialName=item.Port;
@@ -2094,7 +2097,7 @@ define(['app'], function (app) {
 					{
 						SerialName="WWW";
 					}
-					else if ((item.Type == 15)||(item.Type == 23)||(item.Type == 26)||(item.Type == 27))
+					else if ((item.Type == 15)||(item.Type == 23)||(item.Type == 26)||(item.Type == 27)||(item.Type == 51))
 					{
 						SerialName="";
 					}
@@ -2108,10 +2111,8 @@ define(['app'], function (app) {
 					}
 					else
 					{
-						var serpos=jQuery.inArray(item.Port, $.myglobals.SerialPortVal);
-						if (serpos!=-1) {
-							SerialName=$.myglobals.SerialPortStr[serpos];
-						}
+						SerialName=item.SerialPort;
+						intport=jQuery.inArray(item.SerialPort, $scope.SerialPortStr);
 					}
 
 					var enabledstr=$.t("No");
@@ -2233,7 +2234,7 @@ define(['app'], function (app) {
 						"Mode5": item.Mode5,
 						"Mode6": item.Mode6,
 						"Type" : HwTypeStrOrg,
-						"IntPort": item.Port,
+						"IntPort": intport,
 						"Address": item.Address,
 						"Port": SerialName,
 						"DataTimeout": item.DataTimeout,
@@ -2487,10 +2488,9 @@ define(['app'], function (app) {
 			$.devIdx=0;
 			$.myglobals = {
 				HardwareTypesStr : [],
-				SerialPortVal : [],
-				SerialPortStr : [],
 				SelectedHardwareIdx: 0
 			};
+			$scope.SerialPortStr=[];
 			$scope.MakeGlobalConfig();
 			
 			//Get hardware types
@@ -2531,8 +2531,7 @@ define(['app'], function (app) {
 			});
 			
 			$('#hardwareparamsserial #comboserialport > option').each(function() {
-				 $.myglobals.SerialPortStr.push($(this).text());
-				 $.myglobals.SerialPortVal.push(parseInt($(this).val()));
+				 $scope.SerialPortStr.push($(this).text());
 			});
 			
 			ShowHardware();

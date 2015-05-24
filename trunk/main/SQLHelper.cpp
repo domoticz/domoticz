@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 68
+#define DB_VERSION 69
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -229,6 +229,7 @@ const char *sqlCreateHardware =
 "[Type] INTEGER NOT NULL, "
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
+"[SerialPort] VARCHAR(50) DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
 "[Mode1] CHAR DEFAULT 0, "
@@ -1322,6 +1323,60 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE Notifications ADD COLUMN [CustomMessage] VARCHAR(300) DEFAULT ('')");
 			query("ALTER TABLE Notifications ADD COLUMN [ActiveSystems] VARCHAR(300) DEFAULT ('')");
+		}
+		if (dbversion < 69)
+		{
+			//Serial Port patch (using complete port paths now)
+			query("ALTER TABLE Hardware ADD COLUMN [SerialPort] VARCHAR(50) DEFAULT ('')");
+
+			bool bUseDirectPath = false;
+			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
+
+			//Convert all serial hardware to use the new column
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			szQuery << "SELECT ID,[Type],Port FROM Hardware";
+			result = m_sql.query(szQuery.str());
+			if (!result.empty())
+			{
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					int hwId = atoi(sd[0].c_str());
+					_eHardwareTypes hwtype = (_eHardwareTypes)atoi(sd[1].c_str());
+					size_t Port = (size_t)atoi(sd[2].c_str());
+
+					if (IsSerialDevice(hwtype))
+					{
+						char szSerialPort[50];
+#if defined WIN32
+						sprintf(szSerialPort, "COM%d", Port);
+#else
+						bool bUseDirectPath = false;
+						std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
+						if (bUseDirectPath)
+						{
+							if (Port >= serialports.size())
+							{
+								_log.Log(LOG_ERROR, "Serial Port out of range!...");
+								continue;
+							}
+							strcpy(szSerialPort, serialports[Port].c_str());
+						}
+						else
+						{
+							sprintf(szSerialPort, "/dev/ttyUSB%d", Port);
+						}
+#endif
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "UPDATE Hardware SET Port=0, SerialPort='" << szSerialPort << "' WHERE (ID=" << hwId << ")";
+						m_sql.query(szQuery.str());
+						query(szQuery.str());
+					}
+				}
+			}
 		}
 	}
 	else if (bNewInstall)

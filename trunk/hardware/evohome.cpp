@@ -72,7 +72,7 @@ const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
 	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
 }
 
-CEvohome::CEvohome(const int ID, const char* szSerialPort) :
+CEvohome::CEvohome(const int ID, const std::string &szSerialPort) :
 	m_ZoneNames(m_nMaxZones),
 	m_ZoneOverrideLocal(m_nMaxZones)
 {
@@ -90,7 +90,7 @@ CEvohome::CEvohome(const int ID, const char* szSerialPort) :
 	m_nControllerMode=0;
 	
 	m_iBaudRate=115200;
-	if(szSerialPort)
+	if(!szSerialPort.empty())
 	{
 		m_szSerialPort=szSerialPort;
 		m_bScriptOnly=false;
