@@ -16,3 +16,4 @@ ChristmasTree;Christmas Tree;Christmas Tree
 Heating;Heating;Heating device
 Cooling;Cooling;Cooling device
 ComputerPC;Computer PC;Personal Computer System
+Phone;Phone;Mobile Phone
