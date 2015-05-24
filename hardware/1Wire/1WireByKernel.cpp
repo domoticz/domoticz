@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include "../../main/Logger.h"
+#include "../../main/Helper.h"
 
 #ifdef _DEBUG
    #ifdef WIN32
@@ -303,12 +304,12 @@ unsigned long C1WireByKernel::GetCounter(const _t1WireDevice& device,int unit) c
 
 int C1WireByKernel::GetVoltage(const _t1WireDevice& device,int unit) const
 {
-   return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+	return -1000.0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
 float C1WireByKernel::GetIlluminescence(const _t1WireDevice& device) const
 {
-   return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+	return -1000.0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
 
@@ -345,7 +346,10 @@ float C1WireByKernel::ThreadReadRawDataHighPrecisionDigitalThermometer(const std
    }
 
    if (bFoundCrcOk)
-      return (float)atoi(data.c_str())/1000.0f; // Temperature given by kernel is in thousandths of degrees
+   {
+	   if (is_number(data))
+		return (float)atoi(data.c_str()) / 1000.0f; // Temperature given by kernel is in thousandths of degrees
+   }
 
    throw OneWireReadErrorException(deviceFileName);
 }

@@ -32,8 +32,7 @@ extern "C" {
 using namespace boost::python;
 #endif
 
-
-extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 
 CEventSystem::CEventSystem(void)
 {
@@ -922,9 +921,9 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 	std::stringstream lua_DirT;
 
 #ifdef WIN32
-	lua_DirT << szStartupFolder << "scripts\\lua\\";
+	lua_DirT << szUserDataFolder << "scripts\\lua\\";
 #else
-	lua_DirT << szStartupFolder << "scripts/lua/";
+	lua_DirT << szUserDataFolder << "scripts/lua/";
 #endif
 
 	std::string lua_Dir = lua_DirT.str();
@@ -975,9 +974,9 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 	{
 		std::stringstream python_DirT;
 #ifdef WIN32
-		python_DirT << szStartupFolder << "scripts\\python\\";
+		python_DirT << szUserDataFolder << "scripts\\python\\";
 #else
-		python_DirT << szStartupFolder << "scripts/python/";
+		python_DirT << szUserDataFolder << "scripts/python/";
 #endif
 
 		std::string python_Dir = python_DirT.str();
@@ -1626,9 +1625,9 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	std::stringstream python_DirT;
 
 #ifdef WIN32
-	python_DirT << szStartupFolder << "scripts\\python\\";
+	python_DirT << szUserDataFolder << "scripts\\python\\";
 #else
-	python_DirT << szStartupFolder << "scripts/python/";
+	python_DirT << szUserDataFolder << "scripts/python/";
 #endif
 	std::string python_Dir = python_DirT.str();
 	if(!Py_IsInitialized()) {

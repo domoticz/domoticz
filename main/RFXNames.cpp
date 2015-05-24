@@ -187,6 +187,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronicTCP, "KMTronic Gateway with LAN interface" },
 		{ HTYPE_SOLARMAXTCP, "SolarMax via LAN interface" },
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
+		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

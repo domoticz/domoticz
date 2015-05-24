@@ -619,14 +619,14 @@ define(['app'], function (app) {
 						sHeatMode=item.Status;
 					}
 					if (typeof item.Temp != 'undefined') {
-						 bigtext=item.Temp + '\u00B0';
+						 bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
 					}
 					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
 						var tUntil="";
 						if (typeof item.Until != 'undefined')
 							tUntil=item.Until;
 						if (typeof item.SetPoint != 'undefined'){
-							bigtext+=' ('+item.SetPoint + '\u00B0)';
+							bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
 							status+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
 							setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
 						}
@@ -647,7 +647,7 @@ define(['app'], function (app) {
 						if (bigtext!="") {
 							bigtext+=' / ';
 						}
-						bigtext+=item.Chill + '\u00B0';
+						bigtext+=item.Chill + '\u00B0 ' + $scope.config.TempSign;
 					}
 					if (typeof item.Humidity != 'undefined') {
 						if (bigtext!="") {
@@ -808,11 +808,11 @@ define(['app'], function (app) {
 				  var tUntil="";
 				  var bigtext="";
 					if (typeof item.Temp != 'undefined') {
-						bigtext=item.Temp + '\u00B0';
+						bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
 					}
 					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
 						if (typeof item.SetPoint != 'undefined'){
-							bigtext+=' ('+item.SetPoint + '\u00B0)';
+							bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
 						}
 						if (typeof item.State != 'undefined')
 							bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
@@ -829,7 +829,7 @@ define(['app'], function (app) {
 						if (bigtext!="") {
 							bigtext+=' / ';
 						}
-						bigtext+=item.Chill + '\u00B0';
+						bigtext+=item.Chill + '\u00B0 ' + $scope.config.TempSign;
 					}
 				  xhtm+=bigtext+'</td>\n';
 				  xhtm+='\t      <td id="img"><img src="images/';

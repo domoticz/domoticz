@@ -82,6 +82,11 @@ private:
 	void Cmd_WOLUpdateNode(Json::Value &root);
 	void Cmd_WOLRemoveNode(Json::Value &root);
 	void Cmd_WOLClearNodes(Json::Value &root);
+	void Cmd_PingerGetNodes(Json::Value &root);
+	void Cmd_PingerAddNode(Json::Value &root);
+	void Cmd_PingerUpdateNode(Json::Value &root);
+	void Cmd_PingerRemoveNode(Json::Value &root);
+	void Cmd_PingerClearNodes(Json::Value &root);
 	void Cmd_SaveFibaroLinkConfig(Json::Value &root);
 	void Cmd_GetFibaroLinkConfig(Json::Value &root);
 	void Cmd_GetFibaroLinks(Json::Value &root);

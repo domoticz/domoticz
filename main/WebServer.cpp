@@ -28,6 +28,7 @@
 #endif // WITH_GPIO
 #include "../hardware/WOL.h"
 #include "../hardware/evohome.h"
+#include "../hardware/Pinger.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/config.h"
@@ -49,7 +50,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 
 extern std::string szAppVersion;
@@ -379,6 +380,12 @@ namespace http {
 			RegisterCommandCode("wolupdatenode", boost::bind(&CWebServer::Cmd_WOLUpdateNode, this, _1));
 			RegisterCommandCode("wolremovenode", boost::bind(&CWebServer::Cmd_WOLRemoveNode, this, _1));
 			RegisterCommandCode("wolclearnodes", boost::bind(&CWebServer::Cmd_WOLClearNodes, this, _1));
+
+			RegisterCommandCode("pingergetnodes", boost::bind(&CWebServer::Cmd_PingerGetNodes, this, _1));
+			RegisterCommandCode("pingeraddnode", boost::bind(&CWebServer::Cmd_PingerAddNode, this, _1));
+			RegisterCommandCode("pingerupdatenode", boost::bind(&CWebServer::Cmd_PingerUpdateNode, this, _1));
+			RegisterCommandCode("pingerremovenode", boost::bind(&CWebServer::Cmd_PingerRemoveNode, this, _1));
+			RegisterCommandCode("pingerclearnodes", boost::bind(&CWebServer::Cmd_PingerClearNodes, this, _1));
 
 			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1));
 			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1));
@@ -929,6 +936,9 @@ namespace http {
 			else if (htype == HTYPE_1WIRE) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Pinger) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_RaspberryBMP085) {
 				//all fine here!
 			}
@@ -1093,6 +1103,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_1WIRE) {
+				//All fine here
+			}
+			else if (htype == HTYPE_Pinger) {
 				//All fine here
 			}
 			else if (htype == HTYPE_RaspberryBMP085) {
@@ -1353,6 +1366,157 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "WOLClearNodes";
+			pHardware->RemoveAllNodes();
+		}
+
+		void CWebServer::Cmd_PingerGetNodes(Json::Value &root)
+		{
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (pHardware->HwdType != HTYPE_Pinger)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "PingerGetNodes";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["IP"] = sd[2];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_PingerAddNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string ip = m_pWebEm->FindValue("ip");
+			if (
+				(hwid == "") ||
+				(name == "") ||
+				(ip == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "PingerAddNode";
+			pHardware->AddNode(name, ip);
+		}
+
+		void CWebServer::Cmd_PingerUpdateNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string ip = m_pWebEm->FindValue("ip");
+			if (
+				(hwid == "") ||
+				(nodeid == "") ||
+				(name == "") ||
+				(ip == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "PingerUpdateNode";
+			pHardware->UpdateNode(NodeID, name, ip);
+		}
+
+		void CWebServer::Cmd_PingerRemoveNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			if (
+				(hwid == "") ||
+				(nodeid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "PingerRemoveNode";
+			pHardware->RemoveNode(NodeID);
+		}
+
+		void CWebServer::Cmd_PingerClearNodes(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "PingerClearNodes";
 			pHardware->RemoveAllNodes();
 		}
 
@@ -3142,7 +3306,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetActualHistory";
 
-			std::string historyfile = szStartupFolder + "History.txt";
+			std::string historyfile = szUserDataFolder + "History.txt";
 
 			std::ifstream infile;
 			int ii = 0;
@@ -3636,14 +3800,14 @@ namespace http {
 			if (scriptname.find("..") != std::string::npos)
 				return;
 #ifdef WIN32
-			scriptname = szStartupFolder + "scripts\\" + scriptname;
+			scriptname = szUserDataFolder + "scripts\\" + scriptname;
 #else
-			scriptname = szStartupFolder + "scripts/" + scriptname;
+			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 			if (!file_exist(scriptname.c_str()))
 				return;
 			std::string script_params = m_pWebEm->FindValue("scriptparams");
-			std::string strparm = szStartupFolder;
+			std::string strparm = szUserDataFolder;
 			if (script_params != "")
 			{
 				if (strparm.size() > 0)
@@ -10353,7 +10517,7 @@ namespace http {
 		std::string CWebServer::GetDatabaseBackup()
 		{
 			m_retstr = "";
-			std::string OutputFileName = szStartupFolder + "backup.db";
+			std::string OutputFileName = szUserDataFolder + "backup.db";
 			if (m_sql.BackupDatabase(OutputFileName))
 			{
 				std::ifstream testFile(OutputFileName.c_str(), std::ios::binary);
@@ -11173,7 +11337,7 @@ namespace http {
 						{
 							COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 							root["result"][ii]["version"] = pOZWHardware->GetVersion();
-							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
+							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
 						}
 					}
 #endif

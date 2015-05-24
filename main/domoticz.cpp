@@ -53,9 +53,11 @@ const char *szHelp=
 #if defined WIN32
 	"\t-wwwroot file_path (for example D:\\www)\n"
 	"\t-dbase file_path (for example D:\\domoticz.db)\n"
+	"\t-userdata file_path (for example D:\\domoticzdata)\n"
 #else
 	"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
 	"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
+	"\t-userdata file_path (for example /opt/domoticz)\n"
 #endif
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
 	"\t-startupdelay seconds (default=0)\n"
@@ -76,6 +78,7 @@ const char *szHelp=
 	"";
 
 std::string szStartupFolder;
+std::string szUserDataFolder;
 std::string szWWWFolder;
 
 bool bHasInternalTemperature=false;
@@ -476,6 +479,19 @@ int main(int argc, char**argv)
 		return 0;
 	}
 
+	szUserDataFolder=szStartupFolder;
+	if (cmdLine.HasSwitch("-userdata"))
+	{
+		if (cmdLine.GetArgumentCount("-userdata") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a path for user data to be stored");
+			return 1;
+		}
+		std::string szroot = cmdLine.GetSafeArgument("-userdata", 0, "");
+		if (szroot.size() != 0)
+			szUserDataFolder = szroot;
+	}
+
 	if (cmdLine.HasSwitch("-startupdelay"))
 	{
 		if (cmdLine.GetArgumentCount("-startupdelay") != 1)
@@ -548,7 +564,7 @@ int main(int argc, char**argv)
 		m_mainworker.m_bIgnoreUsernamePassword = true;
 	}
 
-	std::string dbasefile = szStartupFolder + "domoticz.db";
+	std::string dbasefile = szUserDataFolder + "domoticz.db";
 #ifdef WIN32
 	if (!IsUserAnAdmin())
 	{

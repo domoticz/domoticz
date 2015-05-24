@@ -534,7 +534,7 @@ const char *sqlCreateToonDevices =
 " [HardwareID] INTEGER NOT NULL,"
 " [UUID] VARCHAR(100) NOT NULL);";
 
-extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper(void)
 {
@@ -2498,18 +2498,18 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				//Execute possible script
 				std::string scriptname;
 #ifdef WIN32
-				scriptname = szStartupFolder + "scripts\\domoticz_main.bat";
+				scriptname = szUserDataFolder + "scripts\\domoticz_main.bat";
 #else
-				scriptname = szStartupFolder + "scripts/domoticz_main";
+				scriptname = szUserDataFolder + "scripts/domoticz_main";
 #endif
 				if (file_exist(scriptname.c_str()))
 				{
 					//Add parameters
 					std::stringstream s_scriptparams;
-					std::string nszStartupFolder = szStartupFolder;
-					if (nszStartupFolder == "")
-						nszStartupFolder = ".";
-					s_scriptparams << nszStartupFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn ? "On" : "Off") << " \"" << lstatus << "\"" << " \"" << devname << "\"";
+					std::string nszUserDataFolder = szUserDataFolder;
+					if (nszUserDataFolder == "")
+						nszUserDataFolder = ".";
+					s_scriptparams << nszUserDataFolder << " " << HardwareID << " " << ulID << " " << (bIsLightSwitchOn ? "On" : "Off") << " \"" << lstatus << "\"" << " \"" << devname << "\"";
 					//add script to background worker				
 					boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 					m_background_task_queue.push_back(_tTaskItem::ExecuteScript(1, scriptname, s_scriptparams.str()));

@@ -57,7 +57,7 @@ The WiringPi project
 
 #define DISABLE_NEW_FUNCTIONS
 
-extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 
 CPiFace::CPiFace(const int ID)
 {
@@ -176,7 +176,7 @@ int CPiFace::LoadConfig(void)
   CIOPort *IOport=NULL;
   bool Regenerate_Config=false;
 
-  std::string configfile=szStartupFolder + "piface.conf";
+  std::string configfile=szUserDataFolder + "piface.conf";
 
   fstream ConfigFile(configfile.c_str(), ios::in);
 
@@ -502,7 +502,7 @@ void CPiFace::AutoCreate_piface_config(void)
   int Value;
   CIOPort *IOport;
 
-  std::string configfile=szStartupFolder + "piface.conf";
+  std::string configfile=szUserDataFolder + "piface.conf";
   fstream ConfigFile(configfile.c_str(), ios::out);
 
   if (ConfigFile.is_open())

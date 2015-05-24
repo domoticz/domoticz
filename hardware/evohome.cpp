@@ -37,7 +37,7 @@
 
 #define RETRY_DELAY 30
 
-extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 
 std::ofstream *CEvohome::m_pEvoLog=NULL;
 #ifdef _DEBUG
@@ -151,7 +151,7 @@ bool CEvohome::StartHardware()
 		{
 			try
 			{
-				std::string debug_file = szStartupFolder + "evoraw.log";
+				std::string debug_file = szUserDataFolder + "evoraw.log";
 				m_pEvoLog = new std::ofstream(debug_file.c_str(), std::ios::out | std::ios::app);
 			}
 			catch (...)

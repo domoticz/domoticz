@@ -324,7 +324,7 @@ float C1WireForWindows::GetHumidity(const _t1WireDevice& device) const
    }
    catch (C1WireForWindowsReadException&)
    {
-      return 0.0;
+	   return -1000.0;
    }
    return ansRoot.get("Humidity",0.0f).asFloat();
 }
@@ -338,7 +338,7 @@ float C1WireForWindows::GetPressure(const _t1WireDevice& device) const
    }
    catch (C1WireForWindowsReadException&)
    {
-      return 0.0;
+	   return -1000.0;
    }
    return ansRoot.get("Pressure",0.0f).asFloat();
 }
@@ -366,7 +366,7 @@ unsigned int C1WireForWindows::GetNbChannels(const _t1WireDevice& device) const
    }
    catch (C1WireForWindowsReadException&)
    {
-      return false;
+      return 0;
    }
 }
 
@@ -379,7 +379,7 @@ unsigned long C1WireForWindows::GetCounter(const _t1WireDevice& device,int unit)
    }
    catch (C1WireForWindowsReadException&)
    {
-      return false;
+      return 0;
    }
 
    return ansRoot.get("Counter",0).asUInt();
@@ -394,7 +394,7 @@ int C1WireForWindows::GetVoltage(const _t1WireDevice& device,int unit) const
    }
    catch (C1WireForWindowsReadException&)
    {
-      return false;
+	   return -1000.0;
    }
 
    return ansRoot.get("Voltage",0).asInt();
@@ -409,7 +409,7 @@ float C1WireForWindows::GetIlluminescence(const _t1WireDevice& device) const
    }
    catch (C1WireForWindowsReadException&)
    {
-      return 0.0;
+	   return -1000.0;
    }
    return ansRoot.get("Illuminescence",0.0f).asFloat();
 }

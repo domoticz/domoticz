@@ -103,7 +103,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: KMTronic USB-> RS485 relay hardware
 - Implemented: Extra check in short-log cleanup
 - Changed: RFLink controller initialisation detection (reported by gkroone)
-
+- Implemented: Native 'Ping' (System Alive Checker)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

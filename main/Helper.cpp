@@ -435,3 +435,10 @@ void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxV
 		break;
 	}
 }
+
+bool is_number(const std::string& s)
+{
+	std::string::const_iterator it = s.begin();
+	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == ' '))) ++it;
+	return !s.empty() && it == s.end();
+}

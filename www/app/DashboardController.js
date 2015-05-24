@@ -203,7 +203,7 @@ define(['app'], function (app) {
 											}
 											else {
 												status='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.t("Open") +'</button> ' + 
-													'<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.t("Locked") +'</button>';
+													'<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.t("Unlock") +'</button>';
 											}
 										}
 										else if (item.SwitchType == "Push Off Button") {
@@ -737,13 +737,13 @@ define(['app'], function (app) {
 										var bigtext="";
 										var bHaveBefore=false;
 										if (typeof item.Temp != 'undefined') {
-												 bigtext=item.Temp + '\u00B0';
+												 bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
 										}
 										if (typeof item.Chill != 'undefined') {
 											if (bigtext!="") {
 												bigtext+=' / ';
 											}
-											bigtext+=item.Chill + '\u00B0';
+											bigtext+=item.Chill + '\u00B0 ' + $scope.config.TempSign;
 										}
 										if (typeof item.Humidity != 'undefined') {
 											if (bigtext!="") {
@@ -1637,7 +1637,7 @@ define(['app'], function (app) {
 											}
 											else {
 												status='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.t("Open") +'</button> ' + 
-													'<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.t("Locked") +'</button>';
+													'<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');">' + $.t("Unlock") +'</button>';
 											}
 									}
 									else if (item.SwitchType == "Push Off Button") {
@@ -2230,7 +2230,7 @@ define(['app'], function (app) {
 									xhtm+='\t      <td id="bigtext">';
 									var bigtext="";
 									if (typeof item.Temp != 'undefined') {
-										bigtext=item.Temp + '\u00B0';
+										bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
 									}
 									if (typeof item.Humidity != 'undefined') {
 										if (bigtext!="") {
@@ -2242,7 +2242,7 @@ define(['app'], function (app) {
 										if (bigtext!="") {
 											bigtext+=' / ';
 										}
-										bigtext+=item.Chill + '\u00B0';
+										bigtext+=item.Chill + '\u00B0 ' + $scope.config.TempSign;
 									}
 									xhtm+=bigtext+'</td>\n';
 									xhtm+='\t      <td id="img"><img src="images/';

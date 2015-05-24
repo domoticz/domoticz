@@ -66,6 +66,7 @@
 #include "../hardware/KMTronicTCP.h"
 #include "../hardware/KMTronic433.h"
 #include "../hardware/SolarMaxTCP.h"
+#include "../hardware/Pinger.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -96,6 +97,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 
 extern http::server::CWebServerHelper m_webservers;
@@ -642,6 +644,10 @@ bool MainWorker::AddHardwareFromParams(
 		//1-Wire file system
 		pHardware = new C1Wire(ID);
 		break;
+	case HTYPE_Pinger:
+		//System Alive Checker (Ping)
+		pHardware = new CPinger(ID);
+		break;
 	case HTYPE_Mochad:
 		//LAN
 		pHardware = new MochadTCP(ID, Address, Port);
@@ -859,15 +865,15 @@ void MainWorker::HandleAutomaticBackups()
 		std::stringstream backup_DirD;
 		std::stringstream backup_DirM;
 
-		#ifdef WIN32
-			backup_DirH << szStartupFolder << "backups\\hourly\\";
-			backup_DirD << szStartupFolder << "backups\\daily\\";
-			backup_DirM << szStartupFolder << "backups\\monthly\\";
-		#else
-			backup_DirH << szStartupFolder << "backups/hourly/";
-			backup_DirD << szStartupFolder << "backups/daily/";
-			backup_DirM << szStartupFolder << "backups/monthly/";
-		#endif
+#ifdef WIN32
+		backup_DirH << szUserDataFolder << "backups\\hourly\\";
+		backup_DirD << szUserDataFolder << "backups\\daily\\";
+		backup_DirM << szUserDataFolder << "backups\\monthly\\";
+#else
+		backup_DirH << szUserDataFolder << "backups/hourly/";
+		backup_DirD << szUserDataFolder << "backups/daily/";
+		backup_DirM << szUserDataFolder << "backups/monthly/";
+#endif
     
 		std::string sbackup_DirH = backup_DirH.str();
 		std::string sbackup_DirD = backup_DirD.str();

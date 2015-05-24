@@ -3,7 +3,7 @@
 #include "NotificationKodi.h"
 #include "../main/Helper.h"
 #include "xmbcclient.h"
-#include "RFXNames.h"
+#include "../main/RFXNames.h"
 
 extern std::string szWWWFolder;
 
@@ -188,7 +188,7 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 		_Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, (const char*)&_TTL, sizeof(_TTL));
 		u_char loop = 1;
-		setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
+		setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loop, sizeof(loop));
 	}
 	else {
 		_Sock = socket(AF_INET, SOCK_DGRAM, 0);

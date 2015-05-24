@@ -317,6 +317,9 @@ void C1Wire::GetDeviceDetails()
 
 void C1Wire::ReportTemperature(const std::string& deviceId,float temperature)
 {
+	if (temperature == -1000.0)
+		return;
+
    unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
    DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
@@ -341,6 +344,9 @@ void C1Wire::ReportTemperature(const std::string& deviceId,float temperature)
 
 void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
 {
+	if (humidity == -1000.0)
+		return;
+
    unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
    DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
@@ -362,14 +368,19 @@ void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
 
 void C1Wire::ReportPressure(const std::string& deviceId,float pressure)
 {
-   _tGeneralDevice gdevice;
-   gdevice.subtype=sTypePressure;
-   gdevice.floatval1=pressure;
-   sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+	if (pressure == -1000.0)
+		return;
+	
+	_tGeneralDevice gdevice;
+	gdevice.subtype=sTypePressure;
+	gdevice.floatval1=pressure;
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 }
 
 void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity)
 {
+	if ((temperature == -1000.0) || (humidity == -1000.0))
+		return;
    unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
    DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
@@ -439,6 +450,9 @@ void C1Wire::ReportCounter(const std::string& deviceId,int unit,unsigned long co
 
 void C1Wire::ReportVoltage(int unit,int voltage)
 {
+	if (voltage == -1000.0)
+		return;
+
    RBUF tsen;
    memset(&tsen,0,sizeof(RBUF));
    tsen.RFXSENSOR.packetlength=sizeof(tsen.RFXSENSOR)-1;
@@ -454,6 +468,9 @@ void C1Wire::ReportVoltage(int unit,int voltage)
 
 void C1Wire::ReportIlluminescence(float illuminescence)
 {
+	if (illuminescence == -1000.0)
+		return;
+
    _tGeneralDevice gdevice;
    gdevice.subtype=sTypeSolarRadiation;
    gdevice.floatval1=illuminescence;

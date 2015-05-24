@@ -210,6 +210,9 @@
     <Filter Include="Devices\SolarMax">
       <UniqueIdentifier>{9a6a8770-2ce3-4d71-bc5b-6e2023e55429}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Ping">
+      <UniqueIdentifier>{c72fb471-c16d-48f3-9721-4ac7e744fa07}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -681,6 +684,9 @@
     <ClInclude Include="..\hardware\KMTronic433.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Pinger.h">
+      <Filter>Devices\Ping</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1099,6 +1105,9 @@
     </ClCompile>
     <ClCompile Include="..\main\WebServerHelper.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Pinger.cpp">
+      <Filter>Devices\Ping</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

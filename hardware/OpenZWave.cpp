@@ -85,6 +85,7 @@ unsigned char GetIndexFromAlarm(const std::string &sLabel)
 #pragma warning(disable: 4996)
 
 extern std::string szStartupFolder;
+extern std::string szUserDataFolder;
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -821,12 +822,17 @@ bool COpenZWave::OpenSerialConnector()
 	m_nodes.clear();
 	m_bNeedSave = false;
 	std::string ConfigPath = szStartupFolder + "Config/";
+	std::string UserPath = ConfigPath;
+	if (szStartupFolder != szUserDataFolder)
+	{
+		UserPath = szUserDataFolder;
+	}
 	// Create the OpenZWave Manager.
 	// The first argument is the path to the config files (where the manufacturer_specific.xml file is located
 	// The second argument is the path for saved Z-Wave network state and the log file.  If you leave it NULL 
 	// the log file will appear in the program's working directory.
 	_log.Log(LOG_STATUS, "OpenZWave: using config in: %s", ConfigPath.c_str());
-	OpenZWave::Options::Create(ConfigPath.c_str(), ConfigPath.c_str(), "--SaveConfiguration=true ");
+	OpenZWave::Options::Create(ConfigPath, UserPath, "--SaveConfiguration=true ");
 	EnableDisableDebug();
 	OpenZWave::Options::Get()->AddOptionInt("PollInterval", 60000); //enable polling each 60 seconds
 	OpenZWave::Options::Get()->AddOptionBool("IntervalBetweenPolls", true);
@@ -2741,7 +2747,7 @@ std::string COpenZWave::GetConfigFile(std::string &szConfigFile)
 	WriteControllerConfig();
 
 	char szFileName[255];
-	sprintf(szFileName, "%sConfig/zwcfg_0x%08x.xml", szStartupFolder.c_str(), m_controllerID);
+	sprintf(szFileName, "%sConfig/zwcfg_0x%08x.xml", szUserDataFolder.c_str(), m_controllerID);
 	szConfigFile = szFileName;
 	std::ifstream testFile(szConfigFile.c_str(), std::ios::binary);
 	std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
