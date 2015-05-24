@@ -178,3 +178,5 @@ bool GetLightCommand(
 	);
 
 bool IsLightSwitchOn(const std::string &lstatus);
+
+bool IsSerialDevice(const _eHardwareTypes htype);

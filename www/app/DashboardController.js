@@ -34,7 +34,7 @@ define(['app'], function (app) {
 			},
 			error: function(){
 				HideNotify();
-				alert($.t('Problem sending switch command'));
+				bootbox.alert($.t('Problem sending switch command'));
 			}     
 			});
 		}

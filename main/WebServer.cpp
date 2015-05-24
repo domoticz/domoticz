@@ -902,16 +902,8 @@ namespace http {
 			int mode5 = 0;
 			int mode6 = 0;
 			int port = atoi(sport.c_str());
-			if (
-				(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) ||
-				(htype == HTYPE_OpenThermGateway) || (htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-				(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
-				)
+			if (IsSerialDevice(htype))
 			{
-				//USB
-				if ((htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433))
-				{
-				}
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
@@ -932,6 +924,9 @@ namespace http {
 			}
 			else if (htype == HTYPE_VOLCRAFTCO20) {
 				//all fine here!
+			}
+			else if (htype == HTYPE_System)	{
+				//All fine here
 			}
 			else if (htype == HTYPE_1WIRE) {
 				//all fine here!
@@ -1004,12 +999,13 @@ namespace http {
 			}
 
 			sprintf(szTmp,
-				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%s',%d, %d,'%s',%d,'%s','%s',%d,%d,%d,%d,%d,%d,%d)",
+				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%s',%d, %d,'%s',%d,'%s','%s','%s',%d,%d,%d,%d,%d,%d,%d)",
 				name.c_str(),
 				(senabled == "true") ? 1 : 0,
 				htype,
 				address.c_str(),
 				port,
+				sport.c_str(),
 				username.c_str(),
 				password.c_str(),
 				mode1, mode2, mode3, mode4, mode5, mode6,
@@ -1025,7 +1021,7 @@ namespace http {
 				std::vector<std::string> sd = result[0];
 				int ID = atoi(sd[0].c_str());
 
-				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout);
+				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, sport, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout);
 			}
 		}
 
@@ -1065,12 +1061,7 @@ namespace http {
 
 			bool bIsSerial = false;
 
-			if (
-				(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) ||
-				(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
-				(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) || (htype == HTYPE_System) ||
-				(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
-				)
+			if (IsSerialDevice(htype))
 			{
 				//USB/System
 				bIsSerial = true;
@@ -1095,6 +1086,9 @@ namespace http {
 				//Remote Domoticz
 				if (address == "")
 					return;
+			}
+			else if (htype == HTYPE_System) {
+				//All fine here
 			}
 			else if (htype == HTYPE_TE923) {
 				//All fine here
@@ -1186,12 +1180,13 @@ namespace http {
 			else
 			{
 				sprintf(szTmp,
-					"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == %s)",
+					"UPDATE Hardware SET Name='%s', Enabled=%d, Type=%d, Address='%s', Port=%d, SerialPort='%s', Username='%s', Password='%s', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == %s)",
 					name.c_str(),
 					(bEnabled == true) ? 1 : 0,
 					htype,
 					address.c_str(),
 					port,
+					sport.c_str(),
 					username.c_str(),
 					password.c_str(),
 					mode1, mode2, mode3, mode4, mode5, mode6,
@@ -1214,7 +1209,7 @@ namespace http {
 			{
 				//re-add the device in our system
 				int ID = atoi(idx.c_str());
-				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout);
+				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout);
 			}
 		}
 
@@ -11302,7 +11297,7 @@ namespace http {
 
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
+			szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
 			result = m_sql.query(szQuery.str());
 			if (result.size() > 0)
 			{
@@ -11318,15 +11313,16 @@ namespace http {
 					root["result"][ii]["Type"] = atoi(sd[3].c_str());
 					root["result"][ii]["Address"] = sd[4];
 					root["result"][ii]["Port"] = atoi(sd[5].c_str());
-					root["result"][ii]["Username"] = sd[6];
-					root["result"][ii]["Password"] = sd[7];
-					root["result"][ii]["Mode1"] = atoi(sd[8].c_str());
-					root["result"][ii]["Mode2"] = atoi(sd[9].c_str());
-					root["result"][ii]["Mode3"] = atoi(sd[10].c_str());
-					root["result"][ii]["Mode4"] = atoi(sd[11].c_str());
-					root["result"][ii]["Mode5"] = atoi(sd[12].c_str());
-					root["result"][ii]["Mode6"] = atoi(sd[13].c_str());
-					root["result"][ii]["DataTimeout"] = atoi(sd[14].c_str());
+					root["result"][ii]["SerialPort"] = sd[6];
+					root["result"][ii]["Username"] = sd[7];
+					root["result"][ii]["Password"] = sd[8];
+					root["result"][ii]["Mode1"] = atoi(sd[9].c_str());
+					root["result"][ii]["Mode2"] = atoi(sd[10].c_str());
+					root["result"][ii]["Mode3"] = atoi(sd[11].c_str());
+					root["result"][ii]["Mode4"] = atoi(sd[12].c_str());
+					root["result"][ii]["Mode5"] = atoi(sd[13].c_str());
+					root["result"][ii]["Mode6"] = atoi(sd[14].c_str());
+					root["result"][ii]["DataTimeout"] = atoi(sd[15].c_str());
 
 #ifdef WITH_OPENZWAVE
 					//Special case for openzwave (status for nodes queried)
@@ -12298,26 +12294,9 @@ namespace http {
 			int ii = 0;
 			for (itt = serialports.begin(); itt != serialports.end(); ++itt)
 			{
-				std::string serialname = *itt;
-				int snumber = -1;
-				if (!bUseDirectPath)
-				{
-					size_t pos = serialname.find_first_of("01234567890");
-					if (pos != std::string::npos) {
-						snumber = atoi(serialname.substr(pos).c_str());
-					}
-				}
-				else
-				{
-					snumber = iDevice;
-				}
-				if (iDevice != -1)
-				{
-					root["result"][ii]["name"] = serialname;
-					root["result"][ii]["value"] = snumber;
-					ii++;
-				}
-				iDevice++;
+				root["result"][ii]["name"] = *itt;
+				root["result"][ii]["value"] = ii;
+				ii++;
 			}
 		}
 

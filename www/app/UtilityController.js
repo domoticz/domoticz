@@ -1510,7 +1510,6 @@ define(['app'], function (app) {
 				  bValid = bValid && checkLength( $("#dialog-editthermostatclockdevice #devicename"), 2, 100 );
 				  if ( bValid ) {
 					  $( this ).dialog( "close" );
-					  //bootbox.alert($.t('Clock will be set when device wakes up.'));
 					  bootbox.alert($.t('Setting the Clock is not finished yet!'));
 					  var daytimestr=$("#dialog-editthermostatclockdevice #comboclockday").val()+";"+$("#dialog-editthermostatclockdevice #clockhour").val()+";"+$("#dialog-editthermostatclockdevice #clockminute").val();
 					  $.ajax({

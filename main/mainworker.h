@@ -79,19 +79,19 @@ public:
 	bool RestartHardware(const std::string &idx);
 
 	bool AddHardwareFromParams(
-				int ID,
-				std::string Name,
-				bool Enabled,
-				_eHardwareTypes Type,
-				std::string Address, unsigned short Port, 
-				std::string Username, std::string Password, 
-				int Mode1,
-				int Mode2, 
-				int Mode3,
-				int Mode4,
-				int Mode5,
-				int Mode6,
-				int DataTimeout
+				const int ID,
+				const std::string &Name,
+				const bool Enabled,
+				const _eHardwareTypes Type,
+				const std::string &Address, const unsigned short Port, const std::string &SerialPort,
+				const std::string &Username, const std::string &Password, 
+				const int Mode1,
+				const int Mode2,
+				const int Mode3,
+				const int Mode4,
+				const int Mode5,
+				const int Mode6,
+				const int DataTimeout
 				);
 
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
