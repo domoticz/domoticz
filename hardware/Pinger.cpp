@@ -11,6 +11,8 @@
 #include "pinger/icmp_header.h"
 #include "pinger/ipv4_header.h"
 
+#include <iostream>
+
 #define PINGER_POLL_INTERVAL 30
 
 class pinger
