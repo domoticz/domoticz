@@ -156,7 +156,7 @@ void OTGWTCP::Do_Work()
 void OTGWTCP::GetGatewayDetails()
 {
 	char szCmd[10];
-	strcpy(szCmd,"PS=1\r\n");
+	strcpy(szCmd,"PR=G\r\nPS=1\r\n");
 	write((const unsigned char*)&szCmd,strlen(szCmd));
 }
 
@@ -174,7 +174,7 @@ void OTGWTCP::SendTime()
 
 	char szCmd[20];
 	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
-	WriteToHardware((const char*)&szCmd, strlen(szCmd));
+	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
 }
 
 void OTGWTCP::SendOutsideTemperature()
@@ -237,12 +237,12 @@ void OTGWTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR,"OTGW: Error: %s",error.message().c_str());
 }
 
-bool OTGWTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool OTGWTCP::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
 	if (!mIsConnected)
 	{
 		return false;
 	}
-//	write(pdata,length,0);
+	write(pData, Len);
 	return true;
 }

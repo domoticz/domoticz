@@ -287,6 +287,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Blinds Percentage") {
+											isdimmer=true;
 											if (item.Status == 'Closed') {
 												status=
 													'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');">' + $.t("Open") +'</button> ' +
@@ -299,6 +300,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Blinds Percentage Inverted") {
+											isdimmer=true;
 										    if (item.Status == 'Closed') {
 										        status =
 													'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');">' + $.t("Open") + '</button> ' +
@@ -514,6 +516,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Blinds Percentage") {
+											isdimmer=true;
 											if (item.Status == 'Closed') {
 												img='<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
 												img2='<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
@@ -524,6 +527,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Blinds Percentage Inverted") {
+											isdimmer=true;
 										    if (item.Status == 'Closed') {
 										        img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 										        img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';

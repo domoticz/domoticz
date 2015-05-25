@@ -7,34 +7,33 @@
 #include "../main/localtime_r.h"
 
 #include <boost/asio.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include "pinger/icmp_header.h"
 #include "pinger/ipv4_header.h"
 
 #include <iostream>
 
-#define PINGER_POLL_INTERVAL 30
-
 class pinger
+	: private boost::noncopyable
 {
 public:
-	pinger(boost::asio::io_service& io_service, const char* destination)
+	pinger(boost::asio::io_service& io_service, const char* destination, const int iPingTimeoutms)
 		: resolver_(io_service), socket_(io_service, boost::asio::ip::icmp::v4()),
-		timer_(io_service), sequence_number_(0), num_replies_(0)
+		timer_(io_service), sequence_number_(0), m_PingState(false), num_replies_(0)
 	{
-		m_PingState = false;
 		boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), destination, "");
 		destination_ = *resolver_.resolve(query);
 
-		start_send();
+		start_send(iPingTimeoutms);
 		start_receive();
 	}
+	int num_replies_;
 	bool m_PingState;
-
 private:
-	void start_send()
+	void start_send(const int iPingTimeoutms)
 	{
-		std::string body("\"Hello!\" from Domoticz.");
+		std::string body("Ping from Domoticz.");
 
 		// Create an ICMP header for an echo request.
 		icmp_header echo_request;
@@ -53,24 +52,20 @@ private:
 		time_sent_ = boost::posix_time::microsec_clock::universal_time();
 		socket_.send_to(request_buffer.data(), destination_);
 
-		// Wait up to five seconds for a reply.
 		num_replies_ = 0;
-		timer_.expires_at(time_sent_ + boost::posix_time::seconds(5));
-		timer_.async_wait(boost::bind(&pinger::handle_timeout, this));
+		timer_.expires_at(time_sent_ + boost::posix_time::milliseconds(iPingTimeoutms));
+		timer_.async_wait(boost::bind(&pinger::handle_timeout, this, boost::asio::placeholders::error));
 	}
 
-	void handle_timeout()
+	void handle_timeout(const boost::system::error_code& error)
 	{
-		if (num_replies_ == 0)
-		{
-			std::cout << "Request timed out" << std::endl;
-			m_PingState = false;
+		if (error != boost::asio::error::operation_aborted) {
+			if (num_replies_ == 0)
+			{
+				m_PingState = false;
+				resolver_.get_io_service().stop();
+			}
 		}
-		resolver_.get_io_service().stop();
-		return;
-		//		// Requests must be sent no less than one second apart.
-		timer_.expires_at(time_sent_ + boost::posix_time::seconds(1));
-		timer_.async_wait(boost::bind(&pinger::start_send, this));
 	}
 
 	void start_receive()
@@ -102,10 +97,8 @@ private:
 			&& icmp_hdr.identifier() == get_identifier()
 			&& icmp_hdr.sequence_number() == sequence_number_)
 		{
-			// If this is the first reply, interrupt the five second timeout.
-			if (num_replies_++ == 0)
-				timer_.cancel();
 			m_PingState = true;
+			num_replies_++;
 			/*
 			// Print out some information about the reply packet.
 			posix_time::ptime now = posix_time::microsec_clock::universal_time();
@@ -117,8 +110,8 @@ private:
 			<< std::endl;
 			*/
 		}
+		timer_.cancel();
 		resolver_.get_io_service().stop();
-		//start_receive();
 	}
 
 	static unsigned short get_identifier()
@@ -136,13 +129,15 @@ private:
 	unsigned short sequence_number_;
 	boost::posix_time::ptime time_sent_;
 	boost::asio::streambuf reply_buffer_;
-	std::size_t num_replies_;
 };
 
-CPinger::CPinger(const int ID)
+CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
+	m_iThreadsRunning = 0;
+
+	SetSettings(PollIntervalsec, PingTimeoutms);
 #ifdef WIN32
 	// Initialize Winsock
 	WSADATA wsaData;
@@ -166,8 +161,11 @@ bool CPinger::StartHardware()
 	StopHardware();
 	m_bIsStarted=true;
 	sOnConnected(this);
+	m_iThreadsRunning = 0;
 
 	StartHeartbeatThread();
+
+	ReloadNodes();
 
 	//Start worker thread
 	m_stoprequested = false;
@@ -187,6 +185,14 @@ bool CPinger::StopHardware()
 			m_stoprequested = true;
 			m_thread->join();
 			m_thread.reset();
+
+			//Make sure all our background workers are stopped
+			int iRetryCounter = 0;
+			while ((m_iThreadsRunning > 0) && (iRetryCounter<15))
+			{
+				sleep_milliseconds(500);
+				iRetryCounter++;
+			}
 		}
 	}
 	catch (...)
@@ -203,7 +209,7 @@ bool CPinger::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-void CPinger::AddNode(const std::string &Name, const std::string &IPAddress)
+void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, const int Timeout)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -217,7 +223,7 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress)
 		return; //Already exists
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "INSERT INTO WOLNodes (HardwareID, Name, MacAddress) VALUES (" << m_HwdID << ",'" << Name << "','" << IPAddress << "')";
+	szQuery << "INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (" << m_HwdID << ",'" << Name << "','" << IPAddress << "'," << Timeout << ")";
 	m_sql.query(szQuery.str());
 
 	szQuery.clear();
@@ -233,9 +239,10 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress)
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
 
 	SendSwitch(ID, 1, 255, false, 0, Name);
+	ReloadNodes();
 }
 
-bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress)
+bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::string &IPAddress, const int Timeout)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
@@ -251,7 +258,7 @@ bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::strin
 	szQuery.clear();
 	szQuery.str("");
 
-	szQuery << "UPDATE WOLNodes SET Name='" << Name << "', MacAddress='" << IPAddress << "' WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
+	szQuery << "UPDATE WOLNodes SET Name='" << Name << "', MacAddress='" << IPAddress << "', Timeout=" << Timeout << " WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
 	m_sql.query(szQuery.str());
 
 	char szID[40];
@@ -263,7 +270,7 @@ bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::strin
 	szQuery <<
 		"UPDATE DeviceStatus SET Name='" << Name << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 	m_sql.query(szQuery.str());
-
+	ReloadNodes();
 	return true;
 }
 
@@ -284,6 +291,7 @@ void CPinger::RemoveNode(const int ID)
 
 	szQuery << "DELETE FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
 	m_sql.query(szQuery.str());
+	ReloadNodes();
 }
 
 void CPinger::RemoveAllNodes()
@@ -299,74 +307,128 @@ void CPinger::RemoveAllNodes()
 	szQuery.str("");
 	szQuery << "DELETE FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ")";
 	m_sql.query(szQuery.str());
+	ReloadNodes();
 }
 
-void CPinger::DoPingHosts()
+void CPinger::ReloadNodes()
 {
+	m_nodes.clear();
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ")";
+	szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ")";
 	result = m_sql.query(szQuery.str());
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
-			boost::lock_guard<boost::mutex> l(m_mutex);
-
 			std::vector<std::string> sd = *itt;
 
-			std::string idx = sd[0];
-			std::string Name = sd[1];
-			std::string IP = sd[2];
+			PingNode pnode;
+			pnode.ID = atoi(sd[0].c_str());
+			pnode.Name = sd[1];
+			pnode.IP = sd[2];
+			pnode.LastOK = mytime(NULL);
 
-			int ID = atoi(idx.c_str());
+			int SensorTimeoutSec = atoi(sd[3].c_str());
+			pnode.SensorTimeoutSec = (SensorTimeoutSec > 0) ? SensorTimeoutSec : 5;
+			m_nodes.push_back(pnode);
+		}
+	}
+}
 
-			bool bPingOK = false;
-			boost::asio::io_service io_service;
-			try
+void CPinger::Do_Ping_Worker(const PingNode Node)
+{
+	bool bPingOK = false;
+	boost::asio::io_service io_service;
+	try
+	{
+		pinger p(io_service, Node.IP.c_str(), m_iPingTimeoutms);
+		io_service.run();
+		if (p.m_PingState == true)
+		{
+			bPingOK = true;
+		}
+	}
+	catch (std::exception& e)
+	{
+		bPingOK = false;
+	}
+	catch (...)
+	{
+		bPingOK = false;
+	}
+	UpdateNodeStatus(Node, bPingOK);
+	if (m_iThreadsRunning > 0) m_iThreadsRunning--;
+}
+
+void CPinger::UpdateNodeStatus(const PingNode Node, const bool bPingOK)
+{
+	//_log.Log(LOG_STATUS, "Pinger: %s = %s", Node.Name.c_str(), (bPingOK == true) ? "OK" : "Error");
+	if (!bPingOK)
+	{
+		//_log.Log(LOG_STATUS, "Pinger: Could not ping host: %s", Node.Name.c_str());
+	}
+
+	//Find out node, and update it's status
+	std::vector<PingNode>::iterator itt;
+	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	{
+		if (itt->ID == Node.ID)
+		{
+			//Found it
+			time_t atime = mytime(NULL);
+			if (bPingOK)
 			{
-				pinger p(io_service, IP.c_str());
-				io_service.run();
-
-				if (p.m_PingState == true)
+				itt->LastOK = atime;
+				SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
+			}
+			else
+			{
+				if (atime - itt->LastOK >= Node.SensorTimeoutSec)
 				{
-					//Could ping device
-					bPingOK = true;
+					itt->LastOK = atime;
+					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
 				}
 			}
-			catch (std::exception& e)
-			{
-				//Could not ping device
-				bPingOK = false;
-				_log.Log(LOG_STATUS, "Pinger: Could not ping host: %s",Name.c_str());
-			}
-			catch (...)
-			{
-				//Could not ping device
-				bPingOK = false;
-				_log.Log(LOG_STATUS, "Pinger: Could not ping host: %s", Name.c_str());
-			}
-			SendSwitch(ID, 1, 255, bPingOK, (bPingOK==true)? 100 : 0, Name);
+			break;
+		}
+	}
+}
 
+void CPinger::DoPingHosts()
+{
+	boost::lock_guard<boost::mutex> l(m_mutex);
+	std::vector<PingNode>::const_iterator itt;
+	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	{
+		if (m_stoprequested)
+			return;
+		if (m_iThreadsRunning < 1000)
+		{
+			//m_iThreadsRunning++;
+			boost::thread t(boost::bind(&CPinger::Do_Ping_Worker, this, *itt));
+			t.join();
 		}
 	}
 }
 
 void CPinger::Do_Work()
 {
+	int mcounter = 0;
 	int scounter = 0;
 	bool bFirstTime = true;
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
-		scounter++;
-		if (scounter >= 2)
+		mcounter++;
+		if (mcounter == 2)
 		{
-			scounter = 0;
-			time_t atime = mytime(NULL);
-			if ((atime % PINGER_POLL_INTERVAL == 0)||(bFirstTime))
+			mcounter = 0;
+			scounter++;
+			if ((scounter >= m_iPollInterval) || (bFirstTime))
 			{
+				scounter = 0;
 				bFirstTime = false;
 				DoPingHosts();
 			}
@@ -374,3 +436,22 @@ void CPinger::Do_Work()
 	}
 	_log.Log(LOG_STATUS, "Pinger: Worker stopped...");
 }
+
+void CPinger::SetSettings(const int PollIntervalsec, const int PingTimeoutms)
+{
+	//Defaults
+	m_iPollInterval = 30;
+	m_iPingTimeoutms = 1000;
+
+	if (PollIntervalsec > 1)
+		m_iPollInterval = PollIntervalsec;
+	if ((PingTimeoutms / 1000 < m_iPollInterval) && (PingTimeoutms != 0))
+		m_iPingTimeoutms = PingTimeoutms;
+}
+
+void CPinger::Restart()
+{
+	StopHardware();
+	StartHardware();
+}
+

@@ -489,6 +489,8 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, cons
 		int nvalue = atoi(result[0][1].c_str());
 		if ((!bOn) && (nvalue == 0))
 			return;
+		if (bOn && (nvalue == light2_sOn))
+			return;
 		if ((bOn && (nvalue != 0)))
 		{
 			//Check Level

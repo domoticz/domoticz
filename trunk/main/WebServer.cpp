@@ -381,6 +381,7 @@ namespace http {
 			RegisterCommandCode("wolremovenode", boost::bind(&CWebServer::Cmd_WOLRemoveNode, this, _1));
 			RegisterCommandCode("wolclearnodes", boost::bind(&CWebServer::Cmd_WOLClearNodes, this, _1));
 
+			RegisterCommandCode("pingersetmode", boost::bind(&CWebServer::Cmd_PingerSetMode, this, _1));
 			RegisterCommandCode("pingergetnodes", boost::bind(&CWebServer::Cmd_PingerGetNodes, this, _1));
 			RegisterCommandCode("pingeraddnode", boost::bind(&CWebServer::Cmd_PingerAddNode, this, _1));
 			RegisterCommandCode("pingerupdatenode", boost::bind(&CWebServer::Cmd_PingerUpdateNode, this, _1));
@@ -997,6 +998,11 @@ namespace http {
 			{
 				address = "0;1000;0;1000;0;1000;0;1000;0;1000";
 			}
+			else if (htype == HTYPE_Pinger)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}
 
 			sprintf(szTmp,
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%s',%d, %d,'%s',%d,'%s','%s','%s',%d,%d,%d,%d,%d,%d,%d)",
@@ -1381,7 +1387,7 @@ namespace http {
 
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
+			szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
 			result = m_sql.query(szQuery.str());
 			if (result.size() > 0)
 			{
@@ -1394,10 +1400,53 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = sd[2];
+					root["result"][ii]["Timeout"] = atoi(sd[3].c_str());
 					ii++;
 				}
 			}
 		}
+
+		void CWebServer::Cmd_PingerSetMode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string mode1 = m_pWebEm->FindValue("mode1");
+			std::string mode2 = m_pWebEm->FindValue("mode2");
+			if (
+				(hwid == "") ||
+				(mode1 == "") ||
+				(mode2 == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "PingerSetMode";
+
+			int iMode1 = atoi(mode1.c_str());
+			int iMode2 = atoi(mode2.c_str());
+
+			char szTmp[100];
+			sprintf(szTmp,
+				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %s)",
+				iMode1,
+				iMode2,
+				hwid.c_str());
+			m_sql.query(szTmp);
+			pHardware->SetSettings(iMode1,iMode2);
+			pHardware->Restart();
+		}
+			
 
 		void CWebServer::Cmd_PingerAddNode(Json::Value &root)
 		{
@@ -1410,10 +1459,12 @@ namespace http {
 			std::string hwid = m_pWebEm->FindValue("idx");
 			std::string name = m_pWebEm->FindValue("name");
 			std::string ip = m_pWebEm->FindValue("ip");
+			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
 			if (
 				(hwid == "") ||
 				(name == "") ||
-				(ip == "")
+				(ip == "") ||
+				(Timeout==0)
 				)
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -1426,7 +1477,7 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "PingerAddNode";
-			pHardware->AddNode(name, ip);
+			pHardware->AddNode(name, ip, Timeout);
 		}
 
 		void CWebServer::Cmd_PingerUpdateNode(Json::Value &root)
@@ -1441,11 +1492,13 @@ namespace http {
 			std::string nodeid = m_pWebEm->FindValue("nodeid");
 			std::string name = m_pWebEm->FindValue("name");
 			std::string ip = m_pWebEm->FindValue("ip");
+			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
 			if (
 				(hwid == "") ||
 				(nodeid == "") ||
 				(name == "") ||
-				(ip == "")
+				(ip == "") ||
+				(Timeout==0)
 				)
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -1459,7 +1512,7 @@ namespace http {
 			int NodeID = atoi(nodeid.c_str());
 			root["status"] = "OK";
 			root["title"] = "PingerUpdateNode";
-			pHardware->UpdateNode(NodeID, name, ip);
+			pHardware->UpdateNode(NodeID, name, ip, Timeout);
 		}
 
 		void CWebServer::Cmd_PingerRemoveNode(Json::Value &root)

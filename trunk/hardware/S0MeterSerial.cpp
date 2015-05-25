@@ -134,6 +134,7 @@ bool S0MeterSerial::StopHardware()
 		}
 	}
 	StopHeartbeatThread();
+	_log.Log(LOG_STATUS, "S0 Meter: Serial Worker stopped...");
 	return true;
 }
 

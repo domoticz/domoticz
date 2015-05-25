@@ -74,6 +74,7 @@
 		<script src="js/colpick.js"></script>
 		<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
         <script type="text/javascript" src="js/noty/layouts/top.js"></script>
+        <script type="text/javascript" src="js/noty/layouts/topLeft.js"></script>
         <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
         <script type="text/javascript" src="js/noty/themes/default.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
@@ -295,7 +296,14 @@ $(document).ready(function() {
 				errText += (typeof($.cachecount) != 'undefined') ? '<br>Loaded ' + $.cachecount + ' of ' + $.cachetotal + ' files' : '';
 				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
 				ClearNotifyCacheRefresh();
-				$.cachenoty=generate_noty('error', errText, false);
+				if (e.message.indexOf("html5.appcache2") >= 0)
+				{
+					$.cachenoty=generate_noty_tl('error', errText, false);
+				}
+				else
+				{
+					$.cachenoty=generate_noty('error', errText, false);
+				}
 				setTimeout(function(){	ClearNotifyCacheRefresh(); }, 2000);
 			}, false);
 

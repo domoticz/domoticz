@@ -8,8 +8,6 @@ class OTGWSerial: public AsyncSerial, public OTGWBase
 public:
 	OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
     ~OTGWSerial();
-
-	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 private:
 	bool StartHardware();
@@ -22,6 +20,7 @@ private:
 	void SendOutsideTemperature();
 	void SendTime();
 	void Do_PollWork();
+	bool WriteInt(const unsigned char *pData, const unsigned char Len);
 	int m_retrycntr;
 	boost::shared_ptr<boost::thread> m_pollerthread;
 	volatile bool m_stoprequestedpoller;

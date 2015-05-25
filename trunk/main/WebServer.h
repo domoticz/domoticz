@@ -82,6 +82,7 @@ private:
 	void Cmd_WOLUpdateNode(Json::Value &root);
 	void Cmd_WOLRemoveNode(Json::Value &root);
 	void Cmd_WOLClearNodes(Json::Value &root);
+	void Cmd_PingerSetMode(Json::Value &root);
 	void Cmd_PingerGetNodes(Json::Value &root);
 	void Cmd_PingerAddNode(Json::Value &root);
 	void Cmd_PingerUpdateNode(Json::Value &root);

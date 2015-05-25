@@ -75,9 +75,16 @@ define(['app'], function (app) {
 						serialport="";
 					}
 				}
+				var address="";
+				if (text.indexOf("S0 Meter") >= 0)
+				{
+					address=$("#hardwarecontent #divremote #tcpaddress").val();
+				}
+
 				$.ajax({
 					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 						"&port=" + encodeURIComponent(serialport) + 
+						"&address=" + address + 
 						"&name=" + encodeURIComponent(name) + 
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx +
@@ -875,7 +882,6 @@ define(['app'], function (app) {
 					if ( anSelected.length !== 0 ) {
 						var data = oTable.fnGetData( anSelected[0] );
 						var idx= data["DT_RowId"];
-						$.myglobals.SelectedTimerIdx=idx;
 						$("#updelclr #nodeupdate").attr("href", "javascript:WOLUpdateNode(" + idx + ")");
 						$('#updelclr #nodedelete').attr("class", "btnstyle3");
 						$("#updelclr #nodedelete").attr("href", "javascript:WOLDeleteNode(" + idx + ")");
@@ -933,12 +939,16 @@ define(['app'], function (app) {
 				ShowNotify($.t('Please enter a IP Address!'), 2500, true);
 				return;
 			}
+			var Timeout=parseInt($("#hardwarecontent #ipnodeparamstable #nodetimeout").val());
+			if (Timeout<1)
+				Timeout=5;
 
 			$.ajax({
 				 url: "json.htm?type=command&param=pingeraddnode" +
 					"&idx=" + $.devIdx +
 					"&name=" + encodeURIComponent(name) + 
-					"&ip=" + ip,
+					"&ip=" + ip +
+					"&timeout=" + Timeout,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -1009,13 +1019,17 @@ define(['app'], function (app) {
 				ShowNotify($.t('Please enter a IP Address!'), 2500, true);
 				return;
 			}
+			var Timeout=parseInt($("#hardwarecontent #ipnodeparamstable #nodetimeout").val());
+			if (Timeout<1)
+				Timeout=5;
 
 			$.ajax({
 				 url: "json.htm?type=command&param=pingerupdatenode" +
 					"&idx=" + $.devIdx +
 					"&nodeid=" + nodeid +
 					"&name=" + encodeURIComponent(name) + 
-					"&ip=" + ip,
+					"&ip=" + ip +
+					"&timeout=" + Timeout,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -1034,6 +1048,7 @@ define(['app'], function (app) {
 			$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
 			$("#hardwarecontent #ipnodeparamstable #nodename").val("");
 			$("#hardwarecontent #ipnodeparamstable #nodeip").val("");
+			$("#hardwarecontent #ipnodeparamstable #nodetimeout").val("5");
 
 		  var oTable = $('#ipnodestable').dataTable();
 		  oTable.fnClearTable();
@@ -1051,7 +1066,8 @@ define(['app'], function (app) {
 						"IP": item.IP,
 						"0": item.idx,
 						"1": item.Name,
-						"2": item.IP
+						"2": item.IP,
+						"3": item.Timeout
 					} );
 				});
 			  }
@@ -1067,6 +1083,7 @@ define(['app'], function (app) {
 					$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
 					$("#hardwarecontent #ipnodeparamstable #nodename").val("");
 					$("#hardwarecontent #ipnodeparamstable #nodeip").val("");
+					$("#hardwarecontent #ipnodeparamstable #nodetimeout").val("5");
 				}
 				else {
 					var oTable = $('#ipnodestable').dataTable();
@@ -1077,17 +1094,41 @@ define(['app'], function (app) {
 					if ( anSelected.length !== 0 ) {
 						var data = oTable.fnGetData( anSelected[0] );
 						var idx= data["DT_RowId"];
-						$.myglobals.SelectedTimerIdx=idx;
 						$("#updelclr #nodeupdate").attr("href", "javascript:PingerUpdateNode(" + idx + ")");
 						$('#updelclr #nodedelete').attr("class", "btnstyle3");
 						$("#updelclr #nodedelete").attr("href", "javascript:PingerDeleteNode(" + idx + ")");
 						$("#hardwarecontent #ipnodeparamstable #nodename").val(data["1"]);
 						$("#hardwarecontent #ipnodeparamstable #nodeip").val(data["2"]);
+						$("#hardwarecontent #ipnodeparamstable #nodetimeout").val(data["3"]);
 					}
 				}
 			}); 
 
 		  $('#modal').hide();
+		}
+		
+		SetPingerSettings = function()
+		{
+			var Mode1=parseInt($("#hardwarecontent #pingsettingstable #pollinterval").val());
+			if (Mode1<1)
+				Mode1=30;
+			var Mode2=parseInt($("#hardwarecontent #pingsettingstable #pingtimeout").val());
+			if (Mode2<500)
+				Mode2=500;
+			$.ajax({
+				 url: "json.htm?type=command&param=pingersetmode" +
+					"&idx=" + $.devIdx +
+					"&mode1=" + Mode1 +
+					"&mode2=" + Mode2,
+				 async: false, 
+				 dataType: 'json',
+				 success: function(data) {
+					bootbox.alert($.t('Settings saved'));
+				 },
+				 error: function(){
+					ShowNotify($.t('Problem Updating Settings!'), 2500, true);
+				 }     
+			});
 		}
 
 		EditPinger = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
@@ -1099,6 +1140,9 @@ define(['app'], function (app) {
 			htmlcontent+=$('#pinger').html();
 			$('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
 			$('#hardwarecontent').i18n();
+			
+			$("#hardwarecontent #pingsettingstable #pollinterval").val(Mode1);
+			$("#hardwarecontent #pingsettingstable #pingtimeout").val(Mode2);
 
 			var oTable = $('#ipnodestable').dataTable( {
 			  "sDom": '<"H"lfrC>t<"F"ip>',
@@ -1571,7 +1615,6 @@ define(['app'], function (app) {
 					if ( anSelected.length !== 0 ) {
 						var data = oTable.fnGetData( anSelected[0] );
 						var idx= data["DT_RowId"];
-						$.myglobals.SelectedTimerIdx=idx;
 						var iNode=parseInt(data["NodeID"]);
 						$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
 						$("#hardwarecontent #zwavecodemanagement").attr("href", "javascript:ZWaveUserCodeManagement(" + idx + ")");
@@ -2269,7 +2312,6 @@ define(['app'], function (app) {
 					if ( anSelected.length !== 0 ) {
 						var data = oTable.fnGetData( anSelected[0] );
 						var idx= data["DT_RowId"];
-						$.myglobals.SelectedTimerIdx=idx;
 						$("#updelclr #hardwareupdate").attr("href", "javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")");
 						$("#updelclr #hardwaredelete").attr("href", "javascript:DeleteHardware(" + idx + ")");
 						$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["Name"]);
@@ -2285,6 +2327,10 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("USB") >= 0) {
 							$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
+							if (data["Type"].indexOf("S0 Meter") >= 0)
+							{
+								$("#hardwarecontent #divremote #tcpaddress").val(data["Address"]);
+							}
 						}
 						else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
