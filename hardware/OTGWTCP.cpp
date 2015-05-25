@@ -8,7 +8,7 @@
 
 #define RETRY_DELAY 30
 
-OTGWTCP::OTGWTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+OTGWTCP::OTGWTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
@@ -33,7 +33,7 @@ OTGWTCP::OTGWTCP(const int ID, const std::string IPAddress, const unsigned short
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
-	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
+	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5);
 }
 
 OTGWTCP::~OTGWTCP(void)
@@ -144,7 +144,6 @@ void OTGWTCP::Do_Work()
 				{
 					bFirstTime=false;
 					SendOutsideTemperature();
-					SendTime();
 					GetGatewayDetails();
 				}
 			}
@@ -156,25 +155,8 @@ void OTGWTCP::Do_Work()
 void OTGWTCP::GetGatewayDetails()
 {
 	char szCmd[10];
-	strcpy(szCmd,"PR=G\r\nPS=1\r\n");
+	strcpy(szCmd,"PS=1\r\n");
 	write((const unsigned char*)&szCmd,strlen(szCmd));
-}
-
-void OTGWTCP::SendTime()
-{
-	time_t atime = mytime(NULL);
-	struct tm ltime;
-	localtime_r(&atime, &ltime);
-
-	int lday = 0;
-	if (ltime.tm_wday == 0)
-		lday = 7;
-	else
-		lday = ltime.tm_wday;
-
-	char szCmd[20];
-	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
-	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
 }
 
 void OTGWTCP::SendOutsideTemperature()
@@ -190,14 +172,7 @@ void OTGWTCP::SendOutsideTemperature()
 void OTGWTCP::SetSetpoint(const int idx, const float temp)
 {
 	char szCmd[30];
-	if (idx == 1)
-	{
-		//Control Set Point (MsgID=1)
-		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
-		sprintf(szCmd, "CS=%.1f\r\n", temp);
-		write((const unsigned char*)&szCmd, strlen(szCmd));
-	}
-	else if (idx == 5)
+	if (idx==5)
 	{
 		//Room Set Point
 		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
@@ -237,12 +212,11 @@ void OTGWTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR,"OTGW: Error: %s",error.message().c_str());
 }
 
-bool OTGWTCP::WriteInt(const unsigned char *pData, const unsigned char Len)
+void OTGWTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!mIsConnected)
 	{
-		return false;
+		return;
 	}
-	write(pData, Len);
-	return true;
+//	write(pdata,length,0);
 }

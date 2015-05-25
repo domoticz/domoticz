@@ -32,11 +32,6 @@ class OTGWBase : public CDomoticzHardwareBase
 		long DHW_pump_valve_operation_hours;
 		long DHW_burner_operation_hours;
 	};
-	struct _tOTGWGPIO
-	{
-		int A;
-		int B;
-	};
 	friend class OTGWSerial;
 	friend class OTGWTCP;
 public:
@@ -44,9 +39,8 @@ public:
 	~OTGWBase(void);
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
-	void SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
+	void SetModes( const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5);
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 	void UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
@@ -54,8 +48,6 @@ private:
 	void UpdatePressureSensor(const unsigned long Idx, const float Pressure, const std::string &defaultname);
 	void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname);
 	bool GetOutsideTemperatureFromDomoticz(float &tvalue);
-	bool SwitchLight(const int idx, const std::string &LCmd, const int svalue);
-	virtual bool WriteInt(const unsigned char *pData, const unsigned char Len) =0;
 	static const int readBufferSize=1028;
 	unsigned char m_buffer[readBufferSize];
 	int m_bufferpos;
