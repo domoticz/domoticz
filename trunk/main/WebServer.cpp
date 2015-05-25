@@ -877,13 +877,13 @@ namespace http {
 				return;
 			}
 
-			std::string name = m_pWebEm->FindValue("name");
+			std::string name = CURLEncode::URLDecode(m_pWebEm->FindValue("name"));
 			std::string senabled = m_pWebEm->FindValue("enabled");
 			std::string shtype = m_pWebEm->FindValue("htype");
 			std::string address = m_pWebEm->FindValue("address");
 			std::string sport = m_pWebEm->FindValue("port");
-			std::string username = m_pWebEm->FindValue("username");
-			std::string password = m_pWebEm->FindValue("password");
+			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
+			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
 			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
 
 			if (
@@ -1042,13 +1042,13 @@ namespace http {
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
 				return;
-			std::string name = m_pWebEm->FindValue("name");
+			std::string name = CURLEncode::URLDecode(m_pWebEm->FindValue("name"));
 			std::string senabled = m_pWebEm->FindValue("enabled");
 			std::string shtype = m_pWebEm->FindValue("htype");
 			std::string address = m_pWebEm->FindValue("address");
 			std::string sport = m_pWebEm->FindValue("port");
-			std::string username = m_pWebEm->FindValue("username");
-			std::string password = m_pWebEm->FindValue("password");
+			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
+			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
 			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
 
 			if (
