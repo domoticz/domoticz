@@ -14,7 +14,7 @@ public:
 	void SetProgramState(const int newState);
 private:
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
-
+	bool SetAway(const bool bIsAway);
 	bool Login();
 	void Logout();
 
@@ -24,6 +24,7 @@ private:
 	std::string m_AccessToken;
 	std::string m_UserID;
 	std::string m_Serial;
+	std::string m_StructureID;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 

@@ -16,6 +16,7 @@
 const std::string NEST_LOGIN_PATH = "https://home.nest.com/user/login";
 const std::string NEST_GET_STATUS = "/v2/mobile/user.";
 const std::string NEST_SET_SHARED = "/v2/put/shared.";
+const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 
 CNestThermostat::CNestThermostat(const int ID, const std::string &Username, const std::string &Password)
 {
@@ -210,13 +211,14 @@ bool CNestThermostat::WriteToHardware(const char *pdata, const unsigned char len
 		return false; //later add RGB support, if someone can provide access
 
 	int node_id = pCmd->LIGHTING2.id4;
-	if ((node_id == 113) || (node_id == 114) || (node_id == 115))
-		return false; //we can not turn on/off the internal status
 
-	int state = 0;
-	int light_command = pCmd->LIGHTING2.cmnd;
-	if (pCmd->LIGHTING2.cmnd == light2_sOn)
-		state = 1;
+	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
+
+	if (node_id == 3)
+	{
+		//Away
+		return SetAway(bIsOn);
+	}
 
 	return false;
 }
@@ -279,6 +281,16 @@ void CNestThermostat::GetMeterDetails()
 	//Get Serial
 	m_Serial = *members.begin();
 
+	//Get Structure
+	members = root["structure"].getMemberNames();
+	if (members.size() < 1)
+	{
+		_log.Log(LOG_ERROR, "NestThermostat: request not successful, restarting..!");
+		m_bDoLogin = true;
+		return;
+	}
+	m_StructureID = *members.begin();
+
 	Json::Value vShared = *root["shared"].begin();
 
 	//Setpoint
@@ -294,6 +306,16 @@ void CNestThermostat::GetMeterDetails()
 		int Humidity = root["device"][m_Serial]["current_humidity"].asInt();
 		SendTempHumSensor(2, 255, currentTemp, Humidity, "Room TempHum");
 	}
+
+	Json::Value vStructure = *root["structure"].begin();
+	if (!vStructure["away"].empty())
+	{
+		bool bIsAway = vShared["away"].asBool();
+		SendSwitch(3, 1, 255, bIsAway, 0, "Away");
+	}
+
+	//Away
+
 }
 
 void CNestThermostat::SetSetpoint(const int idx, const float temp)
@@ -332,7 +354,46 @@ void CNestThermostat::SetSetpoint(const int idx, const float temp)
 		return;
 	}
 	m_LastMinute = -1;
-	return;
+}
+
+bool CNestThermostat::SetAway(const bool bIsAway)
+{
+	if (m_UserName.size() == 0)
+		return false;
+	if (m_Password.size() == 0)
+		return false;
+
+	if (m_bDoLogin == true)
+	{
+		if (!Login())
+			return false;
+	}
+	if (m_StructureID.size() == 0)
+		GetMeterDetails();
+
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("user-agent:Nest/1.1.0.10 CFNetwork/548.0.4");
+	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
+	ExtraHeaders.push_back("X-nl-protocol-version:1");
+
+	std::stringstream sstr;
+	Json::Value root;
+	root["away"] = bIsAway;
+	root["away_timestamp"] = (int)mytime(NULL);
+	root["away_setter"] = 0;
+
+	std::string sResult;
+
+	std::string sURL = m_TransportURL + NEST_SET_STRUCTURE + m_StructureID;
+	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "NestThermostat: Error setting away mode!");
+		m_bDoLogin = true;
+		return false;
+	}
+	m_LastMinute = -1;
+	return true;
 }
 
 void CNestThermostat::SetProgramState(const int newState)
