@@ -4,7 +4,6 @@
 #include "../main/Helper.h"
 #include <iostream>
 #include "../main/localtime_r.h"
-#include "../main/mainworker.h"
 
 #define RETRY_DELAY 30
 
@@ -153,74 +152,6 @@ void OTGWTCP::Do_Work()
 	_log.Log(LOG_STATUS,"OTGW: TCP/IP Worker stopped...");
 } 
 
-void OTGWTCP::GetGatewayDetails()
-{
-	char szCmd[10];
-	strcpy(szCmd,"PS=1\r\n");
-	write((const unsigned char*)&szCmd,strlen(szCmd));
-}
-
-void OTGWTCP::SendTime()
-{
-	time_t atime = mytime(NULL);
-	struct tm ltime;
-	localtime_r(&atime, &ltime);
-
-	int lday = 0;
-	if (ltime.tm_wday == 0)
-		lday = 7;
-	else
-		lday = ltime.tm_wday;
-
-	char szCmd[20];
-	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
-	WriteToHardware((const char*)&szCmd, strlen(szCmd));
-}
-
-void OTGWTCP::SendOutsideTemperature()
-{
-	float temp;
-	if (!GetOutsideTemperatureFromDomoticz(temp))
-		return;
-	char szCmd[30];
-	sprintf(szCmd,"OT=%.1f\r\n",temp);
-	write((const unsigned char*)&szCmd,strlen(szCmd));
-}
-
-void OTGWTCP::SetSetpoint(const int idx, const float temp)
-{
-	char szCmd[30];
-	if (idx == 1)
-	{
-		//Control Set Point (MsgID=1)
-		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
-		sprintf(szCmd, "CS=%.1f\r\n", temp);
-		write((const unsigned char*)&szCmd, strlen(szCmd));
-	}
-	else if (idx == 5)
-	{
-		//Room Set Point
-		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
-		_log.Log(LOG_STATUS,"OTGW: Setting Room SetPoint to: %.1f",temp);
-		sprintf(szCmd,"TT=%.1f\r\n",temp);
-		write((const unsigned char*)&szCmd,strlen(szCmd));
-	}
-	else if (idx==15)
-	{
-		//DHW setpoint (MsgID=56)
-		_log.Log(LOG_STATUS,"OTGW: Setting Heating SetPoint to: %.1f",temp);
-		sprintf(szCmd,"SW=%.1f\r\n",temp);
-		write((const unsigned char*)&szCmd,strlen(szCmd));
-	}
-	else if (idx==16)
-	{
-		//Max CH water setpoint (MsgID=57) 
-		_log.Log(LOG_STATUS,"OTGW: Setting Max CH water SetPoint to: %.1f",temp);
-		sprintf(szCmd,"SH=%.1f\r\n",temp);
-		write((const unsigned char*)&szCmd,strlen(szCmd));
-	}
-}
-
 void OTGWTCP::OnData(const unsigned char *pData, size_t length)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
@@ -237,12 +168,12 @@ void OTGWTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR,"OTGW: Error: %s",error.message().c_str());
 }
 
-bool OTGWTCP::WriteToHardware(const char *pdata, const unsigned char length)
+bool OTGWTCP::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
 	if (!mIsConnected)
 	{
 		return false;
 	}
-//	write(pdata,length,0);
+	write(pData, Len);
 	return true;
 }
