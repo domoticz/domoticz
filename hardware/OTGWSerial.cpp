@@ -20,13 +20,13 @@
 //
 //Class OTGWSerial
 //
-OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5)
+OTGWSerial::OTGWSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
 	m_stoprequestedpoller=false;
-	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5);
+	SetModes(Mode1,Mode2,Mode3,Mode4,Mode5, Mode6);
 }
 
 OTGWSerial::~OTGWSerial()
@@ -70,7 +70,7 @@ void OTGWSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, (int)len);
+	ParseData((const unsigned char*)data, static_cast<int>(len));
 }
 
 void OTGWSerial::StartPollerThread()
@@ -157,6 +157,7 @@ void OTGWSerial::Do_PollWork()
 			{
 				bFirstTime=false;
 				SendOutsideTemperature();
+				SendTime();
 				GetGatewayDetails();
 			}
 		}
@@ -170,6 +171,24 @@ void OTGWSerial::GetGatewayDetails()
 	strcpy(szCmd,"PS=1\r\n");
 	WriteToHardware((const char*)&szCmd,strlen(szCmd));
 }
+
+void OTGWSerial::SendTime()
+{
+	time_t atime = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	int lday = 0;
+	if (ltime.tm_wday == 0)
+		lday = 7;
+	else
+		lday = ltime.tm_wday;
+
+	char szCmd[20];
+	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
+	WriteToHardware((const char*)&szCmd, strlen(szCmd));
+}
+
 void OTGWSerial::SendOutsideTemperature()
 {
 	float temp;
@@ -183,7 +202,14 @@ void OTGWSerial::SendOutsideTemperature()
 void OTGWSerial::SetSetpoint(const int idx, const float temp)
 {
 	char szCmd[30];
-	if (idx==5)
+	if (idx == 1)
+	{
+		//Control Set Point (MsgID=1)
+		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
+		sprintf(szCmd, "CS=%.1f\r\n", temp);
+		write((const char*)&szCmd, strlen(szCmd));
+	}
+	else if (idx == 5)
 	{
 		//Room Set Point
 		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
@@ -207,10 +233,11 @@ void OTGWSerial::SetSetpoint(const int idx, const float temp)
 	}
 }
 
-void OTGWSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool OTGWSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (isOpen()) {
-		write(pdata,length);
-	}
+	if (!isOpen())
+		return false;
+	write(pdata,length);
+	return true;
 }
 

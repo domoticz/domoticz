@@ -22,13 +22,14 @@ extern http::server::CWebServer m_webserver;
 OTGWBase::OTGWBase(void)
 {
 	m_OutsideTemperatureIdx=0;//use build in
+	m_bufferpos = 0;
 }
 
 OTGWBase::~OTGWBase(void)
 {
 }
 
-void OTGWBase::SetModes( const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5)
+void OTGWBase::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
 	m_OutsideTemperatureIdx=Mode1;
 }
@@ -117,7 +118,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
-		result=m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 
 }
@@ -159,7 +160,7 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
-		result=m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -197,7 +198,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-		result=m_sql.query(szQuery.str());
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -221,7 +222,7 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 	gDevice.subtype=sTypePressure;
 	gDevice.id=1;
 	gDevice.floatval1=Pressure;
-	gDevice.intval1=(int)Idx;
+	gDevice.intval1 = static_cast<int>(Idx);
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
 
 	if (!bDeviceExits)
@@ -230,8 +231,7 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 		szQuery.clear();
 		szQuery.str("");
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePressure) << ")";
-		result=m_sql.query(szQuery.str());
-
+		m_sql.query(szQuery.str());
 	}
 }
 
@@ -292,27 +292,35 @@ void OTGWBase::ParseLine()
 			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');								UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
 		
-		_status.Control_setpoint=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
+		_status.Control_setpoint=static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
-		_status.Maximum_relative_modulation_level=(float)atof(results[idx++].c_str());
+		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
+		if (_status.Maximum_relative_modulation_level != 0)
+		{
+			SendPercentageSensor(idx - 1, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
+		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint=(float)atof(results[idx++].c_str());							UpdateSetPointSensor(idx-1,_status.Room_Setpoint,"Room Setpoint");
-		_status.Relative_modulation_level=(float)atof(results[idx++].c_str());
-		_status.CH_water_pressure=(float)atof(results[idx++].c_str());
+		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.Room_Setpoint, "Room Setpoint");
+		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
+		if (_status.Relative_modulation_level != 0)
+		{
+			SendPercentageSensor(idx - 1, 1, 255, _status.Relative_modulation_level, "Relative modulation level");
+		}
+		_status.CH_water_pressure = static_cast<float>(atof(results[idx++].c_str()));
 		if (_status.CH_water_pressure!=0)
 		{
 			UpdatePressureSensor(idx-1,_status.CH_water_pressure,"CH Water Pressure");
 		}
 
-		_status.Room_temperature=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.Room_temperature,"Room Temperature");
-		_status.Boiler_water_temperature=(float)atof(results[idx++].c_str());				UpdateTempSensor(idx-1,_status.Boiler_water_temperature,"Boiler Water Temperature");
-		_status.DHW_temperature=(float)atof(results[idx++].c_str());						UpdateTempSensor(idx-1,_status.DHW_temperature,"DHW Temperature");
-		_status.Outside_temperature=(float)atof(results[idx++].c_str());					UpdateTempSensor(idx-1,_status.Outside_temperature,"Outside Temperature");
-		_status.Return_water_temperature=(float)atof(results[idx++].c_str());				UpdateTempSensor(idx-1,_status.Return_water_temperature,"Return Water Temperature");
+		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.Room_temperature, "Room Temperature");
+		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				UpdateTempSensor(idx - 1, _status.Boiler_water_temperature, "Boiler Water Temperature");
+		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.DHW_temperature, "DHW Temperature");
+		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));					UpdateTempSensor(idx - 1, _status.Outside_temperature, "Outside Temperature");
+		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				UpdateTempSensor(idx - 1, _status.Return_water_temperature, "Return Water Temperature");
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
-		_status.DHW_setpoint=(float)atof(results[idx++].c_str());							UpdateSetPointSensor(idx-1,_status.DHW_setpoint,"DHW Setpoint");
-		_status.Max_CH_water_setpoint=(float)atof(results[idx++].c_str());					UpdateSetPointSensor(idx-1,_status.Max_CH_water_setpoint,"Max_CH Water Setpoint");
+		_status.DHW_setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.DHW_setpoint, "DHW Setpoint");
+		_status.Max_CH_water_setpoint = static_cast<float>(atof(results[idx++].c_str()));					UpdateSetPointSensor(idx - 1, _status.Max_CH_water_setpoint, "Max_CH Water Setpoint");
 		_status.Burner_starts=atol(results[idx++].c_str());
 		_status.CH_pump_starts=atol(results[idx++].c_str());
 		_status.DHW_pump_valve_starts=atol(results[idx++].c_str());
@@ -351,14 +359,13 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << m_OutsideTemperatureIdx;
-	m_webserver.GetJSonDevices(tempjson, "", "temp","ID",sstr.str(),"","",true,0);
+	m_webserver.GetJSonDevices(tempjson, "", "temp","ID",sstr.str(),"","",true,0,true);
 
 	size_t tsize=tempjson.size();
 	if (tsize<1)
 		return false;
 
 	Json::Value::const_iterator itt;
-	int ii=0;
 	Json::ArrayIndex rsize=tempjson["result"].size();
 	if (rsize<1)
 		return false;
