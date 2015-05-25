@@ -163,7 +163,7 @@ define(['app'], function (app) {
 						"&address=" + address + 
 						"&port=" + port + 
 						"&name=" + encodeURIComponent(name) + 
-						"&password=" + password +
+						"&password=" + encodeURIComponent(password) +
 						"&enabled=" + bEnabled + 
 						"&idx=" + idx + 
 						"&datatimeout=" + datatimeout +
