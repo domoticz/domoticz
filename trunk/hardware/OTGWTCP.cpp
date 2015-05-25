@@ -62,16 +62,6 @@ bool OTGWTCP::StartHardware()
 bool OTGWTCP::StopHardware()
 {
 	m_stoprequested=true;
-	try {
-		if (m_thread)
-		{
-			m_thread->join();
-		}
-	}
-	catch (...)
-	{
-		//Don't throw from a Stop command
-	}
 	if (isConnected())
 	{
 		try {
@@ -80,6 +70,17 @@ bool OTGWTCP::StopHardware()
 		{
 			//Don't throw from a Stop command
 		}
+	}
+	try {
+		if (m_thread)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
 	}
 
 	m_bIsStarted=false;
