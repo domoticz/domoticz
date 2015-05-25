@@ -18,6 +18,38 @@ const std::string NEST_GET_STATUS = "/v2/mobile/user.";
 const std::string NEST_SET_SHARED = "/v2/put/shared.";
 const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 
+#ifdef _DEBUG
+	#define DEBUG_NextThermostat
+#endif
+
+#ifdef DEBUG_NextThermostat
+void SaveString2Disk(std::string str, std::string filename)
+{
+	FILE *fOut = fopen(filename.c_str(), "wb+");
+	if (fOut)
+	{
+		fwrite(str.c_str(), 1, str.size(), fOut);
+		fclose(fOut);
+	}
+}
+std::string ReadFile(std::string filename)
+{
+	std::ifstream file;
+	std::string sResult = "";
+	file.open(filename.c_str());
+	if (!file.is_open())
+		return "";
+	std::string sLine;
+	while (!file.eof())
+	{
+		getline(file, sLine);
+		sResult += sLine;
+	}
+	file.close();
+	return sResult;
+}
+#endif
+
 CNestThermostat::CNestThermostat(const int ID, const std::string &Username, const std::string &Password)
 {
 	m_HwdID=ID;
@@ -250,6 +282,7 @@ void CNestThermostat::GetMeterDetails()
 		m_bDoLogin = true;
 		return;
 	}
+
 	Json::Value root;
 	Json::Reader jReader;
 	if (!jReader.parse(sResult, root))
@@ -307,14 +340,14 @@ void CNestThermostat::GetMeterDetails()
 		SendTempHumSensor(2, 255, currentTemp, Humidity, "Room TempHum");
 	}
 
+	//Away
 	Json::Value vStructure = *root["structure"].begin();
 	if (!vStructure["away"].empty())
 	{
-		bool bIsAway = vShared["away"].asBool();
+		bool bIsAway = vStructure["away"].asBool();
 		SendSwitch(3, 1, 255, bIsAway, 0, "Away");
 	}
 
-	//Away
 
 }
 
