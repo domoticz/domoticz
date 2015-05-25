@@ -11,6 +11,7 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include "../json/json.h"
+#include "../main/localtime_r.h"
 #include "../main/WebServerHelper.h"
 
 #include <ctime>
@@ -235,6 +236,172 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 	}
 }
 
+bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
+{
+	if (m_OutsideTemperatureIdx == 0)
+		return false;
+	Json::Value tempjson;
+	std::stringstream sstr;
+	sstr << m_OutsideTemperatureIdx;
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, 0, true);
+
+	size_t tsize = tempjson.size();
+	if (tsize < 1)
+		return false;
+
+	Json::Value::const_iterator itt;
+	Json::ArrayIndex rsize = tempjson["result"].size();
+	if (rsize < 1)
+		return false;
+
+	bool bHaveTimeout = tempjson["result"][0]["HaveTimeout"].asBool();
+	if (bHaveTimeout)
+		return false;
+	tvalue = tempjson["result"][0]["Temp"].asFloat();
+	return true;
+}
+
+bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int svalue)
+{
+	char szCmd[100];
+	char szOTGWCommand[3] = "-";
+	bool doSwitch = false;
+	if (idx == 102)
+	{
+		sprintf(szOTGWCommand, "HW");
+	}
+	else if (idx == 101)
+	{
+		sprintf(szOTGWCommand, "CH");
+	}
+	else if (idx == 96)
+	{
+		sprintf(szOTGWCommand, "GA");
+	}
+	else if (idx == 97)
+	{
+		sprintf(szOTGWCommand, "GB");
+	}
+	if (szOTGWCommand[0] != '-')
+	{
+		if (LCmd == "On")
+		{
+			sprintf(szCmd, "%s=1\r\n", szOTGWCommand);
+		}
+		else if (LCmd == "Off")
+		{
+			sprintf(szCmd, "%s=0\r\n", szOTGWCommand);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "OTGW: Invalid switch command received!");
+			return false;
+		}
+		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+	}
+	return true;
+}
+
+bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char length)
+{
+	tRBUF *pSen = (tRBUF*)pdata;
+
+	unsigned char packettype = pSen->ICMND.packettype;
+	unsigned char subtype = pSen->ICMND.subtype;
+
+	int svalue = 0;
+	std::string LCmd = "";
+	int nodeID = 0;
+
+	if (packettype == pTypeLighting2)
+	{
+		//light command
+		nodeID = pSen->LIGHTING2.id4;
+		if ((pSen->LIGHTING2.cmnd == light2_sOff) || (pSen->LIGHTING2.cmnd == light2_sGroupOff))
+		{
+			LCmd = "Off";
+			svalue = 0;
+		}
+		else if ((pSen->LIGHTING2.cmnd == light2_sOn) || (pSen->LIGHTING2.cmnd == light2_sGroupOn))
+		{
+			LCmd = "On";
+			svalue = 255;
+		}
+		SwitchLight(nodeID, LCmd, svalue);
+	}
+	return true;
+}
+
+void OTGWBase::GetGatewayDetails()
+{
+	char szCmd[30];
+	strcpy(szCmd, "PR=G\r\n");
+	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	strcpy(szCmd, "PS=1\r\n");
+	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+}
+
+void OTGWBase::SendTime()
+{
+	time_t atime = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	int lday = 0;
+	if (ltime.tm_wday == 0)
+		lday = 7;
+	else
+		lday = ltime.tm_wday;
+
+	char szCmd[20];
+	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
+	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+}
+
+void OTGWBase::SendOutsideTemperature()
+{
+	float temp;
+	if (!GetOutsideTemperatureFromDomoticz(temp))
+		return;
+	char szCmd[30];
+	sprintf(szCmd, "OT=%.1f\r\n", temp);
+	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+}
+
+void OTGWBase::SetSetpoint(const int idx, const float temp)
+{
+	char szCmd[30];
+	if (idx == 1)
+	{
+		//Control Set Point (MsgID=1)
+		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
+		sprintf(szCmd, "CS=%.1f\r\n", temp);
+		WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	}
+	else if (idx == 5)
+	{
+		//Room Set Point
+		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
+		_log.Log(LOG_STATUS, "OTGW: Setting Room SetPoint to: %.1f", temp);
+		sprintf(szCmd, "TT=%.1f\r\n", temp);
+		WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	}
+	else if (idx == 15)
+	{
+		//DHW setpoint (MsgID=56)
+		_log.Log(LOG_STATUS, "OTGW: Setting Heating SetPoint to: %.1f", temp);
+		sprintf(szCmd, "SW=%.1f\r\n", temp);
+		WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	}
+	else if (idx == 16)
+	{
+		//Max CH water setpoint (MsgID=57) 
+		_log.Log(LOG_STATUS, "OTGW: Setting Max CH water SetPoint to: %.1f", temp);
+		sprintf(szCmd, "SH=%.1f\r\n", temp);
+		WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	}
+}
+
 void OTGWBase::ParseLine()
 {
 	if (m_bufferpos<2)
@@ -337,14 +504,37 @@ void OTGWBase::ParseLine()
 		{
 			_log.Log(LOG_ERROR,"OTGW: Error received!");
 		}
+		else if (sLine.find("PR: G")!=std::string::npos)
+		{
+			_tOTGWGPIO _GPIO;
+			_GPIO.A=static_cast<int>(sLine[6]- '0'); 
+			if (_GPIO.A==0 || _GPIO.A==1)
+			{
+				UpdateSwitch(96,(_GPIO.A==1),"GPIOAPulledToGround");
+			}
+			else
+			{
+				// Remove device (how?)
+			}
+			_GPIO.B=static_cast<int>(sLine[7]- '0'); 
+			if (_GPIO.B==0 || _GPIO.B==1)
+			{
+				UpdateSwitch(97,(_GPIO.B==1),"GPIOBPulledToGround");
+			}
+			else
+			{
+				// Remove device (how?)
+			}
+		}
 		else
 		{
 			if (
 				(sLine.find("OT")==std::string::npos)&&
-				(sLine.find("PS")==std::string::npos)
+				(sLine.find("PS") == std::string::npos)&&
+				(sLine.find("SC") == std::string::npos)
 				)
 			{
-				//Dont report OT/PS feedback
+				//Dont report OT/PS/SC feedback
 				_log.Log(LOG_STATUS,"OTGW: %s",sLine.c_str());
 			}
 		}
@@ -352,27 +542,3 @@ void OTGWBase::ParseLine()
 
 }
 
-bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
-{
-	if (m_OutsideTemperatureIdx==0)
-		return false;
-	Json::Value tempjson;
-	std::stringstream sstr;
-	sstr << m_OutsideTemperatureIdx;
-	m_webservers.GetJSonDevices(tempjson, "", "temp","ID",sstr.str(),"","",true,0,true);
-
-	size_t tsize=tempjson.size();
-	if (tsize<1)
-		return false;
-
-	Json::Value::const_iterator itt;
-	Json::ArrayIndex rsize=tempjson["result"].size();
-	if (rsize<1)
-		return false;
-
-	bool bHaveTimeout=tempjson["result"][0]["HaveTimeout"].asBool();
-	if (bHaveTimeout)
-		return false;
-	tvalue=tempjson["result"][0]["Temp"].asFloat();
-	return true;
-}

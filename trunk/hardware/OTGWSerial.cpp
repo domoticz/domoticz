@@ -10,7 +10,6 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include "../main/localtime_r.h"
-#include "../main/mainworker.h"
 
 #include <ctime>
 
@@ -165,79 +164,10 @@ void OTGWSerial::Do_PollWork()
 	_log.Log(LOG_STATUS,"OTGW: Worker stopped...");
 }
 
-void OTGWSerial::GetGatewayDetails()
-{
-	char szCmd[10];
-	strcpy(szCmd,"PS=1\r\n");
-	WriteToHardware((const char*)&szCmd,strlen(szCmd));
-}
-
-void OTGWSerial::SendTime()
-{
-	time_t atime = mytime(NULL);
-	struct tm ltime;
-	localtime_r(&atime, &ltime);
-
-	int lday = 0;
-	if (ltime.tm_wday == 0)
-		lday = 7;
-	else
-		lday = ltime.tm_wday;
-
-	char szCmd[20];
-	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
-	WriteToHardware((const char*)&szCmd, strlen(szCmd));
-}
-
-void OTGWSerial::SendOutsideTemperature()
-{
-	float temp;
-	if (!GetOutsideTemperatureFromDomoticz(temp))
-		return;
-	char szCmd[30];
-	sprintf(szCmd,"OT=%.1f\r\n",temp);
-	write((const char*)&szCmd,strlen(szCmd));
-}
-
-void OTGWSerial::SetSetpoint(const int idx, const float temp)
-{
-	char szCmd[30];
-	if (idx == 1)
-	{
-		//Control Set Point (MsgID=1)
-		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
-		sprintf(szCmd, "CS=%.1f\r\n", temp);
-		write((const char*)&szCmd, strlen(szCmd));
-	}
-	else if (idx == 5)
-	{
-		//Room Set Point
-		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
-		_log.Log(LOG_STATUS,"OTGW: Setting Room SetPoint to: %.1f",temp);
-		sprintf(szCmd,"TT=%.1f\r\n",temp);
-		write((const char*)&szCmd,strlen(szCmd));
-	}
-	else if (idx==15)
-	{
-		//DHW setpoint (MsgID=56)
-		_log.Log(LOG_STATUS,"OTGW: Setting Heating SetPoint to: %.1f",temp);
-		sprintf(szCmd,"SW=%.1f\r\n",temp);
-		write((const char*)&szCmd,strlen(szCmd));
-	}
-	else if (idx==16)
-	{
-		//Max CH water setpoint (MsgID=57) 
-		_log.Log(LOG_STATUS,"OTGW: Setting Max CH water SetPoint to: %.1f",temp);
-		sprintf(szCmd,"SH=%.1f\r\n",temp);
-		write((const char*)&szCmd,strlen(szCmd));
-	}
-}
-
-bool OTGWSerial::WriteToHardware(const char *pdata, const unsigned char length)
+bool OTGWSerial::WriteInt(const unsigned char *pData, const unsigned char Len)
 {
 	if (!isOpen())
 		return false;
-	write(pdata,length);
+	write((const char*)pData, Len);
 	return true;
 }
-
