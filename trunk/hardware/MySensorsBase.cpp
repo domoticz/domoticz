@@ -425,7 +425,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		else if (pSensorHum) {
 			if (pSensorHum->bValidValue)
 			{
-				SendTempHumSensor(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue);
+				SendTempHumSensor(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue, "TempHum");
 			}
 		}
 		else
@@ -493,7 +493,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 			if (pSensorTemp->bValidValue)
 			{
 				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
-				SendTempHumSensor(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue);
+				SendTempHumSensor(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue, "TempHum");
 			}
 		}
 		else

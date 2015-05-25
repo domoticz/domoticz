@@ -213,6 +213,9 @@
     <Filter Include="Devices\Ping">
       <UniqueIdentifier>{c72fb471-c16d-48f3-9721-4ac7e744fa07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Nest">
+      <UniqueIdentifier>{358e4bcd-21c6-47e5-b7e3-7d9bbb9b4e90}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -687,6 +690,9 @@
     <ClInclude Include="..\hardware\Pinger.h">
       <Filter>Devices\Ping</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\NestThermostat.h">
+      <Filter>Devices\Nest</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1108,6 +1114,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Pinger.cpp">
       <Filter>Devices\Ping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NestThermostat.cpp">
+      <Filter>Devices\Nest</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

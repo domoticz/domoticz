@@ -601,7 +601,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	}
 	else if (bHaveTemp&&bHaveHum)
 	{
-		SendTempHumSensor(ID, BatteryLevel, temp, humidity);
+		SendTempHumSensor(ID, BatteryLevel, temp, humidity, "TempHum");
 	}
 	else if (bHaveTemp)
 	{
