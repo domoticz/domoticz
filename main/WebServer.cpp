@@ -947,7 +947,7 @@ namespace http {
 			else if (htype == HTYPE_PiFace) {
 				//all fine here!
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT)) {
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NESTTHERMOSTAT)) {
 				if (
 					(username == "") ||
 					(password == "")
@@ -1120,7 +1120,7 @@ namespace http {
 			else if (htype == HTYPE_PiFace) {
 				//All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT)) {
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NESTTHERMOSTAT)) {
 				if (
 					(username == "") ||
 					(password == "")

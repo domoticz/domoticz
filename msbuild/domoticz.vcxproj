@@ -154,6 +154,7 @@
     <ClInclude Include="..\hardware\MySensorsBase.h" />
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
+    <ClInclude Include="..\hardware\NestThermostat.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.h" />
@@ -321,6 +322,7 @@
     <ClCompile Include="..\hardware\MySensorsBase.cpp" />
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
+    <ClCompile Include="..\hardware\NestThermostat.cpp" />
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.cpp" />

@@ -90,6 +90,7 @@ private:
 	friend class KMTronic433;
 	friend class SolarMaxTCP;
 	friend class CPinger;
+	friend class CNestThermostat;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
@@ -104,7 +105,7 @@ private:
 	void SendTempSensor(const int NodeID, const int BatteryLevel, const float temperature, const std::string &defaultname);
 	void SendHumiditySensor(const int NodeID, const int BatteryLevel, const int humidity);
 	void SendBaroSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const int forecast);
-	void SendTempHumSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity);
+	void SendTempHumSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const std::string &defaultname);
 	void SendTempHumBaroSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast);
 	void SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast);
 	void SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);

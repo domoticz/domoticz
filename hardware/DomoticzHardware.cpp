@@ -161,7 +161,7 @@ void CDomoticzHardwareBase::SendTempSensor(const int NodeID, const int BatteryLe
 	tsen.TEMP.id1 = (NodeID & 0xFF00) >> 8;
 	tsen.TEMP.id2 = NodeID & 0xFF;
 	tsen.TEMP.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(abs(temperature*10.0f));
+	int at10 = round(temperature*10.0f);
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -175,7 +175,6 @@ void CDomoticzHardwareBase::SendTempSensor(const int NodeID, const int BatteryLe
 		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP5) << ")";
 		m_sql.query(szQuery.str());
 	}
-
 }
 
 void CDomoticzHardwareBase::SendHumiditySensor(const int NodeID, const int BatteryLevel, const int humidity)
@@ -204,8 +203,22 @@ void CDomoticzHardwareBase::SendBaroSensor(const int NodeID, const int ChildID, 
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 }
 
-void CDomoticzHardwareBase::SendTempHumSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity)
+void CDomoticzHardwareBase::SendTempHumSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const std::string &defaultname)
 {
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp, "%d", (unsigned int)NodeID);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeTEMP_HUM) << ") AND (Subtype==" << int(sTypeTH5) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
 	tsen.TEMP_HUM.packetlength = sizeof(tsen.TEMP_HUM) - 1;
@@ -225,6 +238,15 @@ void CDomoticzHardwareBase::SendTempHumSensor(const int NodeID, const int Batter
 	tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeTEMP_HUM) << ") AND (Subtype==" << int(sTypeTH5) << ")";
+		m_sql.query(szQuery.str());
+	}
 }
 
 void CDomoticzHardwareBase::SendTempHumBaroSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast)
