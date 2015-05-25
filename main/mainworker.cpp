@@ -628,7 +628,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Pinger:
 		//System Alive Checker (Ping)
-		pHardware = new CPinger(ID);
+		pHardware = new CPinger(ID, Mode1, Mode2);
 		break;
 	case HTYPE_Mochad:
 		//LAN

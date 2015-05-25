@@ -337,6 +337,30 @@ void OTGWBase::ParseLine()
 		{
 			_log.Log(LOG_ERROR,"OTGW: Error received!");
 		}
+		else if (sLine.find("PR: G")!=std::string::npos)
+		{
+			_tOTGWGPIO _GPIO;
+			_GPIO.A=static_cast<int>(sLine[6]- '0'); 
+			if (_GPIO.A==0 || _GPIO.A==1)
+			{
+				UpdateSwitch(96,(_GPIO.A==1),"GPIOAPulledToGround");
+			}
+			else
+			{
+				// Remove device (how?)
+			}
+			_GPIO.B=static_cast<int>(sLine[7]- '0'); 
+			if (_GPIO.B==0 || _GPIO.B==1)
+			{
+				UpdateSwitch(97,(_GPIO.B==1),"GPIOBPulledToGround");
+			}
+			else
+			{
+				// Remove device (how?)
+			}
+
+		}
+
 		else
 		{
 			if (
@@ -376,3 +400,75 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	tvalue=tempjson["result"][0]["Temp"].asFloat();
 	return true;
 }
+
+bool OTGWBase::SwitchLight(const int idx, const std::string &LCmd, const int svalue)
+{
+	char szCmd[100];
+	char szOTGWCommand[3] = "-";
+	bool doSwitch = false;
+	if (idx == 102)
+	{
+		sprintf(szOTGWCommand, "HW");
+	}
+	else if (idx == 101)
+	{
+		sprintf(szOTGWCommand, "CH");
+	}
+	else if (idx == 96)
+	{
+		sprintf(szOTGWCommand, "GA");
+	}
+	else if (idx == 97)
+	{
+		sprintf(szOTGWCommand, "GB");
+	}
+	if (szOTGWCommand[0]!='-')
+	{
+		if (LCmd == "On")
+		{
+			sprintf(szCmd, "%s=1\r\n", szOTGWCommand);
+		}
+		else if (LCmd == "Off")
+		{
+			sprintf(szCmd, "%s=0\r\n", szOTGWCommand);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "OTGW: Invalid switch command received!");
+			return false;
+		}
+		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+	}
+	return true;
+}
+
+bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char length)
+{
+	tRBUF *pSen = (tRBUF*)pdata;
+
+	unsigned char packettype = pSen->ICMND.packettype;
+	unsigned char subtype = pSen->ICMND.subtype;
+
+	int svalue = 0;
+	std::string LCmd = "";
+	int nodeID = 0;
+
+	if (packettype == pTypeLighting2)
+	{
+		//light command
+		nodeID = pSen->LIGHTING2.id4;
+		if ((pSen->LIGHTING2.cmnd == light2_sOff) || (pSen->LIGHTING2.cmnd == light2_sGroupOff))
+		{
+			LCmd = "Off";
+			svalue = 0;
+		}
+		else if ((pSen->LIGHTING2.cmnd == light2_sOn) || (pSen->LIGHTING2.cmnd == light2_sGroupOn))
+		{
+			LCmd = "On";
+			svalue = 255;
+		}
+		SwitchLight(nodeID, LCmd, svalue);
+	}
+	return true;
+}
+

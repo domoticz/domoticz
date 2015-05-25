@@ -116,7 +116,7 @@ void CEventSystem::LoadEvents()
 
 		}
 #ifdef _DEBUG
-		_log.Log(LOG_STATUS, "Events (re)loaded");
+		_log.Log(LOG_STATUS, "EventSystem: Events (re)loaded");
 #endif
 	}
 }
@@ -156,7 +156,7 @@ void CEventSystem::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS, "EventSystem stopped...");
+	_log.Log(LOG_STATUS, "EventSystem: Stopped...");
 
 }
 /*
@@ -756,7 +756,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 			m_dewValuesByID[sitem.ID] = dewpoint;
 		}
 		if (isHum) {
-			//_log.Log(LOG_STATUS, "%s (%d)", sitem.deviceName.c_str(),humidity);
 			m_humValuesByName[sitem.deviceName] = humidity;
 			m_humValuesByID[sitem.ID] = humidity;
 		}
@@ -801,7 +800,7 @@ void CEventSystem::RemoveSingleState(int ulDevID)
 
 	boost::lock_guard<boost::mutex> l(eventMutex);
 
-	//_log.Log(LOG_STATUS,"deleted device %d",ulDevID);
+	//_log.Log(LOG_STATUS,"EventSystem: deleted device %d",ulDevID);
 	m_devicestates.erase(ulDevID);
 
 }
@@ -884,7 +883,7 @@ void CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
 		EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
 	}
 	else {
-		_log.Log(LOG_ERROR, "Could not determine switch type for event device %s", devname.c_str());
+		_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
 	}
 }
 
@@ -940,7 +939,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 			{
 				if ((filename.length() < 4) || (filename.compare(filename.length() - 4, 4, ".lua") != 0))
 				{
-					//_log.Log(LOG_STATUS,"ignore file not .lua: %s",filename.c_str());
+					//_log.Log(LOG_STATUS,"EventSystem: ignore file not .lua: %s",filename.c_str());
 				}
 				else if (filename.find("_demo.lua") == std::string::npos) //skip demo lua files
 				{
@@ -966,7 +965,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 		closedir(lDir);
 	}
 	else {
-		_log.Log(LOG_ERROR, "Error accessing lua script directory %s", lua_Dir.c_str());
+		_log.Log(LOG_ERROR, "EventSystem: Error accessing lua script directory %s", lua_Dir.c_str());
 	}
 
 #ifdef ENABLE_PYTHON
@@ -990,7 +989,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 				{
 					if ((filename.length() < 4) || (filename.compare(filename.length() - 3, 3, ".py") != 0))
 					{
-						//_log.Log(LOG_STATUS,"ignore file not .lua: %s",filename.c_str());
+						//_log.Log(LOG_STATUS,"EventSystem: ignore file not .lua: %s",filename.c_str());
 					}
 					else if (filename.find("_demo.py") == std::string::npos) //skip demo python files
 					{
@@ -1016,7 +1015,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 			closedir(lDir);
 		}
 		else {
-			_log.Log(LOG_ERROR, "Error accessing python script directory %s", lua_Dir.c_str());
+			_log.Log(LOG_ERROR, "EventSystem: Error accessing python script directory %s", lua_Dir.c_str());
 		}
 	}
 	catch (...)
@@ -1031,7 +1030,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 {
 
 	//#ifdef _DEBUG
-	//    _log.Log(LOG_STATUS,"EventSystem blockly %s trigger",reason.c_str());
+	//    _log.Log(LOG_STATUS,"EventSystem: blockly %s trigger",reason.c_str());
 	//#endif
 
 	lua_State *lua_state;
@@ -1256,10 +1255,10 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				}
 
 				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
-				//_log.Log(LOG_STATUS,"ifc: %s",ifCondition.c_str());
+				//_log.Log(LOG_STATUS,"EventSystem: ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
-					_log.Log(LOG_ERROR, "Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
+					_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 				}
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
@@ -1268,7 +1267,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					{
 						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
 						{
-							_log.Log(LOG_NORM, "Event: triggered: %s", it->Name.c_str());
+							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						}
 					}
 				}
@@ -1308,7 +1307,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				//_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
-					_log.Log(LOG_ERROR, "Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
+					_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 				}
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
@@ -1317,7 +1316,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					{
 						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
 						{
-							_log.Log(LOG_NORM, "Event: triggered: %s", it->Name.c_str());
+							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						}
 					}
 				}
@@ -1355,7 +1354,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					//_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
 					if (luaL_dostring(lua_state, ifCondition.c_str()))
 					{
-						_log.Log(LOG_ERROR, "Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
+						_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 					}
 					else {
 						lua_Number ruleTrue = lua_tonumber(lua_state, -1);
@@ -1363,7 +1362,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 						{
 							if (parseBlocklyActions(it->Actions, it->Name, it->ID))
 							{
-								_log.Log(LOG_NORM, "Event: triggered: %s", it->Name.c_str());
+								_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 							}
 						}
 					}
@@ -1405,7 +1404,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				//_log.Log(LOG_STATUS,"ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
-					_log.Log(LOG_ERROR, "Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
+					_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 				}
 				else {
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
@@ -1414,7 +1413,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					{
 						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
 						{
-							_log.Log(LOG_NORM, "Event: triggered: %s", it->Name.c_str());
+							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						}
 					}
 				}
@@ -1440,7 +1439,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 	while (!ss.eof()) {
 		getline(ss, csubstr, ',');
 		if ((csubstr.find_first_of("=") == std::string::npos) || (csubstr.find_first_of("[") == std::string::npos) || (csubstr.find_first_of("]") == std::string::npos)) {
-			_log.Log(LOG_ERROR, "Malformed action sequence!");
+			_log.Log(LOG_ERROR, "EventSystem: Malformed action sequence!");
 			break;
 		}
 		size_t eQPos = csubstr.find_first_of("=") + 1;
@@ -1509,7 +1508,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 						std::vector<std::string> sd = result[0];
 						std::string updateResult = m_sql.UpdateUserVariable(variableNo, sd[0], sd[1], doWhat, false);
 						if (updateResult != "OK") {
-							_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
+							_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
 						}
 					}
 				}
@@ -1527,8 +1526,11 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					std::string subject(""), body(""), priority("0"), sound("");
 					std::vector<std::string> aParam;
 					StringSplit(doWhat, "#", aParam);
-					subject = aParam[0];
-					body = aParam[1];
+					subject = body = aParam[0];
+					if (aParam.size() > 1)
+					{
+						body = aParam[1];
+					}
 					if (aParam.size() == 3)
 					{
 						priority = aParam[2];
@@ -1545,6 +1547,12 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					std::string subject(""), body(""), to("");
 					std::vector<std::string> aParam;
 					StringSplit(doWhat, "#", aParam);
+					if (aParam.size() !=3 )
+					{
+						//Invalid
+						_log.Log(LOG_ERROR, "EventSystem: SendEmail, not enough parameters!");
+						return false;
+					}
 					subject = aParam[0];
 					body = aParam[1];
 					body = stdreplace(body, "\\n", "<br>");
@@ -1619,8 +1627,8 @@ const char * Python_exe = "PYTHON_EXE";
 
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
 {
-	//_log.Log(LOG_NORM, "Already scheduled this event, skipping");
-	//_log.Log(LOG_STATUS, "EventSystem script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
+	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
+	//_log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
 
 	std::stringstream python_DirT;
 
@@ -1797,7 +1805,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	//if (isEventscheduled(filename))
 	//{
-	//	//_log.Log(LOG_NORM,"Already scheduled this event, skipping");
+	//	//_log.Log(LOG_NORM,"EventSystem: Already scheduled this event, skipping");
 	//	return;
 	//}
 
@@ -1828,7 +1836,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "print");
 
 #ifdef _DEBUG
-	_log.Log(LOG_STATUS, "EventSystem script %s trigger", reason.c_str());
+	_log.Log(LOG_STATUS, "EventSystem: script %s trigger", reason.c_str());
 #endif
 
 	int intRise = getSunRiseSunSetMinutes("Sunrise");
@@ -2228,11 +2236,11 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
 		{
-			_log.Log(LOG_ERROR, "Warning: lua script %s has been running for more than 10 seconds", filename.c_str());
+			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", filename.c_str());
 		}
 		else
 		{
-			//_log.Log(LOG_ERROR, "lua script completed");
+			//_log.Log(LOG_ERROR, "EventSystem: lua script completed");
 		}
 		
 		
@@ -2264,13 +2272,13 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	{
 		if (status == 0)
 		{
-			_log.Log(LOG_ERROR, "Lua script did not return a commandArray");
+			_log.Log(LOG_ERROR, "EventSystem: Lua script did not return a commandArray");
 		}
 	}
 
 	if (scriptTrue)
 	{
-		_log.Log(LOG_STATUS, "Script event triggered: %s", filename.c_str());
+		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
 	}
 
 	lua_close(lua_state);
@@ -2296,13 +2304,13 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 	{
 		if (status == 0)
 		{
-			_log.Log(LOG_ERROR, "Lua script did not return a commandArray");
+			_log.Log(LOG_ERROR, "EventSystem: Lua script did not return a commandArray");
 		}
 	}
 
 	if (scriptTrue)
 	{
-		_log.Log(LOG_STATUS, "Script event triggered: %s", filename.c_str());
+		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
 	}
 
 	lua_close(lua_state);
@@ -2338,7 +2346,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "commandArray should only return ['string']='actionstring' or [integer]={['string']='actionstring'}");
+			_log.Log(LOG_ERROR, "EventSystem: commandArray should only return ['string']='actionstring' or [integer]={['string']='actionstring'}");
 		}
 		// removes 'value'; keeps 'key' for next iteration
 		lua_pop(lua_state, 1);
@@ -2357,13 +2365,16 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		std::string subject(""), body(""), priority("0"), sound("");
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
-		subject = aParam[0];
-		body = aParam[1];
+		subject = body = aParam[0];
+		if (aParam.size() > 1)
+		{
+			body = aParam[1];
+		}
 		if (aParam.size() == 3)
 		{
 			priority = aParam[2];
 		}
-		if (aParam.size() == 4)
+		else if (aParam.size() == 4)
 		{
 			priority = aParam[2];
 			sound = aParam[3];
@@ -2376,6 +2387,12 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		std::string subject(""), body(""), to("");
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
+		if (aParam.size() != 3)
+		{
+			//Invalid
+			_log.Log(LOG_ERROR, "EventSystem: SendEmail, not enough parameters!");
+			return false;
+		}
 		subject = aParam[0];
 		body = aParam[1];
 		body = stdreplace(body, "\\n", "<br>");
@@ -2420,7 +2437,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			{
 				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
 				if (updateResult != "OK") {
-					_log.Log(LOG_ERROR, "Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
+					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
 				}
 			}
 			else
@@ -2452,7 +2469,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 void CEventSystem::report_errors(lua_State *L, int status)
 {
 	if (status != 0) {
-		_log.Log(LOG_ERROR, "%s", lua_tostring(L, -1));
+		_log.Log(LOG_ERROR, "EventSystem: %s", lua_tostring(L, -1));
 		lua_pop(L, 1); // remove error message
 	}
 }
@@ -2511,17 +2528,17 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 			(idtype == pTypeRadiator1)
 			)
 		{
-			_log.Log(LOG_NORM, "Sending SetPoint to device....");
+			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device....");
 			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(svalue.c_str())));
 		}
 		else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatMode))
 		{
-			_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
+			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device....");
 			m_mainworker.SetZWaveThermostatMode(idx, atoi(nvalue.c_str()));
 		}
 		else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatFanMode))
 		{
-			_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
+			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
 			m_mainworker.SetZWaveThermostatFanMode(idx, atoi(nvalue.c_str()));
 		}
 	}
@@ -2534,8 +2551,7 @@ void CEventSystem::SendEventNotification(const std::string &Subject, const std::
 
 void CEventSystem::OpenURL(const std::string &URL)
 {
-	//_log.Log(LOG_STATUS,"Fetching url: %s",URL.c_str());
-	_log.Log(LOG_STATUS, "Fetching url...");
+	_log.Log(LOG_STATUS, "EventSystem: Fetching url...");
 	_tTaskItem tItem;
 	tItem = _tTaskItem::GetHTTPPage(1, URL, "OpenURL");
 	m_sql.AddTaskItem(tItem);
@@ -2827,7 +2843,7 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state)
 
 void CEventSystem::reportMissingDevice(const int deviceID, const std::string &eventName, const unsigned long long eventID)
 {
-	_log.Log(LOG_ERROR, "Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, eventName.c_str());
+	_log.Log(LOG_ERROR, "EventSystem: Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, eventName.c_str());
 
 
 	std::stringstream szQuery;
@@ -2935,13 +2951,16 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		GetLightStatus(dType, dSubType, switchtype,0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 		ilevel = maxDimLevel;
 
-		if ((switchtype == STYPE_Dimmer) && (maxDimLevel != 0))
+		if (maxDimLevel != 0)
 		{
-			float fLevel = (maxDimLevel / 100.0f)*percentageLevel;
-			if (fLevel>100)
-				fLevel = 100;
-			ilevel = int(fLevel);
-			if (ilevel >0) { ilevel++; }
+			if ((switchtype == STYPE_Dimmer) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+			{
+				float fLevel = (maxDimLevel / 100.0f)*percentageLevel;
+				if (fLevel > 100)
+					fLevel = 100;
+				ilevel = int(fLevel);
+				if (ilevel > 0) { ilevel++; }
+			}
 		}
 	}
 	return ilevel;

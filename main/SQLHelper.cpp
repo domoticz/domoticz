@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 69
+#define DB_VERSION 70
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -427,7 +427,8 @@ const char *sqlCreateWOLNodes =
 	"[ID] INTEGER PRIMARY KEY, "
 	"[HardwareID] INTEGER NOT NULL, "
 	"[Name] VARCHAR(100) DEFAULT Unknown, "
-	"[MacAddress] VARCHAR(50) DEFAULT Unknown);";
+	"[MacAddress] VARCHAR(50) DEFAULT Unknown, "
+	"[Timeout] INTEGER DEFAULT 5);";
 
 const char *sqlCreatePercentage =
 "CREATE TABLE IF NOT EXISTS [Percentage] ("
@@ -1377,6 +1378,10 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
+		}
+		if (dbversion < 70)
+		{
+			query("ALTER TABLE [WOLNodes] ADD COLUMN [Timeout] INTEGER DEFAULT 5");
 		}
 	}
 	else if (bNewInstall)
@@ -6136,28 +6141,42 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 	if (Date.find(':')!=std::string::npos)
 	{
 		char szDateEnd[100];
-		sprintf(szDateEnd,"datetime('%s','+2 Minute', 'localtime')",Date.c_str());
-		//Short log
-		sprintf(szTmp,"DELETE FROM Rain WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
-		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Wind WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
-		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM UV WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
-		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
-		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Meter WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
-		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
-		result=query(szTmp);
-		sprintf(szTmp,"DELETE FROM Percentage WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
-		result=query(szTmp);
 
-		sprintf(szTmp,"DELETE FROM Fan WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<=%s)",ID,Date.c_str(),szDateEnd);
+		time_t now = mytime(NULL);
+		struct tm tLastUpdate;
+		localtime_r(&now, &tLastUpdate);
+
+		tLastUpdate.tm_year = atoi(Date.substr(0, 4).c_str()) - 1900;
+		tLastUpdate.tm_mon = atoi(Date.substr(5, 2).c_str()) - 1;
+		tLastUpdate.tm_mday = atoi(Date.substr(8, 2).c_str());
+		tLastUpdate.tm_hour = atoi(Date.substr(11, 2).c_str());
+		tLastUpdate.tm_min = atoi(Date.substr(14, 2).c_str());
+		tLastUpdate.tm_sec = atoi(Date.substr(17, 2).c_str());
+		time_t cEndTime = mktime(&tLastUpdate) + (2*60); //=time + 2 minutes
+		localtime_r(&cEndTime, &tLastUpdate);
+
+		sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tLastUpdate.tm_year + 1900, tLastUpdate.tm_mon + 1, tLastUpdate.tm_mday, tLastUpdate.tm_hour, tLastUpdate.tm_min, tLastUpdate.tm_sec);
+		//Short log
+		sprintf(szTmp,"DELETE FROM Rain WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<='%s')",ID,Date.c_str(),szDateEnd);
+		result=query(szTmp);
+		sprintf(szTmp,"DELETE FROM Wind WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<='%s')",ID,Date.c_str(),szDateEnd);
+		result=query(szTmp);
+		sprintf(szTmp,"DELETE FROM UV WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<='%s')",ID,Date.c_str(),szDateEnd);
+		result=query(szTmp);
+		sprintf(szTmp,"DELETE FROM Temperature WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<='%s')",ID,Date.c_str(),szDateEnd);
+		result=query(szTmp);
+		sprintf(szTmp,"DELETE FROM Meter WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<='%s')",ID,Date.c_str(),szDateEnd);
+		result=query(szTmp);
+		sprintf(szTmp,"DELETE FROM MultiMeter WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<='%s')",ID,Date.c_str(),szDateEnd);
+		result=query(szTmp);
+		sprintf(szTmp,"DELETE FROM Percentage WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<='%s')",ID,Date.c_str(),szDateEnd);
+		result=query(szTmp);
+		sprintf(szTmp,"DELETE FROM Fan WHERE (DeviceRowID==%s) AND (Date>='%s') AND (Date<='%s')",ID,Date.c_str(),szDateEnd);
 		result=query(szTmp);
 	}
 	else
 	{
+		//Day/Month/Year
 		sprintf(szTmp,"DELETE FROM Rain_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());
 		result=query(szTmp);
 		sprintf(szTmp,"DELETE FROM Wind_Calendar WHERE (DeviceRowID==%s) AND (Date=='%s')",ID,Date.c_str());

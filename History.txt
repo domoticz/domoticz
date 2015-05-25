@@ -106,6 +106,13 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Native 'Ping' (System Alive Checker)
 - Changed: Serial Port names (now always as string)
 - Implemented: Mobile Phone icon
+- Fixed: EventSystem, checking if notification contains two parameters
+- Fixed: S0 Meter, Restore last values, and updating hardware settings
+- Fixed: Gui slider update for Blinds Percentage
+- Implemented: Set Blinds Percentage level from blockly (Ticket #437)
+- Fixed: Possible bug that could delete an incorrect shortlog data point (option in graph, shift-click to delete)
+- Implemented: OTGW, CH_Enable/DHW_Enable are now switchable (Thanks to Rob K)
+- Implemented: OTGW, support for GPIO A/B switches(Thanks to Rob K)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

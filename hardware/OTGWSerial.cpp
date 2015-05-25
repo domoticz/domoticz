@@ -165,11 +165,19 @@ void OTGWSerial::Do_PollWork()
 	_log.Log(LOG_STATUS,"OTGW: Worker stopped...");
 }
 
+bool OTGWSerial::WriteInt(const unsigned char *pData, const unsigned char Len)
+{
+	if (!isOpen())
+		return false;
+	write((const char*)pData, Len);
+	return true;
+}
+
 void OTGWSerial::GetGatewayDetails()
 {
 	char szCmd[10];
 	strcpy(szCmd,"PS=1\r\n");
-	WriteToHardware((const char*)&szCmd,strlen(szCmd));
+	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
 }
 
 void OTGWSerial::SendTime()
@@ -186,7 +194,7 @@ void OTGWSerial::SendTime()
 
 	char szCmd[20];
 	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
-	WriteToHardware((const char*)&szCmd, strlen(szCmd));
+	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
 }
 
 void OTGWSerial::SendOutsideTemperature()
@@ -231,13 +239,5 @@ void OTGWSerial::SetSetpoint(const int idx, const float temp)
 		sprintf(szCmd,"SH=%.1f\r\n",temp);
 		write((const char*)&szCmd,strlen(szCmd));
 	}
-}
-
-bool OTGWSerial::WriteToHardware(const char *pdata, const unsigned char length)
-{
-	if (!isOpen())
-		return false;
-	write(pdata,length);
-	return true;
 }
 

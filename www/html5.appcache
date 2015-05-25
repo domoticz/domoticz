@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 908
+# ref 910
 
 CACHE:
 # CSS
@@ -487,6 +487,7 @@ js/ngDraggable.js
 js/ngload.min.js
 js/noty/jquery.noty.js
 js/noty/layouts/top.js
+js/noty/layouts/topLeft.js
 js/noty/layouts/topRight.js
 js/noty/themes/default.js
 js/require.js

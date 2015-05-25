@@ -32,6 +32,7 @@ S0MeterBase::S0MeterBase(void)
 		m_meters[ii].m_last_values[1] = 0;
 		m_meters[ii].m_last_values[2] = 0;
 		m_meters[ii].m_last_values[3] = 0;
+		m_meters[ii].m_firstTime = true;
 	}
 }
 
@@ -57,11 +58,11 @@ void S0MeterBase::ReloadLastTotals()
 		m_meters[ii].m_last_values[1]=0;
 		m_meters[ii].m_last_values[2]=0;
 		m_meters[ii].m_last_values[3]=0;
+		m_meters[ii].m_firstTime = true;
 
-		char szTmp[300];
 		std::vector<std::vector<std::string> > result;
 		std::vector<std::string> results;
-
+		/*
 		sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%d' AND Unit=0 AND Type=%d AND SubType=%d)",m_HwdID, ii+1, pTypeENERGY, sTypeELEC2);
 		result=m_sql.query(szTmp);
 		if (result.size()==1)
@@ -72,7 +73,24 @@ void S0MeterBase::ReloadLastTotals()
 				m_meters[ii].m_counter_start=atof(results[1].c_str())/1000.0;
 			}
 		}
+		*/
 
+		std::stringstream szQuery;
+		szQuery << "SELECT sValue FROM DeviceStatus WHERE (HardwareID=" << m_HwdID << " AND DeviceID=" << (ii+1) << ")";
+		result = m_sql.query(szQuery.str());
+		if (result.size() == 1)
+		{
+			StringSplit(result[0][0], ";", results);
+			m_meters[ii].m_firstTime = false;
+			if (results.size() == 1)
+			{
+				m_meters[ii].m_counter_start = atof(results[0].c_str()) / 1000.0;
+			}
+			else if (results.size() == 2)
+			{
+				m_meters[ii].m_counter_start = atof(results[1].c_str()) / 1000.0;
+			}
+		}
 	}
 }
 
@@ -256,8 +274,9 @@ void S0MeterBase::ParseLine()
 			}
 		}
 
-		if (m_meters[ii].total_pulses != 0)
+		if ((m_meters[ii].total_pulses != 0) || (m_meters[ii].m_firstTime))
 		{
+			m_meters[ii].m_firstTime = false;
 			if (m_meters[ii].first_total_pulses_received == 0)
 				m_meters[ii].first_total_pulses_received = m_meters[ii].total_pulses;
 

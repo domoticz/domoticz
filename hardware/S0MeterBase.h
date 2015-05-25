@@ -15,6 +15,7 @@ class S0MeterBase : public CDomoticzHardwareBase
 		double m_last_values[5];
 		double m_CurrentUsage;
 		int m_PacketsSinceLastPulseChange;
+		bool m_firstTime;
 	};
 	friend class S0MeterSerial;
 public:
