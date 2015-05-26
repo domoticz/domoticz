@@ -9091,8 +9091,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			else
 			{
-				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
-					return false;
+				if (switchtype != STYPE_Motion) //dont send actual motion off command
+				{
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
+						return false;
+				}
 			}
 
 			if (!IsTesting) {
@@ -9662,8 +9665,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			level = (level > 99) ? 99 : level;
 			gswitch.level = (unsigned char)level;
 			gswitch.rssi = 7;
-			if (!WriteToHardware(HardwareID, (const char*)&gswitch, sizeof(_tGeneralSwitch)))
-				return false;
+			if (switchtype != STYPE_Motion) //dont send actual motion off command
+			{
+				if (!WriteToHardware(HardwareID, (const char*)&gswitch, sizeof(_tGeneralSwitch)))
+					return false;
+			}
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex], (const unsigned char *)&gswitch);
