@@ -115,6 +115,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: OTGW, support for GPIO A/B switches(Thanks to Rob K)
 - Implemented: 'Nest Thermostat' hardware support
 - Changed: Setpoint Up/Down rounds up to 0.5 degrees
+- Changed: Not sending actual motion sensors off command, only updating internally
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
