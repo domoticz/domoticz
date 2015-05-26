@@ -114,6 +114,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: OTGW, CH_Enable/DHW_Enable are now switchable (Thanks to Rob K)
 - Implemented: OTGW, support for GPIO A/B switches(Thanks to Rob K)
 - Implemented: 'Nest Thermostat' hardware support
+- Changed: Setpoint Up/Down rounds up to 0.5 degrees
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

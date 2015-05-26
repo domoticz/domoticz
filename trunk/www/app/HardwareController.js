@@ -2263,6 +2263,11 @@ define(['app'], function (app) {
 							sDataTimeout=days + " " + $.t("Days");
 						}
 					}
+					
+					var dispAddress=item.Address;
+					if (HwTypeStr.indexOf("S0 Meter") >= 0) {
+						dispAddress="";
+					}
 							
 					var addId = oTable.fnAddData( {
 						"DT_RowId": item.idx,
@@ -2285,7 +2290,7 @@ define(['app'], function (app) {
 						"1": item.Name,
 						"2": enabledstr,
 						"3": HwTypeStr,
-						"4": item.Address,
+						"4": dispAddress,
 						"5": SerialName,
 						"6": sDataTimeout
 					} );
