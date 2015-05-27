@@ -59,6 +59,7 @@ private:
 	friend class Teleinfo;
 	friend class CLimitLess;
 	friend class ZWaveBase;
+	friend class COpenZWave;
 	friend class CWunderground;
 	friend class CForecastIO;
 	friend class CTE923;
