@@ -920,46 +920,55 @@ define(['app'], function (app) {
 						tCommand+=" (" + item.Level + "%)";
 					}
 					var DayStr = "";
+					var DayStrOrig = "";
 					if (item.Type!=5) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
-							DayStr="Everyday";
+							DayStrOrig="Everyday";
 						else if (dayflags & 0x100)
-							DayStr="Weekdays";
+							DayStrOrig="Weekdays";
 						else if (dayflags & 0x200)
-							DayStr="Weekends";
+							DayStrOrig="Weekends";
 						else {
 							if (dayflags & 0x01) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Mon";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Mon";
 							}
 							if (dayflags & 0x02) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Tue";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Tue";
 							}
 							if (dayflags & 0x04) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Wed";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Wed";
 							}
 							if (dayflags & 0x08) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Thu";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Thu";
 							}
 							if (dayflags & 0x10) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Fri";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Fri";
 							}
 							if (dayflags & 0x20) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Sat";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Sat";
 							}
 							if (dayflags & 0x40) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Sun";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Sun";
 							}
 						}
 					}
-							
+					//translate daystring
+					var res = DayStrOrig.split(", ");
+					$.each(res, function(i,item){
+						DayStr+=$.t(item);
+						if (i!=res.length-1) {
+							DayStr+=", ";
+						}
+					});
+
 					var rEnabled="No";
 					if (item.Randomness==true) {
 						rEnabled="Yes";
@@ -973,13 +982,13 @@ define(['app'], function (app) {
 						"TTypeString": $.myglobals.TimerTypesStr[item.Type],
 						"Active": active,
 						"Random": rEnabled,
-						"OrgDayString": DayStr,
+						"OrgDayString": DayStrOrig,
 						"0": $.t(active),
 						"1": $.t($.myglobals.TimerTypesStr[item.Type]),
 						"2": item.Date,
 						"3": item.Time,
 						"4": $.t(rEnabled),
-						"5": tCommand,
+						"5": $.t(tCommand),
 						"6": DayStr
 					} );
 				});

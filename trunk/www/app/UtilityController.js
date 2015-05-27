@@ -46,7 +46,7 @@ define(['app'], function (app) {
 			var tsettings = {};
 			tsettings.Active=$('#utilitycontent #timerparamstable #enabled').is(":checked");
 			tsettings.timertype=$("#utilitycontent #timerparamstable #combotype").val();
-			tsettings.date=$("#utilitycontent #timerparamstable #sdate").val();
+			tsettings.date=$("#utilitycontent #timerparamstable #ssdate").val();
 			tsettings.hour=$("#utilitycontent #timerparamstable #combotimehour").val();
 			tsettings.min=$("#utilitycontent #timerparamstable #combotimemin").val();
 			tsettings.tvalue=$('#utilitycontent #timerparamstable #tvalue').val();
@@ -88,7 +88,7 @@ define(['app'], function (app) {
 					return;
 				}
 				//Check if date/time is valid
-				var pickedDate = $("#utilitycontent #timerparamstable #sdate").datepicker( 'getDate' );
+				var pickedDate = $("#utilitycontent #timerparamstable #ssdate").datepicker( 'getDate' );
 				var checkDate = new Date(pickedDate.getFullYear(), pickedDate.getMonth(), pickedDate.getDate(), tsettings.hour, tsettings.min, 0, 0);
 				var nowDate = new Date();
 				if (checkDate<nowDate) {
@@ -131,7 +131,7 @@ define(['app'], function (app) {
 					return;
 				}
 				//Check if date/time is valid
-				var pickedDate = $("#utilitycontent #timerparamstable #sdate").datepicker( 'getDate' );
+				var pickedDate = $("#utilitycontent #timerparamstable #ssdate").datepicker( 'getDate' );
 				var checkDate = new Date(pickedDate.getFullYear(), pickedDate.getMonth(), pickedDate.getDate(), tsettings.hour, tsettings.min, 0, 0);
 				var nowDate = new Date();
 				if (checkDate<nowDate) {
@@ -208,54 +208,66 @@ define(['app'], function (app) {
 					}
 					
 					var DayStr = "";
+					var DayStrOrig = "";
 					if (item.Type!=5) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
-							DayStr="Everyday";
+							DayStrOrig="Everyday";
 						else if (dayflags & 0x100)
-							DayStr="Weekdays";
+							DayStrOrig="Weekdays";
 						else if (dayflags & 0x200)
-							DayStr="Weekends";
+							DayStrOrig="Weekends";
 						else {
 							if (dayflags & 0x01) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Mon";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Mon";
 							}
 							if (dayflags & 0x02) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Tue";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Tue";
 							}
 							if (dayflags & 0x04) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Wed";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Wed";
 							}
 							if (dayflags & 0x08) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Thu";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Thu";
 							}
 							if (dayflags & 0x10) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Fri";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Fri";
 							}
 							if (dayflags & 0x20) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Sat";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Sat";
 							}
 							if (dayflags & 0x40) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Sun";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Sun";
 							}
 						}
 					}
+					//translate daystring
+					var res = DayStrOrig.split(", ");
+					$.each(res, function(i,item){
+						DayStr+=$.t(item);
+						if (i!=res.length-1) {
+							DayStr+=", ";
+						}
+					});
+					
 					var rEnabled="No";
 								
 					var addId = oTable.fnAddData( {
 						"DT_RowId": item.idx,
+						"Active": active,
 						"Temperature": item.Temperature,
 						"TType": item.Type,
 						"TTypeString": $.myglobals.TimerTypesStr[item.Type],
-						"0": active,
-						"1": $.myglobals.TimerTypesStr[item.Type],
+						"Days": DayStrOrig,
+						"0": $.t(active),
+						"1": $.t($.myglobals.TimerTypesStr[item.Type]),
 						"2": item.Date,
 						"3": item.Time,
 						"4": item.Temperature,
@@ -288,7 +300,7 @@ define(['app'], function (app) {
 						$("#updelclr #timerupdate").attr("href", "javascript:UpdateSetpointTimer(" + idx + ")");
 						$("#updelclr #timerdelete").attr("href", "javascript:DeleteSetpointTimer(" + idx + ")");
 						//update user interface with the paramters of this row
-						$('#utilitycontent #timerparamstable #enabled').prop('checked', (data["0"]=="Yes") ? true : false);
+						$('#utilitycontent #timerparamstable #enabled').prop('checked', (data["Active"]=="Yes") ? true : false);
 						$("#utilitycontent #timerparamstable #combotype").val(jQuery.inArray(data["TTypeString"], $.myglobals.TimerTypesStr));
 						$("#utilitycontent #timerparamstable #combotimehour").val(parseInt(data["3"].substring(0,2)));
 						$("#utilitycontent #timerparamstable #combotimemin").val(parseInt(data["3"].substring(3,5)));
@@ -296,7 +308,8 @@ define(['app'], function (app) {
 						
 						var timerType=data["TType"];
 						if (timerType==5) {
-							$("#utilitycontent #timerparamstable #sdate").val(data["2"]);
+							$(".datepicker").datepicker('setDate',data["2"]);
+							$("#utilitycontent #timerparamstable #ssdate").val(data["2"]);
 							$("#utilitycontent #timerparamstable #rdate").show();
 							$("#utilitycontent #timerparamstable #rnorm").hide();
 						}
@@ -306,22 +319,22 @@ define(['app'], function (app) {
 						}
 						
 						var disableDays=false;
-						if (data["5"]=="Everyday") {
+						if (data["Days"]=="Everyday") {
 							$("#utilitycontent #timerparamstable #when_1").prop('checked', 'checked');
 							disableDays=true;
 						}
-						else if (data["5"]=="Weekdays") {
+						else if (data["Days"]=="Weekdays") {
 							$("#utilitycontent #timerparamstable #when_2").prop('checked', 'checked');
 							disableDays=true;
 						}
-						else if (data["5"]=="Weekends") {
+						else if (data["Days"]=="Weekends") {
 							$("#utilitycontent #timerparamstable #when_3").prop('checked', 'checked');
 							disableDays=true;
 						}
 						else
 							$("#utilitycontent #timerparamstable #when_4").prop('checked', 'checked');
 							
-						EnableDisableSetpointDays(data["5"],disableDays);
+						EnableDisableSetpointDays(data["Days"],disableDays);
 					}
 				}
 			}); 
@@ -353,7 +366,7 @@ define(['app'], function (app) {
 			
 			$('#modal').show();
 			var htmlcontent = '';
-			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + name + '</h2></p><br>\n';
+			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + decodeURIComponent(name) + '</h2></p><br>\n';
 
 			var sunRise="";
 			var sunSet="";
@@ -383,13 +396,21 @@ define(['app'], function (app) {
 			var nowTemp = new Date();
 			var now = new Date(nowTemp.getFullYear(), nowTemp.getMonth(), nowTemp.getDate(), 0, 0, 0, 0);
 			
-			$( "#utilitycontent #sdate" ).datepicker({
+			$('.datepick').datepicker({
 				minDate: now,
 				defaultDate: now,
 				dateFormat: "mm/dd/yy",
 				showWeek: true,
-				firstDay: 1
+				firstDay: 1,
+			    onSelect:function() {
+					if ($("#ssdate").val()!='') {
+						$("#utilitycontent #ssdate").datepicker("setDate",$("#ssdate").val());
+					}
+				}
 			});
+			$("#ssdate").datepicker('setDate','0');
+			$("#utilitycontent #ssdate").datepicker('setDate','0');
+
 			$("#utilitycontent #combotype").change(function() { 
 				var timerType=$("#utilitycontent #combotype").val();
 				if (timerType==5) {

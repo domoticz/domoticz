@@ -1,6 +1,6 @@
 <div id="dialog-editutilitydevice" title="Edit Device">
     <form>
-        <label for="name"><span data-i18n="Name">Name</span>: </label>
+        <label for="name"><span data-i18n="Name">devicename</span>: </label>
         <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
     </form>
 </div>
@@ -8,11 +8,11 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="name"><span data-i18n="Name">Name</span>: </label></td>
+          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
-          <td align="right"><label for="metertype"><span data-i18n="Type">Type</span>: </label></td>
+          <td align="right"><label for="combometertype"><span data-i18n="Type">Type</span>: </label></td>
           <td><select id="combometertype" style="width:150px" class="combobox ui-corner-all">
             <!--#embed metertypes -->
           </select></td>
@@ -43,7 +43,7 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="name"><span data-i18n="Name">Name</span>: </label></td>
+          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
@@ -61,7 +61,7 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="name"><span data-i18n="Name">Name</span>: </label></td>
+          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
@@ -95,7 +95,7 @@
     <form>
         <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
         <tr>
-          <td align="right" style="width:60px"><label for="name"><span data-i18n="Name">Name</span>: </label></td>
+          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
 		<tr>
@@ -122,8 +122,8 @@
         <thead>
             <tr>
                 <th width="40" align="center" data-i18n="Active">Active</th>
-                <th width="120" align="center" data-i18n="Type">Type</th>
-                <th width="60" align="center" data-i18n="Date">Date</th>
+                <th width="150" align="center" data-i18n="Type">Type</th>
+                <th width="80" align="center" data-i18n="Date">Date</th>
                 <th width="60" align="center" data-i18n="Time">Time</th>
                 <th width="80" align="center" data-i18n="Value">Value</th>
                 <th align="left" data-i18n="Days">Days</th>
@@ -155,8 +155,8 @@
 				</td>
 			</tr>
 			<tr id="rdate">
-				<td align="right" style="width:80px"><label for="sdate"><span data-i18n="Date"></span>:</label></td>
-				<td><input type="text" id="sdate" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+				<td align="right" style="width:80px"><label for="ssdate"><span data-i18n="Date"></span>:</label></td>
+				<td><input type="text" class="datepick" id="ssdate" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 			</tr>
 			<tr>
 				<td align="right" style="width:80px"><label for="combotimehour"><span data-i18n="Time"></span>:</label></td>
@@ -172,7 +172,7 @@
 			</tr>
 			<tr id="rnorm"><td></td></tr>
 			<tr id="rnorm">
-				<td align="right" style="width:80px"><label for="when"><span data-i18n="When"></span>:</label></td>
+				<td align="right" style="width:80px"><label><span data-i18n="When"></span>:</label></td>
 				<td>
 					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;<span data-i18n="Everyday"></span><br><br>
 					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;<span data-i18n="Weekdays"></span><br><br>
@@ -182,7 +182,7 @@
 			</tr>
 			<tr id="rnorm"><td></td></tr>
 			<tr id="rnorm">
-				<td align="right" style="width:80px"><label for="name"><span data-i18n="Days"></span>:</label></td>
+				<td align="right" style="width:80px"><label><span data-i18n="Days"></span>:</label></td>
 				<td>
 					<input type="checkbox" id="ChkMon" checked/>&nbsp;<span data-i18n="Monday"></span>&nbsp;
 					<input type="checkbox" id="ChkTue" checked/>&nbsp;<span data-i18n="Tuesday"></span>&nbsp;
