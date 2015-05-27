@@ -1439,7 +1439,10 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 		}
 		else
 		{
-			_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s", vLabel.c_str(), vUnits.c_str());
+			if (vLabel != "SourceNodeId")
+			{
+				_log.Log(LOG_STATUS, "OpenZWave: Value_Added: Unhandled Label: %s, Unit: %s", vLabel.c_str(), vUnits.c_str());
+			}
 		}
 	}
 	else if (commandclass == COMMAND_CLASS_METER)
@@ -2264,7 +2267,22 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			//Alarm sensors
 			int nintvalue = 0;
 
-			if (byteValue == 0x16)
+			if (byteValue == 0x03)
+			{
+				// Remove Cover
+				nintvalue = 255;
+			}
+			else if (byteValue == 0x07)
+			{
+				//Movement(PIR) Home Security
+				nintvalue = 255;
+			}
+			else if (byteValue == 0x08)
+			{
+				//Movement(PIR) (Vision ZP3102)
+				nintvalue = 255;
+			}
+			else if (byteValue == 0x16)
 			{
 				//Door Open
 				nintvalue = 255;

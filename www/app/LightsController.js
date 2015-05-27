@@ -253,45 +253,55 @@ define(['app'], function (app) {
 					}
 					
 					var DayStr = "";
+					var DayStrOrig = "";
 					if (item.Type!=5) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
-							DayStr="Everyday";
+							DayStrOrig="Everyday";
 						else if (dayflags & 0x100)
-							DayStr="Weekdays";
+							DayStrOrig="Weekdays";
 						else if (dayflags & 0x200)
-							DayStr="Weekends";
+							DayStrOrig="Weekends";
 						else {
 							if (dayflags & 0x01) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Mon";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Mon";
 							}
 							if (dayflags & 0x02) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Tue";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Tue";
 							}
 							if (dayflags & 0x04) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Wed";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Wed";
 							}
 							if (dayflags & 0x08) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Thu";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Thu";
 							}
 							if (dayflags & 0x10) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Fri";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Fri";
 							}
 							if (dayflags & 0x20) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Sat";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Sat";
 							}
 							if (dayflags & 0x40) {
-								if (DayStr!="") DayStr+=", ";
-								DayStr+="Sun";
+								if (DayStrOrig!="") DayStrOrig+=", ";
+								DayStrOrig+="Sun";
 							}
 						}
 					}
+					//translate daystring
+					var res = DayStrOrig.split(", ");
+					$.each(res, function(i,item){
+						DayStr+=$.t(item);
+						if (i!=res.length-1) {
+							DayStr+=", ";
+						}
+					});
+					
 					var rEnabled="No";
 					if (item.Randomness==true) {
 						rEnabled="Yes";
@@ -299,17 +309,20 @@ define(['app'], function (app) {
 								
 					var addId = oTable.fnAddData( {
 						"DT_RowId": item.idx,
+						"Active": active,
 						"Command": Command,
 						"Level": item.Level,
 						"Hue": item.Hue,
 						"TType": item.Type,
 						"TTypeString": $.myglobals.TimerTypesStr[item.Type],
-						"0": active,
-						"1": $.myglobals.TimerTypesStr[item.Type],
+						"Random": rEnabled,
+						"Days": DayStrOrig,
+						"0": $.t(active),
+						"1": $.t($.myglobals.TimerTypesStr[item.Type]),
 						"2": item.Date,
 						"3": item.Time,
-						"4": rEnabled,
-						"5": tCommand,
+						"4": $.t(rEnabled),
+						"5": $.t(tCommand),
 						"6": DayStr
 					} );
 				});
@@ -339,11 +352,11 @@ define(['app'], function (app) {
 						$("#updelclr #timerupdate").attr("href", "javascript:UpdateTimer(" + idx + ")");
 						$("#updelclr #timerdelete").attr("href", "javascript:DeleteTimer(" + idx + ")");
 						//update user interface with the paramters of this row
-						$('#lightcontent #timerparamstable #enabled').prop('checked', (data["0"]=="Yes") ? true : false);
+						$('#lightcontent #timerparamstable #enabled').prop('checked', (data["Active"]=="Yes") ? true : false);
 						$("#lightcontent #timerparamstable #combotype").val(jQuery.inArray(data["TTypeString"], $.myglobals.TimerTypesStr));
 						$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["3"].substring(0,2)));
 						$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["3"].substring(3,5)));
-						$('#lightcontent #timerparamstable #randomness').prop('checked', (data["4"]=="Yes") ? true : false);
+						$('#lightcontent #timerparamstable #randomness').prop('checked', (data["Random"]=="Yes") ? true : false);
 						$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
 						var level=data["Level"];
 						if ($.bIsLED) {
@@ -381,22 +394,22 @@ define(['app'], function (app) {
 						}
 						
 						var disableDays=false;
-						if (data["6"]=="Everyday") {
+						if (data["Days"]=="Everyday") {
 							$("#lightcontent #timerparamstable #when_1").prop('checked', 'checked');
 							disableDays=true;
 						}
-						else if (data["6"]=="Weekdays") {
+						else if (data["Days"]=="Weekdays") {
 							$("#lightcontent #timerparamstable #when_2").prop('checked', 'checked');
 							disableDays=true;
 						}
-						else if (data["6"]=="Weekends") {
+						else if (data["Days"]=="Weekends") {
 							$("#lightcontent #timerparamstable #when_3").prop('checked', 'checked');
 							disableDays=true;
 						}
 						else
 							$("#lightcontent #timerparamstable #when_4").prop('checked', 'checked');
 							
-						EnableDisableDays(data["6"],disableDays);
+						EnableDisableDays(data["Days"],disableDays);
 					}
 				}
 			}); 

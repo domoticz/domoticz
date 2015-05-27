@@ -524,17 +524,68 @@ const char *sqlCreateMySensors =
 	" [SketchVersion] VARCHAR(40) DEFAULT(1.0));";
 
 const char *sqlCreateMySensorsVariables =
-"CREATE TABLE IF NOT EXISTS [MySensorsVars]("
-" [HardwareID] INTEGER NOT NULL,"
-" [NodeID] INTEGER NOT NULL,"
-" [ChildID] INTEGER NOT NULL,"
-" [VarID] INTEGER NOT NULL,"
-" [Value] VARCHAR(100) NOT NULL);";
+	"CREATE TABLE IF NOT EXISTS [MySensorsVars]("
+	" [HardwareID] INTEGER NOT NULL,"
+	" [NodeID] INTEGER NOT NULL,"
+	" [ChildID] INTEGER NOT NULL,"
+	" [VarID] INTEGER NOT NULL,"
+	" [Value] VARCHAR(100) NOT NULL);";
 
 const char *sqlCreateToonDevices =
-"CREATE TABLE IF NOT EXISTS [ToonDevices]("
-" [HardwareID] INTEGER NOT NULL,"
-" [UUID] VARCHAR(100) NOT NULL);";
+	"CREATE TABLE IF NOT EXISTS [ToonDevices]("
+	" [HardwareID] INTEGER NOT NULL,"
+	" [UUID] VARCHAR(100) NOT NULL);";
+
+
+//Helper triggers to make sure no invalid data is deleted because of a datetime issue
+//should not be needed, but seems we have a problem somewhere (could be domoticz, could be sqlite)
+const char *sqlCreateCleanupTriggerTemperature =
+	"CREATE TRIGGER IF NOT EXISTS onTemperatureDelete AFTER DELETE ON Temperature FOR EACH ROW WHEN strftime('%s',datetime('now','localtime')) - strftime('%s',OLD.Date) <= (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key='5MinuteHistoryDays')\n"
+	"BEGIN\n"
+	"INSERT INTO Temperature (DeviceRowID, Temperature, Chill, Humidity, Barometer, DewPoint, Date, SetPoint) VALUES (OLD.DeviceRowID, OLD.Temperature, OLD.Chill, OLD.Humidity, OLD.Barometer, OLD.DewPoint, OLD.Date, OLD.SetPoint);\n"
+	"END;\n";
+
+const char *sqlCreateCleanupTriggerRain =
+	"CREATE TRIGGER IF NOT EXISTS onRainDelete AFTER DELETE ON Rain FOR EACH ROW WHEN strftime('%s', datetime('now', 'localtime')) - strftime('%s', OLD.Date) <= (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key = '5MinuteHistoryDays')\n"
+	"BEGIN\n"
+	"INSERT INTO Rain(DeviceRowID, Total, Rate, Date) VALUES(OLD.DeviceRowID, OLD.Total, OLD.Rate, OLD.Date);\n"
+	"END;\n";
+
+const char *sqlCreateCleanupTriggerWind =
+	"CREATE TRIGGER IF NOT EXISTS onWindDelete AFTER DELETE ON Wind FOR EACH ROW WHEN strftime('%s',datetime('now','localtime')) - strftime('%s',OLD.Date) <= (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key='5MinuteHistoryDays')\n"
+	"BEGIN\n"
+	"INSERT INTO Wind (DeviceRowID, Direction, Speed, Gust, Date) VALUES (OLD.DeviceRowID, OLD.Direction, OLD.Speed, OLD.Gust, OLD.Date);\n"
+	"END;\n";
+
+const char *sqlCreateCleanupTriggerUV =
+	"CREATE TRIGGER IF NOT EXISTS onUVDelete AFTER DELETE ON UV FOR EACH ROW WHEN strftime('%s',datetime('now','localtime')) - strftime('%s',OLD.Date) <= (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key='5MinuteHistoryDays')\n"
+	"BEGIN\n"
+	"INSERT INTO UV (DeviceRowID, Level, Date) VALUES (OLD.DeviceRowID, OLD.Level, OLD.Date);\n"
+	"END;\n";
+
+const char *sqlCreateCleanupTriggerMeter =
+	"CREATE TRIGGER IF NOT EXISTS onMeterDelete AFTER DELETE ON Meter FOR EACH ROW WHEN strftime('%s',datetime('now','localtime')) - strftime('%s',OLD.Date) <= (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key='5MinuteHistoryDays')\n"
+	"BEGIN\n"
+	"INSERT INTO Meter (DeviceRowID, Value, Usage, Date) VALUES (OLD.DeviceRowID, OLD.Value, OLD.Usage, OLD.Date);\n"
+	"END;\n";
+
+const char *sqlCreateCleanupTriggerMultiMeter =
+	"CREATE TRIGGER IF NOT EXISTS onMultiMeterDelete AFTER DELETE ON MultiMeter FOR EACH ROW WHEN strftime('%s',datetime('now','localtime')) - strftime('%s',OLD.Date) <= (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key='5MinuteHistoryDays')\n"
+	"BEGIN\n"
+	"INSERT INTO MultiMeter (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) VALUES (OLD.DeviceRowID, OLD.Value1, OLD.Value2, OLD.Value3, OLD.Value4, OLD.Value5, OLD.Value6, OLD.Date);\n"
+	"END;\n";
+
+const char *sqlCreateCleanupTriggerPercentage =
+	"CREATE TRIGGER IF NOT EXISTS onPercentageDelete AFTER DELETE ON Percentage FOR EACH ROW WHEN strftime('%s',datetime('now','localtime')) - strftime('%s',OLD.Date) <= (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key='5MinuteHistoryDays')\n"
+	"BEGIN\n"
+	"INSERT INTO Percentage (DeviceRowID, Percentage, Date) VALUES (OLD.DeviceRowID, OLD.Percentage, OLD.Date);\n"
+	"END;\n";
+
+const char *sqlCreateCleanupTriggerFan =
+	"CREATE TRIGGER IF NOT EXISTS onFanDelete AFTER DELETE ON Fan FOR EACH ROW WHEN strftime('%s',datetime('now','localtime')) - strftime('%s',OLD.Date) <= (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key='5MinuteHistoryDays')\n"
+	"BEGIN\n"
+	"INSERT INTO Fan (DeviceRowID, Speed, Date) VALUES (OLD.DeviceRowID, OLD.Speed, OLD.Date);\n"
+	"END;\n";
 
 extern std::string szUserDataFolder;
 
@@ -654,6 +705,17 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateToonDevices);
+
+	//create cleanup fallback triggers (should not be needed!)
+	query(sqlCreateCleanupTriggerTemperature);
+	query(sqlCreateCleanupTriggerRain);
+	query(sqlCreateCleanupTriggerWind);
+	query(sqlCreateCleanupTriggerUV);
+	query(sqlCreateCleanupTriggerMeter);
+	query(sqlCreateCleanupTriggerMultiMeter);
+	query(sqlCreateCleanupTriggerPercentage);
+	query(sqlCreateCleanupTriggerFan);
+
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{
