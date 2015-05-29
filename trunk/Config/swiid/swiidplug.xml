@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- SWIIDPLUG ADAPTER PLUG  -->
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="1" label="Switch All" min="0" max="255" value="255" size="1">
+            <Help>Activate/Deactive ALL ON/OFF</Help>
+            <Item label="Disabled" value="0" />
+            <Item label="Enabled" value="255" />
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Long press"/>
+            <Group index="2" max_associations="5" label="Status" auto="true" />
+        </Associations>
+    </CommandClass>
+</Product>

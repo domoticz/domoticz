@@ -238,7 +238,15 @@ void S0MeterBase::ParseLine()
 		m_meters[ii].m_PacketsSinceLastPulseChange++;
 
 		double s0_pulse=atof(results[roffset+1].c_str());
+
+		unsigned long LastTotalPulses = m_meters[ii].total_pulses;
 		m_meters[ii].total_pulses = (unsigned long)atol(results[roffset + 2].c_str());
+		if (m_meters[ii].total_pulses < LastTotalPulses)
+		{
+			//counter has looped
+			m_meters[ii].m_counter_start += (LastTotalPulses + m_meters[ii].total_pulses);
+			m_meters[ii].first_total_pulses_received = m_meters[ii].total_pulses;
+		}
 
 		if (s0_pulse != 0)
 		{

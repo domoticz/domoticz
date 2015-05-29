@@ -543,7 +543,8 @@ namespace http {
 			m_bDoStop = false;
 			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
 
-			//Check for update
+			//Check for update (force)
+			m_LastUpdateCheck = 0;
 			Json::Value root;
 			Cmd_CheckForUpdate(root);
 			return (m_thread != NULL);
@@ -3333,10 +3334,18 @@ namespace http {
 			root["title"] = "GetVersion";
 			root["version"] = szAppVersion;
 
+			//Force Check for update
+			/*
+			Json::Value root2;
+			Cmd_CheckForUpdate(root2);
+			*/
+
 			int nValue = 1;
 			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 			root["haveupdate"] = (nValue==1)?m_bHaveUpdate:false;
 			root["revision"] = m_iRevision;
+
+
 		}
 
 		void CWebServer::Cmd_GetAuth(Json::Value &root)
@@ -3996,7 +4005,7 @@ namespace http {
 			{
 				//Seems like old arm systems can also use the new arm build
 				machine = "armv7l";
-		}
+			}
 
 #ifdef DEBUG_DOWNLOAD
 			systemname = "linux";

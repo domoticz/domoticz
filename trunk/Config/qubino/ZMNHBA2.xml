@@ -18,7 +18,7 @@
 		</Value>
 
 		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="1" min="0" max="255" value="255">
-			<Help>Flush 1 relay module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
+			<Help>Flush 2 relays module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
 			<Item label="ALL ON active, ALL OFF active" value="255" />
 			<Item label="ALL ON is not active ALL OFF is not active" value="0" />
 			<Item label="ALL ON is not active ALL OFF active" value="1" />
@@ -33,10 +33,10 @@
 			<Help>0 - Auto OFF disabled. 1 - 65535 => 0,01 second - 655,35 seconds. Auto OFF enabled with define time, step is 10 mseconds. Default value 0</Help>
 		</Value>
 
-		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the relay after a power failure" size="1" min="0" max="1" value="0">
+		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the 2 relays after a power failure" size="1" min="0" max="1" value="0">
 			<Help/>
-	 		<Item label="Flush 1relay module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
-			<Item label="Flush 1relay module does not save the state after a power failure, it returns to off position." value="1" />
+	 		<Item label="Flush 2 relays module saves its state before power failure (it returns to the last position saved before a power failure)" value="0" />
+			<Item label="Flush 2 relays module does not save the state after a power failure, it returns to off position." value="1" />
 		</Value>
 	
 	 	<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change for Q1" size="1" min="0" max="100" value="1">
