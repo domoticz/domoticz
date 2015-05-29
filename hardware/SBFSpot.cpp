@@ -45,6 +45,7 @@ void CSBFSpot::Init()
 	{
 		getline(infile, sLine);
 		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
+		sLine = stdstring_trim(sLine);
 		if (sLine.size()!=0)
 		{
 			if (sLine.find("OutputPath=")==0)

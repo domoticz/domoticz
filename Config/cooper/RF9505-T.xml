@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="2" genre="config" label="Panic ON time" units="seconds" min="1" max="255" value="0">
+		  <Help>
+		  The amount of time in seconds the switch will turn on for when panic mode is trigered.  The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
+		  </Help>
+		</Value>
+		<Value type="byte" index="3" genre="config" label="Panic OFF time" units="seconds" min="1" max="255" value="0">
+		  <Help>
+		  The amount of time in seconds the switch will turn off for when panic mode is triggered.  The configuration value is a signed single byte number. This value may represent a value with no units or may represent a value such as time. 0 to 127 (decimal) represents 0 to 127 seconds of time. -128 to -1 (negative decimal numbers) represents 128 to 255 seconds as calculated by this formula.  Config value = desired time in seconds (or desired value) -256 For an example of 172 seconds: config value = 172 - 256 = -84 (decimal) or 0xAC (hex) 
+		  </Help>
+		</Value>
+		<Value type="list" index="5" genre="config" label="Power Up State" units="" min="1" max="3" value="3">
+		  <Help>
+		    Power up state of the device
+		  </Help>
+		  <Item label="OFF" value="1"/>
+		  <Item label="ON" value="2"/>
+		  <Item label="Last state" value="3"/>
+		</Value>
+		<Value type="list" index="6" genre="config" label="Panic mode enable" units="" min="0" max="1" value="0">
+		  <Help>
+		    Enables this device to participate in panic mode
+		  </Help>
+		  <Item label="OFF" value="0"/>
+		  <Item label="ON" value="1"/>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+        		<Group index="1" max_associations="5" label="Group #1" auto="true"/>
+			<Group index="255" max_associations="1" label="Group #255" />
+		</Associations>
+	</CommandClass>
+</Product>

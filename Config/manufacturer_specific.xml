@@ -112,7 +112,6 @@
 		<Product type="001e" id="0001" name="1Pole Switch" config="BeNext/1poleswitch.xml"/>
 		<Product type="001f" id="0001" name="2Pole Switch" config="BeNext/2poleswitch.xml"/>
 		<Product type="0020" id="0001" name="Energy Switch" config="BeNext/EnergySwitch.xml"/>
-		<Product type="0021" id="0100" name="Heating Control" config="BeNext/HeatingControl.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002c" name="BeSafer">
 	</Manufacturer>
@@ -145,7 +144,8 @@
 	</Manufacturer>
 	<Manufacturer id="001a" name="Cooper">
 		<Product type="4449" id="0002" name="RF9534DS Wall Dimmer Module"/>
-		<Product type="5244" id="0000" name="RF9505-TWS Split Control Duplex Receptacle"/>
+		<Product type="4449" id="0101" name="RF9540-N All Load Dimmer Light Switch" config="cooper/RF9540-N.xml"/>
+		<Product type="5244" id="0000" name="RF9505-T Split Control Duplex Receptacle" config="cooper/RF9505-T.xml"/>
 	</Manufacturer>
 	<Manufacturer id="009d" name="Coventive">
 	</Manufacturer>
@@ -262,6 +262,7 @@
 		<Product type="0400" id="0108" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0109" name="FGS221 Switch 3kW" config="fibaro/fgs221.xml" />
 		<Product type="0400" id="100a" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
+		<Product type="0402" id="1002" name="FGS212 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0200" id="0104" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="0105" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="0106" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
@@ -276,9 +277,9 @@
 		<Product type="0b00" id="3001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="1001" name="FGFS101 Flood Sensor" config ="fibaro/fgfs101.xml" />
 		<Product type="0b00" id="9e00" name="FGFS101 Flood Sensor" config="fibaro/fgfs101.xml" />
-   		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
-   		<Product type="0900" id="4000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
-   		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
+    		<Product type="0900" id="1000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
+    		<Product type="0900" id="4000" name="FGRGBWM441 RGBW Controller" config="fibaro/fgrgbwm441.xml" />
+    		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
 		<Product type="0c02" id="1002" name="FGSD002 Smoke Sensor" config="fibaro/fgsd002.xml" />
   	</Manufacturer>
 	<Manufacturer id="0138" name="First Alert">
@@ -462,6 +463,9 @@
 	</Manufacturer>
 	<Manufacturer id="0083" name="MTC Maintronic">
 	</Manufacturer>
+	<Manufacturer id="0165" name="NodOn">
+    		<Product type="0001" id="0001" name="ASP-3-1-00 Smart Plug" config="nodon/asp3100SmartPlug.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0096" name="NorthQ">
 		<Product type="0001" id="0001" name="NQ-92021 Power Reader" config="northq/nq92021.xml"/>
 		<Product type="0001" id="0002" name="NQ-9021 Power Reader"/>
@@ -477,9 +481,9 @@
 		<Product type="0001" id="0004" name="PAN06-1 In Wall Dual Relay (1 Way) Switch Module"/>
 		<Product type="0001" id="0006" name="PAN08-1 In Wall Roller Shutter Controller"/>
 		<Product type="0002" id="0002" name="PSM02-1 Slim Multi-Sensor" config="philio/psm02.xml"/>
-		<Product type="0002" id="000c" name="PST02-A 4 in 1 Multi-Sensor" config="philio/pst02.xml"/>
-		<Product type="0002" id="000d" name="PST02-1B Multi Sensor"/>
-		<Product type="0002" id="000e" name="PST02-1C Slim Multi Sensor" config="philio/pst02-1c.xml"/>
+                <Product type="0002" id="000c" name="PST02-A 4 in 1 Multi-Sensor" config="philio/pst02.xml"/>
+		<Product type="0002" id="000d" name="PST02-B PIR/Motion 3 in 1 Sensor" config="philio/pst02-b.xml"/>
+		<Product type="0002" id="000e" name="PST02-C Door/Window 3 in 1 sensor" config="philio/pst02-1c.xml"/>
 	</Manufacturer>
 	<Manufacturer id="010e" name="Polycontrol">
 		<Product type="0002" id="0001" name="Danalock Keypad" config="polycontrol/keypad.xml"/>
@@ -576,6 +580,7 @@
 	</Manufacturer>
 	<Manufacturer id="166" name="Swiid">
 		<Product type="100" id="100" name="SwiidInter" config="swiid/swiidinter.xml"/>
+                <Product type="2007" id="0706" name="SwiidPlug" config="swiid/swiidplug.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0009" name="Sylvania">
 	</Manufacturer>
@@ -652,12 +657,12 @@
 		<Product type="2001" id="0101" name="ZD2102 US Door/Window Sensor" config="vision/zd2102.xml"/>
 		<Product type="2001" id="0102" name="ZD2102 AU Door/Window Sensor" config="vision/zd2102.xml"/>
 		<Product type="2001" id="0104" name="ZD2102 JP Door/Window Sensor" config="vision/zd2102.xml"/>
-		<Product type="2001" id="0105" name="ZD2102 EU Door/Window Sensor" config="vision/zd2102.xml"/>		
+		<Product type="2001" id="0105" name="ZD2102 EU Door/Window Sensor" config="vision/zd2102.xml"/>
 		<Product type="2002" id="0201" name="ZP3102 US PIR Motion Sensor" config="vision/zp3102.xml"/>
 		<Product type="2002" id="0202" name="ZP3102 AU PIR Motion Sensor" config="vision/zp3102.xml"/>
 		<Product type="2002" id="0203" name="ZP3102 EU PIR Motion Sensor" config="vision/zp3102.xml"/>
 		<Product type="2002" id="0204" name="ZP3102 JP PIR Motion Sensor" config="vision/zp3102.xml"/>
-		<Product type="2002" id="0205" name="ZP3102 EU PIR Motion Sensor" config="vision/zp3102.xml"/>		
+		<Product type="2002" id="0205" name="ZP3102 EU PIR Motion Sensor" config="vision/zp3102.xml"/>
 		<Product type="2003" id="0302" name="ZS5101 Shock and Vibration Sensor"/>
 		<Product type="2004" id="0403" name="ZS6101 Smoke Detector"/>
 		<Product type="2005" id="0503" name="ZM1601 Battery Operated Siren" config="vision/zm1601eu.xml"/>
@@ -698,6 +703,7 @@
 	</Manufacturer>
 	<Manufacturer id="0147" name="Z-Wave.Me">
 		<Product type="0002" id="0003" name="RaZberry Controller"/>
+		<Product type="0400" id="0001" name="RaZberry Controller ZWave+"/>
 	</Manufacturer>
 	<Manufacturer id="004f" name="Z-Wave Technologia">
 	</Manufacturer>

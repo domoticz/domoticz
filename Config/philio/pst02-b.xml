@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Philio: PST02-B 3 in 1 Multi Sensor -->
+<Product xmlns="http://code.google.com/p/open-zwave/">
+ 
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+
+    <Value type="byte" index="2" genre="config" label="2. Basic Set Level" min="-1" max="100" value="-1">
+      <Help>
+          Setting the BASIC command value to turn on the light. The 0xFF (-1) means turn on the light. 
+          For dimmer equipment 1 to 100 means the light strength. 0 means turn off the light.
+	  </Help>
+    </Value>
+
+    <Value type="byte" index="3" genre="config" label="3. PIR Sensitivity" min="0" max="99" value="80">
+       <Help>
+          PIR sensitivity settings. 
+          0 means disable the PIR motion. 
+          1 means the lowest sensitivity, 
+          99 means the highest sensitivity. 
+          High sensitivity means can detected long distance, but if there is more noise signal in the environment, it will re-trigger too frequency.
+       </Help>
+    </Value>
+	
+    <Value type="byte" index="4" genre="config" label="4. Light threshold" min="0" max="100" value="99">
+      <Help>
+          Setting the illummination threshold to turn on the light. When the event triggered and the environment illumination lower then 
+          the threshold, the device will turn on the light.
+          0 means turn off illumination detected function and never turn on the light.
+          1 means darkest.
+          99 means brightest.
+          100 means turn off illumination detected function. And always turn on the light.
+          * Notice * in none test mode, only the value in 1 to 99 will enable the illumination detected function and update the illumination value.
+       </Help>
+    </Value>
+	
+    <Value type="byte" index="5" genre="config" label="5. Operation Mode" min="0" max="127" value="0">
+       <Help>
+          Bit 0: Reserve. 
+          Bit 1: 1 means enable test mode, 0 means disable normal mode. Notice: This bit only effect by the DIP Switch setting to program mode. 
+          Bit 2: Reserve.
+          Bit 3: Setting the temperature scale. 0: Fahrenheit, 1:Celsius. 
+          Bit 4: Disable the illumination report after event triggered (1: Disable, 0: Enable). 
+          Bit 5: Disable the temperature report after event triggered (1: Disable, 0: Enable). 
+          Bit 6: Reserve. 
+          Bit 7: Disable the back key release into test mode (1: Disable, 0: Enable).
+       </Help>
+    </Value>
+
+    <Value type="byte" index="6" genre="config" label="6. Multi-Sensor Function Switch" min="0" max="127" value="4">
+       <Help>
+          Multi-Sensor Function switch. Using bit to control.
+          Bit 0: Reserve. 
+          Bit 1: Disable PIR integrate Illumination to turn ON the lighting nodes in the association group 2 (1: Disable, 0: Enable). 
+          Bit 2: Reserve.
+          Bit 3: Reserve. 
+          Bit 4: Reserve. 
+          Bit 5: Reserve. 
+          Bit 6: Reserve. 
+          Bit 7: Reserve. 
+	  </Help>
+    </Value>
+
+    <Value type="byte" index="7" genre="config" label="7. Customer Function" min="0" max="127" value="4">
+       <Help>
+          Customer function switch, using bit control. 
+          Bit 0: Reserve. 
+          Bit 1: Enable sending motion OFF report. Note: Depends on the Bit4, 0: Report Notification CC, Type: 0x07, Event: 0xFE 1: Sensor Binary Report, Type: 0x0C, Value: 0x00. 
+          Bit 2: Enable PIR super sensitivity mode. 
+          Bit 3: Reserve. 
+          Bit 4: Notification Type, 0: Using Notification Report. 1: Using Sensor Binary Report. 
+          Bit 5: Disable Multi CC in auto report. 
+          Bit 6: Disable to report battery state when the device triggered. 
+          Bit 7: Reserve.
+       </Help>
+    </Value>
+
+
+    <Value type="byte" index="8" genre="config" label="8. PIR re-detect interval time" units="8 sec" min="1" max="127" value="3">
+       <Help>
+          In the normal mode, after the PIR motion detected, setting the re-detect time. 8 seconds per tick, default tick is 3 (24 seconds). 
+          Setting the suitable value to prevent received the trigger signal too frequency. Also can save the battery energy. 
+          Notice: If this value bigger than the configuration setting NO. 9. There is a period after the light turned off and the PIR not start detecting.
+       </Help>
+    </Value>
+	
+    <Value type="byte" index="9" genre="config" label="9. Turn Off Light Time" units="8 sec" min="0" max="127" value="4">
+       <Help>
+          After turn on the lighting, setting the delay time to turn off the lighting when the PIR motion is not detected. 
+          8 seconds per tick, default tick is 4 (32 seconds). 0 means never send turn off light command.
+       </Help>
+    </Value>
+ 
+    <Value type="byte" index="10" genre="config" label="10. Auto Report Battery Time" units="30 min" min="0" max="127" value="12">
+      <Help>
+          The interval time for auto report the battery level. 0 means turn off auto report battery. The default value is 12. The tick time can setting by the configuration No.20.
+      </Help>
+    </Value>
+
+    <Value type="byte" index="12" genre="config" label="12. Auto Report Illumination Time" units="30 min" min="0" max="127" value="12">
+      <Help>
+          The interval time for auto report the illumination. 0 means turn off auto report illumination. The default value is 12. The tick time can setting by the configuration No.20.
+      </Help>
+    </Value>
+ 
+    <Value type="byte" index="13" genre="config" label="13. Auto Report Temperature time" units="30 min" min="0" max="127" value="12">
+      <Help>
+          The interval time for auto report the temperature. 0 means turn off auto report temperature. The default value is 12. The tick time can setting by the configuration No.20.
+      </Help>
+    </Value>
+ 
+    <Value type="byte" index="20" genre="config" label="20. Auto Report Tick Interval" min="0" max="255" value="30">
+      <Help>
+          The interval time for auto report each tick. Setting this configuration will effect configuration No.10, No.11, No.12 and No.13. Caution: Setting to 0 means turn off all auto report function.
+      </Help>
+    </Value>
+ 
+    <Value type="byte" index="21" genre="config" label="21. Temperature Differential Report" min="0" max="255" value="1">
+      <Help>
+          The temperature differential to report. 0 means turn off this function. The unit is Fahrenheit. Enable this function the device will detect every minutes. And when the temperature is over 140 degree Fahrenheit, it will continue report. Enable this functionality will cause some issue please see the detail in the "Temperature Report" section.
+      </Help>
+    </Value>
+ 
+    <Value type="byte" index="22" genre="config" label="22. Illumination Differential Report" min="0" max="255" value="0">
+      <Help>
+          The illumination differential to report.0 means turn off this function. The unit is percentage. Enable this function the device will detect every minutes. Enable this functionality will cause some issue please see the detail in the "Illumination Report" section.
+      </Help>
+    </Value>
+ 
+  </CommandClass>
+
+  <!-- Basic set as report -->
+  <!-- <CommandClass id="32" setasreport="true" ignoremapping="true"/> -->
+ 
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="8" label="Reports" auto="true"/>
+      <Group index="2" max_associations="8" label="Light Control" auto="false"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

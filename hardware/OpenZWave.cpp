@@ -538,7 +538,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				}
 			}
 			m_bControllerCommandInProgress = false;
-			m_bNeedSave = true;
+			WriteControllerConfig();
 		}
 		break;
 	case OpenZWave::Notification::Type_NodeProtocolInfo:
@@ -1866,10 +1866,14 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 
 	instance = vID.GetIndex();
 	unsigned char commandclass = vID.GetCommandClassId();
-	std::string vLabel = m_pManager->GetValueLabel(vID);
 
 	if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
 	{
+		std::string vLabel = "";
+		if (commandclass != 0)
+		{
+			m_pManager->GetValueLabel(vID);
+		}
 		instance = GetIndexFromAlarm(vLabel);
 		if (instance == 0)
 			return;
