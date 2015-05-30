@@ -1404,13 +1404,14 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	// Get a timestamp
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	struct tm *tm;
-	tm = localtime(&tv.tv_sec);
+
+	struct tm timeinfo;
+	localtime_r(&tv.tv_sec, &timeinfo);
 
 	// create a time stamp string for the log message
 	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-		tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-		tm->tm_hour, tm->tm_min, tm->tm_sec, (int)tv.tv_usec / 1000);
+		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
 #else
 	// Get a timestamp
 	SYSTEMTIME time;
@@ -9744,8 +9745,12 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME1));
 		
 	// convert now to string form
-	time_t now = time(0);
-	char *szDate = asctime(localtime(&now));
+	time_t now = mytime(NULL);
+
+	struct tm timeinfo;
+	localtime_r(&now, &timeinfo);
+
+	char *szDate = asctime(&timeinfo);
 	szDate[strlen(szDate)-1]=0;
 
 	WriteMessageStart();
@@ -10477,13 +10482,14 @@ void MainWorker::SetInternalSecStatus()
 	// Get a timestamp
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	struct tm *tm;
-	tm = localtime(&tv.tv_sec);
+
+	struct tm timeinfo;
+	localtime_r(&tv.tv_sec, &timeinfo);
 
 	// create a time stamp string for the log message
 	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-		tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-		tm->tm_hour, tm->tm_min, tm->tm_sec, (int)tv.tv_usec / 1000);
+		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
 #else
 	// Get a timestamp
 	SYSTEMTIME time;

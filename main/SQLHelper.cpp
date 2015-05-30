@@ -7127,13 +7127,12 @@ bool CSQLHelper::CheckDate(const std::string &sDate, int& d, int& m, int& y)
 		t.tm_isdst = -1;
 
 		time_t when = mktime(&t);
-		const struct tm *norm = localtime(&when);
-		if (norm == NULL)
-			return false;
+		struct tm norm;
+		localtime_r(&when, &norm);
 
-		return (norm->tm_mday == d    &&
-			norm->tm_mon == m - 1 &&
-			norm->tm_year == y - 1900);
+		return (norm.tm_mday == d    &&
+			norm.tm_mon == m - 1 &&
+			norm.tm_year == y - 1900);
 	}
 	return false;
 }
