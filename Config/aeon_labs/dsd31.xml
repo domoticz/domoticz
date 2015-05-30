@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aeon Labs DSD31 Siren Gen5 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+	<Protocol refreshonnodeinfoframe="false"/>
+
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
-		<Value type="int" index="37" genre="config" label="Siren sound and Volume" units="" min="0" max="53" value="13" size="2">
+		<Value type="list" index="37" genre="config" label="Siren sound and Volume" units="" value="259" size="2">
 			<Help>
-				The Value1 (low byte) is used to select the Siren sound:
-				Value1=0, do not change the current Siren sound. 
-				Value1=1, Siren sound 1 is selected. 
-				Value1=2, Siren sound 2 is selected. 
-				Value1=3, Siren sound 3 is selected. 
-				Value1=4, Siren sound 4 is selected. 
-				Value1=5, Siren sound 5 is selected. 
-				Other values will be ignored. 
- 
-				The value2 (high byte) is used to adjust the volume: 
-				Value2=0, do not change the current volume. 
-				Value2=1, set the volume to 88 dB. 
-				Value2=2, set the volume to 100 dB. 
-				Value2=3, set the volume to 105 dB. 
-				Other values will be ignored. 
-  
-				example: 53 (Siren sound 5 and 105dB volume)
+				Select the Siren Sound and Volume
 			</Help>
+			<Item label="Sound 1 - Low Volume" value="257"/>
+			<Item label="Sound 1 - Mid Volume" value="258"/>
+			<Item label="Sound 1 - High Volume" value="259"/>
+			<Item label="Sound 2 - Low Volume" value="513"/>
+			<Item label="Sound 2 - Mid Volume" value="514"/>
+			<Item label="Sound 2 - High Volume" value="515"/>
+			<Item label="Sound 3 - Low Volume" value="769"/>
+			<Item label="Sound 3 - Mid Volume" value="770"/>
+			<Item label="Sound 3 - High Volume" value="771"/>
+			<Item label="Sound 4 - Low Volume" value="1025"/>
+			<Item label="Sound 4 - Mid Volume" value="1026"/>
+			<Item label="Sound 4 - High Volume" value="1027"/>
+			<Item label="Sound 5 - Low Volume" value="1281"/>
+			<Item label="Sound 5 - Mid Volume" value="1282"/>
+			<Item label="Sound 5 - High Volume" value="1283"/>
+			
+
 		</Value>
 
 		<Value type="list" index="80" genre="config" label="Send Notifications" units="" min="0" max="1" value="0" size="1">

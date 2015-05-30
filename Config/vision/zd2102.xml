@@ -15,7 +15,7 @@
 	<!-- COMMAND_CLASS_ASSOCIATION -->
 	<CommandClass id="133">
 		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="All triggering reports & low voltage report will be sent to the associated nodes." auto="true"/>
+			<Group index="1" max_associations="5" label="All Reports" auto="true"/>
 		</Associations>
 	</CommandClass>
 </Product>
