@@ -221,7 +221,7 @@ void CHarmonyHub::Do_Work()
 			continue;
 		}
 		bool bIsDataReadable = true;
-		m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+		m_commandcsocket->canRead(&bIsDataReadable, 0.5f);
 		if (bIsDataReadable)
 		{
 			boost::lock_guard<boost::mutex> lock(m_mutex);
@@ -682,7 +682,7 @@ bool CHarmonyHub::SwapAuthorizationToken(csocket* authorizationcsocket, std::str
 	}
 
 	bool bIsDataReadable = false;
-	authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
+	authorizationcsocket->canRead(&bIsDataReadable, 5.0f);
 	if(!bIsDataReadable && strData == "<iq/>")
 	{
 		bIsDataReadable = true;
@@ -740,7 +740,7 @@ bool CHarmonyHub::SendPing()
 
 
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+	m_commandcsocket->canRead(&bIsDataReadable, 5.0f);
 	while (bIsDataReadable)
 	{
 		if (memset(m_databuffer, 0, BUFFER_SIZE) > 0)
@@ -817,7 +817,7 @@ bool CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string 
 	m_commandcsocket->write(sendData.c_str(), sendData.size());
 
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable,0.4f);
+	m_commandcsocket->canRead(&bIsDataReadable,5.0f);
 	while(bIsDataReadable)
 	{
 
@@ -866,7 +866,7 @@ bool CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string 
 	}
 	else if (strCommand == GET_CONFIG_COMMAND || strCommand == GET_CONFIG_COMMAND_RAW)
 	{
-		m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+		m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
 
 		//#ifndef WIN32
 		//		bIsDataReadable = true;
