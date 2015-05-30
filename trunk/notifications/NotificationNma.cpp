@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NotificationNma.h"
 #include "../httpclient/HTTPClient.h"
+#include "../main/Logger.h"
 
 CNotificationNma::CNotificationNma() : CNotificationBase(std::string("nma"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
@@ -21,8 +22,11 @@ bool CNotificationNma::SendMessageImplementation(const std::string &Subject, con
 	sPostData << "apikey=" << _apikey << "&application=Domoticz&event=" << Subject << "&description=" << Text << "&priority=" << Priority;
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult);
-	/* todo: parse result */
-	return bRet;
+
+	bool bSuccess = (sResult.find("success code=\"200\"") != std::string::npos);
+	if (!bSuccess)
+		_log.Log(LOG_ERROR, "NMA: %s", sResult.c_str());
+	return (bRet && bSuccess);	return bRet;
 }
 
 bool CNotificationNma::IsConfigured()
