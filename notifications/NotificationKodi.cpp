@@ -19,6 +19,38 @@ CNotificationKodi::~CNotificationKodi()
 {
 }
 
+std::string CNotificationKodi::CustomIcon(std::string &szCustom)
+{
+	int	iIconLine = atoi(szCustom.c_str());
+	std::string szRetVal = "Light48";
+	std::string sLine = "";
+	std::ifstream infile;
+	std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
+	infile.open(switchlightsfile.c_str());
+	if (infile.is_open())
+	{
+		int index = 0;
+		while (!infile.eof())
+		{
+			getline(infile, sLine);
+			if ((sLine.size() != 0) && (index++ == iIconLine))
+			{
+				std::vector<std::string> results;
+				StringSplit(sLine, ";", results);
+				if (results.size() == 3)
+				{
+					szRetVal = results[0] + "48";
+					break;
+				}
+			}
+		}
+		infile.close();
+	}
+	
+//	_log.Log(LOG_NORM, "Custom Icon look up for %s returned: '%s'", szCustom.c_str(), szRetVal.c_str());
+	return szRetVal;
+}
+
 /*
 	Locate a valid image to send with the message.  Logic is:
 	o	If an image is specified, use it if it exists
@@ -30,11 +62,15 @@ CNotificationKodi::~CNotificationKodi()
 		o	Look for base image
 	o	If it exists, use the logo as the default image
 */
-const char * CNotificationKodi::IconFile(const std::string &ExtraData)
+std::string CNotificationKodi::IconFile(const std::string &ExtraData)
 {
 	std::string	szImageFile;
 
 	int	posImage = (int)ExtraData.find("|Image=");
+	int	posStatus = (int)ExtraData.find("|Status=");
+	int	posCustom = (int)ExtraData.find("|CustomImage=");
+	int	posType = (int)ExtraData.find("|SwitchType=");
+
 	if (posImage >= 0)
 	{
 //		_log.Log(LOG_NORM, "Image data found in extra data: %s, %d", ExtraData.c_str(), posImage);
@@ -52,18 +88,16 @@ const char * CNotificationKodi::IconFile(const std::string &ExtraData)
 		_log.Log(LOG_NORM, "File does not exist:  %s, %d", szImageFile.c_str(), posImage-7);
 	}
 
-	// if a switch type was supplied try and work out the image
 	std::string	szStatus = "On";
-	int	posStatus = (int)ExtraData.find("|Status=");
 	if (posStatus >= 0)
 	{
 		posStatus+=8;
 		szStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus)-posStatus);
 	}
-	int	posType = (int)ExtraData.find("|SwitchType=");
+
+	// if a switch type was supplied try and work out the image
 	if (posType >= 0)
 	{
-//		_log.Log(LOG_NORM, "SwitchType data found in extra data: %s, %d", ExtraData.c_str(), posType);
 		posType+=12;
 		std::string	szType = ExtraData.substr(posType, ExtraData.find("|", posType)-posType);
 		std::string	szTypeImage;
@@ -71,7 +105,13 @@ const char * CNotificationKodi::IconFile(const std::string &ExtraData)
 		switch (switchtype)
 		{
 			case STYPE_OnOff:
-				szTypeImage = "Light48";
+				if (posCustom >= 0)
+				{
+					posCustom+=13;
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom)-posCustom);
+					szTypeImage = CustomIcon(szCustom);
+				}
+				else szTypeImage = "Light48";
 				break;
 			case STYPE_Doorbell:
 				szTypeImage = "doorbell48";
@@ -119,43 +159,43 @@ const char * CNotificationKodi::IconFile(const std::string &ExtraData)
 		if (file_exist(szImageFile.c_str()))
 		{
 			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
-			return szImageFile.c_str();
+			return szImageFile;
 		}
 		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
 #ifdef WIN32
-			szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ((szStatus=="Off") ? "-off" : "-on") + ".png";
+		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ((szStatus=="Off") ? "-off" : "-on") + ".png";
 #else
-			szImageFile = szWWWFolder  + "/images/" + szTypeImage + ((szStatus=="Off") ? "-off" : "-on") + ".png";
+		szImageFile = szWWWFolder  + "/images/" + szTypeImage + ((szStatus=="Off") ? "-off" : "-on") + ".png";
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
 			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
-			return szImageFile.c_str();
+			return szImageFile;
 		}
 		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
 #ifdef WIN32
-			szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ((szStatus=="Off") ? "off" : "on") + ".png";
+		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ((szStatus=="Off") ? "off" : "on") + ".png";
 #else
-			szImageFile = szWWWFolder  + "/images/" + szTypeImage + ((szStatus=="Off") ? "off" : "on") + ".png";
+		szImageFile = szWWWFolder  + "/images/" + szTypeImage + ((szStatus=="Off") ? "off" : "on") + ".png";
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
 			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
-			return szImageFile.c_str();
+			return szImageFile;
 		}
 		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
 #ifdef WIN32
-			szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ".png";
+		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ".png";
 #else
-			szImageFile = szWWWFolder  + "/images/" + szTypeImage + ".png";
+		szImageFile = szWWWFolder  + "/images/" + szTypeImage + ".png";
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
 			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
-			return szImageFile.c_str();
+			return szImageFile;
 		}
 		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 	}
@@ -168,10 +208,10 @@ const char * CNotificationKodi::IconFile(const std::string &ExtraData)
 #endif
 	if (!file_exist(szImageFile.c_str()))
 	{
-		_log.Log(LOG_NORM, "Logo image file does not exist: %s", szImageFile.c_str());
-		return NULL;
+		_log.Log(LOG_ERROR, "Logo image file does not exist: %s", szImageFile.c_str());
+		szImageFile = "";
 	}
-	return szImageFile.c_str();
+	return szImageFile;
 }
 
 bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
@@ -222,7 +262,13 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 	logline << "Kodi Notification (" << _IPAddress << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text;
 	_log.Log(LOG_NORM, std::string(logline.str()).c_str());
 
-	CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, IconFile(ExtraData));
+	const char * pIcon = NULL;
+	std::string	sIconFile = IconFile(ExtraData);
+	if (sIconFile.size() > 0)
+	{
+		pIcon = sIconFile.c_str();
+	}
+	CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, pIcon);
 	if (!packet.Send(_Sock, _Address)) {
 		logline << "Error sending notification: " << _IPAddress << ":" << _Port;
 		_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
