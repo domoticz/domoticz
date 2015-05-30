@@ -19,8 +19,9 @@
 			<Item label="Open: FF, Close: 00" value="0"/>
 			<Item label="Open: 00, Close: FF" value="1"/>
 		</Value>
-		<Value type="int" genre="config" instance="1" index="121" label="Determines which report will be sent when Magnet switch is opened/ closed." min="0" max="1" value="256">
-			<Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0->Battery report, 4->Sensor Binary, 8->Basic Set, Default setting: 0x00000100 (Basic Set)</Help>
+		<Value type="int" genre="config" instance="1" index="121" label="Determines which report will be sent when Magnet switch is opened/ closed." min="0" max="65535" value="17" size="4">
+			<Help>Which reports need to send automatically in timing intervals for group 1. Bitsets: 0->Battery report, 4->Sensor Binary, 8->Basic Set, Default setting: 0x00000100 (Basic Set)
+			Ideal Setting for OZW is 17 (Sensor Binary and Battery Report)</Help>
 		</Value>
 		<Value type="short" index="254" genre="config" label="Device Tag" units="" min="0" max="255" value="0">
 			<Help>Device Tag</Help>

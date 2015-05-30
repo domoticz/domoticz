@@ -54,6 +54,16 @@
 #	define OPENZWAVE_EXPORT_WARNINGS_ON
 #endif
 
+#ifdef __GNUC__
+#define DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED __declspec(deprecated)
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define DEPRECATED
+#endif
+
+
 #ifdef NULL
 #undef NULL
 #endif
@@ -197,7 +207,8 @@ namespace OpenZWave
 
 #endif
 
-#define MAX_TRIES		3	// Retry sends up to 3 times
+//#define MAX_TRIES		3	// Retry sends up to 3 times
+#define MAX_TRIES		1	// set this to one, as I believe now that a ACK failure is indication that the device is offline, hence additional attempts will not work. 
 #define MAX_MAX_TRIES		7	// Don't exceed this retry limit
 #define ACK_TIMEOUT	1000		// How long to wait for an ACK
 #define BYTE_TIMEOUT	150
