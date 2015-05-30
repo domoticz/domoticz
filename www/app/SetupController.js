@@ -57,7 +57,7 @@ define(['app'], function (app) {
 				extraparams = "HTTPField1=" + HTTPField1 + "&HTTPField2=" + HTTPField2 + "&HTTPField3=" + HTTPField3 + "&HTTPField4=" + HTTPField4 + "&HTTPTo=" + HTTPTo + "&HTTPURL=" + HTTPURL;
 				break;
 			case "prowl":
-				var ProwlAPI=encodeURIComponent($("#prowltable #apikey").val());
+				var ProwlAPI=encodeURIComponent($("#prowltable #ProwlAPI").val());
 				if (ProwlAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
@@ -65,7 +65,7 @@ define(['app'], function (app) {
 				extraparams = "ProwlAPI=" + ProwlAPI;
 				break;
 			case "nma":
-				var NMAAPI=encodeURIComponent($("#nmatable #apikey").val());
+				var NMAAPI=encodeURIComponent($("#nmatable #NMAAPI").val());
 				if (NMAAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
@@ -73,7 +73,7 @@ define(['app'], function (app) {
 				extraparams = "NMAAPI=" + NMAAPI;
 				break;
 			case "pushover":
-				var POAPI=encodeURIComponent($("#pushovertable #apikey").val());
+				var POAPI=encodeURIComponent($("#pushovertable #PushoverAPI").val());
 				if (POAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
@@ -86,7 +86,7 @@ define(['app'], function (app) {
 				extraparams = "POAPI=" + POAPI + "&POUSERID=" + POUSERID;
 				break;
 			case "pushalot":
-				var PushAlotAPI=encodeURIComponent($("#pushalottable #palapikey").val());
+				var PushAlotAPI=encodeURIComponent($("#pushalottable #PushALotAPI").val());
 				if (PushAlotAPI=="") {
 					ShowNotify($.t('Please enter the API key!...'), 3500, true);
 					return;
