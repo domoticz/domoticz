@@ -749,14 +749,65 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_ControllerCommand:
 		{
-			//When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
-			//Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState
-			OpenZWave::Driver::ControllerCommand ccmd = (OpenZWave::Driver::ControllerCommand) _notification->GetEvent();
-			OpenZWave::Driver::ControllerState cstate = (OpenZWave::Driver::ControllerState)_notification->GetNotification();
-			//if ((ccmd != OpenZWave::Driver::ControllerCommand_None) && (cstate != OpenZWave::Driver::ControllerState_Normal))
-			//{
-			//	_asm nop;
-			//}
+			uint8 nevent = _notification->GetEvent();
+			std::string LogText = "";
+			switch (nevent)
+			{
+			case OpenZWave::Driver::ControllerState_Normal:
+				break;
+			case OpenZWave::Driver::ControllerState_Starting:
+				//The command is starting
+				LogText = "Command is starting";
+				break;
+			case OpenZWave::Driver::ControllerState_Cancel:
+				//The command was canceled
+				m_bControllerCommandInProgress = false;
+				LogText = "The command is canceled";
+				break;
+			case OpenZWave::Driver::ControllerState_Error:
+				//Command invocation had error(s) and was aborted
+				m_bControllerCommandInProgress = false;
+				LogText = "Command invocation had error(s) and was aborted";
+				break;
+			case OpenZWave::Driver::ControllerState_Waiting:
+				//Controller is waiting for a user action
+				LogText = "Waiting for User action...";
+				break;
+			case OpenZWave::Driver::ControllerState_Sleeping:
+				//Controller command is on a sleep queue wait for device
+				LogText = "Command is on a sleep queue and waiting for device";
+				break;
+			case OpenZWave::Driver::ControllerState_InProgress:
+				//The controller is communicating with the other device to carry out the command
+				LogText = "Controller is communicating with Other devices to carry out the command";
+				break;
+			case OpenZWave::Driver::ControllerState_Completed:
+				m_bControllerCommandInProgress = false;
+				//The command has completed successfully
+				if (!m_bControllerCommandCanceled)
+				{
+					LogText = "The command has completed successfully";
+					m_bNeedSave = true;
+				}
+				break;
+			case OpenZWave::Driver::ControllerState_Failed:
+				m_bControllerCommandInProgress = false;
+				//The command has failed.
+				LogText = "Command has failed!";
+				break;
+			case OpenZWave::Driver::ControllerState_NodeOK:
+				// Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node is OK
+				LogText = "Node OK";
+				break;
+			case OpenZWave::Driver::ControllerState_NodeFailed:
+				//Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node has failed.
+				LogText = "Node Failed!";
+				break;
+			}
+			if (!LogText.empty())
+			{
+				_log.Log(LOG_STATUS, "OpenZWave: %s", LogText.c_str());
+			}
 		}
 	
 		break;
@@ -2576,7 +2627,6 @@ bool COpenZWave::IncludeDevice(const bool bSecure)
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->AddNode(m_controllerID, bSecure);
-	//m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_AddDevice, OnDeviceStatusUpdate, this, true);
 	_log.Log(LOG_STATUS, "OpenZWave: Node Include command initiated...");
 	return true;
 }
@@ -2590,7 +2640,6 @@ bool COpenZWave::ExcludeDevice(const int nodeID)
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->RemoveNode(m_controllerID);
-	//m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveDevice, OnDeviceStatusUpdate, this, true);
 	_log.Log(LOG_STATUS, "OpenZWave: Node Exclude command initiated...");
 
 	return true;
@@ -2745,7 +2794,7 @@ bool COpenZWave::RemoveFailedDevice(const int nodeID)
 	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
-	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveFailedNode, OnDeviceStatusUpdate, this, true, (unsigned char)nodeID);
+	m_pManager->RemoveFailedNode(m_controllerID, (unsigned char)nodeID);
 	_log.Log(LOG_STATUS, "OpenZWave: Remove Failed Device initiated...");
 	return true;
 }
@@ -2758,7 +2807,7 @@ bool COpenZWave::ReceiveConfigurationFromOtherController()
 	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
-	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_ReceiveConfiguration, OnDeviceStatusUpdate, this);
+	m_pManager->ReceiveConfiguration(m_controllerID);
 	_log.Log(LOG_STATUS, "OpenZWave: Receive Configuration initiated...");
 	return true;
 }
@@ -2784,7 +2833,7 @@ bool COpenZWave::TransferPrimaryRole()
 	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
-	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_TransferPrimaryRole, OnDeviceStatusUpdate, this);
+	m_pManager->TransferPrimaryRole(m_controllerID);
 	_log.Log(LOG_STATUS, "OpenZWave: Transfer Primary Role initiated...");
 	return true;
 }
