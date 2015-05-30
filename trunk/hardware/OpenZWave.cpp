@@ -3430,7 +3430,11 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 					std::string i_label = m_pManager->GetValueLabel(*ittValue);
 					std::string i_units = m_pManager->GetValueUnits(*ittValue);
 					std::string i_help = m_pManager->GetValueHelp(*ittValue);
-					char *szDate = asctime(localtime(&ittCmds->second.m_LastSeen));
+
+					struct tm timeinfo;
+					localtime_r(&ittCmds->second.m_LastSeen, &timeinfo);
+
+					char *szDate = asctime(&timeinfo);
 					root["result"][index]["config"][ivalue]["index"] = i_index;
 					root["result"][index]["config"][ivalue]["label"] = i_label;
 					root["result"][index]["config"][ivalue]["units"] = i_units;
@@ -3453,7 +3457,11 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 							std::string i_label = m_pManager->GetValueLabel(*ittValue);
 							std::string i_units = m_pManager->GetValueUnits(*ittValue);
 							std::string i_help = m_pManager->GetValueHelp(*ittValue);
-							char *szDate = asctime(localtime(&ittCmds->second.m_LastSeen));
+
+							struct tm timeinfo;
+							localtime_r(&ittCmds->second.m_LastSeen, &timeinfo);
+
+							char *szDate = asctime(&timeinfo);
 							root["result"][index]["config"][ivalue]["index"] = i_index;
 							root["result"][index]["config"][ivalue]["label"] = i_label;
 							root["result"][index]["config"][ivalue]["units"] = i_units;

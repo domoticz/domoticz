@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "../main/Logger.h"
+#include "../main/localtime_r.h"
 #include "../webserver/Base64.h"
 
 // Part of the Message Construction is taken from jwSMTP library
@@ -245,8 +246,11 @@ const std::string SMTPClient::MakeMessage()
 	time_t t;
 	time(&t);
 	char timestring[128] = "";
-	
-	if (strftime(timestring, 127, "Date: %a, %d %b %Y %H:%M:%S %Z", localtime(&t))) { // got the date
+
+	struct tm timeinfo;
+	localtime_r(&t, &timeinfo);
+
+	if (strftime(timestring, 127, "Date: %a, %d %b %Y %H:%M:%S %Z", &timeinfo)) { // got the date
 		ret += timestring;
 		ret += "\r\n";
 	}

@@ -1985,7 +1985,6 @@ namespace http {
 						localtime_r(&pNode->m_LastSeen, &loctime);
 						strftime(szDate, 80, "%Y-%m-%d %X", &loctime);
 
-						//char *szDate = asctime(localtime(&pNode->m_LastSeen));
 						root["result"][ii]["LastUpdate"] = szDate;
 
 						//Add configuration parameters here
@@ -12749,7 +12748,11 @@ namespace http {
 					root["result"][ii]["Temperature"] = szTemp;
 				}
 				root["result"][ii]["Days"] = itt->Days;
-				char *pDate = asctime(localtime(&itt->startTime));
+
+				struct tm timeinfo;
+				localtime_r(&itt->startTime, &timeinfo);
+
+				char *pDate = asctime(&timeinfo);
 				if (pDate != NULL)
 				{
 					pDate[strlen(pDate) - 1] = 0;
