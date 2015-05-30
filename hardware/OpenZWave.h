@@ -140,7 +140,7 @@ private:
 	void UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID);
 	NodeInfo* GetNodeInfo( OpenZWave::Notification const* _notification );
 	bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
-	bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen);
+	bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr);
 	void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value);
 	void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute);
 	void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode);

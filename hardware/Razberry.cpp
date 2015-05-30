@@ -859,7 +859,7 @@ bool CRazberry::SwitchLight(const int nodeID, const int instanceID, const int co
 	return true;
 }
 
-bool CRazberry::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen)
+bool CRazberry::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr)
 {
 	return false;
 }

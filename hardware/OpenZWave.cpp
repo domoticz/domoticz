@@ -1165,7 +1165,7 @@ bool COpenZWave::HasNodeFailed(const int nodeID)
 	return m_pManager->IsNodeFailed(m_controllerID, nodeID);
 }
 
-bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen)
+bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr)
 {
 	if (m_pManager == NULL)
 		return false;
@@ -1190,12 +1190,11 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 	}
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-
 	if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, "Color", vID) == true)
 	{
-		if (!m_pManager->SetValue(vID, colvalues, valuelen))
+		if (!m_pManager->SetValue(vID, ColorStr))
 		{
-			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! NodeID: %d (0x%02x)",nodeID,nodeID);
+			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! NodeID: %d (0x%02x)", nodeID, nodeID);
 			return false;
 		}
 	}
@@ -1351,7 +1350,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 	{
 		if (vLabel == "Color")
 		{
-			if (vType == OpenZWave::ValueID::ValueType_Raw)
+			if (vType == OpenZWave::ValueID::ValueType_String)
 			{
 				_device.intvalue = 0;
 				InsertDevice(_device);

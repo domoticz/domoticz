@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
-
-  <!-- COMMAND_CLASS_COLOR not supported -->
-  <CommandClass id="51" getsupported="false" />
-
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value type="byte" index="1" genre="config" label="RGB Color" units="" min="0" max="100" value="50">
