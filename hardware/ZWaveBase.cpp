@@ -1092,7 +1092,11 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				{
 					int red, green, blue;
 					float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-					hue2rgb(cHue, red, green, blue,255);
+
+					int Brightness = 100;
+
+					int dMax = round((255.0f / 100.0f)*float(Brightness));
+					hue2rgb(cHue, red, green, blue, dMax);
 					instanceID = 1;
 
 					sstr << "#"
