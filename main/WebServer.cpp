@@ -2038,7 +2038,7 @@ namespace http {
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					pOZWHardware->SetNodeName(homeID, nodeID, name);
-					pOZWHardware->EnableDisableNodePolling();
+					pOZWHardware->EnableDisableNodePolling(nodeID);
 				}
 			}
 		}

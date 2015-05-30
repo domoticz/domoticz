@@ -513,6 +513,8 @@ void COpenZWaveControlPanel::SetAllNodesChanged()
 void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 {
   ValueID id = _notification->GetValueID();
+  int nodeID = _notification->GetNodeId();
+
   switch (_notification->GetType()) {
   case Notification::Type_ValueAdded:
 #ifdef OZW_WRITE_LOG
@@ -521,10 +523,12 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 	       id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-    nodes[_notification->GetNodeId()]->addValue(id);
-    nodes[_notification->GetNodeId()]->setTime(time(NULL));
-    nodes[_notification->GetNodeId()]->setChanged(true);
-    break;
+		if (nodes[nodeID] == NULL)
+			return;
+		nodes[nodeID]->addValue(id);
+		nodes[nodeID]->setTime(time(NULL));
+		nodes[nodeID]->setChanged(true);
+	    break;
   case Notification::Type_ValueRemoved:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Value Removed Home 0x%08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
@@ -532,9 +536,11 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 	       id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-    nodes[_notification->GetNodeId()]->removeValue(id);
-    nodes[_notification->GetNodeId()]->setTime(time(NULL));
-    nodes[_notification->GetNodeId()]->setChanged(true);
+		if (nodes[nodeID] == NULL)
+			return;
+		nodes[nodeID]->removeValue(id);
+		nodes[nodeID]->setTime(time(NULL));
+		nodes[nodeID]->setChanged(true);
     break;
   case Notification::Type_ValueChanged:
 #ifdef OZW_WRITE_LOG
@@ -543,8 +549,10 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 	       id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-    nodes[_notification->GetNodeId()]->saveValue(id);
-    break;
+		if (nodes[nodeID] == NULL)
+			return;
+		nodes[nodeID]->saveValue(id);
+		break;
   case Notification::Type_ValueRefreshed:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Value Refreshed Home 0x%08x Node %d Genre %s Class %s Instance %d Index %d Type %s",
@@ -552,7 +560,9 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 	       id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-    nodes[_notification->GetNodeId()]->setTime(time(NULL));
+	  if (nodes[nodeID] == NULL)
+		  return;
+	  nodes[_notification->GetNodeId()]->setTime(time(NULL));
     nodes[_notification->GetNodeId()]->setChanged(true);
     break;
   case Notification::Type_Group:
@@ -563,7 +573,9 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 #endif
       uint8 *v = NULL;
       int8 n = Manager::Get()->GetAssociations(homeId, _notification->GetNodeId(), _notification->GetGroupIdx(), &v);
-      nodes[_notification->GetNodeId()]->addGroup(_notification->GetNodeId(), _notification->GetGroupIdx(), n, v);
+	  if (nodes[nodeID] == NULL)
+		  return;
+	  nodes[_notification->GetNodeId()]->addGroup(_notification->GetNodeId(), _notification->GetGroupIdx(), n, v);
       if (v != NULL)
 	delete [] v;
     }
@@ -584,7 +596,7 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 	       id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-    new MyNode(_notification->GetNodeId());
+	  new MyNode(_notification->GetNodeId());
     needsave = true;
     break;
   case Notification::Type_NodeRemoved:
@@ -604,7 +616,9 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 	       id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-    nodes[_notification->GetNodeId()]->saveValue(id);
+	  if (nodes[nodeID] == NULL)
+		  return;
+	  nodes[_notification->GetNodeId()]->saveValue(id);
     needsave = true;
     break;
   case Notification::Type_NodeNaming:
@@ -614,7 +628,9 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 	       id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-    nodes[_notification->GetNodeId()]->saveValue(id);
+	  if (nodes[nodeID] == NULL)
+		  return;
+	  nodes[_notification->GetNodeId()]->saveValue(id);
     break;
   case Notification::Type_NodeEvent:
 #ifdef OZW_WRITE_LOG
@@ -623,7 +639,9 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 	       valueGenreStr(id.GetGenre()), cclassStr(id.GetCommandClassId()), id.GetInstance(),
 	       id.GetIndex(), valueTypeStr(id.GetType()));
 #endif
-    nodes[_notification->GetNodeId()]->saveValue(id);
+	  if (nodes[nodeID] == NULL)
+		  return;
+	  nodes[_notification->GetNodeId()]->saveValue(id);
     break;
   case Notification::Type_PollingDisabled:
 #ifdef OZW_WRITE_LOG
@@ -722,14 +740,18 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Essential Node %d Queries Complete", _notification->GetNodeId());
 #endif
-    nodes[_notification->GetNodeId()]->setTime(time(NULL));
+	  if (nodes[nodeID] == NULL)
+		  return;
+	  nodes[_notification->GetNodeId()]->setTime(time(NULL));
     nodes[_notification->GetNodeId()]->setChanged(true);
     break;
   case Notification::Type_NodeQueriesComplete:
 #ifdef OZW_WRITE_LOG
 	  Log::Write(LogLevel_Info, "Notification: Node %d Queries Complete", _notification->GetNodeId());
 #endif
-    nodes[_notification->GetNodeId()]->sortValues();
+	  if (nodes[nodeID] == NULL)
+		  return;
+	  nodes[_notification->GetNodeId()]->sortValues();
     nodes[_notification->GetNodeId()]->setTime(time(NULL));
     nodes[_notification->GetNodeId()]->setChanged(true);
     needsave = true;
@@ -775,7 +797,9 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 		Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Awake",
 		 _notification->GetHomeId(), _notification->GetNodeId());
 #endif
-      nodes[_notification->GetNodeId()]->setTime(time(NULL));
+		if (nodes[nodeID] == NULL)
+			return;
+		nodes[_notification->GetNodeId()]->setTime(time(NULL));
       nodes[_notification->GetNodeId()]->setChanged(true);
       break;
     case Notification::Code_Sleep:
@@ -784,21 +808,23 @@ void COpenZWaveControlPanel::OnCPNotification(Notification const* _notification)
 			_notification->GetHomeId(), _notification->GetNodeId());
 #endif
 		{
-			int node_id = _notification->GetNodeId();
-			if (node_id < 256)
-			{
-				nodes[_notification->GetNodeId()]->setTime(time(NULL));
-				nodes[_notification->GetNodeId()]->setChanged(true);
-			}
+			if (nodes[nodeID] == NULL)
+				return;
+			nodes[nodeID]->setTime(time(NULL));
+			nodes[nodeID]->setChanged(true);
 		}
 	    break;
-    case Notification::Code_Dead:
+	case Notification::Code_Dead:
+		{
 #ifdef OZW_WRITE_LOG
-		Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Dead",
-		 _notification->GetHomeId(), _notification->GetNodeId());
+			Log::Write(LogLevel_Info, "Notification: Notification home %08x node %d Dead",
+				_notification->GetHomeId(), _notification->GetNodeId());
 #endif
-      nodes[_notification->GetNodeId()]->setTime(time(NULL));
-      nodes[_notification->GetNodeId()]->setChanged(true);
+			if (nodes[nodeID] == NULL)
+				return;
+			nodes[nodeID]->setTime(time(NULL));
+			nodes[nodeID]->setChanged(true);
+		}
       break;
     default:
 #ifdef OZW_WRITE_LOG
