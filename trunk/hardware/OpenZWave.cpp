@@ -489,6 +489,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		break;
 	case OpenZWave::Notification::Type_NodeAdded:
 		{
+			if (_nodeID == 0)
+			{
+				_log.Log(LOG_STATUS, "OpenZWave: Invalid NodeID receive. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+				return;
+			}
 			// Add the new node to our list
 			NodeInfo nodeInfo;
 			nodeInfo.m_homeId = _homeID;
@@ -550,6 +555,12 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		m_controllerID = _notification->GetHomeId();
 		break;
 	case OpenZWave::Notification::Type_ValueAdded:
+		if (_nodeID == 0)
+		{
+			_log.Log(LOG_STATUS, "OpenZWave: Invalid NodeID receive. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+			return;
+		}
+
 		if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
 		{
 			// Add the new value to our list
@@ -591,6 +602,12 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		}
 		break;
 	case OpenZWave::Notification::Type_ValueChanged:
+		if (_nodeID == 0)
+		{
+			_log.Log(LOG_STATUS, "OpenZWave: Invalid NodeID receive. HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
+			return;
+		}
+
 		// One of the node values has changed
 		if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
 		{
@@ -711,7 +728,6 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		_log.Log(LOG_STATUS, "OpenZWave: Awake Nodes queried");
 		m_awakeNodesQueried = true;
 		m_bNeedSave = true;
-		NodesQueried();
 		break;
 	case OpenZWave::Notification::Type_AllNodesQueried:
 	case OpenZWave::Notification::Type_AllNodesQueriedSomeDead:
@@ -719,10 +735,17 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		m_allNodesQueried = true;
 		if (nType == OpenZWave::Notification::Type_AllNodesQueried)
 			_log.Log(LOG_STATUS, "OpenZWave: All Nodes queried");
+		else if (nType == OpenZWave::Notification::Type_NodeQueriesComplete)
+		{
+			_log.Log(LOG_STATUS, "OpenZWave: Node queried complete");
+		}
 		else
 			_log.Log(LOG_STATUS, "OpenZWave: All Nodes queried (Some Dead)");
-		NodesQueried();
 		m_bNeedSave = true;
+		break;
+	case OpenZWave::Notification::Type_NodeQueriesComplete:
+		m_bNeedSave = true;
+		NodeQueried(_nodeID);
 		break;
 	case OpenZWave::Notification::Type_NodeNaming:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_notification))
@@ -741,14 +764,13 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			m_bNeedSave = true;
 		}
 		break;
-	case OpenZWave::Notification::Type_NodeQueriesComplete:
-		m_bNeedSave = true;
-		break;
 	case OpenZWave::Notification::Type_EssentialNodeQueriesComplete:
 		//The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages.
 		break;
 	case OpenZWave::Notification::Type_ControllerCommand:
 		{
+			if (!m_bControllerCommandInProgress)
+				return;
 			uint8 nevent = _notification->GetEvent();
 			std::string LogText = "";
 			switch (nevent)
@@ -2794,8 +2816,10 @@ bool COpenZWave::RemoveFailedDevice(const int nodeID)
 	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
-	m_pManager->RemoveFailedNode(m_controllerID, (unsigned char)nodeID);
+	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveFailedNode, OnDeviceStatusUpdate, this, true, (unsigned char)nodeID);
 	_log.Log(LOG_STATUS, "OpenZWave: Remove Failed Device initiated...");
+//	m_pManager->RemoveFailedNode(m_controllerID, (unsigned char)nodeID);
+//	_log.Log(LOG_STATUS, "OpenZWave: Remove Failed Device initiated...");
 	return true;
 }
 
@@ -3052,7 +3076,9 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					m_pManager->EnablePoll(*ittValue, 2);
 				}
 				else
+				{
 					m_pManager->DisablePoll(*ittValue);
+				}
 			}
 		}
 	}
@@ -3134,7 +3160,7 @@ void COpenZWave::SetNodeName(const unsigned int homeID, const int nodeID, const 
 	m_pManager->SetNodeName(homeID, nodeID, NodeName);
 }
 
-void COpenZWave::EnableDisableNodePolling()
+void COpenZWave::EnableDisableNodePolling(int NodeID)
 {
 	int intervalseconds = 60;
 	m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
@@ -3143,30 +3169,16 @@ void COpenZWave::EnableDisableNodePolling()
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT HomeID,NodeID,PollTime FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ")";
+	szQuery << "SELECT PollTime FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (NodeID==" << NodeID << ")";
 	result = m_sql.query(szQuery.str());
 	if (result.size() < 1)
 		return;
+	int PollTime = atoi(result[0][0].c_str());
 
-	std::vector<std::vector<std::string> >::const_iterator itt;
-	for (itt = result.begin(); itt != result.end(); ++itt)
-	{
-		std::vector<std::string> sd = *itt;
-		unsigned int HomeID = boost::lexical_cast<unsigned int>(sd[0]);
-		int NodeID = atoi(sd[1].c_str());
-		int PollTime = atoi(sd[2].c_str());
-
-		if (
-			(HomeID == m_controllerID) &&
-			(NodeID != m_controllerNodeId)
-			)
-		{
-			if (PollTime > 0)
-				EnableNodePoll(HomeID, NodeID, PollTime);
-			else
-				DisableNodePoll(HomeID, NodeID);
-		}
-	}
+	if (PollTime > 0)
+		EnableNodePoll(m_controllerID, NodeID, PollTime);
+	else
+		DisableNodePoll(m_controllerID, NodeID);
 }
 
 void COpenZWave::SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)
@@ -3310,10 +3322,10 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 	return retstr;
 }
 
-void COpenZWave::NodesQueried()
+void COpenZWave::NodeQueried(int NodeID)
 {
 	//All nodes have been queried, enable/disable node polling
-	EnableDisableNodePolling();
+	EnableDisableNodePolling(NodeID);
 }
 
 bool COpenZWave::RequestNodeConfig(const unsigned int homeID, const int nodeID)
@@ -3554,7 +3566,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 				//PollInterval
 				int intervalseconds = atoi(ValueVal.c_str());
 				m_sql.UpdatePreferencesVar("ZWavePollInterval", intervalseconds);
-				EnableDisableNodePolling();
+				EnableDisableNodePolling(nodeID);
 			}
 			else if (rvIndex == 2)
 			{

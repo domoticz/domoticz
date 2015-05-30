@@ -81,7 +81,7 @@ public:
 	bool GetUpdates();
 	void OnZWaveNotification( OpenZWave::Notification const* _notification);
 	void OnZWaveDeviceStatusUpdate(int cs, int err);
-	void EnableDisableNodePolling();
+	void EnableDisableNodePolling(int NodeID);
 	void SetNodeName(const unsigned int homeID, const int nodeID, const std::string &Name);
 	std::string GetNodeStateString(const unsigned int homeID, const int nodeID);
 	void GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index);
@@ -126,7 +126,7 @@ public:
 
 	unsigned char m_controllerNodeId;
 private:
-	void NodesQueried();
+	void NodeQueried(int NodeID);
 	void DeleteNode(const unsigned int homeID, const int nodeID);
 	void AddNode(const unsigned int homeID, const int nodeID,const NodeInfo *pNode);
 	void EnableNodePoll(const unsigned int homeID, const int nodeID, const int pollTime);
