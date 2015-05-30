@@ -121,7 +121,7 @@ private:
 	void UpdateDeviceBatteryStatus(const int nodeID, const int value);
 	unsigned char Convert_Battery_To_PercInt(const unsigned char level);
 	virtual bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value)=0;
-	virtual bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const unsigned char *colvalues, const unsigned char valuelen) = 0;
+	virtual bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr) = 0;
 	virtual void SetThermostatSetPoint(const int nodeID, const int instanceID, const int commandClass, const float value)=0;
 	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
 	virtual void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode) = 0;
