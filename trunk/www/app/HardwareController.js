@@ -1574,7 +1574,6 @@ define(['app'], function (app) {
 					var healButton='<img src="images/heal.png" onclick="ZWaveHealNode('+item.NodeID+')" class="lcursor" title="'+$.t("Heal node")+'" />';
 					
 					var nodeStr = addLeadingZeros(item.NodeID,3) + " (0x" + addLeadingZeros(item.NodeID.toString(16),2) + ")";
-					
 					var addId = oTable.fnAddData( {
 						"DT_RowId": item.idx,
 						"Name": item.Name,
@@ -1587,7 +1586,7 @@ define(['app'], function (app) {
 						"1": item.Name,
 						"2": item.Description,
 						"3": item.LastUpdate,
-						"4": $.t((item.PollEnabled == true)?"Yes":"No"),
+						"4": $.t((item.PollEnabled == "true")?"Yes":"No"),
 						"5": statusImg+'&nbsp;&nbsp;'+healButton,
 					} );
 				});
