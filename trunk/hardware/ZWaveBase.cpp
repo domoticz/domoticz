@@ -1064,14 +1064,12 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				{
 					instanceID = 1;
 					svalue = 0;
-					return true;
 					return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 				}
 				else if (pLed->command == Limitless_LedOn)
 				{
 					instanceID = 1;
 					svalue = 255;
-					return true;
 					return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 				}
 				else if (pLed->command == Limitless_SetBrightnessLevel)
