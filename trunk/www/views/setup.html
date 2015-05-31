@@ -453,15 +453,23 @@
 										<tr>
 											<td align="right"><label for="KodiIPAddress"><span data-i18n="IP Address"></span>: </label></td>
 											<td>
-												<input type="input" id="KodiIPAddress" name="KodiIPAddress" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<input type="input" id="KodiIPAddress" name="KodiIPAddress" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('kodi')">Test</button>
+											</td>
+										</tr>
+										<tr>
+											<td align="right" style="width:80px">
 												<label for="KodiPort"><span data-i18n="Port"></span>: </label>
+											</td>
+											<td>
 												<input type="input" id="KodiPort" name="KodiPort" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 												<label for="KodiTimeToLive"><span data-i18n="Hops"></span>: </label>
-												<input type="input" id="KodiTimeToLive" name="KodiTimeToLive" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('kodi')">Test</button>
+												<input type="input" id="KodiTimeToLive" name="KodiTimeToLive" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 											</td>
 										</tr>
 									</table>
 									<span data-i18n="Test with default settings before changing. Learn about Kodi"></span> <a class="norm-link" href="http://kodi.tv/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<span>(e.g 224.0.0.1, 192.168.1.100;192.168.1.101;...)</span><br>
 									<br>
 								</div>
 								<div class="span6">
