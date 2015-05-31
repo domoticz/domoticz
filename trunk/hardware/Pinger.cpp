@@ -131,12 +131,12 @@ private:
 	boost::asio::streambuf reply_buffer_;
 };
 
-CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms)
+CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms):
+m_stoprequested(false),
+m_iThreadsRunning(0)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
-	m_iThreadsRunning = 0;
-
 	SetSettings(PollIntervalsec, PingTimeoutms);
 #ifdef WIN32
 	// Initialize Winsock
@@ -337,7 +337,7 @@ void CPinger::ReloadNodes()
 	}
 }
 
-void CPinger::Do_Ping_Worker(const PingNode Node)
+void CPinger::Do_Ping_Worker(const PingNode &Node)
 {
 	bool bPingOK = false;
 	boost::asio::io_service io_service;
@@ -362,7 +362,7 @@ void CPinger::Do_Ping_Worker(const PingNode Node)
 	if (m_iThreadsRunning > 0) m_iThreadsRunning--;
 }
 
-void CPinger::UpdateNodeStatus(const PingNode Node, const bool bPingOK)
+void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 {
 	//_log.Log(LOG_STATUS, "Pinger: %s = %s", Node.Name.c_str(), (bPingOK == true) ? "OK" : "Error");
 	if (!bPingOK)

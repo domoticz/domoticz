@@ -13,7 +13,7 @@ private:
 	int			_Port;
 	int			_TTL;
 		
-	std::string	 IconFile(const std::string &ExtraData);
+	std::string	 GetIconFile(const std::string &ExtraData);
 	std::string	 CustomIcon(std::string &szCustom);
 
 };

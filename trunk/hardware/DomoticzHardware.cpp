@@ -461,10 +461,6 @@ void CDomoticzHardwareBase::SendUsageSensor(const int NodeID, const int ChildID,
 
 void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
-	double rlevel = (15.0 / 100)*Level;
-	int level = int(rlevel);
-
 	//make device ID
 	unsigned char ID1 = (unsigned char)((NodeID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((NodeID & 0xFF0000) >> 16);

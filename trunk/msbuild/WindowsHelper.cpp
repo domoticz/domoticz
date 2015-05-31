@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+
 #if defined WIN32
 
 #include <Windows.h>
@@ -42,6 +43,56 @@ BOOL console::IsConsoleVisible()
 	return IsWindowVisible(hWnd);
 }
 
+BOOL console::SetConsoleWindowSize(const int x, const int y)
+{
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	if (h == INVALID_HANDLE_VALUE)
+		return FALSE;
+
+	// If either dimension is greater than the largest console window we can have,
+	// there is no point in attempting the change.
+	{
+		COORD largestSize = GetLargestConsoleWindowSize(h);
+		if (x > largestSize.X)
+			return FALSE;//The x dimension is too large
+		if (y > largestSize.Y)
+			return FALSE;//The y dimension is too large
+	}
+
+	CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
+	if (!GetConsoleScreenBufferInfo(h, &bufferInfo))
+		return FALSE;//Unable to retrieve screen buffer info
+
+	SMALL_RECT& winInfo = bufferInfo.srWindow;
+	COORD windowSize = { winInfo.Right - winInfo.Left + 1, winInfo.Bottom - winInfo.Top + 1 };
+
+	if (windowSize.X > x || windowSize.Y > y)
+	{
+		// window size needs to be adjusted before the buffer size can be reduced.
+		SMALL_RECT info =
+		{
+			0,
+			0,
+			x < windowSize.X ? x - 1 : windowSize.X - 1,
+			y < windowSize.Y ? y - 1 : windowSize.Y - 1
+		};
+
+		if (!SetConsoleWindowInfo(h, TRUE, &info))
+			return FALSE;//Unable to resize window before resizing buffer
+	}
+
+	COORD size = { x, y };
+	if (!SetConsoleScreenBufferSize(h, size))
+		return FALSE;//Unable to resize screen buffer.
+
+	SMALL_RECT info = { 0, 0, x - 1, y - 1 };
+	if (!SetConsoleWindowInfo(h, TRUE, &info))
+		return FALSE;//Unable to resize window after resizing buffer.
+
+	return TRUE;
+}
+
 void console::OpenHideConsole()
 {
 	HWND hWnd = GetConsoleWindow();
@@ -80,6 +131,8 @@ void console::OpenHideConsole()
 	m_in.open("CONIN$");
 	std::cin.rdbuf(m_in.rdbuf());
 	
+	SetConsoleWindowSize(140, 30);
+
 	SetConsoleTitle("Domoticz Home Automation System");
 }
 

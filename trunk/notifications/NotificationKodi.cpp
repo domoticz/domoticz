@@ -62,7 +62,7 @@ std::string CNotificationKodi::CustomIcon(std::string &szCustom)
 		o	Look for base image
 	o	If it exists, use the logo as the default image
 */
-std::string CNotificationKodi::IconFile(const std::string &ExtraData)
+std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 {
 	std::string	szImageFile;
 
@@ -83,7 +83,7 @@ std::string CNotificationKodi::IconFile(const std::string &ExtraData)
 		if (file_exist(szImageFile.c_str()))
 		{
 			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
-			return szImageFile.c_str();
+			return szImageFile;
 		}
 		_log.Log(LOG_NORM, "File does not exist:  %s, %d", szImageFile.c_str(), posImage-7);
 	}
@@ -231,17 +231,12 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 		}
 	}
 
-	const char * pIcon = NULL;
-	std::string	sIconFile = IconFile(ExtraData);
-	if (sIconFile.size() > 0)
-	{
-		pIcon = sIconFile.c_str();
-	}
+	std::string	sIconFile = GetIconFile(ExtraData);
 
 	// Loop through semi-colon separated IP Addresses
 	std::vector<std::string> results;
 	StringSplit(_IPAddress, ";", results);
-	for (int i=0; i < results.size(); i++)
+	for (int i=0; i < (int)results.size(); i++)
 	{
 		std::stringstream logline;
 		logline << "Kodi Notification (" << results[i] << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text << ", Icon " << sIconFile;
@@ -273,7 +268,7 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 
 		_Address.Bind(_Sock);
 
-		CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, pIcon);
+		CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, (!sIconFile.empty())?sIconFile.c_str():NULL);
 		if (!packet.Send(_Sock, _Address)) {
 			std::stringstream logline;
 			logline << "Error sending notification: " << results[i] << ":" << _Port;

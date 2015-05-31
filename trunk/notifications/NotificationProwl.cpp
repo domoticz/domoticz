@@ -25,7 +25,7 @@ bool CNotificationProwl::SendMessageImplementation(const std::string &Subject, c
 	bool bSuccess = (sResult.find("success code=\"200\"") != std::string::npos);
 	if (!bSuccess)
 		_log.Log(LOG_ERROR, "NMA: %s", sResult.c_str());
-	return (bRet && bSuccess);	return bRet;
+	return (bRet && bSuccess);
 }
 
 bool CNotificationProwl::IsConfigured()
