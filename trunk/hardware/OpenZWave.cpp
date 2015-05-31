@@ -889,6 +889,7 @@ void COpenZWave::EnableDisableDebug()
 bool COpenZWave::OpenSerialConnector()
 {
 	_log.Log(LOG_STATUS, "OpenZWave: Starting...");
+	_log.Log(LOG_STATUS, "OpenZWave: Version: %s", GetVersionLong().c_str());
 
 	m_allNodesQueried = false;
 	m_updateTime = mytime(NULL);
