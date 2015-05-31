@@ -216,34 +216,6 @@ std::string CNotificationKodi::IconFile(const std::string &ExtraData)
 
 bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
-	std::stringstream logline;
-	CAddress	_Address;
-	int			_Sock;
-	bool		bMulticast = (_IPAddress.substr(0,4) >= "224.") && (_IPAddress.substr(0,4) <= "239.");
-
-	CAddress my_addr(_IPAddress.c_str(), _Port);
-	_Address = my_addr;
-	_Sock = -1;
-	if (bMulticast) {
-		_Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-		setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, (const char*)&_TTL, sizeof(_TTL));
-		u_char loop = 1;
-		setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loop, sizeof(loop));
-	}
-	else {
-		_Sock = socket(AF_INET, SOCK_DGRAM, 0);
-	}
-	
-	if (_Sock < 0)
-	{
-		logline << "Error creating socket: " << _IPAddress << ":" << _Port;
-		_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
-		return false;
-	}
-
-	_Address.Bind(_Sock);
-
-	// Don't notify the same thing in two fields
 	std::string	sSubject("Domoticz");
 	if (Subject != Text)
 	{
@@ -259,20 +231,55 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 		}
 	}
 
-	logline << "Kodi Notification (" << _IPAddress << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text;
-	_log.Log(LOG_NORM, std::string(logline.str()).c_str());
-
 	const char * pIcon = NULL;
 	std::string	sIconFile = IconFile(ExtraData);
 	if (sIconFile.size() > 0)
 	{
 		pIcon = sIconFile.c_str();
 	}
-	CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, pIcon);
-	if (!packet.Send(_Sock, _Address)) {
-		logline << "Error sending notification: " << _IPAddress << ":" << _Port;
-		_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
-		return false;
+
+	// Loop through semi-colon separated IP Addresses
+	std::vector<std::string> results;
+	StringSplit(_IPAddress, ";", results);
+	for (int i=0; i < results.size(); i++)
+	{
+		std::stringstream logline;
+		logline << "Kodi Notification (" << results[i] << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text << ", Icon " << sIconFile;
+		_log.Log(LOG_NORM, std::string(logline.str()).c_str());
+
+		CAddress	_Address;
+		int			_Sock;
+		bool		bMulticast = (results[i].substr(0,4) >= "224.") && (results[i].substr(0,4) <= "239.");
+
+		CAddress my_addr(results[i].c_str(), _Port);
+		_Address = my_addr;
+		_Sock = -1;
+		if (bMulticast) {
+			_Sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_TTL, (const char*)&_TTL, sizeof(_TTL));
+			u_char loop = 1;
+			setsockopt(_Sock, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loop, sizeof(loop));
+		}
+		else {
+			_Sock = socket(AF_INET, SOCK_DGRAM, 0);
+		}
+		
+		if (_Sock < 0)
+		{
+			logline << "Error creating socket: " << results[i] << ":" << _Port;
+			_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
+			return false;
+		}
+
+		_Address.Bind(_Sock);
+
+		CPacketNOTIFICATION packet(sSubject.c_str(), Text.c_str(), ICON_PNG, pIcon);
+		if (!packet.Send(_Sock, _Address)) {
+			std::stringstream logline;
+			logline << "Error sending notification: " << results[i] << ":" << _Port;
+			_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
+			return false;
+		}
 	}
 
 	return true;
