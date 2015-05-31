@@ -14,6 +14,6 @@ private:
 	int			_TTL;
 		
 	std::string	 GetIconFile(const std::string &ExtraData);
-	std::string	 CustomIcon(std::string &szCustom);
+	std::string	 GetCustomIcon(std::string &szCustom);
 
 };
