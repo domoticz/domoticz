@@ -613,7 +613,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					//Calculate Last Hour
 					szQuery.clear();
 					szQuery.str("");
-					sprintf(szDate, "datetime('now','-%d hour', 'localtime')", 1);
+					sprintf(szDate, "datetime('now', 'localtime', '-%d hour')", 1);
 					if (sitem.subType != sTypeRAINWU)
 					{
 						szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << sitem.ID << " AND Date>=" << szDate << ")";
