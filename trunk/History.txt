@@ -118,6 +118,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Changed: Not sending actual motion sensors off command, only updating internally
 - Changed: OpenZWave Color Command Class (you need to re-include the node)
 - Changed: Enlarged windows console log window
+- Implemented: Lithuanian language support (thanks to our translators!)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
