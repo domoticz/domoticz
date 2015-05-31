@@ -19,7 +19,7 @@ CNotificationKodi::~CNotificationKodi()
 {
 }
 
-std::string CNotificationKodi::CustomIcon(std::string &szCustom)
+std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 {
 	int	iIconLine = atoi(szCustom.c_str());
 	std::string szRetVal = "Light48";
@@ -109,7 +109,7 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				{
 					posCustom+=13;
 					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom)-posCustom);
-					szTypeImage = CustomIcon(szCustom);
+					szTypeImage = GetCustomIcon(szCustom);
 				}
 				else szTypeImage = "Light48";
 				break;
