@@ -22,11 +22,10 @@ bool CNotificationNma::SendMessageImplementation(const std::string &Subject, con
 	sPostData << "apikey=" << _apikey << "&application=Domoticz&event=" << Subject << "&description=" << Text << "&priority=" << Priority;
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult);
-
 	bool bSuccess = (sResult.find("success code=\"200\"") != std::string::npos);
 	if (!bSuccess)
 		_log.Log(LOG_ERROR, "NMA: %s", sResult.c_str());
-	return (bRet && bSuccess);	return bRet;
+	return (bRet && bSuccess);
 }
 
 bool CNotificationNma::IsConfigured()

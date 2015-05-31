@@ -37,7 +37,7 @@ void CNotificationBase::SetupConfig(const std::string &Key, int *Value)
 
 void CNotificationBase::LoadConfig()
 {
-	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); iter++) {
+	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
 		std::string Value;
 		if (!m_sql.GetPreferencesVar(iter->first, Value)) {
 			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter->first + std::string(": Not Found!")).c_str());
@@ -48,7 +48,7 @@ void CNotificationBase::LoadConfig()
 		}
 		*(iter->second) = Value;
 	}
-	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); iter2++) {
+	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); ++iter2) {
 		int Value;
 		if (!m_sql.GetPreferencesVar(iter2->first, Value)) {
 			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter2->first + std::string(": Not Found!")).c_str());
@@ -56,7 +56,7 @@ void CNotificationBase::LoadConfig()
 		}
 		*(iter2->second) = Value;
 	}
-	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); iter3++) {
+	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); ++iter3) {
 		std::string Value;
 		if (!m_sql.GetPreferencesVar(iter3->first, Value)) {
 			//_log.Log(LOG_ERROR, std::string(std::string("Subsystem ") + _subsystemid + std::string(", var: ") + iter3->first + std::string(": Not Found!")).c_str());
@@ -115,7 +115,7 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 
 void CNotificationBase::SetConfigValue(const std::string &Key, const std::string &Value)
 {
-	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); iter++) {
+	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
 		std::string fValue = Value;
 		if (_options & OPTIONS_URL_PARAMS) {
 			fValue = CURLEncode::URLEncode(Value);
@@ -124,12 +124,12 @@ void CNotificationBase::SetConfigValue(const std::string &Key, const std::string
 			*(iter->second) = fValue;
 		}
 	}
-	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); iter2++) {
+	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); ++iter2) {
 		if (Key == iter2->first) {
 			*(iter2->second) = atoi(Value.c_str());
 		}
 	}
-	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); iter3++) {
+	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); ++iter3) {
 		std::string fValue = Value;
 		if (_options & OPTIONS_URL_PARAMS) {
 			fValue = CURLEncode::URLEncode(Value);
@@ -147,7 +147,7 @@ std::string CNotificationBase::GetSubsystemId()
 
 void CNotificationBase::ConfigFromGetvars(http::server::cWebem *webEm, const bool save)
 {
-	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); iter++) {
+	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
 		if (webEm->HasValue(iter->first.c_str())) {
 			std::string Value = CURLEncode::URLDecode(std::string(webEm->FindValue(iter->first.c_str())));
 			*(iter->second) = Value;
@@ -156,7 +156,7 @@ void CNotificationBase::ConfigFromGetvars(http::server::cWebem *webEm, const boo
 			}
 		}
 	}
-	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); iter2++) {
+	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); ++iter2) {
 		int Value = 0;
 		if (webEm->HasValue(iter2->first.c_str())) {
 			std::string sValue = webEm->FindValue(iter2->first.c_str());
@@ -172,7 +172,7 @@ void CNotificationBase::ConfigFromGetvars(http::server::cWebem *webEm, const boo
 			m_sql.UpdatePreferencesVar(iter2->first, Value);
 		}
 	}
-	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); iter3++) {
+	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); ++iter3) {
 		if (webEm->HasValue(iter3->first.c_str())) {
 			std::string Value = CURLEncode::URLDecode(std::string(webEm->FindValue(iter3->first.c_str())));
 			*(iter3->second) = Value;
@@ -197,7 +197,7 @@ bool CNotificationBase::IsInConfig(const std::string &Key)
 
 bool CNotificationBase::IsInConfigString(const std::string &Key)
 {
-	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); iter++) {
+	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
 		if (Key == iter->first) {
 			return true;
 		}
@@ -207,7 +207,7 @@ bool CNotificationBase::IsInConfigString(const std::string &Key)
 
 bool CNotificationBase::IsInConfigInt(const std::string &Key)
 {
-	for (it_conf_type_int iter = _configValuesInt.begin(); iter != _configValuesInt.end(); iter++) {
+	for (it_conf_type_int iter = _configValuesInt.begin(); iter != _configValuesInt.end(); ++iter) {
 		if (Key == iter->first) {
 			return true;
 		}
@@ -217,7 +217,7 @@ bool CNotificationBase::IsInConfigInt(const std::string &Key)
 
 bool CNotificationBase::IsInConfigBase64(const std::string &Key)
 {
-	for (it_conf_type iter = _configValuesBase64.begin(); iter != _configValuesBase64.end(); iter++) {
+	for (it_conf_type iter = _configValuesBase64.begin(); iter != _configValuesBase64.end(); ++iter) {
 		if (Key == iter->first) {
 			return true;
 		}

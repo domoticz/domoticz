@@ -2,15 +2,15 @@
 #include "localtime_r.h"
 
 time_t m_lasttime=time(NULL);
-//boost::mutex TimeMutex_;
+boost::mutex TimeMutex_;
 
 #ifndef localtime_r
 struct tm *localtime_r(const time_t *timep, struct tm *result)
 {
-//	boost::lock_guard<boost::mutex> l(TimeMutex_);
 #ifdef localtime_s
 	localtime_s(timep, result);
 #else
+	boost::lock_guard<boost::mutex> l(TimeMutex_);
 	struct tm *s = localtime(timep);
 	if (s == NULL)
 		return NULL;

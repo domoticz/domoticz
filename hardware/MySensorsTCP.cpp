@@ -8,10 +8,14 @@
 
 #define RETRY_DELAY 30
 
-MySensorsTCP::MySensorsTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+MySensorsTCP::MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
+m_szIPAddress(IPAddress),
+m_usIPPort(usIPPort),
+m_retrycntr(RETRY_DELAY),
+m_stoprequested(false),
+m_bDoRestart(false)
 {
 	m_HwdID=ID;
-	m_bDoRestart=false;
 #if defined WIN32
 	int ret;
 	//Init winsock
@@ -30,9 +34,6 @@ MySensorsTCP::MySensorsTCP(const int ID, const std::string IPAddress, const unsi
 		}
 	}
 #endif
-	m_stoprequested=false;
-	m_szIPAddress=IPAddress;
-	m_usIPPort=usIPPort;
 }
 
 MySensorsTCP::~MySensorsTCP(void)

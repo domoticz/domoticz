@@ -17,12 +17,13 @@
 
 #define RETRY_DELAY 30
 
-MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname)
+MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname):
+m_retrycntr(RETRY_DELAY),
+m_stoprequested(false)
 {
+	m_iBaudRate = 115200;
+	m_szSerialPort = devname;
 	m_HwdID=ID;
-	m_szSerialPort=devname;
-	m_iBaudRate=115200;
-	m_stoprequested = false;
 }
 
 MySensorsSerial::~MySensorsSerial()

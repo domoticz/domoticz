@@ -32,8 +32,8 @@ private:
 	bool StopHardware();
 	void DoPingHosts();
 
-	void Do_Ping_Worker(const PingNode Node);
-	void UpdateNodeStatus(const PingNode Node, const bool bPingOK);
+	void Do_Ping_Worker(const PingNode &Node);
+	void UpdateNodeStatus(const PingNode &Node, const bool bPingOK);
 
 	void ReloadNodes();
 

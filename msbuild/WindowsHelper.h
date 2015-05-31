@@ -12,6 +12,7 @@ public:
 	void OpenHideConsole();
 	BOOL IsConsoleVisible();
 private:
+	BOOL SetConsoleWindowSize(const int x, const int y);
 	std::ofstream m_out;
 	std::ofstream m_err;
 	std::ifstream m_in;

@@ -8,7 +8,7 @@
 class MySensorsTCP : public MySensorsBase, ASyncTCP
 {
 public:
-	MySensorsTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
+	MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~MySensorsTCP(void);
 	bool isConnected(){ return mIsConnected; };
 	bool WriteToHardware(const char *pdata, const unsigned char length);
