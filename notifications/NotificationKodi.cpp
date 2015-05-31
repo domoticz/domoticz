@@ -240,7 +240,7 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 	{
 		std::stringstream logline;
 		logline << "Kodi Notification (" << results[i] << ":" << _Port << ", TTL " << _TTL << "): " << sSubject << ", " << Text << ", Icon " << sIconFile;
-		_log.Log(LOG_NORM, std::string(logline.str()).c_str());
+		_log.Log(LOG_NORM, "%s", logline.str().c_str());
 
 		CAddress	_Address;
 		int			_Sock;
@@ -262,7 +262,7 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 		if (_Sock < 0)
 		{
 			logline << "Error creating socket: " << results[i] << ":" << _Port;
-			_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
+			_log.Log(LOG_ERROR, "%s", logline.str().c_str());
 			return false;
 		}
 
@@ -272,11 +272,10 @@ bool CNotificationKodi::SendMessageImplementation(const std::string &Subject, co
 		if (!packet.Send(_Sock, _Address)) {
 			std::stringstream logline;
 			logline << "Error sending notification: " << results[i] << ":" << _Port;
-			_log.Log(LOG_ERROR, std::string(logline.str()).c_str());
+			_log.Log(LOG_ERROR, "%s", logline.str().c_str());
 			return false;
 		}
 	}
-
 	return true;
 }
 
