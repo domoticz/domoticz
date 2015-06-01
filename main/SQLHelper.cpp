@@ -2064,8 +2064,8 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 	}
 
 	std::string error = sqlite3_errmsg(m_dbase);
-	if(error != "not an error") 
-		_log.Log(LOG_ERROR,"%s",error.c_str());
+	if(error != "not an error")
+		_log.Log(LOG_ERROR, "SQL Query(\"%s\") : %s", szQuery.c_str(), error.c_str());
 	return results; 
 }
 
@@ -2117,7 +2117,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 
 	std::string error = sqlite3_errmsg(m_dbase);
 	if (error != "not an error")
-		_log.Log(LOG_ERROR, "%s", error.c_str());
+		_log.Log(LOG_ERROR, "SQL Query(\"%s\") : %s", szQuery.c_str(), error.c_str());
 	return results;
 }
 

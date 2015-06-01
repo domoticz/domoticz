@@ -1308,12 +1308,14 @@ define(['app'], function (app) {
 			//global var
 			$.devIdx=0;
 			$.LastUpdateTime=parseInt(0);
-			$scope.MakeGlobalConfig();
 
 			$.myglobals = {
 				TimerTypesStr : [],
 				SelectedTimerIdx: 0
 			};
+
+			$scope.MakeGlobalConfig();
+
 			$('#timerparamstable #combotype > option').each(function() {
 						 $.myglobals.TimerTypesStr.push($(this).text());
 			});
