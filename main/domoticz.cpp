@@ -531,7 +531,7 @@ int main(int argc, char**argv)
 	{
 		if (cmdLine.GetArgumentCount("-sslcert") != 1)
 		{
-			_log.Log(LOG_ERROR, "Please specify a port");
+			_log.Log(LOG_ERROR, "Please specify the file path");
 			return 1;
 		}
 		std::string ca_cert = cmdLine.GetSafeArgument("-sslcert", 0, "./server_cert.pem");
