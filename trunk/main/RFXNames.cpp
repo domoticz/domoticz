@@ -2232,6 +2232,11 @@ bool GetLightCommand(
 				cmd=sStatusPanic;
 				return true;
 			}
+			else if (switchcmd == "Off")
+			{
+				cmd = sStatusNormal;
+				return true;
+			}
 		}
 		else if (dSubType==sTypeSecX10M)
 		{

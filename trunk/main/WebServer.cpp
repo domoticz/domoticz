@@ -4261,13 +4261,25 @@ namespace http {
 					return;
 				int level = atoi(m_pWebEm->FindValue("level").c_str());
 				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
+
+				std::string rState = (command == 1) ? "On" : "Off";
+
 				//first check if this device is not the scene code!
 				szQuery.clear();
 				szQuery.str("");
-				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << devidx << ")";
+				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID==" << devidx << ")";
 				result = m_sql.query(szQuery.str());
 				if (result.size() > 0)
 				{
+					int dType = atoi(result[0][3].c_str());
+					int sType = atoi(result[0][4].c_str());
+					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
+					unsigned char scommand;
+					if (GetLightCommand(dType, sType, switchtype, rState, scommand))
+					{
+						command = scommand;
+					}
+
 					szQuery.clear();
 					szQuery.str("");
 					szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM Scenes WHERE (ID==" << idx << ")";
@@ -4286,6 +4298,7 @@ namespace http {
 							return;
 						}
 					}
+
 				}
 				//first check if it is not already a part of this scene/group (with the same OnDelay)
 				szQuery.clear();
@@ -4339,6 +4352,25 @@ namespace http {
 					(devidx == "")
 					)
 					return;
+
+				std::string rState = (command == 1) ? "On" : "Off";
+
+				//first check if this device is not the scene code!
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID==" << devidx << ")";
+				result = m_sql.query(szQuery.str());
+				if (result.size() > 0)
+				{
+					int dType = atoi(result[0][3].c_str());
+					int sType = atoi(result[0][4].c_str());
+					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
+					unsigned char scommand;
+					if (GetLightCommand(dType, sType, switchtype, rState, scommand))
+					{
+						command = scommand;
+					}
+				}
 				int level = atoi(m_pWebEm->FindValue("level").c_str());
 				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
 				root["status"] = "OK";
