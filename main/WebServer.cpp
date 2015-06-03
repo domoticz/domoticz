@@ -7786,6 +7786,8 @@ namespace http {
 			m_sql.UpdatePreferencesVar("EnableTabUtility", (EnableTabUtility == "on" ? 1 : 0));
 			std::string EnableTabScenes = m_pWebEm->FindValue("EnableTabScenes");
 			m_sql.UpdatePreferencesVar("EnableTabScenes", (EnableTabScenes == "on" ? 1 : 0));
+			std::string EnableTabCustom = m_pWebEm->FindValue("EnableTabCustom");
+			m_sql.UpdatePreferencesVar("EnableTabCustom", (EnableTabCustom == "on" ? 1 : 0));
 
 			m_sql.UpdatePreferencesVar("NotificationSensorInterval", atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
 			m_sql.UpdatePreferencesVar("NotificationSwitchInterval", atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
@@ -13555,6 +13557,10 @@ namespace http {
 				else if (Key == "EnableTabScenes")
 				{
 					root["EnableTabScenes"] = nValue;
+				}
+				else if (Key == "EnableTabCustom")
+				{
+					root["EnableTabCustom"] = nValue;
 				}
 				else if (Key == "NotificationSensorInterval")
 				{

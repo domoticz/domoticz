@@ -789,8 +789,8 @@ $(document).ready(function() {
 							<li ng-show="{{config.EnableTabWeather}}" ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
                             <li ng-show="{{config.EnableTabUtility}}" class="divider-vertical clUtility"></li>
 							<li ng-show="{{config.EnableTabUtility}}" ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
-                            <li ng-show="{{config.EnableTabCustom}}" class="divider-vertical clcustommenu" style="display:none;"></li>
-                            <li ng-show="{{config.EnableTabCustom}}" class="dropdown clcustommenu" style="display:none;">
+                            <li ng-show="{{config.EnableTabCustom}}" class="divider-vertical clcustommenu"></li>
+                            <li ng-show="{{config.EnableTabCustom}}" class="dropdown clcustommenu">
                                 <a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
                                 <ul class="dropdown-menu pull-right" id="custommenu"></ul>
 							</li>
