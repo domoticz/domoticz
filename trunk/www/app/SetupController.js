@@ -416,6 +416,9 @@ define(['app'], function (app) {
 			  if (typeof data.EnableTabUtility != 'undefined') {
 				$("#activemenustable #EnableTabUtility").prop('checked',data.EnableTabUtility==1);
 			  }
+			  if (typeof data.EnableTabCustom != 'undefined') {
+				$("#activemenustable #EnableTabCustom").prop('checked',data.EnableTabCustom==1);
+			  }
 			  if (typeof data.NotificationSensorInterval != 'undefined') {
 				$("#nitable #comboNotificationSensorInterval").val(data.NotificationSensorInterval);
 			  }
