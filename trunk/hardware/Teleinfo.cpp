@@ -45,7 +45,7 @@ History :
 
 #define TE_ADCO "ADCO" //meter id
 #define TE_OPTARIF "OPTARIF"//pricing option
-#define TE_ISOUSC "ISOUC"//current power subscribe   //A
+#define TE_ISOUSC "ISOUSC"//current power subscribe   //A
 #define TE_BASE "BASE"//total power usage normal tariff in base option
 #define TE_HCHC "HCHC"// total power usage low tariff in HC option
 #define TE_HCHP "HCHP"// total power usage normal tariff in HC option
@@ -61,8 +61,9 @@ History :
 #define TE_IINST "IINST"//instant current power usage
 #define TE_IMAX "IMAX"//maximal current power usage
 #define TE_PAPP "PAPP"//apparent power
+#define TE_MOTDETAT "MOTDETAT"//mot d'etat
 
-Teleinfo::Match Teleinfo::m_matchlist[18] = {
+Teleinfo::Match Teleinfo::m_matchlist[19] = {
 	{ STD, TELEINFO_TYPE_ADCO, TE_ADCO, 12 },
 	{ STD, TELEINFO_TYPE_OPTARIF, TE_OPTARIF, 4 },
 	{ STD, TELEINFO_TYPE_ISOUSC, TE_ISOUSC, 2 },
@@ -80,7 +81,8 @@ Teleinfo::Match Teleinfo::m_matchlist[18] = {
 	{ STD, TELEINFO_TYPE_PTEC, TE_PTEC, 4 },
 	{ STD, TELEINFO_TYPE_IINST, TE_IINST, 3 },
 	{ STD, TELEINFO_TYPE_IMAX, TE_IMAX, 3 },
-	{ STD, TELEINFO_TYPE_PAPP, TE_PAPP, 5 }
+	{ STD, TELEINFO_TYPE_PAPP, TE_PAPP, 5 },
+	{ STD, TELEINFO_TYPE_MOTDETAT, TE_MOTDETAT, 6 }
 };
 
 Teleinfo::Teleinfo(const int ID, const std::string& devname, unsigned int baud_rate)
@@ -298,6 +300,23 @@ void Teleinfo::MatchLine()
 				m_p1power.usagecurrent = 0;
 			}
 			break;
+		case TELEINFO_TYPE_MOTDETAT:
+			m_counter++;
+			if (m_counter >= NumberOfFrameToSendOne)
+			{
+				//_log.Log(LOG_NORM,"Teleinfo frame complete");
+				//_log.Log(LOG_NORM,"powerusage1 = %lu", m_p1power.powerusage1);
+				//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
+				//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
+				m_p1power.usagecurrent /= m_counter;
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+				m_counter = 0;
+				m_p1power.usagecurrent = 0;
+			}
+			break;
+		default:
+			_log.Log(LOG_ERROR, "Teleinfo: label '%s' not handled!", t.key);
+			break;
 		}
 		return;
 	}
@@ -310,7 +329,7 @@ void Teleinfo::ParseData(const unsigned char *pData, int Len)
 	{
 		const unsigned char c = pData[ii];
 
-		if ((c == 0x0d) || (c == 0x00))
+		if ((c == 0x0d) || (c == 0x00) || (c == 0x02) || (c == 0x03))
 		{
 			ii++;
 			continue;

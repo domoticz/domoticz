@@ -73,6 +73,7 @@ class Teleinfo : public CDomoticzHardwareBase, AsyncSerial
 		TELEINFO_TYPE_IINST,
 		TELEINFO_TYPE_IMAX,
 		TELEINFO_TYPE_PAPP,
+		TELEINFO_TYPE_MOTDETAT
 	} Type;
 
 	typedef struct _tMatch {
@@ -116,5 +117,5 @@ private:
 
 	unsigned char m_buffer[readBufferSize];
 	int m_bufferpos;
-	static Teleinfo::Match m_matchlist[18];
+	static Teleinfo::Match m_matchlist[19];
 };
