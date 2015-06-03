@@ -121,6 +121,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: Lithuanian language support (thanks to our translators!)
 - Changed: Scenes, now supports adding security devices
 - Changed: Teleinfo, added support for CBEMM meters (TELEINFO_TYPE_MOTDETAT), thankx to berty!
+- Fixed: CM113 "Watt", now only displays 1 phase if phase 2/3 are 0 (not used)
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
