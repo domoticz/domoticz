@@ -10016,9 +10016,9 @@ namespace http {
 							else
 							{
 								if ((val2 == 0) && (val3 == 0))
-									sprintf(szData, "%d Watt, %d Watt, %d Watt", int(val1*voltage), int(val2*voltage), int(val3*voltage));
-								else
 									sprintf(szData, "%d Watt", int(val1*voltage));
+								else
+									sprintf(szData, "%d Watt, %d Watt, %d Watt", int(val1*voltage), int(val2*voltage), int(val3*voltage));
 							}
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["displaytype"] = displaytype;
