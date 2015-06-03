@@ -717,6 +717,17 @@ void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int Chi
 	}
 }
 
+bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const int ChildID)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	char szTmp[30];
+	sprintf(szTmp, "%08X", (unsigned int)NodeID);
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
+	result = m_sql.query(szQuery.str());
+	return (!result.empty());
+}
+
 void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp)
 {
 	RBUF tsen;
