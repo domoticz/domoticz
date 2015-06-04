@@ -3616,11 +3616,10 @@ namespace http {
 
 			std::string idx = m_pWebEm->FindValue("idx");
 
-			std::string hid = m_pWebEm->FindValue("hid");
-			std::string did = m_pWebEm->FindValue("did");
-			std::string dunit = m_pWebEm->FindValue("dunit");
-			std::string dtype = m_pWebEm->FindValue("dtype");
-			std::string dsubtype = m_pWebEm->FindValue("dsubtype");
+			if ( idx.empty() || nvalue.empty() || svalue.empty())
+			{
+				return;
+			}
 
 			int signallevel = 12;
 			int batterylevel = 255;
@@ -3635,153 +3634,10 @@ namespace http {
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
-
-			std::stringstream szQuery;
-			std::vector<std::vector<std::string> > result;
-
-			if (idx != "")
+			if (m_mainworker.UpdateDevice(atoi(idx.c_str()), atoi(nvalue.c_str()), svalue, signallevel, batterylevel))
 			{
-				//Get device parameters
-				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
-				result = m_sql.query(szQuery.str());
-				if (result.size() > 0)
-				{
-					hid = result[0][0];
-					did = result[0][1];
-					dunit = result[0][2];
-					dtype = result[0][3];
-					dsubtype = result[0][4];
-				}
-			}
-
-			if (
-				(hid == "") ||
-				(did == "") ||
-				(dunit == "") ||
-				(dtype == "") ||
-				(dsubtype == "")
-				)
-				return;
-			if ((nvalue == "") && (svalue == ""))
-				return;
-
-			int iHWID = atoi(hid.c_str());
-			int iUnit = atoi(dunit.c_str());
-			int iType = atoi(dtype.c_str());
-			int iSubType = atoi(dsubtype.c_str());
-			int inValue = atoi(nvalue.c_str());
-
-			root["status"] = "OK";
-			root["title"] = "Update Device";
-
-			if (iType == pTypeLighting2)
-			{
-				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHWID);
-				if (pHardware)
-				{
-					//Send as Lighting 2
-					unsigned long ID;
-					std::stringstream s_strid;
-					s_strid << std::hex << did;
-					s_strid >> ID;
-					unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
-					unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
-					unsigned char ID3 = (unsigned char)((ID & 0x0000FF00) >> 8);
-					unsigned char ID4 = (unsigned char)((ID & 0x000000FF));
-
-					tRBUF lcmd;
-					memset(&lcmd, 0, sizeof(RBUF));
-					lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-					lcmd.LIGHTING2.packettype = pTypeLighting2;
-					lcmd.LIGHTING2.subtype = iSubType;
-					lcmd.LIGHTING2.id1 = ID1;
-					lcmd.LIGHTING2.id2 = ID2;
-					lcmd.LIGHTING2.id3 = ID3;
-					lcmd.LIGHTING2.id4 = ID4;
-					lcmd.LIGHTING2.unitcode = (unsigned char)iUnit;
-					lcmd.LIGHTING2.cmnd = (unsigned char)inValue;
-					lcmd.LIGHTING2.level = (unsigned char)atoi(svalue.c_str());
-					lcmd.LIGHTING2.filler = 0;
-					lcmd.LIGHTING2.rssi = signallevel;
-					m_mainworker.DecodeRXMessage(pHardware, (const unsigned char *)&lcmd.LIGHTING2);
-					return;
-				}
-			}
-
-			std::string devname = "Unknown";
-			m_sql.UpdateValue(
-				iHWID,
-				did.c_str(),
-				(const unsigned char)iUnit,
-				(const unsigned char)iType,
-				(const unsigned char)iSubType,
-				signallevel,//signal level,
-				batterylevel,//battery level
-				(const int)inValue,
-				svalue.c_str(),
-				devname,
-				false
-				);
-
-			if (
-				((iType == pTypeThermostat) && (iSubType == sTypeThermSetpoint))||
-				((iType == pTypeRadiator1) && (iSubType== sTypeSmartwares))
-				)
-			{
-				int urights = 3;
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
-				_log.Log(LOG_NORM, "Sending SetPoint to device....");
-				m_mainworker.SetSetPoint(idx, static_cast<float>(atof(svalue.c_str())));
-			}
-			else if ((iType == pTypeGeneral) && (iSubType == sTypeZWaveThermostatMode))
-			{
-				int urights = 3;
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Mode command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
-				_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
-				m_mainworker.SetZWaveThermostatMode(idx, atoi(nvalue.c_str()));
-			}
-			else if ((iType == pTypeGeneral) && (iSubType == sTypeZWaveThermostatFanMode))
-			{
-				int urights = 3;
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a Thermostat Fan Mode command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
-				_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
-				m_mainworker.SetZWaveThermostatFanMode(idx, atoi(nvalue.c_str()));
+				root["status"] = "OK";
+				root["title"] = "Update Device";
 			}
 		}
 

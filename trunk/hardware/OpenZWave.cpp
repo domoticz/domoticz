@@ -1649,6 +1649,36 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				InsertDevice(_device);
 			}
 		}
+		else if (vLabel == "Velocity")
+		{
+			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+			{
+				_device.floatValue = fValue;
+				_device.commandClassID = 49;
+				_device.devType = ZDTYPE_SENSOR_VELOCITY;
+				InsertDevice(_device);
+			}
+		}
+		else if (vLabel == "Barometric Pressure")
+		{
+			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+			{
+				_device.floatValue = fValue;
+				_device.commandClassID = 49;
+				_device.devType = ZDTYPE_SENSOR_BAROMETER;
+				InsertDevice(_device);
+			}
+		}
+		else if (vLabel == "Dew Point")
+		{
+			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+			{
+				_device.floatValue = fValue;
+				_device.commandClassID = 49;
+				_device.devType = ZDTYPE_SENSOR_DEWPOINT;
+				InsertDevice(_device);
+			}
+		}
 		else if (
 			(vLabel == "Energy") ||
 			(vLabel == "Power")
@@ -2517,6 +2547,27 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if (vLabel != "Relative Humidity")
 			return;
 		pDevice->intvalue = round(fValue);
+		break;
+	case ZDTYPE_SENSOR_VELOCITY:
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Velocity")
+			return;
+		pDevice->floatValue = fValue;
+		break;
+	case ZDTYPE_SENSOR_BAROMETER:
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Barometric Pressure")
+			return;
+		pDevice->floatValue = fValue;
+		break;
+	case ZDTYPE_SENSOR_DEWPOINT:
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Dew Point")
+			return;
+		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_LIGHT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)

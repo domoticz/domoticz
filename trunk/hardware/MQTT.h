@@ -11,7 +11,9 @@ public:
 	void OnConnect();
 	void OnMQTTMessage(char *topicName, int topicLen,  void *pMessage);
 	void SendMessage(const std::string &Topic, const std::string &Message);
+
 	bool m_bDoRestart;
+	bool m_bDoReconnect;
 	bool m_disc_finished;
 	bool m_IsConnected;
 public:
@@ -20,9 +22,11 @@ public:
 private:
 	bool StartHardware();
 	bool StopHardware();
-	bool ConnectInt(const std::string &IPAddress, const unsigned short usIPPort);
+	bool ConnectInt();
+	bool ConnectIntEx();
 	void WriteInt(const std::string &sendStr);
 	void ProcessMySensorsMessage(const std::string &MySensorsMessage);
+	void SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
@@ -36,5 +40,6 @@ protected:
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
+	boost::signals2::connection m_sConnection;
 };
 

@@ -740,7 +740,85 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
 	}
-	else if (pDevice->devType==ZDTYPE_SENSOR_LIGHT)
+	else if (pDevice->devType == ZDTYPE_SENSOR_VELOCITY)
+	{
+		if (!pDevice->bValidValue)
+			return;
+
+		RBUF tsen;
+		memset(&tsen, 0, sizeof(RBUF));
+		tsen.WIND.packetlength = sizeof(tsen.WIND) - 1;
+		tsen.WIND.packettype = pTypeWIND;
+		tsen.WIND.subtype = sTypeWIND4;
+		tsen.WIND.battery_level = 9;
+		if (pDevice->hasBattery)
+		{
+			tsen.WIND.battery_level = Convert_Battery_To_PercInt(pDevice->batValue);
+		}
+		tsen.WIND.rssi = 12;
+		tsen.WIND.id1 = 0;
+		tsen.WIND.id2 = 1;
+
+		float winddir = 0;
+		int aw = round(winddir);
+		tsen.WIND.directionh = (BYTE)(aw / 256);
+		aw -= (tsen.WIND.directionh * 256);
+		tsen.WIND.directionl = (BYTE)(aw);
+
+		int sw = round(pDevice->floatValue*10.0f);
+		tsen.WIND.av_speedh = (BYTE)(sw / 256);
+		sw -= (tsen.WIND.av_speedh * 256);
+		tsen.WIND.av_speedl = (BYTE)(sw);
+		tsen.WIND.gusth = tsen.WIND.av_speedh;
+		tsen.WIND.gustl = tsen.WIND.av_speedl;
+
+		//this is not correct, why no wind temperature? and only chill?
+		tsen.WIND.chillh = 0;
+		tsen.WIND.chilll = 0;
+		tsen.WIND.temperatureh = 0;
+		tsen.WIND.temperaturel = 0;
+
+		const _tZWaveDevice *pTempDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_TEMPERATURE);
+		if (pTempDevice)
+		{
+			if (!pTempDevice->bValidValue)
+				return;
+			tsen.WIND.tempsign = (pTempDevice->floatValue >= 0) ? 0 : 1;
+			tsen.WIND.chillsign = (pTempDevice->floatValue >= 0) ? 0 : 1;
+			int at10 = round(abs(pTempDevice->floatValue*10.0f));
+			tsen.WIND.temperatureh = (BYTE)(at10 / 256);
+			tsen.WIND.chillh = (BYTE)(at10 / 256);
+			at10 -= (tsen.WIND.chillh * 256);
+			tsen.WIND.temperaturel = (BYTE)(at10);
+			tsen.WIND.chilll = (BYTE)(at10);
+		}
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);//decode message
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_BAROMETER)
+	{
+		if (!pDevice->bValidValue)
+			return;
+		const _tZWaveDevice *pTempDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_TEMPERATURE);
+		const _tZWaveDevice *pHumDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_HUMIDITY);
+		if (pTempDevice && pHumDevice)
+		{
+			int nforecast = wsbaroforcast_some_clouds;
+			float pressure = pDevice->floatValue;
+			if (pressure <= 980)
+				nforecast = wsbaroforcast_heavy_rain;
+			else if (pressure <= 995)
+			{
+				if (pDevice->floatValue > 1)
+					nforecast = wsbaroforcast_rain;
+				else
+					nforecast = wsbaroforcast_snow;
+			}
+			else if (pressure >= 1029)
+				nforecast = wsbaroforcast_sunny;
+			SendTempHumBaroSensorFloat(pDevice->nodeID, pDevice->batValue, pTempDevice->floatValue, pHumDevice->intvalue, pDevice->floatValue, nforecast);
+		}
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_LIGHT)
 	{
 		_tLightMeter lmeter;
 		lmeter.id1=ID1;
