@@ -1682,6 +1682,8 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	//Send to connected Sharing Users
 	m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
 
+	sOnDeviceReceived(pHardware->m_HwdID, DeviceRowIdx, m_LastDeviceName, pRXCommand);
+
 	//send via data push
 	m_datapush.DoWork(DeviceRowIdx);
 }
@@ -10662,6 +10664,97 @@ void MainWorker::HeartbeatCheck()
 	}
 }
 
+bool MainWorker::UpdateDevice(const int idx, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
 
+	//Get device parameters
+	szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.empty())
+		return false;
+	std::vector<std::string> sd = result[0];
+
+	std::stringstream sstr;
+	std::string sidx;
+	sstr << idx;
+	sstr >> sidx;
+
+	int HardwareID = atoi(sd[0].c_str());
+	std::string DeviceID = sd[1];
+	int unit = atoi(sd[2].c_str());
+	int devType = atoi(sd[3].c_str());
+	int subType = atoi(sd[4].c_str());
+
+	if (devType == pTypeLighting2)
+	{
+		CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+		if (pHardware)
+		{
+			//Send as Lighting 2
+			unsigned long ID;
+			std::stringstream s_strid;
+			s_strid << std::hex << DeviceID;
+			s_strid >> ID;
+			unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
+			unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
+			unsigned char ID3 = (unsigned char)((ID & 0x0000FF00) >> 8);
+			unsigned char ID4 = (unsigned char)((ID & 0x000000FF));
+
+			tRBUF lcmd;
+			memset(&lcmd, 0, sizeof(RBUF));
+			lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+			lcmd.LIGHTING2.packettype = pTypeLighting2;
+			lcmd.LIGHTING2.subtype = subType;
+			lcmd.LIGHTING2.id1 = ID1;
+			lcmd.LIGHTING2.id2 = ID2;
+			lcmd.LIGHTING2.id3 = ID3;
+			lcmd.LIGHTING2.id4 = ID4;
+			lcmd.LIGHTING2.unitcode = (unsigned char)unit;
+			lcmd.LIGHTING2.cmnd = (unsigned char)nValue;
+			lcmd.LIGHTING2.level = (unsigned char)atoi(sValue.c_str());
+			lcmd.LIGHTING2.filler = 0;
+			lcmd.LIGHTING2.rssi = signallevel;
+			DecodeRXMessage(pHardware, (const unsigned char *)&lcmd.LIGHTING2);
+			return true;
+		}
+	}
+
+	std::string devname = "Unknown";
+	m_sql.UpdateValue(
+		HardwareID,
+		DeviceID.c_str(),
+		(const unsigned char)unit,
+		(const unsigned char)devType,
+		(const unsigned char)subType,
+		signallevel,//signal level,
+		batterylevel,//battery level
+		nValue,
+		sValue.c_str(),
+		devname,
+		false
+		);
+
+	if (
+		((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
+		((devType == pTypeRadiator1) && (subType == sTypeSmartwares))
+		)
+	{
+		_log.Log(LOG_NORM, "Sending SetPoint to device....");
+		SetSetPoint(sidx, static_cast<float>(atof(sValue.c_str())));
+	}
+	else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode))
+	{
+		_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
+		SetZWaveThermostatMode(sidx, nValue);
+	}
+	else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode))
+	{
+		_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
+		SetZWaveThermostatFanMode(sidx, nValue);
+	}
+	return true;
+}
 
 

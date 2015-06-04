@@ -5,23 +5,29 @@
 #include <iostream>
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
+#include "../json/json.h"
 
 extern "C" {
 	#include "../MQTT/MQTTAsync.h"
 };
 
+
+
 // mosquitto_pub -h 127.0.0.1 -p 1883 -d -t hello/world -m "Hello, MQTT. This is my first message."
 
 #define RETRY_DELAY 30
 
-#define CLIENTID    "Domoticz"
-#define TOPIC       "hello/world"
+#define CLIENTID	"Domoticz"
+#define TOPIC_OUT	"domoticz/out"
+#define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
 MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
+	m_bDoReconnect = false;
 	m_IsConnected = false;
 #if defined WIN32
 	int ret;
@@ -68,6 +74,7 @@ bool MQTT::StartHardware()
 
 	m_stoprequested=false;
 	m_bDoRestart=false;
+	m_bDoReconnect = false;
 
 	//force connect the next first time
 	m_IsConnected=false;
@@ -107,6 +114,7 @@ void MQTT::StopMQTT()
 			}
 		}
 		MQTTAsync_destroy(&m_mqtt_client);
+		m_mqtt_client = NULL;
 	}
 	m_bIsStarted = false;
 }
@@ -134,7 +142,8 @@ bool MQTT::StopHardware()
 		}
 	}
 	StopMQTT();
-
+	if (m_sConnection.connected())
+		m_sConnection.disconnect();
 	m_IsConnected = false;
 	return true;
 }
@@ -161,7 +170,7 @@ void MQTT::OnConnect()
 	MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
 	int rc;
 
-	_log.Log(LOG_STATUS, "MQTT: Subscribing to topic: %s", TOPIC);
+	_log.Log(LOG_STATUS, "MQTT: Subscribing to topic: %s", TOPIC_OUT);
 
 	opts.onSuccess = mqtt_onSubscribe;
 	opts.onFailure = mqtt_onSubscribeFailure;
@@ -169,20 +178,35 @@ void MQTT::OnConnect()
 
 	//deliveredtoken = 0;
 
-	if ((rc = MQTTAsync_subscribe(m_mqtt_client, TOPIC, QOS, &opts)) != MQTTASYNC_SUCCESS)
+	if ((rc = MQTTAsync_subscribe(m_mqtt_client, TOPIC_OUT, QOS, &opts)) != MQTTASYNC_SUCCESS)
 	{
 		_log.Log(LOG_ERROR, "MQTT: Failed to start subscribe, code: %d", rc);
 		m_bDoRestart = true;
 		return;
 	}
+	if ((rc = MQTTAsync_subscribe(m_mqtt_client, TOPIC_IN, QOS, &opts)) != MQTTASYNC_SUCCESS)
+	{
+		_log.Log(LOG_ERROR, "MQTT: Failed to start subscribe, code: %d", rc);
+		m_bDoRestart = true;
+		return;
+	}
+
 	m_IsConnected = true;
 	sOnConnected(this);
+	m_sConnection=m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
 }
 
 void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 {
 	MQTTAsync_message *message = (MQTTAsync_message*)pMessage;
 	std::string topic = std::string(topicName, topicName + topicLen);
+
+	if (topic == TOPIC_OUT)
+	{
+		//ignore our own outgoing messages
+		return;
+	}
+
 	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 	MQTTAsync_freeMessage(&message);
@@ -190,23 +214,64 @@ void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 
 	_log.Log(LOG_STATUS, "MQTT: Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 
+	if (qMessage.empty())
+		return;
+
 	if (topic.find("MyMQTT") != std::string::npos)
 	{
 		//MySensors message
 		ProcessMySensorsMessage(qMessage);
 		return;
 	}
+	else if (topic == TOPIC_IN)
+	{
+		Json::Value root;
 
-	//Todo, support others?
-	if (message->payloadlen < 1)
-		return;
+		Json::Reader jReader;
+		bool ret = jReader.parse(qMessage, root);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "MQTT: Invalid data received!");
+			return;
+		}
+		bool bValid = true;
+		if (root["idx"].empty())
+		{
+			bValid = false;
+		}
+		if (root["nvalue"].empty())
+		{
+			bValid = false;
+		}
+		if (root["svalue"].empty())
+		{
+			bValid = false;
+		}
+		if (!bValid)
+		{
+			_log.Log(LOG_ERROR, "MQTT: Invalid data received! (Missing idx,nvalue,svalue)");
+			return;
+		}
+		int idx = root["idx"].asInt();
+		int nvalue = root["nvalue"].asInt();
+		std::string svalue = root["svalue"].asString();
+
+		int signallevel = 12;
+		int batterylevel = 255;
+
+		if (!m_mainworker.UpdateDevice(idx, nvalue, svalue, signallevel, batterylevel))
+		{
+			_log.Log(LOG_ERROR, "MQTT: unknown idx!");
+			return;
+		}
+	}
 }
 
 void mqtt_connlost(void *context, char *cause)
 {
 	MQTT *pClient = (MQTT*)context;
-	_log.Log(LOG_ERROR, "MQTT: disconnected");
-	pClient->m_bDoRestart = true;
+	_log.Log(LOG_ERROR, "MQTT: disconnected, restarting");
+	pClient->m_bDoReconnect = true;
 }
 
 int mqtt_msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *message)
@@ -220,7 +285,7 @@ void mqtt_onConnectFailure(void* context, MQTTAsync_failureData* response)
 {
 	MQTT *pClient = (MQTT*)context;
 	_log.Log(LOG_ERROR, "MQTT: connection failed, restarting");
-	pClient->m_bDoRestart = true;
+	pClient->m_bDoReconnect = true;
 }
 
 
@@ -230,24 +295,28 @@ void mqtt_onConnect(void* context, MQTTAsync_successData* response)
 	pClient->OnConnect();
 }
 
-bool MQTT::ConnectInt(const std::string &IPAddress, const unsigned short usIPPort)
+bool MQTT::ConnectInt()
 {
 	StopMQTT();
 	m_bDoRestart = false;
-	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
-
 	std::stringstream sstr;
 	sstr << "tcp://" << m_szIPAddress << ":" << m_usIPPort;
 	std::string szAddress = sstr.str();
 
-	_log.Log(LOG_STATUS, "MQTT: Connecting to %s:%d",m_szIPAddress.c_str(),m_usIPPort);
 
 
-	if (MQTTAsync_create(&m_mqtt_client, szAddress.c_str(), CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL) != MQTTASYNC_SUCCESS)
+	if (MQTTAsync_create(&m_mqtt_client, m_szIPAddress.c_str(), CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL) != MQTTASYNC_SUCCESS)
 		return false;
 
 	MQTTAsync_setCallbacks(m_mqtt_client, this, mqtt_connlost, mqtt_msgarrvd, NULL);
+	return ConnectIntEx();
+}
 
+bool MQTT::ConnectIntEx()
+{
+	m_bDoReconnect = false;
+	_log.Log(LOG_STATUS, "MQTT: Connecting to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
 	conn_opts.keepAliveInterval = 20;
 	conn_opts.cleansession = 1;
 	conn_opts.onSuccess = mqtt_onConnect;
@@ -283,14 +352,17 @@ void MQTT::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime=false;
-			ConnectInt(m_szIPAddress,m_usIPPort);
+			ConnectInt();
 		}
 		else
 		{
 			time_t atime=time(NULL);
-			if ((m_bDoRestart)&&(atime%30==0))
+			if (atime%30==0)
 			{
-				ConnectInt(m_szIPAddress,m_usIPPort);
+				if (m_bDoRestart)
+					ConnectInt();
+				else if (m_bDoReconnect)
+					ConnectIntEx();
 			}
 		}
 	}
@@ -304,24 +376,30 @@ void mqtt_onSend(void* context, MQTTAsync_successData* response)
 
 void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 {
-	if (!m_IsConnected)
-	{
-		_log.Log(LOG_STATUS, "MQTT: Not Connected, failed to send message: %s", Message.c_str());
-		return;
+	try {
+		if (!m_IsConnected)
+		{
+			_log.Log(LOG_STATUS, "MQTT: Not Connected, failed to send message: %s", Message.c_str());
+			return;
+		}
+		MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
+		MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
+		opts.onSuccess = mqtt_onSend;
+		opts.context = this;
+
+		pubmsg.payload = (void*)Message.c_str();
+		pubmsg.payloadlen = Message.size();
+		pubmsg.qos = QOS;
+		pubmsg.retained = 0;
+
+		if (MQTTAsync_sendMessage(m_mqtt_client, Topic.c_str(), &pubmsg, &opts) != MQTTASYNC_SUCCESS)
+		{
+			_log.Log(LOG_ERROR, "MQTT: Failed to send message: %s", Message.c_str());
+		}
 	}
-	MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
-	MQTTAsync_message pubmsg = MQTTAsync_message_initializer;
-	opts.onSuccess = mqtt_onSend;
-	opts.context = this;
-
-	pubmsg.payload = (void*) Message.c_str();
-	pubmsg.payloadlen = Message.size();
-	pubmsg.qos = QOS;
-	pubmsg.retained = 0;
-
-	if (MQTTAsync_sendMessage(m_mqtt_client, Topic.c_str(), &pubmsg, &opts) != MQTTASYNC_SUCCESS)
+	catch (...)
 	{
-		_log.Log(LOG_STATUS, "MQTT: Failed to send message: %s", Message.c_str());
+		_log.Log(LOG_ERROR, "MQTT: Failed to send message: %s", Message.c_str());
 	}
 }
 
@@ -341,3 +419,54 @@ void MQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
 	m_buffer[m_bufferpos] = 0;
 	ParseLine();
 }
+
+void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+{
+	if (m_mqtt_client == NULL)
+		return;
+	if (!MQTTAsync_isConnected(m_mqtt_client))
+		return;
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << DeviceRowIdx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() > 0)
+	{
+		std::vector<std::string> sd = result[0];
+		std::string did = sd[0];
+		int dunit = atoi(sd[1].c_str());
+		std::string name = sd[2];
+		int dType = atoi(sd[3].c_str());
+		int dSubType = atoi(sd[4].c_str());
+		int nvalue = atoi(sd[5].c_str());
+		std::string svalue = sd[6];
+
+
+		Json::Value root;
+
+		root["idx"] = DeviceRowIdx;
+		root["id"] = did;
+		root["unit"] = dunit;
+		root["name"] = name;
+		root["dtype"] = RFX_Type_Desc(dType,1);
+		root["stype"] = RFX_Type_SubType_Desc(dType, dSubType);
+		root["nvalue"] = nvalue;
+
+		//give all svalues separate
+		std::vector<std::string> strarray;
+		StringSplit(svalue, ";", strarray);
+
+		std::vector<std::string>::const_iterator itt;
+		int sIndex = 1;
+		for (itt = strarray.begin(); itt != strarray.end(); ++itt)
+		{
+			szQuery.str("");
+			szQuery.clear();
+			szQuery << "svalue" << sIndex;
+			root[szQuery.str()] = *itt;
+			sIndex++;
+		}
+		SendMessage(TOPIC_OUT, root.toStyledString());
+	}
+}
+

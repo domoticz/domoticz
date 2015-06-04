@@ -97,6 +97,10 @@ public:
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
 	void SetInternalSecStatus();
 
+	bool UpdateDevice(const int idx, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel);
+
+	boost::signals2::signal<void(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
+
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
 	CDataPush m_datapush;
