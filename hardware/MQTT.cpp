@@ -13,6 +13,7 @@ extern "C" {
 };
 
 
+boost::mutex m_mqtt_mutex;
 
 // mosquitto_pub -h 127.0.0.1 -p 1883 -d -t hello/world -m "Hello, MQTT. This is my first message."
 
@@ -88,6 +89,7 @@ bool MQTT::StartHardware()
 
 void mqtt_onDisconnect(void* context, MQTTAsync_successData* response)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	MQTT *pClient = (MQTT*)context;
 	_log.Log(LOG_STATUS, "MQTT: Successful disconnection");
 	pClient->m_disc_finished = true;
@@ -121,6 +123,7 @@ void MQTT::StopMQTT()
 
 bool MQTT::StopHardware()
 {
+	StopHeartbeatThread();
 	m_stoprequested=true;
 	try {
 		if (m_thread)
@@ -150,6 +153,7 @@ bool MQTT::StopHardware()
 
 void mqtt_onSubscribe(void* context, MQTTAsync_successData* response)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	MQTT *pClient = (MQTT*)context;
 	_log.Log(LOG_STATUS, "MQTT: Subscribed");
 	pClient->m_IsConnected=true;
@@ -157,6 +161,7 @@ void mqtt_onSubscribe(void* context, MQTTAsync_successData* response)
 
 void mqtt_onSubscribeFailure(void* context, MQTTAsync_failureData* response)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	MQTT *pClient = (MQTT*)context;
 	_log.Log(LOG_ERROR, "MQTT: Subscribe failed, rc %d", response ? response->code : 0);
 	pClient->m_bDoRestart = true;
@@ -184,6 +189,9 @@ void MQTT::OnConnect()
 		m_bDoRestart = true;
 		return;
 	}
+
+	_log.Log(LOG_STATUS, "MQTT: Subscribing to topic: %s", TOPIC_IN);
+
 	if ((rc = MQTTAsync_subscribe(m_mqtt_client, TOPIC_IN, QOS, &opts)) != MQTTASYNC_SUCCESS)
 	{
 		_log.Log(LOG_ERROR, "MQTT: Failed to start subscribe, code: %d", rc);
@@ -269,6 +277,7 @@ void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 
 void mqtt_connlost(void *context, char *cause)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	MQTT *pClient = (MQTT*)context;
 	_log.Log(LOG_ERROR, "MQTT: disconnected, restarting");
 	pClient->m_bDoReconnect = true;
@@ -276,6 +285,7 @@ void mqtt_connlost(void *context, char *cause)
 
 int mqtt_msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_message *message)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	MQTT *pClient = (MQTT*)context;
 	pClient->OnMQTTMessage(topicName, topicLen, message);
 	return 1;
@@ -283,6 +293,7 @@ int mqtt_msgarrvd(void *context, char *topicName, int topicLen, MQTTAsync_messag
 
 void mqtt_onConnectFailure(void* context, MQTTAsync_failureData* response)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	MQTT *pClient = (MQTT*)context;
 	_log.Log(LOG_ERROR, "MQTT: connection failed, restarting");
 	pClient->m_bDoReconnect = true;
@@ -291,6 +302,7 @@ void mqtt_onConnectFailure(void* context, MQTTAsync_failureData* response)
 
 void mqtt_onConnect(void* context, MQTTAsync_successData* response)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	MQTT *pClient = (MQTT*)context;
 	pClient->OnConnect();
 }
@@ -405,6 +417,7 @@ void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 
 void MQTT::WriteInt(const std::string &sendStr)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	if (sendStr.size() < 2)
 		return;
 	//string the return and the end
@@ -422,6 +435,7 @@ void MQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
 
 void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
+	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	if (m_mqtt_client == NULL)
 		return;
 	if (!MQTTAsync_isConnected(m_mqtt_client))
