@@ -10664,7 +10664,7 @@ void MainWorker::HeartbeatCheck()
 	}
 }
 
-bool MainWorker::UpdateDevice(const int idx, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel)
+bool MainWorker::UpdateDevice(const unsigned long long idx, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel)
 {
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
