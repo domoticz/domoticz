@@ -3616,13 +3616,22 @@ namespace http {
 
 			std::string idx = m_pWebEm->FindValue("idx");
 
-			if ( idx.empty() || nvalue.empty() || svalue.empty())
+			if ( idx.empty() || (nvalue.empty() && svalue.empty()) )
 			{
 				return;
 			}
 
 			int signallevel = 12;
 			int batterylevel = 255;
+
+			std::stringstream sstr;
+
+			unsigned long long ulIdx;
+			sstr << idx;
+			sstr >> ulIdx;
+
+			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
+
 
 			std::string sSignalLevel = m_pWebEm->FindValue("rssi");
 			if (sSignalLevel != "")
@@ -3634,7 +3643,7 @@ namespace http {
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
-			if (m_mainworker.UpdateDevice(atoi(idx.c_str()), atoi(nvalue.c_str()), svalue, signallevel, batterylevel))
+			if (m_mainworker.UpdateDevice(ulIdx, invalue, svalue, signallevel, batterylevel))
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";

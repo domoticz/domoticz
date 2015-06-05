@@ -384,7 +384,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				EnableTabTemp: true,
 				EnableTabWeather: true,
 				EnableTabUtility: true,
-				EnableTabCustom: true,
+				EnableTabCustom: false,
 				AllowWidgetOrdering: true,
 				FiveMinuteHistoryDays: 1,
 				DashboardType : 1,
@@ -424,7 +424,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				$rootScope.config.EnableTabTemp=data.result.EnableTabTemp;
 				$rootScope.config.EnableTabWeather=data.result.EnableTabWeather;
 				$rootScope.config.EnableTabUtility=data.result.EnableTabUtility;
-				$rootScope.config.EnableTabCustom=data.result.EnableTabCustom;
 				
 				SetLanguage(data.language);
 				
@@ -441,6 +440,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					});
 					if (customHTML!="") {
 						$("#custommenu").html(customHTML);
+						$rootScope.config.EnableTabCustom=data.result.EnableTabCustom;
 					}
 				}
 			}

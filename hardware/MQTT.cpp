@@ -247,11 +247,11 @@ void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 		{
 			bValid = false;
 		}
-		if (root["nvalue"].empty())
-		{
-			bValid = false;
-		}
-		if (root["svalue"].empty())
+
+		bool bnvalue = !root["nvalue"].empty();
+		bool bsvalue = !root["svalue"].empty();
+
+		if (!bnvalue && !bsvalue)
 		{
 			bValid = false;
 		}
@@ -260,8 +260,8 @@ void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 			_log.Log(LOG_ERROR, "MQTT: Invalid data received! (Missing idx,nvalue,svalue)");
 			return;
 		}
-		int idx = root["idx"].asInt();
-		int nvalue = root["nvalue"].asInt();
+		unsigned long long idx = (unsigned long long)root["idx"].asInt64();
+		int nvalue = (bnvalue) ? root["nvalue"].asInt() : 0;
 		std::string svalue = root["svalue"].asString();
 
 		int signallevel = 12;
