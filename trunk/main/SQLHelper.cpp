@@ -1365,7 +1365,7 @@ bool CSQLHelper::OpenDatabase()
 					{
 						char szSerialPort[50];
 #if defined WIN32
-						sprintf(szSerialPort, "COM%d", Port);
+						sprintf(szSerialPort, "COM%d", (int)Port);
 #else
 						bool bUseDirectPath = false;
 						std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
@@ -1380,7 +1380,7 @@ bool CSQLHelper::OpenDatabase()
 						}
 						else
 						{
-							sprintf(szSerialPort, "/dev/ttyUSB%d", Port);
+							sprintf(szSerialPort, "/dev/ttyUSB%d", (int)Port);
 						}
 #endif
 						szQuery.clear();

@@ -64,7 +64,7 @@ std::string SolarMaxTCP::MakeRequestString()
 	std::string RequestString = "64:KDY;KT0;PAC;UDC;UL1;IDC;IL1;PIN;PRL;TNF;TKK";
 	char szSendTemp[100];
 	char szSendRequest[100];
-	sprintf(szSendTemp, "%02X;%02X;%02X|%s|", SourceAddress, DestAddress, RequestString.size() + 16, RequestString.c_str());
+	sprintf(szSendTemp, "%02X;%02X;%02X|%s|", SourceAddress, DestAddress, (unsigned int)(RequestString.size() + 16), RequestString.c_str());
 	int Chksum = SolarMaxCalcChecksum((const unsigned char*)&szSendTemp, (int)strlen(szSendTemp));
 	sprintf(szSendRequest, "{%s%04X}", szSendTemp, Chksum);
 	return std::string(szSendRequest);
