@@ -11,6 +11,7 @@
 #include "WindCalculation.h"
 #include "../tcpserver/TCPServer.h"
 #include "DataPush.h"
+#include "HttpPush.h"
 
 enum eVerboseLevel
 {
@@ -106,6 +107,7 @@ public:
 	CDataPush m_datapush;
 	CHardwareMonitor m_hardwaremonitor;
 	CCameraHandler m_cameras;
+	CHttpPush m_httppush;
 
 	bool m_bIgnoreUsernamePassword;
 

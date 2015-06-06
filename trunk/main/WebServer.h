@@ -153,6 +153,12 @@ private:
 	void Cmd_GetCustomIconSet(Json::Value &root);
 	void Cmd_DeleteCustomIcon(Json::Value &root);
 	void Cmd_RenameDevice(Json::Value &root);
+	void Cmd_SaveHttpLinkConfig(Json::Value &root);
+	void Cmd_GetHttpLinkConfig(Json::Value &root);
+	void Cmd_GetHttpLinks(Json::Value &root);
+	void Cmd_SaveHttpLink(Json::Value &root);
+	void Cmd_DeleteHttpLink(Json::Value &root);
+	void Cmd_GetDevicesForHttpLink(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

@@ -751,7 +751,9 @@ bool MainWorker::Start()
 			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout);
 		}
 	}
-	m_datapush.UpdateActive();
+
+	m_datapush.Start();
+	m_httppush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	if (m_bStartHardware==false)
 		m_bStartHardware=true;
@@ -774,6 +776,9 @@ bool MainWorker::Stop()
 		m_scheduler.StopScheduler();
 		m_eventsystem.StopEventSystem();
 		m_hardwaremonitor.StopHardwareMonitor();
+		m_datapush.Stop();
+		m_httppush.Stop();
+
 		//    m_cameras.StopCameraGrabber();
 
 		m_stoprequested = true;
@@ -1683,9 +1688,6 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	m_sharedserver.SendToAll(DeviceRowIdx,(const char*)pRXCommand,pRXCommand[0]+1,pClient2Ignore);
 
 	sOnDeviceReceived(pHardware->m_HwdID, DeviceRowIdx, m_LastDeviceName, pRXCommand);
-
-	//send via data push
-	m_datapush.DoWork(DeviceRowIdx);
 }
 
 unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)

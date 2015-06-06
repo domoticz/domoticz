@@ -161,6 +161,7 @@ main/WebServer.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
 main/DataPush.cpp
+main/HttpPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
