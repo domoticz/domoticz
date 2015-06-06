@@ -54,6 +54,7 @@ extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 
 extern std::string szAppVersion;
+extern bool g_bDontCacheWWW;
 
 struct _tGuiLanguage {
 	const char* szShort;
@@ -394,6 +395,11 @@ namespace http {
 			RegisterCommandCode("getfibarolinks", boost::bind(&CWebServer::Cmd_GetFibaroLinks, this, _1));
 			RegisterCommandCode("savefibarolink", boost::bind(&CWebServer::Cmd_SaveFibaroLink, this, _1));
 			RegisterCommandCode("deletefibarolink", boost::bind(&CWebServer::Cmd_DeleteFibaroLink, this, _1));
+			RegisterCommandCode("savehttplinkconfig", boost::bind(&CWebServer::Cmd_SaveHttpLinkConfig, this, _1));
+			RegisterCommandCode("gethttplinkconfig", boost::bind(&CWebServer::Cmd_GetHttpLinkConfig, this, _1));
+			RegisterCommandCode("gethttplinks", boost::bind(&CWebServer::Cmd_GetHttpLinks, this, _1));
+			RegisterCommandCode("savehttplink", boost::bind(&CWebServer::Cmd_SaveHttpLink, this, _1));
+			RegisterCommandCode("deletehttplink", boost::bind(&CWebServer::Cmd_DeleteHttpLink, this, _1));
 			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1));
 			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1));
 
@@ -635,8 +641,12 @@ namespace http {
 
 		std::string CWebServer::GetAppCache()
 		{
+			std::string response = "";
+			if (g_bDontCacheWWW)
+			{
+				return response;
+			}
 			//Return the appcache file (dynamicly generated)
-			std::string response="";
 			std::string sLine;
 			std::string filename = szWWWFolder + "/html5.appcache";
 
@@ -1568,184 +1578,6 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "PingerClearNodes";
 			pHardware->RemoveAllNodes();
-		}
-
-		void CWebServer::Cmd_SaveFibaroLinkConfig(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string remote = m_pWebEm->FindValue("remote");
-			std::string username = m_pWebEm->FindValue("username");
-			std::string password = m_pWebEm->FindValue("password");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string isversion4 = m_pWebEm->FindValue("isversion4");
-			std::string debugenabled = m_pWebEm->FindValue("debugenabled");
-			if (
-				(remote == "") ||
-				(username == "") ||
-				(password == "") ||
-				(linkactive == "") ||
-				(isversion4 == "") ||
-				(debugenabled == "")
-				)
-				return;
-			int ilinkactive = atoi(linkactive.c_str());
-			int iisversion4 = atoi(isversion4.c_str());
-			int idebugenabled = atoi(debugenabled.c_str());
-			m_sql.UpdatePreferencesVar("FibaroIP", remote.c_str());
-			m_sql.UpdatePreferencesVar("FibaroUsername", username.c_str());
-			m_sql.UpdatePreferencesVar("FibaroPassword", password.c_str());
-			m_sql.UpdatePreferencesVar("FibaroActive", ilinkactive);
-			m_sql.UpdatePreferencesVar("FibaroVersion4", iisversion4);
-			m_sql.UpdatePreferencesVar("FibaroDebug", idebugenabled);
-			m_mainworker.m_datapush.UpdateActive();
-			root["status"] = "OK";
-			root["title"] = "SaveFibaroLinkConfig";
-		}
-
-		void CWebServer::Cmd_GetFibaroLinkConfig(Json::Value &root)
-		{
-			std::string sValue;
-			int nValue;
-			if (m_sql.GetPreferencesVar("FibaroActive", nValue)) {
-				root["FibaroActive"] = nValue;
-			}
-			else {
-				root["FibaroActive"] = 0;
-			}
-			if (m_sql.GetPreferencesVar("FibaroVersion4", nValue)) {
-				root["FibaroVersion4"] = nValue;
-			}
-			else {
-				root["FibaroVersion4"] = 0;
-			}
-			if (m_sql.GetPreferencesVar("FibaroDebug", nValue)) {
-				root["FibaroDebug"] = nValue;
-			}
-			else {
-				root["FibaroDebug"] = 0;
-			}
-			if (m_sql.GetPreferencesVar("FibaroIP", sValue))
-			{
-				root["FibaroIP"] = sValue;
-			}
-			if (m_sql.GetPreferencesVar("FibaroUsername", sValue))
-			{
-				root["FibaroUsername"] = sValue;
-			}
-			if (m_sql.GetPreferencesVar("FibaroPassword", sValue))
-			{
-				root["FibaroPassword"] = sValue;
-			}
-			root["status"] = "OK";
-			root["title"] = "GetFibaroLinkConfig";
-		}
-
-		void CWebServer::Cmd_GetFibaroLinks(Json::Value &root)
-		{
-			std::stringstream szQuery;
-			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)";
-			result = m_sql.query(szQuery.str());
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["DeviceID"] = sd[1];
-					root["result"][ii]["Delimitedvalue"] = sd[2];
-					root["result"][ii]["TargetType"] = sd[3];
-					root["result"][ii]["TargetVariable"] = sd[4];
-					root["result"][ii]["TargetDevice"] = sd[5];
-					root["result"][ii]["TargetProperty"] = sd[6];
-					root["result"][ii]["Enabled"] = sd[7];
-					root["result"][ii]["Name"] = sd[8];
-					root["result"][ii]["IncludeUnit"] = sd[9];
-					ii++;
-				}
-			}
-			root["status"] = "OK";
-			root["title"] = "GetFibaroLinks";
-		}
-
-		void CWebServer::Cmd_SaveFibaroLink(Json::Value &root)
-		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string deviceid = m_pWebEm->FindValue("deviceid");
-			int deviceidi = atoi(deviceid.c_str());
-			std::string valuetosend = m_pWebEm->FindValue("valuetosend");
-			std::string targettype = m_pWebEm->FindValue("targettype");
-			int targettypei = atoi(targettype.c_str());
-			std::string targetvariable = m_pWebEm->FindValue("targetvariable");
-			std::string targetdeviceid = m_pWebEm->FindValue("targetdeviceid");
-			std::string targetproperty = m_pWebEm->FindValue("targetproperty");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string includeunit = m_pWebEm->FindValue("includeunit");
-			if ((targettypei == 0) && (targetvariable == ""))
-				return;
-			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
-				return;
-			if ((targettypei == 2) && (targetdeviceid == ""))
-				return;
-			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
-			if (idx == "0") {
-				sprintf(szTmp, "INSERT INTO FibaroLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%s','%d','%s','%d','%d')",
-					deviceidi,
-					atoi(valuetosend.c_str()),
-					targettypei,
-					targetvariable.c_str(),
-					atoi(targetdeviceid.c_str()),
-					targetproperty.c_str(),
-					atoi(includeunit.c_str()),
-					atoi(linkactive.c_str())
-					);
-			}
-			else {
-				sprintf(szTmp,
-					"UPDATE FibaroLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%s', TargetDeviceID=%d, TargetProperty='%s', IncludeUnit='%d', Enabled='%d' WHERE (ID == %s)",
-					deviceidi,
-					atoi(valuetosend.c_str()),
-					targettypei,
-					targetvariable.c_str(),
-					atoi(targetdeviceid.c_str()),
-					targetproperty.c_str(),
-					atoi(includeunit.c_str()),
-					atoi(linkactive.c_str()),
-					idx.c_str()
-					);
-			}
-			result = m_sql.query(szTmp);
-
-			root["status"] = "OK";
-			root["title"] = "SaveFibaroLink";
-		}
-
-		void CWebServer::Cmd_DeleteFibaroLink(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string idx = m_pWebEm->FindValue("idx");
-			if (idx == "")
-				return;
-			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
-			sprintf(szTmp, "DELETE FROM FibaroLink WHERE (ID==%s)", idx.c_str());
-			result = m_sql.query(szTmp);
-
-			root["status"] = "OK";
-			root["title"] = "DeleteFibaroLink";
 		}
 
 		void CWebServer::Cmd_GetDeviceValueOptions(Json::Value &root)

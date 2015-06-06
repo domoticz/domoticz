@@ -409,6 +409,7 @@ define(['app'], function (app) {
 						$("#fibaromain #devicename").append(option);
 					});
 				}
+				ValueSelectorUpdate();
 			 }
 			});
 			

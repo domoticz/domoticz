@@ -164,6 +164,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/dpfibaro.html',
 				controller: 'DPFibaroController'
 			  })).
+			  when('/DPHttp', angularAMD.route({
+				templateUrl: 'views/dphttp.html',
+				controller: 'DPHttpController'
+			  })).
 			  when('/Events', angularAMD.route({
 				templateUrl: 'views/events.html',
 				controller: 'EventsController'

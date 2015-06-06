@@ -62,6 +62,7 @@ const char *szHelp=
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
 	"\t-startupdelay seconds (default=0)\n"
 	"\t-nowwwpwd (in case you forgot the web server username/password)\n"
+	"\t-nocache (do not return appcache, use only when developing the web pages)\n"
 #if defined WIN32
 	"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
@@ -102,6 +103,7 @@ std::string logfile = "";
 bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
+bool g_bDontCacheWWW = false;
 int pidFilehandle = 0;
 
 #define DAEMON_NAME "domoticz"
@@ -563,7 +565,10 @@ int main(int argc, char**argv)
 	{
 		m_mainworker.m_bIgnoreUsernamePassword = true;
 	}
-
+	if (cmdLine.HasSwitch("-nocache"))
+	{
+		g_bDontCacheWWW = true;
+	}
 	std::string dbasefile = szUserDataFolder + "domoticz.db";
 #ifdef WIN32
 	if (!IsUserAnAdmin())
