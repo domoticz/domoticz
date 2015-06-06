@@ -3174,7 +3174,16 @@ namespace http {
 
 			int nValue = 1;
 			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-			root["haveupdate"] = (nValue==1)?m_bHaveUpdate:false;
+
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//only admin users will receive the update notification
+				root["haveupdate"] = false;
+			}
+			else
+			{
+				root["haveupdate"] = (nValue == 1) ? m_bHaveUpdate : false;
+			}
 			root["revision"] = m_iRevision;
 
 
