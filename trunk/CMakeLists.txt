@@ -233,6 +233,7 @@ hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/Teleinfo.cpp
+hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/VolcraftCO20.cpp
 hardware/WOL.cpp

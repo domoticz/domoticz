@@ -68,6 +68,7 @@
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
 #include "../hardware/NestThermostat.h"
+#include "../hardware/Thermosmart.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -669,6 +670,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_NESTTHERMOSTAT:
 		pHardware = new CNestThermostat(ID, Username, Password);
+		break;
+	case HTYPE_THERMOSMART:
+		pHardware = new CThermosmart(ID, Username, Password);
 		break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username);
@@ -9394,14 +9398,38 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		break;
 	case pTypeSecurity2:
 	{
+		BYTE kCodes[9];
+		if (sd[1].size() < 8 * 2)
+		{
+			return false;
+		}
+		for (int ii = 0; ii < 8; ii++)
+		{
+			std::string sHex = sd[1].substr(ii * 2, 2);
+			std::stringstream s_strid;
+			int iHex = 0;
+			s_strid << std::hex << sHex;
+			s_strid >> iHex;
+			kCodes[ii]=(BYTE)iHex;
+
+		}
 		tRBUF lcmd;
 		lcmd.SECURITY2.packetlength = sizeof(lcmd.SECURITY2) - 1;
 		lcmd.SECURITY2.packettype = dType;
 		lcmd.SECURITY2.subtype = dSubType;
 		lcmd.SECURITY2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-		lcmd.SECURITY2.id1 = ID2;
-		lcmd.SECURITY2.id2 = ID3;
-		lcmd.SECURITY2.id3 = ID4;
+		lcmd.SECURITY2.id1 = kCodes[0];
+		lcmd.SECURITY2.id2 = kCodes[1];
+		lcmd.SECURITY2.id3 = kCodes[2];
+		lcmd.SECURITY2.id4 = kCodes[3];
+		lcmd.SECURITY2.id5 = kCodes[4];
+		lcmd.SECURITY2.id6 = kCodes[5];
+		lcmd.SECURITY2.id7 = kCodes[6];
+		lcmd.SECURITY2.id8 = kCodes[7];
+
+		lcmd.SECURITY2.id9 = 0;//bat full
+		lcmd.SECURITY2.battery_level = 9;
+
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY2)))
 			return false;
 		if (!IsTesting) {
@@ -9910,6 +9938,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_NESTTHERMOSTAT) ||
+		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		)
@@ -9937,6 +9966,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_NESTTHERMOSTAT)
 		{
 			CNestThermostat *pGateway = (CNestThermostat*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_THERMOSMART)
+		{
+			CThermosmart *pGateway = (CThermosmart*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
@@ -10168,6 +10202,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 	{
 		CNestThermostat *pGateway = (CNestThermostat*)pHardware;
 		pGateway->SetProgramState(newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_THERMOSMART)
+	{
+		CThermosmart *pGateway = (CThermosmart *)pHardware;
+		//pGateway->SetProgramState(newState);
 		return true;
 	}
 	return false;

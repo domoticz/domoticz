@@ -866,7 +866,10 @@ namespace http {
 #endif
 				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
 					bDoAdd = false;
-
+#ifndef _DEBUG
+				if (ii == HTYPE_THERMOSMART)
+					bDoAdd = false;
+#endif
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
 			}
@@ -959,7 +962,7 @@ namespace http {
 			else if (htype == HTYPE_PiFace) {
 				//all fine here!
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NESTTHERMOSTAT)) {
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NESTTHERMOSTAT) || (htype == HTYPE_THERMOSMART)) {
 				if (
 					(username == "") ||
 					(password == "")
@@ -1132,7 +1135,7 @@ namespace http {
 			else if (htype == HTYPE_PiFace) {
 				//All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NESTTHERMOSTAT)) {
+			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NESTTHERMOSTAT) || (htype == HTYPE_THERMOSMART)) {
 				if (
 					(username == "") ||
 					(password == "")
@@ -11048,7 +11051,6 @@ namespace http {
 						}
 					}
 
-
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["HardwareID"] = HardwareID;
@@ -11084,6 +11086,19 @@ namespace http {
 						root["result"][ii]["CameraIdx"] = scidx.str();
 					}
 					ii++;
+				}
+			}
+			if (!m_mainworker.m_LastSunriseSet.empty())
+			{
+				std::vector<std::string> strarray;
+				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
+				if (strarray.size() == 2)
+				{
+					char szTmp[100];
+					strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					root["ServerTime"] = szTmp;
+					root["Sunrise"] = strarray[0];
+					root["Sunset"] = strarray[1];
 				}
 			}
 		}

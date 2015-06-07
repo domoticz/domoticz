@@ -92,6 +92,7 @@ private:
 	friend class SolarMaxTCP;
 	friend class CPinger;
 	friend class CNestThermostat;
+	friend class CThermosmart;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;

@@ -1207,6 +1207,7 @@ define(['app'], function (app) {
 		  $http({
 			 url: "json.htm?type=scenes&lastupdate="+$.LastUpdateTime
 			 }).success(function(data) {
+				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
 				if (typeof data.result != 'undefined') {
 					if (typeof data.ActTime != 'undefined') {
 						$.LastUpdateTime=parseInt(data.ActTime);
@@ -1293,6 +1294,9 @@ define(['app'], function (app) {
 			tophtm+=
 				'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">' +
 				'\t<tr>' +
+				'\t  <td align="left">\n' +
+				'\t    <div id="timesun"/>\n' +
+				'\t  </td>\n' +
 				'\t  <td align="right">' +
 				'\t    <a class="btnstyle" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>' +
 				'\t  </td>' +
@@ -1416,6 +1420,8 @@ define(['app'], function (app) {
 		  }
 		  $('#scenecontent').html(tophtm+htmlcontent); //tophtm+htmlcontent
 		  $('#scenecontent').i18n();
+		  
+		  $rootScope.RefreshTimeAndSun();
 
 			if (bAllowWidgetReorder==true) {
 				if (permissions.hasPermission("Admin")) {

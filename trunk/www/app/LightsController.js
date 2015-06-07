@@ -1557,7 +1557,13 @@ define(['app'], function (app) {
 								}
 							}
 							else {
-								img='<img src="images/security48.png" height="48" width="48">';
+								if (item.SubType.indexOf('KeeLoq') >= 0) {
+									img='<img src="images/pushon48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
+								}
+								else
+								{
+									img='<img src="images/security48.png" height="48" width="48">';
+								}
 							}
 						}
 					}
@@ -1999,7 +2005,13 @@ define(['app'], function (app) {
 										}
 									}
 									else {
-										xhtm+='\t      <td id="img"><img src="images/security48.png" height="48" width="48"></td>\n';
+										if (item.SubType.indexOf('KeeLoq') >= 0) {
+												xhtm+='\t      <td id="img"><img src="images/pushon48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48"></td>\n';
+										}
+										else
+										{
+											xhtm+='\t      <td id="img"><img src="images/security48.png" height="48" width="48"></td>\n';
+										}
 									}
 								}
 								bAddTimer=false;
