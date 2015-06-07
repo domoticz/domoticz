@@ -219,6 +219,9 @@
     <Filter Include="Devices\HttpLink">
       <UniqueIdentifier>{b84812aa-d71f-4b05-b496-4420b93cd9b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Thermosmart">
+      <UniqueIdentifier>{21b14472-4757-4ef4-b27f-107a322f5ef3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -699,6 +702,9 @@
     <ClInclude Include="..\main\HttpPush.h">
       <Filter>Devices\HttpLink</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Thermosmart.h">
+      <Filter>Devices\Thermosmart</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1126,6 +1132,9 @@
     </ClCompile>
     <ClCompile Include="..\main\HttpPush.cpp">
       <Filter>Devices\HttpLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Thermosmart.cpp">
+      <Filter>Devices\Thermosmart</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

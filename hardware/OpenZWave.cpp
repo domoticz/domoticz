@@ -588,21 +588,30 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			case OpenZWave::Notification::Code_MsgComplete:
 				if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 				{
+					bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 					nodeInfo->eState = NSTATE_AWAKE;
 					nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+					if (bWasDead)
+						ForceUpdateForNodeDevices(m_controllerID, _nodeID);
 				}
 				break;
 			case OpenZWave::Notification::Code_Awake:
 				if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 				{
+					bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 					nodeInfo->eState = NSTATE_AWAKE;
 					nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
+					if (bWasDead)
+						ForceUpdateForNodeDevices(m_controllerID, _nodeID);
 				}
 				break;
 			case OpenZWave::Notification::Code_Sleep:
 				if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 				{
+					bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 					nodeInfo->eState = NSTATE_SLEEP;
+					if (bWasDead)
+						ForceUpdateForNodeDevices(m_controllerID, _nodeID);
 				}
 				break;
 			case OpenZWave::Notification::Code_Dead:
@@ -630,6 +639,9 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				break;
 			case OpenZWave::Notification::Code_NoOperation:
 				//Code_NoOperation send to node
+				if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+				{
+				}
 				break;
 			default:
 				_log.Log(LOG_STATUS, "OpenZWave: Received unknown notification type (%d) from HomeID: %u, NodeID: %d (0x%02x)", subType, _homeID, _nodeID, _nodeID);
@@ -1663,7 +1675,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
-				_device.floatValue = fValue;
+				_device.floatValue = fValue*10.0f;
 				_device.commandClassID = 49;
 				_device.devType = ZDTYPE_SENSOR_BAROMETER;
 				InsertDevice(_device);
@@ -2560,7 +2572,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			return;
 		if (vLabel != "Barometric Pressure")
 			return;
-		pDevice->floatValue = fValue;
+		pDevice->floatValue = fValue*10.0f;
 		break;
 	case ZDTYPE_SENSOR_DEWPOINT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)

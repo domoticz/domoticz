@@ -48,6 +48,7 @@ m_password(password)
 	m_HwdID=ID;
 	m_port=port;
 	m_controllerID=0;
+	_log.Log(LOG_ERROR, "Razberry: Depricated, support will be removed (very!) soon!");
 }
 
 

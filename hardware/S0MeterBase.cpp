@@ -22,6 +22,7 @@ S0MeterBase::S0MeterBase(void)
 	for (ii = 0; ii < max_s0_meters; ii++)
 	{
 		m_meters[ii].m_counter_start = 0;
+		m_meters[ii].m_current_counter = 0;
 		m_meters[ii].total_pulses = 0;
 		m_meters[ii].first_total_pulses_received = 0;
 		m_meters[ii].m_CurrentUsage = 0;
@@ -48,6 +49,7 @@ void S0MeterBase::ReloadLastTotals()
 	for (ii=0; ii<max_s0_meters; ii++)
 	{
 		m_meters[ii].m_counter_start=0;
+		m_meters[ii].m_current_counter = 0;
 		m_meters[ii].total_pulses = 0;
 		m_meters[ii].first_total_pulses_received = 0;
 		m_meters[ii].m_CurrentUsage = 0;
@@ -232,67 +234,99 @@ void S0MeterBase::ParseLine()
 	//std::string MeterID=results[1];
 	double s0_pulse_interval=atof(results[3].c_str());
 
-	int roffset=4;
-	for (int ii=0; ii<totmeters; ii++)
+	int roffset = 4;
+	if (results[0] == "ID")
 	{
-		m_meters[ii].m_PacketsSinceLastPulseChange++;
-
-		double s0_pulse=atof(results[roffset+1].c_str());
-
-		unsigned long LastTotalPulses = m_meters[ii].total_pulses;
-		m_meters[ii].total_pulses = (unsigned long)atol(results[roffset + 2].c_str());
-		if (m_meters[ii].total_pulses < LastTotalPulses)
+		for (int ii = 0; ii < totmeters; ii++)
 		{
-			//counter has looped
-			m_meters[ii].m_counter_start += (LastTotalPulses + m_meters[ii].total_pulses);
-			m_meters[ii].first_total_pulses_received = m_meters[ii].total_pulses;
-		}
+			m_meters[ii].m_PacketsSinceLastPulseChange++;
 
-		if (s0_pulse != 0)
-		{
-			double pph = ((double)m_meters[ii].m_pulse_per_unit) / 1000; // Pulses per (watt) hour
-			double ActualUsage = ((3600.0 / double(m_meters[ii].m_PacketsSinceLastPulseChange*s0_pulse_interval) / pph) * s0_pulse);
-			m_meters[ii].m_PacketsSinceLastPulseChange = 0;
+			double s0_pulse = atof(results[roffset + 1].c_str());
 
-			m_meters[ii].m_last_values[m_meters[ii].m_value_buffer_write_pos] = ActualUsage;
-			m_meters[ii].m_value_buffer_write_pos = (m_meters[ii].m_value_buffer_write_pos + 1) % 5;
-
-			if (m_meters[ii].m_value_buffer_total < 5)
-				m_meters[ii].m_value_buffer_total++;
-
-			//Calculate Average
-			double vTotal = 0;
-			for (int iBuf = 0; iBuf < m_meters[ii].m_value_buffer_total; iBuf++)
-				vTotal += m_meters[ii].m_last_values[iBuf];
-			m_meters[ii].m_CurrentUsage = vTotal / double(m_meters[ii].m_value_buffer_total);
-#ifdef _DEBUG
-			_log.Log(LOG_STATUS, "S0 Meter: M%d, Watt: %.3f", ii + 1, m_meters[ii].m_CurrentUsage);
-#endif
-		}
-		else
-		{
-			if (m_meters[ii].m_PacketsSinceLastPulseChange > 5 * 6)
+			unsigned long LastTotalPulses = m_meters[ii].total_pulses;
+			m_meters[ii].total_pulses = (unsigned long)atol(results[roffset + 2].c_str());
+			if (m_meters[ii].total_pulses < LastTotalPulses)
 			{
-				//No pulses received for a long time, consider no usage
-				m_meters[ii].m_PacketsSinceLastPulseChange = 0;
-				m_meters[ii].m_last_values[0] = 0;
-				m_meters[ii].m_value_buffer_total = 0;
-				m_meters[ii].m_value_buffer_write_pos = 0;
-				m_meters[ii].m_CurrentUsage = 0;
-			}
-		}
-
-		if ((m_meters[ii].total_pulses != 0) || (m_meters[ii].m_firstTime))
-		{
-			m_meters[ii].m_firstTime = false;
-			if (m_meters[ii].first_total_pulses_received == 0)
+				//counter has looped
+				m_meters[ii].m_counter_start += (LastTotalPulses + m_meters[ii].total_pulses);
 				m_meters[ii].first_total_pulses_received = m_meters[ii].total_pulses;
+			}
 
-			double counter_value = m_meters[ii].m_counter_start + (((double)(m_meters[ii].total_pulses - m_meters[ii].first_total_pulses_received) / ((double)m_meters[ii].m_pulse_per_unit)));
-			SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, counter_value);
+			if (s0_pulse != 0)
+			{
+				double pph = ((double)m_meters[ii].m_pulse_per_unit) / 1000; // Pulses per (watt) hour
+				double ActualUsage = ((3600.0 / double(m_meters[ii].m_PacketsSinceLastPulseChange*s0_pulse_interval) / pph) * s0_pulse);
+				m_meters[ii].m_PacketsSinceLastPulseChange = 0;
+
+				m_meters[ii].m_last_values[m_meters[ii].m_value_buffer_write_pos] = ActualUsage;
+				m_meters[ii].m_value_buffer_write_pos = (m_meters[ii].m_value_buffer_write_pos + 1) % 5;
+
+				if (m_meters[ii].m_value_buffer_total < 5)
+					m_meters[ii].m_value_buffer_total++;
+
+				//Calculate Average
+				double vTotal = 0;
+				for (int iBuf = 0; iBuf < m_meters[ii].m_value_buffer_total; iBuf++)
+					vTotal += m_meters[ii].m_last_values[iBuf];
+				m_meters[ii].m_CurrentUsage = vTotal / double(m_meters[ii].m_value_buffer_total);
+#ifdef _DEBUG
+				_log.Log(LOG_STATUS, "S0 Meter: M%d, Watt: %.3f", ii + 1, m_meters[ii].m_CurrentUsage);
+#endif
+			}
+			else
+			{
+				if (m_meters[ii].m_PacketsSinceLastPulseChange > 5 * 6)
+				{
+					//No pulses received for a long time, consider no usage
+					m_meters[ii].m_PacketsSinceLastPulseChange = 0;
+					m_meters[ii].m_last_values[0] = 0;
+					m_meters[ii].m_value_buffer_total = 0;
+					m_meters[ii].m_value_buffer_write_pos = 0;
+					m_meters[ii].m_CurrentUsage = 0;
+				}
+			}
+
+			if ((m_meters[ii].total_pulses != 0) || (m_meters[ii].m_firstTime))
+			{
+				m_meters[ii].m_firstTime = false;
+				if (m_meters[ii].first_total_pulses_received == 0)
+					m_meters[ii].first_total_pulses_received = m_meters[ii].total_pulses;
+
+				double counter_value = m_meters[ii].m_counter_start + (((double)(m_meters[ii].total_pulses - m_meters[ii].first_total_pulses_received) / ((double)m_meters[ii].m_pulse_per_unit)));
+				m_meters[ii].m_current_counter = counter_value;
+				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, counter_value);
+			}
+
+			roffset += 3;
 		}
+	}
+	else if(results[0] == "EID")
+	{
+		roffset = 2;
+		for (int ii = 0; ii < totmeters; ii++)
+		{
+			double s0_counter = atof(results[roffset + 1].c_str());
+			if (s0_counter != 0)
+			{
+				if (m_meters[ii].m_firstTime)
+				{
+					m_meters[ii].m_current_counter = s0_counter;
+					m_meters[ii].m_firstTime = false;
+				}
+				if (s0_counter < m_meters[ii].m_current_counter)
+				{
+					//counter has looped
+					m_meters[ii].m_counter_start += m_meters[ii].m_current_counter;
+				}
+				m_meters[ii].m_current_counter = s0_counter;
+				m_meters[ii].m_CurrentUsage = atof(results[roffset + 2].c_str());
 
-		roffset+=3;
+				double counter_value = m_meters[ii].m_counter_start + s0_counter;
+				SendMeter(ii + 1, m_meters[ii].m_CurrentUsage / 1000.0f, m_meters[ii].m_current_counter);
+			}
+
+			roffset += 3;
+		}
 	}
 }
 

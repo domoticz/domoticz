@@ -7,6 +7,7 @@ class S0MeterBase : public CDomoticzHardwareBase
 	struct _tS0Meter{
 		int m_type;
 		double m_counter_start;
+		double m_current_counter;
 		double m_pulse_per_unit;
 		unsigned long first_total_pulses_received;
 		unsigned long total_pulses;

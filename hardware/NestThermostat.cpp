@@ -19,7 +19,7 @@ const std::string NEST_SET_SHARED = "/v2/put/shared.";
 const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 
 #ifdef _DEBUG
-	#define DEBUG_NextThermostat
+	//#define DEBUG_NextThermostat
 #endif
 
 #ifdef DEBUG_NextThermostat

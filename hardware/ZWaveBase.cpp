@@ -756,8 +756,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.WIND.battery_level = Convert_Battery_To_PercInt(pDevice->batValue);
 		}
 		tsen.WIND.rssi = 12;
-		tsen.WIND.id1 = 0;
-		tsen.WIND.id2 = 1;
+		tsen.WIND.id1 = ID3;
+		tsen.WIND.id2 = ID4;
 
 		float winddir = 0;
 		int aw = round(winddir);
