@@ -494,6 +494,9 @@
 		<Product type="1100" id="0002" name="123580 Plug-in Dimmer" config="popp/123580.xml" />
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml" />
 	</Manufacturer>
+	<Manufacturer id="0169" name="Popp">
+		<Product type="0001" id="0001" name="ZWeather" config="popp/zweather.xml" />
+	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
 		<Product type="0001" id="0000" name="ZW EDAN 300 Flush Mounted Dimmer" />
 		<Product type="1000" id="0002" name="Flush Mounted Switch"/>
