@@ -180,7 +180,9 @@ bool CThermosmart::Login()
 		_log.Log(LOG_ERROR,"Thermosmart: Error login!");
 		return false;
 	}
+#ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart1.txt");
+#endif
 
 	sURL = THERMOSMART_AUTHORISE_PATH;
 	sURL = stdreplace(sURL, "client123", "3de470ce1db15f92");
@@ -190,7 +192,9 @@ bool CThermosmart::Login()
 		_log.Log(LOG_ERROR, "Thermosmart: Error login!");
 		return false;
 	}
+#ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart2.txt");
+#endif
 
 	m_bDoLogin = false;
 	return true;
