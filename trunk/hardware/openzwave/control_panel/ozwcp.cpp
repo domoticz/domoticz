@@ -994,7 +994,15 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 			string str;
 			TiXmlText *textElement;
 			if (Manager::Get()->GetValueAsString(id, &str))
+			{
+				//make valid string
+				for (size_t ii = 0; ii < str.size(); ii++)
+				{
+					if (str[ii] < 0x20)
+						str[ii] = ' ';
+				}
 				textElement = new TiXmlText(str.c_str());
+			}
 			else
 				textElement = new TiXmlText("");
 			if (id.GetType() == ValueID::ValueType_Decimal) {
