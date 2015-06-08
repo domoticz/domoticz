@@ -247,6 +247,21 @@ void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 		{
 			bValid = false;
 		}
+		unsigned long long idx = (unsigned long long)root["idx"].asInt64();
+
+		//Get the raw device parameters
+		std::stringstream szQuery;
+		std::vector<std::vector<std::string> > result;
+		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
+		result = m_sql.query(szQuery.str());
+		if (result.empty())
+			return;
+
+		int HardwareID = atoi(result[0][0].c_str());
+		std::string DeviceID = result[0][1];
+		int unit = atoi(result[0][2].c_str());
+		int devType = atoi(result[0][3].c_str());
+		int subType = atoi(result[0][4].c_str());
 
 		bool bnvalue = !root["nvalue"].empty();
 		bool bsvalue = !root["svalue"].empty();
@@ -260,14 +275,13 @@ void MQTT::OnMQTTMessage(char *topicName, int topicLen, void *pMessage)
 			_log.Log(LOG_ERROR, "MQTT: Invalid data received! (Missing idx,nvalue,svalue)");
 			return;
 		}
-		unsigned long long idx = (unsigned long long)root["idx"].asInt64();
 		int nvalue = (bnvalue) ? root["nvalue"].asInt() : 0;
-		std::string svalue = root["svalue"].asString();
+		std::string svalue = (bsvalue) ? root["svalue"].asString() : "";
 
 		int signallevel = 12;
 		int batterylevel = 255;
 
-		if (!m_mainworker.UpdateDevice(idx, nvalue, svalue, signallevel, batterylevel))
+		if (!m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, nvalue, svalue, signallevel, batterylevel))
 		{
 			_log.Log(LOG_ERROR, "MQTT: unknown idx!");
 			return;

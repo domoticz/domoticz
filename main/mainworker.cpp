@@ -10706,29 +10706,8 @@ void MainWorker::HeartbeatCheck()
 	}
 }
 
-bool MainWorker::UpdateDevice(const unsigned long long idx, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel)
+bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel)
 {
-	std::stringstream szQuery;
-	std::vector<std::vector<std::string> > result;
-
-	//Get device parameters
-	szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
-	result = m_sql.query(szQuery.str());
-	if (result.empty())
-		return false;
-	std::vector<std::string> sd = result[0];
-
-	std::stringstream sstr;
-	std::string sidx;
-	sstr << idx;
-	sstr >> sidx;
-
-	int HardwareID = atoi(sd[0].c_str());
-	std::string DeviceID = sd[1];
-	int unit = atoi(sd[2].c_str());
-	int devType = atoi(sd[3].c_str());
-	int subType = atoi(sd[4].c_str());
-
 	if (devType == pTypeLighting2)
 	{
 		CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
@@ -10764,7 +10743,7 @@ bool MainWorker::UpdateDevice(const unsigned long long idx, const int nValue, co
 	}
 
 	std::string devname = "Unknown";
-	m_sql.UpdateValue(
+	unsigned long long devidx = m_sql.UpdateValue(
 		HardwareID,
 		DeviceID.c_str(),
 		(const unsigned char)unit,
@@ -10777,6 +10756,11 @@ bool MainWorker::UpdateDevice(const unsigned long long idx, const int nValue, co
 		devname,
 		false
 		);
+	if (devidx == -1)
+		return false;
+
+	std::stringstream sidx;
+	sidx << devidx;
 
 	if (
 		((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
@@ -10784,17 +10768,17 @@ bool MainWorker::UpdateDevice(const unsigned long long idx, const int nValue, co
 		)
 	{
 		_log.Log(LOG_NORM, "Sending SetPoint to device....");
-		SetSetPoint(sidx, static_cast<float>(atof(sValue.c_str())));
+		SetSetPoint(sidx.str(), static_cast<float>(atof(sValue.c_str())));
 	}
 	else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode))
 	{
 		_log.Log(LOG_NORM, "Sending Thermostat Mode to device....");
-		SetZWaveThermostatMode(sidx, nValue);
+		SetZWaveThermostatMode(sidx.str(), nValue);
 	}
 	else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode))
 	{
 		_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
-		SetZWaveThermostatFanMode(sidx, nValue);
+		SetZWaveThermostatFanMode(sidx.str(), nValue);
 	}
 	return true;
 }

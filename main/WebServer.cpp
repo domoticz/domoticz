@@ -3455,18 +3455,57 @@ namespace http {
 
 		void CWebServer::Cmd_UpdateDevice(Json::Value &root)
 		{
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string hid = m_pWebEm->FindValue("hid");
+			std::string did = m_pWebEm->FindValue("did");
+			std::string dunit = m_pWebEm->FindValue("dunit");
+			std::string dtype = m_pWebEm->FindValue("dtype");
+			std::string dsubtype = m_pWebEm->FindValue("dsubtype");
+
 			std::string nvalue = m_pWebEm->FindValue("nvalue");
 			std::string svalue = m_pWebEm->FindValue("svalue");
 
-			std::string idx = m_pWebEm->FindValue("idx");
-
-			if ( idx.empty() || (nvalue.empty() && svalue.empty()) )
+			if ( (nvalue.empty() && svalue.empty()) )
 			{
 				return;
 			}
 
 			int signallevel = 12;
 			int batterylevel = 255;
+
+			if (idx.empty())
+			{
+				//No index supplied, check if raw parameters where supplied
+				if (
+					(hid.empty()) ||
+					(did.empty()) ||
+					(dunit.empty()) ||
+					(dtype.empty()) ||
+					(dsubtype.empty())
+					)
+					return;
+			}
+			else
+			{
+				//Get the raw device parameters
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
+				result = m_sql.query(szQuery.str());
+				if (result.empty())
+					return;
+				hid = result[0][0];
+				did = result[0][1];
+				dunit = result[0][2];
+				dtype = result[0][3];
+				dsubtype = result[0][4];
+			}
+
+			int HardwareID = atoi(hid.c_str());
+			std::string DeviceID = did;
+			int unit = atoi(dunit.c_str());
+			int devType = atoi(dtype.c_str());
+			int subType = atoi(dsubtype.c_str());
 
 			std::stringstream sstr;
 
@@ -3487,7 +3526,7 @@ namespace http {
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
-			if (m_mainworker.UpdateDevice(ulIdx, invalue, svalue, signallevel, batterylevel))
+			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";
