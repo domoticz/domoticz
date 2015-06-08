@@ -456,7 +456,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		return;
 	std::vector<std::vector<std::string> > result;
 	std::stringstream szQuery;
-	szQuery << "SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << DeviceRowIdx << ")";
+	szQuery << "SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << DeviceRowIdx << ")";
 	result = m_sql.query(szQuery.str());
 	if (result.size() > 0)
 	{
@@ -468,7 +468,8 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		int dSubType = atoi(sd[4].c_str());
 		int nvalue = atoi(sd[5].c_str());
 		std::string svalue = sd[6];
-
+		int RSSI = atoi(sd[8].c_str());
+		int BatteryLevel = atoi(sd[9].c_str());
 
 		Json::Value root;
 
@@ -478,6 +479,8 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		root["name"] = name;
 		root["dtype"] = RFX_Type_Desc(dType,1);
 		root["stype"] = RFX_Type_SubType_Desc(dType, dSubType);
+		root["RSSI"] = RSSI;
+		root["Battery"] = BatteryLevel;
 		root["nvalue"] = nvalue;
 
 		//give all svalues separate
