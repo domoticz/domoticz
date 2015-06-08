@@ -98,7 +98,7 @@ public:
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
 	void SetInternalSecStatus();
 
-	bool UpdateDevice(const unsigned long long, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel);
+	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel);
 
 	boost::signals2::signal<void(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
 
