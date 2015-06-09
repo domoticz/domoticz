@@ -226,6 +226,9 @@ bool MQTT::ConnectIntEx()
 
 	int rc;
 	int keepalive = 60;
+
+	//int username_pw_set(const char *username, const char *password = NULL);
+
 	if ((rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive) != MOSQ_ERR_SUCCESS))
 	{
 		_log.Log(LOG_ERROR, "MQTT: Failed to start, return code: %d", rc);

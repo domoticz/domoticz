@@ -208,7 +208,7 @@ namespace OpenZWave
 #endif
 
 //#define MAX_TRIES		3	// Retry sends up to 3 times
-#define MAX_TRIES		1	// set this to one, as I believe now that a ACK failure is indication that the device is offline, hence additional attempts will not work. 
+#define MAX_TRIES		1	// set this to one, as I believe now that a ACK failure is indication that the device is offline, hence additional attempts will not work.
 #define MAX_MAX_TRIES		7	// Don't exceed this retry limit
 #define ACK_TIMEOUT	1000		// How long to wait for an ACK
 #define BYTE_TIMEOUT	150
@@ -385,7 +385,7 @@ namespace OpenZWave
 #define SLAVE_LEARN_MODE_REMOVE							0x03	// remove node directly but only if primary/inclusion controller
 
 #define OPTION_HIGH_POWER								0x80
-
+#define OPTION_NWI										0x40	// NWI Inclusion
 //Device request related
 #define BASIC_SET										0x01
 #define BASIC_REPORT									0x03

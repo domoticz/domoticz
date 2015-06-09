@@ -9,7 +9,7 @@
   
   <!-- Configuration Parameters -->
   <CommandClass id="112">
-     <Value type="list" index="250" genre="config" label="Mode" units="" min="0" max="1" size="1" value="1">
+     <Value type="list" index="250" genre="config" label="Mode" units="" min="0" max="1" size="1" value="0">
       <Help>Enable selective Group Mode or Scene Mode when the Key Fob is in Use mode</Help>
       <Item label="Group" value="0" />
       <Item label="Scene" value="1" />
