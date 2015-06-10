@@ -13,7 +13,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			{
 				userrights : permissionList.rights
 			}; 			
-			$rootScope.$broadcast('permissionsChanged')
+			$rootScope.$broadcast('permissionsChanged');
 		  },
 		  hasPermission: function (permission) {
 			if (permission == "Admin") {
@@ -379,15 +379,15 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				$.myglobals.tempsign=$rootScope.config.TempSign;
 			}
 		}
-
+		
 		$rootScope.config={
-				EnableTabDashboard: true,
+				EnableTabDashboard: false,
 				EnableTabFloorplans: false,
-				EnableTabLights: true,
-				EnableTabScenes: true,
-				EnableTabTemp: true,
-				EnableTabWeather: true,
-				EnableTabUtility: true,
+				EnableTabLights: false,
+				EnableTabScenes: false,
+				EnableTabTemp: false,
+				EnableTabWeather: false,
+				EnableTabUtility: false,
 				EnableTabCustom: false,
 				AllowWidgetOrdering: true,
 				FiveMinuteHistoryDays: 1,
@@ -402,57 +402,63 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				language: "en",
 				HaveUpdate: false
 				};
-		//Get Config
-		$.ajax({
-		 url: "json.htm?type=command&param=getconfig",
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			isOnline = true;
-			if (data.status == "OK") {
-				$rootScope.config.AllowWidgetOrdering=data.AllowWidgetOrdering;
-				$rootScope.config.FiveMinuteHistoryDays=data.FiveMinuteHistoryDays;
-				$rootScope.config.DashboardType=data.DashboardType;
-				$rootScope.config.Latitude=data.Latitude;
-				$rootScope.config.Longitude=data.Longitude;
-				$rootScope.config.MobileType=data.MobileType;
-				$rootScope.config.TempScale=data.TempScale;
-				$rootScope.config.TempSign=data.TempSign;
-				$rootScope.config.WindScale=data.WindScale;
-				$rootScope.config.WindSign=data.WindSign;
-				$rootScope.config.language=data.language;
-				$rootScope.config.EnableTabDashboard=data.result.EnableTabDashboard,
-				$rootScope.config.EnableTabFloorplans=data.result.EnableTabFloorplans;
-				$rootScope.config.EnableTabLights=data.result.EnableTabLights;
-				$rootScope.config.EnableTabScenes=data.result.EnableTabScenes;
-				$rootScope.config.EnableTabTemp=data.result.EnableTabTemp;
-				$rootScope.config.EnableTabWeather=data.result.EnableTabWeather;
-				$rootScope.config.EnableTabUtility=data.result.EnableTabUtility;
-				
-				SetLanguage(data.language);
-				
-				$rootScope.MakeGlobalConfig();
 
-				if (typeof data.result.templates!= 'undefined') {
-					var customHTML="";
-					$.each(data.result.templates, function(i,item)
-					{
-						var cFile=item;
-						var cName=cFile.charAt(0).toUpperCase() + cFile.slice(1);
-						var cURL="templates/"+cFile;
-						customHTML+='<li><a href="javascript:SwitchLayout(\'' + cURL + '\')">' + cName + '</a></li>';
-					});
-					if (customHTML!="") {
-						$("#custommenu").html(customHTML);
-						$rootScope.config.EnableTabCustom=data.result.EnableTabCustom;
+		$rootScope.GetGlobalConfig = function()
+		{
+			//Get Config
+			$.ajax({
+			 url: "json.htm?type=command&param=getconfig",
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				isOnline = true;
+				if (data.status == "OK") {
+					$rootScope.config.AllowWidgetOrdering=data.AllowWidgetOrdering;
+					$rootScope.config.FiveMinuteHistoryDays=data.FiveMinuteHistoryDays;
+					$rootScope.config.DashboardType=data.DashboardType;
+					$rootScope.config.Latitude=data.Latitude;
+					$rootScope.config.Longitude=data.Longitude;
+					$rootScope.config.MobileType=data.MobileType;
+					$rootScope.config.TempScale=data.TempScale;
+					$rootScope.config.TempSign=data.TempSign;
+					$rootScope.config.WindScale=data.WindScale;
+					$rootScope.config.WindSign=data.WindSign;
+					$rootScope.config.language=data.language;
+					$rootScope.config.EnableTabDashboard=data.result.EnableTabDashboard,
+					$rootScope.config.EnableTabFloorplans=data.result.EnableTabFloorplans;
+					$rootScope.config.EnableTabLights=data.result.EnableTabLights;
+					$rootScope.config.EnableTabScenes=data.result.EnableTabScenes;
+					$rootScope.config.EnableTabTemp=data.result.EnableTabTemp;
+					$rootScope.config.EnableTabWeather=data.result.EnableTabWeather;
+					$rootScope.config.EnableTabUtility=data.result.EnableTabUtility;
+				
+					SetLanguage(data.language);
+					
+					$rootScope.MakeGlobalConfig();
+
+					if (typeof data.result.templates!= 'undefined') {
+						var customHTML="";
+						$.each(data.result.templates, function(i,item)
+						{
+							var cFile=item;
+							var cName=cFile.charAt(0).toUpperCase() + cFile.slice(1);
+							var cURL="templates/"+cFile;
+							customHTML+='<li><a href="javascript:SwitchLayout(\'' + cURL + '\')">' + cName + '</a></li>';
+						});
+						if (customHTML!="") {
+							$("#custommenu").html(customHTML);
+							$rootScope.config.EnableTabCustom=data.result.EnableTabCustom;
+						}
 					}
 				}
-			}
-		 },
-		 error: function() {
-			isOnline=false;
-		 }
-		});
+			 },
+			 error: function() {
+				isOnline=false;
+			 }
+			});
+		}
+		
+		$rootScope.GetGlobalConfig();
 
 		$.ajax({
 		 url: "json.htm?type=command&param=getversion",

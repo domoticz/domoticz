@@ -698,7 +698,7 @@ define(['app'], function (app) {
 					//Evohome...
 					nbackcolor=EvoSetPointColor(item,sHeatMode,nbackcolor);
 					
-					var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+					var obackcolor=rgb2hex($(id + " #name").css( "background-color" ));
 					if (obackcolor!=nbackcolor) {
 									$(id + " #name").css( "background-color", nbackcolor );
 					}

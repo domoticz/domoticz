@@ -524,10 +524,7 @@ $(document).ready(function() {
 		<h2 data-i18n="Day">Day</h2>
 		<div id="winddaygraph" style="height: 300px;"></div>
 		<br>
-		<div class="row">
-			<div class="span4" id="winddirgraph" style="height: 400px;"></div>
-			<div class="span6" id="windspeedgraph" style="height: 400px;"></div>
-		</div>
+		<div id="windspeedgraph" style="height: 400px;"></div>
 		<br>
 		<h2 data-i18n="Month">Month</h2>
 		<div id="windmonthgraph" style="height: 300px;"></div>
@@ -776,21 +773,21 @@ $(document).ready(function() {
                 <div class="container">
 					<a class="brand hidden-phone" href="#Dashboard"><h1>Domoticz</h1> <h2 id="appversion">*</h2></a>
                         <ul class="nav" id="appnavbar">
-                            <li ng-show="{{config.EnableTabDashboard}}" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
-                            <li ng-show="{{config.EnableTabFloorplans}}" class="divider-vertical clFloorplans"></li>
-							<li ng-show="{{config.EnableTabFloorplans}}" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
-                            <li ng-show="{{config.EnableTabLights}}" class="divider-vertical clLightSwitches"></li>
-							<li ng-show="{{config.EnableTabLights}}" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
-                            <li ng-show="{{config.EnableTabScenes}}" class="divider-vertical clScenes"></li>
-							<li ng-show="{{config.EnableTabScenes}}" ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
-                            <li ng-show="{{config.EnableTabTemp}}" class="divider-vertical clTemperature"></li>
-							<li ng-show="{{config.EnableTabTemp}}" ng-class="{'current_page_item':getClass('/Temperature')}" class="clTemperature"><a id="cTemperature" href="#Temperature"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
-                            <li ng-show="{{config.EnableTabWeather}}" class="divider-vertical clWeather"></li>
-							<li ng-show="{{config.EnableTabWeather}}" ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
-                            <li ng-show="{{config.EnableTabUtility}}" class="divider-vertical clUtility"></li>
-							<li ng-show="{{config.EnableTabUtility}}" ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
-                            <li ng-show="{{config.EnableTabCustom}}" class="divider-vertical clcustommenu"></li>
-                            <li ng-show="{{config.EnableTabCustom}}" class="dropdown clcustommenu">
+                            <li ng-show="config.EnableTabDashboard" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
+                            <li ng-show="config.EnableTabFloorplans" class="divider-vertical clFloorplans"></li>
+							<li ng-show="config.EnableTabFloorplans" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
+                            <li ng-show="config.EnableTabLights" class="divider-vertical clLightSwitches"></li>
+							<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
+                            <li ng-show="config.EnableTabScenes" class="divider-vertical clScenes"></li>
+							<li ng-show="config.EnableTabScenes" ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
+                            <li ng-show="config.EnableTabTemp" class="divider-vertical clTemperature"></li>
+							<li ng-show="config.EnableTabTemp" ng-class="{'current_page_item':getClass('/Temperature')}" class="clTemperature"><a id="cTemperature" href="#Temperature"><img src="images/temperature.png"> <span class="hidden-phone hidden-tablet" data-i18n="Temperature">Temperature</span></a></li>
+                            <li ng-show="config.EnableTabWeather" class="divider-vertical clWeather"></li>
+							<li ng-show="config.EnableTabWeather" ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
+                            <li ng-show="config.EnableTabUtility" class="divider-vertical clUtility"></li>
+							<li ng-show="config.EnableTabUtility" ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
+                            <li ng-show="config.EnableTabCustom" class="divider-vertical clcustommenu"></li>
+                            <li ng-show="config.EnableTabCustom" class="dropdown clcustommenu">
                                 <a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
                                 <ul class="dropdown-menu pull-right" id="custommenu"></ul>
 							</li>
@@ -802,8 +799,8 @@ $(document).ready(function() {
 									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
 									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
                                     <li id="dUpdate" class="divider"></li>
-									<li ng-show="{{config.HaveUpdate}}"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li> 
-                                    <li ng-hide"{{config.HaveUpdate}}"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li> 
+                                    <li ng-hide"config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
                                     <li class="dropdown-submenu">
 										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
 										<ul class="dropdown-menu pull-left">

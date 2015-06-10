@@ -1660,7 +1660,7 @@ define(['app'], function (app) {
 							nbackcolor="#A4B1EE";
 						}
 
-						var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+						var obackcolor=rgb2hex($(id + " #name").css( "background-color" ));
 						if (obackcolor!=nbackcolor) {
 							$(id + " #name").css( "background-color", nbackcolor );
 						}

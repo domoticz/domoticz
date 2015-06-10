@@ -192,7 +192,7 @@ define(['app'], function (app) {
 							}
 						}
 					}
-					var obackcolor=rgb2hex($(id + " #name").css( "background-color" )).toUpperCase();
+					var obackcolor=rgb2hex($(id + " #name").css( "background-color" ));
 					if (obackcolor!=nbackcolor) {
 									$(id + " #name").css( "background-color", nbackcolor );
 					}
