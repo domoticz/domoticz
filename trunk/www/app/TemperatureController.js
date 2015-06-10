@@ -741,7 +741,7 @@ define(['app'], function (app) {
 		  var tophtm=
 				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 				'\t<tr>\n' +
-				'\t  <td align="left">\n' +
+				'\t  <td align="left" valign="top" id="timesun">\n' +
 				'\t    <div id="timesun" />\n' +
 				'\t  </td>\n' +
 				'\t  <td align="right">\n' +
