@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : Teleinfo.h
 Author : Nicolas HILAIRE
-Version : 1.2
+Version : 1.3
 Description : This class manage the Teleinfo Signal
 
 
@@ -10,6 +10,7 @@ History :
 - 2013-11-01 : Creation
 - 2014-10-29 : Add 'EJP' contract (Laurent MEY)
 - 2014-12-13 : Add 'Tempo' contract (Kevin NICOLAS)
+- 2015-06-10 : Fix bug power divided by 2 (Christophe DELPECH)
 */
 
 #pragma once
@@ -107,6 +108,7 @@ private:
 	boost::asio::serial_port_base::stop_bits m_iOptStop;
 
 	int m_counter;
+	bool Label_PAPP_Exist = false;
 	static const int readBufferSize = 1028;
 	static const int NumberOfFrameToSendOne = 8;
 
@@ -119,3 +121,4 @@ private:
 	int m_bufferpos;
 	static Teleinfo::Match m_matchlist[19];
 };
+
