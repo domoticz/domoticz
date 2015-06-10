@@ -44,8 +44,12 @@
       <Item label="Learn Mode" value="5" />
     </Value>
 
-    <Value type="bool" genre="config" instance="1" index="250" label="All Buttons Scenes" value="false" size="1" write_only="true">
-      <Help>When this option is set to true, the buttons 1-4 will send out a Scene Event. Button 1 (tap)=1, Button 1 (hold)=2, Button 2 (tap)=3, Button 2 (hold)=4, Button 3 (tap)=5, Button 3 (hold)=6, Button 4 (tap)=7, Button 4 (hold)=8. NOTE: Minimote firmware 1.17 or higher is required, firmware 1.19 is highly recommended.</Help>
+    <Value type="list" index="250" genre="config" label="Mode" units="" min="0" max="1" size="1" value="1">
+      <Help>
+        Enable selective Group Mode or Scene Mode when Button is in Use.
+        NOTE: Minimote firmware 1.17 or higher is required, firmware 1.19 is highly recommended.</Help>
+      <Item label="Group" value="0" />
+      <Item label="Scene" value="1" />
     </Value>
 
   </CommandClass>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Z-Wave.Me: ZME_WALLC-S Secure Wall Controller -->
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Button 1 and 3 pair mode" units="" min="0" max="2" size="1" value="1">
+			<Help>In separate mode button 1 works with group A, button 3 with groups C. Click is On, Hold is dimming Up, Double click is Off, Click-Hold is dimming Down. In pair button 1/3 are Up/Down correspondingly. Click is On/Off, Hold is dimming Up/Down. Single clicks works with group A, double click with group C.</Help>
+			<Item label="Separately" value="0" />
+			<Item label="In pair without double clicks (Default)" value="1" />
+			<Item label="In pair with double clicks" value="2" />
+		</Value>
+		<Value type="list" index="2" genre="config" label="Button 2 and 4 pair mode" units="" min="0" max="2" size="1" value="1">
+			<Help>In separate mode button 2 works with control group B, button 4 with control group D. Click is On, Hold is dimming Up, Double click is Off, Click-Hold is dimming Down. In pair button B/D are Up/Down correspondingly. Click is On/Off, Hold is dimming Up/Down. Single clicks works with group B, double click with group D.</Help>
+			<Item label="Separately" value="0" />
+			<Item label="In pair without double clicks (Default)" value="1" />
+			<Item label="In pair with double clicks" value="2" />
+		</Value>
+		<Value type="list" index="11" genre="config" label="Command to Control Group A" units="" min="0" max="8" size="1" value="8">
+			<Help>This parameter defines the command to be sent to devices of control group A when the related button is pressed</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="1" />
+			<Item label="Switch On/Off only (send Basic Set)" value="2" />
+			<Item label="Switch All" value="3" />
+			<Item label="Send Scenes" value="4" />
+			<Item label="Send Preconfigured Scenes" value="5" />
+			<Item label="Control DoorLock" value="7" />
+			<Item label="Central Scene to Gateway (Default)" value="8" />
+		</Value>
+		<Value type="list" index="12" genre="config" label="Command to Control Group B" units="" min="0" max="8" size="1" value="8">
+			<Help>This parameter defines the command to be sent to devices of control group B when the related button is pressed</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="1" />
+			<Item label="Switch On/Off only (send Basic Set)" value="2" />
+			<Item label="Switch All" value="3" />
+			<Item label="Send Scenes" value="4" />
+			<Item label="Send Preconfigured Scenes" value="5" />
+			<Item label="Control DoorLock" value="7" />
+			<Item label="Central Scene to Gateway (Default)" value="8" />
+		</Value>
+		<Value type="list" index="13" genre="config" label="Command to Control Group C" units="" min="0" max="8" size="1" value="8">
+			<Help>This parameter defines the command to be sent to devices of control group C when the related button is pressed</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="1" />
+			<Item label="Switch On/Off only (send Basic Set)" value="2" />
+			<Item label="Switch All" value="3" />
+			<Item label="Send Scenes" value="4" />
+			<Item label="Send Preconfigured Scenes" value="5" />
+			<Item label="Control DoorLock" value="7" />
+			<Item label="Central Scene to Gateway (Default)" value="8" />
+		</Value>
+		<Value type="list" index="14" genre="config" label="Command to Control Group D" units="" min="0" max="8" size="1" value="8">
+			<Help>This parameter defines the command to be sent to devices of control group D when the related button is pressed</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On/Off and Dim (send Basic Set and Switch Multilevel)" value="1" />
+			<Item label="Switch On/Off only (send Basic Set)" value="2" />
+			<Item label="Switch All" value="3" />
+			<Item label="Send Scenes" value="4" />
+			<Item label="Send Preconfigured Scenes" value="5" />
+			<Item label="Control DoorLock" value="7" />
+			<Item label="Central Scene to Gateway (Default)" value="8" />
+		</Value>
+		<Value type="list" index="21" genre="config" label="Send the following Switch All commands" units="" min="1" max="255" size="1">
+			<Item label="Switch off only (Default)" value="1" />
+			<Item label="Switch on only" value="2" />
+			<Item label="Switch all on and off" value="255" />
+		</Value>
+		<Value type="list" index="22" genre="config" label="Invert buttons" units="" min="0" max="1" size="1">
+			<Item label="No (default)" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="25" genre="config" label="Blocks wakeup even when wakeup interval is set" units="" min="0" max="1" size="1" value="1">
+			<Help>If the KFOB wakes up and there is no controller nearby, several unsuccessful communication attempts will drain battery</Help>
+			<Item label="Wakeup is blocked" value="0" />
+			<Item label="Wakeup is possible if configured accordingly. (Default)" value="1" />
+		</Value>
+		<Value type="list" index="30" genre="config" label="Send unsolicited Battery Report on Wake Up" units="" min="0" max="1" size="1" value="1">
+			<Item label="No" value="0" />
+			<Item label="To same node as wake up notification (Default)" value="1" />
+			<Item label="Broadcast to neighbours" value="2" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+        <Associations num_groups="5">
+            <Group index="1" max_associations="10" label="Life line" auto="true" />
+            <Group index="2" max_associations="10" label="Group A" auto="false" />
+            <Group index="3" max_associations="10" label="Group B" auto="false" />
+            <Group index="4" max_associations="10" label="Group C" auto="false" />
+            <Group index="5" max_associations="10" label="Group D" auto="false" />
+        </Associations>
+	</CommandClass>
+
+</Product>
+		
