@@ -95,7 +95,7 @@ Teleinfo::Teleinfo(const int ID, const std::string& devname, unsigned int baud_r
 	m_iOptCsize = boost::asio::serial_port_base::character_size(TELEINFO_CARACTER_SIZE);
 	m_iOptFlow = boost::asio::serial_port_base::flow_control(TELEINFO_FLOW_CONTROL);
 	m_iOptStop = boost::asio::serial_port_base::stop_bits(TELEINFO_STOP_BITS);
-
+	m_bLabel_PAPP_Exist = false;
 	Init();
 }
 
@@ -300,11 +300,11 @@ void Teleinfo::MatchLine()
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
 				m_counter = 0;
 				m_p1power.usagecurrent = 0;
-				Label_PAPP_Exist = true;
+				m_bLabel_PAPP_Exist = true;
 			}
 			break;
 		case TELEINFO_TYPE_MOTDETAT:
-			if (Label_PAPP_Exist == false)
+			if (m_bLabel_PAPP_Exist == false)
 			{
 				m_counter++;
 				if (m_counter >= NumberOfFrameToSendOne)
