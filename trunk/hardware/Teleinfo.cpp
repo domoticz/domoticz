@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : Teleinfo.cpp
 Author : Nicolas HILAIRE
-Version : 1.2
+Version : 1.3
 Description : This class manage the Teleinfo Signal
 
 
@@ -10,6 +10,7 @@ History :
 - 2013-11-01 : Creation
 - 2014-10-29 : Add 'EJP' contract (Laurent MEY)
 - 2014-12-13 : Add 'Tempo' contract (Kevin NICOLAS)
+- 2015-06-10 : Fix bug power divided by 2 (Christophe DELPECH)
 */
 
 #include "stdafx.h"
@@ -190,6 +191,7 @@ void Teleinfo::MatchLine()
 	Teleinfo::Match t;
 	char value[20] = "";
 	std::string vString;
+
 	//_log.Log(LOG_NORM,"Frame : #%s#", m_buffer);
 	for (i = 0; (i<sizeof(m_matchlist) / sizeof(Teleinfo::Match))&(!found); i++)
 	{
@@ -298,20 +300,24 @@ void Teleinfo::MatchLine()
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
 				m_counter = 0;
 				m_p1power.usagecurrent = 0;
+				Label_PAPP_Exist = true;
 			}
 			break;
 		case TELEINFO_TYPE_MOTDETAT:
-			m_counter++;
-			if (m_counter >= NumberOfFrameToSendOne)
+			if (Label_PAPP_Exist == false)
 			{
-				//_log.Log(LOG_NORM,"Teleinfo frame complete");
-				//_log.Log(LOG_NORM,"powerusage1 = %lu", m_p1power.powerusage1);
-				//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
-				//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
-				m_p1power.usagecurrent /= m_counter;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
-				m_counter = 0;
-				m_p1power.usagecurrent = 0;
+				m_counter++;
+				if (m_counter >= NumberOfFrameToSendOne)
+				{
+					//_log.Log(LOG_NORM,"Teleinfo frame complete");
+					//_log.Log(LOG_NORM,"powerusage1 = %lu", m_p1power.powerusage1);
+					//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
+					//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
+					m_p1power.usagecurrent /= m_counter;
+					sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+					m_counter = 0;
+					m_p1power.usagecurrent = 0;
+				}
 			}
 			break;
 		default:
@@ -391,3 +397,4 @@ bool Teleinfo::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return false;
 }
+
