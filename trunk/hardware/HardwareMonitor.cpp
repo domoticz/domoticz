@@ -689,6 +689,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 
 		//Disk Usage
 		std::map<std::string, _tDUsageStruct> _disks;
+		std::map<std::string, std::string> _dmounts_;
 		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df");
 		std::vector<std::string>::const_iterator ittDF;
 		for (ittDF=_rlines.begin(); ittDF!=_rlines.end(); ++ittDF)
@@ -700,6 +701,14 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 			int ret=sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret==6)
 			{
+				std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
+				if (it != _dmounts_.end())
+				{
+					if (it->second.length() < strlen(smountpoint))
+					{
+						continue;
+					}
+				}
 				if (strstr(dname,"/dev")!=NULL)
 				{
 					_tDUsageStruct dusage;
@@ -708,6 +717,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 					dusage.AvailBlocks=availblocks;
 					dusage.MountPoint=smountpoint;
 					_disks[dname]=dusage;
+					_dmounts_[dname]=smountpoint;
 				}
 			}
 		}
