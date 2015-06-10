@@ -108,7 +108,7 @@ private:
 	boost::asio::serial_port_base::stop_bits m_iOptStop;
 
 	int m_counter;
-	bool Label_PAPP_Exist = false;
+	bool m_bLabel_PAPP_Exist;
 	static const int readBufferSize = 1028;
 	static const int NumberOfFrameToSendOne = 8;
 
