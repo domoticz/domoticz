@@ -103,7 +103,7 @@ bool S0MeterSerial::StartHardware()
 	m_bIsStarted=true;
 	m_bufferpos=0;
 	ReloadLastTotals();
-
+	/*
 	std::stringstream sstr;
 	sstr << "MODE=2;";
 
@@ -111,8 +111,8 @@ bool S0MeterSerial::StartHardware()
 	{
 		sstr << "P" << int(ii + 1) << "=" << m_meters[ii].m_pulse_per_unit << ";";
 	}
-
 	write(sstr.str());
+	*/
 	setReadCallback(boost::bind(&S0MeterSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
 
