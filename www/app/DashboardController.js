@@ -3124,14 +3124,19 @@ define(['app'], function (app) {
 			
 			var suntext="";
 			if (bShowRoomplan==false) {
-				suntext='<div id="timesun" /><br>\n';
+				tophtm+=
+					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<tr>\n' +
+					'\t  <td align="left" valign="top" id="timesun">'+suntext+'</td>\n' +
+					'\t</tr>\n' +
+					'\t</table>\n';
 			}
 			else {
 				suntext=
 					'<div>'+
 					'<table border="0" cellpadding="0" cellspacing="0" width="100%">'+
 					'<tr>'+
-						'<td align="left" id="timesun"></td>'+
+						'<td align="left" valign="top" id="timesun"></td>'+
 						'<td align="right">'+
 						'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">'+
 						'<option value="0" data-i18n="All">All</option>'+

@@ -237,7 +237,7 @@ define(['app'], function (app) {
 		  var tophtm=
 				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 				'\t<tr>\n' +
-				'\t  <td align="left"><div id="timesun" /></td>\n';
+				'\t  <td align="left" valign="top" id="timesun"><div id="timesun" /></td>\n';
 		  if ($scope.config.Latitude!="") {
 			tophtm+=
 				'\t  <td style="width: 150px;" align="right">\n' +
