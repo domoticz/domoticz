@@ -222,8 +222,8 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 			const std::string sID=ittInstance.key().asString();
 			_device.instanceID=atoi(sID.c_str());
 			_device.indexID=0;
-			if ((_device.instanceID==0)&&(haveMultipleInstance))
-				continue;// We skip instance 0 if there are more, since it should be mapped to other instances or their superposition
+//			if ((_device.instanceID==0)&&(haveMultipleInstance))
+//				continue;// We skip instance 0 if there are more, since it should be mapped to other instances or their superposition
 
 			const Json::Value instance=(*ittInstance);
 
@@ -519,7 +519,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 			{
 				int devID=atoi(results[1].c_str());
 				int scaleID=atoi(results[7].c_str());
-				pDevice=FindDeviceByScale(devID,scaleID);
+				pDevice=FindDeviceByScale(devID,scaleID,cmdID);
 			}
 		}
 	}
@@ -537,7 +537,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 			{
 				int devID=atoi(results[1].c_str());
 				int instanceID=atoi(results[7].c_str());
-				pDevice=FindDeviceInstance(devID,instanceID);
+				pDevice=FindDeviceInstance(devID,instanceID,cmdID);
 			}
 		}
 	}
@@ -817,31 +817,33 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	pDevice->sequence_number+=1;
 	if (pDevice->sequence_number==0)
 		pDevice->sequence_number=1;
-	SendDevice2Domoticz(pDevice);
+		SendDevice2Domoticz(pDevice);
 }
 
-ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceByScale(const int nodeID, const int scaleID)
+ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceByScale(const int nodeID, const int scaleID, const int cmdID)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
 	{
 		if (
 			(itt->second.nodeID==nodeID)&&
-			(itt->second.scaleID==scaleID)
+			(itt->second.scaleID==scaleID)&&
+			(itt->second.commandClassID==cmdID)
 			)
 			return &itt->second;
 	}
 	return NULL;
 }
 
-ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceInstance(const int nodeID, const int instanceID)
+ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceInstance(const int nodeID, const int instanceID, const int cmdID)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
 	{
 		if (
 			(itt->second.nodeID==nodeID)&&
-			(itt->second.instanceID==instanceID)
+			(itt->second.instanceID==instanceID)&&
+			(itt->second.commandClassID==cmdID)
 			)
 			return &itt->second;
 	}

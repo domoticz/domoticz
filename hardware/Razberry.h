@@ -23,8 +23,8 @@ private:
 	void parseDevices(const Json::Value &devroot);
 	void UpdateDevice(const std::string &path, const Json::Value &obj);
 
-	_tZWaveDevice* FindDeviceByScale(const int nodeID, const int scaleID);
-	_tZWaveDevice* FindDeviceInstance(const int nodeID, const int instanceID);
+	_tZWaveDevice* FindDeviceByScale(const int nodeID, const int scaleID, const int cmdID);
+	_tZWaveDevice* FindDeviceInstance(const int nodeID, const int instanceID, const int cmdID);
 
 	bool SwitchLight(const int nodeID, const int instanceID, const int commandClass, const int value);
 	bool SwitchColor(const int nodeID, const int instanceID, const int commandClass, const std::string &ColorStr);
