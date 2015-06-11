@@ -290,6 +290,7 @@ void Teleinfo::MatchLine()
 			//we count to prevent add each block but only one every 10 seconds
 			m_p1power.usagecurrent += ulValue;
 			m_counter++;
+			m_bLabel_PAPP_Exist = true;
 			if (m_counter >= NumberOfFrameToSendOne)
 			{
 				//_log.Log(LOG_NORM,"Teleinfo frame complete");
@@ -300,7 +301,6 @@ void Teleinfo::MatchLine()
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
 				m_counter = 0;
 				m_p1power.usagecurrent = 0;
-				m_bLabel_PAPP_Exist = true;
 			}
 			break;
 		case TELEINFO_TYPE_MOTDETAT:
