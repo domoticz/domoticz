@@ -3124,10 +3124,10 @@ define(['app'], function (app) {
 			
 			var suntext="";
 			if (bShowRoomplan==false) {
-				tophtm+=
+				suntext=
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun">'+suntext+'</td>\n' +
+					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'\t</tr>\n' +
 					'\t</table>\n';
 			}

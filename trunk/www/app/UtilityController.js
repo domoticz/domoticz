@@ -832,14 +832,12 @@ define(['app'], function (app) {
 		  
 		  var bHaveAddedDevider = false;
 
-		var suntext='<div id="timesun" />\n';
-
 		  var tophtm="";
 		  if ($.RoomPlans.length==0) {
 				tophtm+=
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun">'+suntext+'</td>\n' +
+					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'\t</tr>\n' +
 					'\t</table>\n';
 		  }
@@ -847,7 +845,7 @@ define(['app'], function (app) {
 				tophtm+=
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun">'+suntext+'</td>\n' +
+					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'<td align="right">'+
 					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">'+
 					'<option value="0" data-i18n="All">All</option>'+
