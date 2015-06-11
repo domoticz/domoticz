@@ -7827,7 +7827,12 @@ namespace http {
 			if (dbasefile == "") {
 				return (char*)m_retstr.c_str();
 			}
-			if (!m_sql.RestoreDatabase(dbasefile))
+
+			m_mainworker.StopDomoticzHardware();
+
+			bool bOK = m_sql.RestoreDatabase(dbasefile);
+			m_mainworker.AddAllDomoticzHardware();
+			if (!bOK)
 				return (char*)m_retstr.c_str();
 			return (char*)m_retstr.c_str();
 		}

@@ -144,6 +144,44 @@ MainWorker::~MainWorker()
 	Stop();
 }
 
+void MainWorker::AddAllDomoticzHardware()
+{
+	//Add Hardware devices
+	std::vector<std::vector<std::string> > result;
+	std::stringstream szQuery;
+	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
+	result = m_sql.query(szQuery.str());
+	//std::string revfile;
+	//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=Started&amp;idgoal=3",revfile);
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+
+			int ID = atoi(sd[0].c_str());
+			std::string Name = sd[1];
+			std::string sEnabled = sd[2];
+			bool Enabled = (sEnabled == "1") ? true : false;
+			_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[3].c_str());
+			std::string Address = sd[4];
+			unsigned short Port = (unsigned short)atoi(sd[5].c_str());
+			std::string SerialPort = sd[6];
+			std::string Username = sd[7];
+			std::string Password = sd[8];
+			int mode1 = atoi(sd[9].c_str());
+			int mode2 = atoi(sd[10].c_str());
+			int mode3 = atoi(sd[11].c_str());
+			int mode4 = atoi(sd[12].c_str());
+			int mode5 = atoi(sd[13].c_str());
+			int mode6 = atoi(sd[14].c_str());
+			int DataTimeout = atoi(sd[15].c_str());
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout);
+		}
+	}
+}
+
 void MainWorker::StartDomoticzHardware()
 {
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
@@ -721,41 +759,7 @@ bool MainWorker::Start()
 	}
 	GetSunSettings();
 	GetAvailableWebThemes();
-	//Add Hardware devices
-	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
-	result=m_sql.query(szQuery.str());
-	//std::string revfile;
-	//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=Started&amp;idgoal=3",revfile);
-	if (result.size()>0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt=result.begin(); itt!=result.end(); ++itt)
-		{
-			std::vector<std::string> sd=*itt;
-
-			int ID=atoi(sd[0].c_str());
-			std::string Name=sd[1];
-			std::string sEnabled=sd[2];
-			bool Enabled=(sEnabled=="1")?true:false;
-			_eHardwareTypes Type=(_eHardwareTypes)atoi(sd[3].c_str());
-			std::string Address=sd[4];
-			unsigned short Port = (unsigned short)atoi(sd[5].c_str());
-			std::string SerialPort = sd[6];
-			std::string Username = sd[7];
-			std::string Password=sd[8];
-			int mode1=atoi(sd[9].c_str());
-			int mode2=atoi(sd[10].c_str());
-			int mode3=atoi(sd[11].c_str());
-			int mode4=atoi(sd[12].c_str());
-			int mode5 = atoi(sd[13].c_str());
-			int mode6 = atoi(sd[14].c_str());
-			int DataTimeout = atoi(sd[15].c_str());
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout);
-		}
-	}
-
+	AddAllDomoticzHardware();
 	m_datapush.Start();
 	m_httppush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
