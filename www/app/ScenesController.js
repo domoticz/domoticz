@@ -1294,9 +1294,7 @@ define(['app'], function (app) {
 			tophtm+=
 				'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">' +
 				'\t<tr>' +
-				'\t  <td align="left" valign="top" id="timesun">\n' +
-				'\t    <div id="timesun"/>\n' +
-				'\t  </td>\n' +
+				'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 				'\t  <td align="right">' +
 				'\t    <a class="btnstyle" onclick="AddScene();" data-i18n="Add Scene">Add Scene</a>' +
 				'\t  </td>' +
