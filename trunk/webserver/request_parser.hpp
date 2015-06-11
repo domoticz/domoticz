@@ -39,7 +39,7 @@ public:
   {
 	  while ( begin != end)
 	  {
-		  boost::tribool result = consume(req, *begin++);
+		  boost::tribool result = consume(req, begin, end);
 			
 		  if (result || !result) {
 			  return boost::make_tuple(result, begin);
@@ -52,7 +52,7 @@ public:
 
 private:
   /// Handle the next character of input.
-  boost::tribool consume(request& req, char input);
+  boost::tribool consume(request& req, const char* &input, const char *end);
 
   /// Check if a byte is an HTTP character.
   static bool is_char(int c);

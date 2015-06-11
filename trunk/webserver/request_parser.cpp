@@ -24,8 +24,9 @@ void request_parser::reset()
   state_ = method_start;
 }
 
-boost::tribool request_parser::consume(request& req, char input)
+boost::tribool request_parser::consume(request& req, const char* &pInput, const char *end)
 {
+  char input = *pInput++;
   switch (state_)
   {
   case method_start:
@@ -313,16 +314,21 @@ boost::tribool request_parser::consume(request& req, char input)
 		  return false;
 	  }
   case reading_content:
-	  req.content += input;
-	  if( req.content.length() == req.content_length )
-	  {
-		  return true;
-	  } 
-	  else
-	  {
-		  return boost::indeterminate;
+	   // reset pInput to start value
+	  pInput--;
+	  // now we check if we have enough input
+	  if ((end - pInput) < req.content_length) {
+		// not enough input, fast forward to end
+		pInput = end;
+		// tell to read more
+		return boost::indeterminate;
 	  }
-
+	  // read all content
+	  req.content = std::string(pInput, req.content_length);
+	  // adjust input pointer
+	  pInput = end;
+	  // all good
+	  return true;
   default:
     return false;
   }

@@ -274,7 +274,12 @@ $(document).ready(function() {
 				{
 					// Browser downloaded a new app cache.
 					// Swap it in and reload the page to get the new hotness.
-					window.applicationCache.swapCache();
+					try {
+						window.applicationCache.swapCache();
+					}
+					catch(error) {
+						console.log(error.code);
+					}					
 					window.location.reload();
 				}
 			}, false);
@@ -285,7 +290,12 @@ $(document).ready(function() {
 				{
 					// Browser downloaded a new app cache.
 					// Swap it in and reload the page to get the new hotness.
-					window.applicationCache.swapCache();
+					try {
+						window.applicationCache.swapCache();
+					}
+					catch(error) {
+						console.log(error.code);
+					}					
 					window.location.reload();
 				}
 			}, false);
