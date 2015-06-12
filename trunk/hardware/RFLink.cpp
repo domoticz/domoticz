@@ -360,7 +360,19 @@ bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 #endif
+    m_bTXokay=false; // clear OK flag
 	write(sstr.str());
+	time_t atime = mytime(NULL);
+	time_t btime = mytime(NULL);
+    
+	// Wait for an OK response from RFLink to make sure the command was executed
+	while (m_bTXokay == false) {
+        if (btime-atime > 4) {
+			_log.Log(LOG_ERROR, "RFLink: TX time out...");
+			return false;
+        }
+        btime = mytime(NULL);
+	}
 	return true;
 }
 
@@ -475,9 +487,15 @@ bool CRFLink::ParseLine(const std::string &sLine)
 			//write("10;RFUDEBUG=ON;\n");
 			return true;
 		}
+		if (Name_ID.find("OK") != std::string::npos) {
+			//_log.Log(LOG_STATUS, "RFLink: OK received!...");
+            m_bTXokay = true; // variable to indicate an OK was received
+			return true;
+		}
 	}
 	if (results.size() < 4)
 		return true;
+
 	if (results[3].find("ID=") == std::string::npos)
 		return false; //??
 
