@@ -120,7 +120,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Changed: Enlarged windows console log window
 - Implemented: Lithuanian language support (thanks to our translators!)
 - Changed: Scenes, now supports adding security devices
-- Changed: Teleinfo, added support for CBEMM meters (TELEINFO_TYPE_MOTDETAT), thankx to berty!
+- Changed: Teleinfo, added support for CBEMM meters (TELEINFO_TYPE_MOTDETAT), thanks to berty!
 - Fixed: CM113 "Watt", now only displays 1 phase if phase 2/3 are 0 (not used)
 - Implemented: Option to Enable/Disable the Custom tab for non-users (admin)
 - Changed: Light/Switch log now includes seconds in popup
@@ -128,6 +128,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: custom tab now only displayed when there are html files in the template folder, and the option display custom tab is enabled
 - Fixed: Removed update notification in the login screen
 - Fixed: wind gust tooltip
+- Implemented: MySensors, V_UP/V_DOWN/V_STOP/S_COVER
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

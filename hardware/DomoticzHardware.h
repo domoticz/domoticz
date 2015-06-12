@@ -126,6 +126,7 @@ private:
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance);
 	void SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue);
 	void SenUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI);
+	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
 
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 

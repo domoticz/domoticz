@@ -493,7 +493,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("HttpData", data.c_str());
 			m_sql.UpdatePreferencesVar("HttpActive", ilinkactive);
 			m_sql.UpdatePreferencesVar("HttpDebug", idebugenabled);
-			m_sql.UpdatePreferencesVar("HttpAuth", auth.c_str());
+			m_sql.UpdatePreferencesVar("HttpAuth", atoi(auth.c_str()));
 			m_sql.UpdatePreferencesVar("HttpAuthBasicLogin", authbasiclogin.c_str());
 			m_sql.UpdatePreferencesVar("HttpAuthBasicPassword", authbasicpassword.c_str());
 

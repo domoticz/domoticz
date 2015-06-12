@@ -471,7 +471,7 @@ void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int Ch
 	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ")";
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ") AND (Type==" << int(pTypeLighting2) << ") AND (Subtype==" << int(sTypeAC) << ")";
 	result = m_sql.query(szQuery.str()); //-V519
 	if (result.size() < 1)
 	{
@@ -495,7 +495,7 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, cons
 	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ")";
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ") AND (Type==" << int(pTypeLighting2) << ") AND (Subtype==" << int(sTypeAC) << ")";
 	result = m_sql.query(szQuery.str()); //-V519
 	if (result.size() < 1)
 	{
@@ -550,7 +550,48 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, cons
 		//Assign default name for device
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ")";
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ") AND (Type==" << int(pTypeLighting2) << ") AND (Subtype==" << int(sTypeAC) << ")";
+		m_sql.query(szQuery.str());
+	}
+}
+
+void CDomoticzHardwareBase::SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+
+	char szIdx[10];
+	sprintf(szIdx, "%02X%02X%02X", NodeID);
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ") AND (Type==" << int(pTypeBlinds) << ") AND (Subtype==" << int(sTypeBlindsT0) << ")";
+	result = m_sql.query(szQuery.str()); //-V519
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	//Send as Blinds
+	tRBUF lcmd;
+	memset(&lcmd, 0, sizeof(RBUF));
+	lcmd.BLINDS1.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+	lcmd.BLINDS1.packettype = pTypeBlinds;
+	lcmd.BLINDS1.subtype = sTypeBlindsT0;
+	lcmd.BLINDS1.id1 = 0;
+	lcmd.BLINDS1.id2 = 0;
+	lcmd.BLINDS1.id3 = NodeID;
+	lcmd.BLINDS1.id4 = 0;
+	lcmd.BLINDS1.unitcode = ChildID;
+	lcmd.BLINDS1.cmnd = Command;
+	lcmd.BLINDS1.filler = 0;
+	lcmd.BLINDS1.rssi = 12;
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.BLINDS1);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ") AND (Type==" << int(pTypeBlinds) << ") AND (Subtype==" << int(sTypeBlindsT0) << ")";
 		m_sql.query(szQuery.str());
 	}
 }
