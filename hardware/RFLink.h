@@ -31,6 +31,7 @@ private:
 	int m_retrycntr;
 
 	time_t m_LastReceivedTime;
+	bool m_bTXokay;
 
 //	boost::mutex m_sendMutex;
 //	std::vector<std::string> m_sendqueue;
