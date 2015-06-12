@@ -35,7 +35,18 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Kambrook", sSwitchTypeKambrook },     // p8
 	{ "SelectPlus", sSwitchTypeSelectPlus }, // p70
 	{ "Byron", sSwitchTypeByronSX },         // p72
-    { "X10", sSwitchTypeX10 },               // p9
+	{ "Byron MP", sSwitchTypeByronMP001 },   // p74
+	{ "Deltronic", sSwitchTypeSelectPlus3 }, // p73
+	{ "X10", sSwitchTypeX10 },               // p9
+	{ "EMW100", sSwitchTypeEMW100 },         // p13
+	{ "EMW200", sSwitchTypeEMW200 },         // p-
+	{ "BSB", sSwitchTypeBBSB },              // p-
+	{ "MDRemote", sSwitchTypeMDREMOTE },     // p14
+	{ "Waveman", sSwitchTypeWaveman },       // p-
+	{ "AB400D", sSwitchTypeAB400D },         // p-
+	{ "Impuls", sSwitchTypeIMPULS },         // p16
+	{ "Anslut", sSwitchTypeANSLUT },         // p17
+	{ "Lightwave", sSwitchTypeLightwaveRF }, // p18
 	{ "", -1 }
 };
 
