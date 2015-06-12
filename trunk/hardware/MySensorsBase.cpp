@@ -591,6 +591,11 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		//RRGGBBWW
 		SendRGBWSwitch(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->intvalue, true, "RGBW Light");
 		break;
+	case V_UP:
+	case V_DOWN:
+	case V_STOP:
+		SendBlindSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->intvalue, "Blinds/Window");
+		break;
 	case V_LIGHT_LEVEL:
 		{
 			_tLightMeter lmeter;
@@ -797,6 +802,20 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	}
 }
 
+bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &blind_value)
+{
+	char szIdx[10];
+	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	szQuery << "SELECT nValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit==" << ChildID << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+		return false;
+	blind_value = atoi(result[0][0].c_str());
+	return true;
+}
+
 bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue)
 {
 	char szIdx[10];
@@ -908,6 +927,32 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 		else
 		{
 			_log.Log(LOG_ERROR, "MySensors: Light command received for unknown node_id: %d", node_id);
+			return false;
+		}
+	}
+	else if (pCmd->BLINDS1.packettype == pTypeBlinds)
+	{
+		//Blinds/Window command
+		int node_id = pCmd->BLINDS1.id3;
+		int child_sensor_id = pCmd->BLINDS1.unitcode;
+
+		if (_tMySensorNode *pNode = FindNode(node_id))
+		{
+			if (pCmd->BLINDS1.cmnd == blinds_sOpen)
+			{
+				SendCommand(node_id, child_sensor_id, MT_Set, V_UP, "");
+			}
+			else if (pCmd->BLINDS1.cmnd == blinds_sClose)
+			{
+				SendCommand(node_id, child_sensor_id, MT_Set, V_DOWN, "");
+			}
+			else if (pCmd->BLINDS1.cmnd == blinds_sStop)
+			{
+				SendCommand(node_id, child_sensor_id, MT_Set, V_STOP, "");
+			}
+		}
+		else {
+			_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
 			return false;
 		}
 	}
@@ -1130,6 +1175,18 @@ void MySensorsBase::ParseLine()
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
 			break;
+		case V_UP:
+			pSensor->intvalue = blinds_sOpen;
+			bHaveValue = true;
+			break;
+		case V_DOWN:
+			pSensor->intvalue = blinds_sClose;
+			bHaveValue = true;
+			break;
+		case V_STOP:
+			pSensor->intvalue = blinds_sStop;
+			bHaveValue = true;
+			break;
 		case V_DUST_LEVEL:
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
@@ -1252,6 +1309,10 @@ void MySensorsBase::ParseLine()
 			sub_type = V_LIGHT;
 			bDoAdd = true;
 			break;
+		case S_COVER:
+			sub_type = V_UP;
+			bDoAdd = true;
+			break;
 		case S_RGB_LIGHT:
 			sub_type = V_RGBW; //should this be RGB/RGBW
 			bDoAdd = true;
@@ -1301,6 +1362,14 @@ void MySensorsBase::ParseLine()
 					UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
 				else
 					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, (sub_type == V_RGBW), (sub_type == V_RGBW) ? "RGBW Light" : "RGB Light");
+			}
+		}
+		else if (sub_type == V_UP)
+		{
+			int blind_value;
+			if (!GetBlindsValue(node_id, child_sensor_id, blind_value))
+			{
+				SendBlindSensor(node_id, child_sensor_id, 255, blinds_sOpen, "Blinds/Window");
 			}
 		}
 	}

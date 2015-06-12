@@ -10717,7 +10717,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
 		if (pHardware)
 		{
-			//Send as Lighting 2
+			//Update as Lighting 2
 			unsigned long ID;
 			std::stringstream s_strid;
 			s_strid << std::hex << DeviceID;
