@@ -1,136 +1,125 @@
 Version 2.0.xxxx (xxxx 2015)
-- Implemented: Fritzbox Hardware type for caller ID (Beta!)
-- Changed: Avoiding possible RTC/NTP clock drifts
-- Changed: Transferring a device will now look internally which device is newer/older
+- Implemented: MQTT support
+- Implemented: Fritzbox Hardware type for caller ID
 - Implemented: JSON API, option to 'Toggle' a switch state between On/Off
 - Implemented: Warning when deleting a Blockly event
 - Implemented: Support for the ETH8020 relay board
-- Changed: Meteostick support (thanks to Devilsnet)
-- Changed: Handling timeout (dead node)/Awake status, also for switches in the Gui
 - Implemented: Finnish/Lithuanian/Czech language
 - Implemented: Sound Level sensor (dB)
-- Fixed: ZWave Light dimming
-- Implemented: Mertik (Thermostat 3) Up/Down popup
-- Changed: More translation work done
-- Changed: OpenZWave, when a switch/dimmer is turned off, and this node has a Power/Energy sensor, their value is set to 0
-- Fixed: Updating hardware settings for GPIO
-- Fixed: UVC camera default parameters where incorrect
-- Fixed: Fritzbox received from/to where switched
-- Changed: MySensors pressure sensor will now be reported as Barometer
 - Implemented: Distance Sensor (cm/inches)
-- Changed Javascript translation system to I18Next
-- Fixed: TeleInfo (TDF) Hardware ID
-- Changed: Air Quality (CO-2) sensor class
-- Implemented: MySensors Water meter
-- Implemented: MySensors, Saving/Loading VAR values
 - Implemented: Mertik (Thermostat 3) added Second Up/Second Down option in the popup
-- Implemented: MySensors Voltage/UV/Lock value
 - Implemented: RFXCom, support for Blinds T9/T10
-- Changed: P1 Electra/Gas meters now have an ID, update all your domoticz instances !
-- Changed: S0 Meter, actual usage calculation
-- Fixed: Closing Voltcraft usb device handle after reading
 - Implemented: BMP085/MySensors forecast Cloudy/Rain when pressure is <1010 hPa and original forecast was Cloudy
 - Implemented: Hungarian language support (big thanks to Isty1974!)
 - Implemented: Devices tab, Barometer/Text log option
-- Changed: Wind sensor, now using max speed/gust in short log
 - Implemented: 'Toon' zwave switches support
 - Implemented: Support for Python scripts (thanks to Maarten!)
-- Changed: Inverted open/close for BlindsT10
-- Changed: Swapped counters for 'Toon', usage/delivery 1 and 2 where inverted
+- Implemented: Mertik (Thermostat 3) Up/Down popup
 - Implemented: P1 Meter, Energy Used/Generated in graph
 - Implemented: Option to specify sensor timeout (default 60 minutes)
-- Fixed: MySensors, now supports multiple light child id's
-- Fixed: P1 Gas, shortlog graph hour shift duo DST
-- Fixed: Update UserVariable from json
-- Fixed: Not handling invalid barometer svalues (duo invalid json call)
 - Implemented: Greek language support, big thanks to George!!
-- RFLink: disabled debug, corrected support for KAKU door/window sensors and dim values
-- Fixed: Sunset/Sunrise update in blocky events (thanks to pj-r!)
-- Fixed: Compiling under ubuntu (issue 'rm CMakeCache.txt' first)
 - Implemented: RFXCom, mode6 (Keeloq protocol) support
-- Changed: Notification system (big thanks to chimit!)
 - Implemented: SMS Notifications
-- Solved: Wind Graph generation could cause a crash
 - Implemented: Option to Enable/Disable notification systems
 - Implemented: Option to supply custom notification messages
-- Changed: Moved curl folder to windows libraries folder (windows compiler, download the new WindowsLibraries.zip)
 - Implemented: 'Custom HTTP' notification system
 - Implemented: notifications, option to send to specific systems
-- Fixed: hardware setup, passwords containing specials characters
-- Fixed: devices tab, adding device with names containing specials characters
 - Implemented: Basic Auth, log message when a wrong username/password is provided (thanks to pj-r)
 - Implemented: WebServer, keep-alive, big thanks to chimit!!!!
-- Fixed: Email Port, please check your email settings if the port is still correct
-- Fixed: Gui display problem when going from Scenes to the Devices table
-- Fixed: Pushover/NMA now use the subject again
 - Implemented: RFXCom pTypeInterfaceControl messages
-- Changed: MySensors time request now returns localtime
-- Fixed: Setting correct folder permissions on the backup folder
-- Changed: MySensors, Battery level now applied to correct NodeID
-- Fixed: Blockly, now escaping strings/xml
-- Changed: Now using OpenZWave security branch
-- Changed: Now possible to disable serial hardware when usb port is not available
-- Changed: FibaroLink/Datapush, support for V4 firmware
 - Implemented: Scene/Group, now possible to add same device multiple times, as long as the ondelay is different
 - Implemented: Scene devices now supports both on and off delays (off = ondelay + offdelay)
-- Changed: General Graph, min value is now calculated dynamically
 - Implemented: CORS browser support
 - Implemented: Settings, Battery Low check
 - Implemented: Counters in P1 Electra/Gas month reports per day
-- Implemented: MySensors, V_RAIN
-- Implemented: MySensors, V_WIND/V_GUST/V_DIRECTION
-- Fixed: Blockly, possible saving of 'ghost' events
-- Implemented: Sanity check for OpenZWave NetworkKey Length
+- Implemented: Sanity check for OpenZWave Network Key Length
 - Implemented: OTGW, MsgID=14 and MsgID=17 (if reported)
 - Implemented: KMTronic USB/WEB relay hardware
-- Fixed: User Editor, updating a user could result in random password change
 - Implemented: Devices Tab, option to rename device
 - Implemented: Events/Lua, User Variable can now be set after XX seconds
 - Implemented: OpenZWave, option to include device secure (only use for ZWave+ devices)
 - Implemented: OpenZWave security, added support for the Philio PST02-1A door contact
-- Changed: Better new update notification when launching browser
-- Implemented: MySensors, V_CURRENT
-- Updated: HarmoneyHub class (Thanks to Jan)
-- Fixed: HTTP Notification
-- Changed: HTTP Notification, can now handle both HTTP and Scripts
+- Implemented: OpenZWave velocity sensor (wind)
 - Implemented: Uservariables, display Idx value (thanks to ikkemaniac)
 - Implemented: Incremental Counter sensor (thanks to ikkemaniac)
 - Implemented: Kodi notification system (thanks to dnpwwo)
 - Implemented: SolarMax inverter with Lan interface
 - Implemented: Current sensors now also display actual state in caption
-- Changed: Logitech Harmony Hub code
-- Fixed: HTTP Notification (Script) stop url encoding subject/message
 - Implemented: KMTronic USB-> RS485 relay hardware
 - Implemented: Extra check in short-log cleanup
-- Changed: RFLink controller initialisation detection (reported by gkroone)
 - Implemented: Native 'Ping' (System Alive Checker)
-- Changed: Serial Port names (now always as string)
 - Implemented: Mobile Phone icon
-- Fixed: EventSystem, checking if notification contains two parameters
-- Fixed: S0 Meter, Restore last values, and updating hardware settings
-- Fixed: Gui slider update for Blinds Percentage
 - Implemented: Set Blinds Percentage level from blockly (Ticket #437)
-- Fixed: Possible bug that could delete an incorrect shortlog data point (option in graph, shift-click to delete)
 - Implemented: OTGW, CH_Enable/DHW_Enable are now switchable (Thanks to Rob K)
-- Implemented: OTGW, support for GPIO A/B switches(Thanks to Rob K)
+- Implemented: OTGW, support for GPIO A/B switches (Thanks to Rob K)
 - Implemented: 'Nest Thermostat' hardware support
+- Implemented: Lithuanian language support (thanks to our translators!)
+- Implemented: Option to Enable/Disable the Custom tab for non-users (admin)
+- Improved: MySensors support
+- Improved: Logitech Harmoney Hub
+- Changed: Avoiding possible RTC/NTP clock drifts
+- Changed: Transferring a device will now look internally which device is newer/older
+- Changed: Meteostick support (thanks to Devilsnet)
+- Changed: Handling timeout (dead node)/Awake status, also for switches in the Gui
+- Changed: More translation work done
+- Changed: OpenZWave, when a switch/dimmer is turned off, and this node has a Power/Energy sensor, their value is set to 0
+- Changed: Javascript translation system to I18Next
+- Changed: Air Quality (CO-2) sensor class
+- Changed: P1 Electra/Gas meters now have an ID, update all your domoticz instances!
+- Changed: S0 Meter, actual usage calculation
+- Changed: Wind sensor, now using max speed/gust in short log
+- Changed: Inverted open/close for BlindsT10
+- Changed: Swapped counters for 'Toon', usage/delivery 1 and 2 where inverted
+- Changed: RFLink: disabled debug, corrected support for KAKU door/window sensors and dim values
+- Changed: Notification system (big thanks to chimit!)
+- Changed: Moved curl folder to windows libraries folder (windows compiler, download the new WindowsLibraries.zip)
+- Changed: Now using OpenZWave security branch
+- Changed: Now possible to disable serial hardware when usb port is not available
+- Changed: FibaroLink/Datapush, support for V4 firmware
+- Changed: General Graph, min value is now calculated dynamically
+- Changed: Better new update notification when launching browser
+- Changed: HTTP Notification, can now handle both HTTP and Scripts
+- Changed: Logitech Harmony Hub code
+- Changed: RFLink controller initialization detection (reported by gkroone)
+- Changed: Serial Port names (now always as string)
 - Changed: Setpoint Up/Down rounds up to 0.5 degrees
 - Changed: Not sending actual motion sensors off command, only updating internally
 - Changed: OpenZWave Color Command Class (you need to re-include the node)
 - Changed: Enlarged windows console log window
-- Implemented: Lithuanian language support (thanks to our translators!)
 - Changed: Scenes, now supports adding security devices
 - Changed: Teleinfo, added support for CBEMM meters (TELEINFO_TYPE_MOTDETAT), thanks to berty!
-- Fixed: CM113 "Watt", now only displays 1 phase if phase 2/3 are 0 (not used)
-- Implemented: Option to Enable/Disable the Custom tab for non-users (admin)
 - Changed: Light/Switch log now includes seconds in popup
-- Implemented: OZW velocity sensor (wind)
+- Fixed: ZWave Light dimming
+- Fixed: Updating hardware settings for GPIO
+- Fixed: UVC camera default parameters where incorrect
+- Fixed: Fritzbox received from/to where switched
+- Fixed: TeleInfo (TDF) Hardware ID
+- Fixed: Closing Voltcraft usb device handle after reading
+- Fixed: P1 Gas, shortlog graph hour shift duo DST
+- Fixed: Update UserVariable from json
+- Fixed: Not handling invalid barometer svalues (duo invalid json call)
+- Fixed: Sunset/Sunrise update in blocky events (thanks to pj-r!)
+- Fixed: Compiling under ubuntu (issue 'rm CMakeCache.txt' first)
+- Fixed: hardware setup, passwords containing specials characters
+- Fixed: devices tab, adding device with names containing specials characters
+- Fixed: Email Port, please check your email settings if the port is still correct
+- Fixed: Gui display problem when going from Scenes to the Devices table
+- Fixed: Pushover/NMA now use the subject again
+- Fixed: Setting correct folder permissions on the backup folder
+- Fixed: Blockly, now escaping strings/xml
+- Fixed: Blockly, possible saving of 'ghost' events
+- Fixed: User Editor, updating a user could result in random password change
+- Fixed: HTTP Notification
+- Fixed: HTTP Notification (Script) stop url encoding subject/message
+- Fixed: EventSystem, checking if notification contains two parameters
+- Fixed: S0 Meter, Restore last values, and updating hardware settings
+- Fixed: Gui slider update for Blinds Percentage
+- Fixed: Possible bug that could delete an incorrect shortlog data point (option in graph, shift-click to delete)
+- Fixed: CM113 "Watt", now only displays 1 phase if phase 2/3 are 0 (not used)
 - Fixed: custom tab now only displayed when there are html files in the template folder, and the option display custom tab is enabled
 - Fixed: Removed update notification in the login screen
 - Fixed: wind gust tooltip
-- Implemented: MySensors, V_UP/V_DOWN/V_STOP/S_COVER
-- Implemented: MQTT Username/Password
-- Implemented: MySensors, S_LOCK
+- Fixed: Wind Graph generation could cause a crash
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
