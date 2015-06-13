@@ -1865,26 +1865,29 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 			if (vLabel == "Fan Mode") {
 				pNode->tFanModes.clear();
 				m_pManager->GetValueListItems(vID, &pNode->tFanModes);
-				try
+				if (!pNode->tFanModes.empty())
 				{
-					std::string vListStr;
-					if (m_pManager->GetValueListSelection(vID, &vListStr))
+					try
 					{
-						int32 vMode = Lookup_ZWave_Thermostat_Fan_Modes(vListStr);
-						if (vMode != -1)
+						std::string vListStr;
+						if (m_pManager->GetValueListSelection(vID, &vListStr))
 						{
-							pNode->tFanMode = vMode;
-							_device.intvalue = vMode;
-							_device.commandClassID = COMMAND_CLASS_THERMOSTAT_FAN_MODE;
-							_device.devType = ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE;
-							InsertDevice(_device);
-							SendDevice2Domoticz(&_device);
+							int32 vMode = Lookup_ZWave_Thermostat_Fan_Modes(vListStr);
+							if (vMode != -1)
+							{
+								pNode->tFanMode = vMode;
+								_device.intvalue = vMode;
+								_device.commandClassID = COMMAND_CLASS_THERMOSTAT_FAN_MODE;
+								_device.devType = ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE;
+								InsertDevice(_device);
+								SendDevice2Domoticz(&_device);
+							}
 						}
 					}
-				}
-				catch (...)
-				{
-					
+					catch (...)
+					{
+
+					}
 				}
 			}
 		}
