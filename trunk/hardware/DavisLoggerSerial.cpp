@@ -38,6 +38,7 @@ CDavisLoggerSerial::~CDavisLoggerSerial(void)
 
 bool CDavisLoggerSerial::StartHardware()
 {
+	StopHardware();
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
 	//Start worker thread
@@ -50,7 +51,10 @@ bool CDavisLoggerSerial::StartHardware()
 bool CDavisLoggerSerial::StopHardware()
 {
 	m_stoprequested=true;
-	m_thread->join();
+	if (m_thread)
+	{
+		m_thread->join();
+	}
 	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 	sleep_milliseconds(10);
 	if (isOpen())
