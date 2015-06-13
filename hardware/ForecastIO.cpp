@@ -17,7 +17,6 @@
 CForecastIO::CForecastIO(const int ID, const std::string APIKey, const std::string Location)
 {
 	m_HwdID=ID;
-	m_LastMinute=26;
 	m_APIKey=APIKey;
 	m_Location=Location;
 	m_stoprequested=false;
@@ -56,19 +55,17 @@ bool CForecastIO::StopHardware()
 
 void CForecastIO::Do_Work()
 {
+	int sec_counter = 590;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		time_t atime=mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime,&ltime);
-		if ((ltime.tm_min/10!=m_LastMinute))
+		sec_counter++;
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
+		}
+		if (sec_counter % 600 == 0)
 		{
 			GetMeterDetails();
-			m_LastMinute=ltime.tm_min/10;
-		}
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
 		}
 	}
 	_log.Log(LOG_STATUS,"ForecastIO Worker stopped...");

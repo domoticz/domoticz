@@ -22,7 +22,6 @@ protected:
 	unsigned short m_usIPPort;
 	std::string m_Username;
 	std::string m_Password;
-	int m_PollCounter;
 
 	bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn);
 	void Init();

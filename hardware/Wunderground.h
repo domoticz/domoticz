@@ -14,7 +14,6 @@ private:
 	std::string m_APIKey;
 	std::string m_Location;
 	volatile bool m_stoprequested;
-	unsigned char m_LastMinute;
 	boost::shared_ptr<boost::thread> m_thread;
 
 	void Init();

@@ -75,7 +75,6 @@ void CNestThermostat::Init()
 bool CNestThermostat::StartHardware()
 {
 	Init();
-	m_LastMinute = -1;
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CNestThermostat::Do_Work, this)));
 	m_bIsStarted=true;
@@ -97,26 +96,26 @@ bool CNestThermostat::StopHardware()
     return true;
 }
 
-#define NEST_POLL_INTERVAL 2
+#define NEST_POLL_INTERVAL 30
 
 void CNestThermostat::Do_Work()
 {
 	_log.Log(LOG_STATUS,"NestThermostat: Worker started...");
+	int sec_counter = NEST_POLL_INTERVAL-5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		time_t atime=mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime,&ltime);
-		if (ltime.tm_min/NEST_POLL_INTERVAL!=m_LastMinute)
+		sec_counter++;
+		if (sec_counter % 12 == 0)
 		{
-			m_LastMinute=ltime.tm_min/NEST_POLL_INTERVAL;
+			m_LastHeartbeat = mytime(NULL);
+		}
+
+		if (sec_counter % NEST_POLL_INTERVAL == 0)
+		{
 			GetMeterDetails();
 		}
 
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
-		}
 	}
 	_log.Log(LOG_STATUS,"NestThermostat: Worker stopped...");
 }
@@ -386,7 +385,6 @@ void CNestThermostat::SetSetpoint(const int idx, const float temp)
 		m_bDoLogin = true;
 		return;
 	}
-	m_LastMinute = -1;
 }
 
 bool CNestThermostat::SetAway(const bool bIsAway)
@@ -425,7 +423,6 @@ bool CNestThermostat::SetAway(const bool bIsAway)
 		m_bDoLogin = true;
 		return false;
 	}
-	m_LastMinute = -1;
 	return true;
 }
 

@@ -25,7 +25,6 @@ private:
 	unsigned short m_usIPPort;
 	std::string m_Password;
 	volatile bool m_stoprequested;
-	unsigned char m_PollCounter;
 	boost::shared_ptr<boost::thread> m_thread;
 
 	void Init();

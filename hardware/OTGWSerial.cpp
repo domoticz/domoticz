@@ -123,16 +123,15 @@ bool OTGWSerial::OpenSerialDevice()
 void OTGWSerial::Do_PollWork()
 {
 	bool bFirstTime=true;
+	int sec_counter = 0;
 	while (!m_stoprequestedpoller)
 	{
 		sleep_seconds(1);
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
 
+		sec_counter++;
 
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (!isOpen())
@@ -146,15 +145,16 @@ void OTGWSerial::Do_PollWork()
 			{
 				m_retrycntr=0;
 				if (OpenSerialDevice())
-					bFirstTime=true;
+				{
+					bFirstTime = true;
+				}
 			}
 		}
 		else
 		{
-			time_t atime=time(NULL);
-			if ((atime%30==0)||(bFirstTime))	//updates every 30 seconds
+			if ((sec_counter % 30 == 0) || (bFirstTime))	//updates every 30 seconds
 			{
-				bFirstTime=false;
+				bFirstTime = false;
 				SendOutsideTemperature();
 				SendTime();
 				GetGatewayDetails();

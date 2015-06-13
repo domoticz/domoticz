@@ -174,7 +174,8 @@ void DomoticzTCP::disconnect()
 
 void DomoticzTCP::Do_Work()
 {
-	char buf[40];
+	char buf[100];
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		if (
@@ -183,13 +184,9 @@ void DomoticzTCP::Do_Work()
 			)
 		{
 			sleep_seconds(1);
+			sec_counter++;
 
-
-			time_t atime = mytime(NULL);
-			struct tm ltime;
-			localtime_r(&atime, &ltime);
-
-			if (ltime.tm_sec % 12 == 0) {
+			if (sec_counter % 12 == 0) {
 				mytime(&m_LastHeartbeat);
 			}
 
@@ -209,10 +206,7 @@ void DomoticzTCP::Do_Work()
 		{
 			//this could take a long time... maybe there will be no data received at all,
 			//so it's no good to-do the heartbeat timing here
-			time_t atime = mytime(NULL);
-			if (atime % 12 == 0) {
-				mytime(&m_LastHeartbeat);
-			}
+			m_LastHeartbeat = mytime(NULL);
 
 			int bread=recv(m_socket,(char*)&buf,sizeof(buf),0);
 			if (m_stoprequested)

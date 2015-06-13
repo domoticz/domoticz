@@ -18,7 +18,6 @@
 
 #include <ctime>
 
-#define Rego6XX_THREAD_SLEEP_TIME 1
 #define Rego6XX_RETRY_DELAY 30
 #define Rego6XX_COMMAND_DELAY 5
 #define Rego6XX_READ_BUFFER_MASK (Rego6XX_READ_BUFFER_SIZE - 1)
@@ -168,21 +167,19 @@ bool CRego6XXSerial::StopHardware()
 
 void CRego6XXSerial::Do_Work()
 {
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
-		sleep_seconds(Rego6XX_THREAD_SLEEP_TIME);
-
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
-		}
-
+		sleep_seconds(1);
 		if (m_stoprequested)
 			break;
+
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
+		}
+
 		if (!isOpen())
 		{
 			if (m_retrycntr==0)

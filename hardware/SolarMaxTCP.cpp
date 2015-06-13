@@ -206,14 +206,14 @@ void SolarMaxTCP::Do_Work()
 {
 	char buf[1024];
 	bool bFirstTime = true;
-	int scounter = 0;
+	int sec_counter = POLL_INTERVAL-5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		if (atime % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (
@@ -221,21 +221,12 @@ void SolarMaxTCP::Do_Work()
 			(!m_stoprequested)
 			)
 		{
-			time_t atime = mytime(NULL);
-			struct tm ltime;
-			localtime_r(&atime, &ltime);
-
-			if (ltime.tm_sec % 12 == 0) {
-				mytime(&m_LastHeartbeat);
-			}
-
 			if (m_stoprequested)
 				break;
 			m_retrycntr++;
 			if (m_retrycntr >= RETRY_DELAY)
 			{
 				m_retrycntr = 0;
-				scounter = 0;
 				if (!ConnectInternal())
 				{
 					_log.Log(LOG_STATUS, "SolarMax: retrying in %d seconds...", RETRY_DELAY);
@@ -244,10 +235,8 @@ void SolarMaxTCP::Do_Work()
 		}
 		else
 		{
-			scounter++;
-			if ((scounter >= POLL_INTERVAL) || (bFirstTime))
+			if ((sec_counter % POLL_INTERVAL == 0) || (bFirstTime))
 			{
-				scounter = 0;
 				bFirstTime = false;
 
 				//Request data from inverter

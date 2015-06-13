@@ -16,7 +16,6 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	volatile bool m_stoprequested;
-	time_t m_LastPollTime;
 	boost::shared_ptr<boost::thread> m_thread;
 
 	void Init();

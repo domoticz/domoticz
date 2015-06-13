@@ -139,6 +139,7 @@ void P1MeterTCP::disconnect()
 
 void P1MeterTCP::Do_Work()
 {
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		if (
@@ -147,13 +148,10 @@ void P1MeterTCP::Do_Work()
 			)
 		{
 			sleep_seconds(1);
-			time_t atime = mytime(NULL);
-			struct tm ltime;
-			localtime_r(&atime, &ltime);
+			sec_counter++;
 
-
-			if (ltime.tm_sec % 12 == 0) {
-				mytime(&m_LastHeartbeat);
+			if (sec_counter % 12 == 0) {
+				m_LastHeartbeat=mytime(NULL);
 			}
 
 			m_retrycntr++;
@@ -173,7 +171,7 @@ void P1MeterTCP::Do_Work()
 			int bread=recv(m_socket,(char*)&data,sizeof(data),0);
 			if (m_stoprequested)
 				break;
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat=mytime(NULL);
 			if ((bread==0)||(bread<0)) {
 				_log.Log(LOG_ERROR,"P1 Smart Meter: TCP/IP connection closed!");
 				closesocket(m_socket);

@@ -29,7 +29,6 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 
 	bool m_bDoLogin;
-	int m_LastMinute;
 
 	void Init();
 	bool StartHardware();

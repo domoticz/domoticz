@@ -65,7 +65,6 @@ bool CVolcraftCO20::StopHardware()
 
 void CVolcraftCO20::Do_Work()
 {
-	time_t atime;
 	int sec_counter=VolcraftCO20_POLL_INTERVAL-5;
 	while (!m_stoprequested)
 	{
@@ -73,7 +72,7 @@ void CVolcraftCO20::Do_Work()
 		sec_counter++;
 		if (sec_counter%12==0)
 		{
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (sec_counter%VolcraftCO20_POLL_INTERVAL==0)

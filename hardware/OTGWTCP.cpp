@@ -106,18 +106,14 @@ void OTGWTCP::OnDisconnect()
 void OTGWTCP::Do_Work()
 {
 	bool bFirstTime=true;
-
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (bFirstTime)
@@ -131,8 +127,7 @@ void OTGWTCP::Do_Work()
 		}
 		else
 		{
-			time_t atime=time(NULL);
-			if ((m_bDoRestart)&&(atime%30==0))
+			if ((m_bDoRestart) && (sec_counter % 30 == 0))
 			{
 				connect(m_szIPAddress,m_usIPPort);
 			}
@@ -140,7 +135,7 @@ void OTGWTCP::Do_Work()
 			if (mIsConnected)
 			{
 				time_t atime=time(NULL);
-				if (atime%30==0)//updates every 30 seconds
+				if (sec_counter % 30 == 0)//updates every 30 seconds
 				{
 					bFirstTime=false;
 					SendOutsideTemperature();

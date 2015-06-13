@@ -144,27 +144,22 @@ bool CToonThermostat::StopHardware()
     return true;
 }
 
-#define TOON_POLL_INTERVAL 2
+#define TOON_POLL_INTERVAL 30
 
 void CToonThermostat::Do_Work()
 {
-	int LastMinute=-1;
-
+	int sec_counter = TOON_POLL_INTERVAL-5;
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		time_t atime=mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime,&ltime);
-		if (ltime.tm_min/TOON_POLL_INTERVAL!=LastMinute)
-		{
-			LastMinute=ltime.tm_min/TOON_POLL_INTERVAL;
-			GetMeterDetails();
-		}
-
-		if (ltime.tm_sec % 12 == 0) {
+		sec_counter++;
+		if (sec_counter % 12 == 0) {
 			mytime(&m_LastHeartbeat);
+		}
+		if (sec_counter % TOON_POLL_INTERVAL == 0)
+		{
+			GetMeterDetails();
 		}
 	}
 	_log.Log(LOG_STATUS,"ToonThermostat: Worker stopped...");

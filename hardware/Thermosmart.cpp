@@ -96,25 +96,22 @@ bool CThermosmart::StopHardware()
     return true;
 }
 
-#define THERMOSMART_POLL_INTERVAL 2
+#define THERMOSMART_POLL_INTERVAL 30
 
 void CThermosmart::Do_Work()
 {
 	_log.Log(LOG_STATUS,"Thermosmart: Worker started...");
+	int sec_counter = THERMOSMART_POLL_INTERVAL-5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		time_t atime=mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime,&ltime);
-		if (ltime.tm_min/THERMOSMART_POLL_INTERVAL!=m_LastMinute)
-		{
-			m_LastMinute=ltime.tm_min/THERMOSMART_POLL_INTERVAL;
-			GetMeterDetails();
+		sec_counter++;
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % THERMOSMART_POLL_INTERVAL == 0)
+		{
+			GetMeterDetails();
 		}
 	}
 	_log.Log(LOG_STATUS,"Thermosmart: Worker stopped...");

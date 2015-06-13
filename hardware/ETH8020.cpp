@@ -31,7 +31,6 @@ CETH8020::~CETH8020(void)
 
 void CETH8020::Init()
 {
-	m_PollCounter=ETH8020_POLL_INTERVAL-2;
 }
 
 bool CETH8020::StartHardware()
@@ -59,24 +58,20 @@ bool CETH8020::StopHardware()
 
 void CETH8020::Do_Work()
 {
+	int sec_counter = ETH8020_POLL_INTERVAL - 2;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
 
-		m_PollCounter++;
-		if (m_PollCounter>=ETH8020_POLL_INTERVAL)
+		if (sec_counter % ETH8020_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
-			m_PollCounter=0;
 		}
 	}
 	_log.Log(LOG_STATUS,"ETH8020: Worker stopped...");

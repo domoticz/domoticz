@@ -25,7 +25,6 @@ KMTronicTCP::~KMTronicTCP(void)
 
 void KMTronicTCP::Init()
 {
-	m_PollCounter = KMTRONIC_POLL_INTERVAL - 2;
 }
 
 bool KMTronicTCP::StartHardware()
@@ -53,24 +52,20 @@ bool KMTronicTCP::StopHardware()
 
 void KMTronicTCP::Do_Work()
 {
+	int sec_counter = KMTRONIC_POLL_INTERVAL - 2;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
 
-		m_PollCounter++;
-		if (m_PollCounter >= KMTRONIC_POLL_INTERVAL)
+		if (sec_counter % KMTRONIC_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
-			m_PollCounter = 0;
 		}
 	}
 	_log.Log(LOG_STATUS, "KMTronic: TCP/IP Worker stopped...");

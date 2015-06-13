@@ -31,7 +31,6 @@
 #endif
 
 #define POLL_INTERVAL 30
-#define SLEEP_INTERVAL 1000
 
 extern bool bHasInternalTemperature;
 extern std::string szInternalTemperatureCommand;
@@ -145,24 +144,21 @@ void CHardwareMonitor::Init()
 
 void CHardwareMonitor::Do_Work()
 {
-
 	m_stoprequested=false;
-
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
-		sleep_milliseconds(SLEEP_INTERVAL);
-		time_t atime=mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime,&ltime);
+		sleep_seconds(1);
+		sec_counter++;
 
-		if (ltime.tm_sec%POLL_INTERVAL==0)
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
+		}
+
+		if (sec_counter%POLL_INTERVAL == 0)
 		{
 			FetchData();
 		}
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
-		}
-
 	}
 	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
 

@@ -181,7 +181,7 @@ void CHarmonyHub::Do_Work()
 
 		if (scounter % 12 == 0)
 		{
-			mytime(&m_LastHeartbeat);
+			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (m_bDoLogin)
