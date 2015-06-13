@@ -64,27 +64,24 @@ bool CICYThermostat::StopHardware()
     return true;
 }
 
-#define ICY_POLL_INTERVAL 1
+#define ICY_POLL_INTERVAL 60
 
 void CICYThermostat::Do_Work()
 {
-	int LastMinute=-1;
-
+	int sec_counter = 0;
 	_log.Log(LOG_STATUS,"ICYThermostat: Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		time_t atime=mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime,&ltime);
-		if (ltime.tm_min/ICY_POLL_INTERVAL!=LastMinute)
-		{
-			LastMinute=ltime.tm_min/ICY_POLL_INTERVAL;
-			GetMeterDetails();
-		}
+		sec_counter++;
 
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0)
+		{
+			m_LastHeartbeat = mytime(NULL);
+		}
+		if (sec_counter % ICY_POLL_INTERVAL ==0)
+		{
+			GetMeterDetails();
 		}
 	}
 	_log.Log(LOG_STATUS,"ICYThermostat: Worker stopped...");

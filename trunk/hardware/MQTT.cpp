@@ -244,6 +244,7 @@ bool MQTT::ConnectIntEx()
 void MQTT::Do_Work()
 {
 	bool bFirstTime=true;
+	int msec_counter = 0;
 	int sec_counter = 0;
 
 	while (!m_stoprequested)
@@ -261,18 +262,15 @@ void MQTT::Do_Work()
 			}
 		}
 
-
-		sec_counter++;
-		if (sec_counter == 10)
+		msec_counter++;
+		if (msec_counter == 10)
 		{
-			sec_counter = 0;
-			time_t atime = mytime(NULL);
-			struct tm ltime;
-			localtime_r(&atime, &ltime);
+			msec_counter = 0;
 
+			sec_counter++;
 
-			if (ltime.tm_sec % 12 == 0) {
-				mytime(&m_LastHeartbeat);
+			if (sec_counter % 12 == 0) {
+				m_LastHeartbeat=mytime(NULL);
 			}
 
 			if (bFirstTime)
@@ -282,8 +280,7 @@ void MQTT::Do_Work()
 			}
 			else
 			{
-				time_t atime = time(NULL);
-				if (atime % 30 == 0)
+				if (sec_counter % 30 == 0)
 				{
 					if (m_bDoReconnect)
 						ConnectIntEx();

@@ -24,12 +24,6 @@
     <Filter Include="TCPServer">
       <UniqueIdentifier>{7c74c4ee-c056-4e43-98a8-248084de2d02}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\RFXSerial">
-      <UniqueIdentifier>{261207be-5fec-410d-9407-6a50810bd449}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\RFXTCP">
-      <UniqueIdentifier>{041d79b0-1d2f-485b-86fd-edb5607e0f41}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\Domoticz">
       <UniqueIdentifier>{222696d2-1c77-4abb-a483-83548f0b75d4}</UniqueIdentifier>
     </Filter>
@@ -38,12 +32,6 @@
     </Filter>
     <Filter Include="Devices\P1Smart Meter">
       <UniqueIdentifier>{44ff1baf-dce6-4a20-b295-313ef10e0509}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\P1Smart Meter\P1MeterTCP">
-      <UniqueIdentifier>{35d0b876-1f3b-471d-8fee-5f83919994f5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\P1Smart Meter\P1MeterSerial">
-      <UniqueIdentifier>{3842a5f4-988f-43df-ab50-6b41679ce600}</UniqueIdentifier>
     </Filter>
     <Filter Include="SMTP">
       <UniqueIdentifier>{acc2dd9a-c3ba-4abc-9dd5-a6871fd4d465}</UniqueIdentifier>
@@ -222,6 +210,9 @@
     <Filter Include="Devices\Thermosmart">
       <UniqueIdentifier>{21b14472-4757-4ef4-b27f-107a322f5ef3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\RFXCom">
+      <UniqueIdentifier>{48ca3895-ba95-40f6-8441-e2911263a66f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -278,18 +269,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\P1MeterBase.h">
       <Filter>Devices\P1Smart Meter</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\P1MeterSerial.h">
-      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\P1MeterTCP.h">
-      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\RFXComSerial.h">
-      <Filter>Devices\RFXSerial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\RFXComTCP.h">
-      <Filter>Devices\RFXTCP</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\YouLess.h">
       <Filter>Devices\YouLess</Filter>
@@ -708,6 +687,18 @@
     <ClInclude Include="..\MQTT\will_mosq.h">
       <Filter>MQTT</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\RFXComSerial.h">
+      <Filter>Devices\RFXCom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFXComTCP.h">
+      <Filter>Devices\RFXCom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\P1MeterSerial.h">
+      <Filter>Devices\P1Smart Meter</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\P1MeterTCP.h">
+      <Filter>Devices\P1Smart Meter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -757,18 +748,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\P1MeterBase.cpp">
       <Filter>Devices\P1Smart Meter</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\P1MeterSerial.cpp">
-      <Filter>Devices\P1Smart Meter\P1MeterSerial</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\P1MeterTCP.cpp">
-      <Filter>Devices\P1Smart Meter\P1MeterTCP</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\RFXComSerial.cpp">
-      <Filter>Devices\RFXSerial</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\RFXComTCP.cpp">
-      <Filter>Devices\RFXTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\YouLess.cpp">
       <Filter>Devices\YouLess</Filter>
@@ -1132,6 +1111,18 @@
     </ClCompile>
     <ClCompile Include="..\MQTT\will_mosq.c">
       <Filter>MQTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFXComSerial.cpp">
+      <Filter>Devices\RFXCom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFXComTCP.cpp">
+      <Filter>Devices\RFXCom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\P1MeterSerial.cpp">
+      <Filter>Devices\P1Smart Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\P1MeterTCP.cpp">
+      <Filter>Devices\P1Smart Meter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

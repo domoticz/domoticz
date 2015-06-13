@@ -70,21 +70,24 @@ void ZWaveBase::Do_Work()
 	//prevent OpenZWave locale from taking over
 	_configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
 #endif
+	int msec_counter = 0;
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
-
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
-		}
-
 		if (m_stoprequested)
 			return;
+		msec_counter++;
+		if (msec_counter == 2)
+		{
+			msec_counter = 0;
+			sec_counter++;
+			if (sec_counter % 12 == 0) {
+				m_LastHeartbeat=mytime(NULL);
+			}
+		}
+
+
 		if (m_bInitState)
 		{
 			if (GetInitialDevices())

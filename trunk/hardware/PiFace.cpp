@@ -770,21 +770,24 @@ void CPiFace::Do_Work()
 {
     int devId;
     _log.Log(LOG_STATUS,"PiFace: Worker started...");
-
+	int msec_counter = 0;
+	int sec_counter = 0;
     while (!m_stoprequested)
     {
+		boost::this_thread::sleep(boost::posix_time::millisec(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS));
+		if (m_stoprequested)
+			break;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		msec_counter++;
+		if (msec_counter == (1000 / PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS))
+		{
+			msec_counter = 0;
+			sec_counter++;
+			if (sec_counter % 12 == 0) {
+				m_LastHeartbeat = mytime(NULL);
+			}
 		}
-        boost::this_thread::sleep(boost::posix_time::millisec(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS));
-        if (m_stoprequested)
-            break;
+
         m_InputSample_waitcntr++;
         m_CounterEdgeSample_waitcntr++;
 

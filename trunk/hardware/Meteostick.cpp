@@ -130,17 +130,14 @@ bool Meteostick::OpenSerialDevice()
 void Meteostick::Do_PollWork()
 {
 	bool bFirstTime = true;
+	int sec_counter = 0;
 	while (!m_stoprequestedpoller)
 	{
 		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat = mytime(NULL);
 		}
 
 		if (!isOpen())

@@ -98,7 +98,6 @@ bool CBMP085::StartHardware()
 #ifndef __arm__
 	return false;
 #endif
-	m_waitcntr=(I2C_READ_INTERVAL-5)*2;
 	m_stoprequested=false;
 	m_minuteCount = 0;
 	m_firstRound = true;
@@ -130,31 +129,33 @@ bool CBMP085::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CBMP085::Do_Work()
 {
+	int msec_counter = 0;
+	int sec_counter = I2C_READ_INTERVAL - 5;
+
 	while (!m_stoprequested)
 	{
-		boost::this_thread::sleep(boost::posix_time::millisec(500));
+		sleep_milliseconds(500);
 		if (m_stoprequested)
 			break;
-		m_waitcntr++;
-		if (m_waitcntr>=I2C_READ_INTERVAL*2)
+		msec_counter++;
+		if (msec_counter == 2)
 		{
-			m_waitcntr=0;
-			try
-			{
-				ReadSensorDetails();
+			msec_counter = 0;
+			sec_counter++;
+			if (sec_counter % 12 == 0) {
+				m_LastHeartbeat = mytime(NULL);
 			}
-			catch (...)
+			if (sec_counter % I2C_READ_INTERVAL == 0)
 			{
-				_log.Log(LOG_ERROR, "BMP085: Error reading sensor data!...");
+				try
+				{
+					ReadSensorDetails();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_ERROR, "BMP085: Error reading sensor data!...");
+				}
 			}
-		}
-
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
 		}
 	}
 	_log.Log(LOG_STATUS,"BMP085: Worker stopped...");

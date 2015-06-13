@@ -87,21 +87,25 @@ bool CPhilipsHue::StopHardware()
 
 void CPhilipsHue::Do_Work()
 {
-	int LastSecond=-1;
+	int msec_counter = 0;
+	int sec_counter = 0;
 
 	_log.Log(LOG_STATUS,"Philips Hue: Worker started...");
+
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
 
-		time_t atime=mytime(NULL);
-		int tsec = atime%HUE_POLL_INTERVAL;
-		if (((tsec == 0) && ((atime%60) != LastSecond)) || (LastSecond == -1))
+		msec_counter++;
+		if (msec_counter == 2)
 		{
-			LastSecond = (atime % 60);
-			GetLightStates();
-			mytime(&m_LastHeartbeat);
-
+			msec_counter = 0;
+			sec_counter++;
+			if (sec_counter % HUE_POLL_INTERVAL == 0)
+			{
+				m_LastHeartbeat = mytime(NULL);
+				GetLightStates();
+			}
 		}
 	}
 	_log.Log(LOG_STATUS,"Philips Hue: Worker stopped...");

@@ -105,17 +105,13 @@ void MySensorsTCP::OnDisconnect()
 void MySensorsTCP::Do_Work()
 {
 	bool bFirstTime=true;
-
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
+		if (sec_counter % 12 == 0) {
 			mytime(&m_LastHeartbeat);
 		}
 

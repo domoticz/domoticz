@@ -74,20 +74,18 @@ bool CEcoDevices::StopHardware()
 
 void CEcoDevices::Do_Work()
 {
-	int LastMinute=-1;
-
+	int sec_counter = 0;
 	_log.Log(LOG_STATUS,"EcoDevices: Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		time_t atime=mytime(NULL);
-		if (atime%ECODEVICES_POLL_INTERVAL == 0)
+		sec_counter++;
+		if (sec_counter % 12 == 0) {
+			mytime(&m_LastHeartbeat);
+		}
+		if (sec_counter%ECODEVICES_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
-		}
-
-		if (atime % 12 == 0) {
-			mytime(&m_LastHeartbeat);
 		}
 	}
 	_log.Log(LOG_STATUS,"EcoDevices: Worker stopped...");

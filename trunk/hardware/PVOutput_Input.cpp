@@ -58,21 +58,21 @@ bool CPVOutputInput::StopHardware()
 void CPVOutputInput::Do_Work()
 {
 	int LastMinute=-1;
-
+	int sec_counter = 0;
 	_log.Log(LOG_STATUS,"PVOutput (Input): Worker started...");
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		sec_counter++;
+
 		time_t atime=mytime(NULL);
+		m_LastHeartbeat = atime;
 		struct tm ltime;
 		localtime_r(&atime,&ltime);
 		if (((ltime.tm_min/PVOUTPUT_POLL_INTERVAL!=LastMinute))&&(ltime.tm_sec>20))
 		{
 			LastMinute=ltime.tm_min/PVOUTPUT_POLL_INTERVAL;
 			GetMeterDetails();
-		}
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
 		}
 	}
 	_log.Log(LOG_STATUS,"PVOutput (Input): Worker stopped...");

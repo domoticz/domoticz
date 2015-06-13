@@ -258,19 +258,15 @@ bool CLimitLess::StopHardware()
 
 void CLimitLess::Do_Work()
 {
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
-
 	}
 	_log.Log(LOG_STATUS,"AppLamp: Worker stopped...");
 }

@@ -74,18 +74,9 @@ void RFXComTCP::OnDisconnect()
 void RFXComTCP::Do_Work()
 {
 	bool bFirstTime = true;
-
 	while (!m_stoprequested)
 	{
-
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
-		}
+		m_LastHeartbeat = mytime(NULL);
 		if (bFirstTime)
 		{
 			bFirstTime = false;

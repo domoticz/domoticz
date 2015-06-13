@@ -160,29 +160,26 @@ bool CRFLink::StopHardware()
 
 void CRFLink::Do_Work()
 {
-	int secCounter=0;
-	int ping_counter = 0;
+	int msec_counter = 0;
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(200);
 		if (m_stoprequested)
 			break;
 
-		secCounter++;
-		if (secCounter == 5)
+		msec_counter++;
+		if (msec_counter == 5)
 		{
-			secCounter = 0;
-			time_t atime = mytime(NULL);
-			struct tm ltime;
-			localtime_r(&atime, &ltime);
-			if (ltime.tm_sec % 12 == 0) {
-				mytime(&m_LastHeartbeat);
+			msec_counter = 0;
+			sec_counter++;
+
+			if (sec_counter % 12 == 0) {
+				m_LastHeartbeat = mytime(NULL);
 			}
-			ping_counter++;
-			if (ping_counter == 10)
+			if (isOpen())
 			{
-				ping_counter = 0;
-				if (isOpen())
+				if (sec_counter % 10 == 0)
 				{
 					//Send ping (keep alive)
 					time_t atime = mytime(NULL);

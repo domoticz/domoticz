@@ -25,7 +25,6 @@ CYouLess::~CYouLess(void)
 
 void CYouLess::Init()
 {
-	m_PollCounter=YOULESS_POLL_INTERVAL-2;
 	m_meter.len=sizeof(YouLessMeter)-1;
 	m_meter.type=pTypeYouLess;
 	m_meter.subtype=sTypeYouLess;
@@ -64,24 +63,19 @@ bool CYouLess::StopHardware()
 
 void CYouLess::Do_Work()
 {
+	int sec_counter = YOULESS_POLL_INTERVAL - 2;
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
+		sec_counter++;
 
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-
-
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		if (sec_counter % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
-
-		m_PollCounter++;
-		if (m_PollCounter>=YOULESS_POLL_INTERVAL)
+		if (sec_counter % YOULESS_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
-			m_PollCounter=0;
 		}
 	}
 	_log.Log(LOG_STATUS,"YouLess: Worker stopped...");

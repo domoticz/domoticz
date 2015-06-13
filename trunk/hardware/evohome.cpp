@@ -259,14 +259,13 @@ void CEvohome::Do_Work()
 {
 	boost::system_time stLastRelayCheck(boost::posix_time::min_date_time);
 	int nStartup=0;
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-		if (ltime.tm_sec % 12 == 0) {
-			mytime(&m_LastHeartbeat);
+		sec_counter++;
+		if (sec_counter  % 12 == 0) {
+			m_LastHeartbeat=mytime(NULL);
 		}
 		if (m_stoprequested)
 			break;

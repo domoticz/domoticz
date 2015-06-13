@@ -105,13 +105,14 @@ bool CDavisLoggerSerial::WriteToHardware(const char *pdata, const unsigned char 
 
 void CDavisLoggerSerial::Do_Work()
 {
+	int sec_counter = 0;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
-		time_t atime = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&atime, &ltime);
-		if (ltime.tm_sec % 12 == 0) {
+
+		sec_counter++;
+
+		if (sec_counter % 12 == 0) {
 			mytime(&m_LastHeartbeat);
 		}
 		if (m_stoprequested)
