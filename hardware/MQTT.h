@@ -6,7 +6,7 @@
 class MQTT : public MySensorsBase, mosqpp::mosquittopp
 {
 public:
-	MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort);
+	MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password);
 	~MQTT(void);
 	bool isConnected(){ return m_IsConnected; };
 
@@ -35,6 +35,8 @@ private:
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
+	std::string m_UserName;
+	std::string m_Password;
 	boost::mutex m_mqtt_mutex;
 	void StopMQTT();
 	void Do_Work();

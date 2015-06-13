@@ -170,9 +170,31 @@ public:
 		std::string SketchVersion;
 		time_t lastreceived;
 		std::vector<_tMySensorSensor> m_sensors;
+		std::vector<_ePresentationType> m_types;
 		_tMySensorNode()
 		{
+			lastreceived = 0;
 			nodeID = -1;
+		}
+		void AddType(const _ePresentationType ptype)
+		{
+			std::vector<_ePresentationType>::const_iterator itt;
+			for (itt = m_types.begin(); itt != m_types.end(); ++itt)
+			{
+				if (*itt == ptype)
+					return;
+			}
+			m_types.push_back(ptype);
+		}
+		bool FindType(const _ePresentationType ptype)
+		{
+			std::vector<_ePresentationType>::const_iterator itt;
+			for (itt = m_types.begin(); itt != m_types.end(); ++itt)
+			{
+				if (*itt == ptype)
+					return true;
+			}
+			return false;
 		}
 	} MySensorNode;
 

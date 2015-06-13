@@ -93,7 +93,8 @@ public:
 				const int Mode4,
 				const int Mode5,
 				const int Mode6,
-				const int DataTimeout
+				const int DataTimeout,
+				const bool bDoStart
 				);
 
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);

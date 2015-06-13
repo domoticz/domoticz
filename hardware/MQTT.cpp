@@ -15,7 +15,7 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password)
 {
 	m_HwdID=ID;
 	m_IsConnected = false;
@@ -43,6 +43,8 @@ MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPP
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
+	m_UserName = Username;
+	m_Password = Password;
 }
 
 MQTT::~MQTT(void)
@@ -122,7 +124,7 @@ void MQTT::on_connect(int rc)
 		subscribe(NULL, TOPIC_IN);
 	}
 	else {
-		_log.Log(LOG_ERROR, "MQTT: Connection failed!, restarting");
+		_log.Log(LOG_ERROR, "MQTT: Connection failed!, restarting (rc=%d)",rc);
 		m_bDoReconnect = true;
 	}
 }
@@ -210,7 +212,15 @@ void MQTT::on_disconnect(int rc)
 	{
 		if (!m_stoprequested)
 		{
-			_log.Log(LOG_ERROR, "MQTT: disconnected, restarting (rc=%d)",rc);
+			if (rc == 5)
+			{
+				_log.Log(LOG_ERROR, "MQTT: disconnected, Invalid Username/Password (rc=%d)", rc);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "MQTT: disconnected, restarting (rc=%d)", rc);
+			}
+			m_bDoReconnect = true;
 		}
 	}
 }
@@ -230,11 +240,11 @@ bool MQTT::ConnectIntEx()
 	int rc;
 	int keepalive = 60;
 
-	//int username_pw_set(const char *username, const char *password = NULL);
+	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
 
 	if ((rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive) != MOSQ_ERR_SUCCESS))
 	{
-		_log.Log(LOG_ERROR, "MQTT: Failed to start, return code: %d", rc);
+		_log.Log(LOG_ERROR, "MQTT: Failed to start, return code: %d (Check IP/Port)", rc);
 		m_bDoReconnect = true;
 		return false;
 	}
@@ -257,7 +267,12 @@ void MQTT::Do_Work()
 				if (rc != MOSQ_ERR_NO_CONN)
 				{
 					if (!m_stoprequested)
-						reconnect();
+					{
+						if (!m_bDoReconnect)
+						{
+							reconnect();
+						}
+					}
 				}
 			}
 		}

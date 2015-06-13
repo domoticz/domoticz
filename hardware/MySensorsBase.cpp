@@ -876,8 +876,18 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 			if ((light_command == light2_sOn) || (light_command == light2_sOff))
 			{
-				std::string lState = (light_command == light2_sOn) ? "1" : "0";
-				SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
+				if (pNode->FindType(S_LOCK))
+				{
+					//Door lock
+					std::string lState = (light_command == light2_sOn) ? "0" : "1";
+					SendCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState);
+				}
+				else
+				{
+					//normal
+					std::string lState = (light_command == light2_sOn) ? "1" : "0";
+					SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
+				}
 			}
 			else if (light_command == light2_sSetLevel)
 			{
@@ -1291,6 +1301,9 @@ void MySensorsBase::ParseLine()
 			return;
 
 		bool bDoAdd = false;
+
+		_ePresentationType pType = (_ePresentationType)sub_type;
+
 		switch (sub_type)
 		{
 		case S_TEMP:
@@ -1305,6 +1318,7 @@ void MySensorsBase::ParseLine()
 			sub_type = V_PRESSURE;
 			bDoAdd = true;
 			break;
+		case S_LOCK:
 		case S_LIGHT:
 			sub_type = V_LIGHT;
 			bDoAdd = true;
@@ -1333,6 +1347,7 @@ void MySensorsBase::ParseLine()
 				return;
 		}
 		pNode->lastreceived = mytime(NULL);
+		pNode->AddType(pType);
 
 		_tMySensorSensor *pSensor = FindSensor(pNode, child_sensor_id, (_eSetType)sub_type);
 		if (pSensor == NULL)

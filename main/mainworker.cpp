@@ -177,8 +177,10 @@ void MainWorker::AddAllDomoticzHardware()
 			int mode5 = atoi(sd[13].c_str());
 			int mode6 = atoi(sd[14].c_str());
 			int DataTimeout = atoi(sd[15].c_str());
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout);
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout,false);
 		}
+		m_hardwareStartCounter = 0;
+		m_bStartHardware = true;
 	}
 }
 
@@ -472,7 +474,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode6 = atoi(sd[13].c_str());
 	int DataTimeout = atoi(sd[14].c_str());
 
-	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout);
+	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
 
 bool MainWorker::AddHardwareFromParams(
@@ -488,7 +490,8 @@ bool MainWorker::AddHardwareFromParams(
 	const int Mode4,
 	const int Mode5,
 	const int Mode6,
-	const int DataTimeout
+	const int DataTimeout,
+	const bool bDoStart
 	)
 {
 	RemoveDomoticzHardware(ID);
@@ -624,7 +627,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port);
+		pHardware = new MQTT(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_FRITZBOX:
 		//LAN
@@ -744,8 +747,9 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware->Name=Name;
 		pHardware->m_DataTimeout = DataTimeout;
 		AddDomoticzHardware(pHardware);
-		m_hardwareStartCounter=0;
-		m_bStartHardware=true;
+
+		if (bDoStart)
+			pHardware->Start();
 		return true;
 	}
 	return false;
