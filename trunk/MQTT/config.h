@@ -25,3 +25,4 @@
 #define uthash_free(ptr,sz) _mosquitto_free(ptr)
 
 #define WITH_THREADING
+
