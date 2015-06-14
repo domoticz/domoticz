@@ -7,6 +7,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "../json/json.h"
+#include "../notifications/NotificationHelper.h"
 
 #define RETRY_DELAY 30
 
@@ -155,12 +156,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	if (!ret)
 		goto mqttinvaliddata;
 
-	if (root["idx"].empty())
-		goto mqttinvaliddata;
-	if (!root["idx"].isInt64())
-		goto mqttinvaliddata;
-
-	unsigned long long idx = (unsigned long long)root["idx"].asInt64();
+	unsigned long long idx = 0;
 
 
 	if (!root["command"].empty())
@@ -172,6 +168,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 	if ((szCommand == "udevice") || (szCommand == "switchlight"))
 	{
+		if (root["idx"].empty())
+			goto mqttinvaliddata;
+		if (!root["idx"].isInt64())
+			goto mqttinvaliddata;
+
+		idx = (unsigned long long)root["idx"].asInt64();
 		//Get the raw device parameters
 		std::stringstream szQuery;
 		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
@@ -184,6 +186,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	}
 	else if (szCommand == "switchscene")
 	{
+		if (root["idx"].empty())
+			goto mqttinvaliddata;
+		if (!root["idx"].isInt64())
+			goto mqttinvaliddata;
+
+		idx = (unsigned long long)root["idx"].asInt64();
 		std::stringstream szQuery;
 		szQuery << "SELECT Name FROM Scenes WHERE (ID==" << idx << ")";
 		result = m_sql.query(szQuery.str());
@@ -287,6 +295,39 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			goto mqttinvaliddata;
 		if (!root["value"].isString())
 			goto mqttinvaliddata;
+		std::string varvalue = root["value"].asString();
+		m_sql.SetUserVariable(idx, varvalue, true);
+		return;
+	}
+	else if (szCommand == "sendnotification")
+	{
+		std::string subject(""), body(""), sound("");
+		int priority = 0;
+		if (!root["subject"].empty())
+		{
+			if (!root["subject"].isString())
+				goto mqttinvaliddata;
+			subject = root["subject"].asString();
+		}
+		if (!root["body"].empty())
+		{
+			if (!root["body"].isString())
+				goto mqttinvaliddata;
+			body = root["body"].asString();
+		}
+		if (!root["priority"].empty())
+		{
+			if (!root["priority"].isInt())
+				goto mqttinvaliddata;
+			priority = root["priority"].asInt();
+		}
+		if (!root["sound"].empty())
+		{
+			if (!root["sound"].isString())
+				goto mqttinvaliddata;
+			sound = root["sound"].asString();
+		}
+		m_notifications.SendMessageEx(NOTIFYALL, subject, body, "", priority, sound, true);
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
 		return;
