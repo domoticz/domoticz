@@ -166,7 +166,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		szCommand = root["command"].asString();
 	}
 
-	if ((szCommand == "udevice") || (szCommand == "switchlight"))
+	if ((szCommand == "udevice") || (szCommand == "switchlight") || (szCommand == "getdeviceinfo"))
 	{
 		if (root["idx"].empty())
 			goto mqttinvaliddata;
@@ -330,6 +330,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		m_notifications.SendMessageEx(NOTIFYALL, subject, body, "", priority, sound, true);
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
+		return;
+	}
+	else if (szCommand == "getdeviceinfo")
+	{
+		int HardwareID = atoi(result[0][0].c_str());
+		SendDeviceInfo(HardwareID, idx, "request device", NULL);
 		return;
 	}
 	else

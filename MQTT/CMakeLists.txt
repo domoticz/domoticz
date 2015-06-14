@@ -11,10 +11,10 @@ SET(LIBRARY_OUTPUT_PATH "" CACHE INTERNAL
 
 find_library(OPENSSL_LIBRARY ssl)
 if(NOT OPENSSL_INCLUDE_DIR)
-  message(SEND_ERROR "Failed to find openssl include files (ssl.h), no TLS support")
+  message(STATUS "Failed to find openssl include files (ssl.h), no TLS support")
 endif()
 if(NOT OPENSSL_LIBRARY)
-  message(SEND_ERROR "Failed to find the openssl library, no TLS support")
+  message(STATUS "Failed to find the openssl library, no TLS support")
 else()
   add_definitions(-DNS_ENABLE_SSL)
 endif()
