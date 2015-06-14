@@ -1,8 +1,9 @@
-Version 2.0.xxxx (xxxx 2015)
+Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
 - Implemented: RFXCom, support for Blinds T9/T10
 - Implemented: RFXCom, mode6 (Keeloq protocol) support
 - Implemented: RFXCom pTypeInterfaceControl messages
+- Implemented: RFXCom, sTypeTH13/sTypeTH14
 - Implemented: MQTT support
 - Implemented: Native 'Ping' (System Alive Checker) hardware
 - Implemented: KMTronic USB/WEB/RS485 relay hardware
@@ -53,6 +54,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: 'Nest Thermostat' hardware support
 - Implemented: Option to Enable/Disable the Custom tab for non-users (admin)
 - Implemented: Warning when deleting a Blockly event
+- Implemented: Blind status "Stopped" now also displayed on dashboard
 - Improved: MySensors support
 - Improved: Logitech Harmoney Hub
 - Changed: Avoiding possible RTC/NTP clock drifts
@@ -114,16 +116,11 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Removed update notification in the login screen
 - Fixed: wind gust tooltip
 - Fixed: Wind Graph generation could cause a crash
-- Implemented: Blind status "Stopped" now also displayed on dashboard
-- Implemented: MQTT commands to switch light, switch scene and set user variable
-- Implemented: MQTT command to send a Notification
-- Implemented: RFXCom, sTypeTH13/sTypeTH14
-- Implemented: MQTT command to request device information
 
-Version 2.0.2284 (February 22th 2015)
+Version 2.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
 
-Version 2.0.2283 (February 21th 2015)
+Version 2.2283 (February 21th 2015)
 - Implemented: Icon scaling setting per floorplan
 - Changed: floorplan code to handle non-landscape images better
 - Fixed: Possible crash in Eventsystem (GetCurrentMeasurementStates) where string value was empty
@@ -231,7 +228,7 @@ Version 2.0.2283 (February 21th 2015)
 - Implemented: Setpoint Popup
 - Implemented: OTGW sending current time/day
 
-Version 2.0.2025 (September 28th 2014)
+Version 2.2025 (September 28th 2014)
 - Implemented: Fibaro Link data pusher
 - Implemented: Splash screen for iPhone5 retina
 - Implemented: Navigation toolbar for mobile devices
@@ -343,7 +340,7 @@ Version 2.0.2025 (September 28th 2014)
 
 - Disabled: Internal hardware monitoring, some users have issues with latest changes
 
-Version 1.0.1680 (April 21th 2014)
+Version 1.1680 (April 21th 2014)
 - Implemented: Support for Forecast.io
 - Implemented: Temperature/Weather widgets forecast button if hardware is WU/Forecast.io
 - Implemented: Widgets now turn yellow (if no timeout) if the battery level is <= 10 percent
@@ -439,7 +436,7 @@ Version 1.0.1680 (April 21th 2014)
 - Fixed: Thermostat SetPoint in Fahrenheit
 - Fixed: OpenZWave general type (motion sensor) (thanks to Dnpwwo!)
 
-Version 1.0.1396 (January 18th 2014)
+Version 1.1396 (January 18th 2014)
 - Implemented: new commandline option to specify www root folder (-wwwroot)
 - Implemented: Limitless/AppLamp, option to set Hue/Brightness in the Edit option
 - Implemented: Limitless/AppLamp, can now also be used as 'Dimmer'
@@ -510,7 +507,7 @@ Version 1.0.1396 (January 18th 2014)
 - Changed: OpenZWave, better handling of COMMAND_CLASS_ALARM and COMMAND_CLASS_SENSOR_ALARM (you might get new devices!)
 - Implemented: Add Manual Light/Switch for Meiantech
 
-Version 1.0.1186 (November 16th 2013)
+Version 1.1186 (November 16th 2013)
 - Fixed: rain week log, some top legend values did not show on the chart
 - Implemented: Counterlog, Week chart, legend values
 - Implemented: Room Plan editor, dashboard room selector
@@ -565,7 +562,7 @@ Version 1.0.1186 (November 16th 2013)
 - Implemented: Clicking on the security-panel icon in the dashboard/switch tab brings you to the actual security panel
 - Implemented: Option to manual add a ByronSX doorbell
 
-Version 1.0.1087 (Oktober 16th 2013)
+Version 1.1087 (Oktober 16th 2013)
 - Implemented: Login page (solves the caching problems)
 - Fixed: buttons add sensor/switch buttons now hidden for 'viewer' users
 - Implemented: option in settings for basic-auth login type
@@ -633,7 +630,7 @@ Version 1.0.1087 (Oktober 16th 2013)
 - Changed: OpenZWave, Sensor_Binary now also uses the Index value (you might get new sensors, and old one can be removed)
 - Implemented: Wake-up On Lan support
 
-Version 1.0.940 (July 31th 2013)
+Version 1.940 (July 31th 2013)
 - Implemented: Lighting2, when a Group On/Off is received, all switched with the same ID will be set to 'On' or 'Off' (internally)
 - Fixed: Z-Wave, Wattage scale factor was not initialized
 - Implemented: Application settings, mobile view (mobile, or as normal dashboard), iPhone will always be mobile theme
@@ -678,7 +675,7 @@ Version 1.0.940 (July 31th 2013)
 - Implemented: Dummy hardware device, that does nothing, but can be used for virtual switches
 - Implemented: New Scene/Group functionality
 
-Version 1.0.762 (July 1th 2013)
+Version 1.762 (July 1th 2013)
 - Changed: Motion Sensors, Off delay now sends 'Off' to Lighting 1/6 devices, and 'No Motion' to X10 motion sensors
 - Implemented: On/Off switches, Off Delay option
 - Implemented: BMP085 I2C sensor (Rasberry Pi/arm only)
@@ -719,7 +716,7 @@ Version 1.0.762 (July 1th 2013)
 - Implemented: Now possible to switch remote hardware
 - Changed: Only RAEX blinds will not show a 'stop' button
 
-Version 1.0.666 (May 28th 2013)
+Version 1.666 (May 28th 2013)
 - Implemented: Settings, Doorbell could be send as 'Group On' or 'On' command
 - Fixed: Power Usage Graph, Problem with other devices then P1 Smart Meter
 - Implemented: Settings, Option to specify P1 Smart Meter Type (with/without Decimals)
@@ -756,7 +753,7 @@ Version 1.0.666 (May 28th 2013)
 - Changed: meta viewport, removed device-width option
 - Implemented: Blinds now always have open/close buttons
 
-Version 1.0.607 (May 11th 2013)
+Version 1.607 (May 11th 2013)
 - Changed: Rego6XX Type setting moved to the hardware settings in the same way as RFXtrx setup is done
 - Removed: patch for 'Better day value calculation' for multimeter devices (Like P1 Smart Meter electra), not needed
 - Fixed: TE923 (Weather stations) hardware can now be shared
@@ -803,7 +800,7 @@ Version 1.0.607 (May 11th 2013)
 - Changed: P1 Smart meter Power, Day/Week graph now displays both meters (day/night)
 - Changed: P1 Smart meter Power, graph color swap between tariff 1/2
 
-Version 1.0.484 (April 28th 2013)
+Version 1.484 (April 28th 2013)
 - Implemented: Raspberry Pi, updating via the web browser (Settings Tab)
 - Implemented: Web Gui, sticky Notification (now only used when there is an update for the Raspberry Pi)
 - Fixed: ResetSecurityStatus json return status
@@ -837,7 +834,7 @@ Version 1.0.484 (April 28th 2013)
 - Fixed: RFXtrx USB mode option in hardware settings
 - Implemented: Multi language support for sensors/switch names
 
-Version 1.0.412 (April 1th 2013)
+Version 1.412 (April 1th 2013)
 - Fixed: Siren icon on dashboard
 - Implemented: New layout, dropdown menu, hardware moved to setting dropdown
 - Implemented: Chart tooltip now includes weekday

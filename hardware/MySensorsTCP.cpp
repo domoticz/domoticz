@@ -63,6 +63,16 @@ bool MySensorsTCP::StartHardware()
 bool MySensorsTCP::StopHardware()
 {
 	m_stoprequested=true;
+	if (isConnected())
+	{
+		try {
+			disconnect();
+		}
+		catch (...)
+		{
+			//Don't throw from a Stop command
+		}
+	}
 	try {
 		if (m_thread)
 		{
@@ -72,15 +82,6 @@ bool MySensorsTCP::StopHardware()
 	catch (...)
 	{
 		//Don't throw from a Stop command
-	}
-	if (isConnected())
-	{
-		try {
-			disconnect();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
 	}
 
 	m_bIsStarted=false;
@@ -149,22 +150,12 @@ void MySensorsTCP::OnError(const boost::system::error_code& error)
 	_log.Log(LOG_ERROR,"MySensors: Error: %s",error.message().c_str());
 }
 
-bool MySensorsTCP::WriteToHardware(const char *pdata, const unsigned char length)
-{
-	if (!mIsConnected)
-	{
-		return false;
-	}
-	write((const unsigned char*)pdata,length);
-	return true;
-}
-
 void MySensorsTCP::WriteInt(const std::string &sendStr)
 {
 	if (!mIsConnected)
 	{
 		return;
 	}
-	write(sendStr);
+	write((const unsigned char*)sendStr.c_str(),sendStr.size());
 }
 
