@@ -115,6 +115,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: wind gust tooltip
 - Fixed: Wind Graph generation could cause a crash
 - Implemented: Blind status "Stopped" now also displayed on dashboard
+- Implemented: MQTT commands to switch light, switch scene and set user variable
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
