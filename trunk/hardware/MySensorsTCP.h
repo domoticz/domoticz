@@ -11,7 +11,6 @@ public:
 	MySensorsTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~MySensorsTCP(void);
 	bool isConnected(){ return mIsConnected; };
-	bool WriteToHardware(const char *pdata, const unsigned char length);
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
