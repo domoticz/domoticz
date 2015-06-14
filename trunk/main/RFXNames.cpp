@@ -446,6 +446,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeTEMP_HUM, sTypeTH10, "Rubicson/IW008T/TX95" },
 		{ pTypeTEMP_HUM, sTypeTH11, "Oregon EW109" },
 		{ pTypeTEMP_HUM, sTypeTH12, "Imagintronix" },
+		{ pTypeTEMP_HUM, sTypeTH13, "Alecto WS1700" },
+		{ pTypeTEMP_HUM, sTypeTH14, "Alecto" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "LaCrosse TX3" },
 
 
@@ -717,6 +719,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeTEMP_HUM, sTypeTH10, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH11, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH12, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH13, "Temperature,Humidity,Humidity Status" },
+		{ pTypeTEMP_HUM, sTypeTH14, "Temperature,Humidity,Humidity Status" },
 		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "Temperature,Humidity,Humidity Status" },
 
 
