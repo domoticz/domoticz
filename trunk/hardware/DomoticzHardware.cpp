@@ -560,7 +560,7 @@ void CDomoticzHardwareBase::SendBlindSensor(const int NodeID, const int ChildID,
 	bool bDeviceExits = true;
 
 	char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X", NodeID);
+	sprintf(szIdx, "%02X%02X%02X", 0,0,NodeID);
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ") AND (Type==" << int(pTypeBlinds) << ") AND (Subtype==" << int(sTypeBlindsT0) << ")";

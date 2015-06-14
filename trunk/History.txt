@@ -1,60 +1,58 @@
 Version 2.0.xxxx (xxxx 2015)
+- Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
+- Implemented: RFXCom, support for Blinds T9/T10
+- Implemented: RFXCom, mode6 (Keeloq protocol) support
+- Implemented: RFXCom pTypeInterfaceControl messages
 - Implemented: MQTT support
+- Implemented: Native 'Ping' (System Alive Checker) hardware
+- Implemented: KMTronic USB/WEB/RS485 relay hardware
+- Implemented: 'SMS' notification system
+- Implemented: 'Kodi' notification system (thanks to dnpwwo)
+- Implemented: 'Custom HTTP' notification system
 - Implemented: Fritzbox Hardware type for caller ID
 - Implemented: JSON API, option to 'Toggle' a switch state between On/Off
-- Implemented: Warning when deleting a Blockly event
-- Implemented: Support for the ETH8020 relay board
-- Implemented: Finnish/Lithuanian/Czech language
 - Implemented: Sound Level sensor (dB)
+- Implemented: Support for the ETH8020 relay board
+- Implemented: Lithuanian language support (thanks to our translators!)
+- Implemented: Hungarian language support (big thanks to Isty1974!)
+- Implemented: Greek language support, big thanks to George!!
 - Implemented: Distance Sensor (cm/inches)
 - Implemented: Mertik (Thermostat 3) added Second Up/Second Down option in the popup
-- Implemented: RFXCom, support for Blinds T9/T10
 - Implemented: BMP085/MySensors forecast Cloudy/Rain when pressure is <1010 hPa and original forecast was Cloudy
-- Implemented: Hungarian language support (big thanks to Isty1974!)
 - Implemented: Devices tab, Barometer/Text log option
 - Implemented: 'Toon' zwave switches support
-- Implemented: Support for Python scripts (thanks to Maarten!)
 - Implemented: Mertik (Thermostat 3) Up/Down popup
 - Implemented: P1 Meter, Energy Used/Generated in graph
 - Implemented: Option to specify sensor timeout (default 60 minutes)
-- Implemented: Greek language support, big thanks to George!!
-- Implemented: RFXCom, mode6 (Keeloq protocol) support
-- Implemented: SMS Notifications
 - Implemented: Option to Enable/Disable notification systems
 - Implemented: Option to supply custom notification messages
-- Implemented: 'Custom HTTP' notification system
 - Implemented: notifications, option to send to specific systems
 - Implemented: Basic Auth, log message when a wrong username/password is provided (thanks to pj-r)
-- Implemented: WebServer, keep-alive, big thanks to chimit!!!!
-- Implemented: RFXCom pTypeInterfaceControl messages
 - Implemented: Scene/Group, now possible to add same device multiple times, as long as the ondelay is different
 - Implemented: Scene devices now supports both on and off delays (off = ondelay + offdelay)
 - Implemented: CORS browser support
 - Implemented: Settings, Battery Low check
 - Implemented: Counters in P1 Electra/Gas month reports per day
-- Implemented: Sanity check for OpenZWave Network Key Length
 - Implemented: OTGW, MsgID=14 and MsgID=17 (if reported)
-- Implemented: KMTronic USB/WEB relay hardware
+- Implemented: OTGW, CH_Enable/DHW_Enable are now switchable (Thanks to Rob K)
+- Implemented: OTGW, support for GPIO A/B switches (Thanks to Rob K)
 - Implemented: Devices Tab, option to rename device
 - Implemented: Events/Lua, User Variable can now be set after XX seconds
+- Implemented: OpenZWave, Sanity check for Network Key Length
+- Implemented: Openzwave, Now using security branch
 - Implemented: OpenZWave, option to include device secure (only use for ZWave+ devices)
 - Implemented: OpenZWave security, added support for the Philio PST02-1A door contact
 - Implemented: OpenZWave velocity sensor (wind)
 - Implemented: Uservariables, display Idx value (thanks to ikkemaniac)
 - Implemented: Incremental Counter sensor (thanks to ikkemaniac)
-- Implemented: Kodi notification system (thanks to dnpwwo)
 - Implemented: SolarMax inverter with Lan interface
 - Implemented: Current sensors now also display actual state in caption
-- Implemented: KMTronic USB-> RS485 relay hardware
 - Implemented: Extra check in short-log cleanup
-- Implemented: Native 'Ping' (System Alive Checker)
 - Implemented: Mobile Phone icon
 - Implemented: Set Blinds Percentage level from blockly (Ticket #437)
-- Implemented: OTGW, CH_Enable/DHW_Enable are now switchable (Thanks to Rob K)
-- Implemented: OTGW, support for GPIO A/B switches (Thanks to Rob K)
 - Implemented: 'Nest Thermostat' hardware support
-- Implemented: Lithuanian language support (thanks to our translators!)
 - Implemented: Option to Enable/Disable the Custom tab for non-users (admin)
+- Implemented: Warning when deleting a Blockly event
 - Improved: MySensors support
 - Improved: Logitech Harmoney Hub
 - Changed: Avoiding possible RTC/NTP clock drifts
@@ -63,6 +61,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Changed: Handling timeout (dead node)/Awake status, also for switches in the Gui
 - Changed: More translation work done
 - Changed: OpenZWave, when a switch/dimmer is turned off, and this node has a Power/Energy sensor, their value is set to 0
+- Changed: OpenZWave Color Command Class (you need to re-include the node)
 - Changed: Javascript translation system to I18Next
 - Changed: Air Quality (CO-2) sensor class
 - Changed: P1 Electra/Gas meters now have an ID, update all your domoticz instances!
@@ -73,18 +72,15 @@ Version 2.0.xxxx (xxxx 2015)
 - Changed: RFLink: disabled debug, corrected support for KAKU door/window sensors and dim values
 - Changed: Notification system (big thanks to chimit!)
 - Changed: Moved curl folder to windows libraries folder (windows compiler, download the new WindowsLibraries.zip)
-- Changed: Now using OpenZWave security branch
 - Changed: Now possible to disable serial hardware when usb port is not available
 - Changed: FibaroLink/Datapush, support for V4 firmware
 - Changed: General Graph, min value is now calculated dynamically
 - Changed: Better new update notification when launching browser
-- Changed: HTTP Notification, can now handle both HTTP and Scripts
 - Changed: Logitech Harmony Hub code
 - Changed: RFLink controller initialization detection (reported by gkroone)
 - Changed: Serial Port names (now always as string)
 - Changed: Setpoint Up/Down rounds up to 0.5 degrees
 - Changed: Not sending actual motion sensors off command, only updating internally
-- Changed: OpenZWave Color Command Class (you need to re-include the node)
 - Changed: Enlarged windows console log window
 - Changed: Scenes, now supports adding security devices
 - Changed: Teleinfo, added support for CBEMM meters (TELEINFO_TYPE_MOTDETAT), thanks to berty!
@@ -109,8 +105,6 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Blockly, now escaping strings/xml
 - Fixed: Blockly, possible saving of 'ghost' events
 - Fixed: User Editor, updating a user could result in random password change
-- Fixed: HTTP Notification
-- Fixed: HTTP Notification (Script) stop url encoding subject/message
 - Fixed: EventSystem, checking if notification contains two parameters
 - Fixed: S0 Meter, Restore last values, and updating hardware settings
 - Fixed: Gui slider update for Blinds Percentage
@@ -120,6 +114,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Fixed: Removed update notification in the login screen
 - Fixed: wind gust tooltip
 - Fixed: Wind Graph generation could cause a crash
+- Implemented: Blind status "Stopped" now also displayed on dashboard
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup

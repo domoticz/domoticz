@@ -347,7 +347,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
 
    std::string readValue=readRawData(fileName);
    if (readValue.empty())
-	   return -1000.0;
+	   return -1000;
    return static_cast<int>((atof(readValue.c_str())*1000.0));
 }
 

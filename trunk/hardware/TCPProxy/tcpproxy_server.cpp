@@ -188,7 +188,7 @@ namespace tcp_proxy
 						this,
 						boost::asio::placeholders::error));
 		}
-		catch(std::exception& e)
+		catch(...)
 		{
 			//std::cerr << "acceptor exception: " << e.what() << std::endl;
 			return false;

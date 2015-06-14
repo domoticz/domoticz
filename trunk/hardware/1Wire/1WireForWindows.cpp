@@ -394,7 +394,7 @@ int C1WireForWindows::GetVoltage(const _t1WireDevice& device,int unit) const
    }
    catch (C1WireForWindowsReadException&)
    {
-	   return -1000.0;
+	   return -1000;
    }
 
    return ansRoot.get("Voltage",0).asInt();
