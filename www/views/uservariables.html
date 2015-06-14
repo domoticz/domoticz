@@ -10,6 +10,15 @@
             </tr>
         </thead>		
     </table>
+    <table class="display" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td align="left">
+				<a class="btnstyle3-dis" id="uservariableupdate" data-i18n="Update">Update</a>&nbsp;
+				<a class="btnstyle3-dis" id="uservariabledelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right"><a class="btnstyle3" ng-click="RefreshUserVariablesTable();" data-i18n="Refresh">Refresh</a></td>
+		</tr>
+    </table>
 	<p>
 	<h2 data-i18n="Edit variable">Edit variable</h2><br>
 	<table class="display" id="uservariablesedittable" border="0" cellpadding="0" cellspacing="20">
@@ -32,189 +41,10 @@
 			<td align="right" style="width:110px"><label for="uservariablevalue"><span data-i18n="Variable value"></span>:</label></td>
 			<td><input type="text" id="uservariablevalue" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
-
 		<tr>
 			<td colspan="2">
-				<a class="btnstyle3" onclick="AddLink('a');" data-i18n="Add">Add</a>
-				<a class="btnstyle3-dis" id="uservariableupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-				<a class="btnstyle3-dis" id="uservariabledelete" data-i18n="Delete">Delete</a>
+				<a class="btnstyle3" onclick="AddVariable('a');" data-i18n="Add">Add</a>
 			</td>
 		</tr>	
 	</table>
 </div>
-
-	
-
-<script type="text/javascript" charset="utf-8">
-
-
-function DeleteVariable(idx)
-{
-	bootbox.confirm($.t("Are you sure you want to remove this variable?"), function(result) {
-		if (result==true) {
-			$.ajax({
-				url: "json.htm?type=command&param=deleteuservariable&idx=" + idx,
-				async: false, 
-				dataType: 'json',
-				success: function(data) {
-					RefreshUserVariablesTable();
-				}
-			});
-		}
-	});
-}
-	
-
-function AddLink(type)
-{
-	var idx = $.userVariableIdx;
-	var uservariablename = $('#uservariablesedittable #uservariablename').val();
-	var uservariabletype = $('#uservariablesedittable #uservariabletype option:selected').val();
-	var uservariablevalue = $('#uservariablesedittable #uservariablevalue').val();
-	
-	if((type=="a") && (jQuery.inArray(uservariablename,$.varNames) != -1)){
-		ShowNotify($.t('Variable name already exists!'), 2500, true);
-	}
-	else {
-		if (type == "a") {
-			var url = "json.htm?type=command&param=saveuservariable&vname=" + uservariablename + "&vtype=" + uservariabletype + "&vvalue=" + uservariablevalue;
-		}
-		else if (type == "u") {
-			var url = "json.htm?type=command&param=updateuservariable&idx=" + idx + "&vname=" + uservariablename + "&vtype=" + uservariabletype + "&vvalue=" + uservariablevalue;
-		}
-		
-		$.ajax({
-			 url: url, 
-			 async: false, 
-			 dataType: 'json',
-			 success: function(data) {
-				if (typeof data != 'undefined') {
-					if (data.status=="OK") {
-						bootbox.alert($.t('User variable saved'));
-						RefreshUserVariablesTable();
-						$('#uservariablesedittable #uservariablename').val("");
-						$('#uservariablesedittable #uservariablevalue').val("");
-						$('#uservariablesedittable #uservariabletype').val("0");
-					}
-					else {
-						ShowNotify($.t(data.status), 2500, true);
-					}
-				}
-			 },
-			 error: function(){
-					ShowNotify($.t('Problem saving user variable!'), 2500, true);
-			 }     
-		});
-	}
-		
-}
-	
-	
-function RefreshUserVariablesTable()
-{
-  $('#modal').show();
-
-	$('#uservariablesedittable #uservariableupdate').attr("class", "btnstyle3-dis");
-	$('#uservariablesedittable #uservariabledelete').attr("class", "btnstyle3-dis");
-
-  $.varNames = [];	
-  var oTable = $('#uservariablestable').dataTable();
-  oTable.fnClearTable();
-  $.ajax({
-     url: "json.htm?type=command&param=getuservariables",
-     async: false, 
-     dataType: 'json',
-     success: function(data) {   
-      if (typeof data.result != 'undefined') {
-        $.each(data.result, function(i,item){
-			$.varNames.push(item.Name);
-			var typeWording;
-			switch( item.Type ) {
-				case "0" :
-					typeWording = $.t('Integer');
-					break;
-				case "1" :
-					typeWording = $.t('Float');
-					break;
-				case "2" :
-					typeWording = $.t('String');
-					break;					
-				case "3" :
-					typeWording = $.t('Date');
-					break;				
-				case "4" :
-					typeWording = $.t('Time');
-					break;
-				case "5" :
-					typeWording = $.t('DateTime');
-					break;
-				default:
-					typeWording = "undefined";
-			}
-			var addId = oTable.fnAddData( {
-				"DT_RowId": item.idx,
-				"DT_ItemType": item.Type,
-                                "0": item.idx,
-                                "1": item.Name,
-                                "2": typeWording,
-                                "3": item.Value,
-                                "4": item.LastUpdate
-			} );
-        });
-	  }
-     }
-  });
-  $('#modal').hide();
-}
-
-
-function ShowUserVariables()
-{
-	$('#fibaromain').i18n();
-	var oTable = $('#uservariablestable').dataTable( {
-	  "sDom": '<"H"lfrC>t<"F"ip>',
-	  "oTableTools": {
-		"sRowSelect": "single",
-	  },
-	  "fnDrawCallback": function (oSettings) {
-        var nTrs = this.fnGetNodes();
-        $(nTrs).click(
-			function(){
-				$(nTrs).removeClass('row_selected');
-				$(this).addClass('row_selected');
-				$('#uservariablesedittable #uservariableupdate').attr("class", "btnstyle3");
-				$('#uservariablesedittable #uservariabledelete').attr("class", "btnstyle3");
-				var anSelected = fnGetSelected( oTable );
-				if ( anSelected.length !== 0 ) {
-					var data = oTable.fnGetData( anSelected[0] );
-					var idx= data["DT_RowId"];
-					$.userVariableIdx=idx;	
-					$("#uservariablesedittable #uservariableupdate").attr("href", "javascript:AddLink('u')");
-					$("#uservariablesedittable #uservariabledelete").attr("href", "javascript:DeleteVariable(" + idx + ")");
-					$("#uservariablesedittable #uservariablename").val(data["1"]);
-					$("#uservariablesedittable #uservariabletype").val(data["DT_ItemType"]);
-					$("#uservariablesedittable #uservariablevalue").val(data["3"]);
-				}
-		});
-	  },    
-	  "aaSorting": [[ 0, "desc" ]],
-	  "bSortClasses": false,
-	  "bProcessing": true,
-	  "bStateSave": true,
-	  "bJQueryUI": true,
-	  "iDisplayLength" : 10,
-	  'bLengthChange': false,
-	  "sPaginationType": "full_numbers",
-	  language: $.DataTableLanguage
-	} );
-	
-	RefreshUserVariablesTable()
-}
-
-$(document).ready(function() {
-	//global var
-	$.userVariableIdx=0;
-	$.varNames = [];
-	ShowUserVariables();
-} );  
-</script>

@@ -145,27 +145,35 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		ProcessMySensorsMessage(qMessage);
 		return;
 	}
-	else if (topic == TOPIC_IN)
+	else if (topic != TOPIC_IN)
+		return;
+	Json::Value root;
+	Json::Reader jReader;
+	std::string szCommand = "udevice";
+	std::vector<std::vector<std::string> > result;
+	bool ret = jReader.parse(qMessage, root);
+	if (!ret)
+		goto mqttinvaliddata;
+
+	if (root["idx"].empty())
+		goto mqttinvaliddata;
+	if (!root["idx"].isInt64())
+		goto mqttinvaliddata;
+
+	unsigned long long idx = (unsigned long long)root["idx"].asInt64();
+
+
+	if (!root["command"].empty())
 	{
-		Json::Value root;
+		if (!root["command"].isString())
+			goto mqttinvaliddata;
+		szCommand = root["command"].asString();
+	}
 
-		Json::Reader jReader;
-		bool ret = jReader.parse(qMessage, root);
-		if (!ret)
-		{
-			_log.Log(LOG_ERROR, "MQTT: Invalid data received!");
-			return;
-		}
-		bool bValid = true;
-		if (root["idx"].empty())
-		{
-			bValid = false;
-		}
-		unsigned long long idx = (unsigned long long)root["idx"].asInt64();
-
+	if ((szCommand == "udevice") || (szCommand == "switchlight"))
+	{
 		//Get the raw device parameters
 		std::stringstream szQuery;
-		std::vector<std::vector<std::string> > result;
 		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
 		result = m_sql.query(szQuery.str());
 		if (result.empty())
@@ -173,7 +181,32 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
 			return;
 		}
+	}
+	else if (szCommand == "switchscene")
+	{
+		std::stringstream szQuery;
+		szQuery << "SELECT Name FROM Scenes WHERE (ID==" << idx << ")";
+		result = m_sql.query(szQuery.str());
+		if (result.empty())
+		{
+			_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
+			return;
+		}
+	}
+	else if (szCommand == "setuservariable")
+	{
+		std::stringstream szQuery;
+		szQuery << "SELECT Name FROM UserVariables WHERE (ID==" << idx << ")";
+		result = m_sql.query(szQuery.str());
+		if (result.empty())
+		{
+			_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
+			return;
+		}
+	}
 
+	if (szCommand == "udevice")
+	{
 		int HardwareID = atoi(result[0][0].c_str());
 		std::string DeviceID = result[0][1];
 		int unit = atoi(result[0][2].c_str());
@@ -184,14 +217,19 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		bool bsvalue = !root["svalue"].empty();
 
 		if (!bnvalue && !bsvalue)
+			goto mqttinvaliddata;
+
+		if (bnvalue)
 		{
-			bValid = false;
+			if (!root["nvalue"].isInt())
+				goto mqttinvaliddata;
 		}
-		if (!bValid)
+		if (bsvalue)
 		{
-			_log.Log(LOG_ERROR, "MQTT: Invalid data received! (Missing idx,nvalue,svalue)");
-			return;
+			if (!root["svalue"].isString())
+				goto mqttinvaliddata;
 		}
+
 		int nvalue = (bnvalue) ? root["nvalue"].asInt() : 0;
 		std::string svalue = (bsvalue) ? root["svalue"].asString() : "";
 
@@ -203,7 +241,63 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			_log.Log(LOG_ERROR, "MQTT: Problem updating sensor (check idx, hardware enabled)");
 			return;
 		}
+		return;
 	}
+	else if (szCommand == "switchlight")
+	{
+		if (root["switchcmd"].empty())
+			goto mqttinvaliddata;
+		if (!root["switchcmd"].isString())
+			goto mqttinvaliddata;
+		std::string switchcmd = root["switchcmd"].asString();
+		if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Set Level"))
+			goto mqttinvaliddata;
+		int level = 0;
+		if (!root["level"].empty())
+		{
+			if (root["level"].isString())
+				level = atoi(root["level"].asString().c_str());
+			else
+				level = root["level"].asInt();
+		}
+		if (!m_mainworker.SwitchLight(idx, switchcmd, level, -1, false, 0) == true)
+		{
+			_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
+		}
+		return;
+	}
+	else if (szCommand == "switchscene")
+	{
+		if (root["switchcmd"].empty())
+			goto mqttinvaliddata;
+		if (!root["switchcmd"].isString())
+			goto mqttinvaliddata;
+		std::string switchcmd = root["switchcmd"].asString();
+		if ((switchcmd != "On") && (switchcmd != "Off"))
+			goto mqttinvaliddata;
+		if (!m_mainworker.SwitchScene(idx, switchcmd) == true)
+		{
+			_log.Log(LOG_ERROR, "MQTT: Error sending scene command!");
+		}
+		return;
+	}
+	else if (szCommand == "setuservariable")
+	{
+		if (root["value"].empty())
+			goto mqttinvaliddata;
+		if (!root["value"].isString())
+			goto mqttinvaliddata;
+		std::string varvalue = root["value"].asString();
+		m_sql.SetUserVariable(idx, varvalue, true);
+		return;
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "MQTT: Unknown command received: %s", szCommand.c_str());
+		return;
+	}
+mqttinvaliddata:
+	_log.Log(LOG_ERROR, "MQTT: Invalid data received!");
 }
 
 void MQTT::on_disconnect(int rc)

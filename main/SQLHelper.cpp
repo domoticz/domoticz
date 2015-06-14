@@ -6986,7 +6986,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 	}
 	*/
 	
-	time_t now = time(0);
+	time_t now = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
@@ -7007,7 +7007,25 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
 	}
 	return "OK";
+}
 
+bool CSQLHelper::SetUserVariable(const unsigned long long idx, const std::string &varvalue, const bool eventtrigger)
+{
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+	char szTmp[300];
+	sprintf(szTmp,
+		"UPDATE UserVariables SET Value='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %llu)",
+		CURLEncode::URLDecode(varvalue.c_str()).c_str(),
+		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		idx
+		);
+	query(szTmp);
+	if (eventtrigger) {
+		m_mainworker.m_eventsystem.ProcessUserVariable(idx);
+	}
+	return true;
 }
 
 std::string CSQLHelper::CheckUserVariableName(const std::string &varname)
