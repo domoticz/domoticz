@@ -118,6 +118,7 @@ Version 2.0.xxxx (xxxx 2015)
 - Implemented: MQTT commands to switch light, switch scene and set user variable
 - Implemented: MQTT command to send a Notification
 - Implemented: RFXCom, sTypeTH13/sTypeTH14
+- Implemented: MQTT command to request device information
 
 Version 2.0.2284 (February 22th 2015)
 - Fixed: Firefox, RGBW/Setpoint popup
