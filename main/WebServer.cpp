@@ -8705,6 +8705,9 @@ namespace http {
 							if (lstatus == "On") {
 								lstatus = "Closed";
 							}
+							else if (lstatus == "Stop") {
+								lstatus = "Stopped";
+							}
 							else {
 								lstatus = "Open";
 							}
