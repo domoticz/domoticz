@@ -5809,7 +5809,7 @@ namespace http {
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				bool bOK = m_sql.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority);
+				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority);
 				if (bOK) {
 					root["status"] = "OK";
 					root["title"] = "AddNotification";
@@ -5834,7 +5834,7 @@ namespace http {
 				root["title"] = "UpdateNotification";
 
 				//delete old record
-				m_sql.RemoveNotification(idx);
+				m_notifications.RemoveNotification(idx);
 
 				_eNotificationTypes ntype = (_eNotificationTypes)atoi(stype.c_str());
 				std::string ttype = Notification_Type_Desc(ntype, 1);
@@ -5852,7 +5852,7 @@ namespace http {
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				m_sql.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority);
+				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority);
 			}
 			else if (cparam == "deletenotification")
 			{
@@ -5863,7 +5863,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "DeleteNotification";
 
-				m_sql.RemoveNotification(idx);
+				m_notifications.RemoveNotification(idx);
 			}
 			else if (cparam == "switchdeviceorder")
 			{
@@ -6012,7 +6012,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ClearNotification";
 
-				m_sql.RemoveDeviceNotifications(idx);
+				m_notifications.RemoveDeviceNotifications(idx);
 			}
 			else if (cparam == "addcamera")
 			{
@@ -8512,7 +8512,7 @@ namespace http {
 					sprintf(szData, "%d, %s", nValue, sValue.c_str());
 					root["result"][ii]["Data"] = szData;
 
-					root["result"][ii]["Notifications"] = (m_sql.HasNotifications(sd[0]) == true) ? "true" : "false";
+					root["result"][ii]["Notifications"] = (m_notifications.HasNotifications(sd[0]) == true) ? "true" : "false";
 					root["result"][ii]["ShowNotifications"] = true;
 
 					bool bHasTimers = false;
@@ -12507,7 +12507,7 @@ namespace http {
 				std::stringstream s_str(m_pWebEm->FindValue("idx"));
 				s_str >> idx;
 			}
-			std::vector<_tNotification> notifications = m_sql.GetNotifications(idx);
+			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
 			if (notifications.size() > 0)
 			{
 				std::vector<_tNotification>::const_iterator itt;
