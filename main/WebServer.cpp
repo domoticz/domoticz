@@ -5354,6 +5354,25 @@ namespace http {
 					return;
 				}
 
+                // ----------- RFlink "Manual Add" Fix -----------
+                CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+                if (pBaseHardware->HwdType == HTYPE_RFLINK) {
+                   if (dtype == pTypeLighting1){
+                      dtype = pTypeGeneralSwitch;
+
+					  std::stringstream s_strid;
+				      s_strid << std::hex << atoi(devid.c_str());
+					  devid = s_strid.str();
+                      devid = "000000" + devid;  
+                   } else
+                   if (dtype == pTypeLighting2){
+                      dtype = pTypeGeneralSwitch;
+                      subtype = sSwitchTypeAC;
+                      devid = "0" + devid;  
+                   }
+                }
+                // -----------------------------------------------
+                
 				bool bActEnabledState = m_sql.m_bAcceptNewHardware;
 				m_sql.m_bAcceptNewHardware = true;
 				std::string devname;
