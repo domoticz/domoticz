@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "WebServerHelper.h"
 
+#ifdef NS_ENABLE_SSL
+#include <openssl/ssl.h>
+#endif	
 
 namespace http {
 	namespace server {
@@ -28,6 +31,7 @@ namespace http {
 			bool bRet = false;
 
 #ifdef NS_ENABLE_SSL
+			SSL_library_init();
 			serverCollection.resize(secure_listenport.empty() ? 1 : 2);
 #else
 			serverCollection.resize(1);
