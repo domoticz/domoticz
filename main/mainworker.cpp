@@ -2191,7 +2191,7 @@ unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardwar
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleRainNotification(HwdID, ID, Unit, devType, subType, NTYPE_RAIN, TotalRain);
+	m_notifications.CheckAndHandleRainNotification(HwdID, ID, Unit, devType, subType, NTYPE_RAIN, TotalRain);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -2398,9 +2398,9 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 		return -1;
 
 	float wspeedms=float(intSpeed)/10.0f;
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_WIND, wspeedms);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_WIND, wspeedms);
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+	m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
 
 
 	if (m_verboselevel == EVBL_ALL)
@@ -2556,13 +2556,13 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 			unsigned char humidity_status=atoi(result[0][1].c_str());
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,humidity_status);
 			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,m_LastDeviceName);
-			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
+			m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
 			float dewpoint=(float)CalculateDewPoint(temp,humidity);
-			m_sql.CheckAndHandleDewPointNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC,temp,dewpoint);
+			m_notifications.CheckAndHandleDewPointNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC,temp,dewpoint);
 		}
 	}
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, humidity, true, false);
+	m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, humidity, true, false);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -2697,13 +2697,13 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 			temp+=AddjValue;
 			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
 			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp,m_LastDeviceName);
-			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
+			m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC, temp, humidity, true, true);
 			float dewpoint=(float)CalculateDewPoint(temp,humidity);
-			m_sql.CheckAndHandleDewPointNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC,temp,dewpoint);
+			m_notifications.CheckAndHandleDewPointNotification(HwdID, ID, 2, pTypeTEMP_HUM, sTypeTH_LC_TC,temp,dewpoint);
 		}
 	}
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, humidity, false, true);
+	m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, humidity, false, true);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -2850,10 +2850,10 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
+	m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
 
 	float dewpoint=(float)CalculateDewPoint(temp,Humidity);
-	m_sql.CheckAndHandleDewPointNotification(HwdID, ID, Unit, devType, subType,temp,dewpoint);
+	m_notifications.CheckAndHandleDewPointNotification(HwdID, ID, Unit, devType, subType,temp,dewpoint);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -3070,12 +3070,12 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 	//float seaLevelPressure=101325.0f;
 	//float altitude = 44330.0f * (1.0f - pow(fbarometer / seaLevelPressure, 0.1903f));
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
+	m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, Humidity, true, true);
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, fbarometer);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, fbarometer);
 
 	float dewpoint=(float)CalculateDewPoint(temp,Humidity);
-	m_sql.CheckAndHandleDewPointNotification(HwdID, ID, Unit, devType, subType,temp,dewpoint);
+	m_notifications.CheckAndHandleDewPointNotification(HwdID, ID, Unit, devType, subType,temp,dewpoint);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -3204,8 +3204,8 @@ unsigned long long MainWorker::decode_TempBaro(const CDomoticzHardwareBase *pHar
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, fbarometer);
+	m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_BARO, fbarometer);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -3308,11 +3308,11 @@ unsigned long long MainWorker::decode_TempRain(const CDomoticzHardwareBase *pHar
 
 	sprintf(szTmp,"%.1f",temp);
 	unsigned long long DevRowIdxTemp=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, pTypeTEMP, sTypeTEMP3, temp, 0, true, false);
+	m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, pTypeTEMP, sTypeTEMP3, temp, 0, true, false);
 
 	sprintf(szTmp,"%d;%.1f",0,TotalRain);
 	unsigned long long DevRowIdxRain=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeRAIN,sTypeRAIN3,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
-	m_sql.CheckAndHandleRainNotification(HwdID, ID, Unit, pTypeRAIN, sTypeRAIN3, NTYPE_RAIN, TotalRain);
+	m_notifications.CheckAndHandleRainNotification(HwdID, ID, Unit, pTypeRAIN, sTypeRAIN3, NTYPE_RAIN, TotalRain);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -3396,9 +3396,9 @@ unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware,
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+	m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_UV, Level);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_UV, Level);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7097,7 +7097,7 @@ unsigned long long MainWorker::decode_Current(const CDomoticzHardwareBase *pHard
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleAmpere123Notification(HwdID, ID, Unit, devType, subType, CurrentChannel1, CurrentChannel2, CurrentChannel3);
+	m_notifications.CheckAndHandleAmpere123Notification(HwdID, ID, Unit, devType, subType, CurrentChannel1, CurrentChannel2, CurrentChannel3);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7187,7 +7187,7 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)instant);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)instant);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7254,7 +7254,7 @@ unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardwa
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)instant);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)instant);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7370,7 +7370,7 @@ unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleAmpere123Notification(HwdID, ID, Unit, devType, subType, CurrentChannel1, CurrentChannel2, CurrentChannel3);
+	m_notifications.CheckAndHandleAmpere123Notification(HwdID, ID, Unit, devType, subType, CurrentChannel1, CurrentChannel2, CurrentChannel3);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7537,7 +7537,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 			temp+=AddjValue;
 
 			sprintf(szTmp,"%.1f",temp);
-			m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
+			m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, temp, 0, true, false);
 		}
 		break;
 	case sTypeRFXSensorAD:
@@ -7545,7 +7545,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		{
 			int volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
 			sprintf(szTmp,"%d",volt);
-			m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, float(volt));
+			m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, float(volt));
 
 		}
 		break;
@@ -7904,7 +7904,7 @@ unsigned long long MainWorker::decode_P1MeterPower(const CDomoticzHardwareBase *
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)p1Power->usagecurrent);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)p1Power->usagecurrent);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -8003,7 +8003,7 @@ unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)pMeter->usagecurrent);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)pMeter->usagecurrent);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -8046,7 +8046,7 @@ unsigned long long MainWorker::decode_Rego6XXTemp(const CDomoticzHardwareBase *p
 	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-    m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_TEMPERATURE, pRego->temperature);
+    m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_TEMPERATURE, pRego->temperature);
  
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -8118,7 +8118,7 @@ unsigned long long MainWorker::decode_AirQuality(const CDomoticzHardwareBase *pH
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)pMeter->airquality);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (const float)pMeter->airquality);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -8171,7 +8171,7 @@ unsigned long long MainWorker::decode_Usage(const CDomoticzHardwareBase *pHardwa
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fusage);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fusage);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -8213,7 +8213,7 @@ unsigned long long MainWorker::decode_Lux(const CDomoticzHardwareBase *pHardware
 	if (DevRowIdx == -1)
 		return -1;
 
-	m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fLux);
+	m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fLux);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -8266,10 +8266,10 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 
 	if (pMeter->subtype==sTypeThermSetpoint)
 	{
-		m_sql.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, pMeter->temp, 0, true, false);
+		m_notifications.CheckAndHandleTempHumidityNotification(HwdID, ID, Unit, devType, subType, pMeter->temp, 0, true, false);
 	}
 
-	//m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fLux);
+	//m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->fLux);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -8329,7 +8329,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			//miles
 			fValue*=0.6214f;
 		}
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, fValue);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, fValue);
 	}
 	else if (subType == sTypeDistance)
 	{
@@ -8345,7 +8345,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			//inches
 			fValue *= 0.393701f;
 		}
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, fValue);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, fValue);
 	}
 	else if (subType == sTypeSolarRadiation)
 	{
@@ -8353,21 +8353,21 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType==sTypeSoilMoisture)
 	{
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
 	}
 	else if (subType==sTypeLeafWetness)
 	{
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
 	}
 	else if (subType==sTypeVoltage)
 	{
@@ -8375,7 +8375,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypeCurrent)
 	{
@@ -8383,7 +8383,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypeBaro)
 	{
@@ -8391,7 +8391,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypePressure)
 	{
@@ -8399,7 +8399,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType==sTypePercentage)
 	{
@@ -8407,7 +8407,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_PERCENTAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_PERCENTAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypeFan)
 	{
@@ -8415,7 +8415,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_RPM, (float)pMeter->intval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_RPM, (float)pMeter->intval1);
 	}
 	else if (subType == sTypeSoundLevel)
 	{
@@ -8423,7 +8423,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		m_sql.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_RPM, (float)pMeter->intval1);
+		m_notifications.CheckAndHandleNotification(HwdID, ID, Unit, devType, subType, NTYPE_RPM, (float)pMeter->intval1);
 	}
 	else if (subType == sTypeZWaveClock)
 	{

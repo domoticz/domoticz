@@ -1,3 +1,6 @@
+Version 2.xxx (xxxx 2015)
+- Implemented/Changed: Notifications with Priority "Emergency" are always send, regardless the maximum interval specified in the settings
+
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
 - Implemented: RFXCom, support for Blinds T9/T10
