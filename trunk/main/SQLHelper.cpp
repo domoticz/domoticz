@@ -2602,10 +2602,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			}
 
 			//Check for notifications
-			if (bIsLightSwitchOn)
-				m_notifications.CheckAndHandleSwitchNotification(HardwareID,ID,unit,devType,subType,NTYPE_SWITCH_ON);
-			else
-				m_notifications.CheckAndHandleSwitchNotification(HardwareID,ID,unit,devType,subType,NTYPE_SWITCH_OFF);
+			m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
 			if (bIsLightSwitchOn)
 			{
 				if (AddjValue!=0) //Off Delay
@@ -3501,7 +3498,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result2;
 
 	sprintf(szTmp,
-		"SELECT ID,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
+		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
 		"Type=%d OR " //pTypeRFXMeter
 		"Type=%d OR " //pTypeP1Gas
 		"Type=%d OR " //pTypeYouLess
@@ -3559,15 +3556,16 @@ void CSQLHelper::UpdateMeter()
 			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
-			int hardwareID= atoi(sd[1].c_str());
-			std::string DeviceID=sd[2];
-			unsigned char Unit = atoi(sd[3].c_str());
+			std::string devname = sd[1];
+			int hardwareID= atoi(sd[2].c_str());
+			std::string DeviceID=sd[3];
+			unsigned char Unit = atoi(sd[4].c_str());
 
-			unsigned char dType=atoi(sd[4].c_str());
-			unsigned char dSubType=atoi(sd[5].c_str());
-			int nValue=atoi(sd[6].c_str());
-			std::string sValue=sd[7];
-			std::string sLastUpdate=sd[8];
+			unsigned char dType=atoi(sd[5].c_str());
+			unsigned char dSubType=atoi(sd[6].c_str());
+			int nValue=atoi(sd[7].c_str());
+			std::string sValue=sd[8];
+			std::string sLastUpdate=sd[9];
 
 			std::string susage="0";
 
@@ -3628,7 +3626,7 @@ void CSQLHelper::UpdateMeter()
 			{
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
-				m_notifications.CheckAndHandleNotification(hardwareID, DeviceID, Unit, dType, dSubType, NTYPE_USAGE, (float)nValue);
+				m_notifications.CheckAndHandleNotification(ID, devname, dType, dSubType, NTYPE_USAGE, (float)nValue);
 			}
 			else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
 			{
@@ -4269,18 +4267,18 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		s_str >> ID;
 
 		//Get Device Information
-		sprintf(szTmp,"SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
+		sprintf(szTmp,"SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
 		result=query(szTmp);
 		if (result.size()<1)
 			continue;
 		std::vector<std::string> sd=result[0];
-
-		int hardwareID= atoi(sd[0].c_str());
-		std::string DeviceID=sd[1];
-		unsigned char Unit = atoi(sd[2].c_str());
-		unsigned char devType=atoi(sd[3].c_str());
-		unsigned char subType=atoi(sd[4].c_str());
-		_eSwitchType switchtype=(_eSwitchType) atoi(sd[5].c_str());
+		std::string devname = sd[0];
+		int hardwareID= atoi(sd[1].c_str());
+		std::string DeviceID=sd[2];
+		unsigned char Unit = atoi(sd[3].c_str());
+		unsigned char devType=atoi(sd[4].c_str());
+		unsigned char subType=atoi(sd[5].c_str());
+		_eSwitchType switchtype=(_eSwitchType) atoi(sd[6].c_str());
 		_eMeterType metertype=(_eMeterType)switchtype;
 
 		float tGasDivider=GasDivider;
@@ -4351,22 +4349,22 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				case MTYPE_ENERGY:
 					musage=float(total_real)/EnergyDivider;
 					if (musage!=0)
-						m_notifications.CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYENERGY, musage);
+						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 					break;
 				case MTYPE_GAS:
 					musage=float(total_real)/tGasDivider;
 					if (musage!=0)
-						m_notifications.CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
+						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYGAS, musage);
 					break;
 				case MTYPE_WATER:
 					musage=float(total_real)/WaterDivider;
 					if (musage!=0)
-						m_notifications.CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYGAS, musage);
+						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYGAS, musage);
 					break;
 				case MTYPE_COUNTER:
 					musage=float(total_real);
 					if (musage!=0)
-						m_notifications.CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYCOUNTER, musage);
+						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYCOUNTER, musage);
 					break;
 				}
 			}
@@ -4491,18 +4489,19 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		s_str >> ID;
 
 		//Get Device Information
-		sprintf(szTmp,"SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
+		sprintf(szTmp,"SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
 		result=query(szTmp);
 		if (result.size()<1)
 			continue;
 		std::vector<std::string> sd=result[0];
 
-		int hardwareID= atoi(sd[0].c_str());
-		std::string DeviceID=sd[1];
-		unsigned char Unit = atoi(sd[2].c_str());
-		unsigned char devType=atoi(sd[3].c_str());
-		unsigned char subType=atoi(sd[4].c_str());
-		_eSwitchType switchtype=(_eSwitchType) atoi(sd[5].c_str());
+		std::string devname = sd[0];
+		int hardwareID= atoi(sd[1].c_str());
+		std::string DeviceID=sd[2];
+		unsigned char Unit = atoi(sd[3].c_str());
+		unsigned char devType=atoi(sd[4].c_str());
+		unsigned char subType=atoi(sd[5].c_str());
+		_eSwitchType switchtype=(_eSwitchType) atoi(sd[6].c_str());
 		_eMeterType metertype=(_eMeterType)switchtype;
 
 		sprintf(szTmp,"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%llu' AND Date>='%s' AND Date<'%s')",
@@ -4566,7 +4565,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			if (devType==pTypeP1Power)
 			{
 				float musage=(total_real[0]+total_real[1])/EnergyDivider;
-				m_notifications.CheckAndHandleNotification(hardwareID, DeviceID, Unit, devType, subType, NTYPE_TODAYENERGY, musage);
+				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
 /*
 			//Insert the last (max) counter values into the table to get the "today" value correct.

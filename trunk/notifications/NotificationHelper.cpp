@@ -23,6 +23,9 @@ typedef std::map<std::string, CNotificationBase*>::iterator it_noti_type;
 
 CNotificationHelper::CNotificationHelper()
 {
+	m_NotificationSwitchInterval = 0;
+	m_NotificationSensorInterval = 12 * 3600;
+
 	AddNotifier(new CNotificationProwl());
 	AddNotifier(new CNotificationNma());
 	AddNotifier(new CNotificationPushover());
@@ -39,6 +42,11 @@ CNotificationHelper::~CNotificationHelper()
 	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
 		delete iter->second;
 	}
+}
+
+void CNotificationHelper::Init()
+{
+	ReloadNotifications();
 }
 
 void CNotificationHelper::AddNotifier(CNotificationBase *notifier)
@@ -127,40 +135,26 @@ void CNotificationHelper::LoadConfig()
 }
 
 bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
-	const int HardwareID,
-	const std::string &ID,
-	const unsigned char unit,
-	const unsigned char devType,
-	const unsigned char subType,
+	const unsigned long long Idx,
+	const std::string &devicename,
 	const float temp,
 	const int humidity,
 	const bool bHaveTemp,
 	const bool bHaveHumidity)
 {
-	char szTmp[600];
-
-	unsigned long long ulID = 0;
-
-	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp, "SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID.c_str(), unit, devType, subType);
-	result = m_sql.query(szTmp);
-	if (result.size() == 0)
-		return false;
-	std::stringstream s_str(result[0][0]);
-	s_str >> ulID;
-	std::string devicename = result[0][1];
-	std::string szExtraData = "|Name=" + devicename + "|";
-	std::vector<_tNotification> notifications = GetNotifications(ulID);
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
 	if (notifications.size() == 0)
 		return false;
+
+	char szTmp[600];
+
+	std::string szExtraData = "|Name=" + devicename + "|";
 
 	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
 
-	int nNotificationInterval = 12 * 3600;
-	m_sql.GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
-	atime -= nNotificationInterval;
+	atime -= m_NotificationSensorInterval;
 
 	std::string msg = "";
 
@@ -252,38 +246,23 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleDewPointNotification(
-	const int HardwareID,
-	const std::string &ID,
-	const unsigned char unit,
-	const unsigned char devType,
-	const unsigned char subType,
+	const unsigned long long Idx,
+	const std::string &devicename,
 	const float temp,
 	const float dewpoint)
 {
-	char szTmp[600];
-
-	unsigned long long ulID = 0;
-
-	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp, "SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID.c_str(), unit, devType, subType);
-	result = m_sql.query(szTmp);
-	if (result.size() == 0)
-		return false;
-	std::stringstream s_str(result[0][0]);
-	s_str >> ulID;
-	std::string devicename = result[0][1];
-	std::string szExtraData = "|Name=" + devicename + "|Image=temp-0-5|";
-	std::vector<_tNotification> notifications = GetNotifications(ulID);
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
 	if (notifications.size() == 0)
 		return false;
+
+	char szTmp[600];
+	std::string szExtraData = "|Name=" + devicename + "|Image=temp-0-5|";
 
 	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
 
-	int nNotificationInterval = 12 * 3600;
-	m_sql.GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
-	atime -= nNotificationInterval;
+	atime -= m_NotificationSensorInterval;
 
 	std::string msg = "";
 
@@ -325,39 +304,24 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleAmpere123Notification(
-	const int HardwareID,
-	const std::string &ID,
-	const unsigned char unit,
-	const unsigned char devType,
-	const unsigned char subType,
+	const unsigned long long Idx,
+	const std::string &devicename,
 	const float Ampere1,
 	const float Ampere2,
 	const float Ampere3)
 {
-	char szTmp[600];
-
-	unsigned long long ulID = 0;
-
-	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp, "SELECT ID, Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID.c_str(), unit, devType, subType);
-	result = m_sql.query(szTmp);
-	if (result.size() == 0)
-		return false;
-	std::stringstream s_str(result[0][0]);
-	s_str >> ulID;
-	std::string devicename = result[0][1];
-	std::string szExtraData = "|Name=" + devicename + "|Image=current48|";
-	std::vector<_tNotification> notifications = GetNotifications(ulID);
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
 	if (notifications.size() == 0)
 		return false;
+
+	char szTmp[600];
+
+	std::string szExtraData = "|Name=" + devicename + "|Image=current48|";
 
 	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
-
-	int nNotificationInterval = 12 * 3600;
-	m_sql.GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
-	atime -= nNotificationInterval;
+	atime -= m_NotificationSensorInterval;
 
 	std::string msg = "";
 
@@ -459,17 +423,19 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(
-	const int HardwareID,
-	const std::string &ID,
-	const unsigned char unit,
+	const unsigned long long Idx,
+	const std::string &devicename,
 	const unsigned char devType,
 	const unsigned char subType,
 	const _eNotificationTypes ntype,
 	const float mvalue)
 {
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
+	if (notifications.size() == 0)
+		return false;
+
 	char szTmp[600];
 
-	unsigned long long ulID = 0;
 	double intpart;
 	std::string pvalue;
 	if (modf(mvalue, &intpart) == 0)
@@ -479,25 +445,16 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	pvalue = szTmp;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp, "SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID.c_str(), unit, devType, subType);
+	sprintf(szTmp, "SELECT SwitchType FROM DeviceStatus WHERE (ID=%llu)", Idx);
 	result = m_sql.query(szTmp);
 	if (result.size() == 0)
 		return false;
-	std::stringstream s_str(result[0][0]);
-	s_str >> ulID;
-	std::string devicename = result[0][1];
-	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][2] + "|";
-	std::vector<_tNotification> notifications = GetNotifications(ulID);
-	if (notifications.size() == 0)
-		return false;
+	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|";
 
 	time_t atime = mytime(NULL);
 
 	//check if not sent 12 hours ago, and if applicable
-
-	int nNotificationInterval = 12 * 3600;
-	m_sql.GetPreferencesVar("NotificationSensorInterval", nNotificationInterval);
-	atime -= nNotificationInterval;
+	atime -= m_NotificationSensorInterval;
 
 	std::string msg = "";
 
@@ -564,39 +521,30 @@ bool CNotificationHelper::CheckAndHandleNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleSwitchNotification(
-	const int HardwareID,
-	const std::string &ID,
-	const unsigned char unit,
-	const unsigned char devType,
-	const unsigned char subType,
+	const unsigned long long Idx,
+	const std::string &devicename,
 	const _eNotificationTypes ntype)
 {
-	char szTmp[600];
-
-	unsigned long long ulID = 0;
-
-	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp, "SELECT ID, Name, SwitchType, CustomImage FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID.c_str(), unit, devType, subType);
-	result = m_sql.query(szTmp);
-	if (result.size() == 0)
-		return false;
-	std::stringstream s_str(result[0][0]);
-	s_str >> ulID;
-	std::string devicename = result[0][1];
-	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][2].c_str());
-	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][2] + "|CustomImage=" + result[0][3] + "|";
-	std::vector<_tNotification> notifications = GetNotifications(ulID);
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
 	if (notifications.size() == 0)
 		return false;
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	szQuery << "SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=" << Idx << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() == 0)
+		return false;
+	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
+	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
 
 	std::string msg = "";
 
 	std::string ltype = Notification_Type_Desc(ntype, 1);
 
 	time_t atime = mytime(NULL);
-	int nNotificationInterval = 0;
-	m_sql.GetPreferencesVar("NotificationSwitchInterval", nNotificationInterval);
-	atime -= nNotificationInterval;
+	atime -= m_NotificationSwitchInterval;
 
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
@@ -670,24 +618,22 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 }
 
 bool CNotificationHelper::CheckAndHandleRainNotification(
-	const int HardwareID,
-	const std::string &ID,
-	const unsigned char unit,
+	const unsigned long long Idx,
+	const std::string &devicename,
 	const unsigned char devType,
 	const unsigned char subType,
 	const _eNotificationTypes ntype,
 	const float mvalue)
 {
-	char szTmp[600];
-
+	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp, "SELECT ID,AddjValue,AddjMulti FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, ID.c_str(), unit, devType, subType);
-	result = m_sql.query(szTmp);
+
+	szQuery << "SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (ID=" << Idx << ")";
+	result = m_sql.query(szQuery.str());
 	if (result.size() == 0)
 		return false;
-	std::string devidx = result[0][0];
-	double AddjValue = atof(result[0][1].c_str());
-	double AddjMulti = atof(result[0][2].c_str());
+	double AddjValue = atof(result[0][0].c_str());
+	double AddjMulti = atof(result[0][1].c_str());
 
 	char szDateEnd[40];
 
@@ -707,7 +653,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	if (subType != sTypeRAINWU)
 	{
 		std::stringstream szQuery;
-		szQuery << "SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=" << devidx << " AND Date>='" << szDateEnd << "')";
+		szQuery << "SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=" << Idx << " AND Date>='" << szDateEnd << "')";
 		result = m_sql.query(szQuery.str());
 		if (result.size() > 0)
 		{
@@ -717,8 +663,7 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 			float total_max = mvalue;
 			double total_real = total_max - total_min;
 			total_real *= AddjMulti;
-
-			CheckAndHandleNotification(HardwareID, ID, unit, devType, subType, NTYPE_RAIN, (float)total_real);
+			CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
 		}
 	}
 	else
@@ -726,24 +671,40 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 		//value is already total rain
 		double total_real = mvalue;
 		total_real *= AddjMulti;
-		CheckAndHandleNotification(HardwareID, ID, unit, devType, subType, NTYPE_RAIN, (float)total_real);
+		CheckAndHandleNotification(Idx, devicename, devType, subType, NTYPE_RAIN, (float)total_real);
 	}
 	return false;
 }
 
 void CNotificationHelper::TouchNotification(const unsigned long long ID)
 {
-	char szTmp[300];
-	char szDate[100];
+	std::stringstream szQuery;
+	char szDate[50];
 	time_t atime = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 	sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
 	//Set LastSend date
-	sprintf(szTmp,
-		"UPDATE Notifications SET LastSend='%s' WHERE (ID = %llu)", szDate, ID);
-	m_sql.query(szTmp);
+	szQuery << "UPDATE Notifications SET LastSend='" << szDate << "' WHERE (ID=" << ID << ")";
+	m_sql.query(szQuery.str());
+
+	//Also touch it internally
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
+	std::map<unsigned long long, std::vector<_tNotification> >::iterator itt;
+	for (itt = m_notifications.begin(); itt != m_notifications.end(); ++itt)
+	{
+		std::vector<_tNotification>::iterator itt2;
+		for (itt2 = itt->second.begin(); itt2 != itt->second.end(); ++itt2)
+		{
+			if (itt2->ID == ID)
+			{
+				itt2->LastSend = atime;
+				return;
+			}
+		}
+	}
 }
 
 bool CNotificationHelper::AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority)
@@ -761,51 +722,90 @@ bool CNotificationHelper::AddNotification(const std::string &DevIdx, const std::
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, ActiveSystems, Priority) VALUES ('" << DevIdx << "','" << Param << "','" << CustomMessage << "','" << ActiveSystems << "','" << Priority << "')";
-	result = m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
+	ReloadNotifications();
 	return true;
 }
 
 bool CNotificationHelper::RemoveDeviceNotifications(const std::string &DevIdx)
 {
-	std::vector<std::vector<std::string> > result;
-
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "DELETE FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
-	result = m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
+	ReloadNotifications();
 	return true;
 }
 
 bool CNotificationHelper::RemoveNotification(const std::string &ID)
 {
-	std::vector<std::vector<std::string> > result;
-
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
 	szQuery << "DELETE FROM Notifications WHERE (ID==" << ID << ")";
-	result = m_sql.query(szQuery.str());
+	m_sql.query(szQuery.str());
+	ReloadNotifications();
 	return true;
 }
 
+std::vector<_tNotification> CNotificationHelper::GetNotifications(const std::string &DevIdx)
+{
+	std::stringstream s_str(DevIdx);
+	unsigned long long idxll;
+	s_str >> idxll;
+	return GetNotifications(idxll);
+}
 
 std::vector<_tNotification> CNotificationHelper::GetNotifications(const unsigned long long DevIdx)
 {
+	boost::lock_guard<boost::mutex> l(m_mutex);
 	std::vector<_tNotification> ret;
+	std::map<unsigned long long, std::vector<_tNotification> >::const_iterator itt = m_notifications.find(DevIdx);
+	if (itt != m_notifications.end())
+	{
+		ret = itt->second;
+	}
+	return ret;
+}
+
+bool CNotificationHelper::HasNotifications(const std::string &DevIdx)
+{
+	std::stringstream s_str(DevIdx);
+	unsigned long long idxll;
+	s_str >> idxll;
+	return HasNotifications(idxll);
+}
+
+bool CNotificationHelper::HasNotifications(const unsigned long long DevIdx)
+{
+	boost::lock_guard<boost::mutex> l(m_mutex);
+	return (m_notifications.find(DevIdx) != m_notifications.end());
+}
+
+//Re(Loads) all notifications stored in the database, so we do not have to query this all the time
+void CNotificationHelper::ReloadNotifications()
+{
+	boost::lock_guard<boost::mutex> l(m_mutex);
+	m_notifications.clear();
 	std::vector<std::vector<std::string> > result;
+
+	m_sql.GetPreferencesVar("NotificationSensorInterval", m_NotificationSensorInterval);
+	m_sql.GetPreferencesVar("NotificationSwitchInterval", m_NotificationSwitchInterval);
 
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, Params, CustomMessage, ActiveSystems, Priority, LastSend FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
+	szQuery << "SELECT ID, DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, LastSend FROM Notifications ORDER BY DeviceRowID";
 	result = m_sql.query(szQuery.str());
 	if (result.size() == 0)
-		return ret;
+		return;
 
 	time_t mtime = mytime(NULL);
 	struct tm atime;
 	localtime_r(&mtime, &atime);
+
+	std::stringstream sstr;
 
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	for (itt = result.begin(); itt != result.end(); ++itt)
@@ -813,15 +813,23 @@ std::vector<_tNotification> CNotificationHelper::GetNotifications(const unsigned
 		std::vector<std::string> sd = *itt;
 
 		_tNotification notification;
-		std::stringstream s_str(sd[0]);
-		s_str >> notification.ID;
+		unsigned long long Idx;
 
-		notification.Params = sd[1];
-		notification.CustomMessage = sd[2];
-		notification.ActiveSystems = sd[3];
-		notification.Priority = atoi(sd[4].c_str());
+		sstr << sd[0];
+		sstr >> notification.ID;
 
-		std::string stime = sd[5];
+		sstr.clear();
+		sstr.str("");
+
+		sstr << sd[1];
+		sstr >> Idx;
+
+		notification.Params = sd[2];
+		notification.CustomMessage = sd[3];
+		notification.ActiveSystems = sd[4];
+		notification.Priority = atoi(sd[5].c_str());
+
+		std::string stime = sd[6];
 		if (stime == "0")
 		{
 			notification.LastSend = 0;
@@ -839,36 +847,6 @@ std::vector<_tNotification> CNotificationHelper::GetNotifications(const unsigned
 			notification.LastSend = mktime(&ntime);
 		}
 
-		ret.push_back(notification);
+		m_notifications[Idx].push_back(notification);
 	}
-	return ret;
-}
-
-std::vector<_tNotification> CNotificationHelper::GetNotifications(const std::string &DevIdx)
-{
-	std::stringstream s_str(DevIdx);
-	unsigned long long idxll;
-	s_str >> idxll;
-	return GetNotifications(idxll);
-}
-
-bool CNotificationHelper::HasNotifications(const unsigned long long DevIdx)
-{
-	std::vector<std::vector<std::string> > result;
-
-	std::stringstream szQuery;
-	szQuery << "SELECT COUNT(*) FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
-	result = m_sql.query(szQuery.str());
-	if (result.size() == 0)
-		return false;
-	std::vector<std::string> sd = result[0];
-	int totnotifications = atoi(sd[0].c_str());
-	return (totnotifications > 0);
-}
-bool CNotificationHelper::HasNotifications(const std::string &DevIdx)
-{
-	std::stringstream s_str(DevIdx);
-	unsigned long long idxll;
-	s_str >> idxll;
-	return HasNotifications(idxll);
 }
