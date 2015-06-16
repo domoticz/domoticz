@@ -37,6 +37,7 @@ bool CNotificationSMS::SendMessageImplementation(const std::string &Subject, con
 		return false;
 
 	std::string thisTo = _clickatellTo;
+
 	thisTo=stdreplace(thisTo, "+", "");
 	thisTo=stdreplace(thisTo, " ", "");
 

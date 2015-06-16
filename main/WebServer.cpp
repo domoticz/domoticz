@@ -5355,22 +5355,26 @@ namespace http {
 				}
 
                 // ----------- RFlink "Manual Add" Fix -----------
-                CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
-                if (pBaseHardware->HwdType == HTYPE_RFLINK) {
-                   if (dtype == pTypeLighting1){
-                      dtype = pTypeGeneralSwitch;
+                CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
+				if (pBaseHardware != NULL)
+				{
+					if (pBaseHardware->HwdType == HTYPE_RFLINK) {
+						if (dtype == pTypeLighting1){
+							dtype = pTypeGeneralSwitch;
 
-					  std::stringstream s_strid;
-				      s_strid << std::hex << atoi(devid.c_str());
-					  devid = s_strid.str();
-                      devid = "000000" + devid;  
-                   } else
-                   if (dtype == pTypeLighting2){
-                      dtype = pTypeGeneralSwitch;
-                      subtype = sSwitchTypeAC;
-                      devid = "0" + devid;  
-                   }
-                }
+							std::stringstream s_strid;
+							s_strid << std::hex << atoi(devid.c_str());
+							devid = s_strid.str();
+							devid = "000000" + devid;
+						}
+						else
+							if (dtype == pTypeLighting2){
+								dtype = pTypeGeneralSwitch;
+								subtype = sSwitchTypeAC;
+								devid = "0" + devid;
+							}
+					}
+				}
                 // -----------------------------------------------
                 
 				bool bActEnabledState = m_sql.m_bAcceptNewHardware;
@@ -7658,6 +7662,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(m_pWebEm->FindValue("FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(m_pWebEm->FindValue("FloorplanInactiveOpacity").c_str()));
 
+			m_notifications.LoadConfig();
 
 			return (char*)m_retstr.c_str();
 		}
@@ -13125,7 +13130,7 @@ namespace http {
 							std::string conditions = array[index].get("conditions", "").asString();
 							std::string actions = array[index].get("actions", "").asString();
 
-							if ((actions.find("SendNotification") != std::string::npos) || (actions.find("SendEmail") != std::string::npos))
+							if ((actions.find("SendNotification") != std::string::npos) || (actions.find("SendEmail") != std::string::npos) || (actions.find("SendSMS") != std::string::npos))
 							{
 								actions = stdreplace(actions, "$", "#");
 							}
