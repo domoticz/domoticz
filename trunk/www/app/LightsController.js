@@ -1607,10 +1607,10 @@ define(['app'], function (app) {
 						if (
 								(item.Status == 'On')
 							 ) {
-										img='<img src="images/uvdark.png" title="' + $.t("Nighttime") +'"  height="48" width="48">';
+										img='<img src="images/uvdark.png" title="' + $.t("Nighttime") +'" height="48" width="48">';
 						}
 						else {
-										img='<img src="images/uvsunny.png" title="' + $.t("Daytime") +'"  height="48" width="48">';
+										img='<img src="images/uvsunny.png" title="' + $.t("Daytime") +'" height="48" width="48">';
 						}
 					}            
 					else if (item.SwitchType == "Motion Sensor") {
@@ -2059,10 +2059,10 @@ define(['app'], function (app) {
 								bAddTimer=false;
 								if (item.Status == 'On')
 									{
-										xhtm+='\t      <td id="img"><img src="images/uvdark.png" title="' + $.t("Nighttime") +'  height="48" width="48"></td>\n';
+										xhtm+='\t      <td id="img"><img src="images/uvdark.png" title="' + $.t("Nighttime") +'" height="48" width="48"></td>\n';
 									}
 									else {
-										xhtm+='\t      <td id="img"><img src="images/uvsunny.png" title="' + $.t("Daytime") + '  height="48" width="48"></td>\n';
+										xhtm+='\t      <td id="img"><img src="images/uvsunny.png" title="' + $.t("Daytime") + '" height="48" width="48"></td>\n';
 									}
 							}					
 							else if (item.SwitchType == "Motion Sensor") {

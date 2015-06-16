@@ -815,6 +815,9 @@ void CNotificationHelper::ReloadNotifications()
 		_tNotification notification;
 		unsigned long long Idx;
 
+		sstr.clear();
+		sstr.str("");
+
 		sstr << sd[0];
 		sstr >> notification.ID;
 

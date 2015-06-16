@@ -465,6 +465,14 @@
 	        	var setString = 'commandArray["SendEmail"]="'+sSubject+'$'+sBody+'$'+sTo+'"';
 	        	setArray.push(setString);		      	
 		    }
+		    else if ($(this).attr('type') == 'send_sms') {
+				var subjectBlock = $(this).children("title[name='TextSubject']")[0];
+				var sSubject = $(subjectBlock).text().replace(/\,/g, ' ');
+		    	// message separator here cannot be # like in scripts, changed to $..
+		    	// also removed commas as we need to separate commandArray later.
+	        	var setString = 'commandArray["SendSMS"]="'+sSubject+'"';
+	        	setArray.push(setString);		      	
+		    }
 		    else if ($(this).attr('type') == 'open_url') {
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
 		    	var urlText = $(urlBlock).find("title[name='TEXT']")[0];
@@ -786,6 +794,7 @@
    		<category name="Messages">
    			<block type="send_notification"></block>
    			<block type="send_email"></block>
+   			<block type="send_sms"></block>
    			<block type="text"></block>
    			<block type="open_url"></block>
    			<block type="url_text"></block>

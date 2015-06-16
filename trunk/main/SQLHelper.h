@@ -34,6 +34,7 @@ enum _eTaskItemType
 	TITEM_GETURL,
 	TITEM_SEND_EMAIL_TO,
 	TITEM_SET_VARIABLE,
+	TITEM_SEND_SMS,
 };
 
 struct _tTaskItem
@@ -116,7 +117,15 @@ struct _tTaskItem
 		tItem._command=To;
 		return tItem;
 	}
-    static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)
+	static _tTaskItem SendSMS(const int DelayTime, const std::string &Subject)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_SEND_SMS;
+		tItem._DelayTime = DelayTime;
+		tItem._ID = Subject;
+		return tItem;
+	}
+	static _tTaskItem SwitchLightEvent(const int DelayTime, const unsigned long long idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;

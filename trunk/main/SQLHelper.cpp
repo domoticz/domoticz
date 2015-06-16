@@ -1984,6 +1984,10 @@ void CSQLHelper::Do_Work()
 					}
 				}
 			}
+			else if (itt->_ItemType == TITEM_SEND_SMS)
+			{
+				m_notifications.SendMessage("clickatell", itt->_ID, itt->_ID, "", false);
+			}
             else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
             {
 				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Hue);

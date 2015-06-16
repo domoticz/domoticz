@@ -1320,6 +1320,9 @@ void MySensorsBase::ParseLine()
 			break;
 		case S_LOCK:
 		case S_LIGHT:
+		case S_DIMMER:
+		case S_SMOKE:
+		case S_DOOR:
 			sub_type = V_LIGHT;
 			bDoAdd = true;
 			break;

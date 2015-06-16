@@ -1560,6 +1560,16 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
 					actionsDone = true;
 				}
+				else if (devNameNoQuotes == "SendSMS") {
+					if (doWhat.empty())
+					{
+						//Invalid
+						_log.Log(LOG_ERROR, "EventSystem: SendSMS, not enough parameters!");
+						return false;
+					}
+					m_sql.AddTaskItem(_tTaskItem::SendSMS(1, doWhat));
+					actionsDone = true;
+				}
 				else if (devNameNoQuotes == "OpenURL") {
 					OpenURL(doWhat);
 					actionsDone = true;
@@ -2398,6 +2408,17 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		body = stdreplace(body, "\\n", "<br>");
 		to = aParam[2];
 		m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
+		scriptTrue = true;
+	}
+	else if (std::string(lua_tostring(lua_state, -2)) == "SendSMS") {
+		std::string luaString = lua_tostring(lua_state, -1);
+		if (luaString.empty())
+		{
+			//Invalid
+			_log.Log(LOG_ERROR, "EventSystem: SendSMS, not enough parameters!");
+			return false;
+		}
+		m_sql.AddTaskItem(_tTaskItem::SendSMS(1, luaString));
 		scriptTrue = true;
 	}
 	else if (std::string(lua_tostring(lua_state, -2)) == "OpenURL")
