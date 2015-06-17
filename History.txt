@@ -4,6 +4,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: MySensors added support for S_SMOKE/S_DIMMER
 - Fixed: Tooltip bug for the Dusk sensor in the Lights tab
 - Implemented: Blockly/Lua SendSMS
+- Fixed: Battery low (typo) notification
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

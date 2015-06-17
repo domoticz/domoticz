@@ -5764,9 +5764,9 @@ void CSQLHelper::CheckBatteryLow()
 		{
 			int batlevel = atoi(sd[2].c_str());
 			if (batlevel==0)
-				sprintf(szTmp, "Batter Low: %s (Level: Low)", sd[1].c_str());
+				sprintf(szTmp, "Battery Low: %s (Level: Low)", sd[1].c_str());
 			else
-				sprintf(szTmp, "Batter Low: %s (Level: %d %%)", sd[1].c_str(), batlevel);
+				sprintf(szTmp, "Battery Low: %s (Level: %d %%)", sd[1].c_str(), batlevel);
 			m_notifications.SendMessageEx(NOTIFYALL, szTmp, szTmp, std::string(""), 1, std::string(""), true);
 			m_batterylowlastsend[ulID] = stoday.tm_mday;
 		}
