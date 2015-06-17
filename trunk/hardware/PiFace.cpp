@@ -65,13 +65,14 @@ CPiFace::CPiFace(const int ID)
     m_HwdID=ID;
     m_bIsStarted=false;
 
-    for(int i=0;i<4;i++)
-     {
-          m_Inputs[i].Callback_pntr=(void*)this; // Set callback pointer, to enable events from IO class
-          m_Inputs[i].SetID(i);
-          m_Outputs[i].Callback_pntr=(void*)this; // Set callback pointer, to enable events from IO class
-          m_Outputs[i].SetID(i);
-     }
+	for (int i = 0; i < 4; i++)
+	{
+		m_Inputs[i].Callback_pntr = (void*)this; // Set callback pointer, to enable events from IO class
+		m_Inputs[i].SetID(i);
+		m_Outputs[i].Callback_pntr = (void*)this; // Set callback pointer, to enable events from IO class
+		m_Outputs[i].SetID(i);
+	}
+	m_fd = 0;
 }
 
 CPiFace::~CPiFace()
@@ -611,7 +612,7 @@ void CPiFace::GetLastKnownValues(void)
         for (PinNr=0;PinNr < 8 ; PinNr++)
         {
             meterid=0+PinNr + (m_Inputs[BoardNr].GetDevId()*10); //add 0 for output type
-              sprintf(DeviceID,"%d",meterid);
+			sprintf(DeviceID,"%d",meterid);
             unit=0;
             devType=pTypeRFXMeter;
             subType=sTypeRFXMeterCount;
@@ -631,10 +632,15 @@ void CPiFace::GetLastKnownValues(void)
     }
 }
 
-
-void CPiFace::CallBackSendEvent(const unsigned char *pEventPacket)
+void CPiFace::CallBackSendEvent(const unsigned char *pEventPacket, const unsigned int PacketLength)
 {
-     sDecodeRXMessage(this,pEventPacket);
+	std::string sendData;
+	sendData.insert(sendData.begin(), pEventPacket, pEventPacket + PacketLength);
+	boost::lock_guard<boost::mutex> l(m_queue_mutex);
+	if (m_send_queue.size() < 100)
+		m_send_queue.push_back(sendData);
+	else
+		_log.Log(LOG_ERROR, "PiFace: to much messages on queue!");
 }
 
 void CPiFace::CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinID, bool Interrupt_Enable)
@@ -661,6 +667,7 @@ void CPiFace::CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinI
 
 bool CPiFace::StartHardware()
 {
+	StopHardware();
     m_InputSample_waitcntr=(PIFACE_INPUT_PROCESS_INTERVAL)*20;
     m_CounterEdgeSample_waitcntr=(PIFACE_COUNTER_COUNTER_INTERVAL)*20;
 
@@ -691,8 +698,9 @@ bool CPiFace::StartHardware()
                     GetAndSetInitialDeviceState(devId);
               }
 
-            m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPiFace::Do_Work, this)));
-         }
+			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPiFace::Do_Work, this)));
+			m_queue_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPiFace::Do_Work_Queue, this)));
+	   }
          else m_stoprequested=true;
      }
      else m_stoprequested=true;
@@ -706,13 +714,23 @@ bool CPiFace::StopHardware()
     m_stoprequested=true;
     if (m_thread!=NULL)
     {
-        assert(m_thread);
         m_stoprequested = true;
-        if (m_thread!=NULL)
-            m_thread->join();
-    }
+		if (m_thread != NULL)
+		{
+			m_thread->join();
+			m_thread.reset();
+		}
+		if (m_queue_thread != NULL)
+		{
+			m_queue_thread->join();
+			m_queue_thread.reset();
+		}
+	}
 #ifdef __arm__
-    if (m_fd > 0) close(m_fd);
+	if (m_fd > 0) {
+		close(m_fd);
+		m_fd = 0;
+	}
 #endif
 	m_bIsStarted=false;
     return true;
@@ -815,6 +833,27 @@ void CPiFace::Do_Work()
     _log.Log(LOG_STATUS,"PiFace: Worker stopped...");
 }
 
+void CPiFace::Do_Work_Queue()
+{
+	std::vector<std::string>::iterator itt;
+	while (!m_stoprequested)
+	{
+		boost::this_thread::sleep(boost::posix_time::millisec(100));
+		if (m_stoprequested)
+			break;
+		if (m_send_queue.empty())
+			continue;
+
+		std::string sendData;
+		m_queue_mutex.lock();
+		itt = m_send_queue.begin();
+		sendData = *itt;
+		m_send_queue.erase(itt);
+		m_queue_mutex.unlock();
+		sDecodeRXMessage(this, (const unsigned char*)sendData.c_str());
+	}
+}
+
 // Open a connection to the piface
 // Returns a file id, or -1 if not open/error
 int CPiFace::Init_SPI_Device(int Init)
@@ -911,36 +950,35 @@ int CPiFace::Detect_PiFace_Hardware(void)
 
 void CPiFace::Init_Hardware(unsigned char devId)
 {
-      Write_MCP23S17_Register (devId, MCP23x17_IOCON,  IOCON_INIT | IOCON_HAEN) ;
-    Write_MCP23S17_Register (devId, MCP23x17_IOCONB, IOCON_INIT | IOCON_HAEN) ;
+	Write_MCP23S17_Register (devId, MCP23x17_IOCON,  IOCON_INIT | IOCON_HAEN) ;
+	Write_MCP23S17_Register (devId, MCP23x17_IOCONB, IOCON_INIT | IOCON_HAEN) ;
 
-    //setup PortA as output
-    Write_MCP23S17_Register (devId, MCP23x17_IODIRA,  0x00) ;         //set all pins on Port A as output
+	//setup PortA as output
+	Write_MCP23S17_Register (devId, MCP23x17_IODIRA,  0x00) ;         //set all pins on Port A as output
 
-    //lets init the other registers so we always have a clear startup situation
-    Write_MCP23S17_Register (devId, MCP23x17_GPINTENA, 0x00);          //The PiFace does not support the interrupt capabilities, so set it to 0, and useless for output.
-    Write_MCP23S17_Register (devId, MCP23x17_DEFVALA,     0x00);      //Default compare value register, useless for output
-    Write_MCP23S17_Register (devId, MCP23x17_INTCONA,     0x00);        //Interrupt based on current and prev pin state, not Default value
-    //Write_MCP23S17_Register (devId, MCP23x17_INTFA,     0);           // Read only interrupt flag register,not used on output
-    //Write_MCP23S17_Register (devId, MCP23x17_INTCAPA, );             // Read only interrupt status register, captures port status on interrupt, not ued on output
-    Write_MCP23S17_Register (devId, MCP23x17_OLATA, 0xFF);             // Set the output latches to 1, otherwise the relays are activated
+	//lets init the other registers so we always have a clear startup situation
+	Write_MCP23S17_Register (devId, MCP23x17_GPINTENA, 0x00);          //The PiFace does not support the interrupt capabilities, so set it to 0, and useless for output.
+	Write_MCP23S17_Register (devId, MCP23x17_DEFVALA,     0x00);      //Default compare value register, useless for output
+	Write_MCP23S17_Register (devId, MCP23x17_INTCONA,     0x00);        //Interrupt based on current and prev pin state, not Default value
+	//Write_MCP23S17_Register (devId, MCP23x17_INTFA,     0);           // Read only interrupt flag register,not used on output
+	//Write_MCP23S17_Register (devId, MCP23x17_INTCAPA, );             // Read only interrupt status register, captures port status on interrupt, not ued on output
+	Write_MCP23S17_Register (devId, MCP23x17_OLATA, 0xFF);             // Set the output latches to 1, otherwise the relays are activated
 
-    //setup PortB as input
-    Write_MCP23S17_Register (devId, MCP23x17_IODIRB, 0xFF) ;         //set all pins on Port B as input
-    Write_MCP23S17_Register (devId, MCP23x17_GPPUB,  0xFF) ;          //Enable pullup resistors, so the buttons work immediately
-    Write_MCP23S17_Register (devId, MCP23x17_IPOLB,  0xFF) ;          //Invert input pin state, so we will see an active state as as 1.
+	//setup PortB as input
+	Write_MCP23S17_Register (devId, MCP23x17_IODIRB, 0xFF) ;         //set all pins on Port B as input
+	Write_MCP23S17_Register (devId, MCP23x17_GPPUB,  0xFF) ;          //Enable pullup resistors, so the buttons work immediately
+	Write_MCP23S17_Register (devId, MCP23x17_IPOLB,  0xFF) ;          //Invert input pin state, so we will see an active state as as 1.
 
-    //lets init the other registers so we always have a clear startup situation
-    Write_MCP23S17_Register (devId, MCP23x17_GPINTENB, 0x00);          //The PiFace does not support the interrupt capabilities, so set it to 0.
-                                                                    //Todo: use the int detection for small pulses
-    Write_MCP23S17_Register (devId, MCP23x17_DEFVALB,     0x00);      //Default compare value register, we do not use it (yet), but lets set it to 0 (assuming not active state).
-    Write_MCP23S17_Register (devId, MCP23x17_INTCONB,     0x00);         //Interrupt based on current and prev pin state, not Default value
-    //Write_MCP23S17_Register (devId, MCP23x17_INTFB,     0);           // Read only interrupt flag register, listed as a reminder
-    //Write_MCP23S17_Register (devId, MCP23x17_INTCAPB, );             // Read only interrupt status register, captures port status on interrupt, listed as a reminder
-    Write_MCP23S17_Register (devId, MCP23x17_OLATB, 0x00);             // Set the output latches to 0, note: not used.
+	//lets init the other registers so we always have a clear startup situation
+	Write_MCP23S17_Register (devId, MCP23x17_GPINTENB, 0x00);          //The PiFace does not support the interrupt capabilities, so set it to 0.
+	//Todo: use the int detection for small pulses
+	Write_MCP23S17_Register (devId, MCP23x17_DEFVALB,     0x00);      //Default compare value register, we do not use it (yet), but lets set it to 0 (assuming not active state).
+	Write_MCP23S17_Register (devId, MCP23x17_INTCONB,     0x00);         //Interrupt based on current and prev pin state, not Default value
+	//Write_MCP23S17_Register (devId, MCP23x17_INTFB,     0);           // Read only interrupt flag register, listed as a reminder
+	//Write_MCP23S17_Register (devId, MCP23x17_INTCAPB, );             // Read only interrupt status register, captures port status on interrupt, listed as a reminder
+	Write_MCP23S17_Register (devId, MCP23x17_OLATB, 0x00);             // Set the output latches to 0, note: not used.
 
-    Write_MCP23S17_Register (devId, MCP23x17_GPIOA,  0x00) ;         //set all pins on Port A as output, and deactivate
-
+	Write_MCP23S17_Register (devId, MCP23x17_GPIOA,  0x00) ;         //set all pins on Port A as output, and deactivate
 }
 
 void CPiFace::GetAndSetInitialDeviceState(unsigned char devId)
@@ -1114,42 +1152,43 @@ int CIOPinState::Update(bool New)
         {
             default:
             case LEVEL:
-                        if ((Last ^ Current) == true)
-                          {
-                            if (Current)
-                                StateChange=1;
-                            else StateChange=0;
-                          }
-                    break;
-
+				if ((Last ^ Current) == true)
+				{
+					if (Current)
+						StateChange=1;
+					else
+						StateChange=0;
+				}
+                break;
             case INV_LEVEL:    //inverted input
-                        if ((Last ^ Current) == true)
-                          {
-                            if (Current)
-                                StateChange=0;
-                            else StateChange=1;
-                          }
-                    break;
-
+                if ((Last ^ Current) == true)
+                {
+					if (Current)
+						StateChange=0;
+					else
+						StateChange=1;
+                }
+                break;
             case TOGGLE_RISING:
-                        if (((Last ^ Current) == true) && (Current == true))
-                            {
-                                if (Toggle)
-                                    StateChange=1;
-                                else StateChange=0;
-                                Toggle=!Toggle;
-                            }
-                    break;
-
+                if (((Last ^ Current) == true) && (Current == true))
+                {
+                    if (Toggle)
+                        StateChange=1;
+                    else
+						StateChange=0;
+                    Toggle=!Toggle;
+                }
+                break;
             case TOGGLE_FALLING:
-                        if (((Last ^ Current) == true) && (Current == false))
-                            {
-                                if (Toggle)
-                                    StateChange=1;
-                                else StateChange=0;
-                                Toggle=!Toggle;
-                            }
-                    break;
+                if (((Last ^ Current) == true) && (Current == false))
+                {
+                    if (Toggle)
+                        StateChange=1;
+                    else
+						StateChange=0;
+                    Toggle=!Toggle;
+                }
+                break;
         }
     }
 
@@ -1186,31 +1225,32 @@ int CIOPinState::GetInitialState(void)
         {
             default:
             case LEVEL:
-                        if (Current)
-                            CurState=1;
-                          else CurState=0;
-                    break;
-
+                if (Current)
+                    CurState=1;
+                else
+					CurState=0;
+                break;
             case INV_LEVEL:    //inverted input
-                        if (Current)
-                            CurState=0;
-                        else CurState=1;
-                    break;
-
+                if (Current)
+                    CurState=0;
+                else
+					CurState=1;
+                break;
             case TOGGLE_RISING:
-                        if (Toggle)
-                            CurState=1;
-                        else CurState=0;
-                    break;
+                if (Toggle)
+                    CurState=1;
+                else
+					CurState=0;
+                break;
 
             case TOGGLE_FALLING:
-                        if (Toggle)
-                            CurState=1;
-                        else CurState=0;
-                    break;
+                if (Toggle)
+                    CurState=1;
+                else
+					CurState=0;
+                break;
         }
     }
-
    return CurState;
 }
 
@@ -1262,7 +1302,6 @@ int CIOPort::Update(unsigned char New)
     int i;
     int ChangeState=-1;
     bool UpdateCounter=false;
-    unsigned long Count;
     int meterid;
     unsigned char seqnr;
 
@@ -1283,16 +1322,13 @@ int CIOPort::Update(unsigned char New)
             //we have to sent current state
             ChangeState=Pin[i].GetInitialState();
           }
-        //We have something to report to the upperlayer
-         if (ChangeState != 0)
-            IOPinStatusPacket.LIGHTING1.cmnd = light1_sOn;
-          else IOPinStatusPacket.LIGHTING1.cmnd = light1_sOff;
-
+        //We have something to report to the upper layer
+		IOPinStatusPacket.LIGHTING1.cmnd = (ChangeState != 0) ? light1_sOn : light1_sOff;
         seqnr=IOPinStatusPacket.LIGHTING1.seqnbr;
         seqnr++;
         IOPinStatusPacket.LIGHTING1.seqnbr =  seqnr;
         IOPinStatusPacket.LIGHTING1.unitcode = i + (devId*10) ; //report inputs from PiFace X (X0..X9)
-        myCallback->CallBackSendEvent((const unsigned char *)&IOPinStatusPacket);
+		myCallback->CallBackSendEvent((const unsigned char *)&IOPinStatusPacket, sizeof(IOPinStatusPacket.LIGHTING1));
        }
 
        UpdateCounter=Pin[i].Count.ProcessUpdateInterval(PIFACE_INPUT_PROCESS_INTERVAL*PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS);
@@ -1300,19 +1336,25 @@ int CIOPort::Update(unsigned char New)
        {
         if (IOPinStatusPacket.LIGHTING1.housecode == 'I')
             meterid=100+i + (devId*10);
-         else meterid=0+i + (devId*10);
+        else
+			meterid=0+i + (devId*10);
 
         IOPinCounterPacket.RFXMETER.id1=((meterid >>8) & 0xFF);
         IOPinCounterPacket.RFXMETER.id2= (meterid & 0xFF);
 
-        Count=Pin[i].Count.GetTotal();
-    //    _log.Log(LOG_NORM,"Counter %lu\n",Count);
-        IOPinCounterPacket.RFXMETER.count1=(unsigned char) ((Count >>24)&0xFF);
-        IOPinCounterPacket.RFXMETER.count2=(unsigned char) ((Count >>16)&0xFF);
-        IOPinCounterPacket.RFXMETER.count3=(unsigned char) ((Count >>8)&0xFF);
-        IOPinCounterPacket.RFXMETER.count4=(unsigned char) ((Count)&0xFF);
-    //    _log.Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4 %d\n",IOPinCounterPacket.RFXMETER.count1,IOPinCounterPacket.RFXMETER.count2,IOPinCounterPacket.RFXMETER.count3,IOPinCounterPacket.RFXMETER.count4);
-        myCallback->CallBackSendEvent((const unsigned char *)&IOPinCounterPacket);
+		unsigned long Count = Pin[i].Count.GetTotal();
+		unsigned long LastCount = Pin[i].Count.GetLastTotal();
+		if (Count != LastCount)
+		{
+			Pin[i].Count.SetLastTotal(Count);
+			//    _log.Log(LOG_NORM,"Counter %lu\n",Count);
+			IOPinCounterPacket.RFXMETER.count1 = (unsigned char)((Count >> 24) & 0xFF);
+			IOPinCounterPacket.RFXMETER.count2 = (unsigned char)((Count >> 16) & 0xFF);
+			IOPinCounterPacket.RFXMETER.count3 = (unsigned char)((Count >> 8) & 0xFF);
+			IOPinCounterPacket.RFXMETER.count4 = (unsigned char)((Count)& 0xFF);
+			//    _log.Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4 %d\n",IOPinCounterPacket.RFXMETER.count1,IOPinCounterPacket.RFXMETER.count2,IOPinCounterPacket.RFXMETER.count3,IOPinCounterPacket.RFXMETER.count4);
+			myCallback->CallBackSendEvent((const unsigned char *)&IOPinCounterPacket, sizeof(IOPinCounterPacket.RFXMETER));
+		}
        }
        mask<<=1;
     }
@@ -1334,7 +1376,6 @@ int CIOPort::UpdateInterrupt(unsigned char IntFlag,unsigned char PinState)
          ChangeState=Changed;
        mask<<=1;
     }
-
     return (ChangeState);
 }
 
@@ -1344,9 +1385,10 @@ void CIOPort::ConfigureCounter(unsigned char Pinnr,bool Enable)
     myCallback=((CPiFace*)Callback_pntr);
 
     Pin[Pinnr].Count.Enabled=Enable;
-    if (Pin[Pinnr].Direction == 'I')
-        myCallback->CallBackSetPinInterruptMode(devId,Pinnr,Enable);
-
+	if (Pin[Pinnr].Direction == 'I')
+	{
+		myCallback->CallBackSetPinInterruptMode(devId, Pinnr, Enable);
+	}
 }
 
 CIOPort::CIOPort()

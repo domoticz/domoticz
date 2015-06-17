@@ -25,12 +25,17 @@ class CIOCount
 	   int Update(unsigned long Counts);
 	   unsigned long GetCurrent(void) const {return Current;};
 	   unsigned long GetTotal(void) const {return Total;};
-	   unsigned long GetRateLimit(void) const {return Minimum_Pulse_Period_ms;};
+	   unsigned long GetLastTotal(void) const { return LastTotal; };
+	   unsigned long GetRateLimit(void) const { return Minimum_Pulse_Period_ms; };
 	   void SetCurrent(unsigned long NewCurValue) {Current=NewCurValue;};
-	   void SetTotal(unsigned long NewTotalValue) {Total=NewTotalValue;};
-	   void SetRateLimit(unsigned long NewRateLimit) {Minimum_Pulse_Period_ms=NewRateLimit;};
+	   void SetTotal(unsigned long NewTotalValue) { Total = NewTotalValue; };
+	   void SetLastTotal(unsigned long NewTotalValue) { LastTotal = NewTotalValue; };
+	   void SetRateLimit(unsigned long NewRateLimit) { Minimum_Pulse_Period_ms = NewRateLimit; };
 	   void ResetCurrent(void) {Current=0;};
-	   void ResetTotal(void) {Total=0;};
+	   void ResetTotal(void) {
+		   Total = 0;
+		   LastTotal = 0;
+	   };
 	   bool ProcessUpdateInterval(unsigned long PassedTime_ms);
 	   void SetUpdateInterval(unsigned long NewValue_ms);
 	   unsigned long GetUpdateInterval(void) {return UpdateInterval_ms;};
@@ -40,6 +45,7 @@ class CIOCount
    private:
 	   unsigned long Current;
 	   unsigned long Total;
+	   unsigned long LastTotal;
 	   unsigned long UpdateInterval_ms;
 	   unsigned long UpdateDownCount_ms;
 	   unsigned long Minimum_Pulse_Period_ms;
@@ -105,7 +111,7 @@ public:
 	CPiFace(const int ID);
 	~CPiFace();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	void CallBackSendEvent(const unsigned char *pEventPacket);
+	void CallBackSendEvent(const unsigned char *pEventPacket, const unsigned int PacketLength);
 	void CallBackSetPinInterruptMode(unsigned char devId,unsigned char pinID, bool Interrupt_Enable);
 
 private:
@@ -113,7 +119,10 @@ private:
 	bool StopHardware();
 
 	void Do_Work();
+	void Do_Work_Queue();
 	boost::shared_ptr<boost::thread> m_thread;
+	boost::shared_ptr<boost::thread> m_queue_thread;
+
 	volatile bool m_stoprequested;
 	int m_InputSample_waitcntr;
 	int m_CounterEdgeSample_waitcntr;
@@ -151,6 +160,9 @@ private:
 	void AutoCreate_piface_config(void);
 
 	void GetLastKnownValues(void);
+
+	boost::mutex m_queue_mutex;
+	std::vector<std::string> m_send_queue;
 };
 
 
