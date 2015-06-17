@@ -549,17 +549,6 @@ int main(int argc, char**argv)
 		std::string ca_passphrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
 		m_mainworker.SetSecureWebserverPass(ca_passphrase);
 	}
-	if (cmdLine.HasSwitch("-sslpass"))
-	{
-		if (cmdLine.GetArgumentCount("-sslpass") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a passphrase for your certificate file");
-			return 1;
-		}
-		std::string ca_passphrase = cmdLine.GetSafeArgument("-sslpass", 0, "");
-		m_mainworker.SetSecureWebserverPass(ca_passphrase);
-	}
-	
 #endif
 	if (cmdLine.HasSwitch("-nowwwpwd"))
 	{
