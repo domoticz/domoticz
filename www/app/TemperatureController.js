@@ -474,7 +474,7 @@ define(['app'], function (app) {
 				text: "Domoticz.com"
 			  },
 			  title: {
-				  text: 'Custom Temperature Graph'
+				  text: $.t('Custom Temperature Graph')
 			  },
 			  xAxis: {
 				  type: 'datetime'
