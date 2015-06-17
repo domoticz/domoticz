@@ -95,7 +95,7 @@ int mosquitto__cmp_hostname_wildcard(char *certname, const char *hostname)
 		return strcasecmp(certname, hostname);
 	}
 }
-
+#ifdef WIN32
 int inet_pton_old_windows(int af, const char *src, void *dst)
 {
 	struct sockaddr_storage ss;
@@ -119,7 +119,7 @@ int inet_pton_old_windows(int af, const char *src, void *dst)
 	}
 	return 0;
 }
-
+#endif
 
 /* This code is based heavily on the example provided in "Secure Programming
  * Cookbook for C and C++".
