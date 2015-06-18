@@ -164,7 +164,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
-		if ((atime >= itt->LastSend) || (itt->Priority>1)) //emergency always goes true
+		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
@@ -271,7 +271,7 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
-		if ((atime >= itt->LastSend) || (itt->Priority>1)) //emergency always goes true
+		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
@@ -332,7 +332,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
-		if ((atime >= itt->LastSend) || (itt->Priority>1)) //emergency always goes true
+		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
@@ -465,7 +465,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
-		if ((atime >= itt->LastSend) || (itt->Priority>1)) //emergency always goes true
+		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
@@ -549,7 +549,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
-		if ((atime >= itt->LastSend) || (itt->Priority>1)) //emergency always goes true
+		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
@@ -707,7 +707,7 @@ void CNotificationHelper::TouchNotification(const unsigned long long ID)
 	}
 }
 
-bool CNotificationHelper::AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority)
+bool CNotificationHelper::AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority, const bool SendAlways)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -721,7 +721,8 @@ bool CNotificationHelper::AddNotification(const std::string &DevIdx, const std::
 
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, ActiveSystems, Priority) VALUES ('" << DevIdx << "','" << Param << "','" << CustomMessage << "','" << ActiveSystems << "','" << Priority << "')";
+	int iSendAlways = (SendAlways == true) ? 1 : 0;
+	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways) VALUES ('" << DevIdx << "','" << Param << "','" << CustomMessage << "','" << ActiveSystems << "'," << Priority << ", " << iSendAlways << ")";
 	m_sql.query(szQuery.str());
 	ReloadNotifications();
 	return true;
@@ -796,7 +797,7 @@ void CNotificationHelper::ReloadNotifications()
 	std::stringstream szQuery;
 	szQuery.clear();
 	szQuery.str("");
-	szQuery << "SELECT ID, DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, LastSend FROM Notifications ORDER BY DeviceRowID";
+	szQuery << "SELECT ID, DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways, LastSend FROM Notifications ORDER BY DeviceRowID";
 	result = m_sql.query(szQuery.str());
 	if (result.size() == 0)
 		return;
@@ -831,8 +832,9 @@ void CNotificationHelper::ReloadNotifications()
 		notification.CustomMessage = sd[3];
 		notification.ActiveSystems = sd[4];
 		notification.Priority = atoi(sd[5].c_str());
+		notification.SendAlways = (atoi(sd[6].c_str())!=0);
 
-		std::string stime = sd[6];
+		std::string stime = sd[7];
 		if (stime == "0")
 		{
 			notification.LastSend = 0;

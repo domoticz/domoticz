@@ -5813,7 +5813,8 @@ namespace http {
 				std::string scustommessage = m_pWebEm->FindValue("tmsg");
 				std::string sactivesystems = m_pWebEm->FindValue("tsystems");
 				std::string spriority = m_pWebEm->FindValue("tpriority");
-				if ((stype == "") || (swhen == "") || (svalue == "") || (spriority == ""))
+				std::string ssendalways = m_pWebEm->FindValue("tsendalways");
+				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()))
 					return;
 
 				_eNotificationTypes ntype = (_eNotificationTypes)atoi(stype.c_str());
@@ -5832,7 +5833,7 @@ namespace http {
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority);
+				bool bOK = m_notifications.AddNotification(idx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
 				if (bOK) {
 					root["status"] = "OK";
 					root["title"] = "AddNotification";
@@ -5851,7 +5852,9 @@ namespace http {
 				std::string scustommessage = m_pWebEm->FindValue("tmsg");
 				std::string sactivesystems = m_pWebEm->FindValue("tsystems");
 				std::string spriority = m_pWebEm->FindValue("tpriority");
-				if ((stype == "") || (swhen == "") || (svalue == "") || (spriority == ""))
+				std::string ssendalways = m_pWebEm->FindValue("tsendalways");
+
+				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()))
 					return;
 				root["status"] = "OK";
 				root["title"] = "UpdateNotification";
@@ -5875,7 +5878,7 @@ namespace http {
 					sprintf(szTmp, "%s;%c;%s", ttype.c_str(), twhen, svalue.c_str());
 				}
 				int priority = atoi(spriority.c_str());
-				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority);
+				m_notifications.AddNotification(devidx, szTmp, scustommessage, sactivesystems, priority, (ssendalways == "true") ? true : false);
 			}
 			else if (cparam == "deletenotification")
 			{
@@ -12545,6 +12548,7 @@ namespace http {
 					}
 					root["result"][ii]["Params"] = sParams;
 					root["result"][ii]["Priority"] = itt->Priority;
+					root["result"][ii]["SendAlways"] = itt->SendAlways;
 					root["result"][ii]["CustomMessage"] = itt->CustomMessage;
 					root["result"][ii]["ActiveSystems"] = itt->ActiveSystems;
 					ii++;
