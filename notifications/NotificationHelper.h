@@ -15,6 +15,7 @@ struct _tNotification
 	time_t LastSend;
 	std::string CustomMessage;
 	std::string ActiveSystems;
+	bool SendAlways;
 };
 
 class CNotificationHelper {
@@ -30,7 +31,7 @@ public:
 
 	//notification functions
 	void ReloadNotifications();
-	bool AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority);
+	bool AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority, const bool SendAlways);
 	bool RemoveDeviceNotifications(const std::string &DevIdx);
 	bool RemoveNotification(const std::string &ID);
 	std::vector<_tNotification> GetNotifications(const unsigned long long DevIdx);

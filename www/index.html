@@ -712,6 +712,7 @@ $(document).ready(function() {
 									<th align="left" data-i18n="Active Systems">Active Systems</th>
 									<th align="left" data-i18n="Custom Message">Custom Message</th>
 									<th width="120" align="left" data-i18n="Priority">Priority</th>
+									<th width="120" align="left" data-i18n="Ignore Interval">Ignore Interval</th>
 							</tr>
 					</thead>
 			</table>
@@ -729,7 +730,7 @@ $(document).ready(function() {
 			<br>
 			<table class="display" id="notificationparamstable" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:120px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
+					<td align="right" style="width:160px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
 					<td><select id="combotype" style="width:120px" class="combobox ui-corner-all"></select></td>
 				</tr>
 				<tr id="notiwhen">
@@ -747,12 +748,20 @@ $(document).ready(function() {
 				<tr>
 					<td align="right"><label for="combopriority"><span data-i18n="Priority">Priority</span>:</label></td>
 					<td><select id="combopriority" style="width:120px" class="combobox ui-corner-all">
-                <option value="-2" data-i18n="Very Low">Very Low</option>
-								<option value="-1" data-i18n="Moderate">Moderate</option>
-                <option value="0" data-i18n="Normal" selected="selected">Normal</option>
-                <option value="1" data-i18n="High">High</option>
-                <option value="2" data-i18n="Emergency">Emergency</option>
+						<option value="-2" data-i18n="Very Low">Very Low</option>
+						<option value="-1" data-i18n="Moderate">Moderate</option>
+						<option value="0" data-i18n="Normal" selected="selected">Normal</option>
+						<option value="1" data-i18n="High">High</option>
+						<option value="2" data-i18n="Emergency">Emergency</option>
 					</select></td>
+				</tr>
+				<tr>
+					<td align="right"><label for="checkalways"><span data-i18n="Ignore Interval">Ignore Interval</span>:</label></td>
+					<td><input type="checkbox" id="checkalways"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><span data-i18n="If enabled, it will bypass the Notification interval specified in the Settings page">If enabled, it will bypass the Notification interval specified in the Settings page</span></td>
 				</tr>
 				<tr>
 					<td align="right"><label for="custommessage"><span data-i18n="Custom Message"></span>:</label></td>

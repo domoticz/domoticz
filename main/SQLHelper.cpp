@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 71
+#define DB_VERSION 72
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -219,6 +219,7 @@ const char *sqlCreateNotifications =
 "[CustomMessage] VARCHAR(300) DEFAULT (''), "
 "[ActiveSystems] VARCHAR(200) DEFAULT (''), "
 "[Priority] INTEGER default 0, "
+"[SendAlways] INTEGER default 0, "
 "[LastSend] DATETIME DEFAULT 0);";
 
 const char *sqlCreateHardware =
@@ -1407,6 +1408,10 @@ bool CSQLHelper::OpenDatabase()
 			query("DROP TRIGGER IF EXISTS onMultiMeterDelete");
 			query("DROP TRIGGER IF EXISTS onPercentageDelete");
 			query("DROP TRIGGER IF EXISTS onFanDelete");
+		}
+		if (dbversion < 72)
+		{
+			query("ALTER TABLE [Notifications] ADD COLUMN [SendAlways] INTEGER DEFAULT 0");
 		}
 	}
 	else if (bNewInstall)
