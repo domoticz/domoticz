@@ -671,7 +671,7 @@ define(['app'], function (app) {
 			var bIsProtected=$('#lightcontent #protected').is(":checked");
 
 			if (strParam1!="") {
-				if ( (strParam1.indexOf("http://") !=0) && (strParam1.indexOf("script://") !=0) ) {
+				if ( (strParam1.indexOf("http://") !=0) && (strParam1.indexOf("https://") !=0) && (strParam1.indexOf("script://") !=0) ) {
 					bootbox.alert($.t("Invalid ON Action!"));
 					return;
 				}
@@ -683,7 +683,7 @@ define(['app'], function (app) {
 				}
 			}
 			if (strParam2!="") {
-				if ( (strParam2.indexOf("http://") !=0) && (strParam2.indexOf("script://") !=0) ) {
+				if ( (strParam2.indexOf("http://") !=0) && (strParam2.indexOf("https://") !=0) && (strParam2.indexOf("script://") !=0) ) {
 					bootbox.alert($.t("Invalid Off Action!"));
 					return;
 				}
@@ -1337,7 +1337,6 @@ define(['app'], function (app) {
 		
 		EvohomeImg = function(item)
 		{
-			//see http://www.theevohomeshop.co.uk/evohome-controller-display-icons/
 			return '<div title="Quick Actions" class="'+((item.Status=="Auto") ? "evoimgnorm" : "evoimg")+'"><img src="images/evohome/'+item.Status+'.png" class="lcursor" onclick="if($(this).hasClass(\'selected\')){deselect($(this),\'#evopop_'+ item.idx +'\');}else{$(this).addClass(\'selected\');$(\'#evopop_'+ item.idx +'\').slideFadeToggle();}return false;"></div>';
 		}
 

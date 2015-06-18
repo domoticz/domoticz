@@ -5663,7 +5663,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 	{
 		if (OnAction.size()<1)
 			return true;
-		if (OnAction.find("http://")!=std::string::npos)
+		if ((OnAction.find("http://") != std::string::npos) || (OnAction.find("https://") != std::string::npos))
 		{
 			_tTaskItem tItem;
 			tItem=_tTaskItem::GetHTTPPage(1,OnAction,"SwitchActionOn");
@@ -5695,7 +5695,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 	{
 		if (OffAction.size()<1)
 			return true;
-		if (OffAction.find("http://")!=std::string::npos)
+		if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
 		{
 			_tTaskItem tItem;
 			tItem=_tTaskItem::GetHTTPPage(1,OffAction,"SwitchActionOff");

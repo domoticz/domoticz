@@ -113,7 +113,7 @@ define(['app'], function (app) {
 				var offaction=$("#scenecontent #offaction").val();
 				
 				if (onaction!="") {
-					if ( (onaction.indexOf("http://") !=0) && (onaction.indexOf("script://") !=0) ) {
+					if ( (onaction.indexOf("http://") !=0) && (onaction.indexOf("https://") !=0) && (onaction.indexOf("script://") !=0) ) {
 						bootbox.alert($.t("Invalid ON Action!"));
 						return;
 					}
@@ -125,7 +125,7 @@ define(['app'], function (app) {
 					}
 				}
 				if (offaction!="") {
-					if ( (offaction.indexOf("http://") !=0) && (offaction.indexOf("script://") !=0) ) {
+					if ( (offaction.indexOf("http://") !=0) && (offaction.indexOf("https://") !=0) && (offaction.indexOf("script://") !=0) ) {
 						bootbox.alert($.t("Invalid Off Action!"));
 						return;
 					}
