@@ -14,6 +14,10 @@
 #include "../main/mainworker.h"
 #include "../json/json.h"
 
+#ifndef WIN32
+	#include <unistd.h> //gethostbyname
+#endif
+
 typedef struct _STR_TABLE_ID1_ID2 {
 	unsigned long    id1;
 	unsigned long    id2;
@@ -107,7 +111,7 @@ void CHttpPush::DoHttpPush()
 	std::vector<std::vector<std::string> > result;
 	char szTmp[500];
 	sprintf(szTmp, 
-		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate) FROM HttpLink as A, DeviceStatus as B "
+		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType, strftime('%%s', B.LastUpdate), B.Name FROM HttpLink as A, DeviceStatus as B "
 		"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 		m_DeviceRowIdx);
 	result=m_sql.query(szTmp);
@@ -118,9 +122,12 @@ void CHttpPush::DoHttpPush()
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
+			unsigned int deviceId = atoi(sd[0].c_str());
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
+			std::string lType = sd[3].c_str();
+			std::string lSubType = sd[4].c_str();
 			int nValue = atoi(sd[5].c_str());
 			std::string sValue = sd[6].c_str();
 			int targetType = atoi(sd[7].c_str());
@@ -134,6 +141,7 @@ void CHttpPush::DoHttpPush()
 			std::string lunit = "";
 			std::string ltargetVariable = sd[8].c_str();
 			std::string ltargetDeviceId = sd[9].c_str();
+			std::string lname = sd[14].c_str();
 			sendValue = sValue;
 
 			// Compute tz
@@ -181,7 +189,18 @@ void CHttpPush::DoHttpPush()
 			%D : Target Device id
 			%V : Target Variable
 			%u : Unit
+			%n : Name
+			%T0 : Type
+			%T1 : SubType
+			%h : hostname
 			*/
+
+			lunit = getUnit(delpos, metertype);			
+			lType = RFX_Type_Desc(dType,1);
+			lSubType = RFX_Type_SubType_Desc(dType,dSubType);
+			
+			char hostname[256];
+			gethostname(hostname, sizeof(hostname));
 
 			replaceAll(httpUrl, "%v", sendValue);
 			replaceAll(httpUrl, "%u", includeUnit ? lunit : "");
@@ -192,6 +211,10 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpUrl, "%t2", std::string(szLocalTimeUtc));
 			replaceAll(httpUrl, "%t3", std::string(szLocalTimeUtcMs));
 			replaceAll(httpUrl, "%t4", std::string(llastUpdate));
+			replaceAll(httpUrl, "%n", std::string(lname));
+			replaceAll(httpUrl, "%T0", lType);
+			replaceAll(httpUrl, "%T1", lSubType);
+			replaceAll(httpUrl, "%h", std::string(hostname));
 
 			replaceAll(httpData, "%v", sendValue);
 			replaceAll(httpData, "%u", includeUnit ? lunit : "");
@@ -202,6 +225,10 @@ void CHttpPush::DoHttpPush()
 			replaceAll(httpData, "%t2", std::string(szLocalTimeUtc));
 			replaceAll(httpData, "%t3", std::string(szLocalTimeUtcMs));
 			replaceAll(httpData, "%t4", std::string(llastUpdate));
+			replaceAll(httpData, "%n", std::string(lname));
+			replaceAll(httpData, "%T0", lType);
+			replaceAll(httpData, "%T1", lSubType);
+			replaceAll(httpData, "%h", std::string(hostname));
 
 			if (sendValue != "") {
 				std::string sResult;

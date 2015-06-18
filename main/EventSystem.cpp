@@ -172,13 +172,42 @@ return std::string(buf.data(), buf.size());
 }
 */
 
+struct _tHardwareListIntEV{
+	std::string Name;
+	bool Enabled;
+};
+
 void CEventSystem::GetCurrentStates()
 {
 	m_devicestates.clear();
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Used = '1')";
+
+	//Get All Hardware ID's/Names, need them later
+	std::map<unsigned long long, _tHardwareListIntEV> _hardwareNames;
+	szQuery << "SELECT ID, Name, Enabled FROM Hardware";
+	result = m_sql.query(szQuery.str());
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii = 0;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			_tHardwareListIntEV tlist;
+			unsigned long long ID;
+			std::stringstream h_str(sd[0]);
+			h_str >> ID;
+			tlist.Name = sd[1];
+			tlist.Enabled = (atoi(sd[2].c_str()) != 0);
+			_hardwareNames[ID] = tlist;
+		}
+	}
+
+	szQuery.clear();
+	szQuery.str("");
+	szQuery << "SELECT HardwareID,ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Used = '1')";
 	result = m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
@@ -186,21 +215,35 @@ void CEventSystem::GetCurrentStates()
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
-			_tDeviceStatus sitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> sitem.ID;
-			sitem.deviceName = sd[1];//utf8_to_string(sd[1].c_str(),std::locale(".1252"));
 
-			std::stringstream nv_str(sd[2]);
-			nv_str >> sitem.nValue;
-			sitem.sValue = sd[3];
-			sitem.devType = atoi(sd[4].c_str());
-			sitem.subType = atoi(sd[5].c_str());
-			sitem.switchtype = atoi(sd[6].c_str());
+			unsigned long long HwID;
+			std::stringstream h_str(sd[0]);
+			h_str >> HwID;
+
+			std::map<unsigned long long, _tHardwareListIntEV>::const_iterator hItt = _hardwareNames.find(HwID);
+			if (hItt != _hardwareNames.end())
+			{
+				if (!(*hItt).second.Enabled)
+				{
+					//Hardware is disabled, no need to add the device
+					continue;
+				}
+			}
+
+			_tDeviceStatus sitem;
+			std::stringstream s_str(sd[1]);
+			s_str >> sitem.ID;
+			sitem.deviceName = sd[2];
+
+			sitem.nValue = atoi(sd[3].c_str());
+			sitem.sValue = sd[4];
+			sitem.devType = atoi(sd[5].c_str());
+			sitem.subType = atoi(sd[6].c_str());
+			sitem.switchtype = atoi(sd[7].c_str());
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
 			sitem.nValueWording = nValueToWording(sitem.devType, sitem.subType, switchtype, (unsigned char)sitem.nValue, sitem.sValue);
-			sitem.lastUpdate = sd[7];
-			sitem.lastLevel = atoi(sd[8].c_str());
+			sitem.lastUpdate = sd[8];
+			sitem.lastLevel = atoi(sd[9].c_str());
 			m_devicestates[sitem.ID] = sitem;
 		}
 	}
@@ -281,7 +324,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 	//char szTmp[300];
 
 	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++)
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		std::vector<std::string> splitresults;

@@ -66,9 +66,6 @@ CHardwareMonitor::~CHardwareMonitor(void)
 }
 void CHardwareMonitor::StartHardwareMonitor()
 {
-#ifdef _DEBUG
-        _log.Log(LOG_STATUS,"Hardware Monitor: Started");
-#endif
 	Init();
 
 	if (m_bEnabled)
@@ -143,6 +140,8 @@ void CHardwareMonitor::Init()
 
 void CHardwareMonitor::Do_Work()
 {
+	_log.Log(LOG_STATUS, "Hardware Monitor: Started");
+
 	m_stoprequested=false;
 	int sec_counter = 0;
 	while (!m_stoprequested)
