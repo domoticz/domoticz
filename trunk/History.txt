@@ -5,6 +5,8 @@ Version 2.xxx (xxxx 2015)
 - Fixed: Tooltip bug for the Dusk sensor in the Lights tab
 - Implemented: Blockly/Lua SendSMS
 - Fixed: Battery low (typo) notification
+- Changed: EventSystem, not adding sensors from disable hardware
+- Implemented: HTTP Data push, new types for Type/SubType/Hostname/Device Name
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

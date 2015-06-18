@@ -5,6 +5,10 @@ Date: 01-10-2013
 Written by: Robin Stevenhagen
 License: Public domain
 
+Date: 18-06-2015
+GizMoCuz: Added messages to a send queue
+
+
 SPI code is based on code from:
 The WiringPi project
  *    Copyright (c) 2012 Gordon Henderson
