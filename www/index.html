@@ -590,6 +590,105 @@ $(document).ready(function() {
 		<span data-i18n="Year Cost">Year Cost</span>: <span id="mc">-</span><br>
 		<br>
 	</div>
+	<div id="toptextmonthrain" style="display:none;">
+		<a class="btnstylerev" onclick="ShowYearReportRain(0)" data-i18n="Back">Back</a>&nbsp;
+		<h1 id="theader" data-i18n="Usage this Month">Usage this Month</h1>
+		<br>
+		<span data-i18n="Total Rainfall">Total Rainfall</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
+		<span data-i18n="Rainiest Day">Rainiest Day</span>: <span id="vhigh">-</span><br>
+		<br>
+	</div>
+	<div id="toptextyearreportrain" style="display:none;">
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+		  <td align="left">
+			<a id="backbutton" class="btnstylerev" onclick="ShowWeather()" data-i18n="Back">Back</a>&nbsp;
+			<h1 id="theader" data-i18n="Usage this Year">Usage this Year</h1>
+		  </td>
+		  <td align="right">
+				<span data-i18n="Year">Year</span>:
+				<select id="comboyear" style="width:60px" class="combobox ui-corner-all">
+					<option value="2012">2012</option>
+					<option value="2013">2013</option>
+					<option value="2014">2014</option>
+					<option value="2015">2015</option>
+					<option value="2016">2016</option>
+					<option value="2017">2017</option>
+					<option value="2018">2018</option>
+				</select>
+		  </td>
+		</tr>
+		</table>
+		<br>
+		<span data-i18n="Total Rainfall">Total Rainfall</span>: <span id="tu">-</span> <span id="munit">m3</span><br>
+		<span data-i18n="Rainiest Month">Rainiest Month</span>: <span id="mhigh">-</span><br>
+		<span data-i18n="Lowest Rainfall">Lowest Rainfall</span>: <span id="mlow">-</span><br>
+		<span data-i18n="Rainiest Day">Rainiest Day</span>: <span id="vhigh">-</span><br>
+		<br>
+	</div>
+	<div id="reportviewrain" style="display:none;">
+		<table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th width="30" align="right" id="ftext"></th>
+					<th width="60" align="right" data-i18n="Rainfall">Rainfall</th>
+					<th width="40" align="right">&lt;&gt;</th>
+				</tr>
+			</thead>
+		</table>
+		<br>
+		<div id="usagegraph" style="height: 240px;"></div>
+	</div>
+	<div id="toptextmonthtemp" style="display:none;">
+		<a class="btnstylerev" onclick="ShowYearReportTemp(0)" data-i18n="Back">Back</a>&nbsp;
+		<h1 id="theader"></h1>
+		<br>
+		<span data-i18n="Hottest Day">Hottest Day</span>: <span id="mhigh">-</span><br>
+		<span data-i18n="Coldest Day">Coldest Day</span>: <span id="mlow">-</span><br>
+		<br>
+	</div>
+	<div id="toptextyearreporttemp" style="display:none;">
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+		  <td align="left">
+			<a id="backbutton" class="btnstylerev" onclick="ShowTemps()" data-i18n="Back">Back</a>&nbsp;
+			<h1 id="theader"></h1>
+		  </td>
+		  <td align="right">
+				<span data-i18n="Year">Year</span>:
+				<select id="comboyear" style="width:60px" class="combobox ui-corner-all">
+					<option value="2012">2012</option>
+					<option value="2013">2013</option>
+					<option value="2014">2014</option>
+					<option value="2015">2015</option>
+					<option value="2016">2016</option>
+					<option value="2017">2017</option>
+					<option value="2018">2018</option>
+				</select>
+		  </td>
+		</tr>
+		</table>
+		<br>
+		<span data-i18n="Hottest Day">Hottest Day</span>: <span id="mhigh">-</span><br>
+		<span data-i18n="Coldest Day">Coldest Day</span>: <span id="mlow">-</span><br>
+		<br>
+	</div>
+	<div id="reportviewtemp" style="display:none;">
+		<table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th width="30" align="right" id="ftext"></th>
+					<th width="60" align="right" data-i18n="Humidity">Humidity</th>
+					<th width="60" align="right" data-i18n="Avg. Temp">Avg. Temp</th>
+					<th width="60" align="right" data-i18n="Min. Temp">Min. Temp</th>
+					<th width="60" align="right" data-i18n="Max. Temp">Max. Temp</th>
+					<th width="40" align="right">&lt;&gt;</th>
+				</tr>
+			</thead>
+		</table>
+		<br>
+		<div id="usagegraph" style="height: 240px;"></div>
+	</div>
 	<div id="monthreportviewgas" style="display:none;">
 		<table class="display myrighttable" id="monthreport" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<thead>
@@ -609,9 +708,9 @@ $(document).ready(function() {
 		<table class="display myrighttable" id="yearreport" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<thead>
 				<tr valign="middle">
-					<th width="30" align="right">Month</th>
-					<th width="60" align="right">Usage</th>
-					<th width="60" align="right">Costs</th>
+					<th width="30" align="right" data-i18n="Month">Month</th>
+					<th width="60" align="right" data-i18n="Usage">Usage</th>
+					<th width="60" align="right" data-i18n="Costs">Costs</th>
 					<th width="40" align="right">&lt;&gt;</th>
 				</tr>
 			</thead>

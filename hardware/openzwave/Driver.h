@@ -315,7 +315,7 @@ namespace OpenZWave
 		void HandleRemoveFailedNodeRequest( uint8* _data );
 		void HandleReplaceFailedNodeRequest( uint8* _data );
 		void HandleRemoveNodeFromNetworkRequest( uint8* _data );
-		void HandleApplicationCommandHandlerRequest( uint8* _data );
+		void HandleApplicationCommandHandlerRequest( uint8* _data, bool encrypted );
 		void HandlePromiscuousApplicationCommandHandlerRequest( uint8* _data );
 		void HandleAssignReturnRouteRequest( uint8* _data );
 		void HandleDeleteReturnRouteRequest( uint8* _data );

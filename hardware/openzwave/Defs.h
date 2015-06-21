@@ -281,6 +281,7 @@ namespace OpenZWave
 #define FUNC_ID_ZW_DELETE_SUC_RETURN_ROUTE				0x55	// Remove return routes to the SUC
 #define FUNC_ID_ZW_GET_SUC_NODE_ID					0x56	// Try to retrieve a Static Update Controller node id (zero if no SUC present)
 #define FUNC_ID_ZW_REQUEST_NODE_NEIGHBOR_UPDATE_OPTIONS			0x5a	// Allow options for request node neighbor update
+#define FUNC_ID_ZW_EXPLORE_REQUEST_INCLUSION			0x5e	// supports NWI
 #define FUNC_ID_ZW_REQUEST_NODE_INFO					0x60	// Get info (supported command classes) for the specified node
 #define FUNC_ID_ZW_REMOVE_FAILED_NODE_ID				0x61	// Mark a specified node id as failed
 #define FUNC_ID_ZW_IS_FAILED_NODE_ID					0x62	// Check to see if a specified node has failed
