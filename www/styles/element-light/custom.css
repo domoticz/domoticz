@@ -19,7 +19,7 @@ body {
 }
 
 #status:before {
- content: "Status op dit moment:  " !important;
+ content: "Status at this moment:  " !important;
  font-weight: normal;
 }
 
