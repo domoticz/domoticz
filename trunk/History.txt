@@ -8,6 +8,8 @@ Version 2.xxx (xxxx 2015)
 - Changed: EventSystem, not adding sensors from disable hardware
 - Implemented: HTTP Data push, new types for Type/SubType/Hostname/Device Name
 - Implemented: HTTPS support for On/Off actions
+- Implemented: Rain Report
+- Implemented: Temperature Report
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
