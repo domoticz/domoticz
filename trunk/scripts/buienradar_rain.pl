@@ -4,8 +4,8 @@ use strict;
 use LWP::UserAgent;
 use HTTP::Cookies;
 
-my $lat=52.22041;
-my $long=6.89744;
+my $lat=50.22041;
+my $long=5.89744;
 my $domoticz_ip="127.0.0.1";
 my $domoticz_port="8080";
 my $domoticz_sensor_idx="2442";
