@@ -439,6 +439,12 @@ void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxV
 bool is_number(const std::string& s)
 {
 	std::string::const_iterator it = s.begin();
-	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == ' '))) ++it;
+	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' '))) ++it;
 	return !s.empty() && it == s.end();
+}
+
+void padLeft(std::string &str, const size_t num, const char paddingChar)
+{
+	if (num > str.size())
+		str.insert(0, num - str.size(), paddingChar);
 }

@@ -10732,13 +10732,21 @@ namespace http {
 			{
 			case 1:
 				//Pressure (Bar)
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
-				bCreated = true;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
+					bCreated = true;
+				}
 				break;
 			case 2:
 				//Percentage
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
-				bCreated = true;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
+					bCreated = true;
+			}
 				break;
 			case 3:
 				//Gas
@@ -10747,13 +10755,21 @@ namespace http {
 				break;
 			case 4:
 				//Voltage
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, "0.000", devname);
-				bCreated = true;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, "0.000", devname);
+					bCreated = true;
+				}
 				break;
 			case 5:
 				//Text
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, "Hello World", devname);
-				bCreated = true;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, "Hello World", devname);
+					bCreated = true;
+				}
 				break;
 			case 6:
 				//Switch
@@ -10791,13 +10807,21 @@ namespace http {
 				break;
 			case 10:
 				//Sound Level
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeSoundLevel, 12, 255, 0, "65", devname);
-				bCreated = true;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoundLevel, 12, 255, 0, "65", devname);
+					bCreated = true;
+				}
 				break;
 			case 11:
 				//Barometer (hPa)
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeBaro, 12, 255, 0, "1021.34;0", devname);
-				bCreated = true;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeBaro, 12, 255, 0, "1021.34;0", devname);
+					bCreated = true;
+				}
 				break;
 			case 12:
 				//Visibility (km)
@@ -10806,8 +10830,12 @@ namespace http {
 				break;
 			case 13:
 				//Distance (cm)
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeDistance, 12, 255, 0, "123.4", devname);
-				bCreated = true;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeDistance, 12, 255, 0, "123.4", devname);
+					bCreated = true;
+				}
 				break;
 			case 14: //Counter Incremental
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeCounterIncremental, 12, 255, 0, "0", devname);
