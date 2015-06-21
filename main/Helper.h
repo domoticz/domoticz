@@ -33,3 +33,4 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 
 void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue = 100.0);
 bool is_number(const std::string& s);
+void padLeft(std::string &str, const size_t num, const char paddingChar = '0');

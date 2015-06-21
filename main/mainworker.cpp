@@ -8318,7 +8318,19 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
-	if ((subType == sTypeVoltage) || (subType == sTypeCurrent) || (subType == sTypePercentage) || (subType == sTypePressure) || (subType == sTypeZWaveClock) || (subType == sTypeZWaveThermostatMode) || (subType == sTypeZWaveThermostatFanMode) || (subType == sTypeFan) || (subType == sTypeTextStatus) || (subType == sTypeSoundLevel) || (subType == sTypeBaro) || (subType == sTypeDistance))
+	if (
+		(subType == sTypeVoltage) || 
+		(subType == sTypeCurrent) || 
+		(subType == sTypePercentage) || 
+		(subType == sTypePressure) || 
+		(subType == sTypeZWaveClock) || 
+		(subType == sTypeZWaveThermostatMode) || 
+		(subType == sTypeZWaveThermostatFanMode) || 
+		(subType == sTypeFan) || 
+		(subType == sTypeTextStatus) || 
+		(subType == sTypeSoundLevel) || 
+		(subType == sTypeBaro) || 
+		(subType == sTypeDistance))
 	{
 		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
 	}
@@ -10747,10 +10759,10 @@ void MainWorker::HeartbeatCheck()
 
 bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel)
 {
-	if (devType == pTypeLighting2)
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware)
 	{
-		CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
-		if (pHardware)
+		if (devType == pTypeLighting2)
 		{
 			//Update as Lighting 2
 			unsigned long ID;
@@ -10777,6 +10789,20 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			lcmd.LIGHTING2.filler = 0;
 			lcmd.LIGHTING2.rssi = signallevel;
 			DecodeRXMessage(pHardware, (const unsigned char *)&lcmd.LIGHTING2);
+			return true;
+		}
+		else if ((devType == pTypeGeneral) && (subType == sTypePercentage))
+		{
+			unsigned long ID;
+			std::stringstream s_strid;
+			s_strid << std::hex << DeviceID;
+			s_strid >> ID;
+			_tGeneralDevice gDevice;
+			gDevice.subtype = sTypePercentage;
+			gDevice.id = unit;
+			gDevice.floatval1 = (float)atof(sValue.c_str());
+			gDevice.intval1 = static_cast<int>(ID);
+			DecodeRXMessage(pHardware, (const unsigned char *)&gDevice);
 			return true;
 		}
 	}
