@@ -21,7 +21,7 @@ body {
 #status, #lastupdate, body table#itemtable tr td:first-child + td + td + td + td + td{color: #5e5d5d;}
 
 #status:before {
- content: "Status op dit moment:  " !important;
+ content: "Status at this moment:  " !important;
  font-weight: normal;
 }
 
