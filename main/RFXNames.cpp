@@ -190,6 +190,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NESTTHERMOSTAT, "Nest Thermostat" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
+		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

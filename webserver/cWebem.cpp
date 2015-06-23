@@ -811,7 +811,7 @@ void cWebem::AddLocalNetworks(std::string network)
 	int pos=network.find_first_of("*");
 	if (pos>0)
 	{
-		inetwork=stdreplace(inetwork,"*","0");
+		stdreplace(inetwork,"*","0");
 		int a, b, c, d;
 		if (sscanf(inetwork.c_str(), "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
 			return;
@@ -819,7 +819,7 @@ void cWebem::AddLocalNetworks(std::string network)
 		newnetwork << std::dec << a << "." << std::dec << b << "." << std::dec << c << "." << std::dec << d;
 		inetwork=newnetwork.str();
 
-		inetworkmask=stdreplace(inetworkmask,"*","999");
+		stdreplace(inetworkmask,"*","999");
 		int e, f, g, h;
 		if (sscanf(inetworkmask.c_str(), "%d.%d.%d.%d", &e, &f, &g, &h) != 4)
 			return;

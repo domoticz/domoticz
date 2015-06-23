@@ -28,18 +28,17 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	}
 }
 
-std::string stdreplace(
-	std::string result, 
+void stdreplace(
+	std::string &inoutstring,
 	const std::string& replaceWhat, 
 	const std::string& replaceWithWhat)
 {
 	int pos = 0;
-	while (std::string::npos != (pos = result.find(replaceWhat, pos)))
+	while (std::string::npos != (pos = inoutstring.find(replaceWhat, pos)))
 	{
-		result.replace(pos, replaceWhat.size(), replaceWithWhat);
+		inoutstring.replace(pos, replaceWhat.size(), replaceWithWhat);
 		pos += replaceWithWhat.size();
 	}
-	return result;
 }
 
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)

@@ -564,7 +564,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				if (SUCCEEDED(hr))
 				{
 					std::string itemName = _bstr_t(vtProp.bstrVal);
-					itemName = stdreplace(itemName, "#", "");
+					stdreplace(itemName, "#", "");
 					VariantClear(&vtProp);
 
 					hr = pclsObj->Get(L"Value", 0, &vtProp, 0, 0);

@@ -20,7 +20,7 @@ const std::string THERMOSMART_TOKEN_PATH = "https://api.thermosmart.com/oauth2/t
 const std::string THERMOSMART_ACCESS_PATH = "https://api.thermosmart.com/thermostat";
 
 #ifdef _DEBUG
-	#define DEBUG_ThermosmartThermostat
+	//#define DEBUG_ThermosmartThermostat
 #endif
 
 #ifdef DEBUG_ThermosmartThermostat
@@ -182,7 +182,7 @@ bool CThermosmart::Login()
 #endif
 
 	sURL = THERMOSMART_AUTHORISE_PATH;
-	sURL = stdreplace(sURL, "client123", "3de470ce1db15f92");
+	stdreplace(sURL, "client123", "3de470ce1db15f92");
 	ExtraHeaders.clear();
 	if (!HTTPClient::GET(sURL, sResult))
 	{

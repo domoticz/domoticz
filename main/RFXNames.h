@@ -108,6 +108,7 @@ enum _eHardwareTypes {
 	HTYPE_Pinger,				//51
 	HTYPE_NESTTHERMOSTAT,		//52
 	HTYPE_THERMOSMART,			//53
+	HTYPE_NetatmoWeatherStation,	//54
 	HTYPE_END
 };
 

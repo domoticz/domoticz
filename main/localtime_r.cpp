@@ -10,7 +10,7 @@ struct tm *localtime_r(const time_t *timep, struct tm *result)
 #ifdef localtime_s
 	localtime_s(timep, result);
 #else
-	boost::lock_guard<boost::mutex> l(TimeMutex_);
+	boost::mutex::scoped_lock lock(TimeMutex_);
 	struct tm *s = localtime(timep);
 	if (s == NULL)
 		return NULL;

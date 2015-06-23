@@ -11,6 +11,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Rain Report
 - Implemented: Temperature Report
 - Fixed: 1-Wire negative values
+- Implemented: Initial support for the Netatmo Weather Station (Big thanks to Sébastien!)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

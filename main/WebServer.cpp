@@ -21,6 +21,7 @@
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
+#include "../hardware/NetatmoWeatherStation.h"
 #include "../hardware/SBFSpot.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
@@ -79,6 +80,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "pt", "Portuguese" },
 	{ "ru", "Russian" },
 	{ "sk", "Slovak" },
+	//{ "sl", "Slovenian" },
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
 	{ "tr", "Turkish" },
@@ -678,7 +680,7 @@ namespace http {
 							for (itt = _ThemeFiles.begin(); itt != _ThemeFiles.end(); ++itt)
 							{
 								std::string tfname = (itt->first).substr(szWWWFolder.size() + 1);
-								tfname=stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
+								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + "\n";
 							}
 							continue;
@@ -993,6 +995,9 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_NetatmoWeatherStation) {
+				//all fine here!
+			}
 			else
 				return;
 
@@ -1165,6 +1170,9 @@ namespace http {
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
 					return;
+			}
+			else if (htype == HTYPE_NetatmoWeatherStation) {
+				//all fine here!
 			}
 			else
 				return;
@@ -8498,6 +8506,11 @@ namespace http {
 								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
 							}
 						}
+						else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+						{
+							CNetAtmoWeatherStation *pWHardware = (CNetAtmoWeatherStation*)pHardware;
+							root["result"][ii]["Address"] = pWHardware->GetApplication();
+						}
 					}
 
 					sprintf(szData, "%04X", (unsigned int)atoi(sd[1].c_str()));
@@ -13164,7 +13177,7 @@ namespace http {
 
 							if ((actions.find("SendNotification") != std::string::npos) || (actions.find("SendEmail") != std::string::npos) || (actions.find("SendSMS") != std::string::npos))
 							{
-								actions = stdreplace(actions, "$", "#");
+								stdreplace(actions, "$", "#");
 							}
 							int sequenceNo = index + 1;
 							szQuery.clear();

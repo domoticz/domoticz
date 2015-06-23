@@ -266,8 +266,8 @@ bool CCameraHandler::TakeSnapshot(const unsigned long long CamID, std::vector<un
 
 	std::string szURL=GetCameraURL(pCamera);
 	szURL+="/" + pCamera->ImageURL;
-	szURL=stdreplace(szURL, "#USERNAME", pCamera->Username);
-	szURL=stdreplace(szURL, "#PASSWORD", pCamera->Password);
+	stdreplace(szURL, "#USERNAME", pCamera->Username);
+	stdreplace(szURL, "#PASSWORD", pCamera->Password);
 
 	if (pCamera->ImageURL=="raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);

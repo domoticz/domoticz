@@ -1,8 +1,8 @@
 #pragma once
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
-std::string stdreplace(
-	std::string result, 
+void stdreplace(
+	std::string &inoutstring,
 	const std::string& replaceWhat, 
 	const std::string& replaceWithWhat);
 bool file_exist (const char *filename);

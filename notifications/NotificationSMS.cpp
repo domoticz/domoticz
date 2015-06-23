@@ -30,19 +30,19 @@ bool CNotificationSMS::SendMessageImplementation(const std::string &Subject, con
 	bool bRet = false;
 
 	std::string MsgFrom = _clickatellFrom;
-	MsgFrom=stdreplace(MsgFrom, "+", "");
-	MsgFrom=stdreplace(MsgFrom, " ", "");
+	stdreplace(MsgFrom, "+", "");
+	stdreplace(MsgFrom, " ", "");
 	MsgFrom = stdstring_trim(MsgFrom);
 	if (MsgFrom.empty())
 		return false;
 
 	std::string thisTo = _clickatellTo;
 
-	thisTo=stdreplace(thisTo, "+", "");
-	thisTo=stdreplace(thisTo, " ", "");
+	stdreplace(thisTo, "+", "");
+	stdreplace(thisTo, " ", "");
 
 	// One can send to multiple destination addresses by delimiting the addresses with commas
-	thisTo=stdreplace(thisTo, ";", ",");
+	stdreplace(thisTo, ";", ",");
 
 	thisTo = stdstring_trim(thisTo);
 	if (thisTo.empty())

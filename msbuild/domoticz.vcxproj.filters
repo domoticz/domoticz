@@ -213,6 +213,9 @@
     <Filter Include="Devices\RFXCom">
       <UniqueIdentifier>{48ca3895-ba95-40f6-8441-e2911263a66f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Netamo">
+      <UniqueIdentifier>{e2b392a3-f7a9-4c9b-b40a-4963b61407ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -699,6 +702,9 @@
     <ClInclude Include="..\hardware\P1MeterTCP.h">
       <Filter>Devices\P1Smart Meter</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\NetatmoWeatherStation.h">
+      <Filter>Devices\Netamo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1123,6 +1129,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\P1MeterTCP.cpp">
       <Filter>Devices\P1Smart Meter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NetatmoWeatherStation.cpp">
+      <Filter>Devices\Netamo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

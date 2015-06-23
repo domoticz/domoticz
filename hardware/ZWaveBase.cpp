@@ -818,7 +818,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			}
 			else if (pressure >= 1029)
 				nforecast = wsbaroforcast_sunny;
-			SendTempHumBaroSensorFloat(pDevice->nodeID, pDevice->batValue, pTempDevice->floatValue, pHumDevice->intvalue, pDevice->floatValue, nforecast);
+			SendTempHumBaroSensorFloat(pDevice->nodeID, pDevice->batValue, pTempDevice->floatValue, pHumDevice->intvalue, pDevice->floatValue, nforecast, "TempHumBaro");
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_LIGHT)

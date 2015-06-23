@@ -388,7 +388,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 	std::string tmpPath = m_SBFDataPath;
 	std::stringstream sstr;
 	sstr << Year;
-	tmpPath=stdreplace(tmpPath, "%Y", sstr.str());
+	stdreplace(tmpPath, "%Y", sstr.str());
 	sprintf(szLogFile, "%s%s-%04d%02d.csv", tmpPath.c_str(), m_SBFPlantName.c_str(),Year, Month);
 
 	std::ifstream infile;
@@ -430,7 +430,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				pPos = szKwhCounter.find(',');
 				if (pPos == std::string::npos)
 					szKwhCounter = "0," + szKwhCounter;
-				szKwhCounter = stdreplace(szKwhCounter, ",", ".");
+				stdreplace(szKwhCounter, ",", ".");
 				double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
 				unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
@@ -500,7 +500,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 						int year = atoi(results[0].substr(yearPos, 4).c_str());
 
 						std::string szKwhCounter = results[2];
-						szKwhCounter = stdreplace(szKwhCounter, ",", ".");
+						stdreplace(szKwhCounter, ",", ".");
 						double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
 						unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
@@ -619,10 +619,10 @@ void CSBFSpot::GetMeterDetails()
 	time_t t = mktime(&aitime);
 */
 	std::string szKwhCounter=results[23];
-	szKwhCounter=stdreplace(szKwhCounter,",",".");
+	stdreplace(szKwhCounter,",",".");
 	double kWhCounter=atof(szKwhCounter.c_str());
 	std::string szPacActual=results[20];
-	szPacActual=stdreplace(szPacActual,",",".");
+	stdreplace(szPacActual,",",".");
 	double Pac=atof(szPacActual.c_str());
 	if (kWhCounter!=0)
 	{
@@ -641,17 +641,17 @@ void CSBFSpot::GetMeterDetails()
 
 	float voltage;
 	tmpString=results[16];
-	tmpString=stdreplace(tmpString,",",".");
+	stdreplace(tmpString,",",".");
 	voltage = static_cast<float>(atof(tmpString.c_str()));
 	SendVoltage(1,voltage,"Volt uac1");
 	tmpString=results[17];
-	tmpString=stdreplace(tmpString,",",".");
+	stdreplace(tmpString,",",".");
 	voltage = static_cast<float>(atof(tmpString.c_str()));
 	if (voltage!=0) {
 		SendVoltage(2,voltage,"Volt uac2");
 	}
 	tmpString=results[18];
-	tmpString=stdreplace(tmpString,",",".");
+	stdreplace(tmpString,",",".");
 	voltage = static_cast<float>(atof(tmpString.c_str()));
 	if (voltage!=0) {
 		SendVoltage(3,voltage,"Volt uac3");
@@ -659,22 +659,22 @@ void CSBFSpot::GetMeterDetails()
 
 	float percentage;
 	tmpString=results[21];
-	tmpString=stdreplace(tmpString,",",".");
+	stdreplace(tmpString,",",".");
 	percentage = static_cast<float>(atof(tmpString.c_str()));
 	SendPercentage(1,percentage,"Efficiency");
 	tmpString=results[24];
-	tmpString=stdreplace(tmpString,",",".");
+	stdreplace(tmpString,",",".");
 	percentage = static_cast<float>(atof(tmpString.c_str()));
 	SendPercentage(2,percentage,"Hz");
 	tmpString=results[27];
-	tmpString=stdreplace(tmpString,",",".");
+	stdreplace(tmpString,",",".");
 	percentage = static_cast<float>(atof(tmpString.c_str()));
 	SendPercentage(3,percentage,"BT_Signal");
 
 	if (results.size()>=31)
 	{
 		tmpString=results[30];
-		tmpString=stdreplace(tmpString,",",".");
+		stdreplace(tmpString,",",".");
 		float temperature = static_cast<float>(atof(tmpString.c_str()));
 		SendTempSensor(1,temperature,"Temperature");
 	}
