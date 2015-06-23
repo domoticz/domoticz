@@ -229,11 +229,11 @@ std::string CNotificationBase::MakeHtml(const std::string &txt)
 {
 	std::string sRet = txt;
 
-	sRet = stdreplace(sRet, "&", "&amp;");
-	sRet = stdreplace(sRet, "\"", "&quot;");
-	sRet = stdreplace(sRet, "'", "&apos;");
-	sRet = stdreplace(sRet, "<", "&lt;");
-	sRet = stdreplace(sRet, ">", "&gt;");
-	sRet = stdreplace(sRet, "\r\n", "<br/>");
+	stdreplace(sRet, "&", "&amp;");
+	stdreplace(sRet, "\"", "&quot;");
+	stdreplace(sRet, "'", "&apos;");
+	stdreplace(sRet, "<", "&lt;");
+	stdreplace(sRet, ">", "&gt;");
+	stdreplace(sRet, "\r\n", "<br/>");
 	return sRet;
 }

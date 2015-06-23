@@ -119,13 +119,13 @@ void CYouLess::GetMeterDetails()
 	fpos=pusage.find_first_of(" ");
 	if (fpos!=std::string::npos)
 		pusage=pusage.substr(0,fpos);
-	pusage=stdreplace(pusage,",","");
+	stdreplace(pusage,",","");
 
 	std::string pcurrent=stdstring_trim(results[1]);
 	fpos=pcurrent.find_first_of(" ");
 	if (fpos!=std::string::npos)
 		pcurrent=pcurrent.substr(0,fpos);
-	pcurrent=stdreplace(pcurrent,",","");
+	stdreplace(pcurrent,",","");
 
 	m_meter.powerusage=atol(pusage.c_str());
 	m_meter.usagecurrent=atol(pcurrent.c_str());

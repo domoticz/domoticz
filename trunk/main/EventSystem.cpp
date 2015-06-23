@@ -1288,13 +1288,13 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					int intRise = getSunRiseSunSetMinutes("Sunrise");
 					std::stringstream ssRise;
 					ssRise << intRise;
-					it->Conditions = stdreplace(it->Conditions, "@Sunrise", ssRise.str());
+					stdreplace(it->Conditions, "@Sunrise", ssRise.str());
 				}
 				if (it->Conditions.find("@Sunset") != std::string::npos) {
 					int intSet = getSunRiseSunSetMinutes("Sunset");
 					std::stringstream ssSet;
 					ssSet << intSet;
-					it->Conditions = stdreplace(it->Conditions, "@Sunset", ssSet.str());
+					stdreplace(it->Conditions, "@Sunset", ssSet.str());
 				}
 
 				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
@@ -1337,13 +1337,13 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					int intRise = getSunRiseSunSetMinutes("Sunrise");
 					std::stringstream ssRise;
 					ssRise << intRise;
-					it->Conditions = stdreplace(it->Conditions, "@Sunrise", ssRise.str());
+					stdreplace(it->Conditions, "@Sunrise", ssRise.str());
 				}
 				if (it->Conditions.find("@Sunset") != std::string::npos) {
 					int intSet = getSunRiseSunSetMinutes("Sunset");
 					std::stringstream ssSet;
 					ssSet << intSet;
-					it->Conditions = stdreplace(it->Conditions, "@Sunset", ssSet.str());
+					stdreplace(it->Conditions, "@Sunset", ssSet.str());
 				}
 
 				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
@@ -1384,13 +1384,13 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 						int intRise = getSunRiseSunSetMinutes("Sunrise");
 						std::stringstream ssRise;
 						ssRise << intRise;
-						it->Conditions = stdreplace(it->Conditions, "@Sunrise", ssRise.str());
+						stdreplace(it->Conditions, "@Sunrise", ssRise.str());
 					}
 					if (it->Conditions.find("@Sunset") != std::string::npos) {
 						int intSet = getSunRiseSunSetMinutes("Sunset");
 						std::stringstream ssSet;
 						ssSet << intSet;
-						it->Conditions = stdreplace(it->Conditions, "@Sunset", ssSet.str());
+						stdreplace(it->Conditions, "@Sunset", ssSet.str());
 					}
 
 					std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
@@ -1434,13 +1434,13 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					int intRise = getSunRiseSunSetMinutes("Sunrise");
 					std::stringstream ssRise;
 					ssRise << intRise;
-					it->Conditions = stdreplace(it->Conditions, "@Sunrise", ssRise.str());
+					stdreplace(it->Conditions, "@Sunrise", ssRise.str());
 				}
 				if (it->Conditions.find("@Sunset") != std::string::npos) {
 					int intSet = getSunRiseSunSetMinutes("Sunset");
 					std::stringstream ssSet;
 					ssSet << intSet;
-					it->Conditions = stdreplace(it->Conditions, "@Sunset", ssSet.str());
+					stdreplace(it->Conditions, "@Sunset", ssSet.str());
 				}
 
 				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + it->Conditions + " then result = 1 end; return result";
@@ -1598,7 +1598,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					}
 					subject = aParam[0];
 					body = aParam[1];
-					body = stdreplace(body, "\\n", "<br>");
+					stdreplace(body, "\\n", "<br>");
 					to = aParam[2];
 					m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
 					actionsDone = true;
@@ -2448,7 +2448,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		}
 		subject = aParam[0];
 		body = aParam[1];
-		body = stdreplace(body, "\\n", "<br>");
+		stdreplace(body, "\\n", "<br>");
 		to = aParam[2];
 		m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
 		scriptTrue = true;

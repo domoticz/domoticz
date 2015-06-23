@@ -69,6 +69,7 @@
 #include "../hardware/Pinger.h"
 #include "../hardware/NestThermostat.h"
 #include "../hardware/Thermosmart.h"
+#include "../hardware/NetatmoWeatherStation.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -177,7 +178,7 @@ void MainWorker::AddAllDomoticzHardware()
 			int mode5 = atoi(sd[13].c_str());
 			int mode6 = atoi(sd[14].c_str());
 			int DataTimeout = atoi(sd[15].c_str());
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout,false);
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
 		}
 		m_hardwareStartCounter = 0;
 		m_bStartHardware = true;
@@ -699,6 +700,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
+		break;
+	case HTYPE_NetatmoWeatherStation:
+		pHardware = new CNetAtmoWeatherStation(ID,Username,Password,Address);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);

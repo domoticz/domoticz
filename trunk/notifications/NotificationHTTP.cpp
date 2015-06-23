@@ -32,27 +32,26 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 	if (destURL.find("http") == 0)
 	{
 		//HTTP/HTTPS
-		destURL = stdreplace(destURL, "#FIELD1", CURLEncode::URLEncode(_HTTPField1));
-		destURL = stdreplace(destURL, "#FIELD2", CURLEncode::URLEncode(_HTTPField2));
-		destURL = stdreplace(destURL, "#FIELD3", CURLEncode::URLEncode(_HTTPField3));
-		destURL = stdreplace(destURL, "#FIELD4", CURLEncode::URLEncode(_HTTPField4));
-		destURL = stdreplace(destURL, "#TO", CURLEncode::URLEncode(_HTTPTo));
-		destURL = stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
-		destURL = stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
+		stdreplace(destURL, "#FIELD1", CURLEncode::URLEncode(_HTTPField1));
+		stdreplace(destURL, "#FIELD2", CURLEncode::URLEncode(_HTTPField2));
+		stdreplace(destURL, "#FIELD3", CURLEncode::URLEncode(_HTTPField3));
+		stdreplace(destURL, "#FIELD4", CURLEncode::URLEncode(_HTTPField4));
+		stdreplace(destURL, "#TO", CURLEncode::URLEncode(_HTTPTo));
+		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
+		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
 		std::string sResult;
 		bRet = HTTPClient::GET(destURL, sResult);
 	}
 	else if (destURL.find("script://") == 0)
 	{
 		//Script
-
-		destURL = stdreplace(destURL, "#FIELD1", _HTTPField1);
-		destURL = stdreplace(destURL, "#FIELD2", _HTTPField2);
-		destURL = stdreplace(destURL, "#FIELD3", _HTTPField3);
-		destURL = stdreplace(destURL, "#FIELD4", _HTTPField4);
-		destURL = stdreplace(destURL, "#TO", _HTTPTo);
-		destURL = stdreplace(destURL, "#SUBJECT", CURLEncode::URLDecode(Subject));
-		destURL = stdreplace(destURL, "#MESSAGE", CURLEncode::URLDecode(Text));
+		stdreplace(destURL, "#FIELD1", _HTTPField1);
+		stdreplace(destURL, "#FIELD2", _HTTPField2);
+		stdreplace(destURL, "#FIELD3", _HTTPField3);
+		stdreplace(destURL, "#FIELD4", _HTTPField4);
+		stdreplace(destURL, "#TO", _HTTPTo);
+		stdreplace(destURL, "#SUBJECT", CURLEncode::URLDecode(Subject));
+		stdreplace(destURL, "#MESSAGE", CURLEncode::URLDecode(Text));
 
 		std::string scriptname = "";
 		std::string scriptparams = "";

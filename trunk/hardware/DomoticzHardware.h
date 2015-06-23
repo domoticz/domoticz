@@ -93,6 +93,7 @@ private:
 	friend class CPinger;
 	friend class CNestThermostat;
 	friend class CThermosmart;
+	friend class CNetAtmoWeatherStation;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
@@ -109,10 +110,10 @@ private:
 	void SendBaroSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const int forecast);
 	void SendTempHumSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const std::string &defaultname);
 	void SendTempHumBaroSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast);
-	void SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast);
+	void SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast, const std::string &defaultname);
 	void SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);
 	void SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux);
-	void SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality);
+	void SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality, const std::string &defaultname);
 	void SendUsageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Usage);
 	void SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
 	void SendSwitchIfNotExists(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
@@ -120,13 +121,14 @@ private:
 	void SendVoltageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
 	void SendCurrentSensor(const int NodeID, const int BatteryLevel, const float Current1, const float Current2, const float Current3, const std::string &defaultname);
 	void SendPercentageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
-	void SendRainSensor(const int NodeID, const int BatteryLevel, const int RainCounter);
+	void SendRainSensor(const int NodeID, const int BatteryLevel, const int RainCounter, const std::string &defaultname);
 	void SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp);
 	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance);
 	void SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue);
-	void SenUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI);
+	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI);
 	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
+	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);
 
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 

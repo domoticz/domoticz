@@ -419,7 +419,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				SendTempHumBaroSensorFloat(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue, pSensorBaro->floatValue, nforecast);
+				SendTempHumBaroSensorFloat(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue, pSensorBaro->floatValue, nforecast, "TempHumBaro");
 			}
 		}
 		else if (pSensorHum) {
@@ -486,7 +486,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue, pSensorBaro->floatValue, nforecast);
+				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue, pSensorBaro->floatValue, nforecast, "TempHumBaro");
 			}
 		}
 		else if (pSensorTemp) {
@@ -553,7 +553,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensorHum->intvalue, pSensor->floatValue, nforecast);
+				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensorHum->intvalue, pSensor->floatValue, nforecast, "TempHumBaro");
 			}
 		}
 		else
@@ -624,7 +624,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		}
 		break;
 	case V_RAIN:
-		SendRainSensor(cNode, pSensor->batValue, pSensor->intvalue);
+		SendRainSensor(cNode, pSensor->batValue, pSensor->intvalue,"Rain");
 		break;
 	case V_WATT:
 		{
@@ -671,7 +671,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		SendVoltageSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue, devname);
 		break;
 	case V_UV:
-		SenUVSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
+		SendUVSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
 		break;
 	case V_CURRENT:
 		devname = "Current";
