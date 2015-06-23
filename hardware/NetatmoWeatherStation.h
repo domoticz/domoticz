@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../DomoticzHardware.h"
+#include "DomoticzHardware.h"
 
 namespace Json
 {
