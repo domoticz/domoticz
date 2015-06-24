@@ -142,7 +142,7 @@ void CDomoticzHardwareBase::SendTempSensor(const int NodeID, const int BatteryLe
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[30];
-	sprintf(szTmp, "%d", (unsigned int)NodeID);
+	sprintf(szTmp, "%d", NodeID & 0xFFFF);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP5) << ")";
 	result = m_sql.query(szQuery.str());
@@ -210,7 +210,7 @@ void CDomoticzHardwareBase::SendTempHumSensor(const int NodeID, const int Batter
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[30];
-	sprintf(szTmp, "%d", (unsigned int)NodeID);
+	sprintf(szTmp, "%d", NodeID & 0xFFFF);
 
 	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeTEMP_HUM) << ") AND (Subtype==" << int(sTypeTH5) << ")";
 	result = m_sql.query(szQuery.str());
