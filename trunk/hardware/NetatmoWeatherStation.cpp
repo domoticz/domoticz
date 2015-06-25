@@ -264,6 +264,11 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	int rain;
 	int sound;
 
+	int wind_angle = 0;
+	int wind_gust_angle = 0;
+	float wind_strength = 0;
+	float wind_gust = 0;
+
 	int batValue = GetBatteryLevel(ModuleType, battery_vp);
 
 	if (!root["Temperature"].empty())
@@ -295,6 +300,22 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	{
 		bHaveRain = true;
 		rain = root["Rain"].asInt();
+	}
+	if (!root["WindAngle"].empty())
+	{
+		if (
+			(!root["WindAngle"].empty()) &&
+			(!root["WindStrength"].empty()) &&
+			(!root["GustAngle"].empty()) &&
+			(!root["GustStrength"].empty())
+			)
+		{
+			bHaveWind = true;
+			wind_angle = root["WindAngle"].asInt();
+			wind_gust_angle = root["GustAngle"].asInt();
+			wind_strength = root["WindStrength"].asFloat();
+			wind_gust = root["GustStrength"].asFloat();
+		}
 	}
 
 	if (bHaveTemp && bHaveHum && bHaveBaro)
@@ -337,7 +358,11 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	{
 		SendSoundSensor(ID, batValue, sound, name);
 	}
-	//todo wind, but it is not solled yet
+	
+	if (bHaveWind)
+	{
+		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, name);
+	}
 	return true;
 }
 

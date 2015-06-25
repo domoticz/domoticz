@@ -39,7 +39,7 @@ static boost::posix_time::time_duration get_utc_offset() {
 
 CHttpPush::CHttpPush()
 {
-	m_bHttpLinkActive = false;
+	m_bLinkActive = false;
 }
 
 void CHttpPush::Start()
@@ -59,27 +59,15 @@ void CHttpPush::UpdateActive()
 {
 	int fActive;
 	m_sql.GetPreferencesVar("HttpActive", fActive);
-	m_bHttpLinkActive = (fActive == 1);
+	m_bLinkActive = (fActive == 1);
 }
 
 void CHttpPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	m_DeviceRowIdx = DeviceRowIdx;
-	if (m_bHttpLinkActive)
+	if (m_bLinkActive)
 	{
 		DoHttpPush();
-	}
-}
-
-// STATIC
-void CHttpPush::replaceAll(std::string& context, const std::string& from, const std::string& to)
-{
-	size_t lookHere = 0;
-	size_t foundHere;
-	while ((foundHere = context.find(from, lookHere)) != std::string::npos)
-	{
-		context.replace(foundHere, from.size(), to);
-		lookHere = foundHere + to.size();
 	}
 }
 
@@ -92,8 +80,6 @@ void CHttpPush::DoHttpPush()
 	std::string httpAuth = "";
 	std::string httpAuthBasicLogin = "";
 	std::string httpAuthBasicPassword = "";
-	m_sql.GetPreferencesVar("HttpUrl", httpUrl);
-	m_sql.GetPreferencesVar("HttpData", httpData);
 	m_sql.GetPreferencesVar("HttpMethod", httpMethodInt);
 	m_sql.GetPreferencesVar("HttpAuth", httpAuthInt);
 	m_sql.GetPreferencesVar("HttpAuthBasicLogin", httpAuthBasicLogin);
@@ -105,9 +91,6 @@ void CHttpPush::DoHttpPush()
 	if (httpDebugActiveInt == 1) {
 		httpDebugActive = true;
 	}
-
-	if (httpUrl == "")
-		return;
 	std::vector<std::vector<std::string> > result;
 	char szTmp[500];
 	sprintf(szTmp, 
@@ -121,8 +104,14 @@ void CHttpPush::DoHttpPush()
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
+			m_sql.GetPreferencesVar("HttpUrl", httpUrl);
+			m_sql.GetPreferencesVar("HttpData", httpData);
+			if (httpUrl == "")
+				return;
+
 			std::vector<std::string> sd=*itt;
 			unsigned int deviceId = atoi(sd[0].c_str());
+			std::string ldelpos = sd[1].c_str();
 			int delpos = atoi(sd[1].c_str());
 			int dType = atoi(sd[3].c_str());
 			int dSubType = atoi(sd[4].c_str());
@@ -202,6 +191,23 @@ void CHttpPush::DoHttpPush()
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));
 
+			std::vector<std::string> strarray;
+			if (sendValue.find(";")!=std::string::npos)
+			{
+				StringSplit(sendValue, ";", strarray);
+				if (int(strarray.size())>=delpos)
+				{
+					std::string rawsendValue = strarray[delpos-1].c_str();
+					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,false,metertype);
+				}
+			}
+			else
+			{
+				sendValue = ProcessSendValue(sendValue,delpos,nValue,false,metertype);
+			}
+			ltargetDeviceId+="_";
+			ltargetDeviceId+=ldelpos;
+
 			replaceAll(httpUrl, "%v", sendValue);
 			replaceAll(httpUrl, "%u", includeUnit ? lunit : "");
 			replaceAll(httpUrl, "%D", ltargetDeviceId);
@@ -264,225 +270,13 @@ void CHttpPush::DoHttpPush()
 						_log.Log(LOG_ERROR, "Error sending data to http with PUT!");
 					}
 				}
+
+				// debug
+				if (httpDebugActive) {
+					_log.Log(LOG_NORM, "HttpLink: response ", sResult.c_str());
+				}
 			}
 		}
-	}
-}
-
-std::vector<std::string> CHttpPush::DropdownOptions(const unsigned long long DeviceRowIdxIn)
-{
-	std::vector<std::string> dropdownOptions;
-
-	std::vector<std::vector<std::string> > result;
-	char szTmp[300];
-	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
-	result=m_sql.query(szTmp);
-	if (result.size()>0)
-	{
-		int dType=atoi(result[0][0].c_str());
-		int dSubType=atoi(result[0][1].c_str());
-
-		std::string sOptions = RFX_Type_SubType_Values(dType,dSubType);
-		std::vector<std::string> tmpV; 
-		StringSplit(sOptions, ",", tmpV); 
-		for (int i = 0; i < (int) tmpV.size(); ++i) { 
-			dropdownOptions.push_back(tmpV[i]); 
-		}
-	}
-   	else 
-	{
-		dropdownOptions.push_back("Not implemented");
-	}
-	return dropdownOptions;
-}
-
-std::string CHttpPush::DropdownOptionsValue(const unsigned long long DeviceRowIdxIn, const int pos)
-{	
-	std::string wording = "???";
-	int getpos = pos-1; // 0 pos is always nvalue/status, 1 and higher goes to svalues
-	std::vector<std::vector<std::string> > result;
-	char szTmp[300];
-	
-	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
-	result=m_sql.query(szTmp);
-	if (result.size()>0)
-	{
-		int dType=atoi(result[0][0].c_str());
-		int dSubType=atoi(result[0][1].c_str());
-
-		std::string sOptions = RFX_Type_SubType_Values(dType,dSubType);
-		std::vector<std::string> tmpV; 
-		StringSplit(sOptions, ",", tmpV); 
-		if ( (int) tmpV.size() >= pos) {
-			wording = tmpV[getpos];
-		}
-	}
-	return wording;
-}
-
-std::string CHttpPush::getUnit(const int delpos, const int metertypein)
-{
-	std::string vType = DropdownOptionsValue(m_DeviceRowIdx,delpos);
-	unsigned char tempsign=m_sql.m_tempsign[0];
-	_eMeterType metertype = (_eMeterType) metertypein;
-	char szData[100]= "";
-
-	if ((vType=="Temperature") || (vType=="Temperature 1") || (vType=="Temperature 2")|| (vType == "Set point"))
-	{
-		sprintf(szData,"%c", tempsign);
-	}
-	else if (vType == "Humidity")
-	{
-		strcpy(szData,"%%");
-	}
-	else if (vType == "Humidity Status")
-	{
-		strcpy(szData, "");
-	}
-	else if (vType == "Barometer")
-	{
-		strcpy(szData, "hPa");
-	}
-	else if (vType == "Forecast")
-	{
-		strcpy(szData, "");
-	}
-	else if (vType == "Altitude")
-	{
-		strcpy(szData, "");
-	}
-	else if (vType == "UV")
-	{
-		strcpy(szData, "UVI");
-	}
-	else if (vType == "Direction")
-	{
-		strcpy(szData, "Degrees");
-	}
-	else if (vType == "Direction string")
-	{
-		strcpy(szData, "");
-	}
-	else if (vType == "Speed")
-	{
-		strcpy(szData, "");//todo: unit?
-	}
-	else if (vType == "Gust")
-	{
-		strcpy(szData, "");//todo: unit?
-	}
-	else if (vType == "Chill")
-	{
-		sprintf(szData, "%c", tempsign);
-	}
-	else if (vType == "Rain rate")
-	{
-		sprintf(szData,"Not supported yet");
-	}
-	else if (vType == "Total rain")
-	{
-		strcpy(szData, "");
-	}	
-	else if (vType == "Counter")
-	{
-		strcpy(szData, "");
-	}	
-	else if (vType == "Mode")
-	{
-		strcpy(szData, "");
-	}
-	else if (vType == "Status")
-	{
-		strcpy(szData, "");
-	}	
-	else if ((vType == "Current 1") || (vType == "Current 2") || (vType == "Current 3"))
-	{
-		strcpy(szData, "");
-	}	
-	else if (vType == "Instant")
-	{
-		strcpy(szData, "");
-	}	
-	else if ((vType == "Usage") || (vType == "Usage 1") || (vType == "Usage 2") )
-	{
-		strcpy(szData, "Watt");
-	}	
-	else if ((vType == "Delivery") || (vType == "Delivery 1") || (vType == "Delivery 2") )
-	{
-		strcpy(szData, "Watt");
-	}
-	else if (vType == "Usage current")
-	{
-		strcpy(szData, "Watt");
-	}
-	else if (vType == "Delivery current")
-	{
-		strcpy(szData, "Watt");
-	}
-	else if (vType == "Gas usage")
-	{
-		strcpy(szData, "");
-	}
-	else if (vType == "Weight")
-	{
-		strcpy(szData, "kg");
-	}	
-	else if (vType == "Voltage")
-	{
-		strcpy(szData, "V");
-	}
-	else if (vType == "Value")
-	{
-		strcpy(szData, "");
-	}
-	else if (vType == "Visibility")
-	{
-		if (metertype==0)
-		{
-			//km
-			strcpy(szData, "km");
-		}
-		else
-		{
-			//miles
-			strcpy(szData, "mi");
-		}
-	}
-	else if (vType == "Solar Radiation")
-	{
-		strcpy(szData, "Watt/m2");
-	}
-	else if (vType == "Soil Moisture")
-	{
-		strcpy(szData, "cb");
-	}
-	else if (vType == "Leaf Wetness")
-	{
-		strcpy(szData, "");
-	}
-	else if (vType == "Percentage")
-	{
-		strcpy(szData, "%");
-	}
-	else if (vType == "Fanspeed")
-	{
-		strcpy(szData, "RPM");
-	}
-	else if (vType == "Pressure")
-	{
-		strcpy(szData, "Bar");
-	}
-	else if (vType == "Lux")
-	{
-		strcpy(szData, "Lux");
-	}
-	if (szData[0] != '\0') { 
-		std::string sendValue(szData);
-		return sendValue;
-	}
-	else {
-		_log.Log(LOG_ERROR,"Could not determine data push value");
-		return "";
 	}
 }
 

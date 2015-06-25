@@ -216,6 +216,9 @@
     <Filter Include="Devices\Netamo">
       <UniqueIdentifier>{e2b392a3-f7a9-4c9b-b40a-4963b61407ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\PushBase">
+      <UniqueIdentifier>{2be86c90-c015-48e9-9009-0100e9c6b0eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -705,6 +708,9 @@
     <ClInclude Include="..\hardware\NetatmoWeatherStation.h">
       <Filter>Devices\Netamo</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\Push.h">
+      <Filter>Devices\PushBase</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1132,6 +1138,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\NetatmoWeatherStation.cpp">
       <Filter>Devices\Netamo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\Push.cpp">
+      <Filter>Devices\PushBase</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

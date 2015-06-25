@@ -254,39 +254,49 @@ bool HTTPClient::PUTBinary(const std::string &url, const std::string &postdata, 
 
 bool HTTPClient::GET(const std::string &url, std::string &response)
 {
+	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> ExtraHeaders;
 	if (!GETBinary(url,ExtraHeaders,vHTTPResponse))
 		return false;
-	response="";
+	if (vHTTPResponse.empty())
+		return false;
 	response.insert( response.begin(), vHTTPResponse.begin(), vHTTPResponse.end() );
 	return true;
 }
 
 bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response)
 {
+	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!GETBinary(url,ExtraHeaders,vHTTPResponse))
 		return false;
-	response="";
-	response.insert( response.begin(), vHTTPResponse.begin(), vHTTPResponse.end() );
+	if (vHTTPResponse.empty())
+		return false;
+	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
 bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
 {
+	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!POSTBinary(url,postdata,ExtraHeaders, vHTTPResponse))
 		return false;
-	response.insert( response.begin(), vHTTPResponse.begin(), vHTTPResponse.end() );
+	if (vHTTPResponse.empty())
+		return true; //empty response possible
+	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
 bool HTTPClient::PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
 {
+	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!PUTBinary(url,postdata,ExtraHeaders, vHTTPResponse))
 		return false;
-	response.insert( response.begin(), vHTTPResponse.begin(), vHTTPResponse.end() );
+	if (vHTTPResponse.empty())
+		return true; //empty response possible
+	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }

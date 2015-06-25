@@ -160,6 +160,7 @@ main/SunRiseSet.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
+main/Push.cpp
 main/DataPush.cpp
 main/HttpPush.cpp
 httpclient/HTTPClient.cpp
