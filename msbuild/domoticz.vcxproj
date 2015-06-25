@@ -206,6 +206,7 @@
     <ClInclude Include="..\hardware\P1MeterTCP.h" />
     <ClInclude Include="..\main\Logger.h" />
     <ClInclude Include="..\main\mainstructs.h" />
+    <ClInclude Include="..\main\Push.h" />
     <ClInclude Include="..\main\unzip.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
@@ -374,6 +375,7 @@
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
     <ClCompile Include="..\hardware\P1MeterTCP.cpp" />
     <ClCompile Include="..\main\Logger.cpp" />
+    <ClCompile Include="..\main\Push.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />

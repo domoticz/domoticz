@@ -484,8 +484,8 @@ void CDomoticzHardwareBase::SendLuxSensor(const int NodeID, const int ChildID, c
 void CDomoticzHardwareBase::SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality, const std::string &defaultname)
 {
 	char szIdx[10];
-	sprintf(szIdx, "%d", NodeID);
-	int Unit = ChildID;
+	sprintf(szIdx, "%d", NodeID&0xFF);
+	int Unit = ChildID&0xFF;
 
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
@@ -839,8 +839,12 @@ bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const 
 	return (!result.empty());
 }
 
-void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp)
+void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname)
 {
+	bool bDeviceExits = true;
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
 	tsen.WIND.packetlength = sizeof(tsen.WIND) - 1;
@@ -849,6 +853,18 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 		tsen.WIND.subtype = sTypeWINDNoTemp;
 	else
 		tsen.WIND.subtype = sTypeWIND4;
+
+	char szTmp[30];
+	sprintf(szTmp, "%d", NodeID&0xFFFF);
+
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeWIND) << ") AND (Subtype==" << int(tsen.WIND.subtype) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+
 	tsen.WIND.battery_level = BatteryLevel;
 	tsen.WIND.rssi = 12;
 	tsen.WIND.id1 = (NodeID & 0xFF00) >> 8;
@@ -899,6 +915,16 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 	}
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeWIND) << ") AND (Subtype==" << int(tsen.WIND.subtype) << ")";
+		m_sql.query(szQuery.str());
+	}
+
 }
 
 void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure)
