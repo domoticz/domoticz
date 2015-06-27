@@ -67,6 +67,9 @@ static const _tAlarmNameToIndexMapping AlarmToIndexMapping[] = {
 		{ "Power Management",	0x36 },
 		{ "System",				0x37 },
 		{ "Emergency",			0x38 },
+		{ "Clock",				0x39 },
+		{ "Appliance",			0x3A },
+		{ "HomeHealth",			0x3B },
 		{ "", 0 }
 };
 
