@@ -16,7 +16,10 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password)
+MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password) :
+m_szIPAddress(IPAddress),
+m_UserName(Username),
+m_Password(Password)
 {
 	m_HwdID=ID;
 	m_IsConnected = false;
@@ -42,10 +45,7 @@ MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPP
 	mosqpp::lib_init();
 
 	m_stoprequested=false;
-	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
-	m_UserName = Username;
-	m_Password = Password;
 }
 
 MQTT::~MQTT(void)

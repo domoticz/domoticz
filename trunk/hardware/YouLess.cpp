@@ -3,17 +3,18 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
+#include "../httpclient/URLEncode.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
 #define YOULESS_POLL_INTERVAL 10
 
-CYouLess::CYouLess(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string password)
+CYouLess::CYouLess(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string password) :
+m_szIPAddress(IPAddress),
+m_Password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
-	m_szIPAddress=IPAddress;
-	m_Password = password;
 	m_usIPPort=usIPPort;
 	m_stoprequested=false;
 	Init();

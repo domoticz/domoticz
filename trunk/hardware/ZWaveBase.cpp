@@ -235,7 +235,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		//Set Name
 		szQuery.clear();
 		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "', SwitchType=7 WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
+		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "', SwitchType=" << STYPE_Dimmer << " WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
 		result = m_sql.query(szQuery.str());
 	}
 	else

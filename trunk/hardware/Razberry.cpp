@@ -13,6 +13,7 @@
 
 #include "../json/json.h"
 #include "../main/localtime_r.h"
+#include "../httpclient/URLEncode.h"
 
 #pragma warning(disable: 4996)
 
@@ -42,8 +43,8 @@ static std::string readInputTestFile( const char *path )
 
 CRazberry::CRazberry(const int ID, const std::string &ipaddress, const int port, const std::string &username, const std::string &password):
 m_ipaddress(ipaddress),
-m_username(username),
-m_password(password)
+m_username(CURLEncode::URLEncode(username)),
+m_password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
 	m_port=port;
@@ -64,7 +65,7 @@ void CRazberry::StopHardwareIntern()
 const std::string CRazberry::GetControllerURL()
 {
 	std::stringstream sUrl;
-	if (m_username=="")
+	if (m_username.empty())
 		sUrl << "http://" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Data/" << m_updateTime;
 	else
 		sUrl << "http://"  << m_username << ":" << m_password << "@" << m_ipaddress << ":" << m_port << "/ZWaveAPI/Data/" << m_updateTime;

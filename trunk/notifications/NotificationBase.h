@@ -12,7 +12,7 @@ class CNotificationBase {
 	friend class CNotificationHelper;
 protected:
 	CNotificationBase(const std::string &subsystemid, const int options = OPTIONS_NONE);
-	~CNotificationBase();
+	virtual ~CNotificationBase();
 	bool SendMessage(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const bool bFromNotification);
 	bool SendMessageEx(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification);
 	void SetConfigValue(const std::string &Key, const std::string &Value);

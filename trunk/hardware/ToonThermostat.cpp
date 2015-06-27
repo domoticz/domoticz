@@ -81,11 +81,11 @@ const std::string TOON_SWITCH_ALL = "/toonMobileBackendWeb/client/auth/smartplug
 //	STATE_HOLIDAY	//4
 //};
 
-CToonThermostat::CToonThermostat(const int ID, const std::string &Username, const std::string &Password)
+CToonThermostat::CToonThermostat(const int ID, const std::string &Username, const std::string &Password) :
+m_UserName(Username),
+m_Password(Password)
 {
 	m_HwdID=ID;
-	m_UserName=Username;
-	m_Password=Password;
 	m_ClientID = "";
 
 	memset(&m_p1power, 0, sizeof(m_p1power));
