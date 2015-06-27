@@ -69,6 +69,7 @@
 #include "../hardware/Pinger.h"
 #include "../hardware/NestThermostat.h"
 #include "../hardware/Thermosmart.h"
+#include "../hardware/Kodi.h"
 #include "../hardware/NetatmoWeatherStation.h"
 
 // load notifications configuration
@@ -673,6 +674,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Pinger:
 		//System Alive Checker (Ping)
 		pHardware = new CPinger(ID, Mode1, Mode2);
+		break;
+	case HTYPE_Kodi:
+		//Kodi Media Player
+		pHardware = new CKodi(ID, Mode1, Mode2);
 		break;
 	case HTYPE_Mochad:
 		//LAN

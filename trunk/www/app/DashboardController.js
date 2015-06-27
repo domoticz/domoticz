@@ -583,6 +583,19 @@ define(['app'], function (app) {
 														img='<img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 											}
 										}
+										else if (item.SwitchType == "Media Player") {
+										    if (item.CustomImage == 0) item.Image = item.TypeImg;
+										    if ((item.Status != 'Off') && (item.Status != '0')) {
+										        img = '<img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+										        img2 = '<img src="images/Remote48.png" height="40" width="40">';
+										    }
+										    else {
+										        img = '<img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+										        img2 = '<img src="images/Remote48.png" style="opacity:0.4"; height="40" width="40">';
+										    }
+										    if (item.Status.length == 1) item.Status = "";
+										    status = item.Data;
+                                        }
 										else if (item.SwitchType == "Motion Sensor") {
 											if (
 													(item.Status == 'On')||
@@ -668,7 +681,10 @@ define(['app'], function (app) {
 										if ($(id + " #bigtext").html()!=bigtext) {
 											$(id + " #bigtext").html(bigtext);
 										}
-										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+										if ((typeof $(id + " #status") != 'undefined') && ($(id + " #status").html() != status)) {
+										    $(id + " #status").html(status);
+										}
+										if ($(id + " #lastupdate").html() != item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);
 										}
 									}
@@ -1621,7 +1637,8 @@ define(['app'], function (app) {
 						nbackcolor="#A4B1EE";
 					}
 					
-					var xhtm="";
+					var status = "";
+					var xhtm = "";
 								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 									xhtm+=
 											'\t    <tr id="light_' + item.idx +'">\n' +
@@ -1674,7 +1691,7 @@ define(['app'], function (app) {
 												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Open") +'</button>';
 											}
 										}
-									else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+									else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 										if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 											if (item.Status == 'Closed') {
 												status=
@@ -1876,7 +1893,7 @@ define(['app'], function (app) {
 										xhtm='\t<div class="span3 movable" id="light_' + item.idx +'">\n';
 									}
 									xhtm+='\t  <section>\n';
-									if ((item.Type.indexOf('Blind') == 0) || (item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+									if ((item.Type.indexOf('Blind') == 0) || (item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
 										if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 											xhtm+='\t    <table id="itemtablesmalltrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 										}
@@ -1942,7 +1959,19 @@ define(['app'], function (app) {
 											xhtm+='\t      <td id="img"><img src="images/contact48_open.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 										}
 									}
-									else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+									else if (item.SwitchType == "Media Player") {
+									    if (item.CustomImage == 0) item.Image = item.TypeImg;
+									    if ((item.Status != 'Off') && (item.Status != '0')) {
+									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+									        xhtm += '\t      <td id="img2"><img src="images/Remote48.png" height="40" width="40"></td>\n';
+									    }
+									    else {
+									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+									        xhtm += '\t      <td id="img2"><img src="images/Remote48.png" style="opacity:0.4"; height="40" width="40"></td>\n';
+									    }
+									    status = item.Data;
+									}
+									else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 										if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 											if (item.Status == 'Closed') {
 												xhtm+='\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") +'" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40"></td>\n';
@@ -2102,7 +2131,7 @@ define(['app'], function (app) {
 										}
 									}
 									xhtm+=
-												'\t      <td id="status"></td>\n' +
+												'\t      <td id="status">' + status + '</td>\n' +
 												'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n';
 									if (item.SwitchType == "Dimmer") {
 										if (item.SubType=="RGBW") {

@@ -93,6 +93,7 @@ private:
 	friend class CPinger;
 	friend class CNestThermostat;
 	friend class CThermosmart;
+	friend class CKodi;
 	friend class CNetAtmoWeatherStation;
 
 	virtual bool StartHardware()=0;
