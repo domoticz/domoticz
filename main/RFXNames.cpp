@@ -191,6 +191,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_NESTTHERMOSTAT, "Nest Thermostat" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
+		{ HTYPE_Kodi, "Kodi Media Server" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -217,6 +218,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
 		{ STYPE_BlindsPercentageInverted, "Blinds Percentage Inverted" },
+		{ STYPE_Media, "Media Player" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -955,6 +957,22 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
+}
+
+const char *Media_Player_States(const _eMediaStatus Status)
+{
+	STR_TABLE_SINGLE	Table[] =
+	{
+		{ MSTAT_OFF, "Off" },
+		{ MSTAT_IDLE, "Idle" },
+		{ MSTAT_PAUSED, "Paused" },
+		{ MSTAT_VIDEO, "Video" },
+		{ MSTAT_AUDIO, "Audio" },
+		{ MSTAT_PHOTO, "Photo" },
+		{ MSTAT_UNKNOWN, "Unknown" },
+		{ 0, NULL, NULL }
+	};
+	return findTableIDSingle1(Table, Status);
 }
 
 const char *ZWave_Clock_Days(const unsigned char Day)
