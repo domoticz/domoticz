@@ -722,7 +722,8 @@ define(['app'], function (app) {
 						addjvalstr+="&addjvalue2=" + $("#lightcontent #ondelay").val();
 					}
 					var CustomImage=0;
-					if (switchtype==0) {
+					
+					if ((switchtype == 0) || (switchtype == 17)) {
 						var cval=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
 						CustomImage=$.ddData[cval].value;
 					}
@@ -1083,7 +1084,8 @@ define(['app'], function (app) {
 						$("#lightcontent #offdelay").val(addjvalue);
 						$("#lightcontent #ondelay").val(addjvalue2);
 					}
-					if (switchtype==0) {
+					
+					if ((switchtype == 0) || (switchtype == 17)) {
 						$("#lightcontent #SwitchIconDiv").show();
 					}
 				});
@@ -1104,8 +1106,8 @@ define(['app'], function (app) {
 					$("#lightcontent #offdelay").val(addjvalue);
 					$("#lightcontent #ondelay").val(addjvalue2);
 				}
-				if (switchtype==0) {
-					$("#lightcontent #SwitchIconDiv").show();
+				if ((switchtype == 0) || (switchtype == 17)) {
+				    $("#lightcontent #SwitchIconDiv").show();
 				}
 				$("#lightcontent #combosubdevice").html("");
 				
@@ -1611,7 +1613,20 @@ define(['app'], function (app) {
 						else {
 										img='<img src="images/uvsunny.png" title="' + $.t("Daytime") +'" height="48" width="48">';
 						}
-					}            
+					}
+					else if (item.SwitchType == "Media Player") {
+					    if (item.CustomImage == 0) item.Image = item.TypeImg;
+					    if ((item.Status != 'Off') && (item.Status != '0')) {
+					        img = '<img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+					        img2 = '<img src="images/Remote48.png" height="48" width="48">';
+					    }
+					    else {
+					        img = '<img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+					        img2 = '<img src="images/Remote48.png" style="opacity:0.4"; height="48" width="48">';
+					    }
+					    if (item.Status.length == 1) item.Status = "";
+					    status = item.Data;
+                    }
 					else if (item.SwitchType == "Motion Sensor") {
 						if (
 								(item.Status == 'On')||
@@ -1688,7 +1703,10 @@ define(['app'], function (app) {
 						if ($(id + " #bigtext").html()!=TranslateStatus(GetLightStatusText(item))) {
 							$(id + " #bigtext").html(bigtext);
 						}
-						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+						if ((typeof $(id + " #status") != 'undefined') && ($(id + " #status").html() != status)) {
+						    $(id + " #status").html(status);
+						}
+						if ($(id + " #lastupdate").html() != item.LastUpdate) {
 							$(id + " #lastupdate").html(item.LastUpdate);
 						}
 					}
@@ -1803,10 +1821,11 @@ define(['app'], function (app) {
 				  }
 				  var bAddTimer=true;
 				  var bIsDimmer=false;
-				  var xhtm=
+				  var status = "";
+				  var xhtm =
 						'\t<div class="span4" id="' + item.idx + '">\n' +
 						'\t  <section>\n';
-					if ((item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
+				  if ((item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
 						if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 							xhtm+='\t    <table id="itemtabletrippleicon" border="0" cellpadding="0" cellspacing="0">\n';
 						}
@@ -1888,6 +1907,20 @@ define(['app'], function (app) {
 						xhtm+='\t      <td id="img"><img src="images/contact48_open.png" height="48" width="48"></td>\n';
 					}
 					bAddTimer=false;
+				  }
+				  else if (item.SwitchType == "Media Player") {
+				      if (item.CustomImage == 0) item.Image = item.TypeImg;
+				      if ((item.Status != 'Off') && (item.Status != '0')) {
+				          xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+				          xhtm += '\t      <td id="img2"><img src="images/Remote48.png" height="48" width="48"></td>\n';
+                      }
+				      else {
+				          xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+				          xhtm += '\t      <td id="img2"><img src="images/Remote48.png" style="opacity:0.4"; height="48" width="48"></td>\n';
+				      }
+				      if (item.Status.length == 1) item.Status = "";
+				      status = item.Data;
+				      bAddTimer = false;
 				  }
 				  else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
 					if ((item.SubType=="RAEX")||(item.SubType.indexOf('A-OK') == 0)||(item.SubType.indexOf('RollerTrol') == 0)||(item.SubType=="Harrison")||(item.SubType.indexOf('RFY') == 0)||(item.SubType.indexOf('T6 DC') == 0)||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
@@ -2104,7 +2137,7 @@ define(['app'], function (app) {
 								}
 						  }
 					xhtm+=
-						'\t      <td id="status"></td>\n' +
+						'\t      <td id="status">' + status + '</td>\n' +
 						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 						'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {

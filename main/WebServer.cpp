@@ -30,6 +30,7 @@
 #include "../hardware/WOL.h"
 #include "../hardware/evohome.h"
 #include "../hardware/Pinger.h"
+#include "../hardware/Kodi.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/config.h"
@@ -391,6 +392,13 @@ namespace http {
 			RegisterCommandCode("pingerupdatenode", boost::bind(&CWebServer::Cmd_PingerUpdateNode, this, _1));
 			RegisterCommandCode("pingerremovenode", boost::bind(&CWebServer::Cmd_PingerRemoveNode, this, _1));
 			RegisterCommandCode("pingerclearnodes", boost::bind(&CWebServer::Cmd_PingerClearNodes, this, _1));
+
+			RegisterCommandCode("kodisetmode", boost::bind(&CWebServer::Cmd_KodiSetMode, this, _1));
+			RegisterCommandCode("kodigetnodes", boost::bind(&CWebServer::Cmd_KodiGetNodes, this, _1));
+			RegisterCommandCode("kodiaddnode", boost::bind(&CWebServer::Cmd_KodiAddNode, this, _1));
+			RegisterCommandCode("kodiupdatenode", boost::bind(&CWebServer::Cmd_KodiUpdateNode, this, _1));
+			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1));
+			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1));
 
 			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1));
 			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1));
@@ -952,6 +960,9 @@ namespace http {
 			else if (htype == HTYPE_Pinger) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Kodi) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_RaspberryBMP085) {
 				//all fine here!
 			}
@@ -1026,6 +1037,11 @@ namespace http {
 				address = "0;1000;0;1000;0;1000;0;1000;0;1000";
 			}
 			else if (htype == HTYPE_Pinger)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}
+			else if (htype == HTYPE_Kodi)
 			{
 				mode1 = 30;
 				mode2 = 1000;
@@ -1133,6 +1149,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_Pinger) {
+				//All fine here
+			}
+			else if (htype == HTYPE_Kodi) {
 				//All fine here
 			}
 			else if (htype == HTYPE_RaspberryBMP085) {
@@ -1602,6 +1621,204 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "PingerClearNodes";
+			pHardware->RemoveAllNodes();
+		}
+
+		void CWebServer::Cmd_KodiGetNodes(Json::Value &root)
+		{
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (pHardware->HwdType != HTYPE_Kodi)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "KodiGetNodes";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["IP"] = sd[2];
+					root["result"][ii]["Port"] = atoi(sd[3].c_str());
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_KodiSetMode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string mode1 = m_pWebEm->FindValue("mode1");
+			std::string mode2 = m_pWebEm->FindValue("mode2");
+			if (
+				(hwid == "") ||
+				(mode1 == "") ||
+				(mode2 == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "KodiSetMode";
+
+			int iMode1 = atoi(mode1.c_str());
+			int iMode2 = atoi(mode2.c_str());
+
+			char szTmp[100];
+			sprintf(szTmp,
+				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %s)",
+				iMode1,
+				iMode2,
+				hwid.c_str());
+			m_sql.query(szTmp);
+			pHardware->SetSettings(iMode1, iMode2);
+			pHardware->Restart();
+		}
+
+
+		void CWebServer::Cmd_KodiAddNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string ip = m_pWebEm->FindValue("ip");
+			int Port = atoi(m_pWebEm->FindValue("port").c_str());
+			if (
+				(hwid == "") ||
+				(name == "") ||
+				(ip == "") ||
+				(Port == 0)
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "KodiAddNode";
+			pHardware->AddNode(name, ip, Port);
+		}
+
+		void CWebServer::Cmd_KodiUpdateNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string ip = m_pWebEm->FindValue("ip");
+			int Port = atoi(m_pWebEm->FindValue("port").c_str());
+			if (
+				(hwid == "") ||
+				(nodeid == "") ||
+				(name == "") ||
+				(ip == "") ||
+				(Port == 0)
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "KodiUpdateNode";
+			pHardware->UpdateNode(NodeID, name, ip, Port);
+		}
+
+		void CWebServer::Cmd_KodiRemoveNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			if (
+				(hwid == "") ||
+				(nodeid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "KodiRemoveNode";
+			pHardware->RemoveNode(NodeID);
+		}
+
+		void CWebServer::Cmd_KodiClearNodes(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "KodiClearNodes";
 			pHardware->RemoveAllNodes();
 		}
 
@@ -8743,6 +8960,12 @@ namespace http {
 							root["result"][ii]["AddjMulti"] = AddjMulti;
 							root["result"][ii]["AddjValue2"] = AddjValue2;
 							root["result"][ii]["AddjMulti2"] = AddjMulti2;
+						}
+						else if (switchtype == STYPE_Media)
+						{
+							root["result"][ii]["TypeImg"] = "media";
+							root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
+							lstatus = sValue;
 						}
 						else if (
 							(switchtype == STYPE_Blinds) ||
