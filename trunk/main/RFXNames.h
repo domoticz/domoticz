@@ -24,6 +24,7 @@ enum _eSwitchType
 	STYPE_VenetianBlindsUS,	//14
 	STYPE_VenetianBlindsEU,	//15
 	STYPE_BlindsPercentageInverted, //16
+	STYPE_Media,			//17
 	STYPE_END
 };
 
@@ -51,6 +52,17 @@ enum _eTimerCommand
 {
 	TCMD_ON=0,
 	TCMD_OFF
+};
+
+enum _eMediaStatus
+{
+	MSTAT_OFF = 0,
+	MSTAT_IDLE,
+	MSTAT_PAUSED,
+	MSTAT_VIDEO,
+	MSTAT_AUDIO,
+	MSTAT_PHOTO,
+	MSTAT_UNKNOWN
 };
 
 enum _eHardwareTypes {
@@ -109,6 +121,7 @@ enum _eHardwareTypes {
 	HTYPE_NESTTHERMOSTAT,		//52
 	HTYPE_THERMOSMART,			//53
 	HTYPE_NetatmoWeatherStation,	//54
+	HTYPE_Kodi,					//55
 	HTYPE_END
 };
 
@@ -154,6 +167,7 @@ const char *Security_Status_Desc(const unsigned char status);
 const char *Notification_Type_Desc(const int nType, const unsigned char snum);
 const char *Notification_Type_Label(const int nType);
 const char *Get_Moisture_Desc(const int moisture);
+const char *Media_Player_States(const _eMediaStatus Status);
 const char *ZWave_Clock_Days(const unsigned char Day);
 extern const char *ZWave_Thermostat_Modes[];
 extern const char *ZWave_Thermostat_Fan_Modes[];
