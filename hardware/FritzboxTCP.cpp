@@ -314,11 +314,6 @@ void FritzboxTCP::ParseLine()
 			return;
 		sstr << "Call From: " << results[4] << " to: " << results[5];
 		devIdx = m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
-		sstr.clear();
-		sstr.str("");
-		sstr << "Call ID: " << results[2] << " From: " << results[4] << " to: " << results[5];
-		szQuery << "INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('" << devIdx << "', '" << sstr.str() << "')";
-		m_sql.query(szQuery.str());
 	}
 	else if (Cmd == "RING")
 	{
@@ -328,11 +323,6 @@ void FritzboxTCP::ParseLine()
 			return;
 		sstr << "Received From: " << results[3] << " to: " << results[4];
 		devIdx=m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
-		sstr.clear();
-		sstr.str("");
-		sstr << "Received ID: " << results[2] << " From: " << results[3] << " to: " << results[4];
-		szQuery << "INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('" << devIdx << "', '" << sstr.str() << "')";
-		m_sql.query(szQuery.str());
 	}
 	else if (Cmd == "CONNECT")
 	{

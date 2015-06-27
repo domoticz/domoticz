@@ -22,11 +22,11 @@
 #define ENI_DATA_URL "https://eniportal.icy.nl/api/data" //https://eniportal.icy.nl/#/user/data" // /api/data
 
 
-CICYThermostat::CICYThermostat(const int ID, const std::string Username, const std::string Password)
+CICYThermostat::CICYThermostat(const int ID, const std::string Username, const std::string Password) :
+m_UserName(Username),
+m_Password(Password)
 {
 	m_HwdID=ID;
-	m_UserName=Username;
-	m_Password=Password;
 	m_stoprequested=false;
 	m_companymode = CMODE_UNKNOWN;
 	Init();

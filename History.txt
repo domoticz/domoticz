@@ -13,6 +13,8 @@ Version 2.xxx (xxxx 2015)
 - Fixed: 1-Wire negative values
 - Implemented: Initial support for the Netatmo Weather Station (Big thanks to Sébastien!)
 - Changed: json "udevice" Perecentage sensor, you might get new ID's, now also creates an event for blockly/lua
+- Implemented: Text/Alert Sensor logging (when called from json api)
+- Implemented: Support for browsers that do not support gzip compression (thanks to ash77)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

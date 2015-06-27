@@ -6,17 +6,18 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../httpclient/HTTPClient.h"
+#include "../httpclient/UrlEncode.h"
 
 #define KMTRONIC_POLL_INTERVAL 10
 
-KMTronicTCP::KMTronicTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password)
+KMTronicTCP::KMTronicTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
+m_szIPAddress(IPAddress),
+m_Username(CURLEncode::URLEncode(username)),
+m_Password(CURLEncode::URLEncode(password))
 {
 	m_HwdID=ID;
 	m_stoprequested=false;
-	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
-	m_Username = username;
-	m_Password = password;
 }
 
 KMTronicTCP::~KMTronicTCP(void)

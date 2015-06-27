@@ -51,11 +51,11 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password)
+CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password) :
+m_UserName(Username),
+m_Password(Password)
 {
 	m_HwdID=ID;
-	m_UserName=Username;
-	m_Password=Password;
 	Init();
 }
 

@@ -43,12 +43,12 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CPhilipsHue::CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username)
+CPhilipsHue::CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username) :
+m_IPAddress(IPAddress),
+m_UserName(Username)
 {
 	m_HwdID=ID;
-	m_IPAddress= IPAddress;
 	m_Port = Port;
-	m_UserName = Username;
 	m_stoprequested=false;
 	Init();
 }

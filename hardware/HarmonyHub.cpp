@@ -55,8 +55,8 @@ Cleanup and changes: GizMoCuz
 
 #define MAX_MISS_COMMANDS							5	//max commands to miss (when executing a command, the harmony commands may fail)
 
-CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &userName, const std::string &password):
-m_userName(userName),
+CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &username, const std::string &password):
+m_username(username),
 m_password(password),
 m_harmonyAddress(IPAddress),
 m_szAuthorizationToken("")
@@ -282,7 +282,7 @@ bool CHarmonyHub::Login()
 	if(bAuthorizationComplete == false)
 	{
 		// Log into the Logitech Web Service to retrieve the login authorization token
-		if(!HarmonyWebServiceLogin(m_userName, m_password, m_szAuthorizationToken))
+		if(!HarmonyWebServiceLogin(m_username, m_password, m_szAuthorizationToken))
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Logitech web service login failed.");
 			return false;

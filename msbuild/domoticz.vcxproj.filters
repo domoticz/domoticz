@@ -711,6 +711,9 @@
     <ClInclude Include="..\main\Push.h">
       <Filter>Devices\PushBase</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\GZipHelper.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

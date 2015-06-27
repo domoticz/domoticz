@@ -41,7 +41,9 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CNetAtmoWeatherStation::CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password, const std::string& clientIdSecret)
+CNetAtmoWeatherStation::CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password, const std::string& clientIdSecret) :
+m_username(username),
+m_password(password)
 {
 	m_nextRefreshTs = mytime(NULL);
 	m_isLogged = false;
@@ -55,8 +57,6 @@ CNetAtmoWeatherStation::CNetAtmoWeatherStation(const int ID, const std::string& 
 		m_clientId = results[0];
 		m_clientSecret = results[1];
 	}
-	m_username = username;
-	m_password = password;
 	m_stoprequested=false;
 	Init();
 }
@@ -123,7 +123,7 @@ void CNetAtmoWeatherStation::Do_Work()
 		{
 			if (RefreshToken())
 			{
-				if ((sec_counter % 600 == 0) || (bFirstTime))
+				if ((sec_counter % 240 == 0) || (bFirstTime))
 				{
 					bFirstTime = false;
 					GetMeterDetails();

@@ -17,6 +17,7 @@
 #include "reply.hpp"
 #include "request.hpp"
 #include "cWebem.h"
+#include "GZipHelper.h"
 
 #define ZIPREADBUFFERSIZE (8192)
 
@@ -176,28 +177,52 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (!is)
 		  {
-			  if (full_path.find('.') != std::string::npos)
-			  {
-				  rep = reply::stock_reply(reply::not_found);
-				  return;
-			  }
-			  //Maybe it is a folder, lets add the index file
-			  request_path += "/index.html";
-			  full_path = doc_root_ + request_path;
+			  //maybe its a gz file (and clients browser does not support compression)
+			  full_path += ".gz";
 			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
-			  if (!is.is_open())
+			  if (is.is_open())
 			  {
-				  rep = reply::stock_reply(reply::not_found);
-				  return;
-			  }
-			  extension = "html";
-		  }
+				  bHaveLoadedgzip = true;
+				  is.seekg(0, is.end);
+				  std::streampos size = is.tellg();
+				  size_t sourceSize = static_cast<size_t>(size);
+				  boost::scoped_array<char> memblock(new char[sourceSize]);
+				  is.seekg(0, std::ios::beg);
+				  is.read(memblock.get(), size);
 
-		  // Fill out the reply to be sent to the client.
-		  rep.status = reply::ok;
-		  char buf[512];
-		  while (is.read(buf, sizeof(buf)).gcount() > 0)
-			  rep.content.append(buf, (unsigned int)is.gcount());
+				  CGZIP2AT<> decompress(reinterpret_cast<LPGZIP>(memblock.get()), sourceSize);
+
+				  rep.status = reply::ok;
+				  // Fill out the reply to be sent to the client.
+				  rep.content.append(decompress.psz, decompress.Length);
+			  }
+			  else
+			  {
+				  //Maybe it is a folder, lets add the index file
+				  if (full_path.find('.') != std::string::npos)
+				  {
+					  rep = reply::stock_reply(reply::not_found);
+					  return;
+				  }
+				  request_path += "/index.html";
+				  full_path = doc_root_ + request_path;
+				  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+				  if (!is.is_open())
+				  {
+					  rep = reply::stock_reply(reply::not_found);
+					  return;
+				  }
+				  extension = "html";
+			  }
+		  }
+		  if (!bHaveLoadedgzip)
+		  {
+			  // Fill out the reply to be sent to the client.
+			  rep.status = reply::ok;
+			  char buf[512];
+			  while (is.read(buf, sizeof(buf)).gcount() > 0)
+				  rep.content.append(buf, (unsigned int)is.gcount());
+		  }
 	  }
   }
 #ifndef WEBSERVER_DONT_USE_ZIP

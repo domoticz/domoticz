@@ -12,12 +12,12 @@
 #include "request.hpp"
 #include "mime_types.hpp"
 #include "Base64.h"
+#include "GZipHelper.h"
 #include <stdarg.h>
 #include <fstream>
 #include <sstream>
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
-#include "../main/GZipHelper.h"
 #include "../main/Logger.h"
 
 #ifndef WIN32
