@@ -16,6 +16,8 @@
 
 #include <iostream>
 
+#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
+
 // http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}
 //		{"id":1,"jsonrpc":"2.0","result":[{"playerid":1,"type":"video"}]}
 
@@ -166,7 +168,7 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 				if (sMedia == "video") nStatus = MSTAT_VIDEO;
 				if (sMedia == "audio") nStatus = MSTAT_AUDIO;
 				if (sMedia == "picture") nStatus = MSTAT_PHOTO;
-				sPlayerId = std::to_string((int)root["result"][0]["playerid"].asInt());
+				sPlayerId = SSTR((int)root["result"][0]["playerid"].asInt());
 			}
 
 			// If player is active then pick up additional details
@@ -204,12 +206,12 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 							if (root["result"]["item"]["season"].empty() != true)
 							{
 								sTitle += " [S";
-								sTitle += std::to_string((int)root["result"]["item"]["season"].asInt());
+								sTitle += SSTR((int)root["result"]["item"]["season"].asInt());
 							}
 							if (root["result"]["item"]["episode"].empty() != true)
 							{
 								sTitle += "E";
-								sTitle += std::to_string((int)root["result"]["item"]["episode"].asInt());
+								sTitle += SSTR((int)root["result"]["item"]["episode"].asInt());
 								sTitle += "], ";
 							}
 						}
@@ -233,7 +235,7 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 						}
 						if (root["result"]["item"]["year"].empty() != true)
 						{
-							std::string	sYear = std::to_string((int)root["result"]["item"]["year"].asInt());
+							std::string	sYear = SSTR((int)root["result"]["item"]["year"].asInt());
 							if (sYear.length() > 2) sTitle += " (" + sYear + ")";
 						}
 					}
@@ -249,7 +251,7 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 						int		iSpeed = root["result"]["speed"].asInt();
 						if (iSpeed == 0) nStatus = MSTAT_PAUSED;
 						float	fPercent = root["result"]["percentage"].asFloat();
-						if (fPercent > 1.0) sPercent = std::to_string((int)round(fPercent)) + "%";
+						if (fPercent > 1.0) sPercent = SSTR((int)round(fPercent)) + "%";
 					}
 				}
 
