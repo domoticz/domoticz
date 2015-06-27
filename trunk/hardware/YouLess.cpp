@@ -3,7 +3,7 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
-#include "../httpclient/URLEncode.h"
+#include "../httpclient/UrlEncode.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
