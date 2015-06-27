@@ -10,17 +10,10 @@ namespace Json
 class CNetAtmoWeatherStation : public CDomoticzHardwareBase
 {
 public:
-	CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password, const std::string& clientIdSecret);
+	CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password);
 	~CNetAtmoWeatherStation(void);
 
 	bool WriteToHardware(const char *,const unsigned char) { return false; }
-
-	std::string GetClientId() { return m_clientId; }
-	std::string GetClientSecret() { return m_clientSecret; }
-	std::string GetUsername() { return m_username; }
-	std::string GetPassword() { return m_password; }
-	std::string GetApplication();
-
 private:
 	std::string m_clientId;
 	std::string m_clientSecret;
@@ -46,7 +39,5 @@ private:
 
 	int GetBatteryLevel(const std::string &ModuleType, const int battery_vp);
 	bool ParseDashboard(const Json::Value &root, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp);
-
-	//void getData(const std::string& type, const std::string& name, const std::set<std::string>& dataTypes, const std::string& deviceId, const std::string& moduleId, const int battery_vp);
 };
 

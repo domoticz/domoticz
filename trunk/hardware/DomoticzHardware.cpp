@@ -839,7 +839,8 @@ bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const 
 	return (!result.empty());
 }
 
-void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, const int WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname)
+//wind direction is in steps of 22.5 degrees (360/16)
+void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, const float WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname)
 {
 	bool bDeviceExits = true;
 	std::stringstream szQuery;
@@ -870,7 +871,7 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 	tsen.WIND.id1 = (NodeID & 0xFF00) >> 8;
 	tsen.WIND.id2 = NodeID & 0xFF;
 
-	float winddir = float(WindDir)*22.5f;
+	float winddir = WindDir*22.5f;
 	int aw = round(winddir);
 	tsen.WIND.directionh = (BYTE)(aw / 256);
 	aw -= (tsen.WIND.directionh * 256);

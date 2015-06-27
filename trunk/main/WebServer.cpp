@@ -964,7 +964,17 @@ namespace http {
 			else if (htype == HTYPE_PiFace) {
 				//all fine here!
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NESTTHERMOSTAT) || (htype == HTYPE_THERMOSMART)) {
+			else if (
+				(htype == HTYPE_Wunderground) || 
+				(htype == HTYPE_ForecastIO) || 
+				(htype == HTYPE_ICYTHERMOSTAT) || 
+				(htype == HTYPE_TOONTHERMOSTAT) || 
+				(htype == HTYPE_PVOUTPUT_INPUT) || 
+				(htype == HTYPE_NESTTHERMOSTAT) || 
+				(htype == HTYPE_THERMOSMART) ||
+				(htype == HTYPE_NetatmoWeatherStation)
+				)
+			{
 				if (
 					(username == "") ||
 					(password == "")
@@ -993,9 +1003,6 @@ namespace http {
 					port = 80;
 			}
 			else if (htype == HTYPE_RaspberryGPIO) {
-				//all fine here!
-			}
-			else if (htype == HTYPE_NetatmoWeatherStation) {
 				//all fine here!
 			}
 			else
@@ -1140,7 +1147,17 @@ namespace http {
 			else if (htype == HTYPE_PiFace) {
 				//All fine here
 			}
-			else if ((htype == HTYPE_Wunderground) || (htype == HTYPE_ForecastIO) || (htype == HTYPE_ICYTHERMOSTAT) || (htype == HTYPE_TOONTHERMOSTAT) || (htype == HTYPE_PVOUTPUT_INPUT) || (htype == HTYPE_NESTTHERMOSTAT) || (htype == HTYPE_THERMOSMART)) {
+			else if (
+				(htype == HTYPE_Wunderground) || 
+				(htype == HTYPE_ForecastIO) || 
+				(htype == HTYPE_ICYTHERMOSTAT) || 
+				(htype == HTYPE_TOONTHERMOSTAT) || 
+				(htype == HTYPE_PVOUTPUT_INPUT) || 
+				(htype == HTYPE_NESTTHERMOSTAT) || 
+				(htype == HTYPE_THERMOSMART) ||
+				(htype == HTYPE_NetatmoWeatherStation)
+				)
+			{
 				if (
 					(username == "") ||
 					(password == "")
@@ -1170,9 +1187,6 @@ namespace http {
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
 					return;
-			}
-			else if (htype == HTYPE_NetatmoWeatherStation) {
-				//all fine here!
 			}
 			else
 				return;
@@ -8505,11 +8519,6 @@ namespace http {
 							{
 								root["result"][ii]["forecast_url"] = base64_encode((const unsigned char*)forecast_url.c_str(), forecast_url.size());
 							}
-						}
-						else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
-						{
-							CNetAtmoWeatherStation *pWHardware = (CNetAtmoWeatherStation*)pHardware;
-							root["result"][ii]["Address"] = pWHardware->GetApplication();
 						}
 					}
 

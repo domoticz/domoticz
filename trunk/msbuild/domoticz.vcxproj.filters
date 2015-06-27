@@ -213,11 +213,11 @@
     <Filter Include="Devices\RFXCom">
       <UniqueIdentifier>{48ca3895-ba95-40f6-8441-e2911263a66f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Netamo">
-      <UniqueIdentifier>{e2b392a3-f7a9-4c9b-b40a-4963b61407ee}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\PushBase">
       <UniqueIdentifier>{2be86c90-c015-48e9-9009-0100e9c6b0eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Netatmo">
+      <UniqueIdentifier>{e2b392a3-f7a9-4c9b-b40a-4963b61407ee}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -706,7 +706,7 @@
       <Filter>Devices\P1Smart Meter</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\NetatmoWeatherStation.h">
-      <Filter>Devices\Netamo</Filter>
+      <Filter>Devices\Netatmo</Filter>
     </ClInclude>
     <ClInclude Include="..\main\Push.h">
       <Filter>Devices\PushBase</Filter>
@@ -1140,7 +1140,7 @@
       <Filter>Devices\P1Smart Meter</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\NetatmoWeatherStation.cpp">
-      <Filter>Devices\Netamo</Filter>
+      <Filter>Devices\Netatmo</Filter>
     </ClCompile>
     <ClCompile Include="..\main\Push.cpp">
       <Filter>Devices\PushBase</Filter>
