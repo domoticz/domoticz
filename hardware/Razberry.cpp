@@ -13,7 +13,7 @@
 
 #include "../json/json.h"
 #include "../main/localtime_r.h"
-#include "../httpclient/URLEncode.h"
+#include "../httpclient/UrlEncode.h"
 
 #pragma warning(disable: 4996)
 
