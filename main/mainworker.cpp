@@ -702,7 +702,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CForecastIO(ID,Username,Password);
 		break;
 	case HTYPE_NetatmoWeatherStation:
-		pHardware = new CNetAtmoWeatherStation(ID,Username,Password,Address);
+		pHardware = new CNetAtmoWeatherStation(ID,Username,Password);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);

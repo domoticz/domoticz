@@ -11,7 +11,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Rain Report
 - Implemented: Temperature Report
 - Fixed: 1-Wire negative values
-- Implemented: Initial support for the Netatmo Weather Station (Big thanks to Sébastien!)
+- Implemented: Netatmo Weather Station (Big thanks to Sébastien!)
 - Changed: json "udevice" Perecentage sensor, you might get new ID's, now also creates an event for blockly/lua
 - Implemented: Text/Alert Sensor logging (when called from json api)
 - Implemented: Support for browsers that do not support gzip compression (thanks to ash77)

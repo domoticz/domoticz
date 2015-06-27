@@ -41,7 +41,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CNetAtmoWeatherStation::CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password, const std::string& clientIdSecret) :
+CNetAtmoWeatherStation::CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password) :
 m_username(username),
 m_password(password)
 {
@@ -50,13 +50,8 @@ m_password(password)
 
 	m_HwdID=ID;
 
-	std::vector<std::string> results;
-	StringSplit(clientIdSecret, "|", results);
-	if (results.size() == 2)
-	{
-		m_clientId = results[0];
-		m_clientSecret = results[1];
-	}
+	m_clientId = "5588029e485a88af28f4a3c4";
+	m_clientSecret = "6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2";
 	m_stoprequested=false;
 	Init();
 }
@@ -67,13 +62,6 @@ CNetAtmoWeatherStation::~CNetAtmoWeatherStation(void)
 
 void CNetAtmoWeatherStation::Init()
 {
-}
-
-std::string CNetAtmoWeatherStation::GetApplication()
-{
-	std::stringstream sstr2;
-	sstr2 << m_clientId << "|" << m_clientSecret;
-	return sstr2.str();
 }
 
 bool CNetAtmoWeatherStation::StartHardware()
@@ -189,6 +177,113 @@ static unsigned int Crc32(unsigned int crc, const unsigned char *buf, size_t siz
 	return crc ^ ~0U;
 }
 
+bool CNetAtmoWeatherStation::Login()
+{
+	if (m_isLogged)
+		return true;
+
+	std::stringstream sstr;
+	sstr << "grant_type=password&";
+	sstr << "client_id=" << m_clientId << "&";
+	sstr << "client_secret=" << m_clientSecret << "&";
+	sstr << "username=" << m_username << "&";
+	sstr << "password=" << m_password << "&";
+	sstr << "scope=read_station";
+
+	std::string httpData = sstr.str();
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("Host: api.netatmo.net");
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
+
+	std::string httpUrl("https://api.netatmo.net/oauth2/token");
+	std::string sResult;
+	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
+		return false;
+	}
+
+	Json::Value root;
+	Json::Reader jReader;
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
+		return false;
+	}
+
+	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
+	{
+		_log.Log(LOG_ERROR, "Netatmo: No access granted, check username/password...");
+		return false;
+	}
+
+	m_accessToken = root["access_token"].asString();
+	m_refreshToken = root["refresh_token"].asString();
+	int expires = root["expires_in"].asInt();
+	m_nextRefreshTs = mytime(NULL) + expires;
+	m_isLogged = true;
+	return true;
+}
+
+bool CNetAtmoWeatherStation::RefreshToken()
+{
+	if (!m_isLogged)
+		return false;
+
+	if ((mytime(NULL) - 15) < m_nextRefreshTs)
+		return true; //no need to refresh the token yet
+
+	// Time to refresh the token
+	std::stringstream sstr;
+	sstr << "grant_type=refresh_token&";
+	sstr << "refresh_token=" << m_refreshToken << "&";
+	sstr << "client_id=" << m_clientId << "&";
+	sstr << "client_secret=" << m_clientSecret;
+
+	std::string httpData = sstr.str();
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("Host: api.netatmo.net");
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
+
+	std::string httpUrl("https://api.netatmo.net/oauth2/token");
+	std::string sResult;
+	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
+		return false;
+	}
+
+	Json::Value root;
+	Json::Reader jReader;
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
+		//Force login next time
+		m_isLogged = false;
+		return false;
+	}
+
+	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
+	{
+		//Force login next time
+		_log.Log(LOG_ERROR, "Netatmo: No access granted, forcing login again...");
+		m_isLogged = false;
+		return false;
+	}
+
+	m_accessToken = root["access_token"].asString();
+	m_refreshToken = root["refresh_token"].asString();
+	int expires = root["expires_in"].asInt();
+	m_nextRefreshTs = mytime(NULL) + expires;
+	return true;
+}
+
 int CNetAtmoWeatherStation::GetBatteryLevel(const std::string &ModuleType, const int battery_vp)
 {
 	int batValue = 255;
@@ -264,7 +359,7 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	int rain;
 	int sound;
 
-	int wind_angle = 0;
+	float wind_angle = 0;
 	int wind_gust_angle = 0;
 	float wind_strength = 0;
 	float wind_gust = 0;
@@ -311,10 +406,10 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 			)
 		{
 			bHaveWind = true;
-			wind_angle = root["WindAngle"].asInt();
+			wind_angle = float(root["WindAngle"].asInt())/16.0f;
 			wind_gust_angle = root["GustAngle"].asInt();
-			wind_strength = root["WindStrength"].asFloat();
-			wind_gust = root["GustStrength"].asFloat();
+			wind_strength = root["WindStrength"].asFloat()/ 3.6f;
+			wind_gust = root["GustStrength"].asFloat() / 3.6f;
 		}
 	}
 
@@ -473,264 +568,5 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 			}
 		}
 	}
-}
-/*
-void CNetAtmoWeatherStation::getData(const std::string& type, const std::string& name, const std::set<std::string>& dataTypes, const std::string& deviceId, const std::string& moduleId, const int battery_vp)
-{
-	std::stringstream sstr2;
-	sstr2 << "https://api.netatmo.net/api/getmeasure";
-	sstr2 << "?";
-	sstr2 << "access_token=" << m_accessToken;
-	sstr2 << "&" << "device_id=" << deviceId;
-	if (!moduleId.empty())
-	{
-		sstr2 << "&" << "module_id=" << moduleId;
-	}
-	if (type == "NAMain" || type ==	"NAModule1" || type == "NAModule4")
-	{
-		sstr2 << "&" << "type=Temperature,CO2,Humidity,Pressure,Noise";
-	}
-	if (type == "NAModule3")
-	{
-		sstr2 << "&" << "type=Rain";
-	}
-	if (type == "NAModule2")
-	{
-		sstr2 << "&" << "type=WindStrength, WindAngle, GustStrength, GustAngle, date_max_gust";
-	}
-	sstr2 << "&" << "scale=max";
-	sstr2 << "&" << "date_end=last";
-	std::string httpUrl = sstr2.str();
-
-	std::vector<std::string> ExtraHeaders;
-	std::string sResultData;
-	bool ret=HTTPClient::GET(httpUrl, ExtraHeaders, sResultData);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
-		return;
-	}
-
-#ifdef DEBUG_NetatmoWeatherStation
-	std::string fname = "E:\\netatmo_getdata_" + name + ".json";
-	SaveString2Disk(sResultData, fname);
-#endif
-
-
-	Json::Value rootData;
-	Json::Reader jReaderData;
-	ret=jReaderData.parse(sResultData,rootData);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "Netatmo: Invalid data received...");
-		return;
-	}
-
-	bool bIsOK = false;
-
-	//Check if all is OK
-	if (!rootData["status"].empty())
-	{
-		std::string status = rootData["status"].asCString();
-		if (status == "ok")
-		{
-			if (!rootData["body"].empty())
-			{
-				Json::Value deviceData = rootData["body"][0];
-				if (!deviceData["value"].empty())
-				{
-					Json::Value deviceData2 = deviceData["value"][0];
-					if (deviceData2.isArray())
-					{
-						bIsOK = true;
-					}
-				}
-			}
-		}
-	}
-
-	if (!bIsOK)
-	{
-		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
-		return;
-	}
-
-	Json::Value deviceData = rootData["body"][0];
-	Json::Value deviceData2 = deviceData["value"][0];
-	unsigned short crcId = 0;
-	std::string dataId;
-	if (moduleId.empty())
-	{
-		dataId = deviceId;
-		crcId = Crc32(0,(const unsigned char *)deviceId.c_str(),deviceId.length());
-	}
-	else
-	{
-		dataId = moduleId;
-		crcId = Crc32(0,(const unsigned char *)moduleId.c_str(),moduleId.length());
-	}
-	if (type == "NAMain" || type ==	"NAModule1" || type == "NAModule4")
-	{
-		if (dataTypes.count("Temperature") > 0 && dataTypes.count("Humidity") > 0 && dataTypes.count("Pressure") > 0)
-		{
-			float temperature = deviceData2[0].asFloat();
-			float humidity = deviceData2[2].asFloat();
-			float pressure = deviceData2[3].asFloat();
-			SendTempHumBaroSensorFloat(crcId, 9, temperature, (int)humidity, pressure, baroForecastNoInfo);
-
-			if (devicesAdded_.count(dataId) == 0)
-			{
-				std::stringstream szQuery;
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(crcId) << ") AND (Type==" << int(pTypeTEMP_HUM_BARO) << ") AND (Subtype==" << int(sTypeTHBFloat) << ")";
-				m_sql.query(szQuery.str());
-				devicesAdded_.insert(dataId);
-			}
-		}
-		else if (dataTypes.count("Temperature") > 0 && dataTypes.count("Humidity") > 0)
-		{
-			float temperature = deviceData2[0].asFloat();
-			float humidity = deviceData2[2].asFloat();
-			SendTempHumSensor(crcId, 9, temperature, (int)humidity, name);
-		}
-	}
-	else if (type == "NAModule3")
-	{							
-		SendRainSensor(crcId, 9, deviceData2[0].asInt());
-		if (devicesAdded_.count(dataId) == 0)
-		{
-			std::stringstream szQuery;
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(crcId) << ") AND (Type==" << int(pTypeRAIN) << ") AND (Subtype==" << int(sTypeRAIN3) << ")";
-			m_sql.query(szQuery.str());
-			devicesAdded_.insert(dataId);
-		}
-	}
-	else if (type == "NAModule2")
-	{
-		float fWind = deviceData2[0].asFloat();
-		int iDirection = deviceData2[1].asInt();
-		float GustStrength = deviceData2[2].asFloat();
-		SendWind(crcId, 9, iDirection, fWind, GustStrength, 0, 0, false);
-		if (devicesAdded_.count(dataId) == 0)
-		{
-			std::stringstream szQuery;
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(crcId) << ") AND (Type==" << int(pTypeWIND) << ") AND (Subtype==" << int(sTypeWIND1) << ")";
-			m_sql.query(szQuery.str());
-			devicesAdded_.insert(dataId);
-		}
-	}
-}
-*/
-
-bool CNetAtmoWeatherStation::Login()
-{
-	if (m_isLogged)
-		return true;
-
-	std::stringstream sstr;
-	sstr << "grant_type=password&";
-	sstr << "client_id=" << m_clientId << "&";
-	sstr << "client_secret=" << m_clientSecret << "&";
-	sstr << "username=" << m_username << "&";
-	sstr << "password=" << m_password << "&";
-	sstr << "scope=read_station";
-
-	std::string httpData = sstr.str();
-	std::vector<std::string> ExtraHeaders;
-
-	ExtraHeaders.push_back("Host: api.netatmo.net");
-	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
-
-	std::string httpUrl("https://api.netatmo.net/oauth2/token");
-	std::string sResult;
-	bool ret=HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
-		return false;
-	}
-
-	Json::Value root;
-	Json::Reader jReader;
-	ret=jReader.parse(sResult,root);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
-		return false;
-	}
-
-	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
-	{
-		_log.Log(LOG_ERROR, "Netatmo: No access granted, check username/password...");
-		return false;
-	}
-
-	m_accessToken = root["access_token"].asString();
-	m_refreshToken = root["refresh_token"].asString();
-	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(NULL) + expires;
-	m_isLogged = true;
-	return true;
-}
-
-bool CNetAtmoWeatherStation::RefreshToken()
-{
-	if (!m_isLogged)
-		return false;
-
-	if ((mytime(NULL) - 15) < m_nextRefreshTs)
-		return true; //no need to refresh the token yet
-
-	// Time to refresh the token
-	std::stringstream sstr;
-	sstr << "grant_type=refresh_token&";
-	sstr << "refresh_token=" << m_refreshToken << "&";
-	sstr << "client_id=" << m_clientId << "&";
-	sstr << "client_secret=" << m_clientSecret;
-
-	std::string httpData = sstr.str();
-	std::vector<std::string> ExtraHeaders;
-
-	ExtraHeaders.push_back("Host: api.netatmo.net");
-	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
-
-	std::string httpUrl("https://api.netatmo.net/oauth2/token");
-	std::string sResult;
-	bool ret=HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
-		return false;
-	}
-
-	Json::Value root;
-	Json::Reader jReader;
-	ret=jReader.parse(sResult,root);
-	if (!ret)
-	{
-		_log.Log(LOG_ERROR, "Netatmo: Invalid/no data received...");
-		//Force login next time
-		m_isLogged = false;
-		return false;
-	}
-
-	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
-	{
-		//Force login next time
-		_log.Log(LOG_ERROR, "Netatmo: No access granted, forcing login again...");
-		m_isLogged = false;
-		return false;
-	}
-
-	m_accessToken = root["access_token"].asString();
-	m_refreshToken = root["refresh_token"].asString();
-	int expires = root["expires_in"].asInt();
-	m_nextRefreshTs = mytime(NULL) + expires;
-	return true;
 }
 
