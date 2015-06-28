@@ -62,7 +62,7 @@ const _tRFLinkStringIntHelper rfswitchcommands[] =
 int GetGeneralRFLinkFromString(const _tRFLinkStringIntHelper *pTable, const std::string &szType)
 {
 	int ii = 0;
-	while (!pTable[ii].szType.empty())
+	while (pTable[ii].gType!=-1)
 	{
 		if (pTable[ii].szType == szType)
 			return pTable[ii].gType;
@@ -74,7 +74,7 @@ int GetGeneralRFLinkFromString(const _tRFLinkStringIntHelper *pTable, const std:
 std::string GetGeneralRFLinkFromInt(const _tRFLinkStringIntHelper *pTable, const int gType)
 {
 	int ii = 0;
-	while (!pTable[ii].szType.empty())
+	while (pTable[ii].gType!=-1)
 	{
 		if (pTable[ii].gType == gType)
 			return pTable[ii].szType;
@@ -387,10 +387,10 @@ bool CRFLink::SendSwitchInt(const int ID, const int switchunit, const int Batter
 	int svalue=level;
 	if (cmnd==-1) {
 		if (switchcmd.compare(0, 9, "SETLEVEL=") ){
-		cmnd=gswitch_sSetLevel;
-        std::string str2 = switchcmd.substr(10);
-        svalue=atoi(str2.c_str()); 
-	  	//_log.Log(LOG_STATUS, "RFLink: %d level: %d", cmnd, svalue);
+			cmnd=gswitch_sSetLevel;
+			std::string str2 = switchcmd.substr(10);
+			svalue=atoi(str2.c_str()); 
+	  		//_log.Log(LOG_STATUS, "RFLink: %d level: %d", cmnd, svalue);
 		}
     }
     
