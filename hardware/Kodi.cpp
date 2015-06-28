@@ -12,6 +12,7 @@
 #include "../httpclient/HTTPClient.h"
 
 #include <boost/asio.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
 #include "pinger/icmp_header.h"
@@ -21,6 +22,7 @@
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 #define round(a) ( int ) ( a + .5 )
+#define MAX_TITLE_LEN 40
 
 // http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}
 //		{"id":1,"jsonrpc":"2.0","result":[{"playerid":1,"type":"video"}]}
@@ -91,8 +93,6 @@ bool CKodi::StopHardware()
 
 void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, const std::string sStatus, bool bPingOK)
 {
-	_log.Log(LOG_STATUS, "Kodi: %s = %s, Status = %s", Node.Name.c_str(), (bPingOK == true) ? "OK" : "Error", sStatus.c_str());
-
 	//Find out node, and update it's status
 	std::vector<KodiNode>::iterator itt;
 	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
@@ -102,9 +102,10 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 			//Found it
 			time_t atime = mytime(NULL);
 			itt->LastOK = atime;
-//			SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
+			SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
+				_log.Log(LOG_STATUS, "Kodi: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
 				char szID[40];
@@ -142,10 +143,7 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 			bPingOK = true;
 			Json::Value root;
 			Json::Reader jReader;
-			std::string	sPlayerId;
-			std::string	sMedia;
-			std::string	sTitle;
-			std::string	sPercent;
+			std::string	sPlayerId;	
 
 			bRetVal = jReader.parse(sResult, root);
 			if (!bRetVal)
@@ -163,7 +161,7 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 			}
 			else
 			{
-				sMedia = root["result"][0]["type"].asCString();
+				std::string	sMedia = root["result"][0]["type"].asCString();
 				if (root["result"][0]["playerid"].empty() == true)
 				{
 					_log.Log(LOG_ERROR, "Kodi: No PlayerID returned when player is not idle!");
@@ -178,12 +176,15 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 			// If player is active then pick up additional details
 			if (sPlayerId != "")
 			{
-				sStatus = sMedia;
-				sStatus[0] = toupper(sStatus[0]);
+				std::string	sTitle;
+				std::string	sPercent;
+				std::string	sYear;
+
 				sURL.str(std::string());
 				sURL << "http://" << Node.IP << ":" << Node.Port << "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetItem%22,%22id%22:1,%22params%22:{%22playerid%22:" + sPlayerId + ",%22properties%22:[%22artist%22,%22year%22,%22channel%22,%22showtitle%22,%22season%22,%22episode%22,%22title%22]}}";
 				if (HTTPClient::GET(sURL.str(), sResult))
 				{
+//					_log.Log(LOG_STATUS, "Kodi: (%s) Item = %s", Node.Name.c_str(), sResult.c_str());
 					if (jReader.parse(sResult, root))
 					{
 						std::string	sType;
@@ -229,18 +230,42 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 							}
 						}
 
+						if (root["result"]["item"]["year"].empty() != true)
+						{
+							sYear = SSTR((int)root["result"]["item"]["year"].asInt());
+							if (sYear.length() > 2) sYear = " (" + sYear + ")";
+							else sYear = "";
+						}
+
 						if (root["result"]["item"]["title"].empty() != true)
 						{
 							std::string	sLabel = root["result"]["item"]["title"].asCString();
-							sLabel = sLabel.substr(0, 25);
-							if (sLabel.find_first_of('(') != std::string::npos)
-								sLabel = sLabel.substr(0, sLabel.find_first_of('('));
-							sTitle += sLabel;
-						}
-						if (root["result"]["item"]["year"].empty() != true)
-						{
-							std::string	sYear = SSTR((int)root["result"]["item"]["year"].asInt());
-							if (sYear.length() > 2) sTitle += " (" + sYear + ")";
+							if ((!sLabel.length()) && (root["result"]["item"]["label"].empty() != true))
+							{
+								sLabel = root["result"]["item"]["label"].asCString();
+							}
+							// if title is too long shorten it by removing things in brackets, followed by things after a ", "
+							boost::algorithm::trim(sLabel);
+							if (sLabel.length() > MAX_TITLE_LEN)
+							{
+								boost::algorithm::replace_all(sLabel, " - ", ", ");
+							}
+							while (sLabel.length() > MAX_TITLE_LEN)
+							{
+								int begin = sLabel.find_last_of("(");
+								int end = sLabel.find_last_of(")");
+								if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
+								sLabel.erase(begin, end - begin + 1);
+							}
+							while (sLabel.length() > MAX_TITLE_LEN)
+							{
+								int end = sLabel.find_last_of(",");
+								if (std::string::npos == end) break;
+								sLabel = sLabel.substr(0, end);
+							}
+							boost::algorithm::trim(sLabel);
+							sLabel = sLabel.substr(0, MAX_TITLE_LEN);
+							sTitle = sLabel;
 						}
 					}
 				}
@@ -248,32 +273,22 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 				sURL << "http://" << Node.IP << ":" << Node.Port << "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetProperties%22,%22id%22:1,%22params%22:{%22playerid%22:" + sPlayerId + ",%22properties%22:[%22live%22,%22percentage%22,%22speed%22]}}";
 				if (HTTPClient::GET(sURL.str(), sResult))
 				{
+//					_log.Log(LOG_STATUS, "Kodi: (%s) Item = %s", Node.Name.c_str(), sResult.c_str());
 					if (jReader.parse(sResult, root))
 					{
-						bool bLive = root["result"]["live"].asBool();
-						int iSpeed = root["result"]["speed"].asInt();
-						float fPercent = root["result"]["percentage"].asFloat();
-						if (bLive)
-						{
-							sTitle += " (Live)";
-						}
-						if (iSpeed == 0)
-						{
-							nStatus = MSTAT_PAUSED;
-						}
-						if (fPercent > 1.0)
-						{
-							sPercent = SSTR((int)round(fPercent)) + "%";
-						}
+						bool	bLive = root["result"]["live"].asBool();
+						if (bLive) sYear = " (Live)";
+						int		iSpeed = root["result"]["speed"].asInt();
+						if (iSpeed == 0) nStatus = MSTAT_PAUSED;
+						float	fPercent = root["result"]["percentage"].asFloat();
+						if (fPercent > 1.0) sPercent = SSTR((int)round(fPercent)) + "%";
 					}
 				}
 
 				// Assemble final status
 				sStatus = sTitle;
-				if (sPercent.length() != 0)
-				{
-					sStatus += ", " + sPercent;
-				}
+				if (sStatus.length() < (MAX_TITLE_LEN-7)) sStatus += sYear;
+				if (sPercent.length() != 0) sStatus += ", " + sPercent;
 			}
 		}
 	}
