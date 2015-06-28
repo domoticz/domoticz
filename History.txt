@@ -19,6 +19,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented "Stop" state in blockly in switch states
 - Implemented: Kodi Hardware device (Big thanks to dnpwwo!)
 - Fixed: Devices Tab, set device to unused
+- Changed: Air Quality chart will now not begin at 0
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

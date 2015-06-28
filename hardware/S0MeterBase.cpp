@@ -5,6 +5,9 @@
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
+#include "../main/mainworker.h"
+#include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
 #include <string>
@@ -330,3 +333,49 @@ void S0MeterBase::ParseLine()
 	}
 }
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		char * CWebServer::SetS0MeterType()
+		{
+			m_retstr = "/index.html";
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return (char*)m_retstr.c_str();
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "") {
+				return (char*)m_retstr.c_str();
+			}
+
+			std::stringstream szQuery;
+			std::stringstream szAddress;
+
+			std::string S0M1Type = m_pWebEm->FindValue("S0M1Type");
+			std::string S0M2Type = m_pWebEm->FindValue("S0M2Type");
+			std::string S0M3Type = m_pWebEm->FindValue("S0M3Type");
+			std::string S0M4Type = m_pWebEm->FindValue("S0M4Type");
+			std::string S0M5Type = m_pWebEm->FindValue("S0M5Type");
+
+			std::string M1PulsesPerHour = m_pWebEm->FindValue("M1PulsesPerHour");
+			std::string M2PulsesPerHour = m_pWebEm->FindValue("M2PulsesPerHour");
+			std::string M3PulsesPerHour = m_pWebEm->FindValue("M3PulsesPerHour");
+			std::string M4PulsesPerHour = m_pWebEm->FindValue("M4PulsesPerHour");
+			std::string M5PulsesPerHour = m_pWebEm->FindValue("M5PulsesPerHour");
+
+			szAddress <<
+				S0M1Type << ";" << M1PulsesPerHour << ";" <<
+				S0M2Type << ";" << M2PulsesPerHour << ";" <<
+				S0M3Type << ";" << M3PulsesPerHour << ";" <<
+				S0M4Type << ";" << M4PulsesPerHour << ";" <<
+				S0M5Type << ";" << M5PulsesPerHour;
+
+			szQuery << "UPDATE Hardware SET Address='" << szAddress.str() << "' WHERE (ID=" << idx << ")";
+			m_sql.query(szQuery.str());
+			m_mainworker.RestartHardware(idx);
+			return (char*)m_retstr.c_str();
+		}
+	}
+}

@@ -6,6 +6,8 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -534,4 +536,43 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 		sleep_milliseconds(100);
 	}
 	return true;
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		char * CWebServer::SetLimitlessType()
+		{
+			m_retstr = "/index.html";
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return (char*)m_retstr.c_str();
+			}
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "") {
+				return (char*)m_retstr.c_str();
+			}
+
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() < 1)
+				return (char*)m_retstr.c_str();
+
+			int Mode1 = atoi(m_pWebEm->FindValue("LimitlessType").c_str());
+			int Mode2 = atoi(result[0][1].c_str());
+			int Mode3 = atoi(result[0][2].c_str());
+			int Mode4 = atoi(result[0][3].c_str());
+			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, 0, 0);
+
+			m_mainworker.RestartHardware(idx);
+
+			return (char*)m_retstr.c_str();
+		}
+	}
 }
