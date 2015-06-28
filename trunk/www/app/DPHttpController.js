@@ -363,7 +363,7 @@ define(['app'], function (app) {
 			var oTable = $('#linkhttptable').dataTable( {
 			  "sDom": '<"H"lfrC>t<"F"ip>',
 			  "oTableTools": {
-				"sRowSelect": "single",
+				"sRowSelect": "single"
 			  },
 			  "fnDrawCallback": function (oSettings) {
 				var nTrs = this.fnGetNodes();
@@ -420,7 +420,8 @@ define(['app'], function (app) {
 			  "bJQueryUI": true,
 			  "iDisplayLength" : 10,
 			  'bLengthChange': false,
-			  "sPaginationType": "full_numbers"
+			  "sPaginationType": "full_numbers",
+			  language: $.DataTableLanguage
 			} );
 			$("#httpcontent #linkhttptable #combotype").change(function() { 
 				UpdateLinks();
