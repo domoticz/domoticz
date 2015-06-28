@@ -6,6 +6,9 @@
 #include "Helper.h"
 #include "SQLHelper.h"
 #include "mainworker.h"
+#include "WebServer.h"
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
 
 CScheduler::CScheduler(void)
 {
@@ -513,6 +516,776 @@ void CScheduler::CheckSchedules()
 					itt->bEnabled = false;
 				}
 			}
+		}
+	}
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::RType_Schedules(Json::Value &root)
+		{
+			root["status"] = "OK";
+			root["title"] = "Schedules";
+
+			std::vector<tScheduleItem> schedules = m_mainworker.m_scheduler.GetScheduleItems();
+			int ii = 0;
+			std::vector<tScheduleItem>::iterator itt;
+			for (itt = schedules.begin(); itt != schedules.end(); ++itt)
+			{
+				root["result"][ii]["Type"] = (itt->bIsScene) ? "Scene" : "Device";
+				root["result"][ii]["RowID"] = itt->RowID;
+				root["result"][ii]["DevName"] = itt->DeviceName;
+				root["result"][ii]["TimerType"] = Timer_Type_Desc(itt->timerType);
+				root["result"][ii]["TimerCmd"] = Timer_Cmd_Desc(itt->timerCmd);
+				root["result"][ii]["IsThermostat"] = itt->bIsThermostat;
+				if (itt->bIsThermostat == true)
+				{
+					char szTemp[10];
+					sprintf(szTemp, "%.1f", itt->Temperature);
+					root["result"][ii]["Temperature"] = szTemp;
+				}
+				root["result"][ii]["Days"] = itt->Days;
+
+				struct tm timeinfo;
+				localtime_r(&itt->startTime, &timeinfo);
+
+				char *pDate = asctime(&timeinfo);
+				if (pDate != NULL)
+				{
+					pDate[strlen(pDate) - 1] = 0;
+					root["result"][ii]["ScheduleDate"] = pDate;
+					ii++;
+				}
+			}
+		}
+		void CWebServer::RType_Timers(Json::Value &root)
+		{
+			unsigned long long idx = 0;
+			if (m_pWebEm->FindValue("idx") != "")
+			{
+				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				s_str >> idx;
+			}
+			if (idx == 0)
+				return;
+			root["status"] = "OK";
+			root["title"] = "Timers";
+			char szTmp[50];
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					unsigned char iLevel = atoi(sd[6].c_str());
+					if (iLevel == 0)
+						iLevel = 100;
+
+					int iTimerType = atoi(sd[4].c_str());
+					std::string sdate = sd[2];
+					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+					{
+						int Year = atoi(sdate.substr(0, 4).c_str());
+						int Month = atoi(sdate.substr(5, 2).c_str());
+						int Day = atoi(sdate.substr(8, 2).c_str());
+						sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+						sdate = szTmp;
+					}
+					else
+						sdate = "";
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["Date"] = sdate;
+					root["result"][ii]["Time"] = sd[3].substr(0, 5);
+					root["result"][ii]["Type"] = iTimerType;
+					root["result"][ii]["Cmd"] = atoi(sd[5].c_str());
+					root["result"][ii]["Level"] = iLevel;
+					root["result"][ii]["Hue"] = atoi(sd[7].c_str());
+					root["result"][ii]["Days"] = atoi(sd[8].c_str());
+					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) != 0);
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_AddTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string active = m_pWebEm->FindValue("active");
+			std::string stimertype = m_pWebEm->FindValue("timertype");
+			std::string sdate = m_pWebEm->FindValue("date");
+			std::string shour = m_pWebEm->FindValue("hour");
+			std::string smin = m_pWebEm->FindValue("min");
+			std::string randomness = m_pWebEm->FindValue("randomness");
+			std::string scmd = m_pWebEm->FindValue("command");
+			std::string sdays = m_pWebEm->FindValue("days");
+			std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+			std::string shue = m_pWebEm->FindValue("hue");
+			if (
+				(idx == "") ||
+				(active == "") ||
+				(stimertype == "") ||
+				(shour == "") ||
+				(smin == "") ||
+				(randomness == "") ||
+				(scmd == "") ||
+				(sdays == "")
+				)
+				return;
+			unsigned char iTimerType = atoi(stimertype.c_str());
+
+			char szTmp[200];
+			time_t now = mytime(NULL);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			int Year = tm1.tm_year + 1900;
+			int Month = tm1.tm_mon + 1;
+			int Day = tm1.tm_mday;
+
+			if (iTimerType == TTYPE_FIXEDDATETIME)
+			{
+				if (sdate.size() == 10)
+				{
+					Month = atoi(sdate.substr(0, 2).c_str());
+					Day = atoi(sdate.substr(3, 2).c_str());
+					Year = atoi(sdate.substr(6, 4).c_str());
+				}
+			}
+
+			unsigned char hour = atoi(shour.c_str());
+			unsigned char min = atoi(smin.c_str());
+			unsigned char icmd = atoi(scmd.c_str());
+			int days = atoi(sdays.c_str());
+			unsigned char level = atoi(slevel.c_str());
+			int hue = atoi(shue.c_str());
+			root["status"] = "OK";
+			root["title"] = "AddTimer";
+			sprintf(szTmp,
+				"INSERT INTO Timers (Active, DeviceRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Hue, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d)",
+				(active == "true") ? 1 : 0,
+				idx.c_str(),
+				Year, Month, Day,
+				hour, min,
+				iTimerType,
+				(randomness == "true") ? 1 : 0,
+				icmd,
+				level,
+				hue,
+				days,
+				m_sql.m_ActiveTimerPlan
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_UpdateTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string active = m_pWebEm->FindValue("active");
+			std::string stimertype = m_pWebEm->FindValue("timertype");
+			std::string sdate = m_pWebEm->FindValue("date");
+			std::string shour = m_pWebEm->FindValue("hour");
+			std::string smin = m_pWebEm->FindValue("min");
+			std::string randomness = m_pWebEm->FindValue("randomness");
+			std::string scmd = m_pWebEm->FindValue("command");
+			std::string sdays = m_pWebEm->FindValue("days");
+			std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+			std::string shue = m_pWebEm->FindValue("hue");
+			if (
+				(idx == "") ||
+				(active == "") ||
+				(stimertype == "") ||
+				(shour == "") ||
+				(smin == "") ||
+				(randomness == "") ||
+				(scmd == "") ||
+				(sdays == "")
+				)
+				return;
+
+			char szTmp[200];
+			unsigned char iTimerType = atoi(stimertype.c_str());
+			time_t now = mytime(NULL);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			int Year = tm1.tm_year + 1900;
+			int Month = tm1.tm_mon + 1;
+			int Day = tm1.tm_mday;
+
+			if (iTimerType == TTYPE_FIXEDDATETIME)
+			{
+				if (sdate.size() == 10)
+				{
+					Month = atoi(sdate.substr(0, 2).c_str());
+					Day = atoi(sdate.substr(3, 2).c_str());
+					Year = atoi(sdate.substr(6, 4).c_str());
+				}
+			}
+
+			unsigned char hour = atoi(shour.c_str());
+			unsigned char min = atoi(smin.c_str());
+			unsigned char icmd = atoi(scmd.c_str());
+			int days = atoi(sdays.c_str());
+			unsigned char level = atoi(slevel.c_str());
+			int hue = atoi(shue.c_str());
+			root["status"] = "OK";
+			root["title"] = "UpdateTimer";
+			sprintf(szTmp,
+				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == %s)",
+				(active == "true") ? 1 : 0,
+				Year, Month, Day,
+				hour, min,
+				iTimerType,
+				(randomness == "true") ? 1 : 0,
+				icmd,
+				level,
+				hue,
+				days,
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DeleteTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DeleteTimer";
+			char szTmp[100];
+			sprintf(szTmp,
+				"DELETE FROM Timers WHERE (ID == %s)",
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_ClearTimers(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "ClearTimer";
+			char szTmp[100];
+			sprintf(szTmp,
+				"DELETE FROM Timers WHERE (DeviceRowID == %s)",
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::RType_SetpointTimers(Json::Value &root)
+		{
+			unsigned long long idx = 0;
+			if (m_pWebEm->FindValue("idx") != "")
+			{
+				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				s_str >> idx;
+			}
+			if (idx == 0)
+				return;
+			root["status"] = "OK";
+			root["title"] = "Timers";
+			char szTmp[50];
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID, Active, [Date], Time, Type, Temperature, Days FROM SetpointTimers WHERE (DeviceRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					int iTimerType = atoi(sd[4].c_str());
+					std::string sdate = sd[2];
+					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+					{
+						int Year = atoi(sdate.substr(0, 4).c_str());
+						int Month = atoi(sdate.substr(5, 2).c_str());
+						int Day = atoi(sdate.substr(8, 2).c_str());
+						sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+						sdate = szTmp;
+					}
+					else
+						sdate = "";
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["Date"] = sdate;
+					root["result"][ii]["Time"] = sd[3].substr(0, 5);
+					root["result"][ii]["Type"] = iTimerType;
+					root["result"][ii]["Temperature"] = atof(sd[5].c_str());
+					root["result"][ii]["Days"] = atoi(sd[6].c_str());
+					ii++;
+				}
+			}
+		}
+		void CWebServer::Cmd_AddSetpointTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string active = m_pWebEm->FindValue("active");
+			std::string stimertype = m_pWebEm->FindValue("timertype");
+			std::string sdate = m_pWebEm->FindValue("date");
+			std::string shour = m_pWebEm->FindValue("hour");
+			std::string smin = m_pWebEm->FindValue("min");
+			std::string stvalue = m_pWebEm->FindValue("tvalue");
+			std::string sdays = m_pWebEm->FindValue("days");
+			if (
+				(idx == "") ||
+				(active == "") ||
+				(stimertype == "") ||
+				(shour == "") ||
+				(smin == "") ||
+				(stvalue == "") ||
+				(sdays == "")
+				)
+				return;
+			unsigned char iTimerType = atoi(stimertype.c_str());
+
+			char szTmp[200];
+			time_t now = mytime(NULL);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			int Year = tm1.tm_year + 1900;
+			int Month = tm1.tm_mon + 1;
+			int Day = tm1.tm_mday;
+
+			if (iTimerType == TTYPE_FIXEDDATETIME)
+			{
+				if (sdate.size() == 10)
+				{
+					Month = atoi(sdate.substr(0, 2).c_str());
+					Day = atoi(sdate.substr(3, 2).c_str());
+					Year = atoi(sdate.substr(6, 4).c_str());
+				}
+			}
+
+			unsigned char hour = atoi(shour.c_str());
+			unsigned char min = atoi(smin.c_str());
+			int days = atoi(sdays.c_str());
+			float temperature = static_cast<float>(atof(stvalue.c_str()));
+			root["status"] = "OK";
+			root["title"] = "AddSetpointTimer";
+			sprintf(szTmp,
+				"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%.1f,%d,%d)",
+				(active == "true") ? 1 : 0,
+				idx.c_str(),
+				Year, Month, Day,
+				hour, min,
+				iTimerType,
+				temperature,
+				days,
+				m_sql.m_ActiveTimerPlan
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_UpdateSetpointTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string active = m_pWebEm->FindValue("active");
+			std::string stimertype = m_pWebEm->FindValue("timertype");
+			std::string sdate = m_pWebEm->FindValue("date");
+			std::string shour = m_pWebEm->FindValue("hour");
+			std::string smin = m_pWebEm->FindValue("min");
+			std::string stvalue = m_pWebEm->FindValue("tvalue");
+			std::string sdays = m_pWebEm->FindValue("days");
+			if (
+				(idx == "") ||
+				(active == "") ||
+				(stimertype == "") ||
+				(shour == "") ||
+				(smin == "") ||
+				(stvalue == "") ||
+				(sdays == "")
+				)
+				return;
+
+			char szTmp[200];
+			unsigned char iTimerType = atoi(stimertype.c_str());
+			time_t now = mytime(NULL);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			int Year = tm1.tm_year + 1900;
+			int Month = tm1.tm_mon + 1;
+			int Day = tm1.tm_mday;
+
+			if (iTimerType == TTYPE_FIXEDDATETIME)
+			{
+				if (sdate.size() == 10)
+				{
+					Month = atoi(sdate.substr(0, 2).c_str());
+					Day = atoi(sdate.substr(3, 2).c_str());
+					Year = atoi(sdate.substr(6, 4).c_str());
+				}
+			}
+
+			unsigned char hour = atoi(shour.c_str());
+			unsigned char min = atoi(smin.c_str());
+			int days = atoi(sdays.c_str());
+			float tempvalue = static_cast<float>(atof(stvalue.c_str()));
+			root["status"] = "OK";
+			root["title"] = "UpdateSetpointTimer";
+			sprintf(szTmp,
+				"UPDATE SetpointTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, Temperature=%.1f, Days=%d WHERE (ID == %s)",
+				(active == "true") ? 1 : 0,
+				Year, Month, Day,
+				hour, min,
+				iTimerType,
+				tempvalue,
+				days,
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DeleteSetpointTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DeleteSetpointTimer";
+			char szTmp[100];
+			sprintf(szTmp,
+				"DELETE FROM SetpointTimers WHERE (ID == %s)",
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_ClearSetpointTimers(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "ClearSetpointTimers";
+			char szTmp[100];
+			sprintf(szTmp,
+				"DELETE FROM SetpointTimers WHERE (DeviceRowID == %s)",
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::RType_SceneTimers(Json::Value &root)
+		{
+			unsigned long long idx = 0;
+			if (m_pWebEm->FindValue("idx") != "")
+			{
+				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				s_str >> idx;
+			}
+			if (idx == 0)
+				return;
+			root["status"] = "OK";
+			root["title"] = "SceneTimers";
+
+			char szTmp[40];
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					unsigned char iLevel = atoi(sd[6].c_str());
+					if (iLevel == 0)
+						iLevel = 100;
+
+					int iTimerType = atoi(sd[4].c_str());
+					std::string sdate = sd[2];
+					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+					{
+						int Year = atoi(sdate.substr(0, 4).c_str());
+						int Month = atoi(sdate.substr(5, 2).c_str());
+						int Day = atoi(sdate.substr(8, 2).c_str());
+						sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+						sdate = szTmp;
+					}
+					else
+						sdate = "";
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["Date"] = sdate;
+					root["result"][ii]["Time"] = sd[3].substr(0, 5);
+					root["result"][ii]["Type"] = atoi(sd[4].c_str());
+					root["result"][ii]["Cmd"] = atoi(sd[5].c_str());
+					root["result"][ii]["Level"] = iLevel;
+					root["result"][ii]["Hue"] = atoi(sd[7].c_str());
+					root["result"][ii]["Days"] = atoi(sd[8].c_str());
+					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) != 0);
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_AddSceneTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string active = m_pWebEm->FindValue("active");
+			std::string stimertype = m_pWebEm->FindValue("timertype");
+			std::string sdate = m_pWebEm->FindValue("date");
+			std::string shour = m_pWebEm->FindValue("hour");
+			std::string smin = m_pWebEm->FindValue("min");
+			std::string randomness = m_pWebEm->FindValue("randomness");
+			std::string scmd = m_pWebEm->FindValue("command");
+			std::string sdays = m_pWebEm->FindValue("days");
+			std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+			if (
+				(idx == "") ||
+				(active == "") ||
+				(stimertype == "") ||
+				(shour == "") ||
+				(smin == "") ||
+				(randomness == "") ||
+				(scmd == "") ||
+				(sdays == "")
+				)
+				return;
+			unsigned char iTimerType = atoi(stimertype.c_str());
+
+			char szTmp[200];
+			time_t now = mytime(NULL);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			int Year = tm1.tm_year + 1900;
+			int Month = tm1.tm_mon + 1;
+			int Day = tm1.tm_mday;
+
+			if (iTimerType == TTYPE_FIXEDDATETIME)
+			{
+				if (sdate.size() == 10)
+				{
+					Month = atoi(sdate.substr(0, 2).c_str());
+					Day = atoi(sdate.substr(3, 2).c_str());
+					Year = atoi(sdate.substr(6, 4).c_str());
+				}
+			}
+
+			unsigned char hour = atoi(shour.c_str());
+			unsigned char min = atoi(smin.c_str());
+			unsigned char icmd = atoi(scmd.c_str());
+			int days = atoi(sdays.c_str());
+			unsigned char level = atoi(slevel.c_str());
+			root["status"] = "OK";
+			root["title"] = "AddSceneTimer";
+			sprintf(szTmp,
+				"INSERT INTO SceneTimers (Active, SceneRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d)",
+				(active == "true") ? 1 : 0,
+				idx.c_str(),
+				Year, Month, Day,
+				hour, min,
+				iTimerType,
+				(randomness == "true") ? 1 : 0,
+				icmd,
+				level,
+				days,
+				m_sql.m_ActiveTimerPlan
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_UpdateSceneTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string active = m_pWebEm->FindValue("active");
+			std::string stimertype = m_pWebEm->FindValue("timertype");
+			std::string sdate = m_pWebEm->FindValue("date");
+			std::string shour = m_pWebEm->FindValue("hour");
+			std::string smin = m_pWebEm->FindValue("min");
+			std::string randomness = m_pWebEm->FindValue("randomness");
+			std::string scmd = m_pWebEm->FindValue("command");
+			std::string sdays = m_pWebEm->FindValue("days");
+			std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+			if (
+				(idx == "") ||
+				(active == "") ||
+				(stimertype == "") ||
+				(shour == "") ||
+				(smin == "") ||
+				(randomness == "") ||
+				(scmd == "") ||
+				(sdays == "")
+				)
+				return;
+
+			unsigned char iTimerType = atoi(stimertype.c_str());
+
+			char szTmp[200];
+			time_t now = mytime(NULL);
+			struct tm tm1;
+			localtime_r(&now, &tm1);
+			int Year = tm1.tm_year + 1900;
+			int Month = tm1.tm_mon + 1;
+			int Day = tm1.tm_mday;
+
+			if (iTimerType == TTYPE_FIXEDDATETIME)
+			{
+				if (sdate.size() == 10)
+				{
+					Month = atoi(sdate.substr(0, 2).c_str());
+					Day = atoi(sdate.substr(3, 2).c_str());
+					Year = atoi(sdate.substr(6, 4).c_str());
+				}
+			}
+
+			unsigned char hour = atoi(shour.c_str());
+			unsigned char min = atoi(smin.c_str());
+			unsigned char icmd = atoi(scmd.c_str());
+			int days = atoi(sdays.c_str());
+			unsigned char level = atoi(slevel.c_str());
+			root["status"] = "OK";
+			root["title"] = "UpdateSceneTimer";
+			sprintf(szTmp,
+				"UPDATE SceneTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
+				(active == "true") ? 1 : 0,
+				Year, Month, Day,
+				hour, min,
+				iTimerType,
+				(randomness == "true") ? 1 : 0,
+				icmd,
+				level,
+				days,
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DeleteSceneTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DeleteSceneTimer";
+			char szTmp[100];
+			sprintf(szTmp,
+				"DELETE FROM SceneTimers WHERE (ID == %s)",
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_ClearSceneTimers(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "ClearSceneTimer";
+			char szTmp[100];
+			sprintf(szTmp,
+				"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",
+				idx.c_str()
+				);
+			m_sql.query(szTmp);
+			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 	}
 }

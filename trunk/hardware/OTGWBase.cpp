@@ -4,15 +4,16 @@
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "P1MeterBase.h"
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
+#include "../main/WebServerHelper.h"
+#include "../webserver/cWebem.h"
 #include "hardwaretypes.h"
 #include <string>
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
 #include "../json/json.h"
-#include "../main/localtime_r.h"
-#include "../main/WebServerHelper.h"
 
 #include <ctime>
 
@@ -545,3 +546,45 @@ void OTGWBase::ParseLine()
 
 }
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		char * CWebServer::SetOpenThermSettings()
+		{
+			m_retstr = "/index.html";
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return (char*)m_retstr.c_str();
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "") {
+				return (char*)m_retstr.c_str();
+			}
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() < 1)
+				return (char*)m_retstr.c_str();
+
+
+			int currentMode1 = atoi(result[0][0].c_str());
+
+			std::string sOutsideTempSensor = m_pWebEm->FindValue("combooutsidesensor");
+			int newMode1 = atoi(sOutsideTempSensor.c_str());
+
+			if (currentMode1 != newMode1)
+			{
+				m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), newMode1, 0, 0, 0, 0, 0);
+				m_mainworker.RestartHardware(idx);
+			}
+
+			return (char*)m_retstr.c_str();
+		}
+	}
+}

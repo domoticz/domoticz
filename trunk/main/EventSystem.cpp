@@ -11,6 +11,9 @@
 #include "localtime_r.h"
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
+#include "WebServer.h"
+#include "../Webserver/cWebem.h"
+#include "../json/json.h"
 
 #ifdef WIN32
 #include "dirent_windows.h"
@@ -3028,5 +3031,238 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		}
 	}
 	return ilevel;
+}
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		struct _tSortedEventsInt
+		{
+			std::string ID;
+			std::string eventstatus;
+		};
+
+		void CWebServer::RType_Events(Json::Value &root)
+		{
+			//root["status"]="OK";
+			root["title"] = "Events";
+
+			std::string cparam = m_pWebEm->FindValue("param");
+			if (cparam == "")
+			{
+				cparam = m_pWebEm->FindValue("dparam");
+				if (cparam == "")
+				{
+					return;
+				}
+			}
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+
+			if (cparam == "list")
+			{
+				root["title"] = "ListEvents";
+				root["status"] = "OK";
+
+				std::map<std::string, _tSortedEventsInt> _levents;
+				szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC";
+				result = m_sql.query(szQuery.str());
+				if (result.size() > 0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt = result.begin(); itt != result.end(); ++itt)
+					{
+						std::vector<std::string> sd = *itt;
+						std::string ID = sd[0];
+						std::string Name = sd[1];
+						std::string eventStatus = sd[3];
+						_tSortedEventsInt eitem;
+						eitem.ID = ID;
+						eitem.eventstatus = eventStatus;
+						if (_levents.find(Name) != _levents.end())
+						{
+							//Duplicate event name, add the ID
+							szQuery.clear();
+							szQuery.str("");
+							szQuery << Name << " (" << ID << ")";
+							Name = szQuery.str();
+						}
+						_levents[Name] = eitem;
+
+					}
+					//return a sorted event list
+					std::map<std::string, _tSortedEventsInt>::const_iterator itt2;
+					int ii = 0;
+					for (itt2 = _levents.begin(); itt2 != _levents.end(); ++itt2)
+					{
+						root["result"][ii]["name"] = itt2->first;
+						root["result"][ii]["id"] = itt2->second.ID;
+						root["result"][ii]["eventstatus"] = itt2->second.eventstatus;
+						ii++;
+					}
+				}
+			}
+			else if (cparam == "load")
+			{
+				root["title"] = "LoadEvent";
+
+				std::string idx = m_pWebEm->FindValue("event");
+				if (idx == "")
+					return;
+
+				int ii = 0;
+
+				szQuery.clear();
+				szQuery.str("");
+				szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster WHERE (ID==" << idx << ")";
+				result = m_sql.query(szQuery.str());
+				if (result.size() > 0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					for (itt = result.begin(); itt != result.end(); ++itt)
+					{
+						std::vector<std::string> sd = *itt;
+						std::string ID = sd[0];
+						std::string Name = sd[1];
+						std::string XMLStatement = sd[2];
+						std::string eventStatus = sd[3];
+						//int Status=atoi(sd[3].c_str());
+
+						root["result"][ii]["id"] = ID;
+						root["result"][ii]["name"] = Name;
+						root["result"][ii]["xmlstatement"] = XMLStatement;
+						root["result"][ii]["eventstatus"] = eventStatus;
+						ii++;
+					}
+					root["status"] = "OK";
+				}
+			}
+
+			else if (cparam == "create")
+			{
+
+				root["title"] = "AddEvent";
+
+				std::string eventname = m_pWebEm->FindValue("name");
+				if (eventname == "")
+					return;
+
+				std::string eventxml = m_pWebEm->FindValue("xml");
+				if (eventxml == "")
+					return;
+
+				std::string eventactive = m_pWebEm->FindValue("eventstatus");
+				if (eventactive == "")
+					return;
+
+				std::string eventid = m_pWebEm->FindValue("eventid");
+
+
+				std::string eventlogic = m_pWebEm->FindValue("logicarray");
+				if (eventlogic == "")
+					return;
+
+				int eventStatus = atoi(eventactive.c_str());
+
+				Json::Value jsonRoot;
+				Json::Reader reader;
+				std::stringstream ssel(eventlogic);
+
+				bool parsingSuccessful = reader.parse(ssel, jsonRoot);
+
+				if (!parsingSuccessful)
+				{
+
+					_log.Log(LOG_ERROR, "Webserver event parser: Invalid data received!");
+
+				}
+				else {
+
+					szQuery.clear();
+					szQuery.str("");
+
+					if (eventid == "") {
+						szQuery << "INSERT INTO EventMaster (Name, XMLStatement, Status) VALUES ('" << eventname << "','" << eventxml << "','" << eventStatus << "')";
+						m_sql.query(szQuery.str());
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "SELECT ID FROM EventMaster WHERE (Name == '" << eventname << "')";
+						result = m_sql.query(szQuery.str());
+						if (result.size() > 0)
+						{
+							std::vector<std::string> sd = result[0];
+							eventid = sd[0];
+						}
+					}
+					else {
+						szQuery << "UPDATE EventMaster SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Status ='" << eventStatus << "' WHERE (ID == '" << eventid << "')";
+						m_sql.query(szQuery.str());
+						szQuery.clear();
+						szQuery.str("");
+						szQuery << "DELETE FROM EventRules WHERE (EMID == '" << eventid << "')";
+						m_sql.query(szQuery.str());
+					}
+
+					if (eventid == "")
+					{
+						//eventid should now never be empty!
+						_log.Log(LOG_ERROR, "Error writing event actions to database!");
+					}
+					else {
+						const Json::Value array = jsonRoot["eventlogic"];
+						for (int index = 0; index < (int)array.size(); ++index)
+						{
+							std::string conditions = array[index].get("conditions", "").asString();
+							std::string actions = array[index].get("actions", "").asString();
+
+							if ((actions.find("SendNotification") != std::string::npos) || (actions.find("SendEmail") != std::string::npos) || (actions.find("SendSMS") != std::string::npos))
+							{
+								stdreplace(actions, "$", "#");
+							}
+							int sequenceNo = index + 1;
+							szQuery.clear();
+							szQuery.str("");
+							szQuery << "INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('" << eventid << "','" << conditions << "','" << actions << "','" << sequenceNo << "')";
+							m_sql.query(szQuery.str());
+						}
+
+						m_mainworker.m_eventsystem.LoadEvents();
+						root["status"] = "OK";
+					}
+				}
+			}
+			else if (cparam == "delete")
+			{
+				root["title"] = "DeleteEvent";
+				std::string idx = m_pWebEm->FindValue("event");
+				if (idx == "")
+					return;
+				m_sql.DeleteEvent(idx);
+				m_mainworker.m_eventsystem.LoadEvents();
+				root["status"] = "OK";
+			}
+			else if (cparam == "currentstates")
+			{
+				std::vector<CEventSystem::_tDeviceStatus> devStates;
+				m_mainworker.m_eventsystem.WWWGetItemStates(devStates);
+				if (devStates.size() == 0)
+					return;
+
+				int ii = 0;
+				std::vector<CEventSystem::_tDeviceStatus>::iterator itt;
+				for (itt = devStates.begin(); itt != devStates.end(); ++itt)
+				{
+					root["title"] = "Current States";
+					root["result"][ii]["id"] = itt->ID;
+					root["result"][ii]["name"] = itt->deviceName;
+					root["result"][ii]["value"] = itt->nValueWording;
+					root["result"][ii]["svalues"] = itt->sValue;
+					root["result"][ii]["lastupdate"] = itt->lastUpdate;
+					ii++;
+				}
+				root["status"] = "OK";
+			}
+		}
+	}
 }

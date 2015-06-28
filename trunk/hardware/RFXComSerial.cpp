@@ -3,12 +3,15 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/mainworker.h"
+#include "../main/localtime_r.h"
+#include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
 
 #include <string>
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
-#include "../main/localtime_r.h"
 
 #include <ctime>
 
@@ -227,4 +230,79 @@ bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length
 		return false;
 	write(pdata,length);
 	return true;
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		char * CWebServer::SetRFXCOMMode()
+		{
+			m_retstr = "/index.html";
+
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return (char*)m_retstr.c_str();
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "") {
+				return (char*)m_retstr.c_str();
+			}
+			std::vector<std::vector<std::string> > result;
+			std::stringstream szQuery;
+
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() < 1)
+				return (char*)m_retstr.c_str();
+
+			unsigned char Mode1 = atoi(result[0][0].c_str());
+			unsigned char Mode2 = atoi(result[0][1].c_str());
+			unsigned char Mode3 = atoi(result[0][2].c_str());
+			unsigned char Mode4 = atoi(result[0][3].c_str());
+			unsigned char Mode5 = atoi(result[0][4].c_str());
+			unsigned char Mode6 = atoi(result[0][5].c_str());
+
+			tRBUF Response;
+			Response.ICMND.msg1 = Mode1;
+			Response.ICMND.msg2 = Mode2;
+			Response.ICMND.msg3 = Mode3;
+			Response.ICMND.msg4 = Mode4;
+			Response.ICMND.msg5 = Mode5;
+			Response.ICMND.msg6 = Mode6;
+
+			Response.IRESPONSE.UNDECODEDenabled = (m_pWebEm->FindValue("undecon") == "on") ? 1 : 0;
+			Response.IRESPONSE.X10enabled = (m_pWebEm->FindValue("X10") == "on") ? 1 : 0;
+			Response.IRESPONSE.ARCenabled = (m_pWebEm->FindValue("ARC") == "on") ? 1 : 0;
+			Response.IRESPONSE.ACenabled = (m_pWebEm->FindValue("AC") == "on") ? 1 : 0;
+			Response.IRESPONSE.HEEUenabled = (m_pWebEm->FindValue("HomeEasyEU") == "on") ? 1 : 0;
+			Response.IRESPONSE.MEIANTECHenabled = (m_pWebEm->FindValue("Meiantech") == "on") ? 1 : 0;
+			Response.IRESPONSE.OREGONenabled = (m_pWebEm->FindValue("OregonScientific") == "on") ? 1 : 0;
+			Response.IRESPONSE.ATIenabled = (m_pWebEm->FindValue("ATIremote") == "on") ? 1 : 0;
+			Response.IRESPONSE.VISONICenabled = (m_pWebEm->FindValue("Visonic") == "on") ? 1 : 0;
+			Response.IRESPONSE.MERTIKenabled = (m_pWebEm->FindValue("Mertik") == "on") ? 1 : 0;
+			Response.IRESPONSE.LWRFenabled = (m_pWebEm->FindValue("ADLightwaveRF") == "on") ? 1 : 0;
+			Response.IRESPONSE.HIDEKIenabled = (m_pWebEm->FindValue("HidekiUPM") == "on") ? 1 : 0;
+			Response.IRESPONSE.LACROSSEenabled = (m_pWebEm->FindValue("LaCrosse") == "on") ? 1 : 0;
+			Response.IRESPONSE.FS20enabled = (m_pWebEm->FindValue("FS20") == "on") ? 1 : 0;
+			Response.IRESPONSE.PROGUARDenabled = (m_pWebEm->FindValue("ProGuard") == "on") ? 1 : 0;
+			Response.IRESPONSE.BLINDST0enabled = (m_pWebEm->FindValue("BlindT0") == "on") ? 1 : 0;
+			Response.IRESPONSE.BLINDST1enabled = (m_pWebEm->FindValue("BlindT1T2T3T4") == "on") ? 1 : 0;
+			Response.IRESPONSE.AEenabled = (m_pWebEm->FindValue("AEBlyss") == "on") ? 1 : 0;
+			Response.IRESPONSE.RUBICSONenabled = (m_pWebEm->FindValue("Rubicson") == "on") ? 1 : 0;
+			Response.IRESPONSE.FINEOFFSETenabled = (m_pWebEm->FindValue("FineOffsetViking") == "on") ? 1 : 0;
+			Response.IRESPONSE.LIGHTING4enabled = (m_pWebEm->FindValue("Lighting4") == "on") ? 1 : 0;
+			Response.IRESPONSE.RSLenabled = (m_pWebEm->FindValue("RSL") == "on") ? 1 : 0;
+			Response.IRESPONSE.SXenabled = (m_pWebEm->FindValue("ByronSX") == "on") ? 1 : 0;
+			Response.IRESPONSE.IMAGINTRONIXenabled = (m_pWebEm->FindValue("ImaginTronix") == "on") ? 1 : 0;
+			Response.IRESPONSE.KEELOQenabled = (m_pWebEm->FindValue("Keeloq") == "on") ? 1 : 0;
+
+			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.msg1, Response.ICMND.msg2, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
+
+			return (char*)m_retstr.c_str();
+		}
+	}
 }

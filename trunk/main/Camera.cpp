@@ -3,11 +3,15 @@
 #include "Camera.h"
 #include "localtime_r.h"
 #include "Logger.h"
-#include "../main/Helper.h"
+#include "Helper.h"
+#include "mainworker.h"
 #include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../webserver/Base64.h"
 #include "SQLHelper.h"
+#include "WebServer.h"
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
 
 #define CAMERA_POLL_INTERVAL 30
 
@@ -340,4 +344,81 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 		sclient.AddAttachment(imgstring,"snapshot.jpg");
 	bool bRet=sclient.SendEmail();
 	return bRet;
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::RType_Cameras(Json::Value &root)
+		{
+			std::string rused = m_pWebEm->FindValue("used");
+
+			root["status"] = "OK";
+			root["title"] = "Cameras";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			if (rused == "true") {
+				szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC";
+			}
+			else {
+				szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras ORDER BY ID ASC";
+			}
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
+					root["result"][ii]["Address"] = sd[3];
+					root["result"][ii]["Port"] = atoi(sd[4].c_str());
+					root["result"][ii]["Username"] = base64_decode(sd[5]);
+					root["result"][ii]["Password"] = base64_decode(sd[6]);
+					root["result"][ii]["ImageURL"] = sd[7];
+					ii++;
+				}
+			}
+		}
+		std::string CWebServer::GetInternalCameraSnapshot()
+		{
+			m_retstr = "";
+			std::vector<unsigned char> camimage;
+			if (m_pWebEm->m_lastRequestPath.find("raspberry") != std::string::npos)
+			{
+				if (!m_mainworker.m_cameras.TakeRaspberrySnapshot(camimage))
+					goto exitproc;
+			}
+			else
+			{
+				if (!m_mainworker.m_cameras.TakeUVCSnapshot(camimage))
+					goto exitproc;
+			}
+			m_retstr.insert(m_retstr.begin(), camimage.begin(), camimage.end());
+			m_pWebEm->m_outputfilename = "snapshot.jpg";
+		exitproc:
+			return m_retstr;
+		}
+
+		std::string CWebServer::GetCameraSnapshot()
+		{
+			m_retstr = "";
+			std::vector<unsigned char> camimage;
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				goto exitproc;
+
+			if (!m_mainworker.m_cameras.TakeSnapshot(idx, camimage))
+				goto exitproc;
+			m_retstr.insert(m_retstr.begin(), camimage.begin(), camimage.end());
+			m_pWebEm->m_outputfilename = "snapshot.jpg";
+		exitproc:
+			return m_retstr;
+		}
+	}
 }
