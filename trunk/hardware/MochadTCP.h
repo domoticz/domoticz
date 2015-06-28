@@ -16,7 +16,7 @@ public:
 	~MochadTCP(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	RBUF m_mochad;
-
+	RBUF m_mochadsec;
 private:
 	bool StartHardware();
 	bool StopHardware();
@@ -29,6 +29,9 @@ protected:
 	void OnData(const unsigned char *pData, size_t length);
 	void OnError(const std::exception e);
 	void OnError(const boost::system::error_code& error);
+
+	unsigned char hex2bin(char h);
+	void setSecID(unsigned char *p);
 
 	void Do_Work();
 	bool ConnectInternal();
