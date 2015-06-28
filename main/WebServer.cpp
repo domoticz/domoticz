@@ -427,7 +427,9 @@ namespace http {
 
 			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1));
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
+
 			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
+			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -11844,6 +11846,27 @@ namespace http {
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
 			szQuery << "UPDATE DeviceStatus SET Name='" << sname << "' WHERE (ID == " << idx << ")";
+			result = m_sql.query(szQuery.str());
+		}
+
+		void CWebServer::Cmd_SetUnused(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string sidx = m_pWebEm->FindValue("idx");
+			if (sidx.empty())
+				return;
+			int idx = atoi(sidx.c_str());
+			root["status"] = "OK";
+			root["title"] = "SetUnused";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "UPDATE DeviceStatus SET Used=0 WHERE (ID == " << idx << ")";
 			result = m_sql.query(szQuery.str());
 		}
 
