@@ -2,12 +2,14 @@
 #include "SBFSpot.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "hardwaretypes.h"
 #include "../main/localtime_r.h"
-#include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
+#include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
+#include "hardwaretypes.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -680,3 +682,33 @@ void CSBFSpot::GetMeterDetails()
 	}
 }
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		char * CWebServer::SBFSpotImportOldData()
+		{
+			m_retstr = "/index.html";
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return (char*)m_retstr.c_str();
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "") {
+				return (char*)m_retstr.c_str();
+			}
+			int hardwareID = atoi(idx.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_SBFSpot)
+				{
+					CSBFSpot *pSBFSpot = (CSBFSpot *)pHardware;
+					pSBFSpot->ImportOldMonthData();
+				}
+			}
+			return (char*)m_retstr.c_str();
+		}
+	}
+}

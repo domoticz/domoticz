@@ -17,6 +17,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Support for browsers that do not support gzip compression (thanks to ash77)
 - Implemented: When clicking on the log button, browser page now always go to the top
 - Implemented "Stop" state in blockly in switch states
+- Implemented: Kodi Hardware device (Big thanks to dnpwwo!)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

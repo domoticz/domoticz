@@ -13,7 +13,6 @@
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
-#include "../hardware/PhilipsHue.h"
 #ifdef WITH_OPENZWAVE
 #include "../hardware/OpenZWave.h"
 #endif
@@ -21,16 +20,10 @@
 #include "../hardware/EnOceanESP3.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
-#include "../hardware/NetatmoWeatherStation.h"
-#include "../hardware/SBFSpot.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
-#include "../hardware/WOL.h"
-#include "../hardware/evohome.h"
-#include "../hardware/Pinger.h"
-#include "../hardware/Kodi.h"
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
 #include "../json/config.h"
@@ -299,62 +292,19 @@ namespace http {
 			}
 
 			//register callbacks
-			m_pWebEm->RegisterIncludeCode("switchtypes",
-				boost::bind(
-				&CWebServer::DisplaySwitchTypesCombo,	// member function
-				this));			// instance of class
+			m_pWebEm->RegisterIncludeCode("switchtypes", boost::bind(&CWebServer::DisplaySwitchTypesCombo, this));
+			m_pWebEm->RegisterIncludeCode("metertypes", boost::bind(&CWebServer::DisplayMeterTypesCombo, this));
+			m_pWebEm->RegisterIncludeCode("timertypes", boost::bind(&CWebServer::DisplayTimerTypesCombo, this));
+			m_pWebEm->RegisterIncludeCode("combolanguage", boost::bind(&CWebServer::DisplayLanguageCombo, this));
 
-			m_pWebEm->RegisterIncludeCode("metertypes",
-				boost::bind(
-				&CWebServer::DisplayMeterTypesCombo,
-				this));
-
-			m_pWebEm->RegisterIncludeCode("timertypes",
-				boost::bind(
-				&CWebServer::DisplayTimerTypesCombo,	// member function
-				this));			// instance of class
-
-			m_pWebEm->RegisterIncludeCode("combolanguage",
-				boost::bind(
-				&CWebServer::DisplayLanguageCombo,
-				this));
-
-			m_pWebEm->RegisterPageCode("/json.htm",
-				boost::bind(
-				&CWebServer::GetJSonPage,	// member function
-				this));			// instance of class
-
-			m_pWebEm->RegisterPageCode("/uploadcustomicon",
-				boost::bind(
-				&CWebServer::Post_UploadCustomIcon,
-				this));
-
-			m_pWebEm->RegisterPageCode("/html5.appcache",
-				boost::bind(
-				&CWebServer::GetAppCache,
-				this));
-
-			m_pWebEm->RegisterPageCode("/camsnapshot.jpg",
-				boost::bind(
-				&CWebServer::GetCameraSnapshot,
-				this));
-			m_pWebEm->RegisterPageCode("/backupdatabase.php",
-				boost::bind(
-				&CWebServer::GetDatabaseBackup,
-				this));
-
-			m_pWebEm->RegisterPageCode("/raspberry.cgi",
-				boost::bind(
-				&CWebServer::GetInternalCameraSnapshot,	// member function
-				this));			// instance of class
-			m_pWebEm->RegisterPageCode("/uvccapture.cgi",
-				boost::bind(
-				&CWebServer::GetInternalCameraSnapshot,	// member function
-				this));			// instance of class
-			//	m_pWebEm->RegisterPageCode( "/videostream.cgi",
-			//	boost::bind(
-			//&CWebServer::GetInternalCameraSnapshot,	// member function
-			//this ) );			// instance of class
+			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this));
+			m_pWebEm->RegisterPageCode("/uploadcustomicon", boost::bind(&CWebServer::Post_UploadCustomIcon, this));
+			m_pWebEm->RegisterPageCode("/html5.appcache", boost::bind(&CWebServer::GetAppCache, this));
+			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", boost::bind(&CWebServer::GetCameraSnapshot, this));
+			m_pWebEm->RegisterPageCode("/backupdatabase.php", boost::bind(&CWebServer::GetDatabaseBackup, this));
+			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this));
+			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this));
+			//m_pWebEm->RegisterPageCode("/videostream.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this));
 
 			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this));
 			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this));
@@ -405,6 +355,7 @@ namespace http {
 			RegisterCommandCode("getfibarolinks", boost::bind(&CWebServer::Cmd_GetFibaroLinks, this, _1));
 			RegisterCommandCode("savefibarolink", boost::bind(&CWebServer::Cmd_SaveFibaroLink, this, _1));
 			RegisterCommandCode("deletefibarolink", boost::bind(&CWebServer::Cmd_DeleteFibaroLink, this, _1));
+
 			RegisterCommandCode("savehttplinkconfig", boost::bind(&CWebServer::Cmd_SaveHttpLinkConfig, this, _1));
 			RegisterCommandCode("gethttplinkconfig", boost::bind(&CWebServer::Cmd_GetHttpLinkConfig, this, _1));
 			RegisterCommandCode("gethttplinks", boost::bind(&CWebServer::Cmd_GetHttpLinks, this, _1));
@@ -432,8 +383,10 @@ namespace http {
 			RegisterCommandCode("deleteallplandevices", boost::bind(&CWebServer::Cmd_DeleteAllPlanDevices, this, _1));
 			RegisterCommandCode("changeplanorder", boost::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1));
 			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1));
+
 			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1));
 			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1));
+
 			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1),true);
 			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1));
 			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1));
@@ -476,7 +429,6 @@ namespace http {
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
 			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
 
-
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
 			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1));
@@ -504,8 +456,10 @@ namespace http {
 			RegisterRType("deletescene", boost::bind(&CWebServer::RType_DeleteScene, this, _1));
 			RegisterRType("updatescene", boost::bind(&CWebServer::RType_UpdateScene, this, _1));
 			RegisterRType("createvirtualsensor", boost::bind(&CWebServer::RType_CreateVirtualSensor, this, _1));
+
 			RegisterRType("createevohomesensor", boost::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1));
 			RegisterRType("bindevohome", boost::bind(&CWebServer::RType_BindEvohome, this, _1));
+
 			RegisterRType("custom_light_icons", boost::bind(&CWebServer::RType_CustomLightIcons, this, _1));
 			RegisterRType("plans", boost::bind(&CWebServer::RType_Plans, this, _1));
 			RegisterRType("floorplans", boost::bind(&CWebServer::RType_FloorPlans, this, _1));
@@ -1273,553 +1227,6 @@ namespace http {
 				int ID = atoi(idx.c_str());
 				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 			}
-		}
-
-		void CWebServer::Cmd_WOLGetNodes(Json::Value &root)
-		{
-			std::string hwid = m_pWebEm->FindValue("idx");
-			if (hwid == "")
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
-				return;
-			if (pHardware->HwdType != HTYPE_WOL)
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "WOLGetNodes";
-
-			std::stringstream szQuery;
-			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
-			result = m_sql.query(szQuery.str());
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Mac"] = sd[2];
-					ii++;
-				}
-			}
-		}
-
-		void CWebServer::Cmd_WOLAddNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string mac = m_pWebEm->FindValue("mac");
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(mac == "")
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_WOL)
-				return;
-			CWOL *pHardware = (CWOL*)pBaseHardware;
-
-			root["status"] = "OK";
-			root["title"] = "WOLAddNode";
-			pHardware->AddNode(name, mac);
-		}
-
-		void CWebServer::Cmd_WOLUpdateNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string mac = m_pWebEm->FindValue("mac");
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(mac == "")
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_WOL)
-				return;
-			CWOL *pHardware = (CWOL*)pBaseHardware;
-
-			int NodeID = atoi(nodeid.c_str());
-			root["status"] = "OK";
-			root["title"] = "WOLUpdateNode";
-			pHardware->UpdateNode(NodeID, name, mac);
-		}
-
-		void CWebServer::Cmd_WOLRemoveNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_WOL)
-				return;
-			CWOL *pHardware = (CWOL*)pBaseHardware;
-
-			int NodeID = atoi(nodeid.c_str());
-			root["status"] = "OK";
-			root["title"] = "WOLRemoveNode";
-			pHardware->RemoveNode(NodeID);
-		}
-
-		void CWebServer::Cmd_WOLClearNodes(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			if (hwid == "")
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_WOL)
-				return;
-			CWOL *pHardware = (CWOL*)pBaseHardware;
-
-			root["status"] = "OK";
-			root["title"] = "WOLClearNodes";
-			pHardware->RemoveAllNodes();
-		}
-
-		void CWebServer::Cmd_PingerGetNodes(Json::Value &root)
-		{
-			std::string hwid = m_pWebEm->FindValue("idx");
-			if (hwid == "")
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
-				return;
-			if (pHardware->HwdType != HTYPE_Pinger)
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "PingerGetNodes";
-
-			std::stringstream szQuery;
-			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
-			result = m_sql.query(szQuery.str());
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["IP"] = sd[2];
-					root["result"][ii]["Timeout"] = atoi(sd[3].c_str());
-					ii++;
-				}
-			}
-		}
-
-		void CWebServer::Cmd_PingerSetMode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string mode1 = m_pWebEm->FindValue("mode1");
-			std::string mode2 = m_pWebEm->FindValue("mode2");
-			if (
-				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Pinger)
-				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
-
-			root["status"] = "OK";
-			root["title"] = "PingerSetMode";
-
-			int iMode1 = atoi(mode1.c_str());
-			int iMode2 = atoi(mode2.c_str());
-
-			char szTmp[100];
-			sprintf(szTmp,
-				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %s)",
-				iMode1,
-				iMode2,
-				hwid.c_str());
-			m_sql.query(szTmp);
-			pHardware->SetSettings(iMode1,iMode2);
-			pHardware->Restart();
-		}
-			
-
-		void CWebServer::Cmd_PingerAddNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Timeout==0)
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Pinger)
-				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
-
-			root["status"] = "OK";
-			root["title"] = "PingerAddNode";
-			pHardware->AddNode(name, ip, Timeout);
-		}
-
-		void CWebServer::Cmd_PingerUpdateNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Timeout==0)
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Pinger)
-				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
-
-			int NodeID = atoi(nodeid.c_str());
-			root["status"] = "OK";
-			root["title"] = "PingerUpdateNode";
-			pHardware->UpdateNode(NodeID, name, ip, Timeout);
-		}
-
-		void CWebServer::Cmd_PingerRemoveNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Pinger)
-				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
-
-			int NodeID = atoi(nodeid.c_str());
-			root["status"] = "OK";
-			root["title"] = "PingerRemoveNode";
-			pHardware->RemoveNode(NodeID);
-		}
-
-		void CWebServer::Cmd_PingerClearNodes(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			if (hwid == "")
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Pinger)
-				return;
-			CPinger *pHardware = (CPinger*)pBaseHardware;
-
-			root["status"] = "OK";
-			root["title"] = "PingerClearNodes";
-			pHardware->RemoveAllNodes();
-		}
-
-		void CWebServer::Cmd_KodiGetNodes(Json::Value &root)
-		{
-			std::string hwid = m_pWebEm->FindValue("idx");
-			if (hwid == "")
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pHardware == NULL)
-				return;
-			if (pHardware->HwdType != HTYPE_Kodi)
-				return;
-
-			root["status"] = "OK";
-			root["title"] = "KodiGetNodes";
-
-			std::stringstream szQuery;
-			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
-			result = m_sql.query(szQuery.str());
-			if (result.size() > 0)
-			{
-				std::vector<std::vector<std::string> >::const_iterator itt;
-				int ii = 0;
-				for (itt = result.begin(); itt != result.end(); ++itt)
-				{
-					std::vector<std::string> sd = *itt;
-
-					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["IP"] = sd[2];
-					root["result"][ii]["Port"] = atoi(sd[3].c_str());
-					ii++;
-				}
-			}
-		}
-
-		void CWebServer::Cmd_KodiSetMode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string mode1 = m_pWebEm->FindValue("mode1");
-			std::string mode2 = m_pWebEm->FindValue("mode2");
-			if (
-				(hwid == "") ||
-				(mode1 == "") ||
-				(mode2 == "")
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Kodi)
-				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
-
-			root["status"] = "OK";
-			root["title"] = "KodiSetMode";
-
-			int iMode1 = atoi(mode1.c_str());
-			int iMode2 = atoi(mode2.c_str());
-
-			char szTmp[100];
-			sprintf(szTmp,
-				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %s)",
-				iMode1,
-				iMode2,
-				hwid.c_str());
-			m_sql.query(szTmp);
-			pHardware->SetSettings(iMode1, iMode2);
-			pHardware->Restart();
-		}
-
-
-		void CWebServer::Cmd_KodiAddNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Port = atoi(m_pWebEm->FindValue("port").c_str());
-			if (
-				(hwid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Port == 0)
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Kodi)
-				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
-
-			root["status"] = "OK";
-			root["title"] = "KodiAddNode";
-			pHardware->AddNode(name, ip, Port);
-		}
-
-		void CWebServer::Cmd_KodiUpdateNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Port = atoi(m_pWebEm->FindValue("port").c_str());
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(ip == "") ||
-				(Port == 0)
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Kodi)
-				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
-
-			int NodeID = atoi(nodeid.c_str());
-			root["status"] = "OK";
-			root["title"] = "KodiUpdateNode";
-			pHardware->UpdateNode(NodeID, name, ip, Port);
-		}
-
-		void CWebServer::Cmd_KodiRemoveNode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			if (
-				(hwid == "") ||
-				(nodeid == "")
-				)
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Kodi)
-				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
-
-			int NodeID = atoi(nodeid.c_str());
-			root["status"] = "OK";
-			root["title"] = "KodiRemoveNode";
-			pHardware->RemoveNode(NodeID);
-		}
-
-		void CWebServer::Cmd_KodiClearNodes(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string hwid = m_pWebEm->FindValue("idx");
-			if (hwid == "")
-				return;
-			int iHardwareID = atoi(hwid.c_str());
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
-			if (pBaseHardware == NULL)
-				return;
-			if (pBaseHardware->HwdType != HTYPE_Kodi)
-				return;
-			CKodi *pHardware = (CKodi*)pBaseHardware;
-
-			root["status"] = "OK";
-			root["title"] = "KodiClearNodes";
-			pHardware->RemoveAllNodes();
 		}
 
 		void CWebServer::Cmd_GetDeviceValueOptions(Json::Value &root)
@@ -7909,32 +7316,6 @@ namespace http {
 			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::SBFSpotImportOldData()
-		{
-			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return (char*)m_retstr.c_str();
-			}
-
-			std::string idx = m_pWebEm->FindValue("idx");
-			if (idx == "") {
-				return (char*)m_retstr.c_str();
-			}
-			int hardwareID = atoi(idx.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
-			if (pHardware != NULL)
-			{
-				if (pHardware->HwdType == HTYPE_SBFSpot)
-				{
-					CSBFSpot *pSBFSpot = (CSBFSpot *)pHardware;
-					pSBFSpot->ImportOldMonthData();
-				}
-			}
-			return (char*)m_retstr.c_str();
-		}
-
 		char * CWebServer::SetOpenThermSettings()
 		{
 			m_retstr = "/index.html";
@@ -10770,173 +10151,6 @@ namespace http {
 			m_sql.query(szTmp);
 		}
 
-		void CWebServer::RType_CreateEvohomeSensor(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string ssensortype = m_pWebEm->FindValue("sensortype");
-			if ((idx == "") || (ssensortype == ""))
-				return;
-
-			bool bCreated = false;
-			int iSensorType = atoi(ssensortype.c_str());
-
-			int HwdID = atoi(idx.c_str());
-
-			//Make a unique number for ID
-			std::stringstream szQuery;
-			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT MAX(ID) FROM DeviceStatus";
-			result = m_sql.query(szQuery.str());
-
-			unsigned long nid = 1; //could be the first device ever
-
-			if (result.size() > 0)
-			{
-				nid = atol(result[0][0].c_str());
-			}
-			nid += 92000;
-			char ID[40];
-			sprintf(ID, "%ld", nid);
-			
-			//get zone count
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (Type==" << (int)iSensorType << ")";
-			result = m_sql.query(szQuery.str());
-			
-			int nDevCount=0;
-			if (result.size() > 0)
-			{
-				nDevCount = atol(result[0][0].c_str());
-			}
-
-			std::string devname;
-
-			switch (iSensorType)
-			{
-			case pTypeEvohome: //Controller...should be 1 controller per hardware
-				if (nDevCount>=1)
-				{
-					root["status"] = "ERR";
-					root["message"] = "Maximum number of controllers reached";
-					return;
-				}
-				m_sql.UpdateValue(HwdID, ID, 0, pTypeEvohome, sTypeEvohome, 10, 255, 0, "Normal", devname);
-				bCreated = true;
-				break;
-			case pTypeEvohomeZone://max of 12 zones
-				if (nDevCount>=CEvohome::m_nMaxZones)
-				{
-					root["status"] = "ERR";
-					root["message"] = "Maximum number of supported zones reached";
-					return;
-				}
-				m_sql.UpdateValue(HwdID, ID, nDevCount+1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
-				bCreated = true;
-				break;
-			case pTypeEvohomeWater://DHW...should be 1 per hardware
-				if (nDevCount>=1)
-				{
-					root["status"] = "ERR";
-					root["message"] = "Maximum number of DHW zones reached";
-					return;
-				}
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", devname);
-				bCreated = true;
-				break;
-			}
-			if (bCreated)
-			{
-				root["status"] = "OK";
-				root["title"] = "CreateEvohomeSensor";
-			}
-		}
-		
-		void CWebServer::RType_BindEvohome(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
-
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string type = m_pWebEm->FindValue("devtype");
-			int HwdID = atoi(idx.c_str());
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HwdID);
-			if (pHardware == NULL)
-				return;
-			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL)
-				return;
-			CEvohome *pEvoHW=(CEvohome*)pHardware;
-
-			int nDevNo=0;
-			int nID=0;
-			if(type=="Relay")
-			{
-				//get dev count
-				std::stringstream szQuery;
-				std::vector<std::vector<std::string> > result;
-				szQuery << "SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (Type==" << (int)pTypeEvohomeRelay << ") AND (Unit>=64) AND (Unit<96)";
-				result = m_sql.query(szQuery.str());
-				
-				int nDevCount=0;
-				if (result.size() > 0)
-				{
-					nDevCount = atol(result[0][0].c_str());
-				}
-				
-				if(nDevCount>=32)//arbitrary maximum
-				{
-					root["status"] = "ERR";
-					root["message"] = "Maximum number of relays reached";
-					return;
-				}
-				
-				nDevNo=nDevCount+64;
-				nID=pEvoHW->Bind(nDevNo,CEvohomeID::devRelay);
-			}
-			else if(type=="OutdoorSensor")
-				nID=pEvoHW->Bind(0,CEvohomeID::devSensor);
-			if(nID==0)
-			{
-				root["status"] = "ERR";
-				root["message"] = "Timeout when binding device";
-				return;
-			}
-			
-			if(type=="Relay")
-			{
-				std::string devid(CEvohomeID::GetHexID(nID));
-				
-				std::stringstream szQuery;
-				std::vector<std::vector<std::string> > result;
-				szQuery << "SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (DeviceID==" << devid << ")";
-				result = m_sql.query(szQuery.str());
-				if (result.size() > 0)
-				{
-					root["status"] = "ERR";
-					root["message"] = "Device already exists";
-					root["Used"] = true;
-					root["Name"] = result[0][2];
-					return;
-				}
-				
-				std::string devname;
-				m_sql.UpdateValue(HwdID, devid.c_str(), nDevNo, pTypeEvohomeRelay, sTypeEvohomeRelay, 10, 255, 0, "Off", devname);
-				pEvoHW->SetRelayHeatDemand(nDevNo,0);//initialise heat demand
-			}
-			root["status"] = "OK";
-			root["title"] = "BindEvohome";
-			root["Used"] = false;
-		}
-
 		void CWebServer::RType_CreateVirtualSensor(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
@@ -12543,34 +11757,6 @@ namespace http {
 				m_retstr = "var data=" + root.toStyledString() + "\n" + jcallback + "(data);";
 			}
 			return m_retstr;
-		}
-
-
-		void CWebServer::Cmd_RegisterWithPhilipsHue(Json::Value &root)
-		{
-			root["title"] = "RegisterOnHue";
-
-			std::string sipaddress = m_pWebEm->FindValue("ipaddress");
-			std::string sport = m_pWebEm->FindValue("port");
-					std::string susername = m_pWebEm->FindValue("username");
-			if (
-				(sipaddress == "") ||
-				(sport == "")
-				)
-				return;
-
-			std::string sresult = CPhilipsHue::RegisterUser(sipaddress,(unsigned short)atoi(sport.c_str()),susername);
-			std::vector<std::string> strarray;
-			StringSplit(sresult, ";", strarray);
-			if (strarray.size() != 2)
-				return;
-
-			if (strarray[0] == "Error") {
-				root["statustext"] = strarray[1];
-				return;
-			}
-			root["status"] = "OK";
-			root["username"] = strarray[1];
 		}
 
 		void CWebServer::Cmd_GetCustomIconSet(Json::Value &root)

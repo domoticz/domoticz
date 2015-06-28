@@ -4,9 +4,12 @@
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
-#include "../json/json.h"
-#include "../httpclient/HTTPClient.h"
+#include "../main/WebServer.h"
+#include "../main/mainworker.h"
 #include "../main/localtime_r.h"
+#include "../json/json.h"
+#include "../webserver/cWebem.h"
+#include "../httpclient/HTTPClient.h"
 
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -17,6 +20,7 @@
 #include <iostream>
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
+#define round(a) ( int ) ( a + .5 )
 
 // http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}
 //		{"id":1,"jsonrpc":"2.0","result":[{"playerid":1,"type":"video"}]}
@@ -246,18 +250,30 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 				{
 					if (jReader.parse(sResult, root))
 					{
-						bool	bLive = root["result"]["live"].asBool();
-						if (bLive) sTitle += " (Live)";
-						int		iSpeed = root["result"]["speed"].asInt();
-						if (iSpeed == 0) nStatus = MSTAT_PAUSED;
-						float	fPercent = root["result"]["percentage"].asFloat();
-						if (fPercent > 1.0) sPercent = SSTR((int)round(fPercent)) + "%";
+						bool bLive = root["result"]["live"].asBool();
+						int iSpeed = root["result"]["speed"].asInt();
+						float fPercent = root["result"]["percentage"].asFloat();
+						if (bLive)
+						{
+							sTitle += " (Live)";
+						}
+						if (iSpeed == 0)
+						{
+							nStatus = MSTAT_PAUSED;
+						}
+						if (fPercent > 1.0)
+						{
+							sPercent = SSTR((int)round(fPercent)) + "%";
+						}
 					}
 				}
 
 				// Assemble final status
 				sStatus = sTitle;
-				if (sPercent.length() != 0) sStatus += ", " + sPercent;
+				if (sPercent.length() != 0)
+				{
+					sStatus += ", " + sPercent;
+				}
 			}
 		}
 	}
@@ -472,3 +488,205 @@ void CKodi::ReloadNodes()
 }
 
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_KodiGetNodes(Json::Value &root)
+		{
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (pHardware->HwdType != HTYPE_Kodi)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "KodiGetNodes";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["IP"] = sd[2];
+					root["result"][ii]["Port"] = atoi(sd[3].c_str());
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_KodiSetMode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string mode1 = m_pWebEm->FindValue("mode1");
+			std::string mode2 = m_pWebEm->FindValue("mode2");
+			if (
+				(hwid == "") ||
+				(mode1 == "") ||
+				(mode2 == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "KodiSetMode";
+
+			int iMode1 = atoi(mode1.c_str());
+			int iMode2 = atoi(mode2.c_str());
+
+			char szTmp[100];
+			sprintf(szTmp,
+				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %s)",
+				iMode1,
+				iMode2,
+				hwid.c_str());
+			m_sql.query(szTmp);
+			pHardware->SetSettings(iMode1, iMode2);
+			pHardware->Restart();
+		}
+
+
+		void CWebServer::Cmd_KodiAddNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string ip = m_pWebEm->FindValue("ip");
+			int Port = atoi(m_pWebEm->FindValue("port").c_str());
+			if (
+				(hwid == "") ||
+				(name == "") ||
+				(ip == "") ||
+				(Port == 0)
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "KodiAddNode";
+			pHardware->AddNode(name, ip, Port);
+		}
+
+		void CWebServer::Cmd_KodiUpdateNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string ip = m_pWebEm->FindValue("ip");
+			int Port = atoi(m_pWebEm->FindValue("port").c_str());
+			if (
+				(hwid == "") ||
+				(nodeid == "") ||
+				(name == "") ||
+				(ip == "") ||
+				(Port == 0)
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "KodiUpdateNode";
+			pHardware->UpdateNode(NodeID, name, ip, Port);
+		}
+
+		void CWebServer::Cmd_KodiRemoveNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			if (
+				(hwid == "") ||
+				(nodeid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "KodiRemoveNode";
+			pHardware->RemoveNode(NodeID);
+		}
+
+		void CWebServer::Cmd_KodiClearNodes(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Kodi)
+				return;
+			CKodi *pHardware = (CKodi*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "KodiClearNodes";
+			pHardware->RemoveAllNodes();
+		}
+	}
+}

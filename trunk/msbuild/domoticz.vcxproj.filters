@@ -219,6 +219,9 @@
     <Filter Include="Devices\Netatmo">
       <UniqueIdentifier>{e2b392a3-f7a9-4c9b-b40a-4963b61407ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Kodi">
+      <UniqueIdentifier>{7700963a-9c03-43d7-b123-c6cc0f57a734}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -714,6 +717,9 @@
     <ClInclude Include="..\webserver\GZipHelper.h">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Kodi.h">
+      <Filter>Devices\Kodi</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1144,6 +1150,9 @@
     </ClCompile>
     <ClCompile Include="..\main\Push.cpp">
       <Filter>Devices\PushBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Kodi.cpp">
+      <Filter>Devices\Kodi</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

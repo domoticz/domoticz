@@ -5,6 +5,10 @@
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
+#include "../main/WebServer.h"
+#include "../main/mainworker.h"
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
 
 #include <boost/asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -455,3 +459,205 @@ void CPinger::Restart()
 	StartHardware();
 }
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_PingerGetNodes(Json::Value &root)
+		{
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (pHardware->HwdType != HTYPE_Pinger)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "PingerGetNodes";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["IP"] = sd[2];
+					root["result"][ii]["Timeout"] = atoi(sd[3].c_str());
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_PingerSetMode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string mode1 = m_pWebEm->FindValue("mode1");
+			std::string mode2 = m_pWebEm->FindValue("mode2");
+			if (
+				(hwid == "") ||
+				(mode1 == "") ||
+				(mode2 == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "PingerSetMode";
+
+			int iMode1 = atoi(mode1.c_str());
+			int iMode2 = atoi(mode2.c_str());
+
+			char szTmp[100];
+			sprintf(szTmp,
+				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %s)",
+				iMode1,
+				iMode2,
+				hwid.c_str());
+			m_sql.query(szTmp);
+			pHardware->SetSettings(iMode1, iMode2);
+			pHardware->Restart();
+		}
+
+
+		void CWebServer::Cmd_PingerAddNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string ip = m_pWebEm->FindValue("ip");
+			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
+			if (
+				(hwid == "") ||
+				(name == "") ||
+				(ip == "") ||
+				(Timeout == 0)
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "PingerAddNode";
+			pHardware->AddNode(name, ip, Timeout);
+		}
+
+		void CWebServer::Cmd_PingerUpdateNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string ip = m_pWebEm->FindValue("ip");
+			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
+			if (
+				(hwid == "") ||
+				(nodeid == "") ||
+				(name == "") ||
+				(ip == "") ||
+				(Timeout == 0)
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "PingerUpdateNode";
+			pHardware->UpdateNode(NodeID, name, ip, Timeout);
+		}
+
+		void CWebServer::Cmd_PingerRemoveNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			if (
+				(hwid == "") ||
+				(nodeid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "PingerRemoveNode";
+			pHardware->RemoveNode(NodeID);
+		}
+
+		void CWebServer::Cmd_PingerClearNodes(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_Pinger)
+				return;
+			CPinger *pHardware = (CPinger*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "PingerClearNodes";
+			pHardware->RemoveAllNodes();
+		}
+	}
+}

@@ -4,6 +4,10 @@
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/RFXtrx.h"
+#include "../main/WebServer.h"
+#include "../main/mainworker.h"
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
 
 CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port):
 m_broadcast_address(BroadcastAddress)
@@ -263,3 +267,158 @@ void CWOL::RemoveAllNodes()
 	m_sql.query(szQuery.str());
 }
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_WOLGetNodes(Json::Value &root)
+		{
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (pHardware->HwdType != HTYPE_WOL)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "WOLGetNodes";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Mac"] = sd[2];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_WOLAddNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string mac = m_pWebEm->FindValue("mac");
+			if (
+				(hwid == "") ||
+				(name == "") ||
+				(mac == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_WOL)
+				return;
+			CWOL *pHardware = (CWOL*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "WOLAddNode";
+			pHardware->AddNode(name, mac);
+		}
+
+		void CWebServer::Cmd_WOLUpdateNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string name = m_pWebEm->FindValue("name");
+			std::string mac = m_pWebEm->FindValue("mac");
+			if (
+				(hwid == "") ||
+				(nodeid == "") ||
+				(name == "") ||
+				(mac == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_WOL)
+				return;
+			CWOL *pHardware = (CWOL*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "WOLUpdateNode";
+			pHardware->UpdateNode(NodeID, name, mac);
+		}
+
+		void CWebServer::Cmd_WOLRemoveNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			if (
+				(hwid == "") ||
+				(nodeid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_WOL)
+				return;
+			CWOL *pHardware = (CWOL*)pBaseHardware;
+
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "WOLRemoveNode";
+			pHardware->RemoveNode(NodeID);
+		}
+
+		void CWebServer::Cmd_WOLClearNodes(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_WOL)
+				return;
+			CWOL *pHardware = (CWOL*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "WOLClearNodes";
+			pHardware->RemoveAllNodes();
+		}
+	}
+}
