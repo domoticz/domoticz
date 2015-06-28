@@ -11,8 +11,6 @@
  * based in part on https://github.com/mouse256/evomon
  * and details available at http://www.domoticaforum.eu/viewtopic.php?f=7&t=5806&start=90#p72564
  */
-
-
 #include "stdafx.h"
 #include "evohome.h"
 #include "../main/Logger.h"
@@ -20,9 +18,13 @@
 #include "../main/RFXtrx.h"
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
+#include "../main/localtime_r.h"
+#include "../main/mainworker.h"
+#include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
 
 #include <string>
-
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -30,8 +32,6 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "../main/localtime_r.h"
-#include "../main/mainworker.h"
 
 #include <ctime>
 
@@ -1698,5 +1698,177 @@ void CEvohome::Log(bool bDebug, int nLogLevel, const char* format, ... )
 		LogDate();
 		*m_pEvoLog << cbuffer;
 		*m_pEvoLog << std::endl;
+	}
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::RType_CreateEvohomeSensor(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string ssensortype = m_pWebEm->FindValue("sensortype");
+			if ((idx == "") || (ssensortype == ""))
+				return;
+
+			bool bCreated = false;
+			int iSensorType = atoi(ssensortype.c_str());
+
+			int HwdID = atoi(idx.c_str());
+
+			//Make a unique number for ID
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT MAX(ID) FROM DeviceStatus";
+			result = m_sql.query(szQuery.str());
+
+			unsigned long nid = 1; //could be the first device ever
+
+			if (result.size() > 0)
+			{
+				nid = atol(result[0][0].c_str());
+			}
+			nid += 92000;
+			char ID[40];
+			sprintf(ID, "%ld", nid);
+
+			//get zone count
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (Type==" << (int)iSensorType << ")";
+			result = m_sql.query(szQuery.str());
+
+			int nDevCount = 0;
+			if (result.size() > 0)
+			{
+				nDevCount = atol(result[0][0].c_str());
+			}
+
+			std::string devname;
+
+			switch (iSensorType)
+			{
+			case pTypeEvohome: //Controller...should be 1 controller per hardware
+				if (nDevCount >= 1)
+				{
+					root["status"] = "ERR";
+					root["message"] = "Maximum number of controllers reached";
+					return;
+				}
+				m_sql.UpdateValue(HwdID, ID, 0, pTypeEvohome, sTypeEvohome, 10, 255, 0, "Normal", devname);
+				bCreated = true;
+				break;
+			case pTypeEvohomeZone://max of 12 zones
+				if (nDevCount >= CEvohome::m_nMaxZones)
+				{
+					root["status"] = "ERR";
+					root["message"] = "Maximum number of supported zones reached";
+					return;
+				}
+				m_sql.UpdateValue(HwdID, ID, nDevCount + 1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
+				bCreated = true;
+				break;
+			case pTypeEvohomeWater://DHW...should be 1 per hardware
+				if (nDevCount >= 1)
+				{
+					root["status"] = "ERR";
+					root["message"] = "Maximum number of DHW zones reached";
+					return;
+				}
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", devname);
+				bCreated = true;
+				break;
+			}
+			if (bCreated)
+			{
+				root["status"] = "OK";
+				root["title"] = "CreateEvohomeSensor";
+			}
+		}
+
+		void CWebServer::RType_BindEvohome(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string type = m_pWebEm->FindValue("devtype");
+			int HwdID = atoi(idx.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HwdID);
+			if (pHardware == NULL)
+				return;
+			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL)
+				return;
+			CEvohome *pEvoHW = (CEvohome*)pHardware;
+
+			int nDevNo = 0;
+			int nID = 0;
+			if (type == "Relay")
+			{
+				//get dev count
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				szQuery << "SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (Type==" << (int)pTypeEvohomeRelay << ") AND (Unit>=64) AND (Unit<96)";
+				result = m_sql.query(szQuery.str());
+
+				int nDevCount = 0;
+				if (result.size() > 0)
+				{
+					nDevCount = atol(result[0][0].c_str());
+				}
+
+				if (nDevCount >= 32)//arbitrary maximum
+				{
+					root["status"] = "ERR";
+					root["message"] = "Maximum number of relays reached";
+					return;
+				}
+
+				nDevNo = nDevCount + 64;
+				nID = pEvoHW->Bind(nDevNo, CEvohomeID::devRelay);
+			}
+			else if (type == "OutdoorSensor")
+				nID = pEvoHW->Bind(0, CEvohomeID::devSensor);
+			if (nID == 0)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Timeout when binding device";
+				return;
+			}
+
+			if (type == "Relay")
+			{
+				std::string devid(CEvohomeID::GetHexID(nID));
+
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				szQuery << "SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (DeviceID==" << devid << ")";
+				result = m_sql.query(szQuery.str());
+				if (result.size() > 0)
+				{
+					root["status"] = "ERR";
+					root["message"] = "Device already exists";
+					root["Used"] = true;
+					root["Name"] = result[0][2];
+					return;
+				}
+
+				std::string devname;
+				m_sql.UpdateValue(HwdID, devid.c_str(), nDevNo, pTypeEvohomeRelay, sTypeEvohomeRelay, 10, 255, 0, "Off", devname);
+				pEvoHW->SetRelayHeatDemand(nDevNo, 0);//initialize heat demand
+			}
+			root["status"] = "OK";
+			root["title"] = "BindEvohome";
+			root["Used"] = false;
+		}
 	}
 }

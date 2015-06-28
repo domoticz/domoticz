@@ -2,14 +2,15 @@
 #include "PhilipsHue.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "hardwaretypes.h"
 #include "../main/localtime_r.h"
-#include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
+#include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
+#include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
+#include "hardwaretypes.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -589,4 +590,36 @@ bool CPhilipsHue::GetLightStates()
 	}
 
 	return true;
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_RegisterWithPhilipsHue(Json::Value &root)
+		{
+			root["title"] = "RegisterOnHue";
+
+			std::string sipaddress = m_pWebEm->FindValue("ipaddress");
+			std::string sport = m_pWebEm->FindValue("port");
+			std::string susername = m_pWebEm->FindValue("username");
+			if (
+				(sipaddress == "") ||
+				(sport == "")
+				)
+				return;
+
+			std::string sresult = CPhilipsHue::RegisterUser(sipaddress, (unsigned short)atoi(sport.c_str()), susername);
+			std::vector<std::string> strarray;
+			StringSplit(sresult, ";", strarray);
+			if (strarray.size() != 2)
+				return;
+
+			if (strarray[0] == "Error") {
+				root["statustext"] = strarray[1];
+				return;
+			}
+			root["status"] = "OK";
+			root["username"] = strarray[1];
+		}
+	}
 }
