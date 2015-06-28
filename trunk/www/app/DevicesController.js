@@ -41,17 +41,17 @@ define(['app'], function (app) {
 			$("#dialog-addlightdevicedev" ).dialog( "open" );
 		}
 
-		RemoveDevice = function(idx)
+		SetUnused = function(idx)
 		{
 			bootbox.confirm($.t("Are you sure to remove this Device from your used devices?"), function(result) {
 				if (result==true) {
 					$.ajax({
-					   url: "json.htm?type=setused&idx=" + idx + '&used=false',
-					   async: false, 
-					   dataType: 'json',
-					   success: function(data) {
-						  ShowDevices();
-					   }
+						url: "json.htm?type=command&param=setunused&idx=" + idx,
+						async: false, 
+						dataType: 'json',
+						success: function(data) {
+							ShowDevices();
+						}
 					});
 				}
 			});
@@ -235,7 +235,7 @@ define(['app'], function (app) {
 									}
 				  }
 				  if ((item.Used!=0)&&(item.Name.charAt(0)!="$")) {
-					itemSubIcons+='<img src="images/remove.png" title="' + $.t('Remove Device') +'" onclick="RemoveDevice(' + item.idx +')">';
+					itemSubIcons+='<img src="images/remove.png" title="' + $.t('Set Unused') +'" onclick="SetUnused(' + item.idx +')">';
 					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Name + '\')">';
 				  }
 				  else {
