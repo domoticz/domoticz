@@ -22,7 +22,8 @@ typedef enum {
 typedef enum {
 	MOCHAD_STATUS=0,
 	MOCHAD_UNIT,
-	MOCHAD_ACTION
+	MOCHAD_ACTION,
+	MOCHAD_RFSEC
 } MochadType;
 
 typedef struct _tMatch {
@@ -42,7 +43,8 @@ static Match matchlist[] = {
 	{STD,	MOCHAD_ACTION,	"Tx PL House: ",	13, 9},
 	{STD,	MOCHAD_ACTION,	"Rx PL House: ",	13, 9},
 	{STD,	MOCHAD_ACTION,	"Tx RF House: ",	13, 9},
-	{STD,	MOCHAD_ACTION,	"Rx RF House: ",	13, 9}
+	{STD,	MOCHAD_ACTION,	"Rx RF House: ",	13, 9},
+	{STD,	MOCHAD_RFSEC,	"Rx RFSEC Addr: ",	15, 8 }
 };
 
 //end
@@ -77,6 +79,7 @@ m_szIPAddress(IPAddress)
 	m_bufferpos=0;
 
 	memset(&m_mochadbuffer,0,sizeof(m_mochadbuffer));
+	memset(&m_mochadsec, 0, sizeof(m_mochadsec));
 	memset(&m_mochad,0,sizeof(m_mochad));
 
 	m_mochad.LIGHTING1.packetlength = sizeof(m_mochad) - 1;
@@ -85,6 +88,16 @@ m_szIPAddress(IPAddress)
 	m_mochad.LIGHTING1.housecode = 0;
 	m_mochad.LIGHTING1.unitcode = 0;
 	m_mochad.LIGHTING1.cmnd = 0;
+
+	m_mochadsec.SECURITY1.packetlength = sizeof(m_mochadsec) - 1;
+	m_mochadsec.SECURITY1.packettype = pTypeSecurity1;
+	m_mochadsec.SECURITY1.subtype = 0;
+	m_mochadsec.SECURITY1.id1 = 0;
+	m_mochadsec.SECURITY1.id2 = 0;
+	m_mochadsec.SECURITY1.id3 = 0;
+	m_mochadsec.SECURITY1.status;
+	m_mochadsec.SECURITY1.rssi = 12;
+	m_mochadsec.SECURITY1.battery_level = 0;
 
 	memset(&selected, 0, sizeof(selected));
 	currentHouse=0;
@@ -382,6 +395,90 @@ checkFunc:
 			}
 		}
 		break;
+	case MOCHAD_RFSEC:
+		j = t.start;
+		char *pchar;
+		char tempRFSECbuf[50];
+
+		if (strstr((const char*)&m_mochadbuffer[j], "DS10A"))
+		{
+			m_mochadsec.SECURITY1.subtype = sTypeSecX10;
+			setSecID(&m_mochadbuffer[t.start]);
+			m_mochadsec.SECURITY1.battery_level = 0x0f;
+
+			// parse sensor conditions, e.g. "Contact_alert_min_DS10A" or "'Contact_normal_max_low_DS10A"
+			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			pchar = strtok(tempRFSECbuf, " _");
+			while (pchar != NULL)
+			{
+				if (strcmp(pchar, "alert") == 0)
+					m_mochadsec.SECURITY1.status = sStatusAlarm;
+				else if (strcmp(pchar, "normal") == 0)
+					m_mochadsec.SECURITY1.status = sStatusNormal;
+				else if (strcmp(pchar, "max") == 0)
+				{
+					if (m_mochadsec.SECURITY1.status == sStatusAlarm)
+						m_mochadsec.SECURITY1.status = sStatusAlarmDelayed;
+					else if (m_mochadsec.SECURITY1.status == sStatusNormal)
+						m_mochadsec.SECURITY1.status = sStatusNormalDelayed;
+				}
+				else if (strcmp(pchar, "low") == 0)
+					m_mochadsec.SECURITY1.battery_level = 1;
+				pchar = strtok(NULL, " _");
+			}
+			m_mochadsec.SECURITY1.rssi = 12; // signal strength ??
+		}
+		else if (strstr((const char *)&m_mochadbuffer[j], "KR10A"))
+		{
+			m_mochadsec.SECURITY1.subtype = sTypeSecX10R;
+			setSecID(&m_mochadbuffer[t.start]);
+			m_mochadsec.SECURITY1.battery_level = 0x0f;
+
+			// parse remote conditions, e.g. "Panic_KR10A" "Lights_On_KR10A" "Lights_Off_KR10A" "Disarm_KR10A" "Arm_KR10A"
+			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			pchar = strtok(tempRFSECbuf, " _");
+			while (pchar != NULL)
+			{
+				if (strcmp(pchar, "Panic") == 0)
+					m_mochadsec.SECURITY1.status = sStatusPanic;
+				else if (strcmp(pchar, "Disarm") == 0)
+					m_mochadsec.SECURITY1.status = sStatusDisarm;
+				else if (strcmp(pchar, "Arm") == 0)
+					m_mochadsec.SECURITY1.status = sStatusArmAway;
+				else if (strcmp(pchar, "On") == 0)
+					m_mochadsec.SECURITY1.status = sStatusLightOn;
+				else if (strcmp(pchar, "Off") == 0)
+					m_mochadsec.SECURITY1.status = sStatusLightOff;
+				pchar = strtok(NULL, " _");
+			}
+			m_mochadsec.SECURITY1.rssi = 12; // signal strngth ??
+		}
+		else if (strstr((const char *)&m_mochadbuffer[j], "MS10A"))
+		{
+			m_mochadsec.SECURITY1.subtype = sTypeSecX10M;
+			setSecID(&m_mochadbuffer[t.start]);
+			m_mochadsec.SECURITY1.battery_level = 0x0f;
+
+			// parse remote conditions, "Motion_alert_MS10A" and "Motion_normal_MS10A"
+			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			pchar = strtok(tempRFSECbuf, " _");
+			while (pchar != NULL)
+			{
+				if (strcmp(pchar, "alert") == 0)
+					m_mochadsec.SECURITY1.status = sStatusMotion;
+				else if (strcmp(pchar, "normal") == 0)
+					m_mochadsec.SECURITY1.status = sStatusNoMotion;
+				else if (strcmp(pchar, "low") == 0)
+					m_mochadsec.SECURITY1.battery_level = 1;
+				pchar = strtok(NULL, " _");
+			}
+			m_mochadsec.SECURITY1.rssi = 12; // signal strength ??
+		}
+		else
+			goto onError;
+
+		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec);//decode message
+		break;
 	}
 	return;
 onError:
@@ -425,4 +522,24 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 		}
 		ii++;
 	}
+}
+
+void MochadTCP::setSecID(unsigned char *p)
+{
+	int j = 0;
+	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
+	j++; // skip the ":"
+	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
+	j++; // skip the ":"
+	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j++]) << 4) | hex2bin(p[j]);
+}
+
+unsigned char MochadTCP::hex2bin(char h)
+{
+	if (h >= '0' && h <= '9')
+		return h - '0';
+	if (h >= 'A' && h <= 'F')
+		return h - 'A' + 10;
+	// handle lower-case hex letter
+	return h - 'a' + 10;
 }
