@@ -8963,7 +8963,7 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Media)
 						{
-							root["result"][ii]["TypeImg"] = "media";
+							root["result"][ii]["TypeImg"] = "Media";
 							root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
 							lstatus = sValue;
 						}
