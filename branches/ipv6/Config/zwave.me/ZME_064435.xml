@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- Taken from http://www.zwave.eu/api/pdf.php?type=manual&id=ZME_054436_en_long.html -->
+<!-- Z-Wave.Me: 064435 Wall Controller -->
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="10" genre="config" label="Typical click timeout" units="x 10 milliseconds" min="1" max="100" value="50">
+			<Help>Typical time used to differentiate click, hold, double and triple clicks Values: 1 – 100 in 10 ms units (default is 50, that is equivalent to 500 ms)</Help>
+		</Value>
+		<Value type="list" index="11" genre="config" label="Invert buttons" units="" min="0" max="1" size="1">
+			<Item label="No (default)" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="13" genre="config" label="Action on button single press or hold" units="" min="0" max="3" size="1" value="1">
+			<Help>Defines which command should be sent on button single press or hold. Basic commands are sent to Association group. Switch All commands are sent broadcast.</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Switch On, Off and dim using Basic Set (default)" value="1" />
+			<Item label="Switch All On/Off" value="2" />
+			<Item label="Scene Activation" value="3" />
+		</Value>
+		<Value type="list" index="14" genre="config" label="Action on button double press or hold" units="" min="0" max="3" size="1" value="0">
+			<Help>Defines which command should be sent on button double press or press-hold. Basic commands are sent to Association group. Switch All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
+			<Item label="Disabled (don&apos;t wait for double click, default)" value="0" />
+			<Item label="Switch On, Off and dim using Basic Set" value="1" />
+			<Item label="Switch All On/Off" value="2" />
+			<Item label="Scene Activation" value="3" />
+		</Value>
+		<Value type="list" index="15" genre="config" label="Send the following Switch All commands" units="" min="0" max="255" size="1" value="1">
+			<Item label="Switch All Off only (default)" value="1" />
+			<Item label="Switch All On only" value="2" />
+			<Item label="Switch All On and Off" value="255" />
+		</Value>
+		<Value type="list" index="20" genre="config" label="Send battery report" units="" min="0" max="2" size="1" value="0">
+			<Help>Send unsolicited battery report on wakeup.</Help>
+			<Item label="No (default)" value="0" />
+			<Item label="To same node as wakeup notification" value="1" />
+			<Item label="Broadcast" value="2" />
+		</Value>
+	</CommandClass>
+
+	<!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="8" label="Single press" auto="false" />
+			<Group index="2" max_associations="8" label="Double press" auto="false" />
+		</Associations>
+	</CommandClass>
+
+</Product>

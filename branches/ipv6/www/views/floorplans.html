@@ -1,0 +1,117 @@
+<meta http-equiv="Content-Type" content="application/xhtml+xml">
+<div id="floorplancontent" align="center" style="position:absolute;">
+</div>
+
+<div id="fphtmlcontent">
+	<svg style="width:1px; height:1px;"/>
+	<style  type="text/css">
+		body {
+			padding-left: 0px;
+			padding-right: 0px;
+		}
+
+		.navbar-fixed-top {
+			position: fixed;
+		}
+		
+		#copyright {
+			position: fixed;
+		}
+
+		.container-fluid {
+			padding-top: 0px;
+			padding-left: 0px;
+			padding-bottom: 0px;
+			padding-right: 0px;
+		}
+
+		.fpscroller {
+			white-space: nowrap;
+			overflow-y: hidden;
+			overflow-x: hidden;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.floorplan {
+			display: inline;
+			height: auto;
+			width: auto;
+		}
+	</style>
+	<style type="text/css">
+	
+		polygon.hoverable
+		{
+			cursor: pointer;
+			fill: blue;
+			fill-opacity: 0.05;
+			stroke: grey;
+			stroke-width: 0;
+			stroke-linejoin: round;
+			stroke-opacity: 0.5;
+		}
+
+		polygon.hoverable:hover
+		{
+			stroke: black;   
+			stroke-width: 0;
+			fill-opacity: 0.25;
+		}
+		
+		rect.popup{
+			font-family: Arial, Helvetica, sans-serif;
+		}
+		rect.header{
+			fill: #D4E1EE;
+			stroke: black;
+			stroke-width: 1;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+	</style>
+	<style type="text/css">
+		#BulletGroup {
+			margin: 0px 0px;
+			padding: 2px 2px; 
+			border-radius: 15px;
+			background: rgba(0,0,0,0);
+			position: fixed;
+			bottom: 30px;
+		}
+
+		.bullet {
+			cursor: pointer;
+			margin: 8px 10px;
+			width: 10px; height: 10px;
+			border-radius: 100%;
+			background: rgba(0,0,0,0);
+			border: 1px solid white;
+		}
+		.bullet:hover {
+			background: red;
+		}
+
+		.bulletSelected {
+			cursor: pointer;
+			margin: 8px 10px;
+			width: 10px; height: 10px;
+			border-radius: 50%;
+			background: white;
+			border: 1px solid white;
+			border-color: white;
+		}
+		
+		#BulletImages img {
+			display: none;
+			border: 2px solid white;
+			position: relative;
+			max-width: 100px;
+		}
+	</style>
+	<div id="fpwrapper" class="fpscroller" style="display:inline;"></div>
+	<div id="BulletGroup" align="center" style="display:none;"> 
+		<div id="BulletImages"/>
+		<table width="100%">
+			<tr id="BulletRow"/>
+		</table>
+	</div>
+ </div>

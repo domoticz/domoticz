@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" index="1" genre="config" label="Basic Set Level" units="" min="0" max="99" value="99">
+      <Help>
+	When Basic Set Command is sent where contains a value, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp modeule shall be.
+      </Help>
+    </Value>
+    <Value type="bool" index="2" genre="config" label="Enable/Disable Detecting" min="0" max="1" value="1">
+      <Help>
+	The Detecting function can be Disabled of Enabled.
+      </Help>
+    </Value>
+    <Value type="byte" index="3" genre="config" label="Sensitivity Level" units="" min="1" max="10" value="6">
+      <Help>
+	1 Means lowest sensitivity and 10 means highest.
+      </Help>
+    </Value>
+    <Value type="byte" index="4" genre="config" label="Re-trigger Interval Setting" units="Seconds" min="5" max="3600" value="5">
+      <Help>
+	Adjust the interval of being re-triggered afer the detector has	been triggered in seconds.
+      </Help>
+    </Value>
+    <Value type="byte" index="5" genre="config" label="Lux Level" units="%" min="1" max="100" value="10">
+      <Help>
+	Sets minimum Lux Level of ambient illumination neccesary for Motion Detector to trigger.
+      </Help>
+    </Value>
+    <Value type="byte" index="6" genre="config" label="On-Off Duration" units="Seconds" min="5" max="3600" value="5">
+      <Help>
+	The duration determines how long before the module sends an Off after being triggered.
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Basic set as report -->
+  <CommandClass id="32" setasreport="true"/>
+
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="1" label="Reports" />
+      <Group index="2" max_associations="3" label="Control" />
+    </Associations>
+  </CommandClass>
+
+</Product>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--http://www.pepper1.net/zwavedb/device/269-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Set to Default" value="-1">
+			<Help>Set all configuration values to default values (factory settings).</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="2" label="Startup with last known socket status" size="1" value="0">
+			<Help>The state in what the switch is when power is supplied.</Help>
+			<Item label="Off" value="0"/>
+			<Item label="Previous state" value="1"/>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="9" label="Relay delay time" value="50" units="ms">
+			<Help>When the relay is switched it can't be switched again until the configured time has passed.</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="10" label="Led indicator" size="1" value="1">
+			<Help>Show the led state compared to the relay state.</Help>
+			<Item label="Led off" value="0"/>
+			<Item label="Led on / Relay on" value="1"/>
+			<Item label="Led on / Relay off" value="2"/>
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Group 1" auto="false"/>
+		</Associations>
+	</CommandClass>
+</Product>

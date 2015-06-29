@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="1" genre="config" label="Basic Set Level" units="%" min="0" max="99" value="99">
+			<Help>
+				Defines the level in the Basic Set event sent to group 2 when the sensor is triggered.  Default is 99 (full brightness for a Z-Wave dimmer). 0 disables.
+			</Help>
+		</Value>
+		<Value type="short" index="2" genre="config" label="Lux On Trigger" units="LUX" min="0" max="1000" value="300">
+			<Help>
+				Lux level to trigger when a ON command is sent out. 0 will clear the value.
+			</Help>
+		</Value>
+		<Value type="short" index="3" genre="config" label="Lux Off Trigger" units="LUX" min="0" max="1000" value="500">
+			<Help>
+				Lux level to trigger when an OFF command is sent out. 0 will clear the value.
+			</Help>
+		</Value>
+		<Value type="short" index="4" genre="config" label="Lux Timer Off Trigger" units="minutes" min="1" max="480" value="240">
+			<Help>
+				Set Lux timer trigger to send an OFF command. 0 will clear the value.
+			</Help>
+		</Value>
+		<Value type="short" index="5" genre="config" label="Auto Report Time" units="minutes" min="0" max="1439" value="0">
+			<Help>
+				Sets the auto report time interval. 0 disables.
+			</Help>
+		</Value>
+		<Value type="short" index="6" genre="config" label="Auto Report Lux" units="LUX" min="30" max="1000" value="0">
+			<Help>
+				Sets the auto report Lux interval. 0 disabled.
+			</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- COMMAND_CLASS_ALARM doesn't respond -->
+	<CommandClass id="113" getsupported="false" />
+
+	<!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="1" label="Reports" auto="true" />
+			<Group index="2" max_associations="3" label="Basic" auto="true" />
+		</Associations>
+	</CommandClass>
+</Product>
+

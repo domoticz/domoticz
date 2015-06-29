@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="short" index="1" genre="config" label="Pulse factor" units="pulses" min="1" max="65535"  value="1024">
+      <Help>Meter's impulse or rotation factor x 10 (impulses/qm)</Help>
+    </Value>
+
+    <Value type="list" index="2" genre="config" label="Sensor type" units="" min="1" max="2" value="2" size="1">
+      <Help>Defines the type of sensor.</Help>
+      <Item label="Magnetic Contact" value="1"/>
+      <Item label="Silver Spot Meter" value="2"/>
+    </Value>
+
+    <Value type="int" index="9" genre="config" label="Pulse count" units="pulses/cbm" min="0" max="2147483647" value="0" >
+      <Help>Current pulse count in device (Total meter value * pulse factor ).</Help>
+    </Value>
+
+    <Value type="int" index="10" genre="config" label="Keep alive period" units="seconds" min="0" max="32767" value="60" >
+      <Help>How many 'ticks' before going back to sleep in normal wakeup mode.</Help>
+    </Value>
+
+    <Value type="int" index="11" genre="config" label="Real-time mode" units="seconds" min="0" max="32767" value="0" >
+      <Help>Set this to enter real-time mode from remote. Contains seconds * 20 before going back to sleep. If you press the button onc
+e this value will be set.</Help>
+    </Value>
+
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <!--<CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="1" label="Report" auto="true" />
+    </Associations>
+  </CommandClass>-->
+
+</Product>

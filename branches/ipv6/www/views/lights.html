@@ -1,0 +1,492 @@
+<div id="dialog-confirm-delete-subs" title="Warning:" style="display:none;">
+    <p>This device is used as a Sub/Slave device for other Devices.<br>Do you want to remove this device from those devices too?</p>
+</div>
+<div id="editlightswitch" style="display:none;">
+		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:120px"><label for="name"><span data-i18n="Name"></span>: </label></td>
+				<td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+			</tr>
+			<tr id="SwitchType">
+				<td align="right"><label for="comboswitchtype"><span data-i18n="Switch Type"></span>: </label></td>
+				<td><select id="comboswitchtype" style="width:200px" class="combobox ui-corner-all">
+					<!--#embed switchtypes -->
+				</select></td>
+			</tr>
+			<tr id="SwitchIconDiv">
+				<td align="right"><label for="comboswitchicon"><span data-i18n="Switch Icon"></span>: </label></td>
+				<td>
+					<select id="comboswitchicon" style="width:200px" class="combobox ui-corner-all">
+					</select>
+            	</td>
+			</tr>
+			<tr id="MotionDiv">
+				<td align="right"<label for="motionoffdelay"><span data-i18n="Off Delay"></span>:</label></td>
+				<td><input type="text" id="motionoffdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Use sensor time">(Seconds) 0 = Use sensor time</span></td>
+			</tr>
+			<tr id="OnDelayDiv">
+				<td align="right"><label for="ondelay"><span data-i18n="On Delay">On Delay</span>:</label></td>
+				<td><input type="text" id="ondelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Disabled">(Seconds) 0 = Disabled</span></td>
+			</tr>
+			<tr id="OffDelayDiv">
+				<td align="right"><label for="offdelay"><span data-i18n="Off Delay"></span>:</label></td>
+				<td><input type="text" id="offdelay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Seconds) 0 = Disabled">(Seconds) 0 = Disabled</span></td>
+			</tr>
+			<tr id="OnActionDiv">
+				<td align="right"><label for="onaction"><span data-i18n="On Action">On Action</span>:</label></td>
+				<td><input type="text" id="onaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span></td>
+			</tr>
+			<tr id="OffActionDiv">
+				<td align="right"><label for="offaction"><span data-i18n="Off Action">Off Action</span>:</label></td>
+				<td><input type="text" id="offaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span></td>
+			</tr>
+			<tr id="ProtectionDiv">
+				<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
+				<td><input type="checkbox" id="protected"></td>
+			</tr>
+			<tr id="optionsWhite">
+				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+				<td>
+					<button id="brightUp" onclick="appLampBrightnessUp()">Brightness Up</button><button id="brightDown" onclick="appLampBrightnessDown()">Brightness Down</button><br />
+					<button id="discoUp" onclick="appLampWarmer()">Warm White</button><button id="discoDown" onclick="appLampCooler()">Cool White</button><br />
+					<button id="speedUp" onclick="appLampFull()">Full Light</button><button id="speedDown" onclick="appLampNight()">Night Light</button><br />
+				</td>
+			</tr>
+			</div>
+			<tr id="LedColor">
+				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+				<td>
+					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td align="left" style="width:200px">
+							<div id="picker" width="100px" height="100px"></div>
+						</td>
+						<td align="left" style="vertical-align: top;">
+							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
+							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
+							<div class="radio" id="optionsRGBW" style="display:none;">
+								<label>
+									<input type="radio" name="optionsType" id="optionRGB" value="false" checked>
+										RGB
+								</label>
+								<label>
+									<input type="radio" name="optionsType" id="optionWhite" value="true">
+										White
+								</label>
+							</div>
+							<div id="optionsRGB" style="display:none;">
+								<button id="brightUp" onclick="appLampBrightnessUp()">Brightness Up</button><button id="brightDown" onclick="appLampBrightnessDown()">Brightness Down</button><br />
+								<button id="discoUp" onclick="appLampDiscoUp()">Disco Mode Up</button><button id="discoDown" onclick="appLampDiscoDown()">Disco Mode Down</button><br />
+								<button id="speedUp" onclick="appLampSpeedUp()">Speed Up</button><button id="speedDown" onclick="appLampSpeedDown()">Speed Down</button><br />
+								<button id="speedUpLong" onclick="appLampSpeedUpLong()">Exclude Lamp</button><br />
+							</div>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<a class="btnstyle3" onclick="SaveLightSwitch();" data-i18n="Save">Save</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3" onclick="DeleteLightSwitch();" data-i18n="Delete">Delete</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<h2><span data-i18n="Sub/Slave Devices"></span>:</h2>
+		<br>
+		<table class="display" id="subdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<thead>
+						<tr>
+								<th align="left" data-i18n="Name">Name</th>
+						</tr>
+				</thead>
+		</table>
+    <table id="delclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="subdevicedelete" data-i18n="Delete">Delete</a>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" onclick="ClearSubDevices();" data-i18n="Clear">Clear</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table class="display" id="paramstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:120px"><label for="name"><span data-i18n="Sub/Slave Device"></span>: </label></td>
+				<td>
+					<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
+					</select>
+					<a class="btnstyle3" onclick="AddSubDevice();" data-i18n="Add">Add</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+</div>
+<div id="dialog-addlightdevice">
+    <form>
+        <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:120px"><label for="name">Name: </label></td>
+          <td><input type="text" id="devicename" style="width: 244px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+          <td align="right"><label for="switchtype">Switch Type: </label></td>
+          <td><select id="comboswitchtype" style="width:150px" class="combobox ui-corner-all">
+            <!--#embed switchtypes -->
+          </select></td>
+		    </tr>
+		    <br>
+        <tr>
+          <td align="right"><label>As: </label></td>
+          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;Main Device&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;Sub/Slave Device</td>
+        <tr>
+		<tr id="subdevice" style="display:none">
+			<td align="right"><label>Device: </label></td>
+			<td>
+				<select id="combosubdevice" style="width:244px" class="combobox ui-corner-all">
+				</select>
+			</td>
+		</tr>
+		</table>
+    </form>
+</div>
+<div id="dialog-addmanuallightdevice">
+    <form>
+        <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:120px"><label for="combohardware"><span data-i18n="Hardware">Hardware</span>: </label></td>
+          <td><select id="combohardware" style="width:260px" class="combobox ui-corner-all">
+          </select></td>
+        <tr>
+        <tr>
+          <td align="right"><label for="devicename"><span data-i18n="Device name">Device name</span>: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        <tr>
+          <td align="right"><label for="comboswitchtype"><span data-i18n="Switch Type">Switch Type</span>: </label></td>
+					<td><select id="comboswitchtype" style="width:210px" class="combobox ui-corner-all">
+						<!--#embed switchtypes -->
+					</select></td>
+	    </tr>
+	    <tr>
+			<td></td>
+			<td></td>
+	    </tr>
+	    <tr>
+          <td align="right"><label><span data-i18n="Type">Type</span>: </label></td>
+          <td>
+			<select id="combolighttype" style="width:170px" class="combobox ui-corner-all">
+						<option value="0">X10</option>
+						<option value="1">ARC</option>
+						<option value="2">AB400D</option>
+						<option value="3">Waveman</option>
+						<option value="4">EMW200</option>
+						<option value="5">Impuls</option>
+						<option value="6">RisingSun</option>
+						<option value="8">Energenie</option>
+						<option value="9">Energenie 5-gang</option>
+						<option value="10">COCO GDR2</option>
+						<option value="20">AC</option>
+						<option value="21">HE EU</option>
+						<option value="22">ANSLUT</option>
+						<option value="50">LightwaveRF</option>
+						<option value="55">Livolo</option>
+						<option value="57">Aoke</option>
+						<option value="60">Blyss</option>
+						<option value="70">EnOcean</option>
+						<option value="68">GPIO</option>
+						<option value="100">ByronSX</option>
+						<option value="101">Harrison Curtain</option>
+						<option value="102">RFY</option>
+						<option value="103">Meiantech Security</option>
+						<option value="104">HE105</option>
+						<option value="205">Blinds T5 Media Mount</option>
+						<option value="206">Blinds T6 DC106</option>
+						<option value="207">Blinds T7 Forest</option>
+						<option value="208">Blinds T8 Chamberlain</option>
+						<option value="209">Blinds T9 Sunpery</option>
+						<option value="210">Blinds T10 Dolat DLM-1</option>
+						<option value="301">Smartwares Radiator</option>
+			</select>
+			</td>
+		  </tr>
+		</table>
+		<div id="lighting1params">
+			<table class="display" id="lightparams1" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="House Code">House Code</span>:</label></td>
+					<td><select id="combohousecode" style="width:60px" class="combobox ui-corner-all">
+							</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
+					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
+							</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="lighting2params">
+			<table class="display" id="lightparams2" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="ID">ID</span>:</label></td>
+					<td>
+						<select id="combocmd1" style="width:60px" class="combobox ui-corner-all">
+								<option value="0">0</option>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+						</select>
+						<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd3" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd4" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr id="lighting2paramsUnitCode">
+					<td align="right"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
+					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all">
+							</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="lighting3params">
+			<table class="display" id="lightparams3" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="ID">ID</span>:</label></td>
+					<td>
+						<select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><label><span data-i18n="Group Code">Group Code</span>:</label></td>
+					<td>
+						<select id="combogroupcode" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
+					<td>
+						<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="lightingparams_enocean">
+			<table class="display" id="lightparams_enocean" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="ID">ID</span>:</label></td>
+					<td>
+						<select id="comboid" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><label>Rocker_ID:</label></td>
+					<td>
+						<select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="lightingparams_gpio">
+			<table class="display" id="lightparams_gpio" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label>GPIO:</label></td>
+					<td>
+						<select id="combogpio" style="width:220px" class="combobox ui-corner-all"><option value="-1">?</option></select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="blindsparams">
+			<table class="display" id="blindparams" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="ID">ID</span>:</label></td>
+					<td>
+						<select id="combocmd1" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd2" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd3" style="width:60px" class="combobox ui-corner-all"></select>
+						<select id="combocmd4" style="width:60px" class="combobox ui-corner-all"></select>
+					</td>
+				</tr>
+				<tr id="blindparamsUnitCode">
+					<td align="right"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
+					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
+		<div id="he105params">
+			<table class="display" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Unit Code">Unit Code</span>:</label></td>
+					<td><select id="combounitcode" style="width:60px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
+		<br>
+		<center><a class="btnstyle3" onclick="TestManualLight();" data-i18n="Test">Test</a></center>
+		<br>
+        <table class="display" id="howtable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right"><label><span data-i18n="As">As</span>: </label></td>
+          <td><input type="radio" name="how" id="how_1" value="New" checked>&nbsp;<span data-i18n="Main Device">Main Device</span>&nbsp;&nbsp;<input type="radio" name="how" id="how_2" value="Sub Device">&nbsp;<span data-i18n="Sub/Slave Device">Sub/Slave Device</span></td>
+        <tr>
+		<tr id="subdevice" style="display:none">
+			<td align="right" style="width:60px"><label><span data-i18n="Device">Device</span>: </label></td>
+			<td>
+				<select id="combosubdevice" style="width:250px" class="combobox ui-corner-all">
+				</select>
+			</td>
+		</tr>
+		</table>
+    </form>
+</div>
+<div id="lightcontent" class="container">
+</div>
+<div id="edittimers" style="display:none;">
+    <table class="display" id="timertable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="40" align="center" data-i18n="Active">Active</th>
+                <th width="150" align="center" data-i18n="Type">Type</th>
+                <th width="80" align="center" data-i18n="Date">Date</th>
+                <th width="60" align="center" data-i18n="Time">Time</th>
+                <th width="60" align="center" data-i18n="Randomness">Randomness</th>
+                <th width="80" align="center" data-i18n="Command">Command</th>
+                <th align="left" data-i18n="Days">Days</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="timerupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3-dis" id="timerdelete" data-i18n="Delete">Delete</a>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" onclick="ClearTimers();" data-i18n="Clear">Clear</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table class="display" id="timerparamstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:80px"><label for="enabled"><span data-i18n="Enabled"></span>:</label></td>
+				<td><input type="checkbox" id="enabled" checked></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
+				<td><select id="combotype" style="width:180px" class="combobox ui-corner-all">
+						<!--#embed timertypes -->
+						</select>
+				</td>
+			</tr>
+			<tr id="rdate">
+				<td align="right" style="width:80px"><label for="sdate"><span data-i18n="Date"></span>:</label></td>
+				<td><input type="text" id="sdate" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="combotimehour"><span data-i18n="Time"></span>:</label></td>
+				<td><select id="combotimehour" style="width:50px" class="combobox ui-corner-all"></select>
+						:
+						<select id="combotimemin" style="width:50px" class="combobox ui-corner-all"></select>
+						<span data-i18n="(hour/minute)"></span>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="randomness"><span data-i18n="Randomness"></span>:</label></td>
+				<td><input type="checkbox" id="randomness"></td>
+			</tr>
+			<tr>
+				<td align="right" style="width:80px"><label for="combocommand"><span data-i18n="Command"></span>:</label></td>
+				<td>
+					<select id="combocommand" style="width:90px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="On">On</option>
+					<option value="1" data-i18n="Off">Off</option>
+					</select>
+				</td>
+			</tr>
+			<tr id="LevelDiv">
+				<td align="right" style="width:80px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
+				<td>
+					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
+					<option value="5">5%</option>
+					<option value="10">10%</option>
+					<option value="15">15%</option>
+					<option value="20">20%</option>
+					<option value="25">25%</option>
+					<option value="30">30%</option>
+					<option value="35">35%</option>
+					<option value="40">40%</option>
+					<option value="45">45%</option>
+					<option value="50">50%</option>
+					<option value="55">55%</option>
+					<option value="60">60%</option>
+					<option value="65">65%</option>
+					<option value="70">70%</option>
+					<option value="75">75%</option>
+					<option value="80">80%</option>
+					<option value="85">85%</option>
+					<option value="90">90%</option>
+					<option value="95">95%</option>
+					<option value="100">100%</option>
+					</select>
+				</td>
+			</tr>
+			<tr id="LedColor">
+				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+				<td>
+					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td align="left" style="width:200px">
+							<div id="picker" width="100px" height="100px"></div>
+						</td>
+						<td align="left" style="vertical-align: top;">
+							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
+							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
+							<div class="radio" id="optionsRGBW" style="display:none;">
+								<label>
+									<input type="radio" name="optionsType" id="optionRGB" value="false" checked>
+										RGB
+								</label>
+								<label>
+									<input type="radio" name="optionsType" id="optionWhite" value="true">
+										White
+								</label>
+							</div>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<tr id="rnorm"><td></td></tr>
+			<tr id="rnorm">
+				<td align="right" style="width:80px"><label for="when"><span data-i18n="When"></span>:</label></td>
+				<td>
+					<input type="radio" name="when" id="when_1" value="Everyday" checked>&nbsp;<span data-i18n="Everyday"></span><br><br>
+					<input type="radio" name="when" id="when_2" value="Weekdays">&nbsp;<span data-i18n="Weekdays"></span><br><br>
+					<input type="radio" name="when" id="when_3" value="Weekends">&nbsp;<span data-i18n="Weekends"></span><br><br>
+					<input type="radio" name="when" id="when_4" value="SelectedDays">&nbsp;<span data-i18n="Selected Days"></span><br><br>
+				</td>
+			</tr>
+			<tr id="rnorm"><td></td></tr>
+			<tr id="rnorm">
+				<td align="right" style="width:80px"><label for="name"><span data-i18n="Days"></span>:</label></td>
+				<td>
+					<input type="checkbox" id="ChkMon" checked/>&nbsp;<span data-i18n="Monday"></span>&nbsp;
+					<input type="checkbox" id="ChkTue" checked/>&nbsp;<span data-i18n="Tuesday"></span>&nbsp;
+					<input type="checkbox" id="ChkWed" checked/>&nbsp;<span data-i18n="Wednesday"></span>&nbsp;
+					<input type="checkbox" id="ChkThu" checked/>&nbsp;<span data-i18n="Thursday"></span>&nbsp;
+					<input type="checkbox" id="ChkFri" checked/>&nbsp;<span data-i18n="Friday"></span>&nbsp;
+					<input type="checkbox" id="ChkSat" checked/>&nbsp;<span data-i18n="Saturday"></span>&nbsp;
+					<input type="checkbox" id="ChkSun" checked/>&nbsp;<span data-i18n="Sunday"></span>&nbsp;
+				</td>
+			</tr>
+		</table>
+		<br>
+    <a class="btnstyle3" onclick="AddTimer();" data-i18n="Add">Add</a>
+</div>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Taken from http://www.uk-automation.co.uk/pdf/Duwiswitch.pdf -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the Duwi device, but it does not respond to requests -->
+  <CommandClass id="38" action="remove" /> 
+
+</Product>

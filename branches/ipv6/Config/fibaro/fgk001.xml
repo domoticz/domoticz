@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fibaro: FGK101 Door Opening Sensor -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="short" genre="config" instance="1" index="1" label="IN1 Alarm Cancellation Delay" min="0" max="65535" value="0">
+			<Help>Input I alarm cancellation delay. Additional delay after an alarm from input IN1 has ceased. The parameter allows you to specify additional time, after which the input no. 1 alarm is cancelled once its violation has ceased.</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="2" label="Status change signalled by LED" min="0" max="1" value="1" size="1">
+			<Help>Status change signalled by LED. Default setting: LED turned On</Help>
+			<Item label="LED turned Off" value="0" />
+			<Item label="LED turned On" value="1" />
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="3" label="Type of input no. 1" value="1" size="1">
+			<Help>Type of input no. 1, what the input 1 will report if no contact is made</Help>
+			<Item label="NO (Normal Open)" value="0" />
+			<Item label="NC (Normal Close)" value="1" />
+			<Item label="MONOSTABLE" value="2" />
+			<Item label="BISTABLE" value="3" />
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="5" label="Type of transmitted control frame for association group 1" value="255" size="1">
+			<Help>Type of transmitted control frame for association group 1, activated via input IN1. The parameter allows to specify the type of alarm frame or to force transmission of control commands (BASIC_SET)</Help>
+			<Item label="ALARM GENERIC" value="0" />
+			<Item label="ALARM SMOKE" value="1" />
+			<Item label="ALARM CO" value="2" />
+			<Item label="ALARM CO2" value="3" />
+			<Item label="ALARM HEAT" value="4" />
+			<Item label="ALARM WATER" value="5" />
+			<Item label="BASIC_SET" value="255" />
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="7" label="Forced Level of Dimming group 1" min="1" max="255" value="255">
+			<Help>Value of the parameter specifying the forced level of dimming / opening sun blinds when comes "switch on" / "open" command to devices from association group no. 1.
+			  In the case of alarm frames the alarm priority is specified. Possible parameter settings: (1 - 99) and 255. Value of 255 makes it possible to activate the device when using the Dimmer module it means activating the device and setting it to the previous stored condition, e.g. when Dimmer is set to 30%, then deactivated, and then reactivated using command 255, it will automatically be set to the previous condition, i.e. 30%.</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="9" label="Deactivate transmission of frame cancelling alarm" value="0" size="1">
+			<Help>Deactivating transmission of the frame cancelling the alarm or the control frame deactivating the device (Basic). It allows for disabling the deactivation function or the alarm cancellation function for devices associated with the appropriate input of the Fibaro Sensor. NOTE: Information concerning alarm violation or activation commands for devices from association groups are always sent.</Help>
+			<Item label="Groups 1 and 2 sent" value="0" />
+			<Item label="Group 1 sent, Group 2 not sent." value="1" />
+			<Item label="Group 1 not sent, Group 2 sent." value="2" />
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="10" label="Interval between successive readings of temperature sensors" min="1" max="255" value="20">
+			<Help>Interval between successive readings of temperature from all sensors connected to the device in seconds. Note: taking temperature readings from the sensor does not result in sending a temperature condition report to the central hub.</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="11" label="Interval between forcing to send report concerning the temperature conditions" min="0" max="255" value="200">
+			<Help>Interval between forcing to send report concerning the temperature conditions. The forced report is sent immediately after the next reading of temperature from the sensor, irrespective of the settings of parameter no. 12. Value 0 = Deactivates the function. Note: Frequent sending of temperature condition reports is reasonable when the sensor is located somewhere where can occure rapid changes of ambient temperature. In other cases it is recommended to leave the parameter set to the default value.</Help>
+		</Value>
+
+		<Value type="byte" genre="config" instance="1" index="12" label="Insensitiveness to temperature changes" min="0" max="255" value="8">
+			<Help>Insensitiveness to temperature changes. This is the maximum acceptable difference between the last reported temperature and the current temperature taken from the sensor. If the temperatures differ by the set value or more, then a report with the current temperature value is sent to the device assigned to association group no. 3. Intervals between taking readings from sensors are specified by parameter no. 10.
+			  Possible parameter settings:0 - 255 [0oC to 16oC] [0 oF - 28.8oF]
+			  In order to set the appropriate value of the parameter, the following formula should be used:
+			  x = delta T x 16 - for Celsius
+			  x = delta T x 80 / 9 - for Fahrenheit
+			  x - parameter value
+			  delta T - maximum acceptable temperature gradient in Celsius or Fahrenheit
+			  If the value is set to 0, then information about the temperature will be sent every time, immediately once the readings have been taken from the sensor.</Help>
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="13" label="Transmitting the alarm or control frame broadcast mode" value="0" size="1">
+			<Help>Transmitting the alarm or control frame in "broadcast" mode (i.e. to all devices within range), information sent in this mode is not repeated by the mesh network. NOTE: If the broadcast mode of information transmission is activated for a given channel, then transmission of information in singlecast mode to devices assigned to the association group of this channel is deactivated.</Help>
+			<Item label="IN1 and IN2 Broadcast inactive" value="0" />
+			<Item label="IN1 broadcast mode active, Sensor 2 broadcast mode inactive" value="1" />
+			<Item label="IN1 broadcast mode inactive, Sensor 2 broadcast mode active" value="2" />
+			<Item label="INI and IN2 broadcast mode active" value="3" />
+		</Value>
+
+		<Value type="list" genre="config" instance="1" index="14" label="Scene activation" value="0" size="1">
+			<Help>Enable/Disable scene functionality. The device offers the possibility of sending commands compatible with Command class scene activation. Information is sent to devices assigned to association group no. 3.</Help>
+			<Item label="Scenes disabled" value="0" />
+			<Item label="Scenes enabled" value="1" />
+		</Value>
+	</CommandClass>
+
+	<!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="5" label="Input IN1" auto="true"/>
+			<Group index="2" max_associations="5" label="TMP Button" auto="true" />
+			<Group index="3" max_associations="1" label="Device Status" auto="true"/>
+		</Associations>
+	</CommandClass>
+
+</Product>

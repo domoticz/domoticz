@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="1" genre="config" label="On Level" units="" min="0" max="127" value="99">
+			<Help>
+				Defines the level in the event sent when the sensor is triggered.  Default is 99 (full brightness for a Z-Wave dimmer). 100-127 will set device on to the last value it was when turned off.
+			</Help>
+		</Value>
+		<Value type="byte" index="2" genre="config" label="Off Time" units="seconds" min="0" max="127" value="1">
+			<Help>
+				On Time sets the number of seconds the sensor stays alerted before the off event is sent.
+			</Help>
+		</Value>
+		<Value type="byte" index="3" genre="config" label="Power Saving" units="" min="0" max="127" value="0">
+			<Help>
+			  	Enable/Disable power saving mode. 0 enables.
+			</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+	<!-- COMMAND_CLASS_ALARM.  This class is supported but is missing from the list reported by the SM103 -->
+	<CommandClass id="113" action="add" getsupported="false" />
+
+	<!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Reports" auto="true" />
+		</Associations>
+	</CommandClass>
+
+</Product>
+

@@ -1,0 +1,84 @@
+<div id="usercontent" class="container">
+</div>
+<div id="userdevices" style="display:none;">
+	<table id="userdevicestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<select id="devices" class="multiselect" multiple="multiple" name="devices[]">
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<a class="btnstyle3" onclick="SaveUserDevices();">Save</a>
+			</td>
+		</tr>
+	</table>
+</div>
+<div id="usermain" style="display:none;">
+	<table class="display" id="usertable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="60" align="left" data-i18n="Enabled">Enabled</th>
+				<th align="left" data-i18n="Name">Name</th>
+				<th width="80" align="center" data-i18n="Rights">Rights</th>
+				<th width="120" align="center" data-i18n="Sharing">Sharing</th>
+				<th width="80" align="center" data-i18n="Devices">Devices</th>
+			</tr>
+		</thead>
+	</table>
+	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="userupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="userdelete" data-i18n="Delete">Delete</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<table class="display" id="userparamstable" border="0" cellpadding="0" cellspacing="20">
+		<tr>
+			<td align="right" style="width:80px"><label for="enabled"><span data-i18n="Enabled"></span>:</label></td>
+			<td><input type="checkbox" id="enabled" checked></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="username"><span data-i18n="Username"></span>:</label></td>
+			<td><input type="text" id="username" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="userpassword"><span data-i18n="Password"></span>:</label></td>
+			<td><input type="password" id="userpassword" name="userpassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="comborights"><span data-i18n="Rights"></span>:</label></td>
+			<td><select id="comborights" style="width:110px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Viewer">Viewer</option>
+					<option value="1" data-i18n="User">User</option>
+					<option value="2" data-i18n="Admin">Admin</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td align="right" style="width:80px"><label for="enablesharing"><span data-i18n="Sharing"></span>:</label></td>
+			<td><input type="checkbox" id="enablesharing"> <label for="enablesharing"><span data-i18n="(Enables remote sharing of devices with this user)"></span></label></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:80px; vertical-align:top;"><label><span data-i18n="ActiveMenus"></span>:</label></td>
+			<td>
+				<input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans"/> <label for="EnableTabFloorplans"><span data-i18n="Floorplan"></span></label></br>
+				<input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> <label for="EnableTabLights"><span data-i18n="Switches"></span></label></br>
+				<input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> <label for="EnableTabScenes"><span data-i18n="Scenes"></span></label></br>
+				<input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <label for="EnableTabTemp"><span data-i18n="Temperature"></span></label></br>
+				<input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> <label for="EnableTabWeather"><span data-i18n="Weather"></span></label></br>
+				<input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> <label for="EnableTabUtility"><span data-i18n="Utility"></span></label></br>
+				<input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"/> <label for="EnableTabCustom"><span data-i18n="Custom"></span></label></br>
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td>
+				<a class="btnstyle3" onclick="AddUser();" data-i18n="Add">Add</a>
+			</td>
+		</tr>
+	</table>
+</div>

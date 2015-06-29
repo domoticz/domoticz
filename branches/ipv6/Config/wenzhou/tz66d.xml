@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Set Ignore start level bit when transmitting dim commands" min="0" max="1" value="1">
+		  <Help>If the bit is set to 1, the dimmer will ignore the start level and instead start dimming from its current level. If this bit is set to 0, the dimmer will not ignore the start level.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="2" label="Disable transmitting to group 4" min="0" max="1" value="0">
+		  <Help>Setting this parameter to the value of 1 will stop theTZ66D from transmitting to devices that are associated into Group 4.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Night light" min="0" max="1" value="0">
+		  <Help>The LED on the TZ66D will by default, turn ON when the load attached is turned OFF. To make the LED turn ON when the load attached is turned ON instead, set parameter to a value of 1.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="4" label="Invert switch" min="0" max="1" value="0">
+		  <Help>To change the top of the switch to OFF and the bottom of the switch ON , set parameter 4 to 1.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="14" label="Enable shade control Group 2" min="0" max="1" value="0">
+		  <Help>The TZ66D can operate shade control devices via its Group 2 if this configuration parameter is set to 1.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="15" label="Enable shade control Group 3" min="0" max="1" value="0">
+		  <Help>The TZ66D can operate shade control devices via its Group 3 if this configuration parameter is set to 1.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="19" label="LED Transmission indication" min="0" max="2" value="2">
+		  <Help>The TZ66-D will flicker its LED when it is transmitting to any of its 4 groups. This flickering can be set to not flicker at all (set to 0), to flicker the entire time it is transmitting (set to 1), or to flicker for only 1 second when it begins transmitting (set to 2). By default, the TZ66D is set to flicker for only 1 second.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="20" label="Poll Group 2 Interval (minutes)" min="1" max="255" value="2">
+		  <Help>The TZ66D can operate shade control devices via its Group 3 if this configuration parameter is set to 1.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="22" label="Poll Group 2" min="0" max="1" value="1">
+		  <Help>If value is 0, the TZ66D will not poll Group 2. If value is 1, the TZ66D will poll Group 2 at the interval set in Configuration Parameter 20.</Help>
+		</Value>
+	</CommandClass>
+</Product>

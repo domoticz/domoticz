@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aeon Labs DSD31 Siren Gen5 -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<Protocol refreshonnodeinfoframe="false"/>
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="37" genre="config" label="Siren sound and Volume" units="" value="259" size="2">
+			<Help>
+				Select the Siren Sound and Volume
+			</Help>
+			<Item label="Sound 1 - Low Volume" value="257"/>
+			<Item label="Sound 1 - Mid Volume" value="258"/>
+			<Item label="Sound 1 - High Volume" value="259"/>
+			<Item label="Sound 2 - Low Volume" value="513"/>
+			<Item label="Sound 2 - Mid Volume" value="514"/>
+			<Item label="Sound 2 - High Volume" value="515"/>
+			<Item label="Sound 3 - Low Volume" value="769"/>
+			<Item label="Sound 3 - Mid Volume" value="770"/>
+			<Item label="Sound 3 - High Volume" value="771"/>
+			<Item label="Sound 4 - Low Volume" value="1025"/>
+			<Item label="Sound 4 - Mid Volume" value="1026"/>
+			<Item label="Sound 4 - High Volume" value="1027"/>
+			<Item label="Sound 5 - Low Volume" value="1281"/>
+			<Item label="Sound 5 - Mid Volume" value="1282"/>
+			<Item label="Sound 5 - High Volume" value="1283"/>
+			
+
+		</Value>
+
+		<Value type="list" index="80" genre="config" label="Send Notifications" units="" min="0" max="1" value="0" size="1">
+			<Help>
+				Enable to send notifications to associated devices (Group 1) when the state of Siren changed 
+			</Help>
+			<Item label="Nothing" value="0" />
+			<Item label="Hail" value="1" />
+			<Item label="Basic" value="2" />
+		</Value>
+
+		<Value type="list" index="200" genre="config" label="Partner ID" units="" min="0" max="1" value="0" size="1">
+			<Help>
+				Partner ID 
+			</Help>
+			<Item label="Aeon Labs Standard Product" value="0"/>
+		</Value>
+
+		<Value type="list" index="252" genre="config" label="Enable/disable Lock Configuration" units="" min="0" max="1" value="0" size="1">
+			<Help>
+				Enable/disable Lock Configuration
+			</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
+		</Value>
+
+		<Value type="int" index="255" genre="config" label="Reset default configuration" units="" value="" write_only="true" affects="all">
+			<Help>
+				Reset to the default configuration.
+			</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- Basic set as report -->
+	<CommandClass id="32" setasreport="true"/>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="LifeLine" auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

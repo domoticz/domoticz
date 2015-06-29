@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Vision ZD2102 Door/Window Sensor -->
+	<CommandClass id="112">
+		<Value type="list" genre="config"  index="1" label="External Switch" size="1" min="0" max="255" value="0">
+			<Help>External Switch Status</Help>
+			<Item label="On" value="255" />
+			<Item label="Off" value="0" />
+		</Value>
+	</CommandClass>
+
+	<!-- COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" setasreport="true"/>
+
+	<!-- COMMAND_CLASS_ASSOCIATION -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="All Reports" auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

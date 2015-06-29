@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- COMMAND_CLASS_ASSOCIATION.  This class is in the list reported by the thermostat, but it does not respond to requests -->  
+	<CommandClass id="133" name="COMMAND_CLASS_ASSOCIATION" version="1" request_flags="4" create_vars="true">
+		<Instance index="1" />
+		<Associations num_groups="1">
+		  <Group index="1" max_associations="5" label="Group 1" auto="true">
+		    <Node id="1" />
+		  </Group>
+		</Associations>
+	</CommandClass>
+
+        <!-- This thermostat's setpoint descriptions are 1 based, not 0 -->
+        <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" base="0" />
+
+	<CommandClass id="112">
+		<Value type="short" index="23" genre="config" label="Autosend enable" units="" min="" max=""></Value>
+	</CommandClass>
+
+</Product>
+

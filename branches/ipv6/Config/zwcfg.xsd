@@ -1,0 +1,249 @@
+<?xml version='1.0'?>
+<xs:schema
+  xmlns:xs='http://www.w3.org/2001/XMLSchema'
+  targetNamespace='http://code.google.com/p/open-zwave/'
+  xmlns:Driver='http://code.google.com/p/open-zwave/'
+  elementFormDefault='qualified'>
+
+ <xs:element name='Driver'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Driver:Node' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='version' type='xs:string' use='required'/>
+   <xs:attribute name='home_id' type='xs:string' use='required'/>
+   <xs:attribute name='node_id' type='xs:string' use='required'/>
+   <xs:attribute name='api_capabilities' type='xs:string' use='required'/>
+   <xs:attribute name='controller_capabilities' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Node'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Driver:Manufacturer'/>
+    <xs:element ref='Driver:CommandClasses'/>
+   </xs:sequence>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='name' type='xs:string' use='required'/>
+   <xs:attribute name='location' type='xs:string' use='optional'/>
+   <xs:attribute name='basic' type='xs:string' use='optional'/>
+   <xs:attribute name='generic' type='xs:string' use='optional'/>
+   <xs:attribute name='specific' type='xs:string' use='optional'/>
+   <xs:attribute name='type' type='xs:string' use='optional'/>
+   <xs:attribute name='listening' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='frequentListening' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='beaming' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='routing' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='max_baud_rate' type='xs:string' use='optional'/>
+   <xs:attribute name='version' type='xs:string' use='optional'/>
+   <xs:attribute name='query_stage' type='xs:string' use='optional'/>
+   <xs:attribute name='security' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='nodeinfosupported' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Manufacturer'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Driver:Product'/>
+   </xs:sequence>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='name' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Product'>
+  <xs:complexType>
+   <xs:attribute name='type' type='xs:string' use='required'/>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='name' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='CommandClasses'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Driver:CommandClass' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='CommandClass'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Driver:Instance' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Driver:Value' minOccurs='0' maxOccurs='unbounded'/>
+    <xs:element ref='Driver:Associations' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='id' type='xs:string' use='required'/>
+   <xs:attribute name='name' type='xs:string' use='required'/>
+   <xs:attribute name='version' type='xs:string' use='required'/>
+   <xs:attribute name='after_mark' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='create_vars' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='getsupported' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='request_flags' type='xs:string' use='optional'/>
+   <xs:attribute name='base' type='xs:string' use='optional'/>
+   <xs:attribute name='override_precision' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Instance'>
+  <xs:complexType>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Value'>
+  <xs:complexType>
+   <xs:sequence>
+     <xs:element ref='Driver:Help' minOccurs='0' maxOccurs='1'/>
+     <xs:element ref='Driver:Item' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='type' type='xs:string' use='required'/>
+   <xs:attribute name='genre' type='xs:string' use='required'/>
+   <xs:attribute name='instance' type='xs:string' use='required'/>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='units' type='xs:string' use='required'/>
+   <xs:attribute name='read_only' use='required'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='write_only' use='required'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='verify_changes' use='required'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+   <xs:attribute name='poll_intensity' type='xs:string' use='required'/>
+   <xs:attribute name='min' type='xs:string' use='required'/>
+   <xs:attribute name='max' type='xs:string' use='required'/>
+   <xs:attribute name='value' type='xs:string' use='optional'/>
+   <xs:attribute name='vindex' type='xs:string' use='optional'/>
+   <xs:attribute name='affects' type='xs:string' use='optional'/>
+   <xs:attribute name='size' type='xs:string' use='optional'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Help'>
+  <xs:complexType mixed='true'>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Item'>
+  <xs:complexType>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='value' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Associations'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element ref='Driver:Group' minOccurs='0' maxOccurs='unbounded'/>
+   </xs:sequence>
+   <xs:attribute name='num_groups' type='xs:string' use='required'/>
+  </xs:complexType>
+ </xs:element>
+
+ <xs:element name='Group'>
+  <xs:complexType>
+   <xs:sequence>
+    <xs:element name='Node' minOccurs='0' maxOccurs='unbounded'>
+	<xs:complexType>
+		<xs:attribute name='id' type='xs:string' use='required'/>
+	</xs:complexType>
+    </xs:element>
+ </xs:sequence>
+   <xs:attribute name='index' type='xs:string' use='required'/>
+   <xs:attribute name='max_associations' type='xs:string' use='required'/>
+   <xs:attribute name='label' type='xs:string' use='required'/>
+   <xs:attribute name='auto' use='required'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
+  </xs:complexType>
+ </xs:element>
+</xs:schema>

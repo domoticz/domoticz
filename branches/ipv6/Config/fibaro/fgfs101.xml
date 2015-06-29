@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="short" genre="config" instance="1" index="1" label="IN1 Alarm Cancellation Delay" min="0" max="3600" value="0">
+      <Help>Flood alarm cancellation delay. Additional delay after a flood alarm has ceased. The parameter allows you to specify additional time, after which the flood alarm is cancelled once its violation has ceased.</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="2" label="Acoustic and visual signals" value="3" size="1">
+      <Help>Acoustic and visual signals in case of flooding.</Help>
+      <Item label="Signals INACTIVE" value="0" />
+      <Item label="Acoustic INACTIVE, visual ACTIVE" value="1" />
+      <Item label="Acoustic ACTIVE, visual INACTIVE" value="2" />
+      <Item label="Acoustic ACTIVE, visual ACTIVE" value="3" />
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="5" label="Type of alarm frame for association group 1" value="255" size="1">
+      <Help>Type of alarm frame for association group 1, activated by flood sensor. The parameter allows to specify the type of alarm frame or to force transmission of control commands (BASIC_SET)</Help>
+      <Item label="ALARM WATER" value="0" />
+      <Item label="BASIC_SET" value="255" />
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="7" label="Forced Level of Dimming group 1" min="1" max="255" value="255">
+      <Help>Value of the parameter specifying the forced level of dimming / opening sun blinds when comes "switch on" / "open" command to devices from association group no. 1.
+In the case of alarm frames the alarm priority is specified. Possible parameter settings: (1 – 99) and 255. Value of 255 makes it possible to activate the device when using the Dimmer module it means activating the device and setting it to the previous stored condition, e.g. when Dimmer is set to 30%, then deactivated, and then reactivated using command 255, it will automatically be set to the previous condition, i.e. 30%.</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="9" label="Deactivate transmission of frame cancelling alarm" value="1" size="1">
+      <Help>Deactivating transmission of the frame cancelling the alarm or the control frame deactivating the device (Basic). It allows for disabling the deactivation function or the alarm cancellation function for devices associated with the appropriate input of the Fibaro Sensor. NOTE: Information concerning alarm violation or activation commands for devices from association groups are always sent.</Help>
+      <Item label="Alarm (flooding) cancellation INACTIVE" value="0" />
+      <Item label="Alarm (flooding) cancellation ACTIVE" value="1" />
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="10" label="Interval between successive readings of temperature sensors" min="1" max="65535" value="300">
+      <Help>Interval between successive readings of temperature from all sensors connected to the device in seconds. Note: taking temperature readings from the sensor does not result in sending a temperature condition report to the central hub.</Help>
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="12" label="Insensitiveness to temperature changes." min="1" max="1000" value="50">
+      <Help>Insensitiveness to temperature changes. This is the maximum acceptable difference between the last reported temperature and the current temperature taken from the sensor. If the temperatures differ by the set value or more, then a report with the current temperature value is sent to the device assigned to association group no. 3. Intervals between taking readings from sensors are specified by parameter no. 10.
+Possible parameter settings:1 – 1000 [each 0.01oC] [0.01oC – 10.00oC].</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="13" label="Transmitting the alarm or control frame broadcast mode" value="0" size="1">
+      <Help>Transmitting the alarm or control frame in "broadcast" mode (i.e. to all devices within range), information sent in this mode is not repeated by the mesh network. NOTE: If the broadcast mode of information transmission is activated for a given channel, then transmission of information in singlecast mode to devices assigned to the association group of this channel is deactivated.</Help>
+      <Item label="Broadcasts INACTIVE" value="0" />
+      <Item label="Flood ACTIVE, tamper INACTIVE" value="1" />
+      <Item label="Flood INACTIVE, tamper ACTIVE" value="2" />
+      <Item label="Flood ACTIVE, tamper ACTIVE" value="3" />
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="50" label="Low temperature alarm threshold." min="-10000" max="10000" value="1500">
+      <Help>The parameter stores a temperature value, below which LED indicator blinks with a colour determined by Parameter 61 settings. By default the LED indicator blinks blue. 
+Possible parameter settings:-10000 – 10000 [each 0.01oC] [-100oC – 100oC].</Help>
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="51" label="High temperature alarm threshold." min="-10000" max="10000" value="3500">
+      <Help>The parameter stores a temperature value, above which LED indicator blinks with a colour determined by Parameter 62 settings. By default the LED indicator blinks red. 
+Possible parameter settings:-10000 – 10000 [each 0.01oC] [-100oC – 100oC].</Help>
+    </Value>
+
+    <Value type="int" genre="config" instance="1" index="61" label="Low temperature alarm indicator colour." min="0" max="16777215" value="255">
+      <Help>The parameter stores RGB colour value.</Help>
+    </Value>
+
+    <Value type="int" genre="config" instance="1" index="62" label="High temperature alarm indicator colour." min="0" max="16777215" value="16711680">
+      <Help>The parameter stores RGB colour value.</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="63" label="Managing a LED indicator under standard operation." value="2" size="1">
+      <Help>Parameter determines LED indicator's operation. Set to 0 turns the indicator off, saving battery life.</Help>
+      <Item label="LED doesn't indicate temperature" value="0" />
+      <Item label="LED indicates temperature (blink) every Temperature Measurement Interval (Parameter 10, constant power + battery) or Wake Up Interval (battery)" value="1" />
+      <Item label="LED indicates temperature constantly, only in constant power mode." value="2" />
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="73" label="Temperature measurement compensation." min="-10000" max="10000" value="0">
+      <Help>Parameter stores a temperature value to be added to or deducted from the current temperature measured by the internal temperature sensor in order to compensate the difference between air temperature and the temperature at floor level.
+Possible parameter settings:-10000 – 10000 [each 0.01oC] [-100oC – 100oC].</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="74" label="Alarm frame sent to group 2 (tamper/tilt)." value="2" size="1">
+      <Help>The device is able to turn on alarms resulting from sensors vibrations, e.g. when the sensor is moved, or the TMP button is released. Group 2 association alarms are not cancelled.</Help>
+      <Item label="Tamper alarms INACTIVE" value="0" />
+      <Item label="Button tamper alarm ACTIVE" value="1" />
+      <Item label="Movement tamper alarm ACTIVE" value="2" />
+      <Item label="Button and movement tamper alarms ACTIVE" value="3" />
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="75" label="Visual and audible alarm duration" min="0" max="65535" value="0">
+      <Help>Parameter determines a time period after which alarm will become 'quiet' - still active but the device will go into battery saving mode. Visual or acoustic alarm will be reactivated after time period specified in Parameter 76. When alarm status ceases, alarm will be turned off immediately.
+Value of 0 means visual and acoustic alarms are active indefinitely. In battery power mode the device will never go to sleep which may shorten battery life significantly.</Help>
+    </Value>
+
+    <Value type="short" genre="config" instance="1" index="76" label="Alarm frame/basic set frame retransmission time" min="0" max="65535" value="0">
+      <Help>Parameter determines a time period after which an alarm frame will be retransmitted.
+Value of 0 cancels an alarm frame retransmission.</Help>
+    </Value>
+
+    <Value type="list" genre="config" instance="1" index="77" label="Flood sensor functionality turned off." value="0" size="1">
+      <Help>Allows for turning off the internal flood sensor. Tamper and internal temperature sensors will remain active.</Help>
+      <Item label="Default flood sensor operation (ACTIVE)" value="0" />
+      <Item label="Flood sensor INACTIVE" value="1" />
+    </Value>
+
+   </CommandClass>
+
+  <CommandClass id="96" mapping="endpoints" />
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="3">
+      <Group index="1" max_associations="5" label="Flood Alarm" auto="true"/>
+      <Group index="2" max_associations="5" label="Tamper Alarm" auto="true" />
+      <Group index="3" max_associations="1" label="Device Status" auto="true"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

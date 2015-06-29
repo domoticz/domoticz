@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+        <CommandClass id="133">
+                <Associations num_groups="1">
+                        <Group index="1" max_associations="5" label="Group 1" auto="true" />
+                </Associations>
+        </CommandClass>
+</Product>

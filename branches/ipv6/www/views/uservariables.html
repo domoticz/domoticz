@@ -1,0 +1,50 @@
+<div id="fibaromain" class="container">
+    <table class="display" id="uservariablestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="30" align="left">Idx</th>
+                <th width="120" align="left" data-i18n="Variable name">Variable name</th>
+			    <th width="60" align="left" data-i18n="Variable type">Variable type</th>
+                <th width="120" align="left" data-i18n="Current value">Current value</th>
+				<th width="120" align="left" data-i18n="Last update">Last update</th>
+            </tr>
+        </thead>		
+    </table>
+    <table class="display" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td align="left">
+				<a class="btnstyle3-dis" id="uservariableupdate" data-i18n="Update">Update</a>&nbsp;
+				<a class="btnstyle3-dis" id="uservariabledelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right"><a class="btnstyle3" ng-click="RefreshUserVariablesTable();" data-i18n="Refresh">Refresh</a></td>
+		</tr>
+    </table>
+	<p>
+	<h2 data-i18n="Edit variable">Edit variable</h2><br>
+	<table class="display" id="uservariablesedittable" border="0" cellpadding="0" cellspacing="20">
+		<tr id="uservariablenamerow">
+			<td align="right" style="width:110px"><label for="uservariablename"><span data-i18n="Variable name"></span>:</label></td>
+			<td><input type="text" id="uservariablename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td align="right" style="width:110px"><label for="uservariabletype"><span data-i18n="Variable type"></span>:</label></td>
+			<td><select id="uservariabletype" style="width:160px" class="combobox ui-corner-all">
+					<option value="0" data-i18n="Integer">Integer</option>
+					<option value="1" data-i18n="Float">Float</option>
+					<option value="2" data-i18n="String">String</option>
+					<option value="3" data-i18n="Date">Date</option>
+					<option value="4" data-i18n="Time">Time</option>
+				</select>
+			</td>
+		</tr>
+		<tr id="uservariablevaluerow">
+			<td align="right" style="width:110px"><label for="uservariablevalue"><span data-i18n="Variable value"></span>:</label></td>
+			<td><input type="text" id="uservariablevalue" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<a class="btnstyle3" onclick="AddVariable('a');" data-i18n="Add">Add</a>
+			</td>
+		</tr>	
+	</table>
+</div>

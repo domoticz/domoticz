@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- COMMAND_CLASS_NODE_NAMING.  This class is in the list reported by the PM12, but it does not respond to requests -->
+  <CommandClass id="119" action="remove" /> 
+</Product>
+

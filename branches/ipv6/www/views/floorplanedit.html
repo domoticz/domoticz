@@ -1,0 +1,159 @@
+<meta http-equiv="Content-Type" content="application/xhtml+xml">
+<div id="floorplaneditcontent" class="container">
+</div>
+<div id="dialog-add-edit-floorplan" style="display:none;">
+	<table border="0" cellpadding="0" cellspacing="20" width="100%">
+		<tr>
+			<td style="width:25%"><label for="floorplanname" data-i18n="Name">Name</label>:</td>
+			<td><input type="text" id="floorplanname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<table class="display" id="imagetable" border="0" cellpadding="0" cellspacing="0" width="100%">
+					<thead>
+							<tr valign="middle">
+								<th align="middle">www/images/floorplans</th>
+							</tr>
+					</thead>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td style="width:25%"><label for="imagename" data-i18n="Image file">Image file</label>:</td>
+			<td><input type="text" id="imagename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		<tr>
+			<td style="width:25%"><label for="scalefactor" data-i18n="Icon Scale">Icon Scale</label>:</td>
+			<td><input type="text" id="scalefactor" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+	</table>
+</div>
+<div id="floorplaneditmain" style="display:none;">
+	<br>
+	<table class="display" id="floorplantable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th align="left" data-i18n="Name">Name</th>
+				<th align="left" width="60%" data-i18n="Image">Image</th>
+				<th align="left" width="100" data-i18n="Icon Scale">Icon Scale</th>
+				<th width="60" align="center" data-i18n="Order">Order</th>
+			</tr>
+		</thead>
+	</table>
+	<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3" id="floorplanadd" onclick="AddNewFloorplan();" data-i18n="Add">Add</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="floorplanedit" data-i18n="Edit">Edit</a>&nbsp;&nbsp;&nbsp;
+				<a class="btnstyle3-dis" id="floorplandelete" data-i18n="Delete">Delete</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<h2 data-i18n="Room Plans">Room Plans</h2>(<span data-i18n="Select Floorplan first to Edit...">Select Floorplan first to Edit...</span>)<br>
+	<br>
+	<table class="display" id="plantable2" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+				<tr valign="middle">
+					<th align="left" data-i18n="Name">Name</th>
+					<th width="160" align="left" data-i18n="Room Area Defined">Room Area Defined</th>
+				</tr>
+		</thead>
+	</table>
+    <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td align="left" width="100">
+				<label id="mouseX" align="center" style="width: 30px; padding: .2em;" class="ui-widget-content ui-corner-all">0</label>
+				/
+				<label id="mouseY" align="center" style="width: 30px; padding: .2em;" class="ui-widget-content ui-corner-all">0</label>
+			</td>
+			<td align="center">
+				<label><span data-i18n="Plan"></span></label>
+				<select id="comboactiveplan" style="width:300px" class="combobox ui-corner-all"></select>
+				<a class="btnstyle3-dis" id="activeplanadd" onclick="AddUnusedPlan();" data-i18n="Add">Add</a>
+			</td>
+			<td>
+				<a class="btnstyle3-dis" id="activeplandelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="center">
+				<a class="btnstyle3-dis" id="activeplanupdate" data-i18n="Update">Update</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3-dis" id="activeplanclear" data-i18n="Clear">Clear</a>
+			</td>
+		</tr>
+	</table>
+	<div id="floorplaneditor" width="100%" height="100%">
+		<span id="helptext" data-i18n="Click on the image below to define room area, drag and drop devices">Click on the image below to define room area, drag and drop devices</span>
+		<img id="floorplanimagesize" width="100%" height="100%" src="" style="display:none" onload="ImageLoaded()">
+		<style type="text/css">
+			.hoverable
+			{
+				cursor: pointer;
+				fill: blue;
+				fill-opacity: 0.33;
+				stroke: blue;
+				stroke-width: 4;
+				stroke-linejoin: round;
+				stroke-opacity: 0.5;
+			}
+
+			polygon.hoverable:hover
+			{
+				stroke: black;   
+			}
+			
+			polygon.nothoverable
+			{
+				fill: blue;
+				fill-opacity: 0.1;
+				stroke: blue;
+				stroke-width: 1;
+				stroke-linejoin: round;
+				stroke-opacity: 0.5;
+			}
+
+			image.moveable
+			{
+				cursor: move;
+			}
+
+			rect.popup{
+				fill: #F1F5FA;
+				font-family: Arial, Helvetica, sans-serif;
+				stroke: gray;
+				stroke-width: 0.5;
+				stroke-opacity: 0.5;
+			}
+			rect.header{
+				fill: #D4E1EE;
+				stroke: black;
+				stroke-width: 1;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+		</style>
+		<svg id="svgcontainer" width="100%" height="100%" version="1.1"  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+			preserveAspectRatio="xMinYMin meet" style="display:none">
+			<g id="floorplangroup" zoomed="false" >
+				<image id="floorplanimage"  width="100%" height="100%" xlink:href="" />
+				<g id="roomplangroup"/>
+				<polygon id="roompolyarea" class="hoverable">
+					<title data-i18n="Click room to test">Click room to test</title>
+				</polygon>
+				<script>
+					function MouseXY(evt) {
+						if (!evt) var evt = window.event;
+						var parent = evt.target.parentNode;
+						var Scale = Device.xImageSize / $("#floorplaneditor").width();
+						var offset = $("#floorplanimage").offset();
+						var xoffset = Math.round((evt.pageX - offset.left) * Scale);
+						var yoffset = Math.round((evt.pageY - offset.top) * Scale);
+						$('#mouseX').text(xoffset);
+						$('#mouseY').text(yoffset);
+					}
+				</script>
+			</g>
+		</svg>
+	</div>
+	<br>
+</div>

@@ -1,0 +1,9 @@
+FILE(GLOB SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*Test.cpp" )
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/common)
+
+ADD_LIBRARY(TelldusCommonTests STATIC ${SRCS} )
+
+TARGET_LINK_LIBRARIES( TelldusCommonTests TelldusCommon ${CPPUNIT} )
+ADD_DEPENDENCIES( TelldusCommonTests TelldusCommon )
+

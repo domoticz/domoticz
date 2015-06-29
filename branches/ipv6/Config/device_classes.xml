@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DeviceClasses xmlns='http://code.google.com/p/open-zwave/'>
+  <Basic key="0x01" label="Controller" />
+  <Basic key="0x02" label="Static Controller" />
+  <Basic key="0x03" label="Slave" />
+  <Basic key="0x04" label="Routing Slave" />
+  <Generic key="0x01" label="Remote Controller" command_classes="0xef,0x20">
+    <Specific key="0x01" label="Portable Remote Controller" />
+    <Specific key="0x02" label="Portable Scene Controller" command_classes="0x2d,0x72,0x85,0xef,0x2b" />
+    <Specific key="0x03" label="Portable Installer Tool" command_classes="0x21,0x72,0x86,0x8f,0xef,0x21,0x60,0x70,0x72,0x84,0x85,0x86,0x8e" />
+   	<Specific key="0x04" label="Remote Control AV" />
+	<Specific key="0x06" label="Remote Control Simple" />
+  </Generic>
+  <Generic key="0x02" label="Static Controller" command_classes="0xef,0x20">
+    <Specific key="0x01" label="Static PC Controller" />
+    <Specific key="0x02" label="Static Scene Controller" command_classes="0x2d,0x72,0x85,0xef,0x2b" />
+    <Specific key="0x03" label="Static Installer Tool" command_classes="0x21,0x72,0x86,0x8f,0xef,0x21,0x60,0x70,0x72,0x84,0x85,0x86,0x8e" />
+   	<Specific key="0x04" label="Set Top Box"/>
+	<Specific key="0x05" label="Sub System Controller"/>
+	<Specific key="0x06" label="TV"/>
+	<Specific key="0x07" label="Gateway"/>
+  </Generic>
+  <Generic key="0x03" label="AV Control Point" command_classes="0x20">
+    <Specific key="0x04" label="Satellite Receiver" command_classes="0x72,0x86,0x94" />
+    <Specific key="0x11" label="Satellite Receiver V2" command_classes="0x72,0x86,0x94" basic="0x94" />
+    <Specific key="0x12" label="Doorbell" command_classes="0x30,0x72,0x85,0x86" basic="0x30"/>
+  </Generic>
+  <Generic key="0x04" label="Display" command_classes="0x20">
+    <Specific key="0x01" label="Simple Display" command_classes="0x72,0x86,0x92,0x93" />
+  </Generic>
+  <Generic key="0x05" label="Network Extender" command_classes="0x20">
+	<Specific key="0x01" label="Secure Extender"/>
+  </Generic>
+  <Generic key="0x06" label="Appliance" command_classes="0x20">
+	<Specific key="0x01" label="General Appliance"/>
+	<Specific key="0x02" label="Kitchen Appliance"/>
+	<Specific key="0x03" label="Laundry Appliance"/>
+  </Generic>
+  <Generic key="0x07" label="Notification Sensor" command_classes="0x20">
+	<Specific key="0x01" label="Notification Sensor"/>
+  </Generic>
+  <Generic key="0x08" label="Thermostat" command_classes="0x20">
+    <Specific key="0x01" label="Heating Thermostat" />
+    <Specific key="0x02" label="General Thermostat" command_classes="0x40,0x43,0x72" basic="0x40" />
+    <Specific key="0x03" label="Setback Schedule Thermostat" command_classes="0x46,0x72,0x86,0x8f,0xef,0x46,0x81,0x8f" basic="0x46" />
+    <Specific key="0x04" label="Setpoint Thermostat" command_classes="0x43,0x72,0x86,0x8f,0xef,0x43,0x8f" basic="0x43" />
+    <Specific key="0x05" label="Setback Thermostat" command_classes="0x40,0x43,0x47,0x72,0x86" basic="0x40" />
+    <Specific key="0x06" label="General Thermostat V2" command_classes="0x40,0x43,0x72,0x86" basic="0x40" />
+  </Generic>
+  <Generic key="0x09" label="Window Covering" command_classes="0x20">
+    <Specific key="0x01" label="Simple Window Covering" command_classes="0x50" basic="0x50" />
+  </Generic>
+  <Generic key="0x0f" label="Repeater Slave" command_classes="0x20">
+    <Specific key="0x01" label="Basic Repeater Slave" />
+  </Generic>
+  <Generic key="0x10" label="Binary Switch" command_classes="0x20,0x25" basic="0x25">
+    <Specific key="0x01" label="Binary Power Switch" command_classes="0x27" />    
+    <Specific key="0x03" label="Binary Scene Switch" command_classes="0x2b,0x2c,0x72"/>
+	<Specific key="0x04" label="Power Strip" command_classes="0x20,0x25" basic="0x25"/>
+	<Specific key="0x05" label="Siren" command_classes="0x20,0x25" basic="0x25"/>
+	<Specific key="0x06" label="Valve Open Close" command_classes="0x20,0x25" basic="0x25"/>
+  </Generic>
+  <Generic key="0x11" label="Multilevel Switch" command_classes="0x20,0x26" basic="0x26">
+    <Specific key="0x01" label="Multilevel Power Switch" command_classes="0x27" />
+    <Specific key="0x03" label="Multiposition Motor" command_classes="0x72,0x86" />
+    <Specific key="0x04" label="Multilevel Scene Switch" command_classes="0x27,0x2b,0x2c,0x72" />
+    <Specific key="0x05" label="Motor Control Class A" command_classes="0x25,0x72,0x86" />
+    <Specific key="0x06" label="Motor Control Class B" command_classes="0x25,0x72,0x86" />
+    <Specific key="0x07" label="Motor Control Class C" command_classes="0x25,0x72,0x86" />
+  </Generic>
+  <Generic key="0x12" label="Remote Switch" command_classes="0xef,0x20">
+    <Specific key="0x01" label="Binary Remote Switch" command_classes="0xef,0x25" basic="0x25"/>
+    <Specific key="0x02" label="Multilevel Remote Switch" command_classes="0xef,0x26" basic="0x26"/>
+    <Specific key="0x03" label="Binary Toggle Remote Switch" command_classes="0xef,0x28" basic="0x28"/>
+    <Specific key="0x04" label="Multilevel Toggle Remote Switch" command_classes="0xef,0x29" basic="0x29"/>
+  </Generic>
+  <Generic key="0x13" label="Toggle Switch" command_classes="0x20" >
+    <Specific key="0x01" label="Binary Toggle Switch" command_classes="0x25,0x28" basic="0x28" />
+    <Specific key="0x02" label="Multilevel Toggle Switch" command_classes="0x26,0x29" basic="0x29" />
+  </Generic>
+  <Generic key="0x14" label="Z/IP Gateway" command_classes="0x20">
+    <Specific key="0x01" label="Z/IP Tunneling Gateway" command_classes="0x23,0x24,0x72,0x86"/>
+    <Specific key="0x02" label="Z/IP Advanced Gateway" command_classes="0x23,0x24,0x2f,0x33,0x72,0x86"/>
+  </Generic>
+  <Generic key="0x15" label="Z/IP Node">
+    <Specific key="0x01" label="Z/IP Tunneling Node" command_classes="0x23,0x2e,0x72,0x86" />
+    <Specific key="0x02" label="Z/IP Advanced Node" command_classes="0x23,0x2e,0x2f,0x34,0x72,0x86" />
+  </Generic>
+  <Generic key="0x16" label="Ventilation" command_classes="0x20">
+    <Specific key="0x01" label="Residential Heat Recovery Ventilation" command_classes="0x37,0x39,0x72,0x86" basic="0x39"/>
+  </Generic>
+    <Generic key="0x17" label="Security Panel" command_classes="0x20">
+    <Specific key="0x01" label="Zoned Security Panel"/>
+  </Generic>
+  <Generic key="0x18" label="Wall Controller" command_classes="0x20">
+    <Specific key="0x01" label="Basic Wall Controller"/>
+  </Generic>
+  <Generic key="0x20" label="Binary Sensor" command_classes="0x30,0xef,0x20" basic="0x30">
+    <Specific key="0x01" label="Routing Binary Sensor" />
+  </Generic>
+  <Generic key="0x21" label="Multilevel Sensor" command_classes="0x31,0xef,0x20" basic="0x31">
+    <Specific key="0x01" label="Routing Multilevel Sensor" />
+    <Specific key="0x02" label="Chimney Fan"/>
+  </Generic>
+  <Generic key="0x30" label="Pulse Meter" command_classes="0x35,0xef,0x20" basic="0x35"/>
+  <Generic key="0x31" label="Meter" command_classes="0xef,0x20">
+    <Specific key="0x01" label="Simple Meter" command_classes="0x32,0x72,0x86" basic="0x32" />
+	<Specific key="0x02" label="Advanced Energy Control" command_classes="0x3c,0x3d,0x72,0x86"/>
+	<Specific key="0x03" label="Whole Home Meter Simple"/>
+  </Generic>
+  <Generic key="0x40" label="Entry Control" command_classes="0x20">
+    <Specific key="0x01" label="Door Lock" command_classes="0x62" basic="0x62"/>
+    <Specific key="0x02" label="Advanced Door Lock" command_classes="0x62,0x72,0x86" basic="0x62"/>
+    <Specific key="0x03" label="Secure Keypad Door Lock" command_classes="0x62,0x63,0x72,0x86,0x98" basic="0x62"/>
+	<Specific key="0x04" label="Secure Keypad Door Lock DeadBolt" command_classes="0x63,0x72,0x76,0x86,0x98" basic="0x76"/>
+	<Specific key="0x05" label="Secure Door"/>
+	<Specific key="0x06" label="Secure Gate"/>
+	<Specific key="0x07" label="Secure Barrier AddOn"/>
+	<Specific key="0x08" label="Secure Barrier Open Only"/>
+	<Specific key="0x09" label="Secure Barrier Close Only"/>
+	<Specific key="0x0a" label="Secure LockBox"/>
+  </Generic>
+  <Generic key="0x50" label="Semi Interoperable" command_classes="0x20,0x72,0x86,0x88">
+    <Specific key="0x01" label="Energy Production" command_classes="0x90" />
+  </Generic>
+  <Generic key="0xa1" label="Alarm Sensor" command_classes="0xef,0x20" basic="0x71">
+    <Specific key="0x01" label="Basic Routing Alarm Sensor" command_classes="0x71,0x72,0x85,0x86,0xef,0x71" />
+    <Specific key="0x02" label="Routing Alarm Sensor" command_classes="0x71,0x72,0x80,0x85,0x86,0xef,0x71" />
+    <Specific key="0x03" label="Basic Zensor Alarm Sensor" command_classes="0x71,0x72,0x86,0xef,0x71" />
+    <Specific key="0x04" label="Zensor Alarm Sensor" command_classes="0x71,0x72,0x80,0x86,0xef,0x71" />
+    <Specific key="0x05" label="Advanced Zensor Alarm Sensor" command_classes="0x71,0x72,0x80,0x85,0x86,0xef,0x71" />
+    <Specific key="0x06" label="Basic Routing Smoke Sensor" command_classes="0x71,0x72,0x85,0x86,0xef,0x71" />
+    <Specific key="0x07" label="Routing Smoke Sensor" command_classes="0x71,0x72,0x80,0x85,0x86,0xef,0x71" />
+    <Specific key="0x08" label="Basic Zensor Smoke Sensor" command_classes="0x71,0x72,0x86,0xef,0x71" />
+    <Specific key="0x09" label="Zensor Smoke Sensor" command_classes="0x71,0x72,0x80,0x86,0xef,0x71" />
+    <Specific key="0x0a" label="Advanced Zensor Smoke Sensor" command_classes="0x71,0x72,0x80,0x85,0x86,0xef,0x71" />
+    <Specific key="0x0b" label="Alarm Sensor" command_classes="0x71,0x72,0x85,0x86,0xef,0x71" basic="0x71"/>
+  </Generic>
+  <Generic key="0xff" label="Non Interoperable" />
+</DeviceClasses>

@@ -1,0 +1,875 @@
+<div id="dialog-findlatlong" title="Find your Geo location">
+    <form>
+        <table class="display" id="latlongtable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="name">Address: </label></td>
+          <td>
+			<input type="text" id="address" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+			(Example: Streetname Number City Country)
+          </td>
+        </tr>
+        <tr>
+			<td></td>
+			<td><button id="getlatlong">GetLatLong</button></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="lbllat">Latitude: </label></td>
+          <td><input type="text" id="latitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		    </tr>
+        <tr>
+          <td align="right"><label for="lbllng">Longitude: </label></td>
+          <td><input type="text" id="longitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		    </tr>
+		    </table>
+    </form>
+</div>
+<div id="maindiv" class="container">
+	<div id="settingscontent">
+		<form id="settings">
+			<div id="content">
+				<ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
+					<li class="active"><a data-target="#tabsystem" data-toggle="tab" data-i18n="System">System</a></li>
+					<li><a data-target="#tablog" data-toggle="tab" data-i18n="Log History"></a></li>
+					<li><a data-target="#tabnotifications" data-toggle="tab" data-i18n="Notifications"></a></li>
+					<li><a data-target="#tabemail" data-toggle="tab" data-i18n="Email">Email</a></li>
+					<li><a data-target="#tabmeters" data-toggle="tab" data-i18n="Meters/Counters">Meters/Counters</a></li>
+					<li><a data-target="#tabfloorplan" data-toggle="tab" data-i18n="Floorplan"></a></li>
+					<li><a data-target="#tabother" data-toggle="tab" data-i18n="Other">Other</a></li>
+					<li><a data-target="#tabbackuprestore" data-toggle="tab" data-i18n="Backup/Restore">Backup/Restore</a></li>
+					<li class="pull-right"><a data-i18n="Apply Settings" class="btn-danger sub-tabs-apply" ng-click="StoreSettings()">Apply Settings</a></li>
+				</ul>
+				<div id="my-tab-content" class="tab-content">
+					<div class="tab-pane active" id="tabsystem">
+						<!-- System
+						================================================== -->
+						<section id="system">
+							<div class="page-header-small">
+								<h1 data-i18n="SystemSetup">System Setup</h1>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="User Interface"></span>:</h2>
+									<table class="display" id="languagetable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label for="Language">Language: </label></td>
+										<td>
+											<select id="combolanguage" name="Language" style="width:160px" class="combobox ui-corner-all">
+											<!--#embed combolanguage -->
+											</select>			
+										</td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label for="Themes"><span data-i18n="Theme"></span>: </label></td>
+										<td>
+											<select id="combothemes" name="Themes" style="width:200px" class="combobox ui-corner-all">
+											</select>			
+										</td>
+									</tr>
+									</table>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="Location"></span>:</h2>
+									<label id="sunriseset"></label>
+									<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label for="Latitude"><span data-i18n="Latitude"></span>: </label></td>
+										<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="Longitude"><span data-i18n="Longitude"></span>: </label></td>
+										<td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									</table>
+									<span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span data-i18n="Here"></span></a><br>
+								</div>
+							</div>
+							<br>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Dashboard"></span>:</h2>
+									<table class="display" id="dashmodetable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Mode"></span>: </label></td>
+										<td><select id="combosdashtype" name="DashboardType" style="width:120px" class="combobox ui-corner-all">
+											<option data-i18n="Normal" value="0">Normal</option>
+											<option data-i18n="Compact" value="1">Compact</option>
+											<option data-i18n="Mobile" value="2">Mobile</option>
+											<option data-i18n="Floorplan" value="3">Floorplan</option>
+										</select></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"/> <span data-i18n="AllowWidgetOrdering">Allow Widget Re-Order</span></td>
+									</tr>
+									</table>
+								</div>
+								<div class="span3">
+									<h2><span data-i18n="Mobile"></span>:</h2>
+									<table class="display" id="mobilemodetable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Mode"></span>: </label></td>
+										<td><select id="combosmobiletype" name="MobileType" style="width:120px" class="combobox ui-corner-all">
+											<option data-i18n="Mobile" value="0">Mobile</option>
+											<option data-i18n="Dashboard" value="1">Dashboard</option>
+										</select></td>
+									</tr>
+									</table>
+								</div>
+							</div>
+							<br>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="WebsiteProtection"></span>:</h2>
+									<table class="display" id="webtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:120px"><label><span data-i18n="Username"></span>: </label></td>
+										<td><input type="input" id="WebUserName" name="WebUserName" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Password"></span>: </label></td>
+										<td><input type="password" id="WebPassword" name="WebPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Authentication"></span>: </label></td>
+										<td><select id="comboauthmethod" name="AuthenticationMethod" style="width:200px" class="combobox ui-corner-all">
+											<option data-i18n="Login Page" value="0">Login Page</option>
+											<option data-i18n="Basic-Auth" value="1">Basic-Auth</option>
+										</select></td>
+									</tr>
+									<tr style="display:none;">
+										<td align="right" style="width:60px"><label><span data-i18n="Guest User">Guest User</span>: </label></td>
+										<td><select id="comboguestuser" name="GuestUser" style="width:140px" class="combobox ui-corner-all">
+											<option data-i18n="None" value="0">None</option>
+										</select></td>
+									</tr>
+									</table>
+									<br>
+								</div>
+								<div class="span4">
+									<h2><span data-i18n="SecurityPanel"></span>:</h2>
+									<table class="display" id="sectable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
+										<td><input type="password" id="SecPassword" name="SecPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Delay">Delay</span>: </label></td>
+										<td>
+											<input type="input" id="SecOnDelay" name="SecOnDelay" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;
+											<span data-i18n="(seconds, 0=no delay)"></span>
+										</td>
+									</tr>
+									</table>
+								</div>
+								<br>
+							</div>
+							<h2><span data-i18n="Light/Switch Protection">Light/Switch Protection</span>:</h2>
+							<table class="display" id="protectiontable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
+								<td><input type="password" id="ProtectionPassword" name="ProtectionPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+							</tr>
+							</table>
+							<br>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="LocalNetworks(no_username/password)"></span>:</h2>
+									<table class="display" id="weblocaltable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Networks"></span>: </label></td>
+										<td>
+											<input type="input" id="WebLocalNetworks" name="WebLocalNetworks" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+											<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.*;192.168.0.*)
+										</td>
+									</tr>
+									</table>
+									<br>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="RemoteSharedPortForDomoticzClients"></span>:</h2>
+									<table class="display" id="remotesharedtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Port"></span>: </label></td>
+										<td><input type="input" id="RemoteSharedPort" name="RemoteSharedPort" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									</table>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<div id="SoftwareUpdates">
+										<h2><span data-i18n="SoftwareUpdates"></span>:</h2>
+										<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
+											<tr>
+												<td colspan="2"><input type="checkbox" id="checkforupdates" name="checkforupdates"/> <span data-i18n="CheckForSoftwareUpdates"></span></td>
+											</tr>
+											<tr>
+												<td align="right" style="width:130px"><label><span data-i18n="Release Channel">Release Channel</span>: </label></td>
+												<td><select id="comboReleaseChannel" name="ReleaseChannel" style="width:140px" class="combobox ui-corner-all">
+													<option data-i18n="Stable" value="0">Stable</option>
+													<option data-i18n="Beta" value="1">Beta</option>
+												</select></td>
+											</tr>
+										</table>
+									</div>
+									<br>
+								</div>
+								<div class="span6">
+									<div id="AutoBackup">
+										<h2><span data-i18n="AutoBackup"></span>:</h2>
+										<table class="display" id="autobackuptable" border="0" cellpadding="0" cellspacing="0">
+											<tr>
+												<td colspan="2"><input type="checkbox" id="enableautobackup" name="enableautobackup"/> <span data-i18n="EnableAutoBackup"></span></td>
+											</tr>
+										</table>
+									</div>
+									<br>			
+								</div>
+							</div>
+							<div id="NewHardware">
+								<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
+								<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td colspan="2">
+											<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
+										</td>
+									</tr>
+									<tr>
+										<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
+									</tr>
+								</table>
+							</div>
+							<br>			
+							<div id="ActiveTabs">
+								<h2><span data-i18n="ActiveMenus"></span>:</h2>
+								<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td><input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans"/> <span data-i18n="Floorplan"></span></td>
+									</tr>
+									<tr>
+										<td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> <span data-i18n="Switches"></span></td>
+									</tr>
+									<tr>
+										<td><input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> <span data-i18n="Scenes"></span></td>
+									</tr>
+									<tr>
+										<td><input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <span data-i18n="Temperature"></span></td>
+									</tr>
+									<tr>
+										<td><input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> <span data-i18n="Weather"></span></td>
+									</tr>
+									<tr>
+										<td><input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> <span data-i18n="Utility"></span></td>
+									</tr>
+									<tr>
+										<td><input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"/> <span data-i18n="Custom"></span></td>
+									</tr>
+								</table>
+							</div>
+						</section>
+					</div>
+					<div class="tab-pane" id="tablog">
+						<!-- Log History
+						================================================== -->
+						<section id="loghistory">
+						  <div class="page-header-small">
+							<h1 data-i18n="Log History">Log History</h1>
+						  </div>
+							<h2><span data-i18n="Light/Switches"></span>:</h2>
+							<table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Days"></span>: </label></td>
+								<td><input type="text" id="LightHistoryDays" name="LightHistoryDays" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Short Log Sensors"></span>:</h2>
+							<table class="display" id="shortlogtable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Days"></span>: </label></td>
+								<td><select id="comboshortlogdays" name="ShortLogDays" style="width:60px" class="combobox ui-corner-all">
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>
+									<option value="4">4</option>
+									<option value="5">5</option>
+									<option value="6">6</option>
+									<option value="7">7</option>
+								</select></td>
+							</tr>
+							</table>
+						</section>
+					</div>
+					<div class="tab-pane" id="tabnotifications">
+						<!-- Notification system
+						================================================== -->
+						<section id="notifications">
+							<div class="page-header-small">
+								<h1 data-i18n="Notifications">Notifications</h1>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Prowl (iPhone/iPad)"></span>:</h2>
+									<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="ProwlEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="ProwlEnabled" name="ProwlEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="ProwlAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="ProwlAPI" name="ProwlAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('prowl')">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="NMA (Android)"></span>:</h2>
+									<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="NMAEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="NMAEnabled" name="NMAEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="NMAAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="NMAAPI" name="NMAAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('nma')">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.notifymyandroid.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Pushover (Android/iOs)"></span>:</h2>
+									<table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="PushoverEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="PushoverEnabled" name="PushoverEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="PushoverUser"><span data-i18n="User ID"></span>: </label></td>
+										<td><input type="input" id="PushoverUser" name="PushoverUser" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  </td>
+									</tr>
+									<tr>
+										<td align="right"><label for="PushoverAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="PushoverAPI" name="PushoverAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushover')">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="Pushalot (Windows/Windows Phone)"></span>:</h2>
+									<table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="PushALotEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="PushALotEnabled" name="PushALotEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="PushALotAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="PushALotAPI" name="PushALotAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushalot')">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Clickatell SMS">Clickatell SMS</span>:</h2>
+									<table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="ClickatellEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="ClickatellAPI"><span data-i18n="API Key">API Key</span>: </label></td>
+										<td><input type="input" id="ClickatellAPI" name="ClickatellAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="ClickatellUser"><span data-i18n="User ID"></span>: </label></td>
+										<td><input type="input" id="ClickatellUser" name="ClickatellUser" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="ClickatellPassword"><span data-i18n="Password"></span>: </label></td>
+										<td><input type="password" id="ClickatellPassword" name="ClickatellPassword" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"<label for="ClickatellFrom"><span data-i18n="From"></span>: </label></td>
+										<td><input type="input" id="ClickatellFrom" name="ClickatellFrom" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="ClickatellTo"><span data-i18n="To"></span>: </label></td>
+										<td><input type="input" id="ClickatellTo" name="ClickatellTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('clickatell')">Test</button></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><span data-i18n="(Separate by a semicolon, For Example"></span>: +3123456789;+44567890)</td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.clickatell.com/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+								<div class="span6">
+									<h2><span data-i18n="Custom HTTP">Custom HTTP</span>/<span data-i18n="Action">Action</span>:</h2>
+									<table class="display" id="httptable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="HTTPEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="HTTPEnabled" name="HTTPEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="HTTPField1">#FIELD1: </label></td>
+										<td><input type="input" id="HTTPField1" name="HTTPField1" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="HTTPField2">#FIELD2: </label></td>
+										<td><input type="input" id="HTTPField2" name="HTTPField2" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="HTTPField3">#FIELD3: </label></td>
+										<td><input type="input" id="HTTPField3" name="HTTPField3" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="HTTPField4">#FIELD4: </label></td>
+										<td><input type="input" id="HTTPField4" name="HTTPField4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="HTTPTo">#TO: </label></td>
+										<td><input type="input" id="HTTPTo" name="HTTPTo" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="HTTPURL"><span data-i18n="URL"></span>/<span data-i18n="Action"></span>: </label></td>
+										<td>
+											<textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
+											<span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span><br>
+											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE
+										</td>
+									</tr>
+									</table>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Kodi Media Player"></span>:</h2>
+									<table class="display" id="koditable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:80px"><label for="KodiEnabled"><span data-i18n="Enabled"></span>: </label></td>
+											<td><input type="checkbox" id="KodiEnabled" name="KodiEnabled"/></td>
+										</tr>
+										<tr>
+											<td align="right"><label for="KodiIPAddress"><span data-i18n="IP Address"></span>: </label></td>
+											<td>
+												<input type="input" id="KodiIPAddress" name="KodiIPAddress" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('kodi')">Test</button>
+											</td>
+										</tr>
+										<tr>
+											<td align="right" style="width:80px">
+												<label for="KodiPort"><span data-i18n="Port"></span>: </label>
+											</td>
+											<td>
+												<input type="input" id="KodiPort" name="KodiPort" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<label for="KodiTimeToLive"><span data-i18n="Hops"></span>: </label>
+												<input type="input" id="KodiTimeToLive" name="KodiTimeToLive" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+											</td>
+										</tr>
+									</table>
+									<span data-i18n="Test with default settings before changing. Learn about Kodi"></span> <a class="norm-link" href="http://kodi.tv/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<span>(e.g 224.0.0.1, 192.168.1.100;192.168.1.101;...)</span><br>
+									<br>
+								</div>
+								<div class="span6">
+								</div>
+							</div>
+							<br>
+							<h2><span data-i18n="Notification Intervals"></span>:</h2>
+							<table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Sensors"></span>: </label></td>
+								<td><select id="comboNotificationSensorInterval" name="NotificationSensorInterval" style="width:100px" class="combobox ui-corner-all">
+									<option data-i18n="1 Minute" value="60">1 Minute</option>
+									<option data-i18n="5 Minutes" value="300">5 Minutes</option>
+									<option data-i18n="10 Minutes" value="600">10 Minutes</option>
+									<option data-i18n="15 Minutes" value="900">15 Minutes</option>
+									<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
+									<option data-i18n="1 Hour" value="3600">1 Hour</option>
+									<option data-i18n="2 Hours" value="7200">2 Hours</option>
+									<option data-i18n="3 Hours" value="10800">3 Hours</option>
+									<option data-i18n="4 Hours" value="14400">4 Hours</option>
+									<option data-i18n="5 Hours" value="18000">5 Hours</option>
+									<option data-i18n="6 Hours" value="21600">6 Hours</option>
+									<option data-i18n="7 Hours" value="25200">7 Hours</option>
+									<option data-i18n="8 Hours" value="28800">8 Hours</option>
+									<option data-i18n="9 Hours" value="32400">9 Hours</option>
+									<option data-i18n="10 Hours" value="36000">10 Hours</option>
+									<option data-i18n="11 Hours" value="39600">11 Hours</option>
+									<option data-i18n="12 Hours" value="43200">12 Hours</option>
+									<option data-i18n="13 Hours" value="46800">13 Hours</option>
+									<option data-i18n="14 Hours" value="50400">14 Hours</option>
+									<option data-i18n="15 Hours" value="54000">15 Hours</option>
+									<option data-i18n="16 Hours" value="57600">16 Hours</option>
+									<option data-i18n="17 Hours" value="61200">17 Hours</option>
+									<option data-i18n="18 Hours" value="64800">18 Hours</option>
+									<option data-i18n="19 Hours" value="68400">19 Hours</option>
+									<option data-i18n="20 Hours" value="72000">20 Hours</option>
+									<option data-i18n="21 Hours" value="75600">21 Hours</option>
+									<option data-i18n="22 Hours" value="79200">22 Hours</option>
+									<option data-i18n="23 Hours" value="82800">23 Hours</option>
+									<option data-i18n="24 Hours" value="86400">24 Hours</option>
+								</select></td>
+							</tr>
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Switches"></span>: </label></td>
+								<td><select id="comboNotificationSwitchesInterval" name="NotificationSwitchInterval" style="width:120px" class="combobox ui-corner-all">
+									<option data-i18n="Direct" value="0">Direct</option>
+									<option data-i18n="1 Minute" value="60">1 Minute</option>
+									<option data-i18n="5 Minutes" value="300">5 Minutes</option>
+									<option data-i18n="10 Minutes" value="600">10 Minutes</option>
+									<option data-i18n="15 Minutes" value="900">15 Minutes</option>
+									<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
+									<option data-i18n="1 Hour" value="3600">1 Hour</option>
+									<option data-i18n="2 Hours" value="7200">2 Hour</option>
+									<option data-i18n="3 Hours" value="10800">3 Hour</option>
+									<option data-i18n="4 Hours" value="14400">4 Hour</option>
+									<option data-i18n="5 Hours" value="18000">5 Hour</option>
+									<option data-i18n="6 Hours" value="21600">6 Hour</option>
+									<option data-i18n="7 Hours" value="25200">7 Hour</option>
+									<option data-i18n="8 Hours" value="28800">8 Hour</option>
+									<option data-i18n="9 Hours" value="32400">9 Hour</option>
+									<option data-i18n="10 Hours" value="36000">10 Hour</option>
+									<option data-i18n="11 Hours" value="39600">11 Hour</option>
+									<option data-i18n="12 Hours" value="43200">12 Hours</option>
+									<option data-i18n="13 Hours" value="46800">13 Hours</option>
+									<option data-i18n="14 Hours" value="50400">14 Hours</option>
+									<option data-i18n="15 Hours" value="54000">15 Hours</option>
+									<option data-i18n="16 Hours" value="57600">16 Hours</option>
+									<option data-i18n="17 Hours" value="61200">17 Hours</option>
+									<option data-i18n="18 Hours" value="64800">18 Hours</option>
+									<option data-i18n="19 Hours" value="68400">19 Hours</option>
+									<option data-i18n="20 Hours" value="72000">20 Hours</option>
+									<option data-i18n="21 Hours" value="75600">21 Hours</option>
+									<option data-i18n="22 Hours" value="79200">22 Hours</option>
+									<option data-i18n="23 Hours" value="82800">23 Hours</option>
+									<option data-i18n="24 Hours" value="86400">24 Hours</option>
+								</select></td>
+							</tr>
+							</table>
+						</section>
+					</div>
+					<div class="tab-pane" id="tabemail">
+						<!-- Email Setup
+						================================================== -->
+						<section id="emailsetup">
+						  <div class="page-header-small">
+							<h1 data-i18n="Email Setup">Email Setup</h1>
+						  </div>
+							<table class="display" id="emailtable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="From"></span>: </label></td>
+								<td><input type="email" id="EmailFrom" name="EmailFrom" style="width: 180px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+							</tr>
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="To"></span>: </label></td>
+								<td><input type="email" id="EmailTo" name="EmailTo" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td><span data-i18n="(Separate by a semicolon, For Example"></span>: user@mail.com;user2@mail.com)</td>
+							</tr>
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Server"></span>: </label></td>
+								<td><input type="input" id="EmailServer" name="EmailServer" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+							</tr>
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Port"></span>: </label></td>
+								<td><input type="input" id="EmailPort" name="EmailPort" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(default 25, StartTLS Port 587, SSL Port 465)"></span></td>
+							</tr>
+							<tr>
+								<td align="right" style="width:60px"><label><label><span data-i18n="Username"></span>: </label></td>
+								<td><input type="input" id="EmailUsername" name="EmailUsername" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+							</tr>
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
+								<td><input type="password" id="EmailPassword" name="EmailPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('email')">Test</button></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td><input type="checkbox" id="UseEmailInNotifications" name="UseEmailInNotifications"/> <span data-i18n="Send Email Notification Alerts"></span></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"/> <span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></td>
+							</tr>
+							</table>
+						</section>
+					</div>
+					<div class="tab-pane" id="tabmeters">
+						<!-- Meter Settings
+						================================================== -->
+						<section id="metercounters">
+						  <div class="page-header-small">
+							<h1 data-i18n="Meter/Counter Setup">Meter/Counter Setup</h1>
+						  </div>
+							<h2><span data-i18n="Wind Meter"></span>:</h2>
+							<table class="display" id="windmetertable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+									<td><select id="comboWindUnit" name="WindUnit" style="width:120px" class="combobox ui-corner-all">
+										<option value="0">m/s</option>
+										<option value="1">km/h</option>
+										<option value="2">mph</option>
+										<option value="3">Knots</option>
+									</select></td>
+								</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Temperature"></span>:</h2>
+							<table class="display" id="temperaturetable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+									<td><select id="comboTempUnit" name="TempUnit" style="width:120px" class="combobox ui-corner-all">
+										<option value="0">Celcius</option>
+										<option value="1">Fahrenheit</option>
+									</select></td>
+								</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="RFXMeter/Counter Dividers"></span>:</h2>
+							<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Energy"></span>: </label></td>
+								<td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T1: </label></td>
+								<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T2: </label></td>
+								<td><input type="input" id="CostEnergyT2" name="CostEnergyT2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+							</tr>
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Gas"></span>: </label></td>
+								<td><input type="input" id="GasDivider" name="GasDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+								<td align="right" style="width:60px"><label><span data-i18n="Costs"></span>: </label></td>
+								<td><input type="input" id="CostGas" name="CostGas" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
+							</tr>
+							<tr>
+								<td align="right" style="width:60px"><label><span data-i18n="Water"></span>: </label></td>
+								<td><input type="input" id="WaterDivider" name="WaterDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+								<td align="right" style="width:60px"><label><span data-i18n="Costs"></span>: </label></td>
+								<td><input type="input" id="CostWater" name="CostWater" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
+							</tr>
+							</table>
+							<br>
+							<h2>OWL CM113/CM180i:</h2>
+							<table class="display" id="owl113table" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:60px"><label><span data-i18n="Voltage"></span>: </label></td>
+									<td><input type="input" id="ElectricVoltage" name="ElectricVoltage" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+								</tr>
+								<tr>
+									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+									<td><select id="comboscm113type" name="CM113DisplayType" style="width:120px" class="combobox ui-corner-all">
+										<option value="0">Ampere</option>
+										<option value="1">Watt</option>
+									</select></td>
+								</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="P1 Smart Meter Type"></span>:</h2>
+							<table class="display" id="p1metertable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+									<td><select id="comboP1MeterType" name="SmartMeterType" style="width:180px" class="combobox ui-corner-all">
+										<option data-i18n="With Decimals" value="0">With Decimals</option>
+										<option data-i18n="No Decimals" value="1">No Decimals</option>
+									</select></td>
+								</tr>
+							</table>
+						</section>
+					</div>
+					<div class="tab-pane" id="tabfloorplan">
+						<!-- Floorplans
+						================================================== -->
+						<section id="floorplans">
+						  <div class="page-header-small">
+							<h1 data-i18n="Floorplan">Floorplan</h1>
+						  </div>
+							<h2><span data-i18n="General"></span>:</h2>
+							<table class="display" id="floorplanoptionstable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:150px"><label><span data-i18n="Popup Activation Delay"></span>: </label></td>
+								<td><input type="input" id="FloorplanPopupDelay" name="FloorplanPopupDelay" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>&nbsp;<span data-i18n="Milliseconds"></span></td>
+							</tr>
+							<tr>
+								<td align="right" style="width:150px"><label><span data-i18n="Fullscreen Mode">Fullscreen Mode</span>: </label></td>
+								<td>
+									<input type="checkbox" id="FloorplanFullscreenMode" name="FloorplanFullscreenMode"/>
+								</td>
+							</tr>
+							<tr>
+								<td align="right" style="width:150px"><label><span data-i18n="Animate Transitions">Animate Transitions</span>: </label></td>
+								<td>
+									<input type="checkbox" id="FloorplanAnimateZoom" name="FloorplanAnimateZoom"/>
+								</td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Display Values"></span>:</h2>
+							<table class="display" id="floorplandisplaytable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:150px"><label><span data-i18n="Sensors"></span>: </label></td>
+								<td style="width:50px">
+									<input type="checkbox" id="FloorplanShowSensorValues" name="FloorplanShowSensorValues"/>
+								</td>
+								<td align="right" style="width:50px"><label><span data-i18n="Switches"></span>: </label></td>
+								<td style="width:50px">
+									<input type="checkbox" id="FloorplanShowSwitchValues" name="FloorplanShowSwitchValues"/>
+								</td>
+								<td align="right" style="width:50px"><label><span data-i18n="Scenes"></span>: </label></td>
+								<td>
+									<input type="checkbox" id="FloorplanShowSceneNames" name="FloorplanShowSceneNames"/>
+								</td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Colour Options"></span>:</h2>
+							<table class="display" id="floorplancolourtable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:250px"><label><span data-i18n="Room Area Colour"></span>: </label></td>
+									<td><input type="input" id="FloorplanRoomColour" name="FloorplanRoomColour" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>&nbsp;&nbsp;&nbsp;<a href="http://www.december.com/html/spec/colorsvg.html" target="HTML Colours" data-i18n="Colour name or HEX value"></a></td>
+								</tr>
+								<tr>
+									<td align="right" style="width:250px"><label><span data-i18n="Active Room Area Opacity"></span>: </label></td>
+									<td><select id="FloorplanActiveOpacity" name="FloorplanActiveOpacity" style="width:70px" class="combobox ui-corner-all">
+										<option value="0">0%</option>
+										<option value="5">5%</option>
+										<option value="10">10%</option>
+										<option value="20">20%</option>
+										<option value="25">25%</option>
+										<option value="33">33%</option>
+										<option value="50">50%</option>
+										<option value="66">66%</option>
+										<option value="75">75%</option>
+										<option value="90">90%</option>
+										<option value="100">100%</option>
+									</select></td>
+								</tr>
+								<tr>
+									<td align="right" style="width:250px"><label><span data-i18n="Inactive Room Area Opacity"></span>: </label></td>
+									<td><select id="FloorplanInactiveOpacity" name="FloorplanInactiveOpacity" style="width:70px" class="combobox ui-corner-all">
+										<option value="0">0%</option>
+										<option value="5">5%</option>
+										<option value="10">10%</option>
+										<option value="20">20%</option>
+										<option value="25">25%</option>
+										<option value="33">33%</option>
+										<option value="50">50%</option>
+										<option value="66">66%</option>
+										<option value="75">75%</option>
+										<option value="90">90%</option>
+										<option value="100">100%</option>
+									</select></td>
+								</tr>
+							</table>
+						</section>
+					</div>
+					<div class="tab-pane" id="tabother">
+						<!-- Other Settings
+						================================================== -->
+						<section id="othersettings">
+						  <div class="page-header-small">
+							<h1 data-i18n="Other Settings"></h1>
+						  </div>
+							<h2><span data-i18n="Random Timer"></span>:</h2>
+							<table class="display" id="randomtable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px"><label><span data-i18n="Spread"></span>: </label></td>
+								<td><input type="input" id="RandomSpread" name="RandomSpread" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Minutes +/-)"></span></td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Sensor Timeout"></span>:</h2>
+							<table class="display" id="timeouttable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px"><label><span data-i18n="Timeout"></span>: </label></td>
+								<td><input type="input" id="SensorTimeout" name="SensorTimeout" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="Minutes"></span>)</td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Battery Low Level"></span>:</h2>
+							<table class="display" id="batterytable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px"><label><span data-i18n="Level"></span>: </label></td>
+								<td><input type="input" id="BatterLowLevel" name="BatterLowLevel" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (%, <span data-i18n="0 = Disabled"></span>)</td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Timer Plan">Timer Plan</span>:</h2>
+							<table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:90px"><label><span data-i18n="Plan">Plan</span>: </label></td>
+									<td><select id="comboTimerplan" name="ActiveTimerPlan" style="width:120px" class="combobox ui-corner-all">
+										<option data-i18n="default" value="0">default</option>
+										<option data-i18n="Holiday" value="1">Holiday</option>
+									</select></td>
+								</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Doorbell Command"></span>:</h2>
+							<table class="display" id="doorbelltable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:90px"><label><span data-i18n="Command"></span>: </label></td>
+									<td><select id="comboDoorbellCommand" name="DoorbellCommand" style="width:120px" class="combobox ui-corner-all">
+										<option data-i18n="Group On" value="0">Group On</option>
+										<option data-i18n="On" value="1">On</option>
+									</select></td>
+								</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="Raspberry Pi Camera Parameters"></span>:</h2>
+							<table class="display" id="picamtable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px; vertical-align:top;"><label><span data-i18n="Params"></span>: </label></td>
+								<td>
+									<input type="input" id="RaspCamParams" name="RaspCamParams" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+									(<span data-i18n="default"></span>: -w 800 -h 600 -t 1)
+								</td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="UVC Parameters"></span>:</h2>
+							<table class="display" id="uvctable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px; vertical-align:top;"><label><span data-i18n="Params"></span>: </label></td>
+								<td>
+									<input type="input" id="UVCParams" name="UVCParams" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+									(<span data-i18n="default"></span>: -S80 -B128 -C128 -G80 -x800 -y600 -q100)
+								</td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="EventSystem (Lua/Blockly/Scripts)"></span>:</h2>
+							<table class="display" id="eventsystemtable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px"><label><span data-i18n="Disabled"></span>: </label></td>
+								<td>
+									<input type="checkbox" id="DisableEventScriptSystem" name="DisableEventScriptSystem"/>
+								</td>
+							</tr>
+							</table>
+						</section>
+					</div>
+					<div class="tab-pane" id="tabbackuprestore">
+						<!-- Restore Database
+						================================================== -->
+						<section id="restoredatabase">
+						  <div class="page-header-small">
+							<h1 data-i18n="Backup / Restore Database"></h1>
+							<center><a data-i18n="Backup Database" class="btn btn-primary" href="backupdatabase.php" download>Backup Database</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a data-i18n="Restore Database" class="btn btn-warning" href="javascript:SwitchLayout('RestoreDatabase')">Restore Database</a></center>
+						  </div>
+						</section>
+					</div>
+				</div>
+			</div>	
+	</div>
+</div>
