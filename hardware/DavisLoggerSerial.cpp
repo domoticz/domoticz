@@ -16,7 +16,7 @@
 #include <ctime>
 
 #ifdef _DEBUG
-	#define DEBUG_DAVIS
+	//#define DEBUG_DAVIS
 #endif
 
 #define RETRY_DELAY 30
