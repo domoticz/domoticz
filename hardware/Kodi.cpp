@@ -103,9 +103,14 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 			time_t atime = mytime(NULL);
 			itt->LastOK = atime;
 			SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
-			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
+			std::string sShortStatus = sStatus;
+			if (sShortStatus.find_last_of("%") == sShortStatus.length()-1)
 			{
-				_log.Log(LOG_STATUS, "Kodi: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
+				sShortStatus = sShortStatus.substr(0, sShortStatus.find_last_of(",")); // remove ", xx%" to reduce extraneous logging
+			}
+			if ((itt->nStatus != nStatus) || (itt->sStatus != sShortStatus))
+			{
+				_log.Log(LOG_STATUS, "Kodi: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sShortStatus.c_str());
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
 				char szID[40];
@@ -114,10 +119,10 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 				sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 				std::stringstream szQuery;
 				std::vector<std::vector<std::string> > result;
-				szQuery << "UPDATE DeviceStatus SET nValue=" << nStatus << ", sValue='" << sStatus << "', LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << szID << "')";
+				szQuery << "UPDATE DeviceStatus SET nValue=" << nStatus << ", sValue='" << sShortStatus << "', LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << szID << "')";
 				result = m_sql.query(szQuery.str());
 				itt->nStatus = nStatus;
-				itt->sStatus = sStatus;
+				itt->sStatus = sShortStatus;
 			}
 			break;
 		}
