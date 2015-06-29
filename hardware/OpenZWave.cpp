@@ -620,8 +620,12 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			case OpenZWave::Notification::Code_Dead:
 				if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 				{
+					bool bWasDead = (nodeInfo->eState == NSTATE_DEAD);
 					nodeInfo->eState = NSTATE_DEAD;
+					if (!bWasDead)
+						ForceUpdateForNodeDevices(m_controllerID, _nodeID);
 				}
+				_log.Log(LOG_STATUS, "OpenZWave: Received Node Dead notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 				break;
 			case OpenZWave::Notification::Code_Alive:
 				if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
@@ -633,11 +637,11 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				}
 				break;
 			case OpenZWave::Notification::Code_Timeout:
-				if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
-				{
-					nodeInfo->eState = NSTATE_DEAD;
-					ForceUpdateForNodeDevices(m_controllerID, _nodeID);
-				}
+				//if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
+				//{
+				//	nodeInfo->eState = NSTATE_DEAD;
+				//	ForceUpdateForNodeDevices(m_controllerID, _nodeID);
+				//}
 				_log.Log(LOG_STATUS, "OpenZWave: Received timeout notification from HomeID: %u, NodeID: %d (0x%02x)", _homeID, _nodeID, _nodeID);
 				break;
 			case OpenZWave::Notification::Code_NoOperation:
