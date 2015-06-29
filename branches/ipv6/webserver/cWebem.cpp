@@ -1058,6 +1058,10 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 	int pos;
 	std::vector<_tIPNetwork>::const_iterator itt;
 
+	/* RK, check IPv6 prefix */
+	if (host.substr(0, 7) == "::ffff:") {
+		host = host.substr(7);
+	}
 	if (host=="127.0.0.1")
 	{
 		//We could be using a proxy server
@@ -1080,9 +1084,11 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 		}
 	}
 
+	/* RK, this doesn't work with IPv6 addresses.
 	pos=host.find_first_of(":");
 	if (pos!=std::string::npos)
 		host=host.substr(0,pos);
+	*/
 
 	for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
 	{

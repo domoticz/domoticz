@@ -815,7 +815,7 @@ bool MainWorker::StartThread()
 	if (!m_webserverport.empty())
 	{
 		//Start WebServer
-		if (!m_webservers.StartServers("0.0.0.0", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword))
+		if (!m_webservers.StartServers("::", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword))
 		{
 			return false;
 		}
@@ -846,7 +846,7 @@ bool MainWorker::StartThread()
 		char szPort[100];
 		sprintf(szPort,"%d",rnvalue);
 		m_sharedserver.sDecodeRXMessage.connect( boost::bind( &MainWorker::DecodeRXMessage, this, _1, _2 ) );
-		m_sharedserver.StartServer("0.0.0.0",szPort);
+		m_sharedserver.StartServer("::",szPort);
 
 		LoadSharedUsers();
 	}

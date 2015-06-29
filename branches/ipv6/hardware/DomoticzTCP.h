@@ -3,6 +3,9 @@
 #include <deque>
 #include <iostream>
 #include "DomoticzHardware.h"
+#if defined WIN32
+#include "ws2tcpip.h"
+#endif
 
 class DomoticzTCP: public CDomoticzHardwareBase
 {
@@ -13,7 +16,6 @@ public:
 	void write(const char *data, size_t size);
 	bool isConnected(){ return m_socket!= INVALID_SOCKET; };
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	std::string m_endpoint;
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
@@ -33,7 +35,8 @@ protected:
 	void disconnect();
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
-	sockaddr_in m_addr;
+	sockaddr_in6 m_addr;
+	struct addrinfo *info;
 	int m_socket;
 	unsigned char mBuffer[readBufferSize];
 };
