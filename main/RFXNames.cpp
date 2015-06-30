@@ -324,7 +324,10 @@ const char *RFX_WSForecast_Desc(const unsigned char Forecast)
 		{ wsbaroforcast_cloudy, "Cloudy" },
 		{ wsbaroforcast_some_clouds, "Some Clouds" },
 		{ wsbaroforcast_sunny, "Sunny" },
-		{  0,NULL,NULL }
+		{ wsbaroforcast_unknown, "Unknown" },
+		{ wsbaroforcast_unstable, "Unstable" },
+		{ wsbaroforcast_stable, "Stable" },
+		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, Forecast);
 }
