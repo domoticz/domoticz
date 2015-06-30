@@ -40,7 +40,7 @@ bool CDavisLoggerSerial::StartHardware()
 {
 	StopHardware();
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
-
+	m_stoprequested = false;
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDavisLoggerSerial::Do_Work, this)));
 
