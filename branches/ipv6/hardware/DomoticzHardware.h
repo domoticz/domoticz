@@ -140,5 +140,13 @@ private:
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE];
 	bool m_bIsStarted;
 
+	//Barometric calculation (only for 1 sensor per hardware device!)
+	int m_baro_minuteCount;
+	double m_pressureSamples[9][6];
+	double m_pressureAvg[9];
+	double m_dP_dt;
+	int m_last_forecast;
+	time_t m_BaroCalcLastTime;
+	int CalculateBaroForecast(const double pressure);
 };
 

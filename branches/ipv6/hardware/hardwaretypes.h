@@ -15,6 +15,9 @@
 #define wsbaroforcast_cloudy 0x04
 #define wsbaroforcast_some_clouds 0x05
 #define wsbaroforcast_sunny 0x06
+#define wsbaroforcast_unknown 0x07
+#define wsbaroforcast_unstable 0x08
+#define wsbaroforcast_stable 0x09
 
 #define bmpbaroforecast_stable			0x00
 #define bmpbaroforecast_sunny			0x01

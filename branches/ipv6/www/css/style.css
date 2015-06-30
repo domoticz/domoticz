@@ -2555,3 +2555,8 @@ span.evomobile .ui-popup {
 	font-size: 2em;
 	font-weight: bold;	
 }
+
+tspan{
+    text-decoration:none;
+    text-shadow:none !important;
+}
