@@ -4918,41 +4918,41 @@ void CSQLHelper::CleanupShortLog()
             _log.Log(LOG_ERROR,"CleanupShortLog(): MinuteHistoryDays is zero!");
             return;
         }
-
+#if 0
 		char szDateStr[40];
-		char szTmp[200];
-
 		time_t clear_time = mytime(NULL) - (n5MinuteHistoryDays * 24 * 3600);
 		struct tm ltime;
 		localtime_r(&clear_time, &ltime);
-
 		sprintf(szDateStr, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+		_log.Log(LOG_STATUS, "Cleaning up shortlog older then %s", szDateStr);
+#endif
 
-		//_log.Log(LOG_STATUS, "Cleaning up shortlog older then %s", szDateStr);
+		char szQuery[250];
+		std::string szQueryFilter = "strftime('%s',datetime('now','localtime')) - strftime('%s',Date) > (SELECT p.nValue * 86400 From Preferences AS p WHERE p.Key='5MinuteHistoryDays')";
 
-		sprintf(szTmp, "DELETE FROM Temperature WHERE (Date<'%s')", szDateStr);
-	    query(szTmp);
+		sprintf(szQuery, "DELETE FROM Temperature WHERE %s", szQueryFilter.c_str());
+		query(szQuery);
 
-		sprintf(szTmp, "DELETE FROM Rain WHERE (Date<'%s')", szDateStr);
-	    query(szTmp);
+		sprintf(szQuery, "DELETE FROM Rain WHERE %s", szQueryFilter.c_str());
+		query(szQuery);
 
-		sprintf(szTmp, "DELETE FROM Wind WHERE (Date<'%s')", szDateStr);
-	    query(szTmp);
+		sprintf(szQuery, "DELETE FROM Wind WHERE %s", szQueryFilter.c_str());
+		query(szQuery);
 
-		sprintf(szTmp, "DELETE FROM UV WHERE (Date<'%s')", szDateStr);
-	    query(szTmp);
+		sprintf(szQuery, "DELETE FROM UV WHERE %s", szQueryFilter.c_str());
+		query(szQuery);
 
-		sprintf(szTmp, "DELETE FROM Meter WHERE (Date<'%s')", szDateStr);
-	    query(szTmp);
+		sprintf(szQuery, "DELETE FROM Meter WHERE %s", szQueryFilter.c_str());
+		query(szQuery);
 
-		sprintf(szTmp, "DELETE FROM MultiMeter WHERE (Date<'%s')", szDateStr);
-	    query(szTmp);
+		sprintf(szQuery, "DELETE FROM MultiMeter WHERE %s", szQueryFilter.c_str());
+		query(szQuery);
 
-		sprintf(szTmp, "DELETE FROM Percentage WHERE (Date<'%s')", szDateStr);
-		query(szTmp);
-	
-		sprintf(szTmp, "DELETE FROM Fan WHERE (Date<'%s')", szDateStr);
-		query(szTmp);
+		sprintf(szQuery, "DELETE FROM Percentage WHERE %s", szQueryFilter.c_str());
+		query(szQuery);
+
+		sprintf(szQuery, "DELETE FROM Fan WHERE %s", szQueryFilter.c_str());
+		query(szQuery);
 	}
 }
 

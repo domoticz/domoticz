@@ -24,6 +24,7 @@ Version 2.xxx (xxxx 2015)
 - Fixed: HTTP Push table localization (thanks to cgaudry)
 - Changed: OpenZWave, when receiving a timeout notification, do not flag node as 'dead', only log the message
 - Fixed: Davis Logger
+- Changed: Short Log cleanup method
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
