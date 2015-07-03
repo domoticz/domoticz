@@ -1,14 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Product xmlns='http://code.google.com/p/open-zwave/'>
- <!-- COMMAND_CLASS_COLOR get not supported -->
-  <CommandClass id="51" getsupported="false"/>
 
-  <!-- COMMAND_CLASS_POWERLEVEL get not supported -->
-  <CommandClass id="115" getsupported="false"/>
+  <!-- Basic Messages should map to the ColorControl Command Class I hope -->
+  <CommandClass id="32" setasreport="true"/>
 
-  <!-- COMMAND_CLASS_BASIC get not supported -->
-  <CommandClass id="32" getsupported="false"/>
+  <!-- COMMAND_CLASS_POWERLEVEL does not respond to requests -->
+  <CommandClass id="115" action="remove"/>
+
+  <!-- Fibaro Devices with firmware prior to 25.25 have a bug in the Report
+  message -->
+  <CommandClass id="51" coloridxbug="true" >
+	 <!--  The Fibaro doesn't report imediate color values, so we need to verify the value -->
+  	<Value type="string" genre="user" instance="1" index="0" label="Color" units="#RRGGBBWW" verify_changes="true" value="#00000000" />
+  </CommandClass>
+  <!-- Fibaro devices refuse to send a Report message when color changes are done.. so manually trigger a refresh -->
+  <CommandClass id="38">
+	<TriggerRefreshValue Genre="user" Index="0" Instance="1">
+    	<RefreshClassValue CommandClass="51" RequestFlags="0" Index="255" Instance="1" />
+    </TriggerRefreshValue>
+  	<TriggerRefreshValue Genre="user" Index="0" Instance="2">
+    	<RefreshClassValue CommandClass="51" RequestFlags="0" Index="255" Instance="1" />
+    </TriggerRefreshValue>
+    <TriggerRefreshValue Genre="user" Index="0" Instance="3">
+    	<RefreshClassValue CommandClass="51" RequestFlags="0" Index="255" Instance="1" />
+    </TriggerRefreshValue>
+    <TriggerRefreshValue Genre="user" Index="0" Instance="4">
+    	<RefreshClassValue CommandClass="51" RequestFlags="0" Index="255" Instance="1" />
+    </TriggerRefreshValue>
+    <TriggerRefreshValue Genre="user" Index="0" Instance="5">
+    	<RefreshClassValue CommandClass="51" RequestFlags="0" Index="255" Instance="1" />
+    </TriggerRefreshValue>
+    <TriggerRefreshValue Genre="user" Index="0" Instance="6">
+    	<RefreshClassValue CommandClass="51" RequestFlags="0" Index="255" Instance="1" />
+    </TriggerRefreshValue>
+  </CommandClass>
 
   <!-- Configuration -->
   <CommandClass id="112">
@@ -115,6 +141,6 @@
   </CommandClass>
 
   <!-- Remove COMMAND_CLASS_BASIC -->
-  <CommandClass id="32" action="remove" />
+  <!-- <CommandClass id="32" action="remove" /> -->
 
 </Product>
