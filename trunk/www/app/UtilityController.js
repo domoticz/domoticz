@@ -784,6 +784,9 @@ define(['app'], function (app) {
 								$(id + " #img").html(img);
 							}
 						}
+						if ($scope.config.ShowUpdatedEffect==true) {
+							$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						}
 					}
 				});
 			  }
@@ -865,7 +868,6 @@ define(['app'], function (app) {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-				
 				$.each(data.result, function(i,item){
 				  if (i % 3 == 0)
 				  {

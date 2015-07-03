@@ -414,7 +414,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				WindScale: 3.600000143051148,
 				WindSign: "km/h",
 				language: "en",
-				HaveUpdate: false
+				HaveUpdate: false,
+				ShowUpdatedEffect: true
 				};
 
 		$rootScope.GetGlobalConfig = function()
@@ -445,6 +446,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					$rootScope.config.EnableTabTemp=data.result.EnableTabTemp;
 					$rootScope.config.EnableTabWeather=data.result.EnableTabWeather;
 					$rootScope.config.EnableTabUtility=data.result.EnableTabUtility;
+					$rootScope.config.ShowUpdatedEffect=data.result.ShowUpdatedEffect;
 				
 					SetLanguage(data.language);
 					

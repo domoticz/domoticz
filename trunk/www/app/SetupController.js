@@ -453,6 +453,9 @@ define(['app'], function (app) {
 			  if (typeof data.HideDisabledHardwareSensors!= 'undefined') {
 				$("#acceptnewhardwaretable #HideDisabledHardwareSensors").prop('checked',data.HideDisabledHardwareSensors==1);
 			  }
+			  if (typeof data.ShowUpdateEffect!= 'undefined') {
+				$("#acceptnewhardwaretable #ShowUpdateEffect").prop('checked',data.ShowUpdateEffect==1);
+			  }
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }
