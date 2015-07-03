@@ -2970,6 +2970,10 @@ namespace http {
 			m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
 			root["FiveMinuteHistoryDays"] = nValue;
 
+			nValue = 1;
+			m_sql.GetPreferencesVar("ShowUpdateEffect", nValue);
+			root["result"]["ShowUpdatedEffect"] = (nValue == 1);
+
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
 			root["WindScale"] = m_sql.m_windscale*10.0f;
@@ -5956,7 +5960,9 @@ namespace http {
 					(dType != pTypeThermostat3) &&
 					(dType != pTypeRemote) &&
 					(dType != pTypeGeneralSwitch) &&
-					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))&&
+					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
+					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert)))
 					)
 					return; //no light device! we should not be here!
 
@@ -7229,6 +7235,10 @@ namespace http {
 			std::string HideDisabledHardwareSensors = m_pWebEm->FindValue("HideDisabledHardwareSensors");
 			int iHideDisabledHardwareSensors = (HideDisabledHardwareSensors == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", iHideDisabledHardwareSensors);
+
+			std::string ShowUpdateEffect = m_pWebEm->FindValue("ShowUpdateEffect");
+			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
@@ -11349,6 +11359,10 @@ namespace http {
 				else if (Key == "HideDisabledHardwareSensors")
 				{
 					root["HideDisabledHardwareSensors"] = nValue;
+				}
+				else if (Key == "ShowUpdateEffect")
+				{
+					root["ShowUpdateEffect"] = nValue;
 				}
 				else if (Key == "DisableEventScriptSystem")
 				{

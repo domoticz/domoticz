@@ -1780,6 +1780,10 @@ bool CSQLHelper::OpenDatabase()
 		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());
 		m_sql.UpdatePreferencesVar("HTTPURL", sencoded);
 	}
+	if (!GetPreferencesVar("ShowUpdateEffect", nValue))
+	{
+		UpdatePreferencesVar("ShowUpdateEffect", 0);
+	}
 
 	//Start background thread
 	if (!StartThread())
