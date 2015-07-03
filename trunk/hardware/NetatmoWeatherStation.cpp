@@ -10,7 +10,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_NetatmoWeatherStation
+//	#define DEBUG_NetatmoWeatherStation
 #endif
 
 #ifdef DEBUG_NetatmoWeatherStation
@@ -476,7 +476,7 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-#ifdef DEBUG_NetatmoWeatherStation
+#ifdef DEBUG_NetatmoWeatherStation2
 	sResult = ReadFile("E:\\netatmo_mdetails.json");
 	bool ret = true;
 #else
@@ -488,7 +488,7 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 	}
 #endif
 #ifdef DEBUG_NetatmoWeatherStation
-	//SaveString2Disk(sResult, "E:\\netatmo_mdetails.json");
+	SaveString2Disk(sResult, "E:\\netatmo_mdetails.json");
 #endif
 	Json::Value root;
 	Json::Reader jReader;
