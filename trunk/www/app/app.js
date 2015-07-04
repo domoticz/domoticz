@@ -242,6 +242,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/restoredatabase.html',
 				controller: 'RestoreDatabaseController'
 			  })).
+			  when('/RFXComFirmware', angularAMD.route({
+				templateUrl: 'views/rfxcomfirmware.html',
+				controller: 'RFXComFirmwareController'
+			  })).
 			  when('/Cam', angularAMD.route({
 				templateUrl: 'views/cam.html',
 				controller: 'CamController'
