@@ -316,7 +316,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 	if (statszFilename &info)==0)
 	{
 		struct passwd *pw = getpwuid(info.st_uid);
-		int ret=chownszFilename,pw->pw_uid,pw->pw_gid);
+		int ret=chown(szFilename,pw->pw_uid,pw->pw_gid);
 		if (ret!=0)
 		{
 			_log.Log(LOG_ERROR, "Error setting database ownership (chown returned an error!)");
