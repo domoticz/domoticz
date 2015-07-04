@@ -236,7 +236,7 @@ bool RFXComSerial::UpgradeFirmware()
 	if (!Read_Firmware_File(m_szFirmwareFile.c_str()))
 	{
 		m_FirmwareUploadPercentage = -1;
-		_log.Log(LOG_ERROR, "RFXCOM: Bootloader, unable to load/process firmware file!!!");
+		_log.Log(LOG_ERROR, "RFXCOM: Bootloader, unable to load/process firmware file!, %s!!", m_szFirmwareFile.c_str());
 		goto exitfirmwareupload;
 	}
 
@@ -315,7 +315,10 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 	std::string sLine;
 	infile.open(szFilename);
 	if (!infile.is_open())
+	{
+		_log.Log(LOG_STATUS, "RFXCOM: bootloader, unable to open fle: %s",szFilename);
 		return false;
+	}
 
 	_log.Log(LOG_STATUS, "RFXCOM: start reading Firmware...");
 
