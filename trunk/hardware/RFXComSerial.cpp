@@ -220,6 +220,7 @@ bool RFXComSerial::UpgradeFirmware()
 	}
 	m_bStartFirmwareUpload = false;
 	std::map<unsigned long, std::string>::const_iterator itt;
+	int icntr = 0;
 	//Start bootloader mode
 	m_bInBootloaderMode = true;
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT),5);
@@ -246,7 +247,6 @@ bool RFXComSerial::UpgradeFirmware()
 	}
 
 	_log.Log(LOG_STATUS, "RFXCOM: Bootloader, Start programming...");
-	int icntr = 0;
 	for (itt = m_Firmware_Buffer.begin(); itt != m_Firmware_Buffer.end(); ++itt)
 	{
 		unsigned long Address = itt->first;
