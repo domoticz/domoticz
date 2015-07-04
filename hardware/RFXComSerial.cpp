@@ -16,6 +16,13 @@
 
 #include <ctime>
 
+#ifndef WIN32
+	#include <sys/stat.h>
+	#include <unistd.h>
+	#include <sys/types.h>
+	#include <pwd.h>
+#endif
+
 #define RETRY_DELAY 30
 
 extern std::string szStartupFolder;
