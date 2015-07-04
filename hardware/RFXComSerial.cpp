@@ -313,7 +313,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 {
 #ifndef WIN32
 	struct stat info;
-	if (statszFilename &info)==0)
+	if (stat(szFilename,&info)==0)
 	{
 		struct passwd *pw = getpwuid(info.st_uid);
 		int ret=chown(szFilename,pw->pw_uid,pw->pw_gid);
