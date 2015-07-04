@@ -1,0 +1,19 @@
+<div id="maincontent" class="container">
+	<div id="divupload" ng-show="isUpdating==false">
+		<form ng-submit="onSubmit()">
+			<label for="firmwarefile"  data-i18n="Select Firmware File:">Select Firmware File:</label>
+			<input type="file" file="file" name="firmwarefile" accept=".hex"/><br>
+			<br>
+			<input type="submit" value="Upload"/>
+			<br><br>
+			<span data-i18n="Upgrading the firmware takes some time.">Upgrading the firmware takes some time.</span><br>
+			<font class="warning-text"><span data-i18n="Wait until you will see the dashboard again!">Wait until you will see the dashboard again!</span></font>
+		</form>
+	</div>
+
+	<div id="divprogress" ng-show="isUpdating==true">
+		<h1 ng-bind-html="topText"></h1>
+		<br>
+		<div id="progressbar"><div id="proglabel" class="progress-label"></div></div>
+	</div>
+</div>

@@ -7,6 +7,7 @@
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
+#include "../json/json.h"
 
 #include <string>
 #include <algorithm>
@@ -16,6 +17,32 @@
 #include <ctime>
 
 #define RETRY_DELAY 30
+
+extern std::string szStartupFolder;
+
+#define round(a) ( int ) ( a + .5 )
+
+const unsigned char PKT_STX = 0x55;
+const unsigned char PKT_ETX = 0x04;
+const unsigned char PKT_DLE = 0x05;
+
+#define PKT_writeblock 256
+#define PKT_readblock 4
+#define PKT_eraseblock 2048
+#define PKT_maxpacket 261
+#define PKT_bytesperaddr 2
+#define PKT_pmrangelow	0x001A00
+#define PKT_pmrangehigh	0x00A7FF
+#define PKT_userresetvector 0x100
+#define PKT_bootdelay 0x102
+
+#define COMMAND_WRITEPM 2
+#define COMMAND_ERASEPM 3
+
+const unsigned char PKT_STARTBOOT[5] = { 0x01, 0x01, 0x00, 0x00, 0xFF };
+const unsigned char PKT_RESET[2] = { 0x00, 0x00 };
+const unsigned char PKT_VERSION[2] = { 0x00, 0x02 };
+const unsigned char PKT_VERIFY_OK[5] = { 0x08, 0x01, 0x00, 0x00, 0x00 };
 
 //
 //Class RFXComSerial
@@ -27,6 +54,8 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_iBaudRate=baud_rate;
 	m_stoprequested=false;
 	m_bReceiverStarted = false;
+	m_bInBootloaderMode = false;
+	m_bStartFirmwareUpload = false;
 }
 
 RFXComSerial::RFXComSerial(const std::string& devname,
@@ -96,6 +125,26 @@ void RFXComSerial::Do_Work()
 
 		if (m_stoprequested)
 			break;
+
+		if (m_bStartFirmwareUpload)
+		{
+			if (isOpen())
+			{
+				try {
+					clearReadCallback();
+					close();
+					doClose();
+					setErrorStatus(true);
+				}
+				catch (...)
+				{
+					//Don't throw from a Stop command
+				}
+			}
+			sleep_seconds(1);
+			UpgradeFirmware();
+		}
+
 		if (!isOpen())
 		{
 			if (m_retrycntr==0)
@@ -115,7 +164,7 @@ void RFXComSerial::Do_Work()
 } 
 
 
-bool RFXComSerial::OpenSerialDevice()
+bool RFXComSerial::OpenSerialDevice(const bool bIsFirmwareUpgrade)
 {
 	//Try to open the Serial Port
 	try
@@ -139,8 +188,410 @@ bool RFXComSerial::OpenSerialDevice()
 	m_bIsStarted=true;
 	m_rxbufferpos=0;
 	setReadCallback(boost::bind(&RFXComSerial::readCallback, this, _1, _2));
+	if (!bIsFirmwareUpgrade)
+		sOnConnected(this);
+	return true;
+}
+
+bool RFXComSerial::UploadFirmware(const std::string &szFilename)
+{
+	m_szFirmwareFile = szFilename;
+	m_FirmwareUploadPercentage = 0;
+	m_bStartFirmwareUpload = true;
+	try {
+		clearReadCallback();
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
+	return true;
+}
+
+bool RFXComSerial::UpgradeFirmware()
+{
+	m_FirmwareUploadPercentage = 0;
+	OpenSerialDevice(true);
+	if (!isOpen())
+	{
+		_log.Log(LOG_ERROR, "RFXCOM: Serial port not open!!!");
+		m_FirmwareUploadPercentage = -1;
+		return false;
+	}
+	m_bStartFirmwareUpload = false;
+	std::map<unsigned long, std::string>::const_iterator itt;
+	//Start bootloader mode
+	m_bInBootloaderMode = true;
+	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT),5);
+
+	//read bootloader version
+	if (!Write_TX_PKT(PKT_VERSION, sizeof(PKT_VERSION)))
+	{
+		_log.Log(LOG_ERROR, "RFXCOM: Error getting bootloader version!!!");
+		m_FirmwareUploadPercentage = -1;
+		goto exitfirmwareupload;
+	}
+
+	if (!Read_Firmware_File(m_szFirmwareFile.c_str()))
+	{
+		m_FirmwareUploadPercentage = -1;
+		_log.Log(LOG_ERROR, "RFXCOM: Bootloader, unable to load/process firmware file!!!");
+		goto exitfirmwareupload;
+	}
+
+	if (!EraseMemory(PKT_pmrangelow, PKT_pmrangehigh))
+	{
+		m_FirmwareUploadPercentage = -1;
+		goto exitfirmwareupload;
+	}
+
+	_log.Log(LOG_STATUS, "RFXCOM: Bootloader, Start programming...");
+	int icntr = 0;
+	for (itt = m_Firmware_Buffer.begin(); itt != m_Firmware_Buffer.end(); ++itt)
+	{
+		unsigned long Address = itt->first;
+
+		std::stringstream saddress;
+		saddress << "Programming Address: " << std::hex << std::uppercase << std::setw(8) << std::setfill('0') << Address;
+		m_FirmwareUploadPercentage = (100.0f / float(m_Firmware_Buffer.size()))*(icntr + 1);
+		if (m_FirmwareUploadPercentage > 100)
+			m_FirmwareUploadPercentage = 100;
+		_log.Log(LOG_STATUS, "%s, %.1f %%", saddress.str().c_str(), m_FirmwareUploadPercentage);
+
+		icntr++;
+		if (icntr % 5 == 0)
+			m_LastHeartbeat = mytime(NULL);
+
+		unsigned char bcmd[PKT_writeblock + 10];
+		bcmd[0] = COMMAND_WRITEPM;
+		bcmd[1] = 1;
+		bcmd[2] = Address & 0xFF;
+		bcmd[3] = (Address & 0xFF00) >> 8;
+		bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
+		memcpy(bcmd + 5, itt->second.c_str(), itt->second.size());
+		bool ret = Write_TX_PKT(bcmd, 5 + itt->second.size(), 5);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!");
+			m_FirmwareUploadPercentage = -1;
+			goto exitfirmwareupload;
+		}
+	}
+	m_Firmware_Buffer.clear();
+
+	//Verify
+	if (!Write_TX_PKT(PKT_VERIFY_OK, sizeof(PKT_VERIFY_OK)))
+	{
+		_log.Log(LOG_ERROR, "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!");
+		m_FirmwareUploadPercentage = -1;
+		goto exitfirmwareupload;
+	}
+	if (m_rx_input_buffer[0] != PKT_VERIFY_OK[0])
+	{
+		m_FirmwareUploadPercentage = -1;
+		_log.Log(LOG_ERROR, "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!");
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "RFXCOM: Bootloader, Programming completed successfully...");
+	}
+exitfirmwareupload:
+	Write_TX_PKT(PKT_RESET, sizeof(PKT_RESET), 1);
+	m_rxbufferpos = 0;
+	m_bInBootloaderMode = false;
 	sOnConnected(this);
 	return true;
+}
+
+//returns -1 when failed
+float RFXComSerial::GetUploadPercentage()
+{
+	return m_FirmwareUploadPercentage;
+}
+
+bool RFXComSerial::Read_Firmware_File(const char *szFilename)
+{
+	std::ifstream infile;
+	std::string sLine;
+	infile.open(szFilename);
+	if (!infile.is_open())
+		return false;
+
+	_log.Log(LOG_STATUS, "RFXCOM: start reading Firmware...");
+
+	unsigned char rawLineBuf[PKT_writeblock];
+	int raw_length = 0;
+	unsigned long dest_address = 0;
+	int line = 0;
+	int addrh = 0;
+
+	m_Firmware_Buffer.clear();
+	std::string dstring="";
+	bool bHaveEOF = false;
+
+	while (!infile.eof())
+	{
+		getline(infile, sLine);
+		if (sLine.empty())
+			continue;
+		//Every line should start with ':'
+		if (sLine[0] != ':')
+		{
+			infile.close();
+			return false;
+		}
+		sLine = sLine.substr(1);
+		if (sLine.size() % 2 != 0)
+		{
+			infile.close();
+			return false;
+		}
+		raw_length = 0;
+		unsigned char chksum = 0;
+		while (!sLine.empty())
+		{
+			std::string szHex = sLine.substr(0, 2); sLine = sLine.substr(2);
+			std::stringstream sstr;
+			int iByte = 0;
+			sstr << std::hex << szHex;
+			sstr >> iByte;
+			rawLineBuf[raw_length++] = (unsigned char)iByte;
+			if (!sLine.empty())
+				chksum += iByte;
+			if (raw_length > sizeof(rawLineBuf) - 1)
+			{
+				infile.close();
+				return false;
+			}
+			
+		}
+		//
+		chksum = ~chksum + 1;
+		if ((chksum != rawLineBuf[raw_length - 1]) || (raw_length<4))
+		{
+			infile.close();
+			return false;
+		}
+		int byte_count = rawLineBuf[0];
+		int faddress = (rawLineBuf[1] << 8) | rawLineBuf[2];
+		int rtype = rawLineBuf[3];
+
+		switch (rtype)
+		{
+		case 0:
+			//Data record
+			dstring+= std::string((const char*)&rawLineBuf + 4, (const char*)rawLineBuf + 4 + byte_count);
+			if (dstring.size() == PKT_writeblock)
+			{
+				dest_address = (((((addrh << 16) | (faddress + byte_count)) - PKT_writeblock)) / PKT_bytesperaddr);
+				m_Firmware_Buffer[dest_address] = dstring;
+				dstring.clear();
+			}
+			break;
+		case 1:
+			//EOF Record
+			bHaveEOF = dstring.empty();
+			if (!bHaveEOF)
+				_log.Log(LOG_ERROR, "RFXCOM: Bootloader invalid size!");
+			break;
+		case 2:
+			//Extended Segment Address Record 
+			_log.Log(LOG_ERROR, "RFXCOM: Bootloader type 2 not supported!");
+			infile.close();
+			return false;
+		case 3:
+			//Start Segment Address Record 
+			_log.Log(LOG_ERROR, "RFXCOM: Bootloader type 3 not supported!");
+			infile.close();
+			return false;
+		case 4:
+			//Extended Linear Address Record
+			if (raw_length < 7)
+			{
+				infile.close();
+				return false;
+			}
+			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5]; 
+			break;
+		case 5:
+			//Start Linear Address Record
+			_log.Log(LOG_ERROR, "RFXCOM: Bootloader type 5 not supported!");
+			infile.close();
+			return false;
+		}
+		line++;
+	}
+	infile.close();
+	if (!bHaveEOF)
+	{
+		m_Firmware_Buffer.clear();
+		return false;
+	}
+	_log.Log(LOG_STATUS, "RFXCOM: Firmware read correctly...");
+	return true;
+}
+
+bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
+{
+	_log.Log(LOG_STATUS, "RFXCOM: Erasing memory....");
+	int BootAddr = StartAddress;
+
+	int blockcnt = 1;
+	while (BootAddr < StopAddress)
+	{
+		int nBlocks = ((StopAddress - StartAddress + 1) * PKT_bytesperaddr) / PKT_eraseblock;
+		nBlocks = (StopAddress - StartAddress + 1) / (PKT_eraseblock / PKT_bytesperaddr);
+		if (nBlocks > 255)
+			nBlocks = 255;
+
+		unsigned char bcmd[5];
+		bcmd[0] = COMMAND_ERASEPM;
+		bcmd[1] = nBlocks;
+		bcmd[2] = BootAddr & 0xFF;
+		bcmd[3] = (BootAddr & 0xFF00) >> 8;
+		bcmd[4] = (BootAddr & 0xFF0000) >> 16;
+
+		bool ret = Write_TX_PKT(bcmd, sizeof(bcmd), 5);
+		if (!ret)
+		{
+			_log.Log(LOG_ERROR, "RFXCOM: Error erasing memory block %d!", blockcnt);
+			return false;
+		}
+		BootAddr+= (PKT_eraseblock * nBlocks);
+	}
+	_log.Log(LOG_STATUS, "RFXCOM: Erasing memory completed....");
+	return true;
+}
+
+bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const int max_retry)
+{
+	if (!isOpen())
+		return false;
+
+	unsigned char output_buffer[512];
+	int tot_bytes = 0;
+
+	output_buffer[tot_bytes++] = PKT_STX;
+	output_buffer[tot_bytes++] = PKT_STX;
+
+	// Generate the checksum
+	unsigned char chksum = 0;
+	for (size_t ii = 0; ii < length; ii++)
+	{
+		unsigned char dbyte = pdata[ii];
+		chksum += dbyte;
+
+		//if control character, stuff DLE
+		if (dbyte == PKT_STX || dbyte == PKT_ETX || dbyte == PKT_DLE)
+		{
+			output_buffer[tot_bytes++] = PKT_DLE;
+		}
+		output_buffer[tot_bytes++] = dbyte;
+	}
+	chksum = ~chksum + 1;
+	if (chksum == PKT_STX || chksum == PKT_ETX || chksum == PKT_DLE)
+	{
+		output_buffer[tot_bytes++] = PKT_DLE;
+	}
+	output_buffer[tot_bytes++] = chksum;
+	output_buffer[tot_bytes++] = PKT_ETX;
+
+	int nretry = 0;
+	while (nretry < max_retry)
+	{
+		m_bHaveRX = 0;
+		write((const char*)&output_buffer, tot_bytes);
+		int rcount = 0;
+		while ((!m_bHaveRX) && (rcount < 5))
+		{
+			sleep_milliseconds(100);
+			rcount++;
+		}
+		if (m_bHaveRX)
+			return true;
+		nretry++;
+	}
+	return m_bHaveRX;
+}
+
+bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
+{
+	if (length < 2)
+		return false;
+	if ((pdata[0] != PKT_STX) || (pdata[1] != PKT_STX))
+		return false;
+
+	unsigned char chksum = 0;
+	m_rx_tot_bytes = 0;
+	size_t ii = 1;
+	while ((ii<length) && (m_rx_tot_bytes<sizeof(m_rx_input_buffer)))
+	{
+		unsigned char dbyte = pdata[ii];
+		switch (dbyte)
+		{
+		case PKT_STX:
+			m_rx_tot_bytes = 0;
+			chksum = 0;
+			break;
+		case PKT_ETX:
+			chksum = ~chksum + 1; //test checksum
+			if (chksum != 0)
+				return false;
+			//Message OK
+			m_bHaveRX = true;
+			return true;
+			break;
+		case PKT_DLE:
+			dbyte = pdata[ii+1];
+			ii++;
+			if (ii >= length)
+				return false;
+		default:
+			chksum += dbyte;
+			m_rx_input_buffer[m_rx_tot_bytes++] = dbyte;
+			break;
+		}
+		ii++;
+	}
+	return false;
+}
+
+void RFXComSerial::readCallback(const char *data, size_t len)
+{
+	boost::lock_guard<boost::mutex> l(readQueueMutex);
+	try
+	{
+		if (!m_bInBootloaderMode)
+		{
+			bool bRet = onInternalMessage((const unsigned char *)data, len);
+			if (bRet == false)
+			{
+				//close serial connection, and restart
+				if (isOpen())
+				{
+					try {
+						clearReadCallback();
+						close();
+						doClose();
+						setErrorStatus(true);
+					}
+					catch (...)
+					{
+						//Don't throw from a Stop command
+					}
+				}
+
+			}
+		}
+		else
+		{
+			Handle_RX_PKT((const unsigned char*)data, len);
+		}
+	}
+	catch (...)
+	{
+
+	}
 }
 
 bool RFXComSerial::onInternalMessage(const unsigned char *pBuffer, const size_t Len)
@@ -193,40 +644,11 @@ bool RFXComSerial::onInternalMessage(const unsigned char *pBuffer, const size_t 
 	return true;
 }
 
-void RFXComSerial::readCallback(const char *data, size_t len)
-{
-	boost::lock_guard<boost::mutex> l(readQueueMutex);
-	try
-	{
-		bool bRet = onInternalMessage((const unsigned char *)data, len);
-		if (bRet==false)
-		{
-			//close serial connection, and restart
-			if (isOpen())
-			{
-				try {
-					clearReadCallback();
-					close();
-					doClose();
-					setErrorStatus(true);
-				} catch(...)
-				{
-					//Don't throw from a Stop command
-				}
-			}
-
-		}
-	}
-	catch (...)
-	{
-
-	}
-}
-
-
 bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (!isOpen())
+		return false;
+	if (m_bInBootloaderMode)
 		return false;
 	write(pdata,length);
 	return true;
@@ -235,6 +657,48 @@ bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length
 //Webserver helpers
 namespace http {
 	namespace server {
+		char * CWebServer::RFXComUpgradeFirmware()
+		{
+			m_retstr = "/index.html";
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return (char*)m_retstr.c_str();
+			}
+
+			std::string hardwareid = m_pWebEm->FindValue("hardwareid");
+			std::string firmwarefile = m_pWebEm->FindValue("firmwarefile");
+
+			if (
+				(firmwarefile.empty()) ||
+				(hardwareid.empty())
+				)
+			{
+				return (char*)m_retstr.c_str();
+			}
+			std::string outputfile = szStartupFolder + "rfx_firmware.hex";
+			std::ofstream outfile;
+			outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+			if (!outfile.is_open())
+				return (char*)m_retstr.c_str();
+			outfile << firmwarefile;
+			outfile.flush();
+			outfile.close();
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
+			if (pHardware != NULL)
+			{
+				if (
+					(pHardware->HwdType == HTYPE_RFXtrx315)||
+					(pHardware->HwdType == HTYPE_RFXtrx433)
+					)
+				{
+					RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
+					pRFXComSerial->UploadFirmware(outputfile);
+				}
+			}
+			return (char*)m_retstr.c_str();
+		}
 		char * CWebServer::SetRFXCOMMode()
 		{
 			m_retstr = "/index.html";
@@ -304,5 +768,29 @@ namespace http {
 
 			return (char*)m_retstr.c_str();
 		}
+		void CWebServer::Cmd_RFXComGetFirmwarePercentage(Json::Value &root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetFirmwareUpgradePercentage";
+			std::string hardwareid = m_pWebEm->FindValue("hardwareid");
+			if (hardwareid.empty())
+			{
+				return;
+			}
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
+			if (pHardware != NULL)
+			{
+				if (
+					(pHardware->HwdType == HTYPE_RFXtrx315) ||
+					(pHardware->HwdType == HTYPE_RFXtrx433)
+					)
+				{
+					RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
+					root["status"] = "OK";
+					root["percentage"] = pRFXComSerial->GetUploadPercentage();
+				}
+			}
+		}
+
 	}
 }

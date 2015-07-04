@@ -4,6 +4,7 @@
 
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
+#include <map>
 
 class RFXComSerial: public AsyncSerial, public CDomoticzHardwareBase
 {
@@ -40,12 +41,31 @@ public:
 	bool m_bReceiverStarted;
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool UploadFirmware(const std::string &szFilename);
+	float GetUploadPercentage(); //returns -1 when failed
 private:
 	bool StartHardware();
 	bool StopHardware();
-	bool OpenSerialDevice();
+	bool OpenSerialDevice(const bool bIsFirmwareUpgrade=false);
 	void Do_Work();
 	bool onInternalMessage(const unsigned char *pBuffer, const size_t Len);
+
+	bool UpgradeFirmware();
+	bool Write_TX_PKT(const unsigned char *pdata, size_t length, const int max_retry = 3);
+	bool Handle_RX_PKT(const unsigned char *pdata, size_t length);
+	bool Read_Firmware_File(const char *szFilename);
+	bool EraseMemory(const int StartAddress, const int StopAddress);
+
+	bool m_bStartFirmwareUpload;
+	std::string m_szFirmwareFile;
+	float m_FirmwareUploadPercentage;
+	bool m_bInBootloaderMode;
+	bool m_bHaveRX;
+	std::map<unsigned long, std::string> m_Firmware_Buffer;
+
+	unsigned char m_rx_input_buffer[512];
+	int m_rx_tot_bytes;
+
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	int m_retrycntr;

@@ -26,6 +26,7 @@ Version 2.xxx (xxxx 2015)
 - Fixed: Davis Logger
 - Changed: Short Log cleanup method
 - Implemented: Option to flash sensors when an update is received (enable in the settings page)
+- Implemented: RFXCom (Serial) option to upgrade firmware form web interface
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
