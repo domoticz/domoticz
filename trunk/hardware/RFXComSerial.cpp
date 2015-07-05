@@ -626,7 +626,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 	unsigned char chksum = 0;
 	m_rx_tot_bytes = 0;
 	size_t ii = 1;
-	while ((ii<length) && (m_rx_tot_bytes<sizeof(m_rx_input_buffer)))
+	while ((ii<length) && (m_rx_tot_bytes<sizeof(m_rx_input_buffer)-1))
 	{
 		unsigned char dbyte = pdata[ii];
 		switch (dbyte)
@@ -711,7 +711,7 @@ bool RFXComSerial::onInternalMessage(const unsigned char *pBuffer, const size_t 
 		}
 		m_rxbuffer[m_rxbufferpos] = pBuffer[ii];
 		m_rxbufferpos++;
-		if (m_rxbufferpos >= sizeof(m_rxbuffer))
+		if (m_rxbufferpos >= sizeof(m_rxbuffer)-1)
 		{
 			//something is out of sync here!!
 			//restart
