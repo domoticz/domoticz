@@ -64,6 +64,10 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_bInBootloaderMode = false;
 	m_bStartFirmwareUpload = false;
 	m_szUploadMessage = "";
+	m_serial.setPort(m_szSerialPort);
+	m_serial.setBaudrate(m_iBaudRate);
+	serial::Timeout stimeout = serial::Timeout::simpleTimeout(100);
+	m_serial.setTimeout(stimeout);
 }
 
 RFXComSerial::RFXComSerial(const std::string& devname,
@@ -103,6 +107,8 @@ bool RFXComSerial::StopHardware()
 		m_thread->join();
     // Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
     sleep_milliseconds(10);
+	if (m_serial.isOpen())
+		m_serial.close();
 	if (isOpen())
 	{
 		try {
@@ -227,13 +233,17 @@ bool RFXComSerial::UpgradeFirmware()
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
-	OpenSerialDevice(true);
-	if (!isOpen())
+
+	try
 	{
-		m_szUploadMessage = "RFXCOM: Serial port not open!!!";
+		m_serial.open();
+	}
+	catch (...)
+	{
+		m_szUploadMessage = "RFXCOM: Error opening serial port!!!";
 		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
-		return false;
+		goto exitfirmwareupload;
 	}
 	//Start bootloader mode
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
@@ -254,26 +264,27 @@ bool RFXComSerial::UpgradeFirmware()
 		goto exitfirmwareupload;
 	}
 
-	//reopen serial port
-	try {
-		clearReadCallback();
-		close();
-		doClose();
-		setErrorStatus(true);
+	try
+	{
+		m_serial.close();
 	}
 	catch (...)
 	{
-		//Don't throw from a Stop command
 	}
 	sleep_seconds(1);
-	OpenSerialDevice(true);
-	if (!isOpen())
+
+	try
 	{
-		m_szUploadMessage = "RFXCOM: Serial port not open!!!";
+		m_serial.open();
+	}
+	catch (...)
+	{
+		m_szUploadMessage = "RFXCOM: Error opening serial port!!!";
 		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
-		return false;
+		goto exitfirmwareupload;
 	}
+
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 
@@ -333,8 +344,20 @@ bool RFXComSerial::UpgradeFirmware()
 	}
 exitfirmwareupload:
 	Write_TX_PKT(PKT_RESET, sizeof(PKT_RESET), 1);
+	try
+	{
+		if (m_serial.isOpen())
+		{
+			m_serial.close();
+		}
+	}
+	catch (...)
+	{
+	}
+
 	m_rxbufferpos = 0;
 	m_bInBootloaderMode = false;
+	OpenSerialDevice();
 	sOnConnected(this);
 	return true;
 }
@@ -558,7 +581,7 @@ bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 
 bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const int max_retry)
 {
-	if (!isOpen())
+	if (!m_serial.isOpen())
 		return false;
 
 	unsigned char output_buffer[512];
@@ -599,19 +622,31 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const
 	}
 	*/
 	int nretry = 0;
+	unsigned char input_buffer[512];
+	int tot_read;
+
 	while (nretry < max_retry)
 	{
-		m_bHaveRX = 0;
-		write((const char*)&output_buffer, tot_bytes);
-		int rcount = 0;
-		while ((!m_bHaveRX) && (rcount < 5))
+		try
 		{
-			sleep_milliseconds(100);
-			rcount++;
+			m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
+			int rcount = 0;
+			while (rcount < 5)
+			{
+				sleep_milliseconds(100);
+				tot_read = m_serial.read((uint8_t *)&input_buffer, sizeof(input_buffer));
+				if (tot_read)
+				{
+					return Handle_RX_PKT(input_buffer, tot_read);
+				}
+				rcount++;
+			}
+			nretry++;
 		}
-		if (m_bHaveRX)
-			return true;
-		nretry++;
+		catch (...)
+		{
+			return false;
+		}
 	}
 	return m_bHaveRX;
 }
@@ -684,10 +719,6 @@ void RFXComSerial::readCallback(const char *data, size_t len)
 				}
 
 			}
-		}
-		else
-		{
-			Handle_RX_PKT((const unsigned char*)data, len);
 		}
 	}
 	catch (...)
