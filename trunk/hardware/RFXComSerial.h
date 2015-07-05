@@ -4,6 +4,7 @@
 
 #include "ASyncSerial.h"
 #include "DomoticzHardware.h"
+#include "serial/serial.h"
 #include <map>
 
 class RFXComSerial: public AsyncSerial, public CDomoticzHardwareBase
@@ -57,6 +58,7 @@ private:
 	bool Read_Firmware_File(const char *szFilename);
 	bool EraseMemory(const int StartAddress, const int StopAddress);
 
+	serial::Serial m_serial;
 	bool m_bStartFirmwareUpload;
 	std::string m_szFirmwareFile;
 	std::string m_szUploadMessage;

@@ -229,6 +229,8 @@ hardware/RFXComTCP.cpp
 hardware/S0MeterBase.cpp
 hardware/S0MeterSerial.cpp
 hardware/SBFSpot.cpp
+hardware/serial/serial.cpp
+hardware/serial/impl/unix.cpp
 hardware/SolarEdgeBase.cpp
 hardware/SolarEdgeTCP.cpp
 hardware/SolarMaxTCP.cpp
