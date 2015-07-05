@@ -28,6 +28,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Option to flash sensors when an update is received (enable in the settings page)
 - Changed: Lowered HTTP connection timeout to 10 seconds
 - Implemented: RFXCom (Serial) option to update the firmware via the web interface
+- Fixed: Post command handling
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
