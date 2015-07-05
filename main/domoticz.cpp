@@ -479,6 +479,12 @@ int main(int argc, char**argv)
 		szInternalTemperatureCommand="cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
 		bHasInternalTemperature = true;
 	}
+	else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
+	{
+		_log.Log(LOG_STATUS,"System: ODroid");
+		szInternalTemperatureCommand="cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+		bHasInternalTemperature = true;
+	}
 
 	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
 	{
