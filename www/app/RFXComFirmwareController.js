@@ -4,6 +4,7 @@ define(['app'], function (app) {
 		$scope.selected_file="";
 		$scope.isUpdating=false;
 		$scope.topText = "Updating Firmware...";
+		$scope.bottomText = "";
 	
 		$scope.SetPercentage = function (percentage)
 		{
@@ -20,13 +21,15 @@ define(['app'], function (app) {
 			 url: "json.htm?type=command&param=rfxfirmwaregetpercentage&hardwareid="+$rootScope.hwidx
 			 }).success(function(data) {
 				if (data.status=="ERR") {
-					bootbox.alert($.t('Problem updating firmware'));
+					HideNotify();
+					bootbox.alert($.t('Problem updating firmware')+"<br>"+$.t(data.message));
+					SwitchLayout('Dashboard');
 					return;
 				}
 				var percentage=data.percentage;
 				if (percentage==-1) {
 					HideNotify();
-					bootbox.alert($.t('Problem updating firmware'));
+					bootbox.alert($.t('Problem updating firmware')+"<br>"+$.t(data.message));
 					SwitchLayout('Dashboard');
 				}
 				else if (percentage==100) {
@@ -34,13 +37,14 @@ define(['app'], function (app) {
 				}
 				else {
 					$scope.SetPercentage(data.percentage);
+					$scope.bottomText=data.message;
 					$scope.mytimer=$interval(function() {
 						$scope.progressupload();
 					}, 1000);
 				}
 			 }).error(function() {
 					HideNotify();
-					bootbox.alert($.t('Problem updating firmware'));
+					bootbox.alert($.t('Problem updating firmware')+"<br>"+$.t(data.message));
 					SwitchLayout('Dashboard');
 			 });
 		}
@@ -86,6 +90,7 @@ define(['app'], function (app) {
 
 		$scope.init = function()
 		{
+			$scope.bottomText="";
 			$scope.isUpdating=false;
 			$('#maincontent').i18n();
 			
@@ -109,6 +114,13 @@ define(['app'], function (app) {
 		};
 		
 		$scope.init();
+	
+		$scope.$on('$destroy', function(){
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+		}); 
 		
 	} ]);
 });

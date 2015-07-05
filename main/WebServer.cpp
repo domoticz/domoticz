@@ -517,9 +517,11 @@ namespace http {
 			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
 
 			//Check for update (force)
-			m_LastUpdateCheck = 0;
-			Json::Value root;
-			Cmd_CheckForUpdate(root);
+			if (m_LastUpdateCheck == 0)
+			{
+				Json::Value root;
+				Cmd_CheckForUpdate(root);
+			}
 			return (m_thread != NULL);
 		}
 

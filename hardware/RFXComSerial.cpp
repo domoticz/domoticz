@@ -63,6 +63,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_bReceiverStarted = false;
 	m_bInBootloaderMode = false;
 	m_bStartFirmwareUpload = false;
+	m_szUploadMessage = "";
 }
 
 RFXComSerial::RFXComSerial(const std::string& devname,
@@ -218,34 +219,34 @@ bool RFXComSerial::UploadFirmware(const std::string &szFilename)
 bool RFXComSerial::UpgradeFirmware()
 {
 	m_FirmwareUploadPercentage = 0;
-	OpenSerialDevice(true);
-	if (!isOpen())
-	{
-		_log.Log(LOG_ERROR, "RFXCOM: Serial port not open!!!");
-		m_FirmwareUploadPercentage = -1;
-		return false;
-	}
 	m_bStartFirmwareUpload = false;
 	std::map<unsigned long, std::string>::const_iterator itt;
 	int icntr = 0;
-	//Start bootloader mode
-	m_bInBootloaderMode = true;
-	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT),5);
-
-	//read bootloader version
-	if (!Write_TX_PKT(PKT_VERSION, sizeof(PKT_VERSION)))
-	{
-		_log.Log(LOG_ERROR, "RFXCOM: Error getting bootloader version!!!");
-		m_FirmwareUploadPercentage = -1;
-		goto exitfirmwareupload;
-	}
-
 	if (!Read_Firmware_File(m_szFirmwareFile.c_str()))
 	{
 		m_FirmwareUploadPercentage = -1;
-		_log.Log(LOG_ERROR, "RFXCOM: Bootloader, unable to load/process firmware file!, %s!!", m_szFirmwareFile.c_str());
 		goto exitfirmwareupload;
 	}
+	OpenSerialDevice(true);
+	if (!isOpen())
+	{
+		m_szUploadMessage = "RFXCOM: Serial port not open!!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		m_FirmwareUploadPercentage = -1;
+		return false;
+	}
+	//Start bootloader mode
+	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
+	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
+	//read bootloader version
+	if (!Write_TX_PKT(PKT_VERSION, sizeof(PKT_VERSION)))
+	{
+		m_szUploadMessage = "RFXCOM: Error getting bootloader version!!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		m_FirmwareUploadPercentage = -1;
+		goto exitfirmwareupload;
+	}
+	_log.Log(LOG_STATUS, "RFXCOM: bootloader version v%d.%d", m_rx_input_buffer[3], m_rx_input_buffer[2]);
 
 	if (!EraseMemory(PKT_pmrangelow, PKT_pmrangehigh))
 	{
@@ -253,7 +254,31 @@ bool RFXComSerial::UpgradeFirmware()
 		goto exitfirmwareupload;
 	}
 
-	_log.Log(LOG_STATUS, "RFXCOM: Bootloader, Start programming...");
+	//reopen serial port
+	try {
+		clearReadCallback();
+		close();
+		doClose();
+		setErrorStatus(true);
+	}
+	catch (...)
+	{
+		//Don't throw from a Stop command
+	}
+	sleep_seconds(1);
+	OpenSerialDevice(true);
+	if (!isOpen())
+	{
+		m_szUploadMessage = "RFXCOM: Serial port not open!!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		m_FirmwareUploadPercentage = -1;
+		return false;
+	}
+	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
+	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
+
+	m_szUploadMessage = "RFXCOM: Bootloader, Start programming...";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	for (itt = m_Firmware_Buffer.begin(); itt != m_Firmware_Buffer.end(); ++itt)
 	{
 		unsigned long Address = itt->first;
@@ -276,10 +301,11 @@ bool RFXComSerial::UpgradeFirmware()
 		bcmd[3] = (Address & 0xFF00) >> 8;
 		bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
 		memcpy(bcmd + 5, itt->second.c_str(), itt->second.size());
-		bool ret = Write_TX_PKT(bcmd, 5 + itt->second.size(), 5);
+		bool ret = Write_TX_PKT(bcmd, 5 + itt->second.size(), 20);
 		if (!ret)
 		{
-			_log.Log(LOG_ERROR, "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!");
+			m_szUploadMessage = "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			m_FirmwareUploadPercentage = -1;
 			goto exitfirmwareupload;
 		}
@@ -289,18 +315,21 @@ bool RFXComSerial::UpgradeFirmware()
 	//Verify
 	if (!Write_TX_PKT(PKT_VERIFY_OK, sizeof(PKT_VERIFY_OK)))
 	{
-		_log.Log(LOG_ERROR, "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!");
+		m_szUploadMessage = "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
 	if (m_rx_input_buffer[0] != PKT_VERIFY_OK[0])
 	{
 		m_FirmwareUploadPercentage = -1;
-		_log.Log(LOG_ERROR, "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!");
+		m_szUploadMessage = "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 	}
 	else
 	{
-		_log.Log(LOG_STATUS, "RFXCOM: Bootloader, Programming completed successfully...");
+		m_szUploadMessage = "RFXCOM: Bootloader, Programming completed successfully...";
+		_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	}
 exitfirmwareupload:
 	Write_TX_PKT(PKT_RESET, sizeof(PKT_RESET), 1);
@@ -316,18 +345,40 @@ float RFXComSerial::GetUploadPercentage()
 	return m_FirmwareUploadPercentage;
 }
 
+std::string RFXComSerial::GetUploadMessage()
+{
+	return m_szUploadMessage;
+}
+
 bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 {
+#ifndef WIN32
+	struct stat info;
+	if (stat(szFilename,&info)==0)
+	{
+		struct passwd *pw = getpwuid(info.st_uid);
+		int ret=chown(szFilename,pw->pw_uid,pw->pw_gid);
+		if (ret!=0)
+		{
+			m_szUploadMessage = "Error setting firmware ownership (chown returned an error!)";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			return false;
+		}
+	}
+#endif
+
 	std::ifstream infile;
 	std::string sLine;
 	infile.open(szFilename);
 	if (!infile.is_open())
 	{
-		_log.Log(LOG_STATUS, "RFXCOM: bootloader, unable to open fle: %s",szFilename);
+		m_szUploadMessage = "RFXCOM: bootloader, unable to open file: " + std::string(szFilename);
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "RFXCOM: start reading Firmware...");
+	m_szUploadMessage = "RFXCOM: start reading Firmware...";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 
 	unsigned char rawLineBuf[PKT_writeblock];
 	int raw_length = 0;
@@ -348,12 +399,27 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 		if (sLine[0] != ':')
 		{
 			infile.close();
+			m_szUploadMessage = "RFXCOM: bootloader, firmware does not start with ':'";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			return false;
 		}
 		sLine = sLine.substr(1);
+		if (sLine.size() > 1)
+		{
+			if (sLine[sLine.size() - 1] == '\n')
+			{
+				sLine = sLine.substr(0, sLine.size() - 1);
+			}
+			if (sLine[sLine.size() - 1] == '\r')
+			{
+				sLine = sLine.substr(0, sLine.size() - 1);
+			}
+		}
 		if (sLine.size() % 2 != 0)
 		{
 			infile.close();
+			m_szUploadMessage = "RFXCOM: bootloader, firmware line not equals 2 digests";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			return false;
 		}
 		raw_length = 0;
@@ -371,6 +437,8 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 			if (raw_length > sizeof(rawLineBuf) - 1)
 			{
 				infile.close();
+				m_szUploadMessage = "RFXCOM: bootloader, incorrect length";
+				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 				return false;
 			}
 			
@@ -380,6 +448,8 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 		if ((chksum != rawLineBuf[raw_length - 1]) || (raw_length<4))
 		{
 			infile.close();
+			m_szUploadMessage = "RFXCOM: bootloader, checksum mismatch!";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			return false;
 		}
 		int byte_count = rawLineBuf[0];
@@ -402,16 +472,21 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 			//EOF Record
 			bHaveEOF = dstring.empty();
 			if (!bHaveEOF)
-				_log.Log(LOG_ERROR, "RFXCOM: Bootloader invalid size!");
+			{
+				m_szUploadMessage = "RFXCOM: Bootloader invalid size!";
+				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			}
 			break;
 		case 2:
 			//Extended Segment Address Record 
-			_log.Log(LOG_ERROR, "RFXCOM: Bootloader type 2 not supported!");
+			m_szUploadMessage = "RFXCOM: Bootloader type 2 not supported!";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			infile.close();
 			return false;
 		case 3:
 			//Start Segment Address Record 
-			_log.Log(LOG_ERROR, "RFXCOM: Bootloader type 3 not supported!");
+			m_szUploadMessage = "RFXCOM: Bootloader type 3 not supported!";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			infile.close();
 			return false;
 		case 4:
@@ -419,13 +494,16 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 			if (raw_length < 7)
 			{
 				infile.close();
+				m_szUploadMessage = "RFXCOM: Invalid line length!!";
+				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 				return false;
 			}
 			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5]; 
 			break;
 		case 5:
 			//Start Linear Address Record
-			_log.Log(LOG_ERROR, "RFXCOM: Bootloader type 5 not supported!");
+			m_szUploadMessage = "RFXCOM: Bootloader type 5 not supported!";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			infile.close();
 			return false;
 		}
@@ -435,15 +513,19 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 	if (!bHaveEOF)
 	{
 		m_Firmware_Buffer.clear();
+		m_szUploadMessage = "RFXCOM: No end-of-line found!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 		return false;
 	}
-	_log.Log(LOG_STATUS, "RFXCOM: Firmware read correctly...");
+	m_szUploadMessage = "RFXCOM: Firmware read correctly...";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	return true;
 }
 
 bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 {
-	_log.Log(LOG_STATUS, "RFXCOM: Erasing memory....");
+	m_szUploadMessage = "RFXCOM: Erasing memory....";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	int BootAddr = StartAddress;
 
 	int blockcnt = 1;
@@ -461,15 +543,16 @@ bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 		bcmd[3] = (BootAddr & 0xFF00) >> 8;
 		bcmd[4] = (BootAddr & 0xFF0000) >> 16;
 
-		bool ret = Write_TX_PKT(bcmd, sizeof(bcmd), 5);
-		if (!ret)
+		if (!Write_TX_PKT(bcmd, sizeof(bcmd), 5))
 		{
-			_log.Log(LOG_ERROR, "RFXCOM: Error erasing memory block %d!", blockcnt);
+			m_szUploadMessage = "RFXCOM: Error erasing memory!";
+			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 			return false;
 		}
 		BootAddr+= (PKT_eraseblock * nBlocks);
 	}
-	_log.Log(LOG_STATUS, "RFXCOM: Erasing memory completed....");
+	m_szUploadMessage = "RFXCOM: Erasing memory completed....";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	return true;
 }
 
@@ -506,6 +589,15 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const
 	output_buffer[tot_bytes++] = chksum;
 	output_buffer[tot_bytes++] = PKT_ETX;
 
+	m_bInBootloaderMode = true;
+	/*
+	if (!WaitForResponse)
+	{
+		write((const char*)&output_buffer, tot_bytes);
+		sleep_milliseconds(500);
+		return true;
+	}
+	*/
 	int nretry = 0;
 	while (nretry < max_retry)
 	{
@@ -785,6 +877,7 @@ namespace http {
 			std::string hardwareid = m_pWebEm->FindValue("hardwareid");
 			if (hardwareid.empty())
 			{
+				root["message"] = "No hardware ID provided!";
 				return;
 			}
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
@@ -798,8 +891,11 @@ namespace http {
 					RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
 					root["status"] = "OK";
 					root["percentage"] = pRFXComSerial->GetUploadPercentage();
+					root["message"] = pRFXComSerial->GetUploadMessage();
 				}
 			}
+			else
+				root["message"] = "Hardware not found, or not enabled!";
 		}
 
 	}
