@@ -1422,13 +1422,13 @@ bool CSQLHelper::OpenDatabase()
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 
 	//Make sure we have some default preferences
-	int nValue;
+	int nValue=10;
 	std::string sValue;
-	if (!GetPreferencesVar("LightHistoryDays", nValue))
+	if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
 	{
 		UpdatePreferencesVar("LightHistoryDays", 30);
 	}
-	if (!GetPreferencesVar("MeterDividerEnergy", nValue))
+	if ((!GetPreferencesVar("MeterDividerEnergy", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("MeterDividerEnergy", 1000);
 	}
@@ -1437,7 +1437,7 @@ bool CSQLHelper::OpenDatabase()
 		//Sanity check!
 		UpdatePreferencesVar("MeterDividerEnergy", 1000);
 	}
-	if (!GetPreferencesVar("MeterDividerGas", nValue))
+	if ((!GetPreferencesVar("MeterDividerGas", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("MeterDividerGas", 100);
 	}
@@ -1446,7 +1446,7 @@ bool CSQLHelper::OpenDatabase()
 		//Sanity check!
 		UpdatePreferencesVar("MeterDividerGas", 100);
 	}
-	if (!GetPreferencesVar("MeterDividerWater", nValue))
+	if ((!GetPreferencesVar("MeterDividerWater", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("MeterDividerWater", 100);
 	}
@@ -1455,11 +1455,11 @@ bool CSQLHelper::OpenDatabase()
 		//Sanity check!
 		UpdatePreferencesVar("MeterDividerWater", 100);
 	}
-	if (!GetPreferencesVar("RandomTimerFrame", nValue))
+	if ((!GetPreferencesVar("RandomTimerFrame", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("RandomTimerFrame", 15);
 	}
-	if (!GetPreferencesVar("ElectricVoltage", nValue))
+	if ((!GetPreferencesVar("ElectricVoltage", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("ElectricVoltage", 230);
 	}
@@ -1467,11 +1467,11 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("CM113DisplayType", 0);
 	}
-	if (!GetPreferencesVar("5MinuteHistoryDays", nValue))
+	if ((!GetPreferencesVar("5MinuteHistoryDays", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("5MinuteHistoryDays", 1);
 	}
-	if (!GetPreferencesVar("SensorTimeout", nValue))
+	if ((!GetPreferencesVar("SensorTimeout", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("SensorTimeout", 60);
 	}
@@ -1515,28 +1515,28 @@ bool CSQLHelper::OpenDatabase()
         }
 	}
 	//Costs for Energy/Gas and Water (See your provider, try to include tax and other stuff)
-	if (!GetPreferencesVar("CostEnergy", nValue))
+	if ((!GetPreferencesVar("CostEnergy", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("CostEnergy", 2149);
 	}
-	if (!GetPreferencesVar("CostEnergyT2", nValue))
+	if ((!GetPreferencesVar("CostEnergyT2", nValue)) || (nValue == 0))
 	{
 		GetPreferencesVar("CostEnergy", nValue);
 		UpdatePreferencesVar("CostEnergyT2", nValue);
 	}
-	if (!GetPreferencesVar("CostGas", nValue))
+	if ((!GetPreferencesVar("CostGas", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("CostGas", 6218);
 	}
-	if (!GetPreferencesVar("CostWater", nValue))
+	if ((!GetPreferencesVar("CostWater", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("CostWater", 16473);
 	}
-	if (!GetPreferencesVar("UseEmailInNotifications", nValue))
+	if ((!GetPreferencesVar("UseEmailInNotifications", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("UseEmailInNotifications", 1);
 	}
-	if (!GetPreferencesVar("EmailPort", nValue))
+	if ((!GetPreferencesVar("EmailPort", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("EmailPort", 25);
 	}
@@ -1580,7 +1580,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EnableTabFloorplans", 0);
 	}
-	if (!GetPreferencesVar("NotificationSensorInterval", nValue))
+	if ((!GetPreferencesVar("NotificationSensorInterval", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("NotificationSensorInterval", 12*60*60);
 	}
@@ -1593,11 +1593,11 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("NotificationSwitchInterval", 0);
 	}
-	if (!GetPreferencesVar("RemoteSharedPort", nValue))
+	if ((!GetPreferencesVar("RemoteSharedPort", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("RemoteSharedPort", 6144);
 	}
-	if (!GetPreferencesVar("Language", sValue))
+	if ((!GetPreferencesVar("Language", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("Language", "en");
 	}
@@ -1632,7 +1632,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("SecStatus", (int)SECSTATUS_DISARMED);
 	}
-	if (!GetPreferencesVar("SecOnDelay", nValue))
+	if ((!GetPreferencesVar("SecOnDelay", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("SecOnDelay", 30);
 	}
@@ -1645,11 +1645,11 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("ReleaseChannel", 0);//Stable=0, Beta=1
 	}
-	if (!GetPreferencesVar("RaspCamParams", sValue))
+	if ((!GetPreferencesVar("RaspCamParams", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("RaspCamParams", "-w 800 -h 600 -t 1"); //width/height/time2wait
 	}
-	if (!GetPreferencesVar("UVCParams", sValue))
+	if ((!GetPreferencesVar("UVCParams", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("UVCParams", "-S80 -B128 -C128 -G80 -x800 -y600 -q100"); //width/height/time2wait
 	}
@@ -1665,7 +1665,7 @@ bool CSQLHelper::OpenDatabase()
 		nValue=1;
 	}
 	m_bAcceptNewHardware=(nValue==1);
-	if (!GetPreferencesVar("ZWavePollInterval", nValue))
+	if ((!GetPreferencesVar("ZWavePollInterval", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("ZWavePollInterval", 60);
 	}
@@ -1673,7 +1673,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("ZWaveEnableDebug", 0);
 	}
-	if (!GetPreferencesVar("ZWaveNetworkKey", sValue))
+	if ((!GetPreferencesVar("ZWaveNetworkKey", sValue)) || (sValue.empty()))
 	{
 		sValue = "0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10";
 		UpdatePreferencesVar("ZWaveNetworkKey", sValue);
@@ -1721,12 +1721,12 @@ bool CSQLHelper::OpenDatabase()
 	}
 	m_bDisableEventSystem = (nValue==1);
 
-	if (!GetPreferencesVar("WebTheme", sValue))
+	if ((!GetPreferencesVar("WebTheme", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("WebTheme", "default");
 	}
 
-	if (!GetPreferencesVar("FloorplanPopupDelay", nValue))
+	if ((!GetPreferencesVar("FloorplanPopupDelay", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("FloorplanPopupDelay", 750);
 	}
@@ -1750,7 +1750,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("FloorplanShowSceneNames", 1);
 	}
-	if (!GetPreferencesVar("FloorplanRoomColour", sValue))
+	if ((!GetPreferencesVar("FloorplanRoomColour", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("FloorplanRoomColour", "Blue");
 	}
@@ -1762,19 +1762,19 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("FloorplanInactiveOpacity", 5);
 	}
-	if (!GetPreferencesVar("TempHome", sValue))
+	if ((!GetPreferencesVar("TempHome", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("TempHome", "20");
 	}
-	if (!GetPreferencesVar("TempAway", sValue))
+	if ((!GetPreferencesVar("TempAway", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("TempAway", "15");
 	}
-	if (!GetPreferencesVar("TempComfort", sValue))
+	if ((!GetPreferencesVar("TempComfort", sValue)) || (sValue.empty()))
 	{
 		UpdatePreferencesVar("TempComfort", "22.0");
 	}
-	if (!GetPreferencesVar("HTTPURL", sValue))
+	if ((!GetPreferencesVar("HTTPURL", sValue)) || (sValue.empty()))
 	{
 		sValue = "https://www.somegateway.com/pushurl.php?username=#FIELD1&password=#FIELD2&apikey=#FIELD3&from=#FIELD4&to=#TO&message=#MESSAGE";
 		std::string sencoded = base64_encode((const unsigned char*)sValue.c_str(), sValue.size());

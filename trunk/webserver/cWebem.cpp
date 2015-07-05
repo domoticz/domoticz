@@ -444,13 +444,11 @@ bool cWebem::CheckForAction( request& req )
 						}
 					}
 				}
+				// call the function
+				req.uri = pfun->second(this);
+				return true;
 			}
-			// call the function
-			req.uri = pfun->second(this);
-			return true;
 		}
-
-
 		uri = req.content;
 		q = 0;
 	} else {
