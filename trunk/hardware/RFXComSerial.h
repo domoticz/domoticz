@@ -43,6 +43,7 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	bool UploadFirmware(const std::string &szFilename);
 	float GetUploadPercentage(); //returns -1 when failed
+	std::string GetUploadMessage();
 private:
 	bool StartHardware();
 	bool StopHardware();
@@ -58,6 +59,7 @@ private:
 
 	bool m_bStartFirmwareUpload;
 	std::string m_szFirmwareFile;
+	std::string m_szUploadMessage;
 	float m_FirmwareUploadPercentage;
 	bool m_bInBootloaderMode;
 	bool m_bHaveRX;
