@@ -583,7 +583,18 @@ void CBMP085::ReadSensorDetails()
 			m_LastSendForecast = bmpbaroforecast_thunderstorm;
 			break;
 		case FC_BMP085_UNKNOWN:			//
-			m_LastSendForecast = bmpbaroforecast_unknown;
+			{
+				int nforecast = bmpbaroforecast_cloudy;
+				if (pressure <= 980)
+					nforecast = bmpbaroforecast_thunderstorm;
+				else if (pressure <= 995)
+				{
+					nforecast = bmpbaroforecast_rain;
+				}
+				else if (pressure >= 1029)
+					nforecast = bmpbaroforecast_sunny;
+				m_LastSendForecast = nforecast;
+		}
 			break;
 		}
 	}
