@@ -264,6 +264,19 @@ bool RFXComSerial::UpgradeFirmware()
 		goto exitfirmwareupload;
 	}
 
+#ifndef WIN32
+	try
+	{
+		m_serial.flush();
+	}
+	catch (...)
+	{
+		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		m_FirmwareUploadPercentage = -1;
+		goto exitfirmwareupload;
+	}
+#endif
 	try
 	{
 		m_serial.close();
@@ -322,7 +335,19 @@ bool RFXComSerial::UpgradeFirmware()
 		}
 	}
 	m_Firmware_Buffer.clear();
-
+#ifndef WIN32
+	try
+	{
+		m_serial.flush();
+	}
+	catch (...)
+	{
+		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		m_FirmwareUploadPercentage = -1;
+		goto exitfirmwareupload;
+	}
+#endif
 	//Verify
 	if (!Write_TX_PKT(PKT_VERIFY_OK, sizeof(PKT_VERIFY_OK)))
 	{
@@ -344,6 +369,20 @@ bool RFXComSerial::UpgradeFirmware()
 	}
 exitfirmwareupload:
 	Write_TX_PKT(PKT_RESET, sizeof(PKT_RESET), 1);
+#ifndef WIN32
+	try
+	{
+		m_serial.flush();
+	}
+	catch (...)
+	{
+		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
+		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		m_FirmwareUploadPercentage = -1;
+		goto exitfirmwareupload;
+	}
+#endif
+	sleep_seconds(1);
 	try
 	{
 		if (m_serial.isOpen())
