@@ -247,8 +247,12 @@ bool RFXComSerial::UpgradeFirmware()
 		goto exitfirmwareupload;
 	}
 	//Start bootloader mode
+	m_szUploadMessage = "RFXCOM: Start bootloader process...";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
+	m_szUploadMessage = "RFXCOM: Get bootloader version...";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	//read bootloader version
 	if (!Write_TX_PKT(PKT_VERSION, sizeof(PKT_VERSION)))
 	{
@@ -299,6 +303,8 @@ bool RFXComSerial::UpgradeFirmware()
 		goto exitfirmwareupload;
 	}
 
+	m_szUploadMessage = "RFXCOM: Start bootloader version...";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 
@@ -359,6 +365,8 @@ bool RFXComSerial::UpgradeFirmware()
 	}
 #endif
 	//Verify
+	m_szUploadMessage = "RFXCOM: Start bootloader verify...";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	if (!Write_TX_PKT(PKT_VERIFY_OK, sizeof(PKT_VERIFY_OK)))
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!";
@@ -378,6 +386,8 @@ bool RFXComSerial::UpgradeFirmware()
 		_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	}
 exitfirmwareupload:
+	m_szUploadMessage = "RFXCOM: bootloader reset...";
+	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	Write_TX_PKT(PKT_RESET, sizeof(PKT_RESET), 1);
 #ifndef WIN32
 	try
@@ -711,7 +721,9 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 	unsigned char chksum = 0;
 	m_rx_tot_bytes = 0;
 	size_t ii = 1;
-	while ((ii<length) && (m_rx_tot_bytes<sizeof(m_rx_input_buffer)-1))
+	std::string szRespone = "Received: ";
+	int jj;
+	while ((ii<length) && (m_rx_tot_bytes<sizeof(m_rx_input_buffer) - 1))
 	{
 		unsigned char dbyte = pdata[ii];
 		switch (dbyte)
@@ -723,8 +735,20 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 		case PKT_ETX:
 			chksum = ~chksum + 1; //test checksum
 			if (chksum != 0)
+			{
+				_log.Log(LOG_ERROR, "RFXCom: bootloader, received response with invalid checksum!");
 				return false;
+			}
 			//Message OK
+			for (jj = 0; jj < m_rx_tot_bytes; jj++)
+			{
+				std::stringstream sstr;
+				sstr << "0x" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << int(m_rx_input_buffer[jj]);
+				if (jj != m_rx_tot_bytes - 1)
+					sstr << ", ";
+				szRespone+=sstr.str();
+			}
+			_log.Log(LOG_STATUS, "%s", szRespone.c_str());
 			m_bHaveRX = true;
 			return true;
 			break;
