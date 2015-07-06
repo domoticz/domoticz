@@ -38,7 +38,8 @@ const unsigned char PKT_DLE = 0x05;
 #define PKT_eraseblock 2048
 #define PKT_maxpacket 261
 #define PKT_bytesperaddr 2
-#define PKT_pmrangelow	0x001A00
+//#define PKT_pmrangelow	0x001A00
+#define PKT_pmrangelow	0x001800
 #define PKT_pmrangehigh	0x00A7FF
 #define PKT_userresetvector 0x100
 #define PKT_bootdelay 0x102
@@ -136,6 +137,7 @@ void RFXComSerial::Do_Work()
 
 		if (m_bStartFirmwareUpload)
 		{
+			m_bStartFirmwareUpload = false;
 			if (isOpen())
 			{
 				try {
@@ -149,8 +151,13 @@ void RFXComSerial::Do_Work()
 					//Don't throw from a Stop command
 				}
 			}
-			sleep_seconds(1);
-			UpgradeFirmware();
+			try {
+				sleep_seconds(1);
+				UpgradeFirmware();
+			}
+			catch (...)
+			{
+			}
 		}
 
 		if (!isOpen())
