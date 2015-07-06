@@ -8,7 +8,7 @@ define(['app'], function (app) {
 	
 		$scope.SetPercentage = function (percentage)
 		{
-			var perc=parseFloat(parseFloat(percentage).toFixed(1));
+			var perc=parseFloat(parseFloat(percentage).toFixed(2));
 			$( "#progressbar" ).progressbar( "value", perc );
 		}
 

@@ -66,18 +66,12 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_szUploadMessage = "";
 	m_serial.setPort(m_szSerialPort);
 	m_serial.setBaudrate(m_iBaudRate);
+	m_serial.setBytesize(serial::eightbits);
+	m_serial.setParity(serial::parity_none);
+	m_serial.setStopbits(serial::stopbits_one);
+
 	serial::Timeout stimeout = serial::Timeout::simpleTimeout(100);
 	m_serial.setTimeout(stimeout);
-}
-
-RFXComSerial::RFXComSerial(const std::string& devname,
-        unsigned int baud_rate,
-        boost::asio::serial_port_base::parity opt_parity,
-        boost::asio::serial_port_base::character_size opt_csize,
-        boost::asio::serial_port_base::flow_control opt_flow,
-        boost::asio::serial_port_base::stop_bits opt_stop)
-        :AsyncSerial(devname,baud_rate,opt_parity,opt_csize,opt_flow,opt_stop)
-{
 }
 
 RFXComSerial::~RFXComSerial()
@@ -305,33 +299,42 @@ bool RFXComSerial::UpgradeFirmware()
 	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
 	for (itt = m_Firmware_Buffer.begin(); itt != m_Firmware_Buffer.end(); ++itt)
 	{
-		unsigned long Address = itt->first;
-
-		std::stringstream saddress;
-		saddress << "Programming Address: " << std::hex << std::uppercase << std::setw(8) << std::setfill('0') << Address;
-		m_FirmwareUploadPercentage = (100.0f / float(m_Firmware_Buffer.size()))*(icntr + 1);
-		if (m_FirmwareUploadPercentage > 100)
-			m_FirmwareUploadPercentage = 100;
-		_log.Log(LOG_STATUS, "%s, %.1f %%", saddress.str().c_str(), m_FirmwareUploadPercentage);
-
 		icntr++;
 		if (icntr % 5 == 0)
-			m_LastHeartbeat = mytime(NULL);
-
-		unsigned char bcmd[PKT_writeblock + 10];
-		bcmd[0] = COMMAND_WRITEPM;
-		bcmd[1] = 1;
-		bcmd[2] = Address & 0xFF;
-		bcmd[3] = (Address & 0xFF00) >> 8;
-		bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
-		memcpy(bcmd + 5, itt->second.c_str(), itt->second.size());
-		bool ret = Write_TX_PKT(bcmd, 5 + itt->second.size(), 20);
-		if (!ret)
 		{
-			m_szUploadMessage = "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
-			m_FirmwareUploadPercentage = -1;
-			goto exitfirmwareupload;
+			m_LastHeartbeat = mytime(NULL);
+		}
+		unsigned long Address = itt->first;
+		m_FirmwareUploadPercentage = (100.0f / float(m_Firmware_Buffer.size()))*icntr;
+		if (m_FirmwareUploadPercentage > 100)
+			m_FirmwareUploadPercentage = 100;
+
+		//if ((Address >= PKT_pmrangelow) && (Address <= PKT_pmrangehigh))
+		{
+			std::stringstream saddress;
+			saddress << "Programming Address: 0x" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << Address;
+
+			std::stringstream spercentage;
+			spercentage.precision(2);
+			spercentage << std::setprecision(2)  << std::fixed << m_FirmwareUploadPercentage;
+			m_szUploadMessage = saddress.str() + ", " + spercentage.str() + " %";
+			_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
+
+			unsigned char bcmd[PKT_writeblock + 10];
+			bcmd[0] = COMMAND_WRITEPM;
+			bcmd[1] = 1;
+			bcmd[2] = Address & 0xFF;
+			bcmd[3] = (Address & 0xFF00) >> 8;
+			bcmd[4] = (unsigned char)((Address & 0xFF0000) >> 16);
+			memcpy(bcmd + 5, itt->second.c_str(), itt->second.size());
+			bool ret = Write_TX_PKT(bcmd, 5 + itt->second.size(), 20);
+			if (!ret)
+			{
+				m_szUploadMessage = "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!";
+				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				m_FirmwareUploadPercentage = -1;
+				goto exitfirmwareupload;
+			}
 		}
 	}
 	m_Firmware_Buffer.clear();
@@ -397,7 +400,6 @@ exitfirmwareupload:
 	m_rxbufferpos = 0;
 	m_bInBootloaderMode = false;
 	OpenSerialDevice();
-	sOnConnected(this);
 	return true;
 }
 
