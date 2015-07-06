@@ -631,13 +631,15 @@ bool RFXComSerial::Write_TX_PKT(const unsigned char *pdata, size_t length, const
 		{
 			m_serial.write((const uint8_t *)&output_buffer, tot_bytes);
 			int rcount = 0;
-			while (rcount < 5)
+			while (rcount < 2)
 			{
-				sleep_milliseconds(100);
+				sleep_milliseconds(500);
 				tot_read = m_serial.read((uint8_t *)&input_buffer, sizeof(input_buffer));
 				if (tot_read)
 				{
-					return Handle_RX_PKT(input_buffer, tot_read);
+					bool bret=Handle_RX_PKT(input_buffer, tot_read);
+					if (bret)
+						return true;
 				}
 				rcount++;
 			}
@@ -802,13 +804,26 @@ namespace http {
 			std::string hardwareid = m_pWebEm->FindValue("hardwareid");
 			std::string firmwarefile = m_pWebEm->FindValue("firmwarefile");
 
-			if (
-				(firmwarefile.empty()) ||
-				(hardwareid.empty())
-				)
+			if (firmwarefile.empty())
 			{
 				return (char*)m_retstr.c_str();
 			}
+
+			CDomoticzHardwareBase *pHardware = NULL;
+			if ((!hardwareid.empty()) && (hardwareid!="undefined"))
+			{
+				pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
+			}
+			if (pHardware==NULL)
+			{
+				//Try to find the RFXCom hardware
+				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
+				if (pHardware==NULL)
+				{
+					return (char*)m_retstr.c_str();
+				}
+			}
+
 			std::string outputfile = szStartupFolder + "rfx_firmware.hex";
 			std::ofstream outfile;
 			outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
@@ -818,17 +833,13 @@ namespace http {
 			outfile.flush();
 			outfile.close();
 
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
-			if (pHardware != NULL)
+			if (
+				(pHardware->HwdType == HTYPE_RFXtrx315)||
+				(pHardware->HwdType == HTYPE_RFXtrx433)
+				)
 			{
-				if (
-					(pHardware->HwdType == HTYPE_RFXtrx315)||
-					(pHardware->HwdType == HTYPE_RFXtrx433)
-					)
-				{
-					RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
-					pRFXComSerial->UploadFirmware(outputfile);
-				}
+				RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
+				pRFXComSerial->UploadFirmware(outputfile);
 			}
 			return (char*)m_retstr.c_str();
 		}
@@ -906,12 +917,17 @@ namespace http {
 			root["status"] = "ERR";
 			root["title"] = "GetFirmwareUpgradePercentage";
 			std::string hardwareid = m_pWebEm->FindValue("hardwareid");
-			if (hardwareid.empty())
+
+			CDomoticzHardwareBase *pHardware = NULL;
+			if ((!hardwareid.empty()) && (hardwareid != "undefined"))
 			{
-				root["message"] = "No hardware ID provided!";
-				return;
+				pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
 			}
-			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(hardwareid.c_str()));
+			if (pHardware == NULL)
+			{
+				//Try to find the RFXCom hardware
+				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
+			}
 			if (pHardware != NULL)
 			{
 				if (

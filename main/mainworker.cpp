@@ -343,6 +343,20 @@ int MainWorker::FindDomoticzHardware(int HwdId)
 	return -1;
 }
 
+int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
+{
+	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+	{
+		if ((*itt)->HwdType == HWType)
+		{
+			return (itt - m_hardwaredevices.begin());
+		}
+	}
+	return -1;
+}
+
 CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
@@ -350,6 +364,20 @@ CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
 		if ((*itt)->m_HwdID==HwdId)
+		{
+			return (*itt);
+		}
+	}
+	return NULL;
+}
+
+CDomoticzHardwareBase* MainWorker::GetHardwareByType(const _eHardwareTypes HWType)
+{
+	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	std::vector<CDomoticzHardwareBase*>::iterator itt;
+	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+	{
+		if ((*itt)->HwdType == HWType)
 		{
 			return (*itt);
 		}
