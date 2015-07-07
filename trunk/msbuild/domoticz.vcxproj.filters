@@ -726,6 +726,9 @@
     <ClInclude Include="..\hardware\Kodi.h">
       <Filter>Devices\Kodi</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\serial\serial.h">
+      <Filter>Devices\SerialTCP\Serial</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

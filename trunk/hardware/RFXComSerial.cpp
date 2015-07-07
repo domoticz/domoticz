@@ -38,8 +38,8 @@ const unsigned char PKT_DLE = 0x05;
 #define PKT_eraseblock 2048
 #define PKT_maxpacket 261
 #define PKT_bytesperaddr 2
-//#define PKT_pmrangelow	0x001A00
-#define PKT_pmrangelow	0x001800
+#define PKT_pmrangelow	0x001A00
+//#define PKT_pmrangelow	0x001800
 #define PKT_pmrangehigh	0x00A7FF
 #define PKT_userresetvector 0x100
 #define PKT_bootdelay 0x102
@@ -70,6 +70,7 @@ RFXComSerial::RFXComSerial(const int ID, const std::string& devname, unsigned in
 	m_serial.setBytesize(serial::eightbits);
 	m_serial.setParity(serial::parity_none);
 	m_serial.setStopbits(serial::stopbits_one);
+	m_serial.setFlowcontrol(serial::flowcontrol_none);
 
 	serial::Timeout stimeout = serial::Timeout::simpleTimeout(100);
 	m_serial.setTimeout(stimeout);
@@ -721,8 +722,8 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 	unsigned char chksum = 0;
 	m_rx_tot_bytes = 0;
 	size_t ii = 1;
-	std::string szRespone = "Received: ";
-	int jj;
+//	std::string szRespone = "Received: ";
+//	int jj;
 	while ((ii<length) && (m_rx_tot_bytes<sizeof(m_rx_input_buffer) - 1))
 	{
 		unsigned char dbyte = pdata[ii];
@@ -740,6 +741,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 				return false;
 			}
 			//Message OK
+			/*
 			for (jj = 0; jj < m_rx_tot_bytes; jj++)
 			{
 				std::stringstream sstr;
@@ -749,6 +751,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 				szRespone+=sstr.str();
 			}
 			_log.Log(LOG_STATUS, "%s", szRespone.c_str());
+			*/
 			m_bHaveRX = true;
 			return true;
 			break;
