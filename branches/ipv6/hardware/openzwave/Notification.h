@@ -92,8 +92,9 @@ namespace OpenZWave
 			Type_AllNodesQueried,					/**< All nodes have been queried, so client application can expected complete data. */
 			Type_Notification,					/**< An error has occured that we need to report. */
 			Type_DriverRemoved,					/**< The Driver is being removed. (either due to Error or by request) Do Not Call Any Driver Related Methods after recieving this call */
-			Type_ControllerCommand				/**< When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
+			Type_ControllerCommand,				/**< When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
 												  * Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState */
+			Type_NodeReset						/**< The Device has been reset and thus removed from the NodeList in OZW */
 		};
 
 		/**

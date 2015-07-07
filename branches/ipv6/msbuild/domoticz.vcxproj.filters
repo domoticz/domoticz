@@ -102,9 +102,6 @@
     <Filter Include="Devices\Forecast.io">
       <UniqueIdentifier>{739f5460-5c88-47ba-8cd1-d94035c1819d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\AsyncSerialTCP">
-      <UniqueIdentifier>{1d8ff530-0367-4c8a-844f-4d5936d2ab97}</UniqueIdentifier>
-    </Filter>
     <Filter Include="TCPProxy">
       <UniqueIdentifier>{242d77c7-709a-4c87-8d92-a87a489af891}</UniqueIdentifier>
     </Filter>
@@ -221,6 +218,15 @@
     </Filter>
     <Filter Include="Devices\Kodi">
       <UniqueIdentifier>{7700963a-9c03-43d7-b123-c6cc0f57a734}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\SerialTCP">
+      <UniqueIdentifier>{1d8ff530-0367-4c8a-844f-4d5936d2ab97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\SerialTCP\Serial">
+      <UniqueIdentifier>{5a84e3ea-7581-4c01-b04f-c0805e5f1c3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\SerialTCP\Serial\impl">
+      <UniqueIdentifier>{b1efeef9-359d-4322-b902-29790a671287}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -448,10 +454,10 @@
       <Filter>Devices\Forecast.io</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\ASyncSerial.h">
-      <Filter>Devices\AsyncSerialTCP</Filter>
+      <Filter>Devices\SerialTCP</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\ASyncTCP.h">
-      <Filter>Devices\AsyncSerialTCP</Filter>
+      <Filter>Devices\SerialTCP</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\SolarEdgeBase.h">
       <Filter>Devices\SolarEdge</Filter>
@@ -720,6 +726,9 @@
     <ClInclude Include="..\hardware\Kodi.h">
       <Filter>Devices\Kodi</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\serial\serial.h">
+      <Filter>Devices\SerialTCP\Serial</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -909,10 +918,10 @@
       <Filter>Devices\Forecast.io</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ASyncSerial.cpp">
-      <Filter>Devices\AsyncSerialTCP</Filter>
+      <Filter>Devices\SerialTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ASyncTCP.cpp">
-      <Filter>Devices\AsyncSerialTCP</Filter>
+      <Filter>Devices\SerialTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\SolarEdgeBase.cpp">
       <Filter>Devices\SolarEdge</Filter>
@@ -1153,6 +1162,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Kodi.cpp">
       <Filter>Devices\Kodi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\serial\serial.cpp">
+      <Filter>Devices\SerialTCP\Serial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\serial\impl\win.cpp">
+      <Filter>Devices\SerialTCP\Serial\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

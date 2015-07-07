@@ -26,7 +26,6 @@
 #endif // WITH_GPIO
 #include "../webserver/Base64.h"
 #include "../smtpclient/SMTPClient.h"
-#include "../json/config.h"
 #include "../json/json.h"
 #include "Logger.h"
 #include "SQLHelper.h"
@@ -307,6 +306,8 @@ namespace http {
 
 			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this));
 			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this));
+			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this));
+			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1), true);
 			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this));
 			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this));
 			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this));
@@ -516,9 +517,11 @@ namespace http {
 			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
 
 			//Check for update (force)
-			m_LastUpdateCheck = 0;
-			Json::Value root;
-			Cmd_CheckForUpdate(root);
+			if (m_LastUpdateCheck == 0)
+			{
+				Json::Value root;
+				Cmd_CheckForUpdate(root);
+			}
 			return (m_thread != NULL);
 		}
 
@@ -2969,6 +2972,10 @@ namespace http {
 			nValue = 1;
 			m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
 			root["FiveMinuteHistoryDays"] = nValue;
+
+			nValue = 1;
+			m_sql.GetPreferencesVar("ShowUpdateEffect", nValue);
+			root["result"]["ShowUpdatedEffect"] = (nValue == 1);
 
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
@@ -5956,7 +5963,9 @@ namespace http {
 					(dType != pTypeThermostat3) &&
 					(dType != pTypeRemote) &&
 					(dType != pTypeGeneralSwitch) &&
-					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
+					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))&&
+					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
+					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert)))
 					)
 					return; //no light device! we should not be here!
 
@@ -7229,6 +7238,10 @@ namespace http {
 			std::string HideDisabledHardwareSensors = m_pWebEm->FindValue("HideDisabledHardwareSensors");
 			int iHideDisabledHardwareSensors = (HideDisabledHardwareSensors == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", iHideDisabledHardwareSensors);
+
+			std::string ShowUpdateEffect = m_pWebEm->FindValue("ShowUpdateEffect");
+			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
@@ -11349,6 +11362,10 @@ namespace http {
 				else if (Key == "HideDisabledHardwareSensors")
 				{
 					root["HideDisabledHardwareSensors"] = nValue;
+				}
+				else if (Key == "ShowUpdateEffect")
+				{
+					root["ShowUpdateEffect"] = nValue;
 				}
 				else if (Key == "DisableEventScriptSystem")
 				{

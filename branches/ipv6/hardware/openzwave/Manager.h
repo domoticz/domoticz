@@ -37,6 +37,7 @@
 
 #include "Defs.h"
 #include "Driver.h"
+#include "Group.h"
 #include "value_classes/ValueID.h"
 
 namespace OpenZWave
@@ -530,6 +531,15 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint8 GetNodeSecurity( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
+		 * \brief Is this a ZWave+ Supported Node?
+		 * \param _homeId the HomeID of the Z-Wave controller that managed the node.
+		 * \param _nodeId the ID of the node to query.
+		 * \return If this node is a Z-Wave Plus Node
+		 */
+
+		bool IsNodeZWavePlus( uint32 const _homeId, uint8 const _nodeId );
+
+		/**
 		 * \brief Get the basic type of a node.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node to query.
@@ -808,6 +818,56 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \return name of current query stage as a string.
 		 */
 		string GetNodeQueryStage( uint32 const _homeId, uint8 const _nodeId );
+
+
+		/**
+		 * \brief Get the node device type as reported in the Z-Wave+ Info report.
+		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+		 * \param _nodeId The ID of the node to query.
+		 * \return the node's DeviceType
+		 */
+		uint8 GetNodeDeviceType( uint32 const _homeId, uint8 const _nodeId );
+
+		/**
+		 * \brief Get the node device type as reported in the Z-Wave+ Info report.
+		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+		 * \param _nodeId The ID of the node to query.
+		 * \return the node's Device Type as a string.
+		 */
+		string GetNodeDeviceTypeString( uint32 const _homeId, uint8 const _nodeId );
+
+		/**
+		 * \brief Get the node role as reported in the Z-Wave+ Info report.
+		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+		 * \param _nodeId The ID of the node to query.
+		 * \return the node's user icon.
+		 */
+		uint8 GetNodeRole( uint32 const _homeId, uint8 const _nodeId );
+
+		/**
+		 * \brief Get the node role as reported in the Z-Wave+ Info report.
+		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+		 * \param _nodeId The ID of the node to query.
+		 * \return the node's role type as a string
+		 */
+		string GetNodeRoleString( uint32 const _homeId, uint8 const _nodeId );
+
+		/**
+		 * \brief Get the node PlusType as reported in the Z-Wave+ Info report.
+		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+		 * \param _nodeId The ID of the node to query.
+		 * \return the node's PlusType
+		 */
+		uint8 GetNodePlusType( uint32 const _homeId, uint8 const _nodeId );
+		/**
+		 * \brief Get the node PlusType as reported in the Z-Wave+ Info report.
+		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+		 * \param _nodeId The ID of the node to query.
+		 * \return the node's PlusType as a string
+		 */
+		string GetNodePlusTypeString ( uint32 const _homeId, uint8 const _nodeId );
+
+
 
 	/*@}*/
 
@@ -1456,6 +1516,19 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint32 GetAssociations( uint32 const _homeId, uint8 const _nodeId, uint8 const _groupIdx, uint8** o_associations );
 
 		/**
+		 * \brief Gets the associations for a group.
+		 * Makes a copy of the list of associated nodes in the group, and returns it in an array of InstanceAssociation's.
+		 * The caller is responsible for freeing the array memory with a call to delete [].
+		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
+		 * \param _nodeId The ID of the node whose associations we are interested in.
+		 * \param _groupIdx One-based index of the group (because Z-Wave product manuals use one-based group numbering).
+		 * \param o_associations If the number of associations returned is greater than zero, o_associations will be set to point to an array containing the IDs and instances of the associated nodes.
+		 * \return The number of items in the associations array.  If zero, the array will point to NULL, and does not need to be deleted.
+		 * \see GetNumGroups, AddAssociation, RemoveAssociation, GetMaxAssociations
+		 */
+		uint32 GetAssociations( uint32 const _homeId, uint8 const _nodeId, uint8 const _groupIdx, InstanceAssociation** o_associations );
+
+		/**
 		 * \brief Gets the maximum number of associations for a group.
 		 * \param _homeId The Home ID of the Z-Wave controller that manages the node.
 		 * \param _nodeId The ID of the node whose associations we are interested in.
@@ -1484,9 +1557,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _nodeId The ID of the node whose associations are to be changed.
 		 * \param _groupIdx One-based index of the group (because Z-Wave product manuals use one-based group numbering).
 		 * \param _targetNodeId Identifier for the node that will be added to the association group.
+		 * \param _instance Identifier for the instance that will be added to the association group.
 		 * \see GetNumGroups, GetAssociations, GetMaxAssociations, RemoveAssociation
 		 */
-		void AddAssociation( uint32 const _homeId, uint8 const _nodeId, uint8 const _groupIdx, uint8 const _targetNodeId );
+		void AddAssociation( uint32 const _homeId, uint8 const _nodeId, uint8 const _groupIdx, uint8 const _targetNodeId, uint8 const _instance = 0x00 );
 
 		/**
 		 * \brief Removes a node from an association group.
@@ -1497,9 +1571,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _nodeId The ID of the node whose associations are to be changed.
 		 * \param _groupIdx One-based index of the group (because Z-Wave product manuals use one-based group numbering).
 		 * \param _targetNodeId Identifier for the node that will be removed from the association group.
+		 * \param _instance Identifier for the instance that will be removed to the association group.
 		 * \see GetNumGroups, GetAssociations, GetMaxAssociations, AddAssociation
 		 */
-		void RemoveAssociation( uint32 const _homeId, uint8 const _nodeId, uint8 const _groupIdx, uint8 const _targetNodeId );
+		void RemoveAssociation( uint32 const _homeId, uint8 const _nodeId, uint8 const _groupIdx, uint8 const _targetNodeId, uint8 const _instance = 0x00 );
 
 	/*@}*/
 

@@ -43,6 +43,7 @@ public:
 
 	char * PostSettings();
 	char * SetRFXCOMMode();
+	char * RFXComUpgradeFirmware();
 	char * SetRego6XXType();
 	char * SetS0MeterType();
 	char * SetLimitlessType();
@@ -70,6 +71,7 @@ private:
 	void HandleRType(const std::string &rtype, Json::Value &root);
 
 	//Commands
+	void Cmd_RFXComGetFirmwarePercentage(Json::Value &root);
 	void Cmd_GetLanguage(Json::Value &root);
 	void Cmd_GetThemes(Json::Value &root);
 	void Cmd_LoginCheck(Json::Value &root);

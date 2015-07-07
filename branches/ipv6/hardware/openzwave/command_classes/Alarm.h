@@ -57,7 +57,7 @@ namespace OpenZWave
 		/** \brief Handle a response to a message associated with this command class. (Inherited from CommandClass) */
 		virtual bool HandleMsg( uint8 const* _data, uint32 const _length, uint32 const _instance = 1 );
 
-		virtual uint8 GetMaxVersion(){ return 2; }
+		virtual uint8 GetMaxVersion(){ return 3; }
 
 	protected:
 		virtual void CreateVars( uint8 const _instance );

@@ -110,7 +110,7 @@ bool RFXComTCP::onInternalMessage(const unsigned char *pBuffer, const size_t Len
 		}
 		m_rxbuffer[m_rxbufferpos] = pBuffer[ii];
 		m_rxbufferpos++;
-		if (m_rxbufferpos >= sizeof(m_rxbuffer))
+		if (m_rxbufferpos >= sizeof(m_rxbuffer)-1)
 		{
 			//something is out of sync here!!
 			//restart

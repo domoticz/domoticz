@@ -35,7 +35,7 @@ namespace OpenZWave
 {
 	class Value;
 
-	/** \brief Implements COMMAND_CLASS_CONFIGURATION (x70), a Z-Wave device command class.
+	/** \brief Implements COMMAND_CLASS_CONFIGURATION (0x70), a Z-Wave device command class.
 	 */
 	class Configuration: public CommandClass
 	{

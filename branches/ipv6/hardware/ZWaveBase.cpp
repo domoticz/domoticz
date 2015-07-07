@@ -1164,8 +1164,12 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				else if (pLed->command == Limitless_SetColorToWhite)
 				{
-					int wValue = 255;
-					sstr << "#000000" << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wValue << "00";
+					int Brightness = 100;
+					int wWhite = round((255.0f / 100.0f)*float(Brightness));
+					int cWhite = 0;
+					sstr << "#000000"
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
 					instanceID = 1;
 					return SwitchColor(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, sstr.str());
 				}
@@ -1179,11 +1183,14 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					int dMax = round((255.0f / 100.0f)*float(Brightness));
 					hue2rgb(cHue, red, green, blue, dMax);
 					instanceID = 1;
-
+					int wWhite = 0;
+					int cWhite = 0;
 					sstr << "#"
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
-						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
 
 					std::string sColor = sstr.str();
 

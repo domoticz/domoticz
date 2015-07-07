@@ -585,133 +585,135 @@ define(['app'], function (app) {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
 				$.each(data.result, function(i,item){
-							id="#tempcontent #" + item.idx;
-							var obj=$(id);
-							if (typeof obj != 'undefined') {
-								if ($(id + " #name").html()!=item.Name) {
-									$(id + " #name").html(item.Name);
-								}
-								var img='<img src="images/';
-								if (typeof item.Temp != 'undefined') {
-									img+=GetTemp48Item(item.Temp);
-								}
-								else {
-									if (item.Type=="Humidity") {
-										img+="gauge48.png";
-									}
-									else {
-										img+=GetTemp48Item(item.Chill);
-									}
-								}
-					img+='" height="48" width="48">';
-					
-					if ($(id + " #img").html()!=img) {
-									$(id + " #img").html(img);
-								}
-					
-					var status="";
-					var bigtext="";
-					var setonclick="";
-					var bHaveBefore=false;
-					//Evohome...
-					var sHeatMode="";
-					if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
-						sHeatMode=item.Status;
-					}
-					if (typeof item.Temp != 'undefined') {
-						 bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
-					}
-					if (item.SubType=="Zone" || item.SubType=="Hot Water") {
-						var tUntil="";
-						if (typeof item.Until != 'undefined')
-							tUntil=item.Until;
-						if (typeof item.SetPoint != 'undefined'){
-							bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
-							status+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
-							setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+					id="#tempcontent #" + item.idx;
+					var obj=$(id);
+					if (typeof obj != 'undefined') {
+						if ($(id + " #name").html()!=item.Name) {
+							$(id + " #name").html(item.Name);
 						}
-						if (typeof item.State != 'undefined'){
-							bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
-							status+=', '+$.t('State') + ': ' + item.State;
-							setonclick='EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.State + '\', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+						var img='<img src="images/';
+						if (typeof item.Temp != 'undefined') {
+							img+=GetTemp48Item(item.Temp);
 						}
-						if(sHeatMode!="Auto")
-							bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
-						status+=', '+$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
-						if (tUntil!=""){
-							status+=', '+$.t('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
-						}
-						bHaveBefore=true;
-					}
-					if (typeof item.Chill != 'undefined') {
-						if (bigtext!="") {
-							bigtext+=' / ';
-						}
-						bigtext+=item.Chill + '\u00B0 ' + $scope.config.TempSign;
-					}
-					if (typeof item.Humidity != 'undefined') {
-						if (bigtext!="") {
-							bigtext+=' / ';
-						}
-						bigtext+=item.Humidity + '%';
-					}
-					if (typeof item.HumidityStatus != 'undefined') {
-					  status+=$.t(item.HumidityStatus);
-					  bHaveBefore=true;
-					}
-					if (typeof item.Barometer != 'undefined') {
-						if (bHaveBefore==true) {
-							status+=', ';
-						}
-						status+=$.t('Barometer') + ': ' + item.Barometer + ' hPa';
-						bHaveBefore=true;
-					}
-					if (typeof item.ForecastStr != 'undefined') {
-					  status+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr) + '<br>';
-					  bHaveBefore=false;
-					}
-					if (typeof item.Direction != 'undefined') {
-					  status+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
-					  if (typeof item.Gust != 'undefined') {
-						status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
-					  }
-					}
-					if (typeof item.DewPoint != 'undefined') {
-						if (bHaveBefore==true) {
-							status+=', ';
-						}
-						status+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $scope.config.TempSign;
-					}
-
-					var nbackcolor="#D4E1EE";
-					if (item.HaveTimeout==true) {
-						nbackcolor="#DF2D3A";
-					}
-					else {
-						var BatteryLevel=parseInt(item.BatteryLevel);
-						if (BatteryLevel!=255) {
-							if (BatteryLevel<=10) {
-								nbackcolor="#DDDF2D";
+						else {
+							if (item.Type=="Humidity") {
+								img+="gauge48.png";
+							}
+							else {
+								img+=GetTemp48Item(item.Chill);
 							}
 						}
-					}
-					//Evohome...
-					nbackcolor=EvoSetPointColor(item,sHeatMode,nbackcolor);
-					
-					var obackcolor=rgb2hex($(id + " #name").css( "background-color" ));
-					if (obackcolor!=nbackcolor) {
-									$(id + " #name").css( "background-color", nbackcolor );
-					}
-					
-					if ($(id + " #status").html()!=status) {
-									$(id + " #bigtext").html(bigtext);
-									$(id + " #status").html(status);
-									if (setonclick!="")
-										$(id + " #set").attr("onclick",setonclick);
+						img+='" height="48" width="48">';
+			
+						if ($(id + " #img").html()!=img) {
+										$(id + " #img").html(img);
+									}
+						
+						var status="";
+						var bigtext="";
+						var setonclick="";
+						var bHaveBefore=false;
+						//Evohome...
+						var sHeatMode="";
+						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
+							sHeatMode=item.Status;
+						}
+						if (typeof item.Temp != 'undefined') {
+							 bigtext=item.Temp + '\u00B0 ' + $scope.config.TempSign;
+						}
+						if (item.SubType=="Zone" || item.SubType=="Hot Water") {
+							var tUntil="";
+							if (typeof item.Until != 'undefined')
+								tUntil=item.Until;
+							if (typeof item.SetPoint != 'undefined'){
+								bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
+								status+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
+								setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+							}
+							if (typeof item.State != 'undefined'){
+								bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
+								status+=', '+$.t('State') + ': ' + item.State;
+								setonclick='EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.State + '\', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+							}
+							if(sHeatMode!="Auto")
+								bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
+							status+=', '+$.t('Mode') + ': ' + EvoDisplayTextMode(sHeatMode);
+							if (tUntil!=""){
+								status+=', '+$.t('Until') + ': ' + tUntil.replace(/T/,' ').replace(/\..+/, '');
+							}
+							bHaveBefore=true;
+						}
+						if (typeof item.Chill != 'undefined') {
+							if (bigtext!="") {
+								bigtext+=' / ';
+							}
+							bigtext+=item.Chill + '\u00B0 ' + $scope.config.TempSign;
+						}
+						if (typeof item.Humidity != 'undefined') {
+							if (bigtext!="") {
+								bigtext+=' / ';
+							}
+							bigtext+=item.Humidity + '%';
+						}
+						if (typeof item.HumidityStatus != 'undefined') {
+						  status+=$.t(item.HumidityStatus);
+						  bHaveBefore=true;
+						}
+						if (typeof item.Barometer != 'undefined') {
+							if (bHaveBefore==true) {
+								status+=', ';
+							}
+							status+=$.t('Barometer') + ': ' + item.Barometer + ' hPa';
+							bHaveBefore=true;
+						}
+						if (typeof item.ForecastStr != 'undefined') {
+						  status+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr) + '<br>';
+						  bHaveBefore=false;
+						}
+						if (typeof item.Direction != 'undefined') {
+						  status+=item.Direction + ' ' + item.DirectionStr + ', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
+						  if (typeof item.Gust != 'undefined') {
+							status+=', ' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
+						  }
+						}
+						if (typeof item.DewPoint != 'undefined') {
+							if (bHaveBefore==true) {
+								status+=', ';
+							}
+							status+=$.t("Dew Point") + ": " + item.DewPoint + '\u00B0 ' + $scope.config.TempSign;
+						}
+
+						var nbackcolor="#D4E1EE";
+						if (item.HaveTimeout==true) {
+							nbackcolor="#DF2D3A";
+						}
+						else {
+							var BatteryLevel=parseInt(item.BatteryLevel);
+							if (BatteryLevel!=255) {
+								if (BatteryLevel<=10) {
+									nbackcolor="#DDDF2D";
 								}
-								if ($(id + " #lastupdate").html()!=item.LastUpdate) {
-									$(id + " #lastupdate").html(item.LastUpdate);
-								}
+							}
+						}
+						//Evohome...
+						nbackcolor=EvoSetPointColor(item,sHeatMode,nbackcolor);
+						
+						var obackcolor=rgb2hex($(id + " #name").css( "background-color" ));
+						if (obackcolor!=nbackcolor) {
+										$(id + " #name").css( "background-color", nbackcolor );
+						}
+						if ($(id + " #status").html()!=status) {
+							$(id + " #bigtext").html(bigtext);
+							$(id + " #status").html(status);
+							if (setonclick!="")
+								$(id + " #set").attr("onclick",setonclick);
+						}
+						if ($(id + " #lastupdate").html()!=item.LastUpdate) {
+							$(id + " #lastupdate").html(item.LastUpdate);
+						}
+						if ($scope.config.ShowUpdatedEffect==true) {
+							$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+						}
 				   }
 				});
 			  }

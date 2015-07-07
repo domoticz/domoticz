@@ -169,6 +169,9 @@ define(['app'], function (app) {
 												if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 													$(id + " #lastupdate").html(item.LastUpdate);
 												}
+												if ($scope.config.ShowUpdatedEffect==true) {
+													$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+												}
 											}
 										}
 									}
@@ -687,6 +690,9 @@ define(['app'], function (app) {
 										if ($(id + " #lastupdate").html() != item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);
 										}
+										if ($scope.config.ShowUpdatedEffect==true) {
+											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+										}
 									}
 								}
 							}
@@ -807,6 +813,9 @@ define(['app'], function (app) {
 										}
 										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);
+										}
+										if ($scope.config.ShowUpdatedEffect==true) {
+											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 										}
 									}
 								}
@@ -971,6 +980,9 @@ define(['app'], function (app) {
 										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);
 										}
+										if ($scope.config.ShowUpdatedEffect==true) {
+											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+										}
 									}
 								}
 				  }
@@ -1002,6 +1014,9 @@ define(['app'], function (app) {
 									
 										if ($(id + " #bigtext").html()!=tmpStatus) {
 											$(id + " #bigtext").html(tmpStatus);
+										}
+										if ($scope.config.ShowUpdatedEffect==true) {
+											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 										}
 									}
 									else {
@@ -1088,6 +1103,9 @@ define(['app'], function (app) {
 										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);
 										}
+										if ($scope.config.ShowUpdatedEffect==true) {
+											$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+										}
 									}
 								}
 				  }
@@ -1138,6 +1156,9 @@ define(['app'], function (app) {
 											}
 											if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 												$(id + " #lastupdate").html(item.LastUpdate);
+											}
+											if ($scope.config.ShowUpdatedEffect==true) {
+												$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 											}
 										}
 									}
@@ -1388,6 +1409,9 @@ define(['app'], function (app) {
 									if ($(id + " #img").html()!=img) {
 										$(id + " #img").html(img);
 									}
+								}
+								if ($scope.config.ShowUpdatedEffect==true) {
+									$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 								}
 							}
 						}
@@ -3292,6 +3316,9 @@ define(['app'], function (app) {
 							}
 							if ($(id + " #bigtext").html()!=status) {
 								$(id + " #bigtext").html(status);
+							}
+							if ($scope.config.ShowUpdatedEffect==true) {
+								$(id + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 							}
 						}
 					}

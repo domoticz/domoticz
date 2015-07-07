@@ -35,8 +35,10 @@ public:
 	void RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware);
 	void RemoveDomoticzHardware(int HwdId);
 	int FindDomoticzHardware(int HwdId);
+	int FindDomoticzHardwareByType(const _eHardwareTypes HWType);
 	CDomoticzHardwareBase* GetHardware(int HwdId);
-	
+	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
+
 	void HeartbeatUpdate(const std::string component);
 	void HeartbeatRemove(const std::string component);
 	void HeartbeatCheck();

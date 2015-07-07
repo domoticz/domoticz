@@ -358,7 +358,8 @@ bool cWebem::CheckForAction( request& req )
 
 	// decode the values
 
-	if( req.method == "POST" ) {
+	if( req.method == "POST" )
+	{
 		const char *pContent_Type=req.get_req_header(&req,"Content-Type");
 		if (pContent_Type)
 		{
@@ -368,58 +369,86 @@ bool cWebem::CheckForAction( request& req )
 				if (pBoundary!=NULL)
 				{
 					std::string szBoundary=std::string("--")+(pBoundary+9);
-					//Find boundary in content
-					std::istringstream ss(req.content);
-					std::string csubstr;
-					int ii=0;
-					std::string vName="";
-					while (!ss.eof()) 
+
+					std::vector<std::string> results;
+					std::string sorg = req.content;
+					bool bDone = false;
+					while (!bDone)
 					{
-						safeGetline(ss, csubstr);
-						if (ii==0)
+						size_t bpos = sorg.find(szBoundary,1);
+						if (bpos != std::string::npos)
 						{
-							//Boundary
-							if (csubstr!=szBoundary)
-								return true;
-							ii++;
+							results.push_back(sorg.substr(0, bpos));
+							sorg = sorg.substr(bpos);
 						}
-						else if (ii==1)
+						else
+							bDone = true;
+					}
+
+					std::vector<std::string>::const_iterator itt;
+					for (itt = results.begin(); itt != results.end(); ++itt)
+					{
+						std::string lstring = *itt;
+						std::istringstream ss(lstring);
+						//Find boundary in content
+						std::string csubstr;
+						int ii = 0;
+
+						std::string vName = "";
+						while (!ss.eof())
 						{
-							if (csubstr.find("Content-Disposition:")!=std::string::npos)
+							safeGetline(ss, csubstr);
+							if (ii == 0)
 							{
-								size_t npos=csubstr.find("name=\"");
-								if (npos==std::string::npos)
-									return true;
-								vName=csubstr.substr(npos+6);
-								npos=vName.find("\"");
-								if (npos==std::string::npos)
-									return true;
-								vName=vName.substr(0,npos);
+								//Boundary
+								if (csubstr != szBoundary)
+									break;
 								ii++;
 							}
-						}
-						else if (ii==2)
-						{
-							if (csubstr.size()==0)
+							else if (ii == 1)
 							{
-								ii++;
-								//2 empty lines, rest is data
-								std::string szContent;
-								size_t bpos=size_t(ss.tellg());
-								szContent=req.content.substr(bpos,ss.rdbuf()->str().size()-bpos-szBoundary.size()-6);
-								myNameValues.insert( std::pair< std::string,std::string > ( vName, szContent) );
-								// call the function
-								req.uri = pfun->second( this );
-								return true;
+								if (csubstr.find("Content-Disposition:") != std::string::npos)
+								{
+									size_t npos = csubstr.find("name=\"");
+									if (npos == std::string::npos)
+										break;
+									vName = csubstr.substr(npos + 6);
+									npos = vName.find("\"");
+									if (npos == std::string::npos)
+										break;
+									vName = vName.substr(0, npos);
+									ii++;
+								}
+							}
+							else if (ii == 2)
+							{
+								if (csubstr.size() == 0)
+								{
+									ii = 0;
+									std::string szContent;
+									size_t bpos = size_t(ss.tellg());
+									szContent = lstring.substr(bpos, lstring.size() - bpos);
+									if (szContent.size() > 2)
+									{
+										if (
+											(szContent[szContent.size() - 2] == '\r') &&
+											(szContent[szContent.size() - 1] == '\n')
+											)
+										{
+											szContent = szContent.substr(0, szContent.size() - 2);
+										}
+									}
+									myNameValues.insert(std::pair< std::string, std::string >(vName, szContent));
+								}
 							}
 						}
 					}
-					return true;
 				}
+				// call the function
+				req.uri = pfun->second(this);
+				return true;
 			}
 		}
-
-
 		uri = req.content;
 		q = 0;
 	} else {

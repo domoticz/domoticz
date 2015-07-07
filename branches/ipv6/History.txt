@@ -24,6 +24,12 @@ Version 2.xxx (xxxx 2015)
 - Fixed: HTTP Push table localization (thanks to cgaudry)
 - Changed: OpenZWave, when receiving a timeout notification, do not flag node as 'dead', only log the message
 - Fixed: Davis Logger
+- Changed: Short Log cleanup method
+- Implemented: Option to flash sensors when an update is received (enable in the settings page)
+- Changed: Lowered HTTP connection timeout to 10 seconds
+- Fixed: Post command handling
+- Changed: BMP085, when forecast is unknown, its calculated directly based on the pressure
+- Removed: (needs more testing) RFXCom (Serial) option to update the firmware via the web interface
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!
