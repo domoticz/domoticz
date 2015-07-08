@@ -44,7 +44,8 @@ enum _eSensorScaleID
 	SCALEID_VOLTAGE,
 	SCALEID_CURRENT,
 	SCALEID_POWERFACTOR,
-	SCALEID_GAS
+	SCALEID_GAS,
+	SCALEID_CO2
 };
 
 struct _tAlarmNameToIndexMapping
@@ -1782,6 +1783,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				}
 			}
 		}
+		else if (vLabel == "CO2 Level")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_CO2;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_CO2;
+					InsertDevice(_device);
+				}
+			}
+		}
 		else if (vLabel == "General")
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
@@ -2246,7 +2261,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		(vLabel == "Voltage") ||
 		(vLabel == "Current") ||
 		(vLabel == "Power Factor")||
-		(vLabel == "Gas")
+		(vLabel == "Gas")||
+		(vLabel == "CO2 Level")
 		)
 	{
 		int scaleID = 0;
@@ -2262,6 +2278,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_POWERFACTOR;
 		else if (vLabel == "Gas")
 			scaleID = SCALEID_GAS;
+		else if (vLabel == "CO2 Level")
+			scaleID = SCALEID_CO2;
 
 		sstr << "." << scaleID;
 	}
@@ -2678,6 +2696,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				return;//sanity check, don't report it
 		}
 		break;
+	case ZDTYPE_SENSOR_CO2:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "CO2 Level")
+			return;
+		float oldvalue = pDevice->floatValue;
+		pDevice->floatValue = fValue; //always set the value
+	}
+	break;
 	case ZDTYPE_SENSOR_THERMOSTAT_CLOCK:
 		if (vLabel == "Minute")
 		{
