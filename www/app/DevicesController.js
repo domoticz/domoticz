@@ -249,7 +249,7 @@ define(['app'], function (app) {
 					else {
 						itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + item.Name + '\')">';
 					}
-					itemSubIcons+='<img src="images/empty16.png">';
+					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Name + '\')">';
 				  }
 				  if (
 						(item.Type.indexOf("Light")==0)||
