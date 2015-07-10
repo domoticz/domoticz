@@ -21,6 +21,10 @@ bool CNotificationPushover::SendMessageImplementation(const std::string &Subject
 
 	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << Subject << "&message=" << Text;
 
+	if (Sound != "") {
+		sPostData << "&sound=" << Sound;
+	}
+
 	if (Priority == 2) {
 		sPostData << "&retry=300&expire=3600";
 	}
