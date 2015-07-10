@@ -915,7 +915,7 @@ void COpenZWave::EnableDisableDebug()
 bool COpenZWave::OpenSerialConnector()
 {
 	_log.Log(LOG_STATUS, "OpenZWave: Starting...");
-//	_log.Log(LOG_STATUS, "OpenZWave: Version: %s", GetVersionLong().c_str());
+	_log.Log(LOG_STATUS, "OpenZWave: Version: %s", GetVersionLong().c_str());
 
 	m_allNodesQueried = false;
 	m_updateTime = mytime(NULL);
@@ -2907,45 +2907,39 @@ int COpenZWave::ListGroupsForNode(const int nodeID)
 	return m_pManager->GetNumGroups(m_controllerID, nodeID);
 }
 
-int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<string> &nodesingroup)
+int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<int> &nodesingroup)
 {
 
 	if (m_pManager == NULL)
 		return 0;
 
-	InstanceAssociation* arr;
+	uint8* arr;
 	int retval = m_pManager->GetAssociations(m_controllerID, nodeID, groupID, &arr);
 	if (retval > 0) {
 		for (int i = 0; i < retval; i++) {
-		    char str[32];
-		    if (arr[i].m_instance == 0) {
-		    	snprintf( str, 32, "%d", arr[i].m_nodeId );
-		    } else {
-		    	snprintf( str, 32, "%d.%d", arr[i].m_nodeId, arr[i].m_instance );
-		    }
-			nodesingroup.push_back(str);
+			nodesingroup.push_back(arr[i]);
 		}
 		delete[] arr;
 	}
 	return retval;
 }
 
-bool COpenZWave::AddNodeToGroup(const int nodeID, const int groupID, const int addID, const int instance)
+bool COpenZWave::AddNodeToGroup(const int nodeID, const int groupID, const int addID)
 {
 
 	if (m_pManager == NULL)
 		return false;
-	m_pManager->AddAssociation(m_controllerID, nodeID, groupID, addID, instance);
-	_log.Log(LOG_STATUS, "OpenZWave: added node: %d (0x%02x) instance %d in group: %d of node: %d (0x%02x)", addID, addID, instance, groupID, nodeID, nodeID);
+	m_pManager->AddAssociation(m_controllerID, nodeID, groupID, addID);
+	_log.Log(LOG_STATUS, "OpenZWave: added node: %d (0x%02x) in group: %d of node: %d (0x%02x)", addID, addID, groupID, nodeID, nodeID);
 	return true;
 }
 
-bool COpenZWave::RemoveNodeFromGroup(const int nodeID, const int groupID, const int removeID, const int instance)
+bool COpenZWave::RemoveNodeFromGroup(const int nodeID, const int groupID, const int removeID)
 {
 	if (m_pManager == NULL)
 		return false;
-	m_pManager->RemoveAssociation(m_controllerID, nodeID, groupID, removeID, instance);
-	_log.Log(LOG_STATUS, "OpenZWave: removed node: %d (0x%02x) instance %d from group: %d of node: %d (0x%02x)", removeID, removeID, instance, groupID, nodeID, nodeID);
+	m_pManager->RemoveAssociation(m_controllerID, nodeID, groupID, removeID);
+	_log.Log(LOG_STATUS, "OpenZWave: removed node: %d (0x%02x) from group: %d of node: %d (0x%02x)", removeID, removeID, groupID, nodeID, nodeID);
 
 	return true;
 }
@@ -3998,7 +3992,7 @@ namespace http {
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
-				int homeID = atoi(result[0][1].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -4028,7 +4022,7 @@ namespace http {
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = atoi(result[0][1].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -4278,9 +4272,7 @@ namespace http {
 			if (pHardware != NULL)
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-                int nodeId = 0,  instance = 0;
-                sscanf(removenode.c_str(),"%d.%d", &nodeId, &instance);
-                pOZWHardware->RemoveNodeFromGroup(atoi(node.c_str()), atoi(group.c_str()), nodeId, instance);
+				pOZWHardware->RemoveNodeFromGroup(atoi(node.c_str()), atoi(group.c_str()), atoi(removenode.c_str()));
 				root["status"] = "OK";
 				root["title"] = "ZWaveRemoveGroupNode";
 			}
@@ -4310,9 +4302,7 @@ namespace http {
 			if (pHardware != NULL)
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-				int nodeId = 0,  instance = 0;
-				sscanf(addnode.c_str(),"%d.%d", &nodeId, &instance);
-                pOZWHardware->AddNodeToGroup(atoi(node.c_str()), atoi(group.c_str()), nodeId, instance);
+				pOZWHardware->AddNodeToGroup(atoi(node.c_str()), atoi(group.c_str()), atoi(addnode.c_str()));
 				root["status"] = "OK";
 				root["title"] = "ZWaveAddGroupNode";
 			}
@@ -4343,7 +4333,7 @@ namespace http {
 					for (itt = result.begin(); itt != result.end(); ++itt)
 					{
 						std::vector<std::string> sd = *itt;
-						unsigned int homeID = atoi(sd[1].c_str());
+						unsigned int homeID = boost::lexical_cast<unsigned int>(sd[1]);
 						int nodeID = atoi(sd[2].c_str());
 						COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
 						if (pNode == NULL)
@@ -4357,14 +4347,14 @@ namespace http {
 							if (numGroups > MaxNoOfGroups)
 								MaxNoOfGroups = numGroups;
 
-							std::vector< string > nodesingroup;
+							std::vector< int > nodesingroup;
 							int gi = 0;
 							for (int x = 1; x <= numGroups; x++)
 							{
 								int numNodesInGroup = pOZWHardware->ListAssociatedNodesinGroup(nodeID, x, nodesingroup);
 								if (numNodesInGroup > 0) {
 									std::stringstream list;
-									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<string>(list, ","));
+									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<int>(list, ","));
 									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
 									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = list.str();
 								}
@@ -4424,7 +4414,7 @@ namespace http {
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = atoi(result[0][1].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -4450,7 +4440,7 @@ namespace http {
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = atoi(result[0][1].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -4804,7 +4794,7 @@ namespace http {
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = atoi(result[0][1].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
@@ -4831,7 +4821,7 @@ namespace http {
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
-				unsigned int homeID = atoi(result[0][1].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
 				int nodeID = atoi(result[0][2].c_str());
 				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
 				if (pHardware != NULL)
