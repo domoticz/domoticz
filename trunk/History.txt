@@ -31,6 +31,7 @@ Version 2.xxx (xxxx 2015)
 - Changed: BMP085, when forecast is unknown, its calculated directly based on the pressure
 - Implemented: Option to rename unused devices
 - Implemented: RFXCom (Serial) option to update the firmware via the web interface
+- Implemented: OpenZWave, multi instance association support (thanks to xs4!!!)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
