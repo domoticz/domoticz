@@ -115,9 +115,9 @@ public:
 	bool GetFailedState();
 	bool NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray);
 	int ListGroupsForNode(const int nodeID);
-	int ListAssociatedNodesinGroup(const int nodeID,const int groupID,std::vector< int > &nodesingroup);
-	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID);
-	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID);
+	int ListAssociatedNodesinGroup(const int nodeID,const int groupID,std::vector< string > &nodesingroup);
+	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID, const int instance);
+	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID, const int instance);
 	std::string GetConfigFile(std::string &szConfigFile);
 
 	void NightlyNodeHeal();
