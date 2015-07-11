@@ -842,9 +842,11 @@ define(['app'], function (app) {
 			$scope.MakeGlobalConfig();
 			ShowFloorplans();
 			$("#floorplanimage").on("click", function ( event ) {FloorplanClick(event);});
+			$("#guidelines").on("click", function ( event ) {FloorplanClick(event);});
 			$("#roompolyarea").on("click", function ( event ) {PolyClick(event);});
-			$("#svgcontainer").on("mousemove", function ( event ) {MouseXY(event);});
-			$("#svgcontainer").resize(function() { $scope.SVGContainerResize(); });
+			$("#svgcontainer").on("mouseleave", function (event) { MouseOut(event); });
+			$("#svgcontainer").on("mousemove", function (event) { MouseXY(event); });
+			$("#svgcontainer").resize(function () { $scope.SVGContainerResize(); });
 		};
 		$scope.$on('$destroy', function(){
 			if (typeof $scope.mytimer != 'undefined') {
