@@ -82,10 +82,10 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
-			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-		_log.Log(LOG_NORM, "File does not exist:  %s, %d", szImageFile.c_str(), posImage-7);
+//		_log.Log(LOG_NORM, "File does not exist:  %s, %d", szImageFile.c_str(), posImage-7);
 	}
 
 	std::string	szStatus = "On";
@@ -158,10 +158,10 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
-			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
+//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
 #ifdef WIN32
 		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ((szStatus=="Off") ? "-off" : "-on") + ".png";
@@ -170,10 +170,10 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
-			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
+//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
 #ifdef WIN32
 		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ((szStatus=="Off") ? "off" : "on") + ".png";
@@ -182,10 +182,10 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
-			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
+//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 
 #ifdef WIN32
 		szImageFile = szWWWFolder  + "\\images\\" + szTypeImage + ".png";
@@ -194,10 +194,10 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 #endif
 		if (file_exist(szImageFile.c_str()))
 		{
-			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
+//			_log.Log(LOG_NORM, "Icon file to be used: %s", szImageFile.c_str());
 			return szImageFile;
 		}
-		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
+//		_log.Log(LOG_NORM, "File does not exist:  %s", szImageFile.c_str());
 	}
 
 	// Image of last resort is the logo
