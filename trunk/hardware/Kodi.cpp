@@ -7,7 +7,6 @@
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../main/localtime_r.h"
-#include "../json/json.h"
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 
@@ -24,15 +23,6 @@
 #define round(a) ( int ) ( a + .5 )
 #define MAX_TITLE_LEN 40
 
-// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}
-//		{"id":1,"jsonrpc":"2.0","result":[{"playerid":1,"type":"video"}]}
-
-// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetItem%22,%22id%22:1,%22params%22:{%22playerid%22:0,%22properties%22:[%22artist%22,%22year%22,%22channel%22,%22season%22,%22episode%22]}}
-//		{"id":1,"jsonrpc":"2.0","result":{"item":{"artist":["Coldplay"],"id":25,"label":"The Scientist","type":"song","year":2002}}}
-
-// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetProperties%22,%22id%22:1,%22params%22:{%22playerid%22:1,%22properties%22:[%22totaltime%22,%22percentage%22,%22time%22]}}
-//		{"id":1,"jsonrpc":"2.0","result":{"percentage":22.207427978515625,"time":{"hours":0,"milliseconds":948,"minutes":15,"seconds":31},"totaltime":{"hours":1,"milliseconds":560,"minutes":9,"seconds":56}}}
-
 CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
@@ -42,6 +32,35 @@ CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms) :
 CKodi::~CKodi(void)
 {
 	m_bIsStarted = false;
+}
+
+Json::Value CKodi::Query(std::string sIP, int iPort, std::string sQuery)
+{
+	Json::Value root;
+	std::string sResult;
+	std::stringstream	sURL;
+	sURL << "http://" << sIP << ":" << iPort << sQuery;
+	HTTPClient::SetTimeout(m_iPingTimeoutms/1000);
+	bool	bRetVal = HTTPClient::GET(sURL.str(), sResult);
+	if (!bRetVal)
+	{
+//		_log.Log(LOG_ERROR, "Kodi: GET ERROR: %s", sURL.str().c_str());		// Normally timeout so don't log
+		return root;
+	}
+	Json::Reader jReader;
+	bRetVal = jReader.parse(sResult, root);
+	if (!bRetVal)
+	{
+		_log.Log(LOG_ERROR, "Kodi: PARSE ERROR: %s", sResult.c_str());
+		return root;
+	}
+	if (root["error"].empty() != true)
+	{
+		/* e.g {"error":{"code":-32100,"message":"Failed to execute method."},"id":1,"jsonrpc":"2.0"}	*/
+		_log.Log(LOG_ERROR, "Kodi: %d - '%s' request '%s'", root["error"]["code"].asInt(), root["error"]["message"].asCString(), sQuery.c_str());
+		return root;
+	}
+	return root;
 }
 
 bool CKodi::StartHardware()
@@ -100,9 +119,10 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 		if (itt->ID == Node.ID)
 		{
 			//Found it
+			bool	bUseOnOff = false;
+			if (((nStatus == MSTAT_OFF) && bPingOK) || ((nStatus != MSTAT_OFF) && !bPingOK)) bUseOnOff = true;
 			time_t atime = mytime(NULL);
 			itt->LastOK = atime;
-			SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
 			std::string sShortStatus = sStatus;
 			if (sShortStatus.find_last_of("%") == sShortStatus.length()-1)
 			{
@@ -110,19 +130,43 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 			}
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sShortStatus))
 			{
+				/*
+					Media device appears too different to integrate into main code :(
+				*/
+
+				// 1:	Update the DeviceStatus
 				_log.Log(LOG_STATUS, "Kodi: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sShortStatus.c_str());
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
-				char szID[40];
-				sprintf(szID, "%X%02X%02X%02X", 0, 0, (itt->ID & 0xFF00) >> 8, itt->ID & 0xFF);
 				char szLastUpdate[40];
 				sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 				std::stringstream szQuery;
 				std::vector<std::vector<std::string> > result;
-				szQuery << "UPDATE DeviceStatus SET nValue=" << nStatus << ", sValue='" << sShortStatus << "', LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << szID << "')";
+				szQuery << "UPDATE DeviceStatus SET nValue=" << nStatus << ", sValue=\"" << sShortStatus << "\", LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << itt->szDevID << "') AND (Unit == 1)";
 				result = m_sql.query(szQuery.str());
 				itt->nStatus = nStatus;
 				itt->sStatus = sShortStatus;
+
+				// 2:	Log the event
+				std::string sLongStatus = Media_Player_States(itt->nStatus);
+				if (itt->sStatus.length()) sLongStatus += " - " + itt->sStatus;
+				szQuery.str("");
+				szQuery << "INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('" << itt->ID << "'," << itt->nStatus << ",\"" << sLongStatus.c_str() << "\")";
+				result = m_sql.query(szQuery.str());
+
+				// 3:	Trigger On/Off actions
+				if (bUseOnOff)
+				{
+					szQuery.str("");
+					szQuery << "SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (ID = " << itt->szDevID << ") AND (Unit == 1)";
+					result = m_sql.query(szQuery.str());
+					if (result.size() > 0)
+					{
+						m_sql.HandleOnOffAction(bPingOK, result[0][0], result[0][1]);
+					}
+				}
+
+				// 4:	Trigger Notifications
 			}
 			break;
 		}
@@ -135,27 +179,24 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 	_eMediaStatus	nStatus = MSTAT_UNKNOWN;
 	std::string		sStatus = "";
 
+	// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}
+	//		{"id":1,"jsonrpc":"2.0","result":[{"playerid":1,"type":"video"}]}
+
+	// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetItem%22,%22id%22:1,%22params%22:{%22playerid%22:0,%22properties%22:[%22artist%22,%22year%22,%22channel%22,%22season%22,%22episode%22]}}
+	//		{"id":1,"jsonrpc":"2.0","result":{"item":{"artist":["Coldplay"],"id":25,"label":"The Scientist","type":"song","year":2002}}}
+
+	// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetProperties%22,%22id%22:1,%22params%22:{%22playerid%22:1,%22properties%22:[%22totaltime%22,%22percentage%22,%22time%22]}}
+	//		{"id":1,"jsonrpc":"2.0","result":{"percentage":22.207427978515625,"time":{"hours":0,"milliseconds":948,"minutes":15,"seconds":31},"totaltime":{"hours":1,"milliseconds":560,"minutes":9,"seconds":56}}}
+
 	try
 	{
-		std::string sResult;
-		std::stringstream sURL;
-		sURL << "http://" << Node.IP << ":" << Node.Port << "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}";
-		bool bRetVal = HTTPClient::GET(sURL.str(), sResult);
-		if (!bRetVal)
+		Json::Value root = Query(Node.IP, Node.Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}");
+		if (!root.size())
 			nStatus = MSTAT_OFF;
 		else
 		{
 			bPingOK = true;
-			Json::Value root;
-			Json::Reader jReader;
 			std::string	sPlayerId;	
-
-			bRetVal = jReader.parse(sResult, root);
-			if (!bRetVal)
-			{
-				_log.Log(LOG_ERROR, "Kodi: Invalid data received!");
-				return;
-			}
 			if (root["result"].empty() == true)
 			{
 				nStatus = MSTAT_IDLE;
@@ -185,109 +226,101 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 				std::string	sPercent;
 				std::string	sYear;
 
-				sURL.str(std::string());
-				sURL << "http://" << Node.IP << ":" << Node.Port << "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetItem%22,%22id%22:1,%22params%22:{%22playerid%22:" + sPlayerId + ",%22properties%22:[%22artist%22,%22year%22,%22channel%22,%22showtitle%22,%22season%22,%22episode%22,%22title%22]}}";
-				if (HTTPClient::GET(sURL.str(), sResult))
+				root = Query(Node.IP, Node.Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetItem%22,%22id%22:1,%22params%22:{%22playerid%22:" + sPlayerId + ",%22properties%22:[%22artist%22,%22year%22,%22channel%22,%22showtitle%22,%22season%22,%22episode%22,%22title%22]}}");
+				if (root.size())
 				{
-//					_log.Log(LOG_STATUS, "Kodi: (%s) Item = %s", Node.Name.c_str(), sResult.c_str());
-					if (jReader.parse(sResult, root))
+					std::string	sType;
+					if (root["result"]["item"]["type"].empty() != true)
 					{
-						std::string	sType;
-						if (root["result"]["item"]["type"].empty() != true)
-						{
-							sType = root["result"]["item"]["type"].asCString();
-						}
+						sType = root["result"]["item"]["type"].asCString();
+					}
 
-						if (sType == "song")
+					if (sType == "song")
+					{
+						if (root["result"]["item"]["artist"][0].empty() != true)
 						{
-							if (root["result"]["item"]["artist"][0].empty() != true)
-							{
-								sTitle = root["result"]["item"]["artist"][0].asCString();
-								sTitle += " - ";
-							}
+							sTitle = root["result"]["item"]["artist"][0].asCString();
+							sTitle += " - ";
 						}
+					}
 
-						if (sType == "episode")
+					if (sType == "episode")
+					{
+						if (root["result"]["item"]["showtitle"].empty() != true)
 						{
-							if (root["result"]["item"]["showtitle"].empty() != true)
-							{
-								sTitle = root["result"]["item"]["showtitle"].asCString();
-							}
-							if (root["result"]["item"]["season"].empty() != true)
-							{
-								sTitle += " [S";
-								sTitle += SSTR((int)root["result"]["item"]["season"].asInt());
-							}
-							if (root["result"]["item"]["episode"].empty() != true)
-							{
-								sTitle += "E";
-								sTitle += SSTR((int)root["result"]["item"]["episode"].asInt());
-								sTitle += "], ";
-							}
+							sTitle = root["result"]["item"]["showtitle"].asCString();
 						}
+						if (root["result"]["item"]["season"].empty() != true)
+						{
+							sTitle += " [S";
+							sTitle += SSTR((int)root["result"]["item"]["season"].asInt());
+						}
+						if (root["result"]["item"]["episode"].empty() != true)
+						{
+							sTitle += "E";
+							sTitle += SSTR((int)root["result"]["item"]["episode"].asInt());
+							sTitle += "], ";
+						}
+					}
 
-						if (sType == "channel")
+					if (sType == "channel")
+					{
+						if (root["result"]["item"]["channel"].empty() != true)
 						{
-							if (root["result"]["item"]["channel"].empty() != true)
-							{
-								sTitle = root["result"]["item"]["channel"].asCString();
-								sTitle += " - ";
-							}
+							sTitle = root["result"]["item"]["channel"].asCString();
+							sTitle += " - ";
 						}
+					}
 
-						if (root["result"]["item"]["year"].empty() != true)
-						{
-							sYear = SSTR((int)root["result"]["item"]["year"].asInt());
-							if (sYear.length() > 2) sYear = " (" + sYear + ")";
-							else sYear = "";
-						}
+					if (root["result"]["item"]["year"].empty() != true)
+					{
+						sYear = SSTR((int)root["result"]["item"]["year"].asInt());
+						if (sYear.length() > 2) sYear = " (" + sYear + ")";
+						else sYear = "";
+					}
 
-						if (root["result"]["item"]["title"].empty() != true)
+					if (root["result"]["item"]["title"].empty() != true)
+					{
+						std::string	sLabel = root["result"]["item"]["title"].asCString();
+						if ((!sLabel.length()) && (root["result"]["item"]["label"].empty() != true))
 						{
-							std::string	sLabel = root["result"]["item"]["title"].asCString();
-							if ((!sLabel.length()) && (root["result"]["item"]["label"].empty() != true))
-							{
-								sLabel = root["result"]["item"]["label"].asCString();
-							}
-							// if title is too long shorten it by removing things in brackets, followed by things after a ", "
-							boost::algorithm::trim(sLabel);
-							if (sLabel.length() > MAX_TITLE_LEN)
-							{
-								boost::algorithm::replace_all(sLabel, " - ", ", ");
-							}
-							while (sLabel.length() > MAX_TITLE_LEN)
-							{
-								int begin = sLabel.find_last_of("(");
-								int end = sLabel.find_last_of(")");
-								if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
-								sLabel.erase(begin, end - begin + 1);
-							}
-							while (sLabel.length() > MAX_TITLE_LEN)
-							{
-								int end = sLabel.find_last_of(",");
-								if (std::string::npos == end) break;
-								sLabel = sLabel.substr(0, end);
-							}
-							boost::algorithm::trim(sLabel);
-							sLabel = sLabel.substr(0, MAX_TITLE_LEN);
-							sTitle = sLabel;
+							sLabel = root["result"]["item"]["label"].asCString();
 						}
+						// if title is too long shorten it by removing things in brackets, followed by things after a ", "
+						boost::algorithm::trim(sLabel);
+						if (sLabel.length() > MAX_TITLE_LEN)
+						{
+							boost::algorithm::replace_all(sLabel, " - ", ", ");
+						}
+						while (sLabel.length() > MAX_TITLE_LEN)
+						{
+							int begin = sLabel.find_last_of("(");
+							int end = sLabel.find_last_of(")");
+							if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
+							sLabel.erase(begin, end - begin + 1);
+						}
+						while (sLabel.length() > MAX_TITLE_LEN)
+						{
+							int end = sLabel.find_last_of(",");
+							if (std::string::npos == end) break;
+							sLabel = sLabel.substr(0, end);
+						}
+						boost::algorithm::trim(sLabel);
+						stdreplace(sLabel, " ,", ",");
+						sLabel = sLabel.substr(0, MAX_TITLE_LEN);
+						sTitle = sLabel;
 					}
 				}
-				sURL.str(std::string());
-				sURL << "http://" << Node.IP << ":" << Node.Port << "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetProperties%22,%22id%22:1,%22params%22:{%22playerid%22:" + sPlayerId + ",%22properties%22:[%22live%22,%22percentage%22,%22speed%22]}}";
-				if (HTTPClient::GET(sURL.str(), sResult))
+
+				root = Query(Node.IP, Node.Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetProperties%22,%22id%22:1,%22params%22:{%22playerid%22:" + sPlayerId + ",%22properties%22:[%22live%22,%22percentage%22,%22speed%22]}}");
+				if (root.size())
 				{
-//					_log.Log(LOG_STATUS, "Kodi: (%s) Item = %s", Node.Name.c_str(), sResult.c_str());
-					if (jReader.parse(sResult, root))
-					{
-						bool	bLive = root["result"]["live"].asBool();
-						if (bLive) sYear = " (Live)";
-						int		iSpeed = root["result"]["speed"].asInt();
-						if (iSpeed == 0) nStatus = MSTAT_PAUSED;
-						float	fPercent = root["result"]["percentage"].asFloat();
-						if (fPercent > 1.0) sPercent = SSTR((int)round(fPercent)) + "%";
-					}
+					bool	bLive = root["result"]["live"].asBool();
+					if (bLive) sYear = " (Live)";
+					int		iSpeed = root["result"]["speed"].asInt();
+					if (iSpeed == 0) nStatus = MSTAT_PAUSED;
+					float	fPercent = root["result"]["percentage"].asFloat();
+					if (fPercent > 1.0) sPercent = SSTR((int)round(fPercent)) + "%";
 				}
 
 				// Assemble final status
@@ -366,8 +399,73 @@ void CKodi::Restart()
 
 bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_log.Log(LOG_ERROR, "Kodi: This is a read-only sensor!");
-	return true;
+	//	http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22System.GetProperties%22,%22params%22:{%22properties%22:[%22canreboot%22,%22canhibernate%22,%22cansuspend%22,%22canshutdown%22]},%22id%22:1}
+	//		{"id":1,"jsonrpc":"2.0","result":{"canhibernate":false,"canreboot":false,"canshutdown":false,"cansuspend":false}}
+
+	tRBUF *pSen = (tRBUF*)pdata;
+
+	unsigned char packettype = pSen->ICMND.packettype;
+
+	if (packettype != pTypeLighting2)
+		return false;
+
+	if (pSen->LIGHTING2.cmnd != light2_sOff)
+	{
+		return true;
+	}
+	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
+	std::vector<KodiNode>::const_iterator itt;
+	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+	{
+//		_log.Log(LOG_NORM, "Kodi: (%s) Switch Off: Checking %d == %d.", itt->Name.c_str(), itt->DevID, DevID);
+		if (itt->DevID == DevID)
+		{
+			std::string	sAction = "Nothing";
+			bool		bCanReboot = false;
+			bool		bCanShutdown = false;
+			bool		bCanHibernate = false;
+			bool		bCanSuspend = false;
+			std::string	sPlayerId;
+			Json::Value root = Query(itt->IP, itt->Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22System.GetProperties%22,%22params%22:{%22properties%22:[%22canreboot%22,%22canhibernate%22,%22cansuspend%22,%22canshutdown%22]},%22id%22:1}");
+			if (root.size())
+			{
+				if (root["result"]["canhibernate"].empty() != true)
+				{
+					bCanHibernate = root["result"]["canhibernate"].asBool();
+					if (bCanHibernate) sAction = "Hibernate";
+				}
+				if (root["result"]["cansuspend"].empty() != true)
+				{
+					bCanSuspend = root["result"]["cansuspend"].asBool();
+					if (bCanSuspend) sAction = "Suspend";
+				}
+				if (root["result"]["canreboot"].empty() != true)
+				{
+					bCanReboot = root["result"]["canreboot"].asBool();
+					if (bCanReboot) sAction = "Reboot";
+				}
+				if (root["result"]["canshutdown"].empty() != true)
+				{
+					bCanShutdown = root["result"]["canshutdown"].asBool();
+					if (bCanShutdown) sAction = "Shutdown";
+				}
+				_log.Log(LOG_NORM, "Kodi: (%s) Switch Off: CanReboot:%s, CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", itt->Name.c_str(),
+					bCanReboot ? "true" : "false", bCanShutdown ? "true" : "false", bCanHibernate ? "true" : "false", bCanSuspend ? "true" : "false", sAction.c_str());
+
+				if (sAction != "Nothing")
+				{
+					root = Query(itt->IP, itt->Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%System." + sAction + "%22,%22id%22:1,}");
+					return (root.size() > 0);
+				}
+			}
+			else
+			{
+				_log.Log(LOG_NORM, "Kodi: (%s) Switch Off: No response from device, request ignored.", itt->Name.c_str());
+			}
+		}
+	}
+
+	return false;
 }
 
 void CKodi::AddNode(const std::string &Name, const std::string &IPAddress, const int Port)
@@ -493,15 +591,27 @@ void CKodi::ReloadNodes()
 			std::vector<std::string> sd = *itt;
 
 			KodiNode pnode;
-			pnode.ID = atoi(sd[0].c_str());
+			pnode.DevID = atoi(sd[0].c_str());
+			sprintf(pnode.szDevID, "%X%02X%02X%02X", 0, 0, (pnode.DevID & 0xFF00) >> 8, pnode.DevID & 0xFF);
 			pnode.Name = sd[1];
 			pnode.IP = sd[2];
-			pnode.LastOK = mytime(NULL);
-			pnode.nStatus = MSTAT_UNKNOWN;
-			pnode.sStatus = "";
-
 			int Port = atoi(sd[3].c_str());
 			pnode.Port = (Port > 0) ? Port : 8080;
+			pnode.nStatus = MSTAT_UNKNOWN;
+			pnode.sStatus = "";
+			pnode.LastOK = mytime(NULL);
+
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result2;
+			szQuery2 << "SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << pnode.szDevID << "') AND (Unit == 1)";
+			result2 = m_sql.query(szQuery2.str()); //-V519
+			if (result2.size()==1)
+			{
+				pnode.ID = atoi(result2[0][0].c_str());
+				pnode.nStatus = (_eMediaStatus)atoi(result2[0][1].c_str());
+				pnode.sStatus = result2[0][2];
+			}
+
 			m_nodes.push_back(pnode);
 		}
 	}
@@ -587,7 +697,6 @@ namespace http {
 			pHardware->SetSettings(iMode1, iMode2);
 			pHardware->Restart();
 		}
-
 
 		void CWebServer::Cmd_KodiAddNode(Json::Value &root)
 		{

@@ -10553,7 +10553,14 @@ namespace http {
 					bool bHaveGroupCmd = false;
 					int maxDimLevel = 0;
 
-					GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					if (switchtype != STYPE_Media)
+					{
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					}
+					else
+					{
+						lstatus = sValue;
+					}
 
 					if (ii == 0)
 					{
