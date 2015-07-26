@@ -11,11 +11,11 @@
 #include "../main/RFXtrx.h"
 #include "hardwaretypes.h"
 
-#include "../json/json.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../main/mainworker.h"
+
+#include "OpenZWave.h"
 
 #define CONTROLLER_COMMAND_TIMEOUT 20
 
@@ -844,6 +844,10 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		m_p1gas.ID = lID;
 		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
 	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_CO2)
+	{
+		SendAirQualitySensor(ID3, ID4, pDevice->batValue, int(pDevice->floatValue), "CO2 Sensor");
+	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)
 	{
 		_tThermostat tmeter;
@@ -1241,3 +1245,4 @@ void ZWaveBase::ForceUpdateForNodeDevices(const unsigned int homeID, const int n
 		}
 	}
 }
+

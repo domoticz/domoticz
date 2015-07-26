@@ -15,6 +15,10 @@
 #include "../webserver/Base64.h"
 #include "hardwaretypes.h"
 
+#include "../main/WebServer.h"
+#include "../webserver/cWebem.h"
+#include "../main/mainworker.h"
+
 #include "../json/json.h"
 #include "../main/localtime_r.h"
 
@@ -32,6 +36,8 @@
 
 #include "ZWaveCommands.h"
 
+extern std::string szWWWFolder;
+
 //Note!, Some devices uses the same instance for multiple values,
 //to solve this we are going to use the Index value!, Except for COMMAND_CLASS_MULTI_INSTANCE
 
@@ -44,7 +50,8 @@ enum _eSensorScaleID
 	SCALEID_VOLTAGE,
 	SCALEID_CURRENT,
 	SCALEID_POWERFACTOR,
-	SCALEID_GAS
+	SCALEID_GAS,
+	SCALEID_CO2
 };
 
 struct _tAlarmNameToIndexMapping
@@ -1782,6 +1789,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				}
 			}
 		}
+		else if (vLabel == "CO2 Level")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_CO2;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_CO2;
+					InsertDevice(_device);
+				}
+			}
+		}
 		else if (vLabel == "General")
 		{
 			if (vType == OpenZWave::ValueID::ValueType_Decimal)
@@ -2246,7 +2267,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		(vLabel == "Voltage") ||
 		(vLabel == "Current") ||
 		(vLabel == "Power Factor")||
-		(vLabel == "Gas")
+		(vLabel == "Gas")||
+		(vLabel == "CO2 Level")
 		)
 	{
 		int scaleID = 0;
@@ -2262,6 +2284,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_POWERFACTOR;
 		else if (vLabel == "Gas")
 			scaleID = SCALEID_GAS;
+		else if (vLabel == "CO2 Level")
+			scaleID = SCALEID_CO2;
 
 		sstr << "." << scaleID;
 	}
@@ -2678,6 +2702,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 				return;//sanity check, don't report it
 		}
 		break;
+	case ZDTYPE_SENSOR_CO2:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "CO2 Level")
+			return;
+		float oldvalue = pDevice->floatValue;
+		pDevice->floatValue = fValue; //always set the value
+	}
+	break;
 	case ZDTYPE_SENSOR_THERMOSTAT_CLOCK:
 		if (vLabel == "Minute")
 		{
@@ -2873,39 +2907,45 @@ int COpenZWave::ListGroupsForNode(const int nodeID)
 	return m_pManager->GetNumGroups(m_controllerID, nodeID);
 }
 
-int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<int> &nodesingroup)
+int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<string> &nodesingroup)
 {
 
 	if (m_pManager == NULL)
 		return 0;
 
-	uint8* arr;
+	InstanceAssociation* arr;
 	int retval = m_pManager->GetAssociations(m_controllerID, nodeID, groupID, &arr);
 	if (retval > 0) {
 		for (int i = 0; i < retval; i++) {
-			nodesingroup.push_back(arr[i]);
+		    char str[32];
+		    if (arr[i].m_instance == 0) {
+		    	snprintf( str, 32, "%d", arr[i].m_nodeId );
+		    } else {
+		    	snprintf( str, 32, "%d.%d", arr[i].m_nodeId, arr[i].m_instance );
+		    }
+			nodesingroup.push_back(str);
 		}
 		delete[] arr;
 	}
 	return retval;
 }
 
-bool COpenZWave::AddNodeToGroup(const int nodeID, const int groupID, const int addID)
+bool COpenZWave::AddNodeToGroup(const int nodeID, const int groupID, const int addID, const int instance)
 {
 
 	if (m_pManager == NULL)
 		return false;
-	m_pManager->AddAssociation(m_controllerID, nodeID, groupID, addID);
-	_log.Log(LOG_STATUS, "OpenZWave: added node: %d (0x%02x) in group: %d of node: %d (0x%02x)", addID, addID, groupID, nodeID, nodeID);
+	m_pManager->AddAssociation(m_controllerID, nodeID, groupID, addID, instance);
+	_log.Log(LOG_STATUS, "OpenZWave: added node: %d (0x%02x) instance %d in group: %d of node: %d (0x%02x)", addID, addID, instance, groupID, nodeID, nodeID);
 	return true;
 }
 
-bool COpenZWave::RemoveNodeFromGroup(const int nodeID, const int groupID, const int removeID)
+bool COpenZWave::RemoveNodeFromGroup(const int nodeID, const int groupID, const int removeID, const int instance)
 {
 	if (m_pManager == NULL)
 		return false;
-	m_pManager->RemoveAssociation(m_controllerID, nodeID, groupID, removeID);
-	_log.Log(LOG_STATUS, "OpenZWave: removed node: %d (0x%02x) from group: %d of node: %d (0x%02x)", removeID, removeID, groupID, nodeID, nodeID);
+	m_pManager->RemoveAssociation(m_controllerID, nodeID, groupID, removeID, instance);
+	_log.Log(LOG_STATUS, "OpenZWave: removed node: %d (0x%02x) instance %d from group: %d of node: %d (0x%02x)", removeID, removeID, instance, groupID, nodeID, nodeID);
 
 	return true;
 }
@@ -3849,6 +3889,962 @@ void COpenZWave::NightlyNodeHeal()
 	if (!m_bNightlyNetworkHeal)
 		return; //not enabled
 	HealNetwork();
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::RType_OpenZWaveNodes(Json::Value &root)
+		{
+			std::string hwid = m_pWebEm->FindValue("idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (pHardware->HwdType != HTYPE_OpenZWave)
+				return;
+			m_ZW_Hwidx = iHardwareID;
+			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+
+			root["status"] = "OK";
+			root["title"] = "OpenZWaveNodes";
+
+			root["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
+			root["ownNodeId"] = pOZWHardware->m_controllerNodeId;
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT ID,HomeID,NodeID,Name,ProductDescription,PollTime FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
+			result = m_sql.query(szQuery.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					unsigned int homeID = boost::lexical_cast<unsigned int>(sd[1]);
+					int nodeID = atoi(sd[2].c_str());
+					//if (nodeID>1) //Don't include the controller
+					{
+						COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
+						if (pNode == NULL)
+							continue;
+						root["result"][ii]["idx"] = sd[0];
+						root["result"][ii]["HomeID"] = homeID;
+						root["result"][ii]["NodeID"] = nodeID;
+						root["result"][ii]["Name"] = sd[3];
+						root["result"][ii]["Description"] = sd[4];
+						root["result"][ii]["PollEnabled"] = (atoi(sd[5].c_str()) == 1) ? "true" : "false";
+						root["result"][ii]["Version"] = pNode->iVersion;
+						root["result"][ii]["Manufacturer_id"] = pNode->Manufacturer_id;
+						root["result"][ii]["Manufacturer_name"] = pNode->Manufacturer_name;
+						root["result"][ii]["Product_type"] = pNode->Product_type;
+						root["result"][ii]["Product_id"] = pNode->Product_id;
+						root["result"][ii]["Product_name"] = pNode->Product_name;
+						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
+						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
+						char szDate[80];
+						struct tm loctime;
+						localtime_r(&pNode->m_LastSeen, &loctime);
+						strftime(szDate, 80, "%Y-%m-%d %X", &loctime);
+
+						root["result"][ii]["LastUpdate"] = szDate;
+
+						//Add configuration parameters here
+						pOZWHardware->GetNodeValuesJson(homeID, nodeID, root, ii);
+						ii++;
+					}
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveUpdateNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			std::string name = m_pWebEm->FindValue("name");
+			std::string senablepolling = m_pWebEm->FindValue("EnablePolling");
+			if (
+				(name == "") ||
+				(senablepolling == "")
+				)
+				return;
+			root["status"] = "OK";
+			root["title"] = "UpdateZWaveNode";
+
+			std::vector<std::vector<std::string> > result;
+			char szTmp[300];
+
+			sprintf(szTmp,
+				"UPDATE ZWaveNodes SET Name='%s', PollTime=%d WHERE (ID==%s)",
+				name.c_str(),
+				(senablepolling == "true") ? 1 : 0,
+				idx.c_str()
+				);
+			result = m_sql.query(szTmp);
+			sprintf(szTmp, "SELECT HardwareID, HomeID, NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+			result = m_sql.query(szTmp);
+			if (result.size() > 0)
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				int nodeID = atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->SetNodeName(homeID, nodeID, name);
+					pOZWHardware->EnableDisableNodePolling(nodeID);
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveDeleteNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			std::vector<std::vector<std::string> > result;
+			char szTmp[300];
+			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+			result = m_sql.query(szTmp);
+			if (result.size() > 0)
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				int nodeID = atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->RemoveFailedDevice(nodeID);
+					root["status"] = "OK";
+					root["title"] = "DeleteZWaveNode";
+					sprintf(szTmp, "DELETE FROM ZWaveNodes WHERE (ID==%s)", idx.c_str());
+					result = m_sql.query(szTmp);
+				}
+			}
+
+		}
+
+		void CWebServer::Cmd_ZWaveInclude(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			std::string ssecure = m_pWebEm->FindValue("secure");
+			bool bSecure = (ssecure == "true");
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				m_sql.AllowNewHardwareTimer(5);
+				pOZWHardware->IncludeDevice(bSecure);
+				root["status"] = "OK";
+				root["title"] = "ZWaveInclude";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveExclude(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->ExcludeDevice(1);
+				root["status"] = "OK";
+				root["title"] = "ZWaveExclude";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveSoftReset(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->SoftResetDevice();
+				root["status"] = "OK";
+				root["title"] = "ZWaveSoftReset";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveHardReset(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->HardResetDevice();
+				root["status"] = "OK";
+				root["title"] = "ZWaveHardReset";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveStateCheck(Json::Value &root)
+		{
+			root["title"] = "ZWaveStateCheck";
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				if (!pOZWHardware->GetFailedState()) {
+					root["status"] = "OK";
+				}
+			}
+			return;
+		}
+
+		void CWebServer::Cmd_ZWaveNetworkHeal(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->HealNetwork();
+				root["status"] = "OK";
+				root["title"] = "ZWaveHealNetwork";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveNodeHeal(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			std::string node = m_pWebEm->FindValue("node");
+			if (node == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->HealNode(atoi(node.c_str()));
+				root["status"] = "OK";
+				root["title"] = "ZWaveHealNode";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveNetworkInfo(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			root["title"] = "ZWaveNetworkInfo";
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			int hwID = atoi(idx.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwID);
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				std::vector< std::vector< int > > nodevectors;
+
+				if (pOZWHardware->NetworkInfo(hwID, nodevectors)) {
+
+					std::vector<std::vector<int> >::iterator row_iterator;
+					std::vector<int>::iterator col_iterator;
+
+					std::vector<int> allnodes;
+					int rowCount = 0;
+					std::stringstream allnodeslist;
+					for (row_iterator = nodevectors.begin(); row_iterator != nodevectors.end(); ++row_iterator) {
+						int colCount = 0;
+						int nodeID = -1;
+						std::vector<int> rest;
+						std::stringstream list;
+
+						for (col_iterator = (*row_iterator).begin(); col_iterator != (*row_iterator).end(); ++col_iterator) {
+							if (colCount == 0) {
+								nodeID = *col_iterator;
+							}
+							else {
+								rest.push_back(*col_iterator);
+							}
+							colCount++;
+						}
+
+						if (nodeID != -1)
+						{
+							std::copy(rest.begin(), rest.end(), std::ostream_iterator<int>(list, ","));
+							root["result"]["mesh"][rowCount]["nodeID"] = nodeID;
+							allnodes.push_back(nodeID);
+							root["result"]["mesh"][rowCount]["seesNodes"] = list.str();
+							rowCount++;
+						}
+					}
+					std::copy(allnodes.begin(), allnodes.end(), std::ostream_iterator<int>(allnodeslist, ","));
+					root["result"]["nodes"] = allnodeslist.str();
+					root["status"] = "OK";
+				}
+
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveRemoveGroupNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			std::string node = m_pWebEm->FindValue("node");
+			if (node == "")
+				return;
+			std::string group = m_pWebEm->FindValue("group");
+			if (group == "")
+				return;
+			std::string removenode = m_pWebEm->FindValue("removenode");
+			if (removenode == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+                int nodeId = 0,  instance = 0;
+                sscanf(removenode.c_str(),"%d.%d", &nodeId, &instance);
+                pOZWHardware->RemoveNodeFromGroup(atoi(node.c_str()), atoi(group.c_str()), nodeId, instance);
+				root["status"] = "OK";
+				root["title"] = "ZWaveRemoveGroupNode";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveAddGroupNode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			std::string node = m_pWebEm->FindValue("node");
+			if (node == "")
+				return;
+			std::string group = m_pWebEm->FindValue("group");
+			if (group == "")
+				return;
+			std::string addnode = m_pWebEm->FindValue("addnode");
+			if (addnode == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				int nodeId = 0,  instance = 0;
+				sscanf(addnode.c_str(),"%d.%d", &nodeId, &instance);
+                pOZWHardware->AddNodeToGroup(atoi(node.c_str()), atoi(group.c_str()), nodeId, instance);
+				root["status"] = "OK";
+				root["title"] = "ZWaveAddGroupNode";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveGroupInfo(Json::Value &root)
+		{
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			int iHardwareID = atoi(idx.c_str());
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+
+				std::stringstream szQuery;
+				std::vector<std::vector<std::string> > result;
+				szQuery << "SELECT ID,HomeID,NodeID,Name FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
+				result = m_sql.query(szQuery.str());
+
+				if (result.size() > 0)
+				{
+					int MaxNoOfGroups = 0;
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii = 0;
+					for (itt = result.begin(); itt != result.end(); ++itt)
+					{
+						std::vector<std::string> sd = *itt;
+						unsigned int homeID = boost::lexical_cast<unsigned int>(sd[1]);
+						int nodeID = atoi(sd[2].c_str());
+						COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(homeID, nodeID);
+						if (pNode == NULL)
+							continue;
+						std::string nodeName = sd[3].c_str();
+						int numGroups = pOZWHardware->ListGroupsForNode(nodeID);
+						root["result"]["nodes"][ii]["nodeID"] = nodeID;
+						root["result"]["nodes"][ii]["nodeName"] = nodeName;
+						root["result"]["nodes"][ii]["groupCount"] = numGroups;
+						if (numGroups > 0) {
+							if (numGroups > MaxNoOfGroups)
+								MaxNoOfGroups = numGroups;
+
+							std::vector< string > nodesingroup;
+							int gi = 0;
+							for (int x = 1; x <= numGroups; x++)
+							{
+								int numNodesInGroup = pOZWHardware->ListAssociatedNodesinGroup(nodeID, x, nodesingroup);
+								if (numNodesInGroup > 0) {
+									std::stringstream list;
+									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<string>(list, ","));
+									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
+									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = list.str();
+								}
+								else {
+									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
+									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = "";
+								}
+								gi++;
+								nodesingroup.clear();
+							}
+
+						}
+						ii++;
+					}
+					root["result"]["MaxNoOfGroups"] = MaxNoOfGroups;
+
+				}
+			}
+			root["status"] = "OK";
+			root["title"] = "ZWaveGroupInfo";
+		}
+
+		void CWebServer::Cmd_ZWaveCancel(Json::Value &root)
+		{
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->CancelControllerCommand();
+				root["status"] = "OK";
+				root["title"] = "ZWaveCancel";
+			}
+		}
+
+		void CWebServer::Cmd_ApplyZWaveNodeConfig(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string svaluelist = m_pWebEm->FindValue("valuelist");
+			if (
+				(idx == "") ||
+				(svaluelist == "")
+				)
+				return;
+			std::vector<std::vector<std::string> > result;
+			char szTmp[300];
+			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+			result = m_sql.query(szTmp);
+			if (result.size() > 0)
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				int nodeID = atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					if (!pOZWHardware->ApplyNodeConfig(homeID, nodeID, svaluelist))
+						return;
+					root["status"] = "OK";
+					root["title"] = "ApplyZWaveNodeConfig";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveRequestNodeConfig(Json::Value &root)
+		{
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			std::vector<std::vector<std::string> > result;
+			char szTmp[300];
+			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+			result = m_sql.query(szTmp);
+			if (result.size() > 0)
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				int nodeID = atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->RequestNodeConfig(homeID, nodeID);
+					root["status"] = "OK";
+					root["title"] = "RequestZWaveNodeConfig";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->ReceiveConfigurationFromOtherController();
+				root["status"] = "OK";
+				root["title"] = "ZWaveReceiveConfigurationFromOtherController";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->SendConfigurationToSecondaryController();
+				root["status"] = "OK";
+				root["title"] = "ZWaveSendConfigToSecond";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveTransferPrimaryRole(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				pOZWHardware->TransferPrimaryRole();
+				root["status"] = "OK";
+				root["title"] = "ZWaveTransferPrimaryRole";
+			}
+		}
+		std::string CWebServer::ZWaveGetConfigFile()
+		{
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return "";
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					std::string szConfigFile = "";
+					m_retstr = pOZWHardware->GetConfigFile(szConfigFile);
+					if (m_retstr != "")
+					{
+						m_pWebEm->m_outputfilename = szConfigFile;
+					}
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPIndex()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					pOZWHardware->SetAllNodesChanged();
+					std::string wwwFile = szWWWFolder + "/ozwcp/cp.html";
+					std::ifstream testFile(wwwFile.c_str(), std::ios::binary);
+					std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
+						std::istreambuf_iterator<char>());
+					if (fileContents.size() > 0)
+					{
+						m_retstr.insert(m_retstr.begin(), fileContents.begin(), fileContents.end());
+					}
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPPollXml()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SendPollResponse();
+					m_pWebEm->m_outputfilename = "poll.xml";
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeGetConf()
+		{
+			m_retstr = "";
+			if (m_pWebEm->m_ActualRequest.content.find("node") == std::string::npos)
+				return "";
+			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
+			std::string sNode = m_pWebEm->FindValue("node");
+			if (sNode == "")
+				return m_retstr;
+			int iNode = atoi(sNode.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SendNodeConfResponse(iNode);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeGetValues()
+		{
+			m_retstr = "";
+			if (m_pWebEm->m_ActualRequest.content.find("node") == std::string::npos)
+				return "";
+			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
+			std::string sNode = m_pWebEm->FindValue("node");
+			if (sNode == "")
+				return m_retstr;
+			int iNode = atoi(sNode.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SendNodeValuesResponse(iNode);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeSetValue()
+		{
+			m_retstr = "";
+			std::vector<std::string> strarray;
+			StringSplit(m_pWebEm->m_ActualRequest.content, "=", strarray);
+			if (strarray.size() != 2)
+				return "";
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SetNodeValue(strarray[0], strarray[1]);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeSetButton()
+		{
+			m_retstr = "";
+			std::vector<std::string> strarray;
+			StringSplit(m_pWebEm->m_ActualRequest.content, "=", strarray);
+			if (strarray.size() != 2)
+				return "";
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SetNodeButton(strarray[0], strarray[1]);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPAdminCommand()
+		{
+			m_retstr = "";
+			if (m_pWebEm->m_ActualRequest.content.find("fun") == std::string::npos)
+				return "";
+			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
+			std::string sFun = m_pWebEm->FindValue("fun");
+			std::string sNode = m_pWebEm->FindValue("node");
+			std::string sButton = m_pWebEm->FindValue("button");
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str()));
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPNodeChange()
+		{
+			m_retstr = "";
+			if (m_pWebEm->m_ActualRequest.content.find("fun") == std::string::npos)
+				return "";
+			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
+			std::string sFun = m_pWebEm->FindValue("fun");
+			std::string sNode = m_pWebEm->FindValue("node");
+			std::string sValue = m_pWebEm->FindValue("value");
+
+			if (sNode.size() > 4)
+				sNode = sNode.substr(4);
+
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->DoNodeChange(sFun, atoi(sNode.c_str()), sValue);
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPSaveConfig()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->SaveConfig();
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPGetTopo()
+		{
+			m_retstr = "";
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+				if (pHardware->HwdType == HTYPE_OpenZWave)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					m_retstr = pOZWHardware->GetCPTopo();
+					m_pWebEm->m_outputfilename = "topo.xml";
+				}
+			}
+			return m_retstr;
+		}
+		std::string CWebServer::ZWaveCPGetStats()
+		{
+			m_retstr = "";
+			//Crashes at OpenZWave::GetNodeStatistics::_data->m_sentTS = m_sentTS.GetAsString();
+			/*
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
+			if (pHardware != NULL)
+			{
+			if (pHardware->HwdType == HTYPE_OpenZWave)
+			{
+			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+			m_retstr = pOZWHardware->GetCPStats();
+			m_pWebEm->m_outputfilename = "stats.xml";
+			}
+			}
+			*/
+			return m_retstr;
+		}
+
+
+
+		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				root["status"] = "OK";
+				root["title"] = "SetUserCodeEnrollmentMode";
+				pOZWHardware->SetUserCodeEnrollmentMode();
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveRemoveUserCode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string scodeindex = m_pWebEm->FindValue("codeindex");
+			if (
+				(idx == "") ||
+				(scodeindex == "")
+				)
+				return;
+			int iCodeIndex = atoi(scodeindex.c_str());
+
+			std::vector<std::vector<std::string> > result;
+			char szTmp[300];
+			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+			result = m_sql.query(szTmp);
+			if (result.size() > 0)
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				int nodeID = atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					if (!pOZWHardware->RemoveUserCode(homeID, nodeID, iCodeIndex))
+						return;
+					root["status"] = "OK";
+					root["title"] = "RemoveUserCode";
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveGetNodeUserCodes(Json::Value &root)
+		{
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+
+			std::vector<std::vector<std::string> > result;
+			char szTmp[300];
+			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
+			result = m_sql.query(szTmp);
+			if (result.size() > 0)
+			{
+				int hwid = atoi(result[0][0].c_str());
+				unsigned int homeID = boost::lexical_cast<unsigned int>(result[0][1]);
+				int nodeID = atoi(result[0][2].c_str());
+				CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hwid);
+				if (pHardware != NULL)
+				{
+					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+					if (!pOZWHardware->GetNodeUserCodes(homeID, nodeID, root))
+						return;
+					root["status"] = "OK";
+					root["title"] = "GetUserCodes";
+				}
+			}
+		}
+	}
 }
 
 #endif //WITH_OPENZWAVE

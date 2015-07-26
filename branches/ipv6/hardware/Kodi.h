@@ -4,12 +4,15 @@
 
 #include <string>
 #include <vector>
+#include "../json/json.h"
 
 class CKodi : public CDomoticzHardwareBase
 {
 	struct KodiNode
 	{
 		int				ID;
+		int				DevID;
+		char			szDevID[40];
 		std::string		Name;
 		std::string		IP;
 		int				Port;
@@ -32,7 +35,7 @@ private:
 
 	bool StartHardware();
 	bool StopHardware();
-
+	Json::Value Query(std::string sIP, int iPort, std::string sQuery);
 	void Do_Node_Work(const KodiNode &Node);
 	void UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, const std::string sStatus, const bool bPingOK);
 
