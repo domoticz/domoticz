@@ -168,6 +168,7 @@ private:
 	void Cmd_SaveHttpLink(Json::Value &root);
 	void Cmd_DeleteHttpLink(Json::Value &root);
 	void Cmd_GetDevicesForHttpLink(Json::Value &root);
+	void Cmd_MediaCommand(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

@@ -29,6 +29,12 @@ CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms) :
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
+CKodi::CKodi(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
+{
+	m_HwdID = ID;
+	SetSettings(10, 3000);
+}
+
 CKodi::~CKodi(void)
 {
 	m_bIsStarted = false;
@@ -617,6 +623,88 @@ void CKodi::ReloadNodes()
 	}
 }
 
+void  CKodi::SendCommand(const int ID, const std::string &command)
+{
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+
+	// Get device details
+	szQuery << "SELECT DeviceID FROM DeviceStatus WHERE (ID==" << ID << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() == 1)
+	{
+		// Get connection details
+		szQuery.str("");
+		szQuery << "SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << atoi(result[0][0].c_str()) << ")";
+		result = m_sql.query(szQuery.str());
+	}
+
+	if (result.size() == 1)
+	{
+		std::string	sKodiCall;
+		std::string	sKodiParam = "";
+		if ((command == "SELECT") ||
+			(command == "UP")			||
+			(command == "DOWN")			||
+			(command == "LEFT")			||
+			(command == "RIGHT")		||
+			(command == "PLAY")			||
+			(command == "STOP")			||
+			(command == "PAUSE")		||
+			(command == "PLAYPAUSE")	||
+			(command == "INFO")			||
+			(command == "BACK")			||
+			(command == "MUTE")			||
+			(command == "PAGEUP")		||
+			(command == "PAGEDOWN")		||
+			(command == "VOLUMEUP")		||
+			(command == "VOLUMEDOWN")	||
+			(command == "CHANNELUP")	||
+			(command == "CHANNELDOWN")	||
+			(command == "SKIPNEXT")		||
+			(command == "SKIPPREVIOUS") ||
+			(command == "FASTFORWARD")	||
+			(command == "REWIND")		||
+			(command == "FULLSCREEN"))
+		{
+			sKodiCall = "Input.ExecuteAction";
+			std::string	sLower = command;
+			std::transform(sLower.begin(), sLower.end(), sLower.begin(), ::tolower);
+			sKodiParam = sLower;
+		}
+		else if (command == "HOME")
+		{
+			sKodiCall = "Input.Home";
+		}
+
+		if (sKodiCall.length())
+		{
+			//		http://kodi.wiki/view/JSON-RPC_API/v6#Input.Action
+			//		{ "jsonrpc": "2.0", "method": "Input.ExecuteAction", "params": { "action": "stop" }, "id": 1 }
+			std::stringstream	ssRequest;
+			ssRequest << "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22" << sKodiCall << "%22,%22params%22:{";
+			if (sKodiParam.length()) ssRequest << "%22action%22:%22" << sKodiParam << "%22";
+			ssRequest << "},%22id%22:2}";
+			Json::Value root = Query(result[0][1].c_str(), atoi(result[0][2].c_str()), ssRequest.str());
+			if (root.size())
+			{
+				// keep going
+				if (root["result"].empty() != true)
+				{
+					_log.Log(LOG_NORM, "Kodi: (%s) Command: '%s', Result '%s'.", result[0][0].c_str(), command.c_str(), root["result"].asCString());
+				}
+			}
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Kodi: (%s) Command: '%s'. Unknown command.", result[0][0].c_str(), command.c_str());
+		}
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "Kodi: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+	}
+}
 
 //Webserver helpers
 namespace http {
