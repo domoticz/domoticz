@@ -627,7 +627,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT);
 	}
-	else if (pDevice->devType==ZDTYPE_SENSOR_TEMPERATURE)
+	else if (pDevice->devType == ZDTYPE_SENSOR_UV)
+	{
+		SendUVSensor(ID3, ID4, pDevice->batValue, pDevice->floatValue);
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_TEMPERATURE)
 	{
 		if (!pDevice->bValidValue)
 			return;
