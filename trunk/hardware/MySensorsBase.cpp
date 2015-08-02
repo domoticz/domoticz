@@ -61,11 +61,10 @@ const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserRever
 	{ V_RGB, "V_RGB" },
 	{ V_RGBW, "V_RGBW" },
 	{ V_ID, "V_ID" },
-	{ V_LIGHT_LEVEL_LUX, "V_LIGHT_LEVEL_LUX" },
 	{ V_UNIT_PREFIX, "V_UNIT_PREFIX" },
-	{ V_SOUND_DB, "V_SOUND_DB" },
-	{ V_VIBRATION_HZ, "V_VIBRATION_HZ" },
-	{ V_ENCODER_VALUE, "V_ENCODER_VALUE" },
+	{ V_HVAC_SETPOINT_COOL, "V_HVAC_SETPOINT_COOL" },
+	{ V_HVAC_SETPOINT_HEAT, "V_HVAC_SETPOINT_HEAT" },
+	{ V_HVAC_FLOW_MODE, "V_HVAC_FLOW_MODE" },
 	{ 0, NULL }
 };
 
@@ -112,6 +111,16 @@ const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserRever
 	{ S_CUSTOM, "S_CUSTOM" },
 	{ S_DUST, "S_DUST" },
 	{ S_SCENE_CONTROLLER, "S_SCENE_CONTROLLER" },
+	{ S_RGB_LIGHT, "S_RGB_LIGHT" },
+	{ S_RGBW_LIGHT, "S_RGBW_LIGHT" },
+	{ S_COLOR_SENSOR, "S_COLOR_SENSOR" },
+	{ S_HVAC, "S_HVAC" },
+	{ S_MULTIMETER, "S_MULTIMETER" },
+	{ S_SPRINKLER, "S_SPRINKLER" },
+	{ S_WATER_LEAK, "S_WATER_LEAK" },
+	{ S_SOUND, "S_SOUND" },
+	{ S_VIBRATION, "S_VIBRATION" },
+	{ S_MOISTURE, "S_MOISTURE" },
 	{ 0, NULL }
 };
 

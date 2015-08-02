@@ -47,6 +47,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Impuls", sSwitchTypeIMPULS },         // p16
 	{ "Anslut", sSwitchTypeANSLUT },         // p17
 	{ "Lightwave", sSwitchTypeLightwaveRF }, // p18
+	{ "FA20RF", sSwitchTypeAC },
 	{ "", -1 }
 };
 
@@ -114,6 +115,7 @@ CRFLink::CRFLink(const int ID, const std::string& devname)
 	ParseLine("20;03;Eurodomest;ID=03696b;SWITCH=00;CMD=OFF;");
 	ParseLine("20;04;Eurodomest;ID=03696b;SWITCH=07;CMD=ALLOFF;");
 	ParseLine("20;03;Cresta;ID=9701;WINDIR=009d;WINSP=0001;WINGS=0000;WINCHL=003d;");
+	ParseLine("20;02;FA20RF;ID=67f570;SMOKEALERT=ON;");
 	*/
 }
 
@@ -616,6 +618,13 @@ bool CRFLink::ParseLine(const std::string &sLine)
 		}
 		else if (results[ii].find("CMD") != std::string::npos)
 		{
+			bHaveSwitchCmd = true;
+			switchcmd = RFLinkGetStringValue(results[ii]);
+		}
+		else if (results[ii].find("SMOKEALERT") != std::string::npos)
+		{
+			bHaveSwitch = true;
+			switchunit = 1;
 			bHaveSwitchCmd = true;
 			switchcmd = RFLinkGetStringValue(results[ii]);
 		}
