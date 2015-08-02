@@ -36,7 +36,8 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_VELOCITY,
 		ZDTYPE_SENSOR_BAROMETER,
 		ZDTYPE_SENSOR_DEWPOINT,
-		ZDTYPE_SENSOR_CO2
+		ZDTYPE_SENSOR_CO2,
+		ZDTYPE_SENSOR_UV
 	};
 	struct _tZWaveDevice
 	{

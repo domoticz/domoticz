@@ -1675,6 +1675,16 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				InsertDevice(_device);
 			}
 		}
+		else if (vLabel == "Ultraviolet")
+		{
+			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+			{
+				_device.floatValue = fValue;
+				_device.commandClassID = 49;
+				_device.devType = ZDTYPE_SENSOR_UV;
+				InsertDevice(_device);
+			}
+		}
 		else if (vLabel == "Velocity")
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
@@ -2624,6 +2634,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if (vLabel != "Relative Humidity")
 			return;
 		pDevice->intvalue = round(fValue);
+		break;
+	case ZDTYPE_SENSOR_UV:
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Ultraviolet")
+			return;
+		pDevice->floatValue = fValue;
 		break;
 	case ZDTYPE_SENSOR_VELOCITY:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
