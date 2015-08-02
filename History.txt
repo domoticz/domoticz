@@ -34,6 +34,10 @@ Version 2.xxx (xxxx 2015)
 - Implemented: OpenZWave, multi instance association support (thanks to xs4!!!)
 - Fixed: OpenZWave with large homeid values
 - Fixed: pushover sound notification (thanks to Eduard)
+- Implemented: Danish translation (big thanks to jokkemokke!!)
+- Add Kodi media command interface to web server
+- Implemented: RFLink SmokeDetector support
+- Changed: KMTronic LAN, now using actual On/Off commands instead of 'Toggle'
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

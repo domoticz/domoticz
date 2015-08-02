@@ -96,6 +96,7 @@ private:
 	void Cmd_KodiUpdateNode(Json::Value &root);
 	void Cmd_KodiRemoveNode(Json::Value &root);
 	void Cmd_KodiClearNodes(Json::Value &root);
+	void Cmd_KodiMediaCommand(Json::Value &root);
 	void Cmd_SaveFibaroLinkConfig(Json::Value &root);
 	void Cmd_GetFibaroLinkConfig(Json::Value &root);
 	void Cmd_GetFibaroLinks(Json::Value &root);
@@ -168,7 +169,6 @@ private:
 	void Cmd_SaveHttpLink(Json::Value &root);
 	void Cmd_DeleteHttpLink(Json::Value &root);
 	void Cmd_GetDevicesForHttpLink(Json::Value &root);
-	void Cmd_MediaCommand(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

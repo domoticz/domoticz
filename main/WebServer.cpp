@@ -61,6 +61,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "bg", "Bulgarian" },
 	{ "cs", "Czech" },
 	{ "nl", "Dutch" },
+	{ "da", "Danish" },
 	{ "de", "German" },
 	{ "el", "Greek" },
 	{ "fr", "French" },
@@ -349,6 +350,7 @@ namespace http {
 			RegisterCommandCode("kodiupdatenode", boost::bind(&CWebServer::Cmd_KodiUpdateNode, this, _1));
 			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1));
 			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1));
+			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1));
 
 			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1));
 			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1));
@@ -430,8 +432,6 @@ namespace http {
 
 			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
 			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
-
-			RegisterCommandCode("mediacommand", boost::bind(&CWebServer::Cmd_MediaCommand, this, _1));
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -9661,39 +9661,6 @@ namespace http {
 			std::vector<std::vector<std::string> > result;
 			szQuery << "UPDATE DeviceStatus SET Used=0 WHERE (ID == " << idx << ")";
 			result = m_sql.query(szQuery.str());
-		}
-
-		void CWebServer::Cmd_MediaCommand(Json::Value &root)
-		{
-			std::string sIdx = m_pWebEm->FindValue("idx");
-			std::string sAction = m_pWebEm->FindValue("action");
-			if (sIdx.empty())
-				return;
-			int idx = atoi(sIdx.c_str());
-			root["status"] = "OK";
-			root["title"] = "MediaCommand";
-
-			std::stringstream szQuery;
-			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='" << sIdx << "') AND (DS.HardwareID == H.ID)";
-			result = m_sql.query(szQuery.str()); //-V519
-			if (result.size() == 1)
-			{
-				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
-				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][1].c_str());
-				int HwID = atoi(result[0][2].c_str());
-				// Is the device a media Player?
-				if (sType == STYPE_Media)
-				{
-					switch (hType) {
-					case HTYPE_Kodi:
-						CKodi	Kodi(HwID);
-						Kodi.SendCommand(idx, sAction);
-						break;
-					// put other players here ...
-					}
-				}
-			}
 		}
 
 		void CWebServer::RType_GetTransfers(Json::Value &root)

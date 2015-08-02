@@ -905,5 +905,38 @@ namespace http {
 			root["title"] = "KodiClearNodes";
 			pHardware->RemoveAllNodes();
 		}
+		void CWebServer::Cmd_KodiMediaCommand(Json::Value &root)
+		{
+			std::string sIdx = m_pWebEm->FindValue("idx");
+			std::string sAction = m_pWebEm->FindValue("action");
+			if (sIdx.empty())
+				return;
+			int idx = atoi(sIdx.c_str());
+			root["status"] = "OK";
+			root["title"] = "KodiMediaCommand";
+
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			szQuery << "SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='" << sIdx << "') AND (DS.HardwareID == H.ID)";
+			result = m_sql.query(szQuery.str()); //-V519
+			if (result.size() == 1)
+			{
+				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());
+				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][1].c_str());
+				int HwID = atoi(result[0][2].c_str());
+				// Is the device a media Player?
+				if (sType == STYPE_Media)
+				{
+					switch (hType) {
+					case HTYPE_Kodi:
+						CKodi	Kodi(HwID);
+						Kodi.SendCommand(idx, sAction);
+						break;
+						// put other players here ...
+					}
+				}
+			}
+		}
+
 	}
 }

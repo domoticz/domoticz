@@ -57,7 +57,7 @@
 		<Product type="0003" id="0008" name="Smart Energy Illuminator"/>
 		<Product type="0003" id="000a" name="Smart Energy 220V Utility Switch"/>
 		<Product type="0003" id="000b" name="Smart Energy Strip"/>
-		<Product type="0003" id="000c" name="Micro Smart Energy Switch"/>
+		<Product type="0003" id="000c" name="Micro Smart Energy Switch" config="aeotec/ses.xml"/>
 		<Product type="0003" id="000d" name="Micro Smart Energy Illuminator"/>
 		<Product type="0003" id="000e" name="Micro Motor Controller"/>
 		<Product type="0003" id="0011" name="Micro Double Switch" />
@@ -112,10 +112,12 @@
 		<Product type="0004" id="0101" name="Door Sensor" config="BeNext/DoorSensor.xml"/>
 		<Product type="0005" id="0101" name="Alarm Sound" config="BeNext/AlarmSound.xml"/>
 		<Product type="0006" id="0101" name="Energy Switch" config="BeNext/EnergySwitch.xml"/>
+		<Product type="0006" id="0200" name="Energy Switch" config="BeNext/EnergySwitch.xml"/>
 		<Product type="0007" id="0100" name="Tag Reader" config="BeNext/TagReader.xml"/>
 		<Product type="0007" id="0101" name="Tag Reader" config="BeNext/TagReader.xml"/>
 		<Product type="0008" id="0101" name="Power Switch"/>
 		<Product type="000d" id="0100" name="Built-in Dimmer" config="BeNext/BuiltinDimmer.xml"/>
+		<Product type="0014" id="0101" name="Panic Button"/>
 		<Product type="0017" id="0100" name="Scene Controller" config="BeNext/SceneController.xml"/>
 		<Product type="0018" id="0100" name="Plug-in Dimmer" config="BeNext/PluginDimmer.xml"/>
 		<Product type="001e" id="0001" name="1Pole Switch" config="BeNext/1poleswitch.xml"/>
@@ -348,6 +350,7 @@
 		<Product type="0001" id="0003" name="HRT4-ZW Thermostat Transmitter" config="horstmann/hrt4zw.xml"/>
 		<Product type="0003" id="0001" name="ASR-ZW Thermostat Receiver"/>
 		<Product type="0004" id="0001" name="SCSC17 Thermostat"/>
+		<Product type="000d" id="0001" name="SES 301 Temperature Sensor"/>
 		<Product type="000f" id="0001" name="SWM01 Water Meter Sensor"/>
 	</Manufacturer>
 	<Manufacturer id="0121" name="IBR-ZW">
@@ -565,6 +568,7 @@
 	</Manufacturer>
 	<Manufacturer id="003b" name="Schlage">
 		<Product type="634b" id="504c" name="FE599GR Wireless Door Lock"/>
+		<Product type="6341" id="5044" name="BE469NXCEN Touchscreen DeadBolt" config="schlage/BE469NXCEN.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0097" name="Schlage Link">
 		<Product type="1182" id="4501" name="iTemp Dual Sensor" config="schlagelink/itemp.xml" />
@@ -656,6 +660,7 @@
 	</Manufacturer>
 	<Manufacturer id="0149" name="wiDom">
 		<Product type="0012" id="0104" name="UBS104 Universal Relay Switch" config="widom/UBS104.xml"/>
+		<Product type="1214" id="0304" name="UME304 Energy Driven Switch" config="widom/UME304C_S.xml"/>
 	</Manufacturer>
 	<Manufacturer id="004c" name="Woodward Labs">
 	</Manufacturer>

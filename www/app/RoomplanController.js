@@ -113,7 +113,7 @@ define(['app'], function (app) {
 		{
 			var csettings = {};
 
-			csettings.name=$("#dialog-add-edit-plan #planname").val();
+			csettings.name=encodeURIComponent($("#dialog-add-edit-plan #planname").val());
 			if (csettings.name=="")
 			{
 				ShowNotify('Please enter a Name!', 2500, true);
@@ -250,7 +250,7 @@ define(['app'], function (app) {
 							$('#updelclr #plandelete').attr("class", "btnstyle3");
 							$("#updelclr #planedit").attr("href", "javascript:EditPlan(" + idx + ")");
 							$("#updelclr #plandelete").attr("href", "javascript:DeletePlan(" + idx + ")");
-							$("#dialog-add-edit-plan #planname").val(data["Name"]);
+							$("#dialog-add-edit-plan #planname").val(decodeURIComponent(data["Name"]));
 						}
 						RefreshActiveDevicesTable(idx);
 					}
