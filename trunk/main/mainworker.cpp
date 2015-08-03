@@ -7299,6 +7299,32 @@ unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardwa
 
 	m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, (const float)instant);
 
+	int iID = (pResponse->POWER.id1 * 256) + pResponse->POWER.id2;
+
+	_tGeneralDevice gDevice;
+
+	//Voltage
+	sprintf(szTmp, "%.3f", (float)Voltage);
+	std::string tmpDevName;
+	unsigned long long DevRowIdxAlt = m_sql.UpdateValue(HwdID, ID.c_str(), 1, pTypeGeneral, sTypeVoltage, SignalLevel, BatteryLevel, cmnd, szTmp, tmpDevName);
+	if (DevRowIdxAlt == -1)
+		return -1;
+	m_notifications.CheckAndHandleNotification(DevRowIdxAlt, tmpDevName, pTypeGeneral, sTypeVoltage, NTYPE_USAGE, (float)Voltage);
+
+	//Powerfactor
+	sprintf(szTmp, "%.2f", (float)powerfactor);
+	DevRowIdxAlt = m_sql.UpdateValue(HwdID, ID.c_str(), 2, pTypeGeneral, sTypePercentage, SignalLevel, BatteryLevel, cmnd, szTmp, tmpDevName);
+	if (DevRowIdxAlt == -1)
+		return -1;
+	m_notifications.CheckAndHandleNotification(DevRowIdxAlt, tmpDevName, pTypeGeneral, sTypePercentage, NTYPE_PERCENTAGE, (float)powerfactor);
+
+	//Frequency
+	sprintf(szTmp, "%.2f", (float)frequency);
+	DevRowIdxAlt = m_sql.UpdateValue(HwdID, ID.c_str(), 3, pTypeGeneral, sTypePercentage, SignalLevel, BatteryLevel, cmnd, szTmp, tmpDevName);
+	if (DevRowIdxAlt == -1)
+		return -1;
+	m_notifications.CheckAndHandleNotification(DevRowIdxAlt, tmpDevName, pTypeGeneral, sTypePercentage, NTYPE_PERCENTAGE, (float)frequency);
+
 	if (m_verboselevel == EVBL_ALL)
 	{
 		WriteMessageStart();
