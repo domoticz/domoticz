@@ -1632,7 +1632,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("SecStatus", (int)SECSTATUS_DISARMED);
 	}
-	if ((!GetPreferencesVar("SecOnDelay", nValue)) || (nValue == 0))
+	if (!GetPreferencesVar("SecOnDelay", nValue))
 	{
 		UpdatePreferencesVar("SecOnDelay", 30);
 	}
