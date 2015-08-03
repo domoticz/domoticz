@@ -38,7 +38,6 @@ public:
 		unsigned char lastLevel;
 		unsigned char switchtype;
 	};
-	std::map<unsigned long long, _tDeviceStatus> m_devicestates;
 
 	struct _tUserVariable
 	{
@@ -48,7 +47,6 @@ public:
 		int variableType;
 		std::string lastUpdate;
 	};
-	std::map<unsigned long long, _tUserVariable> m_uservariables;
 
 	CEventSystem(void);
 	~CEventSystem(void);
@@ -67,7 +65,10 @@ public:
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;
-	boost::mutex eventMutex;
+	boost::shared_mutex m_devicestatesMutex;
+	boost::shared_mutex m_eventsMutex;
+	boost::shared_mutex m_uservariablesMutex;
+	boost::mutex m_measurementStatesMutex;
 	boost::mutex luaMutex;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
@@ -108,6 +109,8 @@ private:
 	std::vector<_tEventItem> m_events;
 	
 
+	std::map<unsigned long long, _tDeviceStatus> m_devicestates;
+	std::map<unsigned long long, _tUserVariable> m_uservariables;
 	std::map<std::string, float> m_tempValuesByName;
 	std::map<std::string, float> m_dewValuesByName;
 	std::map<std::string, float> m_rainValuesByName;

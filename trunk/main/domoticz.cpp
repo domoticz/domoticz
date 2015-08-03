@@ -45,12 +45,22 @@
 #ifdef __linux__
 #include <execinfo.h>
 static void dumpstack(void) {
-	static void *backbuf[50];
-	int levels;
+	// Notes :
+	// The following code does needs -rdynamic compile option.not print full backtrace.
+	// To have a full backtrace you need to :
+	// - compile with -g -rdynamic options
+	// - active core dump using "ulimit -c unlimited" before starting daemon
+	// - use gdb to analyze the core dump
+	void *addrs[128];
+	int n, count = backtrace(addrs, 128);
+	char** symbols = backtrace_symbols(addrs, count);
 
-	levels = backtrace(backbuf, 50);
-	backtrace_symbols_fd(backbuf, levels, STDERR_FILENO);
-	return;
+	if (symbols) {
+		for (n = 0; n < count; n++) {
+			_log.Log(LOG_ERROR, "  %s", symbols[n]);
+		}
+		free(symbols);
+	}
 }
 #else
 static void dumpstack(void) {
@@ -124,6 +134,8 @@ int pidFilehandle = 0;
 #define DAEMON_NAME "domoticz"
 #define PID_FILE "/var/run/domoticz.pid" 
 
+int fatal_handling = 0;
+
 void signal_handler(int sig_num)
 {
 	switch(sig_num)
@@ -145,9 +157,19 @@ void signal_handler(int sig_num)
 		g_bStopApplication = true;
 		break;
 	case SIGSEGV:
-		//Received a Segmentation error!
+	case SIGILL:
+	case SIGABRT:
+	case SIGFPE:
+		if (fatal_handling) {
+			_log.Log(LOG_ERROR, "Domoticz received fatal signal %d while backtracing !...", sig_num);
+			exit(EXIT_FAILURE);
+		}
+		fatal_handling = 1;
+		_log.Log(LOG_ERROR, "Domoticz received fatal signal %d !...", sig_num);
 		dumpstack();
-		_log.Log(LOG_ERROR, "Domoticz received Segmentation signal!...");
+		// re-raise signal to enforce core dump
+		signal(sig_num, SIG_DFL);
+		raise(sig_num);
 		break;
 	} 
 }
@@ -189,9 +211,11 @@ void daemonize(const char *rundir, const char *pidfile)
 	newSigAction.sa_flags = 0;
 
 	/* Signals to handle */
-	sigaction(SIGTERM, &newSigAction, NULL);    /* catch term signal */
-	sigaction(SIGINT, &newSigAction, NULL);     /* catch interrupt signal */
-	sigaction(SIGSEGV, &newSigAction, NULL);    /* catch Segmentation signal */
+	sigaction(SIGTERM, &newSigAction, NULL);    // catch term signal
+	sigaction(SIGINT,  &newSigAction, NULL);    // catch interrupt signal
+	sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
+	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
+	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
 
 	/* Fork*/
 	pid = fork();

@@ -4928,7 +4928,7 @@ void CSQLHelper::CleanupShortLog()
 		struct tm ltime;
 		localtime_r(&clear_time, &ltime);
 		sprintf(szDateStr, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-		_log.Log(LOG_STATUS, "Cleaning up shortlog older then %s", szDateStr);
+		_log.Log(LOG_STATUS, "Cleaning up shortlog older than %s", szDateStr);
 #endif
 
 		char szQuery[250];

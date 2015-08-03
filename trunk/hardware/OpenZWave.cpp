@@ -3662,7 +3662,9 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 					struct tm timeinfo;
 					localtime_r(&ittCmds->second.m_LastSeen, &timeinfo);
 
-					char *szDate = asctime(&timeinfo);
+					char szDate[30];
+					strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
+
 					root["result"][index]["config"][ivalue]["index"] = i_index;
 					root["result"][index]["config"][ivalue]["label"] = i_label;
 					root["result"][index]["config"][ivalue]["units"] = i_units;
@@ -3689,7 +3691,8 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 							struct tm timeinfo;
 							localtime_r(&ittCmds->second.m_LastSeen, &timeinfo);
 
-							char *szDate = asctime(&timeinfo);
+							char szDate[30];
+							strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
 							root["result"][index]["config"][ivalue]["index"] = i_index;
 							root["result"][index]["config"][ivalue]["label"] = i_label;
 							root["result"][index]["config"][ivalue]["units"] = i_units;

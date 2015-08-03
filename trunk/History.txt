@@ -39,6 +39,18 @@ Version 2.xxx (xxxx 2015)
 - Implemented: RFLink SmokeDetector support
 - Changed: KMTronic LAN, now using actual On/Off commands instead of 'Toggle'
 - Implemented: OpenZWave, added Ultraviolet sensor type support
+- Implemented: Revolt, added support for Voltage/PowerFactor/Frequency
+- Fixed: Revolt, Enery Graph
+- Fixed: EventSystem, SIGSEGV (cgaudry)
+- Fixed: EventSystem, splitresults has missing values because m_devicestates is modified while using an iterator on the map (cgaudry)
+- Fixed: EventSystem, _tEventItem.Conditions should not be modified while reading m_events (cgaudry)
+- Fixed: EventSystem, asctime is not thread-safe (replaced with strftime) (cgaudry)
+- Changed: Main, dumptrace is not logged because the stderr handle is closed on startup (cgaudry)
+- Changed: Main, signal code received is not logged (cgaudry)
+- Changed: Main, application should be stopped after fatal signal receiving (cgaudry)
+- Changed: Main, all fatal signals where not handled (e.g. SIGILL, SIGABRT,SIGFPE) (cgaudry)
+- Changed: SQLHelper, spelling mistake (cgaudry)
+- Changed: RFXCom, fixed confusing logs (cgaudry)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

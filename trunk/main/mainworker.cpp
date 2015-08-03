@@ -9870,8 +9870,8 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	struct tm timeinfo;
 	localtime_r(&now, &timeinfo);
 
-	char *szDate = asctime(&timeinfo);
-	szDate[strlen(szDate)-1]=0;
+	char szDate[30];
+	strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
 
 	WriteMessageStart();
 
