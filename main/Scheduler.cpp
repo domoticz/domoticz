@@ -432,12 +432,15 @@ void CScheduler::CheckSchedules()
 			}
 			if (bOkToFire)
 			{
+				char ltimeBuf[30];
+				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &ltime);
+
 				if (itt->bIsScene == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, SceneID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, SceneID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				else if (itt->bIsThermostat == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, ThermostatID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, ThermostatID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				else
-					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, asctime(&ltime));
+					_log.Log(LOG_STATUS, "Schedule item started! Type: %s, DevID: %llu, Time: %s", Timer_Type_Desc(itt->timerType), itt->RowID, ltimeBuf);
 				std::string switchcmd = "";
 				if (itt->timerCmd == TCMD_ON)
 					switchcmd = "On";
@@ -453,7 +456,7 @@ void CScheduler::CheckSchedules()
 					{
 						if (!m_mainworker.SwitchScene(itt->RowID, switchcmd))
 						{
-							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, asctime(&ltime));
+							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, ltimeBuf);
 						}
 					}
 					else if (itt->bIsThermostat == true)
@@ -462,7 +465,7 @@ void CScheduler::CheckSchedules()
 						sstr << itt->RowID;
 						if (!m_mainworker.SetSetPoint(sstr.str(), itt->Temperature))
 						{
-							_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %llu, Time: %s", itt->RowID, asctime(&ltime));
+							_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %llu, Time: %s", itt->RowID, ltimeBuf);
 						}
 					}
 					else
@@ -500,7 +503,7 @@ void CScheduler::CheckSchedules()
 							}
 							if (!m_mainworker.SwitchLight(itt->RowID, switchcmd, ilevel, itt->Hue,false,0))
 							{
-								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %llu, Time: %s", itt->RowID, asctime(&ltime));
+								_log.Log(LOG_ERROR, "Error sending switch command, DevID: %llu, Time: %s", itt->RowID, ltimeBuf);
 							}
 						}
 					}
@@ -535,6 +538,16 @@ namespace http {
 			std::vector<tScheduleItem>::iterator itt;
 			for (itt = schedules.begin(); itt != schedules.end(); ++itt)
 			{
+				if (itt->startTime == 0) {
+					// This should not happen
+					_log.Log(LOG_ERROR, "Schedule start time not set, Type: %s, RowID: %llu, TimerType: %s, TimerCmd: %s",
+						(itt->bIsScene) ? "Scene" : "Device",
+						itt->RowID,
+						Timer_Type_Desc(itt->timerType),
+						Timer_Cmd_Desc(itt->timerCmd));
+					continue;
+				}
+
 				root["result"][ii]["Type"] = (itt->bIsScene) ? "Scene" : "Device";
 				root["result"][ii]["RowID"] = itt->RowID;
 				root["result"][ii]["DevName"] = itt->DeviceName;
