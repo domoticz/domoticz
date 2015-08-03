@@ -1214,11 +1214,12 @@ define(['app'], function (app) {
 										status+='U: T: ' + item.CounterToday;
 									}
 								}
-								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
+								else if (item.Type == "Current") {
 									status+=item.Data;
 								}
 								else if (
 											(item.Type == "Energy")||
+											(item.Type == "Current/Energy")||
 											(item.Type == "Air Quality")||
 											(item.Type == "Lux")||
 											(item.Type == "Weight")||
@@ -1284,11 +1285,11 @@ define(['app'], function (app) {
 										status='' + $.t("Usage") + ': ' + item.CounterToday;
 									}
 								}
-								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
+								else if (item.Type == "Current") {
 									status=item.Data;
 									bigtext=item.Data;
 								}
-								else if (item.Type == "Energy") {
+								else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 									status=item.Data;
 								}
 								else if (item.Type == "Air Quality") {
@@ -2900,11 +2901,12 @@ define(['app'], function (app) {
 								status='U: T: ' + item.CounterToday;
 							}
 						}
-						else if ((item.Type == "Current") || (item.Type == "Current/Energy")){
+						else if (item.Type == "Current"){
 							status=item.Data;
 						}
 						else if (
 									(item.Type == "Energy")||
+									(item.Type == "Current/Energy")||
 									(item.Type == "Air Quality")||
 									(item.Type == "Lux")||
 									(item.Type == "Weight")||
@@ -3012,7 +3014,7 @@ define(['app'], function (app) {
 								(item.SubType=="Pressure")||
 								(item.SubType=="A/D")||
 								(item.SubType=="Sound Level")||
-								((item.Type == "Current") || (item.Type == "Current/Energy"))
+								(item.Type == "Current")
 							) {
 							xhtm+=item.Data;
 						}
@@ -3039,11 +3041,11 @@ define(['app'], function (app) {
 								status="&nbsp;";
 							}
 						}
-						else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
+						else if (item.Type == "Current") {
 							xhtm+='current48.png" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
-						else if (item.Type == "Energy") {
+						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 							xhtm+='current48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}

@@ -665,11 +665,11 @@ define(['app'], function (app) {
 								status=item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 							}
 						}
-						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
+						else if (item.Type == "Current") {
 						  status=item.Data;
 						  bigtext=item.Data;
 						}
-						else if (item.Type == "Energy") {
+						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 							status=item.Data;
 							if (typeof item.CounterToday != 'undefined') {
 								status+=', ' + $.t("Today") + ': ' + item.CounterToday;
@@ -919,7 +919,7 @@ define(['app'], function (app) {
 						else if (item.Type == "Air Quality") {
 						  xhtm+=item.Data;
 						}
-						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
+						else if (item.Type == "Current") {
 						  xhtm+=item.Data;
 						}
 						else if (item.SubType == "Percentage") {
@@ -961,11 +961,11 @@ define(['app'], function (app) {
 						status=item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 					  }
 					}
-					else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
+					else if (item.Type == "Current") {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
-					else if (item.Type == "Energy") {
+					else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					  if (typeof item.CounterToday != 'undefined') {
@@ -1125,13 +1125,13 @@ define(['app'], function (app) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
+				  else if (item.Type == "Current") {
 					xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  else if (item.Type == "Energy") {
+				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 						xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 						if (permissions.hasPermission("Admin")) {
 							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
