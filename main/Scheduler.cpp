@@ -565,13 +565,10 @@ namespace http {
 				struct tm timeinfo;
 				localtime_r(&itt->startTime, &timeinfo);
 
-				char *pDate = asctime(&timeinfo);
-				if (pDate != NULL)
-				{
-					pDate[strlen(pDate) - 1] = 0;
-					root["result"][ii]["ScheduleDate"] = pDate;
-					ii++;
-				}
+				char ltimeBuf[30];
+				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &timeinfo);
+				root["result"][ii]["ScheduleDate"] = ltimeBuf;
+				ii++;
 			}
 		}
 		void CWebServer::RType_Timers(Json::Value &root)
