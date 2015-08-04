@@ -228,6 +228,9 @@
     <Filter Include="Devices\SerialTCP\Serial\impl">
       <UniqueIdentifier>{b1efeef9-359d-4322-b902-29790a671287}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\AnnaThermostat">
+      <UniqueIdentifier>{15a1d2e6-b739-49bf-8669-fd841f61dfc2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -729,6 +732,9 @@
     <ClInclude Include="..\hardware\serial\serial.h">
       <Filter>Devices\SerialTCP\Serial</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\AnnaThermostat.h">
+      <Filter>Devices\AnnaThermostat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1168,6 +1174,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\serial\impl\win.cpp">
       <Filter>Devices\SerialTCP\Serial\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\AnnaThermostat.cpp">
+      <Filter>Devices\AnnaThermostat</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

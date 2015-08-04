@@ -941,7 +941,8 @@ namespace http {
 				(htype == HTYPE_ICYTHERMOSTAT) || 
 				(htype == HTYPE_TOONTHERMOSTAT) || 
 				(htype == HTYPE_PVOUTPUT_INPUT) || 
-				(htype == HTYPE_NESTTHERMOSTAT) || 
+				(htype == HTYPE_NESTTHERMOSTAT) ||
+				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_NetatmoWeatherStation)
 				)
@@ -1132,7 +1133,8 @@ namespace http {
 				(htype == HTYPE_ICYTHERMOSTAT) || 
 				(htype == HTYPE_TOONTHERMOSTAT) || 
 				(htype == HTYPE_PVOUTPUT_INPUT) || 
-				(htype == HTYPE_NESTTHERMOSTAT) || 
+				(htype == HTYPE_NESTTHERMOSTAT) ||
+				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_NetatmoWeatherStation)
 				)

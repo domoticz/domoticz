@@ -95,6 +95,7 @@ private:
 	friend class CThermosmart;
 	friend class CKodi;
 	friend class CNetAtmoWeatherStation;
+	friend class CAnnaThermostat;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
@@ -113,7 +114,7 @@ private:
 	void SendTempHumBaroSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast);
 	void SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast, const std::string &defaultname);
 	void SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);
-	void SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux);
+	void SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux, const std::string &defaultname);
 	void SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality, const std::string &defaultname);
 	void SendUsageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Usage);
 	void SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);
