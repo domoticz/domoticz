@@ -806,10 +806,12 @@ define(['app'], function (app) {
 										}
 										
 										if ($(id + " #status").html()!=status) {
-											if (typeof $(id + " #bigtext") != 'undefined') {
+											$(id + " #status").html(status);
+										}
+										if (typeof $(id + " #bigtext") != 'undefined') {
+											if ($(id + " #bigtext").html()!=bigtext) {
 												$(id + " #bigtext").html(bigtext);
 											}
-											$(id + " #status").html(status);
 										}
 										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);

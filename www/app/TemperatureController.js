@@ -702,7 +702,7 @@ define(['app'], function (app) {
 						if (obackcolor!=nbackcolor) {
 										$(id + " #name").css( "background-color", nbackcolor );
 						}
-						if ($(id + " #status").html()!=status) {
+						if (($(id + " #status").html()!=status) || ($(id + " #bigtext").html()!=bigtext)) {
 							$(id + " #bigtext").html(bigtext);
 							$(id + " #status").html(status);
 							if (setonclick!="")
