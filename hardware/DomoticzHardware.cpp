@@ -472,7 +472,7 @@ void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID,
 }
 
 
-void CDomoticzHardwareBase::SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux)
+void CDomoticzHardwareBase::SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux, const std::string &defaultname)
 {
 	_tLightMeter lmeter;
 	lmeter.id1 = 0;
@@ -482,7 +482,30 @@ void CDomoticzHardwareBase::SendLuxSensor(const int NodeID, const int ChildID, c
 	lmeter.dunit = ChildID;
 	lmeter.fLux = Lux;
 	lmeter.battery_level = BatteryLevel;
+
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", lmeter.id1, lmeter.id2, lmeter.id3, lmeter.id4);
+
+	std::stringstream szQuery;
+	std::vector<std::vector<std::string> > result;
+	bool bDeviceExits = true;
+	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ") AND (Type==" << int(pTypeLux) << ") AND (Subtype==" << int(sTypeLux) << ")";
+	result = m_sql.query(szQuery.str());
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
 	sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+	
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		szQuery.clear();
+		szQuery.str("");
+		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit == " << ChildID << ") AND (Type==" << int(pTypeLux) << ") AND (Subtype==" << int(sTypeLux) << ")";
+		m_sql.query(szQuery.str());
+	}
 }
 
 void CDomoticzHardwareBase::SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality, const std::string &defaultname)

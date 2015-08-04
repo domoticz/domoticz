@@ -71,6 +71,7 @@
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/NetatmoWeatherStation.h"
+#include "../hardware/AnnaThermostat.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -748,6 +749,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_NESTTHERMOSTAT:
 		pHardware = new CNestThermostat(ID, Username, Password);
+		break;
+	case HTYPE_ANNATHERMOSTAT:
+		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_THERMOSMART:
 		pHardware = new CThermosmart(ID, Username, Password);
@@ -10052,6 +10056,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_NESTTHERMOSTAT) ||
+		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
@@ -10080,6 +10085,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_NESTTHERMOSTAT)
 		{
 			CNestThermostat *pGateway = (CNestThermostat*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
+		{
+			CAnnaThermostat *pGateway = (CAnnaThermostat*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_THERMOSMART)
@@ -10315,6 +10325,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 	else if (pHardware->HwdType == HTYPE_NESTTHERMOSTAT)
 	{
 		CNestThermostat *pGateway = (CNestThermostat*)pHardware;
+		pGateway->SetProgramState(newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
+	{
+		CAnnaThermostat *pGateway = (CAnnaThermostat*)pHardware;
 		pGateway->SetProgramState(newState);
 		return true;
 	}

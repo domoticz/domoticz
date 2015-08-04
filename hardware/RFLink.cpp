@@ -653,7 +653,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveLux)
 	{
-		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux);
+		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux, "Lux");
 	}
 
 	if (bHaveRain)
