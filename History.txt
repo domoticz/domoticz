@@ -52,7 +52,7 @@ Version 2.xxx (xxxx 2015)
 - Changed: SQLHelper, spelling mistake (cgaudry)
 - Changed: RFXCom, fixed confusing logs (cgaudry)
 - Fixed: Security Panel delay, now again possible to set delay to 0 (directly)
-- Implemented: Support for the Anna Thermostat (NEM)
+- Implemented: Support for the Plugwise Anna Thermostat (NEM)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
