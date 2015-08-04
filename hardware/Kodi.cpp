@@ -460,7 +460,7 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 
 				if (sAction != "Nothing")
 				{
-					root = Query(itt->IP, itt->Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22System." + sAction + "%22,%22id%22:1,}");
+					root = Query(itt->IP, itt->Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22System." + sAction + "%22,%22id%22:1}");
 					return (root.size() > 0);
 				}
 			}
