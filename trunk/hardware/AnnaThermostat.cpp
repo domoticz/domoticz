@@ -14,6 +14,8 @@
 
 #define round(a) ( int ) ( a + .5 )
 
+// Plugwise Anna Thermostat
+
 const std::string ANNA_GET_STATUS = "/core/appliances";
 
 #ifdef _DEBUG
