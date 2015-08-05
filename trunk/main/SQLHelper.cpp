@@ -1532,7 +1532,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("CostWater", 16473);
 	}
-	if ((!GetPreferencesVar("UseEmailInNotifications", nValue)) || (nValue == 0))
+	if (!GetPreferencesVar("UseEmailInNotifications", nValue))
 	{
 		UpdatePreferencesVar("UseEmailInNotifications", 1);
 	}
@@ -1580,7 +1580,7 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("EnableTabFloorplans", 0);
 	}
-	if ((!GetPreferencesVar("NotificationSensorInterval", nValue)) || (nValue == 0))
+	if (!GetPreferencesVar("NotificationSensorInterval", nValue))
 	{
 		UpdatePreferencesVar("NotificationSensorInterval", 12*60*60);
 	}
