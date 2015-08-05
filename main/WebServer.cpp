@@ -12745,7 +12745,7 @@ namespace http {
 						result = m_sql.safe_query(
 							"SELECT Value1,Value2,Value5,Value6, Date,"
 							" Counter1, Counter2, Counter3, Counter4 "
-							"FROM '%q' WHERE (DeviceRowID=='%q' AND Date>='%q'"
+							"FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q'"
 							" AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
