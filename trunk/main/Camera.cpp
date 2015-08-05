@@ -72,8 +72,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 	pCamera->mActiveDevices.clear();
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> >::const_iterator itt;
-	result=m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID",
-		CamID.c_str());
+	result=m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID", CamID.c_str());
 	if (result.size()>0)
 	{
 		for (itt=result.begin(); itt!=result.end(); ++itt)

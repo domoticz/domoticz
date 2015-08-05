@@ -232,8 +232,7 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit ==%d)",
-		m_HwdID, szIdx, SubUnit);
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit ==%d)", m_HwdID, szIdx, SubUnit);
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -280,8 +279,7 @@ void FritzboxTCP::UpdateSwitch(const unsigned char Idx, const int SubUnit, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
-			defaultname.c_str(), m_HwdID, szIdx, SubUnit);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)", defaultname.c_str(), m_HwdID, szIdx, SubUnit);
 	}
 }
 
@@ -330,14 +328,12 @@ void FritzboxTCP::ParseLine()
 
 		UpdateSwitch(1, 1, true, 100, "Call");
 
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)",
-			m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
 		if (!result.empty())
 		{
 			std::string idx = result[0][0];
 			sstr << "Connected ID: " << results[2] << " Number: " << results[4];
-			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')",
-				idx.c_str(), sstr.str().c_str());
+			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')", idx.c_str(), sstr.str().c_str());
 		}
 	}
 	else if (Cmd == "DISCONNECT")
@@ -355,8 +351,7 @@ void FritzboxTCP::ParseLine()
 		{
 			std::string idx = result[0][0];
 			sstr << "Disconnect ID: " << results[2] << " Duration: " << results[3] << " seconds";
-			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')",
-				idx.c_str(), sstr.str().c_str());
+			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')", idx.c_str(), sstr.str().c_str());
 		}
 	}
 }

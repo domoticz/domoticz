@@ -21,7 +21,7 @@
 #define BLOCK_RETRY_INTERVAL_MSECS 1
 #define ERROR_INAPPROPRIATE_STATE -1
 
-static bool s_bSocketsInitialized = false;;
+static bool s_bSocketsInitialized = false;
 
 #define SUCCESS     0
 #define FAILURE     1

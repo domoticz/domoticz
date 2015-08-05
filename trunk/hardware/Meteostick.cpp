@@ -208,8 +208,7 @@ void Meteostick::SendTempSensor(const unsigned char Idx, const float Temp, const
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -237,8 +236,7 @@ void Meteostick::SendTempSensor(const unsigned char Idx, const float Temp, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	}
 }
 
@@ -246,8 +244,7 @@ void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, co
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeTEMP_HUM), int(sTypeTH5));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeTEMP_HUM), int(sTypeTH5));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -276,8 +273,7 @@ void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, co
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP_HUM), int(sTypeTH5));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP_HUM), int(sTypeTH5));
 	}
 }
 
@@ -285,8 +281,7 @@ void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, c
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeTEMP_BARO), int(sTypeBMP085));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeTEMP_BARO), int(sTypeBMP085));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -324,8 +319,7 @@ void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, c
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP_BARO), int(sTypeBMP085));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP_BARO), int(sTypeBMP085));
 	}
 }
 
@@ -333,8 +327,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeWIND), int(sTypeWINDNoTemp));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeWIND), int(sTypeWINDNoTemp));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -395,8 +388,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeWIND), int(sTypeWINDNoTemp));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeWIND), int(sTypeWINDNoTemp));
 	}
 
 }
@@ -405,8 +397,7 @@ void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeUV), int(sTypeUV1));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeUV), int(sTypeUV1));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -428,8 +419,7 @@ void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeUV), int(sTypeUV1));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeUV), int(sTypeUV1));
 	}
 }
 
@@ -441,8 +431,7 @@ void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage,
 	char szTmp[30];
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -458,8 +447,7 @@ void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage,
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
 	}
 }
 
@@ -468,8 +456,7 @@ float Meteostick::GetRainSensorCounter(const unsigned char Idx)
 	float counter = 0;
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeRAIN), int(sTypeRAIN3));
+	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeRAIN), int(sTypeRAIN3));
 	if (result.size() >0)
 	{
 		std::vector<std::string> strarray;
@@ -487,8 +474,7 @@ void Meteostick::SendRainSensor(const unsigned char Idx, const float Rainmm, con
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeRAIN), int(sTypeRAIN3));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeRAIN), int(sTypeRAIN3));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -519,8 +505,7 @@ void Meteostick::SendRainSensor(const unsigned char Idx, const float Rainmm, con
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeRAIN), int(sTypeRAIN3));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeRAIN), int(sTypeRAIN3));
 	}
 }
 
@@ -529,8 +514,7 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
 	int finalID = (Idx * 10) + Channel;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, finalID, int(pTypeGeneral), int(sTypeLeafWetness));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, finalID, int(pTypeGeneral), int(sTypeLeafWetness));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -545,8 +529,7 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, finalID, int(pTypeGeneral), int(sTypeLeafWetness));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, finalID, int(pTypeGeneral), int(sTypeLeafWetness));
 	}
 }
 
@@ -555,8 +538,7 @@ void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned 
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
 	int finalID = (Idx * 10) + Channel;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, finalID, int(pTypeGeneral), int(sTypeSoilMoisture));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, finalID, int(pTypeGeneral), int(sTypeSoilMoisture));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -571,8 +553,7 @@ void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, finalID, int(pTypeGeneral), int(sTypeSoilMoisture));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, finalID, int(pTypeGeneral), int(sTypeSoilMoisture));
 	}
 }
 
@@ -580,8 +561,7 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeGeneral), int(sTypeSolarRadiation));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeGeneral), int(sTypeSolarRadiation));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -596,8 +576,7 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeGeneral), int(sTypeSolarRadiation));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeGeneral), int(sTypeSolarRadiation));
 	}
 }
 

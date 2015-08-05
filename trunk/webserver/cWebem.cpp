@@ -241,7 +241,7 @@ void cWebem::Include( std::string& reply )
 		}
 		int q = reply.find("-->",p);
 		if( q == -1 )
-			break;;
+			break;
 		q += 3;
 
 		int reply_len = reply.length();

@@ -70,8 +70,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	char szIdx[10];
 	sprintf(szIdx,"%X%02X%02X%02X",0,0,0,Idx);
 	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-		m_HwdID, szIdx);
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -116,8 +115,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-			defaultname.c_str(), m_HwdID, szIdx);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szIdx);
 	}
 
 }
@@ -126,8 +124,7 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 {
 	bool bDeviceExits=true;
 	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d)",
-		m_HwdID, int(Idx));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d)", m_HwdID, int(Idx));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -155,8 +152,7 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d)", defaultname.c_str(), m_HwdID, int(Idx));
 	}
 }
 
@@ -168,8 +164,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
 
 	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-		m_HwdID, szID);
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -190,8 +185,7 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-			defaultname.c_str(), m_HwdID, szID);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
 	}
 }
 
@@ -203,8 +197,7 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 	char szTmp[30];
 	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -220,8 +213,7 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
 	}
 }
 
@@ -552,8 +544,7 @@ namespace http {
 			}
 			std::vector<std::vector<std::string> > result;
 
-			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')",
-				idx.c_str());
+			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')", idx.c_str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
 
