@@ -2952,7 +2952,7 @@ void CEventSystem::reportMissingDevice(const int deviceID, const std::string &ev
 
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%d')",
+	result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%llu')",
 		eventID);
 	if (result.size()>0)
 	{
@@ -2962,7 +2962,7 @@ void CEventSystem::reportMissingDevice(const int deviceID, const std::string &ev
 		{
 			std::vector<std::string> sd = *itt;
 			int eventStatus = 2;
-			m_sql.safe_query("UPDATE EventMaster SET Status ='%q' WHERE (ID == '%q')",
+			m_sql.safe_query("UPDATE EventMaster SET Status = %d WHERE (ID == '%q')",
 				eventStatus, sd[0].c_str());
 		}
 	}

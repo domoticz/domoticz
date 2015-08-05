@@ -154,7 +154,7 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 	bool bDeviceExits=true;
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(sTypeELEC2));
+		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
