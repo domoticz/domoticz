@@ -1790,7 +1790,7 @@ void GetLightStatus(
 	case pTypeEvohomeRelay:
 		bHaveDimmer=true;
 		maxDimLevel=200;
-		llevel=int(0.5f*atof(sValue.c_str()));;
+		llevel=int(0.5f*atof(sValue.c_str()));
 		switch (nValue)
 		{
 		case light1_sOff:

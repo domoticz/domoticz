@@ -336,8 +336,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')", m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
 		if (result.size() > 0)
 		{
 			//Already in the system

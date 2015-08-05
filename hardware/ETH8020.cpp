@@ -136,8 +136,7 @@ void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
-		m_HwdID, szIdx, SubUnit);
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)", m_HwdID, szIdx, SubUnit);
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -184,8 +183,7 @@ void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
-			defaultname.c_str(), m_HwdID, szIdx, SubUnit);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)", defaultname.c_str(), m_HwdID, szIdx, SubUnit);
 	}
 }
 
@@ -197,8 +195,7 @@ void CETH8020::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	char szTmp[30];
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -214,8 +211,7 @@ void CETH8020::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
 	}
 }
 

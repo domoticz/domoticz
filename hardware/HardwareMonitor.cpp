@@ -103,21 +103,17 @@ void CHardwareMonitor::Init()
 	m_lastquerytime=0;
 	m_HwdID = 0;
 	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT ID,Enabled FROM Hardware WHERE (Type==%d) AND (Name=='Motherboard') LIMIT 1",
-		HTYPE_System);
+	result = m_sql.safe_query("SELECT ID,Enabled FROM Hardware WHERE (Type==%d) AND (Name=='Motherboard') LIMIT 1", HTYPE_System);
 	if (result.size()<1)
 	{
-		m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)",
-			HTYPE_System);
+		m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
 		result=m_sql.safe_query("SELECT MAX(ID) FROM Hardware");
 		if (result.size()>0)
 		{
 			std::vector<std::string> sd=result[0];
 			m_HwdID=atoi(sd[0].c_str());
 		}
-
-		result=m_sql.safe_query("SELECT ID,Enabled FROM Hardware WHERE (Type==%d) AND (Name=='Motherboard') LIMIT 1",
-			HTYPE_System);
+		result = m_sql.safe_query("SELECT ID,Enabled FROM Hardware WHERE (Type==%d) AND (Name=='Motherboard') LIMIT 1", HTYPE_System);
 	}
 	
 	if (result.size()>0)
@@ -161,8 +157,7 @@ void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, co
 	char szTmp[30];
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -178,8 +173,7 @@ void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, co
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
 	}
 }
 
@@ -191,8 +185,7 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	char szTmp[30];
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCurrent));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCurrent));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -208,8 +201,7 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCurrent));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCurrent));
 	}
 }
 
@@ -217,8 +209,7 @@ void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -246,8 +237,7 @@ void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	}
 }
 
@@ -259,8 +249,7 @@ void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Perce
 	char szTmp[30];
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -276,8 +265,7 @@ void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Perce
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
 	}
 }
 
@@ -289,8 +277,7 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 	char szTmp[30];
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeFan));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypeFan));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -306,8 +293,7 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeFan));
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeFan));
 	}
 }
 

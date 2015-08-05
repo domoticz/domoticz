@@ -2909,7 +2909,7 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 			WriteMessage("subtype       = TH1 - THGN122/123/132,THGR122/228/238/268");
 			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
-			break;;
+			break;
 		case sTypeTH2:
 			WriteMessage("subtype       = TH2 - THGR810,THGN800");
 			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);

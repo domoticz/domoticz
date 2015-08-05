@@ -373,7 +373,6 @@ namespace http {
 				return;
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("DELETE FROM FibaroLink WHERE (ID=='%q')", idx.c_str());
-
 			root["status"] = "OK";
 			root["title"] = "DeleteFibaroLink";
 		}

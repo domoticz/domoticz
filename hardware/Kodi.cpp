@@ -147,7 +147,7 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 				char szLastUpdate[40];
 				sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 				std::vector<std::vector<std::string> > result;
-				result=m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1)",
+				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1)",
 					int(nStatus), sShortStatus.c_str(), szLastUpdate, m_HwdID, itt->szDevID);
 				itt->nStatus = nStatus;
 				itt->sStatus = sShortStatus;
@@ -155,14 +155,12 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 				// 2:	Log the event
 				std::string sLongStatus = Media_Player_States(itt->nStatus);
 				if (itt->sStatus.length()) sLongStatus += " - " + itt->sStatus;
-				result=m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')",
-					itt->ID, int(itt->nStatus), sLongStatus.c_str());
+				result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", itt->ID, int(itt->nStatus), sLongStatus.c_str());
 
 				// 3:	Trigger On/Off actions
 				if (bUseOnOff)
 				{
-					result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)",
-						m_HwdID, itt->szDevID);
+					result = m_sql.safe_query("SELECT StrParam1,StrParam2 FROM DeviceStatus WHERE (HardwareID==%d) AND (ID = '%q') AND (Unit == 1)", m_HwdID, itt->szDevID);
 					if (result.size() > 0)
 					{
 						m_sql.HandleOnOffAction(bPingOK, result[0][0], result[0][1]);
@@ -478,15 +476,12 @@ void CKodi::AddNode(const std::string &Name, const std::string &IPAddress, const
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
-		m_HwdID, Name.c_str(), IPAddress.c_str());
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
 	if (result.size()>0)
 		return; //Already exists
-	result = m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)",
-		m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
+	result = m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)", m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
 
-	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress='%q')",
-		m_HwdID, Name.c_str(), IPAddress.c_str());
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
 	if (result.size()<1)
 		return;
 
@@ -511,20 +506,17 @@ bool CKodi::UpdateNode(const int ID, const std::string &Name, const std::string 
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
-		m_HwdID, ID);
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, ID);
 	if (result.size()<1)
 		return false; //Not Found!?
 
-	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)",
-		Name.c_str(), IPAddress.c_str(), Port, m_HwdID, ID);
+	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)", Name.c_str(), IPAddress.c_str(), Port, m_HwdID, ID);
 
 	char szID[40];
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	//Also update Light/Switch
-	m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-		Name.c_str(), m_HwdID, szID);
+	m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", Name.c_str(), m_HwdID, szID);
 	ReloadNodes();
 	return true;
 }
@@ -533,15 +525,13 @@ void CKodi::RemoveNode(const int ID)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
-		m_HwdID, ID);
+	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, ID);
 
 	//Also delete the switch
 	char szID[40];
 	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
-	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-		m_HwdID, szID);
+	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
 	ReloadNodes();
 }
 
@@ -549,12 +539,10 @@ void CKodi::RemoveAllNodes()
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)",
-		m_HwdID);
+	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
 	//Also delete the all switches
-	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d)",
-		m_HwdID);
+	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	ReloadNodes();
 }
 
@@ -562,8 +550,7 @@ void CKodi::ReloadNodes()
 {
 	m_nodes.clear();
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)",
-		m_HwdID);
+	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -583,8 +570,7 @@ void CKodi::ReloadNodes()
 			pnode.LastOK = mytime(NULL);
 
 			std::vector<std::vector<std::string> > result2;
-			result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)",
-				m_HwdID, pnode.szDevID);
+			result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)", m_HwdID, pnode.szDevID);
 			if (result2.size()==1)
 			{
 				pnode.ID = atoi(result2[0][0].c_str());
@@ -602,13 +588,11 @@ void  CKodi::SendCommand(const int ID, const std::string &command)
 	std::vector<std::vector<std::string> > result;
 
 	// Get device details
-	result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (ID==%d)",
-		ID);
+	result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (ID==%d)", ID);
 	if (result.size() == 1)
 	{
 		// Get connection details
-		result = m_sql.safe_query("SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
-			m_HwdID, atoi(result[0][0].c_str()));
+		result = m_sql.safe_query("SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, atoi(result[0][0].c_str()));
 	}
 
 	if (result.size() == 1)
@@ -745,10 +729,7 @@ namespace http {
 			int iMode1 = atoi(mode1.c_str());
 			int iMode2 = atoi(mode2.c_str());
 
-			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')",
-				iMode1,
-				iMode2,
-				hwid.c_str());
+			m_sql.safe_query("UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')", iMode1, iMode2, hwid.c_str());
 			pHardware->SetSettings(iMode1, iMode2);
 			pHardware->Restart();
 		}
@@ -883,8 +864,7 @@ namespace http {
 			root["title"] = "KodiMediaCommand";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)",
-				sIdx.c_str());
+			result = m_sql.safe_query("SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
 			if (result.size() == 1)
 			{
 				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());

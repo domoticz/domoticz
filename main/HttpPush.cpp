@@ -464,7 +464,6 @@ namespace http {
 				return;
 			std::vector<std::vector<std::string> > result;
 			m_sql.safe_query("DELETE FROM HttpLink WHERE (ID=='%q')", idx.c_str());
-
 			root["status"] = "OK";
 			root["title"] = "DeleteHttpLink";
 		}

@@ -6973,7 +6973,7 @@ namespace http {
 						if (camIDX != 0) {
 							std::stringstream scidx;
 							scidx << camIDX;
-							root["result"][ii]["CameraIdx"] = scidx.str();;
+							root["result"][ii]["CameraIdx"] = scidx.str();
 						}
 
 						bool bIsSubDevice = false;
