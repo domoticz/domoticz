@@ -2019,6 +2019,12 @@ std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, .
 	va_list args;
 	va_start(args, fmt);
 	char *zQuery = sqlite3_vmprintf(fmt, args);
+	if (!zQuery)
+	{
+		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+		std::vector<std::vector<std::string> > results;
+		return results;
+	}
 	std::vector<std::vector<std::string> > results = query(zQuery);
 	sqlite3_free(zQuery);
 	va_end(args);

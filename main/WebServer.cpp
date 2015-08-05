@@ -4844,7 +4844,7 @@ namespace http {
 				m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
 
 				m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')",
-					idx.c_str()); //-V519
+					idx.c_str());
 
 				LoadUsers();
 			}
@@ -9288,7 +9288,7 @@ namespace http {
 					);
 				//Sanity Check, remove all SceneDevice that has this code
 				m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID=='%q' AND DeviceRowID=='%q')",
-					idx.c_str(), devid.c_str()); //-V519
+					idx.c_str(), devid.c_str());
 			}
 		}
 

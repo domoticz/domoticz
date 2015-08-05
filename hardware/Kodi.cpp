@@ -584,7 +584,7 @@ void CKodi::ReloadNodes()
 
 			std::vector<std::vector<std::string> > result2;
 			result2 = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == 1)",
-				m_HwdID, pnode.szDevID); //-V519
+				m_HwdID, pnode.szDevID);
 			if (result2.size()==1)
 			{
 				pnode.ID = atoi(result2[0][0].c_str());
@@ -884,7 +884,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT DS.SwitchType, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)",
-				sIdx.c_str()); //-V519
+				sIdx.c_str());
 			if (result.size() == 1)
 			{
 				_eSwitchType	sType = (_eSwitchType)atoi(result[0][0].c_str());

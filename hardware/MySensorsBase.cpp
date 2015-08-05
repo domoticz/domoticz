@@ -752,7 +752,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-		m_HwdID, szIdx, SubUnit); //-V519
+		m_HwdID, szIdx, SubUnit);
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -823,7 +823,7 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-		m_HwdID, szIdx, SubUnit); //-V519
+		m_HwdID, szIdx, SubUnit);
 	if (result.size() < 1)
 		return false;
 	int nvalue = atoi(result[0][1].c_str());
