@@ -322,7 +322,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			sprintf(szID, "%d", NodeID);
 		else
 			sprintf(szID, "%08x", (unsigned int)NodeID);
-		std::string ID = szID;
 
 		sprintf(szSValue, "%d;%d", Sat, Hue);
 
@@ -336,10 +335,9 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			cmd = Limitless_LedOff;
 
 		//Check if we already exist
-		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLimitlessLights << ") AND (SubType==" << sTypeLimitlessRGBW << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
 		if (result.size() > 0)
 		{
 			//Already in the system
@@ -352,10 +350,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			char szLastUpdate[40];
 			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET nValue=" << int(cmd) << ", sValue='" << szSValue << "', LastLevel = " << BrightnessLevel << ", LastUpdate='" << szLastUpdate << "' WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
-			result = m_sql.query(szQuery.str());
+			m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel = %d, LastUpdate='%q' WHERE(HardwareID == %d) AND(DeviceID == '%q')",
+				int(cmd), szSValue, BrightnessLevel, szLastUpdate, m_HwdID, szID);
 			return;
 		}
 
@@ -367,17 +363,14 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
 
 		//Set Name/Parameters
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", nValue=" << int(cmd) << ", sValue='" << szSValue << "', LastLevel=" << BrightnessLevel << " WHERE(HardwareID == " << m_HwdID << ") AND(DeviceID == '" << ID << "')";
-		result = m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND(DeviceID == '%q')",
+			Name.c_str(), int(STYPE_Dimmer), int(cmd), szSValue, BrightnessLevel, m_HwdID, szID);
 	}
 	else
 	{
 		//Send as Lighting 2
 		char szID[10];
 		sprintf(szID, "%X%02X%02X%02X", 0, 0, 0, NodeID);
-		std::string ID = szID;
 		unsigned char unitcode = 1;
 		int cmd = 0;
 		if (bIsOn)
@@ -419,10 +412,9 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sprintf(szLevel, "%d", level);
 
 		//Check if we already exist
-		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
 		if (result.size() > 0)
 		{
 			//Already in the system
@@ -434,10 +426,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			char szLastUpdate[40];
 			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "UPDATE DeviceStatus SET LastLevel=" << BrightnessLevel << ", nValue=" << int(cmd) << ", sValue='" << szLevel << "', LastUpdate='" << szLastUpdate << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
-			result = m_sql.query(szQuery.str());
+			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%d, nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+				BrightnessLevel, int(cmd), szLevel, szLastUpdate, m_HwdID, szID);
 			return;
 		}
 
@@ -460,10 +450,8 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
 
 		//Set Name/Parameters
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << Name << "', SwitchType=" << int(STYPE_Dimmer) << ", LastLevel=" << BrightnessLevel << ", nValue=" << int(cmd) << ", sValue='" << szLevel << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d, nValue=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+			Name.c_str(), int(STYPE_Dimmer), BrightnessLevel, int(cmd), szLevel, m_HwdID, szID);
 	}
 }
 

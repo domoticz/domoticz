@@ -168,10 +168,9 @@ void CToonThermostat::Do_Work()
 void CToonThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -199,24 +198,21 @@ void CToonThermostat::SendTempSensor(const unsigned char Idx, const float Temp, 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-		result=m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	}
 }
 
 void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
 
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_HwdID, szID);
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -237,10 +233,8 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-		result=m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+			defaultname.c_str(), m_HwdID, szID);
 	}
 }
 
@@ -249,10 +243,9 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	bool bDeviceExits = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << szIdx << "')";
-	result = m_sql.query(szQuery.str()); //-V519
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+		m_HwdID, pTypeLighting2, sTypeAC, szIdx); //-V519
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -297,10 +290,8 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeAC << ") AND (DeviceID=='" << szIdx << "')";
-		result = m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+			defaultname.c_str(), m_HwdID, pTypeLighting2, sTypeAC, szIdx);
 	}
 }
 
@@ -449,20 +440,16 @@ void CToonThermostat::Logout()
 
 bool CToonThermostat::AddUUID(const std::string &UUID, int &idx)
 {
-	std::stringstream sstr;
-
-	sstr << "INSERT INTO ToonDevices (HardwareID, UUID) VALUES (" << m_HwdID << ", '" << UUID << "')";
-	m_sql.query(sstr.str());
+	m_sql.safe_query("INSERT INTO ToonDevices (HardwareID, UUID) VALUES (%d, '%q')",
+		m_HwdID, UUID.c_str());
 	return GetUUIDIdx(UUID, idx);
 }
 
 bool CToonThermostat::GetUUIDIdx(const std::string &UUID, int &idx)
 {
-	std::stringstream sstr;
-
 	std::vector<std::vector<std::string> > result;
-	sstr << "SELECT [ROWID] FROM ToonDevices WHERE (HardwareID=" << m_HwdID << ") AND (UUID='" << UUID << "')";
-	result = m_sql.query(sstr.str());
+	result = m_sql.safe_query("SELECT [ROWID] FROM ToonDevices WHERE (HardwareID=%d) AND (UUID='%q')",
+		m_HwdID, UUID.c_str());
 	if (result.size() < 1)
 		return false;
 	std::vector<std::string> sd = result[0];
@@ -472,11 +459,9 @@ bool CToonThermostat::GetUUIDIdx(const std::string &UUID, int &idx)
 
 bool CToonThermostat::GetUUIDFromIdx(const int idx, std::string &UUID)
 {
-	std::stringstream sstr;
-
 	std::vector<std::vector<std::string> > result;
-	sstr << "SELECT [UUID] FROM ToonDevices WHERE (HardwareID=" << m_HwdID << ") AND (ROWID=" << idx << ")";
-	result = m_sql.query(sstr.str());
+	result = m_sql.safe_query("SELECT [UUID] FROM ToonDevices WHERE (HardwareID=%d) AND (ROWID=%d)",
+		m_HwdID, idx);
 	if (result.size() < 1)
 		return false;
 	std::vector<std::string> sd = result[0];

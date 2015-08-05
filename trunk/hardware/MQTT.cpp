@@ -175,9 +175,8 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 		idx = (unsigned long long)root["idx"].asInt64();
 		//Get the raw device parameters
-		std::stringstream szQuery;
-		szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==" << idx << ")";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%llu)",
+			idx);
 		if (result.empty())
 		{
 			_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
@@ -192,9 +191,8 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			goto mqttinvaliddata;
 
 		idx = (unsigned long long)root["idx"].asInt64();
-		std::stringstream szQuery;
-		szQuery << "SELECT Name FROM Scenes WHERE (ID==" << idx << ")";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT Name FROM Scenes WHERE (ID==%llu)",
+			idx);
 		if (result.empty())
 		{
 			_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
@@ -203,9 +201,8 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	}
 	else if (szCommand == "setuservariable")
 	{
-		std::stringstream szQuery;
-		szQuery << "SELECT Name FROM UserVariables WHERE (ID==" << idx << ")";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT Name FROM UserVariables WHERE (ID==%llu)",
+			idx);
 		if (result.empty())
 		{
 			_log.Log(LOG_ERROR, "MQTT: unknown idx received!");
@@ -487,9 +484,8 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 	if (!m_IsConnected)
 		return;
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << DeviceRowIdx << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT DeviceID, Unit, Name, [Type], SubType, nValue, sValue, SwitchType, SignalLevel, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%llu)",
+		m_HwdID, DeviceRowIdx);
 	if (result.size() > 0)
 	{
 		std::vector<std::string> sd = result[0];
@@ -523,8 +519,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		int sIndex = 1;
 		for (itt = strarray.begin(); itt != strarray.end(); ++itt)
 		{
-			szQuery.str("");
-			szQuery.clear();
+			std::stringstream szQuery("");
 			szQuery << "svalue" << sIndex;
 			root[szQuery.str()] = *itt;
 			sIndex++;

@@ -217,23 +217,18 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, con
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << IPAddress << "')";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
+		m_HwdID, Name.c_str(), IPAddress.c_str());
 	if (result.size()>0)
 		return; //Already exists
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (" << m_HwdID << ",'" << Name << "','" << IPAddress << "'," << Timeout << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d,'%q','%q',%d)",
+		m_HwdID, Name.c_str(), IPAddress.c_str(), Timeout);
 
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (Name=='" << Name << "') AND (MacAddress=='" << IPAddress << "')";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
+		m_HwdID, Name.c_str(), IPAddress.c_str());
 	if (result.size()<1)
 		return;
 
@@ -250,30 +245,24 @@ bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::strin
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	szQuery << "SELECT ID FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
+		m_HwdID, ID);
 	if (result.size()<1)
 		return false; //Not Found!?
 
-	szQuery.clear();
-	szQuery.str("");
-
-	szQuery << "UPDATE WOLNodes SET Name='" << Name << "', MacAddress='" << IPAddress << "', Timeout=" << Timeout << " WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)",
+		Name.c_str(), IPAddress.c_str(), Timeout, m_HwdID, ID);
 
 	char szID[40];
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
 
 	//Also update Light/Switch
-	szQuery.clear();
-	szQuery.str("");
-	szQuery <<
-		"UPDATE DeviceStatus SET Name='" << Name << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query(
+		"UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		Name.c_str(), m_HwdID, szID);
 	ReloadNodes();
 	return true;
 }
@@ -282,19 +271,15 @@ void CPinger::RemoveNode(const int ID)
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	std::stringstream szQuery;
-	szQuery << "DELETE FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ") AND (ID==" << ID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
+		m_HwdID, ID);
 
 	//Also delete the switch
-	szQuery.clear();
-	szQuery.str("");
-
 	char szID[40];
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
 
-	szQuery << "DELETE FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_HwdID, szID);
 	ReloadNodes();
 }
 
@@ -302,25 +287,19 @@ void CPinger::RemoveAllNodes()
 {
 	boost::lock_guard<boost::mutex> l(m_mutex);
 
-	std::stringstream szQuery;
-	szQuery << "DELETE FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 
 	//Also delete the all switches
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "DELETE FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	ReloadNodes();
 }
 
 void CPinger::ReloadNodes()
 {
 	m_nodes.clear();
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << m_HwdID << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)",
+		m_HwdID);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -477,10 +456,9 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "PingerGetNodes";
 
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==" << iHardwareID << ")";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)",
+				iHardwareID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -528,13 +506,11 @@ namespace http {
 			int iMode1 = atoi(mode1.c_str());
 			int iMode2 = atoi(mode2.c_str());
 
-			char szTmp[100];
-			sprintf(szTmp,
-				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == %s)",
+			m_sql.safe_query(
+				"UPDATE Hardware SET Mode1=%d, Mode2=%d WHERE (ID == '%q')",
 				iMode1,
 				iMode2,
 				hwid.c_str());
-			m_sql.query(szTmp);
 			pHardware->SetSettings(iMode1, iMode2);
 			pHardware->Restart();
 		}

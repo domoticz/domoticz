@@ -96,10 +96,8 @@ void CEventSystem::LoadEvents()
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status, EventRules.SequenceNo FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status, EventRules.SequenceNo FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -183,13 +181,11 @@ struct _tHardwareListIntEV{
 
 void CEventSystem::GetCurrentStates()
 {
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
 	//Get All Hardware ID's/Names, need them later
 	std::map<unsigned long long, _tHardwareListIntEV> _hardwareNames;
-	szQuery << "SELECT ID, Name, Enabled FROM Hardware";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ID, Name, Enabled FROM Hardware");
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -212,10 +208,7 @@ void CEventSystem::GetCurrentStates()
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
 
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "SELECT HardwareID,ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Used = '1')";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT HardwareID,ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Used = '1')");
 	if (result.size()>0)
 	{
 		// Allocate all memory before filling
@@ -272,10 +265,8 @@ void CEventSystem::GetCurrentUserVariables()
 	//_log.Log(LOG_STATUS, "EventSystem: reset all user variables...");
 	m_uservariables.clear();
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID,Name,Value, ValueType, LastUpdate FROM UserVariables";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ID,Name,Value, ValueType, LastUpdate FROM UserVariables");
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -577,11 +568,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				std::stringstream szQuery;
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
-				result2 = m_sql.query(szQuery.str());
+				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%llu AND Date>='%q')",
+					sitem.ID, szDate);
 				if (result2.size() > 0)
 				{
 					std::vector<std::string> sd2 = result2[0];
@@ -649,13 +637,16 @@ void CEventSystem::GetCurrentMeasurementStates()
 				szQuery.str("");
 				if (sitem.subType != sTypeRAINWU)
 				{
-					szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
+					result2 = m_sql.safe_query(
+						"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q')",
+						sitem.ID, szDate);
 				}
 				else
 				{
-					szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "') ORDER BY ROWID DESC LIMIT 1";
+					result2 = m_sql.safe_query(
+						"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+						sitem.ID, szDate);
 				}
-				result2 = m_sql.query(szQuery.str());
 				if (result2.size()>0)
 				{
 					double total_real = 0;
@@ -684,14 +675,17 @@ void CEventSystem::GetCurrentMeasurementStates()
 					sprintf(szDate, "datetime('now', 'localtime', '-%d hour')", 1);
 					if (sitem.subType != sTypeRAINWU)
 					{
-						szQuery << "SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=" << sitem.ID << " AND Date>=" << szDate << ")";
+						result2 = m_sql.safe_query(
+							"SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q')",
+							sitem.ID, szDate);
 					}
 					else
 					{
-						szQuery << "SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=" << sitem.ID << " AND Date>=" << szDate << ") ORDER BY ROWID DESC LIMIT 1";
+						result2 = m_sql.safe_query(
+							"SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
+							sitem.ID, szDate);
 					}
 					rainmmlasthour = 0;
-					result2 = m_sql.query(szQuery.str());
 					if (result2.size()>0)
 					{
 						std::vector<std::string> sd2 = result2[0];
@@ -722,11 +716,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				std::stringstream szQuery;
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
-				result2 = m_sql.query(szQuery.str());
+				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%llu AND Date>='%q')",
+					sitem.ID, szDate);
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2 = result2[0];
@@ -765,11 +756,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
 
 				std::vector<std::vector<std::string> > result2;
-				std::stringstream szQuery;
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=" << sitem.ID << " AND Date>='" << szDate << "')";
-				result2 = m_sql.query(szQuery.str());
+				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%llu AND Date>='%q')",
+					sitem.ID, szDate);
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2 = result2[0];
@@ -950,9 +938,8 @@ void CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
 
 	// query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT ID, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Name == '" << devname << "')";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Name == '%q')",
+		devname.c_str());
 	if (result.size()>0) {
 		std::vector<std::string> sd = result[0];
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
@@ -1593,9 +1580,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				if (afterTimerSeconds == 0)
 				{
 					std::vector<std::vector<std::string> > result;
-					char szTmp[300];
-					sprintf(szTmp, "SELECT Name, ValueType FROM UserVariables WHERE (ID == '%s')", variableNo.c_str());
-					result = m_sql.query(szTmp);
+					result = m_sql.safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == '%q')", variableNo.c_str());
 					if (result.size() > 0)
 					{
 						std::vector<std::string> sd = result[0];
@@ -2543,7 +2528,6 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		std::string variableValue = lua_tostring(lua_state, -1);
 
 		std::vector<std::vector<std::string> > result;
-		char szTmp[300];
 
 		int afterTimerSeconds = 0;
 		size_t aFind = variableValue.find(" AFTER ");
@@ -2553,8 +2537,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			afterTimerSeconds = atoi(delayString.c_str());
 			variableValue = newAction;
 		}
-		sprintf(szTmp, "SELECT ID, ValueType FROM UserVariables WHERE (Name == '%s')", variableName.c_str());
-		result = m_sql.query(szTmp);
+		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
 		if (result.size() > 0)
 		{
 			std::vector<std::string> sd = result[0];
@@ -2610,9 +2593,8 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	std::string svalue = strarray[2];
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID, Unit, Type, SubType, Name, SwitchType, LastLevel FROM DeviceStatus WHERE (ID==" << idx << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, Name, SwitchType, LastLevel FROM DeviceStatus WHERE (ID=='%q')",
+		idx.c_str());
 	if (result.size()>0)
 	{
 		std::string hid = result[0][0];
@@ -2631,10 +2613,8 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		char szLastUpdate[40];
 		sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET nValue=" << nvalue << ", sValue='" << svalue << "', LastUpdate='" << szLastUpdate << "' WHERE (ID = " << idx << ")";
-		result = m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
+			nvalue.c_str(), svalue.c_str(), szLastUpdate, idx.c_str());
 
 
 		unsigned long long ulIdx = 0;
@@ -2722,15 +2702,15 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 	}
 
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
 
 	if (isScene) {
-		szQuery << "SELECT ID FROM Scenes WHERE (Name == '" << deviceName << "')";
+		result = m_sql.safe_query("SELECT ID FROM Scenes WHERE (Name == '%q')",
+			deviceName.c_str());
 	}
 	else {
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (Name == '" << deviceName << "')";
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Name == '%q')",
+			deviceName.c_str());
 	}
-	result = m_sql.query(szQuery.str());
 	if (result.size()>0)
 	{
 		std::vector<std::string> sd = result[0];
@@ -2812,17 +2792,13 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			tItem = _tTaskItem::SwitchSceneEvent(DelayTime, deviceID, Action, eventName);
 		}
 		else if (Action == "Active") {
-			char szTmp[200];
 			std::vector<std::vector<std::string> > result;
-			sprintf(szTmp, "UPDATE SceneTimers SET Active=1 WHERE (SceneRowID == %d)", deviceID);
-			result = m_sql.query(szTmp);
+			result = m_sql.safe_query("UPDATE SceneTimers SET Active=1 WHERE (SceneRowID == %d)", deviceID);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 		else if (Action == "Inactive") {
-			char szTmp[200];
 			std::vector<std::vector<std::string> > result;
-			sprintf(szTmp, "UPDATE SceneTimers SET Active=0 WHERE (SceneRowID == %d)", deviceID);
-			result = m_sql.query(szTmp);
+			result = m_sql.safe_query("UPDATE SceneTimers SET Active=0 WHERE (SceneRowID == %d)", deviceID);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 	}
@@ -2833,9 +2809,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		{
 			//Get Device details, check for switch global OnDelay (stored in AddjValue2)
 			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
-			szQuery << "SELECT AddjValue2 FROM DeviceStatus WHERE (ID == " << deviceID << ")";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT AddjValue2 FROM DeviceStatus WHERE (ID == %d)",
+				deviceID);
 			if (result.size() < 1)
 				return false;
 
@@ -2976,10 +2951,9 @@ void CEventSystem::reportMissingDevice(const int deviceID, const std::string &ev
 	_log.Log(LOG_ERROR, "EventSystem: Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, eventName.c_str());
 
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '" << eventID << "')";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%d')",
+		eventID);
 	if (result.size()>0)
 	{
 
@@ -2987,10 +2961,9 @@ void CEventSystem::reportMissingDevice(const int deviceID, const std::string &ev
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
-			std::stringstream szRemQuery;
 			int eventStatus = 2;
-			szRemQuery << "UPDATE EventMaster SET Status ='" << eventStatus << "' WHERE (ID == '" << sd[0] << "')";
-			m_sql.query(szQuery.str());
+			m_sql.safe_query("UPDATE EventMaster SET Status ='%q' WHERE (ID == '%q')",
+				eventStatus, sd[0].c_str());
 		}
 	}
 }
@@ -3061,9 +3034,8 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 {
 
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << deviceID << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %d)",
+		deviceID);
 	unsigned char ilevel = 0;
 	if (result.size()>0)
 	{
@@ -3120,7 +3092,6 @@ namespace http {
 				}
 			}
 
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
 
 			if (cparam == "list")
@@ -3129,8 +3100,7 @@ namespace http {
 				root["status"] = "OK";
 
 				std::map<std::string, _tSortedEventsInt> _levents;
-				szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC";
-				result = m_sql.query(szQuery.str());
+				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC");
 				if (result.size() > 0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3146,8 +3116,7 @@ namespace http {
 						if (_levents.find(Name) != _levents.end())
 						{
 							//Duplicate event name, add the ID
-							szQuery.clear();
-							szQuery.str("");
+							std::stringstream szQuery("");
 							szQuery << Name << " (" << ID << ")";
 							Name = szQuery.str();
 						}
@@ -3176,10 +3145,8 @@ namespace http {
 
 				int ii = 0;
 
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "SELECT ID, Name, XMLStatement, Status FROM EventMaster WHERE (ID==" << idx << ")";
-				result = m_sql.query(szQuery.str());
+				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status FROM EventMaster WHERE (ID=='%q')",
+					idx.c_str());
 				if (result.size() > 0)
 				{
 					std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3241,17 +3208,11 @@ namespace http {
 
 				}
 				else {
-
-					szQuery.clear();
-					szQuery.str("");
-
 					if (eventid == "") {
-						szQuery << "INSERT INTO EventMaster (Name, XMLStatement, Status) VALUES ('" << eventname << "','" << eventxml << "','" << eventStatus << "')";
-						m_sql.query(szQuery.str());
-						szQuery.clear();
-						szQuery.str("");
-						szQuery << "SELECT ID FROM EventMaster WHERE (Name == '" << eventname << "')";
-						result = m_sql.query(szQuery.str());
+						m_sql.safe_query("INSERT INTO EventMaster (Name, XMLStatement, Status) VALUES ('%q','%q','%d')",
+							eventname.c_str(), eventxml.c_str(), eventStatus);
+						result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE (Name == '%q')",
+							eventname.c_str());
 						if (result.size() > 0)
 						{
 							std::vector<std::string> sd = result[0];
@@ -3259,12 +3220,10 @@ namespace http {
 						}
 					}
 					else {
-						szQuery << "UPDATE EventMaster SET Name='" << eventname << "', XMLStatement ='" << eventxml << "', Status ='" << eventStatus << "' WHERE (ID == '" << eventid << "')";
-						m_sql.query(szQuery.str());
-						szQuery.clear();
-						szQuery.str("");
-						szQuery << "DELETE FROM EventRules WHERE (EMID == '" << eventid << "')";
-						m_sql.query(szQuery.str());
+						m_sql.safe_query("UPDATE EventMaster SET Name='%q', XMLStatement ='%q', Status ='%d' WHERE (ID == '%q')",
+							eventname.c_str(), eventxml.c_str(), eventStatus, eventid.c_str());
+						m_sql.safe_query("DELETE FROM EventRules WHERE (EMID == '%q')",
+							eventid.c_str());
 					}
 
 					if (eventid == "")
@@ -3284,10 +3243,8 @@ namespace http {
 								stdreplace(actions, "$", "#");
 							}
 							int sequenceNo = index + 1;
-							szQuery.clear();
-							szQuery.str("");
-							szQuery << "INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('" << eventid << "','" << conditions << "','" << actions << "','" << sequenceNo << "')";
-							m_sql.query(szQuery.str());
+							m_sql.safe_query("INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('%q','%q','%q','%d')",
+								eventid.c_str(), conditions.c_str(), actions.c_str(), sequenceNo);
 						}
 
 						m_mainworker.m_eventsystem.LoadEvents();

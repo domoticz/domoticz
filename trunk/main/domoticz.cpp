@@ -488,6 +488,7 @@ int main(int argc, char**argv)
 				(sLine.find("BCM2709")!=std::string::npos)
 				)
 			{
+				//Core temperature of BCM2835 SoC
 				_log.Log(LOG_STATUS,"System: Raspberry Pi");
 				szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp";
 				bHasInternalTemperature=true;
@@ -496,31 +497,31 @@ int main(int argc, char**argv)
 		}
 		infile.close();
 	}
-
-	if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
+	if (!bHasInternalTemperature)
 	{
-		_log.Log(LOG_STATUS,"System: Cubieboard/Cubietruck");
-		szInternalTemperatureCommand="cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
-		bHasInternalTemperature = true;
+		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
+		{
+			_log.Log(LOG_STATUS,"System: Cubieboard/Cubietruck");
+			szInternalTemperatureCommand="cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			bHasInternalTemperature = true;
+		}
+		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
+		{
+			//_log.Log(LOG_STATUS,"System: ODroid");
+			szInternalTemperatureCommand="cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			bHasInternalTemperature = true;
+		}
+		else if (file_exist("/sys/class/power_supply/ac/voltage_now"))
+		{
+			szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+			bHasInternalVoltage = true;
+		}
+		else if (file_exist("/sys/class/power_supply/ac/current_now"))
+		{
+			szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+			bHasInternalCurrent = true;
+		}
 	}
-	else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
-	{
-		_log.Log(LOG_STATUS,"System: ODroid");
-		szInternalTemperatureCommand="cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
-		bHasInternalTemperature = true;
-	}
-
-	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-
 	_log.Log(LOG_STATUS,"Startup Path: %s", szStartupFolder.c_str());
 #endif
 

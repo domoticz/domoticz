@@ -96,8 +96,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		//get the activity id from the db and send to h/w
 		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
-		//szQuery << "SELECT StrParam1 FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx  << "')";
-		//result = m_sql.query(szQuery.str());
+		//result = m_sql.safe_query("SELECT StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
 		//if (result.size() > 0) //should be there since it is switched on
 		//{
 		if (!SubmitCommand(START_ACTIVITY_COMMAND, sstr.str(), ""))
@@ -420,10 +419,9 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 	std::stringstream hexId ;
 	hexId << std::setw(7)  << std::hex << std::setfill('0') << std::uppercase << (int)( actId) ;
 	std::string actHex = hexId.str();
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << actHex << "')";
-	result = m_sql.query(szQuery.str()); //-V519
+	result = m_sql.safe_query("SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_HwdID, actHex.c_str()); //-V519
 	if (result.size() > 0) //if not yet inserted, it will be inserted active upon the next check of the activities list
 	{
 		UpdateSwitch(atoi(result[0][1].c_str()), activityID.c_str(),on,result[0][0]);
@@ -438,10 +436,9 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 	hexId << std::setw(7) << std::setfill('0') << std::hex << std::uppercase << (int)( atoi(realID) );
 	//char szIdx[10];
 	//sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, idx);
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << hexId.str() << "')";
-	result = m_sql.query(szQuery.str()); //-V519
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_HwdID, hexId.str().c_str()); //-V519
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -487,10 +484,8 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << hexId.str() << "')";
-		result = m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+			defaultname.c_str(), m_HwdID, hexId.str().c_str());
 	}
 }
 

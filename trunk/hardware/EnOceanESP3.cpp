@@ -631,12 +631,11 @@ bool CEnOceanESP3::WriteToHardware(const char *pdata, const unsigned char length
 	//because they are threaded differently
 	bool bIsDimmer=false;
 	int LastLevel=0;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	char szDeviceID[20];
 	sprintf(szDeviceID,"%08X",(unsigned int)sID);
-	szQuery << "SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "') AND (Unit==" << int(tsen->LIGHTING2.unitcode) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT SwitchType,LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		m_HwdID, szDeviceID, int(tsen->LIGHTING2.unitcode));
 	if (result.size()>0)
 	{
 		_eSwitchType switchtype=(_eSwitchType)atoi(result[0][0].c_str());
@@ -1067,17 +1066,14 @@ void CEnOceanESP3::ParseRadioDatagram()
 							profile,ttype,Get_Enocean4BSType(0xA5,profile,ttype));
 
 
-						std::stringstream szQuery;
 						std::vector<std::vector<std::string> > result;
-						szQuery << "SELECT ID FROM EnoceanSensors WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "')";
-						result=m_sql.query(szQuery.str());
+						result=m_sql.safe_query("SELECT ID FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+							m_HwdID, szDeviceID);
 						if (result.size()<1)
 						{
 							//Add it to the database
-							szQuery.clear();
-							szQuery.str("");
-							szQuery << "INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (" << m_HwdID << ",'" << szDeviceID << "'," << manufacturer << "," << profile << "," << ttype << ")";
-							m_sql.query(szQuery.str());
+							m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)",
+								m_HwdID, szDeviceID, manufacturer, profile, ttype);
 						}
 
 					}
@@ -1085,10 +1081,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 				else
 				{
 					//Following sensors need to have had a teach-in
-					std::stringstream szQuery;
 					std::vector<std::vector<std::string> > result;
-					szQuery << "SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szDeviceID << "')";
-					result=m_sql.query(szQuery.str());
+					result=m_sql.safe_query("SELECT ID, Manufacturer, Profile, [Type] FROM EnoceanSensors WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+						m_HwdID, szDeviceID);
 					if (result.size()<1)
 					{
 						_log.Log(LOG_NORM, "EnOcean: Need Teach-In for %s", szDeviceID);

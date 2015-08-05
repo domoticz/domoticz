@@ -120,14 +120,12 @@ void CThermosmart::Do_Work()
 void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
 
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -148,10 +146,7 @@ void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp,
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-		result=m_sql.query(szQuery.str());
+		result=m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
 	}
 }
 
