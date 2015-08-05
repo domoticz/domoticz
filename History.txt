@@ -57,6 +57,9 @@ Version 2.xxx (xxxx 2015)
 - Fixed: Email Notifications where always enabled after restart
 - Changed: SQL Queries, now using safe_query to escape all strings (big thanks to Thibaut!)
 - Changed: Internal HTML/JS changes to support all types of characters in the sensors name
+- Changed: disabled timeout for smartwares thermostat (no incomming data from device)
+- Implemented: smartwares thermostat, Setpoint popup
+- Implemented: smartwares thermostat, Setpoint, now always logged
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

@@ -10126,6 +10126,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			lcmd.RADIATOR1.tempPoint5 = (unsigned char)atoi(strarray[1].c_str());
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1)))
 				return false;
+			DecodeRXMessage(pHardware, (const unsigned char*)&lcmd);
 		}
 		else
 		{
