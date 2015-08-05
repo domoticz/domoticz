@@ -115,6 +115,7 @@ public:
 	bool GetFailedState();
 	bool NetworkInfo(const int hwID,std::vector< std::vector< int > > &NodeArray);
 	int ListGroupsForNode(const int nodeID);
+	std::string GetGroupName(const int nodeID, const int groupID);
 	int ListAssociatedNodesinGroup(const int nodeID,const int groupID,std::vector< string > &nodesingroup);
 	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID, const int instance);
 	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID, const int instance);

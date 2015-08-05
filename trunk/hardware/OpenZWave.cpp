@@ -2920,6 +2920,14 @@ int COpenZWave::ListGroupsForNode(const int nodeID)
 	return m_pManager->GetNumGroups(m_controllerID, nodeID);
 }
 
+std::string COpenZWave::GetGroupName(const int nodeID,const int groupID)
+{
+	if (m_pManager == NULL)
+		return "";
+
+	return m_pManager->GetGroupLabel(m_controllerID, nodeID, groupID);
+}
+
 int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<string> &nodesingroup)
 {
 
@@ -4370,10 +4378,12 @@ namespace http {
 									std::stringstream list;
 									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<string>(list, ","));
 									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
+									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, x);
 									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = list.str();
 								}
 								else {
 									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
+									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, x);
 									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = "";
 								}
 								gi++;
