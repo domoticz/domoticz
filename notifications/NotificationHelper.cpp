@@ -445,8 +445,7 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	pvalue = szTmp;
 
 	std::vector<std::vector<std::string> > result;
-	sprintf(szTmp, "SELECT SwitchType FROM DeviceStatus WHERE (ID=%llu)", Idx);
-	result = m_sql.query(szTmp);
+	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%llu)", Idx);
 	if (result.size() == 0)
 		return false;
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|";
@@ -529,11 +528,10 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 	if (notifications.size() == 0)
 		return false;
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
-	szQuery << "SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=" << Idx << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%llu)",
+		Idx);
 	if (result.size() == 0)
 		return false;
 	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
@@ -625,11 +623,10 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	const _eNotificationTypes ntype,
 	const float mvalue)
 {
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
-	szQuery << "SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (ID=" << Idx << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT AddjValue,AddjMulti FROM DeviceStatus WHERE (ID=%llu)",
+		Idx);
 	if (result.size() == 0)
 		return false;
 	double AddjValue = atof(result[0][0].c_str());
@@ -652,9 +649,8 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 
 	if (subType != sTypeRAINWU)
 	{
-		std::stringstream szQuery;
-		szQuery << "SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=" << Idx << " AND Date>='" << szDateEnd << "')";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT MIN(Total) FROM Rain WHERE (DeviceRowID=%llu AND Date>='%q')",
+			Idx, szDateEnd);
 		if (result.size() > 0)
 		{
 			std::vector<std::string> sd = result[0];
@@ -678,7 +674,6 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 
 void CNotificationHelper::TouchNotification(const unsigned long long ID)
 {
-	std::stringstream szQuery;
 	char szDate[50];
 	time_t atime = mytime(NULL);
 	struct tm ltime;
@@ -686,8 +681,8 @@ void CNotificationHelper::TouchNotification(const unsigned long long ID)
 	sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
 	//Set LastSend date
-	szQuery << "UPDATE Notifications SET LastSend='" << szDate << "' WHERE (ID=" << ID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("UPDATE Notifications SET LastSend='%q' WHERE (ID=%llu)",
+		szDate, ID);
 
 	//Also touch it internally
 	boost::lock_guard<boost::mutex> l(m_mutex);
@@ -711,41 +706,31 @@ bool CNotificationHelper::AddNotification(const std::string &DevIdx, const std::
 {
 	std::vector<std::vector<std::string> > result;
 
-	std::stringstream szQuery;
-
 	//First check for duplicate, because we do not want this
-	szQuery << "SELECT ROWID FROM Notifications WHERE (DeviceRowID==" << DevIdx << ") AND (Params=='" << Param << "')";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ROWID FROM Notifications WHERE (DeviceRowID=='%q') AND (Params=='%q')",
+		DevIdx.c_str(), Param.c_str());
 	if (result.size() > 0)
 		return false;//already there!
 
-	szQuery.clear();
-	szQuery.str("");
 	int iSendAlways = (SendAlways == true) ? 1 : 0;
-	szQuery << "INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways) VALUES ('" << DevIdx << "','" << Param << "','" << CustomMessage << "','" << ActiveSystems << "'," << Priority << ", " << iSendAlways << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("INSERT INTO Notifications (DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways) VALUES ('%q','%q','%q','%q',%d,%d)",
+		DevIdx.c_str(), Param.c_str(), CustomMessage.c_str(), ActiveSystems.c_str(), Priority, iSendAlways);
 	ReloadNotifications();
 	return true;
 }
 
 bool CNotificationHelper::RemoveDeviceNotifications(const std::string &DevIdx)
 {
-	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "DELETE FROM Notifications WHERE (DeviceRowID==" << DevIdx << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM Notifications WHERE (DeviceRowID=='%q')",
+		DevIdx.c_str());
 	ReloadNotifications();
 	return true;
 }
 
 bool CNotificationHelper::RemoveNotification(const std::string &ID)
 {
-	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "DELETE FROM Notifications WHERE (ID==" << ID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM Notifications WHERE (ID=='%q')",
+		ID.c_str());
 	ReloadNotifications();
 	return true;
 }
@@ -794,11 +779,7 @@ void CNotificationHelper::ReloadNotifications()
 	m_sql.GetPreferencesVar("NotificationSensorInterval", m_NotificationSensorInterval);
 	m_sql.GetPreferencesVar("NotificationSwitchInterval", m_NotificationSwitchInterval);
 
-	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "SELECT ID, DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways, LastSend FROM Notifications ORDER BY DeviceRowID";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ID, DeviceRowID, Params, CustomMessage, ActiveSystems, Priority, SendAlways, LastSend FROM Notifications ORDER BY DeviceRowID");
 	if (result.size() == 0)
 		return;
 

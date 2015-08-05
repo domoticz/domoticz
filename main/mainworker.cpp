@@ -151,9 +151,8 @@ void MainWorker::AddAllDomoticzHardware()
 {
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
 	//std::string revfile;
 	//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=Started&amp;idgoal=3",revfile);
 	if (result.size() > 0)
@@ -481,11 +480,9 @@ void MainWorker::SetSecureWebserverPass(const std::string &passphrase)
 bool MainWorker::RestartHardware(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID==" << idx << ")";
-	result=m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID=='%q')",
+		idx.c_str());
 	if (result.size()<1)
 		return false;
 	std::vector<std::string> sd=result[0];
@@ -1126,9 +1123,8 @@ void MainWorker::Do_Work()
 				std::string idx = sstr.str();
 
 				std::vector<std::vector<std::string> > result;
-				std::stringstream szQuery;
-				szQuery << "SELECT Name FROM Hardware WHERE (ID==" << idx << ")";
-				result = m_sql.query(szQuery.str());
+				result = m_sql.safe_query("SELECT Name FROM Hardware WHERE (ID=='%q')",
+					idx.c_str());
 				if (result.size() > 0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -1409,8 +1405,9 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		// find our original hardware
 		// if it is not a domoticz type, perform the actual command
 
-		sprintf(szTmp,"SELECT HardwareID,ID,Name,StrParam1,StrParam2,nValue,sValue FROM DeviceStatus WHERE (DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",ID.c_str(), Unit, devType, subType);
-		result=m_sql.query(szTmp);
+		result = m_sql.safe_query(
+			"SELECT HardwareID,ID,Name,StrParam1,StrParam2,nValue,sValue FROM DeviceStatus WHERE (DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			ID.c_str(), Unit, devType, subType);
 		if (result.size()==1)
 		{
 			std::vector<std::string> sd=result[0];
@@ -1718,9 +1715,8 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		return;
 	if (pHardware->m_iLastSendNodeBatteryValue != 255)
 	{
-		std::stringstream szQuery;
-		szQuery << "UPDATE DeviceStatus SET BatteryLevel=" << pHardware->m_iLastSendNodeBatteryValue << " WHERE (ID==" << DeviceRowIdx << ")";
-		m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%llu)",
+			pHardware->m_iLastSendNodeBatteryValue, DeviceRowIdx);
 	}
 
 	if (pHardware->m_bOutputLog)
@@ -2589,8 +2585,9 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 		char szTmp[300];
 		std::vector<std::vector<std::string> > result;
 
-		sprintf(szTmp,"SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HwdID, ID.c_str(),1,pTypeHUM,sTypeHUM1);
-		result=m_sql.query(szTmp);
+		result=m_sql.safe_query(
+			"SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			HwdID, ID.c_str(),1,pTypeHUM,sTypeHUM1);
 		if (result.size()==1)
 		{
 			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);
@@ -2732,8 +2729,9 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 		char szTmp[300];
 		std::vector<std::vector<std::string> > result;
 
-		sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HwdID, ID.c_str(),0,pTypeTEMP,sTypeTEMP5);
-		result=m_sql.query(szTmp);
+		result = m_sql.safe_query(
+			"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			HwdID, ID.c_str(),0,pTypeTEMP,sTypeTEMP5);
 		if (result.size()==1)
 		{
 			temp = static_cast<float>(atof(result[0][0].c_str()));
@@ -4457,8 +4455,9 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 	if (cmnd == Limitless_SetBrightnessLevel)
 	{
 		std::vector<std::vector<std::string> > result;
-		sprintf(szTmp, "SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)", pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
-		result = m_sql.query(szTmp);
+		result = m_sql.safe_query(
+			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (result.size() != 0)
 		{
 			unsigned long long ulID;
@@ -4466,11 +4465,10 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 			s_str >> ulID;
 
 			//store light level
-			sprintf(szTmp,
+			m_sql.safe_query(
 				"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %llu)",
 				value,
 				ulID);
-			m_sql.query(szTmp);
 		}
 
 	}
@@ -5070,17 +5068,20 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 	
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel FROM DeviceStatus WHERE (HardwareID==" << HwdID << ") AND (";
 	if(pEvo->EVOHOME2.zone)//if unit number is available the id3 will be the controller device id
 	{
-		szQuery << "Unit == " << (int)pEvo->EVOHOME2.zone << ") AND (Type==" << (int)pEvo->EVOHOME2.type << ")";
+		result = m_sql.safe_query(
+			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
+			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == %d) AND (Type==%d)",
+			HwdID, (int)pEvo->EVOHOME2.zone, (int)pEvo->EVOHOME2.type);
 	}
 	else//unit number not available then id3 should be the zone device id
 	{
-		szQuery << "DeviceID == '" << std::hex << (int)RFX_GETID3(pEvo->EVOHOME2.id1,pEvo->EVOHOME2.id2,pEvo->EVOHOME2.id3) << std::dec << "')";
+		result = m_sql.safe_query(
+			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
+			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x')",
+			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1,pEvo->EVOHOME2.id2,pEvo->EVOHOME2.id3));
 	}
-	result=m_sql.query(szQuery.str());
 	if (result.size()<1 && !pEvo->EVOHOME2.zone)
 		return -1;
 
@@ -5172,10 +5173,8 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 		return -1;
 	if(bNewDev)
 	{
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (ID == " << DevRowIdx << ")";
-		result = m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %llu)",
+			name.c_str(), DevRowIdx);
 	}
 	return DevRowIdx;
 }
@@ -5200,9 +5199,9 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 
 	//FIXME A similar check is also done in switchmodal do we want to forward the ooc flag and rely on this check entirely?
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << HwdID << ") AND (DeviceID == '" << ID << "')";
-	result=m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
+		HwdID, ID.c_str());
 	bool bNewDev=false;
 	std::string name;
 	if (result.size()>0)
@@ -5227,10 +5226,8 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 		return -1;
 	if(bNewDev)
 	{
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << name << "' WHERE (ID == " << DevRowIdx << ")";
-		result = m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %llu)",
+			name.c_str(), DevRowIdx);
 	}
 	
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
@@ -5278,13 +5275,16 @@ unsigned long long MainWorker::decode_evohome3(const CDomoticzHardwareBase *pHar
 	//Get Device details (devno or devid not available)
 	bool bNewDev=false;
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << HwdID << ") AND (";
 	if(Unit==0xFF)
-		szQuery << "DeviceID == '" << ID << "')";
+		result = m_sql.safe_query(
+			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue "
+			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
+			HwdID, ID.c_str());
 	else
-		szQuery << "Unit == '" << (int)Unit << "')  AND (Type==" << (int)pEvo->EVOHOME3.type << ")";
-	result=m_sql.query(szQuery.str());
+		result = m_sql.safe_query(
+			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue "
+			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d') AND (Type==%d)",
+			HwdID, (int) Unit, (int) pEvo->EVOHOME3.type);
 	if (result.size()>0)
 	{
 		if(pEvo->EVOHOME3.demand==0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
@@ -5335,9 +5335,9 @@ unsigned long long MainWorker::decode_evohome3(const CDomoticzHardwareBase *pHar
 		else if(Unit==0xFC)
 			m_LastDeviceName="Boiler";
 		std::vector<std::vector<std::string> > result;
-		std::stringstream szQuery;
-		szQuery << "UPDATE DeviceStatus SET Name='" << m_LastDeviceName << "' WHERE (ID == " << DevRowIdx << ")";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query(
+			"UPDATE DeviceStatus SET Name='%q' WHERE (ID == %llu)",
+			m_LastDeviceName.c_str(), DevRowIdx);
 	}
 	
 	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
@@ -7389,9 +7389,9 @@ unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase
 	{
 		//no usage provided, get the last usage
 		std::vector<std::vector<std::string> > result2;
-		std::stringstream szQuery2;
-		szQuery2 << "SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=" << HwdID << " AND DeviceID='" << ID << "' AND Unit=" << int(Unit) << " AND Type=" << int(devType) << " AND SubType=" << int(subType) << ")";
-		result2=m_sql.query(szQuery2.str());
+		result2 = m_sql.safe_query(
+			"SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+			HwdID, ID.c_str(), int(Unit), int(devType), int(subType));
 		if (result2.size()>0)
 		{
 			std::vector<std::string> strarray;
@@ -7418,9 +7418,9 @@ unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase
 			//That should not be, let's get the previous value
 			//no usage provided, get the last usage
 			std::vector<std::vector<std::string> > result2;
-			std::stringstream szQuery2;
-			szQuery2 << "SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=" << HwdID << " AND DeviceID='" << ID << "' AND Unit=" << int(Unit) << " AND Type=" << int(devType) << " AND SubType=" << int(subType) << ")";
-			result2=m_sql.query(szQuery2.str());
+			result2 = m_sql.safe_query(
+				"SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+				HwdID, ID.c_str(), int(Unit), int(devType), int(subType));
 			if (result2.size()>0)
 			{
 				std::vector<std::string> strarray;
@@ -9249,9 +9249,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 			//Get Pulse timing
 			std::vector<std::vector<std::string> > result;
-			char szTmp[200];
-			sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, sd[1].c_str(),Unit,int(dType),int(dSubType));
-			result=m_sql.query(szTmp);
+			result = m_sql.safe_query(
+				"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, sd[1].c_str(),Unit,int(dType),int(dSubType));
 			if (result.size()==1)
 			{
 				int pulsetimeing=atoi(result[0][0].c_str());
@@ -9835,9 +9834,9 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 {   
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result=m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
 	if (result.size()<1)
 		return false;
 	std::vector<std::string> sd=result[0];	
@@ -9931,9 +9930,9 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,Name FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query(
+		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,Name FROM DeviceStatus WHERE (ID == %llu)",
+		idx);
 	if (result.size()<1)
 		return false;
 
@@ -9967,9 +9966,9 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
 	if (result.size()<1)
 		return false;
 
@@ -10011,10 +10010,9 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME2));
 		
 		//Pass across the current controller mode if we're going to update as per the hw device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==" << HardwareID << ") AND (Unit==0)";
-		result = m_sql.query(szQuery.str()); //-V519
+		result = m_sql.safe_query(
+			"SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)",
+			HardwareID);
 		if (result.size() > 0)
 		{
 			sd=result[0];
@@ -10155,9 +10153,9 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result=m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
 	if (result.size()<1)
 		return false;
 
@@ -10205,9 +10203,9 @@ bool MainWorker::SetClock(const std::string &idx, const std::string &clockstr)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
 	if (result.size() < 1)
 		return false;
 
@@ -10275,9 +10273,9 @@ bool MainWorker::SetZWaveThermostatMode(const std::string &idx, const int tMode)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
 	if (result.size() < 1)
 		return false;
 
@@ -10289,9 +10287,9 @@ bool MainWorker::SetZWaveThermostatFanMode(const std::string &idx, const int fMo
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
 	if (result.size() < 1)
 		return false;
 
@@ -10303,9 +10301,9 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << idx << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == '%q')",
+		idx.c_str());
 	if (result.size() < 1)
 		return false;
 	int HardwareID = atoi(result[0][0].c_str());
@@ -10356,11 +10354,11 @@ bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcm
 //returns if a device activates a scene
 bool MainWorker::DoesDeviceActiveAScene(const int HwdId, const std::string &idx, const int unit, const int devType, const int subType)
 {
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
-	szQuery << "SELECT ID FROM Scenes WHERE (DeviceID == '" << idx << "') AND (HardwareID==" << HwdId << ") AND (Unit==" << unit << ") AND ([Type]==" << devType << ")  AND (SubType==" << subType << ")";
-	result=m_sql.query(szQuery.str());
+	result = m_sql.safe_query(
+		"SELECT ID FROM Scenes WHERE (DeviceID == '%q') AND (HardwareID==%d) AND (Unit==%d) AND ([Type]==%d)  AND (SubType==%d)",
+		idx.c_str(), HwdId, unit, devType, subType);
 
 	return (result.size()!=0);
 }
@@ -10376,15 +10374,13 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	localtime_r(&now,&ltime);
 
 	//first set actual scene status
-	char szTmp[300];
 	std::string Name="Unknown?";
 	int scenetype=0;
 	std::string onaction="";
 	std::string offaction="";
 
 	//Get Scene Name
-	sprintf(szTmp, "SELECT Name, SceneType, OnAction, OffAction FROM Scenes WHERE (ID == %llu)", idx);
-	result=m_sql.query(szTmp);
+	result=m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction FROM Scenes WHERE (ID == %llu)", idx);
 	if (result.size()>0)
 	{
 		std::vector<std::string> sds=result[0];
@@ -10396,11 +10392,10 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		m_sql.HandleOnOffAction((nValue==1),onaction,offaction);
 	}
 
-	sprintf(szTmp, "UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %llu)",
+	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %llu)",
 		nValue,
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		idx);
-	m_sql.query(szTmp);
 
 	//Check if we need to email a snapshot of a Camera
 	std::string emailserver;
@@ -10409,12 +10404,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	{
 		if (emailserver!="")
 		{
-			sprintf(szTmp,
+			result=m_sql.safe_query(
 				"SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID==%llu) AND (DevSceneWhen==%d)",
 				idx,
 				!nValue
 				);
-			result=m_sql.query(szTmp);
 			if (result.size()>0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator ittCam;
@@ -10437,9 +10431,9 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	_log.Log(LOG_NORM, "Activating Scene/Group: %s", Name.c_str());
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
-	std::stringstream szQuery;
-	szQuery << "SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == " << idx << ")  ORDER BY [Order] ASC";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query(
+		"SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == %llu)  ORDER BY [Order] ASC",
+		idx);
 	if (result.size()<1)
 		return false;
 	std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10453,9 +10447,9 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		int ondelay = atoi(sd[4].c_str());
 		int offdelay = atoi(sd[5].c_str());
 		std::vector<std::vector<std::string> > result2;
-		std::stringstream szQuery2;
-		szQuery2 << "SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, Name FROM DeviceStatus WHERE (ID == " << sd[0] << ")";
-		result2=m_sql.query(szQuery2.str());
+		result2=m_sql.safe_query(
+			"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, Name FROM DeviceStatus WHERE (ID == '%q')",
+			sd[0].c_str());
 		if (result2.size()>0)
 		{
 			std::vector<std::string> sd2=result2[0];
@@ -10543,11 +10537,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int nValue, const char* sValue)
 {
 	//check for scene code
-	char szTmp[200];
 	std::vector<std::vector<std::string> > result;
 
-	sprintf(szTmp,"SELECT ID, SceneType, ListenCmd FROM Scenes WHERE (HardwareID=%d AND DeviceID='%s' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
-	result = m_sql.query(szTmp);
+	result=m_sql.safe_query(
+		"SELECT ID, SceneType, ListenCmd FROM Scenes WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+		HardwareID, ID, unit, devType, subType);
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10590,12 +10584,8 @@ void MainWorker::LoadSharedUsers()
 	std::vector<std::vector<std::string> > result2;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	std::vector<std::vector<std::string> >::const_iterator itt2;
-	std::stringstream szQuery;
 
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "SELECT ID, Username, Password FROM USERS WHERE ((RemoteSharing==1) AND (Active==1))";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT ID, Username, Password FROM USERS WHERE ((RemoteSharing==1) AND (Active==1))");
 	if (result.size()>0)
 	{
 		for (itt=result.begin(); itt!=result.end(); ++itt)
@@ -10606,10 +10596,8 @@ void MainWorker::LoadSharedUsers()
 			suser.Password=sd[2];
 
 			//Get User Devices
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == " << sd[0] << ")";
-			result2=m_sql.query(szQuery.str());
+			result2=m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')",
+				sd[0].c_str());
 			if (result2.size()>0)
 			{
 				for (itt2=result2.begin(); itt2!=result2.end(); ++itt2)
@@ -10766,10 +10754,8 @@ void MainWorker::HeartbeatCheck()
 				//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
 				if (diff > 60)
 				{
-					char szTmp[100];
 					std::vector<std::vector<std::string> > result;
-					sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
-					result = m_sql.query(szTmp);
+					result = m_sql.safe_query("SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
 					if (result.size() == 1)
 					{
 						std::vector<std::string> sd = result[0];
@@ -10784,10 +10770,8 @@ void MainWorker::HeartbeatCheck()
 				double diff = difftime(now, pHardware->m_LastHeartbeatReceive);
 				if (diff > pHardware->m_DataTimeout)
 				{
-					char szTmp[100];
 					std::vector<std::vector<std::string> > result;
-					sprintf(szTmp, "SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
-					result = m_sql.query(szTmp);
+					result = m_sql.safe_query("SELECT Name FROM Hardware WHERE (ID='%d')", pHardware->m_HwdID);
 					if (result.size() == 1)
 					{
 						std::vector<std::string> sd = result[0];

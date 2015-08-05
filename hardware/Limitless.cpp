@@ -148,18 +148,15 @@ void CLimitLess::Init()
 
 bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string& devname)
 {
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(Unit) << ") AND (Type==" << pTypeLimitlessLights << ") AND (SubType==" << int(m_LEDType) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+		m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
 	if (result.size()<1)
 	{
-		szQuery.clear();
-		szQuery.str("");
-		szQuery <<
+		m_sql.safe_query(
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-			"VALUES (" << m_HwdID << ",'" << int(1) << "'," << int(Unit) << "," << pTypeLimitlessLights << "," <<int(m_LEDType) << ",12,255,'" << devname << "',0,' ')";
-		m_sql.query(szQuery.str());
+			"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
+			m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(m_LEDType), devname.c_str());
 		return false;
 	}
 	return true;
@@ -555,12 +552,9 @@ namespace http {
 			}
 
 			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
 
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')",
+				idx.c_str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
 

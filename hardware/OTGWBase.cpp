@@ -69,10 +69,9 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	bool bDeviceExits=true;
 	char szIdx[10];
 	sprintf(szIdx,"%X%02X%02X%02X",0,0,0,Idx);
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
-	result=m_sql.query(szQuery.str()); //-V519
+	result=m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_HwdID, szIdx); //-V519
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -117,10 +116,8 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "')";
-		m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+			defaultname.c_str(), m_HwdID, szIdx);
 	}
 
 }
@@ -128,10 +125,9 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
-	result=m_sql.query(szQuery.str()); //-V519
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d)",
+		m_HwdID, int(Idx)); //-V519
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -159,24 +155,21 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ")";
-		m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d)",
+			defaultname.c_str(), m_HwdID, int(Idx));
 	}
 }
 
 void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
 
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_HwdID, szID);
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -197,24 +190,21 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-		m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+			defaultname.c_str(), m_HwdID, szID);
 	}
 }
 
 void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressure, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[30];
 	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePressure) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -230,10 +220,8 @@ void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressur
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePressure) << ")";
-		m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
 	}
 }
 
@@ -563,12 +551,9 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
 
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')",
+				idx.c_str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
 

@@ -54,12 +54,11 @@ void CScheduler::ReloadSchedules()
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	m_scheduleitems.clear();
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
 	//Add Device Timers
-	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue, T1.[Date] FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue, T1.[Date] FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID",
+		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -113,19 +112,15 @@ void CScheduler::ReloadSchedules()
 			else
 			{
 				//not used? delete it
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "DELETE FROM Timers WHERE (DeviceRowID == " << sd[0] << ")";
-				m_sql.query(szQuery.str());
+				m_sql.safe_query("DELETE FROM Timers WHERE (DeviceRowID == '%q')",
+					sd[0].c_str());
 			}
 		}
 	}
 
 	//Add Scene Timers
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness, T1.[Date] FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness, T1.[Date] FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID",
+		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -173,10 +168,8 @@ void CScheduler::ReloadSchedules()
 	}
 
 	//Add Setpoint Timers
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name, T1.[Date] FROM SetpointTimers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == " << m_sql.m_ActiveTimerPlan << ") AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Temperature, T1.Days, T2.Name, T1.[Date] FROM SetpointTimers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID",
+		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -472,9 +465,8 @@ void CScheduler::CheckSchedules()
 					{
 						//Get SwitchType
 						std::vector<std::vector<std::string> > result;
-						std::stringstream szQuery;
-						szQuery << "SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == " << itt->RowID << ")";
-						result = m_sql.query(szQuery.str());
+						result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %llu)",
+							itt->RowID);
 						if (result.size() > 0)
 						{
 							std::vector<std::string> sd = result[0];
@@ -585,10 +577,9 @@ namespace http {
 			root["title"] = "Timers";
 			char szTmp[50];
 
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
+				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -661,7 +652,6 @@ namespace http {
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			char szTmp[200];
 			time_t now = mytime(NULL);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
@@ -687,8 +677,8 @@ namespace http {
 			int hue = atoi(shue.c_str());
 			root["status"] = "OK";
 			root["title"] = "AddTimer";
-			sprintf(szTmp,
-				"INSERT INTO Timers (Active, DeviceRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Hue, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d)",
+			m_sql.safe_query(
+				"INSERT INTO Timers (Active, DeviceRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Hue, Days, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d)",
 				(active == "true") ? 1 : 0,
 				idx.c_str(),
 				Year, Month, Day,
@@ -701,7 +691,6 @@ namespace http {
 				days,
 				m_sql.m_ActiveTimerPlan
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -736,7 +725,6 @@ namespace http {
 				)
 				return;
 
-			char szTmp[200];
 			unsigned char iTimerType = atoi(stimertype.c_str());
 			time_t now = mytime(NULL);
 			struct tm tm1;
@@ -763,8 +751,8 @@ namespace http {
 			int hue = atoi(shue.c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateTimer";
-			sprintf(szTmp,
-				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == %s)",
+			m_sql.safe_query(
+				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -776,7 +764,6 @@ namespace http {
 				days,
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -793,12 +780,10 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteTimer";
-			char szTmp[100];
-			sprintf(szTmp,
-				"DELETE FROM Timers WHERE (ID == %s)",
+			m_sql.safe_query(
+				"DELETE FROM Timers WHERE (ID == '%q')",
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -815,12 +800,10 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "ClearTimer";
-			char szTmp[100];
-			sprintf(szTmp,
-				"DELETE FROM Timers WHERE (DeviceRowID == %s)",
+			m_sql.safe_query(
+				"DELETE FROM Timers WHERE (DeviceRowID == '%q')",
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -838,10 +821,9 @@ namespace http {
 			root["title"] = "Timers";
 			char szTmp[50];
 
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID, Active, [Date], Time, Type, Temperature, Days FROM SetpointTimers WHERE (DeviceRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Temperature, Days FROM SetpointTimers WHERE (DeviceRowID=%llu) AND (TimerPlan==%d) ORDER BY ID",
+				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -902,7 +884,6 @@ namespace http {
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			char szTmp[200];
 			time_t now = mytime(NULL);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
@@ -926,8 +907,8 @@ namespace http {
 			float temperature = static_cast<float>(atof(stvalue.c_str()));
 			root["status"] = "OK";
 			root["title"] = "AddSetpointTimer";
-			sprintf(szTmp,
-				"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%.1f,%d,%d)",
+			m_sql.safe_query(
+				"INSERT INTO SetpointTimers (Active, DeviceRowID, [Date], Time, Type, Temperature, Days, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%.1f,%d,%d)",
 				(active == "true") ? 1 : 0,
 				idx.c_str(),
 				Year, Month, Day,
@@ -937,7 +918,6 @@ namespace http {
 				days,
 				m_sql.m_ActiveTimerPlan
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -968,7 +948,6 @@ namespace http {
 				)
 				return;
 
-			char szTmp[200];
 			unsigned char iTimerType = atoi(stimertype.c_str());
 			time_t now = mytime(NULL);
 			struct tm tm1;
@@ -993,8 +972,8 @@ namespace http {
 			float tempvalue = static_cast<float>(atof(stvalue.c_str()));
 			root["status"] = "OK";
 			root["title"] = "UpdateSetpointTimer";
-			sprintf(szTmp,
-				"UPDATE SetpointTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, Temperature=%.1f, Days=%d WHERE (ID == %s)",
+			m_sql.safe_query(
+				"UPDATE SetpointTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, Temperature=%.1f, Days=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -1003,7 +982,6 @@ namespace http {
 				days,
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -1020,12 +998,10 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteSetpointTimer";
-			char szTmp[100];
-			sprintf(szTmp,
-				"DELETE FROM SetpointTimers WHERE (ID == %s)",
+			m_sql.safe_query(
+				"DELETE FROM SetpointTimers WHERE (ID == '%q')",
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -1042,12 +1018,10 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "ClearSetpointTimers";
-			char szTmp[100];
-			sprintf(szTmp,
-				"DELETE FROM SetpointTimers WHERE (DeviceRowID == %s)",
+			m_sql.safe_query(
+				"DELETE FROM SetpointTimers WHERE (DeviceRowID == '%q')",
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -1066,10 +1040,9 @@ namespace http {
 
 			char szTmp[40];
 
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==" << idx << ") AND (TimerPlan==" << m_sql.m_ActiveTimerPlan << ") ORDER BY ID";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
+				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -1141,7 +1114,6 @@ namespace http {
 				return;
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			char szTmp[200];
 			time_t now = mytime(NULL);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
@@ -1166,8 +1138,8 @@ namespace http {
 			unsigned char level = atoi(slevel.c_str());
 			root["status"] = "OK";
 			root["title"] = "AddSceneTimer";
-			sprintf(szTmp,
-				"INSERT INTO SceneTimers (Active, SceneRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Days, TimerPlan) VALUES (%d,%s,'%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d)",
+			m_sql.safe_query(
+				"INSERT INTO SceneTimers (Active, SceneRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Days, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d)",
 				(active == "true") ? 1 : 0,
 				idx.c_str(),
 				Year, Month, Day,
@@ -1179,7 +1151,6 @@ namespace http {
 				days,
 				m_sql.m_ActiveTimerPlan
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -1215,7 +1186,6 @@ namespace http {
 
 			unsigned char iTimerType = atoi(stimertype.c_str());
 
-			char szTmp[200];
 			time_t now = mytime(NULL);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
@@ -1240,8 +1210,8 @@ namespace http {
 			unsigned char level = atoi(slevel.c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateSceneTimer";
-			sprintf(szTmp,
-				"UPDATE SceneTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == %s)",
+			m_sql.safe_query(
+				"UPDATE SceneTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -1252,7 +1222,6 @@ namespace http {
 				days,
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -1269,12 +1238,10 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "DeleteSceneTimer";
-			char szTmp[100];
-			sprintf(szTmp,
-				"DELETE FROM SceneTimers WHERE (ID == %s)",
+			m_sql.safe_query(
+				"DELETE FROM SceneTimers WHERE (ID == '%q')",
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -1291,12 +1258,10 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "ClearSceneTimer";
-			char szTmp[100];
-			sprintf(szTmp,
-				"DELETE FROM SceneTimers WHERE (SceneRowID == %s)",
+			m_sql.safe_query(
+				"DELETE FROM SceneTimers WHERE (SceneRowID == '%q')",
 				idx.c_str()
 				);
-			m_sql.query(szTmp);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 	}

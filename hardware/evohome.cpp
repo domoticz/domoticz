@@ -161,10 +161,9 @@ bool CEvohome::StartHardware()
 		}
 		m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 		
-		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==0)";
-		result = m_sql.query(szQuery.str()); //-V519
+		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)",
+			m_HwdID); //-V519
 		if (result.size()>0)
 		{
 			std::vector<std::string> sd=result[0];
@@ -174,10 +173,8 @@ bool CEvohome::StartHardware()
 			m_nControllerMode=atoi(sd[2].c_str());
 		}
 		
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Type==" << (int)pTypeEvohomeRelay << ") AND (Unit>=64) AND (Unit<96)";//we'll put our custom relays in this range
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", //we'll put our custom relays in this range
+			m_HwdID, (int) pTypeEvohomeRelay);
 		m_RelayCheck.clear();
 		for (int i = 0; i<static_cast<int>(result.size()); i++)
 		{
@@ -374,10 +371,9 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 	if(!pdata)
 		return;
 	REVOBUF *tsen=(REVOBUF*)pdata;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << (int)tsen->EVOHOME2.zone << ") AND (Type==" << (int)tsen->EVOHOME2.type << ")";
-	result = m_sql.query(szQuery.str()); //-V519
+	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",
+		m_HwdID, (int) tsen->EVOHOME2.zone, (int) tsen->EVOHOME2.type); //-V519
 	if (result.size()>0)
 	{
 		unsigned long ID;
@@ -557,10 +553,8 @@ void CEvohome::SendExternalSensor()
 	if(GetGatewayID()==0)
 		return;
 	double dbTemp=0.0,dbUV=0.0;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT sValue FROM DeviceStatus WHERE (Name=='Outside')";//There could be different types depending on how data is received from WU etc.
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (Name=='Outside')");//There could be different types depending on how data is received from WU etc.
 	if (result.size()>0)
 	{
 		std::vector<std::string> strarray;
@@ -574,10 +568,8 @@ void CEvohome::SendExternalSensor()
 		return;
 	
 	//FIXME no light level data available UV from WU is only thing vaguely close (on dev system) without a real sensor 
-	szQuery.clear();
-	szQuery.str("");
-	szQuery << "SELECT sValue FROM DeviceStatus WHERE (Type==" << (int)pTypeUV << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (Type==%d)",
+		(int) pTypeUV);
 	if (result.size()>0)
 		dbUV=atof(result[0][0].c_str());
 	else
@@ -1723,10 +1715,8 @@ namespace http {
 			int HwdID = atoi(idx.c_str());
 
 			//Make a unique number for ID
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT MAX(ID) FROM DeviceStatus";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
 
 			unsigned long nid = 1; //could be the first device ever
 
@@ -1739,10 +1729,8 @@ namespace http {
 			sprintf(ID, "%ld", nid);
 
 			//get zone count
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (Type==" << (int)iSensorType << ")";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == %d) AND (Type==%d)",
+				HwdID, (int) iSensorType);
 
 			int nDevCount = 0;
 			if (result.size() > 0)
@@ -1815,10 +1803,10 @@ namespace http {
 			if (type == "Relay")
 			{
 				//get dev count
-				std::stringstream szQuery;
 				std::vector<std::vector<std::string> > result;
-				szQuery << "SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (Type==" << (int)pTypeEvohomeRelay << ") AND (Unit>=64) AND (Unit<96)";
-				result = m_sql.query(szQuery.str());
+				result = m_sql.safe_query(
+					"SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == %d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)",
+					HwdID, (int) pTypeEvohomeRelay);
 
 				int nDevCount = 0;
 				if (result.size() > 0)
@@ -1849,10 +1837,10 @@ namespace http {
 			{
 				std::string devid(CEvohomeID::GetHexID(nID));
 
-				std::stringstream szQuery;
 				std::vector<std::vector<std::string> > result;
-				szQuery << "SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID == " << HwdID << ") AND (DeviceID==" << devid << ")";
-				result = m_sql.query(szQuery.str());
+				result = m_sql.safe_query(
+					"SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID == %d) AND (DeviceID=='%q')",
+					HwdID, devid.c_str());
 				if (result.size() > 0)
 				{
 					root["status"] = "ERR";

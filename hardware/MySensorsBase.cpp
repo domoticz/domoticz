@@ -181,9 +181,8 @@ void MySensorsBase::LoadDevicesFromDatabase()
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string> > result;
-	std::stringstream szQuery;
-	szQuery << "SELECT ID, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=" << m_HwdID << ") ORDER BY ID ASC";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ID, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=%d) ORDER BY ID ASC",
+		m_HwdID);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -207,23 +206,20 @@ void MySensorsBase::LoadDevicesFromDatabase()
 
 void MySensorsBase::Add2Database(const int nodeID, const std::string &SketchName, const std::string &SketchVersion)
 {
-	std::stringstream szQuery;
-	szQuery << "INSERT INTO MySensors (HardwareID, ID, SketchName, SketchVersion) VALUES (" << m_HwdID << "," << nodeID << ", '" << SketchName << "', '" << SketchVersion << "')";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("INSERT INTO MySensors (HardwareID, ID, SketchName, SketchVersion) VALUES (%d,%d, '%q', '%q')",
+		m_HwdID, nodeID, SketchName.c_str(), SketchVersion.c_str());
 }
 
 void MySensorsBase::DatabaseUpdateSketchName(const int nodeID, const std::string &SketchName)
 {
-	std::stringstream szQuery;
-	szQuery << "UPDATE MySensors SET SketchName='" << SketchName << "' WHERE (HardwareID=" << m_HwdID << ") AND (ID=" << nodeID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("UPDATE MySensors SET SketchName='%q' WHERE (HardwareID=%d) AND (ID=%d)",
+		SketchName.c_str(), m_HwdID, nodeID);
 }
 
 void MySensorsBase::DatabaseUpdateSketchVersion(const int nodeID, const std::string &SketchVersion)
 {
-	std::stringstream szQuery;
-	szQuery << "UPDATE MySensors SET SketchVersion='" << SketchVersion << "' WHERE (HardwareID=" << m_HwdID << ") AND (ID=" << nodeID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("UPDATE MySensors SET SketchVersion='%q' WHERE (HardwareID=%d) AND (ID=%d)",
+		SketchVersion.c_str(), m_HwdID, nodeID);
 }
 
 int MySensorsBase::FindNextNodeID()
@@ -754,10 +750,9 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit==" << SubUnit << ")";
-	result = m_sql.query(szQuery.str()); //-V519
+	m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		m_HwdID, szIdx, SubUnit); //-V519
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -804,10 +799,8 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit==" << SubUnit << ")";
-		m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+			defaultname.c_str(), m_HwdID, szIdx, SubUnit);
 	}
 }
 
@@ -815,10 +808,9 @@ bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &bli
 {
 	char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT nValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit==" << ChildID << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		m_HwdID, szIdx, ChildID);
 	if (result.size() < 1)
 		return false;
 	blind_value = atoi(result[0][0].c_str());
@@ -829,10 +821,9 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 {
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szIdx << "') AND (Unit==" << SubUnit << ")";
-	result = m_sql.query(szQuery.str()); //-V519
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		m_HwdID, szIdx, SubUnit); //-V519
 	if (result.size() < 1)
 		return false;
 	int nvalue = atoi(result[0][1].c_str());
@@ -980,37 +971,29 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 void MySensorsBase::UpdateVar(const int NodeID, const int ChildID, const int VarID, const std::string &svalue)
 {
-	std::stringstream sstr;
-
 	std::vector<std::vector<std::string> > result;
-	sstr << "SELECT ROWID FROM MySensorsVars WHERE (HardwareID=" << m_HwdID << ") AND (NodeID=" << NodeID << ") AND (NodeID=" << NodeID << ") AND (ChildID=" << ChildID << ") AND (VarID=" << VarID << ")";
-	result = m_sql.query(sstr.str());
+	result = m_sql.safe_query("SELECT ROWID FROM MySensorsVars WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d) AND (VarID=%d)",
+		m_HwdID, NodeID, ChildID, VarID);
 	if (result.size() == 0)
 	{
 		//Insert
-		sstr.clear();
-		sstr.str("");
-		sstr << "INSERT INTO MySensorsVars (HardwareID, NodeID, ChildID, VarID, [Value]) VALUES (" << m_HwdID << ", " << NodeID << "," << ChildID << ", " << VarID << ",'" << svalue << "')";
-		result = m_sql.query(sstr.str());
+		m_sql.safe_query("INSERT INTO MySensorsVars (HardwareID, NodeID, ChildID, VarID, [Value]) VALUES (%d, %d, %d, %d,'%q')",
+			m_HwdID, NodeID, ChildID, VarID, svalue.c_str());
 	}
 	else
 	{
 		//Update
-		sstr.clear();
-		sstr.str("");
-		sstr << "UPDATE MySensorsVars SET [Value]='" << svalue << "' WHERE (ROWID = " << result[0][0] << ")";
-		m_sql.query(sstr.str());
+		m_sql.safe_query("UPDATE MySensorsVars SET [Value]='%q' WHERE (ROWID = '%q')",
+			svalue.c_str(), result[0][0].c_str());
 	}
 
 }
 
 bool MySensorsBase::GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue)
 {
-	std::stringstream sstr;
-
 	std::vector<std::vector<std::string> > result;
-	sstr << "SELECT [Value] FROM MySensorsVars WHERE (HardwareID=" << m_HwdID << ") AND (NodeID=" << NodeID << ") AND (NodeID=" << NodeID << ") AND (ChildID=" << ChildID << ") AND (VarID=" << VarID << ")";
-	result = m_sql.query(sstr.str());
+	result = m_sql.safe_query("SELECT [Value] FROM MySensorsVars WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d) AND (VarID=%d)",
+		m_HwdID, NodeID, ChildID, VarID);
 	if (result.size() < 1)
 		return false;
 	std::vector<std::string> sd = result[0];
