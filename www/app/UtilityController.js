@@ -1024,12 +1024,8 @@ define(['app'], function (app) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
-					else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+					else if (((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||(item.Type == "Radiator 1")) {
 					  xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
-					  status=item.Data + '\u00B0 ' + $scope.config.TempSign;
-					}
-					else if (item.Type == "Radiator 1") {
-					  xhtm+='override.png" height="48" width="48"></td>\n';
 					  status=item.Data + '\u00B0 ' + $scope.config.TempSign;
 					}
 					else if (item.SubType=="Thermostat Clock") {
