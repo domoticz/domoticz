@@ -1693,7 +1693,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "SetPlanDeviceCoords";
 			m_sql.safe_query("UPDATE DeviceToPlansMap SET [XOffset] = '%q', [YOffset] = '%q' WHERE (DeviceRowID='%q') and (PlanID='%q') and (DevSceneType='%q')",
-				xoffset.c_str(), yoffset.c_str(), idx.c_str(), planidx.c_str());
+				xoffset.c_str(), yoffset.c_str(), idx.c_str(), planidx.c_str(), type.c_str());
 			_log.Log(LOG_STATUS, "(Floorplan) Device '%s' coordinates set to '%s,%s' in plan '%s'.", idx.c_str(), xoffset.c_str(), yoffset.c_str(), planidx.c_str());
 		}
 
@@ -2014,7 +2014,7 @@ namespace http {
 
 			if ((UserID != 0) && (UserID != 10000))
 			{
-				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%d)",
+				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)",
 					UserID);
 				if (result.size() > 0)
 				{
@@ -6322,7 +6322,7 @@ namespace http {
 						_eUserRights urights = m_users[iUser].userrights;
 						if (urights != URIGHTS_ADMIN)
 						{
-							result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')",
+							result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %lu)",
 								m_users[iUser].ID);
 							totUserDevices = (unsigned int)result.size();
 							bShowScenes = (m_users[iUser].ActiveTabs&(1 << 1)) != 0;
@@ -6576,7 +6576,7 @@ namespace http {
 						" 0 as YOffset, 0 as PlanID "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"WHERE (B.DeviceRowID==a.ID)"
-						" AND (B.SharedUserID=='%q') ORDER BY %s",
+						" AND (B.SharedUserID==%lu) ORDER BY %s",
 						m_users[iUser].ID, szOrderBy);
 				}
 			}
@@ -9533,7 +9533,7 @@ namespace http {
 			}
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID==%d)",
+			result = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID==%llu)",
 				idx);
 			if (result.size() > 0)
 			{
@@ -9544,13 +9544,13 @@ namespace http {
 					)
 				{
 					result = m_sql.safe_query(
-						"SELECT ID, Name FROM DeviceStatus WHERE (Type=='%q') AND (ID!=%d)",
+						"SELECT ID, Name FROM DeviceStatus WHERE (Type=='%q') AND (ID!=%llu)",
 						result[0][0].c_str(), idx);
 				}
 				else
 				{
 					result = m_sql.safe_query(
-						"SELECT ID, Name FROM DeviceStatus WHERE (Type=='%q') AND (SubType=='%q') AND (ID!=%d)",
+						"SELECT ID, Name FROM DeviceStatus WHERE (Type=='%q') AND (SubType=='%q') AND (ID!=%llu)",
 						result[0][0].c_str(), result[0][1].c_str(), idx);
 				}
 
@@ -13808,8 +13808,8 @@ namespace http {
 							" Humidity, Barometer, Date, DewPoint, Temp_Avg,"
 							" SetPoint_Min, SetPoint_Max, SetPoint_Avg "
 							"FROM Temperature_Calendar "
-							"WHERE (DeviceRowID==%llu AND Date>='q'"
-							" AND Date<='q') ORDER BY Date ASC",
+							"WHERE (DeviceRowID==%llu AND Date>='%q'"
+							" AND Date<='%q') ORDER BY Date ASC",
 							idx, szDateStart.c_str(), szDateEnd.c_str());
 						int ii = 0;
 						if (result.size() > 0)
