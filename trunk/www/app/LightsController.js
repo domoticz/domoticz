@@ -435,7 +435,7 @@ define(['app'], function (app) {
 			
 			$('#modal').show();
 			var htmlcontent = '';
-			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + atob(name) + '</h2></p><br>\n';
+			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + unescape(name) + '</h2></p><br>\n';
 
 			var sunRise="";
 			var sunSet="";
@@ -1055,7 +1055,7 @@ define(['app'], function (app) {
 
 			$('#lightcontent #picker').colpickSetColor(cHSB);
 
-			$("#lightcontent #devicename").val(atob(name));
+			$("#lightcontent #devicename").val(unescape(name));
 			
 			if ($.stype=="Security") {
 				$("#lightcontent #SwitchType").hide();
@@ -1386,7 +1386,7 @@ define(['app'], function (app) {
 						var bigtext=TranslateStatusShort(item.Status);
 						if (item.UsedByCamera==true) {
 							var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-							streamurl="<a href=\"javascript:ShowCameraLiveStream('" + btoa(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+							streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 							bigtext+="&nbsp;"+streamurl;
 						}
 						
@@ -1618,7 +1618,7 @@ define(['app'], function (app) {
 					    if (item.CustomImage == 0) item.Image = item.TypeImg;
 					    if ((item.Status != 'Off') && (item.Status != '0')) {
 					        img = '<img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
-					        img2 = '<img src="images/remote48.png" onclick="ShowMediaRemote(\'' + btoa(item.Name) + "'," +  item.idx + ');" class="lcursor" height="48" width="48">';
+					        img2 = '<img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ');" class="lcursor" height="48" width="48">';
 					    }
 					    else {
 					        img = '<img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
@@ -1855,7 +1855,7 @@ define(['app'], function (app) {
 				  var bigtext=TranslateStatusShort(item.Status);
 				  if (item.UsedByCamera==true) {
 					var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-					streamurl="<a href=\"javascript:ShowCameraLiveStream('" + btoa(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+					streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 					bigtext+="&nbsp;"+streamurl;
 				  }
 				  xhtm+=bigtext+'</td>\n';
@@ -1915,7 +1915,7 @@ define(['app'], function (app) {
 				      if (item.CustomImage == 0) item.Image = item.TypeImg;
 				      if ((item.Status != 'Off') && (item.Status != '0')) {
 				          xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
-				          xhtm += '\t      <td id="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + btoa(item.Name) + "'," +  item.idx + ');" class="lcursor" height="48" width="48"></td>\n';
+				          xhtm += '\t      <td id="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ');" class="lcursor" height="48" width="48"></td>\n';
                       }
 				      else {
 				          xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
@@ -2170,16 +2170,16 @@ define(['app'], function (app) {
 							  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 					  }
 				  xhtm+=
-						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + btoa(item.Name)  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
+						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
 				  if (permissions.hasPermission("Admin")) {
 					  xhtm+=
-							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + btoa(item.Name) + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + escape(item.Name) + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 								if (bAddTimer == true) {
 											if (item.Timers == "true") {
-												xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + btoa(item.Name) + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
+												xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + escape(item.Name) + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
 											}
 											else {
-												xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + btoa(item.Name) + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
+												xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + escape(item.Name) + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
 											}
 								}
 								if (item.SwitchType == "Smoke Detector") {
@@ -2194,9 +2194,9 @@ define(['app'], function (app) {
 									}
 					  }					
 					  if (item.Notifications == "true")
-						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + btoa(item.Name) + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Notifications">Notifications</a>';
+						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Notifications">Notifications</a>';
 					  else
-						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + btoa(item.Name) + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Notifications">Notifications</a>';
+						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Notifications">Notifications</a>';
 				  }
 				  xhtm+=
 						'</td>\n' +
