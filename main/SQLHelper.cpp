@@ -5103,7 +5103,7 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 {
 	std::vector<std::vector<std::string> > result;
 
-	result=safe_query("SELECT nValue FROM Scenes WHERE (ID == %llu"), Idx);
+	result=safe_query("SELECT nValue FROM Scenes WHERE (ID == %llu)", Idx);
 	if (result.size()<1)
 		return; //not found
 
