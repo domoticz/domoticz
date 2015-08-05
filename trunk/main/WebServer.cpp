@@ -6662,7 +6662,6 @@ namespace http {
 					time_t checktime = mktime(&ntime);
 					bool bHaveTimeout = (now - checktime >= SensorTimeOut * 60);
 
-
 					if (dType == pTypeTEMP_RAIN)
 						continue; //dont want you for now
 
@@ -8282,7 +8281,7 @@ namespace http {
 							sprintf(szTmp, "%.1f", temp);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["SetPoint"] = szTmp;
-							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["HaveTimeout"] = false; //this device does not provide feedback, so no timeout!
 							root["result"][ii]["TypeImg"] = "override_mini";
 						}
 					}
