@@ -286,7 +286,7 @@ void CDomoticzHardwareBase::SendTempHumBaroSensorFloat(const int NodeID, const i
 	std::vector<std::vector<std::string> > result;
 	bool bDeviceExits = true;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, Unit, int(pTypeTEMP_HUM_BARO), int(sTypeTHBFloat)); //-V519
+		m_HwdID, szIdx, Unit, int(pTypeTEMP_HUM_BARO), int(sTypeTHBFloat));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -344,7 +344,7 @@ void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLe
 	std::vector<std::vector<std::string> > result;
 	bool bDeviceExits = true;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3)); //-V519
+		m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -501,7 +501,7 @@ void CDomoticzHardwareBase::SendAirQualitySensor(const int NodeID, const int Chi
 	std::vector<std::vector<std::string> > result;
 	bool bDeviceExits = true;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, Unit, int(pTypeAirQuality), int(sTypeVoltcraft)); //-V519
+		m_HwdID, szIdx, Unit, int(pTypeAirQuality), int(sTypeVoltcraft));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -549,7 +549,7 @@ void CDomoticzHardwareBase::SendSwitchIfNotExists(const int NodeID, const int Ch
 	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC)); //-V519
+		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
 	if (result.size() < 1)
 	{
 		SendSwitch(NodeID, ChildID, BatteryLevel, bOn, Level, defaultname);
@@ -572,7 +572,7 @@ void CDomoticzHardwareBase::SendSwitch(const int NodeID, const int ChildID, cons
 	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC)); //-V519
+		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -637,7 +637,7 @@ void CDomoticzHardwareBase::SendBlindSensor(const int NodeID, const int ChildID,
 	sprintf(szIdx, "%02X%02X%02X", 0,0,NodeID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szIdx, ChildID, int(pTypeBlinds), int(sTypeBlindsT0)); //-V519
+		m_HwdID, szIdx, ChildID, int(pTypeBlinds), int(sTypeBlindsT0));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;

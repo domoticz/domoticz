@@ -137,7 +137,7 @@ void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
-		m_HwdID, szIdx, SubUnit); //-V519
+		m_HwdID, szIdx, SubUnit);
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;

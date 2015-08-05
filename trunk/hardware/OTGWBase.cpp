@@ -71,7 +71,7 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	sprintf(szIdx,"%X%02X%02X%02X",0,0,0,Idx);
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-		m_HwdID, szIdx); //-V519
+		m_HwdID, szIdx);
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -127,7 +127,7 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 	bool bDeviceExits=true;
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d)",
-		m_HwdID, int(Idx)); //-V519
+		m_HwdID, int(Idx));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;

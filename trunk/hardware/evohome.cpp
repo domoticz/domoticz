@@ -163,7 +163,7 @@ bool CEvohome::StartHardware()
 		
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)",
-			m_HwdID); //-V519
+			m_HwdID);
 		if (result.size()>0)
 		{
 			std::vector<std::string> sd=result[0];
@@ -373,7 +373,7 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 	REVOBUF *tsen=(REVOBUF*)pdata;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",
-		m_HwdID, (int) tsen->EVOHOME2.zone, (int) tsen->EVOHOME2.type); //-V519
+		m_HwdID, (int) tsen->EVOHOME2.zone, (int) tsen->EVOHOME2.type);
 	if (result.size()>0)
 	{
 		unsigned long ID;

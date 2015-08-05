@@ -245,7 +245,7 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-		m_HwdID, pTypeLighting2, sTypeAC, szIdx); //-V519
+		m_HwdID, pTypeLighting2, sTypeAC, szIdx);
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;

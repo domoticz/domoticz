@@ -421,7 +421,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 	std::string actHex = hexId.str();
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-		m_HwdID, actHex.c_str()); //-V519
+		m_HwdID, actHex.c_str());
 	if (result.size() > 0) //if not yet inserted, it will be inserted active upon the next check of the activities list
 	{
 		UpdateSwitch(atoi(result[0][1].c_str()), activityID.c_str(),on,result[0][0]);
@@ -438,7 +438,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 	//sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, idx);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-		m_HwdID, hexId.str().c_str()); //-V519
+		m_HwdID, hexId.str().c_str());
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
