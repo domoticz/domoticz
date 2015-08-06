@@ -3227,9 +3227,7 @@ void CSQLHelper::UpdateRainLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)",
-		pTypeRAIN
-		);
+	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeRAIN);
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
