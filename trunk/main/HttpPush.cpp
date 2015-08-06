@@ -418,9 +418,8 @@ namespace http {
 				return;
 			if ((targettypei == 2) && (targetdeviceid == ""))
 				return;
-			std::vector<std::vector<std::string> > result;
 			if (idx == "0") {
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"INSERT INTO HttpLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%q','%d','%q','%d','%d')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
@@ -433,7 +432,7 @@ namespace http {
 					);
 			}
 			else {
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE HttpLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
@@ -446,7 +445,6 @@ namespace http {
 					idx.c_str()
 					);
 			}
-
 			root["status"] = "OK";
 			root["title"] = "SaveHttpLink";
 		}
@@ -462,7 +460,6 @@ namespace http {
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
 				return;
-			std::vector<std::vector<std::string> > result;
 			m_sql.safe_query("DELETE FROM HttpLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";
 			root["title"] = "DeleteHttpLink";

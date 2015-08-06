@@ -424,7 +424,6 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 	if (result.size() > 0) //if not yet inserted, it will be inserted active upon the next check of the activities list
 	{
 		UpdateSwitch(atoi(result[0][1].c_str()), activityID.c_str(),on,result[0][0]);
-
 	}
 }
 

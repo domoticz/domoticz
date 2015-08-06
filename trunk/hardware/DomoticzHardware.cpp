@@ -672,10 +672,11 @@ void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const int ChildID, 
 	bool bDeviceExits = true;
 	int level = int(Level);
 
-	int dID = (NodeID << 8) | ChildID;
-
 	char szIdx[10];
-	sprintf(szIdx, "%08X", dID);
+	if (NodeID == 1)
+		sprintf(szIdx, "%d", 1);
+	else
+		sprintf(szIdx, "%08x", NodeID);
 
 	int subType = (bIsRGBW == true) ? sTypeLimitlessRGBW : sTypeLimitlessRGB;
 
@@ -688,19 +689,20 @@ void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const int ChildID, 
 	}
 	//Send as LimitlessLight
 	_tLimitlessLights lcmd;
-	lcmd.id = dID;
+	lcmd.id = NodeID;
 	lcmd.subtype = subType;
 	if (level == 0)
 		lcmd.command = Limitless_LedOff;
 	else
 		lcmd.command = Limitless_LedOn;
+	lcmd.dunit = ChildID;
 	lcmd.value = level;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd);
 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=7 WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 			defaultname.c_str(), m_HwdID, szIdx, int(pTypeLimitlessLights), subType);
 	}
 }

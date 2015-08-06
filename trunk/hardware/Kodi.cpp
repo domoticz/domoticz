@@ -479,7 +479,7 @@ void CKodi::AddNode(const std::string &Name, const std::string &IPAddress, const
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
 	if (result.size()>0)
 		return; //Already exists
-	result = m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)", m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
+	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)", m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
 
 	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
 	if (result.size()<1)
@@ -583,7 +583,7 @@ void CKodi::ReloadNodes()
 	}
 }
 
-void  CKodi::SendCommand(const int ID, const std::string &command)
+void CKodi::SendCommand(const int ID, const std::string &command)
 {
 	std::vector<std::vector<std::string> > result;
 

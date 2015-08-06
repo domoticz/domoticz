@@ -345,8 +345,7 @@ void FritzboxTCP::ParseLine()
 
 		UpdateSwitch(1, 1, false, 100, "Call");
 
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)",
-			m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
 		if (!result.empty())
 		{
 			std::string idx = result[0][0];

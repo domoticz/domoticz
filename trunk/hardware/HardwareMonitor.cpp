@@ -209,7 +209,7 @@ void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std
 {
 	bool bDeviceExits = true;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, Idx, int(pTypeTEMP), int(sTypeTEMP10));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;

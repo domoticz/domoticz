@@ -813,7 +813,17 @@ bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &bli
 bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue)
 {
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	if ((sub_type == V_RGB) || (sub_type == V_RGBW))
+	{
+		if (Idx==1)
+			sprintf(szIdx, "%d", 1);
+		else
+			sprintf(szIdx, "%08x", Idx);
+	}
+	else
+	{
+		sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+	}
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, SubUnit);
 	if (result.size() < 1)
@@ -907,23 +917,40 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
 		unsigned char ID4 = (unsigned char)pLed->id & 0x000000FF;
 
-		int node_id = (ID1 << 8) | ID2;
-		int child_sensor_id = (ID3 << 8) | ID4;
+		int node_id = (ID3 << 8) | ID4;
+		int child_sensor_id = pLed->dunit;
 
 		if (_tMySensorNode *pNode = FindNode(node_id))
 		{
-			std::string szRGB = "000000";
-			int light_command = pLed->command;
-			if (light_command == Limitless_SetRGBColour)
+			if (pLed->command == Limitless_SetRGBColour)
 			{
 				int red, green, blue;
+
 				float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-				hue2rgb(cHue, red, green, blue, 255.0);
-				char szTmp[20];
-				sprintf(szTmp, "%02X%02X%02X", red, green, blue);
-				szRGB = szTmp;
+				int Brightness = 100;
+				int dMax = round((255.0f / 100.0f)*float(Brightness));
+				hue2rgb(cHue, red, green, blue, dMax);
+				std::stringstream sstr;
+				sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
+					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
+					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
 				bool bIsRGBW = (FindSensor(pNode, child_sensor_id, V_RGBW)!=NULL);
-				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW==true)?V_RGBW:V_RGB, szRGB);
+				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
+			}
+			else if (pLed->command == Limitless_SetBrightnessLevel)
+			{
+				float fvalue = pLed->value;
+				int svalue = round(fvalue);
+				if (svalue > 100)
+					svalue = 100;
+				std::stringstream sstr;
+				sstr << svalue;
+				SendCommand(node_id, child_sensor_id, MT_Set, V_DIMMER, sstr.str());
+			}
+			else if ((pLed->command == Limitless_LedOff) || (pLed->command == Limitless_LedOn))
+			{
+				std::string lState = (pLed->command == Limitless_LedOn) ? "1" : "0";
+				SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
 			}
 		}
 		else
@@ -1315,11 +1342,12 @@ void MySensorsBase::ParseLine()
 			bDoAdd = true;
 			break;
 		case S_RGB_LIGHT:
-			sub_type = V_RGBW; //should this be RGB/RGBW
-			bDoAdd = true;
-			break;
 		case S_COLOR_SENSOR:
 			sub_type = V_RGB;
+			bDoAdd = true;
+			break;
+		case S_RGBW_LIGHT:
+			sub_type = V_RGBW;
 			bDoAdd = true;
 			break;
 		}
