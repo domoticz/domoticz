@@ -2467,11 +2467,6 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
         {
             break;
         }
-	case pTypeRadiator1:
-		if (subType != sTypeSmartwaresSwitchRadiator)
-		{
-			break;
-		}
 	case pTypeGeneral:
 		if ((subType != sTypeTextStatus) && (subType != sTypeAlert))
 		{
@@ -2496,6 +2491,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeThermostat3:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
+	case pTypeRadiator1:
+		if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
+			break;
 		//Add Lighting log
 		m_LastSwitchID=ID;
 		m_LastSwitchRowID=ulID;
@@ -3045,7 +3043,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -3058,6 +3056,7 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeRego6XXTemp,
 		pTypeEvohomeZone,
 		pTypeEvohomeWater,
+		pTypeRadiator1,
 		pTypeGeneral,sTypeSystemTemp,
 		pTypeThermostat,sTypeThermSetpoint,
 		pTypeGeneral, sTypeBaro
@@ -3078,19 +3077,22 @@ void CSQLHelper::UpdateTemperatureLog()
 			int nValue=atoi(sd[3].c_str());
 			std::string sValue=sd[4];
 
-			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[5];
-			struct tm ntime;
-			ntime.tm_isdst=tm1.tm_isdst;
-			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
-			ntime.tm_mon=atoi(sLastUpdate.substr(5,2).c_str())-1;
-			ntime.tm_mday=atoi(sLastUpdate.substr(8,2).c_str());
-			ntime.tm_hour=atoi(sLastUpdate.substr(11,2).c_str());
-			ntime.tm_min=atoi(sLastUpdate.substr(14,2).c_str());
-			ntime.tm_sec=atoi(sLastUpdate.substr(17,2).c_str());
-			time_t checktime=mktime(&ntime);
-			if (now-checktime>=SensorTimeOut*60)
-				continue;
+			if (dType != pTypeRadiator1)
+			{
+				//do not include sensors that have no reading within an hour (except for devices that do not provide feedback, like the smartware radiator)
+				std::string sLastUpdate = sd[5];
+				struct tm ntime;
+				ntime.tm_isdst = tm1.tm_isdst;
+				ntime.tm_year = atoi(sLastUpdate.substr(0, 4).c_str()) - 1900;
+				ntime.tm_mon = atoi(sLastUpdate.substr(5, 2).c_str()) - 1;
+				ntime.tm_mday = atoi(sLastUpdate.substr(8, 2).c_str());
+				ntime.tm_hour = atoi(sLastUpdate.substr(11, 2).c_str());
+				ntime.tm_min = atoi(sLastUpdate.substr(14, 2).c_str());
+				ntime.tm_sec = atoi(sLastUpdate.substr(17, 2).c_str());
+				time_t checktime = mktime(&ntime);
+				if (now - checktime >= SensorTimeOut * 60)
+					continue;
+			}
 
 			std::vector<std::string> splitresults;
 			StringSplit(sValue, ";", splitresults);
@@ -3112,6 +3114,9 @@ void CSQLHelper::UpdateTemperatureLog()
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeThermostat1:
+				temp = static_cast<float>(atof(splitresults[0].c_str()));
+				break;
+			case pTypeRadiator1:
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeEvohomeWater:
