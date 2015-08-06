@@ -96,6 +96,8 @@
 #define sSwitchTypeByronMP001		0x1E
 #define sSwitchTypeSelectPlus		0x1F
 #define sSwitchTypeSelectPlus3		0x20
+#define sSwitchTypeFA20				0x21
+
 //Switch commands
 #define gswitch_sOff				0x00
 #define gswitch_sOn					0x01
