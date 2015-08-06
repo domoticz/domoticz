@@ -370,8 +370,7 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 		return;
 	REVOBUF *tsen=(REVOBUF*)pdata;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",
-		m_HwdID, (int)tsen->EVOHOME2.zone, (int)tsen->EVOHOME2.type);
+	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",	m_HwdID, (int)tsen->EVOHOME2.zone, (int)tsen->EVOHOME2.type);
 	if (result.size()>0)
 	{
 		unsigned long ID;
@@ -1725,7 +1724,7 @@ namespace http {
 			sprintf(ID, "%ld", nid);
 
 			//get zone count
-			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == %d) AND (Type==%d)", HwdID, (int)iSensorType);
+			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, (int)iSensorType);
 
 			int nDevCount = 0;
 			if (result.size() > 0)
@@ -1799,7 +1798,7 @@ namespace http {
 			{
 				//get dev count
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID == %d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", HwdID, (int)pTypeEvohomeRelay);
+				result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", HwdID, (int)pTypeEvohomeRelay);
 				int nDevCount = 0;
 				if (result.size() > 0)
 				{
@@ -1830,7 +1829,7 @@ namespace http {
 				std::string devid(CEvohomeID::GetHexID(nID));
 
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID == %d) AND (DeviceID=='%q')", HwdID, devid.c_str());
+				result = m_sql.safe_query("SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", HwdID, devid.c_str());
 				if (result.size() > 0)
 				{
 					root["status"] = "ERR";
