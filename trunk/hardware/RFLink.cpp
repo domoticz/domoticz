@@ -26,7 +26,7 @@ struct _tRFLinkStringIntHelper
 const _tRFLinkStringIntHelper rfswitches[] =
 {
 	{ "NewKaku", sSwitchTypeAC },            // p4
-	{ "Kaku", sSwitchTypeARC },              // p2
+	{ "Kaku", sSwitchTypeARC },              // p3
 	{ "HomeEasy", sSwitchTypeHEU },          // p15
 	{ "FA500", sSwitchTypePT2262 },          // p3
 	{ "Eurodomest", sSwitchTypeEurodomest }, // p5
@@ -43,12 +43,23 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "BSB", sSwitchTypeBBSB },              // p-
 	{ "MDRemote", sSwitchTypeMDREMOTE },     // p14
 	{ "Waveman", sSwitchTypeWaveman },       // p-
-	{ "AB400D", sSwitchTypeAB400D },         // p-
+	{ "AB400D", sSwitchTypeAB400D },         // p3
 	{ "Impuls", sSwitchTypeIMPULS },         // p11
 	{ "Anslut", sSwitchTypeANSLUT },         // p17
 	{ "Lightwave", sSwitchTypeLightwaveRF }, // p18
-	{ "FA20RF", sSwitchTypeAC },
-	{ "", -1 }
+	{ "FA20RF", sSwitchTypeFA20 },           // p80
+	{ "GDR2", sSwitchTypeGDR2 },           // p80
+	{ "RisingSun", sSwitchTypeRisingSun },   // p-
+	{ "Philips", sSwitchTypePhilips },       // p-
+	{ "Energenie", sSwitchTypeEnergenie },   // p-
+	{ "Energenie5", sSwitchTypeEnergenie5 }, // p-
+	{ "Ikea Koppla", sSwitchTypeKoppla },    // p-
+	{ "TRC02RGB", sSwitchTypeTRC02 },        // p-
+	{ "TRC022RGB", sSwitchTypeTRC02_2 },     // p-
+	{ "Livolo", sSwitchTypeLivolo },         // p-
+	{ "Livolo App", sSwitchTypeLivoloAppliance }, // p-
+	{ "Aoke", sSwitchTypeAoke },             // p-
+    { "", -1 }
 };
 
 const _tRFLinkStringIntHelper rfswitchcommands[] =

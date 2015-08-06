@@ -688,6 +688,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeByronMP001, "Byron MP001" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus, "SelectPlus" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus3, "SelectPlus3" },
+		{ pTypeGeneralSwitch, sSwitchTypeFA20, "FA20RF" },
 
 		{  0,0,NULL }
 	};
