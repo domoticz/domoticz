@@ -60,6 +60,7 @@ Version 2.xxx (xxxx 2015)
 - Changed: disabled timeout for smartwares thermostat (no incomming data from device)
 - Implemented: smartwares thermostat, Setpoint popup
 - Implemented: smartwares thermostat, Setpoint, now always logged
+- Fixed: MySensors, switch names where always set to default name (was caused by safe_query changes)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

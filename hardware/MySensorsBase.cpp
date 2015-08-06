@@ -747,7 +747,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
-	m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, SubUnit);
+	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
 	if (result.size() < 1)
 	{
 		bDeviceExits = false;
@@ -794,7 +794,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", defaultname.c_str(), m_HwdID, szIdx, SubUnit);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
 	}
 }
 
@@ -819,7 +819,7 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	if (result.size() < 1)
 		return false;
 	int nvalue = atoi(result[0][1].c_str());
-	if (sub_type == V_LIGHT)
+	if ((sub_type == V_LIGHT) || (sub_type == V_TRIPPED))
 	{
 		sSwitchValue = (nvalue == light2_sOn) ? "1" : "0";
 		return true;
@@ -1306,6 +1306,10 @@ void MySensorsBase::ParseLine()
 			sub_type = V_LIGHT;
 			bDoAdd = true;
 			break;
+		case S_MOTION:
+			sub_type = V_TRIPPED;
+			bDoAdd = true;
+			break;
 		case S_COVER:
 			sub_type = V_UP;
 			bDoAdd = true;
@@ -1349,7 +1353,7 @@ void MySensorsBase::ParseLine()
 		pSensor->devType = (_eSetType)sub_type;
 		pSensor->bValidValue = false;
 
-		if ((sub_type == V_LIGHT) || (sub_type == V_RGB) || (sub_type == V_RGBW))
+		if ((sub_type == V_LIGHT) || (sub_type == V_RGB) || (sub_type == V_RGBW) || (sub_type == V_TRIPPED))
 		{
 			//Check if switch is already in the system, if not add it
 			std::string sSwitchValue;
@@ -1358,6 +1362,8 @@ void MySensorsBase::ParseLine()
 				//Add it to the system
 				if (sub_type == V_LIGHT)
 					UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
+				else if (sub_type == V_TRIPPED)
+					UpdateSwitch(node_id, child_sensor_id, false, 100, "Security Sensor");
 				else
 					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, (sub_type == V_RGBW), (sub_type == V_RGBW) ? "RGBW Light" : "RGB Light");
 			}
