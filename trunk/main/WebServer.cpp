@@ -10576,6 +10576,7 @@ namespace http {
 								((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								(dType == pTypeThermostat1) ||
+								(dType == pTypeRadiator1) ||
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeBaro)) ||
@@ -12242,7 +12243,7 @@ namespace http {
 							root["result"][ii]["d"] = sd[7].substr(0, 16);
 
 							if (
-								(dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) ||
+								(dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
@@ -12334,7 +12335,7 @@ namespace http {
 
 						root["result"][ii]["d"] = szDateEnd;
 						if (
-							((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1)) ||
+							((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1)) ||
 							((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
 							((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
@@ -12420,7 +12421,7 @@ namespace http {
 							root["resultprev"][iPrev]["d"] = sd[7].substr(0, 16);
 
 							if (
-								(dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) ||
+								(dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
@@ -13685,7 +13686,7 @@ namespace http {
 					bool sendSet = false;
 
 					if ((sgraphTemp == "true") &&
-						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) ||
+						((dType == pTypeRego6XXTemp) || (dType == pTypeTEMP) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeTEMP_BARO) || (dType == pTypeWIND) || (dType == pTypeThermostat1) || (dType == pTypeRadiator1) ||
 						((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 						((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
 						((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||

@@ -846,6 +846,9 @@ bool MainWorker::StartThread()
 		//Start WebServer
 		if (!m_webservers.StartServers("0.0.0.0", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword))
 		{
+#ifdef WIN32
+			MessageBox(0,"Error starting webserver, check if ports are not in use!", MB_OK, MB_ICONERROR);
+#endif
 			return false;
 		}
 	}

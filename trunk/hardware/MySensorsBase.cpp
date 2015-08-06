@@ -922,6 +922,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 		if (_tMySensorNode *pNode = FindNode(node_id))
 		{
+			bool bIsRGBW = (FindSensor(pNode, child_sensor_id, V_RGBW) != NULL);
 			if (pLed->command == Limitless_SetRGBColour)
 			{
 				int red, green, blue;
@@ -934,7 +935,24 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
 					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
-				bool bIsRGBW = (FindSensor(pNode, child_sensor_id, V_RGBW)!=NULL);
+				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
+			}
+			else if (pLed->command == Limitless_SetColorToWhite)
+			{
+				std::stringstream sstr;
+				int Brightness = 100;
+				int wWhite = round((255.0f / 100.0f)*float(Brightness));
+				if (!bIsRGBW)
+				{
+					sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
+				}
+				else
+				{
+					sstr << "#000000"
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
+				}
 				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
 			}
 			else if (pLed->command == Limitless_SetBrightnessLevel)
