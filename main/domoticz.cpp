@@ -624,6 +624,7 @@ int main(int argc, char**argv)
 	}
 	std::string dbasefile = szUserDataFolder + "domoticz.db";
 #ifdef WIN32
+#ifndef _DEBUG
 	if (!IsUserAnAdmin())
 	{
 		char szPath[MAX_PATH];
@@ -646,6 +647,7 @@ int main(int argc, char**argv)
 			dbasefile = sPath;
 		}
 	}
+#endif
 #endif
 
 	if (cmdLine.HasSwitch("-dbase"))
