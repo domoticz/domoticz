@@ -6518,22 +6518,21 @@ namespace http {
 				if (bShowScenes)
 				{
 					//add scenes
-
 					if (rowid != "")
 						result = m_sql.safe_query(
-							"SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM Scenes WHERE (ID=='%q')",
+							"SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, Description FROM Scenes WHERE (ID=='%q')",
 							rowid.c_str());
 					else if ((planID != "") && (planID != "0"))
 						result = m_sql.safe_query(
-							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID=='%q') AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
+							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID=='%q') AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
 							planID.c_str());
 					else if ((floorID != "") && (floorID != "0"))
 						result = m_sql.safe_query(
-								"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID FROM Scenes as A, DeviceToPlansMap as B, Plans as C WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID) AND(B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
+								"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description FROM Scenes as A, DeviceToPlansMap as B, Plans as C WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID) AND(B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
 								floorID.c_str());
 					else
 						result = m_sql.safe_query(
-							"SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID FROM Scenes ORDER BY %s",
+							"SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, Description FROM Scenes ORDER BY %s",
 							szOrderBy);
 
 					if (result.size() > 0)
@@ -6573,6 +6572,7 @@ namespace http {
 							}
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Name"] = sd[1];
+							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
 							root["result"][ii]["LastUpdate"] = sLastUpdate;
@@ -6608,7 +6608,7 @@ namespace http {
 						" LastUpdate, Favorite, SwitchType, HardwareID,"
 						" AddjValue, AddjMulti, AddjValue2, AddjMulti2,"
 						" LastLevel, CustomImage, StrParam1, StrParam2,"
-						" Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID "
+						" Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, Description "
 						"FROM DeviceStatus WHERE (ID=='%q')",
 						rowid.c_str());
 				else if ((planID != "") && (planID != "0"))
@@ -6620,7 +6620,7 @@ namespace http {
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, B.XOffset, B.YOffset,"
-						" B.PlanID "
+						" B.PlanID, A.Description "
 						"FROM DeviceStatus as A, DeviceToPlansMap as B "
 						"WHERE (B.PlanID=='%q') AND (B.DeviceRowID==a.ID)"
 						" AND (B.DevSceneType==0) ORDER BY B.[Order]",
@@ -6634,7 +6634,7 @@ namespace http {
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, B.XOffset, B.YOffset,"
-						" B.PlanID "
+						" B.PlanID, A.Description "
 						"FROM DeviceStatus as A, DeviceToPlansMap as B,"
 						" Plans as C "
 						"WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID)"
@@ -6668,7 +6668,7 @@ namespace http {
 						" LastUpdate, Favorite, SwitchType, HardwareID,"
 						" AddjValue, AddjMulti, AddjValue2, AddjMulti2,"
 						" LastLevel, CustomImage, StrParam1, StrParam2,"
-						" Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID "
+						" Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, Description "
 						"FROM DeviceStatus ORDER BY %s",
 						szOrderBy);
 				}
@@ -6685,7 +6685,7 @@ namespace http {
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, 0 as XOffset,"
-						" 0 as YOffset, 0 as PlanID "
+						" 0 as YOffset, 0 as PlanID, A.Description "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"WHERE (B.DeviceRowID==a.ID)"
 						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
@@ -6699,7 +6699,7 @@ namespace http {
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, C.XOffset,"
-						" C.YOffset, C.PlanID "
+						" C.YOffset, C.PlanID, A.Description "
 						"FROM DeviceStatus as A, SharedDevices as B,"
 						" DeviceToPlansMap as C "
 						"WHERE (C.PlanID=='%q') AND (C.DeviceRowID==a.ID)"
@@ -6715,7 +6715,7 @@ namespace http {
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, C.XOffset, C.YOffset,"
-						" C.PlanID "
+						" C.PlanID, A.Description "
 						"FROM DeviceStatus as A, SharedDevices as B,"
 						" DeviceToPlansMap as C, Plans as D "
 						"WHERE (D.FloorplanID=='%q') AND (D.ID==C.PlanID)"
@@ -6751,7 +6751,7 @@ namespace http {
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, 0 as XOffset,"
-						" 0 as YOffset, 0 as PlanID "
+						" 0 as YOffset, 0 as PlanID, A.Description "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"WHERE (B.DeviceRowID==a.ID)"
 						" AND (B.SharedUserID==%lu) ORDER BY %s",
@@ -6828,6 +6828,8 @@ namespace http {
 					std::string strParam1 = base64_encode((const unsigned char*)sd[21].c_str(), sd[21].size());
 					std::string strParam2 = base64_encode((const unsigned char*)sd[22].c_str(), sd[22].size());
 					int iProtected = atoi(sd[23].c_str());
+
+					std::string Description = sd[27];
 
 					struct tm ntime;
 					ntime.tm_isdst = tm1.tm_isdst;
@@ -7042,6 +7044,7 @@ namespace http {
 					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
 					root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
 					root["result"][ii]["Name"] = sDeviceName;
+					root["result"][ii]["Description"] = Description;
 					root["result"][ii]["Used"] = used;
 					root["result"][ii]["Favorite"] = favorite;
 					root["result"][ii]["SignalLevel"] = atoi(sd[7].c_str());
@@ -8607,6 +8610,11 @@ namespace http {
 						}
 						else if (dSubType == sTypeBaro)
 						{
+							root["result"][ii]["AddjValue"] = AddjValue;
+							root["result"][ii]["AddjMulti"] = AddjMulti;
+							root["result"][ii]["AddjValue2"] = AddjValue2;
+							root["result"][ii]["AddjMulti2"] = AddjMulti2;
+
 							sprintf(szData, "%.1f hPa", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
@@ -8958,6 +8966,7 @@ namespace http {
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string name = m_pWebEm->FindValue("name");
+			std::string description = m_pWebEm->FindValue("description");
 			if ((idx == "") || (name == ""))
 				return;
 			std::string stype = m_pWebEm->FindValue("scenetype");
@@ -8976,8 +8985,9 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "UpdateScene";
-			m_sql.safe_query("UPDATE Scenes SET Name='%q', SceneType=%d, Protected=%d, OnAction='%q', OffAction='%q' WHERE (ID == '%q')",
+			m_sql.safe_query("UPDATE Scenes SET Name='%q', Description='%q', SceneType=%d, Protected=%d, OnAction='%q', OffAction='%q' WHERE (ID == '%q')",
 				name.c_str(),
+				description.c_str(),
 				atoi(stype.c_str()),
 				iProtected,
 				onaction.c_str(),
@@ -9167,7 +9177,7 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result, result2;
 			result = m_sql.safe_query(
-				"SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected, DeviceID, Unit, OnAction, OffAction FROM Scenes ORDER BY [Order]");
+				"SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected, DeviceID, Unit, OnAction, OffAction, Description FROM Scenes ORDER BY [Order]");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9225,6 +9235,7 @@ namespace http {
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Description"] = sd[12];
 					root["result"][ii]["HardwareID"] = HardwareID;
 					root["result"][ii]["CodeDeviceName"] = CodeDeviceName;
 					root["result"][ii]["Favorite"] = atoi(sd[3].c_str());
@@ -9924,6 +9935,7 @@ namespace http {
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string deviceid = m_pWebEm->FindValue("deviceid");
 			std::string name = m_pWebEm->FindValue("name");
+			std::string description = m_pWebEm->FindValue("description");
 			std::string sused = m_pWebEm->FindValue("used");
 			std::string sswitchtype = m_pWebEm->FindValue("switchtype");
 			std::string maindeviceidx = m_pWebEm->FindValue("maindeviceidx");
@@ -9973,6 +9985,9 @@ namespace http {
 			//Strip trailing spaces in 'name'
 			name = stdstring_trim(name);
 
+			//Strip trailing spaces in 'description'
+			description = stdstring_trim(description);
+
 			std::stringstream sstridx(idx);
 			unsigned long long ullidx;
 			sstridx >> ullidx;
@@ -10021,12 +10036,12 @@ namespace http {
 			else
 			{
 				if (switchtype == -1)
-					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q' WHERE (ID == '%q')",
-						used, name.c_str(), idx.c_str());
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
+					used, name.c_str(), description.c_str(), idx.c_str());
 				else
 					m_sql.safe_query(
-						"UPDATE DeviceStatus SET Used=%d, Name='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
-						used, name.c_str(), switchtype, CustomImage, idx.c_str());
+					"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+					used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
 			}
 
 			if (bHasstrParam1)
