@@ -226,7 +226,7 @@ namespace http {
 						{
 							//Does not exists, extract it from the database and add it
 							std::vector<std::vector<std::string> > result2;
-							result2 = m_sql.safe_queryBlob("SELECT %s FROM CustomImages WHERE ID=%d",
+							result2 = m_sql.safe_queryBlob("SELECT \"%q\" FROM CustomImages WHERE ID=%d",
 								TableField.c_str(), ID);
 							if (result2.size() > 0)
 							{
@@ -10748,7 +10748,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					result = m_sql.safe_query("SELECT Temperature, Chill, Humidity, Barometer, Date, SetPoint FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Temperature, Chill, Humidity, Barometer, Date, SetPoint FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 						dbasetable.c_str(), idx);
 					if (result.size() > 0)
 					{
@@ -10834,7 +10834,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					result = m_sql.safe_query("SELECT Percentage, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Percentage, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 						dbasetable.c_str(), idx);
 					if (result.size() > 0)
 					{
@@ -10854,7 +10854,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					result = m_sql.safe_query("SELECT Speed, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Speed, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 						dbasetable.c_str(), idx);
 					if (result.size() > 0)
 					{
@@ -10879,7 +10879,7 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query(
-							"SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+							"SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11050,7 +11050,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11071,7 +11071,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11107,7 +11107,7 @@ namespace http {
 						{
 							vdiv = 1000.0f;
 						}
-						result = m_sql.safe_query("SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11137,7 +11137,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11158,7 +11158,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11179,7 +11179,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11201,7 +11201,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11230,7 +11230,7 @@ namespace http {
 
 						root["displaytype"] = displaytype;
 
-						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11306,7 +11306,7 @@ namespace http {
 
 						root["displaytype"] = displaytype;
 
-						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11397,7 +11397,7 @@ namespace http {
 
 						//First check if we had any usage in the short log, if not, its probably a meter without usage
 						bool bHaveUsage = true;
-						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM '%q' WHERE (DeviceRowID==%llu)",
+						result = m_sql.safe_query("SELECT MIN([Usage]), MAX([Usage]) FROM \"%q\" WHERE (DeviceRowID==%llu)",
 							dbasetable.c_str(), idx);
 						if (result.size() > 0)
 						{
@@ -11414,7 +11414,7 @@ namespace http {
 						}
 
 						int ii = 0;
-						result = m_sql.safe_query("SELECT Value,[Usage], Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value,[Usage], Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 
 						int method = 0;
@@ -11563,7 +11563,7 @@ namespace http {
 							EnergyDivider *= 100.0f;
 
 						int ii = 0;
-						result = m_sql.safe_query("SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+						result = m_sql.safe_query("SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 							dbasetable.c_str(), idx);
 
 						int method = 0;
@@ -11748,7 +11748,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					result = m_sql.safe_query("SELECT Level, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Level, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 						dbasetable.c_str(), idx);
 					if (result.size() > 0)
 					{
@@ -11774,7 +11774,7 @@ namespace http {
 					float LastValue = -1;
 					std::string LastDate = "";
 
-					result = m_sql.safe_query("SELECT Total, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Total, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 						dbasetable.c_str(), idx);
 					if (result.size() > 0)
 					{
@@ -11822,7 +11822,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					result = m_sql.safe_query("SELECT Direction, Speed, Gust, Date FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Direction, Speed, Gust, Date FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 						dbasetable.c_str(), idx);
 					if (result.size() > 0)
 					{
@@ -11849,7 +11849,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					result = m_sql.safe_query("SELECT Direction, Speed, Gust FROM '%q' WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Direction, Speed, Gust FROM \"%q\" WHERE (DeviceRowID==%llu) ORDER BY Date ASC",
 						dbasetable.c_str(), idx);
 					if (result.size() > 0)
 					{
@@ -12057,7 +12057,7 @@ namespace http {
 
 					sprintf(szDateStart, "%04d-%02d-%02d", tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
 
-					result = m_sql.safe_query("SELECT Total, Rate, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Total, Rate, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					int ii = 0;
 					if (result.size() > 0)
@@ -12166,7 +12166,7 @@ namespace http {
 					if (dType == pTypeP1Power)
 					{
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2,Value5,Value6,Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2,Value5,Value6,Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -12207,7 +12207,7 @@ namespace http {
 					else
 					{
 						result = m_sql.safe_query(
-							"SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -12422,7 +12422,7 @@ namespace http {
 						"SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max,"
 						" Humidity, Barometer, Temp_Avg, Date, SetPoint_Min,"
 						" SetPoint_Max, SetPoint_Avg "
-						"FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q'"
+						"FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q'"
 						" AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					int ii = 0;
@@ -12600,7 +12600,7 @@ namespace http {
 						"SELECT Temp_Min, Temp_Max, Chill_Min, Chill_Max,"
 						" Humidity, Barometer, Temp_Avg, Date, SetPoint_Min,"
 						" SetPoint_Max, SetPoint_Avg "
-						"FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q'"
+						"FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q'"
 						" AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 					if (result.size() > 0)
@@ -12696,7 +12696,7 @@ namespace http {
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query(
-						"SELECT Percentage_Min, Percentage_Max, Percentage_Avg, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						"SELECT Percentage_Min, Percentage_Max, Percentage_Avg, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					int ii = 0;
 					if (result.size() > 0)
@@ -12732,7 +12732,7 @@ namespace http {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
 
-					result = m_sql.safe_query("SELECT Speed_Min, Speed_Max, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+					result = m_sql.safe_query("SELECT Speed_Min, Speed_Max, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					int ii = 0;
 					if (result.size() > 0)
@@ -12766,7 +12766,7 @@ namespace http {
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query(
-						"SELECT Level, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						"SELECT Level, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					int ii = 0;
 					if (result.size() > 0)
@@ -12795,7 +12795,7 @@ namespace http {
 					}
 					//Previous Year
 					result = m_sql.safe_query(
-						"SELECT Level, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						"SELECT Level, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 					if (result.size() > 0)
 					{
@@ -12816,7 +12816,7 @@ namespace http {
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query(
-						"SELECT Total, Rate, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						"SELECT Total, Rate, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					int ii = 0;
 					if (result.size() > 0)
@@ -12872,7 +12872,7 @@ namespace http {
 					}
 					//Previous Year
 					result = m_sql.safe_query(
-						"SELECT Total, Rate, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						"SELECT Total, Rate, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 					if (result.size() > 0)
 					{
@@ -12938,7 +12938,7 @@ namespace http {
 						result = m_sql.safe_query(
 							"SELECT Value1,Value2,Value5,Value6, Date,"
 							" Counter1, Counter2, Counter3, Counter4 "
-							"FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q'"
+							"FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q'"
 							" AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
@@ -13005,7 +13005,7 @@ namespace http {
 						//Previous Year
 						result = m_sql.safe_query(
 							"SELECT Value1,Value2,Value5,Value6, Date "
-							"FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 						if (result.size() > 0)
 						{
@@ -13051,7 +13051,7 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13076,7 +13076,7 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13115,7 +13115,7 @@ namespace http {
 						}
 
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13157,7 +13157,7 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13179,7 +13179,7 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13203,7 +13203,7 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13222,7 +13222,7 @@ namespace http {
 					else if (dType == pTypeCURRENT)
 					{
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13311,7 +13311,7 @@ namespace http {
 					else if (dType == pTypeCURRENTENERGY)
 					{
 						result = m_sql.safe_query(
-							"SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value1,Value2,Value3,Value4,Value5,Value6, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13457,7 +13457,7 @@ namespace http {
 						}
 						//Actual Year
 						result = m_sql.safe_query(
-							"SELECT Value, Date, Counter FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value, Date, Counter FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
 						{
@@ -13507,7 +13507,7 @@ namespace http {
 						}
 						//Past Year
 						result = m_sql.safe_query(
-							"SELECT Value, Date, Counter FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value, Date, Counter FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
 						if (result.size() > 0)
 						{
@@ -13810,7 +13810,7 @@ namespace http {
 					result = m_sql.safe_query(
 						"SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
 						" Gust_Max, Date "
-						"FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q'"
+						"FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q'"
 						" AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart, szDateEnd);
 					if (result.size() > 0)
@@ -14162,7 +14162,7 @@ namespace http {
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query(
-						"SELECT Level, Date FROM '%q' WHERE (DeviceRowID==%llu"
+						"SELECT Level, Date FROM \"%q\" WHERE (DeviceRowID==%llu"
 						" AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 					int ii = 0;
@@ -14196,7 +14196,7 @@ namespace http {
 					root["title"] = "Graph " + sensor + " " + srange;
 
 					result = m_sql.safe_query(
-						"SELECT Total, Rate, Date FROM '%q' "
+						"SELECT Total, Rate, Date FROM \"%q\" "
 						"WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 					int ii = 0;
@@ -14278,7 +14278,7 @@ namespace http {
 					{
 						result = m_sql.safe_query(
 							"SELECT Value1,Value2,Value5,Value6, Date "
-							"FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q'"
+							"FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q'"
 							" AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 						if (result.size() > 0)
@@ -14316,7 +14316,7 @@ namespace http {
 					else
 					{
 						result = m_sql.safe_query(
-							"SELECT Value, Date FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+							"SELECT Value, Date FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 							dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 						if (result.size() > 0)
 						{
@@ -14454,7 +14454,7 @@ namespace http {
 					result = m_sql.safe_query(
 						"SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
 						" Gust_Max, Date "
-						"FROM '%q' WHERE (DeviceRowID==%llu AND Date>='%q'"
+						"FROM \"%q\" WHERE (DeviceRowID==%llu AND Date>='%q'"
 						" AND Date<='%q') ORDER BY Date ASC",
 						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
 					if (result.size() > 0)
