@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 72
+#define DB_VERSION 73
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -58,7 +58,8 @@ const char *sqlCreateDeviceStatus =
 "[StrParam2] VARCHAR(200) DEFAULT '', "
 "[LastLevel] INTEGER DEFAULT 0, "
 "[Protected] INTEGER DEFAULT 0, "
-"[CustomImage] INTEGER DEFAULT 0);";
+"[CustomImage] INTEGER DEFAULT 0, "
+"[Description] VARCHAR(200) DEFAULT '');";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -338,6 +339,7 @@ const char *sqlCreateScenes =
 "[Protected] INTEGER DEFAULT 0, \n"
 "[OnAction] VARCHAR(200) DEFAULT '', "
 "[OffAction] VARCHAR(200) DEFAULT '', "
+"[Description] VARCHAR(200) DEFAULT '', "
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
 
 const char *sqlCreateScenesTrigger =
@@ -1385,6 +1387,14 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE [Notifications] ADD COLUMN [SendAlways] INTEGER DEFAULT 0");
 		}
+		if (dbversion < 73)
+		{
+			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
+			{
+				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
+			}
+			query("ALTER TABLE Scenes ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2012,6 +2022,27 @@ void CSQLHelper::Do_Work()
 void CSQLHelper::SetDatabaseName(const std::string &DBName)
 {
 	m_dbase_name=DBName;
+}
+
+bool CSQLHelper::DoesColumnExistsInTable(const std::string columnname, const std::string tablename)
+{
+	if (!m_dbase)
+	{
+		_log.Log(LOG_ERROR, "Database not open!!...Check your user rights!..");
+		return false;
+	}
+	bool columnExists = false;
+
+	sqlite3_stmt *statement;
+
+	std::string szQuery = "select " + columnname + " from " + tablename;
+	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, NULL) == SQLITE_OK)
+	{
+		columnExists = true;
+		sqlite3_finalize(statement);
+	}
+
+	return columnExists;
 }
 
 std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, ...)

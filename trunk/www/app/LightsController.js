@@ -620,7 +620,10 @@ define(['app'], function (app) {
 		DeleteLightSwitchIntern = function (bRemoveSubDevices)
 		{
 			$.ajax({
-				 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + '&used=false&RemoveSubDevices=' + bRemoveSubDevices,
+				 url: "json.htm?type=setused&idx=" + $.devIdx + 
+					'&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + 
+					'&description=' + encodeURIComponent($("#lightcontent #devicedescription").val()) + 
+					'&used=false&RemoveSubDevices=' + bRemoveSubDevices,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -700,6 +703,7 @@ define(['app'], function (app) {
 					$.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx +
 						  '&name=' + encodeURIComponent($("#lightcontent #devicename").val()) +
+						  '&description=' + encodeURIComponent($("#lightcontent #devicedescription").val()) + 
 						  '&strparam1=' + btoa(strParam1) +
 						  '&strparam2=' + btoa(strParam2) +
 						  '&protected=' + bIsProtected +
@@ -730,6 +734,7 @@ define(['app'], function (app) {
 					$.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx + 
 							'&name=' + encodeURIComponent($("#lightcontent #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#lightcontent #devicedescription").val()) + 
 							'&strparam1=' + btoa(strParam1) +
 							'&strparam2=' + btoa(strParam2) +
 							'&protected=' + bIsProtected +
@@ -965,7 +970,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		EditLightDevice = function(idx,name,stype,switchtype,addjvalue,addjvalue2,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected)
+		EditLightDevice = function(idx,name,description,stype,switchtype,addjvalue,addjvalue2,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -1056,6 +1061,7 @@ define(['app'], function (app) {
 			$('#lightcontent #picker').colpickSetColor(cHSB);
 
 			$("#lightcontent #devicename").val(unescape(name));
+			$("#lightcontent #devicedescription").val(unescape(description));
 			
 			if ($.stype=="Security") {
 				$("#lightcontent #SwitchType").hide();
@@ -2185,7 +2191,7 @@ define(['app'], function (app) {
 						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
 				  if (permissions.hasPermission("Admin")) {
 					  xhtm+=
-							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + escape(item.Name) + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 								if (bAddTimer == true) {
 											if (item.Timers == "true") {
 												xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + escape(item.Name) + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
@@ -2573,6 +2579,10 @@ define(['app'], function (app) {
 				}
 			}
 			mParams+="&name="+encodeURIComponent(name.val());
+			
+			var description=$("#dialog-addmanuallightdevice #devicedescription");
+			mParams+="&description="+encodeURIComponent(description.val());
+			
 			mParams+="&switchtype="+$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
 			var lighttype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
 			mParams+="&lighttype="+lighttype;

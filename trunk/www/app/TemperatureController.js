@@ -22,7 +22,7 @@ define(['app'], function (app) {
 		  });
 		}
 			
-		EditTempDevice = function(idx,name,addjvalue)
+		EditTempDevice = function(idx,name,description,addjvalue)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -30,13 +30,14 @@ define(['app'], function (app) {
 			}
 			$.devIdx=idx;
 			$("#dialog-edittempdevice #devicename").val(unescape(name));
+			$("#dialog-edittempdevice #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
 			$("#dialog-edittempdevice #tempcf").html($scope.config.TempSign);
 			$("#dialog-edittempdevice" ).i18n();
 			$("#dialog-edittempdevice" ).dialog( "open" );
 		}
 
-		EditTempDeviceSmall = function(idx,name,addjvalue)
+		EditTempDeviceSmall = function(idx,description,name,addjvalue)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -44,6 +45,7 @@ define(['app'], function (app) {
 			}
 			$.devIdx=idx;
 			$("#dialog-edittempdevicesmall #devicename").val(unescape(name));
+			$("#dialog-edittempdevicesmall #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevicesmall" ).i18n();
 			$("#dialog-edittempdevicesmall" ).dialog( "open" );
 		}
@@ -55,7 +57,7 @@ define(['app'], function (app) {
 			$(idt).val('');return false;
 		}
 		
-		EditSetPoint = function(idx,name,setpoint,mode,until,callback)
+		EditSetPoint = function(idx,name,description,setpoint,mode,until,callback)
 		{
 			//HeatingOff does not apply to dhw
 			if (mode=="HeatingOff"){
@@ -68,6 +70,7 @@ define(['app'], function (app) {
 			}
 			$.devIdx=idx;
 			$("#dialog-editsetpoint #devicename").val(unescape(name));
+			$("#dialog-editsetpoint #devicedescription").val(unescape(description));
 			$("#dialog-editsetpoint #setpoint").val(setpoint);
 			if(mode.indexOf("Override")==-1)
 				$(":button:contains('Cancel Override')").attr("disabled","d‌​isabled").addClass( 'ui-state-disabled' );
@@ -79,7 +82,7 @@ define(['app'], function (app) {
 			$("#dialog-editsetpoint" ).i18n();
 			$("#dialog-editsetpoint" ).dialog( "open" );
 		}
-		EditState = function(idx,name,state,mode,until,callback)
+		EditState = function(idx,name,description,state,mode,until,callback)
 		{
 			//HeatingOff does not apply to dhw
 			if (typeof $scope.mytimer != 'undefined') {
@@ -88,6 +91,7 @@ define(['app'], function (app) {
 			}
 			$.devIdx=idx;
 			$("#dialog-editstate #devicename").val(unescape(name));
+			$("#dialog-editstate #devicedescription").val(unescape(description));
 			$("#dialog-editstate #state").val(state);
 			if(mode.indexOf("Override")==-1)
 				$(":button:contains('Cancel Override')").attr("disabled","d‌​isabled").addClass( 'ui-state-disabled' );
@@ -628,12 +632,12 @@ define(['app'], function (app) {
 							if (typeof item.SetPoint != 'undefined'){
 								bigtext+=' ('+item.SetPoint + '\u00B0 ' + $scope.config.TempSign + ')';
 								status+=', '+$.t('Set Point') + ': ' + item.SetPoint + '\u00B0 ' + $scope.config.TempSign;
-								setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+								setonclick='EditSetPoint(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',' + item.SetPoint + ', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
 							}
 							if (typeof item.State != 'undefined'){
 								bigtext+=' <img height="12" src="images/evohome/'+item.State+'.png" />'
 								status+=', '+$.t('State') + ': ' + item.State;
-								setonclick='EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.State + '\', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
+								setonclick='EditState(' + item.idx + ',\'' + item.Name + '\',\'' + item.Description + '\',\'' + item.State + '\', \''+sHeatMode+'\', \''+tUntil+'\', \'ShowTemps\');';
 							}
 							if(sHeatMode!="Auto")
 								bigtext+=' <img height="15" src="images/evohome/'+sHeatMode+((item.SubType=="Hot Water")?"Inv":"")+'.png" />'
@@ -903,10 +907,10 @@ define(['app'], function (app) {
 						'<a class="btnsmall" onclick="ShowTempLog(\'#tempcontent\',\'ShowTemps\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				if (permissions.hasPermission("Admin")) {
 				  if (item.Type=="Humidity") {
-					  xhtm+='<a class="btnsmall" onclick="EditTempDeviceSmall(' + item.idx + ',\'' + escape(item.Name) + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
+					  xhtm+='<a class="btnsmall" onclick="EditTempDeviceSmall(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
 				  }
 				  else {
-					  xhtm+='<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + escape(item.Name) + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
+					  xhtm+='<a class="btnsmall" onclick="EditTempDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.AddjValue + ');" data-i18n="Edit">Edit</a> ';
 				  }
 				  if (item.Notifications == "true")
 					xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Notifications">Notifications</a>';
@@ -917,9 +921,9 @@ define(['app'], function (app) {
 					xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + escape(item.Name) + '\', \'#tempcontent\', \'ShowTemps\');" data-i18n="Forecast">Forecast</a>';
 				}
 				if (typeof item.SetPoint != 'undefined')
-					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SetPoint + ', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
+					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SetPoint + ', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
 				if (typeof item.State != 'undefined')
-					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditState(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + item.State + '\', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
+					xhtm+='&nbsp;<a id="set" class="btnsmall" onclick="EditState(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',\'' + item.State + '\', \''+item.Status+'\', \''+tUntil+'\', \'ShowTemps\');" data-i18n="Set">Set</a>';
 				
 							xhtm+=
 						'</td>\n' +
@@ -1002,7 +1006,11 @@ define(['app'], function (app) {
 					  $( this ).dialog( "close" );
 					  var aValue=$("#dialog-edittempdevice #edittable #adjustment").val();
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) + '&addjvalue=' + aValue + '&used=true',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) + 
+							'&addjvalue=' + aValue + 
+							'&used=true',
 						 async: false,
 						 dataType: 'json',
 						 success: function(data) {
@@ -1017,7 +1025,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx +
+							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
+							'&used=false',
 						 async: false,
 						 dataType: 'json',
 						 success: function(data) {
@@ -1070,7 +1081,13 @@ define(['app'], function (app) {
 					  $( this ).dialog( "close" );
 					 
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + '&setpoint=' + setpoint + '&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride')+'&until='+tUntil+'&used=true',
+						 url: "json.htm?type=setused&idx=" + $.devIdx +
+							'&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editsetpoint #devicedescription").val()) + 
+							'&setpoint=' + setpoint + 
+							'&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride') +
+							'&until='+tUntil +
+							'&used=true',
 						 async: false,
 						 dataType: 'json',
 						 success: function(data) {
@@ -1089,7 +1106,11 @@ define(['app'], function (app) {
 					  if(aValue<5) aValue=5;//These values will display but the controller will update back the currently scheduled setpoint in due course
 					  if(aValue>35) aValue=35;//These values will display but the controller will update back the currently scheduled setpoint in due course
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) + '&setpoint=' + aValue + '&mode=Auto&used=true',
+						 url: "json.htm?type=setused&idx=" + $.devIdx +
+							'&name=' + encodeURIComponent($("#dialog-editsetpoint #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editsetpoint #devicedescription").val()) +
+							'&setpoint=' + aValue + 
+							'&mode=Auto&used=true',
 						 async: false,
 						 dataType: 'json',
 						 success: function(data) {
@@ -1130,7 +1151,13 @@ define(['app'], function (app) {
 				  if($("#dialog-editstate #edittable #until_state").val()!="")
 					tUntil=$("#dialog-editstate #edittable #until_state").datetimepicker('getDate').toISOString();
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) + '&state=' + aValue + '&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride')+'&until='+tUntil+'&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + 
+						'&name=' + encodeURIComponent($("#dialog-editstate #devicename").val()) + 
+						'&description=' + encodeURIComponent($("#dialog-editstate #devicedescription").val()) + 
+						'&state=' + aValue + 
+						'&mode='+((tUntil!="")?'TemporaryOverride':'PermanentOverride') +
+						'&until='+tUntil +
+						'&used=true',
 					 async: false,
 					 dataType: 'json',
 					 success: function(data) {
@@ -1166,7 +1193,10 @@ define(['app'], function (app) {
 				  if ( bValid ) {
 					  $( this ).dialog( "close" );
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=true',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) + 
+							'&used=true',
 						 async: false,
 						 dataType: 'json',
 						 success: function(data) {
@@ -1181,7 +1211,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) + 
+							'&used=false',
 						 async: false,
 						 dataType: 'json',
 						 success: function(data) {

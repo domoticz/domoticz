@@ -1,7 +1,15 @@
 <div id="dialog-editutilitydevice" title="Edit Device">
     <form>
-        <label for="name"><span data-i18n="Name">devicename</span>: </label>
-        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+        <table class="display" id="metertable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		</table>
     </form>
 </div>
 <div id="dialog-editmeterdevice" title="Edit Device">
@@ -11,6 +19,10 @@
           <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
         <tr>
           <td align="right"><label for="combometertype"><span data-i18n="Type">Type</span>: </label></td>
           <td><select id="combometertype" style="width:150px" class="combobox ui-corner-all">
@@ -26,7 +38,11 @@
         <tr>
           <td align="right" style="width:60px"><label><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        <tr>
+        </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
         <tr>
           <td align="right" style="width:60px"><label><span data-i18n="Display">Display</span>: </label></td>
           <td>
@@ -35,7 +51,7 @@
 				<option value="1">Inches</option>
 			</select>
 		  </td>
-        <tr>
+        </tr>
 		</table>
     </form>
 </div>
@@ -46,6 +62,10 @@
           <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
 		<tr>
 			<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
 			<td><input type="checkbox" id="protected"></td>
@@ -64,6 +84,10 @@
           <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
 		<tr>
 			<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
 			<td><input type="checkbox" id="protected"></td>
@@ -98,6 +122,10 @@
           <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
 		<tr>
 			<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
 			<td><input type="checkbox" id="protected"></td>

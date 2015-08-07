@@ -1,7 +1,15 @@
 <div id="dialog-editweatherdevice">
     <form>
-        <label for="name"><span data-i18n="Name">Name</span>: </label>
-        <input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" />
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label><span data-i18n="Name">Name</span>: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		</table>
     </form>
 </div>
 <div style="display:none">
@@ -216,7 +224,11 @@
         <tr>
           <td align="right" style="width:60px"><label><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        <tr>
+        </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
         <tr>
           <td align="right" style="width:60px"><label><span data-i18n="Display">Display</span>: </label></td>
           <td>
@@ -225,7 +237,7 @@
 				<option value="1">Miles</option>
 			</select>
 		  </td>
-        <tr>
+        </tr>
 		</table>
     </form>
 </div>
@@ -235,11 +247,15 @@
         <tr>
           <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        <tr>
+        </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
         <tr>
           <td align="right" style="width:60px"><label for="multiply"><span data-i18n="Multiply">Multiply</span>: </label></td>
           <td><input type="text" id="multiply" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        <tr>
+        </tr>
 		</table>
     </form>
 </div>
@@ -249,12 +265,16 @@
         <tr>
           <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
           <td><input type="text" id="devicename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-        <tr>
+        </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
         <tr>
           <td align="right" style="width:60px"><label for="adjustment"><span data-i18n="Adjustment">Adjustment</span>: </label></td>
           <td><input type="text" id="adjustment" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> hPa</td>
-        <tr>
-				</table>
+        </tr>
+		</table>
     </form>
 </div>
 <div id="weathercontent" class="container">
