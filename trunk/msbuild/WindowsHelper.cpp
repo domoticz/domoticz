@@ -43,7 +43,7 @@ BOOL console::IsConsoleVisible()
 	return IsWindowVisible(hWnd);
 }
 
-BOOL console::SetConsoleWindowSize(const int x, const int y)
+BOOL console::SetConsoleWindowSize(const SHORT x, const SHORT y)
 {
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 

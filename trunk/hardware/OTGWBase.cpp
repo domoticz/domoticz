@@ -317,9 +317,9 @@ void OTGWBase::GetGatewayDetails()
 {
 	char szCmd[30];
 	strcpy(szCmd, "PR=G\r\n");
-	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	strcpy(szCmd, "PS=1\r\n");
-	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 }
 
 void OTGWBase::SendTime()
@@ -336,7 +336,7 @@ void OTGWBase::SendTime()
 
 	char szCmd[20];
 	sprintf(szCmd, "SC=%d:%02d/%d\r\n", ltime.tm_hour, ltime.tm_min, lday);
-	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 }
 
 void OTGWBase::SendOutsideTemperature()
@@ -346,7 +346,7 @@ void OTGWBase::SendOutsideTemperature()
 		return;
 	char szCmd[30];
 	sprintf(szCmd, "OT=%.1f\r\n", temp);
-	WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 }
 
 void OTGWBase::SetSetpoint(const int idx, const float temp)
@@ -357,7 +357,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		//Control Set Point (MsgID=1)
 		_log.Log(LOG_STATUS, "OTGW: Setting Control SetPoint to: %.1f", temp);
 		sprintf(szCmd, "CS=%.1f\r\n", temp);
-		WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	}
 	else if (idx == 5)
 	{
@@ -365,21 +365,21 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		//Make this a temporarily Set Point, this will be overridden when the thermostat changes/applying it's program
 		_log.Log(LOG_STATUS, "OTGW: Setting Room SetPoint to: %.1f", temp);
 		sprintf(szCmd, "TT=%.1f\r\n", temp);
-		WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	}
 	else if (idx == 15)
 	{
 		//DHW setpoint (MsgID=56)
 		_log.Log(LOG_STATUS, "OTGW: Setting Heating SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SW=%.1f\r\n", temp);
-		WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	}
 	else if (idx == 16)
 	{
 		//Max CH water setpoint (MsgID=57) 
 		_log.Log(LOG_STATUS, "OTGW: Setting Max CH water SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SH=%.1f\r\n", temp);
-		WriteInt((const unsigned char*)&szCmd, strlen(szCmd));
+		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	}
 }
 
