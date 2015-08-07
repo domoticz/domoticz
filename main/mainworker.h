@@ -44,7 +44,9 @@ public:
 	void HeartbeatCheck();
 
 	void SetVerboseLevel(eVerboseLevel Level);
+	void SetWebserverAddress(const std::string &Address);
 	void SetWebserverPort(const std::string &Port);
+	std::string GetWebserverAddress();
 	std::string GetWebserverPort();
 	void SetSecureWebserverPort(const std::string &Port);
 	std::string GetSecureWebserverPort();
@@ -158,6 +160,7 @@ private:
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
 	eVerboseLevel m_verboselevel;
 	std::string m_webserverport;
+	std::string m_webserveraddress;
 	std::string m_secure_webserverport;
 	std::string m_secure_web_cert_file;
 	std::string m_secure_web_passphrase;

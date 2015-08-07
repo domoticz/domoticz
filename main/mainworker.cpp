@@ -123,6 +123,7 @@ m_LastSunriseSet("")
 	m_bStartHardware=false;
 	m_hardwareStartCounter=0;
 	m_webserverport="8080";
+	m_webserveraddress="0.0.0.0";
 	m_secure_webserverport = "";
 	m_secure_web_cert_file = "./server_cert.pem";
 	m_secure_web_passphrase = "";
@@ -447,9 +448,19 @@ void MainWorker::SetVerboseLevel(eVerboseLevel Level)
 	m_verboselevel=Level;
 }
 
+void MainWorker::SetWebserverAddress(const std::string &Address)
+{
+	m_webserveraddress = Address;
+}
+
 void MainWorker::SetWebserverPort(const std::string &Port)
 {
 	m_webserverport=Port;
+}
+
+std::string MainWorker::GetWebserverAddress()
+{
+	return m_webserveraddress;
 }
 
 std::string MainWorker::GetWebserverPort()
@@ -844,7 +855,7 @@ bool MainWorker::StartThread()
 	if (!m_webserverport.empty())
 	{
 		//Start WebServer
-		if (!m_webservers.StartServers("0.0.0.0", m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword))
+		if (!m_webservers.StartServers(m_webserveraddress, m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword))
 		{
 #ifdef WIN32
 			MessageBox(0,"Error starting webserver, check if ports are not in use!", MB_OK, MB_ICONERROR);

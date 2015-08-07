@@ -40,6 +40,13 @@
 #endif
 #include "../notifications/NotificationHelper.h"
 
+extern "C" {
+#include "../lua/src/lua.h"    
+#include "../lua/src/lualib.h"
+#include "../lua/src/lauxlib.h"
+}
+
+
 #include "mainstructs.h"
 
 #define round(a) ( int ) ( a + .5 )
@@ -266,7 +273,10 @@ namespace http {
 					_log.Log(LOG_ERROR, "check if no other application is using port: %s", listenport.c_str());
 				return false;
 			}
-			_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
+			if (listenaddress != "0.0.0.0")
+				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listenaddress.c_str(), listenport.c_str());
+			else
+				_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
 
@@ -392,6 +402,7 @@ namespace http {
 			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1));
 			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1));
 			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1));
+			RegisterCommandCode("udevices", boost::bind(&CWebServer::Cmd_UpdateDevices, this, _1));
 			RegisterCommandCode("thermostatstate", boost::bind(&CWebServer::Cmd_SetThermostatState, this, _1));
 			RegisterCommandCode("system_shutdown", boost::bind(&CWebServer::Cmd_SystemShutdown, this, _1));
 			RegisterCommandCode("system_reboot", boost::bind(&CWebServer::Cmd_SystemReboot, this, _1));
@@ -2105,6 +2116,173 @@ namespace http {
 			m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(1, camidx, subject));
 			root["status"] = "OK";
 			root["title"] = "Email Camera Snapshot";
+		}
+
+		void CWebServer::luaThread(lua_State *lua_state, const std::string &filename)
+		{
+			int status;
+	
+			status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
+			report_errors(lua_state, status);
+			lua_close(lua_state);
+		}
+
+		void CWebServer::luaStop(lua_State *L, lua_Debug *ar)
+		{
+			if (ar->event == LUA_HOOKCOUNT)
+			{
+				(void)ar;  /* unused arg. */
+				lua_sethook(L, NULL, 0, 0);
+				luaL_error(L, "WebServer: Lua script execution exceeds maximum number of lines");
+				lua_close(L);
+			}
+		}
+
+		void CWebServer::report_errors(lua_State *L, int status)
+		{
+			if (status != 0) {
+				_log.Log(LOG_ERROR, "WebServer: %s", lua_tostring(L, -1));
+				lua_pop(L, 1); // remove error message
+			}
+		}
+
+		static int l_domoticz_updateDevice(lua_State* lua_state)
+		{
+			int nargs = lua_gettop(lua_state);
+			if (nargs >= 3 && nargs <= 5)
+			{
+				// Supported format ares :
+				// - idx (integer), svalue (string), nvalue (string), [rssi(integer)], [battery(integer)]
+				// - idx (integer), svalue (string,) nvalue (integer), [rssi(integer)], [battery(integer)]
+				if (lua_isnumber(lua_state, 1) && (lua_isstring(lua_state, 2) || lua_isnumber(lua_state, 2)) && lua_isstring(lua_state, 3))
+				{
+					// Extract the parameters from the lua 'updateDevice' function	
+					int idx = lua_tointeger(lua_state, 1);
+					std::string nvalue = lua_tostring(lua_state, 2);
+					std::string svalue = lua_tostring(lua_state, 3);
+					if (((lua_isstring(lua_state, 3) && nvalue.empty()) && svalue.empty()))
+					{
+						_log.Log(LOG_ERROR, "WebServer (updateDevice from LUA) : nvalue and svalue are empty ");
+						return 0;
+					}
+
+					// Parse
+					int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
+					int signallevel = 12;
+					if (nargs >= 4 && lua_isnumber(lua_state, 4))
+					{
+						signallevel = lua_tointeger(lua_state, 4);
+					}
+					int batterylevel = 255;
+					if (nargs == 5 && lua_isnumber(lua_state, 5))
+					{
+						batterylevel = lua_tointeger(lua_state, 5);
+					}
+					_log.Log(LOG_NORM, "WebServer (updateDevice from LUA) : idx=%d nvalue=%s svalue=%s invalue=%d signallevel=%d batterylevel=%d", idx, nvalue.c_str(), svalue.c_str(), invalue, signallevel, batterylevel);
+
+					// Get the raw device parameters
+					std::vector<std::vector<std::string> > result;
+					result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID==%d)", idx);
+					if (result.empty())
+						return 0;
+					std::string hid = result[0][0];
+					std::string did = result[0][1];
+					std::string dunit = result[0][2];
+					std::string dtype = result[0][3];
+					std::string dsubtype = result[0][4];
+
+					int HardwareID = atoi(hid.c_str());
+					std::string DeviceID = did;
+					int unit = atoi(dunit.c_str());
+					int devType = atoi(dtype.c_str());
+					int subType = atoi(dsubtype.c_str());
+
+					std::stringstream sstr;
+					unsigned long long ulIdx;
+					sstr << idx;
+					sstr >> ulIdx;
+					m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "WebServer (updateDevice from LUA) : Incorrect parameters type");
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "WebServer (updateDevice from LUA) : Not enough parameters");
+			}
+			return 0;
+		}
+
+		static int l_domoticz_print(lua_State* lua_state)
+		{
+			int nargs = lua_gettop(lua_state);
+
+			for (int i = 1; i <= nargs; i++)
+			{
+				if (lua_isstring(lua_state, i))
+				{
+					//std::string lstring=lua_tostring(lua_state, i);
+					_log.Log(LOG_NORM, "WebServer: udevices: %s", lua_tostring(lua_state, i));
+				}
+				else
+				{
+					/* non strings? */
+				}
+			}
+			return 0;
+		}
+
+		void CWebServer::Cmd_UpdateDevices(Json::Value &root)
+		{
+			std::stringstream lua_DirT;
+#ifdef WIN32
+			lua_DirT << szUserDataFolder << "scripts\\lua_parsers\\";
+#else
+			lua_DirT << szUserDataFolder << "scripts/lua_parsers/";
+#endif
+			std::string lua_Dir = lua_DirT.str();
+
+			std::string script = m_pWebEm->FindValue("script");
+			if (script.empty() )
+			{
+				return;
+			}
+			std::string content = m_pWebEm->m_ActualRequest.content;
+
+			lua_State *lua_state;
+			lua_state = luaL_newstate();
+
+			luaL_openlibs(lua_state);
+			lua_pushcfunction(lua_state, l_domoticz_print);
+			lua_setglobal(lua_state, "print");
+
+			lua_pushcfunction(lua_state, l_domoticz_updateDevice);
+			lua_setglobal(lua_state, "domoticz_updateDevice");
+
+			lua_createtable(lua_state, 1, 0);
+			lua_pushstring(lua_state, "content");
+			lua_pushstring(lua_state, content.c_str());
+			lua_rawset(lua_state, -3);
+			lua_setglobal(lua_state, "request");
+
+			std::string fullfilename = lua_Dir + script;
+
+			int status = luaL_loadfile(lua_state, fullfilename.c_str());
+			if (status == 0)
+			{
+				lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
+				boost::thread aluaThread(boost::bind(&CWebServer::luaThread, this, lua_state, fullfilename));
+				aluaThread.timed_join(boost::posix_time::seconds(10));
+				root["status"] = "OK";
+				root["title"] = "Update Device";
+			}
+			else
+			{
+				report_errors(lua_state, status);
+				lua_close(lua_state);
+			}
 		}
 
 		void CWebServer::Cmd_UpdateDevice(Json::Value &root)
