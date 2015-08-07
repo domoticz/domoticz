@@ -70,6 +70,7 @@ static void dumpstack(void) {
 const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
+	"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
 #ifdef NS_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
@@ -558,6 +559,17 @@ int main(int argc, char**argv)
 		sleep_seconds(DelaySeconds);
 	}
 
+	if (cmdLine.HasSwitch("-wwwbind"))
+	{
+		if (cmdLine.GetArgumentCount("-wwwbind") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify an address");
+			return 1;
+		}
+		std::string wwwbind = cmdLine.GetSafeArgument("-wwwbind", 0, "0.0.0.0");
+		m_mainworker.SetWebserverAddress(wwwbind);
+	}
+
 	if (cmdLine.HasSwitch("-www"))
 	{
 		if (cmdLine.GetArgumentCount("-www") != 1)
@@ -716,7 +728,7 @@ int main(int argc, char**argv)
 #ifndef _DEBUG
 	RedirectIOToConsole();	//hide console
 #endif
-	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
+	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, m_mainworker.GetWebserverAddress(), atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
 	MSG Msg;
 	while (!g_bStopApplication)
 	{
