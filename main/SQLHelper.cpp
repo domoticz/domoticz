@@ -1990,8 +1990,7 @@ void CSQLHelper::Do_Work()
 			{
 				std::vector<std::vector<std::string> > result;
 				std::stringstream s_str;
-				s_str << "SELECT Name, ValueType FROM UserVariables WHERE (ID == " << itt->_idx << ")";
-				result = query(s_str.str());
+				result = safe_query("SELECT Name, ValueType FROM UserVariables WHERE (ID == %llu)", itt->_idx);
 				if (result.size() > 0)
 				{
 					std::vector<std::string> sd = result[0];
@@ -2035,12 +2034,18 @@ bool CSQLHelper::DoesColumnExistsInTable(const std::string columnname, const std
 
 	sqlite3_stmt *statement;
 
-	std::string szQuery = "select " + columnname + " from " + tablename;
-	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, NULL) == SQLITE_OK)
+	char *zQuery = sqlite3_mprintf("SELECT \"%q\" FROM \"%q\"", columnname.c_str(), tablename.c_str());
+	if (!zQuery)
+	{
+		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+		return false;
+	}
+	if (sqlite3_prepare_v2(m_dbase, zQuery, -1, &statement, NULL) == SQLITE_OK)
 	{
 		columnExists = true;
 		sqlite3_finalize(statement);
 	}
+	sqlite3_free(zQuery);
 
 	return columnExists;
 }
@@ -5655,7 +5660,7 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 {
 	std::vector<std::vector<std::string> > result;
 
-	result=safe_query("SELECT t.RowID, u.RowID, t.Date from %s as t, %s as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]",
+	result=safe_query("SELECT t.RowID, u.RowID, t.Date FROM \"%q\" as t, \"%q\" as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]",
 		TableName.c_str(),
 		TableName.c_str());
 	if (result.size()>0)
@@ -5685,17 +5690,17 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 				std::string szDateNew=result2[0][0];
 
 				//Check if Date+1 exists, if yes, remove current double value
-				result2=safe_query("SELECT RowID FROM %s WHERE (Date='%q') AND (RowID=='%q')",
+				result2=safe_query("SELECT RowID FROM \"%q\" WHERE (Date='%q') AND (RowID=='%q')",
 					TableName.c_str(), szDateNew.c_str(), sd[1].c_str());
 				if (result2.size()>0)
 				{
 					//Delete row
-					safe_query("DELETE FROM %s WHERE (RowID=='%q')", TableName.c_str(), sd[1].c_str());
+					safe_query("DELETE FROM \"%q\" WHERE (RowID=='%q')", TableName.c_str(), sd[1].c_str());
 				}
 				else
 				{
 					//Update date
-					safe_query("UPDATE %s SET Date='%q' WHERE (RowID=='%q')", TableName.c_str(), szDateNew.c_str(), sd[1].c_str());
+					safe_query("UPDATE \"%q\" SET Date='%q' WHERE (RowID=='%q')", TableName.c_str(), szDateNew.c_str(), sd[1].c_str());
 				}
 			}
 		}
@@ -6266,13 +6271,15 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 				std::string TableField = iItt->first;
 				std::string IconFile = iItt->second;
 
-				std::stringstream szQuery;
-				szQuery.clear();
-				szQuery.str("");
-				szQuery << "UPDATE CustomImages SET " << TableField << " = ? WHERE ID=" << RowID;
-
 				sqlite3_stmt *stmt = NULL;
-				int rc = sqlite3_prepare_v2(m_dbase, szQuery.str().c_str(), -1, &stmt, NULL);
+				char *zQuery = sqlite3_mprintf("UPDATE CustomImages SET \"%q\" = ? WHERE ID=%d", TableField.c_str(), RowID);
+				if (!zQuery)
+				{
+					_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+					return false;
+				}
+				int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, NULL);
+				sqlite3_free(zQuery);
 				if (rc != SQLITE_OK) {
 					ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
 					if (iTotalAdded > 0)
