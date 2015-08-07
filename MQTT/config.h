@@ -12,7 +12,7 @@
  * Generally for Windows native support.
  * ============================================================ */
 #ifdef WIN32
-#define snprintf sprintf_s
+//#define snprintf sprintf_s //not needed for VS2015
 #  ifndef strcasecmp
 #    define strcasecmp strcmpi
 #  endif
