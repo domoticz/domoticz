@@ -64,10 +64,8 @@ namespace http {
 			int HwdID = atoi(idx.c_str());
 
 			//Make a unique number for ID
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT MAX(ID) FROM DeviceStatus";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
 
 			unsigned long nid = 1; //could be the first device ever
 

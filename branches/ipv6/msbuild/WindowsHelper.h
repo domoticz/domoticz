@@ -12,7 +12,7 @@ public:
 	void OpenHideConsole();
 	BOOL IsConsoleVisible();
 private:
-	BOOL SetConsoleWindowSize(const int x, const int y);
+	BOOL SetConsoleWindowSize(const SHORT x, const SHORT y);
 	std::ofstream m_out;
 	std::ofstream m_err;
 	std::ifstream m_in;
@@ -22,7 +22,7 @@ private:
 	std::streambuf* m_old_cin;
 };
 
-bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, const int iWebPort, const bool bStartWebBrowser);
+bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, const std::string& address, const int iWebPort, const bool bStartWebBrowser);
 void ShowSystemTrayNotification(const char *szMessage);
 void RedirectIOToConsole();
 BOOL TrayMessage(DWORD dwMessage, const char *szInfo);

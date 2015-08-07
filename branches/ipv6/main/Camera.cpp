@@ -31,12 +31,10 @@ void CCameraHandler::ReloadCameras()
 	std::vector<std::string> _AddedCameras;
 	boost::lock_guard<boost::mutex> l(m_mutex);
 	m_cameradevices.clear();
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	szQuery << "SELECT ID, Name, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
 	if (result.size()>0)
 	{
 		_log.Log(LOG_STATUS,"Camera: settings (re)loaded");
@@ -74,9 +72,7 @@ void CCameraHandler::ReloadCameraActiveDevices(const std::string &CamID)
 	pCamera->mActiveDevices.clear();
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> >::const_iterator itt;
-	std::stringstream szQuery;
-	szQuery << "SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='" << CamID << "') ORDER BY ID";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID", CamID.c_str());
 	if (result.size()>0)
 	{
 		for (itt=result.begin(); itt!=result.end(); ++itt)
@@ -356,15 +352,13 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Cameras";
 
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
 			if (rused == "true") {
-				szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC";
+				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
 			}
 			else {
-				szQuery << "SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras ORDER BY ID ASC";
+				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras ORDER BY ID ASC");
 			}
-			result = m_sql.query(szQuery.str());
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;

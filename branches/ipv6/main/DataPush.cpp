@@ -87,12 +87,10 @@ void CDataPush::DoFibaroPush()
 		)
 		return;
 	std::vector<std::vector<std::string> > result;
-	char szTmp[300];
-	sprintf(szTmp, 
+	result = m_sql.safe_query(
 		"SELECT A.DeviceID, A.DelimitedValue, B.ID, B.Type, B.SubType, B.nValue, B.sValue, A.TargetType, A.TargetVariable, A.TargetDeviceID, A.TargetProperty, A.IncludeUnit, B.SwitchType FROM FibaroLink as A, DeviceStatus as B "
 		"WHERE (A.DeviceID == '%llu' AND A.Enabled = '1' AND A.DeviceID==B.ID)",
 		m_DeviceRowIdx);
-	result=m_sql.query(szTmp);
 	if (result.size()>0)
 	{
 		std::string sendValue;
@@ -284,10 +282,8 @@ namespace http {
 
 		void CWebServer::Cmd_GetFibaroLinks(Json::Value &root)
 		{
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -331,10 +327,9 @@ namespace http {
 				return;
 			if ((targettypei == 2) && (targetdeviceid == ""))
 				return;
-			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
 			if (idx == "0") {
-				sprintf(szTmp, "INSERT INTO FibaroLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%s','%d','%s','%d','%d')",
+				m_sql.safe_query(
+					"INSERT INTO FibaroLink (DeviceID,DelimitedValue,TargetType,TargetVariable,TargetDeviceID,TargetProperty,IncludeUnit,Enabled) VALUES ('%d','%d','%d','%q','%d','%q','%d','%d')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,
@@ -346,8 +341,8 @@ namespace http {
 					);
 			}
 			else {
-				sprintf(szTmp,
-					"UPDATE FibaroLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%s', TargetDeviceID=%d, TargetProperty='%s', IncludeUnit='%d', Enabled='%d' WHERE (ID == %s)",
+				m_sql.safe_query(
+					"UPDATE FibaroLink SET DeviceID='%d', DelimitedValue=%d, TargetType=%d, TargetVariable='%q', TargetDeviceID=%d, TargetProperty='%q', IncludeUnit='%d', Enabled='%d' WHERE (ID == '%q')",
 					deviceidi,
 					atoi(valuetosend.c_str()),
 					targettypei,
@@ -359,8 +354,6 @@ namespace http {
 					idx.c_str()
 					);
 			}
-			result = m_sql.query(szTmp);
-
 			root["status"] = "OK";
 			root["title"] = "SaveFibaroLink";
 		}
@@ -376,11 +369,7 @@ namespace http {
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
 				return;
-			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
-			sprintf(szTmp, "DELETE FROM FibaroLink WHERE (ID==%s)", idx.c_str());
-			result = m_sql.query(szTmp);
-
+			m_sql.safe_query("DELETE FROM FibaroLink WHERE (ID=='%q')", idx.c_str());
 			root["status"] = "OK";
 			root["title"] = "DeleteFibaroLink";
 		}

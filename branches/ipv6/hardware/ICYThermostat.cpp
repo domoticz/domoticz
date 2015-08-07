@@ -95,10 +95,8 @@ bool CICYThermostat::WriteToHardware(const char *pdata, const unsigned char leng
 void CICYThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-	result=m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -126,24 +124,19 @@ void CICYThermostat::SendTempSensor(const unsigned char Idx, const float Temp, c
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-		result=m_sql.query(szQuery.str());
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	}
 }
 
 void CICYThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 
 	char szID[10];
 	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
 
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-	result=m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -164,10 +157,7 @@ void CICYThermostat::SendSetPointSensor(const unsigned char Idx, const float Tem
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szID << "')";
-		result=m_sql.query(szQuery.str());
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
 	}
 }
 

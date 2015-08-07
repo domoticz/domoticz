@@ -98,13 +98,15 @@ bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 			szURL << "http://" << m_Username << ":" << m_Password << "@" << m_szIPAddress << ":" << m_usIPPort;
 		}
 
+		//toggle=			//szURL << "/relays.cgi?relay=" << Relay;
+
 		if (pSen->LIGHTING2.cmnd == light2_sOff)
 		{
-			szURL << "/relays.cgi?relay=" << Relay;
+			szURL << "/FF0" << Relay << "00";
 		}
 		else
 		{
-			szURL << "/relays.cgi?relay=" << Relay;
+			szURL << "/FF0" << Relay << "01";
 		}
 		std::string sResult;
 		if (!HTTPClient::GET(szURL.str(), sResult))

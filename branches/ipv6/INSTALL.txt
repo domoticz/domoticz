@@ -50,6 +50,7 @@ make
 
 
 [Windows]
+- You need Visual Studio 2015 (community edition is OK)
 - The project file for Visual Studio can be found inside the "msbuild" folder
 - You need to download and unpack the following archive inside the "msbuild" folder:
   http://www.domoticz.com/WindowsLibraries.zip

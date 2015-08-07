@@ -52,7 +52,7 @@
 		function addNodeToGroup(node,group) {
 			var hwid=getParameter("hwid");
 			bootbox.dialog({
-			  message: $.t("Please enter the node to add to this group:")+"<input type='text' id='add_node'></input>",
+			  message: $.t("Please enter the node to add to this group:")+"<input type='text' id='add_node' data-toggle='tooltip' title='NodeId or NodeId.Instance'></input>",
 			  title: "Add node",
 			  buttons: {
 				main: {
@@ -118,7 +118,7 @@
 									if (noGroups > 0) {
 										groupnodes = item.groups;
 										$.each(groupnodes, function(g, group) {
-											td = $('<td></td>');
+											td = $('<td data-toggle="tooltip" title="' + group.groupName + '"></td>');
 											$.each(group.nodes.split(','), function(){
 												if (this!="") {
 													button=$('<span class="label label-info lcursor" onclick="removeNodeFromGroup('+item.nodeID+','+group.id+','+this+');">'+this+'</span>');

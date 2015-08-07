@@ -737,7 +737,7 @@ bool RFXComSerial::Handle_RX_PKT(const unsigned char *pdata, size_t length)
 			chksum = ~chksum + 1; //test checksum
 			if (chksum != 0)
 			{
-				_log.Log(LOG_ERROR, "RFXCom: bootloader, received response with invalid checksum!");
+				_log.Log(LOG_ERROR, "RFXCOM: bootloader, received response with invalid checksum!");
 				return false;
 			}
 			//Message OK
@@ -823,7 +823,7 @@ bool RFXComSerial::onInternalMessage(const unsigned char *pBuffer, const size_t 
 		{
 			//something is out of sync here!!
 			//restart
-			_log.Log(LOG_ERROR, "input buffer out of sync, going to restart!....");
+			_log.Log(LOG_ERROR, "RFXCOM: input buffer out of sync, going to restart!....");
 			m_rxbufferpos = 0;
 			return false;
 		}
@@ -933,12 +933,9 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 			std::vector<std::vector<std::string> > result;
-			std::stringstream szQuery;
 
-			szQuery.clear();
-			szQuery.str("");
-			szQuery << "SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID=" << idx << ")";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')",
+				idx.c_str());
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
 

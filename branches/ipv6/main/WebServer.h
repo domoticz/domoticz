@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 
+struct lua_State;
+struct lua_Debug;
+
 namespace Json
 {
 	class Value;
@@ -96,6 +99,7 @@ private:
 	void Cmd_KodiUpdateNode(Json::Value &root);
 	void Cmd_KodiRemoveNode(Json::Value &root);
 	void Cmd_KodiClearNodes(Json::Value &root);
+	void Cmd_KodiMediaCommand(Json::Value &root);
 	void Cmd_SaveFibaroLinkConfig(Json::Value &root);
 	void Cmd_GetFibaroLinkConfig(Json::Value &root);
 	void Cmd_GetFibaroLinks(Json::Value &root);
@@ -130,6 +134,7 @@ private:
 	void Cmd_SendNotification(Json::Value &root);
 	void Cmd_EmailCameraSnapshot(Json::Value &root);
 	void Cmd_UpdateDevice(Json::Value &root);
+	void Cmd_UpdateDevices(Json::Value &root);
 	void Cmd_SetThermostatState(Json::Value &root);
 	void Cmd_SystemShutdown(Json::Value &root);
 	void Cmd_SystemReboot(Json::Value &root);
@@ -255,6 +260,10 @@ private:
 
 	bool m_bHaveUpdate;
 	int m_iRevision;
+
+	void luaThread(lua_State *lua_state, const std::string &filename);
+	static void luaStop(lua_State *L, lua_Debug *ar);
+	void report_errors(lua_State *L, int status);
 };
 
 } //server

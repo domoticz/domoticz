@@ -152,10 +152,9 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 {
 	int Idx=(ID1 * 256) + ID2;
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -201,20 +200,17 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-		result=m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
 	}
 }
 
 void CSBFSpot::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -242,24 +238,21 @@ void CSBFSpot::SendTempSensor(const unsigned char Idx, const float Temp, const s
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeTEMP) << ") AND (Subtype==" << int(sTypeTEMP10) << ")";
-		result=m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
 	}
 }
 
 void CSBFSpot::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[30];
 	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -275,24 +268,21 @@ void CSBFSpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypeVoltage) << ")";
-		result=m_sql.query(szQuery.str());
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
 	}
 }
 
 void CSBFSpot::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[30];
 	sprintf(szTmp,"%08X", (unsigned int)Idx);
 
-	szQuery << "SELECT Name FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
 	if (result.size()<1)
 	{
 		bDeviceExits=false;
@@ -308,11 +298,8 @@ void CSBFSpot::SendPercentage(const unsigned long Idx, const float Percentage, c
 	if (!bDeviceExits)
 	{
 		//Assign default name for device
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << defaultname << "' WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << szTmp << "') AND (Type==" << int(pTypeGeneral) << ") AND (Subtype==" << int(sTypePercentage) << ")";
-		result=m_sql.query(szQuery.str());
-
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
 	}
 }
 
@@ -320,10 +307,9 @@ bool CSBFSpot::GetMeter(const unsigned char ID1,const unsigned char ID2, double 
 {
 	int Idx=(ID1 * 256) + ID2;
 	bool bDeviceExits=true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(Idx) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result=m_sql.query(szQuery.str());
+	result=m_sql.safe_query("SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
 	if (result.size()<1)
 	{
 		return false;
@@ -341,18 +327,15 @@ void CSBFSpot::ImportOldMonthData()
 {
 	//check if this device exists in the database, if not exit
 	bool bDeviceExits = true;
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(1) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, int(1), int(pTypeENERGY), int(sTypeELEC2));
 	if (result.size() < 1)
 	{
 		//Lets create the sensor, and try again
 		SendMeter(0, 1, 0, 0, "SolarMain");
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID==" << int(1) << ") AND (Type==" << int(pTypeENERGY) << ") AND (Subtype==" << int(sTypeELEC2) << ")";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+			m_HwdID, int(1), int(pTypeENERGY), int(sTypeELEC2));
 		if (result.size() < 1)
 		{
 			return;
@@ -437,21 +420,18 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
 				//check if this day record does not exists in the database, and insert it
-				std::stringstream szQuery;
 				std::vector<std::vector<std::string> > result;
 
 				char szDate[40];
 				sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-				szQuery << "SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==" << DevID << ") AND (Date=='" << szDate << "')";
-				result = m_sql.query(szQuery.str());
+				result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')",
+					DevID, szDate);
 				if (result.size() == 0)
 				{
 					//Insert value into our database
-					szQuery.clear();
-					szQuery.str("");
-					szQuery << "INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('" << DevID << "', '" << ulCounter << "', '" << szDate << "')";
-					result = m_sql.query(szQuery.str());
+					result = m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
+						DevID, ulCounter, szDate);
 				}
 
 			}
@@ -513,15 +493,13 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 						char szDate[40];
 						sprintf(szDate, "%04d-%02d-%02d", year, month, day);
 
-						szQuery << "SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==" << DevID << ") AND (Date=='" << szDate << "')";
-						result = m_sql.query(szQuery.str());
+						result = m_sql.safe_query("SELECT Value FROM Meter_Calendar WHERE (DeviceRowID==%llu) AND (Date=='%q')",
+							DevID, szDate);
 						if (result.size() == 0)
 						{
 							//Insert value into our database
-							szQuery.clear();
-							szQuery.str("");
-							szQuery << "INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('" << DevID << "', '" << ulCounter << "', '" << szDate << "')";
-							result = m_sql.query(szQuery.str());
+							m_sql.safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Date) VALUES ('%llu', '%llu', '%q')",
+								DevID, ulCounter, szDate);
 						}
 					}
 				}

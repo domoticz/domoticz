@@ -23,53 +23,57 @@ define(['app'], function (app) {
 		  });
 		}
 
-		EditRainDevice = function(idx,name,addjmulti)
+		EditRainDevice = function(idx,name,description,addjmulti)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editraindevice #devicename").val(decodeURIComponent(name));
+		  $("#dialog-editraindevice #devicename").val(unescape(name));
+		  $("#dialog-editraindevice #devicedescription").val(unescape(description));
 		  $("#dialog-editraindevice #multiply").val(addjmulti);
-		  $( "#dialog-editraindevice" ).i18n();
+		  $("#dialog-editraindevice" ).i18n();
 		  $("#dialog-editraindevice" ).dialog( "open" );
 		}
 
-		EditBaroDevice = function(idx,name,addjvalue)
+		EditBaroDevice = function(idx,name,description,addjvalue)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editbarodevice #devicename").val(decodeURIComponent(name));
+		  $("#dialog-editbarodevice #devicename").val(unescape(name));
+		  $("#dialog-editbarodevice #devicedescription").val(unescape(description));
 		  $("#dialog-editbarodevice #adjustment").val(addjvalue);
 		  $("#dialog-editbarodevice" ).i18n();
 		  $("#dialog-editbarodevice" ).dialog( "open" );
 		}
 
-		EditVisibilityDevice = function(idx,name,switchtype)
+		EditVisibilityDevice = function(idx,name,description,switchtype)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editvisibilitydevice #devicename").val(decodeURIComponent(name));
+		  $("#dialog-editvisibilitydevice #devicename").val(unescape(name));
+		  $("#dialog-editvisibilitydevice #devicedescription").val(unescape(description));
 		  $("#dialog-editvisibilitydevice #combometertype").val(switchtype);
 		  $("#dialog-editvisibilitydevice" ).i18n();
 		  $("#dialog-editvisibilitydevice" ).dialog( "open" );
 		}
 
-		EditWeatherDevice = function(idx,name)
+		EditWeatherDevice = function(idx,name,description)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editweatherdevice #devicename").val(decodeURIComponent(name));
+		  $("#dialog-editweatherdevice #devicename").val(unescape(name));
+		  $("#dialog-editweatherdevice #devicedescription").val(unescape(description));
 		  $("#dialog-editweatherdevice" ).i18n();
 		  $("#dialog-editweatherdevice" ).dialog( "open" );
 		}
@@ -399,45 +403,45 @@ define(['app'], function (app) {
 				  }
 
 				  if (typeof item.Barometer != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowBaroLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowBaroLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.Rain != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowRainLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowRainLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.UVI != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowUVLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowUVLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.Direction != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowWindLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowWindLog(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.Visibility != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');" data-i18n="Log">Log</a> ';
 				  }
 				  else if (typeof item.Radiation != 'undefined') {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#weathercontent\',\'ShowWeathers\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');" data-i18n="Log">Log</a> ';
 				  }
 				  if (permissions.hasPermission("Admin")) {
 					  if (bHaveRain) {
-						xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditRainDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.AddjMulti +');" data-i18n="Edit">Edit</a> ';
 					  }
 					  else if (bHaveVisibility) {
-						xhtm+='<a class="btnsmall" onclick="EditVisibilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditVisibilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
 					  }
 					  else if (bHaveRadiation) {
-						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					  }
 					  else if (bHaveBaro) {
-						xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditBaroDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.AddjValue2 +');" data-i18n="Edit">Edit</a> ';
 					  }
 					  else {
-						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditWeatherDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					  }
 					  if (item.Notifications == "true")
-						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
+						xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
 					  else
-						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
+						xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Notifications">Notifications</a>';
 						if (typeof item.forecast_url != 'undefined') {
-							xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + encodeURIComponent(item.Name) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Forecast">Forecast</a>';
+							xhtm+='&nbsp;<a class="btnsmall" onclick="ShowForecast(\'' + atob(item.forecast_url) + '\',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'#weathercontent\', \'ShowWeathers\');" data-i18n="Forecast">Forecast</a>';
 						}
 				  }
 				  xhtm+=      
@@ -518,7 +522,10 @@ define(['app'], function (app) {
 			  if ( bValid ) {
 				  $( this ).dialog( "close" );
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + 
+						'&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + 
+						'&description=' + encodeURIComponent($("#dialog-editweatherdevice #devicedescription").val()) + 
+						'&used=true',
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -533,7 +540,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editweatherdevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -572,7 +582,11 @@ define(['app'], function (app) {
 			  if ( bValid ) {
 				  $( this ).dialog( "close" );
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editraindevice #devicename").val()) + '&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() + '&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + 
+						'&name=' + encodeURIComponent($("#dialog-editraindevice #devicename").val()) + 
+						'&description=' + encodeURIComponent($("#dialog-editraindevice #devicedescription").val()) + 
+						'&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() + 
+						'&used=true',
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -587,7 +601,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editweatherdevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -627,7 +644,11 @@ define(['app'], function (app) {
 				  $( this ).dialog( "close" );
 				  var aValue=$("#dialog-editbarodevice #edittable #adjustment").val();
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&addjvalue2=' + aValue + '&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + 
+						'&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + 
+						'&description=' + encodeURIComponent($("#dialog-editbarodevice #devicedescription").val()) + 
+						'&addjvalue2=' + aValue + 
+						'&used=true',
 					 async: false,
 					 dataType: 'json',
 					 success: function(data) {
@@ -642,7 +663,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editbarodevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false,
 						 dataType: 'json',
 						 success: function(data) {
@@ -679,7 +703,11 @@ define(['app'], function (app) {
 			  if ( bValid ) {
 				  $( this ).dialog( "close" );
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() + '&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + 
+						'&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + 
+						'&description=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicedescription").val()) + 
+						'&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() + 
+						'&used=true',
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -694,7 +722,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {

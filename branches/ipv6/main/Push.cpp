@@ -28,9 +28,7 @@ std::vector<std::string> CPush::DropdownOptions(const unsigned long long DeviceR
 	std::vector<std::string> dropdownOptions;
 
 	std::vector<std::vector<std::string> > result;
-	char szTmp[300];
-	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
-	result=m_sql.query(szTmp);
+	result=m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
 	if (result.size()>0)
 	{
 		int dType=atoi(result[0][0].c_str());
@@ -55,10 +53,8 @@ std::string CPush::DropdownOptionsValue(const unsigned long long DeviceRowIdxIn,
 	std::string wording = "???";
 	int getpos = pos-1; // 0 pos is always nvalue/status, 1 and higher goes to svalues
 	std::vector<std::vector<std::string> > result;
-	char szTmp[300];
 	
-	sprintf(szTmp, "SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
-	result=m_sql.query(szTmp);
+	result=m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID== %llu)", DeviceRowIdxIn);
 	if (result.size()>0)
 	{
 		int dType=atoi(result[0][0].c_str());

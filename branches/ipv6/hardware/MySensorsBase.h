@@ -46,13 +46,15 @@ public:
 		S_DUST=24,				// Dust level sensor
 		S_SCENE_CONTROLLER=25,	// Scene controller device
 		S_RGB_LIGHT=26,			// Send data using V_RGB or V_RGBW 
-		S_COLOR_SENSOR=27,		// Send data using V_RGB
-		S_MULTIMETER=28,		// V_VOLTAGE, V_CURRENT, V_IMPEDANCE 
-		S_SPRINKLER=29,			// V_TRIPPED, V_ARMED
-		S_WATER_LEAK=30,		// V_TRIPPED, V_ARMED
-		S_SOUND=31,				// V_TRIPPED, V_ARMED, V_SOUND_DB
-		S_VIBRATION=32,			// V_TRIPPED, V_ARMED, V_VIBRATION_HZ 
-		S_ROTARY_ENCODER=33,	// V_ENCODER_VALUE
+		S_RGBW_LIGHT=27,		// RGBW light(with separate white component)	V_RGBW, V_WATT
+		S_COLOR_SENSOR=28,		// Color sensor V_RGB
+		S_HVAC=29,				// Thermostat / HVAC device V_HVAC_SETPOINT_HEAT, V_HVAC_SETPOINT_COLD, V_HVAC_FLOW_STATE, V_HVAC_FLOW_MODE, V_HVAC_SPEED
+		S_MULTIMETER=30,		// Multimeter device V_VOLTAGE, V_CURRENT, V_IMPEDANCE
+		S_SPRINKLER=31,			// Sprinkler device	V_STATUS(turn on / off), V_TRIPPED(if fire detecting device)
+		S_WATER_LEAK=32,		// Water leak sensor V_TRIPPED, V_ARMED
+		S_SOUND=33,				// Sound sensor	V_LEVEL(in dB), V_TRIPPED, V_ARMED
+		S_VIBRATION=34,			// Vibration sensor	V_LEVEL(vibration in Hz), V_TRIPPED, V_ARMED
+		S_MOISTURE=35			// Moisture sensor	V_LEVEL (water content or moisture in percentage?), V_TRIPPED, V_ARMED
 	};
 
 	enum _eSetType
@@ -100,11 +102,10 @@ public:
 		V_RGB = 40, 		// S_RGB_LIGHT, S_COLOR_SENSOR.  (RRGGBB)
 		V_RGBW = 41,		// S_RGB_LIGHT (RRGGBBWW)
 		V_ID = 42,			// Used for reporting the sensor internal ids (E.g. DS1820b). 
-		V_LIGHT_LEVEL_LUX = 43,  // S_LIGHT, Light level in lux
-		V_UNIT_PREFIX = 44, // Allows sensors to send in a string representing the 
-		V_SOUND_DB = 45,	// S_SOUND sound level in db
-		V_VIBRATION_HZ = 46, // S_VIBRATION vibration i Hz
-		V_ENCODER_VALUE = 47, // S_ROTARY_ENCODER. Rotary encoder value. 
+		V_UNIT_PREFIX = 43,	// Allows sensors to send in a string representing the unit prefix to be displayed in GUI.This is not parsed by controller!E.g.cm, m, km, inch.S_DISTANCE, S_DUST, S_AIR_QUALITY
+		V_HVAC_SETPOINT_COOL = 44,	//HVAC cold setpoint(Integer between 0 - 100)	S_HVAC
+		V_HVAC_SETPOINT_HEAT= 45,	//HVAC / Heater setpoint(Integer between 0 - 100)	S_HVAC, S_HEATER
+		V_HVAC_FLOW_MODE = 46, //Flow mode for HVAC ("Auto", "ContinuousOn", "PeriodicOn")	S_HVAC
 	};
 
 	enum _eInternalType

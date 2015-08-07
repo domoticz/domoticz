@@ -26,7 +26,7 @@ struct _tRFLinkStringIntHelper
 const _tRFLinkStringIntHelper rfswitches[] =
 {
 	{ "NewKaku", sSwitchTypeAC },            // p4
-	{ "Kaku", sSwitchTypeARC },              // p2
+	{ "Kaku", sSwitchTypeARC },              // p3
 	{ "HomeEasy", sSwitchTypeHEU },          // p15
 	{ "FA500", sSwitchTypePT2262 },          // p3
 	{ "Eurodomest", sSwitchTypeEurodomest }, // p5
@@ -43,11 +43,23 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "BSB", sSwitchTypeBBSB },              // p-
 	{ "MDRemote", sSwitchTypeMDREMOTE },     // p14
 	{ "Waveman", sSwitchTypeWaveman },       // p-
-	{ "AB400D", sSwitchTypeAB400D },         // p-
-	{ "Impuls", sSwitchTypeIMPULS },         // p16
+	{ "AB400D", sSwitchTypeAB400D },         // p3
+	{ "Impuls", sSwitchTypeIMPULS },         // p11
 	{ "Anslut", sSwitchTypeANSLUT },         // p17
 	{ "Lightwave", sSwitchTypeLightwaveRF }, // p18
-	{ "", -1 }
+	{ "FA20RF", sSwitchTypeFA20 },           // p80
+	{ "GDR2", sSwitchTypeGDR2 },           // p80
+	{ "RisingSun", sSwitchTypeRisingSun },   // p-
+	{ "Philips", sSwitchTypePhilips },       // p-
+	{ "Energenie", sSwitchTypeEnergenie },   // p-
+	{ "Energenie5", sSwitchTypeEnergenie5 }, // p-
+	{ "Ikea Koppla", sSwitchTypeKoppla },    // p-
+	{ "TRC02RGB", sSwitchTypeTRC02 },        // p-
+	{ "TRC022RGB", sSwitchTypeTRC02_2 },     // p-
+	{ "Livolo", sSwitchTypeLivolo },         // p-
+	{ "Livolo App", sSwitchTypeLivoloAppliance }, // p-
+	{ "Aoke", sSwitchTypeAoke },             // p-
+    { "", -1 }
 };
 
 const _tRFLinkStringIntHelper rfswitchcommands[] =
@@ -114,6 +126,7 @@ CRFLink::CRFLink(const int ID, const std::string& devname)
 	ParseLine("20;03;Eurodomest;ID=03696b;SWITCH=00;CMD=OFF;");
 	ParseLine("20;04;Eurodomest;ID=03696b;SWITCH=07;CMD=ALLOFF;");
 	ParseLine("20;03;Cresta;ID=9701;WINDIR=009d;WINSP=0001;WINGS=0000;WINCHL=003d;");
+	ParseLine("20;02;FA20RF;ID=67f570;SMOKEALERT=ON;");
 	*/
 }
 
@@ -354,9 +367,9 @@ bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
 
 	sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd << ";\n";
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
-#endif
+//#endif
     m_bTXokay=false; // clear OK flag
 	write(sstr.str());
 	time_t atime = mytime(NULL);
@@ -511,13 +524,27 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	int baroforecast = 0;
 	bool bHaveRain = false; int raincounter = 0;
 	bool bHaveLux = false; float lux = 0;
-
+	bool bHaveUV = false; float uv = 0;
+    
 	bool bHaveWindDir = false; int windir = 0;
 	bool bHaveWindSpeed = false; float windspeed = 0;
 	bool bHaveWindGust = false; float windgust = 0;
 	bool bHaveWindTemp = false; float windtemp = 0;
 	bool bHaveWindChill = false; float windchill = 0;
 
+	bool bHaveRGB = false; int rgb = 0;
+	bool bHaveRGBW = false; int rgbw = 0;
+	bool bHaveSound = false; int sound = 0;
+	bool bHaveCO2 = false; int co2 = 0;
+	bool bHaveBlind = false; int blind = 0;   
+
+	bool bHaveKWatt = false; float kwatt = 0;   
+	bool bHaveWatt = false; float watt = 0;   
+	bool bHaveDistance = false; float distance = 0;   
+	bool bHaveMeter = false; float meter = 0;   
+	bool bHaveVoltage = false; float voltage = 0;   
+	bool bHaveCurrent = false; float current = 0;   
+    
 	bool bHaveSwitch = false; int switchunit = 0; 
 	bool bHaveSwitchCmd = false; std::string switchcmd = ""; int switchlevel = 0;
 
@@ -561,11 +588,17 @@ bool CRFLink::ParseLine(const std::string &sLine)
 			bHaveRain = true;
 			raincounter = RFLinkGetHexStringValue(results[ii]);
 		}
-		else if (results[ii].find("UV") != std::string::npos)
+		else if (results[ii].find("LUX") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveLux = true;
 			lux = float(iTemp);
+		}
+		else if (results[ii].find("UV") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveUV = true;
+			uv = float(iTemp);
 		}
 		else if (results[ii].find("BAT") != std::string::npos)
 		{
@@ -609,6 +642,69 @@ bool CRFLink::ParseLine(const std::string &sLine)
 			}
 			windchill = float(iTemp) / 10.0f;
 		}
+		else if (results[ii].find("SOUND") != std::string::npos)
+		{
+			bHaveSound = true;
+			sound = RFLinkGetIntStringValue(results[ii]);
+		}
+		else if (results[ii].find("CO2") != std::string::npos)
+		{
+			bHaveCO2 = true;
+			co2 = RFLinkGetIntStringValue(results[ii]);
+		}
+		else if (results[ii].find("RGBW") != std::string::npos)
+		{
+			bHaveRGBW = true;
+			rgbw = RFLinkGetIntStringValue(results[ii]);
+		}
+		else if (results[ii].find("RGB") != std::string::npos)
+		{
+			bHaveRGB = true;
+			rgb = RFLinkGetIntStringValue(results[ii]);
+		}
+		else if (results[ii].find("BLIND") != std::string::npos)
+		{
+			bHaveBlind = true;
+			blind = RFLinkGetIntStringValue(results[ii]);
+		}
+
+		else if (results[ii].find("KWATT") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveKWatt = true;
+			kwatt = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("WATT") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveWatt = true;
+			watt = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("DIST") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveDistance = true;
+			distance = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("METER") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveMeter = true;
+			meter = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("VOLT") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveVoltage = true;
+			voltage = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("CURRENT") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveCurrent = true;
+			current = float(iTemp) / 10.0f;
+		}
+
 		else if (results[ii].find("SWITCH") != std::string::npos)
 		{
 			bHaveSwitch = true;
@@ -616,6 +712,13 @@ bool CRFLink::ParseLine(const std::string &sLine)
 		}
 		else if (results[ii].find("CMD") != std::string::npos)
 		{
+			bHaveSwitchCmd = true;
+			switchcmd = RFLinkGetStringValue(results[ii]);
+		}
+		else if (results[ii].find("SMOKEALERT") != std::string::npos)
+		{
+			bHaveSwitch = true;
+			switchunit = 1;
 			bHaveSwitchCmd = true;
 			switchcmd = RFLinkGetStringValue(results[ii]);
 		}
@@ -644,9 +747,14 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveLux)
 	{
-		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux);
+		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux, "Lux");
 	}
 
+	if (bHaveUV)
+	{
+  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv);
+	}
+    
 	if (bHaveRain)
 	{
 		SendRainSensor(ID, BatteryLevel, raincounter, "Rain");
@@ -664,7 +772,56 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	{
 		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, "Wind");
 	}
+    
+	if (bHaveCO2)
+	{
+		SendAirQualitySensor((ID & 0xFF00) >> 8, ID & 0xFF, BatteryLevel, co2, "CO2");
+	}
+	if (bHaveSound)
+	{
+		SendSoundSensor(ID, BatteryLevel, sound, "Sound");
+	}
 
+	if (bHaveRGB)
+	{
+		//RRGGBB
+		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgb, false, "RGB Light");
+	}
+	if (bHaveRGBW)
+	{
+		//RRGGBBWW
+		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgbw, true, "RGBW Light");
+	}
+	if (bHaveBlind)
+	{
+		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, "Blinds/Window");
+	}
+
+	if (bHaveKWatt)
+	{
+		SendKwhMeter(Node_ID, Child_ID, BatteryLevel, kwatt / 1000.0f, kwatt, "Meter");
+	}
+	if (bHaveWatt)
+	{
+		SendKwhMeter(Node_ID, Child_ID, BatteryLevel, 0, watt, "Meter");
+	}
+	if (bHaveDistance)
+	{
+		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance);
+	}
+	if (bHaveMeter)
+	{
+		SendMeterSensor(Node_ID, Child_ID, BatteryLevel, meter);
+	}
+	if (bHaveVoltage)
+	{
+		SendVoltageSensor(Node_ID, Child_ID, BatteryLevel, voltage, "Voltage");
+	}
+	if (bHaveCurrent)
+	{
+		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, "Current");
+	}
+    
 	if (bHaveSwitch && bHaveSwitchCmd)
 	{
 		std::string switchType = results[2];

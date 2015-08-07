@@ -164,10 +164,9 @@ void ZWaveBase::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 
 bool ZWaveBase::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 {
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
+		m_HwdID, homeID, nodeID);
 	if (result.size() < 1)
 		return false;
 	std::string ProductDescription = result[0][0];
@@ -214,14 +213,12 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 
 		char szID[10];
 		sprintf(szID, "%08x", (unsigned int)lID);
-		std::string ID = szID;
 		unsigned char unitcode = 1;
 
 		//Check if we already exist
-		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLimitlessLights << ") AND (SubType==" << sTypeLimitlessRGBW << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
 		if (result.size() > 0)
 			return; //Already in the system
 
@@ -233,10 +230,8 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
 
 		//Set Name
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "', SwitchType=" << STYPE_Dimmer << " WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+			pDevice->label.c_str(), STYPE_Dimmer, m_HwdID, szID);
 	}
 	else
 	{
@@ -260,14 +255,12 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 
 		char szID[10];
 		sprintf(szID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-		std::string ID = szID;
 		unsigned char unitcode = 1;
 
 		//Check if we already exist
-		std::stringstream szQuery;
 		std::vector<std::vector<std::string> > result;
-		szQuery << "SELECT ID FROM DeviceStatus WHERE (HardwareID==" << m_HwdID << ") AND (Unit==" << int(unitcode) << ") AND (Type==" << pTypeLighting2 << ") AND (SubType==" << sTypeZWaveSwitch << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeLighting2, sTypeZWaveSwitch, szID);
 		if (result.size() > 0)
 			return; //Already in the system
 
@@ -314,10 +307,8 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
 
 		//Set Name
-		szQuery.clear();
-		szQuery.str("");
-		szQuery << "UPDATE DeviceStatus SET Name='" << pDevice->label << "', SwitchType=" << SwitchType << " WHERE (HardwareID==" << m_HwdID << ") AND (DeviceID=='" << ID << "')";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+			pDevice->label.c_str(), SwitchType, m_HwdID, szID);
 	}
 }
 
@@ -627,7 +618,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT);
 	}
-	else if (pDevice->devType==ZDTYPE_SENSOR_TEMPERATURE)
+	else if (pDevice->devType == ZDTYPE_SENSOR_UV)
+	{
+		SendUVSensor(ID3, ID4, pDevice->batValue, pDevice->floatValue);
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_TEMPERATURE)
 	{
 		if (!pDevice->bValidValue)
 			return;

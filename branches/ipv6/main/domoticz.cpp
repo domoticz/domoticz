@@ -45,12 +45,22 @@
 #ifdef __linux__
 #include <execinfo.h>
 static void dumpstack(void) {
-	static void *backbuf[50];
-	int levels;
+	// Notes :
+	// The following code does needs -rdynamic compile option.not print full backtrace.
+	// To have a full backtrace you need to :
+	// - compile with -g -rdynamic options
+	// - active core dump using "ulimit -c unlimited" before starting daemon
+	// - use gdb to analyze the core dump
+	void *addrs[128];
+	int n, count = backtrace(addrs, 128);
+	char** symbols = backtrace_symbols(addrs, count);
 
-	levels = backtrace(backbuf, 50);
-	backtrace_symbols_fd(backbuf, levels, STDERR_FILENO);
-	return;
+	if (symbols) {
+		for (n = 0; n < count; n++) {
+			_log.Log(LOG_ERROR, "  %s", symbols[n]);
+		}
+		free(symbols);
+	}
 }
 #else
 static void dumpstack(void) {
@@ -60,6 +70,7 @@ static void dumpstack(void) {
 const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
 	"\t-www port (for example -www 8080)\n"
+	"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
 #ifdef NS_ENABLE_SSL
 	"\t-sslwww port (for example -sslwww 443)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
@@ -124,6 +135,8 @@ int pidFilehandle = 0;
 #define DAEMON_NAME "domoticz"
 #define PID_FILE "/var/run/domoticz.pid" 
 
+int fatal_handling = 0;
+
 void signal_handler(int sig_num)
 {
 	switch(sig_num)
@@ -145,9 +158,19 @@ void signal_handler(int sig_num)
 		g_bStopApplication = true;
 		break;
 	case SIGSEGV:
-		//Received a Segmentation error!
+	case SIGILL:
+	case SIGABRT:
+	case SIGFPE:
+		if (fatal_handling) {
+			_log.Log(LOG_ERROR, "Domoticz received fatal signal %d while backtracing !...", sig_num);
+			exit(EXIT_FAILURE);
+		}
+		fatal_handling = 1;
+		_log.Log(LOG_ERROR, "Domoticz received fatal signal %d !...", sig_num);
 		dumpstack();
-		_log.Log(LOG_ERROR, "Domoticz received Segmentation signal!...");
+		// re-raise signal to enforce core dump
+		signal(sig_num, SIG_DFL);
+		raise(sig_num);
 		break;
 	} 
 }
@@ -189,9 +212,11 @@ void daemonize(const char *rundir, const char *pidfile)
 	newSigAction.sa_flags = 0;
 
 	/* Signals to handle */
-	sigaction(SIGTERM, &newSigAction, NULL);    /* catch term signal */
-	sigaction(SIGINT, &newSigAction, NULL);     /* catch interrupt signal */
-	sigaction(SIGSEGV, &newSigAction, NULL);    /* catch Segmentation signal */
+	sigaction(SIGTERM, &newSigAction, NULL);    // catch term signal
+	sigaction(SIGINT,  &newSigAction, NULL);    // catch interrupt signal
+	sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
+	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
+	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
 
 	/* Fork*/
 	pid = fork();
@@ -464,6 +489,7 @@ int main(int argc, char**argv)
 				(sLine.find("BCM2709")!=std::string::npos)
 				)
 			{
+				//Core temperature of BCM2835 SoC
 				_log.Log(LOG_STATUS,"System: Raspberry Pi");
 				szInternalTemperatureCommand="/opt/vc/bin/vcgencmd measure_temp";
 				bHasInternalTemperature=true;
@@ -472,31 +498,31 @@ int main(int argc, char**argv)
 		}
 		infile.close();
 	}
-
-	if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
+	if (!bHasInternalTemperature)
 	{
-		_log.Log(LOG_STATUS,"System: Cubieboard/Cubietruck");
-		szInternalTemperatureCommand="cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
-		bHasInternalTemperature = true;
+		if (file_exist("/sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input"))
+		{
+			_log.Log(LOG_STATUS,"System: Cubieboard/Cubietruck");
+			szInternalTemperatureCommand="cat /sys/devices/platform/sunxi-i2c.0/i2c-0/0-0034/temp1_input | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			bHasInternalTemperature = true;
+		}
+		else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
+		{
+			//_log.Log(LOG_STATUS,"System: ODroid");
+			szInternalTemperatureCommand="cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
+			bHasInternalTemperature = true;
+		}
+		else if (file_exist("/sys/class/power_supply/ac/voltage_now"))
+		{
+			szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+			bHasInternalVoltage = true;
+		}
+		else if (file_exist("/sys/class/power_supply/ac/current_now"))
+		{
+			szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+			bHasInternalCurrent = true;
+		}
 	}
-	else if (file_exist("/sys/devices/virtual/thermal/thermal_zone0/temp"))
-	{
-		_log.Log(LOG_STATUS,"System: ODroid");
-		szInternalTemperatureCommand="cat /sys/devices/virtual/thermal/thermal_zone0/temp | awk '{ printf (\"temp=%0.2f\\n\",$1/1000); }'";
-		bHasInternalTemperature = true;
-	}
-
-	if (file_exist("/sys/class/power_supply/ac/voltage_now"))
-	{
-		szInternalVoltageCommand = "cat /sys/class/power_supply/ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalVoltage = true;
-	}
-	if (file_exist("/sys/class/power_supply/ac/current_now"))
-	{
-		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
-		bHasInternalCurrent = true;
-	}
-
 	_log.Log(LOG_STATUS,"Startup Path: %s", szStartupFolder.c_str());
 #endif
 
@@ -531,6 +557,17 @@ int main(int argc, char**argv)
 		int DelaySeconds = atoi(cmdLine.GetSafeArgument("-startupdelay", 0, "").c_str());
 		_log.Log(LOG_STATUS, "Startup delay... waiting %d seconds...", DelaySeconds);
 		sleep_seconds(DelaySeconds);
+	}
+
+	if (cmdLine.HasSwitch("-wwwbind"))
+	{
+		if (cmdLine.GetArgumentCount("-wwwbind") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify an address");
+			return 1;
+		}
+		std::string wwwbind = cmdLine.GetSafeArgument("-wwwbind", 0, "0.0.0.0");
+		m_mainworker.SetWebserverAddress(wwwbind);
 	}
 
 	if (cmdLine.HasSwitch("-www"))
@@ -691,7 +728,7 @@ int main(int argc, char**argv)
 #ifndef _DEBUG
 	RedirectIOToConsole();	//hide console
 #endif
-	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
+	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, m_mainworker.GetWebserverAddress(), atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
 	MSG Msg;
 	while (!g_bStopApplication)
 	{

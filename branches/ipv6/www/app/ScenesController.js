@@ -144,6 +144,7 @@ define(['app'], function (app) {
 							 url: "json.htm?type=updatescene&idx=" + $.devIdx + 
 									"&scenetype=" + SceneType + 
 									"&name=" + encodeURIComponent($("#scenecontent #devicename").val()) +
+									"&description=" + encodeURIComponent($("#scenecontent #devicedescription").val()) +
 									'&onaction=' + btoa(onaction) +
 									'&offaction=' + btoa(offaction) +
 									"&protected=" + bIsProtected,
@@ -548,7 +549,7 @@ define(['app'], function (app) {
 			}
 		}
 
-		EditSceneDevice = function(idx,name,havecode,type,bIsProtected,learndevicename,onaction,offaction)
+		EditSceneDevice = function(idx,name,description,havecode,type,bIsProtected,learndevicename,onaction,offaction)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -618,7 +619,8 @@ define(['app'], function (app) {
 						  "sPaginationType": "full_numbers",
 						  language: $.DataTableLanguage
 						} );
-			$("#scenecontent #devicename").val(decodeURIComponent(name));
+			$("#scenecontent #devicename").val(unescape(name));
+			$("#scenecontent #devicedescription").val(unescape(description));
 
 			$("#scenecontent #combodevice").html("");
 			
@@ -1076,7 +1078,7 @@ define(['app'], function (app) {
 			
 			$('#modal').show();
 		  var htmlcontent = '';
-		  htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + decodeURIComponent(name) + '</h2></p><br>\n';
+		  htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + unescape(name) + '</h2></p><br>\n';
 		  
 		  var sunRise="";
 		  var sunSet="";
@@ -1226,7 +1228,7 @@ define(['app'], function (app) {
 							var bigtext=TranslateStatusShort(item.Status);
 							if (item.UsedByCamera==true) {
 								var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-								streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+								streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 								bigtext+="&nbsp;"+streamurl;
 							}
 
@@ -1351,7 +1353,7 @@ define(['app'], function (app) {
 						var bigtext=TranslateStatusShort(item.Status);
 					  if (item.UsedByCamera==true) {
 						var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-						streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+						streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 						bigtext+="&nbsp;"+streamurl;
 					  }
 					  xhtm+=bigtext+'</td>\n';
@@ -1389,13 +1391,13 @@ define(['app'], function (app) {
 						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 							if (item.Timers == "true") {
-								xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
+								xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
 							}
 							else {
-								xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',\'' + item.Type +'\');" data-i18n="Timers">Timers</a> ';
+								xhtm+='<a class="btnsmall" onclick="ShowTimers(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + item.Type +'\');" data-i18n="Timers">Timers</a> ';
 							}
 						}
 				  }

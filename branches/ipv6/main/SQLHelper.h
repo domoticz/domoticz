@@ -253,8 +253,9 @@ public:
 
 	bool HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction);
 
-	std::vector<std::vector<std::string> > query(const std::string &szQuery);
-	std::vector<std::vector<std::string> > queryBlob(const std::string &szQuery);
+	std::vector<std::vector<std::string> > safe_query(const char *fmt, ...);
+	std::vector<std::vector<std::string> > safe_queryBlob(const char *fmt, ...);
+	bool DoesColumnExistsInTable(const std::string columnname, const std::string tablename);
 	std::string DeleteUserVariable(const std::string &idx);
 	std::string SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
 	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger);
@@ -331,7 +332,8 @@ private:
 	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
 	bool CheckTime(const std::string &sTime);
 
-
+	std::vector<std::vector<std::string> > query(const std::string &szQuery);
+	std::vector<std::vector<std::string> > queryBlob(const std::string &szQuery);
 };
 
 extern CSQLHelper m_sql;

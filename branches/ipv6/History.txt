@@ -34,6 +34,40 @@ Version 2.xxx (xxxx 2015)
 - Implemented: OpenZWave, multi instance association support (thanks to xs4!!!)
 - Fixed: OpenZWave with large homeid values
 - Fixed: pushover sound notification (thanks to Eduard)
+- Implemented: Danish translation (big thanks to jokkemokke!!)
+- Add Kodi media command interface to web server
+- Implemented: RFLink SmokeDetector support
+- Changed: KMTronic LAN, now using actual On/Off commands instead of 'Toggle'
+- Implemented: OpenZWave, added Ultraviolet sensor type support
+- Implemented: Revolt, added support for Voltage/PowerFactor/Frequency
+- Fixed: Revolt, Enery Graph
+- Fixed: EventSystem, SIGSEGV (cgaudry)
+- Fixed: EventSystem, splitresults has missing values because m_devicestates is modified while using an iterator on the map (cgaudry)
+- Fixed: EventSystem, _tEventItem.Conditions should not be modified while reading m_events (cgaudry)
+- Fixed: EventSystem, asctime is not thread-safe (replaced with strftime) (cgaudry)
+- Changed: Main, dumptrace is not logged because the stderr handle is closed on startup (cgaudry)
+- Changed: Main, signal code received is not logged (cgaudry)
+- Changed: Main, application should be stopped after fatal signal receiving (cgaudry)
+- Changed: Main, all fatal signals where not handled (e.g. SIGILL, SIGABRT,SIGFPE) (cgaudry)
+- Changed: SQLHelper, spelling mistake (cgaudry)
+- Changed: RFXCom, fixed confusing logs (cgaudry)
+- Fixed: Security Panel delay, now again possible to set delay to 0 (directly)
+- Implemented: Support for the Plugwise Anna Thermostat (NEM)
+- Fixed: Temperatures not updated on UI without refreshing browser or changing tabs
+- Fixed: Email Notifications where always enabled after restart
+- Changed: SQL Queries, now using safe_query to escape all strings (big thanks to Thibaut!)
+- Changed: Internal HTML/JS changes to support all types of characters in the sensors name
+- Changed: disabled timeout for smartwares thermostat (no incomming data from device)
+- Implemented: smartwares thermostat, Setpoint popup
+- Implemented: smartwares thermostat, Setpoint, now always logged
+- Fixed: MySensors, switch names where always set to default name (was caused by safe_query changes)
+- Implemented: RGB Popup to select color/on/off
+- Implemented: RFLink: Added various sensors/devices (stuntteam)
+- Implemented: smartwares thermostat, Logging of setpoint value
+- Implemented: smartwares thermostat, Logging of Day/Night switch
+- Implemented: Web Server can now be bind to specific address (-wwwbind) (seb)
+- Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)
+- Implemented: Option to enter a description for each sensor/switch/scene
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!

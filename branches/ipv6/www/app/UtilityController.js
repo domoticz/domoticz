@@ -366,7 +366,7 @@ define(['app'], function (app) {
 			
 			$('#modal').show();
 			var htmlcontent = '';
-			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + decodeURIComponent(name) + '</h2></p><br>\n';
+			htmlcontent='<p><h2><span data-i18n="Name"></span>: ' + unescape(name) + '</h2></p><br>\n';
 
 			var sunRise="";
 			var sunSet="";
@@ -495,45 +495,48 @@ define(['app'], function (app) {
 		  });
 		}
 
-		EditUtilityDevice = function(idx,name)
+		EditUtilityDevice = function(idx,name,description)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editutilitydevice #devicename").val(decodeURIComponent(name));
-		  $( "#dialog-editutilitydevice" ).i18n();
-		  $( "#dialog-editutilitydevice" ).dialog( "open" );
+		  $("#dialog-editutilitydevice #devicename").val(unescape(name));
+		  $("#dialog-editutilitydevice #devicedescription").val(unescape(description));
+		  $("#dialog-editutilitydevice" ).i18n();
+		  $("#dialog-editutilitydevice" ).dialog( "open" );
 		}
 
-		EditDistanceDevice = function(idx,name,switchtype)
+		EditDistanceDevice = function(idx,name,description,switchtype)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editdistancedevice #devicename").val(decodeURIComponent(name));
+		  $("#dialog-editdistancedevice #devicename").val(unescape(name));
+		  $("#dialog-editdistancedevice #devicedescription").val(unescape(description));
 		  $("#dialog-editdistancedevice #combometertype").val(switchtype);
 		  $("#dialog-editdistancedevice" ).i18n();
 		  $("#dialog-editdistancedevice" ).dialog( "open" );
 		}
 
-		EditMeterDevice = function(idx,name,switchtype)
+		EditMeterDevice = function(idx,name,description,switchtype)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 		  $.devIdx=idx;
-		  $("#dialog-editmeterdevice #devicename").val(decodeURIComponent(name));
+		  $("#dialog-editmeterdevice #devicename").val(unescape(name));
+		  $("#dialog-editmeterdevice #devicedescription").val(unescape(description));
 		  $("#dialog-editmeterdevice #combometertype").val(switchtype);
 		  $("#dialog-editmeterdevice" ).i18n();
 		  $("#dialog-editmeterdevice" ).dialog( "open" );
 		}
 
-		EditSetPoint = function(idx,name,setpoint,isprotected)
+		EditSetPoint = function(idx,name,description,setpoint,isprotected)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -541,7 +544,8 @@ define(['app'], function (app) {
 			}
 			HandleProtection(isprotected, function() {
 				$.devIdx=idx;
-				$("#dialog-editsetpointdevice #devicename").val(decodeURIComponent(name));
+				$("#dialog-editsetpointdevice #devicename").val(unescape(name));
+				$("#dialog-editsetpointdevice #devicedescription").val(unescape(description));
 				$('#dialog-editsetpointdevice #protected').prop('checked',(isprotected==true));
 				$("#dialog-editsetpointdevice #setpoint").val(setpoint);
 				$("#dialog-editsetpointdevice #tempunit").html($scope.config.TempSign);
@@ -550,7 +554,7 @@ define(['app'], function (app) {
 			});
 		}
 		
-		EditThermostatClock = function(idx,name,daytime,isprotected)
+		EditThermostatClock = function(idx,name,description,daytime,isprotected)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -559,7 +563,8 @@ define(['app'], function (app) {
 			HandleProtection(isprotected, function() {
 				var sarray=daytime.split(";");
 				$.devIdx=idx;
-				$("#dialog-editthermostatclockdevice #devicename").val(decodeURIComponent(name));
+				$("#dialog-editthermostatclockdevice #devicename").val(unescape(name));
+				$("#dialog-editthermostatclockdevice #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatclockdevice #protected').prop('checked',(isprotected==true));
 				$("#dialog-editthermostatclockdevice #comboclockday").val(parseInt(sarray[0]));
 				$("#dialog-editthermostatclockdevice #clockhour").val(sarray[1]);
@@ -569,13 +574,14 @@ define(['app'], function (app) {
 			});
 		}
 
-		EditThermostatMode = function(idx,name,actmode,modes,isprotected)
+		EditThermostatMode = function(idx,name,description,actmode,modes,isprotected)
 		{
 			HandleProtection(isprotected, function() {
 				var sarray=modes.split(";");
 				$.devIdx=idx;
 				$.isFan=false;
-				$("#dialog-editthermostatmode #devicename").val(decodeURIComponent(name));
+				$("#dialog-editthermostatmode #devicename").val(unescape(name));
+				$("#dialog-editthermostatmode #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatmode #protected').prop('checked',(isprotected==true));
 				//populate mode combo
 				$("#dialog-editthermostatmode #combomode").html("");
@@ -592,13 +598,14 @@ define(['app'], function (app) {
 				$("#dialog-editthermostatmode" ).dialog( "open" );
 			});
 		}
-		EditThermostatFanMode = function(idx,name,actmode,modes,isprotected)
+		EditThermostatFanMode = function(idx,name,description,actmode,modes,isprotected)
 		{
 			HandleProtection(isprotected, function() {
 				var sarray=modes.split(";");
 				$.devIdx=idx;
 				$.isFan=true;
-				$("#dialog-editthermostatmode #devicename").val(decodeURIComponent(name));
+				$("#dialog-editthermostatmode #devicename").val(unescape(name));
+				$("#dialog-editthermostatmode #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatmode #protected').prop('checked',(isprotected==true));
 				//populate mode combo
 				$("#dialog-editthermostatmode #combomode").html("");
@@ -665,11 +672,11 @@ define(['app'], function (app) {
 								status=item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 							}
 						}
-						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
+						else if (item.Type == "Current") {
 						  status=item.Data;
 						  bigtext=item.Data;
 						}
-						else if (item.Type == "Energy") {
+						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 							status=item.Data;
 							if (typeof item.CounterToday != 'undefined') {
 								status+=', ' + $.t("Today") + ': ' + item.CounterToday;
@@ -919,7 +926,7 @@ define(['app'], function (app) {
 						else if (item.Type == "Air Quality") {
 						  xhtm+=item.Data;
 						}
-						else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
+						else if (item.Type == "Current") {
 						  xhtm+=item.Data;
 						}
 						else if (item.SubType == "Percentage") {
@@ -961,11 +968,11 @@ define(['app'], function (app) {
 						status=item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 					  }
 					}
-					else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
+					else if (item.Type == "Current") {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
-					else if (item.Type == "Energy") {
+					else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					  if (typeof item.CounterToday != 'undefined') {
@@ -1024,12 +1031,8 @@ define(['app'], function (app) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
-					else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+					else if (((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||(item.Type == "Radiator 1")) {
 					  xhtm+='override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
-					  status=item.Data + '\u00B0 ' + $scope.config.TempSign;
-					}
-					else if (item.Type == "Radiator 1") {
-					  xhtm+='override.png" height="48" width="48"></td>\n';
 					  status=item.Data + '\u00B0 ' + $scope.config.TempSign;
 					}
 					else if (item.SubType=="Thermostat Clock") {
@@ -1045,7 +1048,7 @@ define(['app'], function (app) {
 					  status=item.Data;
 					}
 					else if (item.SubType == "Sound Level") {
-					  xhtm+='Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="48" width="48"></td>\n';
+					  xhtm+='Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
 					if (typeof item.CounterDeliv != 'undefined') {
@@ -1069,172 +1072,172 @@ define(['app'], function (app) {
 
 				  if (typeof item.Counter != 'undefined') {
 					if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
-						xhtm+='<a class="btnsmall" onclick="ShowSmartLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
+						xhtm+='<a class="btnsmall" onclick="ShowSmartLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 					}
 					else {
-						xhtm+='<a class="btnsmall" onclick="ShowCounterLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
+						xhtm+='<a class="btnsmall" onclick="ShowCounterLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 					}
 					if (permissions.hasPermission("Admin")) {
 						if (item.Type == "P1 Smart Meter") {
-							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 						}
 						else {
-							xhtm+='<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
 						}
 					}
 				  }
 				  else if (item.Type == "Air Quality") {
-					xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowAirQualityLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.SubType == "Percentage") {
-					xhtm+='<a class="btnsmall" onclick="ShowPercentageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowPercentageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Fan") {
-					xhtm+='<a class="btnsmall" onclick="ShowFanLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowFanLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.SubType == "Soil Moisture")||(item.SubType == "Leaf Wetness")) {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Lux") {
-					xhtm+='<a class="btnsmall" onclick="ShowLuxLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowLuxLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Weight") {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',\'' + item.Type +'\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + item.Type +'\', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.Type == "Usage") {
-					xhtm+='<a class="btnsmall" onclick="ShowUsageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowUsageLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  else if ((item.Type == "Current")||(item.Type == "Current/Energy")) {
-					xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
+				  else if (item.Type == "Current") {
+					xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  else if (item.Type == "Energy") {
-						xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
+				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
+						xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 						if (permissions.hasPermission("Admin")) {
-							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 						}
 				  }
 				  else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 						if (permissions.hasPermission("Admin")) {
-							xhtm+='<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
-							xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SetPoint + ',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 							if (item.Timers == "true") {
-								xhtm+='<a class="btnsmall-sel" onclick="ShowSetpointTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
+								xhtm+='<a class="btnsmall-sel" onclick="ShowSetpointTimers(' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
 							}
 							else {
-								xhtm+='<a class="btnsmall" onclick="ShowSetpointTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
+								xhtm+='<a class="btnsmall" onclick="ShowSetpointTimers(' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
 							}
 						}
 				  }
 				  else if (item.Type == "Radiator 1") {
 						if (permissions.hasPermission("Admin")) {
-							xhtm+='<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
-							xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SetPoint + ',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 							if (item.Timers == "true") {
-								xhtm+='<a class="btnsmall-sel" onclick="ShowSetpointTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
+								xhtm+='<a class="btnsmall-sel" onclick="ShowSetpointTimers(' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
 							}
 							else {
-								xhtm+='<a class="btnsmall" onclick="ShowSetpointTimers(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
+								xhtm+='<a class="btnsmall" onclick="ShowSetpointTimers(' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
 							}
 						}
 				  }
 				  else if (item.SubType == "Text") {
-					xhtm+='<a class="btnsmall" onclick="ShowTextLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowTextLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if (item.SubType=="Thermostat Clock") {
 						if (permissions.hasPermission("Admin")) {
-							xhtm+='<a class="btnsmall" onclick="EditThermostatClock(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'' + item.DayTime + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditThermostatClock(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.DayTime + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 						}
 				  }
 				  else if (item.SubType=="Thermostat Mode") {
 						if (permissions.hasPermission("Admin")) {
-							xhtm+='<a class="btnsmall" onclick="EditThermostatMode(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditThermostatMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 						}
 				  }
 				  else if (item.SubType=="Thermostat Fan Mode") {
 						if (permissions.hasPermission("Admin")) {
-							xhtm+='<a class="btnsmall" onclick="EditThermostatFanMode(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							xhtm+='<a class="btnsmall" onclick="EditThermostatFanMode(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', \'' + item.Mode + '\', \'' + item.Modes + '\',' + item.Protected +');" data-i18n="Edit">Edit</a> ';
 						}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Voltage")) {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'VoltageGeneral\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'VoltageGeneral\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Distance")) {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'DistanceGeneral\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'DistanceGeneral\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditDistanceDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Current")) {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'CurrentGeneral\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'CurrentGeneral\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Pressure")) {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'Pressure\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Pressure\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.SubType == "Voltage")||(item.SubType == "Current")||(item.SubType == "A/D")) {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Sound Level")) {
-					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else if ((item.Type == "General")&&(item.SubType == "Alert")) {
-					xhtm+='<a class="btnsmall" onclick="ShowTextLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Log">Log</a> ';
+					xhtm+='<a class="btnsmall" onclick="ShowTextLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  else {
 					if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
 				  if (item.ShowNotifications == true) {
 					  if (permissions.hasPermission("Admin")) {
 						  if (item.Notifications == "true")
-							xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+							xhtm+='<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
 						  else
-							xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+							xhtm+='<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
 					  }
 				  }
 				  xhtm+=      
@@ -1339,7 +1342,10 @@ define(['app'], function (app) {
 			  if ( bValid ) {
 				  $( this ).dialog( "close" );
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + 
+						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + 
+						'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) + 
+						'&used=true',
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -1354,7 +1360,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -1392,7 +1401,11 @@ define(['app'], function (app) {
 			  if ( bValid ) {
 				  $( this ).dialog( "close" );
 				  $.ajax({
-					 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) + '&switchtype=' + $("#dialog-editdistancedevice #combometertype").val() + '&used=true',
+					 url: "json.htm?type=setused&idx=" + $.devIdx + 
+						'&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) + 
+						'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) + 
+						'&switchtype=' + $("#dialog-editdistancedevice #combometertype").val() + 
+						'&used=true',
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {
@@ -1407,7 +1420,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -1441,7 +1457,11 @@ define(['app'], function (app) {
 				  if ( bValid ) {
 					  $( this ).dialog( "close" );
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + '&used=true',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) + 
+							'&switchtype=' + $("#dialog-editmeterdevice #combometertype").val() + 
+							'&used=true',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -1456,7 +1476,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -1493,6 +1516,7 @@ define(['app'], function (app) {
 				  $.ajax({
 					 url: "json.htm?type=setused&idx=" + $.devIdx +
 					 '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
+					 '&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) +
 					 '&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() + 
 					 '&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
 					 '&used=true',
@@ -1510,7 +1534,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -1549,6 +1576,7 @@ define(['app'], function (app) {
 					  $.ajax({
 						 url: "json.htm?type=setused&idx=" + $.devIdx +
 						 '&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) +
+						 '&description=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicedescription").val()) +
 						 '&clock=' + encodeURIComponent(daytimestr) + 
 						 '&protected=' + $('#dialog-editthermostatclockdevice #protected').is(":checked") +
 						 '&used=true',
@@ -1565,7 +1593,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -1609,6 +1640,7 @@ define(['app'], function (app) {
 				  $.ajax({
 					 url: "json.htm?type=setused&idx=" + $.devIdx +
 					 '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) +
+					 '&description=' + encodeURIComponent($("#dialog-editthermostatmode #devicedescription").val()) +
 					 modestr + 
 					 '&protected=' + $('#dialog-editthermostatmode #protected').is(":checked") +
 					 '&used=true',
@@ -1625,7 +1657,10 @@ define(['app'], function (app) {
 				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
 					if (result==true) {
 					  $.ajax({
-						 url: "json.htm?type=setused&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) + '&used=false',
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editthermostatmode #devicedescription").val()) + 
+							'&used=false',
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {

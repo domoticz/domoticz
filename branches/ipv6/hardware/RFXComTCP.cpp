@@ -114,7 +114,7 @@ bool RFXComTCP::onInternalMessage(const unsigned char *pBuffer, const size_t Len
 		{
 			//something is out of sync here!!
 			//restart
-			_log.Log(LOG_ERROR, "input buffer out of sync, going to restart!....");
+			_log.Log(LOG_ERROR, "RFXCOM: input buffer out of sync, going to restart!....");
 			m_rxbufferpos = 0;
 			return false;
 		}

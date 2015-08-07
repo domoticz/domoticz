@@ -43,7 +43,7 @@ BOOL console::IsConsoleVisible()
 	return IsWindowVisible(hWnd);
 }
 
-BOOL console::SetConsoleWindowSize(const int x, const int y)
+BOOL console::SetConsoleWindowSize(const SHORT x, const SHORT y)
 {
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -250,7 +250,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, const int iWebPort, const bool bStartWebBrowser)
+bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCmd, const std::string& webserveraddress, int iWebPort, const bool bStartWebBrowser)
 {
 	g_hInstance=hInstance;
 	WNDCLASSEX wc;
@@ -291,7 +291,7 @@ bool InitWindowsHelper(HINSTANCE hInstance, HINSTANCE hPrevInstance, int nShowCm
 		return false;
 	}
 	char szTrayInfo[100];
-	sprintf(szTrayInfo,"Application Started.\nWebserver port: %d",iWebPort);
+	sprintf(szTrayInfo, "Application Started.\nWebserver address: %s\nWebserver port: %d", webserveraddress.c_str(), iWebPort);
 	TrayMessage(NIM_ADD,szTrayInfo);
 	ShowWindow(g_hWnd, SW_HIDE);
 #ifndef _DEBUG

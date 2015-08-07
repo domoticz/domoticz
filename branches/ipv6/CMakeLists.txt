@@ -170,6 +170,7 @@ hardware/1Wire/1WireByOWFS.cpp
 hardware/1Wire/1WireByKernel.cpp
 hardware/1Wire/1WireCommon.cpp
 hardware/1Wire/1WireForWindows.cpp
+hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/BMP085.cpp

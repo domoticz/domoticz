@@ -192,6 +192,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
+		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -687,6 +688,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeByronMP001, "Byron MP001" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus, "SelectPlus" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus3, "SelectPlus3" },
+		{ pTypeGeneralSwitch, sSwitchTypeFA20, "FA20RF" },
 
 		{  0,0,NULL }
 	};
@@ -1789,7 +1791,7 @@ void GetLightStatus(
 	case pTypeEvohomeRelay:
 		bHaveDimmer=true;
 		maxDimLevel=200;
-		llevel=int(0.5f*atof(sValue.c_str()));;
+		llevel=int(0.5f*atof(sValue.c_str()));
 		switch (nValue)
 		{
 		case light1_sOff:

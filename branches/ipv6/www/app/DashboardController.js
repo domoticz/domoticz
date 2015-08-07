@@ -143,7 +143,7 @@ define(['app'], function (app) {
 												var bigtext=TranslateStatusShort(item.Status);
 												if (item.UsedByCamera==true) {
 													var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-													streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+													streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 													bigtext+="&nbsp;"+streamurl;
 												}
 												
@@ -227,10 +227,10 @@ define(['app'], function (app) {
 									}
 										else if (item.SwitchType == "Contact") {
 											if (item.Status == 'Closed') {
-												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Closed") +'</button>';
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Closed") +'</button>';
 											}
 											else {
-												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Open") +'</button>';
+												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Open") +'</button>';
 											}
 										}
 										else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
@@ -353,10 +353,10 @@ define(['app'], function (app) {
 										else if (item.SwitchType == "Dusk Sensor") {
 											if (item.Status == 'On')
 											{
-												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Dark") +'</button>';
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Dark") +'</button>';
 											}
 											else {
-												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Sunny") +'</button>';
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Sunny") +'</button>';
 											}
 										}
 										else if (item.SwitchType == "Motion Sensor") {
@@ -366,26 +366,26 @@ define(['app'], function (app) {
 													(item.Status == 'Group On')||
 													(item.Status.indexOf('Set ') == 0)
 												 ) {
-														status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Motion") +'</button>';
+														status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Motion") +'</button>';
 											}
 											else {
-														status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("No Motion") +'</button>';
+														status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("No Motion") +'</button>';
 											}
 										}
 										else if (item.SwitchType == "Dusk Sensor") {
 											if (item.Status == 'On') {
-												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Dark") +'</button>';
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Dark") +'</button>';
 											}
 											else {
-												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Sunny") +'</button>';
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Sunny") +'</button>';
 											}
 										}
 										else if (item.SwitchType == "Smoke Detector") {
 											if ((item.Status == "Panic")||(item.Status == "On")) {
-												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("SMOKE") +'</button>';
+												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("SMOKE") +'</button>';
 											}
 											else {
-												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("No Smoke") +'</button>';
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("No Smoke") +'</button>';
 											}
 										}
 										else {
@@ -426,7 +426,7 @@ define(['app'], function (app) {
 										var bigtext=TranslateStatusShort(item.Status);
 										if (item.UsedByCamera==true) {
 											var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-											streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+											streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 											bigtext+="&nbsp;"+streamurl;
 										}
 										
@@ -468,10 +468,10 @@ define(['app'], function (app) {
 										}
 										else if (item.SwitchType == "Contact") {
 											if (item.Status == 'Closed') {
-												img='<img src="images/contact48.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40" >';
+												img='<img src="images/contact48.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40" >';
 											}
 											else {
-												img='<img src="images/contact48_open.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
+												img='<img src="images/contact48_open.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 											}
 										}
 										else if ((item.SwitchType == "Blinds")||(item.SwitchType.indexOf("Venetian Blinds") == 0)) {
@@ -548,7 +548,10 @@ define(['app'], function (app) {
 													(item.Status == 'Group On')||
 													(item.Status.indexOf('Set ') == 0)
 												 ) {
-														if (item.SubType=="RGBW") {
+														if (item.SubType=="RGB") {
+															img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
+														}
+														else if (item.SubType=="RGBW") {
 															img='<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
 														}
 														else {
@@ -556,7 +559,10 @@ define(['app'], function (app) {
 														}
 											}
 											else {
-														if (item.SubType=="RGBW") {
+														if (item.SubType=="RGB") {
+															img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
+														}
+														else if (item.SubType=="RGBW") {
 															img='<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40">';
 														}
 														else {
@@ -580,17 +586,17 @@ define(['app'], function (app) {
 											if (
 													(item.Status == 'On')
 												 ) {
-														img='<img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
+														img='<img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 											}
 											else {
-														img='<img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
+														img='<img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 											}
 										}
 										else if (item.SwitchType == "Media Player") {
 										    if (item.CustomImage == 0) item.Image = item.TypeImg;
 										    if ((item.Status != 'Off') && (item.Status != '0')) {
 										        img = '<img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-										        img2 = '<img src="images/remote48.png" height="40" width="40">';
+										        img2 = '<img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ');" class="lcursor" height="40" width="40">';
 										    }
 										    else {
 										        img = '<img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40">';
@@ -606,10 +612,10 @@ define(['app'], function (app) {
 													(item.Status == 'Group On')||
 													(item.Status.indexOf('Set ') == 0)
 												 ) {
-														img='<img src="images/motion48-on.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
+														img='<img src="images/motion48-on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 											}
 											else {
-														img='<img src="images/motion48-off.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
+														img='<img src="images/motion48-off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 											}
 										}
 										else if (item.SwitchType == "Smoke Detector") {
@@ -617,10 +623,10 @@ define(['app'], function (app) {
 														(item.Status == "Panic")||
 														(item.Status == "On")
 													 ) {
-														img='<img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
+														img='<img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 												}
 												else {
-														img='<img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
+														img='<img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 												}
 										}
 										else {
@@ -710,7 +716,7 @@ define(['app'], function (app) {
 								if (typeof obj != 'undefined') {
 									var vname=item.Name;
 									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
-										var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+										var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
 									}
 									if ($(id + " #name").html()!=vname) {
 										$(id + " #name").html(vname);
@@ -755,7 +761,7 @@ define(['app'], function (app) {
 												img+=GetTemp48Item(item.Chill);
 											}
 										}
-										img+='" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40">';
+										img+='" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
 										if ($(id + " #img").html()!=img) {
 											$(id + " #img").html(img);
 										}
@@ -806,10 +812,12 @@ define(['app'], function (app) {
 										}
 										
 										if ($(id + " #status").html()!=status) {
-											if (typeof $(id + " #bigtext") != 'undefined') {
+											$(id + " #status").html(status);
+										}
+										if (typeof $(id + " #bigtext") != 'undefined') {
+											if ($(id + " #bigtext").html()!=bigtext) {
 												$(id + " #bigtext").html(bigtext);
 											}
-											$(id + " #status").html(status);
 										}
 										if ($(id + " #lastupdate").html()!=item.LastUpdate) {
 											$(id + " #lastupdate").html(item.LastUpdate);
@@ -884,7 +892,7 @@ define(['app'], function (app) {
 										var status="";
 										var bigtext="";
 										if (typeof item.Rain != 'undefined') {
-											img='<img src="images/rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40">';
+											img='<img src="images/rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
 											status=item.Rain + ' mm';
 											bigtext=item.Rain + ' mm';
 											if (typeof item.RainRate != 'undefined') {
@@ -899,7 +907,7 @@ define(['app'], function (app) {
 											bigtext=item.Data;
 										}
 										else if (typeof item.UVI != 'undefined') {
-											img='<img src="images/uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40">';
+											img='<img src="images/uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
 											status=item.UVI + ' UVI';
 											bigtext=item.UVI + ' UVI';
 											if (typeof item.Temp!= 'undefined') {
@@ -912,7 +920,7 @@ define(['app'], function (app) {
 											bigtext=item.Data;
 										}
 										else if (typeof item.Direction != 'undefined') {
-											img='<img src="images/Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40">';
+											img='<img src="images/Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
 											status=item.Direction + ' ' + item.DirectionStr;
 											if (typeof item.Speed != 'undefined') {
 												status+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
@@ -939,7 +947,7 @@ define(['app'], function (app) {
 											}
 										}
 										else if (typeof item.Barometer != 'undefined') {
-											img='<img src="images/baro48.png" class="lcursor" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40">';
+											img='<img src="images/baro48.png" class="lcursor" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40">';
 											bigtext=item.Barometer + ' hPa';
 											if (typeof item.ForecastStr != 'undefined') {
 												status=item.Barometer + ' hPa, ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
@@ -1214,11 +1222,12 @@ define(['app'], function (app) {
 										status+='U: T: ' + item.CounterToday;
 									}
 								}
-								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
+								else if (item.Type == "Current") {
 									status+=item.Data;
 								}
 								else if (
 											(item.Type == "Energy")||
+											(item.Type == "Current/Energy")||
 											(item.Type == "Air Quality")||
 											(item.Type == "Lux")||
 											(item.Type == "Weight")||
@@ -1284,11 +1293,11 @@ define(['app'], function (app) {
 										status='' + $.t("Usage") + ': ' + item.CounterToday;
 									}
 								}
-								else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
+								else if (item.Type == "Current") {
 									status=item.Data;
 									bigtext=item.Data;
 								}
-								else if (item.Type == "Energy") {
+								else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 									status=item.Data;
 								}
 								else if (item.Type == "Air Quality") {
@@ -1572,7 +1581,7 @@ define(['app'], function (app) {
 									  var bigtext=TranslateStatusShort(item.Status);
 									  if (item.UsedByCamera==true) {
 										var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-										streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+										streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 										bigtext+="&nbsp;"+streamurl;
 									  }
 									  xhtm+=bigtext+'</td>\n';
@@ -1709,10 +1718,10 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Contact") {
 											if (item.Status == 'Closed') {
-												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Closed") +'</button>';
+												status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Closed") +'</button>';
 											}
 											else {
-												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Open") +'</button>';
+												status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Open") +'</button>';
 											}
 										}
 									else if ((item.SwitchType == "Blinds") || (item.SwitchType.indexOf("Venetian Blinds") == 0)) {
@@ -1831,10 +1840,10 @@ define(['app'], function (app) {
 									else if (item.SwitchType == "Dusk Sensor") {
 										if (item.Status == 'On')
 										{
-													status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Dark") +'</button>';
+													status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Dark") +'</button>';
 										}
 										else {
-													status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Sunny") +'</button>';
+													status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Sunny") +'</button>';
 										}
 									}
 									else if (item.SwitchType == "Motion Sensor") {
@@ -1844,10 +1853,10 @@ define(['app'], function (app) {
 												(item.Status == 'Group On')||
 												(item.Status.indexOf('Set ') == 0)
 											 ) {
-														status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Motion") +'</button>';
+														status='<button class="btn btn-mini btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("Motion") +'</button>';
 											}
 											else {
-														status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("No Motion") +'</button>';
+														status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("No Motion") +'</button>';
 											}
 									}
 									else if (item.SwitchType == "Smoke Detector") {
@@ -1855,10 +1864,10 @@ define(['app'], function (app) {
 													(item.Status == "Panic")||
 													(item.Status == "On")
 												 ) {
-														status='<button class="btn btn-mini  btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("SMOKE") +'</button>';
+														status='<button class="btn btn-mini  btn-info" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("SMOKE") +'</button>';
 											}
 											else {
-														status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("No Smoke") +'</button>';
+														status='<button class="btn btn-mini" type="button" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');">' + $.t("No Smoke") +'</button>';
 											}
 									}
 									else {
@@ -1935,7 +1944,7 @@ define(['app'], function (app) {
 									var bigtext=TranslateStatusShort(item.Status);
 									if (item.UsedByCamera==true) {
 										var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-										streamurl="<a href=\"javascript:ShowCameraLiveStream('" + encodeURIComponent(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+										streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 										bigtext+="&nbsp;"+streamurl;
 									}
 									xhtm+=bigtext+'</td>\n';
@@ -1977,17 +1986,17 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Contact") {
 										if (item.Status == 'Closed') {
-											xhtm+='\t      <td id="img"><img src="images/contact48.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/contact48.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 										}
 										else {
-											xhtm+='\t      <td id="img"><img src="images/contact48_open.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+											xhtm+='\t      <td id="img"><img src="images/contact48_open.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 										}
 									}
 									else if (item.SwitchType == "Media Player") {
 									    if (item.CustomImage == 0) item.Image = item.TypeImg;
 									    if ((item.Status != 'Off') && (item.Status != '0')) {
 									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-									        xhtm += '\t      <td id="img2"><img src="images/remote48.png" height="40" width="40"></td>\n';
+									        xhtm += '\t      <td id="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ');" class="lcursor" height="40" width="40"></td>\n';
 									    }
 									    else {
 									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
@@ -2070,7 +2079,10 @@ define(['app'], function (app) {
 												(item.Status == 'Group On')||
 												(item.Status.indexOf('Set ') == 0)
 											 ) {
-													if (item.SubType=="RGBW") {
+													if (item.SubType=="RGB") {
+														xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+													}
+													else if (item.SubType=="RGBW") {
 														xhtm+='\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
 													}
 													else {
@@ -2078,7 +2090,10 @@ define(['app'], function (app) {
 													}
 										}
 										else {
-													if (item.SubType=="RGBW") {
+													if (item.SubType=="RGB") {
+														xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
+													}
+													else if (item.SubType=="RGBW") {
 														xhtm+='\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="40" width="40"></td>\n';
 													}
 													else {
@@ -2099,10 +2114,10 @@ define(['app'], function (app) {
 									else if (item.SwitchType == "Dusk Sensor") {
 										if (item.Status == 'On')
 										{
-													xhtm+='\t      <td id="img"><img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+													xhtm+='\t      <td id="img"><img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 										}
 										else {
-													xhtm+='\t      <td id="img"><img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+													xhtm+='\t      <td id="img"><img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 										}
 									}
 									else if (item.SwitchType == "Motion Sensor") {
@@ -2112,10 +2127,10 @@ define(['app'], function (app) {
 												(item.Status == 'Group On')||
 												(item.Status.indexOf('Set ') == 0)
 											 ) {
-													xhtm+='\t      <td id="img"><img src="images/motion48-on.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+													xhtm+='\t      <td id="img"><img src="images/motion48-on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 										}
 										else {
-													xhtm+='\t      <td id="img"><img src="images/motion48-off.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+													xhtm+='\t      <td id="img"><img src="images/motion48-off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 										}
 									}
 									else if (item.SwitchType == "Smoke Detector") {
@@ -2123,10 +2138,10 @@ define(['app'], function (app) {
 													(item.Status == "Panic")||
 													(item.Status == "On")
 												 ) {
-													xhtm+='\t      <td id="img"><img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+													xhtm+='\t      <td id="img"><img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 											}
 											else {
-													xhtm+='\t      <td id="img"><img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + encodeURIComponent(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
+													xhtm+='\t      <td id="img"><img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
 											}
 									}
 									else {
@@ -2232,7 +2247,7 @@ define(['app'], function (app) {
 					}
 					var xhtm="";
 								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
-									var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+									var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
 
 									xhtm+=
 											'\t    <tr id="temp_' + item.idx +'">\n' +
@@ -2320,7 +2335,7 @@ define(['app'], function (app) {
 											xhtm+=GetTemp48Item(item.Chill);
 										}
 									}
-									xhtm+='" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n' +
+									xhtm+='" class="lcursor" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
 											'\t      <td id="status">';
 									var bHaveBefore=false;
 									if (typeof item.HumidityStatus != 'undefined') {
@@ -2490,7 +2505,7 @@ define(['app'], function (app) {
 									xhtm+='</td>\n';
 									xhtm+='\t      <td id="img"><img src="images/';
 									if (typeof item.Rain != 'undefined') {
-										xhtm+='rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n' +
+										xhtm+='rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
 										'\t      <td id="status">' + item.Rain + ' mm';
 										if (typeof item.RainRate != 'undefined') {
 											if (item.RainRate!=0) {
@@ -2499,22 +2514,22 @@ define(['app'], function (app) {
 										}
 									}
 									else if (typeof item.Visibility != 'undefined') {
-										xhtm+='visibility48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');" height="40" width="40"></td>\n' +
+										xhtm+='visibility48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');" height="40" width="40"></td>\n' +
 										'\t      <td id="status">' + item.Data;
 									}
 									else if (typeof item.UVI != 'undefined') {
-										xhtm+='uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n' +
+										xhtm+='uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
 										'\t      <td id="status">' + item.UVI + ' UVI';
 										if (typeof item.Temp!= 'undefined') {
 											xhtm+=', Temp: ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 										}
 									}
 									else if (typeof item.Radiation != 'undefined') {
-										xhtm+='radiation48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');" height="40" width="40"></td>\n' +
+										xhtm+='radiation48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');" height="40" width="40"></td>\n' +
 										'\t      <td id="status">' + item.Data;
 									}
 									else if (typeof item.Direction != 'undefined') {
-										xhtm+='Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n' +
+										xhtm+='Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
 										'\t      <td id="status">' + item.Direction + ' ' + item.DirectionStr;
 										if (typeof item.Speed != 'undefined') {
 											xhtm+=', ' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
@@ -2534,7 +2549,7 @@ define(['app'], function (app) {
 										}
 									}
 									else if (typeof item.Barometer != 'undefined') {
-										xhtm+='baro48.png" class="lcursor" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n' +
+										xhtm+='baro48.png" class="lcursor" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n' +
 										'\t      <td id="status">' + item.Barometer + ' hPa';
 										if (typeof item.ForecastStr != 'undefined') {
 											xhtm+=', ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
@@ -2900,11 +2915,12 @@ define(['app'], function (app) {
 								status='U: T: ' + item.CounterToday;
 							}
 						}
-						else if ((item.Type == "Current") || (item.Type == "Current/Energy")){
+						else if (item.Type == "Current"){
 							status=item.Data;
 						}
 						else if (
 									(item.Type == "Energy")||
+									(item.Type == "Current/Energy")||
 									(item.Type == "Air Quality")||
 									(item.Type == "Lux")||
 									(item.Type == "Weight")||
@@ -3012,7 +3028,7 @@ define(['app'], function (app) {
 								(item.SubType=="Pressure")||
 								(item.SubType=="A/D")||
 								(item.SubType=="Sound Level")||
-								((item.Type == "Current") || (item.Type == "Current/Energy"))
+								(item.Type == "Current")
 							) {
 							xhtm+=item.Data;
 						}
@@ -3027,10 +3043,10 @@ define(['app'], function (app) {
 						var status="";
 						if (typeof item.Counter != 'undefined') {
 							if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
-								xhtm+='counter.png" class="lcursor" onclick="ShowSmartLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+								xhtm+='counter.png" class="lcursor" onclick="ShowSmartLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							}
 							else {
-								xhtm+='counter.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+								xhtm+='counter.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							}
 							if ((item.SubType!="Gas")&&(item.SubType != "RFXMeter counter")) {
 								status='' + $.t("Usage") + ': ' + item.CounterToday;
@@ -3039,28 +3055,28 @@ define(['app'], function (app) {
 								status="&nbsp;";
 							}
 						}
-						else if ((item.Type == "Current") || (item.Type == "Current/Energy")) {
-							xhtm+='current48.png" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
+						else if (item.Type == "Current") {
+							xhtm+='current48.png" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
-						else if (item.Type == "Energy") {
-							xhtm+='current48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
+							xhtm+='current48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.Type == "Air Quality") {
-							xhtm+='air48.png" class="lcursor" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n';
+							xhtm+='air48.png" class="lcursor" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 							status=item.Data + " (" + item.Quality + ")";
 						}
 						else if (item.SubType == "Percentage") {
-							xhtm+='Percentage48.png" class="lcursor" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n';
+							xhtm+='Percentage48.png" class="lcursor" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.Type == "Fan") {
-							xhtm+='Fan48_On.png" class="lcursor" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\');" height="40" width="40"></td>\n';
+							xhtm+='Fan48_On.png" class="lcursor" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}				
 						else if (item.Type == "Lux") {
-							xhtm+='lux48.png" class="lcursor" onclick="ShowLuxLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+							xhtm+='lux48.png" class="lcursor" onclick="ShowLuxLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.Type == "Weight") {
@@ -3068,7 +3084,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.Type == "Usage") {
-							xhtm+='current48.png" class="lcursor" onclick="ShowUsageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+							xhtm+='current48.png" class="lcursor" onclick="ShowUsageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Soil Moisture") {
@@ -3080,15 +3096,15 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType=="Distance") {
-							xhtm+='visibility48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'DistanceGeneral\');" height="40" width="40"></td>\n';
+							xhtm+='visibility48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'DistanceGeneral\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if ((item.SubType=="Voltage")||(item.SubType=="Current")||(item.SubType=="A/D")) {
-							xhtm+='current48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
+							xhtm+='current48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Text") {
-							xhtm+='text48.png" height="40" width="40"></td>\n';
+							xhtm+='text48.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Alert") {
@@ -3096,7 +3112,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType=="Pressure") {
-							xhtm+='gauge48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
+							xhtm+='gauge48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
@@ -3112,7 +3128,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType=="Sound Level") {
-							xhtm+='Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + encodeURIComponent(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
+							xhtm+='Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						

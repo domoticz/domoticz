@@ -68,8 +68,7 @@ void S0MeterBase::ReloadLastTotals()
 		std::vector<std::vector<std::string> > result;
 		std::vector<std::string> results;
 		/*
-		sprintf(szTmp,"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%d' AND Unit=0 AND Type=%d AND SubType=%d)",m_HwdID, ii+1, pTypeENERGY, sTypeELEC2);
-		result=m_sql.query(szTmp);
+		result=m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%d' AND Unit=0 AND Type=%d AND SubType=%d)",m_HwdID, ii+1, pTypeENERGY, sTypeELEC2);
 		if (result.size()==1)
 		{
 			StringSplit(result[0][0],";",results);
@@ -80,9 +79,7 @@ void S0MeterBase::ReloadLastTotals()
 		}
 		*/
 
-		std::stringstream szQuery;
-		szQuery << "SELECT sValue FROM DeviceStatus WHERE (HardwareID=" << m_HwdID << " AND DeviceID=" << (ii+1) << ")";
-		result = m_sql.query(szQuery.str());
+		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID=%d)", m_HwdID, (ii+1));
 		if (result.size() == 1)
 		{
 			StringSplit(result[0][0], ";", results);
@@ -350,7 +347,6 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::stringstream szQuery;
 			std::stringstream szAddress;
 
 			std::string S0M1Type = m_pWebEm->FindValue("S0M1Type");
@@ -372,8 +368,7 @@ namespace http {
 				S0M4Type << ";" << M4PulsesPerHour << ";" <<
 				S0M5Type << ";" << M5PulsesPerHour;
 
-			szQuery << "UPDATE Hardware SET Address='" << szAddress.str() << "' WHERE (ID=" << idx << ")";
-			m_sql.query(szQuery.str());
+			m_sql.safe_query("UPDATE Hardware SET Address='%q' WHERE (ID='%q')", szAddress.str().c_str(), idx.c_str());
 			m_mainworker.RestartHardware(idx);
 			return (char*)m_retstr.c_str();
 		}

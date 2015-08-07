@@ -63,13 +63,12 @@ namespace OpenZWave
 		void OnValueRefreshed( int32 const _valueIdx );
 
 		// From Value
-		virtual string const GetAsString() const { return GetItem().m_label; }
+		virtual string const GetAsString() const { return GetItem()->m_label; }
 		virtual bool SetFromString( string const& _value ) { return SetByLabel( _value ); }
 		virtual void ReadXML( uint32 const _homeId, uint8 const _nodeId, uint8 const _commandClassId, TiXmlElement const* _valueElement );
 		virtual void WriteXML( TiXmlElement* _valueElement );
 
-		Item const& GetItem()const{ return m_items[m_valueIdx]; }
-		Item const& GetNewItem()const{ return m_items[m_newValueIdx]; }
+		Item const* GetItem() const;
 
 		int32 const GetItemIdxByLabel( string const& _label );
 		int32 const GetItemIdxByValue( int32 const _value );

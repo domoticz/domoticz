@@ -1675,6 +1675,16 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				InsertDevice(_device);
 			}
 		}
+		else if (vLabel == "Ultraviolet")
+		{
+			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+			{
+				_device.floatValue = fValue;
+				_device.commandClassID = 49;
+				_device.devType = ZDTYPE_SENSOR_UV;
+				InsertDevice(_device);
+			}
+		}
 		else if (vLabel == "Velocity")
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
@@ -2625,6 +2635,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			return;
 		pDevice->intvalue = round(fValue);
 		break;
+	case ZDTYPE_SENSOR_UV:
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Ultraviolet")
+			return;
+		pDevice->floatValue = fValue;
+		break;
 	case ZDTYPE_SENSOR_VELOCITY:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
@@ -2814,9 +2831,7 @@ bool COpenZWave::SoftResetDevice()
 	if (m_pManager == NULL)
 		return false;
 
-	std::stringstream szQuery;
-	szQuery << "DELETE FROM ZWaveNodes WHERE (HardwareID = '" << m_HwdID << "')";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID = %d)", m_HwdID);
 
 	m_pManager->SoftReset(m_controllerID);
 	_log.Log(LOG_STATUS, "OpenZWave: Soft Reset device executed...");
@@ -2828,9 +2843,8 @@ bool COpenZWave::HardResetDevice()
 	if (m_pManager == NULL)
 		return false;
 
-	std::stringstream szQuery;
-	szQuery << "DELETE FROM ZWaveNodes WHERE (HardwareID = '" << m_HwdID << "')";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID = '%q')",
+		m_HwdID);
 
 	m_pManager->ResetController(m_controllerID);
 	_log.Log(LOG_STATUS, "OpenZWave: Hard Reset device executed...");
@@ -2864,10 +2878,9 @@ bool COpenZWave::NetworkInfo(const int hwID, std::vector< std::vector< int > > &
 		return false;
 	}
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT HomeID,NodeID FROM ZWaveNodes WHERE (HardwareID = '" << hwID << "')";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT HomeID,NodeID FROM ZWaveNodes WHERE (HardwareID = %d)",
+		hwID);
 	if (result.size() < 1) {
 		return false;
 	}
@@ -2905,6 +2918,14 @@ int COpenZWave::ListGroupsForNode(const int nodeID)
 	if (m_pManager == NULL)
 		return 0;
 	return m_pManager->GetNumGroups(m_controllerID, nodeID);
+}
+
+std::string COpenZWave::GetGroupName(const int nodeID,const int groupID)
+{
+	if (m_pManager == NULL)
+		return "";
+
+	return m_pManager->GetGroupLabel(m_controllerID, nodeID, groupID);
 }
 
 int COpenZWave::ListAssociatedNodesinGroup(const int nodeID, const int groupID, std::vector<string> &nodesingroup)
@@ -3109,10 +3130,9 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 
 	bool bSingleIndexPoll = false;
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT ProductDescription FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
+		m_HwdID, homeID, nodeID);
 	if (result.size() > 0)
 	{
 		std::string ProductDescription = result[0][0];
@@ -3252,9 +3272,8 @@ void COpenZWave::DisableNodePoll(const unsigned int homeID, const int nodeID)
 
 void COpenZWave::DeleteNode(const unsigned int homeID, const int nodeID)
 {
-	std::stringstream szQuery;
-	szQuery << "DELETE FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	m_sql.query(szQuery.str());
+	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
+		m_HwdID, homeID, nodeID);
 }
 
 void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const NodeInfo *pNode)
@@ -3264,21 +3283,20 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 	if (homeID != m_controllerID)
 		return;
 	//Check if node already exist
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT ID FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
-	result = m_sql.query(szQuery.str());
-	szQuery.clear();
-	szQuery.str("");
+	result = m_sql.safe_query("SELECT ID FROM ZWaveNodes WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
+		m_HwdID, homeID, nodeID);
 	std::string sProductDescription = pNode->Manufacturer_name + " " + pNode->Product_name;
 
 	if (result.size() < 1)
 	{
 		//Not Found, Add it to the database
 		if (nodeID != m_controllerNodeId)
-			szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'" << sProductDescription << "')";
+			m_sql.safe_query("INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, ProductDescription) VALUES (%d,%u,%d,'%q')",
+				m_HwdID, homeID, nodeID, sProductDescription.c_str());
 		else
-			szQuery << "INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, Name,ProductDescription) VALUES (" << m_HwdID << "," << homeID << "," << nodeID << ",'Controller','" << sProductDescription << "')";
+			m_sql.safe_query("INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, Name,ProductDescription) VALUES (%d,%u,%d,'Controller','%q')",
+				m_HwdID, homeID, nodeID, sProductDescription.c_str());
 	}
 	else
 	{
@@ -3288,9 +3306,9 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 			)
 			return;
 		//Update ProductDescription
-		szQuery << "UPDATE ZWaveNodes SET ProductDescription='" << sProductDescription << "' WHERE (HardwareID==" << m_HwdID << ") AND (HomeID==" << homeID << ") AND (NodeID==" << nodeID << ")";
+		m_sql.safe_query("UPDATE ZWaveNodes SET ProductDescription='%q' WHERE (HardwareID==%d) AND (HomeID==%u) AND (NodeID==%d)",
+			sProductDescription.c_str(), m_HwdID, homeID, nodeID);
 	}
-	m_sql.query(szQuery.str());
 }
 
 std::string COpenZWave::GetVersion()
@@ -3319,10 +3337,9 @@ void COpenZWave::EnableDisableNodePolling(int NodeID)
 
 	m_pManager->SetPollInterval(intervalseconds * 1000, false);
 
-	std::stringstream szQuery;
 	std::vector<std::vector<std::string> > result;
-	szQuery << "SELECT PollTime FROM ZWaveNodes WHERE (HardwareID==" << m_HwdID << ") AND (NodeID==" << NodeID << ")";
-	result = m_sql.query(szQuery.str());
+	result = m_sql.safe_query("SELECT PollTime FROM ZWaveNodes WHERE (HardwareID==%d) AND (NodeID==%d)",
+		m_HwdID, NodeID);
 	if (result.size() < 1)
 		return;
 	int PollTime = atoi(result[0][0].c_str());
@@ -3645,7 +3662,9 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 					struct tm timeinfo;
 					localtime_r(&ittCmds->second.m_LastSeen, &timeinfo);
 
-					char *szDate = asctime(&timeinfo);
+					char szDate[30];
+					strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
+
 					root["result"][index]["config"][ivalue]["index"] = i_index;
 					root["result"][index]["config"][ivalue]["label"] = i_label;
 					root["result"][index]["config"][ivalue]["units"] = i_units;
@@ -3672,7 +3691,8 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 							struct tm timeinfo;
 							localtime_r(&ittCmds->second.m_LastSeen, &timeinfo);
 
-							char *szDate = asctime(&timeinfo);
+							char szDate[30];
+							strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
 							root["result"][index]["config"][ivalue]["index"] = i_index;
 							root["result"][index]["config"][ivalue]["label"] = i_label;
 							root["result"][index]["config"][ivalue]["units"] = i_units;
@@ -3914,10 +3934,9 @@ namespace http {
 			root["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried) || (pOZWHardware->m_allNodesQueried);
 			root["ownNodeId"] = pOZWHardware->m_controllerNodeId;
 
-			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
-			szQuery << "SELECT ID,HomeID,NodeID,Name,ProductDescription,PollTime FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
-			result = m_sql.query(szQuery.str());
+			result = m_sql.safe_query("SELECT ID,HomeID,NodeID,Name,ProductDescription,PollTime FROM ZWaveNodes WHERE (HardwareID==%d)",
+				iHardwareID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3984,17 +4003,14 @@ namespace http {
 			root["title"] = "UpdateZWaveNode";
 
 			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
 
-			sprintf(szTmp,
-				"UPDATE ZWaveNodes SET Name='%s', PollTime=%d WHERE (ID==%s)",
+			m_sql.safe_query(
+				"UPDATE ZWaveNodes SET Name='%q', PollTime=%d WHERE (ID=='%q')",
 				name.c_str(),
 				(senablepolling == "true") ? 1 : 0,
 				idx.c_str()
 				);
-			result = m_sql.query(szTmp);
-			sprintf(szTmp, "SELECT HardwareID, HomeID, NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
-			result = m_sql.query(szTmp);
+			result = m_sql.safe_query("SELECT HardwareID, HomeID, NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
@@ -4022,9 +4038,7 @@ namespace http {
 			if (idx == "")
 				return;
 			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
-			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
-			result = m_sql.query(szTmp);
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID=='%q')", idx.c_str());
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
@@ -4037,8 +4051,7 @@ namespace http {
 					pOZWHardware->RemoveFailedDevice(nodeID);
 					root["status"] = "OK";
 					root["title"] = "DeleteZWaveNode";
-					sprintf(szTmp, "DELETE FROM ZWaveNodes WHERE (ID==%s)", idx.c_str());
-					result = m_sql.query(szTmp);
+					result = m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (ID=='%q')", idx.c_str());
 				}
 			}
 
@@ -4330,10 +4343,9 @@ namespace http {
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 
-				std::stringstream szQuery;
 				std::vector<std::vector<std::string> > result;
-				szQuery << "SELECT ID,HomeID,NodeID,Name FROM ZWaveNodes WHERE (HardwareID==" << iHardwareID << ")";
-				result = m_sql.query(szQuery.str());
+				result = m_sql.safe_query("SELECT ID,HomeID,NodeID,Name FROM ZWaveNodes WHERE (HardwareID==%d)",
+					iHardwareID);
 
 				if (result.size() > 0)
 				{
@@ -4366,10 +4378,12 @@ namespace http {
 									std::stringstream list;
 									std::copy(nodesingroup.begin(), nodesingroup.end(), std::ostream_iterator<string>(list, ","));
 									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
+									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, x);
 									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = list.str();
 								}
 								else {
 									root["result"]["nodes"][ii]["groups"][gi]["id"] = x;
+									root["result"]["nodes"][ii]["groups"][gi]["groupName"] = pOZWHardware->GetGroupName(nodeID, x);
 									root["result"]["nodes"][ii]["groups"][gi]["nodes"] = "";
 								}
 								gi++;
@@ -4418,9 +4432,7 @@ namespace http {
 				)
 				return;
 			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
-			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
-			result = m_sql.query(szTmp);
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID=='%q')", idx.c_str());
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
@@ -4444,9 +4456,7 @@ namespace http {
 			if (idx == "")
 				return;
 			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
-			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
-			result = m_sql.query(szTmp);
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
@@ -4798,9 +4808,7 @@ namespace http {
 			int iCodeIndex = atoi(scodeindex.c_str());
 
 			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
-			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
-			result = m_sql.query(szTmp);
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID=='%q')", idx.c_str());
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
@@ -4825,9 +4833,7 @@ namespace http {
 				return;
 
 			std::vector<std::vector<std::string> > result;
-			char szTmp[300];
-			sprintf(szTmp, "SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%s)", idx.c_str());
-			result = m_sql.query(szTmp);
+			result = m_sql.safe_query("SELECT HardwareID,HomeID,NodeID from ZWaveNodes WHERE (ID==%q)", idx.c_str());
 			if (result.size() > 0)
 			{
 				int hwid = atoi(result[0][0].c_str());
