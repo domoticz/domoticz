@@ -68,6 +68,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Web Server can now be bind to specific address (-wwwbind) (seb)
 - Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)
 - Implemented: Option to enter a description for each sensor/switch/scene
+- Changed: OpenZWave, Alarm/Notification mappings update (xs4)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
