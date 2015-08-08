@@ -38,4 +38,16 @@ struct utsname {
 };
 int	uname(struct utsname *);
 
+struct SerialPortInfo
+{
+	std::string szDevPath;
+	std::string szFriendlyName;
+	std::string szPortName;
+	std::string szPortDesc;
+	bool bUsbDevice;
+
+};
+
+void EnumSerialPortsWindows(std::vector<SerialPortInfo> &serialports);
+
 #endif
