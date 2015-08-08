@@ -98,10 +98,10 @@ define(['app'], function (app) {
 						// Image has loaded, now load it into SVG
 						var svgCont = document.getElementById(tagName+'_svg');
 						svgCont.setAttribute("viewBox","0 0 "+target.naturalWidth+" "+target.naturalHeight);
-						svgCont.appendChild(makeSVGnode('g', {id:tagName+'_grp', transform:'translate(0,0), scale(1)'},''));
+						svgCont.appendChild(makeSVGnode('g', {id:tagName+'_grp', transform:'translate(0,0) scale(1)', style:"", zoomed:"false"},''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('image', { width:"100%", height:"100%", "xlink:href": $scope.floorPlans[i].Image }, ''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Content', 'class':'FloorContent' }, '')); 
-						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Rooms', 'class':'FloorRooms', onclick:'RoomClick(event);' }, '')); 
+						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Rooms', 'class':'FloorRooms' }, '')); 
 						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Devices', transform: 'scale(1)' }, '')); 
 						svgCont.setAttribute("style","display:inline; position: relative;");
 						target.parentNode.removeChild(target);
@@ -119,6 +119,7 @@ define(['app'], function (app) {
 				}
 				if (AllLoaded==true) {
 					Device.checkDefs();
+					$(".FloorRooms").click(function(event){ $scope.RoomClick(event) });
 					$scope.mytimer=$interval(function() { RefreshFPDevices(false); }, 10000);
 					$scope.FloorplanResize();
 				}
@@ -184,7 +185,7 @@ define(['app'], function (app) {
 			}
 		}
 		
-		RoomClick = function(click) {
+		$scope.RoomClick = function(click) {
 			$('.DeviceDetails').css('display','none');   // hide all popups 
 			var borderRect = click.target.getBBox(); // polygon bounding box
 			var margin = 0.1;  // 10% margin around polygon
