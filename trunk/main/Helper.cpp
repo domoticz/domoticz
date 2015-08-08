@@ -10,6 +10,10 @@
 #include <algorithm>
 #include <openssl/md5.h>
 
+#if defined WIN32
+#include "../msbuild/WindowsHelper.h"
+#endif
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -48,18 +52,13 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	std::vector<std::string> ret;
 #if defined WIN32
 	//windows
-	COMMCONFIG cc;
-	DWORD dwSize = sizeof(COMMCONFIG);
-	
-	char szPortName[40];
-	for (int ii=0; ii<256; ii++)
+	std::vector<SerialPortInfo> serialports;
+	EnumSerialPortsWindows(serialports);
+
+	std::vector<SerialPortInfo>::const_iterator itt;
+	for (itt = serialports.begin(); itt != serialports.end(); ++itt)
 	{
-		sprintf(szPortName,"COM%d",ii);
-		if (GetDefaultCommConfig(szPortName, &cc, &dwSize))
-		{
-			sprintf(szPortName,"COM%d",ii);
-			ret.push_back(szPortName);
-		}
+		ret.push_back(itt->szPortName);
 	}
 #else
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA*
