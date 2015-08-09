@@ -875,13 +875,13 @@ namespace http {
 			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
 			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
 			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
-
+			_log.Log(LOG_STATUS, "Adding hardware: %s", name.c_str());
 			if (
 				(name == "") ||
 				(senabled == "") ||
 				(shtype == "") ||
 				(sport == "")
-				)
+				) 
 				return;
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
 
@@ -979,6 +979,16 @@ namespace http {
 				if (port == 0)
 					port = 80;
 			}
+			else if (htype == HTYPE_WINDDELEN) {
+					std::string mill_id = m_pWebEm->FindValue("Mode1");
+					if (
+					(mill_id == "") ||
+					(sport == "")
+					)
+					
+						return;
+					mode1 = atoi(mill_id.c_str());
+			}
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
@@ -1025,6 +1035,8 @@ namespace http {
 				mode1, mode2, mode3, mode4, mode5, mode6,
 				iDataTimeout
 				);
+		
+			_log.Log(LOG_STATUS, "(Hardware) Device '%s': '%s' ,' %s', '%d'.", name.c_str(), address.c_str(), sport.c_str(), mode1);
 
 			//add the device for real in our system
 			result = m_sql.safe_query("SELECT MAX(ID) FROM Hardware");
@@ -1169,6 +1181,14 @@ namespace http {
 			}
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
+					return;
+			}
+			else if (htype == HTYPE_WINDDELEN) {
+				std::string mill_id = m_pWebEm->FindValue("Mode1");
+				if (
+				  (mill_id == "") ||
+				  (sport == "")
+				)
 					return;
 			}
 			else

@@ -377,6 +377,36 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Winddelen") >= 0)
+			{
+				var mill_id = $("#hardwarecontent #divwinddelen #combomillselect").val();
+				var mill_name = $("#hardwarecontent #divwinddelen #combomillselect").find("option:selected").text()
+				var nrofwinddelen = $("#hardwarecontent #divwinddelen #nrofwinddelen").val();
+				var intRegex = /^\d+$/;
+				if(!intRegex.test(nrofwinddelen)) {
+					ShowNotify($.t('Please enter an Valid Number!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					   "&name=" + encodeURIComponent(name) + 
+					   "&address=" + encodeURIComponent(mill_name) + 
+					   "&port=" + encodeURIComponent(nrofwinddelen) + 
+					   "&Mode1=" + encodeURIComponent(mill_id) + 
+					   "&enabled=" + bEnabled +
+					   "&idx=" + idx +
+					   "&datatimeout=" + datatimeout +
+					   "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						RefreshHardwareTable();
+					 },
+					 error: function(){
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					 }     
+				});
+			}
 		}
 
 		AddHardware = function()
@@ -645,6 +675,34 @@ define(['app'], function (app) {
 					 "&username=" + encodeURIComponent(dstusrname) + 
 					 "&password=" + encodeURIComponent("secret") + 
 					 "&name=" + encodeURIComponent(name) + 
+					 "&enabled=" + bEnabled +
+					 "&datatimeout=" + datatimeout,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						RefreshHardwareTable();
+					 },
+					 error: function(){
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					 }     
+				});
+			}
+			else if (text.indexOf("Winddelen") >= 0)
+			{
+				var mill_id = $("#hardwarecontent #divwinddelen #combomillselect").val();
+				var mill_name = $("#hardwarecontent #divwinddelen #combomillselect").find("option:selected").text()
+				var nrofwinddelen = $("#hardwarecontent #divwinddelen #nrofwinddelen").val();
+				var intRegex = /^\d+$/;
+				if(!intRegex.test(nrofwinddelen)) {
+					ShowNotify($.t('Please enter an Valid Number!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					 "&name=" + encodeURIComponent(name) + 
+					 "&address=" + encodeURIComponent(mill_name) + 
+					 "&port=" + encodeURIComponent(nrofwinddelen) + 
+					 "&Mode1=" + encodeURIComponent(mill_id) + 
 					 "&enabled=" + bEnabled +
 					 "&datatimeout=" + datatimeout,
 					 async: false, 
@@ -2652,6 +2710,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
 						}
+						else if (data["Type"].indexOf("Winddelen") >= 0) {
+							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
+							$("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
+						}
 						else if (data["Type"].indexOf("Thermosmart") >= 0) {
 							var res=data["Username"].split("*;");
 							$("#hardwarecontent #hardwareparamslogin #username").val(res[0]);
@@ -2729,6 +2791,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divlocation").hide();
 			$("#hardwarecontent #divphilipshue").hide();
 			$("#hardwarecontent #divthermosmart").hide();
+			$("#hardwarecontent #divwinddelen").hide();
 
 			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
 			{
@@ -2807,6 +2870,16 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divphilipshue").show();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
+			}
+			else if (text.indexOf("Winddelen") >= 0)
+			{
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #username").hide();
+				$("#hardwarecontent #lblusername").hide();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divwinddelen").show();
 			}
 			else
 			{
