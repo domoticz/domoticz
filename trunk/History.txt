@@ -72,6 +72,7 @@ Version 2.xxx (xxxx 2015)
 - Changed: Windows serial port Enumeration (now also supports windows 10)
 - Implemented: Thermosmart Thermostat
 - Implemented: Option for Dummy device to create Soil Moisture,Leaf Wetness, RGB Switch
+- Implemented: Catch SIGHUP signal for log rotation (LarsForum)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
