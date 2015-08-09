@@ -159,7 +159,7 @@ bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outp
 	}
 }
 
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect)
 {
 	try
 	{
@@ -171,6 +171,10 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 
 		CURLcode res;
 		SetGlobalOptions(curl);
+		if (!bFollowRedirect)
+		{
+			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
+		}
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
@@ -277,11 +281,11 @@ bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &Ext
 	return true;
 }
 
-bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!POSTBinary(url,postdata,ExtraHeaders, vHTTPResponse))
+	if (!POSTBinary(url,postdata,ExtraHeaders, vHTTPResponse, bFollowRedirect))
 		return false;
 	if (vHTTPResponse.empty())
 		return true; //empty response possible

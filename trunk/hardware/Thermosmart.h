@@ -18,6 +18,8 @@ private:
 
 	std::string m_UserName;
 	std::string m_Password;
+	std::string m_ClientID;
+	std::string m_ClientSecret;
 	std::string m_AccessToken;
 	std::string m_ThermostatID;
 	volatile bool m_stoprequested;
