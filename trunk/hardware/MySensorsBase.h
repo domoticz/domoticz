@@ -61,8 +61,8 @@ public:
 	{
 		V_TEMP = 0,			//	Temperature
 		V_HUM = 1,			//	Humidity
-		V_LIGHT = 2,			//	Light status. 0 = off 1 = on
-		V_DIMMER = 3,			//	Dimmer value. 0 - 100 %
+		V_STATUS = 2,			//	Light status. 0 = off 1 = on
+		V_PERCENTAGE = 3,			//	Dimmer value. 0 - 100 %
 		V_PRESSURE = 4,		//	Atmospheric Pressure
 		V_FORECAST = 5,		//	Whether forecast.One of "stable", "sunny", "cloudy", "unstable", "thunderstorm" or "unknown"
 		V_RAIN = 6,			//	Amount of rain
@@ -209,10 +209,6 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 
-	bool GetReverseValueLookup(const std::string &ValueString, _eSetType &retSetType);
-	bool GetReversePresentationLookup(const std::string &ValueString, _ePresentationType &retSetType);
-	bool GetReverseTypeLookup(const std::string &ValueString, _eMessageType &retSetType);
-
 	void SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 
@@ -246,9 +242,5 @@ private:
 	static const int readBufferSize=1028;
 	unsigned char m_buffer[readBufferSize];
 	int m_bufferpos;
-
-	static const _tMySensorsReverseTypeLookup m_MySenserReverseValueTable[];
-	static const _tMySensorsReverseTypeLookup m_MySenserReversePresentationTable[];
-	static const _tMySensorsReverseTypeLookup m_MySenserReverseTypeTable[];
 };
 

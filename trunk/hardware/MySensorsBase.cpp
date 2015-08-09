@@ -16,155 +16,6 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseValueTable[] =
-{
-	{ V_TEMP, "V_TEMP" },
-	{ V_HUM, "V_HUM" },
-	{ V_LIGHT, "V_LIGHT" },
-	{ V_DIMMER, "V_DIMMER" },
-	{ V_PRESSURE, "V_PRESSURE" },
-	{ V_FORECAST, "V_FORECAST" },
-	{ V_RAIN, "V_RAIN" },
-	{ V_RAINRATE, "V_RAINRATE" },
-	{ V_WIND, "V_WIND" },
-	{ V_GUST, "V_GUST" },
-	{ V_DIRECTION, "V_DIRECTION" },
-	{ V_UV, "V_UV" },
-	{ V_WEIGHT, "V_WEIGHT" },
-	{ V_DISTANCE, "V_DISTANCE" },
-	{ V_IMPEDANCE, "V_IMPEDANCE" },
-	{ V_ARMED, "V_ARMED" },
-	{ V_TRIPPED, "V_TRIPPED" },
-	{ V_WATT, "V_WATT" },
-	{ V_KWH, "V_KWH" },
-	{ V_SCENE_ON, "V_SCENE_ON" },
-	{ V_SCENE_OFF, "V_SCENE_OFF" },
-	{ V_HEATER, "V_HEATER" },
-	{ V_HEATER_SW, "V_HEATER_SW" },
-	{ V_LIGHT_LEVEL, "V_LIGHT_LEVEL" },
-	{ V_VAR1, "V_VAR1" },
-	{ V_VAR2, "V_VAR2" },
-	{ V_VAR3, "V_VAR3" },
-	{ V_VAR4, "V_VAR4" },
-	{ V_VAR5, "V_VAR5" },
-	{ V_UP, "V_UP" },
-	{ V_DOWN, "V_DOWN" },
-	{ V_STOP, "V_STOP" },
-	{ V_IR_SEND, "V_IR_SEND" },
-	{ V_IR_RECEIVE, "V_IR_RECEIVE" },
-	{ V_FLOW, "V_FLOW" },
-	{ V_VOLUME, "V_VOLUME" },
-	{ V_LOCK_STATUS, "V_LOCK_STATUS" },
-	{ V_DUST_LEVEL, "V_DUST_LEVEL" },
-	{ V_VOLTAGE, "V_VOLTAGE" },
-	{ V_CURRENT, "V_CURRENT" },
-	{ V_RGB, "V_RGB" },
-	{ V_RGBW, "V_RGBW" },
-	{ V_ID, "V_ID" },
-	{ V_UNIT_PREFIX, "V_UNIT_PREFIX" },
-	{ V_HVAC_SETPOINT_COOL, "V_HVAC_SETPOINT_COOL" },
-	{ V_HVAC_SETPOINT_HEAT, "V_HVAC_SETPOINT_HEAT" },
-	{ V_HVAC_FLOW_MODE, "V_HVAC_FLOW_MODE" },
-	{ 0, NULL }
-};
-
-bool MySensorsBase::GetReverseValueLookup(const std::string &ValueString, _eSetType &retSetType)
-{
-	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReverseValueTable;
-	while (pTable->stringType != NULL)
-	{
-		if (pTable->stringType == ValueString)
-		{
-			retSetType = (_eSetType)pTable->SType;
-			return true;
-		}
-		pTable++;
-	}
-	return false;
-}
-
-const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReversePresentationTable[] =
-{
-	{ S_DOOR, "S_DOOR" },
-	{ S_MOTION, "S_MOTION" },
-	{ S_SMOKE, "S_SMOKE" },
-	{ S_LIGHT, "S_LIGHT" },
-	{ S_DIMMER, "S_DIMMER" },
-	{ S_COVER, "S_COVER" },
-	{ S_TEMP, "S_TEMP" },
-	{ S_HUM, "S_HUM" },
-	{ S_BARO, "S_BARO" },
-	{ S_WIND, "S_WIND" },
-	{ S_RAIN, "S_RAIN" },
-	{ S_UV, "S_UV" },
-	{ S_WEIGHT, "S_WEIGHT" },
-	{ S_POWER, "S_POWER" },
-	{ S_HEATER, "S_HEATER" },
-	{ S_DISTANCE, "S_DISTANCE" },
-	{ S_LIGHT_LEVEL, "S_LIGHT_LEVEL" },
-	{ S_ARDUINO_NODE, "S_ARDUINO_NODE" },
-	{ S_ARDUINO_RELAY, "S_ARDUINO_RELAY" },
-	{ S_LOCK, "S_LOCK" },
-	{ S_IR, "S_IR" },
-	{ S_WATER, "S_WATER" },
-	{ S_AIR_QUALITY, "S_AIR_QUALITY" },
-	{ S_CUSTOM, "S_CUSTOM" },
-	{ S_DUST, "S_DUST" },
-	{ S_SCENE_CONTROLLER, "S_SCENE_CONTROLLER" },
-	{ S_RGB_LIGHT, "S_RGB_LIGHT" },
-	{ S_RGBW_LIGHT, "S_RGBW_LIGHT" },
-	{ S_COLOR_SENSOR, "S_COLOR_SENSOR" },
-	{ S_HVAC, "S_HVAC" },
-	{ S_MULTIMETER, "S_MULTIMETER" },
-	{ S_SPRINKLER, "S_SPRINKLER" },
-	{ S_WATER_LEAK, "S_WATER_LEAK" },
-	{ S_SOUND, "S_SOUND" },
-	{ S_VIBRATION, "S_VIBRATION" },
-	{ S_MOISTURE, "S_MOISTURE" },
-	{ 0, NULL }
-};
-
-bool MySensorsBase::GetReversePresentationLookup(const std::string &ValueString, _ePresentationType &retSetType)
-{
-	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReversePresentationTable;
-	while (pTable->stringType != NULL)
-	{
-		if (pTable->stringType == ValueString)
-		{
-			retSetType = (_ePresentationType)pTable->SType;
-			return true;
-		}
-		pTable++;
-	}
-	return false;
-}
-
-
-const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseTypeTable[] =
-{
-	{ MT_Presentation, "Presentation" },
-	{ MT_Set, "Set" },
-	{ MT_Req, "Req" },
-	{ MT_Internal, "Internal" },
-	{ MT_Stream, "Stream" },
-	{ MT_Presentation, NULL }
-};
-
-bool MySensorsBase::GetReverseTypeLookup(const std::string &ValueString, _eMessageType &retSetType)
-{
-	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReverseTypeTable;
-	while (pTable->stringType != NULL)
-	{
-		if (pTable->stringType == ValueString)
-		{
-			retSetType = (_eMessageType)pTable->SType;
-			return true;
-		}
-		pTable++;
-	}
-	return false;
-}
-
 MySensorsBase::MySensorsBase(void)
 {
 	m_bufferpos = 0;
@@ -573,7 +424,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		//Lock status. 1 = Locked, 0 = Unlocked
 		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Lock Sensor");
 		break;
-	case V_LIGHT:
+	case V_STATUS:
 		//	Light status. 0 = off 1 = on
 		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue != 0), 100, "Light");
 		break;
@@ -583,7 +434,7 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 	case V_SCENE_OFF:
 		UpdateSwitch(pSensor->nodeID, pSensor->childID + pSensor->intvalue, false, 100, "Scene");
 		break;
-	case V_DIMMER:
+	case V_PERCENTAGE:
 		//	Dimmer value. 0 - 100 %
 		{
 			int level = pSensor->intvalue;
@@ -835,7 +686,7 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	if (result.size() < 1)
 		return false;
 	int nvalue = atoi(result[0][1].c_str());
-	if ((sub_type == V_LIGHT) || (sub_type == V_TRIPPED))
+	if ((sub_type == V_STATUS) || (sub_type == V_TRIPPED))
 	{
 		sSwitchValue = (nvalue == light2_sOn) ? "1" : "0";
 		return true;
@@ -894,7 +745,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				{
 					//normal
 					std::string lState = (light_command == light2_sOn) ? "1" : "0";
-					SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
+					SendCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
 				}
 			}
 			else if (light_command == light2_sSetLevel)
@@ -906,7 +757,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 				std::stringstream sstr;
 				sstr << svalue;
-				SendCommand(node_id, child_sensor_id, MT_Set, V_DIMMER, sstr.str());
+				SendCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
 			}
 		}
 		else {
@@ -969,12 +820,12 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 					svalue = 100;
 				std::stringstream sstr;
 				sstr << svalue;
-				SendCommand(node_id, child_sensor_id, MT_Set, V_DIMMER, sstr.str());
+				SendCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
 			}
 			else if ((pLed->command == Limitless_LedOff) || (pLed->command == Limitless_LedOn))
 			{
 				std::string lState = (pLed->command == Limitless_LedOn) ? "1" : "0";
-				SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
+				SendCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
 			}
 		}
 		else
@@ -1198,7 +1049,7 @@ void MySensorsBase::ParseLine()
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
 			break;
-		case V_LIGHT:
+		case V_STATUS:
 			//	Light status. 0 = off 1 = on
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
@@ -1221,7 +1072,7 @@ void MySensorsBase::ParseLine()
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
 			break;
-		case V_DIMMER:
+		case V_PERCENTAGE:
 			//	Dimmer value. 0 - 100 %
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
@@ -1416,14 +1267,14 @@ void MySensorsBase::ParseLine()
 		pSensor->devType = (_eSetType)sub_type;
 		pSensor->bValidValue = false;
 
-		if ((sub_type == V_LIGHT) || (sub_type == V_RGB) || (sub_type == V_RGBW) || (sub_type == V_TRIPPED))
+		if ((sub_type == V_STATUS) || (sub_type == V_RGB) || (sub_type == V_RGBW) || (sub_type == V_TRIPPED))
 		{
 			//Check if switch is already in the system, if not add it
 			std::string sSwitchValue;
 			if (!GetSwitchValue(node_id, child_sensor_id, sub_type, sSwitchValue))
 			{
 				//Add it to the system
-				if (sub_type == V_LIGHT)
+				if (sub_type == V_STATUS)
 					UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
 				else if (sub_type == V_TRIPPED)
 					UpdateSwitch(node_id, child_sensor_id, false, 100, "Security Sensor");
@@ -1446,8 +1297,8 @@ void MySensorsBase::ParseLine()
 		std::string tmpstr;
 		switch (sub_type)
 		{
-		case V_LIGHT:
-		case V_DIMMER:
+		case V_STATUS:
+		case V_PERCENTAGE:
 		case V_RGB:
 		case V_RGBW:
 			if (GetSwitchValue(node_id, child_sensor_id, sub_type, tmpstr))
