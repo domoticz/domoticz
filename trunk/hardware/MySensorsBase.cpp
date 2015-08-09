@@ -577,6 +577,12 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		//	Light status. 0 = off 1 = on
 		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue != 0), 100, "Light");
 		break;
+	case V_SCENE_ON:
+		UpdateSwitch(pSensor->nodeID, pSensor->childID + pSensor->intvalue, true, 100, "Scene");
+		break;
+	case V_SCENE_OFF:
+		UpdateSwitch(pSensor->nodeID, pSensor->childID + pSensor->intvalue, false, 100, "Scene");
+		break;
 	case V_DIMMER:
 		//	Dimmer value. 0 - 100 %
 		{
@@ -1197,6 +1203,16 @@ void MySensorsBase::ParseLine()
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
 			break;
+		case V_SCENE_ON:
+			//	Scene On
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
+		case V_SCENE_OFF:
+			//	Scene Off
+			pSensor->intvalue = atoi(payload.c_str());
+			bHaveValue = true;
+			break;
 		case V_RGB:
 			pSensor->intvalue = atoi(payload.c_str());
 			bHaveValue = true;
@@ -1348,7 +1364,8 @@ void MySensorsBase::ParseLine()
 		case S_DIMMER:
 		case S_SMOKE:
 		case S_DOOR:
-			sub_type = V_LIGHT;
+		case S_SCENE_CONTROLLER:
+			sub_type = V_SCENE_ON;
 			bDoAdd = true;
 			break;
 		case S_MOTION:
