@@ -13,8 +13,8 @@ public:
 	static bool GETBinaryToFile(const std::string &url, const std::string &outputfile);
 
 	//POST functions, postdata looks like: "name=john&age=123&country=this"
-	static bool POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response);
-	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response);
+	static bool POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect=true);
+	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect = true);
 
 	//PUT functions, postdata looks like: "name=john&age=123&country=this"
 	static bool PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response);
