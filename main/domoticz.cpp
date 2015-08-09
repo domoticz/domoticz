@@ -217,7 +217,10 @@ void daemonize(const char *rundir, const char *pidfile)
 	sigaction(SIGSEGV, &newSigAction, NULL);    // catch segmentation fault signal
 	sigaction(SIGABRT, &newSigAction, NULL);    // catch abnormal termination signal
 	sigaction(SIGILL,  &newSigAction, NULL);    // catch invalid program image
-
+#ifndef WIN32
+	sigaction(SIGHUP,  &newSigAction, NULL);    // catch HUP, for logrotation
+#endif
+	
 	/* Fork*/
 	pid = fork();
 
