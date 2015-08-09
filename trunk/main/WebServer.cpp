@@ -845,10 +845,6 @@ namespace http {
 #endif
 				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
 					bDoAdd = false;
-#ifndef _DEBUG
-				if (ii == HTYPE_THERMOSMART)
-					bDoAdd = false;
-#endif
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
 			}
