@@ -72,6 +72,7 @@
 #include "../hardware/Kodi.h"
 #include "../hardware/NetatmoWeatherStation.h"
 #include "../hardware/AnnaThermostat.h"
+#include "../hardware/Winddelen.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -691,6 +692,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_YouLess:
 		//LAN
 		pHardware = new CYouLess(ID, Address, Port, Password);
+		break;
+	case HTYPE_WINDDELEN:
+	    pHardware = new CWinddelen(ID, Address, Port, Mode1);
 		break;
 	case HTYPE_ETH8020:
 		//LAN
@@ -1686,6 +1690,9 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			break;
 		case pTypeYouLess:
 			DeviceRowIdx = decode_YouLessMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeWinddelen:
+			DeviceRowIdx = decode_Winddelen(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		case pTypeAirQuality:
 			DeviceRowIdx = decode_AirQuality(pHardware, HwdID, (tRBUF *)pRXCommand);
@@ -8112,6 +8119,52 @@ unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *
 		{
 		case sTypeYouLess:
 			WriteMessage("subtype       = YouLess Meter");
+
+			sprintf(szTmp,"powerusage = %.3f kWh", float(pMeter->powerusage) / 1000.0f);
+			WriteMessage(szTmp);
+			sprintf(szTmp,"current usage = %03lu Watt", pMeter->usagecurrent);
+			WriteMessage(szTmp);
+			break;
+		default:
+			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		WriteMessageEnd();
+	}
+	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_Winddelen(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[200];
+	const _tWinddelen *pMeter=(const _tWinddelen*)pResponse;
+	unsigned char devType=pMeter->type;
+	unsigned char subType=pMeter->subtype;
+	sprintf(szTmp,"%d",pMeter->ID1);
+	std::string ID=szTmp;
+	unsigned char Unit=subType;
+	unsigned char cmnd=0;
+	unsigned char SignalLevel=12;
+	unsigned char BatteryLevel = 255;
+
+	sprintf(szTmp,"%lu;%lu",
+		pMeter->powerusage,
+		pMeter->usagecurrent
+		);
+	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
+
+	m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, (const float)pMeter->usagecurrent);
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		WriteMessageStart();
+		switch (pMeter->subtype)
+		{
+		case sTypeWinddelen:
+			WriteMessage("subtype       = Winddelen");
 
 			sprintf(szTmp,"powerusage = %.3f kWh", float(pMeter->powerusage) / 1000.0f);
 			WriteMessage(szTmp);

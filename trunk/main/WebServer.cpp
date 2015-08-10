@@ -875,7 +875,6 @@ namespace http {
 			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
 			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
 			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
-			_log.Log(LOG_STATUS, "Adding hardware: %s", name.c_str());
 			if (
 				(name == "") ||
 				(senabled == "") ||
@@ -1036,8 +1035,6 @@ namespace http {
 				iDataTimeout
 				);
 		
-			//_log.Log(LOG_STATUS, "(Hardware) Device '%s': '%s' ,' %s', '%d'.", name.c_str(), address.c_str(), sport.c_str(), mode1);
-
 			//add the device for real in our system
 			result = m_sql.safe_query("SELECT MAX(ID) FROM Hardware");
 			if (result.size() > 0)
@@ -4353,7 +4350,7 @@ namespace http {
 				if (
 					((dType == pTypeRFXMeter) && (dSubType == sTypeRFXMeterCount)) ||
                     ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental)) ||
-					(dType == pTypeYouLess) ||
+					(dType == pTypeYouLess) || dType == pTypeWinddelen ||
 					((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
 					)
 				{
@@ -4384,7 +4381,7 @@ namespace http {
 					}
 					ii++;
 				}
-				if (dType == pTypeYouLess)
+				if (dType == pTypeYouLess || dType == pTypeWinddelen)
 				{
 					root["result"][ii]["val"] = NTYPE_USAGE;
 					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
@@ -6960,6 +6957,7 @@ namespace http {
 								(dType != pTypeP1Power) &&
 								(dType != pTypeP1Gas) &&
 								(dType != pTypeYouLess) &&
+								(dType != pTypeWinddelen) &&
 								(dType != pTypeAirQuality) &&
 								(dType != pTypeLux) &&
 								(dType != pTypeUsage) &&
@@ -7978,7 +7976,7 @@ namespace http {
                                 break;
                         }
                     }
-					else if (dType == pTypeYouLess)
+					else if (dType == pTypeYouLess || dType == pTypeWinddelen)
 					{
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
@@ -13397,7 +13395,7 @@ namespace http {
 							}
 							root["counter"] = szTmp;
 						}
-						else if (dType == pTypeYouLess)
+						else if (dType == pTypeYouLess || dType == pTypeWinddelen)
 						{
 							std::vector<std::string> results;
 							StringSplit(sValue, ";", results);
