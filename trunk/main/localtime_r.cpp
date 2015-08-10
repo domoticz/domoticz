@@ -4,6 +4,10 @@
 time_t m_lasttime=time(NULL);
 boost::mutex TimeMutex_;
 
+#ifdef __APPLE__
+	#define localtime_r
+#endif
+
 #ifndef localtime_r
 struct tm *localtime_r(const time_t *timep, struct tm *result)
 {
