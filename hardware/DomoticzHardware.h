@@ -48,6 +48,7 @@ private:
 	friend class RFXComSerial;
 	friend class RFXComTCP;
 	friend class CYouLess;
+	friend class CWinddelen;
 	friend class CRego6XXSerial;
 	friend class CDavisLoggerSerial;
 	friend class CBMP085;

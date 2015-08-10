@@ -143,6 +143,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_P1SmartMeter, "P1 Smart Meter USB" },
 		{ HTYPE_P1SmartMeterLAN, "P1 Smart Meter with LAN interface" },
 		{ HTYPE_YouLess, "YouLess Meter with LAN interface" },
+		{ HTYPE_WINDDELEN, "Winddelen" },
 		{ HTYPE_TE923, "TE923 USB Compatible Weather Station" },
 		{ HTYPE_Rego6XX, "Rego 6XX USB/serial interface" },
 		{ HTYPE_RazberryZWave, "Razberry Z-Wave via LAN interface (HTTP)" },
@@ -193,7 +194,6 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
-		{ HTYPE_WINDDELEN, "Winddelen" },
   		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -395,6 +395,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeP1Power, "P1 Smart Meter" , "counter" },
 		{ pTypeP1Gas, "P1 Smart Meter" , "counter" },
 		{ pTypeYouLess, "YouLess Meter", "counter" },
+		{ pTypeWinddelen, "Winddelen", "counter" },
 		{ pTypeFS20, "FS20" , "unknown" },
 		{ pTypeRego6XXTemp, "Temp" , "temperature" },
 		{ pTypeRego6XXValue, "Value" , "utility" },
@@ -595,6 +596,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
 
 		{ pTypeYouLess, sTypeYouLess, "YouLess counter" },
+		{ pTypeWinddelen, sTypeWinddelen, "Winddelen counter" },
 
 		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "Rego 6XX" },
 		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Rego 6XX" },
@@ -866,6 +868,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeP1Gas, sTypeP1Gas, "Gas usage" },
 
 		{ pTypeYouLess, sTypeYouLess, "Usage,Usage current" },
+		{ pTypeWinddelen, sTypeWinddelen, "Usage,Usage current" },
 
 		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "Temperature" },
 		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Value" },
