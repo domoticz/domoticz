@@ -1036,7 +1036,7 @@ namespace http {
 				iDataTimeout
 				);
 		
-			_log.Log(LOG_STATUS, "(Hardware) Device '%s': '%s' ,' %s', '%d'.", name.c_str(), address.c_str(), sport.c_str(), mode1);
+			//_log.Log(LOG_STATUS, "(Hardware) Device '%s': '%s' ,' %s', '%d'.", name.c_str(), address.c_str(), sport.c_str(), mode1);
 
 			//add the device for real in our system
 			result = m_sql.safe_query("SELECT MAX(ID) FROM Hardware");
