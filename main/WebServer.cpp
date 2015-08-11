@@ -4350,7 +4350,7 @@ namespace http {
 				if (
 					((dType == pTypeRFXMeter) && (dSubType == sTypeRFXMeterCount)) ||
                     ((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental)) ||
-					(dType == pTypeYouLess) || dType == pTypeWinddelen ||
+					(dType == pTypeYouLess) ||
 					((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
 					)
 				{
@@ -4381,7 +4381,7 @@ namespace http {
 					}
 					ii++;
 				}
-				if (dType == pTypeYouLess || dType == pTypeWinddelen)
+				if (dType == pTypeYouLess)
 				{
 					root["result"][ii]["val"] = NTYPE_USAGE;
 					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
@@ -6957,7 +6957,6 @@ namespace http {
 								(dType != pTypeP1Power) &&
 								(dType != pTypeP1Gas) &&
 								(dType != pTypeYouLess) &&
-								(dType != pTypeWinddelen) &&
 								(dType != pTypeAirQuality) &&
 								(dType != pTypeLux) &&
 								(dType != pTypeUsage) &&
@@ -7976,7 +7975,7 @@ namespace http {
                                 break;
                         }
                     }
-					else if (dType == pTypeYouLess || dType == pTypeWinddelen)
+					else if (dType == pTypeYouLess)
 					{
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
@@ -13395,7 +13394,7 @@ namespace http {
 							}
 							root["counter"] = szTmp;
 						}
-						else if (dType == pTypeYouLess || dType == pTypeWinddelen)
+						else if (dType == pTypeYouLess)
 						{
 							std::vector<std::string> results;
 							StringSplit(sValue, ";", results);

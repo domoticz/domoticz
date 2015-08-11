@@ -395,7 +395,6 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeP1Power, "P1 Smart Meter" , "counter" },
 		{ pTypeP1Gas, "P1 Smart Meter" , "counter" },
 		{ pTypeYouLess, "YouLess Meter", "counter" },
-		{ pTypeWinddelen, "Winddelen", "counter" },
 		{ pTypeFS20, "FS20" , "unknown" },
 		{ pTypeRego6XXTemp, "Temp" , "temperature" },
 		{ pTypeRego6XXValue, "Value" , "utility" },
@@ -596,7 +595,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
 
 		{ pTypeYouLess, sTypeYouLess, "YouLess counter" },
-		{ pTypeWinddelen, sTypeWinddelen, "Winddelen counter" },
 
 		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "Rego 6XX" },
 		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Rego 6XX" },
@@ -868,7 +866,6 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeP1Gas, sTypeP1Gas, "Gas usage" },
 
 		{ pTypeYouLess, sTypeYouLess, "Usage,Usage current" },
-		{ pTypeWinddelen, sTypeWinddelen, "Usage,Usage current" },
 
 		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "Temperature" },
 		{ pTypeRego6XXValue, sTypeRego6XXStatus, "Value" },
