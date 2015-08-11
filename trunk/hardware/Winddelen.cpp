@@ -95,13 +95,12 @@ void CWinddelen::GetMeterDetails()
 		_log.Log(LOG_ERROR,"Winddelen: Error connecting to: %s", szURL);
 		return;
 	}
-	// _log.Log(LOG_STATUS,"Response from Mill %s: %s", m_szIPAddress.c_str(), sResult.c_str());
 
 	std::vector<std::string> results;
 	StringSplit(sResult, ",", results);
 	if (results.size()<2)
 	{
-		_log.Log(LOG_ERROR,"Winddelen: Error connecting to: %s", m_szIPAddress.c_str());
+		_log.Log(LOG_ERROR,"Winddelen: Invalid response for '%s'", m_szIPAddress.c_str());
 		return;
 	}
 
@@ -112,16 +111,12 @@ void CWinddelen::GetMeterDetails()
 		pusage=pusage.substr(0,fpos);
 	stdreplace(pusage,",","");
 
-
-	// _log.Log(LOG_STATUS,"WindCentrale power: %s", pusage.c_str());
-
 	std::string pcurrent=stdstring_trim(results[2]);
 	fpos=pcurrent.find_first_of(" ");
 	if (fpos!=std::string::npos)
 		pcurrent=pcurrent.substr(0,fpos);
 	stdreplace(pcurrent,",","");
 	
-	// _log.Log(LOG_STATUS,"WindCentrale current: %s", pcurrent.c_str());
 	std::map<int,float> winddelen_per_mill;
   	winddelen_per_mill[1]=9910.0;
   	winddelen_per_mill[2]=10154.0;
@@ -133,8 +128,8 @@ void CWinddelen::GetMeterDetails()
   	winddelen_per_mill[131]=5534.0;
   	winddelen_per_mill[141]=5512.0;
 
-	double powerusage=atol(pusage.c_str()) * m_usIPPort / winddelen_per_mill[m_usMillID] * 1000.0f;
-	double usagecurrent=atof(pcurrent.c_str()) * m_usIPPort;
-	_log.Log(LOG_STATUS,"'%s' produces current: %.3f for usage: %.03f", m_szIPAddress.c_str(), usagecurrent, powerusage);
+	double powerusage = atol(pusage.c_str()) * m_usIPPort / winddelen_per_mill[m_usMillID];
+	double usagecurrent = atof(pcurrent.c_str()) * m_usIPPort / 1000.0;
+	_log.Log(LOG_STATUS,"%d winddelen in '%s' currently produces: %.0f Watt, total production is: %.03f kWh", m_usIPPort , m_szIPAddress.c_str(), usagecurrent * 1000, powerusage);
 	SendKwhMeter(m_usMillID, 1, 255, usagecurrent, powerusage, "Wind Power");
 }
