@@ -101,7 +101,7 @@ void CWinddelen::GetMeterDetails()
 		_log.Log(LOG_ERROR,"Winddelen: Error connecting to: %s", szURL);
 		return;
 	}
-	_log.Log(LOG_STATUS,"Response from Mill %s: %s", m_szIPAddress.c_str(), sResult.c_str());
+	// _log.Log(LOG_STATUS,"Response from Mill %s: %s", m_szIPAddress.c_str(), sResult.c_str());
 
 	std::vector<std::string> results;
 	StringSplit(sResult, ",", results);
@@ -141,5 +141,6 @@ void CWinddelen::GetMeterDetails()
 
 	m_meter.powerusage=atol(pusage.c_str()) * m_usIPPort / winddelen_per_mill[m_usMillID] * 1000;
 	m_meter.usagecurrent=atol(pcurrent.c_str()) * m_usIPPort;
+	_log.Log(LOG_STATUS,"'%s' produces current: %d for usage: %d", m_szIPAddress.c_str(), m_meter.usagecurrent, m_meter.powerusage);
 	sDecodeRXMessage(this, (const unsigned char *)&m_meter);//decode message
 }
