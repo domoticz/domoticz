@@ -151,9 +151,6 @@
 #define sTypeRego6XXStatus   0x02
 #define sTypeRego6XXCounter  0x03
 
-#define pTypeWinddelen	0xFF
-#define sTypeWinddelen	0x04
-
 //Z-Wave
 //#define pTypeENERGY 0x5A
 #define sTypeZWaveUsage 0xA0

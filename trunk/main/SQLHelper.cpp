@@ -3498,7 +3498,6 @@ void CSQLHelper::UpdateMeter()
 		"Type=%d OR " //pTypeRFXMeter
 		"Type=%d OR " //pTypeP1Gas
 		"Type=%d OR " //pTypeYouLess
-		"Type=%d OR " //pTypeWinddelen
 		"Type=%d OR " //pTypeENERGY
 		"Type=%d OR " //pTypePOWER
 		"Type=%d OR " //pTypeAirQuality
@@ -3522,7 +3521,6 @@ void CSQLHelper::UpdateMeter()
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
-		pTypeWinddelen,
 		pTypeENERGY,
 		pTypePOWER,
 		pTypeAirQuality,
@@ -3589,7 +3587,7 @@ void CSQLHelper::UpdateMeter()
 				if (now-checktime>=3*3600)
 					continue;
 			}
-			if (dType==pTypeYouLess || dType==pTypeWinddelen)
+			if (dType==pTypeYouLess)
 			{
 				std::vector<std::string> splitresults;
 				StringSplit(sValue, ";", splitresults);

@@ -242,10 +242,10 @@ hardware/Teleinfo.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/VolcraftCO20.cpp
+hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
-hardware/Winddelen.cpp
 hardware/ZWaveBase.cpp
 MQTT/mosquittopp.cpp
 notifications/NotificationBase.cpp

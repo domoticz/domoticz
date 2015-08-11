@@ -1691,9 +1691,6 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 		case pTypeYouLess:
 			DeviceRowIdx = decode_YouLessMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
-		case pTypeWinddelen:
-			DeviceRowIdx = decode_Winddelen(pHardware, HwdID, (tRBUF *)pRXCommand);
-			break;
 		case pTypeAirQuality:
 			DeviceRowIdx = decode_AirQuality(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
@@ -8135,52 +8132,6 @@ unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Winddelen(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
-{
-	char szTmp[200];
-	const _tWinddelen *pMeter=(const _tWinddelen*)pResponse;
-	unsigned char devType=pMeter->type;
-	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%d",pMeter->ID1);
-	std::string ID=szTmp;
-	unsigned char Unit=subType;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
-	unsigned char BatteryLevel = 255;
-
-	sprintf(szTmp,"%d;%d",
-		pMeter->powerusage,
-		pMeter->usagecurrent
-		);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
-	if (DevRowIdx == -1)
-		return -1;
-
-	m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, (const float)pMeter->usagecurrent);
-
-	if (m_verboselevel == EVBL_ALL)
-	{
-		WriteMessageStart();
-		switch (pMeter->subtype)
-		{
-		case sTypeWinddelen:
-			WriteMessage("subtype       = Winddelen");
-
-			sprintf(szTmp,"powerusage = %.3f kWh", float(pMeter->powerusage) / 1000.0f);
-			WriteMessage(szTmp);
-			sprintf(szTmp,"current usage = %03lu Watt", pMeter->usagecurrent);
-			WriteMessage(szTmp);
-			break;
-		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-		WriteMessageEnd();
-	}
-	return DevRowIdx;
-}
-
 unsigned long long MainWorker::decode_Rego6XXTemp(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	char szTmp[200];
@@ -10539,7 +10490,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 			std::string intswitchcmd=switchcmd;
 
-			std::string lstatus="";
+			std::string lstatus = intswitchcmd;
 			int llevel=0;
 			bool bHaveDimmer=false;
 			bool bHaveGroupCmd=false;
@@ -10547,13 +10498,16 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			if (scenetype==0)
 			{
 				GetLightStatus(dType, dSubType, switchtype,cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-				if (cmd==0)
-					intswitchcmd="Off";
+				if (cmd == 0)
+					intswitchcmd = "Off";
 				else
-					intswitchcmd="On";
+					intswitchcmd = "On";
 			}
 			else
-				GetLightStatus(dType, dSubType, switchtype,rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+			{
+				GetLightStatus(dType, dSubType, switchtype, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+				lstatus = intswitchcmd;
+			}
 
 			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), intswitchcmd.c_str());
 
@@ -10578,11 +10532,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			int idx = atoi(sd[0].c_str());
 			if (switchtype != STYPE_PushOn)
 			{
-				int delay = (intswitchcmd == "Off") ? offdelay : ondelay;
-				SwitchLight(idx, intswitchcmd, ilevel, hue, false, delay);
+				int delay = (lstatus == "Off") ? offdelay : ondelay;
+				SwitchLight(idx, lstatus, ilevel, hue, false, delay);
 				if (scenetype == 0)
 				{
-					if ((intswitchcmd != "Off") && (offdelay > 0))
+					if ((lstatus != "Off") && (offdelay > 0))
 					{
 						//switch with on delay, and off delay
 						SwitchLight(idx, "Off", ilevel, hue, false, ondelay + offdelay);
@@ -10592,10 +10546,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			else
 			{
 				SwitchLight(idx, "On", ilevel, hue, false, ondelay);
-				//SwitchLightInt(sd2,"On",ilevel,hue,false);
 			}
 			sleep_milliseconds(50);
-
 		}
 	}
 

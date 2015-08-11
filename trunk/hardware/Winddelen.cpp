@@ -26,12 +26,6 @@ CWinddelen::~CWinddelen(void)
 
 void CWinddelen::Init()
 {
-	m_meter.len=sizeof(Winddelen)-1;
-	m_meter.type=pTypeWinddelen;
-	m_meter.subtype=sTypeWinddelen;
-	m_meter.powerusage=0;
-	m_meter.usagecurrent=0;
-	m_meter.ID1=m_usIPPort;
 }
 
 bool CWinddelen::StartHardware()
@@ -139,8 +133,8 @@ void CWinddelen::GetMeterDetails()
   	winddelen_per_mill[131]=5534.0;
   	winddelen_per_mill[141]=5512.0;
 
-	m_meter.powerusage=atol(pusage.c_str()) * m_usIPPort / winddelen_per_mill[m_usMillID] * 1000;
-	m_meter.usagecurrent=atol(pcurrent.c_str()) * m_usIPPort;
-	_log.Log(LOG_STATUS,"'%s' produces current: %d for usage: %d", m_szIPAddress.c_str(), m_meter.usagecurrent, m_meter.powerusage);
-	sDecodeRXMessage(this, (const unsigned char *)&m_meter);//decode message
+	double powerusage=atol(pusage.c_str()) * m_usIPPort / winddelen_per_mill[m_usMillID] * 1000.0f;
+	double usagecurrent=atof(pcurrent.c_str()) * m_usIPPort;
+	_log.Log(LOG_STATUS,"'%s' produces current: %.3f for usage: %.03f", m_szIPAddress.c_str(), usagecurrent, powerusage);
+	SendKwhMeter(m_usMillID, 1, 255, usagecurrent, powerusage, "Wind Power");
 }
