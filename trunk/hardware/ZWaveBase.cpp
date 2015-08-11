@@ -839,6 +839,13 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		m_p1gas.ID = lID;
 		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
 	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
+	{
+		int battery_level = 255;
+		if (pDevice->hasBattery)
+			battery_level = pDevice->batValue;
+		SendMeterSensor(ID3, ID4, battery_level, pDevice->floatValue);
+	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_CO2)
 	{
 		SendAirQualitySensor(ID3, ID4, pDevice->batValue, int(pDevice->floatValue), "CO2 Sensor");

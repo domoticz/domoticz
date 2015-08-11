@@ -51,7 +51,8 @@ enum _eSensorScaleID
 	SCALEID_CURRENT,
 	SCALEID_POWERFACTOR,
 	SCALEID_GAS,
-	SCALEID_CO2
+	SCALEID_CO2,
+	SCALEID_WATER
 };
 
 struct _tAlarmNameToIndexMapping
@@ -1629,6 +1630,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				}
 			}
 		}
+		else if (vLabel == "Water")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_WATER;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_WATER;
+					InsertDevice(_device);
+				}
+			}
+		}
 	}
 	else if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
@@ -1795,6 +1810,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 					_device.scaleID = SCALEID_GAS;
 					_device.scaleMultiply = 1;
 					_device.devType = ZDTYPE_SENSOR_GAS;
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel == "Water")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_WATER;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_WATER;
 					InsertDevice(_device);
 				}
 			}
@@ -2278,7 +2307,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		(vLabel == "Current") ||
 		(vLabel == "Power Factor")||
 		(vLabel == "Gas")||
-		(vLabel == "CO2 Level")
+		(vLabel == "CO2 Level")||
+		(vLabel == "Water")
 		)
 	{
 		int scaleID = 0;
@@ -2296,6 +2326,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_GAS;
 		else if (vLabel == "CO2 Level")
 			scaleID = SCALEID_CO2;
+		else if (vLabel == "Water")
+			scaleID = SCALEID_WATER;
 
 		sstr << "." << scaleID;
 	}
@@ -2775,6 +2807,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
 		if (vLabel != "CO2 Level")
+			return;
+		float oldvalue = pDevice->floatValue;
+		pDevice->floatValue = fValue; //always set the value
+	}
+	break;
+	case ZDTYPE_SENSOR_WATER:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Water")
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value
@@ -3270,7 +3312,8 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					if (
 						(vLabel == "Energy") ||
 						(vLabel == "Power")||
-						(vLabel == "Gas")
+						(vLabel == "Gas")||
+						(vLabel == "Water")
 						)
 					{
 						if (bSingleIndexPoll && (ittValue->GetIndex() != 0))
