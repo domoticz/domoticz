@@ -8,8 +8,8 @@ typedef struct _tWinddelen {
 	unsigned char type;
 	unsigned char subtype;
 	unsigned short ID1;
-	unsigned long powerusage;
-	unsigned long usagecurrent;
+	signed long powerusage;
+	signed long usagecurrent;
 } Winddelen;
 
 class CWinddelen : public CDomoticzHardwareBase

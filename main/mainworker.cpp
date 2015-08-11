@@ -8148,7 +8148,7 @@ unsigned long long MainWorker::decode_Winddelen(const CDomoticzHardwareBase *pHa
 	unsigned char SignalLevel=12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%lu;%lu",
+	sprintf(szTmp,"%d;%d",
 		pMeter->powerusage,
 		pMeter->usagecurrent
 		);
