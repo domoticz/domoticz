@@ -10519,9 +10519,9 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 				(switchtype == STYPE_BlindsPercentageInverted) 
 				) && (maxDimLevel != 0))
 			{
-				if (intswitchcmd == "On")
+				if (lstatus == "On")
 				{
-					intswitchcmd="Set Level";
+					lstatus ="Set Level";
 					float fLevel=(maxDimLevel/100.0f)*level;
 					if (fLevel>100)
 						fLevel=100;
