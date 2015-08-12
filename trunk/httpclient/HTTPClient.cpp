@@ -10,7 +10,7 @@
 #endif
 
 bool		HTTPClient::m_bCurlGlobalInitialized = false;
-long		HTTPClient::m_iConnectionTimeout=10;
+long		HTTPClient::m_iConnectionTimeout=30;
 long		HTTPClient::m_iTimeout=90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent="domoticz/1.0";
 
