@@ -7038,10 +7038,13 @@ namespace http {
 						(dType == pTypeBARO) ||
 						(dType == pTypeHUM) ||
 						(dType == pTypeWIND) ||
+						(dType == pTypeRAIN) ||
+						(dType == pTypeUV) ||
 						(dType == pTypeCURRENT) ||
 						(dType == pTypeCURRENTENERGY) ||
 						(dType == pTypeENERGY) ||
 						(dType == pTypeRFXMeter) ||
+						(dType == pTypeAirQuality) ||
 						(dType == pTypeRFXSensor)
 						)
 					{

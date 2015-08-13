@@ -546,6 +546,13 @@ const char *sqlCreateMySensorsVariables =
 	" [VarID] INTEGER NOT NULL,"
 	" [Value] VARCHAR(100) NOT NULL);";
 
+const char *sqlCreateMySensorsChilds =
+"CREATE TABLE IF NOT EXISTS [MySensorsChilds]("
+" [HardwareID] INTEGER NOT NULL,"
+" [NodeID] INTEGER NOT NULL,"
+" [ChildID] INTEGER NOT NULL,"
+" [Type] INTEGER NOT NULL);";
+
 const char *sqlCreateToonDevices =
 	"CREATE TABLE IF NOT EXISTS [ToonDevices]("
 	" [HardwareID] INTEGER NOT NULL,"
@@ -669,6 +676,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateCustomImages);
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
+	query(sqlCreateMySensorsChilds);
 	query(sqlCreateToonDevices);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
