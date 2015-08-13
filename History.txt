@@ -76,6 +76,9 @@ Version 2.xxx (xxxx 2015)
 - Implemented: MySensors added support for S_SCENE_CONTROLLER, V_SCENE_ON, V_SCENE_OFF
 - Implemented: MySensors, renamed V_LIGHT to V_STATUS and V_DIMMER to V_PERCENTAGE to be compliant to the 1.5 API
 - Fixed: Scenes RFY switch command now correctly handled
+- Fixed: MySensors, Negative temperature sensor
+- Implemented: MySensors added support for V_IMPEDANCE
+- Changed: MySensors, rebuild
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
