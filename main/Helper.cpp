@@ -55,10 +55,28 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	std::vector<SerialPortInfo> serialports;
 	EnumSerialPortsWindows(serialports);
 
-	std::vector<SerialPortInfo>::const_iterator itt;
-	for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+	if (!serialports.empty())
 	{
-		ret.push_back(itt->szPortName);
+		std::vector<SerialPortInfo>::const_iterator itt;
+		for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+		{
+			ret.push_back(itt->szPortName);
+		}
+	}
+
+	//Scan old fashion way
+	COMMCONFIG cc;
+	DWORD dwSize = sizeof(COMMCONFIG);
+
+	char szPortName[40];
+	for (int ii = 0; ii < 256; ii++)
+	{
+		sprintf(szPortName, "COM%d", ii);
+		if (GetDefaultCommConfig(szPortName, &cc, &dwSize))
+		{
+			sprintf(szPortName, "COM%d", ii);
+			ret.push_back(szPortName);
+		}
 	}
 #else
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA*
