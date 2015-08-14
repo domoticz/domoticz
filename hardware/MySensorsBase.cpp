@@ -685,6 +685,12 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_DIRECTION:
 		MakeAndSendWindSensor(pChild->nodeID);
 		break;
+	case V_HVAC_SETPOINT_HEAT:
+		if (pChild->GetValue(vType, floatValue))
+		{
+			SendSetPointSensor(pNode->nodeID, pChild->childID, floatValue, "Heater Setpoint");
+		}
+		break;
 	}
 }
 
@@ -1327,6 +1333,10 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_CURRENT:
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
+			bHaveValue = true;
+			break;
+		case V_HVAC_SETPOINT_HEAT:
 			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
