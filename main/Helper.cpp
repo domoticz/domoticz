@@ -55,7 +55,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	std::vector<SerialPortInfo> serialports;
 	EnumSerialPortsWindows(serialports);
 
-	if (!serialports.empty())
+	if (serialports.empty())
 	{
 		std::vector<SerialPortInfo>::const_iterator itt;
 		for (itt = serialports.begin(); itt != serialports.end(); ++itt)
