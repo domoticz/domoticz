@@ -34,7 +34,7 @@ public:
 		S_UV = 11,						//UV sensor	V_UV
 		S_WEIGHT = 12,					//Weight sensor for scales etc.V_WEIGHT, V_IMPEDANCE
 		S_POWER = 13,					//Power measuring device, like power meters	V_WATT, V_KWH
-		S_HEATER = 14,					//Heater device	V_HVAC_SETPOINT_HEAT, V_HVAC_FLOW_STATE, V_TEMP
+		S_HEATER = 14,					//Heater device	V_HVAC_SETPOINT_HEAT, V_HVAC_FLOW_STATE, V_TEMP, V_STATUS
 		S_DISTANCE = 15,				//Distance sensor	V_DISTANCE, V_UNIT_PREFIX
 		S_LIGHT_LEVEL = 16,				//Light sensor	V_LIGHT_LEVEL(uncalibrated percentage), V_LEVEL(light level in lux)
 		S_ARDUINO_NODE = 17,			//Arduino node device
@@ -49,7 +49,7 @@ public:
 		S_RGB_LIGHT = 26,				//RGB light	V_RGB, V_WATT
 		S_RGBW_LIGHT = 27,				//RGBW light(with separate white component)	V_RGBW, V_WATT
 		S_COLOR_SENSOR = 28,			//Color sensor	V_RGB
-		S_HVAC = 29,					//Thermostat / HVAC device	V_HVAC_SETPOINT_HEAT, V_HVAC_SETPOINT_COLD, V_HVAC_FLOW_STATE, V_HVAC_FLOW_MODE, V_HVAC_SPEED
+		S_HVAC = 29,					//Thermostat / HVAC device	V_HVAC_SETPOINT_HEAT, V_HVAC_SETPOINT_COLD, V_HVAC_FLOW_STATE, V_HVAC_FLOW_MODE, V_HVAC_SPEED, V_TEMP, V_STATUS
 		S_MULTIMETER = 30,				//Multimeter device	V_VOLTAGE, V_CURRENT, V_IMPEDANCE
 		S_SPRINKLER = 31,				//Sprinkler device	V_STATUS(turn on / off), V_TRIPPED(if fire detecting device)
 		S_WATER_LEAK = 32,				//Water leak sensor	V_TRIPPED, V_ARMED
