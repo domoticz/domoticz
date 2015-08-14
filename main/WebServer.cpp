@@ -3004,13 +3004,68 @@ namespace http {
 					{
 						std::vector<std::string> sd = *itt;
 
+						int iTimerType = atoi(sd[6].c_str());
+						std::string sdate = sd[4];
+						if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+						{
+							int Year = atoi(sdate.substr(0, 4).c_str());
+							int Month = atoi(sdate.substr(5, 2).c_str());
+							int Day = atoi(sdate.substr(8, 2).c_str());
+							sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+							sdate = szTmp;
+						}
+						else
+							sdate = "";
+
 						root["result"][ii]["ID"] = sd[0];
 						root["result"][ii]["Active"] = sd[1];
 						root["result"][ii]["Name"] = sd[2];
 						root["result"][ii]["DeviceRowID"] = sd[3];
-						root["result"][ii]["Date"] = sd[4];
+						root["result"][ii]["Date"] = sdate;
 						root["result"][ii]["Time"] = sd[5];
-						root["result"][ii]["Type"] = sd[6];
+						root["result"][ii]["Type"] = iTimerType;
+						root["result"][ii]["Cmd"] = sd[7];
+						root["result"][ii]["Level"] = sd[8];
+						root["result"][ii]["Days"] = sd[9];
+						ii++;
+					}
+				}
+			}
+			else if (cparam == "getscenetimerlist")
+			{
+				root["status"] = "OK";
+				root["title"] = "GetSceneTimerList";
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT t.ID, t.Active, s.[Name], t.SceneRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Days FROM SceneTimers as t, Scenes as s WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d) ORDER BY s.[Name], t.Time",
+					m_sql.m_ActiveTimerPlan);
+				if (result.size() > 0)
+				{
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii = 0;
+					for (itt = result.begin(); itt != result.end(); ++itt)
+					{
+						std::vector<std::string> sd = *itt;
+
+						int iTimerType = atoi(sd[6].c_str());
+						std::string sdate = sd[4];
+						if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+						{
+							int Year = atoi(sdate.substr(0, 4).c_str());
+							int Month = atoi(sdate.substr(5, 2).c_str());
+							int Day = atoi(sdate.substr(8, 2).c_str());
+							sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+							sdate = szTmp;
+						}
+						else
+							sdate = "";
+
+						root["result"][ii]["ID"] = sd[0];
+						root["result"][ii]["Active"] = sd[1];
+						root["result"][ii]["Name"] = sd[2];
+						root["result"][ii]["SceneRowID"] = sd[3];
+						root["result"][ii]["Date"] = sdate;
+						root["result"][ii]["Time"] = sd[5];
+						root["result"][ii]["Type"] = iTimerType;
 						root["result"][ii]["Cmd"] = sd[7];
 						root["result"][ii]["Level"] = sd[8];
 						root["result"][ii]["Days"] = sd[9];
