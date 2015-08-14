@@ -1072,7 +1072,7 @@ namespace http {
 					root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
 					root["result"][ii]["Date"] = sdate;
 					root["result"][ii]["Time"] = sd[3].substr(0, 5);
-					root["result"][ii]["Type"] = atoi(sd[4].c_str());
+					root["result"][ii]["Type"] = iTimerType;
 					root["result"][ii]["Cmd"] = atoi(sd[5].c_str());
 					root["result"][ii]["Level"] = iLevel;
 					root["result"][ii]["Hue"] = atoi(sd[7].c_str());
