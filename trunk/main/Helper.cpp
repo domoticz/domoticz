@@ -55,7 +55,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	std::vector<SerialPortInfo> serialports;
 	EnumSerialPortsWindows(serialports);
 
-	if (serialports.empty())
+	if (!serialports.empty())
 	{
 		std::vector<SerialPortInfo>::const_iterator itt;
 		for (itt = serialports.begin(); itt != serialports.end(); ++itt)
@@ -63,19 +63,21 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 			ret.push_back(itt->szPortName);
 		}
 	}
-
-	//Scan old fashion way
-	COMMCONFIG cc;
-	DWORD dwSize = sizeof(COMMCONFIG);
-
-	char szPortName[40];
-	for (int ii = 0; ii < 256; ii++)
+	else
 	{
-		sprintf(szPortName, "COM%d", ii);
-		if (GetDefaultCommConfig(szPortName, &cc, &dwSize))
+		//Scan old fashion way
+		COMMCONFIG cc;
+		DWORD dwSize = sizeof(COMMCONFIG);
+
+		char szPortName[40];
+		for (int ii = 0; ii < 256; ii++)
 		{
 			sprintf(szPortName, "COM%d", ii);
-			ret.push_back(szPortName);
+			if (GetDefaultCommConfig(szPortName, &cc, &dwSize))
+			{
+				sprintf(szPortName, "COM%d", ii);
+				ret.push_back(szPortName);
+			}
 		}
 	}
 #else
