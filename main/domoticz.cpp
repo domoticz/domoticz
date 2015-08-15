@@ -29,6 +29,7 @@
 #include "WebServerHelper.h"
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
+#include "appversion.h"
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
@@ -356,27 +357,9 @@ void daemonize(const char *rundir, const char *pidfile)
 
 void GetAppVersion()
 {
-	std::string sLine = "";
-	std::ifstream infile;
-
-	szAppVersion="???";
-	std::string filename=szStartupFolder+"svnversion.h";
-
-	infile.open(filename.c_str());
-	if (infile.is_open())
-	{
-		if (!infile.eof())
-		{
-			getline(infile, sLine);
-			std::vector<std::string> results;
-			StringSplit(sLine," ",results);
-			if (results.size()==3)
-			{
-				szAppVersion="2." + results[2];
-			}
-		}
-		infile.close();
-	}
+	std::stringstream sstr;
+	sstr << VERSION_STRING << APPVERSION;
+	szAppVersion = sstr.str();
 }
 
 #if defined WIN32

@@ -124,7 +124,8 @@ m_LastSunriseSet("")
 	m_bStartHardware=false;
 	m_hardwareStartCounter=0;
 	m_webserverport="8080";
-	m_webserveraddress="::";
+	//m_webserveraddress="::"; // does not work on a raspberry
+	m_webserveraddress = "0.0.0.0";
 	m_secure_webserverport = "";
 	m_secure_web_cert_file = "./server_cert.pem";
 	m_secure_web_passphrase = "";
@@ -893,7 +894,7 @@ bool MainWorker::StartThread()
 		char szPort[100];
 		sprintf(szPort,"%d",rnvalue);
 		m_sharedserver.sDecodeRXMessage.connect( boost::bind( &MainWorker::DecodeRXMessage, this, _1, _2 ) );
-		m_sharedserver.StartServer("::",szPort);
+		m_sharedserver.StartServer("0.0.0.0",szPort);
 
 		LoadSharedUsers();
 	}

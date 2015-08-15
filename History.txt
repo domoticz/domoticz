@@ -11,7 +11,7 @@ Version 3.xxx (xxxx 2015)
 - Implemented: Rain Report
 - Implemented: Temperature Report
 - Fixed: 1-Wire negative values
-- Implemented: Netatmo Weather Station (Big thanks to Sébastien!)
+- Implemented: Netatmo Weather Station (Big thanks to Sebastien!)
 - Changed: json "udevice" Perecentage sensor, you might get new ID's, now also creates an event for blockly/lua
 - Implemented: Text/Alert Sensor logging (when called from json api)
 - Implemented: Support for browsers that do not support gzip compression (thanks to ash77)
@@ -79,6 +79,7 @@ Version 3.xxx (xxxx 2015)
 - Fixed: MySensors, Negative temperature sensor
 - Implemented: MySensors added support for V_IMPEDANCE
 - Changed: MySensors, rebuild
+- Changed: migrated to github
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
@@ -540,7 +541,7 @@ Version 1.1396 (January 18th 2014)
 - Fixed: Hardware started/stopped state, should fix the double starting of hardware
 - Fixed: Fixed problem with lux day value
 - Implemented: Option to delete data point from sensor by Shift-Left click on short log for temp/uv/lux/usage graphs
-- Implemented: New 1-Wire system (thanks to Sébastien)
+- Implemented: New 1-Wire system (thanks to Sebastien)
 - Fixed: Scene/Group timer editing (specified days was incorrectly handled)
 - Implemented: Initial support for RGB driver TRC02
 - Fixed: Autobackup

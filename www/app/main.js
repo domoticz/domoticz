@@ -11,7 +11,8 @@ require.config({
         'highcharts-ng': '../js/highcharts-ng.min',
         'angularAMD': '../js/angularAMD.min',
         'angular-tree-control': '../js/angular-tree-control',
-        'ngDraggable': '../js/ngDraggable'
+        'ngDraggable': '../js/ngDraggable',
+		'ui.bootstrap': '../js/ui-bootstrap.min'
     },
     shim: { 
 		'angularAMD': ['angular'], 
@@ -23,6 +24,7 @@ require.config({
 		'ng-grid-flexible-height': ['angular'],
 		'highcharts-ng': ['angular'],
 		'angular-tree-control': ['angular'],
+        'ui.bootstrap': ['angular'],
 		'ngDraggable': ['angular']
 	},
     deps: ['app']

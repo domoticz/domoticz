@@ -112,22 +112,20 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 ENDMACRO()
 
-FIND_PROGRAM(SVN_EXECUTABLE svn
-  DOC "subversion command line client")
+FIND_PROGRAM(GIT_EXECUTABLE git
+  DOC "git command line client")
 
-MACRO(Subversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${SVN_EXECUTABLE} info ${dir}
+MACRO(Gitversion_GET_REVISION dir variable)
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
-  STRING(REGEX REPLACE "^(.*\n)?Revision: ([^\n]+).*"
-    "\\2" ${variable} "${${variable}}")
-ENDMACRO(Subversion_GET_REVISION)
+ENDMACRO(Gitversion_GET_REVISION)
 
-Subversion_GET_REVISION(. ProjectRevision)
+Gitversion_GET_REVISION(. ProjectRevision)
 MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 
 # The version number.
-set (domoticz_VERSION_MAJOR 1)
+set (domoticz_VERSION_MAJOR 3)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
@@ -136,10 +134,10 @@ include_directories(${CMAKE_SOURCE_DIR}/main)
 # a custom target that is always built
 ADD_CUSTOM_TARGET(revisiontag ALL)
 
-# creates svnversion.h using cmake script
+# creates appversion.h using cmake script
 ADD_CUSTOM_COMMAND(TARGET revisiontag COMMAND ${CMAKE_COMMAND}
    -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} 
-   -P ${CMAKE_CURRENT_SOURCE_DIR}/getsvn.cmake)
+   -P ${CMAKE_CURRENT_SOURCE_DIR}/getgit.cmake)
 
 ## Target
 set(
@@ -443,7 +441,6 @@ install(TARGETS domoticz DESTINATION /opt/domoticz)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION /opt/domoticz USE_SOURCE_PERMISSIONS)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION /opt/domoticz)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION /opt/domoticz)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/svnversion.h DESTINATION /opt/domoticz)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION /opt/domoticz USE_SOURCE_PERMISSIONS)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION /opt/domoticz USE_SOURCE_PERMISSIONS)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION /opt/domoticz PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)

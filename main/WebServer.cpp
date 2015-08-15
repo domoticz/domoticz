@@ -30,7 +30,7 @@
 #include "Logger.h"
 #include "SQLHelper.h"
 #include <algorithm>
-
+#include "../appversion.h"
 #ifndef WIN32
 #include <sys/utsname.h>
 #include <dirent.h>
@@ -1842,6 +1842,13 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
 			root["version"] = szAppVersion;
+			root["hash"] = APPHASH;
+			time_t btime = APPDATE;
+			char szTmp[200];
+			struct tm ltime;
+			localtime_r(&btime, &ltime);
+			strftime(szTmp, 200, "%Y-%m-%d %H:%M:%S", &ltime);
+			root["build_time"] = szTmp;
 
 			//Force Check for update
 			/*
@@ -2653,7 +2660,7 @@ namespace http {
 
 					int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
 					m_iRevision = atoi(strarray[2].c_str());
-					m_bHaveUpdate = (version < m_iRevision);
+					m_bHaveUpdate = (version != m_iRevision);
 #ifdef DEBUG_DOWNLOAD
 					m_bHaveUpdate = true;
 					bIsForced = true;
@@ -2717,7 +2724,7 @@ namespace http {
 			if (strarray.size() != 3)
 				return;
 			int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
-			if (version >= atoi(strarray[2].c_str()))
+			if (version == atoi(strarray[2].c_str()))
 			{
 #ifndef DEBUG_DOWNLOAD
 				return;

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1008
+# ref 1009
 
 CACHE:
 # CSS
@@ -72,6 +72,7 @@ css/ui-darkness/images/ui-icons_4b8e0b_256x240.png
 css/ui-darkness/images/ui-icons_a83300_256x240.png
 css/ui-darkness/images/ui-icons_cccccc_256x240.png
 css/ui-darkness/images/ui-icons_ffffff_256x240.png
+images/about.png
 images/add.png
 images/adjust48.png
 images/air.png
@@ -412,6 +413,7 @@ i18n/domoticz-sv.json
 i18n/domoticz-tr.json
 
 # Scripts
+app/AboutController.js
 app/app.js
 app/CamController.js
 app/CustomIconsController.js
@@ -495,6 +497,7 @@ js/noty/themes/default.js
 js/require.js
 js/respond.min.js
 js/themes/dark-blue.js
+js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
 secpanel/js/less.js
@@ -511,6 +514,7 @@ ozwcp/cp.js
 #SwitchIcons
 
 # HTML pages
+views/about.html
 views/cam.html
 views/customicons.html
 views/dashboard.html

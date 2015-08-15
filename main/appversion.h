@@ -1,4 +1,4 @@
 #pragma once
-#include "../svnversion.h"
+#include "../appversion.h"
 
-#define VERSION_STRING "2."
+#define VERSION_STRING "3."

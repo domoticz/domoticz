@@ -1,5 +1,5 @@
-define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5'], function (angularAMD) {
-	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5']);
+define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5',,'ui.bootstrap'], function (angularAMD) {
+	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5',,'ui.bootstrap']);
 
 		isOnline=false;
 		dashboardType=1;
@@ -295,6 +295,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'zwavetopology.html',
 				controller: 'ZWaveTopologyController'
 			  })).
+			  when('/About', angularAMD.route({
+				templateUrl: 'views/about.html',
+				controller: 'AboutController'
+			  })).
 			  otherwise({
 				redirectTo: '/Dashboard'
 			  });
@@ -419,6 +423,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				WindSign: "km/h",
 				language: "en",
 				HaveUpdate: false,
+				appversion: 0,
+				apphash: 0,
+				appdate: 0,
+				versiontooltip: "",
 				ShowUpdatedEffect: true
 				};
 
@@ -487,6 +495,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		 success: function(data) {
 			isOnline = true;
 			if (data.status == "OK") {
+				$rootScope.config.appversion=data.version;
+				$rootScope.config.apphash=data.hash;
+				$rootScope.config.appdate=data.build_time;
+				$rootScope.config.versiontooltip="'Build Hash: <h1>" + $rootScope.config.apphash + "</h1><br>" + "Build Date: " + $rootScope.config.appdate+"'";
 				$( "#appversion" ).text("V" + data.version);
 				$rootScope.config.HaveUpdate=data.haveupdate;
 				if (data.haveupdate == true)

@@ -1,4 +1,4 @@
-#include "../svnversion.h"
+#include "../appversion.h"
  
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
@@ -6,7 +6,7 @@
 #define VERSION_MAJOR               2
 #define VERSION_MINOR               0
 #define VERSION_REVISION            0
-#define VERSION_BUILD               SVNVERSION
+#define VERSION_BUILD               APPVERSION
  
 #define VER_FILE_DESCRIPTION_STR    "Domoticz binary"
 #define VER_FILE_VERSION            VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION, VERSION_BUILD
