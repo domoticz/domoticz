@@ -23,6 +23,10 @@ void connection_manager::start(connection_ptr c)
   connections_.insert(c);
   std::string s = c->socket().remote_endpoint().address().to_string();
 
+  if (s.substr(0, 7) == "::ffff:") {
+	  s = s.substr(7);
+  }
+
   if (connectedips_.find(s)==connectedips_.end())
   {
 	  //ok, this could get a very long list when running for years
