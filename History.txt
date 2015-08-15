@@ -1,4 +1,4 @@
-Version 2.xxx (xxxx 2015)
+Version 3.xxx (xxxx 2015)
 - Implemented: Notifications, new option "Ignore Interval"
 - Improved: Notifications
 - Implemented: MySensors added support for S_SMOKE/S_DIMMER
