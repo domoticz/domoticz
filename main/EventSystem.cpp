@@ -2885,6 +2885,10 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 		{
 			lstatus = "Closed";
 		}
+		else if (lstatus == "Stop")
+		{
+			lstatus = "Stopped";
+		}
 		else
 		{
 			lstatus = "Open";
@@ -2895,6 +2899,10 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 		if (lstatus == "Off")
 		{
 			lstatus = "Closed";
+		}
+		else if (lstatus == "Stop")
+		{
+			lstatus = "Stopped";
 		}
 		else
 		{
