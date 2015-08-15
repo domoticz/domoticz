@@ -32,6 +32,7 @@ m_username(username), m_password(password), m_szIPAddress(IPAddress)
 	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
+	info = NULL;
 }
 
 DomoticzTCP::~DomoticzTCP(void)
@@ -42,44 +43,79 @@ DomoticzTCP::~DomoticzTCP(void)
 	//
 	WSACleanup();
 #endif
+	if (NULL != info) {
+		freeaddrinfo(info);
+	}
+
 }
+
+#if defined WIN32
+int inet_pton(int af, const char *src, void *dst)
+{
+  struct sockaddr_storage ss;
+  int size = sizeof(ss);
+  char src_copy[INET6_ADDRSTRLEN+1];
+
+  ZeroMemory(&ss, sizeof(ss));
+  /* stupid non-const API */
+  strncpy (src_copy, src, INET6_ADDRSTRLEN+1);
+  src_copy[INET6_ADDRSTRLEN] = 0;
+
+  if (WSAStringToAddress(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0) {
+    switch(af) {
+      case AF_INET:
+    *(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;
+    return 1;
+      case AF_INET6:
+    *(struct in6_addr *)dst = ((struct sockaddr_in6 *)&ss)->sin6_addr;
+    return 1;
+    }
+  }
+  return 0;
+}
+#endif
 
 bool DomoticzTCP::StartHardware()
 {
+	int rc;
+	struct addrinfo hints;
 	m_bIsStarted=true;
 
 	m_stoprequested=false;
 
-	memset(&m_addr,0,sizeof(sockaddr_in));
-	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(m_usIPPort);
+	memset(&m_addr,0,sizeof(sockaddr_in6));
+	m_addr.sin6_family = AF_INET6;
+	m_addr.sin6_port = htons(m_usIPPort);
 
-	unsigned long ip;
-	ip=inet_addr(m_szIPAddress.c_str());
+	// RK, removed: unsigned long ip;
+	memset(&hints, 0x00, sizeof(hints));
+    hints.ai_flags    = AI_NUMERICSERV;
+    hints.ai_family   = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
 
-	// if we have a error in the ip, it means we have entered a string
-	if(ip!=INADDR_NONE)
+    rc = inet_pton(AF_INET, m_szIPAddress.c_str(), &(m_addr.sin6_addr));
+	if (rc == 1)    /* valid IPv4 text address? */
 	{
-		m_addr.sin_addr.s_addr=ip;
+		hints.ai_family = AF_INET;
+		hints.ai_flags |= AI_NUMERICHOST;
 	}
 	else
 	{
-		// change Hostname in serveraddr
-		hostent *he=gethostbyname(m_szIPAddress.c_str());
-		if(he==NULL)
+		rc = inet_pton(AF_INET6, m_szIPAddress.c_str(), &(m_addr.sin6_addr));
+		if (rc == 1) /* valid IPv6 text address? */
 		{
-			return false;
-		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr),he->h_addr_list[0],4);
+
+		hints.ai_family = AF_INET6;
+		hints.ai_flags |= AI_NUMERICHOST;
 		}
 	}
-
-	char szIP[20];
-	unsigned char *pAddress=(unsigned char *)&m_addr.sin_addr;
-	sprintf(szIP,"%d.%d.%d.%d",pAddress[0],pAddress[1],pAddress[2],pAddress[3]);
-	m_endpoint=szIP;
+	char myPort[256];
+	sprintf(myPort, "%d", m_usIPPort);
+	rc = getaddrinfo(m_szIPAddress.c_str(), myPort, &hints, &info);
+	if (rc != 0)
+	{
+		return false;
+	}
 
 	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 
@@ -119,7 +155,7 @@ bool DomoticzTCP::StopHardware()
 
 bool DomoticzTCP::ConnectInternal()
 {
-	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	m_socket = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
 	if (m_socket == INVALID_SOCKET)
 	{
 		_log.Log(LOG_ERROR,"Domoticz: TCP could not create a TCP/IP socket!");
@@ -138,7 +174,7 @@ bool DomoticzTCP::ConnectInternal()
 */
 	// connect to the server
 	int nRet;
-	nRet = connect(m_socket,(const sockaddr*)&m_addr, sizeof(m_addr));
+	nRet = connect(m_socket,info->ai_addr, info->ai_addrlen);
 	if (nRet == SOCKET_ERROR)
 	{
 		closesocket(m_socket);
