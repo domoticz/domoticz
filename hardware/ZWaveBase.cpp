@@ -381,7 +381,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.level=level;
 		lcmd.LIGHTING2.filler=0;
 		lcmd.LIGHTING2.rssi=12;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
 		return;
 	}
 	else if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
@@ -432,7 +432,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		umeter.id4 = ID4;
 		umeter.dunit = pDevice->scaleID;
 		umeter.fusage = pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char *)&umeter);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&umeter);
 
 		//Search Energy Device
 		const _tZWaveDevice *pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
@@ -482,7 +482,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			total -= tsen.ENERGY.total5 * 0x100;
 			tsen.ENERGY.total6 = (unsigned char)(total);
 
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
 
 		}
 	}
@@ -536,7 +536,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			total -= tsen.ENERGY.total5 * 0x100;
 			tsen.ENERGY.total6 = (unsigned char)(total);
 
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
 		}
 		else
 		{
@@ -576,7 +576,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			total -= tsen.ENERGY.total5 * 0x100;
 			tsen.ENERGY.total6 = (unsigned char)(total);
 
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VOLTAGE)
@@ -654,6 +654,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 			tsen.TEMP_HUM.humidity=(BYTE)pHumDevice->intvalue;
 			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
 		}
 		else
 		{
@@ -675,8 +676,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP.temperatureh=(BYTE)(at10/256);
 			at10-=(tsen.TEMP.temperatureh*256);
 			tsen.TEMP.temperaturel=(BYTE)(at10);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_HUMIDITY)
 	{
@@ -736,7 +737,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VELOCITY)
 	{
@@ -790,7 +791,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.WIND.temperaturel = (BYTE)(at10);
 			tsen.WIND.chilll = (BYTE)(at10);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_BAROMETER)
 	{
