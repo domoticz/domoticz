@@ -52,7 +52,6 @@ Source: "..\Release\domoticz.exe"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\www\*"; DestDir: {app}\www; Flags: recursesubdirs createallsubdirs ignoreversion;
 Source: "..\..\Config\*"; DestDir: {app}\Config; Flags: recursesubdirs createallsubdirs ignoreversion;
 Source: "..\..\scripts\*"; DestDir: {app}\scripts; Flags: recursesubdirs createallsubdirs ignoreversion;
-Source: "..\Debug\sqlite3.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Debug\libeay32.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\Debug\ssleay32.dll"; DestDir: {app}; Flags: ignoreversion;
@@ -86,7 +85,7 @@ Name: "{app}\backups\monthly"
 Name: "{app}\log"; Permissions: everyone-full
 
 [PostCompile]
-Name: "makedist.bat"
+Name: "S:\Domoticz\msbuild\WindowsInstaller\makedist.bat"; Flags: cmdprompt redirectoutput
 
 [Code]
 var

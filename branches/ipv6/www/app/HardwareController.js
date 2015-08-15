@@ -326,7 +326,35 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
-			else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("Nest Th") >= 0) || (text.indexOf("PVOutput") >= 0) || (text.indexOf("Thermosmart") >= 0) || (text.indexOf("Netatmo Weather Station") >= 0)) {
+			else if (text.indexOf("Thermosmart") >= 0)
+			{
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = $("#hardwarecontent #divlogin #password").val();
+				var client_id = $("#hardwarecontent #divthermosmart #tmsclientid").val();
+				var client_secret = $("#hardwarecontent #divthermosmart #tmsclientsecret").val();
+				var dstusrname=username+"*;"+password+"*;"+client_id+"*;"+client_secret;
+				alert(dstusrname);
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					   "&port=1" +
+					   "&username=" + encodeURIComponent(dstusrname) +
+					   "&password=" + encodeURIComponent("secret") +
+					   "&name=" + encodeURIComponent(name) +
+					   "&enabled=" + bEnabled +
+					   "&idx=" + idx +
+					   "&datatimeout=" + datatimeout +
+					   "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
+			else if ((text.indexOf("ICY") >= 0) || (text.indexOf("Toon") >= 0) || (text.indexOf("Nest Th") >= 0) || (text.indexOf("PVOutput") >= 0) || (text.indexOf("Netatmo Weather Station") >= 0)) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				$.ajax({
@@ -347,6 +375,36 @@ define(['app'], function (app) {
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
+				});
+			}
+			else if (text.indexOf("Winddelen") >= 0)
+			{
+				var mill_id = $("#hardwarecontent #divwinddelen #combomillselect").val();
+				var mill_name = $("#hardwarecontent #divwinddelen #combomillselect").find("option:selected").text()
+				var nrofwinddelen = $("#hardwarecontent #divwinddelen #nrofwinddelen").val();
+				var intRegex = /^\d+$/;
+				if(!intRegex.test(nrofwinddelen)) {
+					ShowNotify($.t('Please enter an Valid Number!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					   "&name=" + encodeURIComponent(name) + 
+					   "&address=" + encodeURIComponent(mill_name) + 
+					   "&port=" + encodeURIComponent(nrofwinddelen) + 
+					   "&Mode1=" + encodeURIComponent(mill_id) + 
+					   "&enabled=" + bEnabled +
+					   "&idx=" + idx +
+					   "&datatimeout=" + datatimeout +
+					   "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						RefreshHardwareTable();
+					 },
+					 error: function(){
+							ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					 }     
 				});
 			}
 		}
@@ -604,7 +662,60 @@ define(['app'], function (app) {
 					 }     
 				});
 			}
-			else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Thermosmart") >= 0)||(text.indexOf("Netatmo Weather Station") >= 0))
+			else if (text.indexOf("Thermosmart") >= 0)
+			{
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = $("#hardwarecontent #divlogin #password").val();
+				var client_id = $("#hardwarecontent #divthermosmart #tmsclientid").val();
+				var client_secret = $("#hardwarecontent #divthermosmart #tmsclientsecret").val();
+				var dstusrname=username+"*;"+password+"*;"+client_id+"*;"+client_secret;
+				$.ajax({
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					 "&port=1" + 
+					 "&username=" + encodeURIComponent(dstusrname) + 
+					 "&password=" + encodeURIComponent("secret") + 
+					 "&name=" + encodeURIComponent(name) + 
+					 "&enabled=" + bEnabled +
+					 "&datatimeout=" + datatimeout,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						RefreshHardwareTable();
+					 },
+					 error: function(){
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					 }     
+				});
+			}
+			else if (text.indexOf("Winddelen") >= 0)
+			{
+				var mill_id = $("#hardwarecontent #divwinddelen #combomillselect").val();
+				var mill_name = $("#hardwarecontent #divwinddelen #combomillselect").find("option:selected").text()
+				var nrofwinddelen = $("#hardwarecontent #divwinddelen #nrofwinddelen").val();
+				var intRegex = /^\d+$/;
+				if(!intRegex.test(nrofwinddelen)) {
+					ShowNotify($.t('Please enter an Valid Number!'), 2500, true);
+					return;
+				}
+				$.ajax({
+					 url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					 "&name=" + encodeURIComponent(name) + 
+					 "&address=" + encodeURIComponent(mill_name) + 
+					 "&port=" + encodeURIComponent(nrofwinddelen) + 
+					 "&Mode1=" + encodeURIComponent(mill_id) + 
+					 "&enabled=" + bEnabled +
+					 "&datatimeout=" + datatimeout,
+					 async: false, 
+					 dataType: 'json',
+					 success: function(data) {
+						RefreshHardwareTable();
+					 },
+					 error: function(){
+							ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					 }     
+				});
+			}
+			else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo Weather Station") >= 0))
 			{
 				var username=$("#hardwarecontent #divlogin #username").val();
 				var password=encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -2599,6 +2710,17 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
 						}
+						else if (data["Type"].indexOf("Winddelen") >= 0) {
+							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
+							$("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
+						}
+						else if (data["Type"].indexOf("Thermosmart") >= 0) {
+							var res=data["Username"].split("*;");
+							$("#hardwarecontent #hardwareparamslogin #username").val(res[0]);
+							$("#hardwarecontent #hardwareparamslogin #password").val(res[1]);
+							$("#hardwarecontent #divthermosmart #tmsclientid").val(res[2]);
+							$("#hardwarecontent #divthermosmart #tmsclientsecret").val(res[3]);
+						}
 						if (
 							(data["Type"].indexOf("Domoticz") >= 0)||
 							(data["Type"].indexOf("ICY") >= 0) ||
@@ -2606,7 +2728,6 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Toon") >= 0)||
 							(data["Type"].indexOf("Nest Th") >= 0)||
 							(data["Type"].indexOf("PVOutput") >= 0)||
-							(data["Type"].indexOf("Thermosmart") >= 0)||
 							(data["Type"].indexOf("ETH8020") >= 0)||
 							(data["Type"].indexOf("Anna") >= 0)||
 							(data["Type"].indexOf("KMTronic") >= 0)||
@@ -2614,8 +2735,8 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Netatmo Weather Station") >= 0)
 							) 
 						{
-								$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
-								$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
 					}
 				}
@@ -2669,6 +2790,8 @@ define(['app'], function (app) {
 					
 			$("#hardwarecontent #divlocation").hide();
 			$("#hardwarecontent #divphilipshue").hide();
+			$("#hardwarecontent #divthermosmart").hide();
+			$("#hardwarecontent #divwinddelen").hide();
 
 			if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
 			{
@@ -2717,7 +2840,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #username").hide();
 				$("#hardwarecontent #lblusername").hide();
 			}
-			else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Thermosmart") >= 0)||(text.indexOf("Netatmo Weather Station") >= 0))
+			else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo Weather Station") >= 0))
 			{
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").hide();
@@ -2731,6 +2854,14 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divunderground").show();
 			}
+			else if (text.indexOf("Thermosmart") >= 0)
+			{
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").show();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divthermosmart").show();
+			}
 			else if (text.indexOf("Philips Hue") >= 0)
 			{
 				$("#hardwarecontent #divserial").hide();
@@ -2739,6 +2870,16 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divphilipshue").show();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
+			}
+			else if (text.indexOf("Winddelen") >= 0)
+			{
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #username").hide();
+				$("#hardwarecontent #lblusername").hide();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divwinddelen").show();
 			}
 			else
 			{

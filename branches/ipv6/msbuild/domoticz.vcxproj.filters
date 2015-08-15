@@ -231,6 +231,9 @@
     <Filter Include="Devices\AnnaThermostat">
       <UniqueIdentifier>{15a1d2e6-b739-49bf-8669-fd841f61dfc2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Winddelen">
+      <UniqueIdentifier>{e5664245-d331-4463-86e8-c64619d68877}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -735,6 +738,9 @@
     <ClInclude Include="..\hardware\AnnaThermostat.h">
       <Filter>Devices\AnnaThermostat</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Winddelen.h">
+      <Filter>Devices\Winddelen</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1177,6 +1183,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\AnnaThermostat.cpp">
       <Filter>Devices\AnnaThermostat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Winddelen.cpp">
+      <Filter>Devices\Winddelen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

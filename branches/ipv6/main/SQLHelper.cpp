@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 73
+#define DB_VERSION 74
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -546,6 +546,13 @@ const char *sqlCreateMySensorsVariables =
 	" [VarID] INTEGER NOT NULL,"
 	" [Value] VARCHAR(100) NOT NULL);";
 
+const char *sqlCreateMySensorsChilds =
+"CREATE TABLE IF NOT EXISTS [MySensorsChilds]("
+" [HardwareID] INTEGER NOT NULL,"
+" [NodeID] INTEGER NOT NULL,"
+" [ChildID] INTEGER NOT NULL,"
+" [Type] INTEGER NOT NULL);";
+
 const char *sqlCreateToonDevices =
 	"CREATE TABLE IF NOT EXISTS [ToonDevices]("
 	" [HardwareID] INTEGER NOT NULL,"
@@ -669,6 +676,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateCustomImages);
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
+	query(sqlCreateMySensorsChilds);
 	query(sqlCreateToonDevices);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
@@ -1395,6 +1403,13 @@ bool CSQLHelper::OpenDatabase()
 			}
 			query("ALTER TABLE Scenes ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
 		}
+		if (dbversion < 74)
+		{
+			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
+			{
+				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2033,20 +2048,12 @@ bool CSQLHelper::DoesColumnExistsInTable(const std::string columnname, const std
 	bool columnExists = false;
 
 	sqlite3_stmt *statement;
-
-	char *zQuery = sqlite3_mprintf("SELECT \"%q\" FROM \"%q\"", columnname.c_str(), tablename.c_str());
-	if (!zQuery)
-	{
-		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
-		return false;
-	}
-	if (sqlite3_prepare_v2(m_dbase, zQuery, -1, &statement, NULL) == SQLITE_OK)
+	std::string szQuery = "SELECT " + columnname + " FROM " + tablename;
+	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, NULL) == SQLITE_OK)
 	{
 		columnExists = true;
 		sqlite3_finalize(statement);
 	}
-	sqlite3_free(zQuery);
-
 	return columnExists;
 }
 
@@ -5660,7 +5667,7 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 {
 	std::vector<std::vector<std::string> > result;
 
-	result=safe_query("SELECT t.RowID, u.RowID, t.Date FROM \"%q\" as t, \"%q\" as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]",
+	result=safe_query("SELECT t.RowID, u.RowID, t.Date FROM %s as t, %s as u WHERE (t.[Date] == u.[Date]) AND (t.[DeviceRowID] == u.[DeviceRowID]) AND (t.[RowID] != u.[RowID]) ORDER BY t.[RowID]",
 		TableName.c_str(),
 		TableName.c_str());
 	if (result.size()>0)
@@ -5690,17 +5697,17 @@ void CSQLHelper::FixDaylightSavingTableSimple(const std::string &TableName)
 				std::string szDateNew=result2[0][0];
 
 				//Check if Date+1 exists, if yes, remove current double value
-				result2=safe_query("SELECT RowID FROM \"%q\" WHERE (Date='%q') AND (RowID=='%q')",
+				result2=safe_query("SELECT RowID FROM %s WHERE (Date='%q') AND (RowID=='%q')",
 					TableName.c_str(), szDateNew.c_str(), sd[1].c_str());
 				if (result2.size()>0)
 				{
 					//Delete row
-					safe_query("DELETE FROM \"%q\" WHERE (RowID=='%q')", TableName.c_str(), sd[1].c_str());
+					safe_query("DELETE FROM %s WHERE (RowID=='%q')", TableName.c_str(), sd[1].c_str());
 				}
 				else
 				{
 					//Update date
-					safe_query("UPDATE \"%q\" SET Date='%q' WHERE (RowID=='%q')", TableName.c_str(), szDateNew.c_str(), sd[1].c_str());
+					safe_query("UPDATE %s SET Date='%q' WHERE (RowID=='%q')", TableName.c_str(), szDateNew.c_str(), sd[1].c_str());
 				}
 			}
 		}
@@ -6272,7 +6279,7 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 				std::string IconFile = iItt->second;
 
 				sqlite3_stmt *stmt = NULL;
-				char *zQuery = sqlite3_mprintf("UPDATE CustomImages SET \"%q\" = ? WHERE ID=%d", TableField.c_str(), RowID);
+				char *zQuery = sqlite3_mprintf("UPDATE CustomImages SET %s = ? WHERE ID=%d", TableField.c_str(), RowID);
 				if (!zQuery)
 				{
 					_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");

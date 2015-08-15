@@ -143,6 +143,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_P1SmartMeter, "P1 Smart Meter USB" },
 		{ HTYPE_P1SmartMeterLAN, "P1 Smart Meter with LAN interface" },
 		{ HTYPE_YouLess, "YouLess Meter with LAN interface" },
+		{ HTYPE_WINDDELEN, "Winddelen" },
 		{ HTYPE_TE923, "TE923 USB Compatible Weather Station" },
 		{ HTYPE_Rego6XX, "Rego 6XX USB/serial interface" },
 		{ HTYPE_RazberryZWave, "Razberry Z-Wave via LAN interface (HTTP)" },
@@ -193,7 +194,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
-		{ 0, NULL, NULL }
+  		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
 }

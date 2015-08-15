@@ -164,7 +164,7 @@ void CDomoticzHardwareBase::SendTempSensor(const int NodeID, const int BatteryLe
 	tsen.TEMP.id1 = (NodeID & 0xFF00) >> 8;
 	tsen.TEMP.id2 = NodeID & 0xFF;
 	tsen.TEMP.tempsign = (temperature >= 0) ? 0 : 1;
-	int at10 = round(temperature*10.0f);
+	int at10 = round(abs(temperature*10.0f));
 	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
@@ -325,6 +325,42 @@ void CDomoticzHardwareBase::SendTempHumBaroSensorFloat(const int NodeID, const i
 			defaultname.c_str(), m_HwdID, szIdx, Unit, int(pTypeTEMP_HUM_BARO), int(sTypeTHBFloat));
 	}
 }
+
+void CDomoticzHardwareBase::SendSetPointSensor(const int NodeID, const int ChildID, const float Temp, const std::string &defaultname)
+{
+	bool bDeviceExits = true;
+
+	char szID[10];
+	sprintf(szID, "%X%02X%02X%02X", 0, 0, NodeID, ChildID);
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_HwdID, szID);
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	_tThermostat thermos;
+	thermos.subtype = sTypeThermSetpoint;
+	thermos.id1 = 0;
+	thermos.id2 = 0;
+	thermos.id3 = NodeID;
+	thermos.id4 = ChildID;
+	thermos.dunit = 0;
+
+	thermos.temp = Temp;
+
+	sDecodeRXMessage(this, (const unsigned char *)&thermos);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+			defaultname.c_str(), m_HwdID, szID);
+	}
+}
+
 
 void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance)
 {

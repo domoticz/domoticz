@@ -16,8 +16,9 @@
 const std::string THERMOSMART_LOGIN_PATH = "https://api.thermosmart.com/login";
 const std::string THERMOSMART_AUTHORISE_PATH = "https://api.thermosmart.com/oauth2/authorize?response_type=code&client_id=client123&redirect_uri=http://clientapp.com/done";
 const std::string THERMOSMART_DECISION_PATH = "https://api.thermosmart.com/oauth2/authorize/decision";
-const std::string THERMOSMART_TOKEN_PATH = "https://api.thermosmart.com/oauth2/token";
-const std::string THERMOSMART_ACCESS_PATH = "https://api.thermosmart.com/thermostat";
+const std::string THERMOSMART_TOKEN_PATH = "https://username:password@api.thermosmart.com/oauth2/token";
+const std::string THERMOSMART_ACCESS_PATH = "https://api.thermosmart.com/thermostat/[TID]?access_token=[access_token]";
+const std::string THERMOSMART_SETPOINT_PATH = "https://api.thermosmart.com/thermostat/[TID]?access_token=[access_token]";
 
 #ifdef _DEBUG
 	//#define DEBUG_ThermosmartThermostat
@@ -51,10 +52,21 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password) :
-m_UserName(Username),
-m_Password(Password)
+CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password)
 {
+	std::vector<std::string> results;
+	StringSplit(Username, "*;", results);
+	if (results.size()<4)
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Invalid login credentials provided");
+		return;
+	}
+
+	m_UserName = results[0];
+	m_Password = results[1];
+	m_ClientID = results[2];
+	m_ClientSecret = results[3];
+
 	m_HwdID=ID;
 	Init();
 }
@@ -160,33 +172,113 @@ bool CThermosmart::Login()
 	m_AccessToken = "";
 	m_ThermostatID = "";
 
+	std::string sURL;
 	std::stringstream sstr;
 	sstr << "username=" << m_UserName << "&password=" << m_Password;
 	std::string szPostdata=sstr.str();
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-	std::string sURL = THERMOSMART_LOGIN_PATH;
+	//# 1. Login
+
+	sURL = THERMOSMART_LOGIN_PATH;
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
-	{
-		_log.Log(LOG_ERROR,"Thermosmart: Error login!");
-		return false;
-	}
+		{
+			_log.Log(LOG_ERROR,"Thermosmart: Error login!");
+			return false;
+		}
+/*
 #ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart1.txt");
 #endif
-
+*/
+	//# 2. Get Authorize Dialog
 	sURL = THERMOSMART_AUTHORISE_PATH;
-	stdreplace(sURL, "client123", "3de470ce1db15f92");
+	stdreplace(sURL, "client123", m_ClientID);
 	ExtraHeaders.clear();
 	if (!HTTPClient::GET(sURL, sResult))
 	{
 		_log.Log(LOG_ERROR, "Thermosmart: Error login!");
 		return false;
 	}
+/*
 #ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart2.txt");
 #endif
+*/
+	size_t tpos = sResult.find("value=");
+	if (tpos == std::string::npos)
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error login!, check username/password");
+		return false;
+	}
+	sResult = sResult.substr(tpos + 7);
+	tpos = sResult.find("\">");
+	if (tpos == std::string::npos)
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error login!, check username/password");
+		return false;
+	}
+	std::string TID = sResult.substr(0, tpos);
+
+	//# 3. Authorize  (read out transaction_id from the HTML form received in the previous step). transaction_id prevents from XSRF attacks.
+	szPostdata = "transaction_id=" + TID;
+	ExtraHeaders.clear();
+	sURL = THERMOSMART_DECISION_PATH;
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult, false))
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error login!, check username/password");
+		return false;
+	}
+/*
+#ifdef DEBUG_ThermosmartThermostat
+	SaveString2Disk(sResult, "E:\\thermosmart3.txt");
+#endif
+*/
+	tpos = sResult.find("code=");
+	if (tpos == std::string::npos)
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error login!, check username/password");
+		return false;
+	}
+	std::string CODE = sResult.substr(tpos + 5);
+
+	//# 4. Exchange authorization code for Access token (read out the code from the previous response)
+	szPostdata = "grant_type=authorization_code&code=" + CODE + "&redirect_uri=http://clientapp.com/done";
+	sURL = THERMOSMART_TOKEN_PATH;
+
+	stdreplace(sURL, "username", m_ClientID);
+	stdreplace(sURL, "password", m_ClientSecret);
+
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult, false))
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error login!, check username/password");
+		return false;
+	}
+/*
+#ifdef DEBUG_ThermosmartThermostat
+	SaveString2Disk(sResult, "E:\\thermosmart4.txt");
+#endif
+*/
+	Json::Value root;
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Invalid/no data received...");
+		return false;
+	}
+
+	if (root["access_token"].empty()||root["thermostat"].empty())
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: No access granted, check username/password...");
+		return false;
+	}
+
+	m_AccessToken = root["access_token"].asString();
+	m_ThermostatID = root["thermostat"].asString();
+
+	_log.Log(LOG_STATUS, "Thermosmart: Login successfull!...");
 
 	m_bDoLogin = false;
 	return true;
@@ -227,13 +319,83 @@ void CThermosmart::GetMeterDetails()
 	if (m_Password.size()==0)
 		return;
 	std::string sResult;
+/*
+	sResult = ReadFile("E:\\thermosmart_getdata.txt");
+*/
 	if (m_bDoLogin)
 	{
 		if (!Login())
+			return;
+	}
+	std::string sURL = THERMOSMART_ACCESS_PATH;
+	stdreplace(sURL, "[TID]", m_ThermostatID);
+	stdreplace(sURL, "[access_token]", m_AccessToken);
+	if (!HTTPClient::GET(sURL, sResult))
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error getting thermostat data!");
+		m_bDoLogin = true;
 		return;
+	}
+
+#ifdef DEBUG_ThermosmartThermostat
+	SaveString2Disk(sResult, "E:\\thermosmart_getdata.txt");
+#endif
+
+	Json::Value root;
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Invalid/no data received...");
+		m_bDoLogin = true;
+		return;
+	}
+
+	if (root["target_temperature"].empty() || root["room_temperature"].empty())
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Invalid/no data received...");
+		m_bDoLogin = true;
+		return;
+	}
+
+	float temperature;
+	temperature = (float)root["target_temperature"].asFloat();
+	SendSetPointSensor(1, temperature, "target temperature");
+
+	temperature = (float)root["room_temperature"].asFloat();
+	SendTempSensor(2, 255, temperature, "room temperature");
+
+	if (!root["outside_temperature"].empty())
+	{
+		temperature = (float)root["outside_temperature"].asFloat();
+		SendTempSensor(3, 255, temperature, "outside temperature");
 	}
 }
 
 void CThermosmart::SetSetpoint(const int idx, const float temp)
 {
+	if (m_bDoLogin)
+	{
+		if (!Login())
+			return;
+	}
+
+	char szTemp[20];
+	sprintf(szTemp, "%.1f", temp);
+	std::string sTemp = szTemp;
+
+	std::string szPostdata = "target_temperature=" + sTemp;
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+	std::string sURL = THERMOSMART_SETPOINT_PATH;
+	stdreplace(sURL, "[TID]", m_ThermostatID);
+	stdreplace(sURL, "[access_token]", m_AccessToken);
+	if (!HTTPClient::PUT(sURL, szPostdata, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error setting thermostat data!");
+		m_bDoLogin = true;
+		return;
+	}
+	SendSetPointSensor(1, temp, "target temperature");
 }

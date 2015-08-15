@@ -192,6 +192,38 @@ namespace http {
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeCounterIncremental, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
+			case 15:
+				//Soil Moisture
+			{
+				std::string rID = std::string(ID);
+				padLeft(rID, 8, '0');
+				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoilMoisture, 12, 255, 3, devname);
+				bCreated = true;
+			}
+			break;
+			case 16:
+				//Leaf Wetness
+			{
+				std::string rID = std::string(ID);
+				padLeft(rID, 8, '0');
+				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeLeafWetness, 12, 255, 2, devname);
+				bCreated = true;
+			}
+			break;
+			case 17:
+				//Thermostat Clock
+			{
+				std::string rID = std::string(ID);
+				padLeft(rID, 8, '0');
+				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeZWaveClock, 12, 255, 0, "24:12:00", devname);
+				bCreated = true;
+			}
+			break;
+			case pTypeLimitlessLights:
+				//RGB switch
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
+				bCreated = true;
+				break;
 			case pTypeTEMP:
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);
 				bCreated = true;

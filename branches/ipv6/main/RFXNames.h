@@ -123,6 +123,7 @@ enum _eHardwareTypes {
 	HTYPE_NetatmoWeatherStation,//54
 	HTYPE_Kodi,					//55
 	HTYPE_ANNATHERMOSTAT,		//56
+	HTYPE_WINDDELEN,			//57
 	HTYPE_END
 };
 

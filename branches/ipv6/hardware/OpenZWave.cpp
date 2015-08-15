@@ -51,7 +51,8 @@ enum _eSensorScaleID
 	SCALEID_CURRENT,
 	SCALEID_POWERFACTOR,
 	SCALEID_GAS,
-	SCALEID_CO2
+	SCALEID_CO2,
+	SCALEID_WATER
 };
 
 struct _tAlarmNameToIndexMapping
@@ -1629,6 +1630,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 				}
 			}
 		}
+		else if (vLabel == "Water")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_WATER;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_WATER;
+					InsertDevice(_device);
+				}
+			}
+		}
 	}
 	else if (commandclass == COMMAND_CLASS_SENSOR_MULTILEVEL)
 	{
@@ -1795,6 +1810,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 					_device.scaleID = SCALEID_GAS;
 					_device.scaleMultiply = 1;
 					_device.devType = ZDTYPE_SENSOR_GAS;
+					InsertDevice(_device);
+				}
+			}
+		}
+		else if (vLabel == "Water")
+		{
+			if (vType == OpenZWave::ValueID::ValueType_Decimal)
+			{
+				if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
+				{
+					_device.floatValue = fValue;
+					_device.scaleID = SCALEID_WATER;
+					_device.scaleMultiply = 1;
+					_device.devType = ZDTYPE_SENSOR_WATER;
 					InsertDevice(_device);
 				}
 			}
@@ -2278,7 +2307,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		(vLabel == "Current") ||
 		(vLabel == "Power Factor")||
 		(vLabel == "Gas")||
-		(vLabel == "CO2 Level")
+		(vLabel == "CO2 Level")||
+		(vLabel == "Water")
 		)
 	{
 		int scaleID = 0;
@@ -2296,6 +2326,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			scaleID = SCALEID_GAS;
 		else if (vLabel == "CO2 Level")
 			scaleID = SCALEID_CO2;
+		else if (vLabel == "Water")
+			scaleID = SCALEID_WATER;
 
 		sstr << "." << scaleID;
 	}
@@ -2445,7 +2477,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	{
 	case ZDTYPE_SWITCH_NORMAL:
 	{
-		if ((commandclass == COMMAND_CLASS_ALARM) || (commandclass == COMMAND_CLASS_SENSOR_ALARM))
+		if (commandclass == COMMAND_CLASS_SENSOR_ALARM)
+		{
+			int intValue = 0;
+			if (byteValue == 0)
+				intValue = 0;
+			else
+				intValue = 255;
+			pDevice->intvalue = intValue;
+		}
+		else if (commandclass == COMMAND_CLASS_ALARM)
 		{
 			/*
 			_log.Log(LOG_STATUS, "------------------------------------");
@@ -2455,6 +2496,13 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			_log.Log(LOG_STATUS, "byteValue: %d (0x%02x)", byteValue, byteValue);
 			_log.Log(LOG_STATUS, "------------------------------------");
 */
+			// default
+			int intValue = 0;
+			if (byteValue == 0)
+				intValue = 0;
+			else
+				intValue = 255;
+
 			if (vLabel == "Alarm Type")
 			{
 				NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
@@ -2482,8 +2530,80 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 					}
 				}
 			}
+			else if (
+				vLabel == "Carbon Monoxide" || 
+				vLabel == "Carbon Dioxide" || 
+				vLabel == "Heat" || 
+				vLabel == "Flood" ||
+				vLabel == "Burglar" ||
+				vLabel == "System" ||
+				vLabel == "Emergency" ||
+				vLabel == "Clock" ||
+				vLabel == "Appliance" ||
+				vLabel == "HomeHealth" 
+				)
+			{
+				switch (byteValue) {
+				case 0x00: 	// Previous Events cleared
+				case 0xfe:	// Unkown event; returned when retrieving the current state.
+					intValue = 0;
+					break;
+				default:	// all others, interpret as alarm
+					intValue = 255;
+					break;
+				}
+			}
+			else if (vLabel == "Smoke")
+			{
+				switch (byteValue) {
+				case 0x00: 	// Previous Events cleared
+				case 0xfe:	// Unkown event; returned when retrieving the current state.
+					intValue = 0;
+					break;
 
-			if ((vLabel != "Alarm Type") && (vLabel != "Alarm Level"))
+				case 0x03: 	// Smoke Alarm Test
+				default:	// all others, interpret as alarm
+					intValue = 255;
+					break;
+				}
+			}
+			else if (vLabel == "Access Control")
+			{
+				switch (byteValue) {
+				case 0x00: 	// Previous Events cleared
+				case 0x17: 	// Door closed
+				case 0xfe:	// Unkown event; returned when retrieving the current state.
+					intValue = 0;
+					break;
+
+				case 0x16: 	// Door open
+				default:	// all others, interpret as alarm
+					intValue = 255;
+					break;
+				}
+			}
+			else if (vLabel == "Power Management")
+			{
+				switch (byteValue) {
+				case 0x00: 	// Previous Events cleared
+				case 0xfe:	// Unkown event; returned when retrieving the current state.
+					intValue = 0;
+					break;
+
+				case 0x0a:	// Replace battery soon
+				case 0x0b:	// Replace battery now
+				case 0x0e:	// Charge battery soon
+				case 0x0f:	// Charge battery now!
+					if (pDevice->hasBattery) {
+						pDevice->batValue = 0; // signal battery needs attention ?!?
+					}
+					// fall through by intent
+				default:	// all others, interpret as alarm
+					intValue = 255;
+					break;
+				}
+			}
+			else if ((vLabel != "Alarm Type") && (vLabel != "Alarm Level"))
 			{
 				if (byteValue != 0)
 				{
@@ -2494,44 +2614,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 					SendSwitch(NodeID, byteValue, pDevice->batValue, true, 0, tmpstr);
 				}
 			}
-
-			//Alarm sensors
-			int nintvalue = 0;
-
-			if (byteValue == 0x03)
-			{
-				// Remove Cover
-				nintvalue = 255;
-			}
-			else if (byteValue == 0x07)
-			{
-				//Movement(PIR) Home Security
-				nintvalue = 255;
-			}
-			else if (byteValue == 0x08)
-			{
-				//Movement(PIR) (Vision ZP3102)
-				nintvalue = 255;
-			}
-			else if (byteValue == 0x16)
-			{
-				//Door Open
-				nintvalue = 255;
-			}
-			else if (byteValue == 0x17)
-			{
-				//Door Closed
-				nintvalue = 0;
-			}
-			else if (byteValue == 0)
-				nintvalue = 0;
-			else
-				nintvalue = 255;
-			//if (pDevice->intvalue==nintvalue)
-			//{
-			//	return; //dont send same value
-			//}
-			pDevice->intvalue = nintvalue;
+			pDevice->intvalue = intValue;
 		}
 		else if (vLabel == "Open")
 		{
@@ -2724,6 +2807,16 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
 		if (vLabel != "CO2 Level")
+			return;
+		float oldvalue = pDevice->floatValue;
+		pDevice->floatValue = fValue; //always set the value
+	}
+	break;
+	case ZDTYPE_SENSOR_WATER:
+	{
+		if (vType != OpenZWave::ValueID::ValueType_Decimal)
+			return;
+		if (vLabel != "Water")
 			return;
 		float oldvalue = pDevice->floatValue;
 		pDevice->floatValue = fValue; //always set the value
@@ -3219,7 +3312,8 @@ void COpenZWave::EnableNodePoll(const unsigned int homeID, const int nodeID, con
 					if (
 						(vLabel == "Energy") ||
 						(vLabel == "Power")||
-						(vLabel == "Gas")
+						(vLabel == "Gas")||
+						(vLabel == "Water")
 						)
 					{
 						if (bSingleIndexPoll && (ittValue->GetIndex() != 0))

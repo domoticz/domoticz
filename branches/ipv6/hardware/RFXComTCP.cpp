@@ -44,8 +44,8 @@ bool RFXComTCP::StopHardware()
 			disconnect();
 			if (m_thread != NULL)
 			{
-				assert(m_thread);
 				m_thread->join();
+				m_thread.reset();
 			}
 		}
 		catch (...)

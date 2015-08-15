@@ -16,155 +16,6 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseValueTable[] =
-{
-	{ V_TEMP, "V_TEMP" },
-	{ V_HUM, "V_HUM" },
-	{ V_LIGHT, "V_LIGHT" },
-	{ V_DIMMER, "V_DIMMER" },
-	{ V_PRESSURE, "V_PRESSURE" },
-	{ V_FORECAST, "V_FORECAST" },
-	{ V_RAIN, "V_RAIN" },
-	{ V_RAINRATE, "V_RAINRATE" },
-	{ V_WIND, "V_WIND" },
-	{ V_GUST, "V_GUST" },
-	{ V_DIRECTION, "V_DIRECTION" },
-	{ V_UV, "V_UV" },
-	{ V_WEIGHT, "V_WEIGHT" },
-	{ V_DISTANCE, "V_DISTANCE" },
-	{ V_IMPEDANCE, "V_IMPEDANCE" },
-	{ V_ARMED, "V_ARMED" },
-	{ V_TRIPPED, "V_TRIPPED" },
-	{ V_WATT, "V_WATT" },
-	{ V_KWH, "V_KWH" },
-	{ V_SCENE_ON, "V_SCENE_ON" },
-	{ V_SCENE_OFF, "V_SCENE_OFF" },
-	{ V_HEATER, "V_HEATER" },
-	{ V_HEATER_SW, "V_HEATER_SW" },
-	{ V_LIGHT_LEVEL, "V_LIGHT_LEVEL" },
-	{ V_VAR1, "V_VAR1" },
-	{ V_VAR2, "V_VAR2" },
-	{ V_VAR3, "V_VAR3" },
-	{ V_VAR4, "V_VAR4" },
-	{ V_VAR5, "V_VAR5" },
-	{ V_UP, "V_UP" },
-	{ V_DOWN, "V_DOWN" },
-	{ V_STOP, "V_STOP" },
-	{ V_IR_SEND, "V_IR_SEND" },
-	{ V_IR_RECEIVE, "V_IR_RECEIVE" },
-	{ V_FLOW, "V_FLOW" },
-	{ V_VOLUME, "V_VOLUME" },
-	{ V_LOCK_STATUS, "V_LOCK_STATUS" },
-	{ V_DUST_LEVEL, "V_DUST_LEVEL" },
-	{ V_VOLTAGE, "V_VOLTAGE" },
-	{ V_CURRENT, "V_CURRENT" },
-	{ V_RGB, "V_RGB" },
-	{ V_RGBW, "V_RGBW" },
-	{ V_ID, "V_ID" },
-	{ V_UNIT_PREFIX, "V_UNIT_PREFIX" },
-	{ V_HVAC_SETPOINT_COOL, "V_HVAC_SETPOINT_COOL" },
-	{ V_HVAC_SETPOINT_HEAT, "V_HVAC_SETPOINT_HEAT" },
-	{ V_HVAC_FLOW_MODE, "V_HVAC_FLOW_MODE" },
-	{ 0, NULL }
-};
-
-bool MySensorsBase::GetReverseValueLookup(const std::string &ValueString, _eSetType &retSetType)
-{
-	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReverseValueTable;
-	while (pTable->stringType != NULL)
-	{
-		if (pTable->stringType == ValueString)
-		{
-			retSetType = (_eSetType)pTable->SType;
-			return true;
-		}
-		pTable++;
-	}
-	return false;
-}
-
-const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReversePresentationTable[] =
-{
-	{ S_DOOR, "S_DOOR" },
-	{ S_MOTION, "S_MOTION" },
-	{ S_SMOKE, "S_SMOKE" },
-	{ S_LIGHT, "S_LIGHT" },
-	{ S_DIMMER, "S_DIMMER" },
-	{ S_COVER, "S_COVER" },
-	{ S_TEMP, "S_TEMP" },
-	{ S_HUM, "S_HUM" },
-	{ S_BARO, "S_BARO" },
-	{ S_WIND, "S_WIND" },
-	{ S_RAIN, "S_RAIN" },
-	{ S_UV, "S_UV" },
-	{ S_WEIGHT, "S_WEIGHT" },
-	{ S_POWER, "S_POWER" },
-	{ S_HEATER, "S_HEATER" },
-	{ S_DISTANCE, "S_DISTANCE" },
-	{ S_LIGHT_LEVEL, "S_LIGHT_LEVEL" },
-	{ S_ARDUINO_NODE, "S_ARDUINO_NODE" },
-	{ S_ARDUINO_RELAY, "S_ARDUINO_RELAY" },
-	{ S_LOCK, "S_LOCK" },
-	{ S_IR, "S_IR" },
-	{ S_WATER, "S_WATER" },
-	{ S_AIR_QUALITY, "S_AIR_QUALITY" },
-	{ S_CUSTOM, "S_CUSTOM" },
-	{ S_DUST, "S_DUST" },
-	{ S_SCENE_CONTROLLER, "S_SCENE_CONTROLLER" },
-	{ S_RGB_LIGHT, "S_RGB_LIGHT" },
-	{ S_RGBW_LIGHT, "S_RGBW_LIGHT" },
-	{ S_COLOR_SENSOR, "S_COLOR_SENSOR" },
-	{ S_HVAC, "S_HVAC" },
-	{ S_MULTIMETER, "S_MULTIMETER" },
-	{ S_SPRINKLER, "S_SPRINKLER" },
-	{ S_WATER_LEAK, "S_WATER_LEAK" },
-	{ S_SOUND, "S_SOUND" },
-	{ S_VIBRATION, "S_VIBRATION" },
-	{ S_MOISTURE, "S_MOISTURE" },
-	{ 0, NULL }
-};
-
-bool MySensorsBase::GetReversePresentationLookup(const std::string &ValueString, _ePresentationType &retSetType)
-{
-	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReversePresentationTable;
-	while (pTable->stringType != NULL)
-	{
-		if (pTable->stringType == ValueString)
-		{
-			retSetType = (_ePresentationType)pTable->SType;
-			return true;
-		}
-		pTable++;
-	}
-	return false;
-}
-
-
-const MySensorsBase::_tMySensorsReverseTypeLookup MySensorsBase::m_MySenserReverseTypeTable[] =
-{
-	{ MT_Presentation, "Presentation" },
-	{ MT_Set, "Set" },
-	{ MT_Req, "Req" },
-	{ MT_Internal, "Internal" },
-	{ MT_Stream, "Stream" },
-	{ MT_Presentation, NULL }
-};
-
-bool MySensorsBase::GetReverseTypeLookup(const std::string &ValueString, _eMessageType &retSetType)
-{
-	const _tMySensorsReverseTypeLookup *pTable = (const _tMySensorsReverseTypeLookup *)&m_MySenserReverseTypeTable;
-	while (pTable->stringType != NULL)
-	{
-		if (pTable->stringType == ValueString)
-		{
-			retSetType = (_eMessageType)pTable->SType;
-			return true;
-		}
-		pTable++;
-	}
-	return false;
-}
-
 MySensorsBase::MySensorsBase(void)
 {
 	m_bufferpos = 0;
@@ -258,34 +109,44 @@ MySensorsBase::_tMySensorNode* MySensorsBase::InsertNode(const int nodeID)
 	return FindNode(nodeID);
 }
 
-//Find sensor with childID+devType
-MySensorsBase::_tMySensorSensor* MySensorsBase::FindSensor(_tMySensorNode *pNode, const int childID, _eSetType devType)
-{
-	std::vector<_tMySensorSensor>::iterator itt;
-	for (itt = pNode->m_sensors.begin(); itt != pNode->m_sensors.end(); ++itt)
-	{
-		if (
-			(itt->childID == childID)&&
-			(itt->devType == devType)
-			)
-			return &*itt;
-	}
-	return NULL;
-}
-
-//Find any sensor with devType
-MySensorsBase::_tMySensorSensor* MySensorsBase::FindSensor(const int nodeID, _eSetType devType)
+//Find any sensor with presentation type
+MySensorsBase::_tMySensorChild* MySensorsBase::FindSensorWithPresentationType(const int nodeID, const _ePresentationType presType)
 {
 	std::map<int, _tMySensorNode>::iterator ittNode;
 	ittNode = m_nodes.find(nodeID);
 	if (ittNode == m_nodes.end())
 		return NULL;
 	_tMySensorNode *pNode = &ittNode->second;
-	std::vector<_tMySensorSensor>::iterator itt;
-	for (itt = pNode->m_sensors.begin(); itt != pNode->m_sensors.end(); ++itt)
+	std::vector<_tMySensorChild>::iterator itt;
+	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
 	{
-		if (itt->devType == devType)
+		if (itt->presType == presType)
 			return &*itt;
+	}
+	return NULL;
+}
+
+//Find any sensor with value type
+MySensorsBase::_tMySensorChild* MySensorsBase::FindChildWithValueType(const int nodeID, const _eSetType valType)
+{
+	std::map<int, _tMySensorNode>::iterator ittNode;
+	ittNode = m_nodes.find(nodeID);
+	if (ittNode == m_nodes.end())
+		return NULL;
+	_tMySensorNode *pNode = &ittNode->second;
+	std::vector<_tMySensorChild>::iterator itt;
+	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
+	{
+		std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+		for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+		{
+			if (itt2->first == valType)
+			{
+				if (!itt2->second.bValidValue)
+					return NULL;
+				return &*itt;
+			}
+		}
 	}
 	return NULL;
 }
@@ -296,8 +157,8 @@ void MySensorsBase::UpdateNodeBatteryLevel(const int nodeID, const int Level)
 	if (ittNode == m_nodes.end())
 		return; //Not found
 	_tMySensorNode *pNode = &ittNode->second;
-	std::vector<_tMySensorSensor>::iterator itt;
-	for (itt = pNode->m_sensors.begin(); itt != pNode->m_sensors.end(); ++itt)
+	std::vector<_tMySensorChild>::iterator itt;
+	for (itt = pNode->m_childs.begin(); itt != pNode->m_childs.end(); ++itt)
 	{
 		itt->hasBattery = true;
 		itt->batValue = Level;
@@ -316,38 +177,36 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID)
 	int iDirection = 0;
 	int iBatteryLevel = 255;
 
-	_tMySensorSensor *pSensor;
-	pSensor = FindSensor(nodeID, V_WIND);
-	if (!pSensor)
+	_tMySensorChild *pChild;
+	pChild = FindChildWithValueType(nodeID, V_WIND);
+	if (!pChild)
 		return;
-	if (!pSensor->bValidValue)
+	if (!pChild->GetValue(V_WIND, fWind))
 		return;
-	fWind = fGust = pSensor->floatValue;
-	ChildID = pSensor->childID;
-	iBatteryLevel = pSensor->batValue;
+	fGust = fWind;
+	ChildID = pChild->childID;
+	iBatteryLevel = pChild->batValue;
 
-	pSensor = FindSensor(nodeID, V_DIRECTION);
-	if (!pSensor)
+	pChild = FindChildWithValueType(nodeID, V_DIRECTION);
+	if (!pChild)
 		return;
-	if (!pSensor->bValidValue)
+	if (!pChild->GetValue(V_DIRECTION, iDirection))
 		return;
-	iDirection = pSensor->intvalue;
 
-	pSensor = FindSensor(nodeID, V_GUST);
-	if (pSensor)
+	pChild = FindChildWithValueType(nodeID, V_GUST);
+	if (pChild)
 	{
-		if (!pSensor->bValidValue)
+		if (!pChild->GetValue(V_GUST, fGust))
 			return;
-		fGust = pSensor->floatValue;
 	}
 
-	pSensor = FindSensor(nodeID, V_TEMP);
-	if (pSensor)
+	pChild = FindChildWithValueType(nodeID, V_TEMP);
+	if (pChild)
 	{
-		if (!pSensor->bValidValue)
+		if (!pChild->GetValue(V_TEMP, fTemp))
 			return;
 		bHaveTemp = true;
-		fTemp = fChill = pSensor->floatValue;
+		fChill = fTemp;
 		if ((fTemp < 10.0) && (fWind >= 1.4))
 		{
 			fChill = 13.12f + 0.6215f*fTemp - 11.37f*pow(fWind*3.6f, 0.16f) + 0.3965f*fTemp*pow(fWind*3.6f, 0.16f);
@@ -357,50 +216,60 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID)
 	SendWind(cNode, iBatteryLevel, float(iDirection), fWind, fGust, fTemp, fChill, bHaveTemp, "Wind");
 }
 
-void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMySensorSensor *pSensor)
+void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *pChild, const _eSetType vType)
 {
 	std::string devname;
 	m_iLastSendNodeBatteryValue = 255;
-	if (pSensor->hasBattery)
+	if (pChild->hasBattery)
 	{
-		m_iLastSendNodeBatteryValue = pSensor->batValue;
+		m_iLastSendNodeBatteryValue = pChild->batValue;
 	}
-	int cNode = (pSensor->nodeID << 8) | pSensor->childID;
+	int cNode = (pChild->nodeID << 8) | pChild->childID;
+	int intValue;
+	float floatValue;
+	std::string stringValue;
 
-	switch (pSensor->devType)
+	switch (vType)
 	{
 	case V_TEMP:
 	{
-		_tMySensorSensor *pSensorHum = FindSensor(pSensor->nodeID, V_HUM);
-		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
-		if (pSensorHum && pSensorBaro)
+		float Temp = 0;
+		pChild->GetValue(V_TEMP, Temp);
+		_tMySensorChild *pChildHum = FindChildWithValueType(pChild->nodeID, V_HUM);
+		_tMySensorChild *pChildBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE);
+		if (pChildHum && pChildBaro)
 		{
-			if (pSensorHum->bValidValue && pSensorBaro->bValidValue)
+			int Humidity;
+			float Baro;
+			bool bHaveHumidity = pChildHum->GetValue(V_HUM, Humidity);
+			bool bHaveBaro = pChildBaro->GetValue(V_PRESSURE, Baro);
+			if (bHaveHumidity && bHaveBaro)
 			{
 				int forecast = bmpbaroforecast_unknown;
-				_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
+				_tMySensorChild *pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST);
 				if (pSensorForecast)
-					forecast = pSensorForecast->intvalue;
+				{
+					pSensorForecast->GetValue(V_FORECAST, forecast);
+				}
 				if (forecast == bmpbaroforecast_cloudy)
 				{
-					if (pSensorBaro->floatValue < 1010)
+					if (Baro < 1010)
 						forecast = bmpbaroforecast_rain;
 				}
 
 				//We are using the TempHumBaro Float type now, convert the forecast
 				int nforecast = wsbaroforcast_some_clouds;
-				float pressure = pSensorBaro->floatValue;
-				if (pressure <= 980)
+				if (Baro <= 980)
 					nforecast = wsbaroforcast_heavy_rain;
-				else if (pressure <= 995)
+				else if (Baro <= 995)
 				{
-					if (pSensor->floatValue > 1)
+					if (Temp > 1)
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				else if (pressure >= 1029)
+				else if (Baro >= 1029)
 					nforecast = wsbaroforcast_sunny;
 				switch (forecast)
 				{
@@ -414,60 +283,76 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 					nforecast = wsbaroforcast_heavy_rain;
 					break;
 				case bmpbaroforecast_rain:
-					if (pSensor->floatValue>1)
+					if (Temp>1)
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				SendTempHumBaroSensorFloat(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue, pSensorBaro->floatValue, nforecast, "TempHumBaro");
+				SendTempHumBaroSensorFloat(cNode, pChild->batValue, Temp, Humidity, Baro, nforecast, "TempHumBaro");
 			}
 		}
-		else if (pSensorHum) {
-			if (pSensorHum->bValidValue)
+		else if (pChildHum) {
+			int Humidity;
+			bool bHaveHumidity = pChildHum->GetValue(V_HUM, Humidity);
+			if (bHaveHumidity)
 			{
-				SendTempHumSensor(cNode, pSensor->batValue, pSensor->floatValue, pSensorHum->intvalue, "TempHum");
+				SendTempHumSensor(cNode, pChild->batValue, Temp, Humidity, "TempHum");
 			}
 		}
 		else
 		{
-			SendTempSensor(cNode, pSensor->batValue, pSensor->floatValue,"Temp");
+			SendTempSensor(cNode, pChild->batValue, Temp,"Temp");
 		}
 	}
 	break;
 	case V_HUM:
 	{
-		_tMySensorSensor *pSensorTemp = FindSensor(pSensor->nodeID, V_TEMP);
-		_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
+		_tMySensorChild *pChildTemp = FindChildWithValueType(pChild->nodeID, V_TEMP);
+		_tMySensorChild *pChildBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE);
 		int forecast = bmpbaroforecast_unknown;
-		_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
+		_tMySensorChild *pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST);
 		if (pSensorForecast)
-			forecast = pSensorForecast->intvalue;
+		{
+			pSensorForecast->GetValue(V_FORECAST, forecast);
+		}
 		if (forecast == bmpbaroforecast_cloudy)
 		{
-			if (pSensorBaro->floatValue < 1010)
-				forecast = bmpbaroforecast_rain;
-		}
-		if (pSensorTemp && pSensorBaro)
-		{
-			if (pSensorTemp->bValidValue && pSensorBaro->bValidValue)
+			if (pChildBaro)
 			{
-				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
+				float Baro;
+				if (pChildBaro->GetValue(V_PRESSURE, Baro))
+				{
+					if (Baro < 1010)
+						forecast = bmpbaroforecast_rain;
+				}
+			}
+		}
+		float Temp;
+		float Baro;
+		int Humidity;
+		pChild->GetValue(V_HUM, Humidity);
+		if (pChildTemp && pChildBaro)
+		{
+			bool bHaveTemp = pChildTemp->GetValue(V_TEMP, Temp);
+			bool bHaveBaro = pChildBaro->GetValue(V_PRESSURE, Baro);
+			if (bHaveTemp && bHaveBaro)
+			{
+				cNode = (pChildTemp->nodeID << 8) | pChildTemp->childID;
 
 				//We are using the TempHumBaro Float type now, convert the forecast
 				int nforecast = wsbaroforcast_some_clouds;
-				float pressure = pSensorBaro->floatValue;
-				if (pressure <= 980)
+				if (Baro <= 980)
 					nforecast = wsbaroforcast_heavy_rain;
-				else if (pressure <= 995)
+				else if (Baro <= 995)
 				{
-					if (pSensorTemp->floatValue > 1)
+					if (Temp > 1)
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				else if (pressure >= 1029)
+				else if (Baro >= 1029)
 					nforecast = wsbaroforcast_sunny;
 				switch (forecast)
 				{
@@ -481,60 +366,70 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 					nforecast = wsbaroforcast_heavy_rain;
 					break;
 				case bmpbaroforecast_rain:
-					if (pSensorTemp->floatValue > 1)
+					if (Temp > 1)
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue, pSensorBaro->floatValue, nforecast, "TempHumBaro");
+
+				SendTempHumBaroSensorFloat(cNode, pChildTemp->batValue, Temp, Humidity, Baro, nforecast, "TempHumBaro");
 			}
 		}
-		else if (pSensorTemp) {
-			if (pSensorTemp->bValidValue)
+		else if (pChildTemp) {
+			bool bHaveTemp = pChildTemp->GetValue(V_TEMP, Temp);
+			if (bHaveTemp)
 			{
-				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
-				SendTempHumSensor(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensor->intvalue, "TempHum");
+				cNode = (pChildTemp->nodeID << 8) | pChildTemp->childID;
+				SendTempHumSensor(cNode, pChildTemp->batValue, Temp, Humidity, "TempHum");
 			}
 		}
 		else
 		{
-			SendHumiditySensor(cNode, pSensor->batValue, pSensor->intvalue);
+			SendHumiditySensor(cNode, pChild->batValue, Humidity);
 		}
 	}
 	break;
 	case V_PRESSURE:
 	{
-		_tMySensorSensor *pSensorTemp = FindSensor(pSensor->nodeID, V_TEMP);
-		_tMySensorSensor *pSensorHum = FindSensor(pSensor->nodeID, V_HUM);
+		float Baro;
+		pChild->GetValue(V_PRESSURE, Baro);
+		_tMySensorChild *pSensorTemp = FindChildWithValueType(pChild->nodeID, V_TEMP);
+		_tMySensorChild *pSensorHum = FindChildWithValueType(pChild->nodeID, V_HUM);
 		int forecast = bmpbaroforecast_unknown;
-		_tMySensorSensor *pSensorForecast = FindSensor(pSensor->nodeID, V_FORECAST);
+		_tMySensorChild *pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST);
 		if (pSensorForecast)
-			forecast = pSensorForecast->intvalue;
+		{
+			pSensorForecast->GetValue(V_FORECAST, forecast);
+		}
 		if (forecast == bmpbaroforecast_cloudy)
 		{
-			if (pSensor->floatValue < 1010)
+			if (Baro < 1010)
 				forecast = bmpbaroforecast_rain;
 		}
 		if (pSensorTemp && pSensorHum)
 		{
-			if (pSensorTemp->bValidValue && pSensorHum->bValidValue)
+			float Temp;
+			int Humidity;
+			bool bHaveTemp = pSensorTemp->GetValue(V_TEMP, Temp);
+			bool bHaveHumidity = pSensorHum->GetValue(V_HUM, Humidity);
+
+			if (bHaveTemp && bHaveHumidity)
 			{
 				cNode = (pSensorTemp->nodeID << 8) | pSensorTemp->childID;
 				//We are using the TempHumBaro Float type now, convert the forecast
 				int nforecast = wsbaroforcast_some_clouds;
-				float pressure = pSensor->floatValue;
-				if (pressure <= 980)
+				if (Baro <= 980)
 					nforecast = wsbaroforcast_heavy_rain;
-				else if (pressure <= 995)
+				else if (Baro <= 995)
 				{
-					if (pSensorTemp->floatValue > 1)
+					if (Temp > 1)
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				else if (pressure >= 1029)
+				else if (Baro >= 1029)
 					nforecast = wsbaroforcast_sunny;
 				switch (forecast)
 				{
@@ -548,116 +443,180 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 					nforecast = wsbaroforcast_heavy_rain;
 					break;
 				case bmpbaroforecast_rain:
-					if (pSensorTemp->floatValue > 1)
+					if (Temp > 1)
 						nforecast = wsbaroforcast_rain;
 					else
 						nforecast = wsbaroforcast_snow;
 					break;
 				}
-				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, pSensorTemp->floatValue, pSensorHum->intvalue, pSensor->floatValue, nforecast, "TempHumBaro");
+				SendTempHumBaroSensorFloat(cNode, pSensorTemp->batValue, Temp, Humidity, Baro, nforecast, "TempHumBaro");
 			}
 		}
 		else
-			SendBaroSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue, forecast);
+			SendBaroSensor(pChild->nodeID, pChild->childID, pChild->batValue, Baro, forecast);
 	}
 	break;
 	case V_TRIPPED:
 		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
-		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Security Sensor");
+		if (pChild->GetValue(vType, intValue))
+			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, "Security Sensor");
 		break;
 	case V_ARMED:
 		//Armed status of a security sensor. 1 = Armed, 0 = Bypassed
-		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Security Sensor");
+		if (pChild->GetValue(vType, intValue))
+			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, "Security Sensor");
 		break;
 	case V_LOCK_STATUS:
 		//Lock status. 1 = Locked, 0 = Unlocked
-		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue == 1), 100, "Lock Sensor");
+		if (pChild->GetValue(vType, intValue))
+			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, "Lock Sensor");
 		break;
-	case V_LIGHT:
+	case V_STATUS:
 		//	Light status. 0 = off 1 = on
-		UpdateSwitch(pSensor->nodeID, pSensor->childID, (pSensor->intvalue != 0), 100, "Light");
+		if (pChild->GetValue(vType, intValue))
+			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue != 0), 100, "Light");
 		break;
-	case V_DIMMER:
+	case V_SCENE_ON:
+		if (pChild->GetValue(vType, intValue))
+			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, true, 100, "Scene");
+		break;
+	case V_SCENE_OFF:
+		if (pChild->GetValue(vType, intValue))
+			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, false, 100, "Scene");
+		break;
+	case V_PERCENTAGE:
 		//	Dimmer value. 0 - 100 %
+		if (pChild->GetValue(vType, intValue))
 		{
-			int level = pSensor->intvalue;
-			UpdateSwitch(pSensor->nodeID, pSensor->childID, (level != 0), level, "Light");
+			int level = intValue;
+			UpdateSwitch(pChild->nodeID, pChild->childID, (level != 0), level, "Light");
 		}
 		break;
 	case V_RGB:
 		//RRGGBB
-		SendRGBWSwitch(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->intvalue, false, "RGB Light");
+		if (pChild->GetValue(vType, intValue))
+			SendRGBWSwitch(pChild->nodeID, pChild->childID, pChild->batValue, intValue, false, "RGB Light");
 		break;
 	case V_RGBW:
 		//RRGGBBWW
-		SendRGBWSwitch(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->intvalue, true, "RGBW Light");
+		if (pChild->GetValue(vType, intValue))
+			SendRGBWSwitch(pChild->nodeID, pChild->childID, pChild->batValue, intValue, true, "RGBW Light");
 		break;
 	case V_UP:
 	case V_DOWN:
 	case V_STOP:
-		SendBlindSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->intvalue, "Blinds/Window");
+		if (pChild->GetValue(vType, intValue))
+			SendBlindSensor(pChild->nodeID, pChild->childID, pChild->batValue, intValue, "Blinds/Window");
 		break;
 	case V_LIGHT_LEVEL:
+		if (pChild->GetValue(vType, floatValue))
 		{
 			_tLightMeter lmeter;
 			lmeter.id1 = 0;
 			lmeter.id2 = 0;
 			lmeter.id3 = 0;
-			lmeter.id4 = pSensor->nodeID;
-			lmeter.dunit = pSensor->childID;
-			lmeter.fLux = pSensor->floatValue;
-			lmeter.battery_level = pSensor->batValue;
-			if (pSensor->hasBattery)
-				lmeter.battery_level = pSensor->batValue;
+			lmeter.id4 = pChild->nodeID;
+			lmeter.dunit = pChild->childID;
+			lmeter.fLux = floatValue;
+			lmeter.battery_level = pChild->batValue;
+			if (pChild->hasBattery)
+				lmeter.battery_level = pChild->batValue;
 			sDecodeRXMessage(this, (const unsigned char *)&lmeter);
 		}
 		break;
-	case V_DUST_LEVEL:
+	case V_LEVEL:
+		if ((pChild->presType == S_DUST)|| (pChild->presType == S_AIR_QUALITY))
 		{
-			_tAirQualityMeter meter;
-			meter.len = sizeof(_tAirQualityMeter) - 1;
-			meter.type = pTypeAirQuality;
-			meter.subtype = sTypeVoltcraft;
-			meter.airquality = pSensor->intvalue;
-			meter.id1 = pSensor->nodeID;
-			meter.id2 = pSensor->childID;
-			sDecodeRXMessage(this, (const unsigned char *)&meter);
+			if (pChild->GetValue(vType, intValue))
+			{
+				_tAirQualityMeter meter;
+				meter.len = sizeof(_tAirQualityMeter) - 1;
+				meter.type = pTypeAirQuality;
+				meter.subtype = sTypeVoltcraft;
+				meter.airquality = intValue;
+				meter.id1 = pChild->nodeID;
+				meter.id2 = pChild->childID;
+				sDecodeRXMessage(this, (const unsigned char *)&meter);
+			}
+		}
+		else if (pChild->presType == S_LIGHT_LEVEL)
+		{
+			if (pChild->GetValue(vType, intValue))
+			{
+				_tLightMeter lmeter;
+				lmeter.id1 = 0;
+				lmeter.id2 = 0;
+				lmeter.id3 = 0;
+				lmeter.id4 = pChild->nodeID;
+				lmeter.dunit = pChild->childID;
+				lmeter.fLux = (float)intValue;
+				lmeter.battery_level = pChild->batValue;
+				if (pChild->hasBattery)
+					lmeter.battery_level = pChild->batValue;
+				sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+			}
+		}
+		else if (pChild->presType == S_SOUND)
+		{
+			if (pChild->GetValue(vType, intValue))
+				SendSoundSensor(cNode, pChild->batValue, intValue, "Sound Level");
+		}
+		else if (pChild->presType == S_MOISTURE)
+		{
+			if (pChild->GetValue(vType, intValue))
+			{
+				_tGeneralDevice gdevice;
+				gdevice.subtype = sTypeSoilMoisture;
+				gdevice.intval1 = intValue;
+				gdevice.id = pChild->nodeID;
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+			}
 		}
 		break;
 	case V_RAIN:
-		SendRainSensor(cNode, pSensor->batValue, pSensor->intvalue,"Rain");
+		if (pChild->GetValue(vType, intValue))
+			SendRainSensor(cNode, pChild->batValue, intValue, "Rain");
 		break;
 	case V_WATT:
 		{
-			_tMySensorSensor *pSensorKwh = FindSensor(pSensor->nodeID, V_KWH);
-			if (pSensorKwh) {
-				SendKwhMeter(pSensorKwh->nodeID, pSensorKwh->childID, pSensorKwh->batValue, pSensor->floatValue / 1000.0f, pSensorKwh->floatValue, "Meter");
-			}
-			else {
-				_tUsageMeter umeter;
-				umeter.id1 = 0;
-				umeter.id2 = 0;
-				umeter.id3 = 0;
-				umeter.id4 = pSensor->nodeID;
-				umeter.dunit = pSensor->childID;
-				umeter.fusage = pSensor->floatValue/1000.0f;
-				sDecodeRXMessage(this, (const unsigned char *)&umeter);
+			if (pChild->GetValue(vType, floatValue))
+			{
+				_tMySensorChild *pSensorKwh = FindChildWithValueType(pChild->nodeID, V_KWH);
+				if (pSensorKwh) {
+					float Kwh;
+					if (pSensorKwh->GetValue(V_KWH, Kwh))
+						SendKwhMeter(pSensorKwh->nodeID, pSensorKwh->childID, pSensorKwh->batValue, floatValue / 1000.0f, Kwh, "Meter");
+				}
+				else {
+					_tUsageMeter umeter;
+					umeter.id1 = 0;
+					umeter.id2 = 0;
+					umeter.id3 = 0;
+					umeter.id4 = pChild->nodeID;
+					umeter.dunit = pChild->childID;
+					umeter.fusage = floatValue / 1000.0f;
+					sDecodeRXMessage(this, (const unsigned char *)&umeter);
+				}
 			}
 		}
 		break;
 	case V_KWH:
+		if (pChild->GetValue(vType, floatValue))
 		{
-			_tMySensorSensor *pSensorWatt = FindSensor(pSensor->nodeID, V_WATT);
+			_tMySensorChild *pSensorWatt = FindChildWithValueType(pChild->nodeID, V_WATT);
 			if (pSensorWatt) {
-				SendKwhMeter(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensorWatt->floatValue / 1000.0f, pSensor->floatValue, "Meter");
+				float Watt;
+				if (pSensorWatt->GetValue(V_WATT, Watt))
+					SendKwhMeter(pChild->nodeID, pChild->childID, pChild->batValue, Watt / 1000.0f, floatValue, "Meter");
 			}
 			else {
-				SendKwhMeter(pSensor->nodeID, pSensor->childID, pSensor->batValue, 0, pSensor->floatValue, "Meter");
+				SendKwhMeter(pChild->nodeID, pChild->childID, pChild->batValue, 0, floatValue, "Meter");
 			}
 		}
 		break;
 	case V_DISTANCE:
-		SendDistanceSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
+		if (pChild->GetValue(vType, floatValue))
+			SendDistanceSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue);
 		break;
 	case V_FLOW:
 		//Flow of water in meter
@@ -665,47 +624,72 @@ void MySensorsBase::SendSensor2Domoticz(const _tMySensorNode *pNode, const _tMyS
 		break;
 	case V_VOLUME:
 		//Water Volume
-		SendMeterSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
+		if (pChild->GetValue(vType, floatValue))
+			SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue);
 		break;
 	case V_VOLTAGE:
 		devname = "Voltage";
-		SendVoltageSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue, devname);
+		if (pChild->GetValue(vType, floatValue))
+			SendVoltageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, devname);
 		break;
 	case V_UV:
-		SendUVSensor(pSensor->nodeID, pSensor->childID, pSensor->batValue, pSensor->floatValue);
+		if (pChild->GetValue(vType, floatValue))
+			SendUVSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue);
+		break;
+	case V_IMPEDANCE:
+		if (pChild->GetValue(vType, floatValue))
+			SendPercentageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, "Impedance");
+		break;
+	case V_WEIGHT:
+		if (pChild->GetValue(vType, floatValue))
+		{
+			while (1 == 0);
+		}
 		break;
 	case V_CURRENT:
 		devname = "Current";
-		SendCurrentSensor(cNode, pSensor->batValue, pSensor->floatValue, 0, 0, devname);
+		if (pChild->GetValue(vType, floatValue))
+			SendCurrentSensor(cNode, pChild->batValue, floatValue, 0, 0, devname);
 		break;
 	case V_FORECAST:
+		if (pChild->GetValue(vType, intValue))
 		{
-			_tMySensorSensor *pSensorBaro = FindSensor(pSensor->nodeID, V_PRESSURE);
+			_tMySensorChild *pSensorBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE);
 			if (pSensorBaro)
 			{
-				if (pSensorBaro->bValidValue)
+				float Baro;
+				if (pSensorBaro->GetValue(V_PRESSURE, Baro))
 				{
-					int forecast = pSensor->intvalue;
+					int forecast = intValue;
 					if (forecast == bmpbaroforecast_cloudy)
 					{
-						if (pSensor->floatValue < 1010)
+						if (Baro < 1010)
 							forecast = bmpbaroforecast_rain;
 					}
-					SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, pSensorBaro->floatValue, forecast);
+					SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, Baro, forecast);
 				}
 			}
 			else
 			{
-				std::stringstream sstr;
-				sstr << pSensor->nodeID;
-				m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pSensor->childID, pTypeGeneral, sTypeTextStatus, 12, pSensor->batValue, 0, pSensor->stringValue.c_str(), devname);
+				if (pChild->GetValue(V_FORECAST, stringValue))
+				{
+					std::stringstream sstr;
+					sstr << pChild->nodeID;
+					m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
+				}
 			}
 		}
 		break;
 	case V_WIND:
 	case V_GUST:
 	case V_DIRECTION:
-		MakeAndSendWindSensor(pSensor->nodeID);
+		MakeAndSendWindSensor(pChild->nodeID);
+		break;
+	case V_HVAC_SETPOINT_HEAT:
+		if (pChild->GetValue(vType, floatValue))
+		{
+			SendSetPointSensor(pNode->nodeID, pChild->childID, floatValue, "Heater Setpoint");
+		}
 		break;
 	}
 }
@@ -829,7 +813,7 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	if (result.size() < 1)
 		return false;
 	int nvalue = atoi(result[0][1].c_str());
-	if ((sub_type == V_LIGHT) || (sub_type == V_TRIPPED))
+	if ((sub_type == V_STATUS) || (sub_type == V_TRIPPED))
 	{
 		sSwitchValue = (nvalue == light2_sOn) ? "1" : "0";
 		return true;
@@ -878,17 +862,21 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 			if ((light_command == light2_sOn) || (light_command == light2_sOff))
 			{
-				if (pNode->FindType(S_LOCK))
+				std::string lState = (light_command == light2_sOn) ? "1" : "0";
+				if (FindChildWithValueType(node_id, V_LOCK_STATUS) != NULL)
 				{
 					//Door lock
-					std::string lState = (light_command == light2_sOn) ? "0" : "1";
 					SendCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState);
+				}
+				else if ((FindChildWithValueType(node_id, V_SCENE_ON) != NULL) || (FindChildWithValueType(node_id, V_SCENE_OFF) != NULL))
+				{
+					//Scene Controller
+					SendCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState);
 				}
 				else
 				{
 					//normal
-					std::string lState = (light_command == light2_sOn) ? "1" : "0";
-					SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
+					SendCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
 				}
 			}
 			else if (light_command == light2_sSetLevel)
@@ -900,7 +888,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 				std::stringstream sstr;
 				sstr << svalue;
-				SendCommand(node_id, child_sensor_id, MT_Set, V_DIMMER, sstr.str());
+				SendCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
 			}
 		}
 		else {
@@ -922,7 +910,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 		if (_tMySensorNode *pNode = FindNode(node_id))
 		{
-			bool bIsRGBW = (FindSensor(pNode, child_sensor_id, V_RGBW) != NULL);
+			bool bIsRGBW = (pNode->FindChildWithPresentationType(child_sensor_id, S_RGBW_LIGHT) != NULL);
 			if (pLed->command == Limitless_SetRGBColour)
 			{
 				int red, green, blue;
@@ -963,12 +951,12 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 					svalue = 100;
 				std::stringstream sstr;
 				sstr << svalue;
-				SendCommand(node_id, child_sensor_id, MT_Set, V_DIMMER, sstr.str());
+				SendCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
 			}
 			else if ((pLed->command == Limitless_LedOff) || (pLed->command == Limitless_LedOn))
 			{
 				std::string lState = (pLed->command == Limitless_LedOn) ? "1" : "0";
-				SendCommand(node_id, child_sensor_id, MT_Set, V_LIGHT, lState);
+				SendCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
 			}
 		}
 		else
@@ -1032,6 +1020,31 @@ bool MySensorsBase::GetVar(const int NodeID, const int ChildID, const int VarID,
 	std::vector<std::string> sd = result[0];
 	sValue = sd[0];
 	return true;
+}
+
+void MySensorsBase::UpdatePresentationType(const int NodeID, const int ChildID, const _ePresentationType pType)
+{
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ROWID FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d)", m_HwdID, NodeID, ChildID);
+	if (result.size() < 1)
+	{
+		//Insert
+		m_sql.safe_query("INSERT INTO MySensorsChilds (HardwareID, NodeID, ChildID, [Type]) VALUES (%d, %d, %d, %d)", m_HwdID, NodeID, ChildID, pType);
+	}
+	else
+	{
+		//Update
+		m_sql.safe_query("UPDATE MySensorsChilds SET [Type]='%d' WHERE (ROWID = '%q')", pType, result[0][0].c_str());
+	}
+}
+
+MySensorsBase::_ePresentationType MySensorsBase::GetPresentationType(const int NodeID, const int ChildID)
+{
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT [Type] FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID=%d) AND (ChildID=%d)", m_HwdID, NodeID, ChildID);
+	if (result.size() < 1)
+		return S_UNKNOWN;
+	return (_ePresentationType)atoi(result[0][0].c_str());
 }
 
 void MySensorsBase::ParseLine()
@@ -1111,6 +1124,7 @@ void MySensorsBase::ParseLine()
 			UpdateNodeBatteryLevel(node_id, atoi(payload.c_str()));
 			break;
 		case I_LOG_MESSAGE:
+			//_log.Log(LOG_NORM, "MySensors: 'Log': %s", payload.c_str());
 			break;
 		case I_GATEWAY_READY:
 			_log.Log(LOG_NORM, "MySensors: Gateway Ready...");
@@ -1141,35 +1155,35 @@ void MySensorsBase::ParseLine()
 		}
 		pNode->lastreceived = mytime(NULL);
 
-		_tMySensorSensor *pSensor = FindSensor(pNode, child_sensor_id, (_eSetType)sub_type);
-		if (pSensor == NULL)
+		_tMySensorChild *pChild = pNode->FindChild(child_sensor_id);
+		if (pChild == NULL)
 		{
 			//Unknown sensor, add it to the system
-			_tMySensorSensor mSensor;
+			_tMySensorChild mSensor;
 			mSensor.nodeID = node_id;
 			mSensor.childID = child_sensor_id;
-			mSensor.devType = (_eSetType)sub_type;
-			pNode->m_sensors.push_back(mSensor);
-			pSensor = FindSensor(pNode, child_sensor_id, mSensor.devType);
-			if (pSensor == NULL)
+			mSensor.presType = GetPresentationType(node_id,child_sensor_id);
+			pNode->m_childs.push_back(mSensor);
+			pChild = pNode->FindChild(child_sensor_id);
+			if (pChild == NULL)
 				return;
 		}
-		pSensor->lastreceived = mytime(NULL);
-		pSensor->devType = (_eSetType)sub_type;
-		pSensor->bValidValue = true;
+		pChild->lastreceived = mytime(NULL);
+
+		_eSetType vType = (_eSetType)sub_type;
 		bool bHaveValue = false;
-		switch (sub_type)
+		switch (vType)
 		{
 		case V_TEMP:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_HUM:
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_PRESSURE:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_VAR1: //Custom value
@@ -1181,65 +1195,76 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_TRIPPED:
 			//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_ARMED:
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_LOCK_STATUS:
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
-		case V_LIGHT:
+		case V_STATUS:
 			//	Light status. 0 = off 1 = on
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
+			bHaveValue = true;
+			break;
+		case V_SCENE_ON:
+			//	Scene On
+			pChild->SetValue(vType, atoi(payload.c_str()));
+			bHaveValue = true;
+			break;
+		case V_SCENE_OFF:
+			//	Scene Off
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_RGB:
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_RGBW:
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
-		case V_DIMMER:
+		case V_PERCENTAGE:
 			//	Dimmer value. 0 - 100 %
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_UP:
-			pSensor->intvalue = blinds_sOpen;
+			pChild->SetValue(vType, int(blinds_sOpen));
 			bHaveValue = true;
 			break;
 		case V_DOWN:
-			pSensor->intvalue = blinds_sClose;
+			pChild->SetValue(vType, int(blinds_sClose));
 			bHaveValue = true;
 			break;
 		case V_STOP:
-			pSensor->intvalue = blinds_sStop;
+			pChild->SetValue(vType, int(blinds_sStop));
 			bHaveValue = true;
 			break;
-		case V_DUST_LEVEL:
-			pSensor->intvalue = atoi(payload.c_str());
+		case V_LEVEL:
+			pChild->SetValue(vType, atoi(payload.c_str()));
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_RAIN:
-			pSensor->intvalue = atoi(payload.c_str());
+			pChild->SetValue(vType, atoi(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_WATT:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_KWH:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_DISTANCE:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_FLOW:
@@ -1248,23 +1273,23 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_VOLUME:
 			//Water Volume
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_WIND:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_GUST:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_DIRECTION:
-			pSensor->intvalue = round(atof(payload.c_str()));
+			pChild->SetValue(vType, round(atof(payload.c_str())));
 			bHaveValue = true;
 			break;
 		case V_LIGHT_LEVEL:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			/*
 			//convert percentage to 1000 scale
 			pSensor->floatValue = (1000.0f / 100.0f)*pSensor->floatValue;
@@ -1274,33 +1299,45 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_FORECAST:
-			pSensor->stringValue = payload;
+			pChild->SetValue(vType, payload);
 			//	Whether forecast.One of "stable", "sunny", "cloudy", "unstable", "thunderstorm" or "unknown"
-			pSensor->intvalue = bmpbaroforecast_unknown;
-			if (pSensor->stringValue == "stable")
-				pSensor->intvalue = bmpbaroforecast_stable;
-			else if (pSensor->stringValue == "sunny")
-				pSensor->intvalue = bmpbaroforecast_sunny;
-			else if (pSensor->stringValue == "cloudy")
-				pSensor->intvalue = bmpbaroforecast_cloudy;
-			else if (pSensor->stringValue == "unstable")
-				pSensor->intvalue = bmpbaroforecast_unstable;
-			else if (pSensor->stringValue == "thunderstorm")
-				pSensor->intvalue = bmpbaroforecast_thunderstorm;
-			else if (pSensor->stringValue == "unknown")
-				pSensor->intvalue = bmpbaroforecast_unknown;
+			pChild->SetValue(vType, int(bmpbaroforecast_unknown));
+			if (payload == "stable")
+				pChild->SetValue(vType, int(bmpbaroforecast_stable));
+			else if (payload == "sunny")
+				pChild->SetValue(vType, int(bmpbaroforecast_sunny));
+			else if (payload == "cloudy")
+				pChild->SetValue(vType, int(bmpbaroforecast_cloudy));
+			else if (payload == "unstable")
+				pChild->SetValue(vType, int(bmpbaroforecast_unstable));
+			else if (payload == "thunderstorm")
+				pChild->SetValue(vType, int(bmpbaroforecast_thunderstorm));
+			else if (payload == "unknown")
+				pChild->SetValue(vType, int(bmpbaroforecast_unknown));
 			bHaveValue = true;
 			break;
 		case V_VOLTAGE:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_UV:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
+			bHaveValue = true;
+			break;
+		case V_IMPEDANCE:
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
+			bHaveValue = true;
+			break;
+		case V_WEIGHT:
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_CURRENT:
-			pSensor->floatValue = (float)atof(payload.c_str());
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
+			bHaveValue = true;
+			break;
+		case V_HVAC_SETPOINT_HEAT:
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		default:
@@ -1316,7 +1353,7 @@ void MySensorsBase::ParseLine()
 		}
 		if (bHaveValue)
 		{
-			SendSensor2Domoticz(pNode, pSensor);
+			SendSensor2Domoticz(pNode, pChild, vType);
 		}
 	}
 	else if (message_type == MT_Presentation)
@@ -1328,50 +1365,52 @@ void MySensorsBase::ParseLine()
 		bool bDoAdd = false;
 
 		_ePresentationType pType = (_ePresentationType)sub_type;
+		_eSetType vType = V_UNKNOWN;
 
-		switch (sub_type)
+		switch (pType)
 		{
+		case S_DOOR:
+		case S_MOTION:
+			vType = V_TRIPPED;
+			bDoAdd = true;
+			break;
+		case S_SMOKE:
+			vType = V_ARMED;
+			bDoAdd = true;
+			break;
 		case S_TEMP:
-			sub_type = V_TEMP;
+			vType = V_TEMP;
 			bDoAdd = true;
 			break;
 		case S_HUM:
-			sub_type = V_HUM;
+			vType = V_HUM;
 			bDoAdd = true;
 			break;
 		case S_BARO:
-			sub_type = V_PRESSURE;
+			vType = V_PRESSURE;
 			bDoAdd = true;
 			break;
 		case S_LOCK:
 		case S_LIGHT:
 		case S_DIMMER:
-		case S_SMOKE:
-		case S_DOOR:
-			sub_type = V_LIGHT;
-			bDoAdd = true;
-			break;
-		case S_MOTION:
-			sub_type = V_TRIPPED;
+		case S_SCENE_CONTROLLER:
+			vType = V_SCENE_ON;
 			bDoAdd = true;
 			break;
 		case S_COVER:
-			sub_type = V_UP;
+			vType = V_UP;
 			bDoAdd = true;
 			break;
 		case S_RGB_LIGHT:
 		case S_COLOR_SENSOR:
-			sub_type = V_RGB;
+			vType = V_RGB;
 			bDoAdd = true;
 			break;
 		case S_RGBW_LIGHT:
-			sub_type = V_RGBW;
+			vType = V_RGBW;
 			bDoAdd = true;
 			break;
 		}
-		if (!bDoAdd)
-			return;
-
 		_tMySensorNode *pNode = FindNode(node_id);
 		if (pNode == NULL)
 		{
@@ -1380,41 +1419,47 @@ void MySensorsBase::ParseLine()
 				return;
 		}
 		pNode->lastreceived = mytime(NULL);
-		pNode->AddType(pType);
 
-		_tMySensorSensor *pSensor = FindSensor(pNode, child_sensor_id, (_eSetType)sub_type);
+		_tMySensorChild *pSensor = pNode->FindChild(child_sensor_id);
 		if (pSensor == NULL)
 		{
 			//Unknown sensor, add it to the system
-			_tMySensorSensor mSensor;
+			_tMySensorChild mSensor;
 			mSensor.nodeID = node_id;
 			mSensor.childID = child_sensor_id;
-			mSensor.devType = (_eSetType)sub_type;
-			pNode->m_sensors.push_back(mSensor);
-			pSensor = FindSensor(pNode, child_sensor_id, mSensor.devType);
+			pNode->m_childs.push_back(mSensor);
+			pSensor = pNode->FindChild(child_sensor_id);
 			if (pSensor == NULL)
 				return;
 		}
+		bool bDiffPresentation = (pSensor->presType != pType);
 		pSensor->lastreceived = mytime(NULL);
-		pSensor->devType = (_eSetType)sub_type;
-		pSensor->bValidValue = false;
+		pSensor->presType = pType;
 
-		if ((sub_type == V_LIGHT) || (sub_type == V_RGB) || (sub_type == V_RGBW) || (sub_type == V_TRIPPED))
+		if (bDiffPresentation)
+		{
+			UpdatePresentationType(node_id, child_sensor_id, pType);
+		}
+
+		if (!bDoAdd)
+			return;
+
+		if ((vType == V_STATUS) || (vType == V_RGB) || (vType == V_RGBW) || (vType == V_TRIPPED))
 		{
 			//Check if switch is already in the system, if not add it
 			std::string sSwitchValue;
-			if (!GetSwitchValue(node_id, child_sensor_id, sub_type, sSwitchValue))
+			if (!GetSwitchValue(node_id, child_sensor_id, vType, sSwitchValue))
 			{
 				//Add it to the system
-				if (sub_type == V_LIGHT)
+				if (vType == V_STATUS)
 					UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
-				else if (sub_type == V_TRIPPED)
+				else if (vType == V_TRIPPED)
 					UpdateSwitch(node_id, child_sensor_id, false, 100, "Security Sensor");
 				else
-					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, (sub_type == V_RGBW), (sub_type == V_RGBW) ? "RGBW Light" : "RGB Light");
+					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, (vType == V_RGBW), (vType == V_RGBW) ? "RGBW Light" : "RGB Light");
 			}
 		}
-		else if (sub_type == V_UP)
+		else if (vType == V_UP)
 		{
 			int blind_value;
 			if (!GetBlindsValue(node_id, child_sensor_id, blind_value))
@@ -1429,8 +1474,8 @@ void MySensorsBase::ParseLine()
 		std::string tmpstr;
 		switch (sub_type)
 		{
-		case V_LIGHT:
-		case V_DIMMER:
+		case V_STATUS:
+		case V_PERCENTAGE:
 		case V_RGB:
 		case V_RGBW:
 			if (GetSwitchValue(node_id, child_sensor_id, sub_type, tmpstr))

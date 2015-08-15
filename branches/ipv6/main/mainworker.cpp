@@ -72,6 +72,7 @@
 #include "../hardware/Kodi.h"
 #include "../hardware/NetatmoWeatherStation.h"
 #include "../hardware/AnnaThermostat.h"
+#include "../hardware/Winddelen.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -691,6 +692,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_YouLess:
 		//LAN
 		pHardware = new CYouLess(ID, Address, Port, Password);
+		break;
+	case HTYPE_WINDDELEN:
+	    pHardware = new CWinddelen(ID, Address, Port, Mode1);
 		break;
 	case HTYPE_ETH8020:
 		//LAN
@@ -10486,7 +10490,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 			std::string intswitchcmd=switchcmd;
 
-			std::string lstatus="";
+			std::string lstatus = intswitchcmd;
 			int llevel=0;
 			bool bHaveDimmer=false;
 			bool bHaveGroupCmd=false;
@@ -10494,13 +10498,16 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			if (scenetype==0)
 			{
 				GetLightStatus(dType, dSubType, switchtype,cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-				if (cmd==0)
-					intswitchcmd="Off";
+				if (cmd == 0)
+					intswitchcmd = "Off";
 				else
-					intswitchcmd="On";
+					intswitchcmd = "On";
 			}
 			else
-				GetLightStatus(dType, dSubType, switchtype,rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+			{
+				GetLightStatus(dType, dSubType, switchtype, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+				lstatus = intswitchcmd;
+			}
 
 			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), intswitchcmd.c_str());
 
@@ -10512,9 +10519,9 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 				(switchtype == STYPE_BlindsPercentageInverted) 
 				) && (maxDimLevel != 0))
 			{
-				if (intswitchcmd == "On")
+				if (lstatus == "On")
 				{
-					intswitchcmd="Set Level";
+					lstatus ="Set Level";
 					float fLevel=(maxDimLevel/100.0f)*level;
 					if (fLevel>100)
 						fLevel=100;
@@ -10525,11 +10532,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			int idx = atoi(sd[0].c_str());
 			if (switchtype != STYPE_PushOn)
 			{
-				int delay = (intswitchcmd == "Off") ? offdelay : ondelay;
-				SwitchLight(idx, intswitchcmd, ilevel, hue, false, delay);
+				int delay = (lstatus == "Off") ? offdelay : ondelay;
+				SwitchLight(idx, lstatus, ilevel, hue, false, delay);
 				if (scenetype == 0)
 				{
-					if ((intswitchcmd != "Off") && (offdelay > 0))
+					if ((lstatus != "Off") && (offdelay > 0))
 					{
 						//switch with on delay, and off delay
 						SwitchLight(idx, "Off", ilevel, hue, false, ondelay + offdelay);
@@ -10539,10 +10546,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			else
 			{
 				SwitchLight(idx, "On", ilevel, hue, false, ondelay);
-				//SwitchLightInt(sd2,"On",ilevel,hue,false);
 			}
 			sleep_milliseconds(50);
-
 		}
 	}
 

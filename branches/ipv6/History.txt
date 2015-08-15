@@ -68,6 +68,17 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Web Server can now be bind to specific address (-wwwbind) (seb)
 - Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)
 - Implemented: Option to enter a description for each sensor/switch/scene
+- Changed: OpenZWave, Alarm/Notification mappings update (xs4)
+- Changed: Windows serial port Enumeration (now also supports windows 10)
+- Implemented: Thermosmart Thermostat
+- Implemented: Option for Dummy device to create Soil Moisture,Leaf Wetness, RGB Switch
+- Implemented: Catch SIGHUP signal for log rotation (LarsForum)
+- Implemented: MySensors added support for S_SCENE_CONTROLLER, V_SCENE_ON, V_SCENE_OFF
+- Implemented: MySensors, renamed V_LIGHT to V_STATUS and V_DIMMER to V_PERCENTAGE to be compliant to the 1.5 API
+- Fixed: Scenes RFY switch command now correctly handled
+- Fixed: MySensors, Negative temperature sensor
+- Implemented: MySensors added support for V_IMPEDANCE
+- Changed: MySensors, rebuild
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!
