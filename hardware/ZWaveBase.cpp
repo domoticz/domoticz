@@ -230,7 +230,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
 
 		//Set Name
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
 			pDevice->label.c_str(), STYPE_Dimmer, m_HwdID, szID);
 	}
 	else
@@ -307,7 +307,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
 
 		//Set Name
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
 			pDevice->label.c_str(), SwitchType, m_HwdID, szID);
 	}
 }
