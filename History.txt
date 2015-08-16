@@ -80,6 +80,7 @@ Version 3.xxx (xxxx 2015)
 - Implemented: MySensors added support for V_IMPEDANCE
 - Changed: MySensors, rebuild
 - Changed: migrated to github
+- Implemented: Option to add a log message via the json api (see wiki)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

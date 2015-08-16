@@ -463,6 +463,8 @@ namespace http {
 			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
 			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
 
+			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1));
+
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
 			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1));
@@ -9801,6 +9803,18 @@ namespace http {
 			result = m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)",
 				idx);
 		}
+
+		void CWebServer::Cmd_AddLogMessage(Json::Value &root)
+		{
+			std::string smessage = m_pWebEm->FindValue("message");
+			if (smessage.empty())
+				return;
+			root["status"] = "OK";
+			root["title"] = "AddLogMessage";
+
+			_log.Log(LOG_STATUS, "%s", smessage.c_str());
+		}
+		
 
 		void CWebServer::RType_GetTransfers(Json::Value &root)
 		{
