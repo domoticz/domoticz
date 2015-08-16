@@ -51,14 +51,31 @@ cWebem::cWebem(
 	   const std::string& secure_cert_file,
 	   const std::string& secure_cert_passphrase) :
 myRequestHandler( doc_root,this ), myPort( port ),
-myServer( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase ),
 m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
 m_actsessionid(""),
 m_actualuser(""),
 actTheme("")
 {
-	
+	myServer = new server( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase );
+	// RK: TODO: delete myServer in destructor
+	m_actualuser_rights = -1;
+	m_authmethod=AUTH_LOGIN;
+	m_bForceRelogin=false;
+	m_bAddNewSession = false;
+	m_bRemoveCookie = false;
+	m_bRemembermeUser = false;
+}
+
+cWebem::cWebem(const std::string& doc_root) :
+myRequestHandler( doc_root, this ), myPort(""),
+m_DigistRealm("Domoticz.com"),
+m_zippassword(""),
+m_actsessionid(""),
+m_actualuser(""),
+actTheme("")
+{
+	myServer = NULL;	
 	m_actualuser_rights = -1;
 	m_authmethod=AUTH_LOGIN;
 	m_bForceRelogin=false;
@@ -77,9 +94,9 @@ If application needs to continue, start new thread with call to this method.
 
 */
 
-void cWebem::Run() { myServer.run(); }
+void cWebem::Run() { if (myServer) myServer->run(); }
 
-void cWebem::Stop() { myServer.stop(); }
+void cWebem::Stop() { if (myServer) myServer->stop(); }
 
 
 void cWebem::SetAuthenticationMethod(const _eAuthenticationMethod amethod)

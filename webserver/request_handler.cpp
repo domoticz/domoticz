@@ -27,7 +27,6 @@ namespace server {
 
 request_handler::request_handler(const std::string& doc_root, cWebem* webem)
   : doc_root_(doc_root), myWebem(webem)
-
 {
 #ifndef WEBSERVER_DONT_USE_ZIP
 	m_uf=NULL;
@@ -118,7 +117,7 @@ void request_handler::handle_request(const std::string &sHost, const request& re
   {
     request_path += "index.html";
   }
-  else if (request_path.find("/acttheme/") == 0)
+  else if (myWebem && request_path.find("/acttheme/") == 0)
   {
 	  request_path = myWebem->actTheme + request_path.substr(9);
   }
@@ -241,7 +240,7 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 		  std::string gzpath = request_path + ".gz";
 		  if (unzLocateFile(m_uf,gzpath.c_str(),0)==UNZ_OK)
 		  {
-			  if (do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
+			  if (myWebem && do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
 			  {
 				  rep = reply::stock_reply(reply::not_found);
 				  return;
@@ -256,7 +255,7 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 			  rep = reply::stock_reply(reply::not_found);
 			  return;
 		  }
-		  if (do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
+		  if (myWebem && do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
 		  {
 			  rep = reply::stock_reply(reply::not_found);
 			  return;

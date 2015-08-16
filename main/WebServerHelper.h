@@ -1,5 +1,6 @@
 #pragma once
 #include "WebServer.h"
+#include "../webserver/proxyclient.h"
 #include <vector>
 
 namespace http {
@@ -26,6 +27,9 @@ namespace http {
 			CWebServer *secureServer_;
 #endif
 			std::vector<CWebServer*> serverCollection;
+
+			// RK: TODO
+			std::vector<CProxyManager*> proxymanagerCollection;
 };
 
 	} // end namespace server

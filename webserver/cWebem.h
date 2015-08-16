@@ -140,6 +140,8 @@ namespace http {
 				const std::string& doc_root,
 				const std::string& secure_cert_file,
 				const std::string& secure_cert_passphrase);
+			
+			cWebem(const std::string& doc_root);
 
 			void Run();
 			void Stop();
@@ -221,12 +223,13 @@ namespace http {
 			std::map < std::string, webem_page_function_w > myPages_w;
 			/// store map between pages and application functions (wide char)
 			std::multimap  < std::string, std::string> myNameValues;
-			/// request handler specialized to handle webem requests
-			cWebemRequestHandler myRequestHandler;
 			/// boost::asio web server (RK: plain or secure)
-			server myServer;
+			server *myServer;
 			/// port server is listening on
 			std::string myPort;
+		public:
+			/// request handler specialized to handle webem requests
+			cWebemRequestHandler myRequestHandler;
 		};
 
 	}

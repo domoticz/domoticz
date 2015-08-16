@@ -1,14 +1,11 @@
 #include "stdafx.h"
 #include "WebServerHelper.h"
 
-#ifdef NS_ENABLE_SSL
-#include <openssl/ssl.h>
-#endif	
-
 namespace http {
 	namespace server {
 
 		typedef std::vector<CWebServer*>::iterator server_iterator;
+		typedef std::vector<CProxyManager*>::iterator proxy_iterator;
 
 		CWebServerHelper::CWebServerHelper()
 		{
@@ -24,6 +21,10 @@ namespace http {
 			if (secureServer_) delete secureServer_;
 #endif
 			if (plainServer_) delete plainServer_;
+
+			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
+				delete (*it);
+			}
 		}
 
 		bool CWebServerHelper::StartServers(std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword)
@@ -46,6 +47,18 @@ namespace http {
 				serverCollection[1] = secureServer_;
 			}
 #endif
+
+#if 1
+			// RK: TODO
+			const int connections = 3;
+			proxymanagerCollection.resize(connections);
+			for (int i = 0; i < connections; i++) {
+				proxymanagerCollection[i] = new CProxyManager(serverpath, plainServer_->m_pWebEm);
+				proxymanagerCollection[i]->Start();
+			}
+			_log.Log(LOG_STATUS, "Proxymanager started.");	
+#endif
+
 			return bRet;
 		}
 
@@ -53,7 +66,10 @@ namespace http {
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				(*it)->StopServer();
-			 }
+			}
+			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
+				(*it)->Stop();
+			}
 		}
 
 		void CWebServerHelper::SetAuthenticationMethod(int amethod)
