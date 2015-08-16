@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1009
+# ref 1010
 
 CACHE:
 # CSS
@@ -211,6 +211,7 @@ images/motion.png
 images/motion48-off.png
 images/motion48-on.png
 images/motionoff.png
+images/nebula.jpg
 images/next.png
 images/nodemand.png
 images/nodemand_mini.png

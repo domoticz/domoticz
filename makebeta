@@ -1,10 +1,10 @@
 #!/bin/sh
 
-#you need to install sshpass (sudo apt-get install sshpass)
-#and after installation (first time) ssh to sourceforge so the key is accepted
-#ssh USERNAME@web.sourceforge.net
+# We use sourceforge to stash our beta/release archives
+# To be able to upload, you need to install sshpass (sudo apt-get install sshpass)
+# and after installation (first time) ssh to sourceforge so the key is accepted
+# ssh USERNAME@web.sourceforge.net
 
-SVN_SERVER="svn://svn.code.sf.net/p/domoticz/code/trunk"
 SVN_UPLOAD_USER="USERNAME"
 SVN_UPLOAD_PASSWORD="PASSWORD"
 
@@ -13,34 +13,18 @@ lowercase(){
 }
 
 OS=`lowercase \`uname -s\``
-#KERNEL=`uname -r`
+# KERNEL=`uname -r`
 MACH=`uname -m`
 
 archive_file="domoticz_${OS}_${MACH}.tgz"
 version_file="version_${OS}_${MACH}.h"
 history_file="history_${OS}_${MACH}.txt"
  
-# Check the servers revision number:
-echo "Checking the server revision..."
-SERVER_REVISION=`svn info $SVN_SERVER | grep Revision: | sed 's .\{10\}  '`
-echo "Server at revision $SERVER_REVISION"
-echo "Checking the working copy revision..."
-LOCAL_REVISION=`svn info | grep Revision: | sed 's .\{10\}  '`
-echo "Working copy at revision $LOCAL_REVISION"
-
-if [ "$SERVER_REVISION" -eq "$LOCAL_REVISION" ]
-then
-    echo "Server is up to date. Nothing to do."
-#    exit 1
-fi
-
+# Make sure we are on latest commit
 echo "Updating to server revision..."
-svn update
-if [ $? -ne 0 ]
-then
-	echo "svnupdate failed!";
-	exit 1
-fi
+git fetch --all
+git reset --hard origin/master
+
 cmake -DCMAKE_BUILD_TYPE=Release .
 if [ $? -ne 0 ]
 then
@@ -50,15 +34,15 @@ fi
 make -j 2
 if [ $? -ne 0 ]
 then
-	echo "Compilation failed!";
+	echo "Compilation failed!...";
 	exit 1
 fi 
 echo "Success, making beta...";
 
-cp -f svnversion.h ${version_file}
+cp -f appversion.h ${version_file}
 cp -f History.txt ${history_file}
 
-#Generate the archive
+# Generate the archive
 echo "Generating Archive: ${archive_file}..."
 
 if [ -f ${archive_file} ];
@@ -70,10 +54,10 @@ then
   rm ${archive_file}.sha256sum
 fi
 
-tar -zcf ${archive_file} domoticz History.txt License.txt svnversion.h domoticz.sh server_cert.pem --exclude .svn www/ scripts/ Config/
+tar -zcf ${archive_file} domoticz History.txt License.txt domoticz.sh server_cert.pem --exclude .svn www/ scripts/ Config/
 if [ $? -ne 0 ]
 then
-        echo "Error creating archive!";
+        echo "Error creating archive!...";
         exit 1
 fi
 echo "Creating checksum file...";
@@ -81,7 +65,7 @@ hash="$(sha256sum ${archive_file} | sed -e 's/\s.*$//') update.tgz";
 echo $hash > ${archive_file}.sha256sum
 if [ ! -f ${archive_file}.sha256sum ];
 then
-        echo "Error creating archive checksum file!";
+        echo "Error creating archive checksum file!...";
         exit 1
 fi
 
@@ -90,15 +74,14 @@ echo "Uploading to SourceForge...";
 sshpass -p ${SVN_UPLOAD_PASSWORD} scp ${archive_file} ${archive_file}.sha256sum ${version_file} ${history_file} ${SVN_UPLOAD_USER}@web.sourceforge.net:/home/project-web/domoticz/htdocs/beta
 if [ $? -ne 0 ]
 then
-        echo "Error uploading to SourceForge!";
+        echo "Error uploading to SourceForge!...";
         exit 1
 fi
-
 #################################
 
-#cleaning up
+# Cleaning up
 rm -f ${version_file}
 rm -f ${history_file}
 
-echo "Done!";
+echo "Done!...";
 exit 0; 

@@ -2560,3 +2560,7 @@ tspan{
     text-decoration:none;
     text-shadow:none !important;
 }
+
+.version-tooltip + .tooltip > .tooltip-inner {
+	background-color: #202040;
+}
