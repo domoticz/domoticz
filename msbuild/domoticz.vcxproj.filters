@@ -741,6 +741,12 @@
     <ClInclude Include="..\hardware\Winddelen.h">
       <Filter>Devices\Winddelen</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\proxyclient.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\proxycommon.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1186,6 +1192,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Winddelen.cpp">
       <Filter>Devices\Winddelen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\proxyclient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\proxycommon.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
