@@ -11,7 +11,7 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 {
 	_log.Log(LOG_NORM, "PROXY: Connecting.");
 	_apikey = "C5BBD25B487957E"; // todo: get from sql preferences
-	_instanceid = "6685"; // todo: also a sql preference
+	_instanceid = ""; // todo: also a sql preference
     m_pWebEm = webEm;
 	Reconnect();
 }
@@ -76,17 +76,22 @@ void CProxyClient::MyWrite(pdu_type type, CValueLengthPart *parameters)
 		boost::asio::placeholders::bytes_transferred));
 }
 
+void CProxyClient::LoginToService()
+{
+	// send authenticate pdu
+	CValueLengthPart parameters;
+	parameters.AddPart((void *)_apikey.c_str(), _apikey.length() + 1);
+	parameters.AddPart((void *)_instanceid.c_str(), _instanceid.length() + 1);
+	// todo: extra password?
+	MyWrite(PDU_AUTHENTICATE, &parameters);
+}
+
 void CProxyClient::handle_handshake(const boost::system::error_code& error)
 {
 	if (!error)
 	{
 		_log.Log(LOG_NORM, "PROXY: Handshake complete. Authenticating.");
-		// send authenticate pdu
-		CValueLengthPart parameters;
-		parameters.AddPart((void *)_apikey.c_str(), _apikey.length() + 1);
-		parameters.AddPart((void *)_instanceid.c_str(), _instanceid.length() + 1);
-		// todo: extra password?
-		MyWrite(PDU_AUTHENTICATE, &parameters);
+		LoginToService();
 	}
 	else
 	{
@@ -237,11 +242,11 @@ void CProxyClient::HandleAssignkey(ProxyPdu *pdu)
 	char *newapi;
 	size_t newapilen;
 	parameters.GetNextPart((void **)&newapi, &newapilen);
-	_log.Log(LOG_NORM, "PROXY: We were assigned an api: %s.\n", newapi);
-	_apikey = newapi;
+	_log.Log(LOG_NORM, "PROXY: We were assigned an instance id: %s.\n", newapi);
+	_instanceid = newapi;
 	// todo: save to sql preferences
 	free(newapi);
-	ReadMore();
+	LoginToService();
 }
 
 void CProxyClient::HandleEnquire(ProxyPdu *pdu)

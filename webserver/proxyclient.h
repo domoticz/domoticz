@@ -30,7 +30,8 @@ public:
     void ReadMore();
       
     void MyWrite(pdu_type type, CValueLengthPart *parameters);
-    
+	void LoginToService();
+
 	void HandleRequest(ProxyPdu *pdu);
     void GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 	void HandleAssignkey(ProxyPdu *pdu);
