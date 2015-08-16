@@ -17,4 +17,4 @@ IF EXIST ..\appversion.h (
 )
 
 :PROCESS
-MV ../appversion_temp.h ../appversion.h
+move ../appversion_temp.h ../appversion.h
