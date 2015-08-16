@@ -30,7 +30,7 @@
 #include "Logger.h"
 #include "SQLHelper.h"
 #include <algorithm>
-#include "../appversion.h"
+
 #ifndef WIN32
 #include <sys/utsname.h>
 #include <dirent.h>
@@ -55,6 +55,9 @@ extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 
 extern std::string szAppVersion;
+extern std::string szAppHash;
+extern std::string szAppDate;
+
 extern bool g_bDontCacheWWW;
 
 struct _tGuiLanguage {
@@ -1842,13 +1845,8 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
 			root["version"] = szAppVersion;
-			root["hash"] = APPHASH;
-			time_t btime = APPDATE;
-			char szTmp[200];
-			struct tm ltime;
-			localtime_r(&btime, &ltime);
-			strftime(szTmp, 200, "%Y-%m-%d %H:%M:%S", &ltime);
-			root["build_time"] = szTmp;
+			root["hash"] = szAppHash;
+			root["build_time"] = szAppDate;
 
 			//Force Check for update
 			/*

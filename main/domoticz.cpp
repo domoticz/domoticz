@@ -30,6 +30,7 @@
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "appversion.h"
+#include "localtime_r.h"
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
@@ -120,6 +121,9 @@ std::string szInternalCurrentCommand = "";
 
 
 std::string szAppVersion="???";
+std::string szAppHash="???";
+std::string szAppDate="???";
+int ActYear;
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -360,6 +364,14 @@ void GetAppVersion()
 	std::stringstream sstr;
 	sstr << VERSION_STRING << APPVERSION;
 	szAppVersion = sstr.str();
+	szAppHash = APPHASH;
+	char szTmp[200];
+	struct tm ltime;
+	time_t btime = APPDATE;
+	localtime_r(&btime, &ltime);
+	ActYear = ltime.tm_year + 1900;
+	strftime(szTmp, 200, "%Y-%m-%d %H:%M:%S", &ltime);
+	szAppDate = szTmp;
 }
 
 #if defined WIN32
@@ -457,7 +469,8 @@ int main(int argc, char**argv)
 #endif
 	}
 	GetAppVersion();
-	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-2015 GizMoCuz", szAppVersion.c_str());
+	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-%d GizMoCuz", szAppVersion.c_str(), ActYear);
+	_log.Log(LOG_STATUS, "Build Hash: %s, Date: %s", szAppHash.c_str(), szAppDate.c_str());
 
 #if !defined WIN32
 	//Check if we are running on a RaspberryPi
