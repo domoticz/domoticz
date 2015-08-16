@@ -20,7 +20,7 @@ void CProxyClient::Reconnect()
 {
 	_log.Log(LOG_NORM, "PROXY: Connecting...");
 
-	std::string address = "josh.chimit.nl";
+	std::string address = "my.domoticz.com";
 	std::string port = "9999";
 
 	boost::asio::ip::tcp::resolver resolver(_io_service);
