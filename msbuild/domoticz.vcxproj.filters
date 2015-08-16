@@ -742,10 +742,10 @@
       <Filter>Devices\Winddelen</Filter>
     </ClInclude>
     <ClInclude Include="..\webserver\proxyclient.h">
-      <Filter>Source Files</Filter>
+      <Filter>Webserver</Filter>
     </ClInclude>
     <ClInclude Include="..\webserver\proxycommon.h">
-      <Filter>Source Files</Filter>
+      <Filter>Webserver</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1194,10 +1194,10 @@
       <Filter>Devices\Winddelen</Filter>
     </ClCompile>
     <ClCompile Include="..\webserver\proxyclient.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Webserver</Filter>
     </ClCompile>
     <ClCompile Include="..\webserver\proxycommon.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
