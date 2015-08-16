@@ -4,7 +4,6 @@
 #and after installation (first time) ssh to sourceforge so the key is accepted
 #ssh USERNAME@web.sourceforge.net
 
-DOCUMENT_ROOT="/home/linaro/dev-domoticz"
 SVN_SERVER="svn://svn.code.sf.net/p/domoticz/code/trunk"
 SVN_UPLOAD_USER="USERNAME"
 SVN_UPLOAD_PASSWORD="PASSWORD"
@@ -21,9 +20,6 @@ archive_file="domoticz_${OS}_${MACH}.tgz"
 version_file="version_${OS}_${MACH}.h"
 history_file="history_${OS}_${MACH}.txt"
  
-echo "Changing directories to $DOCUMENT_ROOT..."
-cd $DOCUMENT_ROOT
-
 # Check the servers revision number:
 echo "Checking the server revision..."
 SERVER_REVISION=`svn info $SVN_SERVER | grep Revision: | sed 's .\{10\}  '`
