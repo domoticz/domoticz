@@ -250,7 +250,7 @@ namespace http {
 			}
 		}
 
-		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
+		bool CWebServer::StartServer(std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
 		{
 			StopServer();
 
@@ -261,21 +261,39 @@ namespace http {
 
 			if (m_pWebEm != NULL)
 				delete m_pWebEm;
-			try {
-				m_pWebEm = new http::server::cWebem(
-					listenaddress.c_str(),						// address
-					listenport.c_str(),							// port
-					serverpath.c_str(), secure_cert_file, secure_cert_passphrase);
-			}
- 			catch (std::exception& e) {
-				_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
-				if (atoi(listenport.c_str()) < 1024)
-					_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
-				else
-					_log.Log(LOG_ERROR, "check if no other application is using port: %s", listenport.c_str());
-				return false;
-			}
-			if (listenaddress != "0.0.0.0")
+
+			int tries = 0;
+			bool exception = false;
+
+			do {
+				try {
+					exception = false;
+					m_pWebEm = new http::server::cWebem(
+						listenaddress.c_str(),						// address
+						listenport.c_str(),							// port
+						serverpath.c_str(), secure_cert_file, secure_cert_passphrase);
+				}
+				catch (std::exception& e) {
+					exception = true;
+					switch (tries) {
+					case 0:
+						listenaddress = "::";
+						break;
+					case 1:
+						listenaddress = "0.0.0.0";
+						break;
+					case 2:
+						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
+						if (atoi(listenport.c_str()) < 1024)
+							_log.Log(LOG_ERROR, "check privileges for opening ports below 1024");
+						else
+							_log.Log(LOG_ERROR, "check if no other application is using port: %s", listenport.c_str());
+						return false;
+					}
+					tries++;
+				}
+			} while (exception);
+			if (listenaddress != "0.0.0.0" && listenaddress != "::")
 				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listenaddress.c_str(), listenport.c_str());
 			else
 				_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
@@ -6411,7 +6429,7 @@ namespace http {
 					char szPort[100];
 					sprintf(szPort, "%d", rnvalue);
 					m_mainworker.m_sharedserver.StopServer();
-					m_mainworker.m_sharedserver.StartServer("0.0.0.0", szPort);
+					m_mainworker.m_sharedserver.StartServer("::", szPort);
 					m_mainworker.LoadSharedUsers();
 				}
 			}

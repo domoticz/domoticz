@@ -28,7 +28,7 @@ public:
 	};
 	CWebServer(void);
 	~CWebServer(void);
-	bool StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file = "", const std::string &secure_cert_passphrase = "");
+	bool StartServer(std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file = "", const std::string &secure_cert_passphrase = "");
 	void StopServer();
 	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication=false);
 	void RegisterRType(const char* idname, webserver_response_function ResponseFunction);
