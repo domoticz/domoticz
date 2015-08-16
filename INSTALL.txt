@@ -92,7 +92,7 @@ Please see Wiki page at: http://www.domoticz.com/wiki/DomoticzSynology
 ------------------------------------------------------------------------------------------------
 
 Getting the source code:
-svn checkout svn://svn.code.sf.net/p/domoticz/code/trunk/ domoticz
+git clone https://github.com/domoticz/domoticz.git domoticz
 
 cd domoticz
 
@@ -112,7 +112,7 @@ To Update to a newer version:
 
 (from the domoticz folder)
 
-svn update
+git pull
 cmake CMakeLists.txt
 make
 
@@ -149,7 +149,7 @@ sudo service domoticz.sh status
 To update when you have installed it as startup service:
 cd /home/pi/domoticz (or where you installed domoticz)
 sudo service domoticz.sh stop
-svn update
+git pull
 make
 sudo service domoticz.sh start
 

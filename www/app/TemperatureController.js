@@ -37,7 +37,7 @@ define(['app'], function (app) {
 			$("#dialog-edittempdevice" ).dialog( "open" );
 		}
 
-		EditTempDeviceSmall = function(idx,description,name,addjvalue)
+		EditTempDeviceSmall = function(idx,name,description,addjvalue)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
