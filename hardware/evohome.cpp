@@ -1721,7 +1721,7 @@ namespace http {
 			}
 			nid += 92000;
 			char ID[40];
-			sprintf(ID, "%ld", nid);
+			sprintf(ID, "%lu", nid);
 
 			//get zone count
 			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, (int)iSensorType);

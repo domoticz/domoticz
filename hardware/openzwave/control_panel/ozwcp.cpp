@@ -1413,7 +1413,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 			len = Manager::Get()->GetNodeNeighbors(homeId, i, &neighbors);
 			if (len > 0) {
 				TiXmlElement* nodeElement = new TiXmlElement("node");
-				snprintf(str, sizeof(str), "%d", i);
+				snprintf(str, sizeof(str), "%u", i);
 				nodeElement->SetAttribute("id", str);
 				string list = "";
 				for (k = 0; k < len; k++) {
@@ -1422,7 +1422,7 @@ std::string COpenZWaveControlPanel::GetCPTopo()
 					if (k < (len - 1))
 						list += ",";
 				}
-				fprintf(stderr, "topo: node=%d %s\n", i, list.c_str());
+				fprintf(stderr, "topo: node=%u %s\n", i, list.c_str());
 				TiXmlText *textElement = new TiXmlText(list.c_str());
 				nodeElement->LinkEndChild(textElement);
 				topoElement->LinkEndChild(nodeElement);
