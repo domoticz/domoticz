@@ -98,7 +98,7 @@ std::string CForecastIO::GetForecastURL()
 {
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "http://forecast.io/#/f/" << szLoc;
+	sURL << "https://forecast.io/#/f/" << szLoc;
 	return sURL.str();
 }
 
