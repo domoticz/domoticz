@@ -300,7 +300,7 @@ void MyNode::updateGroup (uint8 node, uint8 grp, char *glist)
 #endif
     return;
   }
-  v = new uint8((*it)->max);
+  v = new uint8[(*it)->max];
   n = 0;
   while (p != NULL && *p && n < (*it)->max) {
     np = strsep(&p, ",");

@@ -532,7 +532,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 					{
 						float fItemValue = float(vtProp.fltVal);
 						std::ostringstream itemValue;
-						if ((qType == "Load") || (qType == "Temperature")) {
+						if ((strcmp(qType, "Load") == 0) || (strcmp(qType, "Temperature") == 0)) {
 							itemValue.precision(3);
 						}
 						itemValue << fItemValue;
@@ -616,6 +616,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				m_lastquerytime=0;
 			else
 				m_totcpu=totcpu;
+			fclose(fIn);
 		}
 		else
 		{

@@ -2066,6 +2066,7 @@ std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, .
 	{
 		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
 		std::vector<std::vector<std::string> > results;
+		va_end(args);
 		return results;
 	}
 	std::vector<std::vector<std::string> > results = query(zQuery);
