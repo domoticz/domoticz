@@ -18,7 +18,7 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 
 void CProxyClient::Reconnect()
 {
-	_log.Log(LOG_NORM, "PROXY: Connecting....");
+	_log.Log(LOG_NORM, "PROXY: Connecting...");
 
 	std::string address = "my.domoticz.com";
 	std::string port = "9999";
