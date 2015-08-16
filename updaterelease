@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# This script can be used to upgrade to the latest release version
+# Please not that this is for ARMv6 ARMv7 systems only ! (for example a raspberry pi/cubie)
+# It is NOT recommended to run this script if you are on a beta version
+
+echo "Updating to latest beta version..."
+echo "Please Standby..."
+wget http://domoticz.sourceforge.net/domoticz_linux_armv7l.tgz
+tar xvfz domoticz_linux_armv7l.tgz
+rm domoticz_linux_armv7l.tgz
+echo "Restarting Domoticz... (please standby...)"
+sudo service domoticz.sh restart
