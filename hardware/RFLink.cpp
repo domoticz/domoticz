@@ -482,7 +482,6 @@ bool CRFLink::ParseLine(const std::string &sLine)
 		_log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
 #endif
 
-	std::string Sensor_ID = results[1];
 	if (results.size() >2)
 	{
 		//Status reply

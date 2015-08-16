@@ -492,7 +492,7 @@ void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 	char szTmp[100];
 	const char *iText="i";
 	int i;
-	sprintf(szOutputBuffer, "%ld:"  , data->timestamp );
+	sprintf(szOutputBuffer, "%lu:"  , data->timestamp );
 	for ( i = 0; i <= 5; i++ ) {
 
 		if ( data->_t[i] == 0 )  
@@ -557,7 +557,7 @@ void CTE923Tool::GetPrintData( Te923DataSet_t *data, char *szOutputBuffer)
 	strcat(szOutputBuffer,szTmp);
 
 	if ( data->_RainCount == 0 ) 
-		sprintf(szTmp, "%d", data->RainCount );
+		sprintf(szTmp, "%u", data->RainCount );
 	else 
 		sprintf(szTmp, "%s:", iText );
 	strcat(szOutputBuffer,szTmp);

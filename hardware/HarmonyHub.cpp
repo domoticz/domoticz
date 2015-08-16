@@ -94,8 +94,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		sstr << lookUpId;
 
 		//get the activity id from the db and send to h/w
-		std::stringstream szQuery;
-		std::vector<std::vector<std::string> > result;
+		//std::vector<std::vector<std::string> > result;
 		//result = m_sql.safe_query("SELECT StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
 		//if (result.size() > 0) //should be there since it is switched on
 		//{

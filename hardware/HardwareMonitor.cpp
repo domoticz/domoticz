@@ -299,7 +299,7 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 
 void CHardwareMonitor::GetInternalTemperature()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand.c_str());
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand);
 	if (ret.size() < 1)
 		return;
 	std::string tmpline = ret[0];
@@ -324,7 +324,7 @@ void CHardwareMonitor::GetInternalTemperature()
 
 void CHardwareMonitor::GetInternalVoltage()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand.c_str());
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand);
 	if (ret.size() < 1)
 		return;
 	std::string tmpline = ret[0];
@@ -346,7 +346,7 @@ void CHardwareMonitor::GetInternalVoltage()
 
 void CHardwareMonitor::GetInternalCurrent()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand.c_str());
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand);
 	if (ret.size() < 1)
 		return;
 	std::string tmpline = ret[0];
@@ -532,7 +532,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 					{
 						float fItemValue = float(vtProp.fltVal);
 						std::ostringstream itemValue;
-						if ((qType == "Load") || (qType == "Temperature")) {
+						if ((strcmp(qType, "Load") == 0) || (strcmp(qType, "Temperature") == 0)) {
 							itemValue.precision(3);
 						}
 						itemValue << fItemValue;
@@ -616,6 +616,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 				m_lastquerytime=0;
 			else
 				m_totcpu=totcpu;
+			fclose(fIn);
 		}
 		else
 		{
