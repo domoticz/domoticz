@@ -122,6 +122,7 @@ MACRO(Gitversion_GET_REVISION dir variable)
 ENDMACRO(Gitversion_GET_REVISION)
 
 Gitversion_GET_REVISION(. ProjectRevision)
+MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 
 # The version number.
