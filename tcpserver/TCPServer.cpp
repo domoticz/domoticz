@@ -218,18 +218,37 @@ CTCPServer::~CTCPServer()
 
 bool CTCPServer::StartServer(const std::string &address, const std::string &port)
 {
-	try
-	{
-		StopServer();
-		if (m_pTCPServer!=NULL)
-			delete m_pTCPServer;
-		m_pTCPServer=new CTCPServerInt(address,port,this);
-	}
-	catch(std::exception& e)
-	{
-		_log.Log(LOG_ERROR,"Exception: %s",e.what());
-		return false;
-	}
+	int tries = 0;
+	bool exception = false;
+	std::string listen_address = address;
+
+	do {
+		try
+		{
+			exception = false;
+			StopServer();
+			if (m_pTCPServer != NULL)
+				delete m_pTCPServer;
+			m_pTCPServer = new CTCPServerInt(listen_address, port, this);
+		}
+		catch (std::exception& e)
+		{
+			exception = true;
+			switch (tries) {
+			case 0:
+				listen_address = "::";
+				break;
+			case 1:
+				listen_address = "0.0.0.0";
+				break;
+			case 2:
+				_log.Log(LOG_ERROR, "Exception starting shared server: %s", e.what());
+				return false;
+			}
+			tries++;
+		}
+	} while (exception);
+	_log.Log(LOG_NORM, "Started shared server on: %s", listen_address.c_str());
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CTCPServer::Do_Work, this)));
 
