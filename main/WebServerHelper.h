@@ -11,7 +11,7 @@ namespace http {
 			~CWebServerHelper();
 
 			// called from mainworker():
-			bool StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword);
+			bool StartServers(std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword);
 			void StopServers();
 			void SetAuthenticationMethod(int amethod);
 			void SetWebTheme(const std::string &themename);
