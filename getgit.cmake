@@ -27,7 +27,7 @@ Gitversion_GET_HASH(. ProjectHash)
 Gitversion_GET_DATE(. ProjectDate)
 
 # write a file with the APPVERSION define
-file(WRITE appversion.h.txt "#define APPVERSION ${ProjectRevision}\n#define APPHASH ${ProjectHash}\n#define APPDATE ${ProjectDate}\n")
+file(WRITE appversion.h.txt "#define APPVERSION ${ProjectRevision}\n#define APPHASH \"${ProjectHash}\"\n#define APPDATE ${ProjectDate}\n")
 # copy the file to the final header only if the version changes
 # reduces needless rebuilds
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
