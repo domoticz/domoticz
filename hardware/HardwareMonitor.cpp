@@ -299,7 +299,7 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 
 void CHardwareMonitor::GetInternalTemperature()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand.c_str());
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand);
 	if (ret.size() < 1)
 		return;
 	std::string tmpline = ret[0];
@@ -324,7 +324,7 @@ void CHardwareMonitor::GetInternalTemperature()
 
 void CHardwareMonitor::GetInternalVoltage()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand.c_str());
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand);
 	if (ret.size() < 1)
 		return;
 	std::string tmpline = ret[0];
@@ -346,7 +346,7 @@ void CHardwareMonitor::GetInternalVoltage()
 
 void CHardwareMonitor::GetInternalCurrent()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand.c_str());
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand);
 	if (ret.size() < 1)
 		return;
 	std::string tmpline = ret[0];
@@ -492,7 +492,7 @@ bool CHardwareMonitor::IsOHMRunning()
 	return false;
 }
 
-void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
+void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 {
 	if (pServicesOHM && pServicesSystem)
 	{
@@ -611,6 +611,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable,const char* qType)
 						break;
 					totcpu++;
 				}
+				fclose(fIn);
 			}
 			if (totcpu<1)
 				m_lastquerytime=0;

@@ -75,7 +75,7 @@ namespace http {
 			}
 			nid += 82000;
 			char ID[40];
-			sprintf(ID, "%ld", nid);
+			sprintf(ID, "%lu", nid);
 
 			std::string devname;
 

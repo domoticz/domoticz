@@ -150,7 +150,6 @@ void CForecastIO::GetMeterDetails()
 	fclose(fOut);
 	*/
 
-	std::string tmpstr;
 	float temp;
 	int humidity=0;
 	int barometric=0;

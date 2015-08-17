@@ -204,7 +204,6 @@ void CAnnaThermostat::SetSetpoint(const int idx, const float temp)
 	szURL << "/thermostat";
 
 	std::stringstream sPostData;
-	std::stringstream Url;
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
