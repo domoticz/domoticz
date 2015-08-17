@@ -2062,6 +2062,7 @@ std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, .
 	va_list args;
 	va_start(args, fmt);
 	char *zQuery = sqlite3_vmprintf(fmt, args);
+	va_end(args);
 	if (!zQuery)
 	{
 		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
@@ -2070,7 +2071,6 @@ std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, .
 	}
 	std::vector<std::vector<std::string> > results = query(zQuery);
 	sqlite3_free(zQuery);
-	va_end(args);
 	return results;
 }
 
@@ -2128,11 +2128,18 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 std::vector<std::vector<std::string> > CSQLHelper::safe_queryBlob(const char *fmt, ...)
 {
 	va_list args;
+	std::vector<std::vector<std::string> > results;
 	va_start(args, fmt);
 	char *zQuery = sqlite3_vmprintf(fmt, args);
-	std::vector<std::vector<std::string> > results = queryBlob(zQuery);
-	sqlite3_free(zQuery);
 	va_end(args);
+	if (!zQuery)
+	{
+		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+		std::vector<std::vector<std::string> > results;
+		return results;
+	}
+	results = queryBlob(zQuery);
+	sqlite3_free(zQuery);
 	return results;
 }
 

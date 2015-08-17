@@ -230,7 +230,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
 
 		//Set Name
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
 			pDevice->label.c_str(), STYPE_Dimmer, m_HwdID, szID);
 	}
 	else
@@ -307,7 +307,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
 
 		//Set Name
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
 			pDevice->label.c_str(), SwitchType, m_HwdID, szID);
 	}
 }
@@ -719,6 +719,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 			tsen.TEMP_HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
 		}
 		else
 		{
@@ -736,8 +737,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			}
 			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VELOCITY)
 	{

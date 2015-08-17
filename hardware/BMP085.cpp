@@ -254,7 +254,7 @@ int CBMP085::bmp_WriteCmd(int fd, uint8_t devAction)
 int CBMP085::bmp_Calibration(int fd)
 {
 #ifdef __arm__
-	uint8_t rValue[21];
+	uint8_t rValue[22];
 	//printf("Entering Calibration\n");
 	if (bmp_ReadInt(fd,rValue,0xAA,22) == 0)
 	{

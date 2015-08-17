@@ -366,7 +366,6 @@ void CNestThermostat::SetSetpoint(const int idx, const float temp)
 	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 	ExtraHeaders.push_back("X-nl-protocol-version:1");
 
-	std::stringstream sstr;
 	Json::Value root;
 	root["target_change_pending"] = true;
 	root["target_temperature"] = temp;
@@ -403,7 +402,6 @@ bool CNestThermostat::SetAway(const bool bIsAway)
 	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 	ExtraHeaders.push_back("X-nl-protocol-version:1");
 
-	std::stringstream sstr;
 	Json::Value root;
 	root["away"] = bIsAway;
 	root["away_timestamp"] = (int)mytime(NULL);
@@ -427,9 +425,6 @@ void CNestThermostat::SetProgramState(const int newState)
 		return;
 	if (m_Password.size() == 0)
 		return;
-
-	std::string sResult;
-	std::vector<std::string> ExtraHeaders;
 
 	if (m_bDoLogin)
 	{

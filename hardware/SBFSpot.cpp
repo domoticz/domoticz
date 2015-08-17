@@ -487,7 +487,6 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 						unsigned long long ulCounter = (unsigned long long)kWhCounter;
 
 						//check if this day record does not exists in the database, and insert it
-						std::stringstream szQuery;
 						std::vector<std::vector<std::string> > result;
 
 						char szDate[40];

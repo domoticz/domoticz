@@ -377,7 +377,8 @@ bool MQTT::ConnectIntEx()
 
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
 
-	if ((rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive) != MOSQ_ERR_SUCCESS))
+	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);
+	if ( rc != MOSQ_ERR_SUCCESS)
 	{
 		_log.Log(LOG_ERROR, "MQTT: Failed to start, return code: %d (Check IP/Port)", rc);
 		m_bDoReconnect = true;

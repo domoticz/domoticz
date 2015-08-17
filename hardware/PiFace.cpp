@@ -277,7 +277,7 @@ int CPiFace::LoadConfig(void)
             Parametervalue=Line.substr(StartPos,Line.length()-StartPos);
             Parametervalue=preprocess(Parametervalue);
 
-            if ((Address >=0) &&  (Address <= 3) && (PinNumber >=0) && (PinNumber <= 7) && ((PortType=='I') || (PortType=='O')) && (Parametername.length() >0 ) && (Parametervalue.length() >0 ))
+            if ((Address <= 3) && (PinNumber <= 7) && ((PortType=='I') || (PortType=='O')) && (Parametername.length() >0 ) && (Parametervalue.length() >0 ))
             {
                 _log.Log(LOG_STATUS,"PiFace: config file: Valid address: %d , Pin: %d and Port %c Parameter: %s , Value %s",Address,PinNumber,PortType,Parametername.c_str(),Parametervalue.c_str());
                 NameFound=LocateValueInParameterArray(Parametername,ParameterNames,CONFIG_NR_OF_PARAMETER_TYPES);
