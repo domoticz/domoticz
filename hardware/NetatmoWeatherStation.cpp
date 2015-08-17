@@ -10,7 +10,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	#define DEBUG_NetatmoWeatherStation
+	//#define DEBUG_NetatmoWeatherStation
 #endif
 
 #ifdef DEBUG_NetatmoWeatherStation
