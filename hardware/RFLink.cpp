@@ -757,7 +757,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
     
 	if (bHaveRain)
 	{
-		SendRainSensor(ID, BatteryLevel, raincounter, "Rain");
+		SendRainSensor(ID, BatteryLevel, float(raincounter)*0.7f, "Rain");
 	}
 
 	if (bHaveWindDir && bHaveWindSpeed && bHaveWindGust && bHaveWindChill)

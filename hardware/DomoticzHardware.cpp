@@ -371,7 +371,7 @@ void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int Child
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
 }
 
-void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLevel, const int RainCounter, const std::string &defaultname)
+void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname)
 {
 	char szIdx[10];
 	sprintf(szIdx, "%d", NodeID & 0xFFFF);
@@ -399,9 +399,10 @@ void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLe
 	tsen.RAIN.rainrateh = 0;
 	tsen.RAIN.rainratel = 0;
 
-	int tr10 = int((float(RainCounter)*10.0f)*0.7f);
+	uint64_t tr10 = int((float(RainCounter)*10.0f));
 
-	tsen.RAIN.raintotal1 = 0;
+	tsen.RAIN.raintotal1 = (BYTE)(tr10 / 65535);
+	tr10 -= (tsen.RAIN.raintotal1 * 65535);
 	tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
 	tr10 -= (tsen.RAIN.raintotal2 * 256);
 	tsen.RAIN.raintotal3 = (BYTE)(tr10);
@@ -415,6 +416,31 @@ void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLe
 			defaultname.c_str(), m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
 	}
 }
+
+float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool &bExists)
+{
+	char szIdx[10];
+	sprintf(szIdx, "%d", NodeID & 0xFFFF);
+	int Unit = 0;
+
+	std::vector<std::vector<std::string> > result;
+	bool bDeviceExits = true;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
+	if (result.size() < 1)
+	{
+		bExists = false;
+		return 0.0f;
+	}
+	result = m_sql.safe_query("SELECT MAX(Total) FROM Rain_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
+	if (result.size() < 1)
+	{
+		bExists = false;
+		return 0.0f;
+	}
+	bExists = true;
+	return (float)atof(result[0][0].c_str());
+}
+
 
 void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname)
 {

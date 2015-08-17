@@ -125,7 +125,8 @@ private:
 	void SendVoltageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Volt, const std::string &defaultname);
 	void SendCurrentSensor(const int NodeID, const int BatteryLevel, const float Current1, const float Current2, const float Current3, const std::string &defaultname);
 	void SendPercentageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Percentage, const std::string &defaultname);
-	void SendRainSensor(const int NodeID, const int BatteryLevel, const int RainCounter, const std::string &defaultname);
+	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname);
+	float GetRainSensorValue(const int NodeID, bool &bExists);
 	void SendWind(const int NodeID, const int BatteryLevel, const float WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname);
 	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance);
