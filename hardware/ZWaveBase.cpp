@@ -719,6 +719,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 			tsen.TEMP_HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
 		}
 		else
 		{
@@ -736,8 +737,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			}
 			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VELOCITY)
 	{
