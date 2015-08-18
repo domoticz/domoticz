@@ -574,8 +574,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		}
 		break;
 	case V_RAIN:
-		if (pChild->GetValue(vType, intValue))
-			SendRainSensor(cNode, pChild->batValue, intValue, "Rain");
+		if (pChild->GetValue(vType, floatValue))
+			SendRainSensor(cNode, pChild->batValue, floatValue, "Rain");
 		break;
 	case V_WATT:
 		{
@@ -1252,7 +1252,7 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_RAIN:
-			pChild->SetValue(vType, atoi(payload.c_str()));
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_WATT:
@@ -1391,8 +1391,17 @@ void MySensorsBase::ParseLine()
 			bDoAdd = true;
 			break;
 		case S_LOCK:
+			vType = V_LOCK_STATUS;
+			bDoAdd = true;
+			break;
 		case S_LIGHT:
+			vType = V_STATUS;
+			bDoAdd = true;
+			break;
 		case S_DIMMER:
+			vType = V_PERCENTAGE;
+			bDoAdd = true;
+			break;
 		case S_SCENE_CONTROLLER:
 			vType = V_SCENE_ON;
 			bDoAdd = true;
@@ -1444,14 +1453,14 @@ void MySensorsBase::ParseLine()
 		if (!bDoAdd)
 			return;
 
-		if ((vType == V_STATUS) || (vType == V_RGB) || (vType == V_RGBW) || (vType == V_TRIPPED))
+		if ((vType == V_STATUS) || (vType == V_RGB) || (vType == V_RGBW) || (vType == V_TRIPPED) || (vType == V_PERCENTAGE) || (vType == V_LOCK_STATUS))
 		{
 			//Check if switch is already in the system, if not add it
 			std::string sSwitchValue;
 			if (!GetSwitchValue(node_id, child_sensor_id, vType, sSwitchValue))
 			{
 				//Add it to the system
-				if (vType == V_STATUS)
+				if ((vType == V_STATUS) || (vType == V_PERCENTAGE) || (vType == V_LOCK_STATUS))
 					UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
 				else if (vType == V_TRIPPED)
 					UpdateSwitch(node_id, child_sensor_id, false, 100, "Security Sensor");

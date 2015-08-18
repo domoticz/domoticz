@@ -27,6 +27,9 @@ private:
 
 	time_t m_nextRefreshTs;
 
+	float m_RainOffset;
+	float m_OldRainCounter;
+
 	void Init();
 	bool StartHardware();
 	bool StopHardware();

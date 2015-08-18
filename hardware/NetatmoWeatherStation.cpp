@@ -10,7 +10,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-//	#define DEBUG_NetatmoWeatherStation
+	//#define DEBUG_NetatmoWeatherStation
 #endif
 
 #ifdef DEBUG_NetatmoWeatherStation
@@ -53,6 +53,7 @@ m_password(password)
 	m_clientId = "5588029e485a88af28f4a3c4";
 	m_clientSecret = "6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2";
 	m_stoprequested=false;
+
 	Init();
 }
 
@@ -62,6 +63,8 @@ CNetAtmoWeatherStation::~CNetAtmoWeatherStation(void)
 
 void CNetAtmoWeatherStation::Init()
 {
+	m_RainOffset=0;
+	m_OldRainCounter=0;
 }
 
 bool CNetAtmoWeatherStation::StartHardware()
@@ -356,7 +359,7 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	int hum;
 	float baro;
 	int co2;
-	int rain;
+	float rain;
 	int sound;
 
 	float wind_angle = 0;
@@ -391,10 +394,10 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 		bHaveCO2 = true;
 		co2 = root["CO2"].asInt();
 	}
-	if (!root["Rain"].empty())
+	if (!root["sum_rain_24"].empty())
 	{
 		bHaveRain = true;
-		rain = root["Rain"].asInt();
+		rain = root["sum_rain_24"].asFloat();
 	}
 	if (!root["WindAngle"].empty())
 	{
@@ -441,7 +444,21 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 
 	if (bHaveRain)
 	{
-		SendRainSensor(ID, batValue, rain, name);
+		if ((m_RainOffset == 0) && (m_OldRainCounter == 0))
+		{
+			//get last rain counter from the database
+			bool bExists=false;
+			m_RainOffset = GetRainSensorValue(ID, bExists);
+		}
+		if (rain < m_OldRainCounter)
+		{
+			//daily counter when to zero
+			m_RainOffset += m_OldRainCounter;
+			m_OldRainCounter = rain;
+		}
+		else
+			m_OldRainCounter = rain;
+		SendRainSensor(ID, batValue, m_RainOffset+ m_OldRainCounter, name);
 	}
 
 	if (bHaveCO2)
@@ -476,7 +493,7 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-#ifdef DEBUG_NetatmoWeatherStation2
+#ifdef DEBUG_NetatmoWeatherStation
 	sResult = ReadFile("E:\\netatmo_mdetails.json");
 	bool ret = true;
 #else
@@ -487,7 +504,7 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 		return;
 	}
 #endif
-#ifdef DEBUG_NetatmoWeatherStation
+#ifdef DEBUG_NetatmoWeatherStation2
 	SaveString2Disk(sResult, "E:\\netatmo_mdetails.json");
 #endif
 	Json::Value root;
