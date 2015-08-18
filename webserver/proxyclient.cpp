@@ -11,7 +11,7 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 {
 	_log.Log(LOG_NORM, "PROXY: Connecting.");
 	_apikey = "C5BBD25B487957E"; // todo: get from sql preferences
-	_instanceid = ""; // todo: also a sql preference
+	_instanceid = "xxx"; // todo: also a sql preference
     m_pWebEm = webEm;
 	Reconnect();
 }
@@ -268,7 +268,10 @@ void CProxyClient::HandleAuthresp(ProxyPdu *pdu)
 	CValueLengthPart part(pdu);
 	part.GetNextValue((void **)&auth, &authlen);
 	_log.Log(LOG_NORM, "PROXY: Authenticated: %s (%d).\n", auth ? "yes" : "no", auth);
-	// todo: close connection, if auth == 0
+	if (!auth) {
+		Stop();
+		return;
+	}
 	ReadMore();
 }
 
