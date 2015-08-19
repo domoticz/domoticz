@@ -11,7 +11,7 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 {
 	_log.Log(LOG_NORM, "PROXY: Connecting.");
 	_apikey = "C5BBD25B487957E"; // todo: get from sql preferences
-	_instanceid = "xxx"; // todo: also a sql preference
+	_instanceid = ""; // todo: also a sql preference
     m_pWebEm = webEm;
 	Reconnect();
 }
@@ -30,7 +30,7 @@ void CProxyClient::Reconnect()
 	_log.Log(LOG_NORM, "PROXY: we have an iterator");
 	_socket.lowest_layer().async_connect(endpoint,
 		boost::bind(&CProxyClient::handle_connect, this,
-		boost::asio::placeholders::error, ++iterator));
+		boost::asio::placeholders::error, iterator));
 }
 
 void CProxyClient::handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
@@ -339,6 +339,7 @@ CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *
 
 CProxyManager::~CProxyManager()
 {
+	// todo: throws access violation
 	if (proxyclient) delete proxyclient;
 }
 
