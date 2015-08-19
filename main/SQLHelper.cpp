@@ -1330,7 +1330,6 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Hardware ADD COLUMN [SerialPort] VARCHAR(50) DEFAULT ('')");
 
 			bool bUseDirectPath = false;
-			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
 
 			//Convert all serial hardware to use the new column
 			std::stringstream szQuery;
@@ -2927,8 +2926,6 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	if (!m_dbase)
 		return;
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ROWID FROM BackupLog WHERE (Key='%q')",Key);
 	if (result.size()==0)
@@ -2943,6 +2940,7 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	else
 	{
 		//Update
+		unsigned long long ID = 0;
 		std::stringstream s_str( result[0][0] );
 		s_str >> ID;
 
@@ -3089,8 +3087,6 @@ void CSQLHelper::UpdateTemperatureLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
@@ -3279,8 +3275,6 @@ void CSQLHelper::UpdateRainLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeRAIN);
 	if (result.size()>0)
@@ -3345,8 +3339,6 @@ void CSQLHelper::UpdateWindLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,DeviceID, Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
@@ -3430,8 +3422,6 @@ void CSQLHelper::UpdateUVLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
 	if (result.size()>0)
@@ -3502,8 +3492,6 @@ void CSQLHelper::UpdateMeter()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
@@ -3748,8 +3736,6 @@ void CSQLHelper::UpdateMultiMeter()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
 		pTypeP1Power,
@@ -3875,8 +3861,6 @@ void CSQLHelper::UpdatePercentageLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
 		pTypeGeneral,sTypePercentage
@@ -3939,8 +3923,6 @@ void CSQLHelper::UpdateFanLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
@@ -4919,13 +4901,11 @@ void CSQLHelper::DeleteCamera(const std::string &idx)
 
 void CSQLHelper::DeletePlan(const std::string &idx)
 {
-	std::vector<std::vector<std::string> > result;
 	safe_query("DELETE FROM Plans WHERE (ID == '%q')",idx.c_str());
 }
 
 void CSQLHelper::DeleteEvent(const std::string &idx)
 {
-	std::vector<std::vector<std::string> > result;
 	safe_query("DELETE FROM EventRules WHERE (EMID == '%q')",idx.c_str());
 	safe_query("DELETE FROM EventMaster WHERE (ID == '%q')",idx.c_str());
 }
@@ -6003,7 +5983,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
-	result = safe_query(
+	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
 		varname.c_str(),
 		typei,

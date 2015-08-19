@@ -1044,7 +1044,7 @@ namespace http {
 				mode2 = 1000;
 			}
 
-			result = m_sql.safe_query(
+			m_sql.safe_query(
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
 				name.c_str(),
 				(senabled == "true") ? 1 : 0,
@@ -1897,8 +1897,6 @@ namespace http {
 			root["title"] = "GetAuth";
 			root["user"] = m_pWebEm->m_actualuser;
 			root["rights"] = m_pWebEm->m_actualuser_rights;
-
-			int nValue = 0;
 		}
 
 		void CWebServer::Cmd_GetActualHistory(Json::Value &root)
@@ -1945,8 +1943,6 @@ namespace http {
 				if (uname(&my_uname) < 0)
 					return;
 
-				std::string forced = m_pWebEm->FindValue("forced");
-				bool bIsForced = (forced == "true");
 				std::string systemname = my_uname.sysname;
 				std::string machine = my_uname.machine;
 				std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
@@ -2915,7 +2911,7 @@ namespace http {
 					//no it is not, add it
 					if (isscene == "true")
 					{
-						result = m_sql.safe_query(
+						m_sql.safe_query(
 							"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level, Hue, OnDelay, OffDelay) VALUES ('%q','%q',%d,%d,%d,%d,%d)",
 							devidx.c_str(),
 							idx.c_str(),
@@ -2928,7 +2924,7 @@ namespace http {
 					}
 					else
 					{
-						result = m_sql.safe_query(
+						m_sql.safe_query(
 							"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level, Hue, OnDelay, OffDelay) VALUES ('%q','%q',%d,%d,%d,%d)",
 							devidx.c_str(),
 							idx.c_str(),
@@ -2944,7 +2940,6 @@ namespace http {
 			{
 				std::string idx = m_pWebEm->FindValue("idx");
 				std::string devidx = m_pWebEm->FindValue("devidx");
-				std::string isscene = m_pWebEm->FindValue("isscene");
 				int command = atoi(m_pWebEm->FindValue("command").c_str());
 				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
 				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
@@ -4205,7 +4200,7 @@ namespace http {
 						}
 						std::string ID = result[0][0];
 
-						result = m_sql.safe_query(
+						m_sql.safe_query(
 							"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 							name.c_str(), switchtype, ID.c_str());
 
@@ -4267,7 +4262,7 @@ namespace http {
 				}
 				std::string ID = result[0][0];
 
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 					name.c_str(), switchtype, ID.c_str());
 
@@ -5208,7 +5203,7 @@ namespace http {
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
-				result = m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')",
+				m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')",
 					isfavorite, idx.c_str());
 				root["status"] = "OK";
 				root["title"] = "MakeFavorite";
@@ -5220,7 +5215,7 @@ namespace http {
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
-				result = m_sql.safe_query("UPDATE Scenes SET Favorite=%d WHERE (ID == '%q')",
+				m_sql.safe_query("UPDATE Scenes SET Favorite=%d WHERE (ID == '%q')",
 					isfavorite, idx.c_str());
 				root["status"] = "OK";
 				root["title"] = "MakeSceneFavorite";
@@ -5263,7 +5258,7 @@ namespace http {
 
 				if (nValue >= 0)
 				{
-					result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (ID == '%q')",
+					m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (ID == '%q')",
 						nValue, idx.c_str());
 					root["status"] = "OK";
 					root["title"] = "SwitchLight";
@@ -5782,7 +5777,7 @@ namespace http {
 
 				root["status"] = "OK";
 				root["title"] = "AddFloorplan";
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"INSERT INTO Floorplans (Name,ImageFile,ScaleFactor) VALUES ('%q','%q',%q)",
 					name.c_str(),
 					imagefile.c_str(),
@@ -5819,7 +5814,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "UpdateFloorplan";
 
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE Floorplans SET Name='%q',ImageFile='%q', ScaleFactor='%q' WHERE (ID == '%q')",
 					name.c_str(),
 					imagefile.c_str(),
@@ -5847,17 +5842,17 @@ namespace http {
 					return;
 				root["status"] = "OK";
 				root["title"] = "DeleteFloorplan";
-				result = m_sql.safe_query(
+				 m_sql.safe_query(
 					"UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))",
 					idx.c_str()
 					);
 				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for all plans on floorplan '%s'.", idx.c_str());
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')",
 					idx.c_str()
 					);
 				_log.Log(LOG_STATUS, "(Floorplan) Plans for floorplan '%s' reset.", idx.c_str());
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"DELETE FROM Floorplans WHERE (ID == '%q')",
 					idx.c_str()
 					);
@@ -5906,9 +5901,9 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ChangeFloorPlanOrder";
 
-				result = m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')",
+				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')",
 					oOrder.c_str(), idx.c_str());
-				result = m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')",
+				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')",
 					aOrder.c_str(), oID.c_str());
 			}
 			else if (cparam == "getunusedfloorplanplans")
@@ -5983,7 +5978,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "AddFloorplanPlan";
 
-				result = m_sql.safe_query(
+				 m_sql.safe_query(
 					"UPDATE Plans SET FloorplanID='%q' WHERE (ID == '%q')",
 					idx.c_str(),
 					planidx.c_str()
@@ -6011,7 +6006,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "UpdateFloorplanPlan";
 
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE Plans SET Area='%q' WHERE (ID == '%q')",
 					planarea.c_str(),
 					planidx.c_str()
@@ -6037,12 +6032,12 @@ namespace http {
 					return;
 				root["status"] = "OK";
 				root["title"] = "DeleteFloorplanPlan";
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID == '%q')",
 					idx.c_str()
 					);
 				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for plan '%s'.", idx.c_str());
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE Plans SET FloorplanID=0,Area='' WHERE (ID == '%q')",
 					idx.c_str()
 					);
@@ -9738,9 +9733,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteCustomIcon";
 
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("DELETE FROM CustomImages WHERE (ID == %d)",
-				idx);
+			m_sql.safe_query("DELETE FROM CustomImages WHERE (ID == %d)", idx);
 
 			//Delete icons file from disk
 			std::vector<_tCustomIcon>::const_iterator itt;
@@ -9780,8 +9773,7 @@ namespace http {
 			root["title"] = "RenameDevice";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)",
-				sname.c_str(), idx);
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
 		void CWebServer::Cmd_SetUnused(Json::Value &root)
@@ -9798,10 +9790,7 @@ namespace http {
 			int idx = atoi(sidx.c_str());
 			root["status"] = "OK";
 			root["title"] = "SetUnused";
-
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)",
-				idx);
+			m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)", idx);
 		}
 
 		void CWebServer::Cmd_AddLogMessage(Json::Value &root)
@@ -10018,15 +10007,12 @@ namespace http {
 			StringSplit(userdevices, ";", strarray);
 
 			//First delete all devices for this user, then add the (new) onces
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')",
-				idx.c_str());
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
 
 			int nDevices = static_cast<int>(strarray.size());
 			for (int ii = 0; ii < nDevices; ii++)
 			{
-				result = m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')",
-					idx.c_str(), strarray[ii].c_str());
+				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), strarray[ii].c_str());
 			}
 			m_mainworker.LoadSharedUsers();
 		}
@@ -10157,8 +10143,7 @@ namespace http {
 					strParam1.c_str(), strParam2.c_str(), idx.c_str());
 			}
 
-			result = m_sql.safe_query("UPDATE DeviceStatus SET Protected=%d WHERE (ID == '%q')",
-				iProtected, idx.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET Protected=%d WHERE (ID == '%q')", iProtected, idx.c_str());
 
 			if (setPoint != "" || state!="")
 			{
