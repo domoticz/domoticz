@@ -92,7 +92,6 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 void CEventSystem::LoadEvents()
 {
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
-
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
 
