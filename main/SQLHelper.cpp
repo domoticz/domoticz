@@ -1330,7 +1330,6 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Hardware ADD COLUMN [SerialPort] VARCHAR(50) DEFAULT ('')");
 
 			bool bUseDirectPath = false;
-			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
 
 			//Convert all serial hardware to use the new column
 			std::stringstream szQuery;
@@ -2946,7 +2945,7 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 		std::stringstream s_str( result[0][0] );
 		s_str >> ID;
 
-		result = safe_query(
+		safe_query(
 			"UPDATE BackupLog SET Key='%q', nValue=%d "
 			"WHERE (ROWID = %llu)",
 			Key,
@@ -3089,8 +3088,6 @@ void CSQLHelper::UpdateTemperatureLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
@@ -3279,10 +3276,8 @@ void CSQLHelper::UpdateRainLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeRAIN);
+	result = safe_query("SELECT ID,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeRAIN);
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3293,13 +3288,10 @@ void CSQLHelper::UpdateRainLog()
 			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
-			unsigned char dType=atoi(sd[1].c_str());
-			unsigned char dSubType=atoi(sd[2].c_str());
-			int nValue=atoi(sd[3].c_str());
-			std::string sValue=sd[4];
+			std::string sValue=sd[1];
 
 			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[5];
+			std::string sLastUpdate=sd[2];
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
 			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -3346,10 +3338,8 @@ void CSQLHelper::UpdateWindLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,DeviceID, Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
+	result=safe_query("SELECT ID,DeviceID,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3365,13 +3355,10 @@ void CSQLHelper::UpdateWindLog()
 			std::stringstream s_str2(sd[1]);
 			s_str2 >> DeviceID;
 
-			unsigned char dType=atoi(sd[2].c_str());
-			unsigned char dSubType=atoi(sd[3].c_str());
-			int nValue=atoi(sd[4].c_str());
-			std::string sValue=sd[5];
+			std::string sValue=sd[2];
 
 			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[6];
+			std::string sLastUpdate=sd[3];
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
 			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -3430,10 +3417,8 @@ void CSQLHelper::UpdateUVLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
+	result=safe_query("SELECT ID,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -3444,13 +3429,10 @@ void CSQLHelper::UpdateUVLog()
 			unsigned long long ID;
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
-			unsigned char dType=atoi(sd[1].c_str());
-			unsigned char dSubType=atoi(sd[2].c_str());
-			int nValue=atoi(sd[3].c_str());
-			std::string sValue=sd[4];
+			std::string sValue=sd[1];
 
 			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[5];
+			std::string sLastUpdate=sd[2];
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
 			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -3503,10 +3485,7 @@ void CSQLHelper::UpdateMeter()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
-	std::vector<std::vector<std::string> > result2;
 
 	result=safe_query(
 		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
@@ -3748,10 +3727,8 @@ void CSQLHelper::UpdateMultiMeter()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
+	result=safe_query("SELECT ID,Type,SubType,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
 		pTypeP1Power,
 		pTypeCURRENT,
 		pTypeCURRENTENERGY
@@ -3768,11 +3745,10 @@ void CSQLHelper::UpdateMultiMeter()
 			s_str >> ID;
 			unsigned char dType=atoi(sd[1].c_str());
 			unsigned char dSubType=atoi(sd[2].c_str());
-			int nValue=atoi(sd[3].c_str());
-			std::string sValue=sd[4];
+			std::string sValue=sd[3];
 
 			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[5];
+			std::string sLastUpdate=sd[4];
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
 			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -3875,10 +3851,8 @@ void CSQLHelper::UpdatePercentageLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
+	result=safe_query("SELECT ID,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
 		pTypeGeneral,sTypePercentage
 		);
 	if (result.size()>0)
@@ -3892,13 +3866,10 @@ void CSQLHelper::UpdatePercentageLog()
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 
-			unsigned char dType=atoi(sd[1].c_str());
-			unsigned char dSubType=atoi(sd[2].c_str());
-			int nValue=atoi(sd[3].c_str());
-			std::string sValue=sd[4];
+			std::string sValue=sd[1];
 
 			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[5];
+			std::string sLastUpdate=sd[2];
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
 			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -3940,10 +3911,8 @@ void CSQLHelper::UpdateFanLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
+	result=safe_query("SELECT ID,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
 		pTypeGeneral,sTypeFan
 		);
 	if (result.size()>0)
@@ -3957,13 +3926,10 @@ void CSQLHelper::UpdateFanLog()
 			std::stringstream s_str( sd[0] );
 			s_str >> ID;
 
-			unsigned char dType=atoi(sd[1].c_str());
-			unsigned char dSubType=atoi(sd[2].c_str());
-			int nValue=atoi(sd[3].c_str());
-			std::string sValue=sd[4];
+			std::string sValue=sd[1];
 
 			//do not include sensors that have no reading within an hour
-			std::string sLastUpdate=sd[5];
+			std::string sLastUpdate=sd[2];
 			struct tm ntime;
 			ntime.tm_isdst=tm1.tm_isdst;
 			ntime.tm_year=atoi(sLastUpdate.substr(0,4).c_str())-1900;
@@ -4247,17 +4213,14 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		s_str >> ID;
 
 		//Get Device Information
-		result=safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
+		result=safe_query("SELECT Name, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
 		if (result.size()<1)
 			continue;
 		std::vector<std::string> sd=result[0];
 		std::string devname = sd[0];
-		int hardwareID= atoi(sd[1].c_str());
-		std::string DeviceID=sd[2];
-		unsigned char Unit = atoi(sd[3].c_str());
-		unsigned char devType=atoi(sd[4].c_str());
-		unsigned char subType=atoi(sd[5].c_str());
-		_eSwitchType switchtype=(_eSwitchType) atoi(sd[6].c_str());
+		unsigned char devType=atoi(sd[1].c_str());
+		unsigned char subType=atoi(sd[2].c_str());
+		_eSwitchType switchtype=(_eSwitchType) atoi(sd[3].c_str());
 		_eMeterType metertype=(_eMeterType)switchtype;
 
 		float tGasDivider=GasDivider;
@@ -4459,19 +4422,15 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 		s_str >> ID;
 
 		//Get Device Information
-		result=safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
+		result=safe_query("SELECT Name, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%llu')",ID);
 		if (result.size()<1)
 			continue;
 		std::vector<std::string> sd=result[0];
 
 		std::string devname = sd[0];
-		int hardwareID= atoi(sd[1].c_str());
-		std::string DeviceID=sd[2];
-		unsigned char Unit = atoi(sd[3].c_str());
-		unsigned char devType=atoi(sd[4].c_str());
-		unsigned char subType=atoi(sd[5].c_str());
-		_eSwitchType switchtype=(_eSwitchType) atoi(sd[6].c_str());
-		_eMeterType metertype=(_eMeterType)switchtype;
+		unsigned char devType=atoi(sd[1].c_str());
+		unsigned char subType=atoi(sd[2].c_str());
+		_eSwitchType switchtype=(_eSwitchType) atoi(sd[3].c_str());
 
 		result=safe_query(
 			"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2), MIN(Value3), MAX(Value3), MIN(Value4), MAX(Value4), MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID='%llu' AND Date>='%q' AND Date<'%q')",
@@ -4919,13 +4878,11 @@ void CSQLHelper::DeleteCamera(const std::string &idx)
 
 void CSQLHelper::DeletePlan(const std::string &idx)
 {
-	std::vector<std::vector<std::string> > result;
 	safe_query("DELETE FROM Plans WHERE (ID == '%q')",idx.c_str());
 }
 
 void CSQLHelper::DeleteEvent(const std::string &idx)
 {
-	std::vector<std::vector<std::string> > result;
 	safe_query("DELETE FROM EventRules WHERE (EMID == '%q')",idx.c_str());
 	safe_query("DELETE FROM EventMaster WHERE (ID == '%q')",idx.c_str());
 }
@@ -5177,7 +5134,6 @@ void CSQLHelper::CheckSceneStatus(const unsigned long long Idx)
 		std::vector<std::string> sd=*itt;
 		int nValue=atoi(sd[6].c_str());
 		std::string sValue=sd[7];
-		unsigned char Unit=atoi(sd[2].c_str());
 		unsigned char dType=atoi(sd[3].c_str());
 		unsigned char dSubType=atoi(sd[4].c_str());
 		_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
@@ -5984,9 +5940,9 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 	if (formatError != "OK")
 		return formatError;
 
-	std::vector<std::vector<std::string> > result;
-
 	/*
+	std::vector<std::vector<std::string> > result;
+	
 	sprintf(szTmp, "SELECT Value FROM UserVariables WHERE (Name == '%s')",
 		varname.c_str()
 		);
@@ -6003,7 +5959,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
-	result = safe_query(
+	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
 		varname.c_str(),
 		typei,
@@ -6231,7 +6187,6 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 
 			for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
 			{
-				std::string TableField = iItt->first;
 				std::string IconFile = iItt->second;
 				if (in.find(IconFile) == in.end())
 				{
