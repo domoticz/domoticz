@@ -13,6 +13,7 @@
 class CProxyClient {
 public:
   CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm);
+  ~CProxyClient();
     
     void Reconnect();
 
@@ -43,8 +44,10 @@ public:
 private:
 	std::string GetResponseHeaders(const http::server::reply &reply_);
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> _socket;
+	boost::mutex prefs_mutex;
 	std::string _apikey;
 	std::string _instanceid;
+	std::string _password;
 	boost::asio::streambuf _readbuf;
 	std::vector<boost::asio::const_buffer> _writebuf;
 	boost::asio::io_service& _io_service;
@@ -61,7 +64,9 @@ public:
 	void Stop();
 private:
 	void StartThread();
+	boost::asio::io_service io_service;
 	CProxyClient *proxyclient;
 	boost::thread* m_thread;
 	http::server::cWebem *m_pWebEm;
+	boost::mutex end_mutex;
 };

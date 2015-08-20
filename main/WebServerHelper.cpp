@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WebServerHelper.h"
+#include "../main/SQLHelper.h"
 
 namespace http {
 	namespace server {
@@ -50,7 +51,8 @@ namespace http {
 
 #if 1
 			// RK: TODO
-			const int connections = 3;
+			//m_sql.UpdatePreferencesVar("MyDomoticzInstanceId", "");
+			const int connections = GetNrMyDomoticzThreads();
 			proxymanagerCollection.resize(connections);
 			for (int i = 0; i < connections; i++) {
 				proxymanagerCollection[i] = new CProxyManager(serverpath, plainServer_->m_pWebEm);
@@ -112,5 +114,18 @@ namespace http {
 				(*it)->ReloadCustomSwitchIcons();
 			 }
 		}
+
+		int CWebServerHelper::GetNrMyDomoticzThreads()
+		{
+			std::string instanceid;
+			int nrThreads = 3;
+			m_sql.GetPreferencesVar("MyDomoticzInstanceId", instanceid);
+			if (instanceid == "") {
+				return 1;
+			}
+			m_sql.GetPreferencesVar("MyDomoticzNrThreads", nrThreads);
+			return nrThreads;
+		}
 	}
+
 }

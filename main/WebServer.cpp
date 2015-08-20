@@ -6481,6 +6481,13 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(m_pWebEm->FindValue("FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(m_pWebEm->FindValue("FloorplanInactiveOpacity").c_str()));
 
+			std::string md_userid, md_password;
+			md_userid = m_pWebEm->FindValue("MyDomoticzUserId");
+			md_password = m_pWebEm->FindValue("MyDomoticzPassword");
+			m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
+			md_password = base64_encode((const unsigned char *)md_password.c_str(), md_password.length());
+			m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
+
 			m_notifications.LoadConfig();
 
 			return (char*)m_retstr.c_str();
@@ -10601,6 +10608,16 @@ namespace http {
 				else if (Key == "WebTheme")
 				{
 					root["WebTheme"] = sValue;
+				}
+				else if (Key == "MyDomoticzInstanceId") {
+					root["MyDomoticzInstanceId"] = sValue;
+				}
+				else if (Key == "MyDomoticzUserId") {
+					root["MyDomoticzUserId"] = sValue;
+				}
+				else if (Key == "MyDomoticzPassword") {
+					std::string tmp = base64_decode(sValue);
+					root["MyDomoticzPassword"] = tmp;
 				}
 			}
 		}
