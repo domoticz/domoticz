@@ -30,6 +30,7 @@ namespace http {
 
 			// RK: TODO
 			std::vector<CProxyManager*> proxymanagerCollection;
+			int GetNrMyDomoticzThreads();
 };
 
 	} // end namespace server

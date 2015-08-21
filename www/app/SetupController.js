@@ -493,6 +493,15 @@ define(['app'], function (app) {
 			  if (typeof data.SecOnDelay != 'undefined') {
 				$("#sectable #SecOnDelay").val(data.SecOnDelay);
 			  }
+			  if (typeof data.MyDomoticzInstanceId != 'undefined') {
+				$("#mydomoticztable #mydomoticzinstanceidid").text(data.MyDomoticzInstanceId);
+			  }
+			  if (typeof data.MyDomoticzUserId != 'undefined') {
+				$("#mydomoticztable #MyDomoticzUserId").val(data.MyDomoticzUserId);
+			  }
+			  if (typeof data.MyDomoticzPassword != 'undefined') {
+				$("#mydomoticztable #MyDomoticzPassword").val(data.MyDomoticzPassword);
+			  }
 			 }
 		  });
 		}
@@ -543,7 +552,7 @@ define(['app'], function (app) {
 				return;
 			}
 		  }
-
+		  
 		  $.post("storesettings.webem", $("#settings").serialize(), function(data) {
 				$scope.$apply(function() {
 					$window.location = '/#Dashboard';

@@ -3,6 +3,8 @@
 #include "request.hpp"
 #include "reply.hpp"
 #include "request_parser.hpp"
+#include "../main/SQLHelper.h"
+#include "../webserver/Base64.h"
 
 CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm)
     : _socket(io_service, context),
@@ -10,8 +12,19 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 	  doStop(false)
 {
 	_log.Log(LOG_NORM, "PROXY: Connecting.");
-	_apikey = "C5BBD25B487957E"; // todo: get from sql preferences
-	_instanceid = "6685"; // todo: also a sql preference
+	_apikey = "";
+	_instanceid = "";
+	_password = "";
+	m_sql.GetPreferencesVar("MyDomoticzInstanceId", _instanceid);
+	m_sql.GetPreferencesVar("MyDomoticzUserId", _apikey);
+	m_sql.GetPreferencesVar("MyDomoticzPassword", _password);
+	if (_password != "") {
+		_password = base64_decode(_password);
+	}
+	if (_apikey == "" || _password == "") {
+		doStop = true;
+		return;
+	}
 	m_pWebEm = webEm;
 	Reconnect();
 }
@@ -30,7 +43,7 @@ void CProxyClient::Reconnect()
 	_log.Log(LOG_NORM, "PROXY: we have an iterator");
 	_socket.lowest_layer().async_connect(endpoint,
 		boost::bind(&CProxyClient::handle_connect, this,
-		boost::asio::placeholders::error, ++iterator));
+		boost::asio::placeholders::error, iterator));
 }
 
 void CProxyClient::handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
@@ -82,7 +95,7 @@ void CProxyClient::LoginToService()
 	CValueLengthPart parameters;
 	parameters.AddPart((void *)_apikey.c_str(), _apikey.length() + 1);
 	parameters.AddPart((void *)_instanceid.c_str(), _instanceid.length() + 1);
-	// todo: extra password?
+	parameters.AddPart((void *)_password.c_str(), _password.length() + 1);
 	MyWrite(PDU_AUTHENTICATE, &parameters);
 }
 
@@ -237,15 +250,23 @@ void CProxyClient::HandleRequest(ProxyPdu *pdu)
 
 void CProxyClient::HandleAssignkey(ProxyPdu *pdu)
 {
+	std::string old_id;
 	// get our new api key
 	CValueLengthPart parameters(pdu);
 	char *newapi;
 	size_t newapilen;
 	parameters.GetNextPart((void **)&newapi, &newapilen);
 	_log.Log(LOG_NORM, "PROXY: We were assigned an instance id: %s.\n", newapi);
-	_instanceid = newapi;
-	// todo: save to sql preferences
+	prefs_mutex.lock();
+	m_sql.GetPreferencesVar("MyDomoticzInstanceId", old_id);
+	if (old_id == "") {
+		// check if another thread meanwhile also didn't get an instance id
+		_instanceid = newapi;
+		m_sql.UpdatePreferencesVar("MyDomoticzInstanceId", _instanceid);
+	}
+	prefs_mutex.unlock();
 	free(newapi);
+	// re-login with the new instance id
 	LoginToService();
 }
 
@@ -331,6 +352,10 @@ void CProxyClient::Stop()
 	_socket.lowest_layer().close();
 }
 
+CProxyClient::~CProxyClient()
+{
+}
+
 CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm)
 {
 	proxyclient = NULL;
@@ -339,11 +364,14 @@ CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *
 
 CProxyManager::~CProxyManager()
 {
+	//end_mutex.lock();
+	// todo: throws access violation
 	if (proxyclient) delete proxyclient;
 }
 
 int CProxyManager::Start()
 {
+	end_mutex.lock();
 	m_thread = new boost::thread(boost::bind(&CProxyManager::StartThread, this));
 	return 1;
 }
@@ -351,8 +379,6 @@ int CProxyManager::Start()
 void CProxyManager::StartThread()
 {
 	try {
-		boost::asio::io_service io_service;
-
 		boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::sslv23);
 #if 0	
 		ctx.set_verify_mode(boost::asio::ssl::context::verify_peer);
@@ -367,16 +393,16 @@ void CProxyManager::StartThread()
 	}
 	catch (std::exception& e)
 	{
-		_log.Log(LOG_ERROR, "PROXY: StartMe(): Exception: %s", e.what());
+		_log.Log(LOG_ERROR, "PROXY: StartThread(): Exception: %s", e.what());
 	}
 }
 
 void CProxyManager::Stop()
 {
+	io_service.stop();
 	proxyclient->Stop();
 	_log.Log(LOG_ERROR, "PROXY: waiting for thread.join");
 	m_thread->interrupt();
 	m_thread->join();
-
 }
 

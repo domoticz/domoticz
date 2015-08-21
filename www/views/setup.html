@@ -227,23 +227,60 @@
 									<br>			
 								</div>
 							</div>
-							<div id="NewHardware">
-								<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
-								<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td colspan="2">
-											<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
-										</td>
-									</tr>
-									<tr>
-										<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
-									</tr>
-									<tr>
-										<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"/> <span data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</span></td>
-									</tr>
-								</table>
+							<div class="row-fluid">
+								<div class="span6">
+									<div id="NewHardware">
+										<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
+										<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
+											<tr>
+												<td colspan="2">
+													<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
+												</td>
+											</tr>
+											<tr>
+												<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
+											</tr>
+											<tr>
+												<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"/> <span data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</span></td>
+											</tr>
+										</table>
+									</div>
+								</div>
+								<div class="span6">
+									<div id="MyDomoticzTab">
+										<h2><span data-i18n="MyDomoticzSettings">MyDomoticz settings</span>:</h2>
+										<table class="display" id="mydomoticztable" border="0" cellpadding="0" cellspacing="0">
+											<tr>
+												<td>
+													<span data-i18n="MyInstanceId">MyDomoticz Instance ID</span>
+												</td>
+												<td>
+													<span id="mydomoticzinstanceidid">(none)</span>
+												</td>
+											</tr>
+											<tr>
+												<td>
+													<span data-i18n="MyApid">MyDomoticz User ID</span>
+												</td>
+												<td>
+													<span id="mydomoticzuseridid"><input type="text" name="MyDomoticzUserId" id="MyDomoticzUserId" value="" class="text ui-widget-content ui-corner-all" /></span>
+												</td>
+											</tr>
+											<tr>
+												<td>
+													<span data-i18n="Password">MyDomoticz password</span>
+												</td>
+												<td>
+													<span id="mydomoticzpasswordid"><input type="password" name="MyDomoticzPassword" id="MyDomoticzPassword" value="" class="text ui-widget-content ui-corner-all" /></span>
+												</td>
+											</tr>
+										</table>
+										<br/>
+										To register for a MyDomoticz account, click <a href="https://my.domoticz.com/login" target="_blank">here</a>.
+									</div>
+								</div>
 							</div>
-							<br>			
+							<br/>			
 							<div id="ActiveTabs">
 								<h2><span data-i18n="ActiveMenus"></span>:</h2>
 								<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
