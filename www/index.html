@@ -512,7 +512,7 @@ $(document).ready(function() {
 	<div id="dialog-camera-live" style="display:none;">
 		<img id="camfeed" name="camfeed" onload="load_cam_video()" src="images/camera_default.png" width="600" height="337" style="border: 1px solid #1E2832;">
 	</div>
-	<div id="dialog-media-remote" style="display:none; ">
+	<div id="dialog-media-remote" style="display:none;">
 		<style>
 			.remotehoverable
 				{
@@ -521,7 +521,7 @@ $(document).ready(function() {
 			.remotehoverable:hover
 				{
 					cursor: pointer;
-					fill: #6fc4df;
+					fill: #289fe3;
 				}
 			.remoteshadow
 				{
@@ -539,8 +539,16 @@ $(document).ready(function() {
 					font-stretch: ultra-condensed ;
 					pointer-events: none;
 				}
+			.MediaRemote
+				{
+				    position:absolute;
+					top:0;
+					bottom:0;
+					left:0;
+					right:0;
+				}
 		</style>
-		<svg id="MediaRemote" class="MediaRemote" height="100%" viewBox="0 0 850 1030" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
+		<svg id="MediaRemote" class="MediaRemote" viewBox="50 -150 900 1875" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
 			<defs>
 				<radialGradient id="grad1" cx="50%" cy="20%" r="50%" fx="50%" fy="50%">
 					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
@@ -554,84 +562,207 @@ $(document).ready(function() {
 				<radialGradient id="grad4" cx="80%" cy="50%" r="50%" fx="50%" fy="50%">
 					<stop offset="0%" style="stop-color:#cbcccb;" /><stop offset="100%" style="stop-color:#989898;" />
 				</radialGradient>
+				<path id="btnTriangle" d="M100 -140 l370 0 S  110,-100 60 250 L60 -100 S 60,-140 100 -140z" />
+				<path id="btnArrow" d="M190 45 l108 108 s -110,140 0,295 l-108 108 s -205,-235 0,-510z" />
+				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z"/>
+				<path id="symHouse" d="M0 0 l0 -30 l-10 0 l30 -30 l30 30 l-10 0 l0 30 l-10 0 l0 -20 l-10,0 l0 20 m-15 -35 l0 -22 l5 0 l0 20z"/>
+				<g id="symFullscreen" stroke="#393a39" stroke-width="10" stroke-linecap="round">
+					<line x1="0" y1="0" x2="80" y2="0" stroke-width="5"/>
+					<line x1="80" y1="0" x2="80" y2="80" stroke-width="5"/>
+					<line x1="25" y1="50" x2="62" y2="18" />
+					<line x1="65" y1="35" x2="65" y2="15" />
+					<line x1="45" y1="15" x2="65" y2="15" />
+				</g>
+				<g id="symMenu" stroke="#393a39" stroke-width="10" stroke-linecap="round">
+					<rect x="0" y="0" width="80" height="80" rx="20" ry="20" stroke-width="5" style="fill:none;" />
+					<line x1="15" y1="20" x2="65" y2="20" />
+					<line x1="15" y1="40" x2="65" y2="40" />
+					<line x1="15" y1="60" x2="65" y2="60" />
+				</g>
+				<path id="symBack" d="M30 0 l-40 40 l40 40 l0 -20 l 40 0 l 0 -40 l -40 0z" stroke="#393a39" stroke-width="8" />
+				<g id="symI" stroke="#393a39" stroke-width="8" stroke-linecap="round">
+					<circle cx="38" cy="5" r="12" class="remoteshadow" stroke-width="5" style="fill:none;" />
+					<rect x="30" y="30" width="20" height="50" stroke-width="5" style="fill:#393a39;" />
+					<line x1="15" y1="30" x2="48" y2="30" />
+					<line x1="15" y1="80" x2="65" y2="80" />
+				</g>
+				<g id="symSubtitle" stroke="#393a39" stroke-width="10" stroke-linecap="round">
+					<rect x="0" y="0" width="120" height="80" rx="20" ry="20" stroke-width="5" style="fill:none;" />
+					<line x1="35" y1="65" x2="85" y2="65" />
+				</g>
 			</defs>
-			<!-- <circle cx="500" cy="500" r="400" stroke="black" fill="white"/>
-			<circle cx="500" cy="500" r="250" stroke="black" fill="white"/>
-			<path class="remotehoverable" stroke="black" d="M150 150 L850 850 z"/>
-			<path class="remotehoverable" stroke="black" d="M850 150 L150 850 z"/> -->
-			<g transform="translate(-75,-100)">
+			<g>
 				<g>
 					<g>
-						<circle cx="500" cy="512" r="200" class="remoteshadow" />
-						<circle cx="500" cy="500" r="200" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('SELECT');">
+						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(1,10)"/>
+						<use xlink:href="#btnTriangle" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Home');">
+							<title>Home</title>
+						</use>
+						<use xlink:href="#symHouse" class="remoteshadow" transform="translate(120,-30) scale(1.5)"/>
+					</g>
+					<g transform="rotate(90,500,300)">
+						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(10,-1)"/>
+						<use xlink:href="#btnTriangle" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Info');">
+							<title>Details</title>
+						</use>
+					</g>
+					<use xlink:href="#symI" class="remoteshadow" transform="translate(815,-100)"/>
+					<g transform="rotate(180,500,300)">
+						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(-1,-10)"/>
+						<use xlink:href="#btnTriangle" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('ContextMenu');">
+							<title>Menu</title>
+						</use>
+					</g>
+					<use xlink:href="#symMenu" class="remoteshadow" transform="translate(815,625)"/>
+					<g transform="rotate(270,500,300)">
+						<use xlink:href="#btnTriangle" class="remoteshadow" transform="translate(-10,1)"/>
+						<use xlink:href="#btnTriangle" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Back');">
+							<title>Back</title>
+						</use>
+					</g>
+					<use xlink:href="#symBack" class="remoteshadow" transform="translate(107,625)"/>
+					<g>
+						<circle cx="500" cy="312" r="200" class="remoteshadow" />
+						<circle cx="500" cy="300" r="200" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Select');">
 							<title>Select</title>
 						</circle>
-						<text x="500" y="500" class="remotetext"style="font-weight: bold;">OK</text>
+						<text x="500" y="320" class="remotetext"style="font-weight: bold;">OK</text>
 					</g>
 					<g>
-						<path class="remoteshadow" d="M190 255 l108 108 s -110,140 0,295 l-108 108 s -200,-235 0,-505 z" />
-						<path class="remotehoverable" d="M190 245 l108 108 s -110,140 0,295 l-108 108 s -200,-235 0,-505 z" fill="url(#grad1)" onclick="javascript:click_media_remote('LEFT');" >
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(1,10)" />
+						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Left');" >
 							<title>Left</title>
-						</path>
-						<path transform="rotate(90,230,560)" d="m 230,580 -60,60 -60,-60 z" class="remoteshadow"/>
+						</use>
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
 					</g>
-					<g transform="rotate(180,500,500)">
-						<path class="remoteshadow" d="M190 235 l108 108 s -110,140 0,295 l-108 108 s -200,-235 0,-505 z" />
-						<path class="remotehoverable" d="M190 245 l108 108 s -110,140 0,295 l-108 108 s -200,-235 0,-505 z" fill="url(#grad2)" onclick="javascript:click_media_remote('RIGHT');" >
+					<g transform="rotate(180,500,300)">
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-1,-10)"/>
+						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad2)" onclick="javascript:click_media_remote('Right');" >
 							<title>Right</title>
-						</path>	
-						<path transform="rotate(90,230,560)" d="m 230,580 -60,60 -60,-60 z" class="remoteshadow"/>
+						</use>	
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
 					</g>
-					<g transform="rotate(90,500,500)">
-						<path class="remoteshadow"    d="M200 245 l108 108 s -110,140 0,295 l-108 108 s -200,-235 0,-505 z" />
-						<path class="remotehoverable" d="M190 245 l108 108 s -110,140 0,295 l-108 108 s -200,-235 0,-505 z" fill="url(#grad3)" onclick="javascript:click_media_remote('UP');" >
+					<g transform="rotate(90,500,300)">
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(10,-1)"/>
+						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Up');" >
 							<title>Up</title>
-						</path>	
-						<path transform="rotate(90,230,560)" d="m 230,580 -60,60 -60,-60 z" class="remoteshadow"/>
+						</use>	
+						<use xlink:href="#symTriangle" class="remoteshadow"  transform="rotate(90,230,560)"/>
 					</g>
-					<g transform="rotate(270,500,500)">
-						<path class="remoteshadow"    d="M180 245 l108 108 s -110,140 0,295 l-108 108 s -200,-235 0,-505 z" />
-						<path class="remotehoverable" d="M190 245 l108 108 s -110,140 0,295 l-108 108 s -200,-235 0,-505 z" fill="url(#grad4)" onclick="javascript:click_media_remote('DOWN');" >
+					<g transform="rotate(270,500,300)">
+						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-10,1)"/>
+						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad4)" onclick="javascript:click_media_remote('Down');" >
 							<title>Down</title>
-						</path>	
-						<path transform="rotate(90,230,560)" d="m 230,580 -60,60 -60,-60 z" class="remoteshadow"/>
+						</use>	
+						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
 					</g>
 				</g>
 				<g transform="translate(0,20)">
 					<g>
-						<circle cx="500" cy="1010" r="100" class="remoteshadow" /> 
-						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('PLAYPAUSE');">
-							<title>Play/Pause</title>
-						</circle>
-						<path d="m 450 960 0,80 40,-40 m 10 -35 l0 70 l15 0 l0 -70 m 10 0 l0 70 l15 0 l0 -70 z" class="remoteshadow"/>
+						<g>
+							<circle cx="501" cy="870" r="110" class="remoteshadow" /> 
+							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('FullScreen');">
+								<title>Fullscreen</title>
+							</circle>
+							<use xlink:href="#symFullscreen" class="remoteshadow" transform="translate(460,820)"/>
+						</g>
+						<g>
+							<circle cx="501" cy="1110" r="110" class="remoteshadow" /> 
+							<circle cx="500" cy="1100" r="110" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('ShowSubtitles');">
+								<title>Subtitles</title>
+							</circle>
+							<use xlink:href="#symSubtitle" class="remoteshadow" transform="translate(440,1060)"/>
+						</g>
+						<g>
+							<circle cx="501" cy="1350" r="110" class="remoteshadow" /> 
+							<circle cx="500" cy="1340" r="110" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Stop');">
+								<title>Stop</title>
+							</circle>
+							<path class="remoteshadow" d="m 460 1300 l0,80 l80,0 l0,-80z" />
+						</g>
 					</g>
-					<g>
-						<path class="remoteshadow" d="M272 940 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
-						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad1)" onclick="javascript:click_media_remote('FASTFORWARD');" >
-							<title>Rewind</title>
-						</path>
-						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
+					<g transform="rotate(90,500,1000) translate(50,240) scale(1.1)">
+						<g>
+							<circle cx="510" cy="999" r="100" class="remoteshadow" /> 
+							<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad3)"  onclick="javascript:click_media_remote('Channels');">
+								<title>Channel</title>
+							</circle>
+						</g>
+						<g>
+							<path class="remoteshadow" d="M272 929 l150 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" />
+							<path class="remotehoverable" d="M272 930 l140 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" fill="url(#grad3)" onclick="javascript:click_media_remote('ChannelUp');" >
+								<title>Channel Up</title>
+							</path>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+						</g>
+						<g transform="rotate(180,500,1000)">
+							<path class="remoteshadow" d="M265 931 l140 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" />
+							<path class="remotehoverable" d="M265 930 l150 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" fill="url(#grad4)" onclick="javascript:click_media_remote('ChannelDown');" >
+								<title>Channel Down</title>
+							</path>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+						</g>
 					</g>
+					<text x="160" y="1110" class="remotetext"style="font-size: 90px; font-weight: bold;">CH</text>
+					<g transform="rotate(90,500,1000) translate(50,-440) scale(1.1)">
+						<g>
+							<circle cx="510" cy="999" r="100" class="remoteshadow" /> 
+							<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Mute');">
+								<title>Mute</title>
+							</circle>
+							<path class="remoteshadow" d="m 450 970 50,50 50,-50 m -70 20 l0,40 l40,0 l0,-40zz" />
+						</g>
+						<g>
+							<path class="remoteshadow" d="M272 929 l150 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" />
+							<path class="remotehoverable" d="M272 930 l140 0 s -70,70 0,140 l-197 0 s -70,-70 0,-140 z" fill="url(#grad3)" onclick="javascript:click_media_remote('VolumeUp');" >
+								<title>Volume Up</title>
+							</path>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+						</g>
+						<g transform="rotate(180,500,1000)">
+							<path class="remoteshadow" d="M265 931 l140 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" />
+							<path class="remotehoverable" d="M265 930 l150 0 s -70,70 0,140 l-200 0 s -70,-70 0,-140 z" fill="url(#grad4)" onclick="javascript:click_media_remote('VolumeDown');" >
+								<title>Volume Down</title>
+							</path>
+							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
+						</g>
+					</g>
+				</g>
+				<g transform="translate(-50,500) scale(1.1)">
 					<g>
 						<path class="remoteshadow" d="M118 940 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
-						<path class="remotehoverable" d="M118 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad1)" onclick="javascript:click_media_remote('FASTFORWARD');" >
+						<path class="remotehoverable" d="M118 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad1)" onclick="javascript:click_media_remote('BigStepBack');" >
 							<title>Skip Backwards</title>
 						</path>
 						<path transform="rotate(180,158,1000)" d="m 118 960 0,80 40,-40 m 0 -35 l0 70 l15 0 l0 -70 z" class="remoteshadow"/>
 					</g>
-					<g transform="rotate(180,500,1000)">
-						<path class="remoteshadow" d="M272 920 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
-						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad2)" onclick="javascript:click_media_remote('FASTFORWARD');" >
-							<title>Fast Forward</title>
+					<g>
+						<path class="remoteshadow" d="M272 940 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
+						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad1)" onclick="javascript:click_media_remote('Rewind');" >
+							<title>Rewind</title>
 						</path>
 						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
 					</g>
 					<g transform="rotate(180,500,1000)">
 						<path class="remoteshadow" d="M118 920 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
-						<path class="remotehoverable" d="M118 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad2)" onclick="javascript:click_media_remote('FASTFORWARD');" >
+						<path class="remotehoverable" d="M118 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad2)" onclick="javascript:click_media_remote('BigStepForward');" >
 							<title>Skip Forward</title>
 						</path>
 						<path transform="rotate(180,158,1000)" d="m 118 960 0,80 40,-40 m 0 -35 l0 70 l15 0 l0 -70 z" class="remoteshadow"/>
+					</g>
+					<g transform="rotate(180,500,1000)">
+						<path class="remoteshadow" d="M272 920 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
+						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#grad2)" onclick="javascript:click_media_remote('FastForward');" >
+							<title>Fast Forward</title>
+						</path>
+						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
+					</g>
+					<g>
+						<circle cx="500" cy="1010" r="100" class="remoteshadow" /> 
+						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('PlayPause');">
+							<title>Play/Pause</title>
+						</circle>
+						<path d="m 450 960 0,80 40,-40 m 10 -35 l0 70 l15 0 l0 -70 m 10 0 l0 70 l15 0 l0 -70 z" class="remoteshadow"/>
 					</g>
 				</g>
 			</g>
