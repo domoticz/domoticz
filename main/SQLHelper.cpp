@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 74
+#define DB_VERSION 75
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1404,6 +1404,15 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 74)
 		{
+			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
+			{
+				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
+			}
+		}
+		if (dbversion < 75)
+		{
+			safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE ([Type]=%d)",
+				"Change_user_pass", "", HTYPE_THERMOSMART);
 			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
 			{
 				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
