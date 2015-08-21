@@ -17,4 +17,7 @@ IF EXIST ..\appversion.h (
 )
 
 :PROCESS
-mv ../appversion_temp.h ../appversion.h
+cd ..
+copy /Y appversion_temp.h appversion.h
+del appversion_temp.h
+

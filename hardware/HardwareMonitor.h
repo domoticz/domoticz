@@ -38,7 +38,7 @@ private:
 	void InitWMI();
 	void ExitWMI();
 	bool IsOHMRunning();
-	void RunWMIQuery(const char* qTable, const char* qType);
+	void RunWMIQuery(const char* qTable, const std::string &qType);
 	IWbemLocator *pLocator; 
 	IWbemServices *pServicesOHM;
 	IWbemServices *pServicesSystem;

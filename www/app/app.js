@@ -577,10 +577,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			var suntext;
 			var bIsMobile=$.myglobals.ismobile;
 			if (bIsMobile == true) {
-				suntext=$.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet;
+				suntext='<div><font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' +  '&#9660;' + sunSet + '</div>';
 			}
 			else {
-				suntext=ServerTime + ', ' + $.t('SunRise') + ': ' + sunRise + ', ' + $.t('SunSet') + ': ' + sunSet;
+				//$.t('SunRise') + $.t('SunSet')
+				suntext='<div>'+ServerTime + ' <font color="yellow">&#9728;</font>' + '&#9650;' + sunRise + ' ' +  '&#9660;' + sunSet + '</div>';
 			}
 			$("#timesun").html(suntext);
         }

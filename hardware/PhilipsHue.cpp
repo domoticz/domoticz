@@ -89,7 +89,7 @@ bool CPhilipsHue::StopHardware()
 void CPhilipsHue::Do_Work()
 {
 	int msec_counter = 0;
-	int sec_counter = 0;
+	int sec_counter = HUE_POLL_INTERVAL-2;
 
 	_log.Log(LOG_STATUS,"Philips Hue: Worker started...");
 
@@ -460,6 +460,9 @@ bool CPhilipsHue::GetLightStates()
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
+#ifdef DEBUG_PhilipsHue
+	sResult= ReadFile("E:\\philipshue.jon");
+#else
 	std::stringstream sstr2;
 	sstr2 << "http://" << m_IPAddress
 		<< ":" << m_Port
@@ -471,6 +474,10 @@ bool CPhilipsHue::GetLightStates()
 		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
 		return false;
 	}
+#endif
+#ifdef DEBUG_PhilipsHue2
+	SaveString2Disk(sResult, "E:\\philipshue.jon");
+#endif
 
 	Json::Value root;
 
@@ -496,9 +503,11 @@ bool CPhilipsHue::GetLightStates()
 
 	int totLights = root["lights"].size();
 	char szNode[10];
-	for (int ii = 0; ii < totLights; ii++)
+	for (int ii = 0; ii < 255; ii++)
 	{
 		sprintf(szNode, "%d", ii + 1);
+		if (root["lights"][szNode].empty())
+			continue;
 		std::string ltype = root["lights"][szNode]["type"].asString();
 		if (
 			(ltype == "Dimmable plug-in unit") ||
@@ -575,7 +584,6 @@ bool CPhilipsHue::GetLightStates()
 				InsertUpdateSwitch(ii + 1, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, root["lights"][szNode]["name"].asString());
 		}
 	}
-
 	return true;
 }
 

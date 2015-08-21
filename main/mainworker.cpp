@@ -431,7 +431,8 @@ bool MainWorker::GetSunSettings()
 	sunrise=szRiseSet;
 	sprintf(szRiseSet,"%02d:%02d:00",sresult.SunSetHour,sresult.SunSetMin);
 	sunset=szRiseSet;
-	std::string riseset=sunrise+";"+sunset;
+
+	std::string riseset=sunrise.substr(0, sunrise.size()-3)+";"+sunset.substr(0, sunrise.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
 		m_LastSunriseSet = riseset;
@@ -1104,8 +1105,8 @@ void MainWorker::Do_Work()
 
 			//First download the checksum file
 			std::string outfile = szStartupFolder + "update.tgz.sha256sum";
-			m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
-			if (m_bHaveDownloadedDomoticzUpdateSuccessFull)
+			bool bHaveDownloadedChecksumSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
+			if (bHaveDownloadedChecksumSuccessFull)
 			{
 				//Next download the actual update
 				outfile = szStartupFolder + "update.tgz";

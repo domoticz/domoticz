@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 74
+#define DB_VERSION 75
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1330,7 +1330,6 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Hardware ADD COLUMN [SerialPort] VARCHAR(50) DEFAULT ('')");
 
 			bool bUseDirectPath = false;
-			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
 
 			//Convert all serial hardware to use the new column
 			std::stringstream szQuery;
@@ -1405,6 +1404,15 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 74)
 		{
+			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
+			{
+				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
+			}
+		}
+		if (dbversion < 75)
+		{
+			safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE ([Type]=%d)",
+				"Change_user_pass", "", HTYPE_THERMOSMART);
 			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
 			{
 				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
@@ -2062,6 +2070,7 @@ std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, .
 	va_list args;
 	va_start(args, fmt);
 	char *zQuery = sqlite3_vmprintf(fmt, args);
+	va_end(args);
 	if (!zQuery)
 	{
 		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
@@ -2070,7 +2079,6 @@ std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, .
 	}
 	std::vector<std::vector<std::string> > results = query(zQuery);
 	sqlite3_free(zQuery);
-	va_end(args);
 	return results;
 }
 
@@ -2128,11 +2136,18 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string &szQu
 std::vector<std::vector<std::string> > CSQLHelper::safe_queryBlob(const char *fmt, ...)
 {
 	va_list args;
+	std::vector<std::vector<std::string> > results;
 	va_start(args, fmt);
 	char *zQuery = sqlite3_vmprintf(fmt, args);
-	std::vector<std::vector<std::string> > results = queryBlob(zQuery);
-	sqlite3_free(zQuery);
 	va_end(args);
+	if (!zQuery)
+	{
+		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+		std::vector<std::vector<std::string> > results;
+		return results;
+	}
+	results = queryBlob(zQuery);
+	sqlite3_free(zQuery);
 	return results;
 }
 
@@ -2920,8 +2935,6 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	if (!m_dbase)
 		return;
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ROWID FROM BackupLog WHERE (Key='%q')",Key);
 	if (result.size()==0)
@@ -2936,6 +2949,7 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	else
 	{
 		//Update
+		unsigned long long ID = 0;
 		std::stringstream s_str( result[0][0] );
 		s_str >> ID;
 
@@ -3082,8 +3096,6 @@ void CSQLHelper::UpdateTemperatureLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
@@ -3272,8 +3284,6 @@ void CSQLHelper::UpdateRainLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeRAIN);
 	if (result.size()>0)
@@ -3338,8 +3348,6 @@ void CSQLHelper::UpdateWindLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,DeviceID, Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
@@ -3423,8 +3431,6 @@ void CSQLHelper::UpdateUVLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
 	if (result.size()>0)
@@ -3495,8 +3501,6 @@ void CSQLHelper::UpdateMeter()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
@@ -3741,8 +3745,6 @@ void CSQLHelper::UpdateMultiMeter()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
 		pTypeP1Power,
@@ -3868,8 +3870,6 @@ void CSQLHelper::UpdatePercentageLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
 		pTypeGeneral,sTypePercentage
@@ -3932,8 +3932,6 @@ void CSQLHelper::UpdateFanLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
@@ -4912,13 +4910,11 @@ void CSQLHelper::DeleteCamera(const std::string &idx)
 
 void CSQLHelper::DeletePlan(const std::string &idx)
 {
-	std::vector<std::vector<std::string> > result;
 	safe_query("DELETE FROM Plans WHERE (ID == '%q')",idx.c_str());
 }
 
 void CSQLHelper::DeleteEvent(const std::string &idx)
 {
-	std::vector<std::vector<std::string> > result;
 	safe_query("DELETE FROM EventRules WHERE (EMID == '%q')",idx.c_str());
 	safe_query("DELETE FROM EventMaster WHERE (ID == '%q')",idx.c_str());
 }
@@ -5996,7 +5992,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
-	result = safe_query(
+	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
 		varname.c_str(),
 		typei,

@@ -54,19 +54,18 @@ std::string ReadFile(std::string filename)
 
 CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password)
 {
-	std::vector<std::string> results;
-	StringSplit(Username, "*;", results);
-	if (results.size()<4)
+	m_UserName = "";
+	if ((Password == "secret")|| (Password.empty()))
 	{
-		_log.Log(LOG_ERROR, "Thermosmart: Invalid login credentials provided");
-		return;
+		_log.Log(LOG_ERROR, "Thermosmart: Please update your username/password!...");
 	}
-
-	m_UserName = results[0];
-	m_Password = results[1];
-	m_ClientID = results[2];
-	m_ClientSecret = results[3];
-
+	else
+	{
+		m_UserName = Username;
+		m_Password = Password;
+		stdstring_trim(m_UserName);
+		stdstring_trim(m_Password);
+	}
 	m_HwdID=ID;
 	Init();
 }
@@ -169,6 +168,8 @@ bool CThermosmart::Login()
 	{
 		Logout();
 	}
+	if (m_UserName.empty())
+		return false;
 	m_AccessToken = "";
 	m_ThermostatID = "";
 
@@ -194,7 +195,7 @@ bool CThermosmart::Login()
 */
 	//# 2. Get Authorize Dialog
 	sURL = THERMOSMART_AUTHORISE_PATH;
-	stdreplace(sURL, "client123", m_ClientID);
+	stdreplace(sURL, "client123", "api-rob-b130d8f5123bf24b");
 	ExtraHeaders.clear();
 	if (!HTTPClient::GET(sURL, sResult))
 	{
@@ -247,8 +248,8 @@ bool CThermosmart::Login()
 	szPostdata = "grant_type=authorization_code&code=" + CODE + "&redirect_uri=http://clientapp.com/done";
 	sURL = THERMOSMART_TOKEN_PATH;
 
-	stdreplace(sURL, "username", m_ClientID);
-	stdreplace(sURL, "password", m_ClientSecret);
+	stdreplace(sURL, "username", "api-rob-b130d8f5123bf24b");
+	stdreplace(sURL, "password", "c1d91661eef0bc4fa2ac67fd");
 
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult, false))
 	{
