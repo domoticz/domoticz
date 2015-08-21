@@ -38,6 +38,7 @@ namespace http {
 #else
 			serverCollection.resize(1);
 #endif
+			our_serverpath = serverpath;
 			plainServer_ = new CWebServer();
 			serverCollection[0] = plainServer_;
 			bRet |= plainServer_->StartServer(listenaddress, listenport, serverpath, bIgnoreUsernamePassword);
@@ -50,15 +51,8 @@ namespace http {
 #endif
 
 #if 1
-			// RK: TODO
-			//m_sql.UpdatePreferencesVar("MyDomoticzInstanceId", "");
-			const int connections = GetNrMyDomoticzThreads();
-			proxymanagerCollection.resize(connections);
-			for (int i = 0; i < connections; i++) {
-				proxymanagerCollection[i] = new CProxyManager(serverpath, plainServer_->m_pWebEm);
-				proxymanagerCollection[i]->Start();
-			}
-			_log.Log(LOG_STATUS, "Proxymanager started.");	
+			RestartProxy();
+			_log.Log(LOG_STATUS, "Proxymanager started.");
 #endif
 
 			return bRet;
@@ -72,6 +66,23 @@ namespace http {
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
 			}
+		}
+
+		void CWebServerHelper::RestartProxy() {
+			// stop old threads first
+			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
+				(*it)->Stop();
+				delete (*it);
+			}
+
+			// restart threads
+			const int connections = GetNrMyDomoticzThreads();
+			proxymanagerCollection.resize(connections);
+			for (int i = 0; i < connections; i++) {
+				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm);
+				proxymanagerCollection[i]->Start();
+			}
+			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
 		void CWebServerHelper::SetAuthenticationMethod(int amethod)

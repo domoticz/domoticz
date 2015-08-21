@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WebServer.h"
+#include "WebServerHelper.h"
 #include <boost/bind.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <iostream>
@@ -91,6 +92,8 @@ static const _tGuiLanguage guiLanguage[] =
 
 	{ NULL, NULL }
 };
+
+extern http::server::CWebServerHelper m_webservers;
 
 //#define DEBUG_DOWNLOAD
 
@@ -6481,12 +6484,17 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(m_pWebEm->FindValue("FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(m_pWebEm->FindValue("FloorplanInactiveOpacity").c_str()));
 
-			std::string md_userid, md_password;
+			std::string md_userid, md_password, pf_userid, pf_password;
+			m_sql.GetPreferencesVar("MyDomoticzUserId", pf_userid);
+			m_sql.GetPreferencesVar("MyDomoticzPassword", pf_password);
 			md_userid = m_pWebEm->FindValue("MyDomoticzUserId");
 			md_password = m_pWebEm->FindValue("MyDomoticzPassword");
 			m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
 			md_password = base64_encode((const unsigned char *)md_password.c_str(), md_password.length());
 			m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
+			if (md_userid != pf_userid || md_password != pf_password) {
+				m_webservers.RestartProxy();
+			}
 
 			m_notifications.LoadConfig();
 
