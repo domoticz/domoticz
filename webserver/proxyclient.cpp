@@ -11,7 +11,6 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 		_io_service(io_service),
 	  doStop(false)
 {
-	_log.Log(LOG_NORM, "PROXY: Connecting.");
 	_apikey = "";
 	_instanceid = "";
 	_password = "";
@@ -25,6 +24,7 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 		doStop = true;
 		return;
 	}
+	_log.Log(LOG_NORM, "PROXY: Connecting.");
 	m_pWebEm = webEm;
 	Reconnect();
 }
