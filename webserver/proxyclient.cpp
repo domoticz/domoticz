@@ -11,8 +11,8 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 {
 	_log.Log(LOG_NORM, "PROXY: Connecting.");
 	_apikey = "C5BBD25B487957E"; // todo: get from sql preferences
-	_instanceid = "xxx"; // todo: also a sql preference
-    m_pWebEm = webEm;
+	_instanceid = "6685"; // todo: also a sql preference
+	m_pWebEm = webEm;
 	Reconnect();
 }
 
