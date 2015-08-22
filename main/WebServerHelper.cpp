@@ -26,7 +26,7 @@ namespace http {
 			if (plainServer_) delete plainServer_;
 		}
 
-		bool CWebServerHelper::StartServers(std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword)
+		bool CWebServerHelper::StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword)
 		{
 			bool bRet = false;
 

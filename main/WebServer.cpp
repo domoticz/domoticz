@@ -245,7 +245,7 @@ namespace http {
 			}
 		}
 
-		bool CWebServer::StartServer(std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
+		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
 		{
 			StopServer();
 
@@ -259,12 +259,13 @@ namespace http {
 
 			int tries = 0;
 			bool exception = false;
+			std::string listen_address = listenaddress;
 
 			do {
 				try {
 					exception = false;
 					m_pWebEm = new http::server::cWebem(
-						listenaddress.c_str(),						// address
+						listen_address.c_str(),						// address
 						listenport.c_str(),							// port
 						serverpath.c_str(), secure_cert_file, secure_cert_passphrase);
 				}
@@ -272,10 +273,10 @@ namespace http {
 					exception = true;
 					switch (tries) {
 					case 0:
-						listenaddress = "::";
+						listen_address = "::";
 						break;
 					case 1:
-						listenaddress = "0.0.0.0";
+						listen_address = "0.0.0.0";
 						break;
 					case 2:
 						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
@@ -288,8 +289,8 @@ namespace http {
 					tries++;
 				}
 			} while (exception);
-			if (listenaddress != "0.0.0.0" && listenaddress != "::")
-				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listenaddress.c_str(), listenport.c_str());
+			if (listen_address != "0.0.0.0" && listen_address != "::")
+				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
 			else
 				_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
 
