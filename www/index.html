@@ -149,9 +149,8 @@ function CheckForUpdate(showdialog) {
 			};
 			
 			if (data.HaveUpdate == true) {
-				window.my_config.hasupdatesupport = true;
 				if (showdialog) {
-					bootbox.confirm($.t("Update Available !... Update Now?"), function(result) {
+					bootbox.confirm($.t("Update Available !... Update Now?"+"<br>"+$.t('Version')+" #"+data.revision), function(result) {
 						if (result==true) {
 							SwitchLayout('Update');
 						}
@@ -164,12 +163,6 @@ function CheckForUpdate(showdialog) {
 			}
 			else
 			{
-				if (data.IsSupported==false) {
-					window.my_config.hasupdatesupport = false;
-				}
-				else {
-					window.my_config.hasupdatesupport = true;
-				}
 				if (showdialog) {
 					bootbox.alert($.t("No Update Available !..."));
 				}

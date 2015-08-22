@@ -12,7 +12,8 @@ require.config({
         'angularAMD': '../js/angularAMD.min',
         'angular-tree-control': '../js/angular-tree-control',
         'ngDraggable': '../js/ngDraggable',
-		'ui.bootstrap': '../js/ui-bootstrap.min'
+		'ui.bootstrap': '../js/ui-bootstrap.min',
+		'angular.directives-round-progress': '../js/angular-round-progress-directive'
     },
     shim: { 
 		'angularAMD': ['angular'], 
@@ -25,7 +26,8 @@ require.config({
 		'highcharts-ng': ['angular'],
 		'angular-tree-control': ['angular'],
         'ui.bootstrap': ['angular'],
-		'ngDraggable': ['angular']
+		'ngDraggable': ['angular'],
+		'angular.directives-round-progress' : ['angular']
 	},
     deps: ['app']
 });

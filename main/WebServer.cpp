@@ -32,7 +32,6 @@
 #include <algorithm>
 
 #ifndef WIN32
-#include <sys/utsname.h>
 #include <dirent.h>
 #else
 #include "../msbuild/WindowsHelper.h"
@@ -92,8 +91,6 @@ static const _tGuiLanguage guiLanguage[] =
 	{ NULL, NULL }
 };
 
-//#define DEBUG_DOWNLOAD
-
 namespace http {
 	namespace server {
 
@@ -101,12 +98,9 @@ namespace http {
 		{
 			m_pWebEm = NULL;
 			m_bDoStop = false;
-			m_LastUpdateCheck = 0;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
-			m_bHaveUpdate=false;
-			m_iRevision=0;
 		}
 
 
@@ -550,12 +544,6 @@ namespace http {
 			m_bDoStop = false;
 			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
 
-			//Check for update (force)
-			if (m_LastUpdateCheck == 0)
-			{
-				Json::Value root;
-				Cmd_CheckForUpdate(root);
-			}
 			return (m_thread != NULL);
 		}
 
@@ -885,10 +873,7 @@ namespace http {
 		void CWebServer::Cmd_AddHardware(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string name = CURLEncode::URLDecode(m_pWebEm->FindValue("name"));
 			std::string senabled = m_pWebEm->FindValue("enabled");
@@ -1072,10 +1057,7 @@ namespace http {
 		void CWebServer::Cmd_UpdateHardware(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1435,10 +1417,7 @@ namespace http {
 		void CWebServer::Cmd_DeleteHardware(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1486,10 +1465,7 @@ namespace http {
 		void CWebServer::Cmd_AddPlan(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string name = m_pWebEm->FindValue("name");
 			root["status"] = "OK";
@@ -1503,10 +1479,7 @@ namespace http {
 		void CWebServer::Cmd_UpdatePlan(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1530,10 +1503,7 @@ namespace http {
 		void CWebServer::Cmd_DeletePlan(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1618,10 +1588,7 @@ namespace http {
 		void CWebServer::Cmd_AddPlanActiveDevice(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string sactivetype = m_pWebEm->FindValue("activetype");
@@ -1713,10 +1680,7 @@ namespace http {
 		void CWebServer::Cmd_DeletePlanDevice(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1746,10 +1710,7 @@ namespace http {
 		void CWebServer::Cmd_DeleteAllPlanDevices(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1868,12 +1829,6 @@ namespace http {
 			root["hash"] = szAppHash;
 			root["build_time"] = szAppDate;
 
-			//Force Check for update
-			/*
-			Json::Value root2;
-			Cmd_CheckForUpdate(root2);
-			*/
-
 			int nValue = 1;
 			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 
@@ -1884,11 +1839,9 @@ namespace http {
 			}
 			else
 			{
-				root["haveupdate"] = (nValue == 1) ? m_bHaveUpdate : false;
+				root["haveupdate"] = (nValue == 1) ? m_mainworker.m_bHaveUpdate : false;
 			}
-			root["revision"] = m_iRevision;
-
-
+			root["revision"] = m_mainworker.m_iRevision;
 		}
 
 		void CWebServer::Cmd_GetAuth(Json::Value &root)
@@ -1980,6 +1933,9 @@ namespace http {
 
 		void CWebServer::Cmd_GetConfig(Json::Value &root)
 		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
 			root["status"] = "OK";
 			root["title"] = "GetConfig";
 
@@ -1997,8 +1953,7 @@ namespace http {
 				}
 
 			}
-			root["statuscode"] = urights;
-
+			
 			int nValue;
 			std::string sValue;
 
@@ -2601,167 +2556,33 @@ namespace http {
 			}
 			root["statuscode"] = urights;
 
-			utsname my_uname;
-			if (uname(&my_uname) < 0)
+			root["status"] = "OK";
+			root["title"] = "CheckForUpdate";
+			root["HaveUpdate"] = false;
+			root["revision"] = m_mainworker.m_iRevision;
+
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return; //Only admin users may update
+
+			int nValue = 0;
+			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+			if (nValue != 1)
+			{
 				return;
-
-			std::string forced = m_pWebEm->FindValue("forced");
-			bool bIsForced = (forced == "true");
-
-			std::string systemname = my_uname.sysname;
-			std::string machine = my_uname.machine;
-			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-
-			if (machine == "armv6l")
-			{
-				//Seems like old arm systems can also use the new arm build
-				machine = "armv7l";
 			}
 
-#ifdef DEBUG_DOWNLOAD
-			systemname = "linux";
-			machine = "armv7l";
-#endif
+			bool bIsForced = (m_pWebEm->FindValue("forced") == "true");
 
-			if ((systemname == "windows") || ((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
-			{
-				//Only Raspberry Pi (Wheezy)/Ubuntu for now!
-				root["status"] = "OK";
-				root["title"] = "CheckForUpdate";
-				root["HaveUpdate"] = false;
-				root["IsSupported"] = false;
-			}
-			else
-			{
-				time_t atime = mytime(NULL);
-				if (!bIsForced)
-				{
-					if (atime - m_LastUpdateCheck < 12 * 3600)
-					{
-						root["status"] = "OK";
-						root["title"] = "CheckForUpdate";
-						root["HaveUpdate"] = false;
-						root["IsSupported"] = true;
-						return;
-					}
-				}
-				m_LastUpdateCheck = atime;
-
-				int nValue = 0;
-				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-				if (nValue == 1)
-				{
-					m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-					bool bIsBetaChannel = (nValue != 0);
-					std::string szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + systemname + "&machine=" + machine;
-					std::string szHistoryURL = "http://www.domoticz.com/download.php?channel=stable&type=history&system=" + systemname + "&machine=" + machine;
-					if (bIsBetaChannel)
-					{
-						szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + systemname + "&machine=" + machine;
-						szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
-					}
-					std::string revfile;
-
-					if (!HTTPClient::GET(szURL, revfile))
-						return;
-					std::vector<std::string> strarray;
-					StringSplit(revfile, " ", strarray);
-					if (strarray.size() != 3)
-						return;
-					root["status"] = "OK";
-					root["title"] = "CheckForUpdate";
-					root["IsSupported"] = true;
-
-					int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
-					m_iRevision = atoi(strarray[2].c_str());
-					m_bHaveUpdate = (version != m_iRevision);
-#ifdef DEBUG_DOWNLOAD
-					m_bHaveUpdate = true;
-					bIsForced = true;
-#endif
-					root["HaveUpdate"] = m_bHaveUpdate;
-					root["Revision"] = m_iRevision;
-					root["HistoryURL"] = szHistoryURL;
-					root["ActVersion"] = version;
-				}
-				else
-				{
-					root["status"] = "OK";
-					root["title"] = "CheckForUpdate";
-					root["IsSupported"] = false;
-					root["HaveUpdate"] = false;
-				}
-			}
+			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
+			root["revision"] = m_mainworker.m_iRevision;
 		}
 
 		void CWebServer::Cmd_DownloadUpdate(Json::Value &root)
 		{
-			int nValue;
-			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-			bool bIsBetaChannel = (nValue != 0);
-			std::string szURL;
-			std::string revfile;
-
-			utsname my_uname;
-			if (uname(&my_uname) < 0)
+			if (!m_mainworker.StartDownloadUpdate())
 				return;
-
-			std::string forced = m_pWebEm->FindValue("forced");
-			bool bIsForced = (forced == "true");
-			std::string systemname = my_uname.sysname;
-			std::string machine = my_uname.machine;
-			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-
-			if (machine == "armv6l")
-			{
-				//Seems like old arm systems can also use the new arm build
-				machine = "armv7l";
-			}
-
-#ifdef DEBUG_DOWNLOAD
-			systemname = "linux";
-			machine = "armv7l";
-#endif
-
-			if (!bIsBetaChannel)
-			{
-				szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + systemname + "&machine=" + machine;
-			}
-			else
-			{
-				szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + systemname + "&machine=" + machine;
-			}
-			if (!HTTPClient::GET(szURL, revfile))
-				return;
-			std::vector<std::string> strarray;
-			StringSplit(revfile, " ", strarray);
-			if (strarray.size() != 3)
-				return;
-			int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
-			if (version == atoi(strarray[2].c_str()))
-			{
-#ifndef DEBUG_DOWNLOAD
-				return;
-#endif
-			}
-
-			if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
-				return;	//only Raspberry Pi/Ubuntu for now
 			root["status"] = "OK";
 			root["title"] = "DownloadUpdate";
-			std::string downloadURL;
-			std::string checksumURL;
-			if (!bIsBetaChannel)
-			{
-				downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine=" + machine;
-				checksumURL = "http://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + systemname + "&machine=" + machine;
-			}
-			else
-			{
-				downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine=" + machine;
-				checksumURL = "http://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + systemname + "&machine=" + machine;
-			}
-			m_mainworker.GetDomoticzUpdate(downloadURL, checksumURL);
 		}
 
 		void CWebServer::Cmd_DownloadReady(Json::Value &root)
@@ -8976,10 +8797,7 @@ namespace http {
 		void CWebServer::RType_DeleteDevice(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -8994,10 +8812,7 @@ namespace http {
 		void CWebServer::RType_AddScene(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string name = m_pWebEm->FindValue("name");
 			if (name == "")
@@ -9031,10 +8846,7 @@ namespace http {
 		void CWebServer::RType_DeleteScene(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -9049,10 +8861,7 @@ namespace http {
 		void CWebServer::RType_UpdateScene(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string name = m_pWebEm->FindValue("name");
@@ -9530,10 +9339,7 @@ namespace http {
 		void CWebServer::Cmd_SetSceneCode(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string cmnd = m_pWebEm->FindValue("cmnd");
@@ -9573,10 +9379,7 @@ namespace http {
 		void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -9721,10 +9524,7 @@ namespace http {
 		void CWebServer::Cmd_DeleteCustomIcon(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string sidx = m_pWebEm->FindValue("idx");
 			if (sidx == "")
@@ -9756,10 +9556,7 @@ namespace http {
 		void CWebServer::Cmd_RenameDevice(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string sidx = m_pWebEm->FindValue("idx");
 			std::string sname = m_pWebEm->FindValue("name");
@@ -9779,10 +9576,7 @@ namespace http {
 		void CWebServer::Cmd_SetUnused(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string sidx = m_pWebEm->FindValue("idx");
 			if (sidx.empty())
@@ -10020,10 +9814,7 @@ namespace http {
 		void CWebServer::RType_SetUsed(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string deviceid = m_pWebEm->FindValue("deviceid");

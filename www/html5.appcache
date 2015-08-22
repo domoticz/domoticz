@@ -449,6 +449,7 @@ app/WeatherController.js
 app/ZWaveTopologyController.js
 js/angular-animate.min.js
 js/angular-md5-min.js
+js/angular-round-progress-directive.js
 js/angular-route.min.js
 js/angular-sanitize.min.js
 js/angular-tree-control.js
