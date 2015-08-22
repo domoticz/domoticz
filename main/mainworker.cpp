@@ -1217,24 +1217,24 @@ void MainWorker::Do_Work()
 			m_bDoDownloadDomoticzUpdate=false;
 
 			//First download the checksum file
-			std::string outfile = szStartupFolder + "update.tgz.sha256sum";
-			bool bHaveDownloadedChecksumSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
-			if (bHaveDownloadedChecksumSuccessFull)
+			std::string outfile = szStartupFolder + "update.tgz";
+			bool bHaveDownloadedArchive = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(), outfile.c_str());
+			if (bHaveDownloadedArchive)
 			{
 				//Next download the actual update
-				outfile = szStartupFolder + "update.tgz";
-				m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(), outfile.c_str());
+				outfile = szStartupFolder + "update.tgz.sha256sum";
+				m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
 				if (!m_bHaveDownloadedDomoticzUpdateSuccessFull)
 				{
 					//Try one more time
 					sleep_milliseconds(1000);
-					m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(), outfile.c_str());
+					m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
 					if (!m_bHaveDownloadedDomoticzUpdateSuccessFull)
-						m_UpdateStatusMessage = "Problem downloading update file!";
+						m_UpdateStatusMessage = "Problem downloading checksum file!";
 				}
 			}
 			else
-				m_UpdateStatusMessage="Problem downloading checksum file!";
+				m_UpdateStatusMessage="Problem downloading update file!";
 
 			m_bHaveDownloadedDomoticzUpdate=true;
 		}

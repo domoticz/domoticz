@@ -111,7 +111,6 @@ define(['app'], function (app) {
 						}
 						else {
 							$.StopProgress=true;
-							alert("AA");
 							$("#updatecontent #divprogress").hide();
 							$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
 						}
