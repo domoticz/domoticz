@@ -25,7 +25,9 @@ typedef struct tModel {
 	unsigned int outputs;
 } Model;
 
-static Model models[] =
+#define TOT_MODELS 9
+
+static Model models[TOT_MODELS] =
 {
 	{0, "Integra 24", 24, 20},
 	{1, "Integra 32", 32, 32},
@@ -174,13 +176,20 @@ void SatelIntegra::Do_Work()
 		ReadZonesState(true);
 		ReadOutputsState(true);
 
-		int pCounter = SATEL_POLL_INTERVAL + 1;
+		int sec_counter = SATEL_POLL_INTERVAL - 2;
 
 		while (!m_stoprequested)
 		{
 			sleep_seconds(1);
-			pCounter++;
-			if (pCounter % SATEL_POLL_INTERVAL == 0)
+			if (m_stoprequested)
+				break;
+			sec_counter++;
+
+			if (sec_counter % 12 == 0) {
+				m_LastHeartbeat = mytime(NULL);
+			}
+
+			if (sec_counter % SATEL_POLL_INTERVAL == 0)
 			{
 				ReadArmState();
 				ReadZonesState();
@@ -281,7 +290,7 @@ bool SatelIntegra::GetInfo()
 	cmd[0] =0x7E; // Integra version
 	if (SendCommand(cmd, 1, buffer) > 0)
 	{
-		for (unsigned int i = 0; i < 9; ++i)
+		for (unsigned int i = 0; i < TOT_MODELS; ++i)
 		{
 			if (models[i].id == buffer[1])
 			{
