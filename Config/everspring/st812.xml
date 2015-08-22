@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="1" genre="config" label="Basic Set Level" units="%" min="0" max="99" value="99">
+			<Help>
+				Defines the level in the Basic Set event sent to group 2 when the sensor is triggered.  Default is 99 (full brightness for a Z-Wave dimmer). 0 disables.
+			</Help>
+		</Value>		
+	</CommandClass>
+
+	<!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="1" label="Reports" auto="true" />
+			<Group index="2" max_associations="3" label="Basic" />
+		</Associations>
+	</CommandClass>
+	<CommandClass id="96" mapping="endpoints" />
+</Product>
+
