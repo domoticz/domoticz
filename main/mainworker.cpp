@@ -73,6 +73,7 @@
 #include "../hardware/NetatmoWeatherStation.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
+#include "../hardware/SatelIntegra.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -95,7 +96,7 @@
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
 	//#define PARSE_RFXCOM_DEVICE_LOG
-	#define DEBUG_DOWNLOAD
+	//#define DEBUG_DOWNLOAD
 #endif
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
@@ -731,6 +732,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Mochad:
 		//LAN
 		pHardware = new MochadTCP(ID, Address, Port);
+		break;
+	case HTYPE_SatelIntegra:
+		pHardware = new SatelIntegra(ID, Address, Port, Password);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:

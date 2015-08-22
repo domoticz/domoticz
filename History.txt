@@ -83,6 +83,8 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Option to add a log message via the json api (see wiki)
 - Fixed: MySensors, S_LIGHT now creates an initial switch again
 - Fixed: Netatmo, Rain Sensor
+- Fixed: upgrading via the web interface (some users had experienced a problem)
+- Implemented: Satel Integra hardware support (big thanks to Fantom)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

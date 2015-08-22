@@ -124,6 +124,7 @@ enum _eHardwareTypes {
 	HTYPE_Kodi,					//55
 	HTYPE_ANNATHERMOSTAT,		//56
 	HTYPE_WINDDELEN,			//57
+	HTYPE_SatelIntegra,			//58
 	HTYPE_END
 };
 

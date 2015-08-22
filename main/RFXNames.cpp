@@ -194,6 +194,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
+		{ HTYPE_SatelIntegra, "Satel Integra via LAN interface" },
   		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
