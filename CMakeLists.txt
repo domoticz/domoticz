@@ -429,7 +429,7 @@ else()
   message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
 ENDIF(RaspberryPi)
 
-target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
+target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 
