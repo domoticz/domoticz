@@ -1216,6 +1216,7 @@ void MainWorker::Do_Work()
 		{
 			m_bDoDownloadDomoticzUpdate=false;
 
+			_log.Log(LOG_STATUS, "Starting Upgrade progress...");
 #ifdef WIN32
 			std::string outfile;
 
@@ -1244,7 +1245,8 @@ void MainWorker::Do_Work()
 			if (bIsBetaChannel)
 				strparm += " /beta";
 
-			std::string lscript = scriptname + strparm;
+			std::string lscript = scriptname + " " + strparm;
+			_log.Log(LOG_STATUS, "Starting: %s", lscript.c_str());
 			int ret = system(lscript.c_str());
 			m_bHaveDownloadedDomoticzUpdateSuccessFull = (ret == 0);
 #endif
