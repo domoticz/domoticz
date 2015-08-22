@@ -32,6 +32,7 @@
 #include <algorithm>
 
 #ifndef WIN32
+#include <sys/utsname.h>
 #include <dirent.h>
 #else
 #include "../msbuild/WindowsHelper.h"
