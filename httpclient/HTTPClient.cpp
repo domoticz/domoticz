@@ -131,7 +131,7 @@ bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outp
 			return false;
 
 		FILE *fp = fopen(outputfile.c_str(), "wb+");
-		if (!fp.is_open())
+		if (!fp)
 			return false;
 
 		CURL *curl=curl_easy_init();
