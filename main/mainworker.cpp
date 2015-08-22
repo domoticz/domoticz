@@ -1216,26 +1216,38 @@ void MainWorker::Do_Work()
 		{
 			m_bDoDownloadDomoticzUpdate=false;
 
+#ifdef WIN32
+			std::string outfile;
+
 			//First download the checksum file
-			std::string outfile = szStartupFolder + "update.tgz";
-			bool bHaveDownloadedArchive = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(), outfile.c_str());
-			if (bHaveDownloadedArchive)
+			outfile = szStartupFolder + "update.tgz.sha256sum";
+			bool bHaveDownloadedChecksum = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
+			if (bHaveDownloadedChecksum)
 			{
 				//Next download the actual update
-				outfile = szStartupFolder + "update.tgz.sha256sum";
-				m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
+				outfile = szStartupFolder + "update.tgz";
+				m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(), outfile.c_str());
 				if (!m_bHaveDownloadedDomoticzUpdateSuccessFull)
 				{
-					//Try one more time
-					sleep_milliseconds(1000);
-					m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
-					if (!m_bHaveDownloadedDomoticzUpdateSuccessFull)
-						m_UpdateStatusMessage = "Problem downloading checksum file!";
+					m_UpdateStatusMessage = "Problem downloading update file!";
 				}
 			}
 			else
-				m_UpdateStatusMessage="Problem downloading update file!";
+				m_UpdateStatusMessage="Problem downloading checksum file!";
+#else
+			int nValue;
+			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+			bool bIsBetaChannel = (nValue != 0);
 
+			std::string scriptname = szUserDataFolder + "scripts/download_update.sh";
+			std::string strparm = szUserDataFolder;
+			if (bIsBetaChannel)
+				strparm += " /beta";
+
+			std::string lscript = scriptname + strparm;
+			int ret = system(lscript.c_str());
+			m_bHaveDownloadedDomoticzUpdateSuccessFull = (ret == 0);
+#endif
 			m_bHaveDownloadedDomoticzUpdate=true;
 		}
 
