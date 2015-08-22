@@ -294,7 +294,7 @@ bool SatelIntegra::GetInfo()
 			_log.Log(LOG_STATUS,"Satel Integra: Model %s", models[m_modelIndex].name);
 
 			unsigned char cmd[1];
-			cmd[0] = { 0x1A }; // RTC
+			cmd[0] = 0x1A; // RTC
 			if (SendCommand(cmd, 1, buffer) > 0)
 			{
 				_log.Log(LOG_STATUS,"Satel Integra: RTC %.2x%.2x-%.2x-%.2x %.2x:%.2x:%.2x",
@@ -765,21 +765,21 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 {
 	std::vector<std::vector<std::string> > result;
 
-	char szTmp[8];
+	char szTmp[10];
 	sprintf(szTmp, "%06X", (unsigned int)Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q')", m_HwdID, szTmp, shortName);
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q')", m_HwdID, szTmp, shortName.c_str());
 	if (result.size() < 1)
 	{
 		//Assign name from Integra
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS,"Satel Integra: update name for %d to '%s'", Idx, shortName.c_str());
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", shortName, STYPE_Contact, partition, m_HwdID, szTmp);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
 }
 
@@ -787,14 +787,14 @@ void SatelIntegra::UpdateOutputName(const unsigned int Idx, const unsigned char*
 {
 	std::vector<std::vector<std::string> > result;
 
-	char szTmp[8];
+	char szTmp[10];
 	sprintf(szTmp, "%08X", (unsigned int)Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q')", m_HwdID, szTmp, shortName);
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q')", m_HwdID, szTmp, shortName.c_str());
 	if (result.size() < 1)
 	{
 		//Assign name from Integra
@@ -807,7 +807,7 @@ void SatelIntegra::UpdateOutputName(const unsigned int Idx, const unsigned char*
 		{
 			switchType = STYPE_OnOff;
 		}
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", shortName, switchType, m_HwdID, szTmp);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", shortName.c_str(), switchType, m_HwdID, szTmp);
 	}
 }
 
