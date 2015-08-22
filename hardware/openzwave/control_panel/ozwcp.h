@@ -95,7 +95,7 @@ public:
   void addGroup(uint8 node, uint8 g, uint8 n, uint8 *v);
   MyGroup *getGroup(uint8 i);
   void updateGroup(uint8 node, uint8 grp, char *glist);
-  uint8 numGroups() { return groups.size(); }
+  uint8 numGroups() { return (uint8)groups.size(); }
   void updatePoll(char *ilist, char *plist);
 private:
   ~MyNode();

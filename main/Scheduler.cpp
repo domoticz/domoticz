@@ -447,6 +447,17 @@ void CScheduler::CheckSchedules()
 				{
 					if (itt->bIsScene == true)
 					{
+/*
+						if (
+							(itt->timerType == TTYPE_BEFORESUNRISE) ||
+							(itt->timerType == TTYPE_AFTERSUNRISE) ||
+							(itt->timerType == TTYPE_BEFORESUNSET) ||
+							(itt->timerType == TTYPE_AFTERSUNSET)
+							)
+						{
+
+						}
+*/
 						if (!m_mainworker.SwitchScene(itt->RowID, switchcmd))
 						{
 							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, ltimeBuf);
