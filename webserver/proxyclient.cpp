@@ -6,6 +6,8 @@
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 
+extern std::string szAppVersion;
+
 CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm)
     : _socket(io_service, context),
 		_io_service(io_service),
@@ -96,6 +98,8 @@ void CProxyClient::LoginToService()
 	parameters.AddPart((void *)_apikey.c_str(), _apikey.length() + 1);
 	parameters.AddPart((void *)_instanceid.c_str(), _instanceid.length() + 1);
 	parameters.AddPart((void *)_password.c_str(), _password.length() + 1);
+	parameters.AddPart((void *) szAppVersion.c_str(), szAppVersion.length() + 1);
+	// todo: version
 	MyWrite(PDU_AUTHENTICATE, &parameters);
 }
 

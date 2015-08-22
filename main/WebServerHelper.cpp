@@ -50,10 +50,9 @@ namespace http {
 			}
 #endif
 
-#if 1
+			// start up the mydomoticz proxy client
 			RestartProxy();
 			_log.Log(LOG_STATUS, "Proxymanager started.");
-#endif
 
 			return bRet;
 		}
@@ -69,6 +68,7 @@ namespace http {
 		}
 
 		void CWebServerHelper::RestartProxy() {
+			// todo: This seems to crash on a Pi (fatal signal 6). Windows goes fine.
 			// stop old threads first
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
