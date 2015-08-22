@@ -916,6 +916,13 @@ bool MainWorker::StartThread()
 
 bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 {
+	int nValue = 0;
+	m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+	if (nValue != 1)
+	{
+		return false;
+	}
+
 	utsname my_uname;
 	if (uname(&my_uname) < 0)
 		return false;
