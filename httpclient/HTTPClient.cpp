@@ -21,9 +21,11 @@ size_t write_curl_data(void *contents, size_t size, size_t nmemb, void *userp) {
 	return realsize;
 }
 
-size_t write_curl_data_file(void *contents, size_t size, size_t nmemb, FILE *fp) {
-	size_t written = fwrite(contents, size, nmemb, fp);
-	return written;
+size_t write_curl_data_file(void *contents, size_t size, size_t nmemb, void *userp) {
+	size_t realsize = size * nmemb;
+	std::ofstream *outfile=(std::ofstream*)userp;
+	outfile->write((const char*)contents,realsize);
+	return realsize;
 }
 
 bool HTTPClient::CheckIfGlobalInitDone()
@@ -57,7 +59,6 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "domocookie.txt"); 
 	curl_easy_setopt(curl, CURLOPT_COOKIEJAR,  "domocookie.txt"); 
-	curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1);
 }
 
 //Configuration functions
@@ -130,8 +131,10 @@ bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outp
 		if (!CheckIfGlobalInitDone())
 			return false;
 
-		FILE *fp = fopen(outputfile.c_str(), "wb+");
-		if (!fp)
+		//open the output file for writing
+		std::ofstream outfile;
+		outfile.open(outputfile.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
+		if (!outfile.is_open())
 			return false;
 
 		CURL *curl=curl_easy_init();
@@ -141,12 +144,12 @@ bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outp
 		CURLcode res;
 		SetGlobalOptions(curl);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_file);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)fp);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&outfile);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		res = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
 
-		fclose(fp);
+		outfile.close();
 
 		return (res==CURLE_OK);
 	}
