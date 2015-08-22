@@ -1012,13 +1012,19 @@ bool MainWorker::StartDownloadUpdate()
 	std::string checksumURL;
 	if (!bIsBetaChannel)
 	{
-		downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine=" + machine;
-		checksumURL = "http://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + systemname + "&machine=" + machine;
+		downloadURL = "http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz";
+		checksumURL = "http://domoticz.sourceforge.net/domoticz_" + systemname + "_" + machine + ".tgz.sha256sum";
+
+		//downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine=" + machine;
+		//checksumURL = "http://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + systemname + "&machine=" + machine;
 	}
 	else
 	{
-		downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine=" + machine;
-		checksumURL = "http://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + systemname + "&machine=" + machine;
+		downloadURL = "http://domoticz.sourceforge.net/beta/domoticz_" + systemname + "_" + machine + ".tgz";
+		checksumURL = "http://domoticz.sourceforge.net/beta/domoticz_" + systemname + "_" + machine + ".tgz.sha256sum";
+
+		//downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine=" + machine;
+		//checksumURL = "http://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + systemname + "&machine=" + machine;
 	}
 	m_szDomoticzUpdateURL = downloadURL;
 	m_szDomoticzUpdateChecksumURL = checksumURL;
