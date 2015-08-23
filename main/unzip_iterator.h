@@ -96,15 +96,17 @@ namespace clx {
 				return NULL;
 			//Extract into our buffer
 			int offset = 0;
+			int tot_read = 0;
 			do
 			{
-				err = unzReadCurrentFile((unzFile)handler_, buf+offset, 8192);
-				if (err < 0)
+				tot_read = unzReadCurrentFile((unzFile)handler_, buf+offset, 8192);
+				if (tot_read < 0)
 				{
 					//printf("error %d with zipfile in unzReadCurrentFile\n",err);
 					break;
 				}
-			} while (err > 0);
+				offset += tot_read;
+			} while (tot_read > 0);
 			unzCloseCurrentFile((unzFile)handler_);
 			if (err != UNZ_OK)
 			{

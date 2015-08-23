@@ -73,6 +73,7 @@
 #include "../hardware/NetatmoWeatherStation.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
+#include "../hardware/SatelIntegra.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -95,7 +96,7 @@
 #ifdef _DEBUG
 	//#define DEBUG_RECEIVE
 	//#define PARSE_RFXCOM_DEVICE_LOG
-	#define DEBUG_DOWNLOAD
+	//#define DEBUG_DOWNLOAD
 #endif
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
@@ -732,6 +733,9 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new MochadTCP(ID, Address, Port);
 		break;
+	case HTYPE_SatelIntegra:
+		pHardware = new SatelIntegra(ID, Address, Port, Password);
+		break;
 #ifndef WIN32
 	case HTYPE_TE923:
 		//TE923 compatible weather station
@@ -1216,26 +1220,40 @@ void MainWorker::Do_Work()
 		{
 			m_bDoDownloadDomoticzUpdate=false;
 
+			_log.Log(LOG_STATUS, "Starting Upgrade progress...");
+#ifdef WIN32
+			std::string outfile;
+
 			//First download the checksum file
-			std::string outfile = szStartupFolder + "update.tgz.sha256sum";
-			bool bHaveDownloadedChecksumSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
-			if (bHaveDownloadedChecksumSuccessFull)
+			outfile = szStartupFolder + "update.tgz.sha256sum";
+			bool bHaveDownloadedChecksum = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateChecksumURL.c_str(), outfile.c_str());
+			if (bHaveDownloadedChecksum)
 			{
 				//Next download the actual update
 				outfile = szStartupFolder + "update.tgz";
 				m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(), outfile.c_str());
 				if (!m_bHaveDownloadedDomoticzUpdateSuccessFull)
 				{
-					//Try one more time
-					sleep_milliseconds(1000);
-					m_bHaveDownloadedDomoticzUpdateSuccessFull = HTTPClient::GETBinaryToFile(m_szDomoticzUpdateURL.c_str(), outfile.c_str());
-					if (!m_bHaveDownloadedDomoticzUpdateSuccessFull)
-						m_UpdateStatusMessage = "Problem downloading update file!";
+					m_UpdateStatusMessage = "Problem downloading update file!";
 				}
 			}
 			else
 				m_UpdateStatusMessage="Problem downloading checksum file!";
+#else
+			int nValue;
+			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
+			bool bIsBetaChannel = (nValue != 0);
 
+			std::string scriptname = szUserDataFolder + "scripts/download_update.sh";
+			std::string strparm = szUserDataFolder;
+			if (bIsBetaChannel)
+				strparm += " /beta";
+
+			std::string lscript = scriptname + " " + strparm;
+			_log.Log(LOG_STATUS, "Starting: %s", lscript.c_str());
+			int ret = system(lscript.c_str());
+			m_bHaveDownloadedDomoticzUpdateSuccessFull = (ret == 0);
+#endif
 			m_bHaveDownloadedDomoticzUpdate=true;
 		}
 

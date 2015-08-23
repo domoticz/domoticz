@@ -59,7 +59,6 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "domocookie.txt"); 
 	curl_easy_setopt(curl, CURLOPT_COOKIEJAR,  "domocookie.txt"); 
-	curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1);
 }
 
 //Configuration functions

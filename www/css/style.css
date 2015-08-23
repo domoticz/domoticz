@@ -2516,6 +2516,8 @@ span.evomobile .ui-popup {
 }
 .iconlist .iconlistitem img {
 	margin-top: 1px;
+	width: 48px;
+	height: 48px;
     float: left;
 }
 .iconlist .iconlistitem p {

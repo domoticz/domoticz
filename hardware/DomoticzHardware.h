@@ -97,6 +97,7 @@ private:
 	friend class CKodi;
 	friend class CNetAtmoWeatherStation;
 	friend class CAnnaThermostat;
+	friend class SatelIntegra;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;

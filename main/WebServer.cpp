@@ -245,7 +245,7 @@ namespace http {
 			}
 		}
 
-		bool CWebServer::StartServer(std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
+		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
 		{
 			StopServer();
 
@@ -259,12 +259,13 @@ namespace http {
 
 			int tries = 0;
 			bool exception = false;
+			std::string listen_address = listenaddress;
 
 			do {
 				try {
 					exception = false;
 					m_pWebEm = new http::server::cWebem(
-						listenaddress.c_str(),						// address
+						listen_address.c_str(),						// address
 						listenport.c_str(),							// port
 						serverpath.c_str(), secure_cert_file, secure_cert_passphrase);
 				}
@@ -272,10 +273,10 @@ namespace http {
 					exception = true;
 					switch (tries) {
 					case 0:
-						listenaddress = "::";
+						listen_address = "::";
 						break;
 					case 1:
-						listenaddress = "0.0.0.0";
+						listen_address = "0.0.0.0";
 						break;
 					case 2:
 						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
@@ -288,8 +289,8 @@ namespace http {
 					tries++;
 				}
 			} while (exception);
-			if (listenaddress != "0.0.0.0" && listenaddress != "::")
-				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listenaddress.c_str(), listenport.c_str());
+			if (listen_address != "0.0.0.0" && listen_address != "::")
+				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
 			else
 				_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
 
@@ -454,6 +455,7 @@ namespace http {
 
 			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1));
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
+			RegisterCommandCode("updatecustomicon", boost::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1));
 
 			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
 			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
@@ -907,7 +909,7 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP)
+				(htype == HTYPE_ETH8020) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra)
 				) {
 				//Lan
 				if (address == "")
@@ -1103,7 +1105,7 @@ namespace http {
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || 
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || 
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || 
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP)
+				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra)
 				){
 				//Lan
 				if (address == "")
@@ -7034,7 +7036,6 @@ namespace http {
 						}
 						root["result"][ii]["Image"] = IconFile;
 
-
 						if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["Level"] = LastLevel;
@@ -7855,6 +7856,7 @@ namespace http {
                         root["result"][ii]["CounterToday"] = szTmp;
                         root["result"][ii]["SwitchTypeVal"] = metertype;
                         root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "counter";
                         float fvalue = static_cast<float>(atof(sValue.c_str()));
                         switch (metertype)
                         {
@@ -9551,6 +9553,29 @@ namespace http {
 					break;
 				}
 			}
+			ReloadCustomSwitchIcons();
+		}
+
+		void CWebServer::Cmd_UpdateCustomIcon(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
+			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sname = m_pWebEm->FindValue("name");
+			std::string sdescription = m_pWebEm->FindValue("description");
+			if (
+				(sidx.empty()) ||
+				(sname.empty()) ||
+				(sdescription.empty())
+				)
+				return;
+
+			int idx = atoi(sidx.c_str());
+			root["status"] = "OK";
+			root["title"] = "UpdateCustomIcon";
+
+			m_sql.safe_query("UPDATE CustomImages SET Name='%q', Description='%q' WHERE (ID == %d)", sname.c_str(), sdescription.c_str(), idx);
 			ReloadCustomSwitchIcons();
 		}
 

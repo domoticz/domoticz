@@ -83,6 +83,16 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Option to add a log message via the json api (see wiki)
 - Fixed: MySensors, S_LIGHT now creates an initial switch again
 - Fixed: Netatmo, Rain Sensor
+- Fixed: upgrading via the web interface (some users had experienced a problem)
+- Implemented: Satel Integra hardware support (big thanks to Fantom)
+- Fixed: Icon Uploader, uploading went wrong with large files
+- Implemented: Icon Uploader, now possible to upload zip files with multiple folders
+- Implemented: Icon Uploader, now possible to edit name and description
+- Changed: Switch icon picker now has a fixed height
+- Fixed: Counter Incremental small icon display on devices tab
+- Changed: forced fixed icon sizes on some locations (in case of to big user defined icons)
+- Fixed: Weather tab, nofications
+- Changed: EnOcean rocker inclusion (thanks to zorgluf!)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

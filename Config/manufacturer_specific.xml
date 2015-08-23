@@ -217,7 +217,7 @@
 		<Product type="0006" id="0001" name="ST814 Temperature and Humidity Sensor" config="everspring/st814.xml"/>
 		<Product type="0007" id="0001" name="ST815 Illumination Sensor" config="everspring/st815.xml"/>
 		<Product type="0009" id="0001" name="TSE03 Door Bell" config="everspring/tse03.xml"/>
-		<Product type="000b" id="0001" name="ST812 Flood Detector"/>
+		<Product type="000b" id="0001" name="ST812 Flood Detector" config="everspring/st812.xml"/>
 		<Product type="000c" id="0001" name="SE812 Siren" config="everspring/se812.xml"/>
 		<Product type="000d" id="0001" name="SF812 Smoke Alarm" config="everspring/sf812.xml"/>
 		<Product type="0010" id="0001" name="HAC01 In-wall Remote Module"/>
@@ -462,7 +462,7 @@
 		<Product type="8002" id="0001" name="Plug-in Dimmer Module"/>
 		<Product type="4003" id="0001" name="Wall Dimmer Module"/>
 		<Product type="4002" id="0001" name="Wall Appliance Module"/>
-		<Product type="4004" id="0001" name="Wall Roller Shutter Module"/>
+		<Product type="4004" id="0001" name="Wall Roller Shutter Module" config="merten/50x5xx.xml"/>
 		<Product type="8001" id="8001" name="Receiver Flush-Mounted 1-Gang Switch"/>
 		<Product type="0003" id="0004" name="Transmitter Flush-Mounted 4-Gang Switch"/>
 		<Product type="0001" id="0002" name="Transmitter 1-Gang Switch"/>
