@@ -92,6 +92,7 @@ Version 2.xxx (xxxx 2015)
 - Fixed: Counter Incremental small icon display on devices tab
 - Changed: forced fixed icon sizes on some locations (in case of to big user defined icons)
 - Fixed: Weather tab, nofications
+- Changed: EnOcean rocker inclusion (thanks to zorgluf!)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

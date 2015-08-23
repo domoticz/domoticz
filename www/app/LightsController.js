@@ -2601,8 +2601,10 @@ define(['app'], function (app) {
 			}
 			else if (lighttype==70) {
 				//EnOcean
-				mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #comboid option:selected").val();
-				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #combounitcode option:selected").val();
+				//mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #comboid option:selected").val();
+				//mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #combounitcode option:selected").val();
+				mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #combounitcode option:selected").val();
+				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #comboid option:selected").val();				
 				ID="EnOcean";
 				mParams+="&id="+ID;
 			}
