@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('CustomIconsController', [ '$scope', '$rootScope', '$location', '$http', '$interval','$compile', function($scope,$rootScope,$location,$http,$interval,$compile) {
+	app.controller('CustomIconsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
 		$scope.iconset = [];
 		$scope.selectedIcon = [];

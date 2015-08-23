@@ -7036,7 +7036,6 @@ namespace http {
 						}
 						root["result"][ii]["Image"] = IconFile;
 
-
 						if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["Level"] = LastLevel;
@@ -7857,6 +7856,7 @@ namespace http {
                         root["result"][ii]["CounterToday"] = szTmp;
                         root["result"][ii]["SwitchTypeVal"] = metertype;
                         root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "counter";
                         float fvalue = static_cast<float>(atof(sValue.c_str()));
                         switch (metertype)
                         {

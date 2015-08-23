@@ -199,7 +199,7 @@ define(['app'], function (app) {
 				  var itemSubIcons="";
 							var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="'+item.idx+'" />';
 				  var TypeImg=item.TypeImg;
-				  var itemImage='<img src="images/' + TypeImg + '.png">';
+				  var itemImage='<img src="images/' + TypeImg + '.png" width="16" height="16">';
 				  if ((TypeImg.indexOf("lightbulb")==0)||(TypeImg.indexOf("dimmer")==0)) {
 									if (
 											(item.Status == 'On')||

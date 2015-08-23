@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1016
+# ref 1017
 
 CACHE:
 # CSS
@@ -11,7 +11,7 @@ css/demo_table_jui.css
 css/jquery.uix.multiselect.css
 css/jquery-ui-timepicker-addon.css
 css/style.css
-css/ui-darkness/jquery-ui-1.10.3.custom.min.css
+css/ui-darkness/jquery-ui.min.css
 secpanel/css/font.less
 secpanel/css/reset.less
 secpanel/css/style.less
@@ -474,9 +474,7 @@ js/highcharts-ng.min.js
 js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-1.11.2.min.js
-js/jquery-migrate-1.2.1.min.js
-js/jquery-ui-1.10.3.custom.min.js
+js/jquery-1.11.3.min.js
 js/jquery-ui.min.js
 js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js
