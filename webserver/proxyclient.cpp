@@ -216,37 +216,44 @@ void CProxyClient::HandleRequest(ProxyPdu *pdu)
 	part.GetNextPart((void **)&requestbody, &bodylen);
 	_log.Log(LOG_NORM, "PROXY: Body len: %ld.", bodylen);
 			
-
-	std::string request;
-	if (bodylen > 0) {
-		request = "POST ";
-	}
-	else {
-		request = "GET ";
-	}
-	request += requesturl;
-	request += " HTTP/1.1\r\n";
-	request += requestheaders;
-	request += "\r\n";
-	request += std::string(requestbody, bodylen);
-
-	_buf = boost::asio::buffer(( void *)request.c_str(), request.length());
-
-	GetRequest(originatingip, _buf, reply_);
-	free(originatingip);
-	free(requesturl);
-	free(requestheaders);
-	free(requestbody);
-			
-	// assemble response
-	std::string responseheaders = GetResponseHeaders(reply_);
-	_log.Log(LOG_NORM, "PROXY: Response, status: %d.", reply_.status);
-	_log.Log(LOG_NORM, "PROXY: Response length: %ld.", reply_.content.length());
 	CValueLengthPart parameters;
-	parameters.AddValue((void *)&reply_.status, SIZE_INT);
-	parameters.AddPart((void *)responseheaders.c_str(), responseheaders.length() + 1);
-	parameters.AddPart((void *)reply_.content.c_str(), reply_.content.length());
-	_log.Log(LOG_NORM, "About to send PDU.\n");
+
+	switch (subsystem) {
+	case 1:
+		// "normal web request"
+		std::string request;
+		if (bodylen > 0) {
+			request = "POST ";
+		}
+		else {
+			request = "GET ";
+		}
+		request += requesturl;
+		request += " HTTP/1.1\r\n";
+		request += requestheaders;
+		request += "\r\n";
+		request += std::string(requestbody, bodylen);
+
+		_buf = boost::asio::buffer((void *)request.c_str(), request.length());
+
+		GetRequest(originatingip, _buf, reply_);
+		free(originatingip);
+		free(requesturl);
+		free(requestheaders);
+		free(requestbody);
+
+		// assemble response
+		std::string responseheaders = GetResponseHeaders(reply_);
+
+
+		_log.Log(LOG_NORM, "PROXY: Response, status: %d.", reply_.status);
+		_log.Log(LOG_NORM, "PROXY: Response length: %ld.", reply_.content.length());
+		parameters.AddValue((void *)&reply_.status, SIZE_INT);
+		parameters.AddPart((void *)responseheaders.c_str(), responseheaders.length() + 1);
+		parameters.AddPart((void *)reply_.content.c_str(), reply_.content.length());
+		_log.Log(LOG_NORM, "About to send PDU.\n");
+		break;
+	}
 
 	// send response to proxy
 	MyWrite(PDU_RESPONSE, &parameters);
@@ -403,8 +410,8 @@ void CProxyManager::StartThread()
 
 void CProxyManager::Stop()
 {
-	io_service.stop();
 	proxyclient->Stop();
+	io_service.stop();
 	_log.Log(LOG_ERROR, "PROXY: waiting for thread.join");
 	m_thread->interrupt();
 	m_thread->join();
