@@ -403,8 +403,8 @@ void CProxyManager::StartThread()
 
 void CProxyManager::Stop()
 {
-	io_service.stop();
 	proxyclient->Stop();
+	io_service.stop();
 	_log.Log(LOG_ERROR, "PROXY: waiting for thread.join");
 	m_thread->interrupt();
 	m_thread->join();

@@ -8,6 +8,8 @@ CValueLengthPart::CValueLengthPart(ProxyPdu *pdu)
 	_ptr = _data = malloc(len);
 	if (_ptr == NULL) {
 		_log.Log(LOG_ERROR, "CValueLengthPart (1): Could not allocate.");
+		_len = 0;
+		return;
 	}
 	memcpy(_data, pdu->content(), len);
 	_len = len;
@@ -100,6 +102,7 @@ int CValueLengthPart::GetNextPart(void **data, size_t *length)
 	(*data) = malloc(len);
 	if ((*data) == NULL) {
 		_log.Log(LOG_ERROR, "GetNextPart: Could not alloc.");
+		return 0;
 	}
 	memcpy(*data, dataptr + SIZE_SIZE_T, len);
 	*length = len;
