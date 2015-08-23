@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "DomoticzHardware.h"
 
 class I_1WireSystem;
@@ -16,22 +15,23 @@ public:
 private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
-   I_1WireSystem* m_system;
+	I_1WireSystem* m_system;
+	std::map<std::string, bool> m_LastSwitchState;
 
-   static void LogSystem();
-   void DetectSystem();
+	static void LogSystem();
+	void DetectSystem();
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
 	void GetDeviceDetails();
 
-   // Messages to Domoticz
-   void ReportLightState(const std::string& deviceId,int unit,bool state);
-   void ReportTemperature(const std::string& deviceId,float temperature);
-   void ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity);
-   void ReportHumidity(const std::string& deviceId,float humidity);
-   void ReportPressure(const std::string& deviceId,float pressure);
-   void ReportCounter(const std::string& deviceId,int unit,unsigned long counter);
-   void ReportVoltage(int unit,int voltage);
-   void ReportIlluminescence(float illuminescence);
+	// Messages to Domoticz
+	void ReportLightState(const std::string& deviceId,int unit,bool state);
+	void ReportTemperature(const std::string& deviceId,float temperature);
+	void ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity);
+	void ReportHumidity(const std::string& deviceId,float humidity);
+	void ReportPressure(const std::string& deviceId,float pressure);
+	void ReportCounter(const std::string& deviceId,int unit,unsigned long counter);
+	void ReportVoltage(int unit,int voltage);
+	void ReportIlluminescence(float illuminescence);
 };

@@ -58,16 +58,16 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	int ret;
 	//Init winsock
 	WSADATA data;
-	WORD version; 
+	WORD version;
 
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
+	version = (MAKEWORD(2, 2));
+	ret = WSAStartup(version, &data);
+	if (ret != 0)
+	{
+		ret = WSAGetLastError();
 
-		if (ret == WSANOTINITIALISED) 
-		{  
+		if (ret == WSANOTINITIALISED)
+		{
 			_log.Log(LOG_ERROR,"Satel Integra: Winsock could not be initialized!");
 		}
 	}
@@ -246,7 +246,7 @@ bool SatelIntegra::ConnectToIntegra()
 
 	if (connect(m_socket,(const sockaddr*)&m_addr, sizeof(m_addr)) == SOCKET_ERROR)
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: Unable to connect to specified IP Address on specified Port");
+		_log.Log(LOG_ERROR,"Satel Integra: Unable to connect to specified IP Address on specified Port (%s:%d)", m_IPAddress.c_str(), m_IPPort);
 		DestroySocket();
 		return false;
 	}
