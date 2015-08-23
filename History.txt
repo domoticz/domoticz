@@ -85,6 +85,9 @@ Version 2.xxx (xxxx 2015)
 - Fixed: Netatmo, Rain Sensor
 - Fixed: upgrading via the web interface (some users had experienced a problem)
 - Implemented: Satel Integra hardware support (big thanks to Fantom)
+- Fixed: Icon Uploader, uploading went wrong with large files
+- Implemented: Icon Uploader, now possible to upload zip files with multiple folders
+- Implemented: Icon Uploader, now possible to rename name and description
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
