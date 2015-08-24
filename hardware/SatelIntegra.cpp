@@ -191,9 +191,23 @@ void SatelIntegra::Do_Work()
 
 			if (sec_counter % SATEL_POLL_INTERVAL == 0)
 			{
-				ReadArmState();
-				ReadZonesState();
-				ReadOutputsState();
+				_log.Log(LOG_STATUS,"Satel Integra: fetching data");
+
+				if (IsNewData())
+				{
+					if (m_newData[2] & 4)
+					{
+						ReadArmState();
+					}
+					if (m_newData[1] & 1)
+					{
+						ReadZonesState();
+					}
+					if (m_newData[3] & 128)
+					{
+						ReadOutputsState();
+					}
+				}
 			}
 		}
 	}
@@ -280,6 +294,22 @@ void SatelIntegra::DestroySocket()
 
 		m_socket = INVALID_SOCKET;
 	}
+}
+
+bool SatelIntegra::IsNewData()
+{
+	unsigned char cmd[1];
+	cmd[0] = 0x7F; // list of new data
+	if (SendCommand(cmd, 1, m_newData) > 0)
+	{
+		return true;
+	}
+	else
+	{
+		_log.Log(LOG_ERROR,"Satel Integra: Get info about new data is failed");
+	}
+
+	return false;
 }
 
 bool SatelIntegra::GetInfo()
@@ -896,7 +926,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 			for (int i = 0; i < ret - 6; i++)
 			if (buffer[i+2] != 0xF0 || buffer[i+1] != 0xFE) // skip special value
 			{
-				answer[i] = buffer[i+2];
+				answer[answerLength] = buffer[i+2];
 				answerLength++;
 			}
 			unsigned short crc;
