@@ -285,7 +285,7 @@ bool SatelIntegra::GetInfo()
 	unsigned char buffer[15];
 
 	unsigned char cmd[1];
-	cmd[0] =0x7E; // Integra version
+	cmd[0] = 0x7E; // Integra version
 	if (SendCommand(cmd, 1, buffer) > 0)
 	{
 		for (unsigned int i = 0; i < TOT_MODELS; ++i)
@@ -828,7 +828,8 @@ void expandForSpecialValue(std::list<unsigned char> &result)
 	{
 		if (*it == specialValue)
 		{
-			result.insert(it, specialValue);
+			result.insert(++it, 0xF0);
+			it--;
 		}
 	}
 }
@@ -889,12 +890,15 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 	{
 		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ ret - 2] == 0xFE)
 		{
+			unsigned int answerLength = 0;
 			for (int i = 0; i < ret - 6; i++)
+			if (buffer[i+2] != 0xF0 || buffer[i+1] != 0xFE) // skip special value
 			{
 				answer[i] = buffer[i+2];
+				answerLength++;
 			}
 			unsigned short crc;
-			calculateCRC(answer, ret - 6, crc);
+			calculateCRC(answer, answerLength, crc);
 			if ((crc & 0xFF) == buffer[ret - 3] && (crc >> 8) == buffer[ret - 4])
 			{
 				if (buffer[2] == 0xEF)
@@ -919,7 +923,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 				}
 				else
 				{
-					return ret - 6;
+					return answerLength;
 				}
 			}
 			else
