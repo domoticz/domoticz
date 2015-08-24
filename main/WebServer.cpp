@@ -5278,7 +5278,8 @@ namespace http {
 						time_t now = mytime(NULL);
 
 						localtime_r(&now, &loctime);
-						strftime(szTmp, 80, "%b %d %Y %X", &loctime);
+						//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
+						strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
 
 						root["status"] = "OK";
 						root["title"] = "getSunRiseSet";
@@ -5294,7 +5295,8 @@ namespace http {
 				time_t now = mytime(NULL);
 
 				localtime_r(&now, &loctime);
-				strftime(szTmp, 80, "%b %d %Y %X", &loctime);
+				//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
+				strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
 
 				root["status"] = "OK";
 				root["title"] = "getServerTime";
@@ -6379,7 +6381,8 @@ namespace http {
 				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
 				if (strarray.size() == 2)
 				{
-					strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					//strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					strftime(szTmp, 80, "%Y-%m-%d %X", &tm1);
 					root["ServerTime"] = szTmp;
 					root["Sunrise"] = strarray[0];
 					root["Sunset"] = strarray[1];
@@ -9180,7 +9183,8 @@ namespace http {
 				if (strarray.size() == 2)
 				{
 					char szTmp[100];
-					strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					//strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					strftime(szTmp, 80, "%Y-%m-%d %X", &tm1);
 					root["ServerTime"] = szTmp;
 					root["Sunrise"] = strarray[0];
 					root["Sunset"] = strarray[1];
