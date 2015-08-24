@@ -3529,7 +3529,10 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					devid = id;
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance))
+						devid = "00" + id;
+					else
+						devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -3843,7 +3846,10 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					devid = id;
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance))
+						devid = "00" + id;
+					else
+						devid = id;
 				}
 				else if (lighttype < 70)
 				{
