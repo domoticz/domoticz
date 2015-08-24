@@ -93,6 +93,7 @@ Version 2.xxx (xxxx 2015)
 - Changed: forced fixed icon sizes on some locations (in case of to big user defined icons)
 - Fixed: Weather tab, nofications
 - Changed: EnOcean rocker inclusion (thanks to zorgluf!)
+- Implemented: Icons for RFXMeter Gas/Water
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
