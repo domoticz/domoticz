@@ -40,6 +40,8 @@ static Model models[TOT_MODELS] =
 	{72, "Integra 256 Plus", 256, 256},
 };
 
+#define MAX_LENGTH_OF_ANSWER 63 * 2 + 4
+
 const unsigned char partitions[4] = {0xFF, 0xFF, 0xFF, 0xFF};
 
 SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode) :
@@ -285,7 +287,7 @@ bool SatelIntegra::GetInfo()
 	unsigned char buffer[15];
 
 	unsigned char cmd[1];
-	cmd[0] =0x7E; // Integra version
+	cmd[0] = 0x7E; // Integra version
 	if (SendCommand(cmd, 1, buffer) > 0)
 	{
 		for (unsigned int i = 0; i < TOT_MODELS; ++i)
@@ -828,7 +830,8 @@ void expandForSpecialValue(std::list<unsigned char> &result)
 	{
 		if (*it == specialValue)
 		{
-			result.insert(it, specialValue);
+			result.insert(++it, 0xF0);
+			it--;
 		}
 	}
 }
@@ -867,7 +870,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 
 	delete cmdPayload.first;
 
-	unsigned char buffer[67];
+	unsigned char buffer[MAX_LENGTH_OF_ANSWER];
 	// Receive answer
 	fd_set rfds;
 	FD_ZERO(&rfds);
@@ -883,18 +886,21 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 		return -1;
 	}
 
-	int ret = recv(m_socket, (char*)&buffer, 67, 0);
+	int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER, 0);
 
 	if (ret > 6)
 	{
 		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ ret - 2] == 0xFE)
 		{
+			unsigned int answerLength = 0;
 			for (int i = 0; i < ret - 6; i++)
+			if (buffer[i+2] != 0xF0 || buffer[i+1] != 0xFE) // skip special value
 			{
 				answer[i] = buffer[i+2];
+				answerLength++;
 			}
 			unsigned short crc;
-			calculateCRC(answer, ret - 6, crc);
+			calculateCRC(answer, answerLength, crc);
 			if ((crc & 0xFF) == buffer[ret - 3] && (crc >> 8) == buffer[ret - 4])
 			{
 				if (buffer[2] == 0xEF)
@@ -919,7 +925,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 				}
 				else
 				{
-					return ret - 6;
+					return answerLength;
 				}
 			}
 			else
