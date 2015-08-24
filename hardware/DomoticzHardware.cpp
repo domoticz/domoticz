@@ -499,6 +499,28 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 	}
 }
 
+double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, bool &bExists)
+{
+	int Idx = (NodeID * 256) + ChildID;
+	double ret = 0;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
+	if (result.size() < 1)
+	{
+		bExists = false;
+		return 0;
+	}
+	result = m_sql.safe_query("SELECT MAX(Counter) FROM Meter_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
+	if (result.size() < 1)
+	{
+		bExists = false;
+		return 0.0f;
+	}
+	bExists = true;
+	return (float)atof(result[0][0].c_str());
+}
+
 void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue)
 {
 	unsigned long counter = (unsigned long)(metervalue*1000.0f);
