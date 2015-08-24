@@ -143,7 +143,6 @@ bool SatelIntegra::StartHardware()
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SatelIntegra::Do_Work, this)));
 	m_bIsStarted = true;
-	StartHeartbeatThread();
 	sOnConnected(this);
 	return (m_thread != NULL);
 }
@@ -159,7 +158,6 @@ bool SatelIntegra::StopHardware()
 	DestroySocket();
 
 	m_bIsStarted = false;
-	StopHeartbeatThread();
 	return true;
 }
 

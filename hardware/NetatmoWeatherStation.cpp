@@ -452,12 +452,10 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 		}
 		if (rain < m_OldRainCounter)
 		{
-			//daily counter when to zero
+			//daily counter went to zero
 			m_RainOffset += m_OldRainCounter;
-			m_OldRainCounter = rain;
 		}
-		else
-			m_OldRainCounter = rain;
+		m_OldRainCounter = rain;
 		SendRainSensor(ID, batValue, m_RainOffset+ m_OldRainCounter, name);
 	}
 

@@ -165,6 +165,7 @@ private:
 	void Cmd_RegisterWithPhilipsHue(Json::Value &root);
 	void Cmd_GetCustomIconSet(Json::Value &root);
 	void Cmd_DeleteCustomIcon(Json::Value &root);
+	void Cmd_UpdateCustomIcon(Json::Value &root);
 	void Cmd_RenameDevice(Json::Value &root);
 	void Cmd_SetUnused(Json::Value &root);
 	void Cmd_SaveHttpLinkConfig(Json::Value &root);

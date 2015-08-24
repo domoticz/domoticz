@@ -455,6 +455,7 @@ namespace http {
 
 			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1));
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
+			RegisterCommandCode("updatecustomicon", boost::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1));
 
 			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
 			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
@@ -7035,7 +7036,6 @@ namespace http {
 						}
 						root["result"][ii]["Image"] = IconFile;
 
-
 						if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["Level"] = LastLevel;
@@ -7856,6 +7856,7 @@ namespace http {
                         root["result"][ii]["CounterToday"] = szTmp;
                         root["result"][ii]["SwitchTypeVal"] = metertype;
                         root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "counter";
                         float fvalue = static_cast<float>(atof(sValue.c_str()));
                         switch (metertype)
                         {
@@ -9552,6 +9553,29 @@ namespace http {
 					break;
 				}
 			}
+			ReloadCustomSwitchIcons();
+		}
+
+		void CWebServer::Cmd_UpdateCustomIcon(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
+			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sname = m_pWebEm->FindValue("name");
+			std::string sdescription = m_pWebEm->FindValue("description");
+			if (
+				(sidx.empty()) ||
+				(sname.empty()) ||
+				(sdescription.empty())
+				)
+				return;
+
+			int idx = atoi(sidx.c_str());
+			root["status"] = "OK";
+			root["title"] = "UpdateCustomIcon";
+
+			m_sql.safe_query("UPDATE CustomImages SET Name='%q', Description='%q' WHERE (ID == %d)", sname.c_str(), sdescription.c_str(), idx);
 			ReloadCustomSwitchIcons();
 		}
 
