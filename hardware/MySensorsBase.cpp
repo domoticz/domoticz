@@ -625,7 +625,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_VOLUME:
 		//Water Volume
 		if (pChild->GetValue(vType, floatValue))
-			SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue);
+			SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue*10.0f, "Water");
 		break;
 	case V_VOLTAGE:
 		devname = "Voltage";

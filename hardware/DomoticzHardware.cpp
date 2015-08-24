@@ -521,8 +521,20 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 	return (float)atof(result[0][0].c_str());
 }
 
-void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue)
+void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string &defaultname)
 {
+	char szIdx[10];
+	sprintf(szIdx, "%d", (NodeID * 256) + ChildID);
+
+	std::vector<std::vector<std::string> > result;
+	bool bDeviceExits = true;
+	result = m_sql.safe_query(
+		"SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, 0, int(pTypeRFXMeter), int(sTypeRFXMeterCount));
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
 	unsigned long counter = (unsigned long)(metervalue*1000.0f);
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
@@ -538,6 +550,14 @@ void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID,
 	tsen.RFXMETER.count3 = (BYTE)((counter & 0x0000FF00) >> 8);
 	tsen.RFXMETER.count4 = (BYTE)(counter & 0x000000FF);
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		m_sql.safe_query(
+			"UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szIdx, 0, int(pTypeRFXMeter), int(sTypeRFXMeterCount));
+	}
 }
 
 
