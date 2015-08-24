@@ -40,6 +40,8 @@ static Model models[TOT_MODELS] =
 	{72, "Integra 256 Plus", 256, 256},
 };
 
+#define MAX_LENGTH_OF_ANSWER 63 * 2 + 4
+
 const unsigned char partitions[4] = {0xFF, 0xFF, 0xFF, 0xFF};
 
 SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode) :
@@ -868,7 +870,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 
 	delete cmdPayload.first;
 
-	unsigned char buffer[67];
+	unsigned char buffer[MAX_LENGTH_OF_ANSWER];
 	// Receive answer
 	fd_set rfds;
 	FD_ZERO(&rfds);
@@ -884,7 +886,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 		return -1;
 	}
 
-	int ret = recv(m_socket, (char*)&buffer, 67, 0);
+	int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER, 0);
 
 	if (ret > 6)
 	{
