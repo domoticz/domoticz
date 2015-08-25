@@ -7957,7 +7957,7 @@ namespace http {
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%.02f m3", musage);
+								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
@@ -7985,7 +7985,7 @@ namespace http {
 						case MTYPE_GAS:
 						case MTYPE_WATER:
 							musage = float(total_actual) / GasDivider;
-							sprintf(szTmp, "%.02f", musage);
+							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_actual);
@@ -8011,7 +8011,7 @@ namespace http {
 							break;
 						case MTYPE_WATER:
 							musage = float(acounter) / WaterDivider;
-							sprintf(szTmp, "%.02f m3", musage);
+							sprintf(szTmp, "%.03f m3", musage);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", acounter);
@@ -11382,7 +11382,7 @@ namespace http {
 													sprintf(szTmp, "%.2f", TotalValue / GasDivider);
 													break;
 												case MTYPE_WATER:
-													sprintf(szTmp, "%.2f", TotalValue / WaterDivider);
+													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 													break;
 												case MTYPE_COUNTER:
 													sprintf(szTmp, "%.1f", TotalValue);
@@ -11431,7 +11431,7 @@ namespace http {
 										sprintf(szTmp, "%.2f", TotalValue / GasDivider);
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.2f", TotalValue / WaterDivider);
+										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 										break;
 									case MTYPE_COUNTER:
 										sprintf(szTmp, "%.1f", TotalValue);
@@ -11600,7 +11600,7 @@ namespace http {
 												sprintf(szTmp, "%.2f", TotalValue / GasDivider);
 												break;
 											case MTYPE_WATER:
-												sprintf(szTmp, "%.2f", TotalValue / WaterDivider);
+												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
@@ -13300,7 +13300,7 @@ namespace http {
 								sprintf(szTmp, "%.2f", fvalue / GasDivider);
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.2f", fvalue / WaterDivider);
+								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 								break;
 							}
 							root["counter"] = szTmp;
@@ -13322,7 +13322,7 @@ namespace http {
 									sprintf(szTmp, "%.2f", fvalue / GasDivider);
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.2f", fvalue / WaterDivider);
+									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 									break;
 								}
 								root["counter"] = szTmp;
@@ -13364,10 +13364,10 @@ namespace http {
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.2f", (fcounter - atof(szValue.c_str())) / WaterDivider);
+										sprintf(szTmp, "%.3f", (fcounter - atof(szValue.c_str())) / WaterDivider);
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -13399,7 +13399,7 @@ namespace http {
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								}
@@ -13660,9 +13660,9 @@ namespace http {
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.2f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
+								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
 								root["result"][ii]["c"] = szTmp;
 								break;
 							}
@@ -14204,7 +14204,7 @@ namespace http {
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									szValue = szTmp;
 									break;
 								}
@@ -14301,7 +14301,7 @@ namespace http {
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								szValue = szTmp;
 								break;
 							}
