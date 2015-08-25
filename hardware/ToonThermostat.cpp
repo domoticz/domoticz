@@ -575,7 +575,7 @@ double CToonThermostat::GetElectricOffset(const int idx, const double currentKwh
 	{
 		//First time, lets add it
 		bool bExists = false;
-		m_OffsetElectricUsage[idx] = GetKwhMeter(idx, 1, bExists);
+		m_OffsetElectricUsage[idx] = GetKwhMeter(idx, 1, bExists)/100.0;
 		m_LastElectricCounter[idx] = currentKwh;
 	}
 	return m_OffsetElectricUsage[idx];
