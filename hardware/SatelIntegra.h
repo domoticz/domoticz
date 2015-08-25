@@ -9,10 +9,10 @@
 class SatelIntegra : public CDomoticzHardwareBase
 {
 public:
-  SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort,  const std::string& userCode);
-  virtual ~SatelIntegra();
+	SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode);
+	virtual ~SatelIntegra();
 
-  bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
 
 private:
 
@@ -25,6 +25,8 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<unsigned int, const char*> errorCodes;
+	// filled by 0x7F command
+	unsigned char m_newData[7];
 
 	unsigned char m_userCode[8];
 
@@ -44,6 +46,8 @@ private:
 	void DestroySocket();
 	// Connects socket
 	bool ConnectToIntegra();
+	// new data is collected in Integra for selected command
+	bool IsNewData();
 	// Gets info from hardware about PCB, ETHM1 etc
 	bool GetInfo();
 	// Reads and reports zones violation
