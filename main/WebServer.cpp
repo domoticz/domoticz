@@ -2492,6 +2492,12 @@ namespace http {
 				m_sql.GetPreferencesVar("CostWater", nValue);
 				root["CostWater"] = nValue;
 
+				int tValue=1000;
+				if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+				{
+					root["DividerWater"] = float(tValue);
+				}
+
 				unsigned char dType = atoi(sd[0].c_str());
 				unsigned char subType = atoi(sd[1].c_str());
 				nValue = (unsigned char)atoi(sd[2].c_str());
@@ -2507,7 +2513,6 @@ namespace http {
 						return;
 
 					float EnergyDivider = 1000.0f;
-					int tValue;
 					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 					{
 						EnergyDivider = float(tValue);
@@ -6378,7 +6383,7 @@ namespace http {
 
 			root["ActTime"] = static_cast<int>(now);
 
-			char szData[100];
+			char szData[250];
 			char szTmp[300];
 
 			if (!m_mainworker.m_LastSunriseSet.empty())
@@ -7756,8 +7761,7 @@ namespace http {
 								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%.03f m3", musage);
+								sprintf(szTmp, "%llu Liter", total_real);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
