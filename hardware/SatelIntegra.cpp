@@ -121,9 +121,8 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 
 SatelIntegra::~SatelIntegra()
 {
-#ifdef DEBUG_SatelIntegra
 	_log.Log(LOG_NORM, "Satel Integra: Destroy instance");
-#endif
+
 #if defined WIN32
 	//
 	// Release WinSock
@@ -743,59 +742,50 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 
 	if (output->ICMND.packettype == pTypeSecurity1 && output->ICMND.subtype == sTypeSecX10R)
 	{
-		if (ConnectToIntegra())
+		if (output->ICMND.cmnd == gswitch_sOn)
 		{
-
-			if (output->ICMND.cmnd == gswitch_sOn)
-			{
-				return ArmPartitions(partitions);
-			}
-			else
-			{
-				return DisarmPartitions(partitions);
-			}
-
+			return ArmPartitions(partitions);
+		}
+		else
+		{
+			return DisarmPartitions(partitions);
 		}
 	}
 
 	if (output->ICMND.packettype == pTypeGeneralSwitch && output->ICMND.subtype == sSwitchTypeAC)
 	{
-		if (ConnectToIntegra())
+		_tGeneralSwitch *general = (_tGeneralSwitch*)pdata;
+		unsigned char buffer[2];
+		unsigned char cmd[41] = { 0 };
+
+		if (general->cmnd == gswitch_sOn)
 		{
-			_tGeneralSwitch *general = (_tGeneralSwitch*)pdata;
-			unsigned char buffer[2];
-			unsigned char cmd[41] = { 0 };
+			cmd[0] = 0x88;
+		}
+		else
+		{
+			cmd[0] = 0x89;
+		}
 
-			if (general->cmnd == gswitch_sOn)
-			{
-				cmd[0] = 0x88;
-			}
-			else
-			{
-				cmd[0] = 0x89;
-			}
+		for (unsigned int i = 0; i < sizeof(m_userCode); ++i)
+		{
+			cmd[i + 1] = m_userCode[i];
+		}
 
-			for (unsigned int i = 0; i < sizeof(m_userCode); ++i)
-			{
-				cmd[i + 1] = m_userCode[i];
-			}
+		unsigned char byteNumber = (general->id - 256) / 8;
+		unsigned char bitNumber = (general->id - 256) % 8;
 
-			unsigned char byteNumber = (general->id - 256) / 8;
-			unsigned char bitNumber = (general->id - 256) % 8;
+		cmd[byteNumber + 9] = 0x01 << bitNumber;
 
-			cmd[byteNumber + 9] = 0x01 << bitNumber;
-
-			if (SendCommand(cmd, 41, buffer) != -1)
-			{
-				_log.Log(LOG_STATUS, "Satel Integra: switched output %d", general->id - 256);
-				return true;
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "Satel Integra: Switch output %d failed", general->id - 256);
-				return false;
-			}
-
+		if (SendCommand(cmd, 41, buffer) != -1)
+		{
+			_log.Log(LOG_STATUS, "Satel Integra: switched output %d", general->id - 256);
+			return true;
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Satel Integra: Switch output %d failed", general->id - 256);
+			return false;
 		}
 	}
 	return false;
@@ -883,6 +873,8 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 
 int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, unsigned char *answer)
 {
+	boost::lock_guard<boost::mutex> lock(m_mutex);
+
 	if (!ConnectToIntegra())
 	{
 		return -1;

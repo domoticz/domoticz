@@ -28,12 +28,16 @@ private:
 	// filled by 0x7F command
 	unsigned char m_newData[7];
 
+	// password to Integra
 	unsigned char m_userCode[8];
 
 	//TODO maybe create dynamic array ?
 	bool m_zonesLastState[256];
 	bool m_outputsLastState[256];
 	bool m_isOutputSwitch[256];
+
+	// thread-safe for read and write
+	boost::mutex m_mutex;
 
 	bool m_armLast;
 
