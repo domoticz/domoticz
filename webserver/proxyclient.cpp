@@ -6,7 +6,7 @@
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 
-/* also on Google Drive */
+/* pushing to Google Drive test */
 
 extern std::string szAppVersion;
 
