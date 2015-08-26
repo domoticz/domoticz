@@ -305,6 +305,11 @@ void C1Wire::GetDeviceDetails()
 				break;
 			}
 
+		case silicon_serial_number:
+		{ // this is only chip with id (equal device.filename and device.devid)
+			break;
+		}
+
 		default: // Device is not actually supported
 			{
 				_log.Log(LOG_ERROR,"1-Wire : Device family (%02x) is not actually supported", device.family);
