@@ -322,6 +322,10 @@ define(['app'], function (app) {
 				  else if (item.SubType == "Text") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTextLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
+				  else if (item.SubType == "Soil Moisture") {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
+				  }
+
 				  else {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';
 				  }
