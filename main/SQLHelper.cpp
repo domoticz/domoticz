@@ -5424,9 +5424,49 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 	return ( rc==SQLITE_OK );
 }
 
+unsigned long long CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit, 
+													   const unsigned char devType, const unsigned char subType, 
+													   const unsigned char signallevel, const unsigned char batterylevel, 
+													   const int nValue, const char* sValue,
+													   std::string &devname,
+													   const bool bUseOnOffAction)
+{
+	// We only have to update all others units within the ID group. If the current unit does not have the same value, 
+	// it will be updated too. The reason we choose the UpdateValue is the propagation of the change to all units involved, including LogUpdate. 
+
+	unsigned long long devRowIndex = -1;
+	typedef std::vector<std::vector<std::string> > VectorVectorString;
+
+	VectorVectorString result = safe_query("SELECT Unit FROM DeviceStatus WHERE ((DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (nValue!=%d))",
+		ID,
+		pTypeLighting2,
+		subType,
+		nValue);
+
+	for (VectorVectorString::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+	{
+//		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
+		unsigned char theUnit = boost::lexical_cast<unsigned char>((*itt)[0]); // get the unit value
+		devRowIndex = UpdateValue(HardwareID, ID, theUnit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
+	}
+	return devRowIndex;
+}
+
+
 void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
 {
-	safe_query("UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d)",GroupCmd,ID.c_str(),pTypeLighting2,subType);
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+		GroupCmd,
+		"OFF",
+		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		ID.c_str(),
+		pTypeLighting2,
+		subType,
+		GroupCmd);
 }
 
 void CSQLHelper::GeneralSwitchGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)

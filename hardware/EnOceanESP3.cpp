@@ -14,6 +14,9 @@
 
 #include <ctime>
 
+#if _DEBUG
+	#define ENOCEAN_BUTTON_DEBUG
+#endif
 #define ENABLE_LOGGING
 
 #define ENOCEAN_RETRY_DELAY 30
@@ -236,20 +239,43 @@ typedef enum
 /**
  * @defgroup data3 Meaning of data_byte 3 (for RPS telegrams, NU = 1)
  * Bitmasks for the data_byte3-field, if ORG = RPS and NU = 1.
+ * Specification can be found at: 
+ *      https://www.enocean.com/fileadmin/redaktion/enocean_alliance/pdf/EnOcean_Equipment_Profiles_EEP_V2.6.3_public.pdf
  * @{
  */
+
+	//!	Rocker ID Mask
 #define DB3_RPS_NU_RID 0xC0
 #define DB3_RPS_NU_RID_SHIFT 6
+
+//!	Button ID Mask
+#define DB3_RPS_NU_BID 0xE0
+#define DB3_RPS_NU_BID_SHIFT 5
+
+//!	Up Down Mask
 #define DB3_RPS_NU_UD  0x20
-#define DB3_RPS_NU_UD_SHIFT 5
+#define DB3_RPS_NU_UD_SHIFT  5
+
+//!	Pressed Mask
 #define DB3_RPS_NU_PR  0x10
 #define DB3_RPS_NU_PR_SHIFT 4
+
+//!	Second Rocker ID Mask
 #define DB3_RPS_NU_SRID 0x0C
 #define DB3_RPS_NU_SRID_SHIFT 2
+
+//!	Second Button ID Mask
+#define DB3_RPS_NU_SBID 0x0E
+#define DB3_RPS_NU_SBID_SHIFT 1
+
+//!	Second UpDown Mask
 #define DB3_RPS_NU_SUD 0x02
 #define DB3_RPS_NU_SUD_SHIFT 1
+
+//!	Second Action Mask
 #define DB3_RPS_NU_SA 0x01
 #define DB3_RPS_NU_SA_SHIFT 0
+
 /*@}*/
 
 /**
@@ -1484,8 +1510,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 			}
 			break;
 		case RORG_RPS: // repeated switch communication
-			{
-/*
+			{				
+#ifdef ENOCEAN_BUTTON_DEBUG
 				sprintf(szTmp, "RPS data: Sender id: 0x%02x%02x%02x%02x Status: %02x Data: %02x",
 					m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5],
 					m_buffer[6],
@@ -1496,7 +1522,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 				{
 					_log.Log(LOG_NORM, "EnOcean: T21");
 				}
-*/
+#endif // ENOCEAN_BUTTON_DEBUG
+				
 				unsigned char STATUS=m_buffer[6];
 
 				unsigned char T21 = (m_buffer[6] & S_RPS_T21) >> S_RPS_T21_SHIFT;
@@ -1510,6 +1537,9 @@ void CEnOceanESP3::ParseRadioDatagram()
 				char szDeviceID[20];
 				sprintf(szDeviceID,"%08X",(unsigned int)id);
 
+				// Whether we use the ButtonID reporting with ON/OFF
+				bool useButtonIDs = true;
+				
 				if (STATUS & S_RPS_NU)
 				{
 					//Rocker
@@ -1517,22 +1547,31 @@ void CEnOceanESP3::ParseRadioDatagram()
 					unsigned char DATA_BYTE3=m_buffer[1];
 
 					// NU == 1, N-Message
-					unsigned char RockerID=(DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
-					unsigned char UpDown=(DATA_BYTE3 & DB3_RPS_NU_UD) >> DB3_RPS_NU_UD_SHIFT;
-					unsigned char Pressed=(DATA_BYTE3 & DB3_RPS_NU_PR)>>DB3_RPS_NU_PR_SHIFT;
-					unsigned char SecondRockerID=(DATA_BYTE3 & DB3_RPS_NU_SRID)>>DB3_RPS_NU_SRID_SHIFT;
+					unsigned char ButtonID = (DATA_BYTE3 & DB3_RPS_NU_BID) >> DB3_RPS_NU_BID_SHIFT;
+					unsigned char RockerID = (DATA_BYTE3 & DB3_RPS_NU_RID) >> DB3_RPS_NU_RID_SHIFT;
+					unsigned char UpDown=(DATA_BYTE3 & DB3_RPS_NU_UD)  >> DB3_RPS_NU_UD_SHIFT;
+					unsigned char Pressed=(DATA_BYTE3 & DB3_RPS_NU_PR) >> DB3_RPS_NU_PR_SHIFT;
+					
+					unsigned char SecondButtonID = (DATA_BYTE3 & DB3_RPS_NU_SBID) >> DB3_RPS_NU_SBID_SHIFT;
+					unsigned char SecondRockerID = (DATA_BYTE3 & DB3_RPS_NU_SRID) >> DB3_RPS_NU_SRID_SHIFT;
 					unsigned char SecondUpDown=(DATA_BYTE3 & DB3_RPS_NU_SUD)>>DB3_RPS_NU_SUD_SHIFT;
 					unsigned char SecondAction=(DATA_BYTE3 & DB3_RPS_NU_SA)>>DB3_RPS_NU_SA_SHIFT;
-#ifdef _DEBUG
-					_log.Log(LOG_NORM,"Received RPS N-Message Node 0x%08x Rocker ID: %i UD: %i Pressed: %i Second Rocker ID: %i SUD: %i Second Action: %i",
+
+#ifdef ENOCEAN_BUTTON_DEBUG
+					_log.Log(LOG_NORM,
+						"EnOcean: Received RPS N-Message   message: 0x%02X Node 0x%08x RockerID: %i ButtonID: %i Pressed: %i UD: %i Second Rocker ID: %i SecondButtonID: %i SUD: %i Second Action: %i",
+						DATA_BYTE3,
 						id,
-						RockerID, 
-						UpDown, 
+						RockerID,
+						ButtonID,
+						UpDown,
 						Pressed,
-						SecondRockerID, 
+						SecondRockerID,
+						SecondButtonID,
 						SecondUpDown,
 						SecondAction);
-#endif
+#endif // ENOCEAN_BUTTON_DEBUG
+					
 					//We distinguish 3 types of buttons from a switch: Left/Right/Left+Right
 					if (Pressed==1)
 					{
@@ -1552,16 +1591,44 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 						if (SecondAction==0)
 						{
-							//Left/Right Up/Down
-							tsen.LIGHTING2.unitcode=RockerID+1;
-							tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
+							if (useButtonIDs)
+							{
+								//Left/Right Pressed
+								tsen.LIGHTING2.unitcode = ButtonID + 1;
+								tsen.LIGHTING2.cmnd     = light2_sOn; // the button is pressed, so we don't get an OFF message here								
+							}
+							else
+							{
+								//Left/Right Up/Down
+								tsen.LIGHTING2.unitcode = RockerID + 1;
+								tsen.LIGHTING2.cmnd     = (UpDown == 1) ? light2_sOn : light2_sOff;								
+							}
 						}
 						else
 						{
-							//Left+Right Up/Down
-							tsen.LIGHTING2.unitcode=SecondRockerID+10;
-							tsen.LIGHTING2.cmnd=(SecondUpDown==1)?light2_sOn:light2_sOff;
+							if (useButtonIDs)
+							{
+								//Left+Right Pressed
+								tsen.LIGHTING2.unitcode = ButtonID + 10;
+								tsen.LIGHTING2.cmnd     = light2_sOn;  // the button is pressed, so we don't get an OFF message here																
+							}
+							else
+							{								
+								//Left+Right Up/Down
+								tsen.LIGHTING2.unitcode = SecondRockerID + 10;
+								tsen.LIGHTING2.cmnd     = (SecondUpDown == 1) ? light2_sOn : light2_sOff;
+							}
 						}
+
+#ifdef ENOCEAN_BUTTON_DEBUG						
+						_log.Log(LOG_NORM, "EnOcean message: 0x%02X Node 0x%08x UnitID: %02X cmd: %02X ",
+							DATA_BYTE3,
+							id,
+							tsen.LIGHTING2.unitcode,
+							tsen.LIGHTING2.cmnd
+							);
+#endif //ENOCEAN_BUTTON_DEBUG
+
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
 					}
 				}
@@ -1570,12 +1637,20 @@ void CEnOceanESP3::ParseRadioDatagram()
 					if ((T21 == 1) && (NU == 0))
 					{
 						unsigned char DATA_BYTE3 = m_buffer[1];
-						//unsigned char ButtonID = (DATA_BYTE3&DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
-						//unsigned char Position = (DATA_BYTE3&DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
 
+						unsigned char ButtonID = (DATA_BYTE3 & DB3_RPS_BUTTONS) >> DB3_RPS_BUTTONS_SHIFT;
+						unsigned char Pressed = (DATA_BYTE3 & DB3_RPS_PR) >> DB3_RPS_PR_SHIFT;
+						
 						unsigned char UpDown = !((DATA_BYTE3 == 0xD0) || (DATA_BYTE3 == 0xF0));
 
-						//_log.Log(LOG_NORM, "Received RPS T21-Message Node 0x%08x Button ID: %02X UD: %i",id,ButtonID,UpDown);
+#ifdef ENOCEAN_BUTTON_DEBUG
+						_log.Log(LOG_NORM, "EnOcean: Received RPS T21-Message message: 0x%02X Node 0x%08x ButtonID: %i Pressed: %i UD: %i",
+							DATA_BYTE3,
+							id,
+							ButtonID,
+							Pressed,
+							UpDown);
+#endif //ENOCEAN_BUTTON_DEBUG
 
 						RBUF tsen;
 						memset(&tsen, 0, sizeof(RBUF));
@@ -1590,11 +1665,29 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.LIGHTING2.id4 = (BYTE)ID_BYTE0;
 						tsen.LIGHTING2.level = 0;
 						tsen.LIGHTING2.rssi = 12;
+						
+						if (useButtonIDs)
+						{
+							// It's the release message of any button pressed before
+							tsen.LIGHTING2.unitcode = 0; // does not matter, since we are using a group command
+							tsen.LIGHTING2.cmnd = (Pressed == 1) ? light2_sGroupOn : light2_sGroupOff;													
+						}
+						else
+						{
+							tsen.LIGHTING2.unitcode = 1;
+							tsen.LIGHTING2.cmnd = (UpDown == 1) ? light2_sOn : light2_sOff;
+						}
+#ifdef ENOCEAN_BUTTON_DEBUG
 
-						tsen.LIGHTING2.unitcode = 1;
-						tsen.LIGHTING2.cmnd = (UpDown == 1) ? light2_sOn : light2_sOff;
+						_log.Log(LOG_NORM, "EnOcean message: 0x%02X Node 0x%08x UnitID: %02X cmd: %02X ",
+							DATA_BYTE3,
+							id,
+							tsen.LIGHTING2.unitcode,
+							tsen.LIGHTING2.cmnd);
+
+#endif // ENOCEAN_BUTTON_DEBUG
+
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
-
 					}
 				}
 			}
