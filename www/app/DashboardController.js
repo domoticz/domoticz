@@ -3103,7 +3103,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType=="Soil Moisture") {
-							xhtm+='moisture48.png" height="40" width="40"></td>\n';
+							xhtm+='moisture48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Leaf Wetness") {

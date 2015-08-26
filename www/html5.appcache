@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1026
+# ref 1029
 
 CACHE:
 # CSS
@@ -163,6 +163,7 @@ images/Fireplace48_On.png
 images/forward_disabled.png
 images/forward_enabled.png
 images/forward_enabled_hover.png
+images/Gas48.png
 images/gauge.png
 images/gauge48.png
 images/Generic.png
