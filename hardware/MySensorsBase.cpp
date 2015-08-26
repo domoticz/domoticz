@@ -1271,6 +1271,7 @@ void MySensorsBase::ParseLine()
 		case V_FLOW:
 			//Flow of water in meter
 			pChild->SetValue(vType, (float)atof(payload.c_str()));
+			bHaveValue = true;
 			break;
 		case V_VOLUME:
 			//Water Volume
