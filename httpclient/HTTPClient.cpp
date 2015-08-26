@@ -256,15 +256,18 @@ bool HTTPClient::PUTBinary(const std::string &url, const std::string &postdata, 
 }
 
 
-bool HTTPClient::GET(const std::string &url, std::string &response)
+bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> ExtraHeaders;
 	if (!GETBinary(url,ExtraHeaders,vHTTPResponse))
 		return false;
-	if (vHTTPResponse.empty())
-		return false;
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert( response.begin(), vHTTPResponse.begin(), vHTTPResponse.end() );
 	return true;
 }

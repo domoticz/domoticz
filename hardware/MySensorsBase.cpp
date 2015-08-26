@@ -619,13 +619,14 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			SendDistanceSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue);
 		break;
 	case V_FLOW:
-		//Flow of water in meter
-		while (1==0);
+		//Flow of water in meter (for now send as a percentage sensor)
+		if (pChild->GetValue(vType, floatValue))
+			SendPercentageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, "Water Flow");
 		break;
 	case V_VOLUME:
 		//Water Volume
 		if (pChild->GetValue(vType, floatValue))
-			SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue);
+			SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, "Water");
 		break;
 	case V_VOLTAGE:
 		devname = "Voltage";
@@ -1269,7 +1270,8 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_FLOW:
 			//Flow of water in meter
-			while (1==0);
+			pChild->SetValue(vType, (float)atof(payload.c_str()));
+			bHaveValue = true;
 			break;
 		case V_VOLUME:
 			//Water Volume

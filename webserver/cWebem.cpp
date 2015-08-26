@@ -363,87 +363,72 @@ bool cWebem::CheckForAction( request& req )
 		const char *pContent_Type=req.get_req_header(&req,"Content-Type");
 		if (pContent_Type)
 		{
-			if (strstr(pContent_Type,"multipart")!=NULL)
+			if (strstr(pContent_Type,"multipart/form-data")!=NULL)
 			{
-				const char *pBoundary=strstr(pContent_Type,"boundary=");
-				if (pBoundary!=NULL)
+				std::string szContent = req.content;
+				size_t pos;
+				std::string szVariable,szContentType,szValue;
+
+				//first line is our boundary
+				pos = szContent.find("\r\n");
+				if (pos == std::string::npos)
+					return true;
+				std::string szBoundary = szContent.substr(0, pos);
+				szContent = szContent.substr(pos + 2);
+
+				while (!szContent.empty())
 				{
-					std::string szBoundary=std::string("--")+(pBoundary+9);
-
-					std::vector<std::string> results;
-					std::string sorg = req.content;
-					bool bDone = false;
-					while (!bDone)
+					//Next line will contain our variable name
+					pos = szContent.find("\r\n");
+					if (pos == std::string::npos)
+						return true;
+					szVariable = szContent.substr(0, pos);
+					szContent = szContent.substr(pos + 2);
+					if (szVariable.find("Content-Disposition") != 0)
+						return true;
+					pos = szVariable.find("name=\"");
+					if (pos == std::string::npos)
+						return true;
+					szVariable = szVariable.substr(pos + 6);
+					pos = szVariable.find("\"");
+					if (pos == std::string::npos)
+						return true;
+					szVariable = szVariable.substr(0, pos);
+					//Next line could be empty, or a Content-Type, if its empty, it is just a string
+					pos = szContent.find("\r\n");
+					if (pos == std::string::npos)
+						return true;
+					szContentType = szContent.substr(0, pos);
+					szContent = szContent.substr(pos + 2);
+					if (szContentType.find("application/octet-stream") != std::string::npos)
 					{
-						size_t bpos = sorg.find(szBoundary,1);
-						if (bpos != std::string::npos)
-						{
-							results.push_back(sorg.substr(0, bpos));
-							sorg = sorg.substr(bpos);
-						}
-						else
-							bDone = true;
+						//Its a file/stream, next line should be empty
+						pos = szContent.find("\r\n");
+						if (pos == std::string::npos)
+							return true;
+						szContent = szContent.substr(pos + 2);
 					}
-
-					std::vector<std::string>::const_iterator itt;
-					for (itt = results.begin(); itt != results.end(); ++itt)
+					else
 					{
-						std::string lstring = *itt;
-						std::istringstream ss(lstring);
-						//Find boundary in content
-						std::string csubstr;
-						int ii = 0;
-
-						std::string vName = "";
-						while (!ss.eof())
-						{
-							safeGetline(ss, csubstr);
-							if (ii == 0)
-							{
-								//Boundary
-								if (csubstr != szBoundary)
-									break;
-								ii++;
-							}
-							else if (ii == 1)
-							{
-								if (csubstr.find("Content-Disposition:") != std::string::npos)
-								{
-									size_t npos = csubstr.find("name=\"");
-									if (npos == std::string::npos)
-										break;
-									vName = csubstr.substr(npos + 6);
-									npos = vName.find("\"");
-									if (npos == std::string::npos)
-										break;
-									vName = vName.substr(0, npos);
-									ii++;
-								}
-							}
-							else if (ii == 2)
-							{
-								if (csubstr.size() == 0)
-								{
-									ii = 0;
-									std::string szContent;
-									size_t bpos = size_t(ss.tellg());
-									szContent = lstring.substr(bpos, lstring.size() - bpos);
-									if (szContent.size() > 2)
-									{
-										if (
-											(szContent[szContent.size() - 2] == '\r') &&
-											(szContent[szContent.size() - 1] == '\n')
-											)
-										{
-											szContent = szContent.substr(0, szContent.size() - 2);
-										}
-									}
-									myNameValues.insert(std::pair< std::string, std::string >(vName, szContent));
-								}
-							}
-						}
+						//next line should be empty
+						if (!szContentType.empty())
+							return true;//dont know this one
 					}
+					pos = szContent.find(szBoundary);
+					if (pos == std::string::npos)
+						return true;
+					szValue = szContent.substr(0, pos - 2);
+					myNameValues.insert(std::pair< std::string, std::string >(szVariable, szValue));
+
+					szContent=szContent.substr(pos + szBoundary.size());
+					pos = szContent.find("\r\n");
+					if (pos == std::string::npos)
+						return true;
+					szContent = szContent.substr(pos + 2);
 				}
+				//we should have at least one value
+				if (myNameValues.empty())
+					return true;
 				// call the function
 				req.uri = pfun->second(this);
 				return true;
@@ -1084,7 +1069,6 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 		return false;
 
 	std::string host=sHost;
-	int pos;
 	std::vector<_tIPNetwork>::const_iterator itt;
 
 	/* RK, check IPv6 prefix */
