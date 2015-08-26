@@ -974,7 +974,15 @@ define(['app'], function (app) {
 							}
 					   }
 					   else {
-						xhtm+='Counter48.png" height="48" width="48"></td>\n';
+ 							if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
+								xhtm+='Counter48.png" height="48" width="48"></td>\n';
+							}
+							else if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Gas")) {
+								xhtm+='override.png" height="48" width="48"></td>\n';
+							}
+							else {
+								xhtm+='Counter48.png" height="48" width="48"></td>\n';
+							}
 					   }
 					  if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 						status=item.Counter;
