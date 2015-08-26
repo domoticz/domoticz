@@ -970,11 +970,11 @@ define(['app'], function (app) {
 								xhtm+='Water48_On.png" height="48" width="48"></td>\n';
 							}
 							else {
-								xhtm+='counter.png" height="48" width="48"></td>\n';
+								xhtm+='Counter48.png" height="48" width="48"></td>\n';
 							}
 					   }
 					   else {
-						xhtm+='counter.png" height="48" width="48"></td>\n';
+						xhtm+='Counter48.png" height="48" width="48"></td>\n';
 					   }
 					  if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 						status=item.Counter;
