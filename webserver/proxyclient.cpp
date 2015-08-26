@@ -6,8 +6,6 @@
 #include "../main/SQLHelper.h"
 #include "../webserver/Base64.h"
 
-/* pushing to Google Drive test */
-
 extern std::string szAppVersion;
 
 CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm)
