@@ -7,6 +7,8 @@
 #include "../webserver/Base64.h"
 
 extern std::string szAppVersion;
+static std::string _instanceid;
+static boost::mutex prefs_mutex;
 
 CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm)
     : _socket(io_service, context),
@@ -108,6 +110,8 @@ void CProxyClient::handle_handshake(const boost::system::error_code& error)
 	if (!error)
 	{
 		_log.Log(LOG_NORM, "PROXY: Handshake complete. Authenticating.");
+		// lock until we have a valid api id
+		prefs_mutex.lock();
 		LoginToService();
 	}
 	else
@@ -261,21 +265,14 @@ void CProxyClient::HandleRequest(ProxyPdu *pdu)
 
 void CProxyClient::HandleAssignkey(ProxyPdu *pdu)
 {
-	std::string old_id;
 	// get our new api key
 	CValueLengthPart parameters(pdu);
 	char *newapi;
 	size_t newapilen;
 	parameters.GetNextPart((void **)&newapi, &newapilen);
 	_log.Log(LOG_NORM, "PROXY: We were assigned an instance id: %s.\n", newapi);
-	prefs_mutex.lock();
-	m_sql.GetPreferencesVar("MyDomoticzInstanceId", old_id);
-	if (old_id == "") {
-		// check if another thread meanwhile also didn't get an instance id
-		_instanceid = newapi;
-		m_sql.UpdatePreferencesVar("MyDomoticzInstanceId", _instanceid);
-	}
-	prefs_mutex.unlock();
+	_instanceid = newapi;
+	m_sql.UpdatePreferencesVar("MyDomoticzInstanceId", _instanceid);
 	free(newapi);
 	// re-login with the new instance id
 	LoginToService();
@@ -295,11 +292,16 @@ void CProxyClient::HandleEnquire(ProxyPdu *pdu)
 void CProxyClient::HandleAuthresp(ProxyPdu *pdu)
 {
 	// get auth response (0 or 1)
-	size_t authlen;
+	size_t authlen, reasonlen;
 	int auth;
+	char *reason;
 	CValueLengthPart part(pdu);
 	part.GetNextValue((void **)&auth, &authlen);
-	_log.Log(LOG_NORM, "PROXY: Authenticated: %s (%d).\n", auth ? "yes" : "no", auth);
+	part.GetNextPart((void **)&reason, &reasonlen);
+	_log.Log(LOG_NORM, "PROXY: Authenticated: %s (%d).\n", auth ? "yes" : reason, auth);
+	free(reason);
+	// unlock prefs mutex
+	prefs_mutex.unlock();
 	if (!auth) {
 		Stop();
 		return;
@@ -356,9 +358,12 @@ void CProxyClient::handle_read(const boost::system::error_code& error, size_t by
 	}
 }
 
-
 void CProxyClient::Stop()
 {
+	// todo: check if this gives the proper results
+	while (!prefs_mutex.try_lock()) {
+	}
+	prefs_mutex.unlock();
 	doStop = true;
 	_socket.lowest_layer().close();
 }

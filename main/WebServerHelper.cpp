@@ -128,12 +128,7 @@ namespace http {
 
 		int CWebServerHelper::GetNrMyDomoticzThreads()
 		{
-			std::string instanceid;
-			int nrThreads = 3;
-			m_sql.GetPreferencesVar("MyDomoticzInstanceId", instanceid);
-			if (instanceid == "") {
-				return 1;
-			}
+			int nrThreads = 3; // default value
 			m_sql.GetPreferencesVar("MyDomoticzNrThreads", nrThreads);
 			return nrThreads;
 		}
