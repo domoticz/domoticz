@@ -44,9 +44,7 @@ public:
 private:
 	std::string GetResponseHeaders(const http::server::reply &reply_);
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> _socket;
-	boost::mutex prefs_mutex;
 	std::string _apikey;
-	std::string _instanceid;
 	std::string _password;
 	boost::asio::streambuf _readbuf;
 	std::vector<boost::asio::const_buffer> _writebuf;
