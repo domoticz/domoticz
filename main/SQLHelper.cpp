@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 75
+#define DB_VERSION 76
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -551,7 +551,9 @@ const char *sqlCreateMySensorsChilds =
 " [HardwareID] INTEGER NOT NULL,"
 " [NodeID] INTEGER NOT NULL,"
 " [ChildID] INTEGER NOT NULL,"
-" [Type] INTEGER NOT NULL);";
+" [Name] VARCHAR(100) DEFAULT '',"
+" [Type] INTEGER NOT NULL,"
+" [UseAck] INTEGER DEFAULT 0);";
 
 const char *sqlCreateToonDevices =
 	"CREATE TABLE IF NOT EXISTS [ToonDevices]("
@@ -1418,6 +1420,11 @@ bool CSQLHelper::OpenDatabase()
 				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
 			}
 		}
+		if (dbversion < 76)
+		{
+			query("ALTER TABLE MySensorsChilds ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			query("ALTER TABLE MySensorsChilds ADD COLUMN [UseAck] INTEGER DEFAULT 0");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -1789,7 +1796,14 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("ShowUpdateEffect", 0);
 	}
-
+	if (!GetPreferencesVar("ShortLogInterval", nValue))
+	{
+		nValue = 5;
+		UpdatePreferencesVar("ShortLogInterval", nValue);
+	}
+	if (nValue < 1)
+		nValue = 5;
+	m_ShortLogInterval = nValue;
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -3024,7 +3038,7 @@ bool CSQLHelper::HasSceneTimers(const std::string &Idx)
 	return HasSceneTimers(idxll);
 }
 
-void CSQLHelper::Schedule5Minute()
+void CSQLHelper::ScheduleShortlog()
 {
 	if (!m_dbase)
 		return;

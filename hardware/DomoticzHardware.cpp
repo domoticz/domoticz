@@ -441,6 +441,36 @@ float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool &bExists)
 	return (float)atof(result[0][0].c_str());
 }
 
+void CDomoticzHardwareBase::SendWattMeter(const int NodeID, const int ChildID, const int BatteryLevel, const float musage, const std::string &defaultname)
+{
+	_tUsageMeter umeter;
+	umeter.id1 = 0;
+	umeter.id2 = 0;
+	umeter.id3 = 0;
+	umeter.id4 = NodeID;
+	umeter.dunit = ChildID;
+	umeter.fusage = musage;
+
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", umeter.id1, umeter.id2, umeter.id3, umeter.id4);
+
+	bool bDeviceExits = true;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szIdx, umeter.dunit, int(pTypeUsage), int(sTypeElectric));
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	sDecodeRXMessage(this, (const unsigned char *)&umeter);
+
+	if (!bDeviceExits)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szIdx, umeter.dunit, int(pTypeUsage), int(sTypeElectric));
+	}
+}
 
 void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname)
 {

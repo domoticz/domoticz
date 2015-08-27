@@ -190,7 +190,6 @@ public:
 	unsigned long long UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction=true);
 	unsigned long long UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction=true);
 
-	
 	bool GetLastValue(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &nvalue, std::string &sValue, struct tm &LastUpdateTime);
 	
 	void Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd);
@@ -225,7 +224,7 @@ public:
 	void CheckSceneStatusWithDevice(const unsigned long long DevIdx);
 	void CheckSceneStatusWithDevice(const std::string &DevIdx);
 
-	void Schedule5Minute();
+	void ScheduleShortlog();
 	void ScheduleDay();
 
 	void DeleteHardware(const std::string &idx);
@@ -278,6 +277,7 @@ public:
 	bool		m_bAllowWidgetOrdering;
 	int			m_ActiveTimerPlan;
 	bool		m_bDisableEventSystem;
+	int			m_ShortLogInterval;
 private:
 	boost::mutex	m_sqlQueryMutex;
 	sqlite3			*m_dbase;
