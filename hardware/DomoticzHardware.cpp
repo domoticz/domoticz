@@ -423,22 +423,23 @@ float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool &bExists)
 	sprintf(szIdx, "%d", NodeID & 0xFFFF);
 	int Unit = 0;
 
-	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > results;
 	bool bDeviceExits = true;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
-	if (result.size() < 1)
+	results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
+	if (results.size() < 1)
 	{
 		bExists = false;
 		return 0.0f;
 	}
-	result = m_sql.safe_query("SELECT MAX(Total) FROM Rain_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
-	if (result.size() < 1)
+	std::vector<std::string> splitresults;
+	StringSplit(results[0][1], ";", splitresults);
+	if (splitresults.size() != 2)
 	{
 		bExists = false;
 		return 0.0f;
 	}
 	bExists = true;
-	return (float)atof(result[0][0].c_str());
+	return (float)atof(splitresults[1].c_str());
 }
 
 void CDomoticzHardwareBase::SendWattMeter(const int NodeID, const int ChildID, const int BatteryLevel, const float musage, const std::string &defaultname)
