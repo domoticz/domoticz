@@ -154,9 +154,12 @@ public:
 
 	struct _tMySensorChild
 	{
-		_ePresentationType presType;
 		int nodeID;
 		int childID;
+
+		_ePresentationType presType;
+		std::string childName;
+		bool useAck;
 
 		//values
 		std::map<_eSetType, _tMySensorValue> values;
@@ -173,6 +176,7 @@ public:
 			hasBattery = false;
 			batValue = 255;
 			presType = S_UNKNOWN;
+			useAck = false;
 		}
 
 		bool GetValue(const _eSetType vType, int &intValue)
@@ -263,6 +267,27 @@ public:
 			}
 			return NULL;
 		}
+		_tMySensorChild* FindChildWithValueType(const int ChildID, const _eSetType valType)
+		{
+			std::vector<_tMySensorChild>::iterator itt;
+			for (itt = m_childs.begin(); itt != m_childs.end(); ++itt)
+			{
+				if (itt->childID == ChildID)
+				{
+					std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+					for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+					{
+						if (itt2->first == valType)
+						{
+							if (!itt2->second.bValidValue)
+								return NULL;
+							return &*itt;
+						}
+					}
+				}
+			}
+			return NULL;
+		}
 		_tMySensorChild* FindChild(const int ChildID)
 		{
 			std::vector<_tMySensorChild>::iterator itt;
@@ -287,8 +312,8 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 
-	void UpdatePresentationType(const int NodeID, const int ChildID, const _ePresentationType pType);
-	_ePresentationType GetPresentationType(const int NodeID, const int ChildID);
+	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name, const bool UseAck);
+	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
 
 	void SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
@@ -304,7 +329,7 @@ private:
 
 	void SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *pSensor, const _eSetType vType);
 
-	void MakeAndSendWindSensor(const int nodeID);
+	void MakeAndSendWindSensor(const int nodeID, const std::string &sname);
 
 	_tMySensorNode* FindNode(const int nodeID);
 	_tMySensorNode* InsertNode(const int nodeID);
