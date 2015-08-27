@@ -666,7 +666,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 				{
 					std::stringstream sstr;
 					sstr << pChild->nodeID;
-					m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), (!pChild->childName.empty()) ? pChild->childName.c_str() : "Forecast");
+					std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Forecast";
+					m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
 				}
 			}
 		}
