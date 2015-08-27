@@ -449,6 +449,9 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 			//get last rain counter from the database
 			bool bExists=false;
 			m_RainOffset = GetRainSensorValue(ID, bExists);
+			m_RainOffset -= rain;
+			if (m_RainOffset < 0)
+				m_RainOffset = 0;
 		}
 		if (rain < m_OldRainCounter)
 		{
