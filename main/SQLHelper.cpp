@@ -5459,8 +5459,7 @@ unsigned long long CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID
 
 	for (VectorVectorString::const_iterator itt = result.begin(); itt != result.end(); ++itt)
 	{
-//		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
-		unsigned char theUnit = boost::lexical_cast<unsigned char>((*itt)[0]); // get the unit value
+		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
 		devRowIndex = UpdateValue(HardwareID, ID, theUnit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
 	}
 	return devRowIndex;
