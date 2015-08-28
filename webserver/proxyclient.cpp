@@ -28,14 +28,12 @@ CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl
 		doStop = true;
 		return;
 	}
-	_log.Log(LOG_NORM, "PROXY: Connecting.");
 	m_pWebEm = webEm;
 	Reconnect();
 }
 
 void CProxyClient::Reconnect()
 {
-	_log.Log(LOG_NORM, "PROXY: Connecting...");
 
 	std::string address = "my.domoticz.com";
 	std::string port = "9999";
@@ -44,7 +42,6 @@ void CProxyClient::Reconnect()
 	boost::asio::ip::tcp::resolver::query query(address, port);
 	boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 	boost::asio::ip::tcp::endpoint endpoint = *iterator;
-	_log.Log(LOG_NORM, "PROXY: we have an iterator");
 	_socket.lowest_layer().async_connect(endpoint,
 		boost::bind(&CProxyClient::handle_connect, this,
 		boost::asio::placeholders::error, iterator));
@@ -52,17 +49,14 @@ void CProxyClient::Reconnect()
 
 void CProxyClient::handle_connect(const boost::system::error_code& error, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 {
-	_log.Log(LOG_NORM, "PROXY: In handle_connect.");
 	if (!error)
 	{
-		_log.Log(LOG_NORM, "PROXY: Connect complete. Starting handshake.");
 		_socket.async_handshake(boost::asio::ssl::stream_base::client,
 			boost::bind(&CProxyClient::handle_handshake, this,
 			boost::asio::placeholders::error));
 	}
 	else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
 	{
-		_log.Log(LOG_NORM, "PROXY: Trying next endpoint iterator.");
 		_socket.lowest_layer().close();
 		boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
 		_socket.lowest_layer().async_connect(endpoint,
@@ -83,7 +77,6 @@ void CProxyClient::MyWrite(pdu_type type, CValueLengthPart *parameters)
 {
 	_writebuf.clear();
 	writePdu = new ProxyPdu(type, parameters);
-	_log.Log(LOG_NORM, "PROXY: Writing pdu.");
 
 	_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
 
@@ -109,7 +102,6 @@ void CProxyClient::handle_handshake(const boost::system::error_code& error)
 {
 	if (!error)
 	{
-		_log.Log(LOG_NORM, "PROXY: Handshake complete. Authenticating.");
 		// lock until we have a valid api id
 		prefs_mutex.lock();
 		LoginToService();
@@ -135,7 +127,7 @@ void CProxyClient::handle_write(const boost::system::error_code& error, size_t b
 	delete writePdu;
 	if (!error)
 	{
-		_log.Log(LOG_NORM, "PROXY: Write complete. Reading pdu.");
+		// Write complete. Reading pdu.
 		ReadMore();
 	}
 	else
@@ -168,11 +160,9 @@ void CProxyClient::GetRequest(const std::string originatingip, boost::asio::muta
 			m_pWebEm->myRequestHandler.handle_request(originatingip, request_, reply_);
 			//std::vector<boost::asio::const_buffer> replybuf = reply_.to_buffers();
 			//response = std::string(boost::asio::buffers_begin(replybuf), boost::asio::buffers_begin(replybuf) + boost::asio::buffer_size(replybuf));
-			_log.Log(LOG_ERROR, "PROXY: We have a response");
 	}
 	else if (!result)
 	{
-		_log.Log(LOG_ERROR, "PROXY: Parse result: false.");
 		reply_ = http::server::reply::stock_reply(http::server::reply::bad_request);
 		//std::vector<boost::asio::const_buffer> replybuf = reply_.to_buffers();
 		//response = std::string(boost::asio::buffers_begin(replybuf), boost::asio::buffers_begin(replybuf) + boost::asio::buffer_size(replybuf));
@@ -255,7 +245,6 @@ void CProxyClient::HandleRequest(ProxyPdu *pdu)
 		parameters.AddValue((void *)&reply_.status, SIZE_INT);
 		parameters.AddPart((void *)responseheaders.c_str(), responseheaders.length() + 1);
 		parameters.AddPart((void *)reply_.content.c_str(), reply_.content.length());
-		_log.Log(LOG_NORM, "About to send PDU.\n");
 		break;
 	}
 
@@ -280,8 +269,6 @@ void CProxyClient::HandleAssignkey(ProxyPdu *pdu)
 
 void CProxyClient::HandleEnquire(ProxyPdu *pdu)
 {
-	_log.Log(LOG_NORM, "PROXY: Receiving enquire.");
-
 	// assemble response
 	CValueLengthPart parameters;
 
@@ -313,8 +300,6 @@ void CProxyClient::handle_read(const boost::system::error_code& error, size_t by
 {
 	if (!error)
 	{
-		_log.Log(LOG_ERROR, "PROXY: Reply: %ld bytes transferred.", bytes_transferred);
-		
 		_readbuf.commit(bytes_transferred);
 		const char *data = boost::asio::buffer_cast<const char*>(_readbuf.data());
 		ProxyPdu pdu(data, _readbuf.size());
@@ -322,7 +307,6 @@ void CProxyClient::handle_read(const boost::system::error_code& error, size_t by
 			ReadMore();
 			return;
 		}
-		_log.Log(LOG_NORM, "Consuming %d bytes.", pdu.length() + 9);
 		_readbuf.consume(pdu.length() + 9); // 9 is header size
 
 		switch (pdu._type) {
@@ -417,7 +401,6 @@ void CProxyManager::Stop()
 {
 	proxyclient->Stop();
 	io_service.stop();
-	_log.Log(LOG_ERROR, "PROXY: waiting for thread.join");
 	m_thread->interrupt();
 	m_thread->join();
 }
