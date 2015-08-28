@@ -142,22 +142,11 @@ m_iThreadsRunning(0)
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
 	SetSettings(PollIntervalsec, PingTimeoutms);
-#ifdef WIN32
-	// Initialize Winsock
-	WSADATA wsaData;
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-	{
-		_log.Log(LOG_ERROR,"Pinger: Error initializing Winsock!");
-	}
-#endif
 }
 
 CPinger::~CPinger(void)
 {
 	m_bIsStarted=false;
-#ifdef WIN32
-	WSACleanup();
-#endif
 }
 
 bool CPinger::StartHardware()
