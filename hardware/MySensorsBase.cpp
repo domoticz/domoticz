@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <ctime>
 
@@ -1132,7 +1131,8 @@ void MySensorsBase::ParseLine()
 			//send time in seconds from 1970 with timezone offset
 			{
 				boost::posix_time::ptime tlocal(boost::posix_time::second_clock::local_time());
-				time_t fltime = boost::posix_time::to_time_t(tlocal);
+				boost::posix_time::time_duration dur = tlocal - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1));
+				time_t fltime(dur.total_seconds());
 				sstr << fltime;
 				SendCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
 			}
