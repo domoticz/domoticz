@@ -113,6 +113,7 @@ extern std::string szAppVersion;
 
 extern http::server::CWebServerHelper m_webservers;
 
+
 namespace tcp {
 namespace server {
 	class CTCPClient;
@@ -1318,9 +1319,9 @@ void MainWorker::Do_Work()
 				m_ScheduleLastMinute = ltime.tm_min;
 
 				//check for 5 minute schedule
-				if (ltime.tm_min % 5 == 0)
+				if (ltime.tm_min % m_sql.m_ShortLogInterval == 0)
 				{
-					m_sql.Schedule5Minute();
+					m_sql.ScheduleShortlog();
 				}
 				std::string szPwdResetFile = szStartupFolder + "resetpwd";
 				if (file_exist(szPwdResetFile.c_str()))

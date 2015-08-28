@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1029
+# ref 1030
 
 CACHE:
 # CSS
@@ -126,6 +126,7 @@ images/contact48_open.png
 images/copy.png
 images/copy_hover.png
 images/counter.png
+images/Counter48.png
 images/csv.png
 images/csv_hover.png
 images/current.png
@@ -247,6 +248,7 @@ images/pushoff.png
 images/pushoff48.png
 images/pushon.png
 images/pushon48.png
+images/PV48.png
 images/radiation.png
 images/radiation48.png
 images/rain.png

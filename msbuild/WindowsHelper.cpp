@@ -5,11 +5,8 @@
 
 #include <Windows.h>
 #include "WindowsHelper.h"
-//#include <fcntl.h>
-//#include <io.h>
 #include <cstdio>
 #include <iostream>
-//#include <fstream>
 #include "resource.h"
 #include <setupapi.h>
 

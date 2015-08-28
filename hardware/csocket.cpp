@@ -21,34 +21,12 @@
 #define BLOCK_RETRY_INTERVAL_MSECS 1
 #define ERROR_INAPPROPRIATE_STATE -1
 
-static bool s_bSocketsInitialized = false;
-
 #define SUCCESS     0
 #define FAILURE     1
 
 csocket::csocket() : m_socketState(CLOSED), 
                      m_remotePort(0)
 {
-    if ( ! s_bSocketsInitialized )
-    {
-#ifdef WIN32
-        WORD socketVersion;  
-        WSADATA socketData; 
-
-        socketVersion = MAKEWORD(2, 0); 
-		int ret = WSAStartup(socketVersion, &socketData);
-		if (ret != 0)
-		{
-			ret = WSAGetLastError();
-
-			if (ret == WSANOTINITIALISED)
-			{
-				_log.Log(LOG_ERROR, "Domoticz: Winsock could not be initialized!");
-			}
-		}
-#endif
-    }
-     
     m_socket = 0;
 }
 
@@ -76,25 +54,6 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct hostent** p
     if (szRemoteHostName.length() == 0) 
     {
         return FAILURE;
-    }
-
-    if ( ! s_bSocketsInitialized )
-    {
-#ifdef WIN32
-        WORD wVersionRequested;  
-        WSADATA wsaData; 
-        wVersionRequested = MAKEWORD(2, 0); 
-		int ret = WSAStartup(wVersionRequested, &wsaData);
-		if (ret != 0)
-		{
-			ret = WSAGetLastError();
-
-			if (ret == WSANOTINITIALISED)
-			{
-				_log.Log(LOG_ERROR, "Domoticz: Winsock could not be initialized!");
-			}
-		}
-#endif
     }
 
     *pHostEnt = gethostbyname( szRemoteHostName.c_str() );

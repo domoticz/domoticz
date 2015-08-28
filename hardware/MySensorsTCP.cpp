@@ -16,34 +16,10 @@ m_stoprequested(false),
 m_bDoRestart(false)
 {
 	m_HwdID=ID;
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			_log.Log(LOG_ERROR,"MySensors: Winsock could not be initialized!");
-		}
-	}
-#endif
 }
 
 MySensorsTCP::~MySensorsTCP(void)
 {
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-	WSACleanup();
-#endif
 }
 
 bool MySensorsTCP::StartHardware()

@@ -16,7 +16,8 @@
 
 #if _DEBUG
 	#define ENOCEAN_BUTTON_DEBUG
-#endif
+#endif
+
 #define ENABLE_LOGGING
 
 #define ENOCEAN_RETRY_DELAY 30

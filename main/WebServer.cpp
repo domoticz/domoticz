@@ -432,11 +432,15 @@ namespace http {
 			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1));
 			RegisterCommandCode("updatetimer", boost::bind(&CWebServer::Cmd_UpdateTimer, this, _1));
 			RegisterCommandCode("deletetimer", boost::bind(&CWebServer::Cmd_DeleteTimer, this, _1));
+			RegisterCommandCode("enabletimer", boost::bind(&CWebServer::Cmd_EnableTimer, this, _1));
+			RegisterCommandCode("disabletimer", boost::bind(&CWebServer::Cmd_DisableTimer, this, _1));
 			RegisterCommandCode("cleartimers", boost::bind(&CWebServer::Cmd_ClearTimers, this, _1));
 
 			RegisterCommandCode("addscenetimer", boost::bind(&CWebServer::Cmd_AddSceneTimer, this, _1));
 			RegisterCommandCode("updatescenetimer", boost::bind(&CWebServer::Cmd_UpdateSceneTimer, this, _1));
 			RegisterCommandCode("deletescenetimer", boost::bind(&CWebServer::Cmd_DeleteSceneTimer, this, _1));
+			RegisterCommandCode("enablescenetimer", boost::bind(&CWebServer::Cmd_EnableSceneTimer, this, _1));
+			RegisterCommandCode("disablescenetimer", boost::bind(&CWebServer::Cmd_DisableSceneTimer, this, _1));
 			RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1));
 			RegisterCommandCode("setscenecode", boost::bind(&CWebServer::Cmd_SetSceneCode, this, _1));
 			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
@@ -6982,6 +6986,10 @@ namespace http {
 					root["result"][ii]["XOffset"] = sd[24].c_str();
 					root["result"][ii]["YOffset"] = sd[25].c_str();
 					root["result"][ii]["PlanID"] = sd[26].c_str();
+					root["result"][ii]["AddjValue"] = AddjValue;
+					root["result"][ii]["AddjMulti"] = AddjMulti;
+					root["result"][ii]["AddjValue2"] = AddjValue2;
+					root["result"][ii]["AddjMulti2"] = AddjMulti2;
 					sprintf(szData, "%d, %s", nValue, sValue.c_str());
 					root["result"][ii]["Data"] = szData;
 
@@ -7093,14 +7101,7 @@ namespace http {
 
 						root["result"][ii]["IsSubDevice"] = bIsSubDevice;
 
-						if (switchtype == STYPE_OnOff)
-						{
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
-						}
-						else if (switchtype == STYPE_Doorbell)
+						if (switchtype == STYPE_Doorbell)
 						{
 							root["result"][ii]["TypeImg"] = "doorbell";
 							root["result"][ii]["Status"] = "";//"Pressed";
@@ -7117,20 +7118,12 @@ namespace http {
 								lstatus = "Closed";
 							}
 							root["result"][ii]["Status"] = lstatus;
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 						else if (switchtype == STYPE_PushOn)
 						{
 							root["result"][ii]["TypeImg"] = "push";
 							root["result"][ii]["Status"] = "";
 							root["result"][ii]["InternalState"] = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 						else if (switchtype == STYPE_PushOff)
 						{
@@ -7144,10 +7137,6 @@ namespace http {
 							root["result"][ii]["TypeImg"] = "smoke";
 							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
 							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 						else if (switchtype == STYPE_Contact)
 						{
@@ -7160,10 +7149,6 @@ namespace http {
 								lstatus = "Closed";
 							}
 							root["result"][ii]["Status"] = lstatus;
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 						else if (switchtype == STYPE_Media)
 						{
@@ -7218,18 +7203,10 @@ namespace http {
 						else if (switchtype == STYPE_Dimmer)
 						{
 							root["result"][ii]["TypeImg"] = "dimmer";
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 						else if (switchtype == STYPE_Motion)
 						{
 							root["result"][ii]["TypeImg"] = "motion";
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 						if (llevel != 0)
 							sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
@@ -7263,19 +7240,7 @@ namespace http {
 							root["result"][ii]["SwitchTypeVal"] = STYPE_SMOKEDETECTOR;
 							root["result"][ii]["TypeImg"] = "smoke";
 							root["result"][ii]["SwitchType"] = Switch_Type_Desc(STYPE_SMOKEDETECTOR);
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
-						if (switchtype == STYPE_Motion)
-						{
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
-						}
-
 						sprintf(szData, "%s", lstatus.c_str());
 						root["result"][ii]["Data"] = szData;
 						root["result"][ii]["HaveTimeout"] = false;
@@ -7351,11 +7316,6 @@ namespace http {
 						if (strarray.size()>=3)
 						{
 							int i=0;
-							root["result"][ii]["AddjValue"]=AddjValue;
-							root["result"][ii]["AddjMulti"]=AddjMulti;
-							root["result"][ii]["AddjValue2"]=AddjValue2;
-							root["result"][ii]["AddjMulti2"]=AddjMulti2;
-
 							double tempCelcius=atof(strarray[i++].c_str());
 							double temp=ConvertTemperature(tempCelcius,tempsign);
 							double tempSetPoint;
@@ -7394,8 +7354,6 @@ namespace http {
 					}
 					else if ((dType == pTypeTEMP) || (dType == pTypeRego6XXTemp))
 					{
-						root["result"][ii]["AddjValue"] = AddjValue;
-						root["result"][ii]["AddjMulti"] = AddjMulti;
 						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
 						root["result"][ii]["Temp"] = tvalue;
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
@@ -7417,10 +7375,6 @@ namespace http {
 					}
 					else if ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 					{
-						root["result"][ii]["AddjValue"] = AddjValue;
-						root["result"][ii]["AddjMulti"] = AddjMulti;
-						root["result"][ii]["AddjValue2"] = AddjValue2;
-						root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
 						root["result"][ii]["Temp"] = tvalue;
 						sprintf(szData, "%.1f %c", tvalue, tempsign);
@@ -7442,11 +7396,6 @@ namespace http {
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 3)
 						{
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
-
 							double tempCelcius = atof(strarray[0].c_str());
 							double temp = ConvertTemperature(tempCelcius, tempsign);
 							int humidity = atoi(strarray[1].c_str());
@@ -7470,11 +7419,6 @@ namespace http {
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() == 5)
 						{
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
-
 							double tempCelcius = atof(strarray[0].c_str());
 							double temp = ConvertTemperature(tempCelcius, tempsign);
 							int humidity = atoi(strarray[1].c_str());
@@ -7525,11 +7469,6 @@ namespace http {
 						StringSplit(sValue, ";", strarray);
 						if (strarray.size() >= 3)
 						{
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
-
 							double tvalue = ConvertTemperature(atof(strarray[0].c_str()), tempsign);
 							root["result"][ii]["Temp"] = tvalue;
 							int forecast = atoi(strarray[2].c_str());
@@ -7556,11 +7495,6 @@ namespace http {
 							root["result"][ii]["UVI"] = strarray[0];
 							if (dSubType == sTypeUV3)
 							{
-								root["result"][ii]["AddjValue"] = AddjValue;
-								root["result"][ii]["AddjMulti"] = AddjMulti;
-								root["result"][ii]["AddjValue2"] = AddjValue2;
-								root["result"][ii]["AddjMulti2"] = AddjMulti2;
-
 								double tvalue = ConvertTemperature(atof(strarray[1].c_str()), tempsign);
 
 								root["result"][ii]["Temp"] = tvalue;
@@ -7598,10 +7532,6 @@ namespace http {
 					}
 							if ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp))
 							{
-								root["result"][ii]["AddjValue"] = AddjValue;
-								root["result"][ii]["AddjMulti"] = AddjMulti;
-								root["result"][ii]["AddjValue2"] = AddjValue2;
-								root["result"][ii]["AddjMulti2"] = AddjMulti2;
 								if (dSubType == sTypeWIND4)
 								{
 									double tvalue = ConvertTemperature(atof(strarray[4].c_str()), tempsign);
@@ -7653,11 +7583,6 @@ namespace http {
 							}
 							if (result2.size() > 0)
 							{
-								root["result"][ii]["AddjValue"] = AddjValue;
-								root["result"][ii]["AddjMulti"] = AddjMulti;
-								root["result"][ii]["AddjValue2"] = AddjValue2;
-								root["result"][ii]["AddjMulti2"] = AddjMulti2;
-
 								double total_real = 0;
 								float rate = 0;
 								std::vector<std::string> sd2 = result2[0];
@@ -8461,8 +8386,6 @@ namespace http {
 						}
 						else if (dSubType == sTypeSystemTemp)
 						{
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
 							double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
 							root["result"][ii]["Temp"] = tvalue;
 							sprintf(szData, "%.1f %c", tvalue, tempsign);
@@ -8537,11 +8460,6 @@ namespace http {
 						}
 						else if (dSubType == sTypeBaro)
 						{
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
-
 							sprintf(szData, "%.1f hPa", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["TypeImg"] = "gauge";
@@ -8735,10 +8653,6 @@ namespace http {
 
 							root["result"][ii]["Level"] = 0;
 							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
-							root["result"][ii]["AddjValue"] = AddjValue;
-							root["result"][ii]["AddjMulti"] = AddjMulti;
-							root["result"][ii]["AddjValue2"] = AddjValue2;
-							root["result"][ii]["AddjMulti2"] = AddjMulti2;
 						}
 							break;
 						case sTypeRego6XXCounter:
