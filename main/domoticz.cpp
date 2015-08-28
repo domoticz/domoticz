@@ -786,6 +786,7 @@ int main(int argc, char**argv)
 		// Delete PID file
 		remove(PID_FILE);
 	}
+#else
 	// Release WinSock
 	WSACleanup();
 #endif
