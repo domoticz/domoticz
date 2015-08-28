@@ -113,6 +113,7 @@ extern std::string szAppVersion;
 
 extern http::server::CWebServerHelper m_webservers;
 
+
 namespace tcp {
 namespace server {
 	class CTCPClient;
