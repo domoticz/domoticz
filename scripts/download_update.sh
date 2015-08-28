@@ -9,10 +9,16 @@ OS=`lowercase \`uname -s\``
 # KERNEL=`uname -r`
 MACH=`uname -m`
 
+ARCH=${MACH}
+if [ ${ARCH} = "armv6l" ]
+then
+ ARCH="armv7l"
+fi
+
 base_url="http://domoticz.sourceforge.net$2"
 
-archive_file="domoticz_${OS}_${MACH}.tgz"
-checksum_file="domoticz_${OS}_${MACH}.tgz.sha256sum"
+archive_file="domoticz_${OS}_${ARCH}.tgz"
+checksum_file="domoticz_${OS}_${ARCH}.tgz.sha256sum"
 
 # Download checksum
 wget -q ${base_url}/${checksum_file} -O update.tgz.sha256sum

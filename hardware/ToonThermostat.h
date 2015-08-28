@@ -24,6 +24,8 @@ private:
 	bool SwitchLight(const std::string &UUID, const int SwitchState);
 	bool SwitchAll(const int SwitchState);
 
+	double GetElectricOffset(const int idx, const double currentKwh);
+
 	bool Login();
 	void Logout();
 	std::string GetRandom();
@@ -42,6 +44,9 @@ private:
 	time_t m_lastSharedSendGas;
 	unsigned long m_lastgasusage;
 	unsigned long m_lastelectrausage;
+
+	std::map<int, double> m_LastElectricCounter;
+	std::map<int, double> m_OffsetElectricUsage;
 
 	void Init();
 	bool StartHardware();

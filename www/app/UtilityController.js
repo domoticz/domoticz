@@ -962,7 +962,25 @@ define(['app'], function (app) {
 				  xhtm+='\t      <td id="img"><img src="images/';
 					var status="";
 					if (typeof item.Counter != 'undefined') {
-					  xhtm+='counter.png" height="48" width="48"></td>\n';
+					   if (item.Type == "RFXMeter") {
+							if (item.SwitchTypeVal==1) {
+								xhtm+='Gas48.png" height="48" width="48"></td>\n';
+							}
+							else if (item.SwitchTypeVal==2) {
+								xhtm+='Water48_On.png" height="48" width="48"></td>\n';
+							}
+							else {
+								xhtm+='Counter48.png" height="48" width="48"></td>\n';
+							}
+					   }
+					   else {
+						if (item.SubType == "Gas") {
+							xhtm+='Gas48.png" height="48" width="48"></td>\n';
+						}
+						else {
+							xhtm+='Counter48.png" height="48" width="48"></td>\n';
+						}
+					   }
 					  if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 						status=item.Counter;
 					  }

@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('CustomIconsController', [ '$scope', '$rootScope', '$location', '$http', '$interval','$compile', function($scope,$rootScope,$location,$http,$interval,$compile) {
+	app.controller('CustomIconsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
 		$scope.iconset = [];
 		$scope.selectedIcon = [];
@@ -47,11 +47,32 @@ define(['app'], function (app) {
 		}
 		
 		$scope.OnIconSelected = function(icon) {
+			var bWasSelected = icon.selected;
 			$.each($scope.iconset, function(i,item){
 				item.selected = false;
 			});
 			icon.selected = true;
 			$scope.selectedIcon = icon;
+		}
+		
+		$scope.UpdateIconTitleDescription = function() {
+		  var bValid = true;
+		  bValid = bValid && checkLength( $("#iconname"), 2, 100 );
+		  bValid = bValid && checkLength( $("#icondescription"), 2, 100 );
+		  if ( bValid == false ) {
+				ShowNotify($.t('Please enter a Name and Description!...'), 3500, true);
+				return;
+		  }
+		  $.ajax({
+			 url: "json.htm?type=command&param=updatecustomicon&idx=" + $scope.selectedIcon.idx +
+				'&name=' + encodeURIComponent($("#iconname").val()) + 
+				'&description=' + encodeURIComponent($("#icondescription").val()),
+			 async: false,
+			 dataType: 'json',
+			 success: function(data) {
+				$scope.RefreshIconList();
+			 }
+		  });
 		}
 		
 		$scope.DeleteIcon = function() {

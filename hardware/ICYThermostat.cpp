@@ -21,6 +21,9 @@
 #define ENI_LOGIN_URL "https://eniportal.icy.nl/api/login" //https://eniportal.icy.nl/#/user/login"
 #define ENI_DATA_URL "https://eniportal.icy.nl/api/data" //https://eniportal.icy.nl/#/user/data" // /api/data
 
+#define SEC_LOGIN_URL "https://secportal.icy.nl/api/login" //https://secportal.icy.nl/#/user/login"
+#define SEC_DATA_URL "https://secportal.icy.nl/api/data" //https://secportal.icy.nl/#/user/data" // /api/data
+
 
 CICYThermostat::CICYThermostat(const int ID, const std::string Username, const std::string Password) :
 m_UserName(Username),
@@ -172,8 +175,10 @@ bool CICYThermostat::GetSerialAndToken()
 
 	if ((m_companymode == CMODE_UNKNOWN) || (m_companymode == CMODE_PORTAL))
 		sURL = ICY_LOGIN_URL;
-	else
+	else if (m_companymode == CMODE_ENI)
 		sURL = ENI_LOGIN_URL;
+	else
+		sURL = SEC_LOGIN_URL;
 
 	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
 	{
@@ -194,8 +199,27 @@ bool CICYThermostat::GetSerialAndToken()
 			}
 			if (sResult.find("BadLogin") != std::string::npos)
 			{
-				_log.Log(LOG_ERROR, "ICYThermostat: Error login! (Check username/password)");
-				return false;
+				if (m_companymode == CMODE_UNKNOWN)
+				{
+					//Try SEC mode
+					sURL = SEC_LOGIN_URL;
+					sResult = "";
+					if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
+					{
+						_log.Log(LOG_ERROR, "ICYThermostat: Error login!");
+						return false;
+					}
+					if (sResult.find("BadLogin") != std::string::npos)
+					{
+						_log.Log(LOG_ERROR, "ICYThermostat: Error login! (Check username/password)");
+						return false;
+					}
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "ICYThermostat: Error login! (Check username/password)");
+					return false;
+				}
 			}
 		}
 		else
@@ -231,8 +255,10 @@ bool CICYThermostat::GetSerialAndToken()
 	{
 		if (sURL == ICY_LOGIN_URL)
 			m_companymode = CMODE_PORTAL;
-		else
+		else if (sURL == ENI_LOGIN_URL)
 			m_companymode = CMODE_ENI;
+		else
+			m_companymode = CMODE_SEC;
 	}
 
 
@@ -258,8 +284,10 @@ void CICYThermostat::GetMeterDetails()
 
 	if (m_companymode == CMODE_PORTAL)
 		sURL = ICY_DATA_URL;
-	else
+	else if (m_companymode == CMODE_ENI)
 		sURL = ENI_DATA_URL;
+	else
+		sURL = SEC_DATA_URL;
 
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
@@ -311,8 +339,10 @@ void CICYThermostat::SetSetpoint(const int idx, const float temp)
 		std::string sURL = "";
 		if (m_companymode == CMODE_PORTAL)
 			sURL = ICY_DATA_URL;
-		else
+		else if (m_companymode == CMODE_ENI)
 			sURL = ENI_DATA_URL;
+		else
+			sURL = SEC_DATA_URL;
 
 		if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult)) {
 			_log.Log(LOG_ERROR,"ICYThermostat: Error setting SetPoint temperature!");

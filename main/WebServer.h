@@ -147,10 +147,14 @@ private:
 	void Cmd_AddTimer(Json::Value &root);
 	void Cmd_UpdateTimer(Json::Value &root);
 	void Cmd_DeleteTimer(Json::Value &root);
+	void Cmd_EnableTimer(Json::Value & root);
+	void Cmd_DisableTimer(Json::Value & root);
 	void Cmd_ClearTimers(Json::Value &root);
 	void Cmd_AddSceneTimer(Json::Value &root);
 	void Cmd_UpdateSceneTimer(Json::Value &root);
 	void Cmd_DeleteSceneTimer(Json::Value &root);
+	void Cmd_EnableSceneTimer(Json::Value & root);
+	void Cmd_DisableSceneTimer(Json::Value & root);
 	void Cmd_ClearSceneTimers(Json::Value &root);
 	void Cmd_SetSceneCode(Json::Value &root);
 	void Cmd_RemoveSceneCode(Json::Value &root);
@@ -165,6 +169,7 @@ private:
 	void Cmd_RegisterWithPhilipsHue(Json::Value &root);
 	void Cmd_GetCustomIconSet(Json::Value &root);
 	void Cmd_DeleteCustomIcon(Json::Value &root);
+	void Cmd_UpdateCustomIcon(Json::Value &root);
 	void Cmd_RenameDevice(Json::Value &root);
 	void Cmd_SetUnused(Json::Value &root);
 	void Cmd_SaveHttpLinkConfig(Json::Value &root);

@@ -816,7 +816,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	}
 	if (bHaveMeter)
 	{
-		SendMeterSensor(Node_ID, Child_ID, BatteryLevel, meter);
+		SendMeterSensor(Node_ID, Child_ID, BatteryLevel, meter, "Meter");
 	}
 	if (bHaveVoltage)
 	{

@@ -117,6 +117,8 @@ private:
 	void SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast, const std::string &defaultname);
 	void SendSetPointSensor(const int NodeID, const int ChildID, const float Temp, const std::string &defaultname);
 	void SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);
+	void SendWattMeter(const int NodeID, const int ChildID, const int BatteryLevel, const float musage, const std::string &defaultname);
+	double GetKwhMeter(const int NodeID, const int ChildID, bool &bExists);
 	void SendLuxSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Lux, const std::string &defaultname);
 	void SendAirQualitySensor(const int NodeID, const int ChildID, const int BatteryLevel, const int AirQuality, const std::string &defaultname);
 	void SendUsageSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Usage);
@@ -131,7 +133,7 @@ private:
 	void SendWind(const int NodeID, const int BatteryLevel, const float WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname);
 	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
 	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance);
-	void SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue);
+	void SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string &defaultname);
 	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI);
 	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
 	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);

@@ -13,24 +13,6 @@
 SolarEdgeTCP::SolarEdgeTCP(const int ID, const unsigned short usListenPort, const std::string &DestHost, const unsigned short usDestPort)
 {
 	m_HwdID=ID;
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			_log.Log(LOG_ERROR,"SolarEdge: Winsock could not be initialized!");
-		}
-	}
-#endif
 	m_pTCPProxy=NULL;
 	m_stoprequested=false;
 	m_szSourceHost="0.0.0.0";
@@ -46,13 +28,6 @@ SolarEdgeTCP::~SolarEdgeTCP(void)
 	if (m_pTCPProxy)
 		delete m_pTCPProxy;
 	m_pTCPProxy=NULL;
-
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-	WSACleanup();
-#endif
 }
 
 bool SolarEdgeTCP::StartHardware()

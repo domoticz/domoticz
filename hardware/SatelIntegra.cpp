@@ -11,7 +11,7 @@
 #include "../main/SQLHelper.h"
 
 #ifdef _DEBUG
-	//#define DEBUG_SatelIntegra
+//#define DEBUG_SatelIntegra
 #endif
 
 #define SATEL_POLL_INTERVAL 5
@@ -29,18 +29,20 @@ typedef struct tModel {
 
 static Model models[TOT_MODELS] =
 {
-	{0, "Integra 24", 24, 20},
-	{1, "Integra 32", 32, 32},
-	{2, "Integra 64", 64, 64},
-	{3, "Integra 128", 128, 128},
-	{4, "Integra 128 WRL SIM300", 128, 128},
-	{132, "Integra 128 WRL LEON", 128, 128},
-	{66, "Integra 64 Plus", 64, 64},
-	{67, "Integra 128 Plus", 128, 128},
-	{72, "Integra 256 Plus", 256, 256},
+	{ 0, "Integra 24", 24, 20 },
+	{ 1, "Integra 32", 32, 32 },
+	{ 2, "Integra 64", 64, 64 },
+	{ 3, "Integra 128", 128, 128 },
+	{ 4, "Integra 128 WRL SIM300", 128, 128 },
+	{ 132, "Integra 128 WRL LEON", 128, 128 },
+	{ 66, "Integra 64 Plus", 64, 64 },
+	{ 67, "Integra 128 Plus", 128, 128 },
+	{ 72, "Integra 256 Plus", 256, 256 },
 };
 
-const unsigned char partitions[4] = {0xFF, 0xFF, 0xFF, 0xFF};
+#define MAX_LENGTH_OF_ANSWER 63 * 2 + 4
+
+const unsigned char partitions[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
 
 SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode) :
 	m_modelIndex(-1),
@@ -50,28 +52,8 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	m_IPAddress(IPAddress),
 	m_stoprequested(false)
 {
-	_log.Log(LOG_STATUS,"Satel Integra: Create instance");
+	_log.Log(LOG_STATUS, "Satel Integra: Create instance");
 	m_HwdID = ID;
-
-
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			_log.Log(LOG_ERROR,"Satel Integra: Winsock could not be initialized!");
-		}
-	}
-#endif
 
 	// clear last local state of zones and outputs
 	for (unsigned int i = 0; i< 256; ++i)
@@ -82,6 +64,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	}
 
 	m_armLast = false;
+	m_alarmLast = false;
 
 	errorCodes[1] = "requesting user code not found";
 	errorCodes[2] = "no access";
@@ -96,7 +79,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 
 	// decode user code from string to BCD
 	uint64_t result(0);
-	for (unsigned int i = 0; i < 16;  ++i)
+	for (unsigned int i = 0; i < 16; ++i)
 	{
 		result = result << 4;
 
@@ -109,7 +92,7 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 			result += 0x0F;
 		}
 	}
-	for (unsigned int i = 0; i < 8;  ++i)
+	for (unsigned int i = 0; i < 8; ++i)
 	{
 		unsigned int c = (unsigned int)(result >> ((7 - i) * 8));
 		m_userCode[i] = c;
@@ -119,21 +102,13 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 
 SatelIntegra::~SatelIntegra()
 {
-#ifdef DEBUG_SatelIntegra
-  _log.Log(LOG_NORM,"Satel Integra: Destroy instance");
-#endif
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-	WSACleanup();
-#endif
+	_log.Log(LOG_NORM, "Satel Integra: Destroy instance");
 }
 
 bool SatelIntegra::StartHardware()
 {
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: Start hardware");
+	_log.Log(LOG_STATUS, "Satel Integra: Start hardware");
 #endif
 
 	if (!CheckAddress())
@@ -143,7 +118,6 @@ bool SatelIntegra::StartHardware()
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&SatelIntegra::Do_Work, this)));
 	m_bIsStarted = true;
-	StartHeartbeatThread();
 	sOnConnected(this);
 	return (m_thread != NULL);
 }
@@ -151,7 +125,7 @@ bool SatelIntegra::StartHardware()
 bool SatelIntegra::StopHardware()
 {
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: Stop hardware");
+	_log.Log(LOG_STATUS, "Satel Integra: Stop hardware");
 #endif
 
 	m_stoprequested = true;
@@ -159,22 +133,24 @@ bool SatelIntegra::StopHardware()
 	DestroySocket();
 
 	m_bIsStarted = false;
-	StopHeartbeatThread();
 	return true;
 }
 
 void SatelIntegra::Do_Work()
 {
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: Start work");
+	_log.Log(LOG_STATUS, "Satel Integra: Start work");
 #endif
 
 	if (GetInfo())
 	{
 
+		ReadAlarm(true);
 		ReadArmState(true);
 		ReadZonesState(true);
 		ReadOutputsState(true);
+
+		UpdateAlarmAndArmName();
 
 		int sec_counter = SATEL_POLL_INTERVAL - 2;
 
@@ -191,9 +167,29 @@ void SatelIntegra::Do_Work()
 
 			if (sec_counter % SATEL_POLL_INTERVAL == 0)
 			{
-				ReadArmState();
-				ReadZonesState();
-				ReadOutputsState();
+#ifdef DEBUG_SatelIntegra
+	_log.Log(LOG_STATUS, "Satel Integra: fetching data");
+#endif
+
+				if (IsNewData())
+				{
+					if (m_newData[3] & 8)
+					{
+						ReadAlarm();
+					}
+					if (m_newData[2] & 4)
+					{
+						ReadArmState();
+					}
+					if (m_newData[1] & 1)
+					{
+						ReadZonesState();
+					}
+					if (m_newData[3] & 128)
+					{
+						ReadOutputsState();
+					}
+				}
 			}
 		}
 	}
@@ -203,8 +199,8 @@ bool SatelIntegra::CheckAddress()
 {
 	if (m_IPAddress.size() == 0 || m_IPPort < 1 || m_IPPort > 65535)
 	{
-	  _log.Log(LOG_ERROR,"Satel Integra: Empty IP Address or bad Port");
-	  return false;
+		_log.Log(LOG_ERROR, "Satel Integra: Empty IP Address or bad Port");
+		return false;
 	}
 
 	m_addr.sin_family = AF_INET;
@@ -213,7 +209,7 @@ bool SatelIntegra::CheckAddress()
 	unsigned long ip;
 	ip = inet_addr(m_IPAddress.c_str());
 
-	if(ip != INADDR_NONE)
+	if (ip != INADDR_NONE)
 	{
 		m_addr.sin_addr.s_addr = ip;
 	}
@@ -222,7 +218,7 @@ bool SatelIntegra::CheckAddress()
 		hostent *he = gethostbyname(m_IPAddress.c_str());
 		if (he == NULL)
 		{
-			_log.Log(LOG_ERROR,"Satel Integra: cannot resolve host name");
+			_log.Log(LOG_ERROR, "Satel Integra: cannot resolve host name");
 			return false;
 		}
 		else
@@ -241,14 +237,13 @@ bool SatelIntegra::ConnectToIntegra()
 	m_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (m_socket == INVALID_SOCKET)
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: Unable to create socket");
+		_log.Log(LOG_ERROR, "Satel Integra: Unable to create socket");
 		return false;
 	}
 
-
-	if (connect(m_socket,(const sockaddr*)&m_addr, sizeof(m_addr)) == SOCKET_ERROR)
+	if (connect(m_socket, (const sockaddr*)&m_addr, sizeof(m_addr)) == SOCKET_ERROR)
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: Unable to connect to specified IP Address on specified Port");
+		_log.Log(LOG_ERROR, "Satel Integra: Unable to connect to specified IP Address on specified Port (%s:%d)", m_IPAddress.c_str(), m_IPPort);
 		DestroySocket();
 		return false;
 	}
@@ -259,7 +254,7 @@ bool SatelIntegra::ConnectToIntegra()
 #else
 	fcntl(m_socket, F_SETFL, O_NONBLOCK);
 #endif
-	_log.Log(LOG_STATUS,"Satel Integra: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
+	_log.Log(LOG_STATUS, "Satel Integra: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }
@@ -269,12 +264,13 @@ void SatelIntegra::DestroySocket()
 	if (m_socket != INVALID_SOCKET)
 	{
 #ifdef DEBUG_SatelIntegra
-		_log.Log(LOG_STATUS,"Satel Integra: destroy socket");
+		_log.Log(LOG_STATUS, "Satel Integra: destroy socket");
 #endif
 		try
 		{
 			closesocket(m_socket);
-		} catch(...)
+		}
+		catch (...)
 		{
 		}
 
@@ -282,12 +278,28 @@ void SatelIntegra::DestroySocket()
 	}
 }
 
+bool SatelIntegra::IsNewData()
+{
+	unsigned char cmd[1];
+	cmd[0] = 0x7F; // list of new data
+	if (SendCommand(cmd, 1, m_newData) > 0)
+	{
+		return true;
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "Satel Integra: Get info about new data is failed");
+	}
+
+	return false;
+}
+
 bool SatelIntegra::GetInfo()
 {
 	unsigned char buffer[15];
 
 	unsigned char cmd[1];
-	cmd[0] =0x7E; // Integra version
+	cmd[0] = 0x7E; // Integra version
 	if (SendCommand(cmd, 1, buffer) > 0)
 	{
 		for (unsigned int i = 0; i < TOT_MODELS; ++i)
@@ -300,13 +312,13 @@ bool SatelIntegra::GetInfo()
 		}
 		if (m_modelIndex > -1)
 		{
-			_log.Log(LOG_STATUS,"Satel Integra: Model %s", models[m_modelIndex].name);
+			_log.Log(LOG_STATUS, "Satel Integra: Model %s", models[m_modelIndex].name);
 
 			unsigned char cmd[1];
 			cmd[0] = 0x1A; // RTC
 			if (SendCommand(cmd, 1, buffer) > 0)
 			{
-				_log.Log(LOG_STATUS,"Satel Integra: RTC %.2x%.2x-%.2x-%.2x %.2x:%.2x:%.2x",
+				_log.Log(LOG_STATUS, "Satel Integra: RTC %.2x%.2x-%.2x-%.2x %.2x:%.2x:%.2x",
 					buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7]);
 
 				unsigned char cmd[1];
@@ -318,30 +330,30 @@ bool SatelIntegra::GetInfo()
 						m_data32 = true;
 					}
 
-					_log.Log(LOG_STATUS,"Satel Integra: ETHM-1 ver. %c.%c%c %c%c%c%c-%c%c-%c%c",
+					_log.Log(LOG_STATUS, "Satel Integra: ETHM-1 ver. %c.%c%c %c%c%c%c-%c%c-%c%c",
 						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11]);
 				}
 				else
 				{
-					_log.Log(LOG_STATUS,"Satel Integra: unknown version of ETHM-1");
+					_log.Log(LOG_STATUS, "Satel Integra: unknown version of ETHM-1");
 				}
 			}
 			else
 			{
-				_log.Log(LOG_ERROR,"Satel Integra: Unknown basic status");
+				_log.Log(LOG_ERROR, "Satel Integra: Unknown basic status");
 				return false;
 			}
 		}
 		else
 		{
-			_log.Log(LOG_ERROR,"Satel Integra: Unknown model '%02x'", buffer[0]);
+			_log.Log(LOG_ERROR, "Satel Integra: Unknown model '%02x'", buffer[0]);
 			return false;
 		}
 	}
 	else
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: Get info about Integra is failed");
-		 return false;
+		_log.Log(LOG_ERROR, "Satel Integra: Get info about Integra is failed");
+		return false;
 	}
 
 	return true;
@@ -355,7 +367,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 	}
 
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: Read zones states");
+	_log.Log(LOG_STATUS, "Satel Integra: Read zones states");
 #endif
 	unsigned char buffer[33];
 
@@ -383,9 +395,9 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 			if (firstTime)
 			{
 				unsigned char buffer[21];
-		#ifdef DEBUG_SatelIntegra
-			_log.Log(LOG_STATUS,"Satel Integra: Reading zone %d name", index + 1);
-		#endif
+#ifdef DEBUG_SatelIntegra
+				_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d name", index + 1);
+#endif
 				unsigned char cmd[3];
 				cmd[0] = 0xEE;
 				cmd[1] = 0x05;
@@ -398,7 +410,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 				}
 				else
 				{
-					_log.Log(LOG_ERROR,"Satel Integra: Receive info about zone %d failed", index + 1);
+					_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed", index + 1);
 				}
 			}
 			else if (m_zonesLastState[index] != violate)
@@ -410,8 +422,8 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 	}
 	else
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: Send 'Read Outputs' failed");
-		 return false;
+		_log.Log(LOG_ERROR, "Satel Integra: Send 'Read Outputs' failed");
+		return false;
 	}
 
 	return true;
@@ -424,7 +436,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 		return false;
 	}
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: Read outputs states");
+	_log.Log(LOG_STATUS, "Satel Integra: Read outputs states");
 #endif
 	unsigned char buffer[33];
 
@@ -451,7 +463,7 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 			if (firstTime)
 			{
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: Reading output %d name", index + 1);
+				_log.Log(LOG_STATUS, "Satel Integra: Reading output %d name", index + 1);
 #endif
 				unsigned char buffer[21];
 				unsigned char cmd[3];
@@ -463,23 +475,23 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 					if (buffer[3] != 0x00)
 					{
 						if ((buffer[3] == 24) || (buffer[3] == 25) || (buffer[3] == 105) || (buffer[3] == 106) || // switch MONO, switch BI, roller blind up/down
-							 ((buffer[3] >= 64) && (buffer[3] <= 79)))  // DTMF
+							((buffer[3] >= 64) && (buffer[3] <= 79)))  // DTMF
 						{
 							m_isOutputSwitch[index] = true;
 						}
 						ReportOutputState(index + 1, outputState);
-						UpdateOutputName(index + 1 + 256, &buffer[4], m_isOutputSwitch[index]);
+						UpdateOutputName(index + 1, &buffer[4], m_isOutputSwitch[index]);
 					}
 					else
 					{
-		#ifdef DEBUG_SatelIntegra
-			_log.Log(LOG_STATUS,"Satel Integra: output %d is not used", index + 1);
-		#endif
+#ifdef DEBUG_SatelIntegra
+						_log.Log(LOG_STATUS, "Satel Integra: output %d is not used", index + 1);
+#endif
 					}
 				}
 				else
 				{
-					_log.Log(LOG_ERROR,"Satel Integra: Receive info about output %d failed", index);
+					_log.Log(LOG_ERROR, "Satel Integra: Receive info about output %d failed", index);
 				}
 			}
 			else if (m_outputsLastState[index] != outputState)
@@ -491,175 +503,17 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 	}
 	else
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: Send 'Read outputs' failed");
-		 return false;
-	}
-
-	return true;
-}
-
-void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool violation)
-{
-	m_zonesLastState[Idx -1] = violation;
-
-	RBUF security;
-	memset(&security, 0, sizeof(RBUF));
-
-	security.SECURITY1.packetlength = sizeof(security.SECURITY1) - 1;
-	security.SECURITY1.packettype = pTypeSecurity1;
-	security.SECURITY1.subtype = sTypeSecX10;
-	security.SECURITY1.id1 = 0;
-	security.SECURITY1.id2 = 0;
-	security.SECURITY1.id3 = (unsigned char)Idx;
-	security.SECURITY1.rssi = 12;
-	security.SECURITY1.battery_level = 0x0f;
-	security.SECURITY1.status = violation ? sStatusAlarm : sStatusNormal;
-
-	sDecodeRXMessage(this, (const unsigned char *)&security.SECURITY1);
-}
-
-void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
-{
-	m_outputsLastState[Idx - 1] = state;
-
-	/*
-	RBUF output;
-	memset(&output,0,sizeof(RBUF));
-
-	output.LIGHTING2.packetlength = sizeof(output.LIGHTING2)-1;
-	output.LIGHTING2.packettype = pTypeLighting2;
-	output.LIGHTING2.subtype = sTypeAC;
-	output.LIGHTING2.seqnbr = 0;
-	output.LIGHTING2.id1 = 0;
-	output.LIGHTING2.id2 = 0;
-	output.LIGHTING2.id3 = 0;
-	output.LIGHTING2.id4 = Idx;
-	output.LIGHTING2.unitcode = 1;
-	output.LIGHTING2.cmnd = state ? light2_sOn : light2_sOff;
-	output.LIGHTING2.level = 0;
-	output.LIGHTING2.rssi = 12;
-
-	sDecodeRXMessage(this, (const unsigned char *)&output.LIGHTING2);
-*/
-	// TODO - add and use own specialized type
-
-	if (m_isOutputSwitch[Idx - 1])
-	{
-		_tGeneralSwitch output;
-		output.len=sizeof(_tGeneralSwitch)-1;
-		output.type=pTypeGeneralSwitch;
-		output.subtype = sSwitchTypeAC;
-		output.id = Idx + 256;
-		output.unitcode = 1;
-		output.cmnd = state ? gswitch_sOn : gswitch_sOff;
-		output.level = 0;
-		output.battery_level = 0;
-		output.rssi = 12;
-		output.seqnbr = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&output);
-	}
-	else
-	{
-		_tGeneralDevice output;
-		output.len=sizeof(_tGeneralDevice)-1;
-		output.type=pTypeGeneral;
-		output.subtype=sTypePercentage;
-		output.id=0;
-		output.floatval1=state ? 100.0f : 0.0f;
-		output.floatval2=0;
-		output.intval1=Idx + 256;
-		output.intval2=0;
-		sDecodeRXMessage(this, (const unsigned char *)&output);
-	}
-}
-
-void SatelIntegra::ReportArmState(const bool isArm)
-{
-	m_armLast = isArm;
-
-	RBUF security;
-	memset(&security, 0, sizeof(RBUF));
-
-	security.SECURITY1.packetlength = sizeof(security.SECURITY1) - 1;
-	security.SECURITY1.packettype = pTypeSecurity1;
-	security.SECURITY1.subtype = sTypeSecX10R;
-	security.SECURITY1.id1 = 1;
-	security.SECURITY1.id2 = 0;
-	security.SECURITY1.id3 = 0;
-	security.SECURITY1.rssi = 12;
-	security.SECURITY1.battery_level = 0x0f;
-	security.SECURITY1.status = isArm ? sStatusArmAway : sStatusDisarm;
-
-	sDecodeRXMessage(this, (const unsigned char *)&security.SECURITY1);
-}
-
-bool SatelIntegra::ArmPartitions(const unsigned char* partitions, const unsigned int mode)
-{
-#ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: arming partitions");
-#endif
-	if (mode > 3)
-	{
-		_log.Log(LOG_ERROR,"Satel Integra: incorrect mode %d", mode);
+		_log.Log(LOG_ERROR, "Satel Integra: Send 'Read outputs' failed");
 		return false;
 	}
 
-	unsigned char buffer[2];
-
-	unsigned char cmd[13];
-	cmd[0] = (unsigned char)(0x80 + mode); // arm in mode 0
-	for (unsigned int i = 0; i < 8; ++i)
-	{
-		cmd[i + 1] = m_userCode[i];
-	}
-	for (unsigned int i = 0; i < 4; ++i)
-	{
-		cmd[i + 9] = partitions[i];
-	}
-
-	if (SendCommand(cmd, 13, buffer) == -1) // arm
-	{
-		_log.Log(LOG_ERROR,"Satel Integra: Send 'Arm' failed");
-		 return false;
-	}
-
-	_log.Log(LOG_STATUS,"Satel Integra: System armed");
-	return true;
-}
-
-bool SatelIntegra::DisarmPartitions(const unsigned char* partitions)
-{
-#ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: disarming partitions");
-#endif
-
-	unsigned char buffer[2];
-
-	unsigned char cmd[13];
-	cmd[0] = 0x84; // disarm
-	for (unsigned int i = 0; i < 8; ++i)
-	{
-		cmd[i + 1] = m_userCode[i];
-	}
-	for (unsigned int i = 0; i < 4; ++i)
-	{
-		cmd[i + 9] = partitions[i];
-	}
-
-	if (SendCommand(cmd, 13, buffer) == -1) // disarm
-	{
-		_log.Log(LOG_ERROR,"Satel Integra: Send 'Disarm' failed");
-		 return false;
-	}
-
-	_log.Log(LOG_STATUS,"Satel Integra: System disarmed");
 	return true;
 }
 
 bool SatelIntegra::ReadArmState(const bool firstTime)
 {
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS,"Satel Integra: Read arm state");
+	_log.Log(LOG_STATUS, "Satel Integra: Read arm state");
 #endif
 	unsigned char buffer[5];
 
@@ -678,19 +532,15 @@ bool SatelIntegra::ReadArmState(const bool firstTime)
 			}
 		}
 
-		if (firstTime)
-		{
-			ReportArmState(armed);
-		}
-		else if (m_armLast != armed)
+		if (firstTime || (m_armLast != armed))
 		{
 			if (armed)
 			{
-				_log.Log(LOG_STATUS,"Satel Integra: System arm");
+				_log.Log(LOG_STATUS, "Satel Integra: System arm");
 			}
 			else
 			{
-				_log.Log(LOG_STATUS,"Satel Integra: System not arm");
+				_log.Log(LOG_STATUS, "Satel Integra: System not arm");
 			}
 
 			ReportArmState(armed);
@@ -698,24 +548,202 @@ bool SatelIntegra::ReadArmState(const bool firstTime)
 	}
 	else
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: Send 'Get Armed partitions' failed");
-		 return false;
+		_log.Log(LOG_ERROR, "Satel Integra: Send 'Get Armed partitions' failed");
+		return false;
+	}
+
+	return true;
+}
+
+bool SatelIntegra::ReadAlarm(const bool firstTime)
+{
+#ifdef DEBUG_SatelIntegra
+	_log.Log(LOG_STATUS, "Satel Integra: Read partitions alarms");
+#endif
+	unsigned char buffer[5];
+
+	unsigned char cmd[1];
+	cmd[0] = 0x13; // read partitions alarm
+	if (SendCommand(cmd, 1, buffer) > 0)
+	{
+		bool alarm = false;
+
+		for (unsigned int index = 0; index < 4; ++index)
+		{
+			if (buffer[index + 1])
+			{
+				alarm = true;
+				break;
+			}
+		}
+
+		if (firstTime || (m_alarmLast != alarm))
+		{
+			if (alarm)
+			{
+				_log.Log(LOG_STATUS, "Satel Integra: ALARM !!");
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "Satel Integra: Alarm not set");
+			}
+
+			ReportAlarm(alarm);
+		}
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "Satel Integra: Send 'Get Alarm partitions' failed");
+		return false;
 	}
 
 	return true;
 }
 
 
+void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool violation)
+{
+	m_zonesLastState[Idx - 1] = violation;
+
+	char szTmp[4];
+	sprintf(szTmp, "%02X", (unsigned int)Idx);
+	std::string devname;
+
+	m_sql.UpdateValue(m_HwdID, szTmp, 0, pTypeGeneral, sTypeTextStatus, 12, 255, 0, violation ? "Violate" : "Normal", devname);
+}
+
+void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
+{
+	m_outputsLastState[Idx - 1] = state;
+
+	if (m_isOutputSwitch[Idx - 1])
+	{
+		_tGeneralSwitch output;
+		output.len = sizeof(_tGeneralSwitch) - 1;
+		output.type = pTypeGeneralSwitch;
+		output.subtype = sSwitchTypeAC;
+		output.id = Idx;
+		output.unitcode = 1;
+		output.cmnd = state ? gswitch_sOn : gswitch_sOff;
+		output.level = 0;
+		output.battery_level = 0;
+		output.rssi = 12;
+		output.seqnbr = 0;
+		sDecodeRXMessage(this, (const unsigned char *)&output);
+	}
+	else
+	{
+		char szTmp[10];
+		sprintf(szTmp, "%08X", (unsigned int)Idx);
+		std::string devname;
+
+		m_sql.UpdateValue(m_HwdID, szTmp, 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, state ? "On" : "Off", devname);
+	}
+}
+
+void SatelIntegra::ReportArmState(const bool isArm)
+{
+	m_armLast = isArm;
+
+	_tGeneralSwitch arm;
+	arm.len = sizeof(_tGeneralSwitch) - 1;
+	arm.type = pTypeGeneralSwitch;
+	arm.subtype = sSwitchTypeAC;
+	arm.id = 1;
+	arm.unitcode = 2;
+	arm.cmnd = isArm ? gswitch_sOn : gswitch_sOff;
+	arm.level = 0;
+	arm.battery_level = 0x0f;
+	arm.rssi = 12;
+	arm.seqnbr = 0;
+	sDecodeRXMessage(this, (const unsigned char *)&arm);
+}
+
+void SatelIntegra::ReportAlarm(const bool isAlarm)
+{
+	m_alarmLast = isAlarm;
+
+	char szTmp[8];
+	sprintf(szTmp, "%06X", (unsigned int)2);
+	std::string devname;
+
+	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeTextStatus, 12, 255, 0, isAlarm ? "Alarm !" : "Normal", devname);
+}
+
+
+bool SatelIntegra::ArmPartitions(const unsigned char* partitions, const unsigned int mode)
+{
+#ifdef DEBUG_SatelIntegra
+	_log.Log(LOG_STATUS, "Satel Integra: arming partitions");
+#endif
+	if (mode > 3)
+	{
+		_log.Log(LOG_ERROR, "Satel Integra: incorrect mode %d", mode);
+		return false;
+	}
+
+	unsigned char buffer[2];
+
+	unsigned char cmd[13];
+	cmd[0] = (unsigned char)(0x80 + mode); // arm in mode 0
+	for (unsigned int i = 0; i < 8; ++i)
+	{
+		cmd[i + 1] = m_userCode[i];
+	}
+	for (unsigned int i = 0; i < 4; ++i)
+	{
+		cmd[i + 9] = partitions[i];
+	}
+
+	if (SendCommand(cmd, 13, buffer) == -1) // arm
+	{
+		_log.Log(LOG_ERROR, "Satel Integra: Send 'Arm' failed");
+		return false;
+	}
+
+	_log.Log(LOG_STATUS, "Satel Integra: System armed");
+	return true;
+}
+
+bool SatelIntegra::DisarmPartitions(const unsigned char* partitions)
+{
+#ifdef DEBUG_SatelIntegra
+	_log.Log(LOG_STATUS, "Satel Integra: disarming partitions");
+#endif
+
+	unsigned char buffer[2];
+
+	unsigned char cmd[13];
+	cmd[0] = 0x84; // disarm
+	for (unsigned int i = 0; i < 8; ++i)
+	{
+		cmd[i + 1] = m_userCode[i];
+	}
+	for (unsigned int i = 0; i < 4; ++i)
+	{
+		cmd[i + 9] = partitions[i];
+	}
+
+	if (SendCommand(cmd, 13, buffer) == -1) // disarm
+	{
+		_log.Log(LOG_ERROR, "Satel Integra: Send 'Disarm' failed");
+		return false;
+	}
+
+	_log.Log(LOG_STATUS, "Satel Integra: System disarmed");
+	return true;
+}
+
 bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *output = (tRBUF*)pdata;
 
-	if (output->ICMND.packettype == pTypeSecurity1 && output->ICMND.subtype == sTypeSecX10R)
+	if (output->ICMND.packettype == pTypeGeneralSwitch && output->ICMND.subtype == sSwitchTypeAC)
 	{
-		if (ConnectToIntegra())
+		_tGeneralSwitch *general = (_tGeneralSwitch*)pdata;
+		if (general->unitcode == 2) // arm
 		{
-
-			if (output->ICMND.cmnd == gswitch_sOn)
+			if (general->cmnd == gswitch_sOn)
 			{
 				return ArmPartitions(partitions);
 			}
@@ -723,17 +751,12 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 			{
 				return DisarmPartitions(partitions);
 			}
-
 		}
-	}
-
-	if (output->ICMND.packettype == pTypeGeneralSwitch && output->ICMND.subtype == sSwitchTypeAC)
-	{
-		if (ConnectToIntegra())
+		else if (general->unitcode == 1) // outputs
 		{
 			_tGeneralSwitch *general = (_tGeneralSwitch*)pdata;
 			unsigned char buffer[2];
-			unsigned char cmd[41] = {0};
+			unsigned char cmd[41] = { 0 };
 
 			if (general->cmnd == gswitch_sOn)
 			{
@@ -749,24 +772,25 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 				cmd[i + 1] = m_userCode[i];
 			}
 
-			unsigned char byteNumber = (general->id - 256) / 8;
-			unsigned char bitNumber = (general->id - 256) % 8;
+			unsigned char byteNumber = (general->id) / 8;
+			unsigned char bitNumber = (general->id) % 8;
 
 			cmd[byteNumber + 9] = 0x01 << bitNumber;
 
 			if (SendCommand(cmd, 41, buffer) != -1)
 			{
-				_log.Log(LOG_STATUS,"Satel Integra: switched output %d", general->id - 256);
+				_log.Log(LOG_STATUS, "Satel Integra: switched output %d", general->id);
 				return true;
 			}
 			else
 			{
-				_log.Log(LOG_ERROR,"Satel Integra: Switch output %d failed", general->id - 256);
+				_log.Log(LOG_ERROR, "Satel Integra: Switch output %d failed", general->id);
 				return false;
 			}
 
 		}
 	}
+
 	return false;
 }
 
@@ -774,21 +798,21 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 {
 	std::vector<std::vector<std::string> > result;
 
-	char szTmp[10];
-	sprintf(szTmp, "%06X", (unsigned int)Idx);
+	char szTmp[4];
+	sprintf(szTmp, "%02X", (unsigned int)Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q')", m_HwdID, szTmp, shortName.c_str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Zone:%q') AND (Unit=0)", m_HwdID, szTmp, shortName.c_str());
 	if (result.size() < 1)
 	{
 		//Assign name from Integra
 #ifdef DEBUG_SatelIntegra
-		_log.Log(LOG_STATUS,"Satel Integra: update name for %d to '%s'", Idx, shortName.c_str());
+		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s'", Idx, shortName.c_str());
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Zone:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=0)", shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
 }
 
@@ -803,12 +827,12 @@ void SatelIntegra::UpdateOutputName(const unsigned int Idx, const unsigned char*
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q')", m_HwdID, szTmp, shortName.c_str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Output:%q') AND (Unit=1)", m_HwdID, szTmp, shortName.c_str());
 	if (result.size() < 1)
 	{
 		//Assign name from Integra
 #ifdef DEBUG_SatelIntegra
-		_log.Log(LOG_STATUS,"Satel Integra: update name for %d to '%s'", Idx, shortName.c_str());
+		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s'", Idx, shortName.c_str());
 #endif
 
 		_eSwitchType switchType = STYPE_Contact;
@@ -816,9 +840,36 @@ void SatelIntegra::UpdateOutputName(const unsigned int Idx, const unsigned char*
 		{
 			switchType = STYPE_OnOff;
 		}
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", shortName.c_str(), switchType, m_HwdID, szTmp);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Output:%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", shortName.c_str(), switchType, m_HwdID, szTmp);
 	}
 }
+
+void SatelIntegra::UpdateAlarmAndArmName()
+{
+	std::vector<std::vector<std::string> > result;
+
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Name=='Alarm') AND (Unit=2)", m_HwdID);
+	if (result.size() < 1)
+	{
+		//Assign name for Alarm
+#ifdef DEBUG_SatelIntegra
+		_log.Log(LOG_STATUS, "Satel Integra: update Alarm name for %d to 'Alarm'", Idx);
+#endif
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Alarm' WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Unit=2)", m_HwdID);
+	}
+
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='00000001') AND (Name=='Arm') AND (Unit=2)", m_HwdID);
+	if (result.size() < 1)
+	{
+		//Assign name for Arm
+#ifdef DEBUG_SatelIntegra
+		_log.Log(LOG_STATUS, "Satel Integra: update Arm name for %d to 'Arm'", Idx);
+#endif
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm' WHERE (HardwareID==%d) AND (DeviceID=='00000001') AND (Unit=2)", m_HwdID);
+	}
+
+}
+
 
 void expandForSpecialValue(std::list<unsigned char> &result)
 {
@@ -826,11 +877,12 @@ void expandForSpecialValue(std::list<unsigned char> &result)
 
 	const unsigned char specialValue = 0xFE;
 
-	for (;it != result.end(); it++)
+	for (; it != result.end(); it++)
 	{
 		if (*it == specialValue)
 		{
-			result.insert(it, specialValue);
+			result.insert(++it, 0xF0);
+			it--;
 		}
 	}
 }
@@ -851,6 +903,8 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 
 int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, unsigned char *answer)
 {
+	boost::lock_guard<boost::mutex> lock(m_mutex);
+
 	if (!ConnectToIntegra())
 	{
 		return -1;
@@ -860,16 +914,16 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 	cmdPayload = getFullFrame(cmd, cmdLength);
 
 	//Send cmd
-	if (send(m_socket , (const char*) cmdPayload.first , cmdPayload.second , 0) < 0)
+	if (send(m_socket, (const char*)cmdPayload.first, cmdPayload.second, 0) < 0)
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: Send command '%02X' failed", cmdPayload.first[2]);
+		_log.Log(LOG_ERROR, "Satel Integra: Send command '%02X' failed", cmdPayload.first[2]);
 		delete cmdPayload.first;
 		return -1;
 	}
 
 	delete cmdPayload.first;
 
-	unsigned char buffer[67];
+	unsigned char buffer[MAX_LENGTH_OF_ANSWER];
 	// Receive answer
 	fd_set rfds;
 	FD_ZERO(&rfds);
@@ -880,23 +934,26 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 	tv.tv_usec = 0;
 	if (select(m_socket + 1, &rfds, NULL, NULL, &tv) < 0)
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: no connection.");
+		_log.Log(LOG_ERROR, "Satel Integra: no connection.");
 		DestroySocket();
 		return -1;
 	}
 
-	int ret = recv(m_socket, (char*)&buffer, 67, 0);
+	int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER, 0);
 
 	if (ret > 6)
 	{
-		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ ret - 2] == 0xFE)
+		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ret - 2] == 0xFE)
 		{
+			unsigned int answerLength = 0;
 			for (int i = 0; i < ret - 6; i++)
-			{
-				answer[i] = buffer[i+2];
-			}
+				if (buffer[i + 2] != 0xF0 || buffer[i + 1] != 0xFE) // skip special value
+				{
+					answer[answerLength] = buffer[i + 2];
+					answerLength++;
+				}
 			unsigned short crc;
-			calculateCRC(answer, ret - 6, crc);
+			calculateCRC(answer, answerLength, crc);
 			if ((crc & 0xFF) == buffer[ret - 3] && (crc >> 8) == buffer[ret - 4])
 			{
 				if (buffer[2] == 0xEF)
@@ -915,18 +972,18 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 						{
 							error = it->second;
 						}
-						_log.Log(LOG_ERROR,"Satel Integra: receive error: %s", error);
+						_log.Log(LOG_ERROR, "Satel Integra: receive error: %s", error);
 						return -1;
 					}
 				}
 				else
 				{
-					return ret - 6;
+					return answerLength;
 				}
 			}
 			else
 			{
-				_log.Log(LOG_ERROR,"Satel Integra: receive bad CRC");
+				_log.Log(LOG_ERROR, "Satel Integra: receive bad CRC");
 				return -1;
 			}
 		}
@@ -934,19 +991,19 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 		{
 			if (buffer[0] == 16)
 			{
-				_log.Log(LOG_STATUS,"Satel Integra: busy");
+				_log.Log(LOG_STATUS, "Satel Integra: busy");
 				return -1;
 			}
 			else
 			{
-				_log.Log(LOG_ERROR,"Satel Integra: received bad frame (prefix or sufix)");
+				_log.Log(LOG_ERROR, "Satel Integra: received bad frame (prefix or sufix)");
 				return -1;
 			}
 		}
 	}
 	else
 	{
-		_log.Log(LOG_ERROR,"Satel Integra: received frame is too short.");
+		_log.Log(LOG_ERROR, "Satel Integra: received frame is too short.");
 		DestroySocket();
 		return -1;
 	}
@@ -985,5 +1042,5 @@ std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigne
 		pResult[index] = *it;
 	}
 
-  return std::pair<unsigned char*, unsigned int>(pResult, resultSize);
+	return std::pair<unsigned char*, unsigned int>(pResult, resultSize);
 }
