@@ -1940,8 +1940,8 @@ namespace http {
 
 		void CWebServer::Cmd_GetConfig(Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-				return;//Only admin user allowed
+			//if (m_pWebEm->m_actualuser_rights != 2)
+				//return;//Only admin user allowed
 
 			root["status"] = "OK";
 			root["title"] = "GetConfig";
