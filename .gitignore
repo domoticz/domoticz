@@ -1,1 +1,5 @@
 *.orig
+msbuild
+domoticz.db
+appversion.h
+
