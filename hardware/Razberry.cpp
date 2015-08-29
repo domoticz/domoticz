@@ -925,12 +925,22 @@ bool CRazberry::ExcludeDevice(const int nodeID)
 	return false;
 }
 
+bool CRazberry::IsNodeIncluded()
+{
+	return false;
+}
+
+bool CRazberry::IsNodeExcluded()
+{
+	return false;
+}
+
 bool CRazberry::RemoveFailedDevice(const int nodeID)
 {
 	return false;
 }
 
-bool CRazberry::CancelControllerCommand()
+bool CRazberry::CancelControllerCommand(const bool bForce)
 {
 	return true;
 }

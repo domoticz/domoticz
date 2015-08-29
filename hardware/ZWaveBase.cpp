@@ -17,7 +17,7 @@
 
 #include "OpenZWave.h"
 
-#define CONTROLLER_COMMAND_TIMEOUT 20
+#define CONTROLLER_COMMAND_TIMEOUT 30
 
 #pragma warning(disable: 4996)
 

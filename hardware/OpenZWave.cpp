@@ -487,6 +487,8 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo.m_LastSeen = m_updateTime;
 			m_nodes.push_back(nodeInfo);
 			m_LastIncludedNode = _nodeID;
+			m_LastIncludedNodeType = nodeInfo.szType;
+			m_bHaveLastIncludedNodeInfo = !nodeInfo.Product_name.empty();
 			AddNode(_homeID, _nodeID, &nodeInfo);
 			m_bControllerCommandInProgress = false;
 			m_bNeedSave = true;
@@ -508,6 +510,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				}
 			}
 			m_bControllerCommandInProgress = false;
+			m_LastRemovedNode = _nodeID;
 			WriteControllerConfig();
 		}
 		break;
@@ -740,6 +743,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				nodeInfo->Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
 				nodeInfo->Product_name = product_name;
 				AddNode(_homeID, _nodeID, nodeInfo);
+				m_bHaveLastIncludedNodeInfo = !product_name.empty();
 			}
 			nodeInfo->m_LastSeen = m_updateTime;
 			m_bNeedSave = true;
@@ -2897,9 +2901,11 @@ bool COpenZWave::IncludeDevice(const bool bSecure)
 		return false;
 	CancelControllerCommand();
 	m_LastIncludedNode = 0;
+	m_LastIncludedNodeType = "";
+	m_bHaveLastIncludedNodeInfo = false;
 	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
-	m_bControllerCommandInProgress = true;
+	m_bControllerCommandInProgress = false; //unlimited time
 	m_pManager->AddNode(m_controllerID, bSecure);
 	_log.Log(LOG_STATUS, "OpenZWave: Node Include command initiated...");
 	return true;
@@ -2910,14 +2916,25 @@ bool COpenZWave::ExcludeDevice(const int nodeID)
 	if (m_pManager == NULL)
 		return false;
 	CancelControllerCommand();
+	m_LastRemovedNode = 0;
 	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
-	m_bControllerCommandInProgress = true;
+	m_bControllerCommandInProgress = false; //unlimited time
 	m_pManager->RemoveNode(m_controllerID);
 	_log.Log(LOG_STATUS, "OpenZWave: Node Exclude command initiated...");
-
 	return true;
 }
+
+bool COpenZWave::IsNodeIncluded()
+{
+	return ((m_LastIncludedNode != 0) && (m_bHaveLastIncludedNodeInfo == true));
+}
+
+bool COpenZWave::IsNodeExcluded()
+{
+	return (m_LastRemovedNode != 0);
+}
+
 
 bool COpenZWave::SoftResetDevice()
 {
@@ -3072,8 +3089,6 @@ bool COpenZWave::RemoveFailedDevice(const int nodeID)
 	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
-	//m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_RemoveFailedNode, OnDeviceStatusUpdate, this, true, (unsigned char)nodeID);
-	//_log.Log(LOG_STATUS, "OpenZWave: Remove Failed Device initiated...");
 	m_pManager->RemoveFailedNode(m_controllerID, (unsigned char)nodeID);
 	_log.Log(LOG_STATUS, "OpenZWave: Remove Failed Device initiated...");
 	return true;
@@ -3084,7 +3099,7 @@ bool COpenZWave::ReceiveConfigurationFromOtherController()
 	if (m_pManager == NULL)
 		return false;
 
-	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
+	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->ReceiveConfiguration(m_controllerID);
@@ -3097,10 +3112,10 @@ bool COpenZWave::SendConfigurationToSecondaryController()
 	if (m_pManager == NULL)
 		return false;
 
-	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
+	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
-	m_pManager->BeginControllerCommand(m_controllerID, OpenZWave::Driver::ControllerCommand_ReplicationSend, OnDeviceStatusUpdate, this);
+	m_pManager->ReplicationSend(m_controllerID, 0xFF);
 	_log.Log(LOG_STATUS, "OpenZWave: Replication to Secondary Controller initiated...");
 	return true;
 }
@@ -3110,7 +3125,7 @@ bool COpenZWave::TransferPrimaryRole()
 	if (m_pManager == NULL)
 		return false;
 
-	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
+	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandCanceled = false;
 	m_bControllerCommandInProgress = true;
 	m_pManager->TransferPrimaryRole(m_controllerID);
@@ -3118,9 +3133,9 @@ bool COpenZWave::TransferPrimaryRole()
 	return true;
 }
 
-bool COpenZWave::CancelControllerCommand()
+bool COpenZWave::CancelControllerCommand(const bool bForce)
 {
-	if (m_bControllerCommandInProgress == false)
+	if ((m_bControllerCommandInProgress == false) && (!bForce))
 		return false;
 	if (m_pManager == NULL)
 		return false;
@@ -3391,6 +3406,7 @@ void COpenZWave::AddNode(const unsigned int homeID, const int nodeID, const Node
 		else
 			m_sql.safe_query("INSERT INTO ZWaveNodes (HardwareID, HomeID, NodeID, Name,ProductDescription) VALUES (%d,%u,%d,'Controller','%q')",
 				m_HwdID, homeID, nodeID, sProductDescription.c_str());
+		_log.Log(LOG_STATUS, "OpenZWave: New Node added. HomeID: %u, NodeID: %d (0x%02x)", homeID, nodeID, nodeID);
 	}
 	else
 	{
@@ -3916,7 +3932,7 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 //User Code routines
 bool COpenZWave::SetUserCodeEnrollmentMode()
 {
-	m_ControllerCommandStartTime = mytime(NULL) + 10;//30 second timeout
+	m_ControllerCommandStartTime = mytime(NULL);
 	m_bControllerCommandInProgress = true;
 	m_bControllerCommandCanceled = false;
 	m_bInUserCodeEnrollmentMode = true;
@@ -3996,6 +4012,11 @@ bool COpenZWave::RemoveUserCode(const unsigned int homeID, const int nodeID, con
 		}
 	}
 	return true;
+}
+
+unsigned int COpenZWave::GetControllerID()
+{
+	return m_controllerID;
 }
 
 void COpenZWave::NightlyNodeHeal()
@@ -4193,6 +4214,50 @@ namespace http {
 				pOZWHardware->ExcludeDevice(1);
 				root["status"] = "OK";
 				root["title"] = "ZWaveExclude";
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveIsNodeIncluded(Json::Value & root)
+		{
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				root["status"] = "OK";
+				root["title"] = "ZWaveIsNodeIncluded";
+				bool bIsIncluded = pOZWHardware->IsNodeIncluded();
+				root["result"] = bIsIncluded;
+				if (bIsIncluded)
+				{
+					root["node_id"] = pOZWHardware->m_LastIncludedNode;
+					root["node_type"] = pOZWHardware->m_LastIncludedNodeType;
+					std::string productName("Unknown");
+					COpenZWave::NodeInfo *pNode = pOZWHardware->GetNodeInfo(pOZWHardware->GetControllerID(), pOZWHardware->m_LastIncludedNode);
+					if (pNode)
+					{
+						productName = pNode->Product_name;
+					}
+					root["node_product_name"] = productName;
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ZWaveIsNodeExcluded(Json::Value & root)
+		{
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
+			if (pHardware != NULL)
+			{
+				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+				root["status"] = "OK";
+				root["title"] = "ZWaveIsNodeExcluded";
+				root["result"] = pOZWHardware->IsNodeExcluded();
+				root["node_id"] = pOZWHardware->m_LastRemovedNode;
 			}
 		}
 
@@ -4504,7 +4569,7 @@ namespace http {
 			if (pHardware != NULL)
 			{
 				COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-				pOZWHardware->CancelControllerCommand();
+				pOZWHardware->CancelControllerCommand(true);
 				root["status"] = "OK";
 				root["title"] = "ZWaveCancel";
 			}

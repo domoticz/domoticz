@@ -217,6 +217,8 @@ private:
 	void Cmd_ZWaveDeleteNode(Json::Value &root);
 	void Cmd_ZWaveInclude(Json::Value &root);
 	void Cmd_ZWaveExclude(Json::Value &root);
+	void Cmd_ZWaveIsNodeIncluded(Json::Value &root);
+	void Cmd_ZWaveIsNodeExcluded(Json::Value &root);
 	void Cmd_ZWaveSoftReset(Json::Value &root);
 	void Cmd_ZWaveHardReset(Json::Value &root);
 	void Cmd_ZWaveNetworkHeal(Json::Value &root);
@@ -227,7 +229,6 @@ private:
 	void Cmd_ZWaveGroupInfo(Json::Value &root);
 	void Cmd_ZWaveCancel(Json::Value &root);
 	void Cmd_ApplyZWaveNodeConfig(Json::Value &root);
-	void Cmd_RequestZWaveNodeConfig(Json::Value &root);
 	void Cmd_ZWaveStateCheck(Json::Value &root);
 	void Cmd_ZWaveRequestNodeConfig(Json::Value &root);
 	void Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &root);

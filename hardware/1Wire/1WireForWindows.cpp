@@ -143,6 +143,9 @@ std::string C1WireForWindows::SendAndReceive(std::string requestToSend) const
 
 bool C1WireForWindows::IsAvailable()
 {
+#ifdef _DEBUG
+	return false;
+#endif
    static boost::optional<bool> IsAvailable;
 
    if (IsAvailable.is_initialized())
