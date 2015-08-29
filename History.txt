@@ -95,7 +95,8 @@ Version 2.xxx (xxxx 2015)
 - Changed: EnOcean rocker inclusion (thanks to zorgluf!)
 - Implemented: Icons for RFXMeter Gas/Water
 - Fixed: MySensors, corrected sending localtime
-- Implemented: OpenZWave, Include/Exclude progress dialog
+- Implemented: OpenZWave, Include/Exclude progress dialog-
+- Changed: non-windows systems, scripts can now use a relative patch to the scripts folder if script does not start with a '/'
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
