@@ -59,7 +59,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		std::string scriptparams = "";
 #if !defined WIN32
 		if (scriptname.find("/") != 0)
-			scriptname = szUserDataFolder + scriptname;
+			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 		//Add parameters
 		uPos = scriptname.find(" ");

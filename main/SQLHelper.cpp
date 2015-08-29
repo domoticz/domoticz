@@ -5542,7 +5542,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
 			if (scriptname.find("/") != 0)
-				scriptname = szUserDataFolder + scriptname;
+				scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 			std::string scriptparams="";
 			//Add parameters
@@ -5574,7 +5574,7 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			std::string scriptname = OffAction.substr(9);
 #if !defined WIN32
 			if (scriptname.find("/") != 0)
-				scriptname = szUserDataFolder + scriptname;
+				scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 			std::string scriptparams="";
 			int pindex=scriptname.find(' ');
