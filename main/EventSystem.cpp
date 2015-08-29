@@ -2703,7 +2703,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 	std::vector<std::vector<std::string> > result;
 
 	if (isScene) {
-		result = m_sql.safe_query("SELECT ID FROM Scenes WHERE (Name == '%q')",
+		result = m_sql.safe_query("SELECT ID FROM	Scenes WHERE (Name == '%q')",
 			deviceName.c_str());
 	}
 	else {

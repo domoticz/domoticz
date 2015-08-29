@@ -156,8 +156,10 @@ private:
 	void Cmd_EnableSceneTimer(Json::Value & root);
 	void Cmd_DisableSceneTimer(Json::Value & root);
 	void Cmd_ClearSceneTimers(Json::Value &root);
-	void Cmd_SetSceneCode(Json::Value &root);
+	void Cmd_GetSceneActivations(Json::Value &root);
+	void Cmd_AddSceneCode(Json::Value &root);
 	void Cmd_RemoveSceneCode(Json::Value &root);
+	void Cmd_ClearSceneCodes(Json::Value &root);
 	void Cmd_SetSetpoint(Json::Value &root);
 	void Cmd_AddSetpointTimer(Json::Value &root);
 	void Cmd_UpdateSetpointTimer(Json::Value &root);

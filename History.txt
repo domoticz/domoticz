@@ -97,6 +97,7 @@ Version 2.xxx (xxxx 2015)
 - Fixed: MySensors, corrected sending localtime
 - Implemented: OpenZWave, Include/Exclude progress dialog-
 - Changed: non-windows systems, scripts can now use a relative patch to the scripts folder if script does not start with a '/'
+- Implemented: Support for multiple scene/group codes
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

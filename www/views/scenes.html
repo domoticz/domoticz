@@ -59,11 +59,29 @@
 			</tr>
 		</table>
 		<br>
-		<h2><span data-i18n="Code">Code</span>:</h2>
+		<h2><span data-i18n="Activation Devices">Activation Devices</span>:</h2>
 		<br>
-			<button id="removecode" class="btn btn-small" type="button" onclick="RemoveCode();" data-i18n="Remove Code">Remove Code</button>
-			<button id="learncode" class="btn btn-small" type="button" onclick="LearnCode();" data-i18n="Learn Code">Learn Code</button>
-			<span id="learndevicename"></span>
+		<table class="display" id="scenedactivationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th align="left" width="70">Idx</th>
+					<th align="left" data-i18n="Name">Name</th>
+				</tr>
+			</thead>
+		</table>
+		<table id="delclract" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="removecode" data-i18n="Remove Device">Remove Device</a>
+					<button id="addcode" class="btn btn-small btn-success" type="button" onclick="AddCode();" data-i18n="Add Device">Add Device</button>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" onclick="ClearCodes();" data-i18n="Clear">Clear</a>
+				</td>
+			</tr>
+		</table>
+		
+		<span id="learndevicename"></span>
 		<br>
 		<br>
 		<h2><span data-i18n="Devices">Devices</span>:</h2>

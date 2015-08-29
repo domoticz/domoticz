@@ -1,40 +1,33 @@
 define(['app'], function (app) {
 	app.controller('ScenesController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
-		RemoveCode = function()
+		RemoveCode = function(idx)
 		{
 			if($("#scenecontent #removecode").hasClass('disabled')) {
 				return false;
 			}
-			$("#scenecontent #removecode").removeClass("btn-danger");
-			$("#scenecontent #learncode").removeClass("btn-warning");
-
-			$("#scenecontent #removecode").addClass("disabled");
-			$("#scenecontent #learncode").addClass("btn-success");
-			$("#scenecontent #learncode").html($.t("Learn Code"));
-
-			$("#scenecontent #learndevicename").html("");
-
-			$.ajax({
-				 url: "json.htm?type=command&param=removescenecode&idx="+$.devIdx,
-				 async: false, 
-				 dataType: 'json',
-				 success: function(data) {
-				 }
+			bootbox.confirm($.t("Are you sure to delete this Device?\n\nThis action can not be undone..."), function(result) {
+				if (result==true) {
+					$.ajax({
+						 url: "json.htm?type=command&param=removescenecode&sceneidx="+$.SceneIdx+"&idx="+idx,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							RefresActivators();
+						 }
+					});
+				}
 			});
 		}
 
-		LearnCode = function()
+		AddCode = function()
 		{
 		  ShowNotify($.t('Press button on Remote...'));
 		  
 		  setTimeout(function() {
 			var bHaveFoundDevice = false;
-			var deviceID = "";
 			var deviceidx = 0;
-			var bIsUsed = false;
 			var Cmd = 0;
-			var Name = "";
 			
 			$.ajax({
 			   url: "json.htm?type=command&param=learnsw", 
@@ -45,10 +38,7 @@ define(['app'], function (app) {
 				  if (data.status == 'OK')
 				  {
 					bHaveFoundDevice=true;
-					deviceID=data.ID;
 					deviceidx=data.idx;
-					bIsUsed=data.Used;
-					Name=data.Name;
 					Cmd=data.Cmd;
 				  }
 				}
@@ -59,20 +49,12 @@ define(['app'], function (app) {
 			setTimeout(function() {
 			  if (bHaveFoundDevice == true)
 			  {
-						$("#scenecontent #removecode").removeClass("disabled");
-						$("#scenecontent #learncode").removeClass("btn-success");
-
-						$("#scenecontent #removecode").addClass("btn-danger");
-						$("#scenecontent #learncode").addClass("btn-warning");
-						$("#scenecontent #learncode").html($.t("Change Code"));
-						
-						$("#scenecontent #learndevicename").html("( " + Name + " )");
-						
 						$.ajax({
-							 url: "json.htm?type=command&param=setscenecode&idx="+$.devIdx+"&devid="+deviceidx+"&cmnd="+Cmd, 
+							 url: "json.htm?type=command&param=addscenecode&sceneidx="+$.SceneIdx+"&idx="+deviceidx+"&cmnd="+Cmd, 
 							 async: false, 
 							 dataType: 'json',
 							 success: function(data) {
+								RefresActivators();
 							 }
 						});
 			  }
@@ -81,6 +63,23 @@ define(['app'], function (app) {
 			  }
 			}, 200);
 			}, 600);
+		}
+		
+		ClearCodes = function()
+		{
+			var bValid = false;
+			bootbox.confirm($.t("Are you sure to delete ALL Devices?\n\nThis action can not be undone!"), function(result) {
+				if (result==true) {
+					$.ajax({
+						 url: "json.htm?type=command&param=clearscenecodes&sceneidx="+$.SceneIdx,
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							RefresActivators();
+						 }
+					});
+				}
+			});
 		}
 
 		AddScene = function()
@@ -284,6 +283,55 @@ define(['app'], function (app) {
 		RefreshDeviceTableEx = function()
 		{
 			RefreshDeviceTable($.SceneIdx);
+		}
+
+		RefresActivators = function()
+		{
+			$('#scenecontent #delclract #removecode').attr("class", "btnstyle3-dis");
+
+		  var oTable = $('#scenecontent #scenedactivationtable').dataTable();
+		  oTable.fnClearTable();
+		  
+		  $.ajax({
+			 url: "json.htm?type=command&param=getsceneactivations&idx=" + $.SceneIdx,
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				
+			  if (typeof data.result != 'undefined') {
+				$.each(data.result, function(i,item){
+						var addId = oTable.fnAddData( {
+							"DT_RowId": item.idx,
+							"0": item.idx,
+							"1": item.name
+						} );
+				});
+			  }
+			 }
+		  });
+			/* Add a click handler to the rows - this could be used as a callback */
+			$("#scenecontent #scenedactivationtable tbody").off();
+			$("#scenecontent #scenedactivationtable tbody").on( 'click', 'tr', function () {
+				if ( $(this).hasClass('row_selected') ) {
+						$(this).removeClass('row_selected');
+						$('#scenecontent #delclract #removecode').attr("class", "btnstyle3-dis");
+				}
+				else {
+						var oTable = $('#scenecontent #scenedactivationtable').dataTable();
+						oTable.$('tr.row_selected').removeClass('row_selected');
+						$(this).addClass('row_selected');
+						
+						$('#scenecontent #delclract #removecode').attr("class", "btnstyle3");
+						var anSelected = fnGetSelected( oTable );
+						if ( anSelected.length !== 0 ) {
+							var data = oTable.fnGetData( anSelected[0] );
+							var idx= data["DT_RowId"];
+							$("#scenecontent #delclract #removecode").attr("href", "javascript:RemoveCode(" + idx + ")");
+						}
+				}
+			}); 
+		  
+		  $('#modal').hide();
 		}
 
 		RefreshDeviceTable = function(idx)
@@ -549,7 +597,7 @@ define(['app'], function (app) {
 			}
 		}
 
-		EditSceneDevice = function(idx,name,description,havecode,type,bIsProtected,learndevicename,onaction,offaction)
+		EditSceneDevice = function(idx,name,description,havecode,type,bIsProtected,onaction,offaction)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -560,8 +608,6 @@ define(['app'], function (app) {
 		 var bIsScene=(type=="Scene");
 		 $.isScene=bIsScene;
 
-		  var oTable;
-			
 		  var htmlcontent = '';
 		  htmlcontent+=$('#editscene').html();
 		  $('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes')+htmlcontent);
@@ -602,7 +648,24 @@ define(['app'], function (app) {
 				}
 			});
 
-		  oTable = $('#scenecontent #scenedevicestable').dataTable( {
+		  $('#scenecontent #scenedevicestable').dataTable( {
+						  "sDom": '<"H"lfrC>t<"F"ip>',
+						  "oTableTools": {
+							"sRowSelect": "single",
+						  },
+							"aoColumnDefs": [
+								{ "bSortable": false, "aTargets": [ 1 ] }
+							],
+						  "bSort": false,
+						  "bProcessing": true,
+						  "bStateSave": false,
+						  "bJQueryUI": true,
+						  "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+						  "iDisplayLength" : 25,
+						  "sPaginationType": "full_numbers",
+						  language: $.DataTableLanguage
+						} );
+		  $('#scenecontent #scenedactivationtable').dataTable( {
 						  "sDom": '<"H"lfrC>t<"F"ip>',
 						  "oTableTools": {
 							"sRowSelect": "single",
@@ -646,20 +709,8 @@ define(['app'], function (app) {
 
 			OnSelChangeDevice();
 
-			if (havecode==0) {
-					$("#scenecontent #removecode").addClass("disabled");
-					$("#scenecontent #learncode").addClass("btn-success");
-					$("#scenecontent #learncode").html($.t("Learn Code"));
-					$("#scenecontent #learndevicename").html("");
-			}
-			else {
-					$("#scenecontent #removecode").addClass("btn-danger");
-					$("#scenecontent #learncode").addClass("btn-warning");
-					$("#scenecontent #learncode").html($.t("Change Code"));
-					$("#scenecontent #learndevicename").html("( " + learndevicename + " )");
-			}
-
-		  RefreshDeviceTable(idx);
+			RefreshDeviceTable(idx);
+			RefresActivators();
 		}
 
 		RefreshLightSwitchesComboArray = function()
@@ -1393,7 +1444,7 @@ define(['app'], function (app) {
 						  '<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') +'" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 				  }
 				  if (permissions.hasPermission("Admin")) {
-						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.CodeDeviceName + '\', \'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
+						xhtm+='<a class="btnsmall" onclick="EditSceneDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\',' + item.HardwareID + ',\'' + item.Type + '\', ' + item.Protected + ',\'' + item.OnAction + '\', \'' + item.OffAction + '\');" data-i18n="Edit">Edit</a> ';
 						if (bAddTimer == true) {
 							if (item.Timers == "true") {
 								xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + item.Type + '\');" data-i18n="Timers">Timers</a> ';
