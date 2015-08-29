@@ -9361,23 +9361,20 @@ namespace http {
 				std::vector<std::string> arrayActivators;
 				StringSplit(Activators, ";", arrayActivators);
 				std::vector<std::string>::const_iterator ittAct;
+				std::string newActivation = "";
 				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 				{
 					std::string ID = *ittAct;
-					if (ID == idx)
+					if (ID != idx)
 					{
-						arrayActivators.erase(ittAct);
-						//Build new Activators
-						std::string Activators("");
-						for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
-						{
-							if (!Activators.empty())
-								Activators += ";";
-							Activators += *ittAct;
-						}
-						m_sql.safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activators.c_str(), sceneidx.c_str());
-						return;
+						if (!newActivation.empty())
+							newActivation += ";";
+						newActivation += ID;
 					}
+				}
+				if (Activators != newActivation)
+				{
+					m_sql.safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", newActivation.c_str(), sceneidx.c_str());
 				}
 			}
 		}
