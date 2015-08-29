@@ -447,6 +447,17 @@ void CScheduler::CheckSchedules()
 				{
 					if (itt->bIsScene == true)
 					{
+/*
+						if (
+							(itt->timerType == TTYPE_BEFORESUNRISE) ||
+							(itt->timerType == TTYPE_AFTERSUNRISE) ||
+							(itt->timerType == TTYPE_BEFORESUNSET) ||
+							(itt->timerType == TTYPE_AFTERSUNSET)
+							)
+						{
+
+						}
+*/
 						if (!m_mainworker.SwitchScene(itt->RowID, switchcmd))
 						{
 							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %llu, Time: %s", itt->RowID, ltimeBuf);
@@ -782,6 +793,46 @@ namespace http {
 			root["title"] = "DeleteTimer";
 			m_sql.safe_query(
 				"DELETE FROM Timers WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_EnableTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "EnableTimer";
+			m_sql.safe_query(
+				"UPDATE Timers SET Active=1 WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DisableTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DisableTimer";
+			m_sql.safe_query(
+				"UPDATE Timers SET Active=0 WHERE (ID == '%q')",
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -1240,6 +1291,46 @@ namespace http {
 			root["title"] = "DeleteSceneTimer";
 			m_sql.safe_query(
 				"DELETE FROM SceneTimers WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_EnableSceneTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "EnableSceneTimer";
+			m_sql.safe_query(
+				"UPDATE SceneTimers SET Active=1 WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DisableSceneTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DisableSceneTimer";
+			m_sql.safe_query(
+				"UPDATE SceneTimers SET Active=0 WHERE (ID == '%q')",
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();

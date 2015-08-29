@@ -28,7 +28,7 @@ public:
 	};
 	CWebServer(void);
 	~CWebServer(void);
-	bool StartServer(std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file = "", const std::string &secure_cert_passphrase = "");
+	bool StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file = "", const std::string &secure_cert_passphrase = "");
 	void StopServer();
 	void RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication=false);
 	void RegisterRType(const char* idname, webserver_response_function ResponseFunction);
@@ -147,10 +147,14 @@ private:
 	void Cmd_AddTimer(Json::Value &root);
 	void Cmd_UpdateTimer(Json::Value &root);
 	void Cmd_DeleteTimer(Json::Value &root);
+	void Cmd_EnableTimer(Json::Value & root);
+	void Cmd_DisableTimer(Json::Value & root);
 	void Cmd_ClearTimers(Json::Value &root);
 	void Cmd_AddSceneTimer(Json::Value &root);
 	void Cmd_UpdateSceneTimer(Json::Value &root);
 	void Cmd_DeleteSceneTimer(Json::Value &root);
+	void Cmd_EnableSceneTimer(Json::Value & root);
+	void Cmd_DisableSceneTimer(Json::Value & root);
 	void Cmd_ClearSceneTimers(Json::Value &root);
 	void Cmd_SetSceneCode(Json::Value &root);
 	void Cmd_RemoveSceneCode(Json::Value &root);
@@ -165,6 +169,7 @@ private:
 	void Cmd_RegisterWithPhilipsHue(Json::Value &root);
 	void Cmd_GetCustomIconSet(Json::Value &root);
 	void Cmd_DeleteCustomIcon(Json::Value &root);
+	void Cmd_UpdateCustomIcon(Json::Value &root);
 	void Cmd_RenameDevice(Json::Value &root);
 	void Cmd_SetUnused(Json::Value &root);
 	void Cmd_SaveHttpLinkConfig(Json::Value &root);
@@ -254,13 +259,9 @@ private:
 	void Do_Work();
 	std::string m_retstr;
 	std::wstring m_wretstr;
-	time_t m_LastUpdateCheck;
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
-
-	bool m_bHaveUpdate;
-	int m_iRevision;
 
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);

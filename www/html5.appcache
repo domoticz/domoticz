@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1043
+# ref 1011
 
 CACHE:
 # CSS
@@ -11,7 +11,7 @@ css/demo_table_jui.css
 css/jquery.uix.multiselect.css
 css/jquery-ui-timepicker-addon.css
 css/style.css
-css/ui-darkness/jquery-ui-1.10.3.custom.min.css
+css/ui-darkness/jquery-ui.min.css
 secpanel/css/font.less
 secpanel/css/reset.less
 secpanel/css/style.less
@@ -126,6 +126,7 @@ images/contact48_open.png
 images/copy.png
 images/copy_hover.png
 images/counter.png
+images/Counter48.png
 images/csv.png
 images/csv_hover.png
 images/current.png
@@ -163,6 +164,7 @@ images/Fireplace48_On.png
 images/forward_disabled.png
 images/forward_enabled.png
 images/forward_enabled_hover.png
+images/Gas48.png
 images/gauge.png
 images/gauge48.png
 images/Generic.png
@@ -449,6 +451,7 @@ app/WeatherController.js
 app/ZWaveTopologyController.js
 js/angular-animate.min.js
 js/angular-md5-min.js
+js/angular-round-progress-directive.js
 js/angular-route.min.js
 js/angular-sanitize.min.js
 js/angular-tree-control.js
@@ -473,9 +476,7 @@ js/highcharts-ng.min.js
 js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-1.11.2.min.js
-js/jquery-migrate-1.2.1.min.js
-js/jquery-ui-1.10.3.custom.min.js
+js/jquery-1.11.3.min.js
 js/jquery-ui.min.js
 js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js

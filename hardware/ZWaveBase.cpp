@@ -846,7 +846,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		int battery_level = 255;
 		if (pDevice->hasBattery)
 			battery_level = pDevice->batValue;
-		SendMeterSensor(ID3, ID4, battery_level, pDevice->floatValue);
+		SendMeterSensor(ID3, ID4, battery_level, pDevice->floatValue,"Water");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_CO2)
 	{

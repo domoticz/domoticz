@@ -95,8 +95,6 @@ static const _tGuiLanguage guiLanguage[] =
 
 extern http::server::CWebServerHelper m_webservers;
 
-//#define DEBUG_DOWNLOAD
-
 namespace http {
 	namespace server {
 
@@ -104,12 +102,9 @@ namespace http {
 		{
 			m_pWebEm = NULL;
 			m_bDoStop = false;
-			m_LastUpdateCheck = 0;
 #ifdef WITH_OPENZWAVE
 			m_ZW_Hwidx = -1;
 #endif
-			m_bHaveUpdate=false;
-			m_iRevision=0;
 		}
 
 
@@ -253,7 +248,7 @@ namespace http {
 			}
 		}
 
-		bool CWebServer::StartServer(std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
+		bool CWebServer::StartServer(const std::string &listenaddress, const std::string &listenport, const std::string &serverpath, const bool bIgnoreUsernamePassword, const std::string &secure_cert_file, const std::string &secure_cert_passphrase)
 		{
 			StopServer();
 
@@ -267,12 +262,13 @@ namespace http {
 
 			int tries = 0;
 			bool exception = false;
+			std::string listen_address = listenaddress;
 
 			do {
 				try {
 					exception = false;
 					m_pWebEm = new http::server::cWebem(
-						listenaddress.c_str(),						// address
+						listen_address.c_str(),						// address
 						listenport.c_str(),							// port
 						serverpath.c_str(), secure_cert_file, secure_cert_passphrase);
 				}
@@ -280,10 +276,10 @@ namespace http {
 					exception = true;
 					switch (tries) {
 					case 0:
-						listenaddress = "::";
+						listen_address = "::";
 						break;
 					case 1:
-						listenaddress = "0.0.0.0";
+						listen_address = "0.0.0.0";
 						break;
 					case 2:
 						_log.Log(LOG_ERROR, "Failed to start the web server: %s", e.what());
@@ -296,8 +292,8 @@ namespace http {
 					tries++;
 				}
 			} while (exception);
-			if (listenaddress != "0.0.0.0" && listenaddress != "::")
-				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listenaddress.c_str(), listenport.c_str());
+			if (listen_address != "0.0.0.0" && listen_address != "::")
+				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
 			else
 				_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
 
@@ -439,11 +435,15 @@ namespace http {
 			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1));
 			RegisterCommandCode("updatetimer", boost::bind(&CWebServer::Cmd_UpdateTimer, this, _1));
 			RegisterCommandCode("deletetimer", boost::bind(&CWebServer::Cmd_DeleteTimer, this, _1));
+			RegisterCommandCode("enabletimer", boost::bind(&CWebServer::Cmd_EnableTimer, this, _1));
+			RegisterCommandCode("disabletimer", boost::bind(&CWebServer::Cmd_DisableTimer, this, _1));
 			RegisterCommandCode("cleartimers", boost::bind(&CWebServer::Cmd_ClearTimers, this, _1));
 
 			RegisterCommandCode("addscenetimer", boost::bind(&CWebServer::Cmd_AddSceneTimer, this, _1));
 			RegisterCommandCode("updatescenetimer", boost::bind(&CWebServer::Cmd_UpdateSceneTimer, this, _1));
 			RegisterCommandCode("deletescenetimer", boost::bind(&CWebServer::Cmd_DeleteSceneTimer, this, _1));
+			RegisterCommandCode("enablescenetimer", boost::bind(&CWebServer::Cmd_EnableSceneTimer, this, _1));
+			RegisterCommandCode("disablescenetimer", boost::bind(&CWebServer::Cmd_DisableSceneTimer, this, _1));
 			RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1));
 			RegisterCommandCode("setscenecode", boost::bind(&CWebServer::Cmd_SetSceneCode, this, _1));
 			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
@@ -462,6 +462,7 @@ namespace http {
 
 			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1));
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
+			RegisterCommandCode("updatecustomicon", boost::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1));
 
 			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
 			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
@@ -553,12 +554,6 @@ namespace http {
 			m_bDoStop = false;
 			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWebServer::Do_Work, this)));
 
-			//Check for update (force)
-			if (m_LastUpdateCheck == 0)
-			{
-				Json::Value root;
-				Cmd_CheckForUpdate(root);
-			}
 			return (m_thread != NULL);
 		}
 
@@ -888,10 +883,7 @@ namespace http {
 		void CWebServer::Cmd_AddHardware(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string name = CURLEncode::URLDecode(m_pWebEm->FindValue("name"));
 			std::string senabled = m_pWebEm->FindValue("enabled");
@@ -924,7 +916,7 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP)
+				(htype == HTYPE_ETH8020) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra)
 				) {
 				//Lan
 				if (address == "")
@@ -1047,7 +1039,7 @@ namespace http {
 				mode2 = 1000;
 			}
 
-			result = m_sql.safe_query(
+			m_sql.safe_query(
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
 				name.c_str(),
 				(senabled == "true") ? 1 : 0,
@@ -1075,10 +1067,7 @@ namespace http {
 		void CWebServer::Cmd_UpdateHardware(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1123,7 +1112,7 @@ namespace http {
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || 
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || 
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || 
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP)
+				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra)
 				){
 				//Lan
 				if (address == "")
@@ -1438,10 +1427,7 @@ namespace http {
 		void CWebServer::Cmd_DeleteHardware(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1489,10 +1475,7 @@ namespace http {
 		void CWebServer::Cmd_AddPlan(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string name = m_pWebEm->FindValue("name");
 			root["status"] = "OK";
@@ -1506,10 +1489,7 @@ namespace http {
 		void CWebServer::Cmd_UpdatePlan(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1533,10 +1513,7 @@ namespace http {
 		void CWebServer::Cmd_DeletePlan(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1621,10 +1598,7 @@ namespace http {
 		void CWebServer::Cmd_AddPlanActiveDevice(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string sactivetype = m_pWebEm->FindValue("activetype");
@@ -1716,10 +1690,7 @@ namespace http {
 		void CWebServer::Cmd_DeletePlanDevice(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1749,10 +1720,7 @@ namespace http {
 		void CWebServer::Cmd_DeleteAllPlanDevices(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1871,12 +1839,6 @@ namespace http {
 			root["hash"] = szAppHash;
 			root["build_time"] = szAppDate;
 
-			//Force Check for update
-			/*
-			Json::Value root2;
-			Cmd_CheckForUpdate(root2);
-			*/
-
 			int nValue = 1;
 			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 
@@ -1887,11 +1849,9 @@ namespace http {
 			}
 			else
 			{
-				root["haveupdate"] = (nValue == 1) ? m_bHaveUpdate : false;
+				root["haveupdate"] = (nValue == 1) ? m_mainworker.m_bHaveUpdate : false;
 			}
-			root["revision"] = m_iRevision;
-
-
+			root["revision"] = m_mainworker.m_iRevision;
 		}
 
 		void CWebServer::Cmd_GetAuth(Json::Value &root)
@@ -1900,8 +1860,6 @@ namespace http {
 			root["title"] = "GetAuth";
 			root["user"] = m_pWebEm->m_actualuser;
 			root["rights"] = m_pWebEm->m_actualuser_rights;
-
-			int nValue = 0;
 		}
 
 		void CWebServer::Cmd_GetActualHistory(Json::Value &root)
@@ -1948,8 +1906,6 @@ namespace http {
 				if (uname(&my_uname) < 0)
 					return;
 
-				std::string forced = m_pWebEm->FindValue("forced");
-				bool bIsForced = (forced == "true");
 				std::string systemname = my_uname.sysname;
 				std::string machine = my_uname.machine;
 				std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
@@ -1987,6 +1943,9 @@ namespace http {
 
 		void CWebServer::Cmd_GetConfig(Json::Value &root)
 		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
 			root["status"] = "OK";
 			root["title"] = "GetConfig";
 
@@ -2004,7 +1963,6 @@ namespace http {
 				}
 
 			}
-			root["statuscode"] = urights;
 
 			int nValue;
 			std::string sValue;
@@ -2541,6 +2499,12 @@ namespace http {
 				m_sql.GetPreferencesVar("CostWater", nValue);
 				root["CostWater"] = nValue;
 
+				int tValue=1000;
+				if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+				{
+					root["DividerWater"] = float(tValue);
+				}
+
 				unsigned char dType = atoi(sd[0].c_str());
 				unsigned char subType = atoi(sd[1].c_str());
 				nValue = (unsigned char)atoi(sd[2].c_str());
@@ -2556,7 +2520,6 @@ namespace http {
 						return;
 
 					float EnergyDivider = 1000.0f;
-					int tValue;
 					if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
 					{
 						EnergyDivider = float(tValue);
@@ -2608,168 +2571,34 @@ namespace http {
 			}
 			root["statuscode"] = urights;
 
-			utsname my_uname;
-			if (uname(&my_uname) < 0)
-				return;
-
-			std::string forced = m_pWebEm->FindValue("forced");
-			bool bIsForced = (forced == "true");
-
-			std::string systemname = my_uname.sysname;
-			std::string machine = my_uname.machine;
-			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-
-			if (machine == "armv6l")
-			{
-				//Seems like old arm systems can also use the new arm build
-				machine = "armv7l";
-			}
-
-#ifdef DEBUG_DOWNLOAD
-			systemname = "linux";
-			machine = "armv7l";
-#endif
-
-			if ((systemname == "windows") || ((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
-			{
-				//Only Raspberry Pi (Wheezy)/Ubuntu for now!
 				root["status"] = "OK";
 				root["title"] = "CheckForUpdate";
 				root["HaveUpdate"] = false;
-				root["IsSupported"] = false;
-			}
-			else
-			{
-				time_t atime = mytime(NULL);
-				if (!bIsForced)
-				{
-					if (atime - m_LastUpdateCheck < 12 * 3600)
-					{
-						root["status"] = "OK";
-						root["title"] = "CheckForUpdate";
-						root["HaveUpdate"] = false;
-						root["IsSupported"] = true;
-						return;
-					}
-				}
-				m_LastUpdateCheck = atime;
+			root["revision"] = m_mainworker.m_iRevision;
+
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return; //Only admin users may update
 
 				int nValue = 0;
 				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
-				if (nValue == 1)
+			if (nValue != 1)
 				{
-					m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-					bool bIsBetaChannel = (nValue != 0);
-					std::string szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + systemname + "&machine=" + machine;
-					std::string szHistoryURL = "http://www.domoticz.com/download.php?channel=stable&type=history&system=" + systemname + "&machine=" + machine;
-					if (bIsBetaChannel)
-					{
-						szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + systemname + "&machine=" + machine;
-						szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
+				return;
 					}
-					std::string revfile;
 
-					if (!HTTPClient::GET(szURL, revfile))
-						return;
-					std::vector<std::string> strarray;
-					StringSplit(revfile, " ", strarray);
-					if (strarray.size() != 3)
-						return;
-					root["status"] = "OK";
-					root["title"] = "CheckForUpdate";
-					root["IsSupported"] = true;
+			bool bIsForced = (m_pWebEm->FindValue("forced") == "true");
 
-					int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
-					m_iRevision = atoi(strarray[2].c_str());
-					m_bHaveUpdate = (version != m_iRevision);
-#ifdef DEBUG_DOWNLOAD
-					m_bHaveUpdate = true;
-					bIsForced = true;
-#endif
-					root["HaveUpdate"] = m_bHaveUpdate;
-					root["Revision"] = m_iRevision;
-					root["HistoryURL"] = szHistoryURL;
-					root["ActVersion"] = version;
-				}
-				else
-				{
-					root["status"] = "OK";
-					root["title"] = "CheckForUpdate";
-					root["IsSupported"] = false;
-					root["HaveUpdate"] = false;
-				}
-			}
+			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
+			root["revision"] = m_mainworker.m_iRevision;
 		}
 
 		void CWebServer::Cmd_DownloadUpdate(Json::Value &root)
 		{
-			int nValue;
-			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-			bool bIsBetaChannel = (nValue != 0);
-			std::string szURL;
-			std::string revfile;
-
-			utsname my_uname;
-			if (uname(&my_uname) < 0)
+			if (!m_mainworker.StartDownloadUpdate())
 				return;
-
-			std::string forced = m_pWebEm->FindValue("forced");
-			bool bIsForced = (forced == "true");
-			std::string systemname = my_uname.sysname;
-			std::string machine = my_uname.machine;
-			std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-
-			if (machine == "armv6l")
-			{
-				//Seems like old arm systems can also use the new arm build
-				machine = "armv7l";
-			}
-
-#ifdef DEBUG_DOWNLOAD
-			systemname = "linux";
-			machine = "armv7l";
-#endif
-
-			if (!bIsBetaChannel)
-			{
-				szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + systemname + "&machine=" + machine;
-			}
-			else
-			{
-				szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + systemname + "&machine=" + machine;
-			}
-			if (!HTTPClient::GET(szURL, revfile))
-				return;
-			std::vector<std::string> strarray;
-			StringSplit(revfile, " ", strarray);
-			if (strarray.size() != 3)
-				return;
-			int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
-			if (version == atoi(strarray[2].c_str()))
-			{
-#ifndef DEBUG_DOWNLOAD
-				return;
-#endif
-			}
-
-			if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
-				return;	//only Raspberry Pi/Ubuntu for now
 			root["status"] = "OK";
 			root["title"] = "DownloadUpdate";
-			std::string downloadURL;
-			std::string checksumURL;
-			if (!bIsBetaChannel)
-			{
-				downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine=" + machine;
-				checksumURL = "http://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + systemname + "&machine=" + machine;
 			}
-			else
-			{
-				downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine=" + machine;
-				checksumURL = "http://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + systemname + "&machine=" + machine;
-			}
-			m_mainworker.GetDomoticzUpdate(downloadURL, checksumURL);
-		}
 
 		void CWebServer::Cmd_DownloadReady(Json::Value &root)
 		{
@@ -2918,7 +2747,7 @@ namespace http {
 					//no it is not, add it
 					if (isscene == "true")
 					{
-						result = m_sql.safe_query(
+						m_sql.safe_query(
 							"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Cmd, Level, Hue, OnDelay, OffDelay) VALUES ('%q','%q',%d,%d,%d,%d,%d)",
 							devidx.c_str(),
 							idx.c_str(),
@@ -2931,7 +2760,7 @@ namespace http {
 					}
 					else
 					{
-						result = m_sql.safe_query(
+						m_sql.safe_query(
 							"INSERT INTO SceneDevices (DeviceRowID, SceneRowID, Level, Hue, OnDelay, OffDelay) VALUES ('%q','%q',%d,%d,%d,%d)",
 							devidx.c_str(),
 							idx.c_str(),
@@ -2947,7 +2776,6 @@ namespace http {
 			{
 				std::string idx = m_pWebEm->FindValue("idx");
 				std::string devidx = m_pWebEm->FindValue("devidx");
-				std::string isscene = m_pWebEm->FindValue("isscene");
 				int command = atoi(m_pWebEm->FindValue("command").c_str());
 				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
 				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
@@ -3713,6 +3541,9 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance))
+						devid = "00" + id;
+					else
 					devid = id;
 				}
 				else if (lighttype < 70)
@@ -4027,6 +3858,9 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance))
+						devid = "00" + id;
+					else
 					devid = id;
 				}
 				else if (lighttype < 70)
@@ -4208,7 +4042,7 @@ namespace http {
 						}
 						std::string ID = result[0][0];
 
-						result = m_sql.safe_query(
+						m_sql.safe_query(
 							"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 							name.c_str(), switchtype, ID.c_str());
 
@@ -4270,7 +4104,7 @@ namespace http {
 				}
 				std::string ID = result[0][0];
 
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 					name.c_str(), switchtype, ID.c_str());
 
@@ -5211,7 +5045,7 @@ namespace http {
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
-				result = m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')",
+				m_sql.safe_query("UPDATE DeviceStatus SET Favorite=%d WHERE (ID == '%q')",
 					isfavorite, idx.c_str());
 				root["status"] = "OK";
 				root["title"] = "MakeFavorite";
@@ -5223,7 +5057,7 @@ namespace http {
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
-				result = m_sql.safe_query("UPDATE Scenes SET Favorite=%d WHERE (ID == '%q')",
+				m_sql.safe_query("UPDATE Scenes SET Favorite=%d WHERE (ID == '%q')",
 					isfavorite, idx.c_str());
 				root["status"] = "OK";
 				root["title"] = "MakeSceneFavorite";
@@ -5266,7 +5100,7 @@ namespace http {
 
 				if (nValue >= 0)
 				{
-					result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (ID == '%q')",
+					m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (ID == '%q')",
 						nValue, idx.c_str());
 					root["status"] = "OK";
 					root["title"] = "SwitchLight";
@@ -5462,7 +5296,8 @@ namespace http {
 						time_t now = mytime(NULL);
 
 						localtime_r(&now, &loctime);
-						strftime(szTmp, 80, "%b %d %Y %X", &loctime);
+						//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
+						strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
 
 						root["status"] = "OK";
 						root["title"] = "getSunRiseSet";
@@ -5478,7 +5313,8 @@ namespace http {
 				time_t now = mytime(NULL);
 
 				localtime_r(&now, &loctime);
-				strftime(szTmp, 80, "%b %d %Y %X", &loctime);
+				//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
+				strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
 
 				root["status"] = "OK";
 				root["title"] = "getServerTime";
@@ -5785,7 +5621,7 @@ namespace http {
 
 				root["status"] = "OK";
 				root["title"] = "AddFloorplan";
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"INSERT INTO Floorplans (Name,ImageFile,ScaleFactor) VALUES ('%q','%q',%q)",
 					name.c_str(),
 					imagefile.c_str(),
@@ -5822,7 +5658,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "UpdateFloorplan";
 
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE Floorplans SET Name='%q',ImageFile='%q', ScaleFactor='%q' WHERE (ID == '%q')",
 					name.c_str(),
 					imagefile.c_str(),
@@ -5850,17 +5686,17 @@ namespace http {
 					return;
 				root["status"] = "OK";
 				root["title"] = "DeleteFloorplan";
-				result = m_sql.safe_query(
+				 m_sql.safe_query(
 					"UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))",
 					idx.c_str()
 					);
 				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for all plans on floorplan '%s'.", idx.c_str());
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')",
 					idx.c_str()
 					);
 				_log.Log(LOG_STATUS, "(Floorplan) Plans for floorplan '%s' reset.", idx.c_str());
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"DELETE FROM Floorplans WHERE (ID == '%q')",
 					idx.c_str()
 					);
@@ -5909,9 +5745,9 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "ChangeFloorPlanOrder";
 
-				result = m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')",
+				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')",
 					oOrder.c_str(), idx.c_str());
-				result = m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')",
+				m_sql.safe_query("UPDATE Floorplans SET [Order] = '%q' WHERE (ID='%q')",
 					aOrder.c_str(), oID.c_str());
 			}
 			else if (cparam == "getunusedfloorplanplans")
@@ -5986,7 +5822,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "AddFloorplanPlan";
 
-				result = m_sql.safe_query(
+				 m_sql.safe_query(
 					"UPDATE Plans SET FloorplanID='%q' WHERE (ID == '%q')",
 					idx.c_str(),
 					planidx.c_str()
@@ -6014,7 +5850,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "UpdateFloorplanPlan";
 
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE Plans SET Area='%q' WHERE (ID == '%q')",
 					planarea.c_str(),
 					planidx.c_str()
@@ -6040,12 +5876,12 @@ namespace http {
 					return;
 				root["status"] = "OK";
 				root["title"] = "DeleteFloorplanPlan";
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID == '%q')",
 					idx.c_str()
 					);
 				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for plan '%s'.", idx.c_str());
-				result = m_sql.safe_query(
+				m_sql.safe_query(
 					"UPDATE Plans SET FloorplanID=0,Area='' WHERE (ID == '%q')",
 					idx.c_str()
 					);
@@ -6566,7 +6402,7 @@ namespace http {
 
 			root["ActTime"] = static_cast<int>(now);
 
-			char szData[100];
+			char szData[250];
 			char szTmp[300];
 
 			if (!m_mainworker.m_LastSunriseSet.empty())
@@ -6575,7 +6411,8 @@ namespace http {
 				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
 				if (strarray.size() == 2)
 				{
-					strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					//strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					strftime(szTmp, 80, "%Y-%m-%d %X", &tm1);
 					root["ServerTime"] = szTmp;
 					root["Sunrise"] = strarray[0];
 					root["Sunset"] = strarray[1];
@@ -7231,7 +7068,6 @@ namespace http {
 							IconFile = m_custom_light_icons[ittIcon->second].RootFile;
 						}
 						root["result"][ii]["Image"] = IconFile;
-
 
 						if (switchtype == STYPE_Dimmer)
 						{
@@ -7944,8 +7780,7 @@ namespace http {
 								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%.03f m3", musage);
+								sprintf(szTmp, "%llu Liter", total_real);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
@@ -8053,6 +7888,7 @@ namespace http {
                         root["result"][ii]["CounterToday"] = szTmp;
                         root["result"][ii]["SwitchTypeVal"] = metertype;
                         root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						root["result"][ii]["TypeImg"] = "counter";
                         float fvalue = static_cast<float>(atof(sValue.c_str()));
                         switch (metertype)
                         {
@@ -8140,7 +7976,7 @@ namespace http {
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%.02f m3", musage);
+								sprintf(szTmp, "%.03f m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu", total_real);
@@ -8168,7 +8004,7 @@ namespace http {
 						case MTYPE_GAS:
 						case MTYPE_WATER:
 							musage = float(total_actual) / GasDivider;
-							sprintf(szTmp, "%.02f", musage);
+							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", total_actual);
@@ -8194,7 +8030,7 @@ namespace http {
 							break;
 						case MTYPE_WATER:
 							musage = float(acounter) / WaterDivider;
-							sprintf(szTmp, "%.02f m3", musage);
+							sprintf(szTmp, "%.03f m3", musage);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu", acounter);
@@ -8996,10 +8832,7 @@ namespace http {
 		void CWebServer::RType_DeleteDevice(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -9014,10 +8847,7 @@ namespace http {
 		void CWebServer::RType_AddScene(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string name = m_pWebEm->FindValue("name");
 			if (name == "")
@@ -9051,10 +8881,7 @@ namespace http {
 		void CWebServer::RType_DeleteScene(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -9069,10 +8896,7 @@ namespace http {
 		void CWebServer::RType_UpdateScene(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string name = m_pWebEm->FindValue("name");
@@ -9388,7 +9212,8 @@ namespace http {
 				if (strarray.size() == 2)
 				{
 					char szTmp[100];
-					strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					//strftime(szTmp, 80, "%b %d %Y %X", &tm1);
+					strftime(szTmp, 80, "%Y-%m-%d %X", &tm1);
 					root["ServerTime"] = szTmp;
 					root["Sunrise"] = strarray[0];
 					root["Sunset"] = strarray[1];
@@ -9550,10 +9375,7 @@ namespace http {
 		void CWebServer::Cmd_SetSceneCode(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string cmnd = m_pWebEm->FindValue("cmnd");
@@ -9593,10 +9415,7 @@ namespace http {
 		void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -9741,10 +9560,7 @@ namespace http {
 		void CWebServer::Cmd_DeleteCustomIcon(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string sidx = m_pWebEm->FindValue("idx");
 			if (sidx == "")
@@ -9753,9 +9569,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "DeleteCustomIcon";
 
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("DELETE FROM CustomImages WHERE (ID == %d)",
-				idx);
+			m_sql.safe_query("DELETE FROM CustomImages WHERE (ID == %d)", idx);
 
 			//Delete icons file from disk
 			std::vector<_tCustomIcon>::const_iterator itt;
@@ -9775,13 +9589,33 @@ namespace http {
 			ReloadCustomSwitchIcons();
 		}
 
+		void CWebServer::Cmd_UpdateCustomIcon(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
+			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sname = m_pWebEm->FindValue("name");
+			std::string sdescription = m_pWebEm->FindValue("description");
+			if (
+				(sidx.empty()) ||
+				(sname.empty()) ||
+				(sdescription.empty())
+				)
+				return;
+
+			int idx = atoi(sidx.c_str());
+			root["status"] = "OK";
+			root["title"] = "UpdateCustomIcon";
+
+			m_sql.safe_query("UPDATE CustomImages SET Name='%q', Description='%q' WHERE (ID == %d)", sname.c_str(), sdescription.c_str(), idx);
+			ReloadCustomSwitchIcons();
+			}
+
 		void CWebServer::Cmd_RenameDevice(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string sidx = m_pWebEm->FindValue("idx");
 			std::string sname = m_pWebEm->FindValue("name");
@@ -9795,17 +9629,13 @@ namespace http {
 			root["title"] = "RenameDevice";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)",
-				sname.c_str(), idx);
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
 		void CWebServer::Cmd_SetUnused(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string sidx = m_pWebEm->FindValue("idx");
 			if (sidx.empty())
@@ -9813,10 +9643,7 @@ namespace http {
 			int idx = atoi(sidx.c_str());
 			root["status"] = "OK";
 			root["title"] = "SetUnused";
-
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)",
-				idx);
+			m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)", idx);
 		}
 
 		void CWebServer::Cmd_AddLogMessage(Json::Value &root)
@@ -10033,15 +9860,12 @@ namespace http {
 			StringSplit(userdevices, ";", strarray);
 
 			//First delete all devices for this user, then add the (new) onces
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')",
-				idx.c_str());
+			m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
 
 			int nDevices = static_cast<int>(strarray.size());
 			for (int ii = 0; ii < nDevices; ii++)
 			{
-				result = m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')",
-					idx.c_str(), strarray[ii].c_str());
+				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), strarray[ii].c_str());
 			}
 			m_mainworker.LoadSharedUsers();
 		}
@@ -10049,10 +9873,7 @@ namespace http {
 		void CWebServer::RType_SetUsed(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
-			{
-				//No admin user, and not allowed to be here
-				return;
-			}
+				return;//Only admin user allowed
 
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string deviceid = m_pWebEm->FindValue("deviceid");
@@ -10172,8 +9993,7 @@ namespace http {
 					strParam1.c_str(), strParam2.c_str(), idx.c_str());
 			}
 
-			result = m_sql.safe_query("UPDATE DeviceStatus SET Protected=%d WHERE (ID == '%q')",
-				iProtected, idx.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET Protected=%d WHERE (ID == '%q')", iProtected, idx.c_str());
 
 			if (setPoint != "" || state!="")
 			{
@@ -11591,7 +11411,7 @@ namespace http {
 													sprintf(szTmp, "%.2f", TotalValue / GasDivider);
 													break;
 												case MTYPE_WATER:
-													sprintf(szTmp, "%.2f", TotalValue / WaterDivider);
+													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 													break;
 												case MTYPE_COUNTER:
 													sprintf(szTmp, "%.1f", TotalValue);
@@ -11640,7 +11460,7 @@ namespace http {
 										sprintf(szTmp, "%.2f", TotalValue / GasDivider);
 										break;
 									case MTYPE_WATER:
-										sprintf(szTmp, "%.2f", TotalValue / WaterDivider);
+										sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 										break;
 									case MTYPE_COUNTER:
 										sprintf(szTmp, "%.1f", TotalValue);
@@ -11809,7 +11629,7 @@ namespace http {
 												sprintf(szTmp, "%.2f", TotalValue / GasDivider);
 												break;
 											case MTYPE_WATER:
-												sprintf(szTmp, "%.2f", TotalValue / WaterDivider);
+												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
 												break;
 											case MTYPE_COUNTER:
 												sprintf(szTmp, "%.1f", TotalValue);
@@ -13509,7 +13329,7 @@ namespace http {
 								sprintf(szTmp, "%.2f", fvalue / GasDivider);
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.2f", fvalue / WaterDivider);
+								sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 								break;
 							}
 							root["counter"] = szTmp;
@@ -13531,7 +13351,7 @@ namespace http {
 									sprintf(szTmp, "%.2f", fvalue / GasDivider);
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.2f", fvalue / WaterDivider);
+									sprintf(szTmp, "%.3f", fvalue / WaterDivider);
 									break;
 								}
 								root["counter"] = szTmp;
@@ -13573,10 +13393,10 @@ namespace http {
 									root["result"][ii]["c"] = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
-										sprintf(szTmp, "%.2f", (fcounter - atof(szValue.c_str())) / WaterDivider);
+										sprintf(szTmp, "%.3f", (fcounter - atof(szValue.c_str())) / WaterDivider);
 									else
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
@@ -13608,7 +13428,7 @@ namespace http {
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								}
@@ -13869,9 +13689,9 @@ namespace http {
 								root["result"][ii]["c"] = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.2f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
+								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
 								root["result"][ii]["c"] = szTmp;
 								break;
 							}
@@ -14413,7 +14233,7 @@ namespace http {
 									szValue = szTmp;
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 									szValue = szTmp;
 									break;
 								}
@@ -14510,7 +14330,7 @@ namespace http {
 								szValue = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / WaterDivider);
+								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								szValue = szTmp;
 								break;
 							}

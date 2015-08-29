@@ -14,7 +14,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_ToonThermostat
+//	#define DEBUG_ToonThermostat
 #endif
 
 #ifdef DEBUG_ToonThermostat
@@ -568,6 +568,19 @@ bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char len
 	return SwitchLight(uuid, state);
 }
 
+double CToonThermostat::GetElectricOffset(const int idx, const double currentKwh)
+{
+	std::map<int, double>::const_iterator itt = m_OffsetElectricUsage.find(idx);
+	if (itt == m_OffsetElectricUsage.end())
+	{
+		//First time, lets add it
+		bool bExists = false;
+		m_OffsetElectricUsage[idx] = GetKwhMeter(idx, 1, bExists)/100.0;
+		m_LastElectricCounter[idx] = currentKwh;
+	}
+	return m_OffsetElectricUsage[idx];
+}
+
 void CToonThermostat::GetMeterDetails()
 {
 	if (m_UserName.size()==0)
@@ -588,6 +601,10 @@ void CToonThermostat::GetMeterDetails()
 		<< "&random=" << GetRandom();
 	std::string szPostdata = sstr2.str();
 	//Get Data
+
+#ifdef DEBUG_ToonThermostat
+	sResult = ReadFile("E:\\toonresult_001.txt");
+#else
 	std::string sURL = TOON_HOST + TOON_UPDATE_PATH + szPostdata;
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
@@ -595,9 +612,10 @@ void CToonThermostat::GetMeterDetails()
 		m_bDoLogin = true;
 		return;
 	}
+#endif
 	time_t atime = mytime(NULL);
 
-#ifdef DEBUG_ToonThermostat
+#ifdef DEBUG_ToonThermostat2
 	char szFileName[MAX_PATH];
 	static int sNum = 1;
 	sprintf_s(szFileName, "E:\\toonresult_%03d.txt", sNum++);
@@ -647,6 +665,22 @@ void CToonThermostat::GetMeterDetails()
 					}
 				}
 				UpdateSwitch(Idx, state != 0, deviceName);
+
+				if (root["deviceStatusInfo"]["device"][ii]["currentUsage"].empty() == false)
+				{
+					double currentUsage = root["deviceStatusInfo"]["device"][ii]["currentUsage"].asDouble();
+					double DayCounter = root["deviceStatusInfo"]["device"][ii]["dayUsage"].asDouble();
+
+					double ElecOffset = GetElectricOffset(Idx, DayCounter);
+					double OldDayCounter = m_LastElectricCounter[Idx];
+					if (DayCounter < OldDayCounter)
+					{
+						//daily counter went to zero
+						m_OffsetElectricUsage[Idx] += OldDayCounter;
+					}
+					m_LastElectricCounter[Idx] = DayCounter;
+					SendKwhMeter(Idx, 1, 255, currentUsage/1000.0, (m_OffsetElectricUsage[Idx] + m_LastElectricCounter[Idx])/1000.0, deviceName);
+				}
 			}
 		}
 	}

@@ -599,38 +599,16 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 	{
 		std::string	sKodiCall;
 		std::string	sKodiParam = "";
-		if ((command == "SELECT") ||
-			(command == "UP")			||
-			(command == "DOWN")			||
-			(command == "LEFT")			||
-			(command == "RIGHT")		||
-			(command == "PLAY")			||
-			(command == "STOP")			||
-			(command == "PAUSE")		||
-			(command == "PLAYPAUSE")	||
-			(command == "INFO")			||
-			(command == "BACK")			||
-			(command == "MUTE")			||
-			(command == "PAGEUP")		||
-			(command == "PAGEDOWN")		||
-			(command == "VOLUMEUP")		||
-			(command == "VOLUMEDOWN")	||
-			(command == "CHANNELUP")	||
-			(command == "CHANNELDOWN")	||
-			(command == "SKIPNEXT")		||
-			(command == "SKIPPREVIOUS") ||
-			(command == "FASTFORWARD")	||
-			(command == "REWIND")		||
-			(command == "FULLSCREEN"))
+		if (command == "Home")
+		{
+			sKodiCall = "Input.Home";
+		}
+		else  // Assume generic ExecuteAction  for any unrecognised strings
 		{
 			sKodiCall = "Input.ExecuteAction";
 			std::string	sLower = command;
 			std::transform(sLower.begin(), sLower.end(), sLower.begin(), ::tolower);
 			sKodiParam = sLower;
-		}
-		else if (command == "HOME")
-		{
-			sKodiCall = "Input.Home";
 		}
 
 		if (sKodiCall.length())
@@ -853,6 +831,7 @@ namespace http {
 			root["title"] = "KodiClearNodes";
 			pHardware->RemoveAllNodes();
 		}
+
 		void CWebServer::Cmd_KodiMediaCommand(Json::Value &root)
 		{
 			std::string sIdx = m_pWebEm->FindValue("idx");

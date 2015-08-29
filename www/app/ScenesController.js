@@ -1209,7 +1209,9 @@ define(['app'], function (app) {
 		  $http({
 			 url: "json.htm?type=scenes&lastupdate="+$.LastUpdateTime
 			 }).success(function(data) {
-				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+				}
 				if (typeof data.result != 'undefined') {
 					if (typeof data.ActTime != 'undefined') {
 						$.LastUpdateTime=parseInt(data.ActTime);

@@ -3,14 +3,19 @@ define(['app'], function (app) {
 
 		$scope.topText = "";
 		$scope.bottomText = "";
+
+		$scope.ProgressData = {
+          label: 0,
+          percentage: 0
+        }
 		
 		$scope.progressdownload = function() {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			var val = $( "#progressbar" ).progressbar( "value" ) || 0;
-			$( "#progressbar" ).progressbar( "value", val + 1 );
+			var val = $scope.ProgressData.label;
+			$scope.ProgressData.label = val + 1;
 			if ( val < 99 ) {
 				if ($.StopProgress==false) {
 					$scope.mytimer=$interval(function() {
@@ -29,8 +34,8 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			var val = $( "#progressbar" ).progressbar( "value" ) || 0;
-			$( "#progressbar" ).progressbar( "value", val + 1 );
+			var val = $scope.ProgressData.label;
+			$scope.ProgressData.label = val + 1;
 			if ( val < 99 ) {
 				if ($.StopProgress==false) {
 					$scope.mytimer=$interval(function() {
@@ -66,8 +71,6 @@ define(['app'], function (app) {
 				 dataType: 'json',
 				 success: function(data) {
 					$scope.topText = $.t("Restarting System (This could take some time...)");
-					//var val = $( "#progressbar" ).progressbar( "value" ) || 0;
-					//$( "#progressbar" ).progressbar( "value", 90 );
 				 },
 				 error: function(){
 				 }     
@@ -80,7 +83,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer2);
 				$scope.mytimer2 = undefined;
 			}
-			var val = $( "#progressbar" ).progressbar( "value" ) || 0;
+			var val = $scope.ProgressData.label;
 			if (val == 100) {
 				$("#updatecontent #divprogress").hide();
 				$scope.topText = $.t("Error while downloading Update,<br>check your internet connection or try again later !...");
@@ -97,7 +100,7 @@ define(['app'], function (app) {
 									$interval.cancel($scope.mytimer);
 									$scope.mytimer = undefined;
 								}
-								$( "#progressbar" ).progressbar( "value",0);
+								$scope.ProgressData.label = 0;
 								$scope.topText = $.t("Updating system...");
 								$scope.mytimer=$interval(function() {
 									$scope.progressupdatesystem();
@@ -146,7 +149,7 @@ define(['app'], function (app) {
 							 success: function(data) {
 								if (data.status == "OK") {
 									$("#updatecontent #divprogress").show();
-									$( "#progressbar" ).progressbar( "value",0);
+									$scope.ProgressData.label = 0;
 									$scope.mytimer=$interval(function() {
 										$scope.progressdownload();
 									}, 1000);
@@ -177,25 +180,14 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			// Here I synchronize the value of label and percentage in order to have a nice demo
+			$scope.$watch('ProgressData', function (newValue, oldValue) {
+				newValue.percentage = newValue.label / 100;
+			}, true);
+        		
 			$.StopProgress=false;
 			$scope.topText = $.t("Checking for updates....");
 			$scope.bottomText = $.t("Do not poweroff the system while updating !...");
-			var progressbar = $( "#progressbar" );
-			progressLabel = $( ".progress-label" );
-			progressbar.height(22);
-			progressbar.progressbar({
-				value: false,
-				change: function() {
-					progressLabel.text( progressbar.progressbar( "value" ) + "%" );
-				},
-				complete: function() {
-					//progressLabel.text( "Complete!" );
-				}
-			});
-			progressbarValue = progressbar.find( ".ui-progressbar-value" );
-			progressbarValue.css({
-				"background": 'url(images/pbar-ani.gif)'
-			});
 			
 			$scope.mytimer=$interval(function() {
 				$scope.CheckForUpdate();

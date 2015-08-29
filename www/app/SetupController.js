@@ -149,7 +149,12 @@ define(['app'], function (app) {
 				},
 				error: function(){
 					HideNotify();
-					ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
+					if (subsystem=="email") {
+						ShowNotify($.t('Invalid Email Settings...'), 3000, true);
+					}
+					else {
+						ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
+					}
 				}
 			});
 		}

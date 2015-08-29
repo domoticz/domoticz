@@ -983,9 +983,10 @@ define(['app'], function (app) {
 			var oTable;
 			
 			$('#modal').show();
-			var htmlcontent = '';
+			var htmlcontent = GetBackbuttonHTMLTable('ShowLights');
 			htmlcontent+=$('#editlightswitch').html();
-			$('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights')+htmlcontent);
+			$('#lightcontent').html(htmlcontent);
+			//$('#lightcontent').html($compile(htmlcontent)($scope));
 			$('#lightcontent').i18n();
 			
 			oTable = $('#lightcontent #subdevicestable').dataTable( {
@@ -1130,7 +1131,8 @@ define(['app'], function (app) {
 
 				$('#lightcontent #comboswitchicon').ddslick({
 					data: $.ddData,
-					width:200,
+					width:260,
+					height:390,
 					selectText: "Select Switch Icon",
 					imagePosition:"left"
 				});
@@ -1369,7 +1371,9 @@ define(['app'], function (app) {
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
-				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+				}
 
 			  if (typeof data.result != 'undefined') {
 
@@ -2597,8 +2601,10 @@ define(['app'], function (app) {
 			}
 			else if (lighttype==70) {
 				//EnOcean
-				mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #comboid option:selected").val();
-				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #combounitcode option:selected").val();
+				//mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #comboid option:selected").val();
+				//mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #combounitcode option:selected").val();
+				mParams+="&groupcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #combounitcode option:selected").val();
+				mParams+="&unitcode="+$("#dialog-addmanuallightdevice #lightingparams_enocean #comboid option:selected").val();				
 				ID="EnOcean";
 				mParams+="&id="+ID;
 			}
@@ -2896,6 +2902,7 @@ define(['app'], function (app) {
 			});
 
 			$.ddData=[];
+			$scope.CustomImages=[];
 			//Get Custom icons
 			$.ajax({
 			 url: "json.htm?type=custom_light_icons", 
@@ -2911,13 +2918,15 @@ define(['app'], function (app) {
 						}
 						var img="images/"+item.imageSrc+"48_On.png";
 						$.ddData.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
+						$scope.CustomImages.push({ text: item.text, value: item.idx, selected: bSelected, description: item.description, imageSrc: img });
 					});
+					if (totalItems>0) {
+						$scope.customimagesel=$scope.CustomImages[0];
+					}
 				}
 			 }
 		   });
-
 			ShowLights();
-
 		};
 		$scope.$on('$destroy', function(){
 			if (typeof $scope.mytimer != 'undefined') {

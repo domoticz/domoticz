@@ -116,10 +116,14 @@ public:
 	CHttpPush m_httppush;
 
 	bool m_bIgnoreUsernamePassword;
+	bool m_bHaveUpdate;
+	int m_iRevision;
 
-	void GetDomoticzUpdate(const std::string &UpdateURL, const std::string &ChecksumURL);
+	bool IsUpdateAvailable(const bool bIsForced=false);
+	bool StartDownloadUpdate();
 	bool m_bHaveDownloadedDomoticzUpdate;
 	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
+	std::string m_UpdateStatusMessage;
 
 	void GetAvailableWebThemes();
 
@@ -168,6 +172,8 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::mutex m_mutex;
+
+	time_t m_LastUpdateCheck;
 
 	bool StartThread();
 	void Do_Work();

@@ -423,24 +423,55 @@ float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool &bExists)
 	sprintf(szIdx, "%d", NodeID & 0xFFFF);
 	int Unit = 0;
 
-	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > results;
 	bool bDeviceExits = true;
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
-	if (result.size() < 1)
+	results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
+	if (results.size() < 1)
 	{
 		bExists = false;
 		return 0.0f;
 	}
-	result = m_sql.safe_query("SELECT MAX(Total) FROM Rain_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
-	if (result.size() < 1)
+	std::vector<std::string> splitresults;
+	StringSplit(results[0][1], ";", splitresults);
+	if (splitresults.size() != 2)
 	{
 		bExists = false;
 		return 0.0f;
 	}
 	bExists = true;
-	return (float)atof(result[0][0].c_str());
+	return (float)atof(splitresults[1].c_str());
 }
 
+void CDomoticzHardwareBase::SendWattMeter(const int NodeID, const int ChildID, const int BatteryLevel, const float musage, const std::string &defaultname)
+{
+	_tUsageMeter umeter;
+	umeter.id1 = 0;
+	umeter.id2 = 0;
+	umeter.id3 = 0;
+	umeter.id4 = NodeID;
+	umeter.dunit = ChildID;
+	umeter.fusage = musage;
+
+	char szIdx[10];
+	sprintf(szIdx, "%X%02X%02X%02X", umeter.id1, umeter.id2, umeter.id3, umeter.id4);
+
+	bool bDeviceExits = true;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szIdx, umeter.dunit, int(pTypeUsage), int(sTypeElectric));
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	sDecodeRXMessage(this, (const unsigned char *)&umeter);
+
+	if (!bDeviceExits)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szIdx, umeter.dunit, int(pTypeUsage), int(sTypeElectric));
+	}
+}
 
 void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname)
 {
@@ -499,8 +530,42 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 	}
 }
 
-void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue)
+double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, bool &bExists)
 {
+	int Idx = (NodeID * 256) + ChildID;
+	double ret = 0;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
+	if (result.size() < 1)
+	{
+		bExists = false;
+		return 0;
+	}
+	result = m_sql.safe_query("SELECT MAX(Counter) FROM Meter_Calendar WHERE (DeviceRowID=='%q')", result[0][0].c_str());
+	if (result.size() < 1)
+	{
+		bExists = false;
+		return 0.0f;
+	}
+	bExists = true;
+	return (float)atof(result[0][0].c_str());
+}
+
+void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string &defaultname)
+{
+	char szIdx[10];
+	sprintf(szIdx, "%d", (NodeID * 256) + ChildID);
+
+	std::vector<std::vector<std::string> > result;
+	bool bDeviceExits = true;
+	result = m_sql.safe_query(
+		"SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, 0, int(pTypeRFXMeter), int(sTypeRFXMeterCount));
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
 	unsigned long counter = (unsigned long)(metervalue*1000.0f);
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
@@ -516,6 +581,14 @@ void CDomoticzHardwareBase::SendMeterSensor(const int NodeID, const int ChildID,
 	tsen.RFXMETER.count3 = (BYTE)((counter & 0x0000FF00) >> 8);
 	tsen.RFXMETER.count4 = (BYTE)(counter & 0x000000FF);
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		m_sql.safe_query(
+			"UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szIdx, 0, int(pTypeRFXMeter), int(sTypeRFXMeterCount));
+	}
 }
 
 

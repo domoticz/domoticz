@@ -365,12 +365,12 @@ bool CRFLink::WriteToHardware(const char *pdata, const unsigned char length)
 	std::stringstream sstr;
 	//10;NewKaku;00c142;1;ON;     => protocol;address;button number;action (ON/OFF/ALLON/ALLOFF/15 -11-15 for dim level)
 
-	sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd << ";\n";
-
+	sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd;
 //#ifdef _DEBUG
 	_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
 //#endif
-    m_bTXokay=false; // clear OK flag
+	sstr << "\n";
+	m_bTXokay = false; // clear OK flag
 	write(sstr.str());
 	time_t atime = mytime(NULL);
 	time_t btime = mytime(NULL);
@@ -500,6 +500,11 @@ bool CRFLink::ParseLine(const std::string &sLine)
 		if (Name_ID.find("OK") != std::string::npos) {
 			//_log.Log(LOG_STATUS, "RFLink: OK received!...");
             m_bTXokay = true; // variable to indicate an OK was received
+			return true;
+		}
+		else if (Name_ID.find("CMD UNKNOWN") != std::string::npos) {
+			_log.Log(LOG_ERROR, "RFLink: Error/Unknown command received!...");
+			m_bTXokay = true; // variable to indicate an ERROR was received
 			return true;
 		}
 	}
@@ -811,7 +816,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	}
 	if (bHaveMeter)
 	{
-		SendMeterSensor(Node_ID, Child_ID, BatteryLevel, meter);
+		SendMeterSensor(Node_ID, Child_ID, BatteryLevel, meter, "Meter");
 	}
 	if (bHaveVoltage)
 	{
