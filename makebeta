@@ -61,7 +61,7 @@ then
         exit 1
 fi
 echo "Creating checksum file...";
-hash="$(sha256sum ${archive_file} | sed -e 's/\s.*$//') update.tgz";
+hash="$(sha256sum ${archive_file} | sed -e 's/\s.*$//')  update.tgz";
 echo $hash > ${archive_file}.sha256sum
 if [ ! -f ${archive_file}.sha256sum ];
 then

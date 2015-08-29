@@ -234,6 +234,9 @@
     <Filter Include="Devices\Winddelen">
       <UniqueIdentifier>{e5664245-d331-4463-86e8-c64619d68877}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\SatelIntegra">
+      <UniqueIdentifier>{2030c44f-07ff-411f-945f-505826b0c02a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -747,6 +750,9 @@
     <ClInclude Include="..\webserver\proxycommon.h">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\SatelIntegra.h">
+      <Filter>Devices\SatelIntegra</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1198,6 +1204,9 @@
     </ClCompile>
     <ClCompile Include="..\webserver\proxycommon.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\SatelIntegra.cpp">
+      <Filter>Devices\SatelIntegra</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

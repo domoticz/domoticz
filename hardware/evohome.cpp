@@ -657,7 +657,7 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 		}
 		else if(i==1)
 		{
-			if(SetPacketType(tkn.c_str())!=pktunk)
+			if(SetPacketType(tkn)!=pktunk)
 				SetFlag(flgpkt);
 		}
 		else if(cmdidx && i==cmdidx+2) //payload starts 2 after command idx
@@ -1721,7 +1721,7 @@ namespace http {
 			}
 			nid += 92000;
 			char ID[40];
-			sprintf(ID, "%ld", nid);
+			sprintf(ID, "%lu", nid);
 
 			//get zone count
 			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, (int)iSensorType);

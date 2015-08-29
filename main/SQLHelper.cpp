@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 74
+#define DB_VERSION 76
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -551,7 +551,9 @@ const char *sqlCreateMySensorsChilds =
 " [HardwareID] INTEGER NOT NULL,"
 " [NodeID] INTEGER NOT NULL,"
 " [ChildID] INTEGER NOT NULL,"
-" [Type] INTEGER NOT NULL);";
+" [Name] VARCHAR(100) DEFAULT '',"
+" [Type] INTEGER NOT NULL,"
+" [UseAck] INTEGER DEFAULT 0);";
 
 const char *sqlCreateToonDevices =
 	"CREATE TABLE IF NOT EXISTS [ToonDevices]("
@@ -1330,7 +1332,6 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Hardware ADD COLUMN [SerialPort] VARCHAR(50) DEFAULT ('')");
 
 			bool bUseDirectPath = false;
-			std::vector<std::string> serialports = GetSerialPorts(bUseDirectPath);
 
 			//Convert all serial hardware to use the new column
 			std::stringstream szQuery;
@@ -1409,6 +1410,20 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
 			}
+		}
+		if (dbversion < 75)
+		{
+			safe_query("UPDATE Hardware SET Username='%q', Password='%q' WHERE ([Type]=%d)",
+				"Change_user_pass", "", HTYPE_THERMOSMART);
+			if (!DoesColumnExistsInTable("Description", "DeviceStatus"))
+			{
+				query("ALTER TABLE DeviceStatus ADD COLUMN [Description] VARCHAR(200) DEFAULT ''");
+			}
+		}
+		if (dbversion < 76)
+		{
+			query("ALTER TABLE MySensorsChilds ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			query("ALTER TABLE MySensorsChilds ADD COLUMN [UseAck] INTEGER DEFAULT 0");
 		}
 	}
 	else if (bNewInstall)
@@ -1781,7 +1796,14 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("ShowUpdateEffect", 0);
 	}
-
+	if (!GetPreferencesVar("ShortLogInterval", nValue))
+	{
+		nValue = 5;
+		UpdatePreferencesVar("ShortLogInterval", nValue);
+	}
+	if (nValue < 1)
+		nValue = 5;
+	m_ShortLogInterval = nValue;
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -2927,8 +2949,6 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	if (!m_dbase)
 		return;
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ROWID FROM BackupLog WHERE (Key='%q')",Key);
 	if (result.size()==0)
@@ -2943,6 +2963,7 @@ void CSQLHelper::SetLastBackupNo(const char *Key, const int nValue)
 	else
 	{
 		//Update
+		unsigned long long ID = 0;
 		std::stringstream s_str( result[0][0] );
 		s_str >> ID;
 
@@ -3017,7 +3038,7 @@ bool CSQLHelper::HasSceneTimers(const std::string &Idx)
 	return HasSceneTimers(idxll);
 }
 
-void CSQLHelper::Schedule5Minute()
+void CSQLHelper::ScheduleShortlog()
 {
 	if (!m_dbase)
 		return;
@@ -3089,8 +3110,6 @@ void CSQLHelper::UpdateTemperatureLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
@@ -3279,8 +3298,6 @@ void CSQLHelper::UpdateRainLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeRAIN);
 	if (result.size()>0)
@@ -3345,8 +3362,6 @@ void CSQLHelper::UpdateWindLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,DeviceID, Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeWIND);
@@ -3430,8 +3445,6 @@ void CSQLHelper::UpdateUVLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d)", pTypeUV);
 	if (result.size()>0)
@@ -3502,8 +3515,6 @@ void CSQLHelper::UpdateMeter()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
@@ -3748,8 +3759,6 @@ void CSQLHelper::UpdateMultiMeter()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d)",
 		pTypeP1Power,
@@ -3875,8 +3884,6 @@ void CSQLHelper::UpdatePercentageLog()
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
-	unsigned long long ID=0;
-
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
 		pTypeGeneral,sTypePercentage
@@ -3939,8 +3946,6 @@ void CSQLHelper::UpdateFanLog()
 
 	int SensorTimeOut=60;
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	unsigned long long ID=0;
 
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
@@ -4919,13 +4924,11 @@ void CSQLHelper::DeleteCamera(const std::string &idx)
 
 void CSQLHelper::DeletePlan(const std::string &idx)
 {
-	std::vector<std::vector<std::string> > result;
 	safe_query("DELETE FROM Plans WHERE (ID == '%q')",idx.c_str());
 }
 
 void CSQLHelper::DeleteEvent(const std::string &idx)
 {
-	std::vector<std::vector<std::string> > result;
 	safe_query("DELETE FROM EventRules WHERE (EMID == '%q')",idx.c_str());
 	safe_query("DELETE FROM EventMaster WHERE (ID == '%q')",idx.c_str());
 }
@@ -6003,7 +6006,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
-	result = safe_query(
+	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
 		varname.c_str(),
 		typei,
@@ -6167,182 +6170,199 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 		ErrorMessage = "Error opening zip file";
 		return false;
 	}
-	clx::basic_unzip<char>::iterator fitt = in.find("icons.txt");
-	if (fitt == in.end())
-	{
-		//definition file not found
-		ErrorMessage = "Icon definition file not found";
-		return false;
-	}
-
-	uLong fsize;
-	unsigned char *pFBuf = (unsigned char *)(fitt).Extract(fsize,1);
-	if (pFBuf == NULL)
-	{
-		ErrorMessage = "Could not extract icons.txt";
-		return false;
-	}
-	pFBuf[fsize] = 0; //null terminate
-
-	std::string _defFile = std::string(pFBuf, pFBuf+fsize);
-	free(pFBuf);
-
-	std::vector<std::string> _Lines;
-	StringSplit(_defFile, "\n", _Lines);
-	std::vector<std::string>::const_iterator itt;
 
 	int iTotalAdded = 0;
 
-	for (itt = _Lines.begin(); itt != _Lines.end(); ++itt)
-	{
-		std::string sLine = (*itt);
-		sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
-		std::vector<std::string> splitresult;
-		StringSplit(sLine, ";", splitresult);
-		if (splitresult.size() == 3)
+	for (clx::unzip::iterator pos = in.begin(); pos != in.end(); ++pos) {
+		//_log.Log(LOG_STATUS, "unzip: %s", pos->path().c_str());
+		std::string fpath = pos->path();
+
+		//Skip strange folders
+		if (fpath.find("__MACOSX") != std::string::npos)
+			continue;
+
+		int ipos = fpath.find("icons.txt");
+		if ( ipos != std::string::npos)
 		{
-			std::string IconBase = splitresult[0];
-			std::string IconName = splitresult[1];
-			std::string IconDesc = splitresult[2];
-
+			std::string rpath;
+			if (ipos > 0)
+				rpath = fpath.substr(0, ipos);
 			
-
-			//Check if this Icon(Name) does not exist in the database already
-			std::vector<std::vector<std::string> > result;
-			result = safe_query("SELECT ID FROM CustomImages WHERE Base='%q'", IconBase.c_str());
-			bool bIsDuplicate = (result.size()>0);
-			int RowID = 0;
-			if (bIsDuplicate)
+			uLong fsize;
+			unsigned char *pFBuf = (unsigned char *)(pos).Extract(fsize, 1);
+			if (pFBuf == NULL)
 			{
-				RowID=atoi(result[0][0].c_str());
+				ErrorMessage = "Could not extract icons.txt";
+				return false;
 			}
-			
-			//Locate the files in the zip, if not present back out
-			std::string IconFile16 = IconBase + ".png";
-			std::string IconFile48On = IconBase + "48_On.png";
-			std::string IconFile48Off = IconBase + "48_Off.png";
+			pFBuf[fsize] = 0; //null terminate
 
-			std::map<std::string, std::string> _dbImageFiles;
-			_dbImageFiles["IconSmall"] = IconFile16;
-			_dbImageFiles["IconOn"] = IconFile48On;
-			_dbImageFiles["IconOff"] = IconFile48Off;
+			std::string _defFile = std::string(pFBuf, pFBuf + fsize);
+			free(pFBuf);
 
-			std::map<std::string, std::string>::const_iterator iItt;
+			std::vector<std::string> _Lines;
+			StringSplit(_defFile, "\n", _Lines);
+			std::vector<std::string>::const_iterator itt;
 
-			for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
+			for (itt = _Lines.begin(); itt != _Lines.end(); ++itt)
 			{
-				std::string TableField = iItt->first;
-				std::string IconFile = iItt->second;
-				if (in.find(IconFile) == in.end())
+				std::string sLine = (*itt);
+				sLine.erase(std::remove(sLine.begin(), sLine.end(), '\r'), sLine.end());
+				std::vector<std::string> splitresult;
+				StringSplit(sLine, ";", splitresult);
+				if (splitresult.size() == 3)
 				{
-					ErrorMessage = "Icon File: " + IconFile + " is not present";
-					if (iTotalAdded>0)
+					std::string IconBase = splitresult[0];
+					std::string IconName = splitresult[1];
+					std::string IconDesc = splitresult[2];
+
+					//Check if this Icon(Name) does not exist in the database already
+					std::vector<std::vector<std::string> > result;
+					result = safe_query("SELECT ID FROM CustomImages WHERE Base='%q'", IconBase.c_str());
+					bool bIsDuplicate = (result.size() > 0);
+					int RowID = 0;
+					if (bIsDuplicate)
 					{
-						m_webservers.ReloadCustomSwitchIcons();
+						RowID = atoi(result[0][0].c_str());
 					}
-					return false;
-				}
-			}
 
-			//All good, now lets add it to the database
-			if (!bIsDuplicate)
-			{
-				safe_query("INSERT INTO CustomImages (Base,Name, Description) VALUES ('%q', '%q', '%q')",
-					IconBase.c_str(), IconName.c_str(), IconDesc.c_str());
+					//Locate the files in the zip, if not present back out
+					std::string IconFile16 = IconBase + ".png";
+					std::string IconFile48On = IconBase + "48_On.png";
+					std::string IconFile48Off = IconBase + "48_Off.png";
 
-				//Get our Database ROWID
-				result = safe_query("SELECT ID FROM CustomImages WHERE Base='%q'", IconBase.c_str());
-				if (result.size() == 0)
-				{
-					ErrorMessage = "Error adding new row to database!";
-					if (iTotalAdded > 0)
+					std::map<std::string, std::string> _dbImageFiles;
+					_dbImageFiles["IconSmall"] = IconFile16;
+					_dbImageFiles["IconOn"] = IconFile48On;
+					_dbImageFiles["IconOff"] = IconFile48Off;
+
+					//Check if all icons are there
+					std::map<std::string, std::string>::const_iterator iItt;
+					for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
 					{
-						m_webservers.ReloadCustomSwitchIcons();
-					}
-					return false;
-				}
-				RowID = atoi(result[0][0].c_str());
-			}
-			else
-			{
-				//Update
-				safe_query("UPDATE CustomImages SET Name='%q', Description='%q' WHERE ID=%d",
-					IconName.c_str(), IconDesc.c_str(), RowID);
-
-				//Delete from disk, so it will be updated when we exit this function
-				std::string IconFile16 = szWWWFolder + "/images/" + IconBase + ".png";
-				std::string IconFile48On = szWWWFolder + "/images/" + IconBase + "48_On.png";
-				std::string IconFile48Off = szWWWFolder + "/images/" + IconBase + "48_Off.png";
-				std::remove(IconFile16.c_str());
-				std::remove(IconFile48On.c_str());
-				std::remove(IconFile48Off.c_str());
-			}
-
-			//Insert the Icons
-
-			for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
-			{
-				std::string TableField = iItt->first;
-				std::string IconFile = iItt->second;
-
-				sqlite3_stmt *stmt = NULL;
-				char *zQuery = sqlite3_mprintf("UPDATE CustomImages SET %s = ? WHERE ID=%d", TableField.c_str(), RowID);
-				if (!zQuery)
-				{
-					_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
-					return false;
-				}
-				int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, NULL);
-				sqlite3_free(zQuery);
-				if (rc != SQLITE_OK) {
-					ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
-					if (iTotalAdded > 0)
-					{
-						m_webservers.ReloadCustomSwitchIcons();
-					}
-					return false;
-				}
-				// SQLITE_STATIC because the statement is finalized
-				// before the buffer is freed:
-				pFBuf = (unsigned char *)in.find(IconFile).Extract(fsize);
-				if (pFBuf == NULL)
-				{
-					ErrorMessage = "Could not extract File: " + IconFile16;
-					if (iTotalAdded > 0)
-					{
-						m_webservers.ReloadCustomSwitchIcons();
-					}
-					return false;
-				}
-				rc = sqlite3_bind_blob(stmt, 1, pFBuf, fsize, SQLITE_STATIC);
-				if (rc != SQLITE_OK) {
-					ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
-					free(pFBuf);
-					if (iTotalAdded > 0)
-					{
-						m_webservers.ReloadCustomSwitchIcons();
-					}
-					return false;
-				}
-				else {
-					rc = sqlite3_step(stmt);
-					if (rc != SQLITE_DONE)
-					{
-						free(pFBuf);
-						ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
-						if (iTotalAdded > 0)
+						std::string TableField = iItt->first;
+						std::string IconFile = rpath + iItt->second;
+						if (in.find(IconFile) == in.end())
 						{
-							m_webservers.ReloadCustomSwitchIcons();
+							ErrorMessage = "Icon File: " + IconFile + " is not present";
+							if (iTotalAdded > 0)
+							{
+								m_webservers.ReloadCustomSwitchIcons();
+							}
+							return false;
 						}
-						return false;
+					}
+
+					//All good, now lets add it to the database
+					if (!bIsDuplicate)
+					{
+						safe_query("INSERT INTO CustomImages (Base,Name, Description) VALUES ('%q', '%q', '%q')",
+							IconBase.c_str(), IconName.c_str(), IconDesc.c_str());
+
+						//Get our Database ROWID
+						result = safe_query("SELECT ID FROM CustomImages WHERE Base='%q'", IconBase.c_str());
+						if (result.size() == 0)
+						{
+							ErrorMessage = "Error adding new row to database!";
+							if (iTotalAdded > 0)
+							{
+								m_webservers.ReloadCustomSwitchIcons();
+							}
+							return false;
+						}
+						RowID = atoi(result[0][0].c_str());
+					}
+					else
+					{
+						//Update
+						safe_query("UPDATE CustomImages SET Name='%q', Description='%q' WHERE ID=%d",
+							IconName.c_str(), IconDesc.c_str(), RowID);
+
+						//Delete from disk, so it will be updated when we exit this function
+						std::string IconFile16 = szWWWFolder + "/images/" + IconBase + ".png";
+						std::string IconFile48On = szWWWFolder + "/images/" + IconBase + "48_On.png";
+						std::string IconFile48Off = szWWWFolder + "/images/" + IconBase + "48_Off.png";
+						std::remove(IconFile16.c_str());
+						std::remove(IconFile48On.c_str());
+						std::remove(IconFile48Off.c_str());
+					}
+
+					//Insert the Icons
+
+					for (iItt = _dbImageFiles.begin(); iItt != _dbImageFiles.end(); ++iItt)
+					{
+						std::string TableField = iItt->first;
+						std::string IconFile = rpath + iItt->second;
+
+						sqlite3_stmt *stmt = NULL;
+						char *zQuery = sqlite3_mprintf("UPDATE CustomImages SET %s = ? WHERE ID=%d", TableField.c_str(), RowID);
+						if (!zQuery)
+						{
+							_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+							return false;
+						}
+						int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, NULL);
+						sqlite3_free(zQuery);
+						if (rc != SQLITE_OK) {
+							ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+							if (iTotalAdded > 0)
+							{
+								m_webservers.ReloadCustomSwitchIcons();
+							}
+							return false;
+						}
+						// SQLITE_STATIC because the statement is finalized
+						// before the buffer is freed:
+						pFBuf = (unsigned char *)in.find(IconFile).Extract(fsize);
+						if (pFBuf == NULL)
+						{
+							ErrorMessage = "Could not extract File: " + IconFile16;
+							if (iTotalAdded > 0)
+							{
+								m_webservers.ReloadCustomSwitchIcons();
+							}
+							return false;
+						}
+						rc = sqlite3_bind_blob(stmt, 1, pFBuf, fsize, SQLITE_STATIC);
+						if (rc != SQLITE_OK) {
+							ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+							free(pFBuf);
+							if (iTotalAdded > 0)
+							{
+								m_webservers.ReloadCustomSwitchIcons();
+							}
+							return false;
+						}
+						else {
+							rc = sqlite3_step(stmt);
+							if (rc != SQLITE_DONE)
+							{
+								free(pFBuf);
+								ErrorMessage = "Problem inserting icon into database! " + std::string(sqlite3_errmsg(m_dbase));
+								if (iTotalAdded > 0)
+								{
+									m_webservers.ReloadCustomSwitchIcons();
+								}
+								return false;
+							}
+						}
+						sqlite3_finalize(stmt);
+						free(pFBuf);
+						iTotalAdded++;
 					}
 				}
-				sqlite3_finalize(stmt);
-				free(pFBuf);
-				iTotalAdded++;
 			}
+
 		}
 	}
+	
+	if (iTotalAdded == 0)
+	{
+		//definition file not found
+		ErrorMessage = "No Icon definition file not found";
+		return false;
+	}
+
 	m_webservers.ReloadCustomSwitchIcons();
 	return true;
 }

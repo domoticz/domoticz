@@ -40,7 +40,7 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		stdreplace(destURL, "#SUBJECT", CURLEncode::URLEncode(Subject));
 		stdreplace(destURL, "#MESSAGE", CURLEncode::URLEncode(Text));
 		std::string sResult;
-		bRet = HTTPClient::GET(destURL, sResult);
+		bRet = HTTPClient::GET(destURL, sResult, true);
 	}
 	else if (destURL.find("script://") == 0)
 	{

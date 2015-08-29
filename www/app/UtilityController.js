@@ -641,7 +641,9 @@ define(['app'], function (app) {
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
-				$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise,data.Sunset,data.ServerTime);
+				}
 
 			if (typeof data.result != 'undefined') {
 				if (typeof data.ActTime != 'undefined') {
@@ -960,7 +962,20 @@ define(['app'], function (app) {
 				  xhtm+='\t      <td id="img"><img src="images/';
 					var status="";
 					if (typeof item.Counter != 'undefined') {
-					  xhtm+='counter.png" height="48" width="48"></td>\n';
+					   if (item.Type == "RFXMeter") {
+							if (item.SwitchTypeVal==1) {
+								xhtm+='override.png" height="48" width="48"></td>\n';
+							}
+							else if (item.SwitchTypeVal==2) {
+								xhtm+='Water48_On.png" height="48" width="48"></td>\n';
+							}
+							else {
+								xhtm+='Counter48.png" height="48" width="48"></td>\n';
+							}
+					   }
+					   else {
+						xhtm+='Counter48.png" height="48" width="48"></td>\n';
+					   }
 					  if ((item.SubType == "Gas")||(item.SubType == "RFXMeter counter")) {
 						status=item.Counter;
 					  }

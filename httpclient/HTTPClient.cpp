@@ -10,7 +10,7 @@
 #endif
 
 bool		HTTPClient::m_bCurlGlobalInitialized = false;
-long		HTTPClient::m_iConnectionTimeout=30;
+long		HTTPClient::m_iConnectionTimeout=10;
 long		HTTPClient::m_iTimeout=90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent="domoticz/1.0";
 
@@ -256,15 +256,18 @@ bool HTTPClient::PUTBinary(const std::string &url, const std::string &postdata, 
 }
 
 
-bool HTTPClient::GET(const std::string &url, std::string &response)
+bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> ExtraHeaders;
 	if (!GETBinary(url,ExtraHeaders,vHTTPResponse))
 		return false;
-	if (vHTTPResponse.empty())
-		return false;
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert( response.begin(), vHTTPResponse.begin(), vHTTPResponse.end() );
 	return true;
 }
