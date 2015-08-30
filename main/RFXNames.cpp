@@ -154,6 +154,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Wunderground, "Weather Underground" },
 		{ HTYPE_ForecastIO, "Forecast IO (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
+		{ HTYPE_Tellstick, "Tellstick" },
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
 		{ HTYPE_S0SmartMeter, "S0 Meter USB" },
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
