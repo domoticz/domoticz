@@ -285,7 +285,7 @@ void CProxyClient::HandleAuthresp(ProxyPdu *pdu)
 	CValueLengthPart part(pdu);
 	part.GetNextValue((void **)&auth, &authlen);
 	part.GetNextPart((void **)&reason, &reasonlen);
-	_log.Log(LOG_NORM, "PROXY: Authenticated: %s (%d).\n", auth ? "yes" : reason, auth);
+	_log.Log(LOG_NORM, "PROXY: Authenticate result: %s.", auth ? "success" : reason);
 	free(reason);
 	// unlock prefs mutex
 	prefs_mutex.unlock();
