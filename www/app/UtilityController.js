@@ -983,6 +983,12 @@ define(['app'], function (app) {
 							else if (item.SwitchTypeVal==2) {
 								xhtm+='Water48_On.png" height="48" width="48"></td>\n';
 							}
+							else if (item.SwitchTypeVal==3) {
+								xhtm+='Counter48.png" height="48" width="48"></td>\n';
+							}
+							else if (item.SwitchTypeVal==4) {
+								xhtm+='PV48.png" height="48" width="48"></td>\n';
+							}
 							else {
 								xhtm+='Counter48.png" height="48" width="48"></td>\n';
 							}
