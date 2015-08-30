@@ -981,7 +981,11 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 
 	int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
 	m_iRevision = atoi(strarray[2].c_str());
+#ifdef DEBUG_DOWNLOAD
+	return true;
+#else
 	return (version != m_iRevision);
+#endif
 }
 
 bool MainWorker::StartDownloadUpdate()
@@ -3867,31 +3871,20 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 	unsigned char level=pResponse->LIGHTING2.level;
 	unsigned char SignalLevel=pResponse->LIGHTING2.rssi;
 
-	sprintf(szTmp,"%d",level);
-	unsigned long long DevRowIdx = -1;
-
-	bool isGroupCommand = ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn));
+	sprintf(szTmp, "%d", level);
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	unsigned char check_cmnd = cmnd;
-
-	if (isGroupCommand)
-	{
+	if ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn))
 		check_cmnd = (cmnd == light2_sGroupOff) ? light2_sOff : light2_sOn;
-		DevRowIdx = m_sql.UpdateValueLighting2GroupCmd(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, check_cmnd, szTmp, m_LastDeviceName);
-	
+
+	if ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn))
+	{
 		//set the status of all lights with the same code to on/off
 		m_sql.Lighting2GroupCmd(ID, subType, (cmnd == light2_sGroupOff) ? light2_sOff : light2_sOn);
 	}
-	else
-	{
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, m_LastDeviceName);
-	}
-
-	if (DevRowIdx == -1)
-	{
-		// not found nothing to do 
-		return -1;
-	}
-	CheckSceneCode(DevRowIdx,devType,subType,check_cmnd,szTmp);
+	CheckSceneCode(DevRowIdx, devType, subType, check_cmnd, szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{

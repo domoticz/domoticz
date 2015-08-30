@@ -5462,34 +5462,6 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 	return ( rc==SQLITE_OK );
 }
 
-unsigned long long CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit, 
-													   const unsigned char devType, const unsigned char subType, 
-													   const unsigned char signallevel, const unsigned char batterylevel, 
-													   const int nValue, const char* sValue,
-													   std::string &devname,
-													   const bool bUseOnOffAction)
-{
-	// We only have to update all others units within the ID group. If the current unit does not have the same value, 
-	// it will be updated too. The reason we choose the UpdateValue is the propagation of the change to all units involved, including LogUpdate. 
-
-	unsigned long long devRowIndex = -1;
-	typedef std::vector<std::vector<std::string> > VectorVectorString;
-
-	VectorVectorString result = safe_query("SELECT Unit FROM DeviceStatus WHERE ((DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (nValue!=%d))",
-		ID,
-		pTypeLighting2,
-		subType,
-		nValue);
-
-	for (VectorVectorString::const_iterator itt = result.begin(); itt != result.end(); ++itt)
-	{
-		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
-		devRowIndex = UpdateValue(HardwareID, ID, theUnit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
-	}
-	return devRowIndex;
-}
-
-
 void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
 {
 	time_t now = mytime(NULL);
