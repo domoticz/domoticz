@@ -6323,12 +6323,12 @@ namespace http {
 			std::string md_userid, md_password, pf_userid, pf_password;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", pf_userid);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", pf_password);
-			md_userid = m_pWebEm->FindValue("MyDomoticzUserId");
-			md_password = m_pWebEm->FindValue("MyDomoticzPassword");
-			m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
-			md_password = base64_encode((const unsigned char *)md_password.c_str(), md_password.length());
-			m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
+			md_userid = CURLEncode::URLDecode(m_pWebEm->FindValue("MyDomoticzUserId"));
+			md_password = CURLEncode::URLDecode(m_pWebEm->FindValue("MyDomoticzPassword"));
 			if (md_userid != pf_userid || md_password != pf_password) {
+				m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
+				md_password = base64_encode((unsigned char const*)md_password.c_str(), md_password.size());
+				m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
 				m_webservers.RestartProxy();
 			}
 
@@ -10444,8 +10444,7 @@ namespace http {
 					root["MyDomoticzUserId"] = sValue;
 				}
 				else if (Key == "MyDomoticzPassword") {
-					std::string tmp = base64_decode(sValue);
-					root["MyDomoticzPassword"] = tmp;
+					root["MyDomoticzPassword"] = sValue;
 				}
 			}
 		}
