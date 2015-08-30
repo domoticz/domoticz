@@ -4353,6 +4353,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				switch (metertype)
 				{
 				case MTYPE_ENERGY:
+				case MTYPE_ENERGY_GENERATED:
 					musage=float(total_real)/EnergyDivider;
 					if (musage!=0)
 						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);

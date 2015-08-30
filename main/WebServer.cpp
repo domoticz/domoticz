@@ -4274,7 +4274,7 @@ namespace http {
 					((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
 					)
 				{
-					if (switchtype == MTYPE_ENERGY)
+					if ((switchtype == MTYPE_ENERGY)|| (switchtype == MTYPE_ENERGY_GENERATED))
 					{
 						root["result"][ii]["val"] = NTYPE_TODAYENERGY;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYENERGY, 0);
@@ -7684,6 +7684,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / EnergyDivider;
 								sprintf(szTmp, "%.03f kWh", musage);
 								break;
@@ -7707,6 +7708,7 @@ namespace http {
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
 							sprintf(szTmp, "%.03f kWh", fvalue / EnergyDivider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
@@ -7780,6 +7782,7 @@ namespace http {
                             switch (metertype)
                             {
                             case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
                                     musage = float(total_real) / EnergyDivider;
                                     sprintf(szTmp, "%.03f kWh", musage);
                                     break;
@@ -7805,6 +7808,7 @@ namespace http {
                         switch (metertype)
                         {
                         case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
                                 sprintf(szTmp, "%.03f kWh", fvalue / EnergyDivider);
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
@@ -7879,6 +7883,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / EnergyDivider;
 								sprintf(szTmp, "%.03f kWh", musage);
 								break;
@@ -7910,6 +7915,7 @@ namespace http {
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
 							musage = float(total_actual) / EnergyDivider;
 							sprintf(szTmp, "%.03f", musage);
 							break;
@@ -7933,6 +7939,7 @@ namespace http {
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
 							musage = float(acounter) / EnergyDivider;
 							sprintf(szTmp, "%.03f kWh %s Watt", musage, splitresults[1].c_str());
 							break;
@@ -7952,6 +7959,7 @@ namespace http {
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
 							sprintf(szTmp, "%s Watt", splitresults[1].c_str());
 							break;
 						case MTYPE_GAS:
@@ -8257,7 +8265,6 @@ namespace http {
 								root["result"][ii]["Data"] = szData;
 								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
 								root["result"][ii]["Usage"] = szData;
-								root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 								sprintf(szTmp, "%.03f kWh", total - minimum);
 								root["result"][ii]["CounterToday"] = szTmp;
@@ -8268,9 +8275,10 @@ namespace http {
 								root["result"][ii]["Data"] = szData;
 								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
 								root["result"][ii]["Usage"] = szData;
-								root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							}
+							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
+
 						}
 					}
 					else if (dType == pTypeAirQuality)
@@ -11355,6 +11363,7 @@ namespace http {
 												switch (metertype)
 												{
 												case MTYPE_ENERGY:
+												case MTYPE_ENERGY_GENERATED:
 													sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 													break;
 												case MTYPE_GAS:
@@ -11404,6 +11413,7 @@ namespace http {
 									switch (metertype)
 									{
 									case MTYPE_ENERGY:
+									case MTYPE_ENERGY_GENERATED:
 										sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 										break;
 									case MTYPE_GAS:
@@ -11509,6 +11519,7 @@ namespace http {
 												switch (metertype)
 												{
 												case MTYPE_ENERGY:
+												case MTYPE_ENERGY_GENERATED:
 													sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 													break;
 												case MTYPE_GAS:
@@ -11573,6 +11584,7 @@ namespace http {
 											switch (metertype)
 											{
 											case MTYPE_ENERGY:
+											case MTYPE_ENERGY_GENERATED:
 												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 												break;
 											case MTYPE_GAS:
@@ -11611,6 +11623,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 									break;
 								case MTYPE_GAS:
@@ -12097,6 +12110,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									szValue = szTmp;
 									break;
@@ -12202,6 +12216,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 								szValue = szTmp;
 								break;
@@ -13273,6 +13288,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
 								break;
 							case MTYPE_GAS:
@@ -13295,6 +13311,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
 									break;
 								case MTYPE_GAS:
@@ -13325,6 +13342,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
@@ -13370,6 +13388,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
@@ -13627,6 +13646,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 								root["result"][ii]["v"] = szTmp;
 								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider);
@@ -14175,6 +14195,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									szValue = szTmp;
 									break;
@@ -14272,6 +14293,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 								szValue = szTmp;
 								break;

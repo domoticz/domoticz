@@ -589,6 +589,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					switch (metertype)
 					{
 					case MTYPE_ENERGY:
+					case MTYPE_ENERGY_GENERATED:
 						musage = float(total_real) / EnergyDivider;
 						sprintf(szTmp, "%.03f kWh", musage);
 						break;
@@ -777,6 +778,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					switch (metertype)
 					{
 					case MTYPE_ENERGY:
+					case MTYPE_ENERGY_GENERATED:
 						musage = float(total_real) / EnergyDivider;
 						sprintf(szTmp, "%.03f kWh", musage);
 						break;
