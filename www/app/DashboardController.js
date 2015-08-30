@@ -1221,7 +1221,11 @@ define(['app'], function (app) {
 										status+='' + $.t("Usage") + ': ' + item.CounterToday;
 									}
 									else {
-										status+='U: T: ' + item.CounterToday;
+										if ((typeof item.CounterDeliv != 'undefined')&&(item.CounterDeliv!=0)) {
+											status+='U: T: ' + item.CounterToday;
+										} else {
+											status+='T: ' + item.CounterToday;
+										}
 									}
 								}
 								else if (item.Type == "Current") {
@@ -1246,7 +1250,12 @@ define(['app'], function (app) {
 											(item.SubType=="A/D")||
 											(item.SubType=="Sound Level")
 										) {
-									status+=item.Data;
+											if (typeof item.CounterToday != 'undefined') {
+												status+='T: ' + item.CounterToday;
+											}
+											else {
+												status=item.Data;
+											}
 								}
 								else if (item.SubType=="Alert") {
 									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
@@ -2914,7 +2923,12 @@ define(['app'], function (app) {
 								status='' + $.t("Usage") + ': ' + item.CounterToday;
 							}
 							else {
-								status='U: T: ' + item.CounterToday;
+								if ((typeof item.CounterDeliv != 'undefined')&&(item.CounterDeliv!=0)) {
+									status='U: T: ' + item.CounterToday;
+								}
+								else {
+									status='T: ' + item.CounterToday;
+								}
 							}
 						}
 						else if (item.Type == "Current"){
@@ -2939,7 +2953,12 @@ define(['app'], function (app) {
 									(item.SubType=="A/D")||
 									(item.SubType=="Sound Level")
 								) {
-							status=item.Data;
+									if (typeof item.CounterToday != 'undefined') {
+										status+='T: ' + item.CounterToday;
+									}
+									else {
+										status=item.Data;
+									}
 						}
 						else if (item.SubType=="Alert") {
 							status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
