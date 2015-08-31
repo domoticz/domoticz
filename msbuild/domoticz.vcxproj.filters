@@ -237,6 +237,9 @@
     <Filter Include="Devices\SatelIntegra">
       <UniqueIdentifier>{2030c44f-07ff-411f-945f-505826b0c02a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Tellstick">
+      <UniqueIdentifier>{85d93c50-c787-4bfb-858a-f9f4dd72af20}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -747,6 +750,9 @@
     <ClInclude Include="..\hardware\SatelIntegra.h">
       <Filter>Devices\SatelIntegra</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Tellstick.h">
+      <Filter>Devices\Tellstick</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1195,6 +1201,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\SatelIntegra.cpp">
       <Filter>Devices\SatelIntegra</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Tellstick.cpp">
+      <Filter>Devices\Tellstick</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

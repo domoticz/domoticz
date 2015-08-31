@@ -955,6 +955,9 @@ namespace http {
 			else if (htype == HTYPE_Dummy) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Tellstick) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL) {
 				//all fine here!
 			}
@@ -2710,36 +2713,20 @@ namespace http {
 				std::string rState = (command == 1) ? "On" : "Off";
 
 				//first check if this device is not the scene code!
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID=='%q')",
-					devidx.c_str());
+				result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID=='%q')", idx.c_str());
 				if (result.size() > 0)
 				{
-					int dType = atoi(result[0][3].c_str());
-					int sType = atoi(result[0][4].c_str());
-					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					unsigned char scommand;
-					if (GetLightCommand(dType, sType, switchtype, rState, scommand))
+					std::vector<std::string> arrayActivators;
+					StringSplit(result[0][0], ";", arrayActivators);
+					std::vector<std::string>::const_iterator ittAct;
+					for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 					{
-						command = scommand;
-					}
-
-					result2 = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM Scenes WHERE (ID=='%q')",
-						idx.c_str());
-					if (result2.size() > 0)
-					{
-						if (
-							(result[0][0] == result2[0][0]) &&
-							(result[0][1] == result2[0][1]) &&
-							(result[0][2] == result2[0][2]) &&
-							(result[0][3] == result2[0][3]) &&
-							(result[0][4] == result2[0][4])
-							)
+						std::string sDevice = *ittAct;
+						if (sDevice == devidx)
 						{
-							//This is not allowed!
-							return;
+							return; //not allowed
 						}
 					}
-
 				}
 				//first check if it is not already a part of this scene/group (with the same OnDelay)
 				result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d)",
@@ -3075,6 +3062,7 @@ namespace http {
 						case HTYPE_EnOceanESP2:
 						case HTYPE_EnOceanESP3:
 						case HTYPE_Dummy:
+						case HTYPE_Tellstick:
 						case HTYPE_EVOHOME_SCRIPT:
 						case HTYPE_EVOHOME_SERIAL:
 						case HTYPE_RaspberryGPIO:
