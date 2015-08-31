@@ -244,17 +244,17 @@ define(['app'], function (app) {
 									}
 				  }
 				  else if (TypeImg.indexOf("scene")==0) {
-									itemImage='<img src="images/scene.png" title="Switch Scene" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
+									itemImage='<img src="images/push.png" title="Switch Scene" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 				  }
 				  else if (TypeImg.indexOf("group")==0) {
 									if (
 											(item.Status == 'On')||
 											(item.Status == 'Mixed')
 										 ) {
-													itemImage='<img src="images/groupon.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
+													itemImage='<img src="images/push.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
 									}
 									else {
-													itemImage='<img src="images/groupoff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
+													itemImage='<img src="images/pushoff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 									}
 				  }
 				  if ((item.Type == "Group")||(item.Type == "Scene")) {
