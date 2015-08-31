@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 76
+#define DB_VERSION 77
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -326,20 +326,15 @@ const char *sqlCreateScenes =
 "CREATE TABLE IF NOT EXISTS [Scenes] (\n"
 "[ID] INTEGER PRIMARY KEY, \n"
 "[Name] VARCHAR(100) NOT NULL, \n"
-"[HardwareID] INTEGER DEFAULT 0, \n"
-"[DeviceID] VARCHAR(25), \n"
-"[Unit] INTEGER DEFAULT 0, \n"
-"[Type] INTEGER DEFAULT 0, \n"
-"[SubType] INTEGER DEFAULT 0, \n"
 "[Favorite] INTEGER DEFAULT 0, \n"
 "[Order] INTEGER BIGINT(10) default 0, \n"
 "[nValue] INTEGER DEFAULT 0, \n"
 "[SceneType] INTEGER DEFAULT 0, \n"
-"[ListenCmd] INTEGER DEFAULT 1, \n"
 "[Protected] INTEGER DEFAULT 0, \n"
 "[OnAction] VARCHAR(200) DEFAULT '', "
 "[OffAction] VARCHAR(200) DEFAULT '', "
 "[Description] VARCHAR(200) DEFAULT '', "
+"[Activators] VARCHAR(200) DEFAULT '', "
 "[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));\n";
 
 const char *sqlCreateScenesTrigger =
@@ -894,10 +889,6 @@ bool CSQLHelper::OpenDatabase()
 			query("UPDATE SceneTimers SET [Type]=2, [UseRandomness]=1 WHERE ([Type]=5)");
 			//"[] INTEGER DEFAULT 0, "
 		}
-		if (dbversion < 29)
-		{
-			query("ALTER TABLE Scenes ADD COLUMN [ListenCmd] INTEGER default 1");
-		}
 		if (dbversion < 30)
 		{
 			query("ALTER TABLE DeviceToPlansMap ADD COLUMN [DevSceneType] INTEGER default 0");
@@ -1424,6 +1415,39 @@ bool CSQLHelper::OpenDatabase()
 		{
 			query("ALTER TABLE MySensorsChilds ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
 			query("ALTER TABLE MySensorsChilds ADD COLUMN [UseAck] INTEGER DEFAULT 0");
+		}
+		if (dbversion < 77)
+		{
+			//Simplify Scenes table, and add support for multiple activators
+			query("ALTER TABLE Scenes ADD COLUMN [Activators] VARCHAR(200) DEFAULT ''");
+			std::vector<std::vector<std::string> > result, result2;
+			std::vector<std::vector<std::string> >::const_iterator itt, itt2;
+			result = safe_query("SELECT ID, HardwareID, DeviceID, Unit, [Type], SubType FROM Scenes");
+			if (!result.empty())
+			{
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string Activator("");
+					result2 = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%q) AND (DeviceID=='%q') AND (Unit==%q) AND ([Type]==%q) AND (SubType==%q)",
+						sd[1].c_str(), sd[2].c_str(), sd[3].c_str(), sd[4].c_str(), sd[5].c_str());
+					if (!result2.empty())
+					{
+						Activator = result2[0][0];
+					}
+					safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activator.c_str(), sd[0].c_str());
+				}
+			}
+			//create a backup
+			query("ALTER TABLE Scenes RENAME TO tmp_Scenes");
+			//Create the new table
+			query(sqlCreateScenes);
+			//Copy values from tmp_Scenes back into our new table
+			query(
+				"INSERT INTO Scenes ([ID],[Name],[Favorite],[Order],[nValue],[SceneType],[LastUpdate],[Protected],[OnAction],[OffAction],[Description],[Activators])"
+				"SELECT [ID],[Name],[Favorite],[Order],[nValue],[SceneType],[LastUpdate],[Protected],[OnAction],[OffAction],[Description],[Activators] FROM tmp_Scenes");
+			//Drop the tmp table
+			query("DROP TABLE tmp_Scenes");
 		}
 	}
 	else if (bNewInstall)
@@ -4329,6 +4353,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				switch (metertype)
 				{
 				case MTYPE_ENERGY:
+				case MTYPE_ENERGY_GENERATED:
 					musage=float(total_real)/EnergyDivider;
 					if (musage!=0)
 						m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
@@ -5438,34 +5463,6 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 	return ( rc==SQLITE_OK );
 }
 
-unsigned long long CSQLHelper::UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit, 
-													   const unsigned char devType, const unsigned char subType, 
-													   const unsigned char signallevel, const unsigned char batterylevel, 
-													   const int nValue, const char* sValue,
-													   std::string &devname,
-													   const bool bUseOnOffAction)
-{
-	// We only have to update all others units within the ID group. If the current unit does not have the same value, 
-	// it will be updated too. The reason we choose the UpdateValue is the propagation of the change to all units involved, including LogUpdate. 
-
-	unsigned long long devRowIndex = -1;
-	typedef std::vector<std::vector<std::string> > VectorVectorString;
-
-	VectorVectorString result = safe_query("SELECT Unit FROM DeviceStatus WHERE ((DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (nValue!=%d))",
-		ID,
-		pTypeLighting2,
-		subType,
-		nValue);
-
-	for (VectorVectorString::const_iterator itt = result.begin(); itt != result.end(); ++itt)
-	{
-		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
-		devRowIndex = UpdateValue(HardwareID, ID, theUnit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
-	}
-	return devRowIndex;
-}
-
-
 void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
 {
 	time_t now = mytime(NULL);
@@ -5539,11 +5536,11 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		else if (OnAction.find("script://")!=std::string::npos)
 		{
 			//Execute possible script
-			std::string scriptname = "";
-			if (OnAction.find("script:///") != std::string::npos)
-				scriptname = OnAction.substr(9);
-			else
-				scriptname = OnAction.substr(8);
+			std::string scriptname = OnAction.substr(9);
+#if !defined WIN32
+			if (scriptname.find("/") != 0)
+				scriptname = szUserDataFolder + "scripts/" + scriptname;
+#endif
 			std::string scriptparams="";
 			//Add parameters
 			int pindex=scriptname.find(' ');
@@ -5571,11 +5568,11 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		else if (OffAction.find("script://")!=std::string::npos)
 		{
 			//Execute possible script
-			std::string scriptname = "";
-			if (OffAction.find("script:///") != std::string::npos)
-				scriptname=OffAction.substr(9);
-			else
-				scriptname = OffAction.substr(8);
+			std::string scriptname = OffAction.substr(9);
+#if !defined WIN32
+			if (scriptname.find("/") != 0)
+				scriptname = szUserDataFolder + "scripts/" + scriptname;
+#endif
 			std::string scriptparams="";
 			int pindex=scriptname.find(' ');
 			if (pindex!=std::string::npos)

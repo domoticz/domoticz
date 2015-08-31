@@ -981,7 +981,11 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 
 	int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
 	m_iRevision = atoi(strarray[2].c_str());
+#ifdef DEBUG_DOWNLOAD
+	return true;
+#else
 	return (version != m_iRevision);
+#endif
 }
 
 bool MainWorker::StartDownloadUpdate()
@@ -3678,11 +3682,11 @@ unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHa
 	unsigned char Unit=pResponse->LIGHTING1.unitcode;
 	unsigned char cmnd=pResponse->LIGHTING1.cmnd;
 	unsigned char SignalLevel=pResponse->LIGHTING1.rssi;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -3867,31 +3871,20 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 	unsigned char level=pResponse->LIGHTING2.level;
 	unsigned char SignalLevel=pResponse->LIGHTING2.rssi;
 
-	sprintf(szTmp,"%d",level);
-	unsigned long long DevRowIdx = -1;
-
-	bool isGroupCommand = ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn));
+	sprintf(szTmp, "%d", level);
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, m_LastDeviceName);
+	if (DevRowIdx == -1)
+		return -1;
 	unsigned char check_cmnd = cmnd;
-
-	if (isGroupCommand)
-	{
+	if ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn))
 		check_cmnd = (cmnd == light2_sGroupOff) ? light2_sOff : light2_sOn;
-		DevRowIdx = m_sql.UpdateValueLighting2GroupCmd(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, check_cmnd, szTmp, m_LastDeviceName);
-	
+
+	if ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn))
+	{
 		//set the status of all lights with the same code to on/off
 		m_sql.Lighting2GroupCmd(ID, subType, (cmnd == light2_sGroupOff) ? light2_sOff : light2_sOn);
 	}
-	else
-	{
-		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, m_LastDeviceName);
-	}
-
-	if (DevRowIdx == -1)
-	{
-		// not found nothing to do 
-		return -1;
-	}
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,check_cmnd,szTmp);
+	CheckSceneCode(DevRowIdx, devType, subType, check_cmnd, szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -4025,7 +4018,7 @@ unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHa
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -4219,7 +4212,7 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
-		CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+		CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
 	}
 
 	if (m_verboselevel == EVBL_ALL)
@@ -4555,7 +4548,7 @@ unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHa
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -4627,7 +4620,7 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
 
 	if (cmnd == Limitless_SetBrightnessLevel)
 	{
@@ -4667,7 +4660,7 @@ unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardwa
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -4991,7 +4984,7 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -5121,7 +5114,7 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -5407,7 +5400,7 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 			name.c_str(), DevRowIdx);
 	}
 	
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
 	if (m_verboselevel == EVBL_ALL)
 	{
 		WriteMessageStart();
@@ -5517,7 +5510,7 @@ unsigned long long MainWorker::decode_evohome3(const CDomoticzHardwareBase *pHar
 			m_LastDeviceName.c_str(), DevRowIdx);
 	}
 	
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
 	return DevRowIdx;
 }
 
@@ -5545,7 +5538,7 @@ unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHa
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -5722,7 +5715,7 @@ unsigned long long MainWorker::decode_Security2(const CDomoticzHardwareBase *pHa
 	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(), Unit, devType, subType, cmnd, "");
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -5855,7 +5848,7 @@ unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardw
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7017,11 +7010,11 @@ unsigned long long MainWorker::decode_Thermostat2(const CDomoticzHardwareBase *p
 	unsigned char cmnd = pResponse->THERMOSTAT2.cmnd;
 	unsigned char SignalLevel = pResponse->THERMOSTAT2.rssi;
 	unsigned char BatteryLevel = 255;
-	CheckSceneCode(HwdID, ID.c_str(), Unit, devType, subType, cmnd, "");
 
 	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -7078,11 +7071,11 @@ unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *p
 	unsigned char cmnd=pResponse->THERMOSTAT3.cmnd;
 	unsigned char SignalLevel=pResponse->THERMOSTAT3.rssi;
 	unsigned char BatteryLevel = 255;
-	CheckSceneCode(HwdID, ID.c_str(),Unit,devType,subType,cmnd,"");
 
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,m_LastDeviceName);
 	if (DevRowIdx == -1)
 		return -1;
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 
 	if (m_verboselevel == EVBL_ALL)
 	{
@@ -8832,7 +8825,7 @@ unsigned long long MainWorker::decode_GeneralSwitch(const CDomoticzHardwareBase 
 	unsigned char check_cmnd = cmnd;
 	if ((cmnd == gswitch_sGroupOff) || (cmnd == gswitch_sGroupOn))
 		check_cmnd = (cmnd == gswitch_sGroupOff) ? gswitch_sOff : gswitch_sOn;
-	CheckSceneCode(HwdID, ID.c_str(), Unit, devType, subType, check_cmnd, szTmp);
+	CheckSceneCode(DevRowIdx, devType, subType, check_cmnd, szTmp);
 
 	if ((cmnd == gswitch_sGroupOff) || (cmnd == gswitch_sGroupOn))
 	{
@@ -10530,15 +10523,36 @@ bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcm
 }
 
 //returns if a device activates a scene
-bool MainWorker::DoesDeviceActiveAScene(const int HwdId, const std::string &idx, const int unit, const int devType, const int subType)
+bool MainWorker::DoesDeviceActiveAScene(const unsigned long long DevRowIdx)
 {
+	//check for scene code
 	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	result = m_sql.safe_query(
-		"SELECT ID FROM Scenes WHERE (DeviceID == '%q') AND (HardwareID==%d) AND (Unit==%d) AND ([Type]==%d)  AND (SubType==%d)",
-		idx.c_str(), HwdId, unit, devType, subType);
+	result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (Activators!='')");
+	if (result.size() > 0)
+	{
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
 
-	return (result.size()!=0);
+			std::vector<std::string> arrayActivators;
+			StringSplit(sd[0], ";", arrayActivators);
+			std::vector<std::string>::const_iterator ittAct;
+			for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
+			{
+				unsigned long long aID;
+				std::stringstream sstr;
+				sstr << *ittAct;
+				sstr >> aID;
+				if (aID == DevRowIdx)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &switchcmd)
@@ -10609,9 +10623,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	_log.Log(LOG_NORM, "Activating Scene/Group: %s", Name.c_str());
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
-	result=m_sql.safe_query(
-		"SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == %llu)  ORDER BY [Order] ASC",
-		idx);
+	result = m_sql.safe_query(
+		"SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == %llu) ORDER BY [Order] ASC", idx);
 	if (result.size()<1)
 		return false;
 	std::vector<std::vector<std::string> >::const_iterator itt;
@@ -10625,9 +10638,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		int ondelay = atoi(sd[4].c_str());
 		int offdelay = atoi(sd[5].c_str());
 		std::vector<std::vector<std::string> > result2;
-		result2=m_sql.safe_query(
-			"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, Name FROM DeviceStatus WHERE (ID == '%q')",
-			sd[0].c_str());
+		result2 = m_sql.safe_query(
+			"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, Name FROM DeviceStatus WHERE (ID == '%q')", sd[0].c_str());
 		if (result2.size()>0)
 		{
 			std::vector<std::string> sd2=result2[0];
@@ -10640,8 +10652,11 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			_eSwitchType switchtype=(_eSwitchType)atoi(sd2[5].c_str());
 
 			//Check if this device will not activate a scene
-			int hwID=atoi(sd2[0].c_str());
-			if (DoesDeviceActiveAScene(hwID,sd2[1],Unit,dType,dSubType))
+			unsigned long long dID;
+			std::stringstream sdID;
+			sdID << sd[0];
+			sdID >> dID;
+			if (DoesDeviceActiveAScene(dID))
 			{
 				_log.Log(LOG_ERROR, "Skipping sensor '%s' because this triggers another scene!", DeviceName.c_str());
 				continue;
@@ -10713,44 +10728,47 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	return true;
 }
 
-void MainWorker::CheckSceneCode(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int nValue, const char* sValue)
+void MainWorker::CheckSceneCode(const unsigned long long DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue)
 {
 	//check for scene code
 	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	result=m_sql.safe_query(
-		"SELECT ID, SceneType, ListenCmd FROM Scenes WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-		HardwareID, ID, unit, devType, subType);
-	if (result.size()>0)
+	result = m_sql.safe_query("SELECT ID, Activators, SceneType FROM Scenes WHERE (Activators!='')");
+	if (result.size() > 0)
 	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt=result.begin(); itt!=result.end(); ++itt)
+		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
-			std::vector<std::string> sd=*itt;
+			std::vector<std::string> sd = *itt;
 
-			unsigned long long ID;
-			std::stringstream s_str( sd[0] );
-			s_str >> ID;
-			int scenetype=atoi(sd[1].c_str());
-			int listencmd=atoi(sd[2].c_str());
-
-			if (scenetype==0)
+			std::vector<std::string> arrayActivators;
+			StringSplit(sd[1], ";", arrayActivators);
+			std::vector<std::string>::const_iterator ittAct;
+			for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 			{
-				//it is a 'Scene' match the nValue/Command
-				if (nValue!=listencmd)
-					continue;
+				unsigned long long aID;
+				std::stringstream sstr;
+				sstr << *ittAct;
+				sstr >> aID;
+				if (aID == DevRowIdx)
+				{
+					unsigned long long ID;
+					std::stringstream s_str(sd[0]);
+					s_str >> ID;
+					int scenetype = atoi(sd[2].c_str());
+
+					std::string lstatus = "";
+					int llevel = 0;
+					bool bHaveDimmer = false;
+					bool bHaveGroupCmd = false;
+					int maxDimLevel = 0;
+
+					GetLightStatus(dType, dSubType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+					std::string switchcmd = (IsLightSwitchOn(lstatus) == true) ? "On" : "Off";
+
+					m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(1, ID, switchcmd, "SceneTrigger"));
+				}
 			}
-
-			std::string lstatus="";
-			int llevel=0;
-			bool bHaveDimmer=false;
-			bool bHaveGroupCmd=false;
-			int maxDimLevel=0;
-
-			GetLightStatus(devType,subType, STYPE_OnOff ,nValue,sValue,lstatus,llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd);
-			std::string switchcmd=(IsLightSwitchOn(lstatus)==true)?"On":"Off";
-
-			m_sql.AddTaskItem(_tTaskItem::SwitchSceneEvent(1,ID,switchcmd,"SceneTrigger"));
 		}
 	}
 }

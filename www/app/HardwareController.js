@@ -2,6 +2,8 @@ define(['app'], function (app) {
     app.controller('HardwareController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 
         $scope.SerialPortStr=[];
+        $scope.ozw_node_id = "-";
+        $scope.ozw_node_desc = "-";
 
         DeleteHardware = function(idx)
         {
@@ -1571,6 +1573,168 @@ define(['app'], function (app) {
             $('#hardwarecontent #combom1type').val(Mode1);
         }
 
+		$scope.ZWaveCheckIncludeReady = function() {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.ajax({
+			 url: "json.htm?type=command&param=zwaveisnodeincluded&idx="+$.devIdx,
+			 async: false, 
+			 dataType: 'json',
+				 success: function(data) {
+					if (data.status == "OK") {
+						if (data.result==true) {
+							//Node included
+					        $scope.ozw_node_id = data.node_id;
+							$scope.ozw_node_desc = data.node_product_name;
+							$("#IncludeZWaveDialog #izwd_waiting").hide();
+							$("#IncludeZWaveDialog #izwd_result").show();
+						}
+						else {
+							//Not ready yet
+							$scope.mytimer=$interval(function() {
+								$scope.ZWaveCheckIncludeReady();
+							}, 1000);
+						}
+					}
+					else {
+						$scope.mytimer=$interval(function() {
+							$scope.ZWaveCheckIncludeReady();
+						}, 1000);
+					}
+				 },
+				 error: function(){
+					$scope.mytimer=$interval(function() {
+						$scope.ZWaveCheckIncludeReady();
+					}, 1000);
+				 }     
+			});
+		}
+
+		OnZWaveAbortInclude = function()
+		{
+			$http({
+			 url: "json.htm?type=command&param=zwavecancel&idx="+$.devIdx,
+			 async: true, 
+			 dataType: 'json'
+			}).success(function(data) {
+				$('#IncludeZWaveDialog').modal('hide');
+			 }).error(function() {
+				$('#IncludeZWaveDialog').modal('hide');
+			 });
+		}
+
+		OnZWaveCloseInclude = function()
+		{
+			$('#IncludeZWaveDialog').modal('hide');
+			RefreshOpenZWaveNodeTable();
+		}
+
+        ZWaveIncludeNode = function(isSecure)
+        {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$("#IncludeZWaveDialog #izwd_waiting").show();
+			$("#IncludeZWaveDialog #izwd_result").hide();
+            $.ajax({
+                 url: "json.htm?type=command&param=zwaveinclude&idx=" + $.devIdx + "&secure=" + isSecure,
+                 async: false,
+                 dataType: 'json',
+                 success: function(data) {
+					$scope.ozw_node_id = "-";
+					$scope.ozw_node_desc = "-";
+           			$('#IncludeZWaveDialog').modal('show');
+					$scope.mytimer=$interval(function() {
+						$scope.ZWaveCheckIncludeReady();
+					}, 1000);
+                 }
+            });
+        }
+        
+		$scope.ZWaveCheckExcludeReady = function() {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$.ajax({
+			 url: "json.htm?type=command&param=zwaveisnodeexcluded&idx="+$.devIdx,
+			 async: false, 
+			 dataType: 'json',
+				 success: function(data) {
+					if (data.status == "OK") {
+						if (data.result==true) {
+							//Node excluded
+							$scope.ozw_node_id = data.node_id;
+							$scope.ozw_node_desc = "-";
+							$("#ExcludeZWaveDialog #ezwd_waiting").hide();
+							$("#ExcludeZWaveDialog #ezwd_result").show();
+						}
+						else {
+							//Not ready yet
+							$scope.mytimer=$interval(function() {
+								$scope.ZWaveCheckExcludeReady();
+							}, 1000);
+						}
+					}
+					else {
+						$scope.mytimer=$interval(function() {
+							$scope.ZWaveCheckExcludeReady();
+						}, 1000);
+					}
+				 },
+				 error: function(){
+					$scope.mytimer=$interval(function() {
+						$scope.ZWaveCheckExcludeReady();
+					}, 1000);
+				 }     
+			});
+		}
+        
+		OnZWaveAbortExclude = function()
+		{
+			$http({
+			 url: "json.htm?type=command&param=zwavecancel&idx="+$.devIdx,
+			 async: true, 
+			 dataType: 'json'
+			}).success(function(data) {
+				$('#ExcludeZWaveDialog').modal('hide');
+			 }).error(function() {
+				$('#ExcludeZWaveDialog').modal('hide');
+			 });
+		}
+
+		OnZWaveCloseExclude = function()
+		{
+			$('#ExcludeZWaveDialog').modal('hide');
+			RefreshOpenZWaveNodeTable();
+		}
+        
+        ZWaveExcludeNode = function()
+        {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$("#ExcludeZWaveDialog #ezwd_waiting").show();
+			$("#ExcludeZWaveDialog #ezwd_result").hide();
+            $.ajax({
+                 url: "json.htm?type=command&param=zwaveexclude&idx=" + $.devIdx,
+                 async: false,
+                 dataType: 'json',
+                 success: function(data) {
+					$scope.ozw_node_id = data.node_id;
+					$scope.ozw_node_desc = "-";
+           			$('#ExcludeZWaveDialog').modal('show');
+					$scope.mytimer=$interval(function() {
+						$scope.ZWaveCheckExcludeReady();
+					}, 1000);
+                 }
+            });
+        }
+
         DeleteNode = function(idx)
         {
             if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
@@ -1681,29 +1845,6 @@ define(['app'], function (app) {
                      }
                 });
             }
-        }
-
-        ZWaveIncludeNode = function(isSecure)
-        {
-            $.ajax({
-                 url: "json.htm?type=command&param=zwaveinclude&idx=" + $.devIdx + "&secure=" + isSecure,
-                 async: false,
-                 dataType: 'json',
-                 success: function(data) {
-                    bootbox.alert($.t('Inclusion mode Started. You have 20 seconds to include the device...!'));
-                 }
-            });
-        }
-        ZWaveExcludeNode = function()
-        {
-            $.ajax({
-                 url: "json.htm?type=command&param=zwaveexclude&idx=" + $.devIdx,
-                 async: false,
-                 dataType: 'json',
-                 success: function(data) {
-                    bootbox.alert($.t('Exclusion mode Started. You have 20 seconds to exclude the device...!'));
-                 }
-            });
         }
 
         ZWaveSoftResetNode = function()
@@ -2912,7 +3053,16 @@ define(['app'], function (app) {
             });
 
             ShowHardware();
-
         };
+		$scope.$on('$destroy', function(){
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			if (typeof $scope.mytimer2 != 'undefined') {
+				$interval.cancel($scope.mytimer2);
+				$scope.mytimer2 = undefined;
+			}
+		}); 
     } ]);
 });

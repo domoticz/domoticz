@@ -536,6 +536,20 @@ define(['app'], function (app) {
 		  $("#dialog-editmeterdevice" ).dialog( "open" );
 		}
 
+		EditEnergyDevice = function(idx,name,description,switchtype)
+		{
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+		  $.devIdx=idx;
+		  $("#dialog-editenergydevice #devicename").val(unescape(name));
+		  $("#dialog-editenergydevice #devicedescription").val(unescape(description));
+		  $("#dialog-editenergydevice #combometertype").val(switchtype);
+		  $("#dialog-editenergydevice" ).i18n();
+		  $("#dialog-editenergydevice" ).dialog( "open" );
+		}
+
 		EditSetPoint = function(idx,name,description,setpoint,isprotected)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
@@ -969,6 +983,12 @@ define(['app'], function (app) {
 							else if (item.SwitchTypeVal==2) {
 								xhtm+='Water48_On.png" height="48" width="48"></td>\n';
 							}
+							else if (item.SwitchTypeVal==3) {
+								xhtm+='Counter48.png" height="48" width="48"></td>\n';
+							}
+							else if (item.SwitchTypeVal==4) {
+								xhtm+='PV48.png" height="48" width="48"></td>\n';
+							}
 							else {
 								xhtm+='Counter48.png" height="48" width="48"></td>\n';
 							}
@@ -993,11 +1013,16 @@ define(['app'], function (app) {
 					  status=item.Data;
 					}
 					else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
-					  xhtm+='current48.png" height="48" width="48"></td>\n';
-					  status=item.Data;
-					  if (typeof item.CounterToday != 'undefined') {
-						status+=', ' + $.t("Today") + ': ' + item.CounterToday;
-					  }
+						if ((item.Type == "Energy")&&(item.SwitchTypeVal == 4)) {
+							xhtm+='PV48.png" height="48" width="48"></td>\n';
+						}
+						else {
+							xhtm+='current48.png" height="48" width="48"></td>\n';
+						}
+						status=item.Data;
+						if (typeof item.CounterToday != 'undefined') {
+							status+=', ' + $.t("Today") + ': ' + item.CounterToday;
+						}
 					}
 					else if (item.Type == "Air Quality") {
 					  xhtm+='air48.png" height="48" width="48"></td>\n';
@@ -1157,7 +1182,11 @@ define(['app'], function (app) {
 				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
 						xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 						if (permissions.hasPermission("Admin")) {
-							xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+							if (item.Type == "Energy") {
+								xhtm+='<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
+							} else {
+								xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
+							}
 						}
 				  }
 				  else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
@@ -1521,6 +1550,62 @@ define(['app'], function (app) {
 				  resizable: false,
 				  title: $.t("Edit Device"),
 				  buttons: dialog_editmeterdevice_buttons,
+				  close: function() {
+					$( this ).dialog( "close" );
+				  }
+			});
+
+			var dialog_editenergydevice_buttons = {};
+			dialog_editenergydevice_buttons[$.t("Update")]=function() {
+				  var bValid = true;
+				  bValid = bValid && checkLength( $("#dialog-editenergydevice #devicename"), 2, 100 );
+				  if ( bValid ) {
+					  $( this ).dialog( "close" );
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) + 
+							'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + 
+							'&used=true',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					  
+				  }
+			};
+			dialog_editenergydevice_buttons[$.t("Remove Device")]=function() {
+				$( this ).dialog( "close" );
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+					if (result==true) {
+					  $.ajax({
+						 url: "json.htm?type=setused&idx=" + $.devIdx + 
+							'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) + 
+							'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) + 
+							'&used=false',
+						 async: false, 
+						 dataType: 'json',
+						 success: function(data) {
+							ShowUtilities();
+						 }
+					  });
+					}
+				});
+			};
+			dialog_editenergydevice_buttons[$.t("Cancel")]=function() {
+			  $( this ).dialog( "close" );
+			};
+
+			$( "#dialog-editenergydevice" ).dialog({
+				  autoOpen: false,
+				  width: 'auto',
+				  height: 'auto',
+				  modal: true,
+				  resizable: false,
+				  title: $.t("Edit Device"),
+				  buttons: dialog_editenergydevice_buttons,
 				  close: function() {
 					$( this ).dialog( "close" );
 				  }

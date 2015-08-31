@@ -442,8 +442,10 @@ namespace http {
 			RegisterCommandCode("enablescenetimer", boost::bind(&CWebServer::Cmd_EnableSceneTimer, this, _1));
 			RegisterCommandCode("disablescenetimer", boost::bind(&CWebServer::Cmd_DisableSceneTimer, this, _1));
 			RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1));
-			RegisterCommandCode("setscenecode", boost::bind(&CWebServer::Cmd_SetSceneCode, this, _1));
+			RegisterCommandCode("getsceneactivations", boost::bind(&CWebServer::Cmd_GetSceneActivations, this, _1));
+			RegisterCommandCode("addscenecode", boost::bind(&CWebServer::Cmd_AddSceneCode, this, _1));
 			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
+			RegisterCommandCode("clearscenecodes", boost::bind(&CWebServer::Cmd_ClearSceneCodes, this, _1));
 
 			RegisterCommandCode("setsetpoint", boost::bind(&CWebServer::Cmd_SetSetpoint, this, _1));
 			RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1));
@@ -506,6 +508,10 @@ namespace http {
 			RegisterCommandCode("deletezwavenode", boost::bind(&CWebServer::Cmd_ZWaveDeleteNode, this, _1));
 			RegisterCommandCode("zwaveinclude", boost::bind(&CWebServer::Cmd_ZWaveInclude, this, _1));
 			RegisterCommandCode("zwaveexclude", boost::bind(&CWebServer::Cmd_ZWaveExclude, this, _1));
+
+			RegisterCommandCode("zwaveisnodeincluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1));
+			RegisterCommandCode("zwaveisnodeexcluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1));
+
 			RegisterCommandCode("zwavesoftreset", boost::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1));
 			RegisterCommandCode("zwavehardreset", boost::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1));
 			RegisterCommandCode("zwavenetworkheal", boost::bind(&CWebServer::Cmd_ZWaveNetworkHeal, this, _1));
@@ -4268,7 +4274,7 @@ namespace http {
 					((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))
 					)
 				{
-					if (switchtype == MTYPE_ENERGY)
+					if ((switchtype == MTYPE_ENERGY)|| (switchtype == MTYPE_ENERGY_GENERATED))
 					{
 						root["result"][ii]["val"] = NTYPE_TODAYENERGY;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_TODAYENERGY, 0);
@@ -7678,6 +7684,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / EnergyDivider;
 								sprintf(szTmp, "%.03f kWh", musage);
 								break;
@@ -7701,6 +7708,7 @@ namespace http {
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
 							sprintf(szTmp, "%.03f kWh", fvalue / EnergyDivider);
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
@@ -7774,6 +7782,7 @@ namespace http {
                             switch (metertype)
                             {
                             case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
                                     musage = float(total_real) / EnergyDivider;
                                     sprintf(szTmp, "%.03f kWh", musage);
                                     break;
@@ -7799,6 +7808,7 @@ namespace http {
                         switch (metertype)
                         {
                         case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
                                 sprintf(szTmp, "%.03f kWh", fvalue / EnergyDivider);
                                 root["result"][ii]["Data"] = szTmp;
                                 root["result"][ii]["Counter"] = szTmp;
@@ -7873,6 +7883,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / EnergyDivider;
 								sprintf(szTmp, "%.03f kWh", musage);
 								break;
@@ -7904,6 +7915,7 @@ namespace http {
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
 							musage = float(total_actual) / EnergyDivider;
 							sprintf(szTmp, "%.03f", musage);
 							break;
@@ -7927,6 +7939,7 @@ namespace http {
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
 							musage = float(acounter) / EnergyDivider;
 							sprintf(szTmp, "%.03f kWh %s Watt", musage, splitresults[1].c_str());
 							break;
@@ -7946,6 +7959,7 @@ namespace http {
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
+						case MTYPE_ENERGY_GENERATED:
 							sprintf(szTmp, "%s Watt", splitresults[1].c_str());
 							break;
 						case MTYPE_GAS:
@@ -8251,7 +8265,6 @@ namespace http {
 								root["result"][ii]["Data"] = szData;
 								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
 								root["result"][ii]["Usage"] = szData;
-								root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 								sprintf(szTmp, "%.03f kWh", total - minimum);
 								root["result"][ii]["CounterToday"] = szTmp;
@@ -8262,9 +8275,10 @@ namespace http {
 								root["result"][ii]["Data"] = szData;
 								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
 								root["result"][ii]["Usage"] = szData;
-								root["result"][ii]["SwitchTypeVal"] = MTYPE_ENERGY;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							}
+							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
+
 						}
 					}
 					else if (dType == pTypeAirQuality)
@@ -9005,8 +9019,7 @@ namespace http {
 			root["ActTime"] = static_cast<int>(now);
 
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query(
-				"SELECT ID, Name, HardwareID, Favorite, nValue, SceneType, LastUpdate, Protected, DeviceID, Unit, OnAction, OffAction, Description FROM Scenes ORDER BY [Order]");
+			result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes ORDER BY [Order]");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9034,39 +9047,13 @@ namespace http {
 					unsigned char nValue = atoi(sd[4].c_str());
 					unsigned char scenetype = atoi(sd[5].c_str());
 					int iProtected = atoi(sd[7].c_str());
-					int HardwareID = atoi(sd[2].c_str());
-					std::string CodeDeviceName = "";
 
-					if (HardwareID != 0)
-					{
-						CodeDeviceName = "? not found!";
-					}
-
-					std::string onaction = "";
-					std::string offaction = "";
-
-					std::string DeviceID = sd[8];
-					int Unit = atoi(sd[9].c_str());
-					onaction = base64_encode((const unsigned char*)sd[10].c_str(), sd[10].size());
-					offaction = base64_encode((const unsigned char*)sd[11].c_str(), sd[11].size());
-
-					if (HardwareID != 0)
-					{
-						//Get learn code device name
-						result2 = m_sql.safe_query(
-							"SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-							HardwareID, DeviceID.c_str(), Unit);
-						if (result2.size() > 0)
-						{
-							CodeDeviceName = result2[0][0];
-						}
-					}
+					std::string onaction = base64_encode((const unsigned char*)sd[8].c_str(), sd[8].size());
+					std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Description"] = sd[12];
-					root["result"][ii]["HardwareID"] = HardwareID;
-					root["result"][ii]["CodeDeviceName"] = CodeDeviceName;
+					root["result"][ii]["Description"] = sd[10];
 					root["result"][ii]["Favorite"] = atoi(sd[3].c_str());
 					root["result"][ii]["Protected"] = (iProtected != 0);
 					root["result"][ii]["OnAction"] = onaction;
@@ -9267,47 +9254,7 @@ namespace http {
 			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())));
 		}
 
-		void CWebServer::Cmd_SetSceneCode(Json::Value &root)
-		{
-			if (m_pWebEm->m_actualuser_rights != 2)
-				return;//Only admin user allowed
-
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string cmnd = m_pWebEm->FindValue("cmnd");
-			if (
-				(idx == "") ||
-				(cmnd == "")
-				)
-				return;
-			std::string devid = m_pWebEm->FindValue("devid");
-			if (devid == "")
-				return;
-			root["status"] = "OK";
-			root["title"] = "SetSceneCode";
-
-
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')",
-				devid.c_str());
-			if (result.size() > 0)
-			{
-				m_sql.safe_query(
-					"UPDATE Scenes SET HardwareID=%d, DeviceID='%q', Unit=%d, Type=%d, SubType=%d, ListenCmd=%d WHERE (ID == '%q')",
-					atoi(result[0][0].c_str()),
-					result[0][1].c_str(),
-					atoi(result[0][2].c_str()),
-					atoi(result[0][3].c_str()),
-					atoi(result[0][4].c_str()),
-					atoi(cmnd.c_str()),
-					idx.c_str()
-					);
-				//Sanity Check, remove all SceneDevice that has this code
-				m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID=='%q' AND DeviceRowID=='%q')",
-					idx.c_str(), devid.c_str());
-			}
-		}
-
-		void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
+		void CWebServer::Cmd_GetSceneActivations(Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9315,17 +9262,143 @@ namespace http {
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
 				return;
+
+			root["status"] = "OK";
+			root["title"] = "GetSceneActivations";
+
+			std::vector<std::vector<std::string> > result, result2;
+			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", idx.c_str());
+			if (result.empty())
+				return;
+			int ii = 0;
+			std::string Activators = result[0][0];
+			if (!Activators.empty())
+			{
+				//Get Activator device names
+				std::vector<std::string> arrayActivators;
+				StringSplit(Activators, ";", arrayActivators);
+				std::vector<std::string>::const_iterator ittAct;
+				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
+				{
+					std::string ID = *ittAct;
+					result2 = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID==%q)", ID.c_str());
+					if (result2.size() > 0)
+					{
+						std::stringstream sstr;
+						unsigned long long dID;
+						sstr << ID;
+						sstr >> dID;
+						root["result"][ii]["idx"] = dID;
+						root["result"][ii]["name"] = result2[0][0];
+						ii++;
+					}
+				}
+			}
+		}
+
+		void CWebServer::Cmd_AddSceneCode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
+			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
+			std::string idx = m_pWebEm->FindValue("idx");
+			std::string cmnd = m_pWebEm->FindValue("cmnd");
+			if (
+				(sceneidx == "") ||
+				(idx == "") ||
+				(cmnd == "")
+				)
+				return;
+			root["status"] = "OK";
+			root["title"] = "AddSceneCode";
+
+			//First check if we do not already have this device as activation code
+			bool bFound = false;
+			std::vector<std::vector<std::string> > result, result2;
+			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
+			if (result.empty())
+				return;
+			int ii = 0;
+			std::string Activators = result[0][0];
+			if (!Activators.empty())
+			{
+				//Get Activator device names
+				std::vector<std::string> arrayActivators;
+				StringSplit(Activators, ";", arrayActivators);
+				std::vector<std::string>::const_iterator ittAct;
+				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
+				{
+					std::string ID = *ittAct;
+					if (ID == idx)
+					{
+						return; //already there!
+					}
+				}
+			}
+			if (!Activators.empty())
+				Activators += ";";
+			Activators += idx;
+			m_sql.safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activators.c_str(), sceneidx.c_str());
+		}
+
+		void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
+			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (
+				(idx == "") ||
+				(sceneidx == "")
+				)
+				return;
 			root["status"] = "OK";
 			root["title"] = "RemoveSceneCode";
-			m_sql.safe_query(
-				"UPDATE Scenes SET HardwareID=%d, DeviceID='%q', Unit=%d, Type=%d, SubType=%d WHERE (ID == '%q')",
-				0,
-				"",
-				0,
-				0,
-				0,
-				idx.c_str()
-				);
+
+			std::vector<std::vector<std::string> > result, result2;
+			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
+			if (result.empty())
+				return;
+			int ii = 0;
+			std::string Activators = result[0][0];
+			if (!Activators.empty())
+			{
+				//Get Activator device names
+				std::vector<std::string> arrayActivators;
+				StringSplit(Activators, ";", arrayActivators);
+				std::vector<std::string>::const_iterator ittAct;
+				std::string newActivation = "";
+				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
+				{
+					std::string ID = *ittAct;
+					if (ID != idx)
+					{
+						if (!newActivation.empty())
+							newActivation += ";";
+						newActivation += ID;
+					}
+				}
+				if (Activators != newActivation)
+				{
+					m_sql.safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", newActivation.c_str(), sceneidx.c_str());
+				}
+			}
+		}
+
+		void CWebServer::Cmd_ClearSceneCodes(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
+			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
+			if (sceneidx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "ClearSceneCode";
+
+			m_sql.safe_query("UPDATE Scenes SET Activators='' WHERE (ID==%q)", sceneidx.c_str());
 		}
 
 		void CWebServer::Cmd_GetSerialDevices(Json::Value &root)
@@ -11290,6 +11363,7 @@ namespace http {
 												switch (metertype)
 												{
 												case MTYPE_ENERGY:
+												case MTYPE_ENERGY_GENERATED:
 													sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 													break;
 												case MTYPE_GAS:
@@ -11339,6 +11413,7 @@ namespace http {
 									switch (metertype)
 									{
 									case MTYPE_ENERGY:
+									case MTYPE_ENERGY_GENERATED:
 										sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 										break;
 									case MTYPE_GAS:
@@ -11444,6 +11519,7 @@ namespace http {
 												switch (metertype)
 												{
 												case MTYPE_ENERGY:
+												case MTYPE_ENERGY_GENERATED:
 													sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 													break;
 												case MTYPE_GAS:
@@ -11508,6 +11584,7 @@ namespace http {
 											switch (metertype)
 											{
 											case MTYPE_ENERGY:
+											case MTYPE_ENERGY_GENERATED:
 												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 												break;
 											case MTYPE_GAS:
@@ -11546,6 +11623,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
 									break;
 								case MTYPE_GAS:
@@ -12032,6 +12110,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									szValue = szTmp;
 									break;
@@ -12137,6 +12216,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 								szValue = szTmp;
 								break;
@@ -13208,6 +13288,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
 								break;
 							case MTYPE_GAS:
@@ -13230,6 +13311,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
 									break;
 								case MTYPE_GAS:
@@ -13260,6 +13342,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									root["result"][ii]["v"] = szTmp;
 									if (fcounter != 0)
@@ -13305,6 +13388,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
@@ -13562,6 +13646,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 								root["result"][ii]["v"] = szTmp;
 								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider);
@@ -14110,6 +14195,7 @@ namespace http {
 								switch (metertype)
 								{
 								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 									szValue = szTmp;
 									break;
@@ -14207,6 +14293,7 @@ namespace http {
 							switch (metertype)
 							{
 							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
 								szValue = szTmp;
 								break;
