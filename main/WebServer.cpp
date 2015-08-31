@@ -955,6 +955,9 @@ namespace http {
 			else if (htype == HTYPE_Dummy) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Tellstick) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL) {
 				//all fine here!
 			}
@@ -3075,6 +3078,7 @@ namespace http {
 						case HTYPE_EnOceanESP2:
 						case HTYPE_EnOceanESP3:
 						case HTYPE_Dummy:
+						case HTYPE_Tellstick:
 						case HTYPE_EVOHOME_SCRIPT:
 						case HTYPE_EVOHOME_SERIAL:
 						case HTYPE_RaspberryGPIO:

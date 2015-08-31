@@ -1,1 +1,8 @@
-*.orig
+Makefile
+CMakeFiles
+*.cmake
+*.a
+CMakeCache.txt
+appversion.h*
+domoticz
+stdafx.h.gch

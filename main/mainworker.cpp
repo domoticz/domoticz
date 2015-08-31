@@ -35,6 +35,7 @@
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
 #include "../hardware/Dummy.h"
+#include "../hardware/Tellstick.h"
 #include "../hardware/PiFace.h"
 #include "../hardware/S0MeterSerial.h"
 #include "../hardware/OTGWSerial.h"
@@ -793,6 +794,11 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);
 		break;
+#ifdef WITH_TELLDUSCORE
+	case HTYPE_Tellstick:
+		pHardware = new CTellstick(ID);
+		break;
+#endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
 		pHardware = new CEvohome(ID,"");
 		break;
