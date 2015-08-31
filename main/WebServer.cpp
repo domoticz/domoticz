@@ -6501,12 +6501,10 @@ namespace http {
 							if (scenetype == 0)
 							{
 								root["result"][ii]["Type"] = "Scene";
-								root["result"][ii]["TypeImg"] = "scene";
 							}
 							else
 							{
 								root["result"][ii]["Type"] = "Group";
-								root["result"][ii]["TypeImg"] = "group";
 							}
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Name"] = sd[1];
@@ -6514,6 +6512,7 @@ namespace http {
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
 							root["result"][ii]["LastUpdate"] = sLastUpdate;
+							root["result"][ii]["TypeImg"] = "lightbulb";
 							if (nValue == 0)
 								root["result"][ii]["Status"] = "Off";
 							else if (nValue == 1)
