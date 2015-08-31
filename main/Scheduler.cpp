@@ -858,6 +858,32 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
+		void CWebServer::Cmd_ClearExpiredTimers(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			char szDate[20];
+			char szTime[20];
+			time_t now = mytime(NULL);
+			struct tm tmnow;
+			localtime_r(&now, &tmnow);
+			sprintf(szDate, "%04d-%02d-%02d", tmnow.tm_year + 1900, tmnow.tm_mon + 1, tmnow.tm_mday);
+			sprintf(szTime, "%02d:%02d", tmnow.tm_hour, tmnow.tm_min);
+
+			root["status"] = "OK";
+			root["title"] = "ClearExpiredTimers";
+			m_sql.safe_query(
+				"DELETE FROM Timers WHERE (Type == 5 AND Date <= '%q' AND Time < '%q')",
+				szDate,
+				szTime
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
 		void CWebServer::RType_SetpointTimers(Json::Value &root)
 		{
 			unsigned long long idx = 0;
@@ -1352,6 +1378,32 @@ namespace http {
 			m_sql.safe_query(
 				"DELETE FROM SceneTimers WHERE (SceneRowID == '%q')",
 				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_ClearExpiredSceneTimers(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			char szDate[20];
+			char szTime[20];
+			time_t now = mytime(NULL);
+			struct tm tmnow;
+			localtime_r(&now, &tmnow);
+			sprintf(szDate, "%04d-%02d-%02d", tmnow.tm_year + 1900, tmnow.tm_mon + 1, tmnow.tm_mday);
+			sprintf(szTime, "%02d:%02d", tmnow.tm_hour, tmnow.tm_min);
+
+			root["status"] = "OK";
+			root["title"] = "ClearExpiredSceneTimers";
+			m_sql.safe_query(
+				"DELETE FROM SceneTimers WHERE (Type == 5 AND Date <= '%q' AND Time < '%q')",
+				szDate,
+				szTime
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
