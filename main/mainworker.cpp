@@ -3873,18 +3873,27 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 
 	sprintf(szTmp, "%d", level);
 	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, m_LastDeviceName);
-	if (DevRowIdx == -1)
-		return -1;
-	unsigned char check_cmnd = cmnd;
-	if ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn))
-		check_cmnd = (cmnd == light2_sGroupOff) ? light2_sOff : light2_sOn;
 
-	if ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn))
+	bool isGroupCommand = ((cmnd == light2_sGroupOff) || (cmnd == light2_sGroupOn));
+	unsigned char single_cmnd = cmnd;
+
+	if (isGroupCommand)
 	{
+		single_cmnd = (cmnd == light2_sGroupOff) ? light2_sOff : light2_sOn;
+
+		// We write the GROUP_CMD into the log to differentiate between manual turn off/on and group_off/group_on
+		m_sql.UpdateValueLighting2GroupCmd(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, m_LastDeviceName);
+
 		//set the status of all lights with the same code to on/off
-		m_sql.Lighting2GroupCmd(ID, subType, (cmnd == light2_sGroupOff) ? light2_sOff : light2_sOn);
+		m_sql.Lighting2GroupCmd(ID, subType, single_cmnd);
 	}
-	CheckSceneCode(DevRowIdx, devType, subType, check_cmnd, szTmp);
+
+	if (DevRowIdx == -1)
+	{
+		// not found nothing to do 
+		return -1;
+	}
+	CheckSceneCode(DevRowIdx, devType, subType, single_cmnd, szTmp);
 
 	if (m_verboselevel == EVBL_ALL)
 	{
