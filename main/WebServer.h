@@ -160,6 +160,7 @@ private:
 	void Cmd_AddSceneCode(Json::Value &root);
 	void Cmd_RemoveSceneCode(Json::Value &root);
 	void Cmd_ClearSceneCodes(Json::Value &root);
+	void Cmd_RenameScene(Json::Value &root);
 	void Cmd_SetSetpoint(Json::Value &root);
 	void Cmd_AddSetpointTimer(Json::Value &root);
 	void Cmd_UpdateSetpointTimer(Json::Value &root);

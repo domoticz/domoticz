@@ -207,7 +207,7 @@ namespace http {
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
 			// actual theme selected
-			std::string actTheme;
+			std::string m_actTheme;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;

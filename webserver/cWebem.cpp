@@ -56,7 +56,7 @@ m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
 m_actsessionid(""),
 m_actualuser(""),
-actTheme("")
+m_actTheme("")
 {
 	
 	m_actualuser_rights = -1;
@@ -782,7 +782,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 
 void cWebem::SetWebTheme(const std::string &themename)
 {
-	actTheme = "/styles/"+themename;
+	m_actTheme = "/styles/"+themename;
 }
 
 void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs)

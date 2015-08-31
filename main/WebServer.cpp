@@ -446,6 +446,7 @@ namespace http {
 			RegisterCommandCode("addscenecode", boost::bind(&CWebServer::Cmd_AddSceneCode, this, _1));
 			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
 			RegisterCommandCode("clearscenecodes", boost::bind(&CWebServer::Cmd_ClearSceneCodes, this, _1));
+			RegisterCommandCode("renamescene", boost::bind(&CWebServer::Cmd_RenameScene, this, _1));
 
 			RegisterCommandCode("setsetpoint", boost::bind(&CWebServer::Cmd_SetSetpoint, this, _1));
 			RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1));
@@ -6518,6 +6519,7 @@ namespace http {
 								root["result"][ii]["Status"] = "On";
 							else
 								root["result"][ii]["Status"] = "Mixed";
+							root["result"][ii]["Data"] = root["result"][ii]["Status"];
 							unsigned long long camIDX = m_mainworker.m_cameras.IsDevSceneInCamera(1, sd[0]);
 							root["result"][ii]["UsedByCamera"] = (camIDX != 0) ? true : false;
 							if (camIDX != 0) {
@@ -9028,8 +9030,11 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 
-					std::string sLastUpdate = sd[6].c_str();
+					std::string sName = sd[1];
+					if (sName[0] == '$')
+						continue;
 
+					std::string sLastUpdate = sd[6].c_str();
 					if (LastUpdate != 0)
 					{
 						tLastUpdate.tm_isdst = tm1.tm_isdst;
@@ -9052,7 +9057,7 @@ namespace http {
 					std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());
 
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Name"] = sName;
 					root["result"][ii]["Description"] = sd[10];
 					root["result"][ii]["Favorite"] = atoi(sd[3].c_str());
 					root["result"][ii]["Protected"] = (iProtected != 0);
@@ -9598,6 +9603,26 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
+		}
+
+		void CWebServer::Cmd_RenameScene(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+
+			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sname = m_pWebEm->FindValue("name");
+			if (
+				(sidx == "") ||
+				(sname == "")
+				)
+				return;
+			int idx = atoi(sidx.c_str());
+			root["status"] = "OK";
+			root["title"] = "RenameScene";
+
+			std::vector<std::vector<std::string> > result;
+			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
 		void CWebServer::Cmd_SetUnused(Json::Value &root)

@@ -98,6 +98,8 @@ Version 2.xxx (xxxx 2015)
 - Implemented: OpenZWave, Include/Exclude progress dialog-
 - Changed: non-windows systems, scripts can now use a relative patch to the scripts folder if script does not start with a '/'
 - Implemented: Support for multiple scene/group codes
+- Implemented: Devices Tab, now displaying scenes/groups
+- Implemented: Option to hide scenes/groups (placing a $ in front of the name)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
