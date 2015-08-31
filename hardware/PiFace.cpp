@@ -1307,7 +1307,6 @@ int CIOPort::Update(unsigned char New)
     int ChangeState=-1;
     bool UpdateCounter=false;
     int meterid;
-    unsigned char seqnr;
 
     CPiFace *myCallback;
     myCallback=((CPiFace*)Callback_pntr);
@@ -1328,9 +1327,7 @@ int CIOPort::Update(unsigned char New)
           }
         //We have something to report to the upper layer
 		IOPinStatusPacket.LIGHTING1.cmnd = (ChangeState != 0) ? light1_sOn : light1_sOff;
-        seqnr=IOPinStatusPacket.LIGHTING1.seqnbr;
-        seqnr++;
-        IOPinStatusPacket.LIGHTING1.seqnbr =  seqnr;
+        IOPinStatusPacket.LIGHTING1.seqnbr++;
         IOPinStatusPacket.LIGHTING1.unitcode = i + (devId*10) ; //report inputs from PiFace X (X0..X9)
 		myCallback->CallBackSendEvent((const unsigned char *)&IOPinStatusPacket, sizeof(IOPinStatusPacket.LIGHTING1));
        }
@@ -1356,6 +1353,7 @@ int CIOPort::Update(unsigned char New)
 			IOPinCounterPacket.RFXMETER.count2 = (unsigned char)((Count >> 16) & 0xFF);
 			IOPinCounterPacket.RFXMETER.count3 = (unsigned char)((Count >> 8) & 0xFF);
 			IOPinCounterPacket.RFXMETER.count4 = (unsigned char)((Count)& 0xFF);
+			IOPinCounterPacket.RFXMETER.seqnbr++;
 			//    _log.Log(LOG_NORM,"RFXMeter Packet C1 %d, C2 %d C3 %d C4 %d\n",IOPinCounterPacket.RFXMETER.count1,IOPinCounterPacket.RFXMETER.count2,IOPinCounterPacket.RFXMETER.count3,IOPinCounterPacket.RFXMETER.count4);
 			myCallback->CallBackSendEvent((const unsigned char *)&IOPinCounterPacket, sizeof(IOPinCounterPacket.RFXMETER));
 		}

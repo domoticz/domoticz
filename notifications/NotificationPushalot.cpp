@@ -39,7 +39,7 @@ bool CNotificationPushalot::SendMessageImplementation(const std::string &Subject
 		break;
 	}
 
-	sPostData << "AuthorizationToken=" << _apikey << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Body=" << Text;
+	sPostData << "AuthorizationToken=" << _apikey << "&IsImportant=" << IsImportant << "&IsSilent=" << IsSilent << "&Source=Domoticz&Title=" << Subject << "&Body=" << Text;
 	std::vector<std::string> ExtraHeaders;
 	bRet = HTTPClient::POST("https://pushalot.com/api/sendmessage", sPostData.str(), ExtraHeaders, sResult);
 	return bRet;

@@ -1221,7 +1221,11 @@ define(['app'], function (app) {
 										status+='' + $.t("Usage") + ': ' + item.CounterToday;
 									}
 									else {
-										status+='U: T: ' + item.CounterToday;
+										if ((typeof item.CounterDeliv != 'undefined')&&(item.CounterDeliv!=0)) {
+											status+='U: T: ' + item.CounterToday;
+										} else {
+											status+='T: ' + item.CounterToday;
+										}
 									}
 								}
 								else if (item.Type == "Current") {
@@ -1246,7 +1250,12 @@ define(['app'], function (app) {
 											(item.SubType=="A/D")||
 											(item.SubType=="Sound Level")
 										) {
-									status+=item.Data;
+											if (typeof item.CounterToday != 'undefined') {
+												status+='T: ' + item.CounterToday;
+											}
+											else {
+												status=item.Data;
+											}
 								}
 								else if (item.SubType=="Alert") {
 									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
@@ -2914,7 +2923,12 @@ define(['app'], function (app) {
 								status='' + $.t("Usage") + ': ' + item.CounterToday;
 							}
 							else {
-								status='U: T: ' + item.CounterToday;
+								if ((typeof item.CounterDeliv != 'undefined')&&(item.CounterDeliv!=0)) {
+									status='U: T: ' + item.CounterToday;
+								}
+								else {
+									status='T: ' + item.CounterToday;
+								}
 							}
 						}
 						else if (item.Type == "Current"){
@@ -2939,7 +2953,12 @@ define(['app'], function (app) {
 									(item.SubType=="A/D")||
 									(item.SubType=="Sound Level")
 								) {
-							status=item.Data;
+									if (typeof item.CounterToday != 'undefined') {
+										status+='T: ' + item.CounterToday;
+									}
+									else {
+										status=item.Data;
+									}
 						}
 						else if (item.SubType=="Alert") {
 							status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
@@ -3051,6 +3070,12 @@ define(['app'], function (app) {
 								else if (item.SwitchTypeVal==2) {
 									xhtm+='Water48_On.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 								}
+								else if (item.SwitchTypeVal==3) {
+									xhtm+='Counter48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+								}
+								else if (item.SwitchTypeVal==4) {
+									xhtm+='PV48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+								}
 								else {
 									xhtm+='Counter48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 								}
@@ -3078,7 +3103,12 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
-							xhtm+='current48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+							if ((item.Type == "Energy")&&(item.SwitchTypeVal == 4)) {
+								xhtm+='PV48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+							}
+							else {
+								xhtm+='current48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
+							}
 							status=item.Data;
 						}
 						else if (item.Type == "Air Quality") {
