@@ -13341,7 +13341,7 @@ namespace http {
 						else
 						{
 							//Add last counter value
-							sprintf(szTmp, "%.3f", atof(sValue.c_str()) / 1000.0);
+							sprintf(szTmp, "%d", atoi(sValue.c_str()));
 							root["counter"] = szTmp;
 						}
 						//Actual Year
