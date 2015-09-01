@@ -1,7 +1,7 @@
 define(['app'], function (app) {
 	app.controller('ScenesController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
 
-		RemoveCode = function(idx)
+		RemoveCode = function(idx, code)
 		{
 			if($("#scenecontent #removecode").hasClass('disabled')) {
 				return false;
@@ -9,7 +9,7 @@ define(['app'], function (app) {
 			bootbox.confirm($.t("Are you sure to delete this Device?\n\nThis action can not be undone..."), function(result) {
 				if (result==true) {
 					$.ajax({
-						 url: "json.htm?type=command&param=removescenecode&sceneidx="+$.SceneIdx+"&idx="+idx,
+						 url: "json.htm?type=command&param=removescenecode&sceneidx="+$.SceneIdx+"&idx="+idx+"&code="+code,
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -302,8 +302,10 @@ define(['app'], function (app) {
 				$.each(data.result, function(i,item){
 						var addId = oTable.fnAddData( {
 							"DT_RowId": item.idx,
+							"code": item.code,
 							"0": item.idx,
-							"1": item.name
+							"1": item.name,
+							"2": item.codestr
 						} );
 				});
 			  }
@@ -326,7 +328,8 @@ define(['app'], function (app) {
 						if ( anSelected.length !== 0 ) {
 							var data = oTable.fnGetData( anSelected[0] );
 							var idx= data["DT_RowId"];
-							$("#scenecontent #delclract #removecode").attr("href", "javascript:RemoveCode(" + idx + ")");
+							var code= data["code"];
+							$("#scenecontent #delclract #removecode").attr("href", "javascript:RemoveCode(" + idx + ", " + code + ")");
 						}
 				}
 			}); 
