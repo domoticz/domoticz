@@ -3546,7 +3546,7 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
 						devid = "00" + id;
 					else
 						devid = id;
@@ -3670,6 +3670,20 @@ namespace http {
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = "1";
+					}
+					else if (lighttype == 105)
+					{
+						//ASA
+						dtype = pTypeRFY;
+						subtype = sTypeASA;
+						std::string id = m_pWebEm->FindValue("id");
+						sunitcode = m_pWebEm->FindValue("unitcode");
+						if (
+							(id == "") ||
+							(sunitcode == "")
+							)
+							return;
+						devid = id;
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
@@ -3863,7 +3877,7 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
 						devid = "00" + id;
 					else
 						devid = id;
@@ -3924,6 +3938,37 @@ namespace http {
 						return;
 					devid = id;
 					sunitcode = "0";
+				}
+				else if (lighttype == 104)
+				{
+					//HE105
+					dtype = pTypeThermostat2;
+					subtype = sTypeHE105;
+					sunitcode = m_pWebEm->FindValue("unitcode");
+					if (sunitcode == "")
+						return;
+					//convert to hex, and we have our Unit Code
+					std::stringstream s_strid;
+					s_strid << std::hex << std::uppercase << sunitcode;
+					int iUnitCode;
+					s_strid >> iUnitCode;
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = "1";
+				}
+				else if (lighttype == 105)
+				{
+					//ASA
+					dtype = pTypeRFY;
+					subtype = sTypeASA;
+					std::string id = m_pWebEm->FindValue("id");
+					sunitcode = m_pWebEm->FindValue("unitcode");
+					if (
+						(id == "") ||
+						(sunitcode == "")
+						)
+						return;
+					devid = id;
 				}
 				else
 				{
