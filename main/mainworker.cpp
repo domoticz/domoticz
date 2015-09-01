@@ -10538,31 +10538,49 @@ bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcm
 }
 
 //returns if a device activates a scene
-bool MainWorker::DoesDeviceActiveAScene(const unsigned long long DevRowIdx)
+bool MainWorker::DoesDeviceActiveAScene(const unsigned long long DevRowIdx, const int Cmnd)
 {
 	//check for scene code
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (Activators!='')");
+	result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (Activators!='')");
 	if (result.size() > 0)
 	{
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
+			
+			int SceneType = atoi(sd[1].c_str());
 
 			std::vector<std::string> arrayActivators;
 			StringSplit(sd[0], ";", arrayActivators);
 			std::vector<std::string>::const_iterator ittAct;
 			for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 			{
+				std::string sCodeCmd = *ittAct;
+
+				std::vector<std::string> arrayCode;
+				StringSplit(sCodeCmd, ":", arrayCode);
+
+				std::string sID = arrayCode[0];
+				std::string sCode = "";
+				if (arrayCode.size() == 2)
+				{
+					sCode = arrayCode[1];
+				}
+
 				unsigned long long aID;
 				std::stringstream sstr;
-				sstr << *ittAct;
+				sstr << sID;
 				sstr >> aID;
 				if (aID == DevRowIdx)
 				{
-					return true;
+					if ((SceneType == 1) || (sCode.empty()))
+						return true;
+					int iCode = atoi(sCode.c_str());
+					if (iCode == Cmnd)
+						return true;
 				}
 			}
 		}
@@ -10635,7 +10653,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 		}
 	}
 
-	_log.Log(LOG_NORM, "Activating Scene/Group: %s", Name.c_str());
+	_log.Log(LOG_NORM, "Activating Scene/Group: [%s]", Name.c_str());
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	result = m_sql.safe_query(
@@ -10671,7 +10689,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			std::stringstream sdID;
 			sdID << sd[0];
 			sdID >> dID;
-			if (DoesDeviceActiveAScene(dID))
+			if (DoesDeviceActiveAScene(dID, cmd))
 			{
 				_log.Log(LOG_ERROR, "Skipping sensor '%s' because this triggers another scene!", DeviceName.c_str());
 				continue;
@@ -10761,9 +10779,21 @@ void MainWorker::CheckSceneCode(const unsigned long long DevRowIdx, const unsign
 			std::vector<std::string>::const_iterator ittAct;
 			for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 			{
+				std::string sCodeCmd = *ittAct;
+
+				std::vector<std::string> arrayCode;
+				StringSplit(sCodeCmd, ":", arrayCode);
+
+				std::string sID = arrayCode[0];
+				std::string sCode = "";
+				if (arrayCode.size() == 2)
+				{
+					sCode = arrayCode[1];
+				}
+
 				unsigned long long aID;
 				std::stringstream sstr;
-				sstr << *ittAct;
+				sstr << sID;
 				sstr >> aID;
 				if (aID == DevRowIdx)
 				{
@@ -10771,6 +10801,14 @@ void MainWorker::CheckSceneCode(const unsigned long long DevRowIdx, const unsign
 					std::stringstream s_str(sd[0]);
 					s_str >> ID;
 					int scenetype = atoi(sd[2].c_str());
+
+					if ((scenetype == 0) && (!sCode.empty()))
+					{
+						//Also check code
+						int iCode = atoi(sCode.c_str());
+						if (iCode != nValue)
+							continue;
+					}
 
 					std::string lstatus = "";
 					int llevel = 0;
