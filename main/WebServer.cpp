@@ -2713,18 +2713,31 @@ namespace http {
 				std::string rState = (command == 1) ? "On" : "Off";
 
 				//first check if this device is not the scene code!
-				result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID=='%q')", idx.c_str());
+				result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID=='%q')", idx.c_str());
 				if (result.size() > 0)
 				{
+					int SceneType = atoi(result[0][1].c_str());
+
 					std::vector<std::string> arrayActivators;
 					StringSplit(result[0][0], ";", arrayActivators);
 					std::vector<std::string>::const_iterator ittAct;
 					for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 					{
-						std::string sDevice = *ittAct;
-						if (sDevice == devidx)
+						std::string sCodeCmd = *ittAct;
+
+						std::vector<std::string> arrayCode;
+						StringSplit(sCodeCmd, ":", arrayCode);
+
+						std::string sID = arrayCode[0];
+						std::string sCode = "";
+						if (arrayCode.size() == 2)
 						{
-							return; //not allowed
+							sCode = arrayCode[1];
+						}
+
+						if (sID == devidx)
+						{
+							return; //Group does not work with separate codes, so already there
 						}
 					}
 				}
@@ -6489,10 +6502,12 @@ namespace http {
 							if (scenetype == 0)
 							{
 								root["result"][ii]["Type"] = "Scene";
+								root["result"][ii]["TypeImg"] = "scene";
 							}
 							else
 							{
 								root["result"][ii]["Type"] = "Group";
+								root["result"][ii]["TypeImg"] = "group";
 							}
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Name"] = sd[1];
@@ -6500,7 +6515,6 @@ namespace http {
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
 							root["result"][ii]["LastUpdate"] = sLastUpdate;
-							root["result"][ii]["TypeImg"] = "lightbulb";
 							if (nValue == 0)
 								root["result"][ii]["Status"] = "Off";
 							else if (nValue == 1)
@@ -9260,11 +9274,12 @@ namespace http {
 			root["title"] = "GetSceneActivations";
 
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", idx.c_str());
+			result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID==%q)", idx.c_str());
 			if (result.empty())
 				return;
 			int ii = 0;
 			std::string Activators = result[0][0];
+			int SceneType = atoi(result[0][1].c_str());
 			if (!Activators.empty())
 			{
 				//Get Activator device names
@@ -9273,16 +9288,45 @@ namespace http {
 				std::vector<std::string>::const_iterator ittAct;
 				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 				{
-					std::string ID = *ittAct;
-					result2 = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID==%q)", ID.c_str());
+					std::string sCodeCmd = *ittAct;
+
+					std::vector<std::string> arrayCode;
+					StringSplit(sCodeCmd, ":", arrayCode);
+
+					std::string sID = arrayCode[0];
+					int sCode = 0;
+					if (arrayCode.size() == 2)
+					{
+						sCode = atoi(arrayCode[1].c_str());
+					}
+
+
+					result2 = m_sql.safe_query("SELECT Name, [Type], SubType, SwitchType FROM DeviceStatus WHERE (ID==%q)", sID.c_str());
 					if (result2.size() > 0)
 					{
+						std::vector<std::string> sd = result2[0];
+						std::string lstatus = "-";
+						if ((SceneType == 0) && (arrayCode.size() == 2))
+						{
+							unsigned char devType = (unsigned char)atoi(sd[1].c_str());
+							unsigned char subType = (unsigned char)atoi(sd[2].c_str());
+							_eSwitchType switchtype = (_eSwitchType)atoi(sd[3].c_str());
+							int nValue = sCode;
+							std::string sValue = "";
+							int llevel = 0;
+							bool bHaveDimmer = false;
+							bool bHaveGroupCmd = false;
+							int maxDimLevel = 0;
+							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						}
 						std::stringstream sstr;
 						unsigned long long dID;
-						sstr << ID;
+						sstr << sID;
 						sstr >> dID;
 						root["result"][ii]["idx"] = dID;
-						root["result"][ii]["name"] = result2[0][0];
+						root["result"][ii]["name"] = sd[0];
+						root["result"][ii]["code"] = sCode;
+						root["result"][ii]["codestr"] = lstatus;
 						ii++;
 					}
 				}
@@ -9309,11 +9353,13 @@ namespace http {
 			//First check if we do not already have this device as activation code
 			bool bFound = false;
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
+			result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
 			if (result.empty())
 				return;
 			int ii = 0;
 			std::string Activators = result[0][0];
+			unsigned char scenetype = atoi(result[0][1].c_str());
+
 			if (!Activators.empty())
 			{
 				//Get Activator device names
@@ -9322,16 +9368,34 @@ namespace http {
 				std::vector<std::string>::const_iterator ittAct;
 				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 				{
-					std::string ID = *ittAct;
-					if (ID == idx)
+					std::string sCodeCmd = *ittAct;
+
+					std::vector<std::string> arrayCode;
+					StringSplit(sCodeCmd, ":", arrayCode);
+
+					std::string sID = arrayCode[0];
+					std::string sCode = "";
+					if (arrayCode.size() == 2)
 					{
-						return; //already there!
+						sCode = arrayCode[1];
+					}
+
+					if (sID == idx)
+					{
+						if (scenetype == 1)
+							return; //Group does not work with separate codes, so already there
+						if (sCode == cmnd)
+							return; //same code, already there!
 					}
 				}
 			}
 			if (!Activators.empty())
 				Activators += ";";
 			Activators += idx;
+			if (scenetype == 0)
+			{
+				Activators += ":" + cmnd;
+			}
 			m_sql.safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activators.c_str(), sceneidx.c_str());
 		}
 
@@ -9342,20 +9406,23 @@ namespace http {
 
 			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
 			std::string idx = m_pWebEm->FindValue("idx");
+			std::string code = m_pWebEm->FindValue("code");
 			if (
 				(idx == "") ||
-				(sceneidx == "")
+				(sceneidx == "") ||
+				(code == "")
 				)
 				return;
 			root["status"] = "OK";
 			root["title"] = "RemoveSceneCode";
 
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
+			result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
 			if (result.empty())
 				return;
 			int ii = 0;
 			std::string Activators = result[0][0];
+			int SceneType = atoi(result[0][1].c_str());
 			if (!Activators.empty())
 			{
 				//Get Activator device names
@@ -9365,12 +9432,39 @@ namespace http {
 				std::string newActivation = "";
 				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 				{
-					std::string ID = *ittAct;
-					if (ID != idx)
+					std::string sCodeCmd = *ittAct;
+
+					std::vector<std::string> arrayCode;
+					StringSplit(sCodeCmd, ":", arrayCode);
+
+					std::string sID = arrayCode[0];
+					std::string sCode = "";
+					if (arrayCode.size() == 2)
+					{
+						sCode = arrayCode[1];
+					}
+					bool bFound = false;
+					if (sID == idx)
+					{
+						if ((SceneType == 1)||(sCode.empty()))
+						{
+							bFound = true;
+						}
+						else
+						{
+							//Also check the code
+							bFound = (sCode == code);
+						}
+					}
+					if (!bFound)
 					{
 						if (!newActivation.empty())
 							newActivation += ";";
-						newActivation += ID;
+						newActivation += sID;
+						if ((SceneType == 0)&&(!sCode.empty()))
+						{
+							newActivation += ":" + sCode;
+						}
 					}
 				}
 				if (Activators != newActivation)

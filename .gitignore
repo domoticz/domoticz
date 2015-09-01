@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+*.orig
+msbuild
+domoticz.db
+appversion.h
+
+=======
 Makefile
 CMakeFiles
 *.cmake
@@ -6,3 +13,4 @@ CMakeCache.txt
 appversion.h*
 domoticz
 stdafx.h.gch
+>>>>>>> 3ab53b90264f7c67ca31b683bfdfa166847a23d9
