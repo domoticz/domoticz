@@ -251,10 +251,10 @@ define(['app'], function (app) {
 											(item.Status == 'On')||
 											(item.Status == 'Mixed')
 										 ) {
-													itemImage='<img src="images/push.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
+													itemImage='<img src="images/pushoff.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
 									}
 									else {
-													itemImage='<img src="images/pushoff.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
+													itemImage='<img src="images/push.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 									}
 				  }
 				  if ((item.Type == "Group")||(item.Type == "Scene")) {
