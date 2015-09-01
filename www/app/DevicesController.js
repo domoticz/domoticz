@@ -284,7 +284,8 @@ define(['app'], function (app) {
 						(item.Type.indexOf("Light")==0)||
 						(item.Type.indexOf("Chime")==0)||
 						(item.Type.indexOf("Security")==0)||
-						(item.Type.indexOf("RFY")==0)
+						(item.Type.indexOf("RFY")==0)||
+						(item.Type.indexOf("ASA")==0)
 					 )
 				  {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';

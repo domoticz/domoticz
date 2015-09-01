@@ -27,6 +27,14 @@ portions of this file.
 */
 
 /*
+SDK version 9.01
+	RFY - ASA blinds added
+
+SDK version 9.00
+	Lighting5 - sTypeRGB432W added
+	ICMND - msg1 changed to freqsel
+	ICMND - msg2 changed to xmitpwr
+
 SDK version 8.03A
 	Thermostat3 - Mertik G6R-H4S added
 
@@ -295,6 +303,7 @@ SDK version 4.9
 #define sTypeUnknownRFYremote 0x01
 #define sTypeExtError 0x02
 #define sTypeRFYremoteList 0x03
+#define sTypeASAremoteList 0x04
 #define sTypeRecStarted 0x07
 #define sTypeInterfaceWrongCommand 0xFF
 #define recType310 0x50
@@ -441,6 +450,7 @@ SDK version 4.9
 #define sTypeTRC02_2 0x08
 #define sTypeEurodomest 0x09
 #define sTypeLivoloAppliance 0x0A
+#define sTypeRGB432W 0x0B
 
 #define light5_sOff 0x0
 #define light5_sOn 0x1
@@ -568,6 +578,7 @@ SDK version 4.9
 #define pTypeRFY 0x1A
 #define sTypeRFY 0x0	//RFY
 #define sTypeRFYext 0x1	//RFY extended
+#define sTypeASA 0x3	//ASA
 #define rfy_sStop 0x0
 #define rfy_sUp 0x1
 #define rfy_sUpStop 0x2
@@ -858,8 +869,8 @@ typedef union tRBUF {
 		BYTE	subtype;
 		BYTE	seqnbr;
 		BYTE	cmnd;
-		BYTE	msg1;
-		BYTE	msg2;
+		BYTE	freqsel;
+		BYTE	xmitpwr;
 		BYTE	msg3;
 		BYTE	msg4;
 		BYTE	msg5;

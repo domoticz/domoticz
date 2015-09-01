@@ -1412,8 +1412,8 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 	cmd.ICMND.subtype = 0;
 	cmd.ICMND.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 	cmd.ICMND.cmnd = Cmd;
-	cmd.ICMND.msg1 = 0;
-	cmd.ICMND.msg2 = 0;
+	cmd.ICMND.freqsel = 0;
+	cmd.ICMND.xmitpwr = 0;
 	cmd.ICMND.msg3 = 0;
 	cmd.ICMND.msg4 = 0;
 	cmd.ICMND.msg5 = 0;
@@ -2176,16 +2176,33 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 		WriteMessage(szTmp);
 		break;
 	case sTypeRFYremoteList:
-		if ((pResponse->ICMND.msg2 == 0) && (pResponse->ICMND.msg3 == 0) && (pResponse->ICMND.msg4 == 0) && (pResponse->ICMND.msg5 == 0))
+		if ((pResponse->ICMND.xmitpwr == 0) && (pResponse->ICMND.msg3 == 0) && (pResponse->ICMND.msg4 == 0) && (pResponse->ICMND.msg5 == 0))
 		{
-			sprintf(szTmp, "subtype           = RFY remote: %d is empty", pResponse->ICMND.msg1);
+			sprintf(szTmp, "subtype           = RFY remote: %d is empty", pResponse->ICMND.freqsel);
 			WriteMessage(szTmp);
 		}
 		else
 		{
 			sprintf(szTmp, "subtype           = RFY remote: %d, ID: %02d%02d%02d, unitnbr: %d",
-				pResponse->ICMND.msg1,
-				pResponse->ICMND.msg2,
+				pResponse->ICMND.freqsel,
+				pResponse->ICMND.xmitpwr,
+				pResponse->ICMND.msg3,
+				pResponse->ICMND.msg4,
+				pResponse->ICMND.msg5);
+			WriteMessage(szTmp);
+		}
+		break;
+	case sTypeASAremoteList:
+		if ((pResponse->ICMND.xmitpwr == 0) && (pResponse->ICMND.msg3 == 0) && (pResponse->ICMND.msg4 == 0) && (pResponse->ICMND.msg5 == 0))
+		{
+			sprintf(szTmp, "subtype           = ASA remote: %d is empty", pResponse->ICMND.freqsel);
+			WriteMessage(szTmp);
+		}
+		else
+		{
+			sprintf(szTmp, "subtype           = ASA remote: %d, ID: %02d%02d%02d, unitnbr: %d",
+				pResponse->ICMND.freqsel,
+				pResponse->ICMND.xmitpwr,
 				pResponse->ICMND.msg3,
 				pResponse->ICMND.msg4,
 				pResponse->ICMND.msg5);
@@ -4193,7 +4210,7 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 	char szTmp[100];
 	unsigned char devType=pTypeLighting5;
 	unsigned char subType=pResponse->LIGHTING5.subtype;
-	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance))
+	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance) && (subType != sTypeRGB432W))
 		sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	else
 		sprintf(szTmp,"%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
@@ -4443,6 +4460,41 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 				break;
 			default:
 				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
+		case sTypeRGB432W:
+			WriteMessage("subtype       = RGB432W");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->LIGHTING5.cmnd)
+			{
+			case light5_sRGBoff:
+				WriteMessage("Off");
+				break;
+			case light5_sRGBon:
+				WriteMessage("On");
+				break;
+			case light5_sRGBbright:
+				WriteMessage("Bright+");
+				break;
+			case light5_sRGBdim:
+				WriteMessage("Bright-");
+				break;
+			case light5_sRGBcolorplus:
+				WriteMessage("Color+");
+				break;
+			case light5_sRGBcolormin:
+				WriteMessage("Color-");
+				break;
+			default:
+				sprintf(szTmp, "Color =          = %d", pResponse->LIGHTING5.cmnd);
+				WriteMessage(szTmp);
 				break;
 			}
 			break;
@@ -5144,6 +5196,9 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 		case sTypeRFYext:
 			WriteMessage("subtype       = RFY-Ext");
 			break;
+		case sTypeASA:
+			WriteMessage("subtype       = ASA");
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->RFY.packettype, pResponse->RFY.subtype);
 			WriteMessage(szTmp);
@@ -5218,7 +5273,6 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 		case rfy_sEraseAll:
 			WriteMessage("Erase all remotes");
 			break;
-
 		case rfy_s05SecUp:
 			WriteMessage("< 0.5 seconds: up");
 			break;
@@ -5231,7 +5285,6 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 		case rfy_s2SecDown:
 			WriteMessage("> 2 seconds: down");
 			break;
-
 		default:
 			WriteMessage("UNKNOWN");
 			break;
@@ -9214,8 +9267,8 @@ bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned cha
 	Response.ICMND.subtype = sTypeInterfaceCommand;
 	Response.ICMND.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 	Response.ICMND.cmnd = cmdSETMODE;
-	Response.ICMND.msg1=Mode1;
-	Response.ICMND.msg2=Mode2;
+	Response.ICMND.freqsel =Mode1;
+	Response.ICMND.xmitpwr =Mode2;
 	Response.ICMND.msg3=Mode3;
 	Response.ICMND.msg4=Mode4;
 	Response.ICMND.msg5=Mode5;
