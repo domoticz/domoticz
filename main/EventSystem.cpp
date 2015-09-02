@@ -589,6 +589,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					switch (metertype)
 					{
 					case MTYPE_ENERGY:
+					case MTYPE_ENERGY_GENERATED:
 						musage = float(total_real) / EnergyDivider;
 						sprintf(szTmp, "%.03f kWh", musage);
 						break;
@@ -777,6 +778,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					switch (metertype)
 					{
 					case MTYPE_ENERGY:
+					case MTYPE_ENERGY_GENERATED:
 						musage = float(total_real) / EnergyDivider;
 						sprintf(szTmp, "%.03f kWh", musage);
 						break;
@@ -2703,7 +2705,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 	std::vector<std::vector<std::string> > result;
 
 	if (isScene) {
-		result = m_sql.safe_query("SELECT ID FROM Scenes WHERE (Name == '%q')",
+		result = m_sql.safe_query("SELECT ID FROM	Scenes WHERE (Name == '%q')",
 			deviceName.c_str());
 	}
 	else {

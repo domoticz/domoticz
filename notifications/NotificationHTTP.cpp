@@ -5,6 +5,8 @@
 #include "../httpclient/UrlEncode.h"
 #include "../main/SQLHelper.h"
 
+extern std::string szUserDataFolder;
+
 CNotificationHTTP::CNotificationHTTP() : CNotificationBase(std::string("http"), OPTIONS_NONE)
 {
 	SetupConfig(std::string("HTTPEnabled"), &m_IsEnabled);
@@ -53,15 +55,11 @@ bool CNotificationHTTP::SendMessageImplementation(const std::string &Subject, co
 		stdreplace(destURL, "#SUBJECT", CURLEncode::URLDecode(Subject));
 		stdreplace(destURL, "#MESSAGE", CURLEncode::URLDecode(Text));
 
-		std::string scriptname = "";
+		std::string scriptname = destURL.substr(9);
 		std::string scriptparams = "";
 #if !defined WIN32
-		if (destURL.find("script:///") != std::string::npos)
-			scriptname = destURL.substr(9);
-		else
-			scriptname = destURL.substr(8);
-#else
-		scriptname = destURL.substr(9);
+		if (scriptname.find("/") != 0)
+			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 		//Add parameters
 		uPos = scriptname.find(" ");

@@ -818,7 +818,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	pDevice->sequence_number+=1;
 	if (pDevice->sequence_number==0)
 		pDevice->sequence_number=1;
-		SendDevice2Domoticz(pDevice);
+	SendDevice2Domoticz(pDevice);
 }
 
 ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceByScale(const int nodeID, const int scaleID, const int cmdID)
@@ -925,12 +925,22 @@ bool CRazberry::ExcludeDevice(const int nodeID)
 	return false;
 }
 
+bool CRazberry::IsNodeIncluded()
+{
+	return false;
+}
+
+bool CRazberry::IsNodeExcluded()
+{
+	return false;
+}
+
 bool CRazberry::RemoveFailedDevice(const int nodeID)
 {
 	return false;
 }
 
-bool CRazberry::CancelControllerCommand()
+bool CRazberry::CancelControllerCommand(const bool bForce)
 {
 	return true;
 }

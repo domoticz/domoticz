@@ -111,6 +111,11 @@ public:
 	bool StartHardware();
 	bool StopHardware();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+public:
+	int m_LastIncludedNode;
+	std::string m_LastIncludedNodeType;
+	bool m_bHaveLastIncludedNodeInfo;
+	int m_LastRemovedNode;
 private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
@@ -139,13 +144,14 @@ private:
 	virtual bool IncludeDevice(const bool bSecure) = 0;
 	virtual bool ExcludeDevice(const int nodeID)=0;
 	virtual bool RemoveFailedDevice(const int nodeID)=0;
-	virtual bool CancelControllerCommand()=0;
+	virtual bool CancelControllerCommand(const bool bForce = false)=0;
 	virtual bool HasNodeFailed(const int nodeID) = 0;
+	virtual bool IsNodeIncluded() = 0;
+	virtual bool IsNodeExcluded() = 0;
 
 	bool m_bControllerCommandInProgress;
 	bool m_bControllerCommandCanceled;
 	time_t m_ControllerCommandStartTime;
-	int m_LastIncludedNode;
 	time_t m_updateTime;
 	bool m_bInitState;
 	std::map<std::string,_tZWaveDevice> m_devices;

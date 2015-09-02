@@ -11,8 +11,9 @@ define(['app'], function (app) {
 			$("#dialog-adddevice").dialog( "open" );
 		}
 
-		RenameDevice = function(idx,itemname)
+		RenameDevice = function(idx,itype,itemname)
 		{
+			$.devType=itype;
 			$.devIdx = idx;
 			if (name!='Unknown') {
 				$( "#dialog-renamedevice #devicename" ).val(itemname);
@@ -190,12 +191,20 @@ define(['app'], function (app) {
 		  oTable.fnClearTable();
 		  
 		  $.ajax({
-			 url: "json.htm?type=devices&displayhidden=1&used=" + ifilter, 
+			 url: "json.htm?type=devices&displayhidden=1&filter=all&used=" + ifilter, 
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
 			  if (typeof data.result != 'undefined') {
 				$.each(data.result, function(i,item){
+					if ((item.Type=="Group")||(item.Type=="Scene")) {
+					  item.HardwareName="Domoticz";
+					  item.ID="-";
+					  item.Unit="-";
+					  item.SubType="-";
+					  item.SignalLevel="-";
+					  item.BatteryLevel=255;
+					}
 				  var itemSubIcons="";
 							var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="'+item.idx+'" />';
 				  var TypeImg=item.TypeImg;
@@ -234,28 +243,49 @@ define(['app'], function (app) {
 											itemImage='<img src="images/smokeoff.png">';
 									}
 				  }
-				  if ((item.Used!=0)&&(item.Name.charAt(0)!="$")) {
-					itemSubIcons+='<img src="images/remove.png" title="' + $.t('Set Unused') +'" onclick="SetUnused(' + item.idx +')">';
-					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Name + '\')">';
+				  else if (TypeImg.indexOf("scene")==0) {
+									itemImage='<img src="images/push.png" title="Switch Scene" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
+				  }
+				  else if (TypeImg.indexOf("group")==0) {
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Mixed')
+										 ) {
+													itemImage='<img src="images/pushoff.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
+									}
+									else {
+													itemImage='<img src="images/push.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
+									}
+				  }
+				  if ((item.Type == "Group")||(item.Type == "Scene")) {
+					itemSubIcons+='&nbsp;<img src="images/empty16.png">';
+					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + item.Name + '\')">';
 				  }
 				  else {
-					if (
-							(item.Type.indexOf("Light")==0)||
-							(item.Type.indexOf("Security")==0)
-						 )
-					{
-						itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Light/Switch Device') + '" onclick="AddLightDeviceDev(' + item.idx +',\'' + item.Name + '\')">';
-					}
-					else {
-						itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + item.Name + '\')">';
-					}
-					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Name + '\')">';
+					  if ((item.Used!=0)&&(item.Name.charAt(0)!="$")) {
+						itemSubIcons+='<img src="images/remove.png" title="' + $.t('Set Unused') +'" onclick="SetUnused(' + item.idx +')">';
+						itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type+'\',\'' + item.Name + '\')">';
+					  }
+					  else {
+						if (
+								(item.Type.indexOf("Light")==0)||
+								(item.Type.indexOf("Security")==0)
+							 )
+						{
+							itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Light/Switch Device') + '" onclick="AddLightDeviceDev(' + item.idx +',\'' + item.Name + '\')">';
+						}
+						else {
+							itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + item.Name + '\')">';
+						}
+						itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + item.Name + '\')">';
+					  }
 				  }
 				  if (
 						(item.Type.indexOf("Light")==0)||
 						(item.Type.indexOf("Chime")==0)||
 						(item.Type.indexOf("Security")==0)||
-						(item.Type.indexOf("RFY")==0)
+						(item.Type.indexOf("RFY")==0)||
+						(item.Type.indexOf("ASA")==0)
 					 )
 				  {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
@@ -325,7 +355,6 @@ define(['app'], function (app) {
 				  else if (item.SubType == "Soil Moisture") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
 				  }
-
 				  else {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';
 				  }
@@ -441,8 +470,15 @@ define(['app'], function (app) {
 			  bValid = bValid && checkLength( $("#dialog-renamedevice #devicename"), 2, 100 );
 			  if ( bValid ) {
 				  $( this ).dialog( "close" );
+				  var durl;
+				  if (($.devType=="Group")||($.devType=="Scene")) {
+					durl="json.htm?type=command&param=renamescene&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-renamedevice #devicename").val());
+				  }
+				  else {
+					durl="json.htm?type=command&param=renamedevice&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-renamedevice #devicename").val());
+				  }
 				  $.ajax({
-					 url: "json.htm?type=command&param=renamedevice&idx=" + $.devIdx + '&name=' + encodeURIComponent($("#dialog-renamedevice #devicename").val()),
+					 url: durl,
 					 async: false, 
 					 dataType: 'json',
 					 success: function(data) {

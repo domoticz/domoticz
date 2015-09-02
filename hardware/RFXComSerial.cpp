@@ -947,8 +947,8 @@ namespace http {
 			unsigned char Mode6 = atoi(result[0][5].c_str());
 
 			tRBUF Response;
-			Response.ICMND.msg1 = Mode1;
-			Response.ICMND.msg2 = Mode2;
+			Response.ICMND.freqsel = Mode1;
+			Response.ICMND.xmitpwr = Mode2;
 			Response.ICMND.msg3 = Mode3;
 			Response.ICMND.msg4 = Mode4;
 			Response.ICMND.msg5 = Mode5;
@@ -980,7 +980,7 @@ namespace http {
 			Response.IRESPONSE.IMAGINTRONIXenabled = (m_pWebEm->FindValue("ImaginTronix") == "on") ? 1 : 0;
 			Response.IRESPONSE.KEELOQenabled = (m_pWebEm->FindValue("Keeloq") == "on") ? 1 : 0;
 
-			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.msg1, Response.ICMND.msg2, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
+			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
 
 			return (char*)m_retstr.c_str();
 		}

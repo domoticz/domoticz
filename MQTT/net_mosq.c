@@ -87,11 +87,6 @@ int tls_ex_index_mosq = -1;
 
 void _mosquitto_net_init(void)
 {
-#ifdef WIN32
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD(2,2), &wsaData);
-#endif
-
 #ifdef WITH_SRV
 	ares_library_init(ARES_LIB_INIT_ALL);
 #endif
@@ -119,10 +114,6 @@ void _mosquitto_net_cleanup(void)
 
 #ifdef WITH_SRV
 	ares_library_cleanup();
-#endif
-
-#ifdef WIN32
-	WSACleanup();
 #endif
 }
 

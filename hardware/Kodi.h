@@ -19,7 +19,8 @@ class CKodi : public CDomoticzHardwareBase
 		time_t			LastOK;
 		_eMediaStatus	nStatus;
 		std::string		sStatus;
-//		boost::mutex	mutDevice;
+		std::string		sShortStatus;
+		//		boost::mutex	mutDevice;
 	};
 public:
 	CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms);

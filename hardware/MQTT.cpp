@@ -24,24 +24,6 @@ m_Password(Password)
 	m_HwdID=ID;
 	m_IsConnected = false;
 	m_bDoReconnect = false;
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			_log.Log(LOG_ERROR,"MQTT: Winsock could not be initialized!");
-		}
-	}
-#endif
 	mosqpp::lib_init();
 
 	m_stoprequested=false;
@@ -50,12 +32,6 @@ m_Password(Password)
 
 MQTT::~MQTT(void)
 {
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-	WSACleanup();
-#endif
 	mosqpp::lib_cleanup();
 }
 
