@@ -102,6 +102,10 @@
 #define sSwitchTypeSilvercrest		0x24
 #define sSwitchTypeMertik			0x25
 #define sSwitchTypeHomeConfort		0x26
+#define sSwitchTypePowerfix			0x27
+#define sSwitchTypeTriState			0x28
+#define sSwitchTypeDeltronic		0x29
+#define sSwitchTypeFA500			0x30
 
 //Switch commands
 #define gswitch_sOff				0x00
