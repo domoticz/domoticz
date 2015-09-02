@@ -7069,7 +7069,8 @@ namespace http {
 						(dType == pTypeThermostat3) ||
 						(dType == pTypeRemote)||
 						(dType == pTypeGeneralSwitch) ||
-						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
+						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) ||
+						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
 						)
 					{
 						//add light details
@@ -13429,7 +13430,8 @@ namespace http {
 							size_t spos = sValue.find(";");
 							if (spos != std::string::npos)
 							{
-								sprintf(szTmp, "%.3f", atof(sValue.substr(spos + 1).c_str()));
+								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 100.0f));
 								root["counter"] = szTmp;
 							}
 						}
@@ -13476,6 +13478,12 @@ namespace http {
 								root["counter"] = szTmp;
 							}
 						}
+						else
+						{
+							//Add last counter value
+							sprintf(szTmp, "%d", atoi(sValue.c_str()));
+							root["counter"] = szTmp;
+						}
 						//Actual Year
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
@@ -13521,6 +13529,15 @@ namespace http {
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
 									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+									root["result"][ii]["v"] = szTmp;
+									if (fcounter != 0)
+										sprintf(szTmp, "%.0f", (fcounter - atof(szValue.c_str())));
+									else
+										strcpy(szTmp, "0");
+									root["result"][ii]["c"] = szTmp;
+									break;
 								}
 								ii++;
 							}
@@ -13550,6 +13567,10 @@ namespace http {
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									root["resultprev"][iPrev]["v"] = szTmp;
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								}
@@ -13814,6 +13835,12 @@ namespace http {
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								root["result"][ii]["v"] = szTmp;
 								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
+								root["result"][ii]["c"] = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+								root["result"][ii]["v"] = szTmp;
+								sprintf(szTmp, "%.0f", (atof(sValue.c_str()) - atof(szValue.c_str())));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							}
