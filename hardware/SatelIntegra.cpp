@@ -772,8 +772,8 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 				cmd[i + 1] = m_userCode[i];
 			}
 
-			unsigned char byteNumber = (general->id) / 8;
-			unsigned char bitNumber = (general->id) % 8;
+			unsigned char byteNumber = (general->id - 1) / 8;
+			unsigned char bitNumber = (general->id - 1) % 8;
 
 			cmd[byteNumber + 9] = 0x01 << bitNumber;
 
