@@ -331,20 +331,11 @@ returns false is authentication is invalid
 */
 bool cWebem::CheckForAction( request& req )
 {
+	myNameValues.clear();
 	// look for cWebem form action request
 	std::string uri = req.uri;
 	int q = 0;
-	/*
-	if( req.method != "POST" ) {
-		q = uri.find(".webem");
-		if( q == -1 )
-			return true;
-	} else {
-		q = uri.find(".webem");
-		if( q == -1 )
-			return true;
-	}
-	*/
+
 	q = uri.find(".webem");
 	if (q == -1)
 		return true;
@@ -440,8 +431,6 @@ bool cWebem::CheckForAction( request& req )
 		q += 7;
 	}
 
-
-	myNameValues.clear();
 	std::string name;
 	std::string value;
 

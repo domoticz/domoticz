@@ -243,6 +243,20 @@ define(['app'], function (app) {
 											itemImage='<img src="images/smokeoff.png">';
 									}
 				  }
+				  else if (TypeImg.indexOf("scene")==0) {
+									itemImage='<img src="images/push.png" title="Switch Scene" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
+				  }
+				  else if (TypeImg.indexOf("group")==0) {
+									if (
+											(item.Status == 'On')||
+											(item.Status == 'Mixed')
+										 ) {
+													itemImage='<img src="images/pushoff.png" title="Turn Off" onclick="SwitchScene(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
+									}
+									else {
+													itemImage='<img src="images/push.png" title="Turn On" onclick="SwitchScene(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
+									}
+				  }
 				  if ((item.Type == "Group")||(item.Type == "Scene")) {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';
 					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + item.Name + '\')">';
@@ -270,7 +284,8 @@ define(['app'], function (app) {
 						(item.Type.indexOf("Light")==0)||
 						(item.Type.indexOf("Chime")==0)||
 						(item.Type.indexOf("Security")==0)||
-						(item.Type.indexOf("RFY")==0)
+						(item.Type.indexOf("RFY")==0)||
+						(item.Type.indexOf("ASA")==0)
 					 )
 				  {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';

@@ -2564,7 +2564,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
             break;
         }
 	case pTypeGeneral:
-		if ((subType != sTypeTextStatus) && (subType != sTypeAlert))
+		if ((devType == pTypeGeneral) && (subType != sTypeTextStatus) && (subType != sTypeAlert))
 		{
 			break;
 		}

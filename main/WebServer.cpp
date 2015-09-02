@@ -955,6 +955,9 @@ namespace http {
 			else if (htype == HTYPE_Dummy) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Tellstick) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL) {
 				//all fine here!
 			}
@@ -2710,36 +2713,33 @@ namespace http {
 				std::string rState = (command == 1) ? "On" : "Off";
 
 				//first check if this device is not the scene code!
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID=='%q')",
-					devidx.c_str());
+				result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID=='%q')", idx.c_str());
 				if (result.size() > 0)
 				{
-					int dType = atoi(result[0][3].c_str());
-					int sType = atoi(result[0][4].c_str());
-					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					unsigned char scommand;
-					if (GetLightCommand(dType, sType, switchtype, rState, scommand))
-					{
-						command = scommand;
-					}
+					int SceneType = atoi(result[0][1].c_str());
 
-					result2 = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM Scenes WHERE (ID=='%q')",
-						idx.c_str());
-					if (result2.size() > 0)
+					std::vector<std::string> arrayActivators;
+					StringSplit(result[0][0], ";", arrayActivators);
+					std::vector<std::string>::const_iterator ittAct;
+					for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 					{
-						if (
-							(result[0][0] == result2[0][0]) &&
-							(result[0][1] == result2[0][1]) &&
-							(result[0][2] == result2[0][2]) &&
-							(result[0][3] == result2[0][3]) &&
-							(result[0][4] == result2[0][4])
-							)
+						std::string sCodeCmd = *ittAct;
+
+						std::vector<std::string> arrayCode;
+						StringSplit(sCodeCmd, ":", arrayCode);
+
+						std::string sID = arrayCode[0];
+						std::string sCode = "";
+						if (arrayCode.size() == 2)
 						{
-							//This is not allowed!
-							return;
+							sCode = arrayCode[1];
+						}
+
+						if (sID == devidx)
+						{
+							return; //Group does not work with separate codes, so already there
 						}
 					}
-
 				}
 				//first check if it is not already a part of this scene/group (with the same OnDelay)
 				result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d)",
@@ -3075,6 +3075,7 @@ namespace http {
 						case HTYPE_EnOceanESP2:
 						case HTYPE_EnOceanESP3:
 						case HTYPE_Dummy:
+						case HTYPE_Tellstick:
 						case HTYPE_EVOHOME_SCRIPT:
 						case HTYPE_EVOHOME_SERIAL:
 						case HTYPE_RaspberryGPIO:
@@ -3545,7 +3546,7 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
 						devid = "00" + id;
 					else
 						devid = id;
@@ -3669,6 +3670,20 @@ namespace http {
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = "1";
+					}
+					else if (lighttype == 105)
+					{
+						//ASA
+						dtype = pTypeRFY;
+						subtype = sTypeASA;
+						std::string id = m_pWebEm->FindValue("id");
+						sunitcode = m_pWebEm->FindValue("unitcode");
+						if (
+							(id == "") ||
+							(sunitcode == "")
+							)
+							return;
+						devid = id;
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
@@ -3862,7 +3877,7 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
 						devid = "00" + id;
 					else
 						devid = id;
@@ -3923,6 +3938,37 @@ namespace http {
 						return;
 					devid = id;
 					sunitcode = "0";
+				}
+				else if (lighttype == 104)
+				{
+					//HE105
+					dtype = pTypeThermostat2;
+					subtype = sTypeHE105;
+					sunitcode = m_pWebEm->FindValue("unitcode");
+					if (sunitcode == "")
+						return;
+					//convert to hex, and we have our Unit Code
+					std::stringstream s_strid;
+					s_strid << std::hex << std::uppercase << sunitcode;
+					int iUnitCode;
+					s_strid >> iUnitCode;
+					sprintf(szTmp, "%d", iUnitCode);
+					sunitcode = szTmp;
+					devid = "1";
+				}
+				else if (lighttype == 105)
+				{
+					//ASA
+					dtype = pTypeRFY;
+					subtype = sTypeASA;
+					std::string id = m_pWebEm->FindValue("id");
+					sunitcode = m_pWebEm->FindValue("unitcode");
+					if (
+						(id == "") ||
+						(sunitcode == "")
+						)
+						return;
+					devid = id;
 				}
 				else
 				{
@@ -6501,10 +6547,12 @@ namespace http {
 							if (scenetype == 0)
 							{
 								root["result"][ii]["Type"] = "Scene";
+								root["result"][ii]["TypeImg"] = "scene";
 							}
 							else
 							{
 								root["result"][ii]["Type"] = "Group";
+								root["result"][ii]["TypeImg"] = "group";
 							}
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Name"] = sd[1];
@@ -6512,7 +6560,6 @@ namespace http {
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
 							root["result"][ii]["LastUpdate"] = sLastUpdate;
-							root["result"][ii]["TypeImg"] = "lightbulb";
 							if (nValue == 0)
 								root["result"][ii]["Status"] = "Off";
 							else if (nValue == 1)
@@ -7022,7 +7069,8 @@ namespace http {
 						(dType == pTypeThermostat3) ||
 						(dType == pTypeRemote)||
 						(dType == pTypeGeneralSwitch) ||
-						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
+						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) ||
+						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
 						)
 					{
 						//add light details
@@ -9272,11 +9320,12 @@ namespace http {
 			root["title"] = "GetSceneActivations";
 
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", idx.c_str());
+			result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID==%q)", idx.c_str());
 			if (result.empty())
 				return;
 			int ii = 0;
 			std::string Activators = result[0][0];
+			int SceneType = atoi(result[0][1].c_str());
 			if (!Activators.empty())
 			{
 				//Get Activator device names
@@ -9285,16 +9334,45 @@ namespace http {
 				std::vector<std::string>::const_iterator ittAct;
 				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 				{
-					std::string ID = *ittAct;
-					result2 = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID==%q)", ID.c_str());
+					std::string sCodeCmd = *ittAct;
+
+					std::vector<std::string> arrayCode;
+					StringSplit(sCodeCmd, ":", arrayCode);
+
+					std::string sID = arrayCode[0];
+					int sCode = 0;
+					if (arrayCode.size() == 2)
+					{
+						sCode = atoi(arrayCode[1].c_str());
+					}
+
+
+					result2 = m_sql.safe_query("SELECT Name, [Type], SubType, SwitchType FROM DeviceStatus WHERE (ID==%q)", sID.c_str());
 					if (result2.size() > 0)
 					{
+						std::vector<std::string> sd = result2[0];
+						std::string lstatus = "-";
+						if ((SceneType == 0) && (arrayCode.size() == 2))
+						{
+							unsigned char devType = (unsigned char)atoi(sd[1].c_str());
+							unsigned char subType = (unsigned char)atoi(sd[2].c_str());
+							_eSwitchType switchtype = (_eSwitchType)atoi(sd[3].c_str());
+							int nValue = sCode;
+							std::string sValue = "";
+							int llevel = 0;
+							bool bHaveDimmer = false;
+							bool bHaveGroupCmd = false;
+							int maxDimLevel = 0;
+							GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						}
 						std::stringstream sstr;
 						unsigned long long dID;
-						sstr << ID;
+						sstr << sID;
 						sstr >> dID;
 						root["result"][ii]["idx"] = dID;
-						root["result"][ii]["name"] = result2[0][0];
+						root["result"][ii]["name"] = sd[0];
+						root["result"][ii]["code"] = sCode;
+						root["result"][ii]["codestr"] = lstatus;
 						ii++;
 					}
 				}
@@ -9321,11 +9399,13 @@ namespace http {
 			//First check if we do not already have this device as activation code
 			bool bFound = false;
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
+			result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
 			if (result.empty())
 				return;
 			int ii = 0;
 			std::string Activators = result[0][0];
+			unsigned char scenetype = atoi(result[0][1].c_str());
+
 			if (!Activators.empty())
 			{
 				//Get Activator device names
@@ -9334,16 +9414,34 @@ namespace http {
 				std::vector<std::string>::const_iterator ittAct;
 				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 				{
-					std::string ID = *ittAct;
-					if (ID == idx)
+					std::string sCodeCmd = *ittAct;
+
+					std::vector<std::string> arrayCode;
+					StringSplit(sCodeCmd, ":", arrayCode);
+
+					std::string sID = arrayCode[0];
+					std::string sCode = "";
+					if (arrayCode.size() == 2)
 					{
-						return; //already there!
+						sCode = arrayCode[1];
+					}
+
+					if (sID == idx)
+					{
+						if (scenetype == 1)
+							return; //Group does not work with separate codes, so already there
+						if (sCode == cmnd)
+							return; //same code, already there!
 					}
 				}
 			}
 			if (!Activators.empty())
 				Activators += ";";
 			Activators += idx;
+			if (scenetype == 0)
+			{
+				Activators += ":" + cmnd;
+			}
 			m_sql.safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activators.c_str(), sceneidx.c_str());
 		}
 
@@ -9354,20 +9452,23 @@ namespace http {
 
 			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
 			std::string idx = m_pWebEm->FindValue("idx");
+			std::string code = m_pWebEm->FindValue("code");
 			if (
 				(idx == "") ||
-				(sceneidx == "")
+				(sceneidx == "") ||
+				(code == "")
 				)
 				return;
 			root["status"] = "OK";
 			root["title"] = "RemoveSceneCode";
 
 			std::vector<std::vector<std::string> > result, result2;
-			result = m_sql.safe_query("SELECT Activators FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
+			result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID==%q)", sceneidx.c_str());
 			if (result.empty())
 				return;
 			int ii = 0;
 			std::string Activators = result[0][0];
+			int SceneType = atoi(result[0][1].c_str());
 			if (!Activators.empty())
 			{
 				//Get Activator device names
@@ -9377,12 +9478,39 @@ namespace http {
 				std::string newActivation = "";
 				for (ittAct = arrayActivators.begin(); ittAct != arrayActivators.end(); ++ittAct)
 				{
-					std::string ID = *ittAct;
-					if (ID != idx)
+					std::string sCodeCmd = *ittAct;
+
+					std::vector<std::string> arrayCode;
+					StringSplit(sCodeCmd, ":", arrayCode);
+
+					std::string sID = arrayCode[0];
+					std::string sCode = "";
+					if (arrayCode.size() == 2)
+					{
+						sCode = arrayCode[1];
+					}
+					bool bFound = false;
+					if (sID == idx)
+					{
+						if ((SceneType == 1)||(sCode.empty()))
+						{
+							bFound = true;
+						}
+						else
+						{
+							//Also check the code
+							bFound = (sCode == code);
+						}
+					}
+					if (!bFound)
 					{
 						if (!newActivation.empty())
 							newActivation += ";";
-						newActivation += ID;
+						newActivation += sID;
+						if ((SceneType == 0)&&(!sCode.empty()))
+						{
+							newActivation += ":" + sCode;
+						}
 					}
 				}
 				if (Activators != newActivation)
@@ -13302,7 +13430,8 @@ namespace http {
 							size_t spos = sValue.find(";");
 							if (spos != std::string::npos)
 							{
-								sprintf(szTmp, "%.3f", atof(sValue.substr(spos + 1).c_str()));
+								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 100.0f));
 								root["counter"] = szTmp;
 							}
 						}
@@ -13349,6 +13478,12 @@ namespace http {
 								root["counter"] = szTmp;
 							}
 						}
+						else
+						{
+							//Add last counter value
+							sprintf(szTmp, "%d", atoi(sValue.c_str()));
+							root["counter"] = szTmp;
+						}
 						//Actual Year
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
@@ -13394,6 +13529,15 @@ namespace http {
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
 									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+									root["result"][ii]["v"] = szTmp;
+									if (fcounter != 0)
+										sprintf(szTmp, "%.0f", (fcounter - atof(szValue.c_str())));
+									else
+										strcpy(szTmp, "0");
+									root["result"][ii]["c"] = szTmp;
+									break;
 								}
 								ii++;
 							}
@@ -13423,6 +13567,10 @@ namespace http {
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									root["resultprev"][iPrev]["v"] = szTmp;
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								}
@@ -13687,6 +13835,12 @@ namespace http {
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								root["result"][ii]["v"] = szTmp;
 								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
+								root["result"][ii]["c"] = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+								root["result"][ii]["v"] = szTmp;
+								sprintf(szTmp, "%.0f", (atof(sValue.c_str()) - atof(szValue.c_str())));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							}

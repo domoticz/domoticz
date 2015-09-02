@@ -62,7 +62,7 @@ public:
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
 	bool SwitchScene(const unsigned long long idx, const std::string &switchcmd);
 	void CheckSceneCode(const unsigned long long DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
-	bool DoesDeviceActiveAScene(const unsigned long long DevRowIdx);
+	bool DoesDeviceActiveAScene(const unsigned long long DevRowIdx, const int Cmnd);
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
 	bool SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until);
