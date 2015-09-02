@@ -2765,7 +2765,7 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
                         UpdateHardwareParamControls();
-                        if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0)||(data["Type"].indexOf("System Alive") >= 0) ||(data["Type"].indexOf("PiFace") >= 0)||(text.indexOf("Tellstick") >= 0))
+                        if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0)||(data["Type"].indexOf("System Alive") >= 0) ||(data["Type"].indexOf("PiFace") >= 0)||(data["Type"].indexOf("Tellstick") >= 0))
                         {
                             //nothing to be set
                         }
