@@ -13430,7 +13430,8 @@ namespace http {
 							size_t spos = sValue.find(";");
 							if (spos != std::string::npos)
 							{
-								sprintf(szTmp, "%.3f", atof(sValue.substr(spos + 1).c_str()));
+								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 100.0f));
 								root["counter"] = szTmp;
 							}
 						}
