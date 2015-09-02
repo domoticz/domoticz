@@ -97,6 +97,11 @@
 #define sSwitchTypeSelectPlus		0x1F
 #define sSwitchTypeSelectPlus3		0x20
 #define sSwitchTypeFA20				0x21
+#define sSwitchTypeChuango			0x22
+#define sSwitchTypePlieger			0x23
+#define sSwitchTypeSilvercrest		0x24
+#define sSwitchTypeMertik			0x25
+#define sSwitchTypeHomeConfort		0x26
 
 //Switch commands
 #define gswitch_sOff				0x00
