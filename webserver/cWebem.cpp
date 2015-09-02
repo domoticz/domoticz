@@ -73,7 +73,7 @@ m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
 m_actsessionid(""),
 m_actualuser(""),
-actTheme("")
+m_actTheme("")
 {
 	myServer = NULL;	
 	m_actualuser_rights = -1;
