@@ -9317,8 +9317,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	}
 
 	int hindex=FindDomoticzHardware(HardwareID);
-	if (hindex==-1)
+	if (hindex == -1)
+	{
+		_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
 		return false;
+	}
 	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
 	if (pHardware==NULL)
 		return false;
