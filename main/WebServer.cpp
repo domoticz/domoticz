@@ -2751,8 +2751,14 @@ namespace http {
 					}
 				}
 				//first check if it is not already a part of this scene/group (with the same OnDelay)
-				result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d)",
-					devidx.c_str(), idx.c_str(), ondelay);
+				if (isscene == "true") {
+					result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d) AND (OffDelay == %d) AND (Cmd == %d)",
+						devidx.c_str(), idx.c_str(), ondelay, offdelay, command);
+				}
+				else {
+					result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d)",
+						devidx.c_str(), idx.c_str(), ondelay);
+				}
 				if (result.size() == 0)
 				{
 					root["status"] = "OK";
