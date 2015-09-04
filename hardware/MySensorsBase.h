@@ -112,6 +112,8 @@ public:
 		V_HVAC_SETPOINT_HEAT = 45,		//HVAC / Heater setpoint(Integer between 0 - 100)	S_HVAC, S_HEATER
 		V_HVAC_FLOW_MODE = 46,			//Flow mode for HVAC("Auto", "ContinuousOn", "PeriodicOn")	S_HVAC
 
+		V_TEXT = 47,					//Text/Info message S_INFO
+
 		V_UNKNOWN = 200					//No value received
 	};
 

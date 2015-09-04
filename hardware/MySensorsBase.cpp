@@ -683,6 +683,15 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			SendSetPointSensor(pNode->nodeID, pChild->childID, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Heater Setpoint");
 		}
 		break;
+	case V_TEXT:
+		if (pChild->GetValue(vType, stringValue))
+		{
+			std::stringstream sstr;
+			sstr << pChild->nodeID;
+			std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Text";
+			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
+		}
+		break;
 	}
 }
 
@@ -1340,6 +1349,11 @@ void MySensorsBase::ParseLine()
 			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
+		case V_TEXT:
+			pChild->SetValue(vType, payload);
+			UpdateVar(node_id, child_sensor_id, sub_type, payload);
+			bHaveValue = true;
+			break;
 		default:
 			if (sub_type > V_CURRENT)
 			{
@@ -1501,6 +1515,7 @@ void MySensorsBase::ParseLine()
 		case V_VAR3:
 		case V_VAR4:
 		case V_VAR5:
+		case V_TEXT:
 			//send back a previous stored custom variable
 			tmpstr = "";
 			GetVar(node_id, child_sensor_id, sub_type, tmpstr);
