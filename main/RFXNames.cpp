@@ -693,7 +693,14 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus, "SelectPlus" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus3, "SelectPlus3" },
 		{ pTypeGeneralSwitch, sSwitchTypeFA20, "FA20RF" },
-
+		{ pTypeGeneralSwitch, sSwitchTypePowerfix, "Powerfix" },
+		{ pTypeGeneralSwitch, sSwitchTypeTriState, "TriState" },
+		{ pTypeGeneralSwitch, sSwitchTypeDeltronic, "Deltronic" },
+		{ pTypeGeneralSwitch, sSwitchTypeChuango, "Chuango" },
+		{ pTypeGeneralSwitch, sSwitchTypePlieger, "Plieger" },
+		{ pTypeGeneralSwitch, sSwitchTypeSilvercrest, "SilverCrest" },
+		{ pTypeGeneralSwitch, sSwitchTypeMertik, "Mertik" },
+		{ pTypeGeneralSwitch, sSwitchTypeHomeConfort, "HomeConfort" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
