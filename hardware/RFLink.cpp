@@ -13,7 +13,9 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
-#define ENABLE_LOGGING
+#ifdef _DEBUG
+	#define ENABLE_LOGGING
+#endif
 
 #define RFLINK_RETRY_DELAY 30
 
