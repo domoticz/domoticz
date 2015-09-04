@@ -2931,7 +2931,7 @@ define(['app'], function (app) {
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();
-                $("#hardwarecontent #divlogin").show();
+                $("#hardwarecontent #divlogin").hide();
                 $("#hardwarecontent #divunderground").show();
             }
             else if (text.indexOf("Philips Hue") >= 0)
