@@ -4922,8 +4922,8 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("DELETE FROM Hardware WHERE (ID == '%q')",idx.c_str());
-	//also delete all records in other tables
 
+	//and now delete all records in the DeviceStatus table itself
 	result=safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID == '%q')",idx.c_str());
 	if (result.size()>0)
 	{
@@ -4934,11 +4934,11 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 			DeleteDevice(sd[0]);
 		}
 	}
-	//and now delete all records in the DeviceStatus table itself
-	safe_query("DELETE FROM DeviceStatus WHERE (HardwareID == '%q')",idx.c_str());
+	//also delete all records in other tables
 	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID== '%q')",idx.c_str());
 	safe_query("DELETE FROM EnoceanSensors WHERE (HardwareID== '%q')", idx.c_str());
 	safe_query("DELETE FROM MySensors WHERE (HardwareID== '%q')", idx.c_str());
+	safe_query("DELETE FROM WOLNodes WHERE (HardwareID == '%q')",idx.c_str());
 }
 
 void CSQLHelper::DeleteCamera(const std::string &idx)
