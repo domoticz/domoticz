@@ -347,8 +347,7 @@ private:
 
 	std::map<int, _tMySensorNode> m_nodes;
 
-	static const int readBufferSize=1028;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1028];
 	int m_bufferpos;
 };
 
