@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <ctime>
 
@@ -695,6 +696,21 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
 		}
 		break;
+	case V_IR_RECEIVE:
+		if (pChild->GetValue(vType, intValue))
+		{
+			_tGeneralSwitch gswitch;
+			gswitch.subtype = sSwitchTypeMDREMOTE;
+			gswitch.id = intValue;
+			gswitch.unitcode = pNode->nodeID;
+			gswitch.cmnd = gswitch_sOn;
+			gswitch.level = 100;
+			gswitch.battery_level = pChild->batValue;
+			gswitch.rssi = 12;
+			gswitch.seqnbr = 0;
+			sDecodeRXMessage(this, (const unsigned char *)&gswitch);
+		}
+		break;
 	}
 }
 
@@ -1013,6 +1029,25 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 		sstr << round(pMeter->temp);
 
 		SendCommand(node_id, child_sensor_id, MT_Set, vtype_id, sstr.str());
+	}
+	else if (packettype == pTypeGeneralSwitch)
+	{
+		//Used to store IR codes
+		_tGeneralSwitch *pSwitch=(_tGeneralSwitch *)pCmd;
+
+		int node_id = pSwitch->unitcode;
+		unsigned int ir_code = pSwitch->id;
+
+		if (_tMySensorNode *pNode = FindNode(node_id))
+		{
+			_tMySensorChild* pChild = pNode->FindChildByValueType(V_IR_RECEIVE);
+			if (pChild)
+			{
+				std::stringstream sstr;
+				sstr << ir_code;
+				SendCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str());
+			}
+		}
 	}
 	else
 	{
@@ -1380,6 +1415,10 @@ void MySensorsBase::ParseLine()
 		case V_TEXT:
 			pChild->SetValue(vType, payload);
 			UpdateVar(node_id, child_sensor_id, sub_type, payload);
+			bHaveValue = true;
+			break;
+		case V_IR_RECEIVE:
+			pChild->SetValue(vType, (int)boost::lexical_cast<unsigned int>(payload));
 			bHaveValue = true;
 			break;
 		default:

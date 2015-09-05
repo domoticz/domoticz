@@ -292,6 +292,24 @@ public:
 			}
 			return NULL;
 		}
+		_tMySensorChild* FindChildByValueType(const _eSetType valType)
+		{
+			std::vector<_tMySensorChild>::iterator itt;
+			for (itt = m_childs.begin(); itt != m_childs.end(); ++itt)
+			{
+				std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+				for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+				{
+					if (itt2->first == valType)
+					{
+						if (!itt2->second.bValidValue)
+							return NULL;
+						return &*itt;
+					}
+				}
+			}
+			return NULL;
+		}
 		_tMySensorChild* FindChild(const int ChildID)
 		{
 			std::vector<_tMySensorChild>::iterator itt;
