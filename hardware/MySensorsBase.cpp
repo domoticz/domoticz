@@ -564,11 +564,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		{
 			if (pChild->GetValue(vType, intValue))
 			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype = sTypeSoilMoisture;
-				gdevice.intval1 = intValue;
-				gdevice.id = pChild->nodeID;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+				SendMoistureSensor(cNode, pChild->batValue, intValue, "Moisture");
 			}
 		}
 		break;
@@ -611,14 +607,19 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			SendDistanceSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue);
 		break;
 	case V_FLOW:
-		//Flow of water in meter (for now send as a percentage sensor)
+		//Flow of water/gas in meter (for now send as a percentage sensor)
 		if (pChild->GetValue(vType, floatValue))
 			SendPercentageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water Flow");
 		break;
 	case V_VOLUME:
-		//Water Volume
+		//Water or Gas Volume
 		if (pChild->GetValue(vType, floatValue))
-			SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water");
+		{
+			if (pChild->presType == S_WATER)
+				SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water");
+			else
+				SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water");
+		}
 		break;
 	case V_VOLTAGE:
 		if (pChild->GetValue(vType, floatValue))
@@ -679,9 +680,11 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		break;
 	case V_HVAC_SETPOINT_HEAT:
 		if (pChild->GetValue(vType, floatValue))
-		{
-			SendSetPointSensor(pNode->nodeID, pChild->childID, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Heater Setpoint");
-		}
+			SendSetPointSensor(pNode->nodeID, pChild->childID, (unsigned char)vType, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Heat");
+		break;
+	case V_HVAC_SETPOINT_COOL:
+		if (pChild->GetValue(vType, floatValue))
+			SendSetPointSensor(pNode->nodeID, pChild->childID, (unsigned char)vType, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Cool");
 		break;
 	case V_TEXT:
 		if (pChild->GetValue(vType, stringValue))
@@ -842,7 +845,10 @@ void MySensorsBase::SendCommand(const int NodeID, const int ChildID, const _eMes
 bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pCmd = (tRBUF *)pdata;
-	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
+	unsigned char packettype = pCmd->ICMND.packettype;
+	unsigned char subtype = pCmd->ICMND.subtype;
+
+	if (packettype == pTypeLighting2)
 	{
 		//Light command
 
@@ -897,7 +903,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			return false;
 		}
 	}
-	else if (pCmd->LIGHTING2.packettype == pTypeLimitlessLights)
+	else if (packettype == pTypeLimitlessLights)
 	{
 		//RGW/RGBW command
 		_tLimitlessLights *pLed = (_tLimitlessLights *)pdata;
@@ -966,7 +972,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			return false;
 		}
 	}
-	else if (pCmd->BLINDS1.packettype == pTypeBlinds)
+	else if (packettype == pTypeBlinds)
 	{
 		//Blinds/Window command
 		int node_id = pCmd->BLINDS1.id3;
@@ -991,6 +997,27 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
 			return false;
 		}
+	}
+	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
+	{
+		//Set Point
+		_tThermostat *pMeter = (_tThermostat *)pCmd;
+
+		int node_id = pMeter->id2;
+		int child_sensor_id = pMeter->id3;
+		int vtype_id = pMeter->id4;
+
+		//Seems MySensors setpoints are integers?
+
+		std::stringstream sstr;
+		sstr << round(pMeter->temp);
+
+		SendCommand(node_id, child_sensor_id, MT_Set, vtype_id, sstr.str());
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "MySensors: Unknown action received");
+		return false;
 	}
 	return true;
 }
@@ -1346,6 +1373,7 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_HVAC_SETPOINT_HEAT:
+		case V_HVAC_SETPOINT_COOL:
 			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;

@@ -39,7 +39,6 @@ protected:
 	sockaddr_in m_addr;
 	int m_socket;
 	std::string m_endpoint;
-	static const int readBufferSize = 512;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[512];
 };
 

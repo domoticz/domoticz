@@ -109,7 +109,6 @@ private:
 
 	int m_counter;
 	bool m_bLabel_PAPP_Exist;
-	static const int readBufferSize = 1028;
 	static const int NumberOfFrameToSendOne = 8;
 
 	void Init();
@@ -117,7 +116,7 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	bool isCheckSumOk();
 
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1028];
 	int m_bufferpos;
 	static Teleinfo::Match m_matchlist[19];
 };

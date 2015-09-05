@@ -149,7 +149,7 @@ void ASyncTCP::read()
 	if(!mIsConnected) return;
 	if(mIsClosing) return;
 
-	mSocket.async_read_some(boost::asio::buffer(m_buffer,readBufferSize),
+	mSocket.async_read_some(boost::asio::buffer(m_buffer,sizeof(m_buffer)),
 		boost::bind(&ASyncTCP::handle_read,
 		this,
 		boost::asio::placeholders::error,

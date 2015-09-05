@@ -53,8 +53,7 @@ protected:
 	boost::asio::io_service			mIos;
 	boost::asio::ip::tcp::socket	mSocket;
 
-	static const int readBufferSize=1024;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1024];
 
 	boost::asio::deadline_timer		mReconnectTimer;
 
