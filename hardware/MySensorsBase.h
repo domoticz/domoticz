@@ -56,6 +56,8 @@ public:
 		S_SOUND = 33,					//Sound sensor	V_LEVEL(in dB), V_TRIPPED, V_ARMED
 		S_VIBRATION = 34,				//Vibration sensor	V_LEVEL(vibration in Hz), V_TRIPPED, V_ARMED
 		S_MOISTURE = 35,				//Moisture sensor	V_LEVEL(water content or moisture in percentage ? ), V_TRIPPED, V_ARMED
+		S_INFO = 36,					// LCD text device / Simple information device on controller, V_TEXT
+		S_GAS = 37,						// Gas meter, V_FLOW, V_VOLUME
 
 		S_UNKNOWN = 200,				//No Type received
 	};
