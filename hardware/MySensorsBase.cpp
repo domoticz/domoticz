@@ -564,11 +564,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		{
 			if (pChild->GetValue(vType, intValue))
 			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype = sTypeSoilMoisture;
-				gdevice.intval1 = intValue;
-				gdevice.id = pChild->nodeID;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+				SendMoistureSensor(cNode, pChild->batValue, intValue, "Moisture");
 			}
 		}
 		break;

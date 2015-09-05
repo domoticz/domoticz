@@ -138,6 +138,7 @@ private:
 	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI);
 	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
 	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);
+	void SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname);
 
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 

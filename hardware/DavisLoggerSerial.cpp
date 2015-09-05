@@ -679,12 +679,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		if (pData[62+iMoister]!=0xFF)
 		{
 			int moister=pData[62+iMoister];
-
-			_tGeneralDevice gdevice;
-			gdevice.subtype=sTypeSoilMoisture;
-			gdevice.intval1=moister;
-			gdevice.id=1+iMoister;
-			sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+			SendMoistureSensor(1 + iMoister, 255, moister, "Moisture");
 		}
 	}
 

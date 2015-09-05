@@ -8624,20 +8624,22 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char subType=pMeter->subtype;
 
 	if (
-		(subType == sTypeVoltage) || 
-		(subType == sTypeCurrent) || 
-		(subType == sTypePercentage) || 
-		(subType == sTypePressure) || 
-		(subType == sTypeZWaveClock) || 
-		(subType == sTypeZWaveThermostatMode) || 
-		(subType == sTypeZWaveThermostatFanMode) || 
-		(subType == sTypeFan) || 
-		(subType == sTypeTextStatus) || 
-		(subType == sTypeSoundLevel) || 
-		(subType == sTypeBaro) || 
-		(subType == sTypeDistance))
+		(subType == sTypeVoltage) ||
+		(subType == sTypeCurrent) ||
+		(subType == sTypePercentage) ||
+		(subType == sTypePressure) ||
+		(subType == sTypeZWaveClock) ||
+		(subType == sTypeZWaveThermostatMode) ||
+		(subType == sTypeZWaveThermostatFanMode) ||
+		(subType == sTypeFan) ||
+		(subType == sTypeTextStatus) ||
+		(subType == sTypeSoundLevel) ||
+		(subType == sTypeBaro) ||
+		(subType == sTypeDistance) ||
+		(subType == sTypeSoilMoisture)
+		)
 	{
-		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
+		sprintf(szTmp, "%08X", (unsigned int)pMeter->intval1);
 	}
 	else
 	{
@@ -8693,7 +8695,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	}
 	else if (subType==sTypeSoilMoisture)
 	{
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,m_LastDeviceName);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval2,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName,devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
@@ -8798,7 +8800,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			break;
 		case sTypeSoilMoisture:
 			WriteMessage("subtype       = Soil Moisture");
-			sprintf(szTmp,"Moisture = %d cb", pMeter->intval1);
+			sprintf(szTmp,"Moisture = %d cb", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeLeafWetness:

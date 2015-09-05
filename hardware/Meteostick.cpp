@@ -536,25 +536,8 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
 {
 	bool bDeviceExits = true;
-	std::vector<std::vector<std::string> > result;
 	int finalID = (Idx * 10) + Channel;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, finalID, int(pTypeGeneral), int(sTypeSoilMoisture));
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
-	_tGeneralDevice gdevice;
-	gdevice.subtype = sTypeSoilMoisture;
-	gdevice.intval1 = Moisture;
-	gdevice.id = finalID;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, finalID, int(pTypeGeneral), int(sTypeSoilMoisture));
-	}
+	SendMoistureSensor(finalID,255, Moisture, defaultname);
 }
 
 void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float Radiation, const std::string &defaultname)
