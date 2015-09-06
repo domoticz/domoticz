@@ -164,7 +164,7 @@ define(['app'], function (app) {
 				return ;
 			}
 
-			var Command=$("#scenecontent #combocommand option:selected").text();
+			var Command=$("#scenecontent #combocommand option:selected").val();
 			
 			var level=100;
 			var hue=0;
@@ -496,7 +496,7 @@ define(['app'], function (app) {
 				return ;
 			}
 
-			var Command=$("#scenecontent #combocommand option:selected").text();
+			var Command=$("#scenecontent #combocommand option:selected").val();
 			
 			var level=100;
 			var hue=0;

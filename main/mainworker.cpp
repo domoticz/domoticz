@@ -10658,7 +10658,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 	//first set actual scene status
 	std::string Name="Unknown?";
-	int scenetype=0;
+	_eSceneGroupType scenetype = SGTYPE_SCENE;
 	std::string onaction="";
 	std::string offaction="";
 
@@ -10668,7 +10668,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	{
 		std::vector<std::string> sds=result[0];
 		Name=sds[0];
-		scenetype=atoi(sds[1].c_str());
+		scenetype=(_eSceneGroupType)atoi(sds[1].c_str());
 		onaction=sds[2];
 		offaction=sds[3];
 
@@ -10701,7 +10701,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 					std::string camidx=sd[0];
 					int delay=atoi(sd[1].c_str());
 					std::string subject;
-					if (scenetype==0)
+					if (scenetype==SGTYPE_SCENE)
 						subject=Name + " Activated";
 					else
 						subject=Name + " Status: " + switchcmd;
@@ -10753,28 +10753,22 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 				continue;
 			}
 
-			std::string intswitchcmd=switchcmd;
-
-			std::string lstatus = intswitchcmd;
+			std::string lstatus = switchcmd;
 			int llevel=0;
 			bool bHaveDimmer=false;
 			bool bHaveGroupCmd=false;
 			int maxDimLevel=0;
-			if (scenetype==0)
+			if (scenetype == SGTYPE_SCENE)
 			{
-				GetLightStatus(dType, dSubType, switchtype,cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-				if (cmd == 0)
-					intswitchcmd = "Off";
-				else
-					intswitchcmd = "On";
+				GetLightStatus(dType, dSubType, switchtype, cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 			}
 			else
 			{
-				GetLightStatus(dType, dSubType, switchtype, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-				lstatus = intswitchcmd;
+				lstatus = ((lstatus == "On") || (lstatus == "Group On") || (lstatus == "Chime") || (lstatus == "All On")) ? "On" : "Off";
+				GetLightStatus(dType, dSubType, switchtype, cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 			}
+			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), lstatus.c_str());
 
-			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), intswitchcmd.c_str());
 
 			int ilevel=maxDimLevel-1;
 
@@ -10799,7 +10793,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			{
 				int delay = (lstatus == "Off") ? offdelay : ondelay;
 				SwitchLight(idx, lstatus, ilevel, hue, false, delay);
-				if (scenetype == 0)
+				if (scenetype == SGTYPE_SCENE)
 				{
 					if ((lstatus != "Off") && (offdelay > 0))
 					{
