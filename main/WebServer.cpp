@@ -5475,6 +5475,22 @@ namespace http {
 
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, -1,false,0);
 			}
+			else if (cparam == "discomode")
+			{
+				std::string idx = m_pWebEm->FindValue("idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				unsigned long long ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Disco Mode", 0, -1, false, 0);
+			}
 			else if (cparam == "discoup")
 			{
 				std::string idx = m_pWebEm->FindValue("idx");

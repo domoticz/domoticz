@@ -2248,6 +2248,11 @@ bool GetLightCommand(
 			cmd = Limitless_SetBrightDown;
 			return true;
 		}
+		else if (switchcmd == "Disco Mode")
+		{
+			cmd = Limitless_DiscoMode;
+			return true;
+		}
 		else if (switchcmd == "Disco Up")
 		{
 			cmd = Limitless_RGBDiscoNext;
