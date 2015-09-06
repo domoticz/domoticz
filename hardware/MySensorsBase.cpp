@@ -691,7 +691,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		if (pChild->GetValue(vType, stringValue))
 		{
 			std::stringstream sstr;
-			sstr << pChild->nodeID;
+			sstr << cNode;
 			std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Text";
 			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
 		}
@@ -1414,7 +1414,6 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_TEXT:
 			pChild->SetValue(vType, payload);
-			UpdateVar(node_id, child_sensor_id, sub_type, payload);
 			bHaveValue = true;
 			break;
 		case V_IR_RECEIVE:
@@ -1582,11 +1581,27 @@ void MySensorsBase::ParseLine()
 		case V_VAR3:
 		case V_VAR4:
 		case V_VAR5:
-		case V_TEXT:
 			//send back a previous stored custom variable
 			tmpstr = "";
 			GetVar(node_id, child_sensor_id, sub_type, tmpstr);
 			SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+			break;
+		case V_TEXT:
+			{
+				//Get Text sensor value from the database
+				int cNode = (node_id << 8) | child_sensor_id;
+				std::stringstream sstr;
+				sstr << cNode;
+				tmpstr = "";
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+					m_HwdID, sstr.str().c_str(), pTypeGeneral, sTypeTextStatus);
+				if (!result.empty())
+				{
+					tmpstr = result[0][0];
+				}
+				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+			}
 			break;
 		default:
 			while (1==0);
