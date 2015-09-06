@@ -6506,7 +6506,10 @@ namespace http {
 			int ii = 0;
 			if (rfilter == "all")
 			{
-				if (bShowScenes)
+				if (
+					(bShowScenes)&&
+					((rused=="all")||(rused=="true"))
+					)
 				{
 					//add scenes
 					if (rowid != "")
