@@ -10765,7 +10765,6 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			else
 			{
 				lstatus = ((lstatus == "On") || (lstatus == "Group On") || (lstatus == "Chime") || (lstatus == "All On")) ? "On" : "Off";
-				GetLightStatus(dType, dSubType, switchtype, cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 			}
 			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), lstatus.c_str());
 
