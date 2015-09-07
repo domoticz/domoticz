@@ -6410,6 +6410,8 @@ namespace http {
 
 		struct _tHardwareListInt{
 			std::string Name;
+			int HardwareTypeVal;
+			std::string HardwareType;
 			bool Enabled;
 		} tHardwareList;
 
@@ -6432,7 +6434,7 @@ namespace http {
 
 			//Get All Hardware ID's/Names, need them later
 			std::map<int, _tHardwareListInt> _hardwareNames;
-			result = m_sql.safe_query("SELECT ID, Name, Enabled FROM Hardware");
+			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -6444,6 +6446,8 @@ namespace http {
 					int ID = atoi(sd[0].c_str());
 					tlist.Name = sd[1];
 					tlist.Enabled = (atoi(sd[2].c_str()) != 0);
+					tlist.HardwareTypeVal = atoi(sd[3].c_str());
+					tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
 					_hardwareNames[ID] = tlist;
 				}
 			}
@@ -6985,9 +6989,17 @@ namespace http {
 
 					root["result"][ii]["HardwareID"] = hardwareID;
 					if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
+					{
 						root["result"][ii]["HardwareName"] = "Unknown?";
+						root["result"][ii]["HardwareTypeVal"] = 0;
+						root["result"][ii]["HardwareType"] = "Unknown?";
+					}
 					else
+					{
 						root["result"][ii]["HardwareName"] = _hardwareNames[hardwareID].Name;
+						root["result"][ii]["HardwareTypeVal"] = _hardwareNames[hardwareID].HardwareTypeVal;
+						root["result"][ii]["HardwareType"] = _hardwareNames[hardwareID].HardwareType;
+					}
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Protected"] = (iProtected != 0);
 
