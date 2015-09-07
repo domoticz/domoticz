@@ -58,5 +58,6 @@ private:
 	bool AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay);
 	//will check if anything needs to be scheduled
 	void CheckSchedules();
+	void DeleteExpiredTimers();
 };
 
