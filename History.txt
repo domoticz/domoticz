@@ -107,6 +107,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: MySensors, V_IR_RECEIVE and V_IR_SEND
 - Implemented: Serbian language support, big thanks to siklosi!!
 - Implemented: Slovenian language support, big thanks to eden86!!
+- Implemented: Option to replace an Energy device
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
