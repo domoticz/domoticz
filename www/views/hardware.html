@@ -2,14 +2,14 @@
   <div class="modal-dialog" >
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="izwd_title">Including ZWave Node</h4>
+        <h4 class="modal-title" id="izwd_title" data-i18n="Including ZWave Node">Including ZWave Node</h4>
       </div>
       <div class="modal-body">
 		<div>
 			<center>
 			<font color="black">
 			<div id="izwd_waiting" style="display:none;">
-				<span>Press the include button on your device...</span><br>
+				<span data-i18n="Press the include button on your device...">Press the include button on your device...</span><br>
 				<br>
 				<div class="sk-fading-circle" style="width: 48px; height: 48px;">
 				  <div class="sk-circle1 sk-circle"></div>
@@ -26,13 +26,13 @@
 				  <div class="sk-circle12 sk-circle"></div>
 				</div>				
 				<br>
-				<button type="button" onclick="OnZWaveAbortInclude()" id="izwd_abort" class="btn btn-info">Abort</button><br>
+				<button type="button" onclick="OnZWaveAbortInclude()" id="izwd_abort" class="btn btn-info" data-i18n="Abort">Abort</button><br>
 			</div>
 			<div id="izwd_result" style="display:none2;">
 				Included node: <b>{{ozw_node_id}}</b><br>
 				<b>{{ozw_node_desc}}</b><br>
 				<br>
-				<button type="button" onclick="OnZWaveCloseInclude()" class="btn btn-default" data-dismiss="modal">Close</button> 
+				<button type="button" onclick="OnZWaveCloseInclude()" class="btn btn-default" data-dismiss="modal" data-i18n="Close">Close</button> 
 			</div>
 			</font>
 			</center>
@@ -45,14 +45,14 @@
   <div class="modal-dialog" >
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="ezwd_title">Excluding ZWave Node</h4>
+        <h4 data-i18n="Excluding ZWave Node" class="modal-title" id="ezwd_title">Excluding ZWave Node</h4>
       </div>
       <div class="modal-body">
 		<div>
 			<center>
 			<font color="black">
 			<div id="ezwd_waiting" style="display:none;">
-				<span>Press the exclude button on your device...</span><br>
+				<span data-i18n="Press the exclude button on your device...">Press the exclude button on your device...</span><br>
 				<br>
 				<div class="sk-fading-circle" style="width: 48px; height: 48px;">
 				  <div class="sk-circle1 sk-circle"></div>
@@ -69,12 +69,12 @@
 				  <div class="sk-circle12 sk-circle"></div>
 				</div>				
 				<br>
-				<button type="button" onclick="OnZWaveAbortExclude()" id="ezwd_abort" class="btn btn-info">Abort</button><br>
+				<button type="button" onclick="OnZWaveAbortExclude()" id="ezwd_abort" class="btn btn-info" data-i18n="Abort">Abort</button><br>
 			</div>
 			<div id="ezwd_result" style="display:none;">
 				Excluded node: <b>{{ozw_node_id}}</b><br>
 				<br>
-				<button type="button" onclick="OnZWaveCloseExclude()" class="btn btn-default" data-dismiss="modal">Close</button> 
+				<button type="button" onclick="OnZWaveCloseExclude()" class="btn btn-default" data-dismiss="modal" data-i18n="Close">Close</button> 
 			</div>
 			</font>
 			</center>
@@ -95,7 +95,7 @@
 			</select>
 			<br><br>
 			<input type="hidden" id="idx" name="idx" value="-1">
-			<button class="btn btn-danger" id="submitbuttonopentherm">Save</button>
+			<button class="btn btn-danger" id="submitbuttonopentherm" data-i18n="Save">Save</button>
 		</center>
 	</form>
 	</center>
@@ -105,7 +105,7 @@
 	<form id="sbfspot">
 		<br>
 		<center>
-			<button class="btn btn-warning" id="btnimportolddata">Import old Month Data</button>
+			<button class="btn btn-warning" id="btnimportolddata" data-i18n="Import old Month Data">Import old Month Data</button>
 			<br><br>
 			<p>
 			You can retreive old month records by running SBFSpot/SMASpot with commandline parameter -v -amXX,<br>
