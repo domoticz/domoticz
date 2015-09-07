@@ -253,14 +253,32 @@ void cWebem::Include( std::string& reply )
 		std::map < std::string, webem_include_function >::iterator pf = myIncludes.find( code );
 		if( pf != myIncludes.end() ) {
 			// insert generated text
-			reply.insert( p, pf->second() );
+			std::string ret;
+			try
+			{
+				ret = pf->second();
+			}
+			catch (...)
+			{
+				
+			}
+			reply.insert( p, ret );
 		} else {
 			// no function found, look for a wide character fuction
 			std::map < std::string, webem_include_function_w >::iterator pf = myIncludes_w.find( code );
 			if( pf != myIncludes_w.end() ) {
 				// function found
 				// get return string and convert from UTF-16 to UTF-8
-				cUTF utf( pf->second() );
+				std::wstring wret;
+				try
+				{
+					wret = pf->second();
+				}
+				catch (...)
+				{
+					
+				}
+				cUTF utf( wret.c_str() );
 				// insert generated text
 				reply.insert( p, utf.get8() );
 			}
@@ -421,7 +439,16 @@ bool cWebem::CheckForAction( request& req )
 				if (myNameValues.empty())
 					return true;
 				// call the function
-				req.uri = pfun->second(this);
+				std::string ret;
+				try
+				{
+					ret = pfun->second(this);
+				}
+				catch (...)
+				{
+					
+				}
+				req.uri = ret;
 				return true;
 			}
 		}
@@ -462,7 +489,16 @@ bool cWebem::CheckForAction( request& req )
 	}
 
 	// call the function
-	req.uri = pfun->second( this );
+	std::string ret;
+	try
+	{
+		ret = pfun->second(this);
+	}
+	catch (...)
+	{
+		
+	}
+	req.uri = ret;
 
 	return true;
 }
@@ -661,7 +697,15 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	{
 		m_outputfilename="";
 		rep.status = reply::ok;
-		std::string retstr=pfun->second( );
+		std::string retstr;
+		try
+		{
+			retstr = pfun->second();
+		}
+		catch (...)
+		{
+			
+		}
 
 		rep.content.append(retstr.c_str(), retstr.size());
 
@@ -737,7 +781,16 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	if (pfunW==myPages_w.end())
 		return false;
 
-	cUTF utf( pfunW->second( ) );
+	std::wstring wret;
+	try
+	{
+		wret = pfunW->second();
+	}
+	catch (...)
+	{
+		
+	}
+	cUTF utf( wret.c_str() );
 
 	int extraheaders = 0;
 	if (req.keep_alive) {
@@ -899,8 +952,17 @@ std::string& cWebem::FindValue( const char* name )
 	static std::string ret;
 	ret = "";
 	webem_iter_name_value iter = myNameValues.find( name );
-	if( iter != myNameValues.end() )
-		ret = iter->second;
+	if (iter != myNameValues.end())
+	{
+		try
+		{
+			ret = iter->second;
+		}
+		catch (...)
+		{
+			
+		}
+	}
 
 	return ret;
 }
