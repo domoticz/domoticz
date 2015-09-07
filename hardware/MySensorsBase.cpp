@@ -619,7 +619,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			if (pChild->presType == S_WATER)
 				SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water");
 			else
-				SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water");
+				SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Gas");
 		}
 		break;
 	case V_VOLTAGE:
@@ -1023,12 +1023,9 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 		int child_sensor_id = pMeter->id3;
 		int vtype_id = pMeter->id4;
 
-		//Seems MySensors setpoints are integers?
-
-		std::stringstream sstr;
-		sstr << round(pMeter->temp);
-
-		SendCommand(node_id, child_sensor_id, MT_Set, vtype_id, sstr.str());
+		char szTmp[10];
+		sprintf(szTmp, "%.1f", pMeter->temp);
+		SendCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp);
 	}
 	else if (packettype == pTypeGeneralSwitch)
 	{

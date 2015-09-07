@@ -101,7 +101,7 @@ public:
 		V_IR_SEND = 32,					//Send out an IR - command	S_IR
 		V_IR_RECEIVE = 33,				//This message contains a received IR - command	S_IR
 		V_FLOW = 34,					//Flow of water(in meter)	S_WATER
-		V_VOLUME = 35,					//Water volume	S_WATER
+		V_VOLUME = 35,					//Water volume	S_WATER, S_GAS
 		V_LOCK_STATUS = 36,				//Set or get lock status. 1 = Locked, 0 = Unlocked	S_LOCK
 		V_LEVEL = 37,					//Used for sending level - value	S_DUST, S_AIR_QUALITY, S_SOUND(dB), S_VIBRATION(hz), S_LIGHT_LEVEL(lux)
 		V_VOLTAGE = 38,					//Voltage level	S_MULTIMETER
