@@ -40,7 +40,6 @@ protected:
 	sockaddr_in m_addr;
 	int m_socket;
 
-	static const int readBufferSize=1028;
 	int selected[17][17];
 	int currentHouse;
 	int currentUnit;
@@ -50,8 +49,8 @@ protected:
 	unsigned char m_exclmarkfound;
 	void MatchLine();
 	void ParseData(const unsigned char *pData, int Len);
-	unsigned char m_mochadbuffer[readBufferSize];
-	char s_buffer[readBufferSize];
+	unsigned char m_mochadbuffer[1028];
+	char s_buffer[1028];
 	int m_bufferpos;
 
 };

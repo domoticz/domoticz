@@ -6506,7 +6506,10 @@ namespace http {
 			int ii = 0;
 			if (rfilter == "all")
 			{
-				if (bShowScenes)
+				if (
+					(bShowScenes)&&
+					((rused=="all")||(rused=="true"))
+					)
 				{
 					//add scenes
 					if (rowid != "")
@@ -7026,7 +7029,8 @@ namespace http {
 						(dType == pTypeENERGY) ||
 						(dType == pTypeRFXMeter) ||
 						(dType == pTypeAirQuality) ||
-						(dType == pTypeRFXSensor)
+						(dType == pTypeRFXSensor) ||
+						((dType == pTypeGeneral)&&(dSubType == sTypeTextStatus))
 						)
 					{
 						root["result"][ii]["ID"] = szData;

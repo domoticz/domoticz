@@ -60,8 +60,7 @@ private:
 	boost::shared_ptr<boost::thread> m_pollerthread;
 	int m_retrycntr;
 	bool m_stoprequestedpoller;
-	static const int readBufferSize = 1028;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1028];
 	int m_bufferpos;
 
 };

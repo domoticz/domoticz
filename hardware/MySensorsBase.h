@@ -56,6 +56,8 @@ public:
 		S_SOUND = 33,					//Sound sensor	V_LEVEL(in dB), V_TRIPPED, V_ARMED
 		S_VIBRATION = 34,				//Vibration sensor	V_LEVEL(vibration in Hz), V_TRIPPED, V_ARMED
 		S_MOISTURE = 35,				//Moisture sensor	V_LEVEL(water content or moisture in percentage ? ), V_TRIPPED, V_ARMED
+		S_INFO = 36,					// LCD text device / Simple information device on controller, V_TEXT
+		S_GAS = 37,						// Gas meter, V_FLOW, V_VOLUME
 
 		S_UNKNOWN = 200,				//No Type received
 	};
@@ -290,6 +292,24 @@ public:
 			}
 			return NULL;
 		}
+		_tMySensorChild* FindChildByValueType(const _eSetType valType)
+		{
+			std::vector<_tMySensorChild>::iterator itt;
+			for (itt = m_childs.begin(); itt != m_childs.end(); ++itt)
+			{
+				std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+				for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+				{
+					if (itt2->first == valType)
+					{
+						if (!itt2->second.bValidValue)
+							return NULL;
+						return &*itt;
+					}
+				}
+			}
+			return NULL;
+		}
 		_tMySensorChild* FindChild(const int ChildID)
 		{
 			std::vector<_tMySensorChild>::iterator itt;
@@ -347,8 +367,7 @@ private:
 
 	std::map<int, _tMySensorNode> m_nodes;
 
-	static const int readBufferSize=1028;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1028];
 	int m_bufferpos;
 };
 

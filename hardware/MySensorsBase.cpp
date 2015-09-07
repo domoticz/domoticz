@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <ctime>
 
@@ -564,11 +565,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		{
 			if (pChild->GetValue(vType, intValue))
 			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype = sTypeSoilMoisture;
-				gdevice.intval1 = intValue;
-				gdevice.id = pChild->nodeID;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+				SendMoistureSensor(cNode, pChild->batValue, intValue, "Moisture");
 			}
 		}
 		break;
@@ -611,14 +608,19 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			SendDistanceSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue);
 		break;
 	case V_FLOW:
-		//Flow of water in meter (for now send as a percentage sensor)
+		//Flow of water/gas in meter (for now send as a percentage sensor)
 		if (pChild->GetValue(vType, floatValue))
 			SendPercentageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water Flow");
 		break;
 	case V_VOLUME:
-		//Water Volume
+		//Water or Gas Volume
 		if (pChild->GetValue(vType, floatValue))
-			SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water");
+		{
+			if (pChild->presType == S_WATER)
+				SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water");
+			else
+				SendMeterSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water");
+		}
 		break;
 	case V_VOLTAGE:
 		if (pChild->GetValue(vType, floatValue))
@@ -679,17 +681,34 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		break;
 	case V_HVAC_SETPOINT_HEAT:
 		if (pChild->GetValue(vType, floatValue))
-		{
-			SendSetPointSensor(pNode->nodeID, pChild->childID, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Heater Setpoint");
-		}
+			SendSetPointSensor(pNode->nodeID, pChild->childID, (unsigned char)vType, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Heat");
+		break;
+	case V_HVAC_SETPOINT_COOL:
+		if (pChild->GetValue(vType, floatValue))
+			SendSetPointSensor(pNode->nodeID, pChild->childID, (unsigned char)vType, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Setpoint Cool");
 		break;
 	case V_TEXT:
 		if (pChild->GetValue(vType, stringValue))
 		{
 			std::stringstream sstr;
-			sstr << pChild->nodeID;
+			sstr << cNode;
 			std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Text";
 			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
+		}
+		break;
+	case V_IR_RECEIVE:
+		if (pChild->GetValue(vType, intValue))
+		{
+			_tGeneralSwitch gswitch;
+			gswitch.subtype = sSwitchTypeMDREMOTE;
+			gswitch.id = intValue;
+			gswitch.unitcode = pNode->nodeID;
+			gswitch.cmnd = gswitch_sOn;
+			gswitch.level = 100;
+			gswitch.battery_level = pChild->batValue;
+			gswitch.rssi = 12;
+			gswitch.seqnbr = 0;
+			sDecodeRXMessage(this, (const unsigned char *)&gswitch);
 		}
 		break;
 	}
@@ -842,7 +861,10 @@ void MySensorsBase::SendCommand(const int NodeID, const int ChildID, const _eMes
 bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	tRBUF *pCmd = (tRBUF *)pdata;
-	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
+	unsigned char packettype = pCmd->ICMND.packettype;
+	unsigned char subtype = pCmd->ICMND.subtype;
+
+	if (packettype == pTypeLighting2)
 	{
 		//Light command
 
@@ -897,7 +919,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			return false;
 		}
 	}
-	else if (pCmd->LIGHTING2.packettype == pTypeLimitlessLights)
+	else if (packettype == pTypeLimitlessLights)
 	{
 		//RGW/RGBW command
 		_tLimitlessLights *pLed = (_tLimitlessLights *)pdata;
@@ -966,7 +988,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			return false;
 		}
 	}
-	else if (pCmd->BLINDS1.packettype == pTypeBlinds)
+	else if (packettype == pTypeBlinds)
 	{
 		//Blinds/Window command
 		int node_id = pCmd->BLINDS1.id3;
@@ -991,6 +1013,46 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			_log.Log(LOG_ERROR, "MySensors: Blinds/Window command received for unknown node_id: %d", node_id);
 			return false;
 		}
+	}
+	else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
+	{
+		//Set Point
+		_tThermostat *pMeter = (_tThermostat *)pCmd;
+
+		int node_id = pMeter->id2;
+		int child_sensor_id = pMeter->id3;
+		int vtype_id = pMeter->id4;
+
+		//Seems MySensors setpoints are integers?
+
+		std::stringstream sstr;
+		sstr << round(pMeter->temp);
+
+		SendCommand(node_id, child_sensor_id, MT_Set, vtype_id, sstr.str());
+	}
+	else if (packettype == pTypeGeneralSwitch)
+	{
+		//Used to store IR codes
+		_tGeneralSwitch *pSwitch=(_tGeneralSwitch *)pCmd;
+
+		int node_id = pSwitch->unitcode;
+		unsigned int ir_code = pSwitch->id;
+
+		if (_tMySensorNode *pNode = FindNode(node_id))
+		{
+			_tMySensorChild* pChild = pNode->FindChildByValueType(V_IR_RECEIVE);
+			if (pChild)
+			{
+				std::stringstream sstr;
+				sstr << ir_code;
+				SendCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str());
+			}
+		}
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "MySensors: Unknown action received");
+		return false;
 	}
 	return true;
 }
@@ -1346,12 +1408,16 @@ void MySensorsBase::ParseLine()
 			bHaveValue = true;
 			break;
 		case V_HVAC_SETPOINT_HEAT:
+		case V_HVAC_SETPOINT_COOL:
 			pChild->SetValue(vType, (float)atof(payload.c_str()));
 			bHaveValue = true;
 			break;
 		case V_TEXT:
 			pChild->SetValue(vType, payload);
-			UpdateVar(node_id, child_sensor_id, sub_type, payload);
+			bHaveValue = true;
+			break;
+		case V_IR_RECEIVE:
+			pChild->SetValue(vType, (int)boost::lexical_cast<unsigned int>(payload));
 			bHaveValue = true;
 			break;
 		default:
@@ -1515,11 +1581,27 @@ void MySensorsBase::ParseLine()
 		case V_VAR3:
 		case V_VAR4:
 		case V_VAR5:
-		case V_TEXT:
 			//send back a previous stored custom variable
 			tmpstr = "";
 			GetVar(node_id, child_sensor_id, sub_type, tmpstr);
 			SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+			break;
+		case V_TEXT:
+			{
+				//Get Text sensor value from the database
+				int cNode = (node_id << 8) | child_sensor_id;
+				std::stringstream sstr;
+				sstr << cNode;
+				tmpstr = "";
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+					m_HwdID, sstr.str().c_str(), pTypeGeneral, sTypeTextStatus);
+				if (!result.empty())
+				{
+					tmpstr = result[0][0];
+				}
+				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+			}
 			break;
 		default:
 			while (1==0);

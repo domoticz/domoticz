@@ -103,6 +103,8 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Scene codes now handles again seperate status (on/off)
 - Implemented: RFXtrx ASA protocol implemented
 - Implemented: Scene, option for 'stop'
+- Implemented: MySensors, V_TEXT, V_HVAC_SETPOINT_COOL and V_HVAC_SETPOINT_HEAT
+- Implemented: MySensors, V_IR_RECEIVE and V_IR_SEND
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
