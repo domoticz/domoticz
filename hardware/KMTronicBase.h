@@ -19,9 +19,7 @@ private:
 	virtual bool WriteInt(const unsigned char *data, const size_t len, const bool bWaitForReturn) = 0;
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
-
-	static const int readBufferSize=1028;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1028];
 	int m_bufferpos;
 
 	bool m_bDoInitialQuery;

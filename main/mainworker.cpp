@@ -8624,20 +8624,22 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	unsigned char subType=pMeter->subtype;
 
 	if (
-		(subType == sTypeVoltage) || 
-		(subType == sTypeCurrent) || 
-		(subType == sTypePercentage) || 
-		(subType == sTypePressure) || 
-		(subType == sTypeZWaveClock) || 
-		(subType == sTypeZWaveThermostatMode) || 
-		(subType == sTypeZWaveThermostatFanMode) || 
-		(subType == sTypeFan) || 
-		(subType == sTypeTextStatus) || 
-		(subType == sTypeSoundLevel) || 
-		(subType == sTypeBaro) || 
-		(subType == sTypeDistance))
+		(subType == sTypeVoltage) ||
+		(subType == sTypeCurrent) ||
+		(subType == sTypePercentage) ||
+		(subType == sTypePressure) ||
+		(subType == sTypeZWaveClock) ||
+		(subType == sTypeZWaveThermostatMode) ||
+		(subType == sTypeZWaveThermostatFanMode) ||
+		(subType == sTypeFan) ||
+		(subType == sTypeTextStatus) ||
+		(subType == sTypeSoundLevel) ||
+		(subType == sTypeBaro) ||
+		(subType == sTypeDistance) ||
+		(subType == sTypeSoilMoisture)
+		)
 	{
-		sprintf(szTmp,"%08X", (unsigned int)pMeter->intval1);
+		sprintf(szTmp, "%08X", (unsigned int)pMeter->intval1);
 	}
 	else
 	{
@@ -8693,7 +8695,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	}
 	else if (subType==sTypeSoilMoisture)
 	{
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1,m_LastDeviceName);
+		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval2,m_LastDeviceName);
 		if (DevRowIdx == -1)
 			return -1;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName,devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
@@ -8798,7 +8800,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			break;
 		case sTypeSoilMoisture:
 			WriteMessage("subtype       = Soil Moisture");
-			sprintf(szTmp,"Moisture = %d cb", pMeter->intval1);
+			sprintf(szTmp,"Moisture = %d cb", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeLeafWetness:
@@ -9317,8 +9319,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	}
 
 	int hindex=FindDomoticzHardware(HardwareID);
-	if (hindex==-1)
+	if (hindex == -1)
+	{
+		_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
 		return false;
+	}
 	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
 	if (pHardware==NULL)
 		return false;
@@ -10653,7 +10658,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 
 	//first set actual scene status
 	std::string Name="Unknown?";
-	int scenetype=0;
+	_eSceneGroupType scenetype = SGTYPE_SCENE;
 	std::string onaction="";
 	std::string offaction="";
 
@@ -10663,7 +10668,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	{
 		std::vector<std::string> sds=result[0];
 		Name=sds[0];
-		scenetype=atoi(sds[1].c_str());
+		scenetype=(_eSceneGroupType)atoi(sds[1].c_str());
 		onaction=sds[2];
 		offaction=sds[3];
 
@@ -10696,7 +10701,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 					std::string camidx=sd[0];
 					int delay=atoi(sd[1].c_str());
 					std::string subject;
-					if (scenetype==0)
+					if (scenetype==SGTYPE_SCENE)
 						subject=Name + " Activated";
 					else
 						subject=Name + " Status: " + switchcmd;
@@ -10748,28 +10753,21 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 				continue;
 			}
 
-			std::string intswitchcmd=switchcmd;
-
-			std::string lstatus = intswitchcmd;
+			std::string lstatus = switchcmd;
 			int llevel=0;
 			bool bHaveDimmer=false;
 			bool bHaveGroupCmd=false;
 			int maxDimLevel=0;
-			if (scenetype==0)
+			if (scenetype == SGTYPE_SCENE)
 			{
-				GetLightStatus(dType, dSubType, switchtype,cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-				if (cmd == 0)
-					intswitchcmd = "Off";
-				else
-					intswitchcmd = "On";
+				GetLightStatus(dType, dSubType, switchtype, cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 			}
 			else
 			{
-				GetLightStatus(dType, dSubType, switchtype, rnValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-				lstatus = intswitchcmd;
+				lstatus = ((lstatus == "On") || (lstatus == "Group On") || (lstatus == "Chime") || (lstatus == "All On")) ? "On" : "Off";
 			}
+			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), lstatus.c_str());
 
-			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), intswitchcmd.c_str());
 
 			int ilevel=maxDimLevel-1;
 
@@ -10794,7 +10792,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			{
 				int delay = (lstatus == "Off") ? offdelay : ondelay;
 				SwitchLight(idx, lstatus, ilevel, hue, false, delay);
-				if (scenetype == 0)
+				if (scenetype == SGTYPE_SCENE)
 				{
 					if ((lstatus != "Off") && (offdelay > 0))
 					{

@@ -131,13 +131,7 @@ public:
     void doClose();
 
     ~AsyncSerial();
-
-    /**
-     * Read buffer maximum size
-     */
-    static const int readBufferSize=512;
 private:
-
     /**
      * Callback called to start an asynchronous read operation.
      * This callback is called by the io_service in the spawned thread.

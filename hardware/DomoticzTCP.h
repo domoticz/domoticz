@@ -19,7 +19,6 @@ public:
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
-	static const int readBufferSize=512;
 private:
 	int m_retrycntr;
 	bool StartHardware();
@@ -38,6 +37,6 @@ protected:
 	sockaddr_in6 m_addr;
 	struct addrinfo *info;
 	int m_socket;
-	unsigned char mBuffer[readBufferSize];
+	unsigned char mBuffer[512];
 };
 

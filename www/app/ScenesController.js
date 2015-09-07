@@ -359,22 +359,9 @@ define(['app'], function (app) {
 				var totalItems=data.result.length;
 				$.each(data.result, function(i,item){
 						var bIsLED=(item.SubType.indexOf("RGB") >= 0);
-						var commandbtns;
-						if ($.isScene==false) {
-							if (item.IsOn==true) {
-								commandbtns='<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.t('ON') + '</button> <button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.t('OFF') + '</button>';
-							}
-							else {
-								commandbtns='<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.DevID + ',\'On\',RefreshDeviceTableEx);">' + $.t('ON') + '</button> <button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.DevID + ',\'Off\',RefreshDeviceTableEx);">' + $.t('OFF') + '</button>';
-							}
-						}
-						else {
-							if (item.IsOn==true) {
-								commandbtns='<button class="btn btn-mini btn-info" type="button">' + $.t('ON') + '</button> <button class="btn btn-mini" type="button">' + $.t('OFF') + '</button>';
-							}
-							else {
-								commandbtns='<button class="btn btn-mini" type="button">' + $.t('ON') + '</button> <button class="btn btn-mini btn-info" type="button">' + $.t('OFF') + '</button>';
-							}
+						var command="-";
+						if ($.isScene==true) {
+							command=item.Command;
 						}
 						var updownImg="";
 						if (i!=totalItems-1) {
@@ -413,15 +400,16 @@ define(['app'], function (app) {
 						
 						var addId = oTable.fnAddData( {
 							"DT_RowId": item.ID,
-							"IsOn": item.IsOn,
+							"Command": item.Command,
 							"RealIdx": item.DevRealIdx,
 							"Level": item.Level,
 							"Hue": item.Hue,
 							"OnDelay": item.OnDelay,
 							"OffDelay": item.OffDelay,
 							"Order": item.Order,
+							"IsScene": item.Order,
 							"0": item.Name,
-							"1": commandbtns,
+							"1": command,
 							"2": levelstr,
 							"3": item.OnDelay,
 							"4": item.OffDelay,
@@ -458,11 +446,11 @@ define(['app'], function (app) {
 							$("#scenecontent #delclr #updatedelete").attr("href", "javascript:UpdateDevice(" + idx + "," + devidx + ")");
 							$.lampIdx = devidx;
 							$("#scenecontent #combodevice").val(devidx);
-							if (data["IsOn"]==true) {
-								$("#scenecontent #combocommand").val(1);
+							if ($.isScene==true) {
+								$("#scenecontent #combocommand").val(data["Command"]);
 							}
 							else {
-								$("#scenecontent #combocommand").val(0);
+								$("#scenecontent #combocommand").val("On");
 							}
 							OnSelChangeDevice();
 							

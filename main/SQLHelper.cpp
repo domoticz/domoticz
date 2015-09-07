@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 77
+#define DB_VERSION 78
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1448,6 +1448,24 @@ bool CSQLHelper::OpenDatabase()
 				"SELECT [ID],[Name],[Favorite],[Order],[nValue],[SceneType],[LastUpdate],[Protected],[OnAction],[OffAction],[Description],[Activators] FROM tmp_Scenes");
 			//Drop the tmp table
 			query("DROP TABLE tmp_Scenes");
+		}
+		if (dbversion < 78)
+		{
+			//Patch for soil moisture to use large ID
+			result = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (Type=%d) AND (SubType=%d)", pTypeGeneral, sTypeSoilMoisture);
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string idx = sd[0];
+					int lid = atoi(sd[1].c_str());
+					char szTmp[10];
+					sprintf(szTmp, "%08X", lid);
+					safe_query("UPDATE DeviceStatus SET DeviceID='%q' WHERE (ID='%q')", szTmp, idx.c_str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -4922,8 +4940,8 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("DELETE FROM Hardware WHERE (ID == '%q')",idx.c_str());
-	//also delete all records in other tables
 
+	//and now delete all records in the DeviceStatus table itself
 	result=safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID == '%q')",idx.c_str());
 	if (result.size()>0)
 	{
@@ -4934,11 +4952,11 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 			DeleteDevice(sd[0]);
 		}
 	}
-	//and now delete all records in the DeviceStatus table itself
-	safe_query("DELETE FROM DeviceStatus WHERE (HardwareID == '%q')",idx.c_str());
+	//also delete all records in other tables
 	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID== '%q')",idx.c_str());
 	safe_query("DELETE FROM EnoceanSensors WHERE (HardwareID== '%q')", idx.c_str());
 	safe_query("DELETE FROM MySensors WHERE (HardwareID== '%q')", idx.c_str());
+	safe_query("DELETE FROM WOLNodes WHERE (HardwareID == '%q')",idx.c_str());
 }
 
 void CSQLHelper::DeleteCamera(const std::string &idx)
