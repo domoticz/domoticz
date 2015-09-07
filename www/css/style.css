@@ -1987,6 +1987,7 @@ a:link {
 	color: #43A4D3;
 	font-weight:bold;
 	cursor: pointer;
+	text-decoration: none;
 }
 
 .lcursor {

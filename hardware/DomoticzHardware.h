@@ -116,7 +116,7 @@ private:
 	void SendTempHumSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const std::string &defaultname);
 	void SendTempHumBaroSensor(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast);
 	void SendTempHumBaroSensorFloat(const int NodeID, const int BatteryLevel, const float temperature, const int humidity, const float pressure, int forecast, const std::string &defaultname);
-	void SendSetPointSensor(const int NodeID, const int ChildID, const float Temp, const std::string &defaultname);
+	void SendSetPointSensor(const int NodeID, const int ChildID, const unsigned char SensorID, const float Temp, const std::string &defaultname);
 	void SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname);
 	void SendWattMeter(const int NodeID, const int ChildID, const int BatteryLevel, const float musage, const std::string &defaultname);
 	double GetKwhMeter(const int NodeID, const int ChildID, bool &bExists);
@@ -138,6 +138,7 @@ private:
 	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI);
 	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
 	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);
+	void SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname);
 
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 

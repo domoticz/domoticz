@@ -188,11 +188,11 @@ bool CThermosmart::Login()
 			_log.Log(LOG_ERROR,"Thermosmart: Error login!");
 			return false;
 		}
-/*
+
 #ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart1.txt");
 #endif
-*/
+
 	//# 2. Get Authorize Dialog
 	sURL = THERMOSMART_AUTHORISE_PATH;
 	stdreplace(sURL, "client123", "api-rob-b130d8f5123bf24b");
@@ -202,11 +202,11 @@ bool CThermosmart::Login()
 		_log.Log(LOG_ERROR, "Thermosmart: Error login!");
 		return false;
 	}
-/*
+
 #ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart2.txt");
 #endif
-*/
+
 	size_t tpos = sResult.find("value=");
 	if (tpos == std::string::npos)
 	{
@@ -231,11 +231,11 @@ bool CThermosmart::Login()
 		_log.Log(LOG_ERROR, "Thermosmart: Error login!, check username/password");
 		return false;
 	}
-/*
+
 #ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart3.txt");
 #endif
-*/
+
 	tpos = sResult.find("code=");
 	if (tpos == std::string::npos)
 	{
@@ -256,11 +256,11 @@ bool CThermosmart::Login()
 		_log.Log(LOG_ERROR, "Thermosmart: Error login!, check username/password");
 		return false;
 	}
-/*
+
 #ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart4.txt");
 #endif
-*/
+
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);

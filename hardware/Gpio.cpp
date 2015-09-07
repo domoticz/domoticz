@@ -296,6 +296,7 @@ void CGpio::Do_Work()
 {
 	int interruptNumber = NO_INTERRUPT;
 	boost::posix_time::milliseconds duration(12000);
+	std::vector<int> triggers;
 
 	_log.Log(LOG_NORM,"GPIO: Worker started...");
 
@@ -306,8 +307,9 @@ void CGpio::Do_Work()
 			//_log.Log(LOG_NORM, "GPIO: Updating heartbeat");
 			mytime(&m_LastHeartbeat);
 		} else {
-			if (!gpioInterruptQueue.empty()) {
+			while (!gpioInterruptQueue.empty()) {
 				interruptNumber = gpioInterruptQueue.front();
+				triggers.push_back(interruptNumber);
 				gpioInterruptQueue.erase(gpioInterruptQueue.begin());
 				_log.Log(LOG_NORM, "GPIO: Acknowledging interrupt for GPIO %d.", interruptNumber);
 			}
@@ -318,9 +320,10 @@ void CGpio::Do_Work()
 			break;
 		}
 
-    	if (interruptNumber != NO_INTERRUPT) {
-    		CGpio::ProcessInterrupt(interruptNumber);
-    		interruptNumber = NO_INTERRUPT;
+    	while (!triggers.empty()) {
+		interruptNumber = triggers.front();
+		triggers.erase(triggers.begin());
+		CGpio::ProcessInterrupt(interruptNumber);
 		}
 #else
 		sleep_milliseconds(100);

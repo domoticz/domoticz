@@ -83,8 +83,9 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "pl", "Polish" },
 	{ "pt", "Portuguese" },
 	{ "ru", "Russian" },
+	{ "sr", "Serbian" },
 	{ "sk", "Slovak" },
-	//{ "sl", "Slovenian" },
+	{ "sl", "Slovenian" },
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
 	{ "tr", "Turkish" },
@@ -2697,7 +2698,7 @@ namespace http {
 				std::string idx = m_pWebEm->FindValue("idx");
 				std::string devidx = m_pWebEm->FindValue("devidx");
 				std::string isscene = m_pWebEm->FindValue("isscene");
-				int command = atoi(m_pWebEm->FindValue("command").c_str());
+				std::string scommand = m_pWebEm->FindValue("command");
 				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
 				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
 
@@ -2710,7 +2711,16 @@ namespace http {
 				int level = atoi(m_pWebEm->FindValue("level").c_str());
 				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
 
-				std::string rState = (command == 1) ? "On" : "Off";
+				unsigned char command=0;
+				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID=='%q')",
+					devidx.c_str());
+				if (result.size() > 0)
+				{
+					int dType = atoi(result[0][3].c_str());
+					int sType = atoi(result[0][4].c_str());
+					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
+					GetLightCommand(dType, sType, switchtype, scommand, command);
+				}
 
 				//first check if this device is not the scene code!
 				result = m_sql.safe_query("SELECT Activators, SceneType FROM Scenes WHERE (ID=='%q')", idx.c_str());
@@ -2742,8 +2752,14 @@ namespace http {
 					}
 				}
 				//first check if it is not already a part of this scene/group (with the same OnDelay)
-				result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d)",
-					devidx.c_str(), idx.c_str(), ondelay);
+				if (isscene == "true") {
+					result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d) AND (OffDelay == %d) AND (Cmd == %d)",
+						devidx.c_str(), idx.c_str(), ondelay, offdelay, command);
+				}
+				else {
+					result = m_sql.safe_query("SELECT ID FROM SceneDevices WHERE (DeviceRowID=='%q') AND (SceneRowID =='%q') AND (OnDelay == %d)",
+						devidx.c_str(), idx.c_str(), ondelay);
+				}
 				if (result.size() == 0)
 				{
 					root["status"] = "OK";
@@ -2780,7 +2796,7 @@ namespace http {
 			{
 				std::string idx = m_pWebEm->FindValue("idx");
 				std::string devidx = m_pWebEm->FindValue("devidx");
-				int command = atoi(m_pWebEm->FindValue("command").c_str());
+				std::string scommand = m_pWebEm->FindValue("command");
 				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
 				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
 
@@ -2790,9 +2806,8 @@ namespace http {
 					)
 					return;
 
-				std::string rState = (command == 1) ? "On" : "Off";
+				unsigned char command = 0;
 
-				//first check if this device is not the scene code!
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID=='%q')",
 					devidx.c_str());
 				if (result.size() > 0)
@@ -2800,11 +2815,7 @@ namespace http {
 					int dType = atoi(result[0][3].c_str());
 					int sType = atoi(result[0][4].c_str());
 					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
-					unsigned char scommand;
-					if (GetLightCommand(dType, sType, switchtype, rState, scommand))
-					{
-						command = scommand;
-					}
+					GetLightCommand(dType, sType, switchtype, scommand, command);
 				}
 				int level = atoi(m_pWebEm->FindValue("level").c_str());
 				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
@@ -2948,7 +2959,7 @@ namespace http {
 				root["title"] = "GetSceneDevices";
 
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Hue, a.OnDelay, a.OffDelay FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]",
+				result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Hue, a.OnDelay, a.OffDelay, b.SwitchType FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]",
 					idx.c_str());
 				if (result.size() > 0)
 				{
@@ -2966,6 +2977,8 @@ namespace http {
 						root["result"][ii]["OnDelay"] = atoi(sd[12].c_str());
 						root["result"][ii]["OffDelay"] = atoi(sd[13].c_str());
 
+						_eSwitchType switchtype=(_eSwitchType)atoi(sd[14].c_str());
+
 						unsigned char devType = atoi(sd[3].c_str());
 						unsigned char subType = atoi(sd[4].c_str());
 						unsigned char nValue = (unsigned char)atoi(sd[5].c_str());
@@ -2978,11 +2991,8 @@ namespace http {
 						bool bHaveDimmer = false;
 						bool bHaveGroupCmd = false;
 						int maxDimLevel = 0;
-						if (isscene == "true")
-							GetLightStatus(devType, subType, STYPE_OnOff, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-						else
-							GetLightStatus(devType, subType, STYPE_OnOff, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-						root["result"][ii]["IsOn"] = IsLightSwitchOn(lstatus);
+						GetLightStatus(devType, subType, STYPE_OnOff, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						root["result"][ii]["Command"] = lstatus;
 						root["result"][ii]["Level"] = level;
 						root["result"][ii]["Hue"] = atoi(sd[11].c_str());
 						root["result"][ii]["Type"] = RFX_Type_Desc(devType, 1);
@@ -6497,7 +6507,10 @@ namespace http {
 			int ii = 0;
 			if (rfilter == "all")
 			{
-				if (bShowScenes)
+				if (
+					(bShowScenes)&&
+					((rused=="all")||(rused=="true"))
+					)
 				{
 					//add scenes
 					if (rowid != "")
@@ -7017,7 +7030,8 @@ namespace http {
 						(dType == pTypeENERGY) ||
 						(dType == pTypeRFXMeter) ||
 						(dType == pTypeAirQuality) ||
-						(dType == pTypeRFXSensor)
+						(dType == pTypeRFXSensor) ||
+						((dType == pTypeGeneral)&&(dSubType == sTypeTextStatus))
 						)
 					{
 						root["result"][ii]["ID"] = szData;
@@ -7069,7 +7083,8 @@ namespace http {
 						(dType == pTypeThermostat3) ||
 						(dType == pTypeRemote)||
 						(dType == pTypeGeneralSwitch) ||
-						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
+						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) ||
+						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
 						)
 					{
 						//add light details
@@ -13429,7 +13444,8 @@ namespace http {
 							size_t spos = sValue.find(";");
 							if (spos != std::string::npos)
 							{
-								sprintf(szTmp, "%.3f", atof(sValue.substr(spos + 1).c_str()));
+								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 100.0f));
 								root["counter"] = szTmp;
 							}
 						}
@@ -13476,6 +13492,12 @@ namespace http {
 								root["counter"] = szTmp;
 							}
 						}
+						else
+						{
+							//Add last counter value
+							sprintf(szTmp, "%d", atoi(sValue.c_str()));
+							root["counter"] = szTmp;
+						}
 						//Actual Year
 						result = m_sql.safe_query("SELECT Value, Date, Counter FROM %s WHERE (DeviceRowID==%llu AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
 						if (result.size() > 0)
@@ -13521,6 +13543,15 @@ namespace http {
 										strcpy(szTmp, "0");
 									root["result"][ii]["c"] = szTmp;
 									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+									root["result"][ii]["v"] = szTmp;
+									if (fcounter != 0)
+										sprintf(szTmp, "%.0f", (fcounter - atof(szValue.c_str())));
+									else
+										strcpy(szTmp, "0");
+									root["result"][ii]["c"] = szTmp;
+									break;
 								}
 								ii++;
 							}
@@ -13550,6 +13581,10 @@ namespace http {
 									break;
 								case MTYPE_WATER:
 									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									root["resultprev"][iPrev]["v"] = szTmp;
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
 									root["resultprev"][iPrev]["v"] = szTmp;
 									break;
 								}
@@ -13814,6 +13849,12 @@ namespace http {
 								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
 								root["result"][ii]["v"] = szTmp;
 								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / WaterDivider);
+								root["result"][ii]["c"] = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+								root["result"][ii]["v"] = szTmp;
+								sprintf(szTmp, "%.0f", (atof(sValue.c_str()) - atof(szValue.c_str())));
 								root["result"][ii]["c"] = szTmp;
 								break;
 							}

@@ -13,7 +13,9 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
-#define ENABLE_LOGGING
+#ifdef _DEBUG
+	#define ENABLE_LOGGING
+#endif
 
 #define RFLINK_RETRY_DELAY 30
 
@@ -28,7 +30,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "NewKaku", sSwitchTypeAC },            // p4
 	{ "Kaku", sSwitchTypeARC },              // p3
 	{ "HomeEasy", sSwitchTypeHEU },          // p15
-	{ "FA500", sSwitchTypePT2262 },          // p3
+	{ "PT2262", sSwitchTypePT2262 },         // p3
 	{ "Eurodomest", sSwitchTypeEurodomest }, // p5
 	{ "Blyss", sSwitchTypeBlyss },           // p6
 	{ "Conrad", sSwitchTypeRSL },            // p7
@@ -44,11 +46,11 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "MDRemote", sSwitchTypeMDREMOTE },     // p14
 	{ "Waveman", sSwitchTypeWaveman },       // p-
 	{ "AB400D", sSwitchTypeAB400D },         // p3
-	{ "Impuls", sSwitchTypeIMPULS },         // p11
+	{ "Impuls", sSwitchTypeIMPULS },         // p3
 	{ "Anslut", sSwitchTypeANSLUT },         // p17
 	{ "Lightwave", sSwitchTypeLightwaveRF }, // p18
 	{ "FA20RF", sSwitchTypeFA20 },           // p80
-	{ "GDR2", sSwitchTypeGDR2 },           // p80
+	{ "GDR2", sSwitchTypeGDR2 },             // p-
 	{ "RisingSun", sSwitchTypeRisingSun },   // p-
 	{ "Philips", sSwitchTypePhilips },       // p-
 	{ "Energenie", sSwitchTypeEnergenie },   // p-
@@ -59,6 +61,15 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Livolo", sSwitchTypeLivolo },         // p-
 	{ "Livolo App", sSwitchTypeLivoloAppliance }, // p-
 	{ "Aoke", sSwitchTypeAoke },             // p-
+	{ "Powerfix", sSwitchTypePowerfix },     // p13
+	{ "TriState", sSwitchTypeTriState },     // p16
+    { "Deltronic", sSwitchTypeDeltronic },   // p73
+    { "FA500", sSwitchTypeFA500 },           // p12
+    { "Chuango", sSwitchTypeChuango },       // p62
+    { "Plieger", sSwitchTypePlieger },       // p71
+    { "SilverCrest", sSwitchTypeSilvercrest }, // p75
+    { "Mertik", sSwitchTypeMertik },         // p82
+    { "HomeConfort", sSwitchTypeHomeConfort }, // p11
     { "", -1 }
 };
 
