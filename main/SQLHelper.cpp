@@ -1413,8 +1413,14 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 76)
 		{
-			query("ALTER TABLE MySensorsChilds ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
-			query("ALTER TABLE MySensorsChilds ADD COLUMN [UseAck] INTEGER DEFAULT 0");
+			if (!DoesColumnExistsInTable("Name", "MySensorsChilds"))
+			{			
+				query("ALTER TABLE MySensorsChilds ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			}
+			if (!DoesColumnExistsInTable("UseAck", "MySensorsChilds"))
+			{
+				query("ALTER TABLE MySensorsChilds ADD COLUMN [UseAck] INTEGER DEFAULT 0");
+			}
 		}
 		if (dbversion < 77)
 		{
@@ -1422,7 +1428,7 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Scenes ADD COLUMN [Activators] VARCHAR(200) DEFAULT ''");
 			std::vector<std::vector<std::string> > result, result2;
 			std::vector<std::vector<std::string> >::const_iterator itt, itt2;
-			result = safe_query("SELECT ID, HardwareID, DeviceID, Unit, [Type], SubType FROM Scenes");
+			result = safe_query("SELECT ID, HardwareID, DeviceID, Unit, [Type], SubType, SceneType, ListenCmd FROM Scenes");
 			if (!result.empty())
 			{
 				for (itt = result.begin(); itt != result.end(); ++itt)
@@ -1434,6 +1440,9 @@ bool CSQLHelper::OpenDatabase()
 					if (!result2.empty())
 					{
 						Activator = result2[0][0];
+						if (sd[6] == "0") { //Scene
+							Activator += ":" + sd[7];
+						}
 					}
 					safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activator.c_str(), sd[0].c_str());
 				}
