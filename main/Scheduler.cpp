@@ -544,37 +544,42 @@ void CScheduler::DeleteExpiredTimers()
 	int iExpiredTimers = 0;
 
 	std::vector<std::vector<std::string> > result;
-	std::vector<std::vector<std::string> > result2;
-	result = m_sql.safe_query("SELECT ID FROM Timers WHERE (Type == %i AND Date <= '%q' AND Time < '%q')",
+	// Check Timers
+	result = m_sql.safe_query("SELECT ID FROM Timers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
 		TTYPE_FIXEDDATETIME,
+		szDate,
 		szDate,
 		szTime
 		);
-	result2 = m_sql.safe_query("SELECT ID FROM SceneTimers WHERE (Type == %i AND Date <= '%q' AND Time < '%q')",
-		TTYPE_FIXEDDATETIME,
-		szDate,
-		szTime
-		);
-
 	if (result.size() > 0) {
-		m_sql.safe_query("DELETE FROM Timers WHERE (Type == %i AND Date <= '%q' AND Time < '%q')",
+		m_sql.safe_query("DELETE FROM Timers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
 			TTYPE_FIXEDDATETIME,
+			szDate,
 			szDate,
 			szTime
 			);
 		iExpiredTimers += result.size();
 	}
-	if (result2.size() > 0) {
-		m_sql.safe_query("DELETE FROM SceneTimers WHERE (Type == %i AND Date <= '%q' AND Time < '%q')",
+	
+	// Check SceneTimers
+	result = m_sql.safe_query("SELECT ID FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
+		TTYPE_FIXEDDATETIME,
+		szDate,
+		szDate,
+		szTime
+		);
+	if (result.size() > 0) {
+		m_sql.safe_query("DELETE FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
 			TTYPE_FIXEDDATETIME,
+			szDate,
 			szDate,
 			szTime
 			);
-		iExpiredTimers += result2.size();
+		iExpiredTimers += result.size();
 	}
 
 	if (iExpiredTimers > 0) {
-		_log.Log(LOG_STATUS, "Purged %i expired timer(s)", iExpiredTimers);
+		_log.Log(LOG_STATUS, "Purged %i expired (scene)timer(s)", iExpiredTimers);
 
 		ReloadSchedules();
 	}
