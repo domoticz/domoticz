@@ -10,9 +10,9 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
-#ifdef _DEBUG
-//#define DEBUG_SatelIntegra
-#endif
+//#ifdef _DEBUG
+#define DEBUG_SatelIntegra
+//#endif
 
 #define SATEL_POLL_INTERVAL 5
 
@@ -427,7 +427,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 		return false;
 	}
 
-	// Read temperatures from ADT100
+	// Read temperatures from ATD100
 #ifdef DEBUG_SatelIntegra
 	_log.Log(LOG_STATUS, "Satel Integra: Read zones temperatures");
 #endif
@@ -442,7 +442,9 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 		cmd[1] = (index != 255) ? (index + 1) : 0;
 		if (SendCommand(cmd, 2, buffer) > 0)
 		{
-			ReportTemperature(index + 1, buffer[2]);
+			unsigned int temp;
+			sscanf(reinterpret_cast<const char*>(&buffer[2]), "%d", &temp);
+			ReportTemperature(index + 1, temp);
 		}
 		else
 		{
@@ -696,7 +698,7 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 }
 
 
-void SatelIntegra::ReportTemperature(const unsigned long Idx, float temp)
+void SatelIntegra::ReportTemperature(const unsigned long Idx, unsigned int temp)
 {
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
@@ -853,7 +855,7 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 	shortName.erase(pos + 1);
 
 	std::string namePrefix = "Zone";
-	if (shortName.find("ADT100") != std::string::npos)
+	if (shortName.find("ATD100") != std::string::npos)
 	{
 		m_isTemperature[Idx - 1] = true;
 		namePrefix = "Temp";
@@ -864,7 +866,7 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 	{
 		//Assign name from Integra
 #ifdef DEBUG_SatelIntegra
-		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s:%s'", Idx, namePrefix, shortName.c_str());
+		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s:%s'", Idx, namePrefix.c_str(), shortName.c_str());
 #endif
 		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=0)", namePrefix.c_str(), shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
@@ -907,7 +909,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 	{
 		//Assign name for Alarm
 #ifdef DEBUG_SatelIntegra
-		_log.Log(LOG_STATUS, "Satel Integra: update Alarm name for %d to 'Alarm'", Idx);
+		_log.Log(LOG_STATUS, "Satel Integra: update Alarm name to 'Alarm'");
 #endif
 		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Alarm' WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Unit=2)", m_HwdID);
 	}
@@ -917,7 +919,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 	{
 		//Assign name for Arm
 #ifdef DEBUG_SatelIntegra
-		_log.Log(LOG_STATUS, "Satel Integra: update Arm name for %d to 'Arm'", Idx);
+		_log.Log(LOG_STATUS, "Satel Integra: update Arm name for to 'Arm'");
 #endif
 		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm' WHERE (HardwareID==%d) AND (DeviceID=='00000001') AND (Unit=2)", m_HwdID);
 	}

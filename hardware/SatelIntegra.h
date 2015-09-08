@@ -79,7 +79,7 @@ private:
 	// Reports alarms to domoticz
 	void ReportAlarm(const bool isAlarm);
 	// Reports temperatures to domoticz
-	void ReportTemperature(const unsigned long Idx, float temp);
+	void ReportTemperature(const unsigned long Idx, unsigned int temp);
 	// arms given partitions
 	bool ArmPartitions(const unsigned char* partitions, const unsigned int mode = 0);
 	// disarms given partitions
