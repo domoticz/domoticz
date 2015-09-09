@@ -1594,6 +1594,11 @@ define(['app'], function (app) {
 					}
 				});
 			};
+			dialog_editenergydevice_buttons[$.t("Replace")]=function() {
+				  $( this ).dialog( "close" );
+				  ReplaceDevice($.devIdx,ShowUtilities);
+			};
+			
 			dialog_editenergydevice_buttons[$.t("Cancel")]=function() {
 			  $( this ).dialog( "close" );
 			};

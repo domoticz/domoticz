@@ -908,6 +908,16 @@ define(['app'], function (app) {
 				 dataType: 'json'
 			});
 		}
+		
+		appLampDiscoMode = function()
+		{
+			$.ajax({
+				 url: "json.htm?type=command&param=discomode&idx=" + $.devIdx,
+				 async: false, 
+				 dataType: 'json'
+			});
+		}
+		
 		appLampSpeedUp = function()
 		{
 			$.ajax({
