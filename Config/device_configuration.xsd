@@ -244,6 +244,7 @@
 	 <xs:enumeration value='2'/>
 	 <xs:enumeration value='3'/>
 	 <xs:enumeration value='4'/>
+	 <xs:enumeration value='16'/>
        </xs:restriction>
      </xs:simpleType>
    </xs:attribute>
