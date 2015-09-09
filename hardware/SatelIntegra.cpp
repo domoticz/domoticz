@@ -636,7 +636,7 @@ void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool viol
 	sprintf(szTmp, "%02X", (unsigned int)Idx);
 	std::string devname;
 
-	m_sql.UpdateValue(m_HwdID, szTmp, 0, pTypeGeneral, sTypeTextStatus, 12, 255, 0, violation ? "Violate" : "Normal", devname);
+	m_sql.UpdateValue(m_HwdID, szTmp, 0, pTypeGeneral, sTypeAlert, 12, 255, violation ? 3 : 1, violation ? "Violate" : "Normal", devname);
 }
 
 void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
@@ -694,7 +694,7 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 	sprintf(szTmp, "%06X", (unsigned int)2);
 	std::string devname;
 
-	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeTextStatus, 12, 255, 0, isAlarm ? "Alarm !" : "Normal", devname);
+	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeAlert, 12, 255, isAlarm ? 4 : 1, isAlarm ? "Alarm !" : "Normal", devname);
 }
 
 
