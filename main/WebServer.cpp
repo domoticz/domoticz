@@ -20,6 +20,7 @@
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
 #include "../hardware/Kodi.h"
+#include "../hardware/LogitechMediaServer.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -378,6 +379,9 @@ namespace http {
 			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1));
 			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1));
 
+			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1));
+			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1));
+			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1));
 			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1));
 			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1));
 			RegisterCommandCode("getfibarolinks", boost::bind(&CWebServer::Cmd_GetFibaroLinks, this, _1));
@@ -950,6 +954,9 @@ namespace http {
 			else if (htype == HTYPE_Kodi) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_LogitechMediaServer) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_RaspberryBMP085) {
 				//all fine here!
 			}
@@ -1046,7 +1053,11 @@ namespace http {
 				mode1 = 30;
 				mode2 = 1000;
 			}
-
+			else if (htype == HTYPE_LogitechMediaServer)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}
 			m_sql.safe_query(
 				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
 				name.c_str(),
@@ -1147,6 +1158,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_Kodi) {
+				//All fine here
+			}
+			else if (htype == HTYPE_LogitechMediaServer) {
 				//All fine here
 			}
 			else if (htype == HTYPE_RaspberryBMP085) {
