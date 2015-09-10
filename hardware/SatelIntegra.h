@@ -35,6 +35,7 @@ private:
 	bool m_zonesLastState[256];
 	bool m_outputsLastState[256];
 	bool m_isOutputSwitch[256];
+	bool m_isTemperature[256];
 
 	// thread-safe for read and write
 	boost::mutex m_mutex;
@@ -77,6 +78,8 @@ private:
 	void ReportArmState(const bool isArm);
 	// Reports alarms to domoticz
 	void ReportAlarm(const bool isAlarm);
+	// Reports temperatures to domoticz
+	void ReportTemperature(const unsigned long Idx, unsigned int temp);
 	// arms given partitions
 	bool ArmPartitions(const unsigned char* partitions, const unsigned int mode = 0);
 	// disarms given partitions

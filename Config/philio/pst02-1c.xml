@@ -26,14 +26,12 @@
 	
     <Value type="byte" index="5" genre="config" label="5. Operation Mode" min="0" max="127" value="0">
        <Help>
-          Bit 0: Reserve. 
-          Bit 1: 1 means enable test mode, 0 means disable normal mode. Notice: This bit only effect by the DIP Switch setting to program mode. 
+          Bit 0: Reserved 
+          Bit 1: Reserved 
           Bit 2: Disable the door/window function (1: Disable, 0: Enable). 
           Bit 3: Setting the temperature scale. 0: Fahrenheit, 1:Celsius. 
           Bit 4: Disable the illumination report after event triggered (1: Disable, 0: Enable). 
-          Bit 5: Disable the temperature report after event triggered (1: Disable, 0: Enable). 
-          Bit 6: Reserve. 
-          Bit 7: Disable the back key release into test mode (1: Disable, 0: Enable).
+          Bit 5: Disable the temperature report after event triggered (1: Disable, 0: Enable).
        </Help>
     </Value>
 
@@ -41,13 +39,12 @@
        <Help>
           Multi-Sensor Function switch. Using bit to control.
           Bit 0: Disable magnetic integrate illumination to turn ON the lighting nodes in the association group 2 (1: Disable, 0: Enable). 
-          Bit 1: Disable PIR integrate Illumination to turn ON the lighting nodes in the association group 2 (1: Disable, 0: Enable). 
-          Bit 2: Disable magnetic integrate PIR to turn ON the light the nodes in the association group 2 (1: Disable, 0: Enable) (Default is Disable).
-          Bit 3: When Bit 2 is 0 (Enable), Are the device and the lighting in the same room? 0: In the same room (Default), 1: In the different room. Notice: If this bit is 1, it is recommended also set the Bit1 to 1, cause the PIR triggered, doesn't mean the people in that room. 
+          Bit 1: Reserved always 1 
+          Bit 2: Reserved always 1
+          Bit 3: Reserved
           Bit 4: Disable delay 5 seconds to turn off the light, when door/window closed. 
           Bit 5: Disable auto turn off the light, after door/window opened to turn on the light. Notice: If bit2 is zero, this setting is useless. Notice: If the configuration No.9 is zero, this setting is useless. 
-          Bit 6: Reserve. 
-          Bit 7: Reserve. 
+          Bit 6: Enable temperature monitoring. When this bit enabled the temperature changed 3 degree Fahrenheit. It will report. And also temp above 140 it will report every 64 seconds.
 	  </Help>
     </Value>
 
