@@ -21,24 +21,6 @@ SolarMaxTCP::SolarMaxTCP(const int ID, const std::string IPAddress, const unsign
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			_log.Log(LOG_ERROR,"SolarMax: Winsock could not be initialized!");
-		}
-	}
-#endif
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
@@ -72,12 +54,6 @@ std::string SolarMaxTCP::MakeRequestString()
 
 SolarMaxTCP::~SolarMaxTCP(void)
 {
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-	WSACleanup();
-#endif
 }
 
 bool SolarMaxTCP::StartHardware()

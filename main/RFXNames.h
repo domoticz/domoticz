@@ -34,6 +34,7 @@ enum _eMeterType
 	MTYPE_GAS,
 	MTYPE_WATER,
     MTYPE_COUNTER,
+	MTYPE_ENERGY_GENERATED,
 	MTYPE_END
 };
 
@@ -125,6 +126,7 @@ enum _eHardwareTypes {
 	HTYPE_ANNATHERMOSTAT,		//56
 	HTYPE_WINDDELEN,			//57
 	HTYPE_SatelIntegra,			//58
+	HTYPE_Tellstick,			//59
 	HTYPE_END
 };
 

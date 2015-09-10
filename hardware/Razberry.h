@@ -41,8 +41,10 @@ private:
 	void StopHardwareIntern();
 	bool IncludeDevice(const bool bSecure);
 	bool ExcludeDevice(const int nodeID);
+	bool IsNodeIncluded();
+	bool IsNodeExcluded();
 	bool RemoveFailedDevice(const int nodeID);
-	bool CancelControllerCommand();
+	bool CancelControllerCommand(const bool bForce = false);
 	std::string m_ipaddress;
 	int m_port;
 	std::string m_username;

@@ -687,6 +687,21 @@ int main(int argc, char**argv)
 	{
 		bStartWebBrowser = false;
 	}
+	//Init WinSock
+	WSADATA data;
+	WORD version;
+
+	version = (MAKEWORD(2, 2));
+	int ret = WSAStartup(version, &data);
+	if (ret != 0)
+	{
+		ret = WSAGetLastError();
+
+		if (ret == WSANOTINITIALISED)
+		{
+			_log.Log(LOG_ERROR, "Error: Winsock could not be initialized!");
+		}
+	}
 #endif
 #ifndef WIN32
 	if (cmdLine.HasSwitch("-daemon"))
@@ -771,6 +786,9 @@ int main(int argc, char**argv)
 		// Delete PID file
 		remove(PID_FILE);
 	}
+#else
+	// Release WinSock
+	WSACleanup();
 #endif
 	return 0;
 }

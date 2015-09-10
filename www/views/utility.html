@@ -32,6 +32,27 @@
 		</table>
     </form>
 </div>
+<div id="dialog-editenergydevice" title="Edit Device">
+    <form>
+        <table class="display" id="energytable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:60px"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
+          <td><input type="text" id="devicename" style="width: 250px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+		<tr>
+			<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
+			<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+        <tr>
+          <td align="right"><label for="combometertype"><span data-i18n="Type">Type</span>: </label></td>
+          <td><select id="combometertype" style="width:150px" class="combobox ui-corner-all">
+            <option value="0" data-i18n="Usage">Usage</option>
+            <option value="4" data-i18n="Return">Return</option>
+          </select></td>
+		</tr>
+		</table>
+    </form>
+</div>
 <div id="dialog-editdistancedevice">
     <form>
         <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">

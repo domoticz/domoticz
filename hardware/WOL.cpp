@@ -14,23 +14,12 @@ m_broadcast_address(BroadcastAddress)
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
-#ifdef WIN32
-	// Initialize Winsock
-	WSADATA wsaData;
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-	{
-		_log.Log(LOG_ERROR,"WOL: Error initializing Winsock!");
-	}
-#endif
 	m_wol_port=Port;//9;
 }
 
 CWOL::~CWOL(void)
 {
 	m_bIsStarted=false;
-#ifdef WIN32
-	WSACleanup();
-#endif
 }
 
 void CWOL::Init()

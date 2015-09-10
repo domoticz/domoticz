@@ -55,25 +55,6 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 	_log.Log(LOG_STATUS, "Satel Integra: Create instance");
 	m_HwdID = ID;
 
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version;
-
-	version = (MAKEWORD(2, 2));
-	ret = WSAStartup(version, &data);
-	if (ret != 0)
-	{
-		ret = WSAGetLastError();
-
-		if (ret == WSANOTINITIALISED)
-		{
-			_log.Log(LOG_ERROR, "Satel Integra: Winsock could not be initialized!");
-		}
-	}
-#endif
-
 	// clear last local state of zones and outputs
 	for (unsigned int i = 0; i< 256; ++i)
 	{
@@ -122,13 +103,6 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 SatelIntegra::~SatelIntegra()
 {
 	_log.Log(LOG_NORM, "Satel Integra: Destroy instance");
-
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-	WSACleanup();
-#endif
 }
 
 bool SatelIntegra::StartHardware()
@@ -798,8 +772,8 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 				cmd[i + 1] = m_userCode[i];
 			}
 
-			unsigned char byteNumber = (general->id) / 8;
-			unsigned char bitNumber = (general->id) % 8;
+			unsigned char byteNumber = (general->id - 1) / 8;
+			unsigned char bitNumber = (general->id - 1) % 8;
 
 			cmd[byteNumber + 9] = 0x01 << bitNumber;
 

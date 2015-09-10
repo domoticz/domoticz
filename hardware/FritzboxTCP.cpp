@@ -40,24 +40,6 @@ FritzboxTCP::FritzboxTCP(const int ID, const std::string IPAddress, const unsign
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			_log.Log(LOG_ERROR,"Fritzbox: Winsock could not be initialized!");
-		}
-	}
-#endif
 	m_stoprequested=false;
 	m_szIPAddress=IPAddress;
 	m_usIPPort=usIPPort;
@@ -65,12 +47,6 @@ FritzboxTCP::FritzboxTCP(const int ID, const std::string IPAddress, const unsign
 
 FritzboxTCP::~FritzboxTCP(void)
 {
-#if defined WIN32
-	//
-	// Release WinSock
-	//
-	WSACleanup();
-#endif
 }
 
 bool FritzboxTCP::StartHardware()

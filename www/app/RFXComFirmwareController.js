@@ -5,6 +5,11 @@ define(['app'], function (app) {
 		$scope.isUpdating=false;
 		$scope.topText = "Updating Firmware...";
 		$scope.bottomText = "";
+		$scope.ProgressData = {
+          label: 0,
+          percentage: 0
+        }
+		
 	
 		$scope.SetPercentage = function (percentage)
 		{
@@ -36,7 +41,7 @@ define(['app'], function (app) {
 					SwitchLayout('Dashboard');
 				}
 				else {
-					$scope.SetPercentage(data.percentage);
+					$scope.ProgressData.label = Math.round(data.percentage);
 					$scope.bottomText=data.message;
 					$scope.mytimer=$interval(function() {
 						$scope.progressupload();
@@ -48,7 +53,10 @@ define(['app'], function (app) {
 					SwitchLayout('Dashboard');
 			 });
 		}
-		$scope.uploadFile = function() {
+		$scope.UpdateFirmware = function() {
+			if (typeof $scope.file == 'undefined') {
+				return;
+			}
 			$http({
 				method: 'POST',
 				url: 'rfxupgradefirmware.webem',
@@ -81,15 +89,11 @@ define(['app'], function (app) {
 			});
    		};
 		
-		$scope.onSubmit = function() {
-			if (typeof $scope.file == 'undefined') {
-				return;
-			}
-			$scope.uploadFile();
-		}
-
 		$scope.init = function()
 		{
+			$scope.$watch('ProgressData', function (newValue, oldValue) {
+				newValue.percentage = newValue.label / 100;
+			}, true);
 			$scope.bottomText="";
 			$scope.isUpdating=false;
 			$('#maincontent').i18n();
@@ -105,10 +109,6 @@ define(['app'], function (app) {
 				complete: function() {
 					//progressLabel.text( "Complete!" );
 				}
-			});
-			progressbarValue = progressbar.find( ".ui-progressbar-value" );
-			progressbarValue.css({
-				"background": 'url(images/pbar-ani.gif)'
 			});
 			$scope.SetPercentage(0);
 		};

@@ -96,7 +96,7 @@
 
 function NotifyCacheRefresh()
 {
-	$.cachenoty=generate_noty('information', '<b>' + 'Browser Cache is being refreshed' + '...</b><br>' + 'Please standby' + '...', false);
+	$.cachenoty=generate_noty('information', '<b>' + $.t('Browser Cache is being refreshed') + '...</b><br>' + $.t('Please standby') + '...', false);
 	$.cachecount=0
 	$.cachetotal=0
 }
@@ -151,7 +151,7 @@ function CheckForUpdate(showdialog) {
 			
 			if (data.HaveUpdate == true) {
 				if (showdialog) {
-					bootbox.confirm($.t("Update Available !... Update Now?"+"<br>"+$.t('Version')+" #"+data.revision), function(result) {
+					bootbox.confirm($.t("Update Available !... Update Now?")+"<br>"+$.t('Version')+" #"+data.revision, function(result) {
 						if (result==true) {
 							SwitchLayout('Update');
 						}
@@ -296,7 +296,7 @@ $(document).ready(function() {
 			
 			window.applicationCache.addEventListener('error', function(e)
 			{
-				var errText = 'Browser Cache refresh failed.';
+				var errText = $.t('Browser Cache refresh failed.');
 				errText += (typeof($.cachecount) != 'undefined') ? '<br>Loaded ' + $.cachecount + ' of ' + $.cachetotal + ' files' : '';
 				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
 				ClearNotifyCacheRefresh();

@@ -227,14 +227,12 @@ images/override.png
 images/override_mini.png
 images/overrule.png
 images/overrule_mini.png
-images/pbar-ani.gif
 images/pdf.png
 images/pdf_hover.png
 images/Percentage48.png
 images/Phone.png
 images/Phone48_On.png
 images/Phone48_Off.png
-images/pIkfp.gif
 images/print.png
 images/print_hover.png
 images/Printer.png
@@ -248,6 +246,7 @@ images/pushoff.png
 images/pushoff48.png
 images/pushon.png
 images/pushon48.png
+images/PV48.png
 images/radiation.png
 images/radiation48.png
 images/rain.png
@@ -281,7 +280,6 @@ images/sort_asc_disabled.png
 images/sort_both.png
 images/sort_desc.png
 images/sort_desc_disabled.png
-images/spacer.gif
 images/Speaker.png
 images/Speaker48_Off.png
 images/Speaker48_On.png

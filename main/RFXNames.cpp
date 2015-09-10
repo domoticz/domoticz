@@ -154,6 +154,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Wunderground, "Weather Underground" },
 		{ HTYPE_ForecastIO, "Forecast IO (Weather Lookup)" },
 		{ HTYPE_Dummy, "Dummy (Does nothing, use for virtual switches only)" },
+		{ HTYPE_Tellstick, "Tellstick" },
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
 		{ HTYPE_S0SmartMeter, "S0 Meter USB" },
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
@@ -235,6 +236,7 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 		{ MTYPE_GAS, "Gas" },
 		{ MTYPE_WATER, "Water" },
 		{ MTYPE_COUNTER, "Counter" },
+		{ MTYPE_ENERGY_GENERATED, "Energy Generated" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -518,8 +520,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeAoke, "Aoke" },
 		{ pTypeLighting5, sTypeEurodomest, "Eurodomest" },
 		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo Appliance" },
-
-
+		{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -652,6 +653,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFYext, "RFY-Ext" },
+		{ pTypeRFY, sTypeASA, "ASA" },
 
 		{ pTypeEvohome, sTypeEvohome, "Evohome" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Zone" },
@@ -691,7 +693,14 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus, "SelectPlus" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus3, "SelectPlus3" },
 		{ pTypeGeneralSwitch, sSwitchTypeFA20, "FA20RF" },
-
+		{ pTypeGeneralSwitch, sSwitchTypePowerfix, "Powerfix" },
+		{ pTypeGeneralSwitch, sSwitchTypeTriState, "TriState" },
+		{ pTypeGeneralSwitch, sSwitchTypeDeltronic, "Deltronic" },
+		{ pTypeGeneralSwitch, sSwitchTypeChuango, "Chuango" },
+		{ pTypeGeneralSwitch, sSwitchTypePlieger, "Plieger" },
+		{ pTypeGeneralSwitch, sSwitchTypeSilvercrest, "SilverCrest" },
+		{ pTypeGeneralSwitch, sSwitchTypeMertik, "Mertik" },
+		{ pTypeGeneralSwitch, sSwitchTypeHomeConfort, "HomeConfort" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -792,6 +801,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeAoke, "Status" },
 		{ pTypeLighting5, sTypeEurodomest, "Status" },
 		{ pTypeLighting5, sTypeLivoloAppliance, "Status" },
+		{ pTypeLighting5, sTypeRGB432W, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 
@@ -923,6 +933,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFYext, "Status" },
+		{ pTypeRFY, sTypeASA, "Status" },
 		{ pTypeEvohome, sTypeEvohome, "Status" },
 		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature,Set point,Status" },
 		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature,State,Status" },
@@ -1352,6 +1363,29 @@ void GetLightStatus(
 				break;
 			case light5_sLivoloGang1Toggle:
 				lstatus = "On";
+				break;
+			}
+			break;
+		case sTypeRGB432W:
+			switch (nValue)
+			{
+			case light5_sRGBoff:
+				lstatus = "Off";
+				break;
+			case light5_sRGBon:
+				lstatus = "On";
+				break;
+			case light5_sRGBbright:
+				lstatus = "Bright";
+				break;
+			case light5_sRGBdim:
+				lstatus = "Dim";
+				break;
+			case light5_sRGBcolorplus:
+				lstatus = "Color Plus";
+				break;
+			case light5_sRGBcolormin:
+				lstatus = "Color Min";
 				break;
 			}
 			break;

@@ -1130,10 +1130,10 @@ void MySensorsBase::ParseLine()
 		case I_TIME:
 			//send time in seconds from 1970 with timezone offset
 			{
-				time_t atime = mytime(NULL);
-				struct tm ltime;
-				localtime_r(&atime, &ltime);
-				sstr << mktime(&ltime);
+				boost::posix_time::ptime tlocal(boost::posix_time::second_clock::local_time());
+				boost::posix_time::time_duration dur = tlocal - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1));
+				time_t fltime(dur.total_seconds());
+				sstr << fltime;
 				SendCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
 			}
 			break;

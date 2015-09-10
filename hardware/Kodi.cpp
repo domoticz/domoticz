@@ -129,33 +129,34 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 			if (((nStatus == MSTAT_OFF) && bPingOK) || ((nStatus != MSTAT_OFF) && !bPingOK)) bUseOnOff = true;
 			time_t atime = mytime(NULL);
 			itt->LastOK = atime;
-			std::string sShortStatus = sStatus;
-			if (sShortStatus.find_last_of("%") == sShortStatus.length()-1)
-			{
-				sShortStatus = sShortStatus.substr(0, sShortStatus.find_last_of(",")); // remove ", xx%" to reduce extraneous logging
-			}
-			if ((itt->nStatus != nStatus) || (itt->sStatus != sShortStatus))
+			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
 				/*
 					Media device appears too different to integrate into main code :(
 				*/
 
 				// 1:	Update the DeviceStatus
-				_log.Log(LOG_STATUS, "Kodi: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sShortStatus.c_str());
+				_log.Log(LOG_STATUS, "Kodi: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
 				char szLastUpdate[40];
 				sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1)",
-					int(nStatus), sShortStatus.c_str(), szLastUpdate, m_HwdID, itt->szDevID);
-				itt->nStatus = nStatus;
-				itt->sStatus = sShortStatus;
+				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
+					int(nStatus), sStatus.c_str(), szLastUpdate, m_HwdID, itt->szDevID, STYPE_Media);
 
-				// 2:	Log the event
-				std::string sLongStatus = Media_Player_States(itt->nStatus);
-				if (itt->sStatus.length()) sLongStatus += " - " + itt->sStatus;
-				result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", itt->ID, int(itt->nStatus), sLongStatus.c_str());
+				// 2:	Log the event if the actual status has changed but remove ", xx%" to reduce extraneous logging
+				std::string sShortStatus = sStatus;
+				if (sShortStatus.find_last_of("%") == sShortStatus.length() - 1)
+				{
+					sShortStatus = sShortStatus.substr(0, sShortStatus.find_last_of(","));
+				}
+				if ((itt->nStatus != nStatus) || (itt->sShortStatus != sShortStatus))
+				{
+					std::string sLongStatus = Media_Player_States(nStatus);
+					if (sShortStatus.length()) sLongStatus += " - " + sShortStatus;
+					result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", itt->ID, int(nStatus), sLongStatus.c_str());
+				}
 
 				// 3:	Trigger On/Off actions
 				if (bUseOnOff)
@@ -167,7 +168,11 @@ void CKodi::UpdateNodeStatus(const KodiNode &Node, const _eMediaStatus nStatus, 
 					}
 				}
 
-				// 4:	Trigger Notifications
+				// 4:	Trigger Notifications (TBD)
+
+				itt->nStatus = nStatus;
+				itt->sStatus = sStatus;
+				itt->sShortStatus = sShortStatus;
 			}
 			break;
 		}
@@ -282,7 +287,7 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 
 					if (root["result"]["item"]["title"].empty() != true)
 					{
-						std::string	sLabel = root["result"]["item"]["title"].asCString();
+						std::string	sLabel = sTitle + root["result"]["item"]["title"].asCString();
 						if ((!sLabel.length()) && (root["result"]["item"]["label"].empty() != true))
 						{
 							sLabel = root["result"]["item"]["label"].asCString();
@@ -330,10 +335,6 @@ void CKodi::Do_Node_Work(const KodiNode &Node)
 				if (sPercent.length() != 0) sStatus += ", " + sPercent;
 			}
 		}
-	}
-	catch (std::exception& e)
-	{
-		bPingOK = false;
 	}
 	catch (...)
 	{
@@ -592,7 +593,8 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 	if (result.size() == 1)
 	{
 		// Get connection details
-		result = m_sql.safe_query("SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, atoi(result[0][0].c_str()));
+		long	DeviceID = strtol(result[0][0].c_str(), NULL, 16); 
+		result = m_sql.safe_query("SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, DeviceID);
 	}
 
 	if (result.size() == 1)
@@ -602,6 +604,22 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 		if (command == "Home")
 		{
 			sKodiCall = "Input.Home";
+		}
+		else if (command == "Up")
+		{
+			sKodiCall = "Input.Up";
+		}
+		else if (command == "Down")
+		{
+			sKodiCall = "Input.Down";
+		}
+		else if (command == "Left")
+		{
+			sKodiCall = "Input.Left";
+		}
+		else if (command == "Right")
+		{
+			sKodiCall = "Input.Right";
 		}
 		else  // Assume generic ExecuteAction  for any unrecognised strings
 		{
