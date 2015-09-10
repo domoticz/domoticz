@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Taken from http://en.z-wave.me/docs/ZME_0643x_UserManual.pdf-->
+<!--Taken from http://pepper1.net/zwavedb/device/273 and http://www.pepper1.net/zwavedb/device/145 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration Parameters -->
 	<!--IMPORTANT: Controllers may only allow to configure signed values. 
@@ -13,21 +13,21 @@
 	    36000?65536=?29536.-->
 
 	<CommandClass id="112">
-		<Value type="list" index="1" genre="config" label="Set LED indication mode" units="" min="1" max="99" value="3" size="1">
+		<Value type="list" index="1" genre="config" label="Set LED indication mode" value="3" size="1">
 			<Item label="Disabled" value="0" />
-			<Item label="Show switch/dimmer state / when in motion or inactive (for blinds)" value="1" />
+			<Item label="Show switch/dimmer state" value="1" />
 			<Item label="Night mode (inverted switch state)" value="2" />
 			<Item label="Operated by Indicator Command Class (default)" value="3" />
-			<Item label="Show if not closed (for blinds only)" value="4" />
 		</Value>
 		<Value type="int" index="2" genre="config" label="Automatically switch off after" units="seconds" min="0" max="65535" value="0">
-			<Help>If not zero, automatically switch off/close blind after a user defined time</Help>
+			<Help>If not zero, automatically switch off after a user defined time</Help>
 		</Value>
 		<Value type="list" index="3" genre="config" label="What to do on RF off command" value="0" size="1">
-			<Help>If not zero, automatically switch off/close blind after a user defined time</Help>
+			<Help>Defines how to interpret RF Off command. Can be used in conjunction with Auto Off function: Ignore - to switch on the light by motion detectors and switch it off after some amount of time: in case of multiple motion detectors each would try to switch the light off that would break logics; Switch on - to switch on the light on both On and Off paddle press on the remote and switch it off after some amount of time. Button off click will still work (if button operations are not disabled).</Help>
 			<Item label="Switch off (default)" value="0" />
 			<Item label="Ignore" value="1" />
 			<Item label="Switch on" value="2" />
+			<Item label="Switch on if load is off else switch off (v1.8)" value="3" />
 		</Value>
 		<Value type="list" index="4" genre="config" label="Ignore Start Level" value="1" size="1">
 			<Help>Defines if the dimmer shall ignore start level in StartLevelChange command despite it is specified or not.</Help>
@@ -56,31 +56,59 @@
 			<Help>Typical time used to differentiate click, hold, double and triple clicks.</Help>
 		</Value>
 		<Value type="list" index="11" genre="config" label="Invert buttons" value="0" size="1">
-		  <Item label="No default)" value="0" />
+		  <Item label="No (default)" value="0" />
 		  <Item label="Yes" value="1" />
 		</Value>
 		<Value type="list" index="12" genre="config" label="Switch by buttons" value="1" size="1">
 			<Help>If disabled, the local operations by buttons will not switch the load, but only send commands to On/Off association group. In  this mode buttons are not linked with the switch anymore. They can be used separately: buttons to control remote device, switch will operate by RF commands only. </Help>
 			<Item label="No" value="0" />
 			<Item label="By single press and hold (default)" value="1" />
-			<Item label="By double press and hold" value="1" />
+			<Item label="By double press and hold" value="2" />
 		</Value>
-		<Value type="list" index="13" genre="config" label="Action on button single press or hold" value="1" size="1">
-			<Help>Defines which command should be sent on button single press or hold. Basic commands are sent to Association group. Switch All commands are sent broadcast. </Help>
+		<Value type="list" index="13" genre="config" label="Action on button single press or hold" value="4" size="1">
+			<Help>Defines which command should be sent on button single press or hold. Basic and Scene Activation commands are sent to Association group. Use Scene Controller Conf to set up Scene ID for Scene Activation. Switch All commands are sent broadcast.</Help>
 			<Item label="Disabled" value="0" />
-			<Item label="Switch On, Off and dim using Basic Set(default)" value="1" />
-			<Item label="Switch All On/Off" value="1" />
+			<Item label="Send Basic Set and Switch Multilevel (v1.8)" value="4" />
+			<Item label="Send Basic Set" value="1" />
+			<Item label="Send Switch All" value="2" />
+			<Item label="Send Scenes (v1.8)" value="3" />
+			<Item label="Send Preconfigured Scenes (v1.8)" value="5" />
 		</Value>
 		<Value type="list" index="14" genre="config" label="Action on button double press or hold" value="0" size="1">
-			<Help>Defines which command should be sent on button double press or press-hold. Basic commands are sent to Association group.   Switch   All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
+			<Help>Defines which command should be sent on button double press or press-hold. Basic and Scene Activation commands are sent to Association group. Use Scene Controller Conf to set up Scene ID for Scene Activation. Switch All commands are sent broadcast. If not disabled, the device will wait for a click timeout to see if the second click would be pressed. This will introduce a small delay for single click commands.</Help>
 			<Item label="Disabled (don't wait for double click,default)" value="0" />
-			<Item label="Switch On, Off and dim using Basic Set" value="1" />
-			<Item label="Switch All On/Off" value="1" />
+			<Item label="Send Basic Set and Switch Multilevel (v1.8)" value="4" />
+			<Item label="Send Basic Set" value="1" />
+			<Item label="Send Switch All" value="2" />
+			<Item label="Send Scenes (v1.8)" value="3" />
+			<Item label="Send Preconfigured Scenes (v1.8)" value="5" />
 		</Value>
 		<Value type="list" index="15" genre="config" label="Send the following Switch All commands" value="1" size="1">
 			<Item label="Switch All Off only (default)" value="1" />
 			<Item label="Switch All On only" value="1" />
 			<Item label="Switch All On and Off" value="255" />
+		</Value>
+		<Value type="byte" index="17" genre="config" label="Limit minimal light level (v1.8)" units="dimmer level %" min="1" max="95" value="1">
+		</Value>
+		<Value type="byte" index="18" genre="config" label="Limit maximal light level (v1.8)" units="dimmer level %" min="0" max="99" value="99">
+			<Help>Maximum level should be greater than minimal level. Set to 0 to work as a switch (off or full on only), or set to 10 - 99</Help>
+		</Value>
+		<Value type="byte" index="19" genre="config" label="Switch On on a defined level (v1.8)" units="dimmer level %" min="0" max="99" value="0">
+			<Help>Set to 0 to use previous light level, or set to 1 - 99</Help>
+		</Value>
+		<Value type="byte" index="51" genre="config" label="Pause before pulse (v1.8)" units="x 10/156 milliseconds" min="1" max="60" value="28">
+			<Help>NB: Do not touch these settings if you are not sure what they mean! For dimmable LEDs and CFL with bypass use value 1. For other bulbs use default value.</Help>
+		</Value>
+		<Value type="byte" index="52" genre="config" label="Pause after pulse (v1.8)" units="x 10/156 milliseconds" min="5" max="60" value="28">
+			<Help>NB: Do not touch these settings if you are not sure what they mean! For dimmable LEDs and CFL with bypass use value 40. For other bulbs use default value.</Help>
+		</Value>
+		<Value type="byte" index="53" genre="config" label="Pulse width (v1.8)" units="x 10/156 milliseconds" min="3" max="20" value="10">
+			<Help>NB: Do not touch these settings if you are not sure what they mean! For dimmable LEDs and CFL with bypass use value 20. For other bulbs use default value.</Help>
+		</Value>
+		<Value type="list" index="54" genre="config" label="Pulse type (v1.8)" value="0" size="1">
+			<Help>NB: Do not touch these settings if you are not sure what they mean!</Help>
+			<Item label="Long pulse" value="0" />
+			<Item label="Short pulse" value="1" />
 		</Value>
 	</CommandClass>
 
