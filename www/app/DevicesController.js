@@ -349,7 +349,7 @@ define(['app'], function (app) {
 				  else if (item.SubType == "Barometer") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowBaroLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
-				  else if (item.SubType == "Text") {
+				  else if ((item.SubType == "Text") || (item.SubType == "Alert")) {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTextLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
 				  else if (item.SubType == "Soil Moisture") {

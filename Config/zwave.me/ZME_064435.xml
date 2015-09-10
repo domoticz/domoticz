@@ -43,6 +43,10 @@
 	<!-- Basic set as report -->
 	<CommandClass id="32" setasreport="true"/>
 
+	<!-- COMMAND_CLASS_SCENE_ACTIVATION. KFob can be configured to send scene commands but does not advertise it -->
+    <CommandClass id="43" action="add" getsupported="false"/>
+
+
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="2">

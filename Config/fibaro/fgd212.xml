@@ -38,7 +38,7 @@
       <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
     </Value>
-    <Value type="byte" size="2" genre="config" instance="1" index="10" label="Timer functionality (auto - off)" min="0" max="32767" units="sec" value="0">
+    <Value type="short" size="2" genre="config" instance="1" index="10" label="Timer functionality (auto - off)" min="0" max="32767" units="sec" value="0">
       <Help>Available settings: 0 - Function disabled; 1-32767 - time to turn off measured in seconds (1s - 9,1h) Default setting: 0</Help>
     </Value>
     <!-- size of two and max 255 seems off -->

@@ -3156,7 +3156,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType=="Alert") {
-							xhtm+='Alert48_' + item.Level + '.png" height="40" width="40"></td>\n';
+							xhtm+='Alert48_' + item.Level + '.png" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Pressure") {
