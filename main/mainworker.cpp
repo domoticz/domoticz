@@ -10634,7 +10634,7 @@ bool MainWorker::DoesDeviceActiveAScene(const unsigned long long DevRowIdx, cons
 				sstr >> aID;
 				if (aID == DevRowIdx)
 				{
-					if ((SceneType == 1) || (sCode.empty()))
+					if ((SceneType == SGTYPE_GROUP) || (sCode.empty()))
 						return true;
 					int iCode = atoi(sCode.c_str());
 					if (iCode == Cmnd)
@@ -10701,7 +10701,7 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 					std::string camidx=sd[0];
 					int delay=atoi(sd[1].c_str());
 					std::string subject;
-					if (scenetype==SGTYPE_SCENE)
+					if (scenetype == SGTYPE_SCENE)
 						subject=Name + " Activated";
 					else
 						subject=Name + " Status: " + switchcmd;
@@ -10852,7 +10852,7 @@ void MainWorker::CheckSceneCode(const unsigned long long DevRowIdx, const unsign
 					s_str >> ID;
 					int scenetype = atoi(sd[2].c_str());
 
-					if ((scenetype == 0) && (!sCode.empty()))
+					if ((scenetype == SGTYPE_SCENE) && (!sCode.empty()))
 					{
 						//Also check code
 						int iCode = atoi(sCode.c_str());
