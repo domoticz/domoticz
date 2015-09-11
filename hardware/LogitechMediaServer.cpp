@@ -42,6 +42,17 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAdd
 CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
+	m_IP = "";
+	m_Port = 0;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Address, Port FROM Hardware WHERE ID==%d", m_HwdID);
+
+	if (result.size() > 0)
+	{
+		m_IP = result[0][0];
+		m_Port = atoi(result[0][1].c_str());
+	}
+
 	SetSettings(10, 3000);
 }
 
@@ -74,12 +85,11 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 		_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
 		return root;
 	}
-	if (root["result"].empty())
+	if (root["method"].empty())
 	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: '%s' postdata '%s'", sURL.str(), sPostdata);
+		_log.Log(LOG_ERROR, "Logitech Media Server: '%s'", sURL.str());
 		return root;
 	}
-
 	return root["result"];
 }
 
@@ -501,10 +511,6 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 	if (packettype != pTypeLighting2)
 		return false;
 
-	//if (pSen->LIGHTING2.cmnd != light2_sOff)
-	//{
-	//	return true;
-	//}
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 	std::vector<LogitechMediaServerNode>::const_iterator itt;
 	for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
@@ -522,8 +528,7 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"power\",\"" + sPower + "\"]]}";
 			Json::Value root = Query(m_IP, m_Port, sPostdata);
 
-			return (root.size() > 0);
-
+			return true;
 		}
 	}
 
@@ -570,6 +575,8 @@ void CLogitechMediaServer::ReloadNodes()
 void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 {
 	std::vector<std::vector<std::string> > result;
+	std::string sPlayerId = "";
+	std::string sLMSCmnd = "";
 
 	// Get device details
 	result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (ID==%d)", ID);
@@ -578,57 +585,45 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 		// Get connection details
 		long	DeviceID = strtol(result[0][0].c_str(), NULL, 16);
 		result = m_sql.safe_query("SELECT Name, MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, DeviceID);
+		sPlayerId = result[0][1];
 	}
 
 	if (result.size() == 1)
 	{
 		std::string	sLMSCall;
-		std::string	sLMSParam = "";
-		if (command == "Home")
+		if (command == "PlayPause")
 		{
-			sLMSCall = "Input.Home";
+			sLMSCmnd = "\"pause\"";
 		}
-		else if (command == "Up")
+		else if (command == "Stop")
 		{
-			sLMSCall = "Input.Up";
+			sLMSCmnd = "\"stop\"";
 		}
-		else if (command == "Down")
+		else if (command == "BigStepForward")
 		{
-			sLMSCall = "Input.Down";
+			sLMSCmnd = "\"button\", \"jump_fwd\"";
 		}
-		else if (command == "Left")
+		else if (command == "BigStepBack")
 		{
-			sLMSCall = "Input.Left";
+			sLMSCmnd = "\"button\", \"jump_rew\"";
 		}
-		else if (command == "Right")
+		else if (command == "VolumeUp")
 		{
-			sLMSCall = "Input.Right";
+			sLMSCmnd = "\"mixer\", \"volume\", \"+2\"";
 		}
-		else  // Assume generic ExecuteAction  for any unrecognised strings
+		else if (command == "VolumeDown")
 		{
-			sLMSCall = "Input.ExecuteAction";
-			std::string	sLower = command;
-			std::transform(sLower.begin(), sLower.end(), sLower.begin(), ::tolower);
-			sLMSParam = sLower;
+			sLMSCmnd = "\"mixer\", \"volume\", \"-2\"";
+		}
+		else if (command == "Mute")
+		{
+			sLMSCmnd = "\"mixer\", \"muting\", \"toggle\"";
 		}
 
-		if (sLMSCall.length())
+		if (sLMSCmnd != "")
 		{
-			//		http://kodi.wiki/view/JSON-RPC_API/v6#Input.Action
-			//		{ "jsonrpc": "2.0", "method": "Input.ExecuteAction", "params": { "action": "stop" }, "id": 1 }
-			std::stringstream	ssRequest;
-			ssRequest << "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22" << sLMSCall << "%22,%22params%22:{";
-			if (sLMSParam.length()) ssRequest << "%22action%22:%22" << sLMSParam << "%22";
-			ssRequest << "},%22id%22:2}";
-			Json::Value root = Query(result[0][1].c_str(), atoi(result[0][2].c_str()), ssRequest.str());
-			if (root.size())
-			{
-				// keep going
-				if (root["result"].empty() != true)
-				{
-					_log.Log(LOG_NORM, "Logitech Media Server: (%s) Command: '%s', Result '%s'.", result[0][0].c_str(), command.c_str(), root["result"].asCString());
-				}
-			}
+			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
+			Json::Value root = Query(m_IP, m_Port, sPostdata);
 		}
 		else
 		{
