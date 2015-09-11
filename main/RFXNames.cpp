@@ -989,6 +989,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 		{ MSTAT_AUDIO, "Audio" },
 		{ MSTAT_PHOTO, "Photo" },
 		{ MSTAT_UNKNOWN, "Unknown" },
+		{ MSTAT_ON, "On" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1(Table, Status);

@@ -154,10 +154,6 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			itt->LastOK = atime;
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
-				/*
-				Media device appears too different to integrate into main code :(
-				*/
-
 				// 1:	Update the DeviceStatus
 				_log.Log(LOG_STATUS, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				struct tm ltime;
@@ -204,21 +200,45 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 
 void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 {
-	bool			bPingOK = false;
-	_eMediaStatus	nStatus = MSTAT_UNKNOWN;
-	std::string		sStatus = "";
-
-	// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}
-	//		{"id":1,"jsonrpc":"2.0","result":[{"playerid":1,"type":"video"}]}
-
-	// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetItem%22,%22id%22:1,%22params%22:{%22playerid%22:0,%22properties%22:[%22artist%22,%22year%22,%22channel%22,%22season%22,%22episode%22]}}
-	//		{"id":1,"jsonrpc":"2.0","result":{"item":{"artist":["Coldplay"],"id":25,"label":"The Scientist","type":"song","year":2002}}}
-
-	// http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetProperties%22,%22id%22:1,%22params%22:{%22playerid%22:1,%22properties%22:[%22totaltime%22,%22percentage%22,%22time%22]}}
-	//		{"id":1,"jsonrpc":"2.0","result":{"percentage":22.207427978515625,"time":{"hours":0,"milliseconds":948,"minutes":15,"seconds":31},"totaltime":{"hours":1,"milliseconds":560,"minutes":9,"seconds":56}}}
+	bool bPingOK = false;
+	_eMediaStatus nStatus = MSTAT_UNKNOWN;
+	std::string	sPlayerId = Node.IP;
+	std::string sMode = "";
+	std::string	sTitle = "";
+	std::string	sStatus = "";
 
 	try
 	{
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:uB\"]]}";
+		Json::Value root = Query(m_IP, m_Port, sPostdata);
+
+		if (!root.size())
+			nStatus = MSTAT_OFF;
+		else
+		{
+			bPingOK = true;
+
+			if (root["player_connected"].asString() == "1")
+			{
+				if (root["power"].asString() == "0")
+					nStatus = MSTAT_OFF;
+				else {
+					nStatus = MSTAT_ON;
+					sMode = root["mode"].asString();
+
+					if (root["playlist_loop"].size()) {
+
+						sTitle = root["playlist_loop"][0]["title"].asString();
+					}
+
+					// Assemble final status
+					sStatus = sTitle + " (" + sMode + ")";
+
+				}
+			}
+		}
+
+/*
 		Json::Value root = Query(Node.IP, Node.Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}");
 		if (!root.size())
 			nStatus = MSTAT_OFF;
@@ -358,6 +378,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 				if (sPercent.length() != 0) sStatus += ", " + sPercent;
 			}
 		}
+*/
 	}
 	catch (...)
 	{
@@ -393,18 +414,18 @@ void CLogitechMediaServer::Do_Work()
 
 				GetPlayerInfo();
 
-				//std::vector<LogitechMediaServerNode>::const_iterator itt;
-				//for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
-				//{
-				//	if (m_stoprequested)
-				//		return;
-				//	if (m_iThreadsRunning < 1000)
-				//	{
-				//		m_iThreadsRunning++;
-				//		boost::thread t(boost::bind(&CLogitechMediaServer::Do_Node_Work, this, *itt));
-				//		t.join();
-				//	}
-				//}
+				std::vector<LogitechMediaServerNode>::const_iterator itt;
+				for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt)
+				{
+					if (m_stoprequested)
+						return;
+					if (m_iThreadsRunning < 1000)
+					{
+						m_iThreadsRunning++;
+						boost::thread t(boost::bind(&CLogitechMediaServer::Do_Node_Work, this, *itt));
+						t.join();
+					}
+				}
 			}
 		}
 	}
@@ -413,22 +434,10 @@ void CLogitechMediaServer::Do_Work()
 
 void CLogitechMediaServer::GetPlayerInfo()
 {
-	_log.Log(LOG_STATUS, "GetPlayerInfo()");
 	try
 	{
 		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"\",[\"serverstatus\",0,999]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
-		/*
-		{"params":["", ["serverstatus", "0", "999"]], "method" : "slim.request",
-		"result" : {"info total albums":2176, "info total genres" : 83, "other player count" : 0, "version" : "7.8.1", "lastscan" : "1436174654",
-		"info total songs" : 31056, "sn player count" : 0, "uuid" : "6def3829-aacb-404a-a625-6d05b24e3423", "player count" : 3,
-		"players_loop" : [{"name":"SqueezeBox_Daan", "seq_no" : 0, "canpoweroff" : 1, "isplayer" : 1, "ip" : "192.168.100.62:40492",
-		"displaytype" : "graphic-320x32", "connected" : 1, "power" : 0, "model" : "squeezebox3", "playerid" : "00:04:20:12:66:30", "uuid" : null},
-		{ "playerid":"00:04:20:12:77:12","uuid" : null,"model" : "squeezebox3","power" : 0,"ip" : "192.168.100.61:19464","displaytype" : "graphic-320x32",
-		"connected" : 1,"name" : "SqueezeBox_Zolder","seq_no" : 0,"isplayer" : 1,"canpoweroff" : 1 }, { "power":0,"playerid" : "00:04:20:12:7b:48",
-		"uuid" : null,"model" : "squeezebox3","ip" : "192.168.100.60:37323","displaytype" : "graphic-320x32","connected" : 1,"seq_no" : 0,
-		"name" : "SqueezeBox_EduLot","isplayer" : 1,"canpoweroff" : 1 }], "info total artists" : 539}, "id" : 1}
-		*/
 
 		int totPlayers = root["player count"].asInt();
 		for (int ii = 0; ii < totPlayers; ii++)

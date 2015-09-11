@@ -1465,7 +1465,7 @@ define(['app'], function (app) {
             RefreshKodiNodeTable();
         }
 
-		RefreshLMSNodeTable = function () {
+        RefreshLMSNodeTable = function () {
             $('#modal').show();
             $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
