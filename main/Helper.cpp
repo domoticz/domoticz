@@ -52,9 +52,19 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	std::vector<std::string> ret;
 #if defined WIN32
 	//windows
-	// Method 1: GetDefaultCommConfig
-	// ---------
+	std::vector<SerialPortInfo> serialports;
+	EnumSerialPortsWindows(serialports);
+
 	bool bFoundPort = false;
+	if (!serialports.empty())
+	{
+		bFoundPort = true;
+		std::vector<SerialPortInfo>::const_iterator itt;
+		for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+		{
+			ret.push_back(itt->szPortName);
+		}
+	}
 
 	//Scan old fashion way
 	COMMCONFIG cc;
@@ -67,7 +77,20 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		{
 			bFoundPort = true;
 			sprintf(szPortName, "COM%d", ii);
-			ret.push_back(szPortName); // add port
+
+			//Check if we did not already have it
+			std::vector<std::string>::const_iterator itt;
+			bool bFound = false;
+			for (itt = ret.begin(); itt != ret.end(); ++itt)
+			{
+				if (*itt == szPortName)
+				{
+					bFound = true;
+					break;
+				}
+			}
+			if (!bFound)
+				ret.push_back(szPortName); // add port
 		}
 	}
 	// Method 2: CreateFile, slow
