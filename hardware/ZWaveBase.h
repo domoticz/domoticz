@@ -59,6 +59,10 @@ class ZWaveBase : public CDomoticzHardwareBase
 		bool hasWakeup;
 		bool hasBattery;
 
+		int Manufacturer_id;
+		int Product_id;
+		int Product_type;
+
 		//values
 		float floatValue;
 		int intvalue;
@@ -100,6 +104,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 			basicType=0;
 			genericType=0;
 			specificType=0;
+			Manufacturer_id = -1;
+			Product_id = -1;
+			Product_type = -1;
 		}
 	};
 public:
