@@ -531,6 +531,15 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			// Add the new value to our list
+
+			if (nodeInfo->Manufacturer_id.empty())
+			{
+				nodeInfo->Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
+				nodeInfo->Manufacturer_name = pManager->GetNodeManufacturerName(_homeID, _nodeID);
+				nodeInfo->Product_type = pManager->GetNodeProductType(_homeID, _nodeID);
+				nodeInfo->Product_id = pManager->GetNodeProductId(_homeID, _nodeID);
+			}
+
 			nodeInfo->Instances[instance][commandClass].Values.push_back(vID);
 			nodeInfo->m_LastSeen = m_updateTime;
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
@@ -538,7 +547,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			{
 				nodeInfo->HaveUserCodes = true;
 			}
-			AddValue(vID);
+			AddValue(vID, nodeInfo);
 		}
 		break;
 	case OpenZWave::Notification::Type_SceneEvent:
@@ -1323,7 +1332,7 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 	m_updateTime = mytime(NULL);
 }
 
-void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
+void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeInfo)
 {
 	if (m_pManager == NULL)
 		return;
@@ -1383,6 +1392,20 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID)
 	_device.indexID = 0;
 	_device.hasWakeup = m_pManager->IsNodeAwake(HomeID, NodeID);
 	_device.isListening = m_pManager->IsNodeListeningDevice(HomeID, NodeID);
+
+	int xID;
+	std::stringstream ss;
+	ss << std::hex << pNodeInfo->Manufacturer_id;
+	ss >> xID;
+	_device.Manufacturer_id = xID;
+	std::stringstream ss2;
+	ss2 << std::hex << pNodeInfo->Product_id;
+	ss2 >> xID;
+	_device.Product_id = xID;
+	std::stringstream ss3;
+	ss3 << std::hex << pNodeInfo->Product_type;
+	ss3 >> xID;
+	_device.Product_type = xID;
 
 	if (vLabel != "")
 		_device.label = vLabel;
@@ -2379,7 +2402,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 							{
 								_log.Log(LOG_STATUS, "OpenZWave: Enrolling User Code/Tag to code index: %d", vNodeIndex);
 								m_pManager->SetValue(vNode, strValue);
-								AddValue(vID);
+								AddValue(vID, pNode);
 								bIncludedCode = true;
 								break;
 							}

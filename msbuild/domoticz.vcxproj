@@ -66,7 +66,7 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\makeversion.bat</Command>
+      <Command>"$(SolutionDir)makeversion.bat"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Getting git version info</Message>
@@ -97,7 +97,7 @@
       </LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\makeversion.bat</Command>
+      <Command>"$(SolutionDir)makeversion.bat"</Command>
       <Message>Getting git version info</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
