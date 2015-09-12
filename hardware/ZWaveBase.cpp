@@ -493,7 +493,22 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		RBUF tsen;
 		memset(&tsen, 0, sizeof(RBUF));
 
-		const _tZWaveDevice *pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+		const _tZWaveDevice *pPowerDevice;
+		if (
+			(pDevice->Manufacturer_id == 0x010F) &&
+			(pDevice->Product_type == 0x0600) &&
+			(pDevice->Product_id == 0x1000)
+			)
+		{
+			//Fibaro Wallplug, find power sensor with idx 4 (idx 1 only reports when plug goes on/off, idx 4 is live power)
+			pPowerDevice = FindDevice(pDevice->nodeID, 4, pDevice->indexID, COMMAND_CLASS_SENSOR_MULTILEVEL, ZDTYPE_SENSOR_POWER);
+			if (pPowerDevice==NULL)
+				pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+		}
+		else
+		{
+			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+		}
 		if (pPowerDevice == NULL)
 		{
 			pPowerDevice=FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWER);
