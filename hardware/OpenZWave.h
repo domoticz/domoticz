@@ -105,9 +105,11 @@ public:
 	bool ReceiveConfigurationFromOtherController();
 	bool SendConfigurationToSecondaryController();
 	bool TransferPrimaryRole();
-	bool CancelControllerCommand();
+	bool CancelControllerCommand(const bool bForce = false);
 	bool IncludeDevice(const bool bSecure);
 	bool ExcludeDevice(const int nodeID);
+	bool IsNodeIncluded();
+	bool IsNodeExcluded();
 	bool SoftResetDevice();
 	bool HardResetDevice();
 	bool HealNetwork();
@@ -120,7 +122,7 @@ public:
 	bool AddNodeToGroup(const int nodeID,const int groupID, const int addID, const int instance);
 	bool RemoveNodeFromGroup(const int nodeID,const int groupID, const int removeID, const int instance);
 	std::string GetConfigFile(std::string &szConfigFile);
-
+	unsigned int GetControllerID();
 	void NightlyNodeHeal();
 
 	bool m_awakeNodesQueried;
@@ -136,7 +138,7 @@ private:
 	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
 	bool GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string &vLabel, OpenZWave::ValueID &nValue);
 	bool GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue);
-	void AddValue(const OpenZWave::ValueID &vID);
+	void AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeInfo);
 	void UpdateValue(const OpenZWave::ValueID &vID);
 	void UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID);
 	void UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID);

@@ -120,7 +120,7 @@ void request_handler::handle_request(const std::string &sHost, const request& re
   }
   else if (request_path.find("/acttheme/") == 0)
   {
-	  request_path = myWebem->actTheme + request_path.substr(9);
+	  request_path = myWebem->m_actTheme + request_path.substr(9);
   }
 
   // Determine the file extension.

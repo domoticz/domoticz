@@ -56,6 +56,8 @@ public:
 		S_SOUND = 33,					//Sound sensor	V_LEVEL(in dB), V_TRIPPED, V_ARMED
 		S_VIBRATION = 34,				//Vibration sensor	V_LEVEL(vibration in Hz), V_TRIPPED, V_ARMED
 		S_MOISTURE = 35,				//Moisture sensor	V_LEVEL(water content or moisture in percentage ? ), V_TRIPPED, V_ARMED
+		S_INFO = 36,					// LCD text device / Simple information device on controller, V_TEXT
+		S_GAS = 37,						// Gas meter, V_FLOW, V_VOLUME
 
 		S_UNKNOWN = 200,				//No Type received
 	};
@@ -99,7 +101,7 @@ public:
 		V_IR_SEND = 32,					//Send out an IR - command	S_IR
 		V_IR_RECEIVE = 33,				//This message contains a received IR - command	S_IR
 		V_FLOW = 34,					//Flow of water(in meter)	S_WATER
-		V_VOLUME = 35,					//Water volume	S_WATER
+		V_VOLUME = 35,					//Water volume	S_WATER, S_GAS
 		V_LOCK_STATUS = 36,				//Set or get lock status. 1 = Locked, 0 = Unlocked	S_LOCK
 		V_LEVEL = 37,					//Used for sending level - value	S_DUST, S_AIR_QUALITY, S_SOUND(dB), S_VIBRATION(hz), S_LIGHT_LEVEL(lux)
 		V_VOLTAGE = 38,					//Voltage level	S_MULTIMETER
@@ -111,6 +113,8 @@ public:
 		V_HVAC_SETPOINT_COOL = 44,		//HVAC cold setpoint(Integer between 0 - 100)	S_HVAC
 		V_HVAC_SETPOINT_HEAT = 45,		//HVAC / Heater setpoint(Integer between 0 - 100)	S_HVAC, S_HEATER
 		V_HVAC_FLOW_MODE = 46,			//Flow mode for HVAC("Auto", "ContinuousOn", "PeriodicOn")	S_HVAC
+
+		V_TEXT = 47,					//Text/Info message S_INFO
 
 		V_UNKNOWN = 200					//No value received
 	};
@@ -154,9 +158,12 @@ public:
 
 	struct _tMySensorChild
 	{
-		_ePresentationType presType;
 		int nodeID;
 		int childID;
+
+		_ePresentationType presType;
+		std::string childName;
+		bool useAck;
 
 		//values
 		std::map<_eSetType, _tMySensorValue> values;
@@ -173,6 +180,7 @@ public:
 			hasBattery = false;
 			batValue = 255;
 			presType = S_UNKNOWN;
+			useAck = false;
 		}
 
 		bool GetValue(const _eSetType vType, int &intValue)
@@ -263,6 +271,45 @@ public:
 			}
 			return NULL;
 		}
+		_tMySensorChild* FindChildWithValueType(const int ChildID, const _eSetType valType)
+		{
+			std::vector<_tMySensorChild>::iterator itt;
+			for (itt = m_childs.begin(); itt != m_childs.end(); ++itt)
+			{
+				if (itt->childID == ChildID)
+				{
+					std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+					for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+					{
+						if (itt2->first == valType)
+						{
+							if (!itt2->second.bValidValue)
+								return NULL;
+							return &*itt;
+						}
+					}
+				}
+			}
+			return NULL;
+		}
+		_tMySensorChild* FindChildByValueType(const _eSetType valType)
+		{
+			std::vector<_tMySensorChild>::iterator itt;
+			for (itt = m_childs.begin(); itt != m_childs.end(); ++itt)
+			{
+				std::map<_eSetType, _tMySensorValue>::const_iterator itt2;
+				for (itt2 = itt->values.begin(); itt2 != itt->values.end(); ++itt2)
+				{
+					if (itt2->first == valType)
+					{
+						if (!itt2->second.bValidValue)
+							return NULL;
+						return &*itt;
+					}
+				}
+			}
+			return NULL;
+		}
 		_tMySensorChild* FindChild(const int ChildID)
 		{
 			std::vector<_tMySensorChild>::iterator itt;
@@ -287,8 +334,8 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 
-	void UpdatePresentationType(const int NodeID, const int ChildID, const _ePresentationType pType);
-	_ePresentationType GetPresentationType(const int NodeID, const int ChildID);
+	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name, const bool UseAck);
+	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
 
 	void SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
@@ -304,7 +351,7 @@ private:
 
 	void SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *pSensor, const _eSetType vType);
 
-	void MakeAndSendWindSensor(const int nodeID);
+	void MakeAndSendWindSensor(const int nodeID, const std::string &sname);
 
 	_tMySensorNode* FindNode(const int nodeID);
 	_tMySensorNode* InsertNode(const int nodeID);
@@ -320,8 +367,7 @@ private:
 
 	std::map<int, _tMySensorNode> m_nodes;
 
-	static const int readBufferSize=1028;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1028];
 	int m_bufferpos;
 };
 

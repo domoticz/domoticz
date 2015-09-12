@@ -11,24 +11,6 @@ DomoticzTCP::DomoticzTCP(const int ID, const std::string &IPAddress, const unsig
 m_username(username), m_password(password), m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-#if defined WIN32
-	int ret;
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			_log.Log(LOG_ERROR,"Domoticz: Winsock could not be initialized!");
-		}
-	}
-#endif
 	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
@@ -41,7 +23,6 @@ DomoticzTCP::~DomoticzTCP(void)
 	//
 	// Release WinSock
 	//
-	WSACleanup();
 #endif
 	if (NULL != info) {
 		freeaddrinfo(info);

@@ -31,5 +31,6 @@ MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 file(WRITE appversion.h.txt "#define APPVERSION ${ProjectRevision}\n#define APPHASH \"${ProjectHash}\"\n#define APPDATE ${ProjectDate}\n")
 # copy the file to the final header only if the version changes
 # reduces needless rebuilds
+
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                        appversion.h.txt appversion.h)
+                        appversion.h.txt ${CMAKE_CURRENT_LIST_DIR}/appversion.h)

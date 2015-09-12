@@ -68,5 +68,8 @@
 
 	<!-- Remove COMMAND_CLASS_BASIC -->
 	<CommandClass id="32" action="remove" />
+	
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
 
 </Product>

@@ -35,11 +35,13 @@ private:
 	bool m_zonesLastState[256];
 	bool m_outputsLastState[256];
 	bool m_isOutputSwitch[256];
+	bool m_isTemperature[256];
 
 	// thread-safe for read and write
 	boost::mutex m_mutex;
 
 	bool m_armLast;
+	bool m_alarmLast;
 
 	bool StartHardware();
 	bool StopHardware();
@@ -58,22 +60,30 @@ private:
 	bool ReadZonesState(const bool firstTime = false);
 	// Reads and reports state of outputs
 	bool ReadOutputsState(const bool firstTime = false);
+	// Read state of arming
+	bool ReadArmState(const bool firstTime = false);
+	// Read alarm
+	bool ReadAlarm(const bool firstTime = false);
 	// Updates zone name and type in database
 	void UpdateZoneName(const unsigned int Idx, const unsigned char* name, const unsigned int partition);
 	// Updates output name and type in database
 	void UpdateOutputName(const unsigned int Idx, const unsigned char* name, const bool switchable);
+	// Updates output name for virtual in/out (arming ald alarm)
+	void UpdateAlarmAndArmName();
 	// Reports zones states to domoticz
 	void ReportZonesViolation(const unsigned long Idx, const bool violation);
 	// Reports output states to domoticz
 	void ReportOutputState(const unsigned long Idx, const bool state);
 	// Reports arm state to domoticz
 	void ReportArmState(const bool isArm);
+	// Reports alarms to domoticz
+	void ReportAlarm(const bool isAlarm);
+	// Reports temperatures to domoticz
+	void ReportTemperature(const unsigned long Idx, unsigned int temp);
 	// arms given partitions
 	bool ArmPartitions(const unsigned char* partitions, const unsigned int mode = 0);
 	// disarms given partitions
 	bool DisarmPartitions(const unsigned char* partitions);
-	// Read state of arming
-	bool ReadArmState(const bool firstTime = false);
 
 	std::pair<unsigned char*, unsigned int> getFullFrame(const unsigned char* pCmd, unsigned int cmdLength);
 	int SendCommand(const unsigned char* cmd, unsigned int cmdLength, unsigned char *answer);

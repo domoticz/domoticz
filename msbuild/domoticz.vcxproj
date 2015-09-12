@@ -14,6 +14,7 @@
     <ProjectGuid>{6AD96441-5B2C-467B-AAB6-A1B8368D503A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>domoticz</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -27,7 +28,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -65,7 +66,7 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\makeversion.bat</Command>
+      <Command>"$(SolutionDir)makeversion.bat"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Getting git version info</Message>
@@ -96,7 +97,7 @@
       </LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\makeversion.bat</Command>
+      <Command>"$(SolutionDir)makeversion.bat"</Command>
       <Message>Getting git version info</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -184,6 +185,7 @@
     <ClInclude Include="..\hardware\TE923.h" />
     <ClInclude Include="..\hardware\TE923Tool.h" />
     <ClInclude Include="..\hardware\Teleinfo.h" />
+    <ClInclude Include="..\hardware\Tellstick.h" />
     <ClInclude Include="..\hardware\Thermosmart.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
@@ -366,6 +368,7 @@
     <ClCompile Include="..\hardware\TE923.cpp" />
     <ClCompile Include="..\hardware\TE923Tool.cpp" />
     <ClCompile Include="..\hardware\Teleinfo.cpp" />
+    <ClCompile Include="..\hardware\Tellstick.cpp" />
     <ClCompile Include="..\hardware\Thermosmart.cpp" />
     <ClCompile Include="..\hardware\ToonThermostat.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />

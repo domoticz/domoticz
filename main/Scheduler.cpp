@@ -362,6 +362,10 @@ void CScheduler::Do_Work()
 		}
 
 		CheckSchedules();
+
+		if (ltime.tm_sec == 0) {
+			DeleteExpiredTimers();
+		}
 	}
 	_log.Log(LOG_STATUS, "Scheduler stopped...");
 }
@@ -525,6 +529,59 @@ void CScheduler::CheckSchedules()
 				}
 			}
 		}
+	}
+}
+
+void CScheduler::DeleteExpiredTimers()
+{
+	char szDate[20];
+	char szTime[20];
+	time_t now = mytime(NULL);
+	struct tm tmnow;
+	localtime_r(&now, &tmnow);
+	sprintf(szDate, "%04d-%02d-%02d", tmnow.tm_year + 1900, tmnow.tm_mon + 1, tmnow.tm_mday);
+	sprintf(szTime, "%02d:%02d", tmnow.tm_hour, tmnow.tm_min);
+	int iExpiredTimers = 0;
+
+	std::vector<std::vector<std::string> > result;
+	// Check Timers
+	result = m_sql.safe_query("SELECT ID FROM Timers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
+		TTYPE_FIXEDDATETIME,
+		szDate,
+		szDate,
+		szTime
+		);
+	if (result.size() > 0) {
+		m_sql.safe_query("DELETE FROM Timers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
+			TTYPE_FIXEDDATETIME,
+			szDate,
+			szDate,
+			szTime
+			);
+		iExpiredTimers += result.size();
+	}
+	
+	// Check SceneTimers
+	result = m_sql.safe_query("SELECT ID FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
+		TTYPE_FIXEDDATETIME,
+		szDate,
+		szDate,
+		szTime
+		);
+	if (result.size() > 0) {
+		m_sql.safe_query("DELETE FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
+			TTYPE_FIXEDDATETIME,
+			szDate,
+			szDate,
+			szTime
+			);
+		iExpiredTimers += result.size();
+	}
+
+	if (iExpiredTimers > 0) {
+		_log.Log(LOG_STATUS, "Purged %i expired (scene)timer(s)", iExpiredTimers);
+
+		ReloadSchedules();
 	}
 }
 
@@ -793,6 +850,46 @@ namespace http {
 			root["title"] = "DeleteTimer";
 			m_sql.safe_query(
 				"DELETE FROM Timers WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_EnableTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "EnableTimer";
+			m_sql.safe_query(
+				"UPDATE Timers SET Active=1 WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DisableTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DisableTimer";
+			m_sql.safe_query(
+				"UPDATE Timers SET Active=0 WHERE (ID == '%q')",
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -1251,6 +1348,46 @@ namespace http {
 			root["title"] = "DeleteSceneTimer";
 			m_sql.safe_query(
 				"DELETE FROM SceneTimers WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_EnableSceneTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "EnableSceneTimer";
+			m_sql.safe_query(
+				"UPDATE SceneTimers SET Active=1 WHERE (ID == '%q')",
+				idx.c_str()
+				);
+			m_mainworker.m_scheduler.ReloadSchedules();
+		}
+
+		void CWebServer::Cmd_DisableSceneTimer(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string idx = m_pWebEm->FindValue("idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DisableSceneTimer";
+			m_sql.safe_query(
+				"UPDATE SceneTimers SET Active=0 WHERE (ID == '%q')",
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();

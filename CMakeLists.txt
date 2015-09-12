@@ -239,6 +239,7 @@ hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
 hardware/Teleinfo.cpp
+hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/VolcraftCO20.cpp
@@ -429,6 +430,15 @@ IF(RaspberryPi)
 else()
   message(STATUS "Not building on Raspberry Pi. GPIO support disabled.")
 ENDIF(RaspberryPi)
+
+find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
+if (TELLDUSCORE_INCLUDE)
+  message(STATUS "Found telldus-core (telldus-core.h), adding tellstick support")
+  target_link_libraries (domoticz telldus-core)
+  add_definitions(-DWITH_TELLDUSCORE)
+else()
+  message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
+endif (TELLDUSCORE_INCLUDE)
 
 target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
 

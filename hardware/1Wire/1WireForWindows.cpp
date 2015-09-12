@@ -27,15 +27,10 @@ void Log(const _eLogLevel level, const char* logline, ...)
 SOCKET ConnectToService()
 {
    // Connection
-   WSADATA wsaData;
    SOCKET theSocket = INVALID_SOCKET;
    struct addrinfo *result = NULL,
       *ptr = NULL,
       hints;
-
-   // Initialize Winsock
-   if (WSAStartup(MAKEWORD(2,2),&wsaData) != 0)
-      return INVALID_SOCKET;
 
    ZeroMemory(&hints,sizeof(hints));
    hints.ai_family = AF_UNSPEC;
@@ -47,7 +42,6 @@ SOCKET ConnectToService()
    if (getaddrinfoRet != 0)
    {
       Log(LOG_ERROR,"getaddrinfo failed with error: %d\n", getaddrinfoRet);
-      WSACleanup();
       return INVALID_SOCKET;
    }
 
@@ -59,7 +53,6 @@ SOCKET ConnectToService()
       if (theSocket == INVALID_SOCKET)
       {
          Log(LOG_ERROR,"socket function failed with error = %d\n", WSAGetLastError());
-         WSACleanup();
          return INVALID_SOCKET;
       }
 
@@ -78,7 +71,6 @@ SOCKET ConnectToService()
 
    if (theSocket==INVALID_SOCKET)
    {
-      WSACleanup();
       return INVALID_SOCKET;
    }
 
@@ -89,7 +81,6 @@ SOCKET ConnectToService()
    {
       Log(LOG_ERROR,"setsockopt failed with error: %u\n", WSAGetLastError());
       closesocket(theSocket);
-      WSACleanup();
       return INVALID_SOCKET;
    }
 
@@ -99,7 +90,6 @@ SOCKET ConnectToService()
 void DisconnectFromService(SOCKET theSocket)
 {
    closesocket(theSocket);
-   WSACleanup();
 }
 
 bool Send(SOCKET theSocket,std::string requestToSend)
@@ -153,6 +143,9 @@ std::string C1WireForWindows::SendAndReceive(std::string requestToSend) const
 
 bool C1WireForWindows::IsAvailable()
 {
+#ifdef _DEBUG
+	return false;
+#endif
    static boost::optional<bool> IsAvailable;
 
    if (IsAvailable.is_initialized())

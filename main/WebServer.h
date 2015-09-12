@@ -147,13 +147,20 @@ private:
 	void Cmd_AddTimer(Json::Value &root);
 	void Cmd_UpdateTimer(Json::Value &root);
 	void Cmd_DeleteTimer(Json::Value &root);
+	void Cmd_EnableTimer(Json::Value & root);
+	void Cmd_DisableTimer(Json::Value & root);
 	void Cmd_ClearTimers(Json::Value &root);
 	void Cmd_AddSceneTimer(Json::Value &root);
 	void Cmd_UpdateSceneTimer(Json::Value &root);
 	void Cmd_DeleteSceneTimer(Json::Value &root);
+	void Cmd_EnableSceneTimer(Json::Value & root);
+	void Cmd_DisableSceneTimer(Json::Value & root);
 	void Cmd_ClearSceneTimers(Json::Value &root);
-	void Cmd_SetSceneCode(Json::Value &root);
+	void Cmd_GetSceneActivations(Json::Value &root);
+	void Cmd_AddSceneCode(Json::Value &root);
 	void Cmd_RemoveSceneCode(Json::Value &root);
+	void Cmd_ClearSceneCodes(Json::Value &root);
+	void Cmd_RenameScene(Json::Value &root);
 	void Cmd_SetSetpoint(Json::Value &root);
 	void Cmd_AddSetpointTimer(Json::Value &root);
 	void Cmd_UpdateSetpointTimer(Json::Value &root);
@@ -213,6 +220,8 @@ private:
 	void Cmd_ZWaveDeleteNode(Json::Value &root);
 	void Cmd_ZWaveInclude(Json::Value &root);
 	void Cmd_ZWaveExclude(Json::Value &root);
+	void Cmd_ZWaveIsNodeIncluded(Json::Value &root);
+	void Cmd_ZWaveIsNodeExcluded(Json::Value &root);
 	void Cmd_ZWaveSoftReset(Json::Value &root);
 	void Cmd_ZWaveHardReset(Json::Value &root);
 	void Cmd_ZWaveNetworkHeal(Json::Value &root);
@@ -223,7 +232,6 @@ private:
 	void Cmd_ZWaveGroupInfo(Json::Value &root);
 	void Cmd_ZWaveCancel(Json::Value &root);
 	void Cmd_ApplyZWaveNodeConfig(Json::Value &root);
-	void Cmd_RequestZWaveNodeConfig(Json::Value &root);
 	void Cmd_ZWaveStateCheck(Json::Value &root);
 	void Cmd_ZWaveRequestNodeConfig(Json::Value &root);
 	void Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &root);

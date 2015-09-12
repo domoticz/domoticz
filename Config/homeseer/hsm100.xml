@@ -2,12 +2,6 @@
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
-		<Value type="byte" index="0" genre="config" label="Unidentified Parameter" units="" min="0" max="255" value="5">
-			<Help>
-				Parameter #0 is undocumented: let us know if you know what it does!
-				Attributes (type, units, min and max) are wild guesses, except default value.
-			</Help>
-		</Value>
 		<Value type="byte" index="1" genre="config" label="Sensitivity" units="" min="0" max="255" value="200">
 			<Help>
 				Sensitivity sets the amount of motion required for the device to
@@ -98,6 +92,8 @@
 			</Help>
 		</Value>
 	</CommandClass>
+    <!-- Basic set as report -->
+    <CommandClass id="32" setasreport="true"/>
 	<!-- Association Groups -->
 	<CommandClass id="96" mapping="endpoints" />
 	<CommandClass id="133">

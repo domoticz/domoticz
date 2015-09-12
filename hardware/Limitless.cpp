@@ -115,31 +115,11 @@ CLimitLess::CLimitLess(const int ID, const int LedType, const std::string IPAddr
 	m_bSkipReceiveCheck = true;
 	m_LEDType=LedType;
 	m_bIsStarted=false;
-#if defined WIN32
-	//Init winsock
-	WSADATA data;
-	WORD version; 
-
-	version = (MAKEWORD(2, 2)); 
-	int ret = WSAStartup(version, &data); 
-	if (ret != 0) 
-	{  
-		ret = WSAGetLastError(); 
-
-		if (ret == WSANOTINITIALISED) 
-		{  
-			MessageBox(0,"Winsock not initialized","Error:",MB_OK); 
-		}
-	}		
-#endif
 	Init();
 }
 
 CLimitLess::~CLimitLess(void)
 {
-#if defined WIN32
-	WSACleanup();
-#endif
 }
 
 void CLimitLess::Init()

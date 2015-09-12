@@ -29,8 +29,7 @@ private:
 	void ParseLine();
 	void SendMeter(unsigned char ID, double musage, double mtotal);
 	void ReloadLastTotals();
-	static const int readBufferSize=1028;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1028];
 
 	static const int max_s0_meters=5;
 	_tS0Meter m_meters[max_s0_meters];

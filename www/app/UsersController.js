@@ -116,7 +116,7 @@ define(['app'], function (app) {
 			$.devIdx=idx;
 			cursordefault();
 			var htmlcontent = '';
-			htmlcontent='<p><h2>User: ' + name + '</h2></p>\n';
+			htmlcontent='<p><h2>' + $.t('User') +': ' + name + '</h2></p>\n';
 			htmlcontent+=$('#userdevices').html();
 			$('#usercontent').html(GetBackbuttonHTMLTable('ShowUsers')+htmlcontent);
 			$('#usercontent').i18n();

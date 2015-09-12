@@ -8,7 +8,8 @@ class CICYThermostat : public CDomoticzHardwareBase
 	enum _eICYCompanyMode {
 		CMODE_UNKNOWN=0,
 		CMODE_PORTAL,
-		CMODE_ENI
+		CMODE_ENI,
+		CMODE_SEC,
 	};
 public:
 	CICYThermostat(const int ID, const std::string Username, const std::string Password);
