@@ -10,11 +10,11 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
-//#ifdef _DEBUG
-#define DEBUG_SatelIntegra
-//#endif
+#ifdef _DEBUG
+	#define DEBUG_SatelIntegra
+#endif
 
-#define SATEL_POLL_INTERVAL 5
+#define SATEL_POLL_INTERVAL 4
 
 extern CSQLHelper m_sql;
 
@@ -828,7 +828,7 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 
 			if (SendCommand(cmd, 41, buffer) != -1)
 			{
-				_log.Log(LOG_STATUS, "Satel Integra: switched output %d", general->id);
+				_log.Log(LOG_STATUS, "Satel Integra: switched output %d to %s", general->id, general->cmnd == gswitch_sOn ? "on" : "off");
 				return true;
 			}
 			else
@@ -990,7 +990,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 	tv.tv_usec = 0;
 	if (select(m_socket + 1, &rfds, NULL, NULL, &tv) < 0)
 	{
-		_log.Log(LOG_ERROR, "Satel Integra: no connection.");
+		_log.Log(LOG_ERROR, "Satel Integra: connection lost.");
 		DestroySocket();
 		return -1;
 	}
