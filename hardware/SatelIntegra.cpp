@@ -407,7 +407,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 				{
 					ReportZonesViolation(index + 1, violate);
 					//UpdateZoneName(index + 1, &buffer[4], buffer[20]);  	 Security1 does not support units - partition
-					UpdateZoneName(index + 1, &buffer[4], 0);
+					UpdateZoneName(index + 1, &buffer[4], 1);
 				}
 				else
 				{
@@ -632,11 +632,19 @@ void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool viol
 {
 	m_zonesLastState[Idx - 1] = violation;
 
-	char szTmp[4];
-	sprintf(szTmp, "%02X", (unsigned int)Idx);
-	std::string devname;
+//	char szTmp[4];
+//	sprintf(szTmp, "%02X", (unsigned int)Idx);
+//	std::string devname;
 
-	m_sql.UpdateValue(m_HwdID, szTmp, 0, pTypeGeneral, sTypeAlert, 12, 255, violation ? 3 : 1, violation ? "Violate" : "Normal", devname);
+//	m_sql.UpdateValue(m_HwdID, szTmp, 0, pTypeGeneral, sTypeAlert, 12, 255, violation ? 3 : 1, violation ? "Violate" : "Normal", devname);
+
+	_tGeneralDevice output;
+	output.subtype = sTypeAlert;
+	output.id = Idx;
+	output.intval1 = violation ? 3 : 1;
+
+	sDecodeRXMessage(this, (const unsigned char *)&output);
+
 }
 
 void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
@@ -848,7 +856,7 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[4];
-	sprintf(szTmp, "%02X", (unsigned int)Idx);
+	sprintf(szTmp, "%d", (unsigned int)Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -861,14 +869,14 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 		namePrefix = "Temp";
 	}
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q:%q') AND (Unit=0)", m_HwdID, szTmp, namePrefix.c_str(), shortName.c_str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q:%q') AND (Unit=1)", m_HwdID, szTmp, namePrefix.c_str(), shortName.c_str());
 	if (result.size() < 1)
 	{
 		//Assign name from Integra
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s:%s'", Idx, namePrefix.c_str(), shortName.c_str());
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=0)", namePrefix.c_str(), shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", namePrefix.c_str(), shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
 }
 
