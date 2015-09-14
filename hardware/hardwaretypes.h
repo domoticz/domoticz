@@ -106,6 +106,8 @@
 #define sSwitchTypeTriState			0x28
 #define sSwitchTypeDeltronic		0x29
 #define sSwitchTypeFA500			0x30
+#define sSwitchTypeHT12E			0x31
+#define sSwitchTypeEV1527			0x32
 
 //Switch commands
 #define gswitch_sOff				0x00
