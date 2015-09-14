@@ -628,6 +628,22 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 		{
 			sLMSCmnd = "\"mixer\", \"muting\", \"toggle\"";
 		}
+		else if (command == "Left")
+		{
+			sLMSCmnd = "\"button\", \"left\"";
+		}
+		else if (command == "Right")
+		{
+			sLMSCmnd = "\"button\", \"right\"";
+		}
+		else if (command == "Up")
+		{
+			sLMSCmnd = "\"button\", \"up\"";
+		}
+		else if (command == "Down")
+		{
+			sLMSCmnd = "\"button\", \"down\"";
+		}
 
 		if (sLMSCmnd != "")
 		{
