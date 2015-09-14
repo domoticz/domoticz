@@ -108,6 +108,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Serbian language support, big thanks to siklosi!!
 - Implemented: Slovenian language support, big thanks to eden86!!
 - Implemented: Option to replace an Energy device
+- Changed: OpenZWave, Fibaro Wall Plug, now using multisensor for power reading
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

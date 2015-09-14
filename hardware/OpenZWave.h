@@ -138,7 +138,7 @@ private:
 	bool GetValueByCommandClass(const int nodeID, const int instanceID, const int commandClass, OpenZWave::ValueID &nValue);
 	bool GetValueByCommandClassLabel(const int nodeID, const int instanceID, const int commandClass, const std::string &vLabel, OpenZWave::ValueID &nValue);
 	bool GetNodeConfigValueByIndex(const NodeInfo *pNode, const int index, OpenZWave::ValueID &nValue);
-	void AddValue(const OpenZWave::ValueID &vID);
+	void AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeInfo);
 	void UpdateValue(const OpenZWave::ValueID &vID);
 	void UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID);
 	void UpdateNodeScene(const OpenZWave::ValueID &vID, int SceneID);
