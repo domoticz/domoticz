@@ -309,6 +309,17 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char length)
 			svalue = 255;
 		}
 		SwitchLight(nodeID, LCmd, svalue);
+  } 
+  else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint)) 
+  {
+      const _tThermostat *pMeter=(const _tThermostat*)pdata;
+      float temp = pMeter->temp;
+      unsigned char idx = pMeter->id4;
+      SetSetpoint(idx, temp);
+   } 
+  else 
+  {
+     _log.Log(LOG_STATUS, "OTGW: Skipping writing to Hardware for type: %02X, subType: %02X", packettype, subtype);
 	}
 	return true;
 }
