@@ -55,8 +55,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Philips", sSwitchTypePhilips },       // p-
 	{ "Energenie", sSwitchTypeEnergenie },   // p-
 	{ "Energenie5", sSwitchTypeEnergenie5 }, // p-
-	{ "Ikea Koppla", sSwitchTypeKoppla },    // p-
-	{ "TRC02RGB", sSwitchTypeTRC02 },        // p-
+	{ "Ikea Koppla", sSwitchTypeKoppla },    // p14
+	{ "TRC02RGB", sSwitchTypeTRC02 },        // p10
 	{ "TRC022RGB", sSwitchTypeTRC02_2 },     // p-
 	{ "Livolo", sSwitchTypeLivolo },         // p-
 	{ "Livolo App", sSwitchTypeLivoloAppliance }, // p-
@@ -70,7 +70,9 @@ const _tRFLinkStringIntHelper rfswitches[] =
     { "SilverCrest", sSwitchTypeSilvercrest }, // p75
     { "Mertik", sSwitchTypeMertik },         // p82
     { "HomeConfort", sSwitchTypeHomeConfort }, // p11
-    { "", -1 }
+	{ "HT12E", sSwitchTypeHT12E },           // p60
+	{ "EV1527", sSwitchTypeEV1527 },         // p61
+	{ "", -1 }
 };
 
 const _tRFLinkStringIntHelper rfswitchcommands[] =
