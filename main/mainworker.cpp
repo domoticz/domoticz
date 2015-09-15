@@ -75,7 +75,6 @@
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
-#include "../hardware/LogitechMediaServer.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -738,10 +737,6 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_SatelIntegra:
 		pHardware = new SatelIntegra(ID, Address, Port, Password);
-		break;
-	case HTYPE_LogitechMediaServer:
-		//Logitech Media Server
-		pHardware = new CLogitechMediaServer(ID, Address, Port, Mode1, Mode2);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:
@@ -8781,6 +8776,13 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	{
 		cmnd = (unsigned char)pMeter->intval2;
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
+	}
+	else if (subType == sTypeAlert)
+	{
+		sprintf(szTmp, "%d", pMeter->intval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
 	}
 
 	if (m_verboselevel == EVBL_ALL)
