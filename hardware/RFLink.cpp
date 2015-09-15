@@ -72,6 +72,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
     { "HomeConfort", sSwitchTypeHomeConfort }, // p11
 	{ "HT12E", sSwitchTypeHT12E },           // p60
 	{ "EV1527", sSwitchTypeEV1527 },         // p61
+	{ "Elmes", sSwitchTypeElmes },           // p65
 	{ "", -1 }
 };
 
