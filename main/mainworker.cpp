@@ -8777,6 +8777,13 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		cmnd = (unsigned char)pMeter->intval2;
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
 	}
+	else if (subType == sTypeAlert)
+	{
+		sprintf(szTmp, "%d", pMeter->intval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
+	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{
