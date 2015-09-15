@@ -4493,7 +4493,10 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
 					ii++;
 				}
-				if (dType == pTypeENERGY)
+				if (
+					(dType == pTypeENERGY)||
+					((dType == pTypeGeneral)&& (dSubType == sTypeKwh))
+					)
 				{
 					root["result"][ii]["val"] = NTYPE_USAGE;
 					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
@@ -6975,7 +6978,8 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveThermostatFanMode))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeDistance))) &&
-                                (!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeCounterIncremental))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeKwh))) &&
 								(dType != pTypeCURRENT) &&
 								(dType != pTypeCURRENTENERGY) &&
 								(dType != pTypeENERGY) &&
@@ -8333,7 +8337,10 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+					else if (
+						((dType == pTypeENERGY) || (dType == pTypePOWER))||
+						((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+						)
 					{
 						std::vector<std::string> strarray;
 						StringSplit(sValue, ";", strarray);
@@ -10784,7 +10791,7 @@ namespace http {
 			unsigned char dType = atoi(result[0][0].c_str());
 			unsigned char dSubType = atoi(result[0][1].c_str());
 			_eMeterType metertype = (_eMeterType)atoi(result[0][2].c_str());
-			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER))
+			if ((dType == pTypeP1Power) || (dType == pTypeENERGY) || (dType == pTypePOWER) || ((dType = pTypeGeneral) && (dSubType == sTypeKwh)))
 				metertype = MTYPE_ENERGY;
 			else if (dType == pTypeP1Gas)
 				metertype = MTYPE_GAS;
@@ -11481,7 +11488,7 @@ namespace http {
 							}
 						}
 					}
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+					else if ((dType == pTypeENERGY) || (dType == pTypePOWER) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
 					{
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
@@ -13495,6 +13502,16 @@ namespace http {
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
 								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 100.0f));
+								root["counter"] = szTmp;
+							}
+						}
+						else if ((dType == pTypeGeneral)&&(dSubType==sTypeKwh))
+						{
+							size_t spos = sValue.find(";");
+							if (spos != std::string::npos)
+							{
+								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
+								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 1000.0f));
 								root["counter"] = szTmp;
 							}
 						}

@@ -530,6 +530,33 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 	}
 }
 
+void CDomoticzHardwareBase::SendKwhMeterEx(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname)
+{
+	int Idx = (NodeID * 256) + ChildID;
+	bool bDeviceExits = true;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, int(Idx), int(pTypeGeneral), int(sTypeKwh));
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
+	_tGeneralDevice gdevice;
+	gdevice.intval1 = Idx;
+	gdevice.subtype = sTypeKwh;
+	gdevice.floatval1 = (float)musage;
+	gdevice.floatval2 = (float)(mtotal*1000.0);
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeGeneral), int(sTypeKwh));
+	}
+}
+
 double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, bool &bExists)
 {
 	int Idx = (NodeID * 256) + ChildID;
