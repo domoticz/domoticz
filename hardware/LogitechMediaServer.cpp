@@ -600,49 +600,53 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 	if (result.size() == 1)
 	{
 		std::string	sLMSCall;
-		if (command == "PlayPause")
-		{
-			sLMSCmnd = "\"pause\"";
-		}
-		else if (command == "Stop")
-		{
-			sLMSCmnd = "\"stop\"";
-		}
-		else if (command == "Forward")
-		{
-			sLMSCmnd = "\"button\", \"jump_fwd\"";
-		}
-		else if (command == "Rewind")
-		{
-			sLMSCmnd = "\"button\", \"jump_rew\"";
-		}
-		else if (command == "VolumeUp")
-		{
-			sLMSCmnd = "\"mixer\", \"volume\", \"+2\"";
-		}
-		else if (command == "VolumeDown")
-		{
-			sLMSCmnd = "\"mixer\", \"volume\", \"-2\"";
-		}
-		else if (command == "Mute")
-		{
-			sLMSCmnd = "\"mixer\", \"muting\", \"toggle\"";
-		}
-		else if (command == "Left")
-		{
+		if (command == "Left") {
 			sLMSCmnd = "\"button\", \"left\"";
 		}
-		else if (command == "Right")
-		{
+		else if (command == "Right") {
 			sLMSCmnd = "\"button\", \"right\"";
 		}
-		else if (command == "Up")
-		{
+		else if (command == "Up") {
 			sLMSCmnd = "\"button\", \"up\"";
 		}
-		else if (command == "Down")
-		{
+		else if (command == "Down") {
 			sLMSCmnd = "\"button\", \"down\"";
+		}
+		else if (command == "Favorites") {
+			sLMSCmnd = "";
+		}
+		else if (command == "Browse") {
+			sLMSCmnd = "";
+		}
+		else if (command == "NowPlaying") {
+			sLMSCmnd = "";
+		}
+		else if (command == "Shuffle") {
+			sLMSCmnd = "";
+		}
+		else if (command == "Repeat") {
+			sLMSCmnd = "";
+		}
+		else if (command == "Stop") {
+			sLMSCmnd = "\"stop\"";
+		}
+		else if (command == "VolumeUp") {
+			sLMSCmnd = "\"mixer\", \"volume\", \"+2\"";
+		}
+		else if (command == "Mute") {
+			sLMSCmnd = "\"mixer\", \"muting\", \"toggle\"";
+		}
+		else if (command == "VolumeDown") {
+			sLMSCmnd = "\"mixer\", \"volume\", \"-2\"";
+		}
+		else if (command == "Rewind") {
+			sLMSCmnd = "\"button\", \"jump_rew\"";
+		}
+		else if (command == "PlayPause") {
+			sLMSCmnd = "\"pause\"";
+		}
+		else if (command == "Forward") {
+			sLMSCmnd = "\"button\", \"jump_fwd\"";
 		}
 
 		if (sLMSCmnd != "")
