@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 78
+#define DB_VERSION 79
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -234,6 +234,7 @@ const char *sqlCreateHardware =
 "[SerialPort] VARCHAR(50) DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
+"[FileName] VARCHAR(200) DEFAULT (''),"
 "[Mode1] CHAR DEFAULT 0, "
 "[Mode2] CHAR DEFAULT 0, "
 "[Mode3] CHAR DEFAULT 0, "
@@ -1475,6 +1476,11 @@ bool CSQLHelper::OpenDatabase()
 					safe_query("UPDATE DeviceStatus SET DeviceID='%q' WHERE (ID='%q')", szTmp, idx.c_str());
 				}
 			}
+		}
+		if (dbversion < 79)
+		{
+			//MQTT filename for ca file
+			query("ALTER TABLE Hardware ADD COLUMN [FileName] VARCHAR(200) DEFAULT ('')");
 		}
 	}
 	else if (bNewInstall)
