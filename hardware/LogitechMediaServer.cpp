@@ -608,11 +608,11 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 		{
 			sLMSCmnd = "\"stop\"";
 		}
-		else if (command == "BigStepForward")
+		else if (command == "Forward")
 		{
 			sLMSCmnd = "\"button\", \"jump_fwd\"";
 		}
-		else if (command == "BigStepBack")
+		else if (command == "Rewind")
 		{
 			sLMSCmnd = "\"button\", \"jump_rew\"";
 		}
