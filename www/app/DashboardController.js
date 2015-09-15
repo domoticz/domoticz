@@ -598,7 +598,7 @@ define(['app'], function (app) {
 										    if (item.CustomImage == 0) item.Image = item.TypeImg;
 										    if ((item.Status != 'Off') && (item.Status != '0')) {
 										        img = '<img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-										        img2 = '<img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx);" class="lcursor" height="40" width="40">';
+										        img2 = '<img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ');" class="lcursor" height="40" width="40">';
 										    }
 										    else {
 										        img = '<img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40">';
@@ -2007,7 +2007,7 @@ define(['app'], function (app) {
 									    if (item.CustomImage == 0) item.Image = item.TypeImg;
 									    if ((item.Status != 'Off') && (item.Status != '0')) {
 									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-									        xhtm += '\t      <td id="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx);" class="lcursor" height="40" width="40"></td>\n';
+									        xhtm += '\t      <td id="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ');" class="lcursor" height="40" width="40"></td>\n';
 									    }
 									    else {
 									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
