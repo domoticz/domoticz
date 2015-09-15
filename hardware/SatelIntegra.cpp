@@ -16,6 +16,8 @@
 
 #define SATEL_POLL_INTERVAL 4
 
+#define round(a) ( int ) ( a + .5 )
+
 extern CSQLHelper m_sql;
 
 typedef struct tModel {
@@ -640,7 +642,7 @@ void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool viol
 
 	_tGeneralDevice zone;
 	zone.subtype = sTypeAlert;
-	zone.id = Idx;
+	zone.id = (unsigned char)Idx;
 	zone.intval1 = violation ? 3 : 1;
 
 	sDecodeRXMessage(this, (const unsigned char *)&zone);}

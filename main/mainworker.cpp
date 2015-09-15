@@ -8636,7 +8636,8 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		(subType == sTypeSoundLevel) ||
 		(subType == sTypeBaro) ||
 		(subType == sTypeDistance) ||
-		(subType == sTypeSoilMoisture)
+		(subType == sTypeSoilMoisture) ||
+		(subType == sTypeKwh)
 		)
 	{
 		sprintf(szTmp, "%08X", (unsigned int)pMeter->intval1);
@@ -8777,6 +8778,13 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		cmnd = (unsigned char)pMeter->intval2;
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
 	}
+	else if (subType == sTypeKwh)
+	{
+		sprintf(szTmp, "%.3f;%.3f", pMeter->floatval1, pMeter->floatval2);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
+
+	}
 	else if (subType == sTypeAlert)
 	{
 		sprintf(szTmp, "%d", pMeter->intval1);
@@ -8871,9 +8879,16 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			sprintf(szTmp, "Percentage = %.2f",pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
-    case sTypeAlert:
+		case sTypeKwh:
+			WriteMessage("subtype       = kWh");
+			sprintf(szTmp, "Instant = %.3f", pMeter->floatval1);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "Counter = %.3f", pMeter->floatval2/1000.0f);
+			WriteMessage(szTmp);
+			break;
+		case sTypeAlert:
 			WriteMessage("subtype       = Alert");
-			sprintf(szTmp, "Level = %d", pMeter->intval1);
+			sprintf(szTmp, "Alert = %d", pMeter->intval1);
 			WriteMessage(szTmp);
 			break;
 		default:

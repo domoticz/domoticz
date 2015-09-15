@@ -3593,7 +3593,8 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeSoundLevel
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeDistance
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypePressure
-		"(Type=%d AND SubType=%d)"     //pTypeGeneral,sTypeCounterIncremental
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeCounterIncremental
+		"(Type=%d AND SubType=%d)"     //pTypeGeneral,sTypeKwh
 		")",
 		pTypeRFXMeter,
 		pTypeP1Gas,
@@ -3616,7 +3617,8 @@ void CSQLHelper::UpdateMeter()
 		pTypeGeneral, sTypeSoundLevel,
 		pTypeGeneral, sTypeDistance,
 		pTypeGeneral, sTypePressure,
-		pTypeGeneral, sTypeCounterIncremental
+		pTypeGeneral, sTypeCounterIncremental,
+		pTypeGeneral, sTypeKwh
 		);
 	if (result.size()>0)
 	{
@@ -3728,6 +3730,17 @@ void CSQLHelper::UpdateMeter()
 			{
 				double fValue = atof(sValue.c_str())*10.0f;
 				sprintf(szTmp, "%d", int(fValue));
+				sValue = szTmp;
+			}
+			else if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(sValue, ";", splitresults);
+				if (splitresults.size() < 2)
+					continue;
+				susage = splitresults[0];
+				double fValue = atof(splitresults[1].c_str());
+				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
 			else if (dType == pTypeLux)

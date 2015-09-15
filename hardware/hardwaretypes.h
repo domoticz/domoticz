@@ -60,6 +60,7 @@
 #define sTypeBaro					0x1A
 #define sTypeDistance				0x1B
 #define sTypeCounterIncremental		0x1C
+#define sTypeKwh					0x1D
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4

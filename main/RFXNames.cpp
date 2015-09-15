@@ -631,6 +631,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
+		{ pTypeGeneral, sTypeKwh, "Current/Energy" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -914,6 +915,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
+		{ pTypeGeneral, sTypeKwh, "Current/Energy" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },

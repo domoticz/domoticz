@@ -109,6 +109,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Slovenian language support, big thanks to eden86!!
 - Implemented: Option to replace an Energy device
 - Changed: OpenZWave, Fibaro Wall Plug, now using multisensor for power reading
+- Fixed: Display correct energy graph in devices view (spline instead of bars for short log)
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
