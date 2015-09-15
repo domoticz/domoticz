@@ -8871,6 +8871,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 			sprintf(szTmp, "Percentage = %.2f",pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
+    case sTypeAlert:
+			WriteMessage("subtype       = Alert");
+			sprintf(szTmp, "Level = %d", pMeter->intval1);
+			WriteMessage(szTmp);
+			break;
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 			WriteMessage(szTmp);
