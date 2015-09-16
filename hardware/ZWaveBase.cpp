@@ -456,7 +456,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		{
 			if (pEnergyDevice->bValidValue)
 			{
-				SendKwhMeterEx(pEnergyDevice->nodeID, pEnergyDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, pEnergyDevice->floatValue, "kWh Meter");
+				SendKwhMeterEx(pEnergyDevice->nodeID, pEnergyDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.ENERGY.packettype = pTypeENERGY;
@@ -533,7 +533,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		if (bHaveValidPowerDevice)
 		{
-			SendKwhMeterEx(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pPowerDevice->floatValue, pDevice->floatValue, "kWh Meter");
+			SendKwhMeterEx(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pPowerDevice->floatValue, pDevice->floatValue / pDevice->scaleMultiply, "kWh Meter");
 
 			tsen.ENERGY.packettype = pTypeENERGY;
 			tsen.ENERGY.subtype = sTypeELEC2;
