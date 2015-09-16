@@ -1258,7 +1258,7 @@ define(['app'], function (app) {
 											}
 								}
 								else if (item.SubType=="Alert") {
-									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" class="lcursor" height="16" width="16">';
+									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 									status+=item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -3156,7 +3156,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType=="Alert") {
-							xhtm+='Alert48_' + item.Level + '.png" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
+							xhtm+='Alert48_' + item.Level + '.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Pressure") {
