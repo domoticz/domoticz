@@ -11588,7 +11588,7 @@ namespace http {
 											}
 											ulFirstRealValue = ulLastValue;
 											float TotalValue = float(ulTotalValue);
-											if (TotalValue != 0)
+											if (TotalValue >= 0)
 											{
 												switch (metertype)
 												{
@@ -11848,7 +11848,7 @@ namespace http {
 
 							float TotalValue = float(ulTotalValue);
 
-							if (TotalValue != 0)
+							if (TotalValue >= 0)
 							{
 								switch (metertype)
 								{
