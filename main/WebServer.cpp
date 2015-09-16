@@ -810,10 +810,17 @@ namespace http {
 					usrname = base64_decode(usrname);
 					int iUser = -1;
 					iUser = FindUser(usrname.c_str());
-					if (iUser == -1)
+					if (iUser == -1) {
+						// log brute force attack
+						_log.Log(LOG_ERROR, "Login failed : user '%s' not found", usrname.c_str());
 						return;
-					if (m_users[iUser].Password != usrpass)
+					}
+					if (m_users[iUser].Password != usrpass) {
+						// log brute force attack
+						_log.Log(LOG_ERROR, "Login failed : user '%s' with wrong password", m_users[iUser].Username.c_str());
 						return;
+					}
+					_log.Log(LOG_STATUS, "Login successfull : user '%s'", m_users[iUser].Username.c_str());
 					root["status"] = "OK";
 					root["title"] = "logincheck";
 					m_pWebEm->m_actualuser = m_users[iUser].Username;
@@ -11540,6 +11547,15 @@ namespace http {
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
 							method = 0;
+
+						// Force Value graph if device should show Value graph
+						if ((method = 1) && (
+								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3)))
+							)) {
+							_log.Log(LOG_ERROR, "Energy/CMxxx device graph method should be 0!");
+							method = 0;
+						}
+
 						if (method != 0)
 						{
 							//realtime graph
@@ -11581,7 +11597,7 @@ namespace http {
 											}
 											ulFirstRealValue = ulLastValue;
 											float TotalValue = float(ulTotalValue);
-											if (TotalValue != 0)
+											if (TotalValue >= 0)
 											{
 												switch (metertype)
 												{
@@ -11841,7 +11857,7 @@ namespace http {
 
 							float TotalValue = float(ulTotalValue);
 
-							if (TotalValue != 0)
+							if (TotalValue >= 0)
 							{
 								switch (metertype)
 								{
