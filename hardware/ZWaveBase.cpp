@@ -129,6 +129,8 @@ void ZWaveBase::InsertDevice(_tZWaveDevice device)
 {
 	device.string_id=GenerateDeviceStringID(&device);
 
+	boost::unique_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
+
 	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
 	
 	device.lastreceived=mytime(NULL);
@@ -152,6 +154,7 @@ void ZWaveBase::InsertDevice(_tZWaveDevice device)
 void ZWaveBase::UpdateDeviceBatteryStatus(const int nodeID, const int value)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
+	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
 	{
 		if (itt->second.nodeID==nodeID)
@@ -921,6 +924,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID)
 {
 	std::map<std::string, _tZWaveDevice>::iterator itt;
+	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
 		if (
@@ -936,6 +940,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
+	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
 	{
 		if (
@@ -951,6 +956,7 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID,  const _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
+	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
 	{
 		if (
@@ -1239,6 +1245,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 void ZWaveBase::ForceUpdateForNodeDevices(const unsigned int homeID, const int nodeID)
 {
 	std::map<std::string, _tZWaveDevice>::iterator itt;
+	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
 		if (itt->second.nodeID == nodeID)
