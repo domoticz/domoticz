@@ -7043,6 +7043,14 @@ namespace http {
 						}
 					}
 
+					// has this device already been seen, now with different plan?
+					// assume results are ordered such that same device is adjacent
+					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str()) {
+						_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
+						root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
+						continue;
+					}
+		
 					root["result"][ii]["HardwareID"] = hardwareID;
 					if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
 					{
@@ -7123,6 +7131,9 @@ namespace http {
 					root["result"][ii]["XOffset"] = sd[24].c_str();
 					root["result"][ii]["YOffset"] = sd[25].c_str();
 					root["result"][ii]["PlanID"] = sd[26].c_str();
+					Json::Value jsonArray;
+					jsonArray.append(atoi(sd[26].c_str()));
+					root["result"][ii]["PlanIDs"] = jsonArray;
 					root["result"][ii]["AddjValue"] = AddjValue;
 					root["result"][ii]["AddjMulti"] = AddjMulti;
 					root["result"][ii]["AddjValue2"] = AddjValue2;
