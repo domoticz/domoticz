@@ -234,7 +234,7 @@ const char *sqlCreateHardware =
 "[SerialPort] VARCHAR(50) DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
-"[FileName] VARCHAR(200) DEFAULT (''),"
+"[Extra] VARCHAR(200) DEFAULT (''),"
 "[Mode1] CHAR DEFAULT 0, "
 "[Mode2] CHAR DEFAULT 0, "
 "[Mode3] CHAR DEFAULT 0, "
@@ -1480,7 +1480,7 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 79)
 		{
 			//MQTT filename for ca file
-			query("ALTER TABLE Hardware ADD COLUMN [FileName] VARCHAR(200) DEFAULT ('')");
+			query("ALTER TABLE Hardware ADD COLUMN [Extra] VARCHAR(200) DEFAULT ('')");
 		}
 	}
 	else if (bNewInstall)

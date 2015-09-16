@@ -201,14 +201,14 @@ define(['app'], function (app) {
                 }
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=$("#hardwarecontent #divlogin #password").val();
-                var filename=$("#hardwarecontent #divmqtt #filename").val(); 
+                var extra=$("#hardwarecontent #divmqtt #filename").val(); 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
                         "&port=" + port +
                         "&username=" + encodeURIComponent(username) +
                         "&password=" + encodeURIComponent(password) +
-                        "&filename=" + encodeURIComponent(filename) +
+                        "&extra=" + encodeURIComponent(extra) +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
@@ -564,7 +564,7 @@ define(['app'], function (app) {
                 }
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-                var filename = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
+                var extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
 
                 if ((text.indexOf("Harmony") >= 0) && (username == "")) {
                     ShowNotify($.t('Please enter a username!'), 2500, true);
@@ -577,7 +577,7 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&filename=" + encodeURIComponent(filename),
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + encodeURIComponent(extra),
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -2715,7 +2715,7 @@ define(['app'], function (app) {
                         "DT_RowId": item.idx,
                         "Username": item.Username,
                         "Password": item.Password,
-                        "Filename": item.Filename,
+                        "Extra": item.Extra,
                         "Enabled": item.Enabled,
                         "Name": item.Name,
                         "Mode1": item.Mode1,
@@ -2806,7 +2806,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
                         }
                         if (data["Type"].indexOf("MQTT") >= 0) {
-                            $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Filename"]);
+                            $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
                         }                        
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||

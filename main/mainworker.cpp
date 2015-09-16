@@ -164,7 +164,7 @@ void MainWorker::AddAllDomoticzHardware()
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, FileName, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
+		"SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
 	//std::string revfile;
 	//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=Started&amp;idgoal=3",revfile);
 	if (result.size() > 0)
@@ -184,7 +184,7 @@ void MainWorker::AddAllDomoticzHardware()
 			std::string SerialPort = sd[6];
 			std::string Username = sd[7];
 			std::string Password = sd[8];
-			std::string FileName = sd[9];
+			std::string Extra = sd[9];
 			int mode1 = atoi(sd[10].c_str());
 			int mode2 = atoi(sd[11].c_str());
 			int mode3 = atoi(sd[12].c_str());
@@ -192,7 +192,7 @@ void MainWorker::AddAllDomoticzHardware()
 			int mode5 = atoi(sd[14].c_str());
 			int mode6 = atoi(sd[15].c_str());
 			int DataTimeout = atoi(sd[16].c_str());
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, FileName, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
 		}
 		m_hardwareStartCounter = 0;
 		m_bStartHardware = true;
@@ -505,7 +505,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, FileName, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID=='%q')",
+		"SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID=='%q')",
 		idx.c_str());
 	if (result.size()<1)
 		return false;
@@ -518,7 +518,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	std::string serialport = sd[5];
 	std::string username=sd[6];
 	std::string password=sd[7];
-	std::string filename=sd[8];
+	std::string extra=sd[8];
 	int Mode1=atoi(sd[9].c_str());
 	int Mode2=atoi(sd[10].c_str());
 	int Mode3=atoi(sd[11].c_str());
@@ -527,7 +527,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode6 = atoi(sd[14].c_str());
 	int DataTimeout = atoi(sd[15].c_str());
 
-	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, filename, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
+	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
 
 bool MainWorker::AddHardwareFromParams(
