@@ -812,12 +812,12 @@ namespace http {
 					iUser = FindUser(usrname.c_str());
 					if (iUser == -1) {
 						// log brute force attack
-						_log.Log(LOG_ERROR, "Login failed : user '%s' not found", usrname.c_str());
+						_log.Log(LOG_ERROR, "Failed login attempt for '%s' !", usrname.c_str());
 						return;
 					}
 					if (m_users[iUser].Password != usrpass) {
 						// log brute force attack
-						_log.Log(LOG_ERROR, "Login failed : user '%s' with wrong password", m_users[iUser].Username.c_str());
+						_log.Log(LOG_ERROR, "Failed login attempt for '%s' !", m_users[iUser].Username.c_str());
 						return;
 					}
 					_log.Log(LOG_STATUS, "Login successfull : user '%s'", m_users[iUser].Username.c_str());
