@@ -2488,8 +2488,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	std::map<std::string, _tZWaveDevice>::iterator itt;
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
-		std::string::size_type loc = path.find(itt->second.string_id, 0);
-		if (loc != std::string::npos)
+		if (itt->second.string_id == path)
 		{
 			pDevice = &itt->second;
 			break;

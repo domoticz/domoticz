@@ -8376,14 +8376,24 @@ namespace http {
 								{
 									EnergyDivider = float(tValue);
 								}
-								EnergyDivider *= 100.0;
+								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+								{
+									EnergyDivider *= 100.0;
+								}
 
 								std::vector<std::string> sd2 = result2[0];
 								double minimum = atof(sd2[0].c_str()) / EnergyDivider;
 
 								sprintf(szData, "%.3f kWh", total);
 								root["result"][ii]["Data"] = szData;
-								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+								{
+									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+								}
+								else
+								{
+									sprintf(szData, "%.1f Watt", atof(strarray[0].c_str()));
+								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 								sprintf(szTmp, "%.03f kWh", total - minimum);
@@ -8393,7 +8403,14 @@ namespace http {
 							{
 								sprintf(szData, "%.3f kWh", total);
 								root["result"][ii]["Data"] = szData;
-								sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+								{
+									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
+								}
+								else
+								{
+									sprintf(szData, "%.1f Watt", atof(strarray[0].c_str()));
+								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							}
@@ -11633,6 +11650,8 @@ namespace http {
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
 
 									float TotalValue = float(actValue);
+									if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+										TotalValue /= 10.0f;
 									switch (metertype)
 									{
 									case MTYPE_ENERGY:
