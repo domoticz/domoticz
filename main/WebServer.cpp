@@ -11547,6 +11547,15 @@ namespace http {
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
 							method = 0;
+
+						// Force Value graph if device should show Value graph
+						if ((method = 1) && (
+								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3)))
+							)) {
+							_log.Log(LOG_ERROR, "Energy/CMxxx device graph method should be 0!");
+							method = 0;
+						}
+
 						if (method != 0)
 						{
 							//realtime graph
