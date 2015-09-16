@@ -2486,14 +2486,21 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 	_tZWaveDevice *pDevice = NULL;
 	std::map<std::string, _tZWaveDevice>::iterator itt;
+	std::string path_plus = path + ".";
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
 		std::string dstring = itt->second.string_id;
-		size_t loc = dstring.find(path);
-		if (loc != std::string::npos)
-		{
+		if (dstring == path) {
 			pDevice = &itt->second;
 			break;
+		}
+		else {
+			size_t loc = dstring.find(path_plus);
+			if (loc != std::string::npos)
+			{
+				pDevice = &itt->second;
+				break;
+			}
 		}
 	}
 	if (pDevice == NULL)
