@@ -897,6 +897,7 @@ namespace http {
 			std::string sport = m_pWebEm->FindValue("port");
 			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
 			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
+			std::string extra = CURLEncode::URLDecode(m_pWebEm->FindValue("extra"));
 			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
 			if (
 				(name == "") ||
@@ -1048,7 +1049,7 @@ namespace http {
 			}
 
 			m_sql.safe_query(
-				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
+				"INSERT INTO Hardware (Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout) VALUES ('%q',%d, %d,'%q',%d,'%q','%q','%q','%q',%d,%d,%d,%d,%d,%d,%d)",
 				name.c_str(),
 				(senabled == "true") ? 1 : 0,
 				htype,
@@ -1057,6 +1058,7 @@ namespace http {
 				sport.c_str(),
 				username.c_str(),
 				password.c_str(),
+				extra.c_str(),
 				mode1, mode2, mode3, mode4, mode5, mode6,
 				iDataTimeout
 				);
@@ -1068,7 +1070,7 @@ namespace http {
 				std::vector<std::string> sd = result[0];
 				int ID = atoi(sd[0].c_str());
 
-				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, sport, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
+				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 			}
 		}
 
@@ -1087,6 +1089,7 @@ namespace http {
 			std::string sport = m_pWebEm->FindValue("port");
 			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
 			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
+			std::string extra = CURLEncode::URLDecode(m_pWebEm->FindValue("extra"));
 			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
 
 			if (
@@ -1243,7 +1246,7 @@ namespace http {
 			else
 			{
 				m_sql.safe_query(
-					"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+					"UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', Extra='%q', Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
 					name.c_str(),
 					(bEnabled == true) ? 1 : 0,
 					htype,
@@ -1252,6 +1255,7 @@ namespace http {
 					sport.c_str(),
 					username.c_str(),
 					password.c_str(),
+					extra.c_str(),
 					mode1, mode2, mode3, mode4, mode5, mode6,
 					iDataTimeout,
 					idx.c_str()
@@ -1271,7 +1275,7 @@ namespace http {
 			{
 				//re-add the device in our system
 				int ID = atoi(idx.c_str());
-				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
+				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 			}
 		}
 
@@ -9253,7 +9257,7 @@ namespace http {
 #endif			
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
+			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -9271,13 +9275,14 @@ namespace http {
 					root["result"][ii]["SerialPort"] = sd[6];
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
-					root["result"][ii]["Mode1"] = atoi(sd[9].c_str());
-					root["result"][ii]["Mode2"] = atoi(sd[10].c_str());
-					root["result"][ii]["Mode3"] = atoi(sd[11].c_str());
-					root["result"][ii]["Mode4"] = atoi(sd[12].c_str());
-					root["result"][ii]["Mode5"] = atoi(sd[13].c_str());
-					root["result"][ii]["Mode6"] = atoi(sd[14].c_str());
-					root["result"][ii]["DataTimeout"] = atoi(sd[15].c_str());
+					root["result"][ii]["Extra"] = sd[9];
+					root["result"][ii]["Mode1"] = atoi(sd[10].c_str());
+					root["result"][ii]["Mode2"] = atoi(sd[11].c_str());
+					root["result"][ii]["Mode3"] = atoi(sd[12].c_str());
+					root["result"][ii]["Mode4"] = atoi(sd[13].c_str());
+					root["result"][ii]["Mode5"] = atoi(sd[14].c_str());
+					root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
+					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 
 #ifdef WITH_OPENZWAVE
 					//Special case for openzwave (status for nodes queried)
