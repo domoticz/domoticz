@@ -8578,7 +8578,9 @@ namespace http {
 						}
 						else if (dSubType == sTypeAlert)
 						{
-							root["result"][ii]["Data"] = sValue;
+							sprintf(szData, "Level: %d", nValue);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["Desc"] = Get_Alert_Desc(nValue);
 							root["result"][ii]["TypeImg"] = "Alert";
 							root["result"][ii]["Level"] = nValue;
 							root["result"][ii]["HaveTimeout"] = false;
