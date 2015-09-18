@@ -130,6 +130,8 @@ void CWinddelen::GetMeterDetails()
 
 	double powerusage = atol(pusage.c_str()) * m_usIPPort / winddelen_per_mill[m_usMillID];
 	double usagecurrent = atof(pcurrent.c_str()) * m_usIPPort / 1000.0;
+#ifdef _DEBUG
 	_log.Log(LOG_STATUS,"%d winddelen in '%s' currently produces: %.0f Watt, total production is: %.03f kWh", m_usIPPort , m_szIPAddress.c_str(), usagecurrent * 1000, powerusage);
-	SendKwhMeter(m_usMillID, 1, 255, usagecurrent, powerusage, "Wind Power");
+#endif
+	SendKwhMeterOldWay(m_usMillID, 1, 255, usagecurrent, powerusage, "Wind Power");
 }

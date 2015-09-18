@@ -1471,7 +1471,7 @@ bool CSQLHelper::OpenDatabase()
 					std::vector<std::string> sd = *itt;
 					std::string idx = sd[0];
 					int lid = atoi(sd[1].c_str());
-					char szTmp[10];
+					char szTmp[20];
 					sprintf(szTmp, "%08X", lid);
 					safe_query("UPDATE DeviceStatus SET DeviceID='%q' WHERE (ID='%q')", szTmp, idx.c_str());
 				}
@@ -1484,31 +1484,27 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 80)
 		{
-			//ZWave kWh sensor to new kWh sensor
+			//pTypeEngery sensor to new kWh sensor
 			std::stringstream szQuery2;
-			std::vector<std::vector<std::string> > result, result2,result3;
-			result = safe_query("SELECT ID FROM Hardware WHERE ([Type] = %d)", HTYPE_OpenZWave);
-			if (result.size() > 0)
+			std::vector<std::vector<std::string> > result2,result3;
+			std::vector<std::vector<std::string> >::const_iterator itt,itt2,itt3;
+			for (itt = result.begin(); itt != result.end(); ++itt)
 			{
-				std::vector<std::vector<std::string> >::const_iterator itt,itt2,itt3;
-				for (itt = result.begin(); itt != result.end(); ++itt)
+				result2 = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type] = %d)", pTypeENERGY);
+				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
 				{
-					result2 = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (HardwareID = %q) AND ([Type] = %d) AND ([SubType] = %d)", result[0][0].c_str(), pTypeENERGY, sTypeELEC2);
-					for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
-					{
-						std::vector<std::string> sd2 = *itt2;
+					std::vector<std::string> sd2 = *itt2;
 
-						//Change type to new sensor, and update ID
-						int oldID = atoi(sd2[1].c_str());
-						char szTmp[10];
-						sprintf(szTmp, "%08X", oldID);
-						safe_query("UPDATE DeviceStatus SET [DeviceID]='%q', [Type]=%d, [SubType]=%d, [Unit]=1 WHERE (ID==%q)", szTmp, pTypeGeneral, sTypeKwh, sd2[0].c_str());
+					//Change type to new sensor, and update ID
+					int oldID = atoi(sd2[1].c_str());
+					char szTmp[20];
+					sprintf(szTmp, "%08X", oldID);
+					safe_query("UPDATE DeviceStatus SET [DeviceID]='%s', [Type]=%d, [SubType]=%d, [Unit]=1 WHERE (ID==%s)", szTmp, pTypeGeneral, sTypeKwh, sd2[0].c_str());
 
-						//meter table
-						safe_query("UPDATE Meter SET Value=Value/100, Usage=Usage*10 WHERE DeviceRowID=%q", sd2[0].c_str());
-						//meter_calendar table
-						safe_query("UPDATE Meter_Calendar SET Value=Value/100, Counter=Counter/100 WHERE (DeviceRowID==%q)", sd2[0].c_str());
-					}
+					//meter table
+					safe_query("UPDATE Meter SET Value=Value/100, Usage=Usage*10 WHERE DeviceRowID=%s", sd2[0].c_str());
+					//meter_calendar table
+					safe_query("UPDATE Meter_Calendar SET Value=Value/100, Counter=Counter/100 WHERE (DeviceRowID==%s)", sd2[0].c_str());
 				}
 			}
 		}
