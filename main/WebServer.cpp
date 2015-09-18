@@ -6646,16 +6646,20 @@ namespace http {
 			if (totUserDevices == 0)
 			{
 				//All
-				if (rowid != "")
+				if (rowid != "") 
+				{
+					_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 					result = m_sql.safe_query(
-						"SELECT ID, DeviceID, Unit, Name, Used, Type, SubType,"
-						" SignalLevel, BatteryLevel, nValue, sValue,"
-						" LastUpdate, Favorite, SwitchType, HardwareID,"
-						" AddjValue, AddjMulti, AddjValue2, AddjMulti2,"
-						" LastLevel, CustomImage, StrParam1, StrParam2,"
-						" Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, Description "
-						"FROM DeviceStatus WHERE (ID=='%q')",
+						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType,"
+						" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
+						" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
+						" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
+						" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
+						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description "
+						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) "
+						"WHERE (A.ID=='%q')",
 						rowid.c_str());
+				}
 				else if ((planID != "") && (planID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
@@ -6707,14 +6711,24 @@ namespace http {
 						}
 						bAllowDeviceToBeHidden = true;
 					}
+					
+					if (order == "")
+						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+					else
+					{
+						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+					}
+					_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
 					result = m_sql.safe_query(
-						"SELECT ID, DeviceID, Unit, Name, Used, Type, SubType,"
-						" SignalLevel, BatteryLevel, nValue, sValue,"
-						" LastUpdate, Favorite, SwitchType, HardwareID,"
-						" AddjValue, AddjMulti, AddjValue2, AddjMulti2,"
-						" LastLevel, CustomImage, StrParam1, StrParam2,"
-						" Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, Description "
-						"FROM DeviceStatus ORDER BY %s",
+						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
+						" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
+						" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
+						" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
+						" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
+						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description "
+						"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
+						"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
+						"ORDER BY %s",
 						szOrderBy);
 				}
 			}
@@ -6722,6 +6736,8 @@ namespace http {
 			{
 				//Specific devices
 				if (rowid != "")
+				{
+					_log.Log(LOG_STATUS, "Getting device with id: %s for user %lu", rowid.c_str(), m_users[iUser].ID);
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -6729,12 +6745,13 @@ namespace http {
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, 0 as XOffset,"
-						" 0 as YOffset, 0 as PlanID, A.Description "
-						"FROM DeviceStatus as A, SharedDevices as B "
-						"WHERE (B.DeviceRowID==a.ID)"
-						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
+						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
+						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
+						"FROM DeviceStatus as A, SharedDevices as B LEFT OUTER JOIN DeviceToPlansMap as C "
+						"ON (C.DeviceRowID==a.ID) "
+						"WHERE (B.SharedUserID==%lu) AND (A.ID=='%q')",
 						m_users[iUser].ID, rowid.c_str());
+				}
 				else if ((planID != "") && (planID != "0"))
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
@@ -6788,18 +6805,19 @@ namespace http {
 						}
 						bAllowDeviceToBeHidden = true;
 					}
+					sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+					_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					result = m_sql.safe_query(
-						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
+						"SELECT DISTINCT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
 						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, 0 as XOffset,"
-						" 0 as YOffset, 0 as PlanID, A.Description "
-						"FROM DeviceStatus as A, SharedDevices as B "
-						"WHERE (B.DeviceRowID==a.ID)"
-						" AND (B.SharedUserID==%lu) ORDER BY %s",
+						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
+						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
+						"FROM DeviceStatus as A LEFT OUTER JOIN SharedDevices as B, DeviceToPlansMap as C "
+						"ON (C.DeviceRowID==a.ID) AND (B.SharedUserID==%lu) ORDER BY %s",
 						m_users[iUser].ID, szOrderBy);
 				}
 			}
@@ -7032,6 +7050,14 @@ namespace http {
 						}
 					}
 
+					// has this device already been seen, now with different plan?
+					// assume results are ordered such that same device is adjacent
+					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str()) {
+						_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
+						root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
+						continue;
+					}
+		
 					root["result"][ii]["HardwareID"] = hardwareID;
 					if (_hardwareNames.find(hardwareID) == _hardwareNames.end())
 					{
@@ -7112,6 +7138,9 @@ namespace http {
 					root["result"][ii]["XOffset"] = sd[24].c_str();
 					root["result"][ii]["YOffset"] = sd[25].c_str();
 					root["result"][ii]["PlanID"] = sd[26].c_str();
+					Json::Value jsonArray;
+					jsonArray.append(atoi(sd[26].c_str()));
+					root["result"][ii]["PlanIDs"] = jsonArray;
 					root["result"][ii]["AddjValue"] = AddjValue;
 					root["result"][ii]["AddjMulti"] = AddjMulti;
 					root["result"][ii]["AddjValue2"] = AddjValue2;
