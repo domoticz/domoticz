@@ -85,6 +85,6 @@ private:
 	// disarms given partitions
 	bool DisarmPartitions(const unsigned char* partitions);
 
-	std::pair<unsigned char*, unsigned int> getFullFrame(const unsigned char* pCmd, unsigned int cmdLength);
-	int SendCommand(const unsigned char* cmd, unsigned int cmdLength, unsigned char *answer);
+	std::pair<unsigned char*, unsigned int> getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength);
+	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer);
 };

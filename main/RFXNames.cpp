@@ -632,6 +632,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
+		{ pTypeGeneral, sTypeKwh, "kWh" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -704,6 +705,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeHomeConfort, "HomeConfort" },
 		{ pTypeGeneralSwitch, sSwitchTypeHT12E, "HT12E" },
 		{ pTypeGeneralSwitch, sSwitchTypeEV1527, "EV1527" },
+		{ pTypeGeneralSwitch, sSwitchTypeElmes, "Elmes" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -914,6 +916,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
+		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
