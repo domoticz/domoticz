@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 79
+#define DB_VERSION 80
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1481,6 +1481,33 @@ bool CSQLHelper::OpenDatabase()
 		{
 			//MQTT filename for ca file
 			query("ALTER TABLE Hardware ADD COLUMN [Extra] VARCHAR(200) DEFAULT ('')");
+		}
+		if (dbversion < 80)
+		{
+			//ZWave kWh sensor to new kWh sensor
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result, result2,result3;
+			result = safe_query("SELECT ID FROM Hardware WHERE ([Type] = %d)", HTYPE_OpenZWave);
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt,itt2,itt3;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					result2 = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID = %s) AND ([Type] = %d) AND ([SubType] = %d)", result[0][0].c_str(), pTypeENERGY, sTypeELEC2);
+					for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+					{
+						std::vector<std::string> sd2 = *itt2;
+
+						//Change type to new sensor
+						safe_query("UPDATE DeviceStatus SET [Type]=%d, [SubType]=%d WHERE (ID==%s)", pTypeGeneral, sTypeKwh, sd2[0].c_str());
+
+						//meter table
+						safe_query("UPDATE Meter SET Value=Value/100, Usage=Usage*10 WHERE DeviceRowID=%s", sd2[0].c_str());
+						//meter_calendar table
+						safe_query("UPDATE Meter_Calendar SET Value=Value/100, Counter=Counter/100 WHERE (DeviceRowID==%s)", sd2[0].c_str());
+					}
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
