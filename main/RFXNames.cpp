@@ -631,7 +631,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
-		{ pTypeGeneral, sTypeKwh, "Current/Energy" },
+		{ pTypeGeneral, sTypeKwh, "kWh" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -915,7 +915,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
-		{ pTypeGeneral, sTypeKwh, "Current/Energy" },
+		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -2650,16 +2650,32 @@ bool IsLightSwitchOn(const std::string &lstatus)
 
 const char *Get_Moisture_Desc(const int moisture)
 {
-	if (moisture<10)
-		return "saturated";
-	else if (moisture<20)
-		return "adequately wet";
-	else if (moisture<60)
-		return "irrigation advise";
-	else if (moisture<100)
-		return "irrigation";
-	else
-		return "dangerously dry";
+		if (moisture<10)
+			return "saturated";
+		else if (moisture<20)
+			return "adequately wet";
+		else if (moisture<60)
+			return "irrigation advise";
+		else if (moisture<100)
+			return "irrigation";
+		else
+			return "dangerously dry";
+}
+
+const char *Get_Alert_Desc(const int level)
+{
+		if (level == 0)
+			return "undefined";
+		else if (level == 1)
+			return "normal";
+		else if (level == 2)
+			return "warning";
+		else if (level == 3)
+			return "alert";
+		else if (level == 4)
+			return "alarm";
+		else
+			return "unknown level";
 }
 
 bool IsSerialDevice(const _eHardwareTypes htype)

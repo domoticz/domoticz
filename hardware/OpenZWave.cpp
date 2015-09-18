@@ -2487,13 +2487,21 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	_tZWaveDevice *pDevice = NULL;
 	std::map<std::string, _tZWaveDevice>::iterator itt;
 	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
+	std::string path_plus = path + ".";
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
-		std::string::size_type loc = path.find(itt->second.string_id, 0);
-		if (loc != std::string::npos)
-		{
+		std::string dstring = itt->second.string_id;
+		if (dstring == path) {
 			pDevice = &itt->second;
 			break;
+		}
+		else {
+			size_t loc = dstring.find(path_plus);
+			if (loc != std::string::npos)
+			{
+				pDevice = &itt->second;
+				break;
+			}
 		}
 	}
 	devicesMutexLock.unlock();

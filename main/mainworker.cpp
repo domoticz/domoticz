@@ -164,7 +164,7 @@ void MainWorker::AddAllDomoticzHardware()
 	//Add Hardware devices
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
+		"SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware ORDER BY ID ASC");
 	//std::string revfile;
 	//HTTPClient::GET("http://www.domoticz.com/pwiki/piwik.php?idsite=1&amp;rec=1&amp;action_name=Started&amp;idgoal=3",revfile);
 	if (result.size() > 0)
@@ -184,14 +184,15 @@ void MainWorker::AddAllDomoticzHardware()
 			std::string SerialPort = sd[6];
 			std::string Username = sd[7];
 			std::string Password = sd[8];
-			int mode1 = atoi(sd[9].c_str());
-			int mode2 = atoi(sd[10].c_str());
-			int mode3 = atoi(sd[11].c_str());
-			int mode4 = atoi(sd[12].c_str());
-			int mode5 = atoi(sd[13].c_str());
-			int mode6 = atoi(sd[14].c_str());
-			int DataTimeout = atoi(sd[15].c_str());
-			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
+			std::string Extra = sd[9];
+			int mode1 = atoi(sd[10].c_str());
+			int mode2 = atoi(sd[11].c_str());
+			int mode3 = atoi(sd[12].c_str());
+			int mode4 = atoi(sd[13].c_str());
+			int mode5 = atoi(sd[14].c_str());
+			int mode6 = atoi(sd[15].c_str());
+			int DataTimeout = atoi(sd[16].c_str());
+			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
 		}
 		m_hardwareStartCounter = 0;
 		m_bStartHardware = true;
@@ -504,7 +505,7 @@ bool MainWorker::RestartHardware(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID=='%q')",
+		"SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID=='%q')",
 		idx.c_str());
 	if (result.size()<1)
 		return false;
@@ -517,15 +518,16 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	std::string serialport = sd[5];
 	std::string username=sd[6];
 	std::string password=sd[7];
-	int Mode1=atoi(sd[8].c_str());
-	int Mode2=atoi(sd[9].c_str());
-	int Mode3=atoi(sd[10].c_str());
-	int Mode4=atoi(sd[11].c_str());
-	int Mode5 = atoi(sd[12].c_str());
-	int Mode6 = atoi(sd[13].c_str());
-	int DataTimeout = atoi(sd[14].c_str());
+	std::string extra=sd[8];
+	int Mode1=atoi(sd[9].c_str());
+	int Mode2=atoi(sd[10].c_str());
+	int Mode3=atoi(sd[11].c_str());
+	int Mode4=atoi(sd[12].c_str());
+	int Mode5 = atoi(sd[13].c_str());
+	int Mode6 = atoi(sd[14].c_str());
+	int DataTimeout = atoi(sd[15].c_str());
 
-	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
+	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
 
 bool MainWorker::AddHardwareFromParams(
@@ -535,6 +537,7 @@ bool MainWorker::AddHardwareFromParams(
 	const _eHardwareTypes Type,
 	const std::string &Address, const unsigned short Port, const std::string &SerialPort,
 	const std::string &Username, const std::string &Password,
+	const std::string &Filename,
 	const int Mode1,
 	const int Mode2,
 	const int Mode3,
@@ -678,7 +681,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename);
 		break;
 	case HTYPE_FRITZBOX:
 		//LAN
@@ -7467,51 +7470,13 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 		}
 	}
 
-	sprintf(szTmp, "%ld;%.2f", instant, total);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
-	if (DevRowIdx == -1)
-		return -1;
-
-	m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, (const float)instant);
-
-	if (m_verboselevel == EVBL_ALL)
-	{
-		WriteMessageStart();
-		switch (pResponse->ENERGY.subtype)
-		{
-		case sTypeELEC2:
-			WriteMessage("subtype       = ELEC2 - OWL CM119, CM160");
-			break;
-		case sTypeELEC3:
-			WriteMessage("subtype       = ELEC2 - OWL CM180");
-			break;
-		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->ENERGY.packettype, pResponse->ENERGY.subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->ENERGY.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Count         = %d", pResponse->ENERGY.count);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Instant usage = %ld Watt", instant);
-		WriteMessage(szTmp);
-		sprintf(szTmp, "total usage   = %.2f Wh", total);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp,"Signal level  = %d", pResponse->ENERGY.rssi);
-		WriteMessage(szTmp);
-
-		if ((pResponse->ENERGY.battery_level & 0xF) == 0)
-			WriteMessage("Battery       = Low");
-		else
-			WriteMessage("Battery       = OK");
-		WriteMessageEnd();
-	}
-	return DevRowIdx;
+	//Translate this sensor type to the new kWh sensor type
+	_tGeneralDevice gdevice;
+	gdevice.intval1 = (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2;
+	gdevice.subtype = sTypeKwh;
+	gdevice.floatval1 = (float)instant;
+	gdevice.floatval2 = (float)total;
+	return decode_General(pHardware, HwdID, (const tRBUF*)&gdevice);
 }
 
 unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)

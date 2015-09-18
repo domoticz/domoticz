@@ -1191,6 +1191,7 @@ define(['app'], function (app) {
 							(item.SubType=="Percentage")||
 							(item.Type=="Fan")||
 							((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
+							(item.SubType=="kWh")||
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
@@ -1234,6 +1235,7 @@ define(['app'], function (app) {
 								else if (
 											(item.Type == "Energy")||
 											(item.Type == "Current/Energy")||
+											(item.SubType=="kWh")||
 											(item.Type == "Air Quality")||
 											(item.Type == "Lux")||
 											(item.Type == "Weight")||
@@ -1258,7 +1260,7 @@ define(['app'], function (app) {
 											}
 								}
 								else if (item.SubType=="Alert") {
-									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" class="lcursor" height="16" width="16">';
+									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 									status+=item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1308,7 +1310,7 @@ define(['app'], function (app) {
 									status=item.Data;
 									bigtext=item.Data;
 								}
-								else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
+								else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType=="kWh")) {
 									status=item.Data;
 								}
 								else if (item.Type == "Air Quality") {
@@ -2857,6 +2859,7 @@ define(['app'], function (app) {
 							(typeof item.Counter != 'undefined') || 
 							(item.Type == "Current") || 
 							(item.Type == "Energy") || 
+							(item.SubType=="kWh") ||
 							(item.Type == "Current/Energy") || 
 							(item.Type == "Air Quality") || 
 							(item.Type == "Lux") || 
@@ -2937,6 +2940,7 @@ define(['app'], function (app) {
 						else if (
 									(item.Type == "Energy")||
 									(item.Type == "Current/Energy")||
+									(item.SubType=="kWh") ||
 									(item.Type == "Air Quality")||
 									(item.Type == "Lux")||
 									(item.Type == "Weight")||
@@ -3102,8 +3106,8 @@ define(['app'], function (app) {
 							xhtm+='current48.png" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
-						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
-							if ((item.Type == "Energy")&&(item.SwitchTypeVal == 4)) {
+						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType=="kWh")) {
+							if (((item.Type == "Energy")||(item.SubType=="kWh"))&&(item.SwitchTypeVal == 4)) {
 								xhtm+='PV48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							}
 							else {
@@ -3156,7 +3160,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType=="Alert") {
-							xhtm+='Alert48_' + item.Level + '.png" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
+							xhtm+='Alert48_' + item.Level + '.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Pressure") {

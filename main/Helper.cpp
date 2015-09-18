@@ -52,24 +52,31 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	std::vector<std::string> ret;
 #if defined WIN32
 	//windows
-	std::vector<SerialPortInfo> serialports;
-	EnumSerialPortsWindows(serialports);
+
+	std::vector<int> ports;
+	std::vector<std::string> friendlyNames;
+	char szPortName[40];
+
+	EnumSerialFromWMI(ports, friendlyNames);
 
 	bool bFoundPort = false;
-	if (!serialports.empty())
+	if (!ports.empty())
 	{
 		bFoundPort = true;
-		std::vector<SerialPortInfo>::const_iterator itt;
-		for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+		std::vector<int>::const_iterator itt;
+		for (itt = ports.begin(); itt != ports.end(); ++itt)
 		{
-			ret.push_back(itt->szPortName);
+			sprintf(szPortName, "COM%d", *itt);
+			ret.push_back(szPortName);
 		}
 	}
 
-	//Scan old fashion way
+	if (bFoundPort)
+		return ret;
+
+	//Scan old fashion way (SLOW!)
 	COMMCONFIG cc;
 	DWORD dwSize = sizeof(COMMCONFIG);
-	char szPortName[40];
 	for (int ii = 0; ii < 256; ii++)
 	{
 		sprintf(szPortName, "COM%d", ii);
