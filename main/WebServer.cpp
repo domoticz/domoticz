@@ -8447,6 +8447,7 @@ namespace http {
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							}
+							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
 
 						}
@@ -13564,7 +13565,7 @@ namespace http {
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 1000.0f));
+								sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
 								root["counter"] = szTmp;
 							}
 						}
@@ -13953,10 +13954,22 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider);
-								root["result"][ii]["c"] = szTmp;
+								{
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									root["result"][ii]["v"] = szTmp;
+
+									std::vector<std::string> mresults;
+									StringSplit(sValue, ";", mresults);
+									if (mresults.size() == 2)
+									{
+										sValue = mresults[1];
+									}
+									if (dType == pTypeENERGY)
+										sprintf(szTmp, "%.3f", ((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / EnergyDivider);
+									else
+										sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider);
+									root["result"][ii]["c"] = szTmp;
+								}
 								break;
 							case MTYPE_GAS:
 								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);
