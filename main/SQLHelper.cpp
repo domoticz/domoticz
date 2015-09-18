@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 80
+#define DB_VERSION 81
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1507,6 +1507,11 @@ bool CSQLHelper::OpenDatabase()
 					safe_query("UPDATE Meter_Calendar SET Value=Value/100, Counter=Counter/100 WHERE (DeviceRowID==%s)", sd2[0].c_str());
 				}
 			}
+		}
+		if (dbversion < 81)
+		{
+			//Enable pushbullet notification system
+			UpdatePreferencesVar("PushbulletEnabled", 1);
 		}
 	}
 	else if (bNewInstall)
