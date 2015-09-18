@@ -439,13 +439,24 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		if (pEnergyDevice == NULL)
 		{
 			pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWERENERGYMETER);
-			//if (pEnergyDevice == NULL)
-				//pEnergyDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
+			if (pEnergyDevice == NULL)
+			{
+				if (
+					(pDevice->Manufacturer_id == 0x010F) &&
+					(pDevice->Product_type == 0x0600) &&
+					(pDevice->Product_id == 0x1000)
+					)
+				{
+					//Fibaro Wallplug, find energy sensor
+					pEnergyDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
+				}
+			}
 		}
 		if (pEnergyDevice)
 		{
 			if (pEnergyDevice->bValidValue)
 			{
+				//SendKwhMeterEx(pEnergyDevice->nodeID, pEnergyDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, pEnergyDevice->floatValue, "kWh Meter");
 				RBUF tsen;
 				memset(&tsen, 0, sizeof(RBUF));
 				tsen.ENERGY.packettype = pTypeENERGY;
@@ -522,6 +533,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		if (bHaveValidPowerDevice)
 		{
+			//SendKwhMeterEx(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pPowerDevice->floatValue, pDevice->floatValue, "kWh Meter");
+
 			tsen.ENERGY.packettype = pTypeENERGY;
 			tsen.ENERGY.subtype = sTypeELEC2;
 			tsen.ENERGY.packetlength = sizeof(tsen.ENERGY) - 1;
@@ -562,6 +575,8 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		else
 		{
+			SendKwhMeterEx(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, 0, pDevice->floatValue, "kWh Meter");
+
 			tsen.ENERGY.packettype = pTypeENERGY;
 			tsen.ENERGY.subtype = sTypeELEC2;
 			tsen.ENERGY.packetlength = sizeof(tsen.ENERGY) - 1;

@@ -328,8 +328,8 @@ define(['app'], function (app) {
 				  else if (typeof item.Rain != 'undefined') {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowRainLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
-				  else if (item.Type == "Energy") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLogSpline(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
 				  }
 				  else if (item.Type == "Air Quality") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowAirQualityLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
