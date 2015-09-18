@@ -6648,7 +6648,7 @@ namespace http {
 				//All
 				if (rowid != "") 
 				{
-					_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
+					//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType,"
 						" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
@@ -6718,7 +6718,7 @@ namespace http {
 					{
 						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 					}
-					_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
+					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
 						" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
@@ -6737,7 +6737,7 @@ namespace http {
 				//Specific devices
 				if (rowid != "")
 				{
-					_log.Log(LOG_STATUS, "Getting device with id: %s for user %lu", rowid.c_str(), m_users[iUser].ID);
+					//_log.Log(LOG_STATUS, "Getting device with id: %s for user %lu", rowid.c_str(), m_users[iUser].ID);
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -6806,7 +6806,7 @@ namespace http {
 						bAllowDeviceToBeHidden = true;
 					}
 					sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
-					_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
+					//_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					result = m_sql.safe_query(
 						"SELECT DISTINCT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -7053,7 +7053,7 @@ namespace http {
 					// has this device already been seen, now with different plan?
 					// assume results are ordered such that same device is adjacent
 					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str()) {
-						_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
+						//_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
 						root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
 						continue;
 					}
