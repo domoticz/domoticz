@@ -201,12 +201,14 @@ define(['app'], function (app) {
                 }
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=$("#hardwarecontent #divlogin #password").val();
+                var extra=$("#hardwarecontent #divmqtt #filename").val(); 
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
                         "&port=" + port +
                         "&username=" + encodeURIComponent(username) +
                         "&password=" + encodeURIComponent(password) +
+                        "&extra=" + encodeURIComponent(extra) +
                         "&name=" + encodeURIComponent(name) +
                         "&enabled=" + bEnabled +
                         "&idx=" + idx +
@@ -562,6 +564,7 @@ define(['app'], function (app) {
                 }
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+                var extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
 
                 if ((text.indexOf("Harmony") >= 0) && (username == "")) {
                     ShowNotify($.t('Please enter a username!'), 2500, true);
@@ -574,7 +577,7 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + encodeURIComponent(extra),
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -2712,6 +2715,7 @@ define(['app'], function (app) {
                         "DT_RowId": item.idx,
                         "Username": item.Username,
                         "Password": item.Password,
+                        "Extra": item.Extra,
                         "Enabled": item.Enabled,
                         "Name": item.Name,
                         "Mode1": item.Mode1,
@@ -2801,6 +2805,9 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
                         }
+                        if (data["Type"].indexOf("MQTT") >= 0) {
+                            $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
+                        }                        
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||
                             (data["Type"].indexOf("ICY") >= 0) ||
@@ -2872,6 +2879,8 @@ define(['app'], function (app) {
             $("#hardwarecontent #divlocation").hide();
             $("#hardwarecontent #divphilipshue").hide();
             $("#hardwarecontent #divwinddelen").hide();
+            $("#hardwarecontent #divmqtt").hide();
+            
 
             if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
             {
@@ -2963,6 +2972,10 @@ define(['app'], function (app) {
             if ((text.indexOf("ETH8020") >= 0)||(text.indexOf("Anna") >= 0)||(text.indexOf("MQTT") >= 0)||(text.indexOf("KMTronic Gateway with LAN") >= 0)) {
                 $("#hardwarecontent #divlogin").show();
             }
+            if (text.indexOf("MQTT") >= 0)     
+            {
+                $("#hardwarecontent #divmqtt").show();            
+            }            
         }
 
         ShowHardware = function()

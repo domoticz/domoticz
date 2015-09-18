@@ -16,6 +16,8 @@
 
 #define SATEL_POLL_INTERVAL 4
 
+#define round(a) ( int ) ( a + .5 )
+
 extern CSQLHelper m_sql;
 
 typedef struct tModel {
@@ -640,7 +642,7 @@ void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool viol
 
 	_tGeneralDevice zone;
 	zone.subtype = sTypeAlert;
-	zone.id = Idx;
+	zone.id = (unsigned char)Idx;
 	zone.intval1 = violation ? 3 : 1;
 
 	sDecodeRXMessage(this, (const unsigned char *)&zone);}
@@ -963,7 +965,7 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 	result = crc;
 }
 
-int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, unsigned char *answer)
+int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 
@@ -1072,7 +1074,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 
 }
 
-std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigned char* pCmd, unsigned int cmdLength)
+std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength)
 {
 	std::list<unsigned char> result;
 
