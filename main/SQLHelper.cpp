@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 79
+#define DB_VERSION 80
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1471,7 +1471,7 @@ bool CSQLHelper::OpenDatabase()
 					std::vector<std::string> sd = *itt;
 					std::string idx = sd[0];
 					int lid = atoi(sd[1].c_str());
-					char szTmp[10];
+					char szTmp[20];
 					sprintf(szTmp, "%08X", lid);
 					safe_query("UPDATE DeviceStatus SET DeviceID='%q' WHERE (ID='%q')", szTmp, idx.c_str());
 				}
@@ -1481,6 +1481,32 @@ bool CSQLHelper::OpenDatabase()
 		{
 			//MQTT filename for ca file
 			query("ALTER TABLE Hardware ADD COLUMN [Extra] VARCHAR(200) DEFAULT ('')");
+		}
+		if (dbversion < 80)
+		{
+			//pTypeEngery sensor to new kWh sensor
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result2,result3;
+			std::vector<std::vector<std::string> >::const_iterator itt,itt2,itt3;
+			for (itt = result.begin(); itt != result.end(); ++itt)
+			{
+				result2 = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type] = %d)", pTypeENERGY);
+				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+				{
+					std::vector<std::string> sd2 = *itt2;
+
+					//Change type to new sensor, and update ID
+					int oldID = atoi(sd2[1].c_str());
+					char szTmp[20];
+					sprintf(szTmp, "%08X", oldID);
+					safe_query("UPDATE DeviceStatus SET [DeviceID]='%s', [Type]=%d, [SubType]=%d, [Unit]=1 WHERE (ID==%s)", szTmp, pTypeGeneral, sTypeKwh, sd2[0].c_str());
+
+					//meter table
+					safe_query("UPDATE Meter SET Value=Value/100, Usage=Usage*10 WHERE DeviceRowID=%s", sd2[0].c_str());
+					//meter_calendar table
+					safe_query("UPDATE Meter_Calendar SET Value=Value/100, Counter=Counter/100 WHERE (DeviceRowID==%s)", sd2[0].c_str());
+				}
+			}
 		}
 	}
 	else if (bNewInstall)

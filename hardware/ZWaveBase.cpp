@@ -456,46 +456,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		{
 			if (pEnergyDevice->bValidValue)
 			{
-				//SendKwhMeterEx(pEnergyDevice->nodeID, pEnergyDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, pEnergyDevice->floatValue, "kWh Meter");
-				RBUF tsen;
-				memset(&tsen, 0, sizeof(RBUF));
-				tsen.ENERGY.packettype = pTypeENERGY;
-				tsen.ENERGY.subtype = sTypeELEC2;
-				tsen.ENERGY.packetlength = sizeof(tsen.ENERGY) - 1;
-				tsen.ENERGY.id1 = ID3;
-				tsen.ENERGY.id2 = ID4;
-				tsen.ENERGY.count = 1;
-				tsen.ENERGY.rssi = 12;
-
-				tsen.ENERGY.battery_level = 9;
-				if (pDevice->hasBattery)
-				{
-					tsen.ENERGY.battery_level = Convert_Battery_To_PercInt(pDevice->batValue);
-				}
-
-				unsigned long long instant = (unsigned long long)round(pDevice->floatValue);
-				tsen.ENERGY.instant1 = (unsigned char)(instant / 0x1000000);
-				instant -= tsen.ENERGY.instant1 * 0x1000000;
-				tsen.ENERGY.instant2 = (unsigned char)(instant / 0x10000);
-				instant -= tsen.ENERGY.instant2 * 0x10000;
-				tsen.ENERGY.instant3 = (unsigned char)(instant / 0x100);
-				instant -= tsen.ENERGY.instant3 * 0x100;
-				tsen.ENERGY.instant4 = (unsigned char)(instant);
-
-				double total = pEnergyDevice->floatValue*223.666;
-				tsen.ENERGY.total1 = (unsigned char)(total / 0x10000000000ULL);
-				total -= tsen.ENERGY.total1 * 0x10000000000ULL;
-				tsen.ENERGY.total2 = (unsigned char)(total / 0x100000000ULL);
-				total -= tsen.ENERGY.total2 * 0x100000000ULL;
-				tsen.ENERGY.total3 = (unsigned char)(total / 0x1000000);
-				total -= tsen.ENERGY.total3 * 0x1000000;
-				tsen.ENERGY.total4 = (unsigned char)(total / 0x10000);
-				total -= tsen.ENERGY.total4 * 0x10000;
-				tsen.ENERGY.total5 = (unsigned char)(total / 0x100);
-				total -= tsen.ENERGY.total5 * 0x100;
-				tsen.ENERGY.total6 = (unsigned char)(total);
-
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
+				SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
 			}
 		}
 	}
@@ -533,87 +494,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		if (bHaveValidPowerDevice)
 		{
-			//SendKwhMeterEx(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pPowerDevice->floatValue, pDevice->floatValue, "kWh Meter");
-
-			tsen.ENERGY.packettype = pTypeENERGY;
-			tsen.ENERGY.subtype = sTypeELEC2;
-			tsen.ENERGY.packetlength = sizeof(tsen.ENERGY) - 1;
-			tsen.ENERGY.id1 = ID3;
-			tsen.ENERGY.id2 = ID4;
-			tsen.ENERGY.count = 1;
-			tsen.ENERGY.rssi = 12;
-
-			tsen.ENERGY.battery_level = 9;
-			if (pDevice->hasBattery)
-			{
-				tsen.ENERGY.battery_level = Convert_Battery_To_PercInt(pDevice->batValue);
-			}
-
-			unsigned long long instant = (unsigned long long)round(pPowerDevice->floatValue);
-			tsen.ENERGY.instant1 = (unsigned char)(instant / 0x1000000);
-			instant -= tsen.ENERGY.instant1 * 0x1000000;
-			tsen.ENERGY.instant2 = (unsigned char)(instant / 0x10000);
-			instant -= tsen.ENERGY.instant2 * 0x10000;
-			tsen.ENERGY.instant3 = (unsigned char)(instant / 0x100);
-			instant -= tsen.ENERGY.instant3 * 0x100;
-			tsen.ENERGY.instant4 = (unsigned char)(instant);
-
-			double total = pDevice->floatValue*223.666;
-			tsen.ENERGY.total1 = (unsigned char)(total / 0x10000000000ULL);
-			total -= tsen.ENERGY.total1 * 0x10000000000ULL;
-			tsen.ENERGY.total2 = (unsigned char)(total / 0x100000000ULL);
-			total -= tsen.ENERGY.total2 * 0x100000000ULL;
-			tsen.ENERGY.total3 = (unsigned char)(total / 0x1000000);
-			total -= tsen.ENERGY.total3 * 0x1000000;
-			tsen.ENERGY.total4 = (unsigned char)(total / 0x10000);
-			total -= tsen.ENERGY.total4 * 0x10000;
-			tsen.ENERGY.total5 = (unsigned char)(total / 0x100);
-			total -= tsen.ENERGY.total5 * 0x100;
-			tsen.ENERGY.total6 = (unsigned char)(total);
-
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
+			SendKwhMeter(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pPowerDevice->floatValue, pDevice->floatValue / pDevice->scaleMultiply, "kWh Meter");
 		}
 		else
 		{
-			SendKwhMeterEx(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, 0, pDevice->floatValue, "kWh Meter");
-
-			tsen.ENERGY.packettype = pTypeENERGY;
-			tsen.ENERGY.subtype = sTypeELEC2;
-			tsen.ENERGY.packetlength = sizeof(tsen.ENERGY) - 1;
-			tsen.ENERGY.id1 = ID3;
-			tsen.ENERGY.id2 = ID4;
-			tsen.ENERGY.count = 1;
-			tsen.ENERGY.rssi = 12;
-
-			tsen.ENERGY.battery_level = 9;
-			if (pDevice->hasBattery)
-			{
-				tsen.ENERGY.battery_level = Convert_Battery_To_PercInt(pDevice->batValue);
-			}
-
-			unsigned long long instant = 0;
-			tsen.ENERGY.instant1 = (unsigned char)(instant / 0x1000000);
-			instant -= tsen.ENERGY.instant1 * 0x1000000;
-			tsen.ENERGY.instant2 = (unsigned char)(instant / 0x10000);
-			instant -= tsen.ENERGY.instant2 * 0x10000;
-			tsen.ENERGY.instant3 = (unsigned char)(instant / 0x100);
-			instant -= tsen.ENERGY.instant3 * 0x100;
-			tsen.ENERGY.instant4 = (unsigned char)(instant);
-
-			double total = pDevice->floatValue*223.666;
-			tsen.ENERGY.total1 = (unsigned char)(total / 0x10000000000ULL);
-			total -= tsen.ENERGY.total1 * 0x10000000000ULL;
-			tsen.ENERGY.total2 = (unsigned char)(total / 0x100000000ULL);
-			total -= tsen.ENERGY.total2 * 0x100000000ULL;
-			tsen.ENERGY.total3 = (unsigned char)(total / 0x1000000);
-			total -= tsen.ENERGY.total3 * 0x1000000;
-			tsen.ENERGY.total4 = (unsigned char)(total / 0x10000);
-			total -= tsen.ENERGY.total4 * 0x10000;
-			tsen.ENERGY.total5 = (unsigned char)(total / 0x100);
-			total -= tsen.ENERGY.total5 * 0x100;
-			tsen.ENERGY.total6 = (unsigned char)(total);
-
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
+			SendKwhMeter(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, 0, pDevice->floatValue, "kWh Meter");
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VOLTAGE)

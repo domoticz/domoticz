@@ -525,47 +525,27 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		}
 		break;
 	case V_LEVEL:
-		if ((pChild->presType == S_DUST)|| (pChild->presType == S_AIR_QUALITY))
+		if (pChild->GetValue(vType, intValue))
 		{
-			if (pChild->GetValue(vType, intValue))
+			if (pChild->presType == S_DUST)
 			{
-				_tAirQualityMeter meter;
-				meter.len = sizeof(_tAirQualityMeter) - 1;
-				meter.type = pTypeAirQuality;
-				meter.subtype = sTypeVoltcraft;
-				meter.airquality = intValue;
-				meter.id1 = pChild->nodeID;
-				meter.id2 = pChild->childID;
-				sDecodeRXMessage(this, (const unsigned char *)&meter);
+				SendAirQualitySensor(pChild->nodeID, pChild->childID, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Dust");
 			}
-		}
-		else if (pChild->presType == S_LIGHT_LEVEL)
-		{
-			if (pChild->GetValue(vType, intValue))
+			else if (pChild->presType == S_AIR_QUALITY)
 			{
-				_tLightMeter lmeter;
-				lmeter.id1 = 0;
-				lmeter.id2 = 0;
-				lmeter.id3 = 0;
-				lmeter.id4 = pChild->nodeID;
-				lmeter.dunit = pChild->childID;
-				lmeter.fLux = (float)intValue;
-				lmeter.battery_level = pChild->batValue;
-				if (pChild->hasBattery)
-					lmeter.battery_level = pChild->batValue;
-				sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+				SendAirQualitySensor(pChild->nodeID, pChild->childID, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Air Quality");
 			}
-		}
-		else if (pChild->presType == S_SOUND)
-		{
-			if (pChild->GetValue(vType, intValue))
+			else if (pChild->presType == S_LIGHT_LEVEL)
+			{
+				SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, (float)intValue, (!pChild->childName.empty()) ? pChild->childName : "Lux");
+			}
+			else if (pChild->presType == S_SOUND)
+			{
 				SendSoundSensor(cNode, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Sound Level");
-		}
-		else if (pChild->presType == S_MOISTURE)
-		{
-			if (pChild->GetValue(vType, intValue))
+			}
+			else if (pChild->presType == S_MOISTURE)
 			{
-				SendMoistureSensor(cNode, pChild->batValue, intValue, "Moisture");
+				SendMoistureSensor(cNode, pChild->batValue, intValue, (!pChild->childName.empty()) ? pChild->childName : "Moisture");
 			}
 		}
 		break;
@@ -581,7 +561,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 				if (pSensorKwh) {
 					float Kwh;
 					if (pSensorKwh->GetValue(V_KWH, Kwh))
-						SendKwhMeter(pSensorKwh->nodeID, pSensorKwh->childID, pSensorKwh->batValue, floatValue / 1000.0f, Kwh, (!pChild->childName.empty()) ? pChild->childName : "Meter");
+						SendKwhMeterOldWay(pSensorKwh->nodeID, pSensorKwh->childID, pSensorKwh->batValue, floatValue / 1000.0f, Kwh, (!pChild->childName.empty()) ? pChild->childName : "Meter");
 				}
 				else {
 					SendWattMeter(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Usage");
@@ -596,10 +576,10 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			if (pSensorWatt) {
 				float Watt;
 				if (pSensorWatt->GetValue(V_WATT, Watt))
-					SendKwhMeter(pChild->nodeID, pChild->childID, pChild->batValue, Watt / 1000.0f, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Meter");
+					SendKwhMeterOldWay(pChild->nodeID, pChild->childID, pChild->batValue, Watt / 1000.0f, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Meter");
 			}
 			else {
-				SendKwhMeter(pChild->nodeID, pChild->childID, pChild->batValue, 0, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Meter");
+				SendKwhMeterOldWay(pChild->nodeID, pChild->childID, pChild->batValue, 0, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Meter");
 			}
 		}
 		break;
@@ -1544,11 +1524,13 @@ void MySensorsBase::ParseLine()
 			{
 				//Add it to the system
 				if ((vType == V_STATUS) || (vType == V_PERCENTAGE) || (vType == V_LOCK_STATUS))
-					UpdateSwitch(node_id, child_sensor_id, false, 100, "Light");
+					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Light");
 				else if (vType == V_TRIPPED)
-					UpdateSwitch(node_id, child_sensor_id, false, 100, "Security Sensor");
-				else
-					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, (vType == V_RGBW), (vType == V_RGBW) ? "RGBW Light" : "RGB Light");
+					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor");
+				else if (vType == V_RGBW)
+					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light");
+				else if (vType == V_RGB)
+					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, false, (!pSensor->childName.empty()) ? pSensor->childName : "RGB Light");
 			}
 		}
 		else if (vType == V_UP)
@@ -1556,7 +1538,7 @@ void MySensorsBase::ParseLine()
 			int blind_value;
 			if (!GetBlindsValue(node_id, child_sensor_id, blind_value))
 			{
-				SendBlindSensor(node_id, child_sensor_id, 255, blinds_sOpen, "Blinds/Window");
+				SendBlindSensor(node_id, child_sensor_id, 255, blinds_sOpen, (!pSensor->childName.empty()) ? pSensor->childName : "Blinds/Window");
 			}
 		}
 	}

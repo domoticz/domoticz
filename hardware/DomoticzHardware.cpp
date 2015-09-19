@@ -473,64 +473,14 @@ void CDomoticzHardwareBase::SendWattMeter(const int NodeID, const int ChildID, c
 	}
 }
 
-void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname)
+//Obsolete, we should not call this anymore
+//when all calls are removed, we should delete this function
+void CDomoticzHardwareBase::SendKwhMeterOldWay(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname)
 {
-	int Idx = (NodeID * 256) + ChildID;
-	bool bDeviceExits = true;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-
-	tsen.ENERGY.packettype = pTypeENERGY;
-	tsen.ENERGY.subtype = sTypeELEC2;
-	tsen.ENERGY.packetlength = sizeof(tsen.ENERGY) - 1;
-	tsen.ENERGY.id1 = NodeID;
-	tsen.ENERGY.id2 = ChildID;
-	tsen.ENERGY.count = 1;
-	tsen.ENERGY.rssi = 12;
-
-	tsen.ENERGY.battery_level = BatteryLevel;
-
-	unsigned long long instant = (unsigned long long)(musage*1000.0);
-	tsen.ENERGY.instant1 = (unsigned char)(instant / 0x1000000);
-	instant -= tsen.ENERGY.instant1 * 0x1000000;
-	tsen.ENERGY.instant2 = (unsigned char)(instant / 0x10000);
-	instant -= tsen.ENERGY.instant2 * 0x10000;
-	tsen.ENERGY.instant3 = (unsigned char)(instant / 0x100);
-	instant -= tsen.ENERGY.instant3 * 0x100;
-	tsen.ENERGY.instant4 = (unsigned char)(instant);
-
-	double total = (mtotal*1000.0)*223.666;
-	tsen.ENERGY.total1 = (unsigned char)(total / 0x10000000000ULL);
-	total -= tsen.ENERGY.total1 * 0x10000000000ULL;
-	tsen.ENERGY.total2 = (unsigned char)(total / 0x100000000ULL);
-	total -= tsen.ENERGY.total2 * 0x100000000ULL;
-	tsen.ENERGY.total3 = (unsigned char)(total / 0x1000000);
-	total -= tsen.ENERGY.total3 * 0x1000000;
-	tsen.ENERGY.total4 = (unsigned char)(total / 0x10000);
-	total -= tsen.ENERGY.total4 * 0x10000;
-	tsen.ENERGY.total5 = (unsigned char)(total / 0x100);
-	total -= tsen.ENERGY.total5 * 0x100;
-	tsen.ENERGY.total6 = (unsigned char)(total);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
-	}
+	SendKwhMeter(NodeID, ChildID, BatteryLevel, musage * 1000, mtotal, defaultname);
 }
 
-void CDomoticzHardwareBase::SendKwhMeterEx(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname)
+void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, const int BatteryLevel, const double musage, const double mtotal, const std::string &defaultname)
 {
 	int Idx = (NodeID * 256) + ChildID;
 	bool bDeviceExits = true;
@@ -563,7 +513,7 @@ double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, b
 	double ret = 0;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
+		m_HwdID, int(Idx), int(pTypeGeneral), int(sTypeKwh));
 	if (result.size() < 1)
 	{
 		bExists = false;
