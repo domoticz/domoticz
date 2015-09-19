@@ -6664,7 +6664,7 @@ namespace http {
 				//All
 				if (rowid != "") 
 				{
-					_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
+					//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used, A.Type, A.SubType,"
 						" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
@@ -6734,7 +6734,7 @@ namespace http {
 					{
 						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 					}
-					_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
+					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
 						" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
@@ -6753,7 +6753,7 @@ namespace http {
 				//Specific devices
 				if (rowid != "")
 				{
-					_log.Log(LOG_STATUS, "Getting device with id: %s for user %lu", rowid.c_str(), m_users[iUser].ID);
+					//_log.Log(LOG_STATUS, "Getting device with id: %s for user %lu", rowid.c_str(), m_users[iUser].ID);
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -6822,7 +6822,7 @@ namespace http {
 						bAllowDeviceToBeHidden = true;
 					}
 					sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
-					_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
+					//_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					result = m_sql.safe_query(
 						"SELECT DISTINCT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -7069,7 +7069,7 @@ namespace http {
 					// has this device already been seen, now with different plan?
 					// assume results are ordered such that same device is adjacent
 					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str()) {
-						_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
+						//_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
 						root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
 						continue;
 					}
@@ -8463,6 +8463,7 @@ namespace http {
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							}
+							root["result"][ii]["TypeImg"] = "current";
 							root["result"][ii]["SwitchTypeVal"] = switchtype; //MTYPE_ENERGY
 
 						}
@@ -8644,7 +8645,9 @@ namespace http {
 						}
 						else if (dSubType == sTypeAlert)
 						{
-							root["result"][ii]["Data"] = sValue;
+							sprintf(szData, "Level: %d", nValue);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["Desc"] = Get_Alert_Desc(nValue);
 							root["result"][ii]["TypeImg"] = "Alert";
 							root["result"][ii]["Level"] = nValue;
 							root["result"][ii]["HaveTimeout"] = false;
@@ -13580,7 +13583,7 @@ namespace http {
 							if (spos != std::string::npos)
 							{
 								float fvalue = static_cast<float>(atof(sValue.substr(spos + 1).c_str()));
-								sprintf(szTmp, "%.3f", fvalue / (EnergyDivider / 1000.0f));
+								sprintf(szTmp, "%.3f", fvalue / EnergyDivider);
 								root["counter"] = szTmp;
 							}
 						}
@@ -13969,10 +13972,22 @@ namespace http {
 							{
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-								root["result"][ii]["v"] = szTmp;
-								sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider);
-								root["result"][ii]["c"] = szTmp;
+								{
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									root["result"][ii]["v"] = szTmp;
+
+									std::vector<std::string> mresults;
+									StringSplit(sValue, ";", mresults);
+									if (mresults.size() == 2)
+									{
+										sValue = mresults[1];
+									}
+									if (dType == pTypeENERGY)
+										sprintf(szTmp, "%.3f", ((atof(sValue.c_str())*100.0f) - atof(szValue.c_str())) / EnergyDivider);
+									else
+										sprintf(szTmp, "%.3f", (atof(sValue.c_str()) - atof(szValue.c_str())) / EnergyDivider);
+									root["result"][ii]["c"] = szTmp;
+								}
 								break;
 							case MTYPE_GAS:
 								sprintf(szTmp, "%.2f", atof(szValue.c_str()) / GasDivider);

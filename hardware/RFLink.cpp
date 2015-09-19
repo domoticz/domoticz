@@ -815,11 +815,11 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveKWatt)
 	{
-		SendKwhMeter(Node_ID, Child_ID, BatteryLevel, kwatt / 1000.0f, kwatt, "Meter");
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, kwatt / 1000.0f, kwatt, "Meter");
 	}
 	if (bHaveWatt)
 	{
-		SendKwhMeter(Node_ID, Child_ID, BatteryLevel, 0, watt, "Meter");
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, 0, watt, "Meter");
 	}
 	if (bHaveDistance)
 	{

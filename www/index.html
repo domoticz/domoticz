@@ -297,7 +297,7 @@ $(document).ready(function() {
 			
 			window.applicationCache.addEventListener('error', function(e)
 			{
-				var errText = $.t('Browser Cache refresh failed.');
+				var errText = "Browser Cache refresh failed.";
 				errText += (typeof($.cachecount) != 'undefined') ? '<br>Loaded ' + $.cachecount + ' of ' + $.cachetotal + ' files' : '';
 				errText += (typeof(e.message) != 'undefined') ? '<br>' + e.message : '';
 				ClearNotifyCacheRefresh();

@@ -7475,51 +7475,13 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 		}
 	}
 
-	sprintf(szTmp, "%ld;%.2f", instant, total);
-	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp,m_LastDeviceName);
-	if (DevRowIdx == -1)
-		return -1;
-
-	m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, (const float)instant);
-
-	if (m_verboselevel == EVBL_ALL)
-	{
-		WriteMessageStart();
-		switch (pResponse->ENERGY.subtype)
-		{
-		case sTypeELEC2:
-			WriteMessage("subtype       = ELEC2 - OWL CM119, CM160");
-			break;
-		case sTypeELEC3:
-			WriteMessage("subtype       = ELEC2 - OWL CM180");
-			break;
-		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->ENERGY.packettype, pResponse->ENERGY.subtype);
-			WriteMessage(szTmp);
-			break;
-		}
-
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->ENERGY.seqnbr);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Count         = %d", pResponse->ENERGY.count);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Instant usage = %ld Watt", instant);
-		WriteMessage(szTmp);
-		sprintf(szTmp, "total usage   = %.2f Wh", total);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp,"Signal level  = %d", pResponse->ENERGY.rssi);
-		WriteMessage(szTmp);
-
-		if ((pResponse->ENERGY.battery_level & 0xF) == 0)
-			WriteMessage("Battery       = Low");
-		else
-			WriteMessage("Battery       = OK");
-		WriteMessageEnd();
-	}
-	return DevRowIdx;
+	//Translate this sensor type to the new kWh sensor type
+	_tGeneralDevice gdevice;
+	gdevice.intval1 = (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2;
+	gdevice.subtype = sTypeKwh;
+	gdevice.floatval1 = (float)instant;
+	gdevice.floatval2 = (float)total;
+	return decode_General(pHardware, HwdID, (const tRBUF*)&gdevice);
 }
 
 unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)

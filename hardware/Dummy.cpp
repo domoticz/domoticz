@@ -219,61 +219,64 @@ namespace http {
 				bCreated = true;
 			}
 			break;
+			case 18:
+				//kWh
+			{
+				std::string rID = std::string(ID);
+				padLeft(rID, 8, '0');
+				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeKwh, 12, 255, 0, "0;0.0", devname);
+				bCreated = true;
+			}
+			break;
 			case pTypeLimitlessLights:
 				//RGB switch
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 10, 255, 0, "0.0", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 12, 255, 0, "0.0", devname);
 				bCreated = true;
 				break;
 			case pTypeHUM:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeTEMP1, 10, 255, 50, "1", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeTEMP1, 12, 255, 50, "1", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP_HUM:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM, sTypeTH1, 10, 255, 0, "0.0;50;1", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM, sTypeTH1, 12, 255, 0, "0.0;50;1", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP_HUM_BARO:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM_BARO, sTypeTHB1, 10, 255, 0, "0.0;50;1;1010;1", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM_BARO, sTypeTHB1, 12, 255, 0, "0.0;50;1;1010;1", devname);
 				bCreated = true;
 				break;
 			case pTypeWIND:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND1, 10, 255, 0, "0;N;0;0;0;0", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND1, 12, 255, 0, "0;N;0;0;0;0", devname);
 				bCreated = true;
 				break;
 			case pTypeRAIN:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeRAIN, sTypeRAIN3, 10, 255, 0, "0;0", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeRAIN, sTypeRAIN3, 12, 255, 0, "0;0", devname);
 				bCreated = true;
 				break;
 			case pTypeUV:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeUV, sTypeUV1, 10, 255, 0, "0;0", devname);
-				bCreated = true;
-				break;
-			case pTypeENERGY:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeENERGY, sTypeELEC2, 10, 255, 0, "0;0.0", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeUV, sTypeUV1, 12, 255, 0, "0;0", devname);
 				bCreated = true;
 				break;
 			case pTypeRFXMeter:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeRFXMeter, sTypeRFXMeterCount, 10, 255, 0, "0", devname);
-				bCreated = true;
 				break;
 			case pTypeAirQuality:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 10, 255, 0, devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 12, 255, 0, devname);
 				bCreated = true;
 				break;
 			case pTypeUsage:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeUsage, sTypeElectric, 10, 255, 0, "0", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeUsage, sTypeElectric, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case pTypeLux:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeLux, sTypeLux, 10, 255, 0, "0", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeLux, sTypeLux, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case pTypeP1Power:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Power, sTypeP1Power, 10, 255, 0, "0;0;0;0;0;0", devname);
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Power, sTypeP1Power, 12, 255, 0, "0;0;0;0;0;0", devname);
 				bCreated = true;
 				break;
 			}
