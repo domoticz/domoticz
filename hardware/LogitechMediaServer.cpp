@@ -613,19 +613,19 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 			sLMSCmnd = "\"button\", \"down\"";
 		}
 		else if (command == "Favorites") {
-			sLMSCmnd = "";
+			sLMSCmnd = "\"button\", \"favorites\"";
 		}
 		else if (command == "Browse") {
-			sLMSCmnd = "";
+			sLMSCmnd = "\"button\", \"browse\"";
 		}
 		else if (command == "NowPlaying") {
-			sLMSCmnd = "";
+			sLMSCmnd = "\"button\", \"playdisp_toggle\"";
 		}
 		else if (command == "Shuffle") {
-			sLMSCmnd = "";
+			sLMSCmnd = "\"button\", \"shuffle_toggle\"";
 		}
 		else if (command == "Repeat") {
-			sLMSCmnd = "";
+			sLMSCmnd = "\"button\", \"repeat_toggle\"";
 		}
 		else if (command == "Stop") {
 			sLMSCmnd = "\"stop\"";
