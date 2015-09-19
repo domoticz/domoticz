@@ -122,7 +122,7 @@ MACRO(Gitversion_GET_REVISION dir variable)
 ENDMACRO(Gitversion_GET_REVISION)
 
 Gitversion_GET_REVISION(. ProjectRevision)
-MATH(EXPR ProjectRevision "${ProjectRevision}0")
+MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 
 # The version number.
@@ -284,7 +284,7 @@ add_dependencies(domoticz revisiontag)
 
 ## Link libraries
 
-option(USE_STATIC_BOOST "Build with static BOOST libraries" NO)
+option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
