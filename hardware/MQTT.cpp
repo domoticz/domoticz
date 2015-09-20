@@ -16,10 +16,11 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password) :
+MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password, const std::string CAfilename) :
 m_szIPAddress(IPAddress),
 m_UserName(Username),
-m_Password(Password)
+m_Password(Password),
+m_CAFilename(CAfilename)
 {
 	m_HwdID=ID;
 	m_IsConnected = false;
@@ -351,6 +352,17 @@ bool MQTT::ConnectIntEx()
 	int rc;
 	int keepalive = 60;
 
+	if (!m_CAFilename.empty()){
+		rc = tls_set(m_CAFilename.c_str());
+
+		if ( rc != MOSQ_ERR_SUCCESS)
+		{
+			_log.Log(LOG_ERROR, "MQTT: Failed enabling TLS mode, return code: %d (CA certificate: '%s')", rc, m_CAFilename.c_str());
+			return false;
+		} else {
+			_log.Log(LOG_STATUS, "MQTT: enabled TLS mode");
+		}
+	}
 	rc = username_pw_set((!m_UserName.empty()) ? m_UserName.c_str() : NULL, (!m_Password.empty()) ? m_Password.c_str() : NULL);
 
 	rc = connect(m_szIPAddress.c_str(), m_usIPPort, keepalive);

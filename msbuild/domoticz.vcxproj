@@ -248,6 +248,7 @@
     <ClInclude Include="..\notifications\NotificationNma.h" />
     <ClInclude Include="..\notifications\NotificationProwl.h" />
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
+    <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
@@ -486,6 +487,7 @@
     <ClCompile Include="..\notifications\NotificationNma.cpp" />
     <ClCompile Include="..\notifications\NotificationProwl.cpp" />
     <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
+    <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />
     <ClCompile Include="..\notifications\NotificationPushover.cpp" />
     <ClCompile Include="..\notifications\NotificationSMS.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />

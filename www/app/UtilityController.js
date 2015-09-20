@@ -692,7 +692,7 @@ define(['app'], function (app) {
 						  status=item.Data;
 						  bigtext=item.Data;
 						}
-						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
+						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType == "kWh")) {
 							status=item.Data;
 							if (typeof item.CounterToday != 'undefined') {
 								status+=', ' + $.t("Today") + ': ' + item.CounterToday;
@@ -1012,8 +1012,8 @@ define(['app'], function (app) {
 					  xhtm+='current48.png" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
-					else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
-						if ((item.Type == "Energy")&&(item.SwitchTypeVal == 4)) {
+					else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType == "kWh")) {
+						if (((item.Type == "Energy")||(item.SubType == "kWh"))&&(item.SwitchTypeVal == 4)) {
 							xhtm+='PV48.png" height="48" width="48"></td>\n';
 						}
 						else {
@@ -1179,10 +1179,10 @@ define(['app'], function (app) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
+				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType == "kWh")) {
 						xhtm+='<a class="btnsmall" onclick="ShowCounterLogSpline(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" data-i18n="Log">Log</a> ';
 						if (permissions.hasPermission("Admin")) {
-							if (item.Type == "Energy") {
+							if ((item.Type == "Energy")||(item.SubType == "kWh")) {
 								xhtm+='<a class="btnsmall" onclick="EditEnergyDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal +');" data-i18n="Edit">Edit</a> ';
 							} else {
 								xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';

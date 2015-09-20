@@ -575,7 +575,7 @@ double CToonThermostat::GetElectricOffset(const int idx, const double currentKwh
 	{
 		//First time, lets add it
 		bool bExists = false;
-		m_OffsetElectricUsage[idx] = GetKwhMeter(idx, 1, bExists)/100.0;
+		m_OffsetElectricUsage[idx] = GetKwhMeter(idx, 1, bExists);
 		m_LastElectricCounter[idx] = currentKwh;
 	}
 	return m_OffsetElectricUsage[idx];
@@ -679,7 +679,7 @@ void CToonThermostat::GetMeterDetails()
 						m_OffsetElectricUsage[Idx] += OldDayCounter;
 					}
 					m_LastElectricCounter[Idx] = DayCounter;
-					SendKwhMeter(Idx, 1, 255, currentUsage/1000.0, (m_OffsetElectricUsage[Idx] + m_LastElectricCounter[Idx])/1000.0, deviceName);
+					SendKwhMeterOldWay(Idx, 1, 255, currentUsage/1000.0, (m_OffsetElectricUsage[Idx] + m_LastElectricCounter[Idx])/1000.0, deviceName);
 				}
 			}
 		}
