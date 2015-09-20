@@ -7,6 +7,7 @@
 #include "NotificationHelper.h"
 #include "NotificationProwl.h"
 #include "NotificationNma.h"
+#include "NotificationPushbullet.h"
 #include "NotificationPushover.h"
 #include "NotificationPushalot.h"
 #include "NotificationEmail.h"
@@ -28,6 +29,7 @@ CNotificationHelper::CNotificationHelper()
 
 	AddNotifier(new CNotificationProwl());
 	AddNotifier(new CNotificationNma());
+	AddNotifier(new CNotificationPushbullet());
 	AddNotifier(new CNotificationPushover());
 	AddNotifier(new CNotificationPushalot());
 	AddNotifier(new CNotificationEmail());
