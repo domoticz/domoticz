@@ -255,6 +255,7 @@ notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp
 notifications/NotificationNma.cpp
+notifications/NotificationPushbullet.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
 notifications/NotificationPushalot.cpp
