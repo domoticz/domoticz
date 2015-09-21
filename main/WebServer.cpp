@@ -11635,27 +11635,24 @@ namespace http {
 											}
 											ulFirstRealValue = ulLastValue;
 											float TotalValue = float(ulTotalValue);
-											if (TotalValue != 0)
+											switch (metertype)
 											{
-												switch (metertype)
-												{
-												case MTYPE_ENERGY:
-												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
-													break;
-												case MTYPE_GAS:
-													sprintf(szTmp, "%.2f", TotalValue / GasDivider);
-													break;
-												case MTYPE_WATER:
-													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
-													break;
-												case MTYPE_COUNTER:
-													sprintf(szTmp, "%.1f", TotalValue);
-													break;
-												}
-												root["result"][ii]["v"] = szTmp;
-												ii++;
+											case MTYPE_ENERGY:
+											case MTYPE_ENERGY_GENERATED:
+												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+												break;
+											case MTYPE_GAS:
+												sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+												break;
+											case MTYPE_WATER:
+												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+												break;
+											case MTYPE_COUNTER:
+												sprintf(szTmp, "%.1f", TotalValue);
+												break;
 											}
+											root["result"][ii]["v"] = szTmp;
+											ii++;
 										}
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;
