@@ -73,6 +73,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "HT12E", sSwitchTypeHT12E },           // p60
 	{ "EV1527", sSwitchTypeEV1527 },         // p61
 	{ "Elmes", sSwitchTypeElmes },           // p65
+	{ "Aster", sSwitchTypeAster },           // p17
+	{ "Sartano", sSwitchTypeSartano },           // p17
 	{ "", -1 }
 };
 
