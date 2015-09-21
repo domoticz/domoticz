@@ -815,10 +815,17 @@ namespace http {
 					usrname = base64_decode(usrname);
 					int iUser = -1;
 					iUser = FindUser(usrname.c_str());
-					if (iUser == -1)
+					if (iUser == -1) {
+						// log brute force attack
+						_log.Log(LOG_ERROR, "Failed login attempt for '%s' !", usrname.c_str());
 						return;
-					if (m_users[iUser].Password != usrpass)
+					}
+					if (m_users[iUser].Password != usrpass) {
+						// log brute force attack
+						_log.Log(LOG_ERROR, "Failed login attempt for '%s' !", m_users[iUser].Username.c_str());
 						return;
+					}
+					_log.Log(LOG_STATUS, "Login successfull : user '%s'", m_users[iUser].Username.c_str());
 					root["status"] = "OK";
 					root["title"] = "logincheck";
 					m_pWebEm->m_actualuser = m_users[iUser].Username;
@@ -11613,6 +11620,16 @@ namespace http {
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
 							method = 0;
+
+						// Force Value graph even if device should show Value graph
+						if ((method == 1) && (
+								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3))) ||
+								((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+							)) {
+							//_log.Log(LOG_ERROR, "Energy/CMxxx or General/kWh device graph method should be 0!");
+							method = 0;
+						}
+
 						if (method != 0)
 						{
 							//realtime graph
@@ -11654,27 +11671,24 @@ namespace http {
 											}
 											ulFirstRealValue = ulLastValue;
 											float TotalValue = float(ulTotalValue);
-											if (TotalValue != 0)
+											switch (metertype)
 											{
-												switch (metertype)
-												{
-												case MTYPE_ENERGY:
-												case MTYPE_ENERGY_GENERATED:
-													sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
-													break;
-												case MTYPE_GAS:
-													sprintf(szTmp, "%.2f", TotalValue / GasDivider);
-													break;
-												case MTYPE_WATER:
-													sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
-													break;
-												case MTYPE_COUNTER:
-													sprintf(szTmp, "%.1f", TotalValue);
-													break;
-												}
-												root["result"][ii]["v"] = szTmp;
-												ii++;
+											case MTYPE_ENERGY:
+											case MTYPE_ENERGY_GENERATED:
+												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+												break;
+											case MTYPE_GAS:
+												sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+												break;
+											case MTYPE_WATER:
+												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+												break;
+											case MTYPE_COUNTER:
+												sprintf(szTmp, "%.1f", TotalValue);
+												break;
 											}
+											root["result"][ii]["v"] = szTmp;
+											ii++;
 										}
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;

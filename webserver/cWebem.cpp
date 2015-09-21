@@ -409,7 +409,11 @@ bool cWebem::CheckForAction( request& req )
 						return true;
 					szContentType = szContent.substr(0, pos);
 					szContent = szContent.substr(pos + 2);
-					if (szContentType.find("application/octet-stream") != std::string::npos)
+					if (
+						(szContentType.find("application/octet-stream") != std::string::npos) ||
+						(szContentType.find("application/json") != std::string::npos) ||
+						(szContentType.find("Content-Type: text/xml") != std::string::npos)
+						)
 					{
 						//Its a file/stream, next line should be empty
 						pos = szContent.find("\r\n");
