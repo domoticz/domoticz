@@ -411,7 +411,7 @@ bool cWebem::CheckForAction( request& req )
 					szContent = szContent.substr(pos + 2);
 					if (
 						(szContentType.find("application/octet-stream") != std::string::npos) ||
-						(szContentType.find("application/json") != std::string::npos)
+						(szContentType.find("application/json") != std::string::npos) ||
 						(szContentType.find("Content-Type: text/xml") != std::string::npos)
 						)
 					{
