@@ -87,7 +87,7 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	}
 	if (root["method"].empty())
 	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: '%s'", sURL.str());
+		_log.Log(LOG_ERROR, "Logitech Media Server: '%s' request '%s'", sURL.str().c_str(), sPostData.str().c_str());
 		return root;
 	}
 	return root["result"];
@@ -155,7 +155,10 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
 				// 1:	Update the DeviceStatus
-				_log.Log(LOG_STATUS, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
+				if (nStatus == MSTAT_ON)
+					_log.Log(LOG_STATUS, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
+				else
+					_log.Log(LOG_STATUS, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
 				char szLastUpdate[40];
@@ -164,12 +167,8 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastUpdate='%q' WHERE (HardwareID == %d) AND (DeviceID == '%q') AND (Unit == 1) AND (SwitchType == %d)",
 					int(nStatus), sStatus.c_str(), szLastUpdate, m_HwdID, itt->szDevID, STYPE_Media);
 
-				// 2:	Log the event if the actual status has changed but remove ", xx%" to reduce extraneous logging
+				// 2:	Log the event if the actual status has changed
 				std::string sShortStatus = sStatus;
-				if (sShortStatus.find_last_of("%") == sShortStatus.length() - 1)
-				{
-					sShortStatus = sShortStatus.substr(0, sShortStatus.find_last_of(","));
-				}
 				if ((itt->nStatus != nStatus) || (itt->sShortStatus != sShortStatus))
 				{
 					std::string sLongStatus = Media_Player_States(nStatus);
@@ -203,13 +202,11 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 	bool bPingOK = false;
 	_eMediaStatus nStatus = MSTAT_UNKNOWN;
 	std::string	sPlayerId = Node.IP;
-	std::string sMode = "";
-	std::string	sTitle = "";
 	std::string	sStatus = "";
 
 	try
 	{
-		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:uB\"]]}";
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:lady\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 		if (!root.size())
@@ -224,161 +221,56 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					nStatus = MSTAT_OFF;
 				else {
 					nStatus = MSTAT_ON;
-					sMode = root["mode"].asString();
+					std::string sMode = root["mode"].asString();
+					std::string	sTitle = "";
+					std::string	sAlbum = "";
+					std::string	sArtist = "";
+					std::string	sYear = "";
+					std::string	sDuration = "";
+					std::string sLabel = "";
 
 					if (root["playlist_loop"].size()) {
 
 						sTitle = root["playlist_loop"][0]["title"].asString();
+						sAlbum = root["playlist_loop"][0]["album"].asString();
+						sArtist = root["playlist_loop"][0]["artist"].asString();
+						sYear = root["playlist_loop"][0]["year"].asString();
+						sDuration = root["playlist_loop"][0]["duration"].asString();
+
+						sLabel = sArtist + " - " + sTitle;
+						sYear = " (" + sYear + ")";
 					}
+
+					// if title is too long shorten it by removing things in brackets, followed by things after a ", "
+					boost::algorithm::trim(sLabel);
+					if (sLabel.length() > MAX_TITLE_LEN)
+					{
+						boost::algorithm::replace_all(sLabel, " - ", ", ");
+					}
+					while (sLabel.length() > MAX_TITLE_LEN)
+					{
+						int begin = sLabel.find_last_of("(");
+						int end = sLabel.find_last_of(")");
+						if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
+						sLabel.erase(begin, end - begin + 1);
+					}
+					while (sLabel.length() > MAX_TITLE_LEN)
+					{
+						int end = sLabel.find_last_of(",");
+						if (std::string::npos == end) break;
+						sLabel = sLabel.substr(0, end);
+					}
+					boost::algorithm::trim(sLabel);
+					stdreplace(sLabel, " ,", ",");
+					sLabel = sLabel.substr(0, MAX_TITLE_LEN);
+					sTitle = sLabel;
 
 					// Assemble final status
-					sStatus = sTitle + " (" + sMode + ")";
-
+					sStatus = sTitle;
+					if (sStatus.length() < (MAX_TITLE_LEN - 7)) sStatus += sYear;
 				}
 			}
 		}
-
-/*
-		Json::Value root = Query(Node.IP, Node.Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetActivePlayers%22,%22id%22:1}");
-		if (!root.size())
-			nStatus = MSTAT_OFF;
-		else
-		{
-			bPingOK = true;
-			std::string	sPlayerId;
-			if (root["result"].empty() == true)
-			{
-				nStatus = MSTAT_IDLE;
-			}
-			else if (root["result"][0]["type"].empty() == true)
-			{
-				nStatus = MSTAT_UNKNOWN;
-			}
-			else
-			{
-				std::string	sMedia = root["result"][0]["type"].asCString();
-				if (root["result"][0]["playerid"].empty() == true)
-				{
-					_log.Log(LOG_ERROR, "Logitech Media Server: No PlayerID returned when player is not idle!");
-					return;
-				}
-				if (sMedia == "video") nStatus = MSTAT_VIDEO;
-				if (sMedia == "audio") nStatus = MSTAT_AUDIO;
-				if (sMedia == "picture") nStatus = MSTAT_PHOTO;
-				sPlayerId = SSTR((int)root["result"][0]["playerid"].asInt());
-			}
-
-			// If player is active then pick up additional details
-			if (sPlayerId != "")
-			{
-				std::string	sTitle;
-				std::string	sPercent;
-				std::string	sYear;
-
-				root = Query(Node.IP, Node.Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetItem%22,%22id%22:1,%22params%22:{%22playerid%22:" + sPlayerId + ",%22properties%22:[%22artist%22,%22year%22,%22channel%22,%22showtitle%22,%22season%22,%22episode%22,%22title%22]}}");
-				if (root.size())
-				{
-					std::string	sType;
-					if (root["result"]["item"]["type"].empty() != true)
-					{
-						sType = root["result"]["item"]["type"].asCString();
-					}
-
-					if (sType == "song")
-					{
-						if (root["result"]["item"]["artist"][0].empty() != true)
-						{
-							sTitle = root["result"]["item"]["artist"][0].asCString();
-							sTitle += " - ";
-						}
-					}
-
-					if (sType == "episode")
-					{
-						if (root["result"]["item"]["showtitle"].empty() != true)
-						{
-							sTitle = root["result"]["item"]["showtitle"].asCString();
-						}
-						if (root["result"]["item"]["season"].empty() != true)
-						{
-							sTitle += " [S";
-							sTitle += SSTR((int)root["result"]["item"]["season"].asInt());
-						}
-						if (root["result"]["item"]["episode"].empty() != true)
-						{
-							sTitle += "E";
-							sTitle += SSTR((int)root["result"]["item"]["episode"].asInt());
-							sTitle += "], ";
-						}
-					}
-
-					if (sType == "channel")
-					{
-						if (root["result"]["item"]["channel"].empty() != true)
-						{
-							sTitle = root["result"]["item"]["channel"].asCString();
-							sTitle += " - ";
-						}
-					}
-
-					if (root["result"]["item"]["year"].empty() != true)
-					{
-						sYear = SSTR((int)root["result"]["item"]["year"].asInt());
-						if (sYear.length() > 2) sYear = " (" + sYear + ")";
-						else sYear = "";
-					}
-
-					if (root["result"]["item"]["title"].empty() != true)
-					{
-						std::string	sLabel = sTitle + root["result"]["item"]["title"].asCString();
-						if ((!sLabel.length()) && (root["result"]["item"]["label"].empty() != true))
-						{
-							sLabel = root["result"]["item"]["label"].asCString();
-						}
-						// if title is too long shorten it by removing things in brackets, followed by things after a ", "
-						boost::algorithm::trim(sLabel);
-						if (sLabel.length() > MAX_TITLE_LEN)
-						{
-							boost::algorithm::replace_all(sLabel, " - ", ", ");
-						}
-						while (sLabel.length() > MAX_TITLE_LEN)
-						{
-							int begin = sLabel.find_last_of("(");
-							int end = sLabel.find_last_of(")");
-							if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
-							sLabel.erase(begin, end - begin + 1);
-						}
-						while (sLabel.length() > MAX_TITLE_LEN)
-						{
-							int end = sLabel.find_last_of(",");
-							if (std::string::npos == end) break;
-							sLabel = sLabel.substr(0, end);
-						}
-						boost::algorithm::trim(sLabel);
-						stdreplace(sLabel, " ,", ",");
-						sLabel = sLabel.substr(0, MAX_TITLE_LEN);
-						sTitle = sLabel;
-					}
-				}
-
-				root = Query(Node.IP, Node.Port, "/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22Player.GetProperties%22,%22id%22:1,%22params%22:{%22playerid%22:" + sPlayerId + ",%22properties%22:[%22live%22,%22percentage%22,%22speed%22]}}");
-				if (root.size())
-				{
-					bool	bLive = root["result"]["live"].asBool();
-					if (bLive) sYear = " (Live)";
-					int		iSpeed = root["result"]["speed"].asInt();
-					if (iSpeed == 0) nStatus = MSTAT_PAUSED;
-					float	fPercent = root["result"]["percentage"].asFloat();
-					if (fPercent > 1.0) sPercent = SSTR((int)round(fPercent)) + "%";
-				}
-
-				// Assemble final status
-				sStatus = sTitle;
-				if (sStatus.length() < (MAX_TITLE_LEN - 7)) sStatus += sYear;
-				if (sPercent.length() != 0) sStatus += ", " + sPercent;
-			}
-		}
-*/
 	}
 	catch (...)
 	{
@@ -457,7 +349,11 @@ void CLogitechMediaServer::GetPlayerInfo()
 			std::string ip = IPPort[0];
 			int port = atoi(IPPort[1].c_str());
 
-			InsertUpdatePlayer(name, ip, port);
+			if (model == "squeezebox3") {
+				InsertUpdatePlayer(name, ip, port);
+			}
+			//else
+			//	_log.Log(LOG_ERROR, "Logitech Media Server: model '%s' not (yet) supported.", model.c_str());
 		}
 	}
 	catch (...)

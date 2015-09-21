@@ -10761,6 +10761,9 @@ namespace http {
 					int nValue = atoi(sd[1].c_str());
 					std::string sValue = sd[2];
 
+					//skip 0-values in log for MediaPlayers
+					if ((switchtype == STYPE_Media) && (sValue == "0")) continue;
+
 					root["result"][ii]["idx"] = sd[0];
 
 					//add light details
