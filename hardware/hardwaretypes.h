@@ -110,6 +110,8 @@
 #define sSwitchTypeHT12E			0x31
 #define sSwitchTypeEV1527			0x32
 #define sSwitchTypeElmes			0x33
+#define sSwitchTypeAster			0x34
+#define sSwitchTypeSartano			0x35
 
 //Switch commands
 #define gswitch_sOff				0x00
