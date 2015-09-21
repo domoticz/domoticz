@@ -498,7 +498,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		else
 		{
-			SendKwhMeter(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, 0, pDevice->floatValue, "kWh Meter");
+			SendKwhMeter(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, 0, pDevice->floatValue / pDevice->scaleMultiply, "kWh Meter");
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VOLTAGE)
