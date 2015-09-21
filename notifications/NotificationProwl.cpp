@@ -24,7 +24,7 @@ bool CNotificationProwl::SendMessageImplementation(const std::string &Subject, c
 	bRet = HTTPClient::POST("https://api.prowlapp.com/publicapi/add",sPostData.str(),ExtraHeaders,sResult);
 	bool bSuccess = (sResult.find("success code=\"200\"") != std::string::npos);
 	if (!bSuccess)
-		_log.Log(LOG_ERROR, "NMA: %s", sResult.c_str());
+		_log.Log(LOG_ERROR, "Prowl: %s", sResult.c_str());
 	return (bRet && bSuccess);
 }
 
