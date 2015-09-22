@@ -4311,6 +4311,25 @@ namespace http {
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_SWITCH_OFF, 1);
 						ii++;
 					}
+					if (switchtype == STYPE_Media)
+					{
+						root["result"][ii]["val"] = NTYPE_VIDEO;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
+						ii++;
+						root["result"][ii]["val"] = NTYPE_AUDIO;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
+						ii++;
+						root["result"][ii]["val"] = NTYPE_PHOTO;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
+						ii++;
+						root["result"][ii]["val"] = NTYPE_PAUSED;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
+						ii++;
+					}
 				}
 				if (
 					(

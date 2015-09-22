@@ -770,7 +770,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveUV)
 	{
-  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv);
+  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, "UV");
 	}
     
 	if (bHaveRain)
@@ -825,7 +825,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	}
 	if (bHaveDistance)
 	{
-		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance);
+		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance, "Distance");
 	}
 	if (bHaveMeter)
 	{
