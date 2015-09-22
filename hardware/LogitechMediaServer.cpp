@@ -3,21 +3,11 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../main/RFXtrx.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../main/localtime_r.h"
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
-
-#include <boost/asio.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/enable_shared_from_this.hpp>
-
-#include "pinger/icmp_header.h"
-#include "pinger/ipv4_header.h"
-
-#include <iostream>
 
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
 {
@@ -153,9 +143,9 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			{
 				// 1:	Update the DeviceStatus
 				if (nStatus == MSTAT_ON)
-					_log.Log(LOG_STATUS, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
+					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				else
-					_log.Log(LOG_STATUS, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
+					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
 				char szLastUpdate[40];
@@ -182,8 +172,6 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 						m_sql.HandleOnOffAction(bPingOK, result[0][0], result[0][1]);
 					}
 				}
-
-				// 4:	Trigger Notifications (TBD)
 
 				itt->nStatus = nStatus;
 				itt->sStatus = sStatus;
@@ -243,6 +231,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 						else
 							if (sAlbumArtist != "")
 								sArtist = sAlbumArtist;
+						if (sYear == "0") sYear = "";
 						if (sYear != "")
 							sYear = " (" + sYear + ")";
 					}
@@ -283,7 +272,6 @@ void CLogitechMediaServer::Do_Work()
 
 				scounter = 0;
 				bFirstTime = false;
-
 
 				GetPlayerInfo();
 

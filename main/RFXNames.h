@@ -63,8 +63,7 @@ enum _eMediaStatus
 	MSTAT_VIDEO,
 	MSTAT_AUDIO,
 	MSTAT_PHOTO,
-	MSTAT_UNKNOWN,
-	MSTAT_ON
+	MSTAT_UNKNOWN
 };
 
 enum _eHardwareTypes {
