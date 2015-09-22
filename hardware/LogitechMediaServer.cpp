@@ -19,10 +19,6 @@
 
 #include <iostream>
 
-//#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-//#define round(a) ( int ) ( a + .5 )
-//#define MAX_TITLE_LEN 40
-
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
