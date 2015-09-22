@@ -58,7 +58,7 @@ enum _eTimerCommand
 enum _eMediaStatus
 {
 	MSTAT_OFF = 0,
-	MSTAT_IDLE,
+	MSTAT_ON,
 	MSTAT_PAUSED,
 	MSTAT_VIDEO,
 	MSTAT_AUDIO,
@@ -153,6 +153,10 @@ enum _eNotificationTypes
 	NTYPE_DEWPOINT,
 	NTYPE_RPM,
 	NTYPE_SETPOINT,
+	NTYPE_VIDEO,
+	NTYPE_AUDIO,
+	NTYPE_PHOTO,
+	NTYPE_PAUSED
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);

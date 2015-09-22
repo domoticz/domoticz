@@ -266,7 +266,10 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_RPM, "RPM", "Z" },
 		{ NTYPE_DEWPOINT, "Dew Point", "D" },
 		{ NTYPE_SETPOINT, "Set Point", "N" },
-
+		{ NTYPE_VIDEO, "Video", "V" },
+		{ NTYPE_AUDIO, "Audio", "A" },
+		{ NTYPE_PHOTO, "Photo", "X" },
+		{ NTYPE_PAUSED, "Paused", "Y" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -299,6 +302,10 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_RPM, "RPM" },
 		{ NTYPE_DEWPOINT, "degrees" },
 		{ NTYPE_SETPOINT, "degrees" },
+		{ NTYPE_VIDEO, "" },
+		{ NTYPE_AUDIO, "" },
+		{ NTYPE_PHOTO, "" },
+		{ NTYPE_PAUSED, "" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -989,7 +996,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 	STR_TABLE_SINGLE	Table[] =
 	{
 		{ MSTAT_OFF, "Off" },
-		{ MSTAT_IDLE, "Idle" },
+		{ MSTAT_ON, "On" },
 		{ MSTAT_PAUSED, "Paused" },
 		{ MSTAT_VIDEO, "Video" },
 		{ MSTAT_AUDIO, "Audio" },
