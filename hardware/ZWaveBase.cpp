@@ -542,7 +542,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_UV)
 	{
-		SendUVSensor(ID3, ID4, pDevice->batValue, pDevice->floatValue);
+		SendUVSensor(ID3, ID4, pDevice->batValue, pDevice->floatValue, "UV");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_TEMPERATURE)
 	{
