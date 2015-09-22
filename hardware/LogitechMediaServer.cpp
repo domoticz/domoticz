@@ -19,9 +19,9 @@
 
 #include <iostream>
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-#define round(a) ( int ) ( a + .5 )
-#define MAX_TITLE_LEN 40
+//#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
+//#define round(a) ( int ) ( a + .5 )
+//#define MAX_TITLE_LEN 40
 
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
 {
@@ -206,7 +206,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 
 	try
 	{
-		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:lady\"]]}";
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:Aadly\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 		if (!root.size())
@@ -225,6 +225,8 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					std::string	sTitle = "";
 					std::string	sAlbum = "";
 					std::string	sArtist = "";
+					std::string	sAlbumArtist = "";
+					std::string	sTrackArtist = "";
 					std::string	sYear = "";
 					std::string	sDuration = "";
 					std::string sLabel = "";
@@ -234,40 +236,22 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 						sTitle = root["playlist_loop"][0]["title"].asString();
 						sAlbum = root["playlist_loop"][0]["album"].asString();
 						sArtist = root["playlist_loop"][0]["artist"].asString();
+						sAlbumArtist = root["playlist_loop"][0]["albumartist"].asString();
+						sTrackArtist = root["playlist_loop"][0]["trackartist"].asString();
 						sYear = root["playlist_loop"][0]["year"].asString();
 						sDuration = root["playlist_loop"][0]["duration"].asString();
 
-						sLabel = sArtist + " - " + sTitle;
-						sYear = " (" + sYear + ")";
+						if (sTrackArtist != "")
+							sArtist = sTrackArtist;
+						else
+							if (sAlbumArtist != "")
+								sArtist = sAlbumArtist;
+						if (sYear != "")
+							sYear = " (" + sYear + ")";
 					}
 
-					// if title is too long shorten it by removing things in brackets, followed by things after a ", "
-					boost::algorithm::trim(sLabel);
-					if (sLabel.length() > MAX_TITLE_LEN)
-					{
-						boost::algorithm::replace_all(sLabel, " - ", ", ");
-					}
-					while (sLabel.length() > MAX_TITLE_LEN)
-					{
-						int begin = sLabel.find_last_of("(");
-						int end = sLabel.find_last_of(")");
-						if ((std::string::npos == begin) || (std::string::npos == end) || (begin >= end)) break;
-						sLabel.erase(begin, end - begin + 1);
-					}
-					while (sLabel.length() > MAX_TITLE_LEN)
-					{
-						int end = sLabel.find_last_of(",");
-						if (std::string::npos == end) break;
-						sLabel = sLabel.substr(0, end);
-					}
-					boost::algorithm::trim(sLabel);
-					stdreplace(sLabel, " ,", ",");
-					sLabel = sLabel.substr(0, MAX_TITLE_LEN);
-					sTitle = sLabel;
-
-					// Assemble final status
-					sStatus = sTitle;
-					if (sStatus.length() < (MAX_TITLE_LEN - 7)) sStatus += sYear;
+					sLabel = sArtist + " - " + sTitle + sYear;
+					sStatus = sLabel;
 				}
 			}
 		}
@@ -330,6 +314,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 	{
 		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"\",[\"serverstatus\",0,999]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
+		bool bSHowedWarning = false;
 
 		int totPlayers = root["player count"].asInt();
 		for (int ii = 0; ii < totPlayers; ii++)
@@ -349,12 +334,34 @@ void CLogitechMediaServer::GetPlayerInfo()
 			std::string ip = IPPort[0];
 			int port = atoi(IPPort[1].c_str());
 
-			if (model == "squeezebox3") {
+			//  slimp3		=> 'SliMP3'					?
+			//	Squeezebox	=> 'Squeezebox 1'			V
+			//	squeezebox2 => 'Squeezebox 2'			V
+			//	squeezebox3 => 'Squeezebox 3'			V
+			//	transporter => 'Transporter'			?
+			//	receiver	=> 'Squeezebox Receiver'	X
+			//	boom		=> 'Squeezebox Boom'		?
+			//	softsqueeze => 'Softsqueeze'			?
+			//	controller	=> 'Squeezebox Controller'	X
+			//	squeezeplay => 'SqueezePlay'			?
+			//	baby		=> 'Squeezebox Radio'		V
+			//	fab4		=> 'Squeezebox Touch'		V
+			//  squeezelite => 'Max2Play SqueezePlug'	V
+			//  iPengiPod	=> 'iPeng iOS App'			X
+
+			if ((model == "Squeezebox") || (model == "squeezebox2") || (model == "squeezebox3") || (model == "baby") || (model == "fab4") || (model == "squeezelite")) {
 				InsertUpdatePlayer(name, ip, port);
 			}
-			//else
-			//	_log.Log(LOG_ERROR, "Logitech Media Server: model '%s' not (yet) supported.", model.c_str());
+			else {
+				//show only once
+				if (!m_bShowedUnsupported) {
+					_log.Log(LOG_ERROR, "Logitech Media Server: model '%s' not supported.", model.c_str());
+					bSHowedWarning = true;
+				}
+			}
 		}
+		if (!m_bShowedUnsupported)
+			m_bShowedUnsupported = bSHowedWarning;
 	}
 	catch (...)
 	{
