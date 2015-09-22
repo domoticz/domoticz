@@ -433,7 +433,7 @@ std::string RFXComSerial::GetUploadMessage()
 	return m_szUploadMessage;
 }
 
-bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned long, std::string> fileBuffer)
+bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned long, std::string>& fileBuffer)
 {
 #ifndef WIN32
 	struct stat info;
