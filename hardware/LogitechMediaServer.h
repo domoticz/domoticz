@@ -54,7 +54,7 @@ private:
 	int m_iPingTimeoutms;
 	std::string	m_IP;
 	int	m_Port;
-	bool m_bShowedUnsupported = false;
+	bool m_bShowedUnsupported;
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;

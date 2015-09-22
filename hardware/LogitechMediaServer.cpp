@@ -55,6 +55,7 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false
 CLogitechMediaServer::~CLogitechMediaServer(void)
 {
 	m_bIsStarted = false;
+	m_bShowedUnsupported = false;
 }
 
 Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string sPostdata)
