@@ -73,6 +73,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "HT12E", sSwitchTypeHT12E },           // p60
 	{ "EV1527", sSwitchTypeEV1527 },         // p61
 	{ "Elmes", sSwitchTypeElmes },           // p65
+	{ "Aster", sSwitchTypeAster },           // p17
+	{ "Sartano", sSwitchTypeSartano },           // p17
 	{ "", -1 }
 };
 
@@ -768,7 +770,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveUV)
 	{
-  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv);
+  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, "UV");
 	}
     
 	if (bHaveRain)
@@ -823,7 +825,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	}
 	if (bHaveDistance)
 	{
-		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance);
+		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance, "Distance");
 	}
 	if (bHaveMeter)
 	{
