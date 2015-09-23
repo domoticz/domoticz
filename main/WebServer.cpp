@@ -927,6 +927,13 @@ namespace http {
 				//Lan
 				if (address == "")
 					return;
+
+				if (htype == HTYPE_MQTT) {
+					std::string modeqStr = m_pWebEm->FindValue("mode1");
+					if (!modeqStr.empty()) {
+						mode1 = atoi(modeqStr.c_str());
+					}
+				}
 			}
 			else if (htype == HTYPE_Domoticz) {
 				//Remote Domoticz
