@@ -822,6 +822,7 @@ namespace http {
 					}
 					_log.Log(LOG_STATUS, "Login successfull : user '%s'", m_users[iUser].Username.c_str());
 					root["status"] = "OK";
+					root["version"] = szAppVersion;
 					root["title"] = "logincheck";
 					m_pWebEm->m_actualuser = m_users[iUser].Username;
 					m_pWebEm->m_actualuser_rights = m_users[iUser].userrights;
