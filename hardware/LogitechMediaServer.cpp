@@ -489,16 +489,16 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 	{
 		std::string	sLMSCall;
 		if (command == "Left") {
-			sLMSCmnd = "\"button\", \"left\"";
+			sLMSCmnd = "\"button\", \"arrow_left\"";
 		}
 		else if (command == "Right") {
-			sLMSCmnd = "\"button\", \"right\"";
+			sLMSCmnd = "\"button\", \"arrow_right\"";
 		}
 		else if (command == "Up") {
-			sLMSCmnd = "\"button\", \"up\"";
+			sLMSCmnd = "\"button\", \"arrow_up\"";
 		}
 		else if (command == "Down") {
-			sLMSCmnd = "\"button\", \"down\"";
+			sLMSCmnd = "\"button\", \"arrow_down\"";
 		}
 		else if (command == "Favorites") {
 			sLMSCmnd = "\"button\", \"favorites\"";
@@ -516,7 +516,7 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 			sLMSCmnd = "\"button\", \"repeat_toggle\"";
 		}
 		else if (command == "Stop") {
-			sLMSCmnd = "\"stop\"";
+			sLMSCmnd = "\"button\", \"stop\"";
 		}
 		else if (command == "VolumeUp") {
 			sLMSCmnd = "\"mixer\", \"volume\", \"+2\"";
@@ -528,13 +528,16 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 			sLMSCmnd = "\"mixer\", \"volume\", \"-2\"";
 		}
 		else if (command == "Rewind") {
-			sLMSCmnd = "\"button\", \"jump_rew\"";
+			sLMSCmnd = "\"button\", \"rew.single\"";
 		}
-		else if (command == "PlayPause") {
-			sLMSCmnd = "\"pause\"";
+		else if (command == "Play") {
+			sLMSCmnd = "\"button\", \"play.single\"";
+		}
+		else if (command == "Pause") {
+			sLMSCmnd = "\"button\", \"pause.single\"";
 		}
 		else if (command == "Forward") {
-			sLMSCmnd = "\"button\", \"jump_fwd\"";
+			sLMSCmnd = "\"button\", \"fwd.single\"";
 		}
 
 		if (sLMSCmnd != "")

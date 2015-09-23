@@ -868,26 +868,33 @@ $(document).ready(function() {
 					</g>
 				</g>
 				<g transform="translate(-50,500) scale(1.1)">
-					<g>
+					<g transform="translate(-145,0)">
 						<path class="remoteshadow" d="M272 940 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
 						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Rewind');">
 							<title>Rewind</title>
 						</path>
 						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
 					</g>
-					<g transform="rotate(180,500,1000)">
+					<g transform="rotate(180,500,1000) translate(-145,0)">
 						<path class="remoteshadow" d="M272 920 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" />
 						<path class="remotehoverable" d="M272 930 l150 0 s -70,70 0,140 l-150 0 s -70,-70 0,-140 z" fill="url(#gradient2)" onclick="javascript:click_lmsplayer_remote('Forward');">
 							<title>Forward</title>
 						</path>
-						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
+						<path class="remoteshadow" transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z"/>
 					</g>
-					<g>
+					<g transform="translate(-120,0)">
 						<circle cx="500" cy="1010" r="100" class="remoteshadow" /> 
-						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('PlayPause');">
-							<title>Play/Pause</title>
+						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Play');">
+							<title>Play</title>
 						</circle>
-						<path d="m 450 960 0,80 40,-40 m 10 -35 l0 70 l15 0 l0 -70 m 10 0 l0 70 l15 0 l0 -70 z" class="remoteshadow"/>
+						<path class="remoteshadow" d="m 485 960 0,80 40,-40"/>
+					</g>
+					<g transform="translate(120,0)">
+						<circle cx="500" cy="1010" r="100" class="remoteshadow" /> 
+						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Pause');">
+							<title>Pause</title>
+						</circle>
+						<path class="remoteshadow" d="m 470 960 l0 70 l25 0 l0 -70 m 10 0 l0 70 l25 0 l0 -70 z"/>
 					</g>
 				</g>
 			</g>
