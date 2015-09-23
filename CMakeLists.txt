@@ -284,8 +284,8 @@ add_dependencies(domoticz revisiontag)
 
 ## Link libraries
 
-option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
-set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
+option(USE_STATIC_BOOST "Build with static BOOST libraries" NO)
+set(Boost_USE_STATIC_LIBS NO)
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
