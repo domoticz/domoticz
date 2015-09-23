@@ -362,13 +362,33 @@ void CDomoticzHardwareBase::SendSetPointSensor(const int NodeID, const int Child
 }
 
 
-void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance)
+void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string &defaultname)
 {
+	bool bDeviceExits = true;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp, "%08X", (NodeID << 8) | ChildID);
+
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeDistance));
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
 	_tGeneralDevice gdevice;
 	gdevice.intval1 = (NodeID << 8) | ChildID;
 	gdevice.subtype = sTypeDistance;
 	gdevice.floatval1 = distance;
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeDistance));
+	}
 }
 
 void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname)
@@ -1027,13 +1047,33 @@ void CDomoticzHardwareBase::SendWind(const int NodeID, const int BatteryLevel, c
 
 }
 
-void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure)
+void CDomoticzHardwareBase::SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const std::string &defaultname)
 {
+	bool bDeviceExits = true;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	sprintf(szTmp, "%08X", (NodeID << 8) | ChildID);
+
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
 	_tGeneralDevice gdevice;
 	gdevice.intval1 = (NodeID << 8) | ChildID;
 	gdevice.subtype = sTypePressure;
 	gdevice.floatval1 = pressure;
 	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
+	}
 }
 
 void CDomoticzHardwareBase::SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname)
@@ -1096,8 +1136,22 @@ void CDomoticzHardwareBase::SendMoistureSensor(const int NodeID, const int Batte
 	}
 }
 
-void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI)
+void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const std::string &defaultname)
 {
+	bool bDeviceExits = true;
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[30];
+	std::string ID;
+	sprintf(szTmp, "%d", (NodeID * 256) + ChildID);
+
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szTmp, int(pTypeUV), int(sTypeUV1));
+	if (result.size() < 1)
+	{
+		bDeviceExits = false;
+	}
+
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
 	tsen.UV.packetlength = sizeof(tsen.UV) - 1;
@@ -1110,6 +1164,13 @@ void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, co
 
 	tsen.UV.uv = (BYTE)round(UVI * 10);
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+			defaultname.c_str(), m_HwdID, szTmp, int(pTypeUV), int(sTypeUV1));
+	}
 }
 
 int CDomoticzHardwareBase::CalculateBaroForecast(const double pressure)

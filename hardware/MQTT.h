@@ -6,7 +6,7 @@
 class MQTT : public MySensorsBase, mosqpp::mosquittopp
 {
 public:
-	MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password, const std::string CAFile);
+	MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password, const std::string CAFile, const int Topics);
 	~MQTT(void);
 	bool isConnected(){ return m_IsConnected; };
 
@@ -45,5 +45,11 @@ protected:
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	boost::signals2::connection m_sConnection;
+	enum _ePublishTopics {
+		PT_none 	  = 0x00,
+		PT_out  	  = 0x01, 			// publish on domoticz/out
+		PT_floor_room = PT_out << 1 	// publish on domoticz/<floor>/<room>
+	};
+	_ePublishTopics m_publish_topics;
 };
 

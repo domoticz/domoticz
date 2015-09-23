@@ -681,7 +681,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
 		break;
 	case HTYPE_FRITZBOX:
 		//LAN
