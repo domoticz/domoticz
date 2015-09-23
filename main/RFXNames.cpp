@@ -1179,8 +1179,10 @@ void GetLightStatus(
 		// Determine max dim level based on switch type
 		maxDimLevel=(dSubType != sTypeZWaveSwitch) ? 15 : 100;
 
-		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-		llevel=(int)float((100.0f/float(maxDimLevel))*atof(sValue.c_str()));
+		if (switchtype != STYPE_Media) {
+			// Calculate % that the light is currently on, taking the maxdimlevel into account.
+			llevel=(int)float((100.0f/float(maxDimLevel))*atof(sValue.c_str()));
+		}
 
 		// Fill in other parameters
 		switch (dSubType)
