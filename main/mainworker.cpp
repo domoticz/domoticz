@@ -461,6 +461,11 @@ void MainWorker::SetVerboseLevel(eVerboseLevel Level)
 	m_verboselevel=Level;
 }
 
+eVerboseLevel MainWorker::GetVerboseLevel()
+{
+  return m_verboselevel;
+}
+
 void MainWorker::SetWebserverAddress(const std::string &Address)
 {
 	m_webserveraddress = Address;
