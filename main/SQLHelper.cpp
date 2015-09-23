@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 80
+#define DB_VERSION 81
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1508,6 +1508,14 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+		if (dbversion < 81)
+		{
+			// MQTT set default mode
+			std::stringstream szQuery2;
+			szQuery2 << "UPDATE Hardware SET Mode1=1 WHERE  ([Type]==" << HTYPE_MQTT << " )";
+			query(szQuery2.str());
+		}
+
 	}
 	else if (bNewInstall)
 	{

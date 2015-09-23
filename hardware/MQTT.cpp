@@ -16,7 +16,7 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password, const std::string CAfilename) :
+MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password, const std::string CAfilename, const int Topics) :
 m_szIPAddress(IPAddress),
 m_UserName(Username),
 m_Password(Password),
@@ -29,6 +29,7 @@ m_CAFilename(CAfilename)
 
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
+	m_publish_topics = (_ePublishTopics)Topics;
 }
 
 MQTT::~MQTT(void)
@@ -509,7 +510,25 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 			root[szQuery.str()] = *itt;
 			sIndex++;
 		}
-		SendMessage(TOPIC_OUT, root.toStyledString());
+		std::string message =  root.toStyledString();
+		if (m_publish_topics & PT_out)
+		{
+			SendMessage(TOPIC_OUT, message);
+		}
+
+		if (m_publish_topics & PT_floor_room) {
+			result = m_sql.safe_query("SELECT F.Name, P.Name, M.DeviceRowID FROM Plans as P, Floorplans as F, DeviceToPlansMap as M WHERE P.FloorplanID=F.ID and M.PlanID=P.ID and M.DeviceRowID=='%llu'", DeviceRowIdx);
+			for(size_t i=0 ; i<result.size(); i++)
+			{
+				std::vector<std::string> sd = result[i];
+				std::string floor = sd[0];
+				std::string room =  sd[1];
+				std::stringstream topic("");
+				topic << TOPIC_OUT << "/" << floor << "/" + room;
+
+				SendMessage(topic.str() , message);
+			}
+		}
 	}
 }
 
