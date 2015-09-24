@@ -756,6 +756,9 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationLogitechMediaServer.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1209,6 +1212,9 @@
       <Filter>Devices\Tellstick</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationLogitechMediaServer.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>

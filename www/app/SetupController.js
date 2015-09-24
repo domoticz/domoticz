@@ -132,6 +132,11 @@ define(['app'], function (app) {
 				if (($("#koditable #KodiTimeToLive").val() == "") || !$.isNumeric($("#koditable #KodiTimeToLive").val())) $("#koditable #KodiTimeToLive").val("5");
 				extraparams = 'KodiIPAddress=' + $("#koditable #KodiIPAddress").val() + '&KodiPort=' + $("#koditable #KodiPort").val() + "&KodiTimeToLive=" + $("#koditable #KodiTimeToLive").val();
 				break;
+			case "lms":
+				if (($("#lmstable #LmsServerPort").val() == "") || !$.isNumeric($("#lmstable #LmsServerPort").val())) $("#lmstable #LmsServerPort").val("9000");
+				if (($("#lmstable #LmsDuration").val() == "") || !$.isNumeric($("#lmstable #LmsDuration").val())) $("#lmstable #LmsDuration").val("5");
+				extraparams = 'LmsServerIP=' + $("#lmstable #LmsServerIP").val() + '&LmsServerPort=' + $("#lmstable #LmsServerPort").val() + 'LmsPlayerIP=' + $("#lmstable #LmsPlayerIP").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
+				break;
 			default:
 				return;
 			}
@@ -307,6 +312,24 @@ define(['app'], function (app) {
 			  $("#koditable #KodiTimeToLive").val("5");
 			  if (typeof data.KodiTimeToLive != 'undefined') {
 				$("#koditable #KodiTimeToLive").val(data.KodiTimeToLive);
+			  }
+
+			  if (typeof data.LmsEnabled != 'undefined') {
+  				$("#lmstable #LmsEnabled").prop('checked',data.LmsEnabled==1);
+			  }
+			  if (typeof data.LmsServerIP != 'undefined') {
+				$("#lmstable #LmsServerIP").val(data.LmsServerIP);
+			  }
+			  $("#lmstable #LmsServerPort").val("9000");
+			  if (typeof data.LmsServerPort != 'undefined') {
+				$("#lmstable #LmsServerPort").val(data.LmsServerPort);
+			  }
+			  if (typeof data.LmsPlayerIP != 'undefined') {
+				$("#lmstable #LmsPlayerIP").val(data.LmsPlayerIP);
+			  }
+			  $("#lmstable #LmsDuration").val("5");
+			  if (typeof data.LmsDuration != 'undefined') {
+				$("#lmstable #LmsDuration").val(data.LmsDuration);
 			  }
 
 			  if (typeof data.LightHistoryDays != 'undefined') {
