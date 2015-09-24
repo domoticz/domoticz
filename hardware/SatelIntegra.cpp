@@ -645,6 +645,11 @@ void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool viol
 	zone.id = (unsigned char)Idx;
 	zone.intval1 = violation ? 3 : 1;
 
+  if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+  {
+    _log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", zone.id, zone.intval1);
+  }
+  
 	sDecodeRXMessage(this, (const unsigned char *)&zone);}
 
 void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
