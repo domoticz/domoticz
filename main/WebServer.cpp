@@ -11629,15 +11629,6 @@ namespace http {
 						if (bHaveUsage == false)
 							method = 0;
 
-						// Force Value graph even if device should show Value graph
-						if ((method == 1) && (
-								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3))) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeKwh))
-							)) {
-							//_log.Log(LOG_ERROR, "Energy/CMxxx or General/kWh device graph method should be 0!");
-							method = 0;
-						}
-
 						if (method != 0)
 						{
 							//realtime graph
