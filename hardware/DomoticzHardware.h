@@ -141,6 +141,8 @@ private:
 	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
 	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);
 	void SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname);
+	void SendTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname);
+	std::string GetTextSensorText(const int NodeID, const int ChildID, bool &bExists);
 
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 

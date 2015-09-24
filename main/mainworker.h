@@ -44,6 +44,7 @@ public:
 	void HeartbeatCheck();
 
 	void SetVerboseLevel(eVerboseLevel Level);
+  eVerboseLevel GetVerboseLevel();
 	void SetWebserverAddress(const std::string &Address);
 	void SetWebserverPort(const std::string &Port);
 	std::string GetWebserverAddress();

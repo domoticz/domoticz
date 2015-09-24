@@ -827,6 +827,7 @@ namespace http {
 					}
 					_log.Log(LOG_STATUS, "Login successfull : user '%s'", m_users[iUser].Username.c_str());
 					root["status"] = "OK";
+					root["version"] = szAppVersion;
 					root["title"] = "logincheck";
 					m_pWebEm->m_actualuser = m_users[iUser].Username;
 					m_pWebEm->m_actualuser_rights = m_users[iUser].userrights;
@@ -939,6 +940,13 @@ namespace http {
 				//Lan
 				if (address == "")
 					return;
+
+				if (htype == HTYPE_MQTT) {
+					std::string modeqStr = m_pWebEm->FindValue("mode1");
+					if (!modeqStr.empty()) {
+						mode1 = atoi(modeqStr.c_str());
+					}
+				}
 			}
 			else if (htype == HTYPE_Domoticz) {
 				//Remote Domoticz
@@ -11639,15 +11647,6 @@ namespace http {
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
 							method = 0;
-
-						// Force Value graph even if device should show Value graph
-						if ((method == 1) && (
-								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3))) ||
-								((dType == pTypeGeneral) && (dSubType == sTypeKwh))
-							)) {
-							//_log.Log(LOG_ERROR, "Energy/CMxxx or General/kWh device graph method should be 0!");
-							method = 0;
-						}
 
 						if (method != 0)
 						{
