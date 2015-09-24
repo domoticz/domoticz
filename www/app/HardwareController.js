@@ -202,6 +202,7 @@ define(['app'], function (app) {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=$("#hardwarecontent #divlogin #password").val();
                 var extra=$("#hardwarecontent #divmqtt #filename").val(); 
+                Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -565,6 +566,7 @@ define(['app'], function (app) {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 var extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
+                var mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 
                 if ((text.indexOf("Harmony") >= 0) && (username == "")) {
                     ShowNotify($.t('Please enter a username!'), 2500, true);
@@ -577,7 +579,7 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + encodeURIComponent(extra),
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + encodeURIComponent(extra) + "&mode1=" + mode1,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -1351,7 +1353,7 @@ define(['app'], function (app) {
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
             $("#hardwarecontent #kodinodeparamstable #nodename").val("");
             $("#hardwarecontent #kodinodeparamstable #nodeip").val("");
-            $("#hardwarecontent #kodinodeparamstable #nodeport").val("8080");
+            $("#hardwarecontent #kodinodeparamstable #nodeport").val("9090");
 
             var oTable = $('#kodinodestable').dataTable();
             oTable.fnClearTable();
@@ -1386,7 +1388,7 @@ define(['app'], function (app) {
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
                     $("#hardwarecontent #kodinodeparamstable #nodename").val("");
                     $("#hardwarecontent #kodinodeparamstable #nodeip").val("");
-                    $("#hardwarecontent #kodinodeparamstable #nodeport").val("8080");
+                    $("#hardwarecontent #kodinodeparamstable #nodeport").val("9090");
                 }
                 else {
                     var oTable = $('#kodinodestable').dataTable();
@@ -2807,6 +2809,7 @@ define(['app'], function (app) {
                         }
                         if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
+                            $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
                         }                        
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||

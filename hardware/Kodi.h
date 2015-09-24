@@ -83,6 +83,7 @@ public:
 protected:
 	bool			m_stoprequested;
 	bool			m_Busy;
+	bool			m_Stoppable;
 
 private:
 	void			handleConnect();

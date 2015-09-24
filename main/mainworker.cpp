@@ -461,6 +461,11 @@ void MainWorker::SetVerboseLevel(eVerboseLevel Level)
 	m_verboselevel=Level;
 }
 
+eVerboseLevel MainWorker::GetVerboseLevel()
+{
+  return m_verboselevel;
+}
+
 void MainWorker::SetWebserverAddress(const std::string &Address)
 {
 	m_webserveraddress = Address;
@@ -681,7 +686,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
 		break;
 	case HTYPE_FRITZBOX:
 		//LAN

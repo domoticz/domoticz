@@ -84,6 +84,8 @@ const _tRFLinkStringIntHelper rfswitchcommands[] =
 	{ "OFF", gswitch_sOff },
 	{ "ALLON", gswitch_sGroupOn },
 	{ "ALLOFF", gswitch_sGroupOff },
+	{ "DIM", gswitch_sDim },
+	{ "BRIGHT", gswitch_sBright },
 	{ "", -1 }
 };
 

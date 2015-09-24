@@ -228,9 +228,10 @@ bool RFXComSerial::UpgradeFirmware()
 {
 	m_FirmwareUploadPercentage = 0;
 	m_bStartFirmwareUpload = false;
+	std::map<unsigned long, std::string> firmwareBuffer;
 	std::map<unsigned long, std::string>::const_iterator itt;
 	int icntr = 0;
-	if (!Read_Firmware_File(m_szFirmwareFile.c_str()))
+	if (!Read_Firmware_File(m_szFirmwareFile.c_str(), firmwareBuffer))
 	{
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
@@ -311,7 +312,7 @@ bool RFXComSerial::UpgradeFirmware()
 
 	m_szUploadMessage = "RFXCOM: Bootloader, Start programming...";
 	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
-	for (itt = m_Firmware_Buffer.begin(); itt != m_Firmware_Buffer.end(); ++itt)
+	for (itt = firmwareBuffer.begin(); itt != firmwareBuffer.end(); ++itt)
 	{
 		icntr++;
 		if (icntr % 5 == 0)
@@ -319,7 +320,7 @@ bool RFXComSerial::UpgradeFirmware()
 			m_LastHeartbeat = mytime(NULL);
 		}
 		unsigned long Address = itt->first;
-		m_FirmwareUploadPercentage = (100.0f / float(m_Firmware_Buffer.size()))*icntr;
+		m_FirmwareUploadPercentage = (100.0f / float(firmwareBuffer.size()))*icntr;
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
 
@@ -351,7 +352,7 @@ bool RFXComSerial::UpgradeFirmware()
 			}
 		}
 	}
-	m_Firmware_Buffer.clear();
+	firmwareBuffer.clear();
 #ifndef WIN32
 	try
 	{
@@ -432,7 +433,7 @@ std::string RFXComSerial::GetUploadMessage()
 	return m_szUploadMessage;
 }
 
-bool RFXComSerial::Read_Firmware_File(const char *szFilename)
+bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned long, std::string>& fileBuffer)
 {
 #ifndef WIN32
 	struct stat info;
@@ -468,7 +469,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 	int line = 0;
 	int addrh = 0;
 
-	m_Firmware_Buffer.clear();
+	fileBuffer.clear();
 	std::string dstring="";
 	bool bHaveEOF = false;
 
@@ -546,7 +547,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 			if (dstring.size() == PKT_writeblock)
 			{
 				dest_address = (((((addrh << 16) | (faddress + byte_count)) - PKT_writeblock)) / PKT_bytesperaddr);
-				m_Firmware_Buffer[dest_address] = dstring;
+				fileBuffer[dest_address] = dstring;
 				dstring.clear();
 			}
 			break;
@@ -575,9 +576,9 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 			//Extended Linear Address Record
 			if (raw_length < 7)
 			{
-				infile.close();
 				m_szUploadMessage = "RFXCOM: Invalid line length!!";
 				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				infile.close();
 				return false;
 			}
 			addrh = (rawLineBuf[4] << 8) | rawLineBuf[5]; 
@@ -594,7 +595,6 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename)
 	infile.close();
 	if (!bHaveEOF)
 	{
-		m_Firmware_Buffer.clear();
 		m_szUploadMessage = "RFXCOM: No end-of-line found!!";
 		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
 		return false;
