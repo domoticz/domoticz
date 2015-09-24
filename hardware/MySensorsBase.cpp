@@ -670,10 +670,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_TEXT:
 		if (pChild->GetValue(vType, stringValue))
 		{
-			std::stringstream sstr;
-			sstr << cNode;
-			std::string devname = (!pChild->childName.empty()) ? pChild->childName : "Text";
-			m_sql.UpdateValue(m_HwdID, sstr.str().c_str(), pChild->childID, pTypeGeneral, sTypeTextStatus, 12, pChild->batValue, 0, stringValue.c_str(), devname);
+			SendTextSensor(pNode->nodeID, pChild->childID, pChild->batValue, stringValue, (!pChild->childName.empty()) ? pChild->childName : "Text Sensor");
 		}
 		break;
 	case V_IR_RECEIVE:
@@ -1545,6 +1542,15 @@ void MySensorsBase::ParseLine()
 				SendBlindSensor(node_id, child_sensor_id, 255, blinds_sOpen, (!pSensor->childName.empty()) ? pSensor->childName : "Blinds/Window");
 			}
 		}
+		else if (vType == V_TEXT)
+		{
+			bool bExits = false;
+			std::string tmpstr = GetTextSensorText(node_id, child_sensor_id, bExits);
+			if (!bExits)
+			{
+				SendTextSensor(node_id, child_sensor_id, 244, "-", (!pSensor->childName.empty()) ? pSensor->childName : "Text Sensor");
+			}
+		}
 	}
 	else if (message_type == MT_Req)
 	{
@@ -1572,17 +1578,8 @@ void MySensorsBase::ParseLine()
 		case V_TEXT:
 			{
 				//Get Text sensor value from the database
-				int cNode = (node_id << 8) | child_sensor_id;
-				std::stringstream sstr;
-				sstr << cNode;
-				tmpstr = "";
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-					m_HwdID, sstr.str().c_str(), pTypeGeneral, sTypeTextStatus);
-				if (!result.empty())
-				{
-					tmpstr = result[0][0];
-				}
+				bool bExits = false;
+				tmpstr = GetTextSensorText(node_id, child_sensor_id, bExits);
 				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			}
 			break;
