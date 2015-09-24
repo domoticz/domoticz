@@ -16,6 +16,8 @@
 
 #define SATEL_POLL_INTERVAL 4
 
+#define round(a) ( int ) ( a + .5 )
+
 extern CSQLHelper m_sql;
 
 typedef struct tModel {
@@ -407,7 +409,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 				{
 					ReportZonesViolation(index + 1, violate);
 					//UpdateZoneName(index + 1, &buffer[4], buffer[20]);  	 Security1 does not support units - partition
-					UpdateZoneName(index + 1, &buffer[4], 0);
+					UpdateZoneName(index + 1, &buffer[4], 1);
 				}
 				else
 				{
@@ -632,12 +634,23 @@ void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool viol
 {
 	m_zonesLastState[Idx - 1] = violation;
 
-	char szTmp[4];
-	sprintf(szTmp, "%02X", (unsigned int)Idx);
-	std::string devname;
+//	char szTmp[4];
+//	sprintf(szTmp, "%02X", (unsigned int)Idx);
+//	std::string devname;
 
-	m_sql.UpdateValue(m_HwdID, szTmp, 0, pTypeGeneral, sTypeAlert, 12, 255, violation ? 3 : 1, violation ? "Violate" : "Normal", devname);
-}
+//	m_sql.UpdateValue(m_HwdID, szTmp, 0, pTypeGeneral, sTypeAlert, 12, 255, violation ? 3 : 1, violation ? "Violate" : "Normal", devname);
+
+	_tGeneralDevice zone;
+	zone.subtype = sTypeAlert;
+	zone.id = (unsigned char)Idx;
+	zone.intval1 = violation ? 3 : 1;
+
+  if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+  {
+    _log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", zone.id, zone.intval1);
+  }
+  
+	sDecodeRXMessage(this, (const unsigned char *)&zone);}
 
 void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
 {
@@ -848,7 +861,7 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[4];
-	sprintf(szTmp, "%02X", (unsigned int)Idx);
+	sprintf(szTmp, "%d", (unsigned int)Idx);
 
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
@@ -861,14 +874,14 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 		namePrefix = "Temp";
 	}
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q:%q') AND (Unit=0)", m_HwdID, szTmp, namePrefix.c_str(), shortName.c_str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q:%q') AND (Unit=1)", m_HwdID, szTmp, namePrefix.c_str(), shortName.c_str());
 	if (result.size() < 1)
 	{
-		//Assign name from Integra
+		//Assign zone name from Integra
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s:%s'", Idx, namePrefix.c_str(), shortName.c_str());
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=0)", namePrefix.c_str(), shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", namePrefix.c_str(), shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
 }
 
@@ -886,7 +899,7 @@ void SatelIntegra::UpdateOutputName(const unsigned int Idx, const unsigned char*
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Output:%q') AND (Unit=1)", m_HwdID, szTmp, shortName.c_str());
 	if (result.size() < 1)
 	{
-		//Assign name from Integra
+		//Assign output name from Integra
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s'", Idx, shortName.c_str());
 #endif
@@ -957,7 +970,7 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 	result = crc;
 }
 
-int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, unsigned char *answer)
+int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 
@@ -1066,7 +1079,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, unsigned int cmdLength, 
 
 }
 
-std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigned char* pCmd, unsigned int cmdLength)
+std::pair<unsigned char*, unsigned int> SatelIntegra::getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength)
 {
 	std::list<unsigned char> result;
 

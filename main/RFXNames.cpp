@@ -266,7 +266,10 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_RPM, "RPM", "Z" },
 		{ NTYPE_DEWPOINT, "Dew Point", "D" },
 		{ NTYPE_SETPOINT, "Set Point", "N" },
-
+		{ NTYPE_VIDEO, "Video", "V" },
+		{ NTYPE_AUDIO, "Audio", "A" },
+		{ NTYPE_PHOTO, "Photo", "X" },
+		{ NTYPE_PAUSED, "Paused", "Y" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -299,6 +302,10 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_RPM, "RPM" },
 		{ NTYPE_DEWPOINT, "degrees" },
 		{ NTYPE_SETPOINT, "degrees" },
+		{ NTYPE_VIDEO, "" },
+		{ NTYPE_AUDIO, "" },
+		{ NTYPE_PHOTO, "" },
+		{ NTYPE_PAUSED, "" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -631,6 +638,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
+		{ pTypeGeneral, sTypeKwh, "kWh" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -703,6 +711,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeHomeConfort, "HomeConfort" },
 		{ pTypeGeneralSwitch, sSwitchTypeHT12E, "HT12E" },
 		{ pTypeGeneralSwitch, sSwitchTypeEV1527, "EV1527" },
+		{ pTypeGeneralSwitch, sSwitchTypeElmes, "Elmes" },
+		{ pTypeGeneralSwitch, sSwitchTypeAster, "Aster" },
+		{ pTypeGeneralSwitch, sSwitchTypeSartano, "Sartano" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -913,6 +924,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeSoundLevel, "Sound Level" },
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
+		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -984,7 +996,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 	STR_TABLE_SINGLE	Table[] =
 	{
 		{ MSTAT_OFF, "Off" },
-		{ MSTAT_IDLE, "Idle" },
+		{ MSTAT_ON, "On" },
 		{ MSTAT_PAUSED, "Paused" },
 		{ MSTAT_VIDEO, "Video" },
 		{ MSTAT_AUDIO, "Audio" },
@@ -2647,16 +2659,32 @@ bool IsLightSwitchOn(const std::string &lstatus)
 
 const char *Get_Moisture_Desc(const int moisture)
 {
-	if (moisture<10)
-		return "saturated";
-	else if (moisture<20)
-		return "adequately wet";
-	else if (moisture<60)
-		return "irrigation advise";
-	else if (moisture<100)
-		return "irrigation";
-	else
-		return "dangerously dry";
+		if (moisture<10)
+			return "saturated";
+		else if (moisture<20)
+			return "adequately wet";
+		else if (moisture<60)
+			return "irrigation advise";
+		else if (moisture<100)
+			return "irrigation";
+		else
+			return "dangerously dry";
+}
+
+const char *Get_Alert_Desc(const int level)
+{
+		if (level == 0)
+			return "undefined";
+		else if (level == 1)
+			return "normal";
+		else if (level == 2)
+			return "warning";
+		else if (level == 3)
+			return "alert";
+		else if (level == 4)
+			return "alarm";
+		else
+			return "unknown level";
 }
 
 bool IsSerialDevice(const _eHardwareTypes htype)

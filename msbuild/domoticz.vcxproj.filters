@@ -753,6 +753,9 @@
     <ClInclude Include="..\hardware\Tellstick.h">
       <Filter>Devices\Tellstick</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationPushbullet.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1204,6 +1207,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Tellstick.cpp">
       <Filter>Devices\Tellstick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

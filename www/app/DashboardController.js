@@ -597,11 +597,11 @@ define(['app'], function (app) {
 										else if (item.SwitchType == "Media Player") {
 										    if (item.CustomImage == 0) item.Image = item.TypeImg;
 										    if ((item.Status != 'Off') && (item.Status != '0')) {
-										        img = '<img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+										        img = '<img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 										        img2 = '<img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ');" class="lcursor" height="40" width="40">';
 										    }
 										    else {
-										        img = '<img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+										        img = '<img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 										        img2 = '<img src="images/remote48.png" style="opacity:0.4"; height="40" width="40">';
 										    }
 										    if (item.Status.length == 1) item.Status = "";
@@ -1191,6 +1191,7 @@ define(['app'], function (app) {
 							(item.SubType=="Percentage")||
 							(item.Type=="Fan")||
 							((item.Type == "Thermostat")&&(item.SubType=="SetPoint"))||
+							(item.SubType=="kWh")||
 							(item.SubType=="Soil Moisture")||
 							(item.SubType=="Leaf Wetness")||
 							(item.SubType=="Voltage")||
@@ -1234,6 +1235,7 @@ define(['app'], function (app) {
 								else if (
 											(item.Type == "Energy")||
 											(item.Type == "Current/Energy")||
+											(item.SubType=="kWh")||
 											(item.Type == "Air Quality")||
 											(item.Type == "Lux")||
 											(item.Type == "Weight")||
@@ -1308,7 +1310,7 @@ define(['app'], function (app) {
 									status=item.Data;
 									bigtext=item.Data;
 								}
-								else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
+								else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType=="kWh")) {
 									status=item.Data;
 								}
 								else if (item.Type == "Air Quality") {
@@ -2006,11 +2008,11 @@ define(['app'], function (app) {
 									else if (item.SwitchType == "Media Player") {
 									    if (item.CustomImage == 0) item.Image = item.TypeImg;
 									    if ((item.Status != 'Off') && (item.Status != '0')) {
-									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
 									        xhtm += '\t      <td id="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ');" class="lcursor" height="40" width="40"></td>\n';
 									    }
 									    else {
-									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
 									        xhtm += '\t      <td id="img2"><img src="images/remote48.png" style="opacity:0.4"; height="40" width="40"></td>\n';
 									    }
 									    status = item.Data;
@@ -2857,6 +2859,7 @@ define(['app'], function (app) {
 							(typeof item.Counter != 'undefined') || 
 							(item.Type == "Current") || 
 							(item.Type == "Energy") || 
+							(item.SubType=="kWh") ||
 							(item.Type == "Current/Energy") || 
 							(item.Type == "Air Quality") || 
 							(item.Type == "Lux") || 
@@ -2937,6 +2940,7 @@ define(['app'], function (app) {
 						else if (
 									(item.Type == "Energy")||
 									(item.Type == "Current/Energy")||
+									(item.SubType=="kWh") ||
 									(item.Type == "Air Quality")||
 									(item.Type == "Lux")||
 									(item.Type == "Weight")||
@@ -3102,8 +3106,8 @@ define(['app'], function (app) {
 							xhtm+='current48.png" class="lcursor" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
-						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")) {
-							if ((item.Type == "Energy")&&(item.SwitchTypeVal == 4)) {
+						else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType=="kWh")) {
+							if (((item.Type == "Energy")||(item.SubType=="kWh"))&&(item.SwitchTypeVal == 4)) {
 								xhtm+='PV48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 							}
 							else {
@@ -3156,7 +3160,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType=="Alert") {
-							xhtm+='Alert48_' + item.Level + '.png" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
+							xhtm+='Alert48_' + item.Level + '.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
 							status=item.Data;
 						}
 						else if (item.SubType=="Pressure") {

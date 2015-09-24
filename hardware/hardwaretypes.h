@@ -60,6 +60,7 @@
 #define sTypeBaro					0x1A
 #define sTypeDistance				0x1B
 #define sTypeCounterIncremental		0x1C
+#define sTypeKwh					0x1D
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4
@@ -108,6 +109,9 @@
 #define sSwitchTypeFA500			0x30
 #define sSwitchTypeHT12E			0x31
 #define sSwitchTypeEV1527			0x32
+#define sSwitchTypeElmes			0x33
+#define sSwitchTypeAster			0x34
+#define sSwitchTypeSartano			0x35
 
 //Switch commands
 #define gswitch_sOff				0x00

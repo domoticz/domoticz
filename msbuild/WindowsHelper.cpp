@@ -12,6 +12,12 @@
 
 extern bool g_bStopApplication;
 
+#include <comdef.h>
+#include <WbemCli.h>
+#include <WbemProv.h>
+#pragma comment(lib, "WbemUuid.lib")
+#include "../main/Helper.h"
+
 console::console()
 {
 	m_old_cout=NULL;
@@ -317,6 +323,94 @@ int	uname(struct utsname *putsname)
 	strcpy(putsname->version,"latest");
 
 	return 0;
+}
+
+static inline BOOL IsNumeric(LPCWSTR pszString, BOOL bIgnoreColon)
+{
+	size_t nLen = wcslen(pszString);
+	if (nLen == 0)
+		return FALSE;
+
+	//What will be the return value from this function (assume the best)
+	BOOL bNumeric = TRUE;
+
+	for (size_t i = 0; i < nLen && bNumeric; i++)
+	{
+		bNumeric = (iswdigit(pszString[i]) != 0);
+		if (bIgnoreColon && (pszString[i] == L':'))
+			bNumeric = TRUE;
+	}
+
+	return bNumeric;
+}
+
+
+void EnumSerialFromWMI(std::vector<int> &ports, std::vector<std::string> &friendlyNames)
+{
+	ports.clear();
+	friendlyNames.clear();
+
+	HRESULT hr;
+	IWbemLocator *pLocator = NULL;
+	IWbemServices *pServicesSystem = NULL;
+
+	hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
+	if (FAILED(hr))
+	{
+		return;
+	}
+	hr = pLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &pServicesSystem);
+	if (pServicesSystem == NULL)
+	{
+		pLocator->Release();
+		return;
+	}
+
+	int dindex = 0;
+	std::string query = "SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{4d36e978-e325-11ce-bfc1-08002be10318}\"";
+	IEnumWbemClassObject* pEnumerator = NULL;
+	hr = pServicesSystem->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+	if (!FAILED(hr))
+	{
+		// Get the data from the query
+		IWbemClassObject *pclsObj = NULL;
+		while (pEnumerator)
+		{
+			ULONG uReturn = 0;
+			HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+			if (FAILED(hr) || (0 == uReturn))
+			{
+				break;
+			}
+
+			VARIANT vtProp;
+			VariantInit(&vtProp);
+			HRESULT hrGet = pclsObj->Get(L"Name", 0, &vtProp, NULL, NULL);
+			if (SUCCEEDED(hrGet) && (vtProp.vt == VT_BSTR) && (wcslen(vtProp.bstrVal) > 3))
+			{
+				std::string itemName = _bstr_t(vtProp.bstrVal);
+				VariantClear(&vtProp);
+
+				size_t spos = itemName.find("(COM");
+				if (spos != std::string::npos)
+				{
+					std::string tmpstr = itemName.substr(spos + 4);
+					spos = tmpstr.find(")");
+					if (spos != std::string::npos)
+					{
+						tmpstr = tmpstr.substr(0, spos);
+						int nPort = atoi(tmpstr.c_str());
+						ports.push_back(nPort);
+						friendlyNames.push_back(itemName);
+					}
+				}
+			}
+			pclsObj->Release();
+		}
+		pEnumerator->Release();
+	}
+	pServicesSystem->Release();
+	pLocator->Release();
 }
 
 void EnumSerialPortsWindows(std::vector<SerialPortInfo> &serialports)
