@@ -240,6 +240,9 @@
     <Filter Include="Devices\Tellstick">
       <UniqueIdentifier>{85d93c50-c787-4bfb-858a-f9f4dd72af20}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Logitech Media Server">
+      <UniqueIdentifier>{61411910-e1dc-4691-8d42-e72cf0a6721f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -756,6 +759,9 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\LogitechMediaServer.h">
+      <Filter>Devices\Logitech Media Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1210,6 +1216,9 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\LogitechMediaServer.cpp">
+      <Filter>Devices\Logitech Media Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
