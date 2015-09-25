@@ -151,6 +151,7 @@
     <ClInclude Include="..\hardware\Kodi.h" />
     <ClInclude Include="..\hardware\Limitless.h" />
     <ClInclude Include="..\hardware\HardwareMonitor.h" />
+    <ClInclude Include="..\hardware\LogitechMediaServer.h" />
     <ClInclude Include="..\hardware\Meteostick.h" />
     <ClInclude Include="..\hardware\MochadTCP.h" />
     <ClInclude Include="..\hardware\MQTT.h" />
@@ -332,6 +333,7 @@
     <ClCompile Include="..\hardware\Kodi.cpp" />
     <ClCompile Include="..\hardware\Limitless.cpp" />
     <ClCompile Include="..\hardware\HardwareMonitor.cpp" />
+    <ClCompile Include="..\hardware\LogitechMediaServer.cpp" />
     <ClCompile Include="..\hardware\Meteostick.cpp" />
     <ClCompile Include="..\hardware\MochadTCP.cpp" />
     <ClCompile Include="..\hardware\MQTT.cpp" />

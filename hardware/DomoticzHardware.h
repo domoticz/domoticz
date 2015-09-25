@@ -99,6 +99,7 @@ private:
 	friend class CNetAtmoWeatherStation;
 	friend class CAnnaThermostat;
 	friend class SatelIntegra;
+	friend class CLogitechMediaServer;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
