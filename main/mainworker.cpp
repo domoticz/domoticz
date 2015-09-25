@@ -1710,6 +1710,11 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 
 	if (DeviceRowIdx == -1)
 	{
+    if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+    {
+      _log.Log(LOG_STATUS, "Decode: SubType %d", pRXCommand[1]);
+    }
+    
 		switch (pRXCommand[1])
 		{
 		case pTypeInterfaceMessage:
@@ -8588,11 +8593,17 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 
 unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
+ 
 	char szTmp[200];
 	const _tGeneralDevice *pMeter=(const _tGeneralDevice*)pResponse;
 	unsigned char devType=pMeter->type;
 	unsigned char subType=pMeter->subtype;
 
+  if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+  {
+    _log.Log(LOG_STATUS, "Decode General: Report %d = %d", pMeter->id, pMeter->intval1);
+  }
+  
 	if (
 		(subType == sTypeVoltage) ||
 		(subType == sTypeCurrent) ||
@@ -8757,6 +8768,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	}
 	else if (subType == sTypeAlert)
 	{
+    if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+    {
+      _log.Log(LOG_STATUS, "Decode Alert: Report %d = %d", ID.c_str(), pMeter->intval1);
+    }
+    
 		sprintf(szTmp, "%d", pMeter->intval1);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, szTmp, m_LastDeviceName);
 		if (DevRowIdx == -1)
