@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1053
+# ref 1054
 
 CACHE:
 # CSS
@@ -15,6 +15,7 @@ css/ui-darkness/jquery-ui.min.css
 secpanel/css/font.less
 secpanel/css/reset.less
 secpanel/css/style.less
+css/remote.css
 
 # Fonts
 css/fonts/Oswald-Light.eot

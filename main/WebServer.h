@@ -100,6 +100,9 @@ private:
 	void Cmd_KodiRemoveNode(Json::Value &root);
 	void Cmd_KodiClearNodes(Json::Value &root);
 	void Cmd_KodiMediaCommand(Json::Value &root);
+	void Cmd_LMSSetMode(Json::Value &root);
+	void Cmd_LMSGetNodes(Json::Value &root);
+	void Cmd_LMSMediaCommand(Json::Value &root);
 	void Cmd_SaveFibaroLinkConfig(Json::Value &root);
 	void Cmd_GetFibaroLinkConfig(Json::Value &root);
 	void Cmd_GetFibaroLinks(Json::Value &root);
