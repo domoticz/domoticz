@@ -142,10 +142,10 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
 				// 1:	Update the DeviceStatus
-				if (nStatus == MSTAT_ON)
-					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
-				else
+				if (nStatus == MSTAT_OFF)
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
+				else
+					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
 				char szLastUpdate[40];
@@ -205,8 +205,9 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 				if (root["power"].asString() == "0")
 					nStatus = MSTAT_OFF;
 				else {
-					nStatus = MSTAT_ON;
 					std::string sMode = root["mode"].asString();
+					if (sMode == "pause") nStatus = MSTAT_PAUSED;
+					else nStatus = MSTAT_ON;
 					std::string	sTitle = "";
 					std::string	sAlbum = "";
 					std::string	sArtist = "";
@@ -217,7 +218,6 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					std::string sLabel = "";
 
 					if (root["playlist_loop"].size()) {
-
 						sTitle = root["playlist_loop"][0]["title"].asString();
 						sAlbum = root["playlist_loop"][0]["album"].asString();
 						sArtist = root["playlist_loop"][0]["artist"].asString();
@@ -319,20 +319,20 @@ void CLogitechMediaServer::GetPlayerInfo()
 			std::string ip = IPPort[0];
 			int port = atoi(IPPort[1].c_str());
 
-			//  slimp3		=> 'SliMP3'					?
+			//	slimp3		=> 'SliMP3'					?
 			//	Squeezebox	=> 'Squeezebox 1'			V
-			//	squeezebox2 => 'Squeezebox 2'			V
-			//	squeezebox3 => 'Squeezebox 3'			V
-			//	transporter => 'Transporter'			?
+			//	squeezebox2	=> 'Squeezebox 2'			V
+			//	squeezebox3	=> 'Squeezebox 3'			V
+			//	transporter	=> 'Transporter'			?
 			//	receiver	=> 'Squeezebox Receiver'	X
 			//	boom		=> 'Squeezebox Boom'		?
-			//	softsqueeze => 'Softsqueeze'			?
+			//	softsqueeze	=> 'Softsqueeze'			?
 			//	controller	=> 'Squeezebox Controller'	X
-			//	squeezeplay => 'SqueezePlay'			?
+			//	squeezeplay	=> 'SqueezePlay'			?
 			//	baby		=> 'Squeezebox Radio'		V
 			//	fab4		=> 'Squeezebox Touch'		V
-			//  squeezelite => 'Max2Play SqueezePlug'	V
-			//  iPengiPod	=> 'iPeng iOS App'			X
+			//	squeezelite	=> 'Max2Play SqueezePlug'	V
+			//	iPengiPod	=> 'iPeng iOS App'			X
 
 			if ((model == "Squeezebox") || (model == "squeezebox2") || (model == "squeezebox3") || (model == "baby") || (model == "fab4") || (model == "squeezelite")) {
 				InsertUpdatePlayer(name, ip, port);

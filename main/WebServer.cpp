@@ -7357,7 +7357,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Media)
 						{
-							root["result"][ii]["TypeImg"] = "Media";
+							if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
+								root["result"][ii]["TypeImg"] = "LogitechMediaServer";
+							else
+								root["result"][ii]["TypeImg"] = "Media";
 							root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
 							lstatus = sValue;
 						}
