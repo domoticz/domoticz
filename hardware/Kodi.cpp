@@ -3,6 +3,7 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../notifications/NotificationHelper.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
@@ -124,6 +125,20 @@ bool CKodiNode::CKodiStatus::UpdateRequired(CKodiStatus& pPrevious)
 bool CKodiNode::CKodiStatus::OnOffRequired(CKodiStatus& pPrevious)
 {
 	return ((m_nStatus == MSTAT_OFF) || (pPrevious.Status() == MSTAT_OFF)) && (m_nStatus != pPrevious.Status());
+}
+
+_eNotificationTypes	CKodiNode::CKodiStatus::NotificationType()
+{
+	switch (m_nStatus)
+	{
+	case MSTAT_OFF:		return NTYPE_SWITCH_OFF;
+	case MSTAT_ON:		return NTYPE_SWITCH_ON;
+	case MSTAT_PAUSED:	return NTYPE_PAUSED;
+	case MSTAT_VIDEO:	return NTYPE_VIDEO;
+	case MSTAT_AUDIO:	return NTYPE_AUDIO;
+	case MSTAT_PHOTO:	return NTYPE_PHOTO;
+	default:			return NTYPE_SWITCH_OFF;
+	}
 }
 
 CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
@@ -418,9 +433,9 @@ void CKodiNode::UpdateStatus()
 	}
 
 	// 2:	Log the event if the actual status has changed (not counting the percentage)
+	std::string	sLogText = m_CurrentStatus.StatusText();
 	if (m_CurrentStatus.LogRequired(m_PreviousStatus))
 	{
-		std::string	sLogText = m_CurrentStatus.StatusText();
 		if (m_CurrentStatus.IsStreaming()) sLogText += " - " + m_CurrentStatus.LogMessage();
 		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str());
 		_log.Log(LOG_NORM, "Kodi: (%s) Event: '%s'.", m_Name.c_str(), sLogText.c_str());
@@ -436,8 +451,11 @@ void CKodiNode::UpdateStatus()
 		}
 	}
 
-	// 4:	Trigger Notifications (TBD)
-
+	// 4:	Trigger Notifications on status change
+	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
+	{
+		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
+	}
 
 	m_PreviousStatus = m_CurrentStatus;
 }

@@ -4,6 +4,7 @@
 #include "../main/Helper.h"
 #include "xmbcclient.h"
 #include "../main/RFXNames.h"
+#include "../main/SQLHelper.h"
 
 extern std::string szWWWFolder;
 
@@ -23,28 +24,41 @@ std::string CNotificationKodi::GetCustomIcon(std::string &szCustom)
 {
 	int	iIconLine = atoi(szCustom.c_str());
 	std::string szRetVal = "Light48";
-	std::string sLine = "";
-	std::ifstream infile;
-	std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
-	infile.open(switchlightsfile.c_str());
-	if (infile.is_open())
+	if (iIconLine < 100)  // default set of custom icons
 	{
-		int index = 0;
-		while (!infile.eof())
+		std::string sLine = "";
+		std::ifstream infile;
+		std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
+		infile.open(switchlightsfile.c_str());
+		if (infile.is_open())
 		{
-			getline(infile, sLine);
-			if ((sLine.size() != 0) && (index++ == iIconLine))
+			int index = 0;
+			while (!infile.eof())
 			{
-				std::vector<std::string> results;
-				StringSplit(sLine, ";", results);
-				if (results.size() == 3)
+				getline(infile, sLine);
+				if ((sLine.size() != 0) && (index++ == iIconLine))
 				{
-					szRetVal = results[0] + "48";
-					break;
+					std::vector<std::string> results;
+					StringSplit(sLine, ";", results);
+					if (results.size() == 3)
+					{
+						szRetVal = results[0] + "48";
+						break;
+					}
 				}
 			}
+			infile.close();
 		}
-		infile.close();
+	}
+	else  // Uploaded icons
+	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine-100);
+		if (result.size() == 1)
+		{
+			std::string sBase = result[0][0];
+			return sBase;
+		}
 	}
 	
 //	_log.Log(LOG_NORM, "Custom Icon look up for %s returned: '%s'", szCustom.c_str(), szRetVal.c_str());
@@ -147,6 +161,15 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 				break;
 			case STYPE_DoorLock:
 				szTypeImage = "door48";
+				break;
+			case STYPE_Media:
+				if (posCustom >= 0)
+				{
+					posCustom += 13;
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					szTypeImage = GetCustomIcon(szCustom);
+				}
+				else szTypeImage = "Media48";
 				break;
 			default:
 				szTypeImage = "logo";
