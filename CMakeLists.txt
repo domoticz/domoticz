@@ -196,6 +196,7 @@ hardware/KMTronicSerial.cpp
 hardware/KMTronicTCP.cpp
 hardware/Kodi.cpp
 hardware/Limitless.cpp
+hardware/LogitechMediaServer.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
