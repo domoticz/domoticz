@@ -148,6 +148,15 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 			case STYPE_DoorLock:
 				szTypeImage = "door48";
 				break;
+			case STYPE_Media:
+				if (posCustom >= 0)
+				{
+					posCustom += 13;
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					szTypeImage = GetCustomIcon(szCustom);
+				}
+				else szTypeImage = "Media48";
+				break;
 			default:
 				szTypeImage = "logo";
 		}
