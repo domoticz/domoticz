@@ -142,10 +142,10 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
 				// 1:	Update the DeviceStatus
-				if (nStatus == MSTAT_OFF)
-					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
-				else
+				if (nStatus == MSTAT_ON)
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
+				else
+					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
 				struct tm ltime;
 				localtime_r(&atime, &ltime);
 				char szLastUpdate[40];
@@ -205,9 +205,8 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 				if (root["power"].asString() == "0")
 					nStatus = MSTAT_OFF;
 				else {
+					nStatus = MSTAT_ON;
 					std::string sMode = root["mode"].asString();
-					if (sMode == "pause") nStatus = MSTAT_PAUSED;
-					else nStatus = MSTAT_ON;
 					std::string	sTitle = "";
 					std::string	sAlbum = "";
 					std::string	sArtist = "";
