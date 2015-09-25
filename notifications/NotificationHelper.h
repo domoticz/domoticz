@@ -59,6 +59,11 @@ public:
 		const unsigned char subType,
 		const _eNotificationTypes ntype,
 		const float mvalue);
+	bool CheckAndHandleNotification(
+		const unsigned long long Idx,
+		const std::string &devicename,
+		const _eNotificationTypes ntype,
+		const std::string &message);
 	bool CheckAndHandleSwitchNotification(
 		const unsigned long long Idx,
 		const std::string &devicename,
