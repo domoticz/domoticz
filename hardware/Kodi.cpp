@@ -3,6 +3,7 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../notifications/NotificationHelper.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
@@ -126,11 +127,26 @@ bool CKodiNode::CKodiStatus::OnOffRequired(CKodiStatus& pPrevious)
 	return ((m_nStatus == MSTAT_OFF) || (pPrevious.Status() == MSTAT_OFF)) && (m_nStatus != pPrevious.Status());
 }
 
+_eNotificationTypes	CKodiNode::CKodiStatus::NotificationType()
+{
+	switch (m_nStatus)
+	{
+	case MSTAT_OFF:		return NTYPE_SWITCH_OFF;
+	case MSTAT_ON:		return NTYPE_SWITCH_ON;
+	case MSTAT_PAUSED:	return NTYPE_PAUSED;
+	case MSTAT_VIDEO:	return NTYPE_VIDEO;
+	case MSTAT_AUDIO:	return NTYPE_AUDIO;
+	case MSTAT_PHOTO:	return NTYPE_PHOTO;
+	default:			return NTYPE_SWITCH_OFF;
+	}
+}
+
 CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int PollIntervalsec, const int pTimeoutMs,
 	const std::string& pID, const std::string& pName, const std::string& pIP, const std::string& pPort)
 {
 	m_stoprequested = false;
 	m_Busy = false;
+	m_Stoppable = false;
 
 	m_Ios = pIos;
 	m_HwdID = pHwdID;
@@ -256,6 +272,9 @@ void CKodiNode::handleMessage(std::string& pMessage)
 			{
 				if ((root.isMember("result") && (root.isMember("id"))))
 				{
+					bool		bCanShutdown = false;
+					bool		bCanHibernate = false;
+					bool		bCanSuspend = false;
 					int		iMessageID = root["id"].asInt();
 					switch (iMessageID)
 					{
@@ -335,9 +354,6 @@ void CKodiNode::handleMessage(std::string& pMessage)
 					case 4:		//Shutdown details response
 						{
 							std::string	sAction = "Nothing";
-							bool		bCanShutdown = false;
-							bool		bCanHibernate = false;
-							bool		bCanSuspend = false;
 							if (root["result"].isMember("canshutdown"))
 							{
 								bCanShutdown = root["result"]["canshutdown"].asBool();
@@ -375,6 +391,22 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						if (root["result"] != "OK")
 							_log.Log(LOG_ERROR, "Kodi: (%s) Send Command Failed: '%s'", m_Name.c_str(), root["result"].asCString());
 						break;
+					case 7:		//Can Shutdown response (after connect)
+						handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":5}"));
+						if (root["result"].isMember("canshutdown"))
+						{
+							bCanShutdown = root["result"]["canshutdown"].asBool();
+						}
+						if (root["result"].isMember("canhibernate"))
+						{
+							bCanHibernate = root["result"]["canhibernate"].asBool();
+						}
+						if (root["result"].isMember("cansuspend"))
+						{
+							bCanSuspend = root["result"]["cansuspend"].asBool();
+						}
+						m_Stoppable = (bCanShutdown || bCanHibernate || bCanSuspend);
+						break;
 					default:
 						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown ID found: '%s'", m_Name.c_str(), pMessage.c_str());
 					}
@@ -401,9 +433,9 @@ void CKodiNode::UpdateStatus()
 	}
 
 	// 2:	Log the event if the actual status has changed (not counting the percentage)
+	std::string	sLogText = m_CurrentStatus.StatusText();
 	if (m_CurrentStatus.LogRequired(m_PreviousStatus))
 	{
-		std::string	sLogText = m_CurrentStatus.StatusText();
 		if (m_CurrentStatus.IsStreaming()) sLogText += " - " + m_CurrentStatus.LogMessage();
 		result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", m_ID, int(m_CurrentStatus.Status()), sLogText.c_str());
 		_log.Log(LOG_NORM, "Kodi: (%s) Event: '%s'.", m_Name.c_str(), sLogText.c_str());
@@ -419,8 +451,11 @@ void CKodiNode::UpdateStatus()
 		}
 	}
 
-	// 4:	Trigger Notifications (TBD)
-
+	// 4:	Trigger Notifications on status change
+	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
+	{
+		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
+	}
 
 	m_PreviousStatus = m_CurrentStatus;
 }
@@ -445,7 +480,7 @@ void CKodiNode::handleConnect()
 			}
 			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 				boost::bind(&CKodiNode::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-			handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":5}"));
+			handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":7}"));
 		}
 		else
 		{
@@ -643,7 +678,7 @@ bool CKodiNode::SendShutdown()
 	std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":4}";
 	handleWrite(sMessage);
 
-	return false;
+	return m_Stoppable;
 }
 
 std::vector<boost::shared_ptr<CKodiNode> > CKodi::m_pNodes;

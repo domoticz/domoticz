@@ -427,6 +427,51 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 bool CNotificationHelper::CheckAndHandleNotification(
 	const unsigned long long Idx,
 	const std::string &devicename,
+	const _eNotificationTypes ntype,
+	const std::string &message)
+{
+	std::vector<_tNotification> notifications = GetNotifications(Idx);
+	if (notifications.size() == 0)
+		return false;
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%llu)", Idx);
+	if (result.size() == 0)
+		return false;
+	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
+
+	time_t atime = mytime(NULL);
+
+	//check if not sent 12 hours ago, and if applicable
+	atime -= m_NotificationSensorInterval;
+
+	std::string ltype = Notification_Type_Desc(ntype, 1);
+	std::vector<_tNotification>::const_iterator itt;
+	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
+	{
+		std::vector<std::string> splitresults;
+		StringSplit(itt->Params, ";", splitresults);
+		if (splitresults.size() < 1)
+			continue; //impossible
+		std::string atype = splitresults[0];
+		if (atype == ltype)
+		{
+			if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
+			{
+				std::string msg = message;
+				if (!itt->CustomMessage.empty())
+					msg = itt->CustomMessage;
+				SendMessageEx(itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+				TouchNotification(itt->ID);
+			}
+		}
+	}
+	return true;
+}
+
+bool CNotificationHelper::CheckAndHandleNotification(
+	const unsigned long long Idx,
+	const std::string &devicename,
 	const unsigned char devType,
 	const unsigned char subType,
 	const _eNotificationTypes ntype,

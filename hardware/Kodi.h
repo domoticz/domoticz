@@ -19,6 +19,7 @@ class CKodiNode : public boost::enable_shared_from_this<CKodiNode>
 	public:
 		CKodiStatus() { Clear(); };
 		_eMediaStatus	Status() { return m_nStatus; };
+		_eNotificationTypes	NotificationType();
 		std::string		StatusText() { return Media_Player_States(m_nStatus); };
 		void			Status(_eMediaStatus pStatus) { m_nStatus = pStatus; };
 		void			Status(std::string pStatus) { m_sStatus = pStatus; };
@@ -83,6 +84,7 @@ public:
 protected:
 	bool			m_stoprequested;
 	bool			m_Busy;
+	bool			m_Stoppable;
 
 private:
 	void			handleConnect();
