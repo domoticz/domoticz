@@ -75,6 +75,7 @@
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
+#include "../hardware/LogitechMediaServer.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -745,6 +746,10 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_SatelIntegra:
 		pHardware = new SatelIntegra(ID, Address, Port, Password);
+		break;
+	case HTYPE_LogitechMediaServer:
+		//Logitech Media Server
+		pHardware = new CLogitechMediaServer(ID, Address, Port, Mode1, Mode2);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:

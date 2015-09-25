@@ -20,6 +20,7 @@
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
 #include "../hardware/Kodi.h"
+#include "../hardware/LogitechMediaServer.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -377,6 +378,10 @@ namespace http {
 			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1));
 			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1));
 			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1));
+
+			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1));
+			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1));
+			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1));
 
 			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1));
 			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1));
@@ -966,6 +971,9 @@ namespace http {
 			else if (htype == HTYPE_Kodi) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_LogitechMediaServer) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_RaspberryBMP085) {
 				//all fine here!
 			}
@@ -1058,6 +1066,11 @@ namespace http {
 				mode2 = 1000;
 			}
 			else if (htype == HTYPE_Kodi)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}
+			else if (htype == HTYPE_LogitechMediaServer)
 			{
 				mode1 = 30;
 				mode2 = 1000;
@@ -1165,6 +1178,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_Kodi) {
+				//All fine here
+			}
+			else if (htype == HTYPE_LogitechMediaServer) {
 				//All fine here
 			}
 			else if (htype == HTYPE_RaspberryBMP085) {
@@ -7341,7 +7357,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Media)
 						{
-							root["result"][ii]["TypeImg"] = "Media";
+							if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
+								root["result"][ii]["TypeImg"] = "LogitechMediaServer";
+							else
+								root["result"][ii]["TypeImg"] = "Media";
 							root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
 							lstatus = sValue;
 						}
@@ -10777,6 +10796,9 @@ namespace http {
 
 					int nValue = atoi(sd[1].c_str());
 					std::string sValue = sd[2];
+
+					//skip 0-values in log for MediaPlayers
+					if ((switchtype == STYPE_Media) && (sValue == "0")) continue;
 
 					root["result"][ii]["idx"] = sd[0];
 

@@ -503,6 +503,39 @@
 								</div>
 								<div class="span6">
 									<h2><span data-i18n="Logitech Media Server"></span>:</h2>
+									<table class="display" id="lmstable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:80px"><label for="LmsEnabled"><span data-i18n="Enabled"></span>: </label></td>
+											<td><input type="checkbox" id="LmsEnabled" name="LmsEnabled"/></td>
+										</tr>
+										<tr>
+											<td align="right" style="width:80px">
+												<label for="LmsServerIP"><span data-i18n="Server IP"></span>: </label>
+											</td>
+											<td>
+												<input type="input" id="LmsServerIP" name="LmsServerIP" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<label for="LmsServerPort"><span data-i18n="Server Port"></span>: </label>
+												<input type="input" id="LmsServerPort" name="LmsServerPort" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+											</td>
+										</tr>
+										<tr>
+											<td align="right">
+												<label for="LmsPlayerIP"><span data-i18n="Player IP"></span>: </label>
+											</td>
+											<td>
+												<input type="input" id="LmsPlayerIP" name="LmsPlayerIP" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('lms')">Test</button>
+											</td>
+										</tr>
+										<tr>
+											<td align="right" style="width:80px">
+												<label for="LmsDuration"><span data-i18n="Duration"></span>: </label>
+											</td>
+											<td>
+												<input type="input" id="LmsDuration" name="LmsDuration" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+											</td>
+										</tr>
+									</table>
 								</div>
 							</div>
 							<br>

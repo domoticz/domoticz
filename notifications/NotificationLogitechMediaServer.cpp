@@ -3,6 +3,7 @@
 #include "NotificationLogitechMediaServer.h"
 #include "../main/Helper.h"
 #include "../main/RFXNames.h"
+#include "../httpclient/HTTPClient.h"
 
 CNotificationLogitechMediaServer::CNotificationLogitechMediaServer() : CNotificationBase(std::string("lms"), OPTIONS_NONE)
 {
@@ -24,7 +25,6 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(const std::stri
 	{
 		sSubject = Subject;
 	}
-	//????????????
 
 	// Loop through semi-colon separated IP Addresses
 	std::vector<std::string> results;
@@ -32,13 +32,15 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(const std::stri
 	for (int i = 0; i < (int)results.size(); i++)
 	{
 		std::stringstream logline;
-		logline << "Lms Notification (" << results[i] << "): " << sSubject << ", " << Text;
+		std::string sPlayerId = results[i];
+		std::string sPower = "0";
+
+		logline << "Lms Notification (" << sPlayerId << "): " << sSubject << ", " << Text;
 		_log.Log(LOG_NORM, "%s", logline.str().c_str());
 
-		std::stringstream postdata;
-		postdata << sSubject << ": " << Text << "(" << results[i] << ")";
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"power\",\"" + sPower + "\"]]}";
 
-		Json::Value root = Query(_ServerIP, _ServerPort, postdata.str().c_str());
+		Json::Value root = Query(_ServerIP, _ServerPort, sPostdata);
 
 	}
 	return true;
@@ -58,25 +60,25 @@ Json::Value CNotificationLogitechMediaServer::Query(std::string sIP, int iPort, 
 	std::stringstream sPostData;
 
 	sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
-//	sPostData << sPostdata;
-//	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
-//	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
-//
-//	if (!bRetVal)
-//	{
-//		return root;
-//	}
-//	Json::Reader jReader;
-//	bRetVal = jReader.parse(sResult, root);
-//	if (!bRetVal)
-//	{
-//		_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
-//		return root;
-//	}
-//	if (root["method"].empty())
-//	{
-//		_log.Log(LOG_ERROR, "Logitech Media Server: '%s' request '%s'", sURL.str().c_str(), sPostData.str().c_str());
-//		return root;
-//	}
+	sPostData << sPostdata;
+	HTTPClient::SetTimeout(2);
+	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
+
+	if (!bRetVal)
+	{
+		return root;
+	}
+	Json::Reader jReader;
+	bRetVal = jReader.parse(sResult, root);
+	if (!bRetVal)
+	{
+		_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
+		return root;
+	}
+	if (root["method"].empty())
+	{
+		_log.Log(LOG_ERROR, "Logitech Media Server: '%s' request '%s'", sURL.str().c_str(), sPostData.str().c_str());
+		return root;
+	}
 	return root["result"];
 }
