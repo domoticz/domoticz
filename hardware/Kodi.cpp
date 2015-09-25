@@ -131,6 +131,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 {
 	m_stoprequested = false;
 	m_Busy = false;
+	m_Stoppable = false;
 
 	m_Ios = pIos;
 	m_HwdID = pHwdID;
@@ -256,6 +257,9 @@ void CKodiNode::handleMessage(std::string& pMessage)
 			{
 				if ((root.isMember("result") && (root.isMember("id"))))
 				{
+					bool		bCanShutdown = false;
+					bool		bCanHibernate = false;
+					bool		bCanSuspend = false;
 					int		iMessageID = root["id"].asInt();
 					switch (iMessageID)
 					{
@@ -335,9 +339,6 @@ void CKodiNode::handleMessage(std::string& pMessage)
 					case 4:		//Shutdown details response
 						{
 							std::string	sAction = "Nothing";
-							bool		bCanShutdown = false;
-							bool		bCanHibernate = false;
-							bool		bCanSuspend = false;
 							if (root["result"].isMember("canshutdown"))
 							{
 								bCanShutdown = root["result"]["canshutdown"].asBool();
@@ -374,6 +375,22 @@ void CKodiNode::handleMessage(std::string& pMessage)
 					case 6:		//Remote Control response
 						if (root["result"] != "OK")
 							_log.Log(LOG_ERROR, "Kodi: (%s) Send Command Failed: '%s'", m_Name.c_str(), root["result"].asCString());
+						break;
+					case 7:		//Can Shutdown response (after connect)
+						handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":5}"));
+						if (root["result"].isMember("canshutdown"))
+						{
+							bCanShutdown = root["result"]["canshutdown"].asBool();
+						}
+						if (root["result"].isMember("canhibernate"))
+						{
+							bCanHibernate = root["result"]["canhibernate"].asBool();
+						}
+						if (root["result"].isMember("cansuspend"))
+						{
+							bCanSuspend = root["result"]["cansuspend"].asBool();
+						}
+						m_Stoppable = (bCanShutdown || bCanHibernate || bCanSuspend);
 						break;
 					default:
 						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown ID found: '%s'", m_Name.c_str(), pMessage.c_str());
@@ -445,7 +462,7 @@ void CKodiNode::handleConnect()
 			}
 			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 				boost::bind(&CKodiNode::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-			handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":5}"));
+			handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":7}"));
 		}
 		else
 		{
@@ -643,7 +660,7 @@ bool CKodiNode::SendShutdown()
 	std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":4}";
 	handleWrite(sMessage);
 
-	return false;
+	return m_Stoppable;
 }
 
 std::vector<boost::shared_ptr<CKodiNode> > CKodi::m_pNodes;

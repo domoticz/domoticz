@@ -1353,7 +1353,7 @@ define(['app'], function (app) {
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
             $("#hardwarecontent #kodinodeparamstable #nodename").val("");
             $("#hardwarecontent #kodinodeparamstable #nodeip").val("");
-            $("#hardwarecontent #kodinodeparamstable #nodeport").val("8080");
+            $("#hardwarecontent #kodinodeparamstable #nodeport").val("9090");
 
             var oTable = $('#kodinodestable').dataTable();
             oTable.fnClearTable();
@@ -1388,7 +1388,7 @@ define(['app'], function (app) {
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
                     $("#hardwarecontent #kodinodeparamstable #nodename").val("");
                     $("#hardwarecontent #kodinodeparamstable #nodeip").val("");
-                    $("#hardwarecontent #kodinodeparamstable #nodeport").val("8080");
+                    $("#hardwarecontent #kodinodeparamstable #nodeport").val("9090");
                 }
                 else {
                     var oTable = $('#kodinodestable').dataTable();
