@@ -96,10 +96,14 @@ void MQTT::on_connect(int rc)
 	*/
 
 	if (rc == 0){
-		_log.Log(LOG_STATUS, "MQTT: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
-		m_IsConnected = true;
-		sOnConnected(this);
-		m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
+		if (m_IsConnected) {
+			_log.Log(LOG_STATUS, "MQTT: re-connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		} else {
+			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+			m_IsConnected = true;
+			sOnConnected(this);
+			m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
+		}
 		subscribe(NULL, TOPIC_IN);
 	}
 	else {
