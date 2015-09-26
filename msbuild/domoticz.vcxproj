@@ -14,6 +14,7 @@
     <ProjectGuid>{6AD96441-5B2C-467B-AAB6-A1B8368D503A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>domoticz</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -27,7 +28,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -65,7 +66,7 @@
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\makeversion.bat</Command>
+      <Command>"$(SolutionDir)makeversion.bat"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Getting git version info</Message>
@@ -96,7 +97,7 @@
       </LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)\makeversion.bat</Command>
+      <Command>"$(SolutionDir)makeversion.bat"</Command>
       <Message>Getting git version info</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -150,6 +151,7 @@
     <ClInclude Include="..\hardware\Kodi.h" />
     <ClInclude Include="..\hardware\Limitless.h" />
     <ClInclude Include="..\hardware\HardwareMonitor.h" />
+    <ClInclude Include="..\hardware\LogitechMediaServer.h" />
     <ClInclude Include="..\hardware\Meteostick.h" />
     <ClInclude Include="..\hardware\MochadTCP.h" />
     <ClInclude Include="..\hardware\MQTT.h" />
@@ -247,6 +249,7 @@
     <ClInclude Include="..\notifications\NotificationNma.h" />
     <ClInclude Include="..\notifications\NotificationProwl.h" />
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
+    <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
@@ -332,6 +335,7 @@
     <ClCompile Include="..\hardware\Kodi.cpp" />
     <ClCompile Include="..\hardware\Limitless.cpp" />
     <ClCompile Include="..\hardware\HardwareMonitor.cpp" />
+    <ClCompile Include="..\hardware\LogitechMediaServer.cpp" />
     <ClCompile Include="..\hardware\Meteostick.cpp" />
     <ClCompile Include="..\hardware\MochadTCP.cpp" />
     <ClCompile Include="..\hardware\MQTT.cpp" />
@@ -487,6 +491,7 @@
     <ClCompile Include="..\notifications\NotificationNma.cpp" />
     <ClCompile Include="..\notifications\NotificationProwl.cpp" />
     <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
+    <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />
     <ClCompile Include="..\notifications\NotificationPushover.cpp" />
     <ClCompile Include="..\notifications\NotificationSMS.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />

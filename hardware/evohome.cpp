@@ -1596,11 +1596,11 @@ void CEvohome::InitZoneNames()
 {
 	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
 	char szTmp[1024];
-	for(size_t i=0;i<m_ZoneNames.size();i++)
+	for(int i=0;i<(int)m_ZoneNames.size();i++)
 	{
 		if(m_ZoneNames[i].empty())
 		{
-			sprintf(szTmp,"Zone %lu",i+1);
+			sprintf(szTmp,"Zone %d",i+1);
 			m_ZoneNames[i]=szTmp;
 		}
 	}

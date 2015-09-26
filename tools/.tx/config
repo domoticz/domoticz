@@ -6,4 +6,5 @@ file_filter = ../www/i18n/domoticz-<lang>.json.
 host = https://www.transifex.net
 source_lang = en
 type = KEYVALUEJSON
+lang_map = sl_SI:sl, sr@latin:sr
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- EVERSPRING AD147 ON/OFF MODULE -->
+<!-- EVERSPRING AD147 Dimming MODULE -->
 <!-- Information from http://www.pepper1.net/zwavedb/device/686 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
   <!-- Configuration Parameters -->
@@ -31,7 +31,7 @@
   <CommandClass id="133">
     <Associations num_groups="2">
       <Group index="1" max_associations="1" label="Reports" auto="true" />
-      <Group index="2" max_associations="1" label="Basic" auto="true" />
+      <Group index="2" max_associations="4" label="Basic"/>
     </Associations>
   </CommandClass>
 </Product>

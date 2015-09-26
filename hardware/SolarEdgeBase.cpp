@@ -230,26 +230,6 @@ int SolarEdgeBase::ParsePacket(const unsigned char *pData, int len)
 	return orgdlen;
 }
 
-bool SolarEdgeBase::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
-{
-	int Idx=(ID1 * 256) + ID2;
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
-	if (result.size()<1)
-	{
-		return false;
-	}
-	std::vector<std::string> splitresult;
-	StringSplit(result[0][1],";",splitresult);
-	if (splitresult.size()!=2)
-		return false;
-	musage=atof(splitresult[0].c_str());
-	mtotal=atof(splitresult[1].c_str());
-	return true;
-}
-
 void SolarEdgeBase::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
 {
 	int Idx=(ID1 * 256) + ID2;
@@ -469,14 +449,6 @@ int SolarEdgeBase::ParsePacket0x0280(const unsigned char *pData, int dlen)
 	unsigned long *pUL=(unsigned long*)b;
 	b+=4;
 	dlen-=4;
-/*
-	double musage,mtotal;
-	if (GetMeter(0,1,musage,mtotal))
-	{
-		SendMeter(0,1, Watt/100.0f, mtotal/1000.0f, "SolarMain");
-		UpdateTempSensor(1,temp,"SolarMain");
-	}
-*/
 	return (b-pData);
 }
 
@@ -496,13 +468,6 @@ int SolarEdgeBase::ParsePacket0x0281(const unsigned char *pData, int dlen)
 	//Watt P-Out
 	float Watt=GetFloat(b);
 	b+=4;
-/*
-	double musage,mtotal;
-	if (GetMeter(0,1,musage,mtotal))
-	{
-		SendMeter(0,1, Watt/100.0f, mtotal/1000.0f, "SolarMain");
-	}
-*/
 	//skip the rest
 	return dlen-2;
 }
@@ -578,15 +543,6 @@ int SolarEdgeBase::ParsePacket0x0283(const unsigned char *pData, int dlen)
 	//Temp
 	float temp=GetFloat(b);
 	b+=4;
-
-/*
-	double musage,mtotal;
-	if (GetMeter(0,1,musage,mtotal))
-	{
-		SendMeter(0,1, Watt/100.0f, mtotal/1000.0f, "SolarMain");
-		UpdateTempSensor(1,temp,"SolarMain");
-	}
-*/
 
 	//skip the rest
 	return dlen-2;

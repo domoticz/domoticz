@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 77
+#define DB_VERSION 82
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -234,6 +234,7 @@ const char *sqlCreateHardware =
 "[SerialPort] VARCHAR(50) DEFAULT (''), "
 "[Username] VARCHAR(100), "
 "[Password] VARCHAR(100), "
+"[Extra] VARCHAR(200) DEFAULT (''),"
 "[Mode1] CHAR DEFAULT 0, "
 "[Mode2] CHAR DEFAULT 0, "
 "[Mode3] CHAR DEFAULT 0, "
@@ -1413,8 +1414,14 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 76)
 		{
-			query("ALTER TABLE MySensorsChilds ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
-			query("ALTER TABLE MySensorsChilds ADD COLUMN [UseAck] INTEGER DEFAULT 0");
+			if (!DoesColumnExistsInTable("Name", "MySensorsChilds"))
+			{			
+				query("ALTER TABLE MySensorsChilds ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			}
+			if (!DoesColumnExistsInTable("UseAck", "MySensorsChilds"))
+			{
+				query("ALTER TABLE MySensorsChilds ADD COLUMN [UseAck] INTEGER DEFAULT 0");
+			}
 		}
 		if (dbversion < 77)
 		{
@@ -1422,7 +1429,7 @@ bool CSQLHelper::OpenDatabase()
 			query("ALTER TABLE Scenes ADD COLUMN [Activators] VARCHAR(200) DEFAULT ''");
 			std::vector<std::vector<std::string> > result, result2;
 			std::vector<std::vector<std::string> >::const_iterator itt, itt2;
-			result = safe_query("SELECT ID, HardwareID, DeviceID, Unit, [Type], SubType FROM Scenes");
+			result = safe_query("SELECT ID, HardwareID, DeviceID, Unit, [Type], SubType, SceneType, ListenCmd FROM Scenes");
 			if (!result.empty())
 			{
 				for (itt = result.begin(); itt != result.end(); ++itt)
@@ -1434,6 +1441,9 @@ bool CSQLHelper::OpenDatabase()
 					if (!result2.empty())
 					{
 						Activator = result2[0][0];
+						if (sd[6] == "0") { //Scene
+							Activator += ":" + sd[7];
+						}
 					}
 					safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activator.c_str(), sd[0].c_str());
 				}
@@ -1448,6 +1458,59 @@ bool CSQLHelper::OpenDatabase()
 				"SELECT [ID],[Name],[Favorite],[Order],[nValue],[SceneType],[LastUpdate],[Protected],[OnAction],[OffAction],[Description],[Activators] FROM tmp_Scenes");
 			//Drop the tmp table
 			query("DROP TABLE tmp_Scenes");
+		}
+		if (dbversion < 78)
+		{
+			//Patch for soil moisture to use large ID
+			result = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (Type=%d) AND (SubType=%d)", pTypeGeneral, sTypeSoilMoisture);
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string idx = sd[0];
+					int lid = atoi(sd[1].c_str());
+					char szTmp[20];
+					sprintf(szTmp, "%08X", lid);
+					safe_query("UPDATE DeviceStatus SET DeviceID='%q' WHERE (ID='%q')", szTmp, idx.c_str());
+				}
+			}
+		}
+		if (dbversion < 79)
+		{
+			//MQTT filename for ca file
+			query("ALTER TABLE Hardware ADD COLUMN [Extra] VARCHAR(200) DEFAULT ('')");
+		}
+		if (dbversion < 81)
+		{
+			// MQTT set default mode
+			std::stringstream szQuery2;
+			szQuery2 << "UPDATE Hardware SET Mode1=1 WHERE  ([Type]==" << HTYPE_MQTT << " )";
+			query(szQuery2.str());
+		}
+		if (dbversion < 82)
+		{
+			//pTypeEngery sensor to new kWh sensor
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result2, result3;
+			std::vector<std::vector<std::string> >::const_iterator itt, itt2, itt3;
+			result2 = safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE ([Type] = %d)", pTypeENERGY);
+			for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+			{
+				std::vector<std::string> sd2 = *itt2;
+
+				//Change type to new sensor, and update ID
+				int oldID = atoi(sd2[1].c_str());
+				char szTmp[20];
+				sprintf(szTmp, "%08X", oldID);
+				safe_query("UPDATE DeviceStatus SET [DeviceID]='%s', [Type]=%d, [SubType]=%d, [Unit]=1 WHERE (ID==%s)", szTmp, pTypeGeneral, sTypeKwh, sd2[0].c_str());
+
+				//meter table
+				safe_query("UPDATE Meter SET Value=Value/100, Usage=Usage*10 WHERE DeviceRowID=%s", sd2[0].c_str());
+				//meter_calendar table
+				safe_query("UPDATE Meter_Calendar SET Value=Value/100, Counter=Counter/100 WHERE (DeviceRowID==%s)", sd2[0].c_str());
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -1824,6 +1887,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		nValue = 5;
 		UpdatePreferencesVar("ShortLogInterval", nValue);
+	}
+	if (!GetPreferencesVar("DisplayPowerUsageInkWhGraph", nValue))
+	{
+		UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", 1);
 	}
 	if (nValue < 1)
 		nValue = 5;
@@ -3566,7 +3633,8 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeSoundLevel
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeDistance
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypePressure
-		"(Type=%d AND SubType=%d)"     //pTypeGeneral,sTypeCounterIncremental
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeCounterIncremental
+		"(Type=%d AND SubType=%d)"     //pTypeGeneral,sTypeKwh
 		")",
 		pTypeRFXMeter,
 		pTypeP1Gas,
@@ -3589,7 +3657,8 @@ void CSQLHelper::UpdateMeter()
 		pTypeGeneral, sTypeSoundLevel,
 		pTypeGeneral, sTypeDistance,
 		pTypeGeneral, sTypePressure,
-		pTypeGeneral, sTypeCounterIncremental
+		pTypeGeneral, sTypeCounterIncremental,
+		pTypeGeneral, sTypeKwh
 		);
 	if (result.size()>0)
 	{
@@ -3701,6 +3770,21 @@ void CSQLHelper::UpdateMeter()
 			{
 				double fValue = atof(sValue.c_str())*10.0f;
 				sprintf(szTmp, "%d", int(fValue));
+				sValue = szTmp;
+			}
+			else if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(sValue, ";", splitresults);
+				if (splitresults.size() < 2)
+					continue;
+
+				double fValue = atof(splitresults[0].c_str())*10.0f;
+				sprintf(szTmp, "%d", int(fValue));
+				susage = szTmp;
+
+				fValue = atof(splitresults[1].c_str());
+				sprintf(szTmp, "%.0f", fValue);
 				sValue = szTmp;
 			}
 			else if (dType == pTypeLux)
@@ -4922,8 +5006,8 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 {
 	std::vector<std::vector<std::string> > result;
 	result=safe_query("DELETE FROM Hardware WHERE (ID == '%q')",idx.c_str());
-	//also delete all records in other tables
 
+	//and now delete all records in the DeviceStatus table itself
 	result=safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID == '%q')",idx.c_str());
 	if (result.size()>0)
 	{
@@ -4934,11 +5018,11 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 			DeleteDevice(sd[0]);
 		}
 	}
-	//and now delete all records in the DeviceStatus table itself
-	safe_query("DELETE FROM DeviceStatus WHERE (HardwareID == '%q')",idx.c_str());
+	//also delete all records in other tables
 	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID== '%q')",idx.c_str());
 	safe_query("DELETE FROM EnoceanSensors WHERE (HardwareID== '%q')", idx.c_str());
 	safe_query("DELETE FROM MySensors WHERE (HardwareID== '%q')", idx.c_str());
+	safe_query("DELETE FROM WOLNodes WHERE (HardwareID == '%q')",idx.c_str());
 }
 
 void CSQLHelper::DeleteCamera(const std::string &idx)

@@ -34,6 +34,8 @@
 #include <iostream>
 #include <boost/bind.hpp>
 
+#define BUFFER_SIZE 2048
+
 //
 //Class AsyncSerial
 //
@@ -56,7 +58,7 @@ public:
     boost::shared_array<char> writeBuffer; ///< Data being written
     size_t writeBufferSize; ///< Size of writeBuffer
     boost::mutex writeQueueMutex; ///< Mutex for access to writeQueue
-    char readBuffer[AsyncSerial::readBufferSize]; ///< data being read
+    char readBuffer[BUFFER_SIZE]; ///< data being read
 
     /// Read complete callback
     boost::function<void (const char*, size_t)> callback;
@@ -211,7 +213,7 @@ void AsyncSerial::writeString(const std::string& s)
 void AsyncSerial::doRead()
 {
 	if(isOpen()==false) return;
-    pimpl->port.async_read_some(boost::asio::buffer(pimpl->readBuffer,readBufferSize),
+    pimpl->port.async_read_some(boost::asio::buffer(pimpl->readBuffer,sizeof(pimpl->readBuffer)),
             boost::bind(&AsyncSerial::readEnd,
             this,
             boost::asio::placeholders::error,

@@ -58,7 +58,7 @@ enum _eTimerCommand
 enum _eMediaStatus
 {
 	MSTAT_OFF = 0,
-	MSTAT_IDLE,
+	MSTAT_ON,
 	MSTAT_PAUSED,
 	MSTAT_VIDEO,
 	MSTAT_AUDIO,
@@ -127,6 +127,7 @@ enum _eHardwareTypes {
 	HTYPE_WINDDELEN,			//57
 	HTYPE_SatelIntegra,			//58
 	HTYPE_Tellstick,			//59
+	HTYPE_LogitechMediaServer,	//60
 	HTYPE_END
 };
 
@@ -153,6 +154,10 @@ enum _eNotificationTypes
 	NTYPE_DEWPOINT,
 	NTYPE_RPM,
 	NTYPE_SETPOINT,
+	NTYPE_VIDEO,
+	NTYPE_AUDIO,
+	NTYPE_PHOTO,
+	NTYPE_PAUSED
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
@@ -172,6 +177,7 @@ const char *Security_Status_Desc(const unsigned char status);
 const char *Notification_Type_Desc(const int nType, const unsigned char snum);
 const char *Notification_Type_Label(const int nType);
 const char *Get_Moisture_Desc(const int moisture);
+const char *Get_Alert_Desc(const int level);
 const char *Media_Player_States(const _eMediaStatus Status);
 const char *ZWave_Clock_Days(const unsigned char Day);
 extern const char *ZWave_Thermostat_Modes[];
