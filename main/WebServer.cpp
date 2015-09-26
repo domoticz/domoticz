@@ -8414,7 +8414,7 @@ namespace http {
 							}
 							if (total > 0)
 							{
-								sprintf(szTmp, ", Total: %.3f Wh", total);
+								sprintf(szTmp, ", Total: %.3f kWh", total/1000.0f);
 								strcat(szData, szTmp);
 							}
 							root["result"][ii]["Data"] = szData;
