@@ -60,8 +60,7 @@ private:
 	void GetGatewayDetails();
 	void SendTime();
 	void SendOutsideTemperature();
-	static const int readBufferSize=1028;
-	unsigned char m_buffer[readBufferSize];
+	unsigned char m_buffer[1028];
 	int m_bufferpos;
 	int m_OutsideTemperatureIdx;
 };

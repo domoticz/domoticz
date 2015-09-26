@@ -52,34 +52,97 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	std::vector<std::string> ret;
 #if defined WIN32
 	//windows
-	std::vector<SerialPortInfo> serialports;
-	EnumSerialPortsWindows(serialports);
 
-	if (!serialports.empty())
+	std::vector<int> ports;
+	std::vector<std::string> friendlyNames;
+	char szPortName[40];
+
+	EnumSerialFromWMI(ports, friendlyNames);
+
+	bool bFoundPort = false;
+	if (!ports.empty())
 	{
-		std::vector<SerialPortInfo>::const_iterator itt;
-		for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+		bFoundPort = true;
+		std::vector<int>::const_iterator itt;
+		for (itt = ports.begin(); itt != ports.end(); ++itt)
 		{
-			ret.push_back(itt->szPortName);
+			sprintf(szPortName, "COM%d", *itt);
+			ret.push_back(szPortName);
 		}
 	}
-	else
-	{
-		//Scan old fashion way
-		COMMCONFIG cc;
-		DWORD dwSize = sizeof(COMMCONFIG);
 
-		char szPortName[40];
+	if (bFoundPort)
+		return ret;
+
+	//Scan old fashion way (SLOW!)
+	COMMCONFIG cc;
+	DWORD dwSize = sizeof(COMMCONFIG);
+	for (int ii = 0; ii < 256; ii++)
+	{
+		sprintf(szPortName, "COM%d", ii);
+		if (GetDefaultCommConfig(szPortName, &cc, &dwSize))
+		{
+			bFoundPort = true;
+			sprintf(szPortName, "COM%d", ii);
+
+			//Check if we did not already have it
+			std::vector<std::string>::const_iterator itt;
+			bool bFound = false;
+			for (itt = ret.begin(); itt != ret.end(); ++itt)
+			{
+				if (*itt == szPortName)
+				{
+					bFound = true;
+					break;
+				}
+			}
+			if (!bFound)
+				ret.push_back(szPortName); // add port
+		}
+	}
+	// Method 2: CreateFile, slow
+	// ---------
+	if (!bFoundPort) {
 		for (int ii = 0; ii < 256; ii++)
 		{
-			sprintf(szPortName, "COM%d", ii);
-			if (GetDefaultCommConfig(szPortName, &cc, &dwSize))
-			{
+			sprintf(szPortName, "\\\\.\\COM%d", ii);
+			bool bSuccess = false;
+			HANDLE hPort = ::CreateFile(szPortName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+			if (hPort == INVALID_HANDLE_VALUE) {
+				DWORD dwError = GetLastError();
+				//Check to see if the error was because some other app had the port open
+				if (dwError == ERROR_ACCESS_DENIED)
+					bSuccess = TRUE;
+			}
+			else {
+				//The port was opened successfully
+				bSuccess = TRUE;
+				//Don't forget to close the port, since we are going to do nothing with it anyway
+				CloseHandle(hPort);
+			}
+			if (bSuccess) {
+				bFoundPort = true;
 				sprintf(szPortName, "COM%d", ii);
-				ret.push_back(szPortName);
+				ret.push_back(szPortName); // add port
+			}
+			// --------------            
+		}
+	}
+	// Method 3: EnumSerialPortsWindows, often fails
+	// ---------
+	if (!bFoundPort) {
+		std::vector<SerialPortInfo> serialports;
+		EnumSerialPortsWindows(serialports);
+		if (!serialports.empty())
+		{
+			std::vector<SerialPortInfo>::const_iterator itt;
+			for (itt = serialports.begin(); itt != serialports.end(); ++itt)
+			{
+				ret.push_back(itt->szPortName); // add port
 			}
 		}
 	}
+
 #else
 	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA*
 

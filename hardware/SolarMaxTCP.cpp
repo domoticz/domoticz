@@ -405,7 +405,7 @@ void SolarMaxTCP::ParseLine()
 	}
 	if (kwhCounter != 0)
 	{
-		SendKwhMeter(1, 1, 255, ActUsage/1000.0f, kwhCounter, "kWh Meter");
+		SendKwhMeterOldWay(1, 1, 255, ActUsage/1000.0f, kwhCounter, "kWh Meter");
 	}
 
 }

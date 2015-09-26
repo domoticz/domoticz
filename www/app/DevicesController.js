@@ -209,7 +209,10 @@ define(['app'], function (app) {
 							var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="'+item.idx+'" />';
 				  var TypeImg=item.TypeImg;
 				  var itemImage='<img src="images/' + TypeImg + '.png" width="16" height="16">';
-				  if ((TypeImg.indexOf("lightbulb")==0)||(TypeImg.indexOf("dimmer")==0)) {
+				  if (TypeImg.indexOf("Alert")==0) {
+									itemImage='<img src="images/Alert48_' + item.Level + '.png" width="16" height="16">';
+				  }
+				  else if ((TypeImg.indexOf("lightbulb")==0)||(TypeImg.indexOf("dimmer")==0)) {
 									if (
 											(item.Status == 'On')||
 											(item.Status == 'Chime')||
@@ -325,8 +328,8 @@ define(['app'], function (app) {
 				  else if (typeof item.Rain != 'undefined') {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowRainLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
-				  else if (item.Type == "Energy") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType == "kWh")) {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLogSpline(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
 				  }
 				  else if (item.Type == "Air Quality") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowAirQualityLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
@@ -349,7 +352,7 @@ define(['app'], function (app) {
 				  else if (item.SubType == "Barometer") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowBaroLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
-				  else if (item.SubType == "Text") {
+				  else if ((item.SubType == "Text") || (item.SubType == "Alert")) {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTextLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
 				  }
 				  else if (item.SubType == "Soil Moisture") {

@@ -132,10 +132,10 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="5">
-      <Group index="1" max_associations="5" label="Input 1" auto="true"/>
-      <Group index="2" max_associations="5" label="Input 2" auto="true" />
-      <Group index="3" max_associations="5" label="Input 3" auto="true"/>
-      <Group index="4" max_associations="5" label="Input 4" auto="true"/>
+      <Group index="1" max_associations="5" label="Input 1"/>
+      <Group index="2" max_associations="5" label="Input 2"/>
+      <Group index="3" max_associations="5" label="Input 3"/>
+      <Group index="4" max_associations="5" label="Input 4"/>
       <Group index="5" max_associations="1" label="Controller Updates" auto="true"/>
     </Associations>
   </CommandClass>

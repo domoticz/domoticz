@@ -15,6 +15,7 @@ css/ui-darkness/jquery-ui.min.css
 secpanel/css/font.less
 secpanel/css/reset.less
 secpanel/css/style.less
+css/remote.css
 
 # Fonts
 css/fonts/Oswald-Light.eot
@@ -410,6 +411,8 @@ i18n/domoticz-pl.json
 i18n/domoticz-pt.json
 i18n/domoticz-ru.json
 i18n/domoticz-sk.json
+i18n/domoticz-sl.json
+i18n/domoticz-sr.json
 i18n/domoticz-sv.json
 i18n/domoticz-tr.json
 

@@ -44,6 +44,7 @@ public:
 	void HeartbeatCheck();
 
 	void SetVerboseLevel(eVerboseLevel Level);
+  eVerboseLevel GetVerboseLevel();
 	void SetWebserverAddress(const std::string &Address);
 	void SetWebserverPort(const std::string &Port);
 	std::string GetWebserverAddress();
@@ -91,6 +92,7 @@ public:
 				const _eHardwareTypes Type,
 				const std::string &Address, const unsigned short Port, const std::string &SerialPort,
 				const std::string &Username, const std::string &Password, 
+				const std::string &Filename,
 				const int Mode1,
 				const int Mode2,
 				const int Mode3,

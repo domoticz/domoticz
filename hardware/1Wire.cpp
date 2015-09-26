@@ -412,8 +412,12 @@ void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float tempera
 void C1Wire::ReportLightState(const std::string& deviceId,int unit,bool state)
 {
 // check - is state changed ?
+	char num[16];
+	sprintf(num, "%s/%d", deviceId.c_str(), unit);
+	const std::string id(num);
+
 	std::map<std::string, bool>::iterator it;
-	it = m_LastSwitchState.find(deviceId);
+	it = m_LastSwitchState.find(id);
 	if (it != m_LastSwitchState.end())
 	{
 		if (it->second == state)
@@ -421,7 +425,7 @@ void C1Wire::ReportLightState(const std::string& deviceId,int unit,bool state)
 			return;
 		}
 	}
-	m_LastSwitchState[deviceId] = state;
+	m_LastSwitchState[id] = state;
 
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);

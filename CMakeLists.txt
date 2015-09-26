@@ -196,6 +196,7 @@ hardware/KMTronicSerial.cpp
 hardware/KMTronicTCP.cpp
 hardware/Kodi.cpp
 hardware/Limitless.cpp
+hardware/LogitechMediaServer.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
@@ -255,6 +256,7 @@ notifications/NotificationHelper.cpp
 notifications/NotificationHTTP.cpp
 notifications/NotificationKodi.cpp
 notifications/NotificationNma.cpp
+notifications/NotificationPushbullet.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
 notifications/NotificationPushalot.cpp
@@ -442,7 +444,11 @@ else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
-target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
+IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
+else()
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
+ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
 

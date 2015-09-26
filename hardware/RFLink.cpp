@@ -13,7 +13,9 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 
-#define ENABLE_LOGGING
+#ifdef _DEBUG
+	#define ENABLE_LOGGING
+#endif
 
 #define RFLINK_RETRY_DELAY 30
 
@@ -36,7 +38,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "SelectPlus", sSwitchTypeSelectPlus }, // p70
 	{ "Byron", sSwitchTypeByronSX },         // p72
 	{ "Byron MP", sSwitchTypeByronMP001 },   // p74
-	{ "Deltronic", sSwitchTypeSelectPlus3 }, // p73
+	{ "Doorbell", sSwitchTypeSelectPlus3 },  // p73  
 	{ "X10", sSwitchTypeX10 },               // p9
 	{ "EMW100", sSwitchTypeEMW100 },         // p13
 	{ "EMW200", sSwitchTypeEMW200 },         // p-
@@ -53,8 +55,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Philips", sSwitchTypePhilips },       // p-
 	{ "Energenie", sSwitchTypeEnergenie },   // p-
 	{ "Energenie5", sSwitchTypeEnergenie5 }, // p-
-	{ "Ikea Koppla", sSwitchTypeKoppla },    // p-
-	{ "TRC02RGB", sSwitchTypeTRC02 },        // p-
+	{ "Ikea Koppla", sSwitchTypeKoppla },    // p14
+	{ "TRC02RGB", sSwitchTypeTRC02 },        // p10
 	{ "TRC022RGB", sSwitchTypeTRC02_2 },     // p-
 	{ "Livolo", sSwitchTypeLivolo },         // p-
 	{ "Livolo App", sSwitchTypeLivoloAppliance }, // p-
@@ -68,7 +70,12 @@ const _tRFLinkStringIntHelper rfswitches[] =
     { "SilverCrest", sSwitchTypeSilvercrest }, // p75
     { "Mertik", sSwitchTypeMertik },         // p82
     { "HomeConfort", sSwitchTypeHomeConfort }, // p11
-    { "", -1 }
+	{ "HT12E", sSwitchTypeHT12E },           // p60
+	{ "EV1527", sSwitchTypeEV1527 },         // p61
+	{ "Elmes", sSwitchTypeElmes },           // p65
+	{ "Aster", sSwitchTypeAster },           // p17
+	{ "Sartano", sSwitchTypeSartano },           // p17
+	{ "", -1 }
 };
 
 const _tRFLinkStringIntHelper rfswitchcommands[] =
@@ -77,6 +84,8 @@ const _tRFLinkStringIntHelper rfswitchcommands[] =
 	{ "OFF", gswitch_sOff },
 	{ "ALLON", gswitch_sGroupOn },
 	{ "ALLOFF", gswitch_sGroupOff },
+	{ "DIM", gswitch_sDim },
+	{ "BRIGHT", gswitch_sBright },
 	{ "", -1 }
 };
 
@@ -121,21 +130,7 @@ CRFLink::CRFLink(const int ID, const std::string& devname)
 	ParseLine("20;31;Mebus;ID=c201;TEMP=00cf;");
 	ParseLine("20;32;Auriol;ID=008f;TEMP=00d3;BAT=OK;");
 	ParseLine("20;AF;SelectPlus;ID=1bb4;CHIME=01;");
-	ParseLine("20;12;Pir;ID=aa66;PIR=ON;");
-	ParseLine("20;63;SmokeAlert;ID=1234;SMOKEALERT=ON;");
-	ParseLine("20;06;Kaku;ID=41;SWITCH=A1;CMD=ON;");
-	ParseLine("20;0C;Kaku;ID=41;SWITCH=A2;CMD=OFF;");
-	ParseLine("20;0D;Kaku;ID=41;SWITCH=A2;CMD=ON;");
-	ParseLine("20;46;Kaku;ID=44;SWITCH=D4;CMD=OFF;");
-	ParseLine("20;3A;NewKaku;ID=c142;SWITCH=1;CMD=ALLOFF;");
-	ParseLine("20;3B;NewKaku;ID=c142;SWITCH=3;CMD=OFF;");
-	ParseLine("20;0C;HomeEasy;ID=7900b200;SWITCH=0b;CMD=ALLON;");
-	ParseLine("20;AD;FA500;ID=0d00b900;SWITCH=0001;CMD=UNKOWN;");
-	ParseLine("20;AE;FA500;ID=0a01;SWITCH=0a01;CMD=OFF;");
-	ParseLine("20;03;Eurodomest;ID=03696b;SWITCH=00;CMD=OFF;");
 	ParseLine("20;04;Eurodomest;ID=03696b;SWITCH=07;CMD=ALLOFF;");
-	ParseLine("20;03;Cresta;ID=9701;WINDIR=009d;WINSP=0001;WINGS=0000;WINCHL=003d;");
-	ParseLine("20;02;FA20RF;ID=67f570;SMOKEALERT=ON;");
 	*/
 }
 
@@ -201,14 +196,14 @@ void CRFLink::Do_Work()
 			}
 			if (isOpen())
 			{
-				if (sec_counter % 10 == 0)
+				if (sec_counter % 20 == 0)
 				{
 					//Send ping (keep alive)
 					time_t atime = mytime(NULL);
-					if (atime - m_LastReceivedTime > 15)
+					if (atime - m_LastReceivedTime > 30)
 					{
 						//Timeout
-						_log.Log(LOG_ERROR, "RFLink: Not received anything for more then 15 seconds, restarting...");
+						_log.Log(LOG_ERROR, "RFLink: Not received anything for more then 30 seconds, restarting...");
 						m_retrycntr = (RFLINK_RETRY_DELAY-3) * 5;
 						m_LastReceivedTime = atime;
 						try {
@@ -496,7 +491,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	{
 		//Status reply
 		std::string Name_ID = results[2];
-		if (Name_ID.find("Nodo RadioFrequencyLink") != std::string::npos)
+		if ((Name_ID.find("Nodo RadioFrequencyLink") != std::string::npos) || (Name_ID.find("RFLink Gateway") != std::string::npos))
 		{
 			_log.Log(LOG_STATUS, "RFLink: Controller Initialized!...");
 			//Enable DEBUG
@@ -504,6 +499,12 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 			//Enable Undecoded DEBUG
 			//write("10;RFUDEBUG=ON;\n");
+			return true;
+		}
+		if (Name_ID.find("PONG") != std::string::npos) {
+			//_log.Log(LOG_STATUS, "RFLink: PONG received!...");
+            mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
+            m_bTXokay = true; // variable to indicate an OK was received
 			return true;
 		}
 		if (Name_ID.find("OK") != std::string::npos) {
@@ -558,7 +559,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	bool bHaveMeter = false; float meter = 0;   
 	bool bHaveVoltage = false; float voltage = 0;   
 	bool bHaveCurrent = false; float current = 0;   
-    
+	bool bHaveImpedance = false; float impedance = 0;   
 	bool bHaveSwitch = false; int switchunit = 0; 
 	bool bHaveSwitchCmd = false; std::string switchcmd = ""; int switchlevel = 0;
 
@@ -718,7 +719,12 @@ bool CRFLink::ParseLine(const std::string &sLine)
 			bHaveCurrent = true;
 			current = float(iTemp) / 10.0f;
 		}
-
+		else if (results[ii].find("IMPEDANCE") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveCurrent = true;
+			current = float(iTemp) / 10.0f;
+		}
 		else if (results[ii].find("SWITCH") != std::string::npos)
 		{
 			bHaveSwitch = true;
@@ -766,7 +772,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveUV)
 	{
-  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv);
+  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, "UV");
 	}
     
 	if (bHaveRain)
@@ -813,15 +819,15 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveKWatt)
 	{
-		SendKwhMeter(Node_ID, Child_ID, BatteryLevel, kwatt / 1000.0f, kwatt, "Meter");
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, kwatt / 1000.0f, kwatt, "Meter");
 	}
 	if (bHaveWatt)
 	{
-		SendKwhMeter(Node_ID, Child_ID, BatteryLevel, 0, watt, "Meter");
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, 0, watt, "Meter");
 	}
 	if (bHaveDistance)
 	{
-		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance);
+		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance, "Distance");
 	}
 	if (bHaveMeter)
 	{
@@ -835,7 +841,10 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	{
 		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, "Current");
 	}
-    
+	if (bHaveImpedance)
+	{
+		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, "Impedance");
+	}
 	if (bHaveSwitch && bHaveSwitchCmd)
 	{
 		std::string switchType = results[2];
