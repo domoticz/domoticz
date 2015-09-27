@@ -11655,7 +11655,7 @@ namespace http {
 						if (bHaveUsage == false)
 							method = 0;
 
-						int iDisplayInPower = 0;
+						int iDisplayInPower = 1;
 						m_sql.GetPreferencesVar("DisplayPowerUsageInkWhGraph", iDisplayInPower);
 						if (!iDisplayInPower)
 						{
