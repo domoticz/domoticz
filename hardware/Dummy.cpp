@@ -79,6 +79,9 @@ namespace http {
 
 			std::string devname;
 
+			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
+			m_sql.m_bAcceptNewHardware = true;
+
 			switch (iSensorType)
 			{
 			case 1:
@@ -280,6 +283,9 @@ namespace http {
 				bCreated = true;
 				break;
 			}
+
+			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
+
 			if (bCreated)
 			{
 				root["status"] = "OK";
