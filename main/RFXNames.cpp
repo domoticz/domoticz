@@ -267,10 +267,10 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_RPM, "RPM", "Z" },
 		{ NTYPE_DEWPOINT, "Dew Point", "D" },
 		{ NTYPE_SETPOINT, "Set Point", "N" },
-		{ NTYPE_VIDEO, "Video", "V" },
-		{ NTYPE_AUDIO, "Audio", "A" },
-		{ NTYPE_PHOTO, "Photo", "X" },
-		{ NTYPE_PAUSED, "Paused", "Y" },
+		{ NTYPE_VIDEO, "Play Video", "V" },
+		{ NTYPE_AUDIO, "Play Audio", "A" },
+		{ NTYPE_PHOTO, "View Photo", "X" },
+		{ NTYPE_PAUSED, "Pause Stream", "Y" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)

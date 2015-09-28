@@ -156,7 +156,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	m_IP = pIP;
 	int iPort = atoi(pPort.c_str());
 	m_Port = (iPort > 0) ? iPort : 9090;
-	m_iTimeoutSec = pTimeoutMs / 1000;
+	m_iTimeoutCnt = (pTimeoutMs > 999) ? pTimeoutMs / 1000 : pTimeoutMs;
 	m_iPollIntSec = PollIntervalsec;
 	m_iMissedPongs = 0;
 
@@ -525,8 +525,8 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 	{
 		if (e.value() != 1236)		// local disconnect cause by hardware reload
 		{
-			if (e.value() != 121)	// Semaphore tieout expiry aka 'lost contact'
-				_log.Log(LOG_ERROR, "Kodi: (%s) Async Read Exception: %s", m_Name.c_str(), e.message().c_str());
+			if ((e.value() != 2) && (e.value() != 121))	// Semaphore tmieout expiry or end of file aka 'lost contact'
+				_log.Log(LOG_ERROR, "Kodi: (%s) Async Read Exception: %d, %s", m_Name.c_str(), e.value(), e.message().c_str());
 			m_CurrentStatus.Clear();
 			m_CurrentStatus.Status(MSTAT_OFF);
 			UpdateStatus();
@@ -590,12 +590,11 @@ void CKodiNode::Do_Work()
 				else
 				{
 					sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"JSONRPC.Ping\",\"id\":1}";
-					if (m_iMissedPongs++ > 3)
+					if (m_iMissedPongs++ > m_iTimeoutCnt)
 					{
-						m_CurrentStatus.Clear();
-						m_CurrentStatus.Status(MSTAT_OFF);
-						UpdateStatus();
-						handleDisconnect();
+						_log.Log(LOG_NORM, "Kodi: (%s) Missed %d pings, assumed off.", m_Name.c_str(), m_iTimeoutCnt);
+						boost::system::error_code	ec;
+						m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 						continue;
 					};
 				}
@@ -672,12 +671,13 @@ void CKodiNode::SendCommand(const std::string &command)
 
 bool CKodiNode::SendShutdown()
 {
-	//	http://<ip_address>:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22System.GetProperties%22,%22params%22:{%22properties%22:[%22canreboot%22,%22canhibernate%22,%22cansuspend%22,%22canshutdown%22]},%22id%22:1}
 	//		{"id":1,"jsonrpc":"2.0","result":{"canhibernate":false,"canreboot":false,"canshutdown":false,"cansuspend":false}}
 
 	std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":4}";
 	handleWrite(sMessage);
 
+	if (m_Stoppable) _log.Log(LOG_NORM, "Kodi: (%s) Shutdown requested and is supported.", m_Name.c_str());
+	else 			 _log.Log(LOG_NORM, "Kodi: (%s) Shutdown requested but is probably not supported.", m_Name.c_str());
 	return m_Stoppable;
 }
 
@@ -749,6 +749,7 @@ void CKodi::Do_Work()
 			boost::lock_guard<boost::mutex> l(m_mutex);
 
 			scounter = 0;
+			bool bWorkToDo = false;
 			std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
 			for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 			{
@@ -758,9 +759,10 @@ void CKodi::Do_Work()
 					boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
 					m_ios.stop();
 				}
+				if ((*itt)->IsOn()) bWorkToDo = true;
 			}
 
-			if (m_ios.stopped())  // make sure that there is a boost thread to service i/o operations
+			if (bWorkToDo && m_ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				m_ios.reset();
 				// Note that this is the only thread that handles async i/o so we don't
