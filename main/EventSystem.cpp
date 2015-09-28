@@ -2477,7 +2477,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			sound = aParam[3];
 		}
 		if (aParam.size() > 4) {
-			extraData = "|User=" + aParam[4];
+			extraData = "|Device=" + aParam[4];
 		}
 		SendEventNotification(subject, body, extraData, atoi(priority.c_str()), sound);
 		scriptTrue = true;
