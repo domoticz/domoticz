@@ -35,6 +35,7 @@ public:
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
 	void Restart();
 	void SendCommand(const int ID, const std::string &command);
+	void SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration);
 private:
 	void Do_Work();
 	void GetPlayerInfo();

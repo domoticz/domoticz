@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "../main/Logger.h"
 #include "NotificationLogitechMediaServer.h"
+#include "../hardware/LogitechMediaServer.h"
+#include "../main/mainworker.h"
 #include "../main/Helper.h"
 #include "../main/RFXNames.h"
-#include "../httpclient/HTTPClient.h"
 
 CNotificationLogitechMediaServer::CNotificationLogitechMediaServer() : CNotificationBase(std::string("lms"), OPTIONS_NONE)
 {
@@ -26,22 +27,18 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(const std::stri
 		sSubject = Subject;
 	}
 
+	//find hardware, if exist; otherwise disable notifications
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
+	CLogitechMediaServer* pLMS = dynamic_cast<CLogitechMediaServer*>(pHardware);
+	
 	// Loop through semi-colon separated IP Addresses
 	std::vector<std::string> results;
 	StringSplit(_PlayerIP, ";", results);
+
 	for (int i = 0; i < (int)results.size(); i++)
 	{
-		std::stringstream logline;
 		std::string sPlayerId = results[i];
-		std::string sPower = "0";
-
-		logline << "Lms Notification (" << sPlayerId << "): " << sSubject << ", " << Text;
-		_log.Log(LOG_NORM, "%s", logline.str().c_str());
-
-		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"power\",\"" + sPower + "\"]]}";
-
-		Json::Value root = Query(_ServerIP, _ServerPort, sPostdata);
-
+		pLMS->SendText(sPlayerId, sSubject, Text, _Duration);
 	}
 	return true;
 }
@@ -49,36 +46,4 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(const std::stri
 bool CNotificationLogitechMediaServer::IsConfigured()
 {
 	return (!_PlayerIP.empty());
-}
-
-Json::Value CNotificationLogitechMediaServer::Query(std::string sIP, int iPort, std::string sPostdata)
-{
-	Json::Value root;
-	std::vector<std::string> ExtraHeaders;
-	std::string sResult;
-	std::stringstream sURL;
-	std::stringstream sPostData;
-
-	sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
-	sPostData << sPostdata;
-	HTTPClient::SetTimeout(2);
-	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
-
-	if (!bRetVal)
-	{
-		return root;
-	}
-	Json::Reader jReader;
-	bRetVal = jReader.parse(sResult, root);
-	if (!bRetVal)
-	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
-		return root;
-	}
-	if (root["method"].empty())
-	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: '%s' request '%s'", sURL.str().c_str(), sPostData.str().c_str());
-		return root;
-	}
-	return root["result"];
 }

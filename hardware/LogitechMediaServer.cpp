@@ -555,6 +555,21 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 	}
 }
 
+
+void CLogitechMediaServer::SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration)
+{
+	if ((playerIP != "") && (text != ""))
+	{
+		std::string sLine1 = subject;
+		std::string sLine2 = text;
+		std::string sFont = "huge";
+		std::string sBrightness = "4";
+		std::string sDuration = std::to_string(duration);
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";
+		Json::Value root = Query(m_IP, m_Port, sPostdata);
+	}
+}
+
 //Webserver helpers
 namespace http {
 	namespace server {
