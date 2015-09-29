@@ -6671,6 +6671,12 @@ namespace http {
 							unsigned char scenetype = atoi(sd[5].c_str());
 							int iProtected = atoi(sd[6].c_str());
 
+							std::string sSceneName = sd[1];
+							if (!bDisplayHidden && sSceneName[0] == '$')
+							{
+								continue;
+							}
+
 							if (scenetype == 0)
 							{
 								root["result"][ii]["Type"] = "Scene";
@@ -6682,7 +6688,7 @@ namespace http {
 								root["result"][ii]["TypeImg"] = "group";
 							}
 							root["result"][ii]["idx"] = sd[0];
-							root["result"][ii]["Name"] = sd[1];
+							root["result"][ii]["Name"] = sSceneName;
 							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
@@ -6811,11 +6817,11 @@ namespace http {
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
-						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
-						"FROM DeviceStatus as A, SharedDevices as B LEFT OUTER JOIN DeviceToPlansMap as C "
-						"ON (C.DeviceRowID==a.ID) "
-						"WHERE (B.SharedUserID==%lu) AND (A.ID=='%q')",
+						" A.StrParam2, A.Protected, 0 as XOffset,"
+						" 0 as YOffset, 0 as PlanID, A.Description "
+						"FROM DeviceStatus as A, SharedDevices as B "
+						"WHERE (B.DeviceRowID==a.ID)"
+						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
 						m_users[iUser].ID, rowid.c_str());
 				}
 				else if ((planID != "") && (planID != "0"))
@@ -6874,16 +6880,17 @@ namespace http {
 					sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 					//_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					result = m_sql.safe_query(
-						"SELECT DISTINCT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
+						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
 						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
-						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
-						"FROM DeviceStatus as A LEFT OUTER JOIN SharedDevices as B, DeviceToPlansMap as C "
-						"ON (C.DeviceRowID==a.ID) AND (B.SharedUserID==%lu) ORDER BY %s",
+						" A.StrParam2, A.Protected, 0 as XOffset,"
+						" 0 as YOffset, 0 as PlanID, A.Description "
+						"FROM DeviceStatus as A, SharedDevices as B "
+						"WHERE (B.DeviceRowID==a.ID)"
+						" AND (B.SharedUserID==%lu) ORDER BY %s",
 						m_users[iUser].ID, szOrderBy);
 				}
 			}
