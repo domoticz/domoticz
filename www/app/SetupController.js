@@ -133,9 +133,14 @@ define(['app'], function (app) {
 				extraparams = 'KodiIPAddress=' + $("#koditable #KodiIPAddress").val() + '&KodiPort=' + $("#koditable #KodiPort").val() + "&KodiTimeToLive=" + $("#koditable #KodiTimeToLive").val();
 				break;
 			case "lms":
-				if (($("#lmstable #LmsServerPort").val() == "") || !$.isNumeric($("#lmstable #LmsServerPort").val())) $("#lmstable #LmsServerPort").val("9000");
 				if (($("#lmstable #LmsDuration").val() == "") || !$.isNumeric($("#lmstable #LmsDuration").val())) $("#lmstable #LmsDuration").val("5");
-				extraparams = 'LmsServerIP=' + $("#lmstable #LmsServerIP").val() + '&LmsServerPort=' + $("#lmstable #LmsServerPort").val() + 'LmsPlayerIP=' + $("#lmstable #LmsPlayerIP").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
+				var LmsPlayerIP=encodeURIComponent($("#lmstable #LmsPlayerIP").val());
+				var LmsDuration=encodeURIComponent($("#lmstable #LmsDuration").val());
+				if (LmsPlayerIP=="" || LmsDuration=="") {
+					ShowNotify($.t('All Logitech Media Server fields are required!...'), 3500, true);
+					return;
+				}
+				extraparams = 'LmsPlayerIP=' + $("#lmstable #LmsPlayerIP").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
 				break;
 			default:
 				return;
@@ -147,7 +152,7 @@ define(['app'], function (app) {
 				success: function(data) {
 					if (data.status != "OK") {
 						HideNotify();
-						if ((subsystem=="http") || (subsystem=="kodi")) {
+						if ((subsystem=="http") || (subsystem=="kodi") || (subsystem=="lms")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
 						}
 						else {
@@ -316,13 +321,6 @@ define(['app'], function (app) {
 
 			  if (typeof data.LmsEnabled != 'undefined') {
   				$("#lmstable #LmsEnabled").prop('checked',data.LmsEnabled==1);
-			  }
-			  if (typeof data.LmsServerIP != 'undefined') {
-				$("#lmstable #LmsServerIP").val(data.LmsServerIP);
-			  }
-			  $("#lmstable #LmsServerPort").val("9000");
-			  if (typeof data.LmsServerPort != 'undefined') {
-				$("#lmstable #LmsServerPort").val(data.LmsServerPort);
 			  }
 			  if (typeof data.LmsPlayerIP != 'undefined') {
 				$("#lmstable #LmsPlayerIP").val(data.LmsPlayerIP);

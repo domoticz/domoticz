@@ -9,8 +9,6 @@
 CNotificationLogitechMediaServer::CNotificationLogitechMediaServer() : CNotificationBase(std::string("lms"), OPTIONS_NONE)
 {
 	SetupConfig(std::string("LmsEnabled"), &m_IsEnabled);
-	SetupConfig(std::string("LmsServerIP"), _ServerIP);
-	SetupConfig(std::string("LmsServerPort"), &_ServerPort);
 	SetupConfig(std::string("LmsPlayerIP"), _PlayerIP);
 	SetupConfig(std::string("LmsDuration"), &_Duration);
 }
@@ -27,10 +25,16 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(const std::stri
 		sSubject = Subject;
 	}
 
-	//find hardware, if exist; otherwise disable notifications
 	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
 	CLogitechMediaServer* pLMS = dynamic_cast<CLogitechMediaServer*>(pHardware);
-	
+
+	if (pHardware == NULL) {
+		std::stringstream logline;
+		logline << "Error sending notification: 'Logitech Media Server' not found in Hardware-list";
+		_log.Log(LOG_ERROR, "%s", logline.str().c_str());
+		return false;
+	}
+
 	// Loop through semi-colon separated IP Addresses
 	std::vector<std::string> results;
 	StringSplit(_PlayerIP, ";", results);

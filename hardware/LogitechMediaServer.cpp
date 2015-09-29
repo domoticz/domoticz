@@ -3,6 +3,7 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../notifications/NotificationHelper.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../main/localtime_r.h"
@@ -78,6 +79,18 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 		return root;
 	}
 	return root["result"];
+}
+
+_eNotificationTypes	CLogitechMediaServer::NotificationType(_eMediaStatus nStatus)
+{
+	switch (nStatus)
+	{
+	case MSTAT_OFF:		return NTYPE_SWITCH_OFF;
+	case MSTAT_ON:		return NTYPE_SWITCH_ON;
+	case MSTAT_PAUSED:	return NTYPE_PAUSED;
+	case MSTAT_AUDIO:	return NTYPE_AUDIO;
+	default:			return NTYPE_SWITCH_OFF;
+	}
 }
 
 bool CLogitechMediaServer::StartHardware()
@@ -171,6 +184,12 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 					{
 						m_sql.HandleOnOffAction(bPingOK, result[0][0], result[0][1]);
 					}
+				}
+
+				// 4:   Trigger Notifications & events on status change
+				if (itt->nStatus != nStatus)
+				{
+					m_notifications.CheckAndHandleNotification(itt->ID, itt->Name, NotificationType(nStatus), sStatus.c_str());
 				}
 
 				itt->nStatus = nStatus;
@@ -558,11 +577,11 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 
 void CLogitechMediaServer::SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration)
 {
-	if ((playerIP != "") && (text != ""))
+	if ((playerIP != "") && (text != "") && (duration > 0))
 	{
 		std::string sLine1 = subject;
 		std::string sLine2 = text;
-		std::string sFont = "huge";
+		std::string sFont = ""; //"huge";
 		std::string sBrightness = "4";
 		std::string sDuration = std::to_string(duration);
 		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";

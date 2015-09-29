@@ -4321,22 +4321,37 @@ namespace http {
 					}
 					if (switchtype == STYPE_Media)
 					{
-						root["result"][ii]["val"] = NTYPE_VIDEO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
+						std::string idx = m_pWebEm->FindValue("idx");
+						std::vector<std::vector<std::string> > result;
+						_eHardwareTypes type;
+
+						result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
+						if (result.size() == 1) {
+							std::string hdwid = result[0][0];
+							CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hdwid.c_str()));
+							if (pBaseHardware != NULL) {
+								type = pBaseHardware->HwdType;
+							}
+						}
+
+						root["result"][ii]["val"] = NTYPE_PAUSED;
+						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
+						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
 						ii++;
 						root["result"][ii]["val"] = NTYPE_AUDIO;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
 						ii++;
-						root["result"][ii]["val"] = NTYPE_PHOTO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
-						ii++;
-						root["result"][ii]["val"] = NTYPE_PAUSED;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
-						ii++;
+						if (type == HTYPE_Kodi) {
+							root["result"][ii]["val"] = NTYPE_VIDEO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
+							ii++;
+							root["result"][ii]["val"] = NTYPE_PHOTO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
+							ii++;
+						}
 					}
 				}
 				if (
