@@ -461,7 +461,7 @@ bool CPhilipsHue::GetLightStates()
 	std::string sResult;
 
 #ifdef DEBUG_PhilipsHue
-	sResult= ReadFile("E:\\philipshue.jon");
+	sResult= ReadFile("E:\\philipshue.json");
 #else
 	std::stringstream sstr2;
 	sstr2 << "http://" << m_IPAddress
@@ -476,7 +476,7 @@ bool CPhilipsHue::GetLightStates()
 	}
 #endif
 #ifdef DEBUG_PhilipsHue2
-	SaveString2Disk(sResult, "E:\\philipshue.jon");
+	SaveString2Disk(sResult, "E:\\philipshue.json");
 #endif
 
 	Json::Value root;
@@ -489,7 +489,7 @@ bool CPhilipsHue::GetLightStates()
 		return false;
 	}
 
-	if (sResult.find("error") != std::string::npos)
+	if (sResult.find("\"error\":") != std::string::npos)
 	{
 		//We had an error
 		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root[0]["error"]["description"].asString().c_str());
@@ -498,6 +498,7 @@ bool CPhilipsHue::GetLightStates()
 
 	if (sResult.find("lights") == std::string::npos)
 	{
+		//_log.Log(LOG_ERROR, "Philips Hue: No Lights found!");
 		return false;
 	}
 

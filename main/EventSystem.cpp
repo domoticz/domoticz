@@ -2463,23 +2463,23 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
 		std::string subject(""), body(""), priority("0"), sound("");
+		std::string extraData("");
 		std::vector<std::string> aParam;
 		StringSplit(luaString, "#", aParam);
 		subject = body = aParam[0];
-		if (aParam.size() > 1)
-		{
+		if (aParam.size() > 1) {
 			body = aParam[1];
 		}
-		if (aParam.size() == 3)
-		{
+		if (aParam.size() > 2) {
 			priority = aParam[2];
 		}
-		else if (aParam.size() == 4)
-		{
-			priority = aParam[2];
+		if (aParam.size() > 3) {
 			sound = aParam[3];
 		}
-		SendEventNotification(subject, body, std::string(""), atoi(priority.c_str()), sound);
+		if (aParam.size() > 4) {
+			extraData = "|Device=" + aParam[4];
+		}
+		SendEventNotification(subject, body, extraData, atoi(priority.c_str()), sound);
 		scriptTrue = true;
 	}
 	else if (std::string(lua_tostring(lua_state, -2)) == "SendEmail") {

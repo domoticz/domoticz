@@ -196,6 +196,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Kodi, "Kodi Media Server" },
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
 		{ HTYPE_SatelIntegra, "Satel Integra via LAN interface" },
+		{ HTYPE_LogitechMediaServer, "Logitech Media Server" },
   		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -266,10 +267,10 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_RPM, "RPM", "Z" },
 		{ NTYPE_DEWPOINT, "Dew Point", "D" },
 		{ NTYPE_SETPOINT, "Set Point", "N" },
-		{ NTYPE_VIDEO, "Video", "V" },
-		{ NTYPE_AUDIO, "Audio", "A" },
-		{ NTYPE_PHOTO, "Photo", "X" },
-		{ NTYPE_PAUSED, "Paused", "Y" },
+		{ NTYPE_VIDEO, "Play Video", "V" },
+		{ NTYPE_AUDIO, "Play Audio", "A" },
+		{ NTYPE_PHOTO, "View Photo", "X" },
+		{ NTYPE_PAUSED, "Pause Stream", "Y" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -1178,8 +1179,10 @@ void GetLightStatus(
 		// Determine max dim level based on switch type
 		maxDimLevel=(dSubType != sTypeZWaveSwitch) ? 15 : 100;
 
-		// Calculate % that the light is currently on, taking the maxdimlevel into account.
-		llevel=(int)float((100.0f/float(maxDimLevel))*atof(sValue.c_str()));
+		if (switchtype != STYPE_Media) {
+			// Calculate % that the light is currently on, taking the maxdimlevel into account.
+			llevel=(int)float((100.0f/float(maxDimLevel))*atof(sValue.c_str()));
+		}
 
 		// Fill in other parameters
 		switch (dSubType)
