@@ -19,14 +19,16 @@ bool CNotificationPushover::SendMessageImplementation(const std::string &Subject
 	std::string sResult;
 	std::stringstream sPostData;
 
-	//override token if keyword 'Token' is found in ExtraData
+	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << Subject << "&message=" << Text;
+
 	size_t posDevice = ExtraData.find("|Device=");
 	if (posDevice != std::string::npos) {
 		posDevice += 8;
-		_apikey = ExtraData.substr(posDevice, ExtraData.find("|", posDevice) - posDevice);
+		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find("|", posDevice) - posDevice);
+		if (sDevice != "") {
+			sPostData << "&device=" << sDevice;
+		}
 	}
-
-	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << Subject << "&message=" << Text;
 
 	if (Sound != "") {
 		sPostData << "&sound=" << Sound;

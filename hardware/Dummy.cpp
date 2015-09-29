@@ -231,6 +231,15 @@ namespace http {
 				bCreated = true;
 			}
 			break;
+			case 19:
+				//Current (Single)
+			{
+				std::string rID = std::string(ID);
+				padLeft(rID, 8, '0');
+				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeCurrent, 12, 255, 0, "6.4", devname);
+				bCreated = true;
+			}
+			break;
 			case pTypeLimitlessLights:
 				//RGB switch
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
@@ -265,6 +274,8 @@ namespace http {
 				bCreated = true;
 				break;
 			case pTypeRFXMeter:
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeRFXMeter, sTypeRFXMeterCount, 10, 255, 0, "0", devname);
+				bCreated = true;
 				break;
 			case pTypeAirQuality:
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 12, 255, 0, devname);
