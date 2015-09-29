@@ -6656,6 +6656,12 @@ namespace http {
 							unsigned char scenetype = atoi(sd[5].c_str());
 							int iProtected = atoi(sd[6].c_str());
 
+							std::string sSceneName = sd[1];
+							if (!bDisplayHidden && sSceneName[0] == '$')
+							{
+								continue;
+							}
+
 							if (scenetype == 0)
 							{
 								root["result"][ii]["Type"] = "Scene";
@@ -6667,7 +6673,7 @@ namespace http {
 								root["result"][ii]["TypeImg"] = "group";
 							}
 							root["result"][ii]["idx"] = sd[0];
-							root["result"][ii]["Name"] = sd[1];
+							root["result"][ii]["Name"] = sSceneName;
 							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
