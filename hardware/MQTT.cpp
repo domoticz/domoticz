@@ -486,6 +486,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		int dSubType = atoi(sd[4].c_str());
 		int nvalue = atoi(sd[5].c_str());
 		std::string svalue = sd[6];
+		_eSwitchType switchType = (_eSwitchType)atoi(sd[7].c_str());
 		int RSSI = atoi(sd[8].c_str());
 		int BatteryLevel = atoi(sd[9].c_str());
 
@@ -497,6 +498,13 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		root["name"] = name;
 		root["dtype"] = RFX_Type_Desc(dType,1);
 		root["stype"] = RFX_Type_SubType_Desc(dType, dSubType);
+
+		// only devices appearing on the 'lights' page have a switch type
+		// where can we find if a device is a 'light' ?
+		if (dType == pTypeLighting2) {
+			root["switchType"] = Switch_Type_Desc(switchType);
+		}
+
 		root["RSSI"] = RSSI;
 		root["Battery"] = BatteryLevel;
 		root["nvalue"] = nvalue;
