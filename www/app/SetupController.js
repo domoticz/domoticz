@@ -417,6 +417,9 @@ define(['app'], function (app) {
 			  if (typeof data.SmartMeterType != 'undefined') {
 				$("#p1metertable #comboP1MeterType").val(data.SmartMeterType);
 			  }
+			  if (typeof data.DisplayPowerUsageInkWhGraph != 'undefined') {
+				$("#kwhshortlogtable #combokWhShotlogDisplay").val(data.DisplayPowerUsageInkWhGraph);
+			  }
 			  if (typeof data.EnableTabFloorplans != 'undefined') {
 				$("#activemenustable #EnableTabFloorplans").prop('checked',data.EnableTabFloorplans==1);
 			  }

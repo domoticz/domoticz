@@ -1,0 +1,32 @@
+.remotehoverable {
+	cursor: pointer;
+}
+.remotehoverable:hover {
+	cursor: pointer;
+	fill: #289fe3;
+}
+.remotedisabled {
+	pointer-events: none;
+	fill: #2e2e2e;
+}
+.remoteshadow {
+	fill: #393a39;
+	pointer-events: none;
+}
+.remotetext {
+	cursor: pointer;
+	text-anchor: middle;
+	dominant-baseline: middle;
+	fill: #393a39;
+	font-size: 180px;
+	font-family: sans-serif;
+	font-stretch: ultra-condensed ;
+	pointer-events: none;
+}
+.MediaRemote {
+	position:absolute;
+	top:0;
+	bottom:0;
+	left:0;
+	right:0;
+}
