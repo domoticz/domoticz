@@ -499,9 +499,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		root["dtype"] = RFX_Type_Desc(dType,1);
 		root["stype"] = RFX_Type_SubType_Desc(dType, dSubType);
 
-		// only devices appearing on the 'lights' page have a switch type
-		// where can we find if a device is a 'light' ?
-		if (dType == pTypeLighting2) {
+		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);
 		}
 

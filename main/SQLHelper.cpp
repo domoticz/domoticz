@@ -2324,33 +2324,10 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	if (devRowID == -1)
 		return -1;
 
-	bool bIsLightSwitch=false;
-	switch (devType)
+	if (!IsLightOrSwitch(devType, subType))
 	{
-	case pTypeLighting1:
-	case pTypeLighting2:
-	case pTypeLighting3:
-	case pTypeLighting4:
-	case pTypeLighting5:
-	case pTypeLighting6:
-	case pTypeLimitlessLights:
-	case pTypeSecurity1:
-	case pTypeSecurity2:
-	case pTypeCurtain:
-	case pTypeBlinds:
-	case pTypeRFY:
-	case pTypeThermostat2:
-	case pTypeThermostat3:
-	case pTypeRemote:
-	case pTypeGeneralSwitch:
-		bIsLightSwitch = true;
-		break;
-	case pTypeRadiator1:
-		bIsLightSwitch = (subType == sTypeSmartwaresSwitchRadiator);
-		break;
-	}
-	if (!bIsLightSwitch)
 		return devRowID;
+	}
 
 	//Get the ID of this device
 	std::vector<std::vector<std::string> > result,result2;
