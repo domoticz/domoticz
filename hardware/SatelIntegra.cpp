@@ -444,9 +444,8 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 		cmd[1] = (index != 255) ? (index + 1) : 0;
 		if (SendCommand(cmd, 2, buffer) > 0)
 		{
-			unsigned int temp;
-			sscanf(reinterpret_cast<const char*>(&buffer[2]), "%d", &temp);
-			ReportTemperature(index + 1, temp);
+			uint16_t* pTemp = reinterpret_cast<uint16_t*>(&buffer[2]);
+			ReportTemperature(index + 1, *pTemp);
 		}
 		else
 		{
