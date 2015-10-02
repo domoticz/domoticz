@@ -20,6 +20,7 @@
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
 #include "../hardware/Kodi.h"
+#include "../hardware/LogitechMediaServer.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -377,6 +378,10 @@ namespace http {
 			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1));
 			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1));
 			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1));
+
+			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1));
+			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1));
+			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1));
 
 			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1));
 			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1));
@@ -966,6 +971,9 @@ namespace http {
 			else if (htype == HTYPE_Kodi) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_LogitechMediaServer) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_RaspberryBMP085) {
 				//all fine here!
 			}
@@ -1058,6 +1066,11 @@ namespace http {
 				mode2 = 1000;
 			}
 			else if (htype == HTYPE_Kodi)
+			{
+				mode1 = 30;
+				mode2 = 1000;
+			}
+			else if (htype == HTYPE_LogitechMediaServer)
 			{
 				mode1 = 30;
 				mode2 = 1000;
@@ -1165,6 +1178,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_Kodi) {
+				//All fine here
+			}
+			else if (htype == HTYPE_LogitechMediaServer) {
 				//All fine here
 			}
 			else if (htype == HTYPE_RaspberryBMP085) {
@@ -3753,6 +3769,10 @@ namespace http {
 					if (pBaseHardware->HwdType == HTYPE_RFLINK) {
 						if (dtype == pTypeLighting1){
 							dtype = pTypeGeneralSwitch;
+							std::stringstream s_strid;
+							s_strid << std::hex << atoi(devid.c_str());
+							devid = s_strid.str();
+							devid = "000000" + devid;                            
 						}
 						else
 							if (dtype == pTypeLighting2){
@@ -6336,6 +6356,7 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
 			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
+			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(m_pWebEm->FindValue("DisplayPowerUsageInkWhGraph").c_str()));
 
 			std::string EnableTabFloorplans = m_pWebEm->FindValue("EnableTabFloorplans");
 			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
@@ -6639,6 +6660,12 @@ namespace http {
 							unsigned char scenetype = atoi(sd[5].c_str());
 							int iProtected = atoi(sd[6].c_str());
 
+							std::string sSceneName = sd[1];
+							if (!bDisplayHidden && sSceneName[0] == '$')
+							{
+								continue;
+							}
+
 							if (scenetype == 0)
 							{
 								root["result"][ii]["Type"] = "Scene";
@@ -6650,7 +6677,7 @@ namespace http {
 								root["result"][ii]["TypeImg"] = "group";
 							}
 							root["result"][ii]["idx"] = sd[0];
-							root["result"][ii]["Name"] = sd[1];
+							root["result"][ii]["Name"] = sSceneName;
 							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
@@ -6779,11 +6806,11 @@ namespace http {
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
-						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
-						"FROM DeviceStatus as A, SharedDevices as B LEFT OUTER JOIN DeviceToPlansMap as C "
-						"ON (C.DeviceRowID==a.ID) "
-						"WHERE (B.SharedUserID==%lu) AND (A.ID=='%q')",
+						" A.StrParam2, A.Protected, 0 as XOffset,"
+						" 0 as YOffset, 0 as PlanID, A.Description "
+						"FROM DeviceStatus as A, SharedDevices as B "
+						"WHERE (B.DeviceRowID==a.ID)"
+						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
 						m_users[iUser].ID, rowid.c_str());
 				}
 				else if ((planID != "") && (planID != "0"))
@@ -6842,16 +6869,17 @@ namespace http {
 					sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 					//_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					result = m_sql.safe_query(
-						"SELECT DISTINCT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
+						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
 						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
-						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
-						"FROM DeviceStatus as A LEFT OUTER JOIN SharedDevices as B, DeviceToPlansMap as C "
-						"ON (C.DeviceRowID==a.ID) AND (B.SharedUserID==%lu) ORDER BY %s",
+						" A.StrParam2, A.Protected, 0 as XOffset,"
+						" 0 as YOffset, 0 as PlanID, A.Description "
+						"FROM DeviceStatus as A, SharedDevices as B "
+						"WHERE (B.DeviceRowID==a.ID)"
+						" AND (B.SharedUserID==%lu) ORDER BY %s",
 						m_users[iUser].ID, szOrderBy);
 				}
 			}
@@ -7341,7 +7369,10 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Media)
 						{
-							root["result"][ii]["TypeImg"] = "Media";
+							if ((pHardware != NULL) && (pHardware->HwdType == HTYPE_LogitechMediaServer))
+								root["result"][ii]["TypeImg"] = "LogitechMediaServer";
+							else
+								root["result"][ii]["TypeImg"] = "Media";
 							root["result"][ii]["Status"] = Media_Player_States((_eMediaStatus)nValue);
 							lstatus = sValue;
 						}
@@ -8395,7 +8426,7 @@ namespace http {
 							}
 							if (total > 0)
 							{
-								sprintf(szTmp, ", Total: %.3f Wh", total);
+								sprintf(szTmp, ", Total: %.3f kWh", total/1000.0f);
 								strcat(szData, szTmp);
 							}
 							root["result"][ii]["Data"] = szData;
@@ -10575,6 +10606,10 @@ namespace http {
 				{
 					root["SmartMeterType"] = nValue;
 				}
+				else if (Key == "DisplayPowerUsageInkWhGraph")
+				{
+					root["DisplayPowerUsageInkWhGraph"] = nValue;
+				}
 				else if (Key == "EnableTabFloorplans")
 				{
 					root["EnableTabFloorplans"] = nValue;
@@ -10777,6 +10812,9 @@ namespace http {
 
 					int nValue = atoi(sd[1].c_str());
 					std::string sValue = sd[2];
+
+					//skip 0-values in log for MediaPlayers
+					if ((switchtype == STYPE_Media) && (sValue == "0")) continue;
 
 					root["result"][ii]["idx"] = sd[0];
 
@@ -11628,6 +11666,19 @@ namespace http {
 						if (bHaveUsage == false)
 							method = 0;
 
+						int iDisplayInPower = 1;
+						m_sql.GetPreferencesVar("DisplayPowerUsageInkWhGraph", iDisplayInPower);
+						if (!iDisplayInPower)
+						{
+							// Force Value graph even if device should show Value graph
+							if ((method == 1) && (
+								((dType == pTypeENERGY) && ((dSubType == sTypeELEC2) || (dSubType == sTypeELEC3))) ||
+								((dType == pTypeGeneral) && (dSubType == sTypeKwh))
+								)) {
+								//_log.Log(LOG_ERROR, "Energy/CMxxx or General/kWh device graph method should be 0!");
+								method = 0;
+							}
+						}
 						if (method != 0)
 						{
 							//realtime graph

@@ -127,6 +127,7 @@ enum _eHardwareTypes {
 	HTYPE_WINDDELEN,			//57
 	HTYPE_SatelIntegra,			//58
 	HTYPE_Tellstick,			//59
+	HTYPE_LogitechMediaServer,	//60
 	HTYPE_END
 };
 

@@ -73,9 +73,9 @@ public:
 	void			Do_Work();
 	void			SendCommand(const std::string&);
 	bool			SendShutdown();
-
 	void			StopRequest() { m_stoprequested = true; };
 	bool			IsBusy() { return m_Busy; };
+	bool			IsOn() { return (m_CurrentStatus.Status() != MSTAT_OFF); };
 
 	int				m_ID;
 	int				m_DevID;
@@ -103,7 +103,7 @@ private:
 	CKodiStatus		m_CurrentStatus;
 	void			UpdateStatus();
 
-	int				m_iTimeoutSec;
+	int				m_iTimeoutCnt;
 	int				m_iPollIntSec;
 	int				m_iMissedPongs;
 	std::string		m_sLastMessage;

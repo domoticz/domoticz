@@ -83,63 +83,6 @@ bool CPVOutputInput::WriteToHardware(const char *pdata, const unsigned char leng
 	return false;
 }
 
-void CPVOutputInput::SendMeter(const unsigned char ID1,const unsigned char ID2, const double musage, const double mtotal, const std::string &defaultname)
-{
-	int Idx=(ID1 * 256) + ID2;
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-
-	tsen.ENERGY.packettype=pTypeENERGY;
-	tsen.ENERGY.subtype=sTypeELEC2;
-	tsen.ENERGY.packetlength=sizeof(tsen.ENERGY)-1;
-	tsen.ENERGY.id1=ID1;
-	tsen.ENERGY.id2=ID2;
-	tsen.ENERGY.count=1;
-	tsen.ENERGY.rssi=12;
-
-	tsen.ENERGY.battery_level=9;
-
-	unsigned long long instant=(unsigned long long)(musage*1000.0);
-	tsen.ENERGY.instant1=(unsigned char)(instant/0x1000000);
-	instant-=tsen.ENERGY.instant1*0x1000000;
-	tsen.ENERGY.instant2=(unsigned char)(instant/0x10000);
-	instant-=tsen.ENERGY.instant2*0x10000;
-	tsen.ENERGY.instant3=(unsigned char)(instant/0x100);
-	instant-=tsen.ENERGY.instant3*0x100;
-	tsen.ENERGY.instant4=(unsigned char)(instant);
-
-	double total=(mtotal*1000.0)*223.666;
-	tsen.ENERGY.total1=(unsigned char)(total/0x10000000000ULL);
-	total-=tsen.ENERGY.total1*0x10000000000ULL;
-	tsen.ENERGY.total2=(unsigned char)(total/0x100000000ULL);
-	total-=tsen.ENERGY.total2*0x100000000ULL;
-	tsen.ENERGY.total3=(unsigned char)(total/0x1000000);
-	total-=tsen.ENERGY.total3*0x1000000;
-	tsen.ENERGY.total4=(unsigned char)(total/0x10000);
-	total-=tsen.ENERGY.total4*0x10000;
-	tsen.ENERGY.total5=(unsigned char)(total/0x100);
-	total-=tsen.ENERGY.total5*0x100;
-	tsen.ENERGY.total6=(unsigned char)(total);
-
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
-	}
-}
-
 void CPVOutputInput::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	bool bDeviceExits=true;
@@ -238,26 +181,6 @@ void CPVOutputInput::SendPercentage(const unsigned long Idx, const float Percent
 	}
 }
 
-bool CPVOutputInput::GetMeter(const unsigned char ID1,const unsigned char ID2, double &musage, double &mtotal)
-{
-	int Idx=(ID1 * 256) + ID2;
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeENERGY), int(sTypeELEC2));
-	if (result.size()<1)
-	{
-		return false;
-	}
-	std::vector<std::string> splitresult;
-	StringSplit(result[0][1],";",splitresult);
-	if (splitresult.size()!=2)
-		return false;
-	musage=atof(splitresult[0].c_str());
-	mtotal=atof(splitresult[1].c_str())/1000.0;
-	return true;
-}
-
 void CPVOutputInput::GetMeterDetails()
 {
 	if (m_SID.size()==0)
@@ -332,7 +255,7 @@ void CPVOutputInput::GetMeterDetails()
 	}
 
 	double kWhCounterUsage=atof(splitresult[0].c_str());
-	SendMeter(0, 1, Usage / 1000.0, kWhCounterUsage / 1000.0, "SolarMain");
+	SendKwhMeter(0, 1, 255, Usage, kWhCounterUsage / 1000.0, "SolarMain");
 
 	if (bHaveConsumption)
 	{
@@ -341,7 +264,7 @@ void CPVOutputInput::GetMeterDetails()
 			double kWhCounterConsumed = atof(splitresult[11].c_str());
 			if (kWhCounterConsumed != 0)
 			{
-				SendMeter(0, 2, Consumption / 1000.0, kWhCounterConsumed / 1000.0, "SolarConsumed");
+				SendKwhMeter(0, 2, 255, Consumption, kWhCounterConsumed / 1000.0, "SolarConsumed");
 			}
 		}
 	}
