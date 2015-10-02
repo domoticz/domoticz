@@ -536,14 +536,18 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 
 void CKodiNode::handleWrite(std::string pMessage)
 {
-	if (!m_stoprequested)
+	if (!m_stoprequested) {
 		if (m_Socket)
 		{
 			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Sending data: '%s'", m_Name.c_str(), pMessage.c_str());
 			m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
 			m_sLastMessage = pMessage;
 		}
-		else _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to NULL socket: '%s'", m_Name.c_str(), pMessage.c_str());
+		else 
+    {
+      _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to NULL socket: '%s'", m_Name.c_str(), pMessage.c_str());
+    }
+  }
 }
 
 void CKodiNode::handleDisconnect()
