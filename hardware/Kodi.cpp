@@ -453,7 +453,7 @@ void CKodiNode::UpdateStatus()
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
-//		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str(), 0);
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str(), 0);
 	}
 
 	m_PreviousStatus = m_CurrentStatus;
@@ -812,10 +812,6 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 	if (packettype != pTypeLighting2)
 		return false;
 
-	if (pSen->LIGHTING2.cmnd != light2_sOff)
-	{
-		return true;
-	}
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
 	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
@@ -823,7 +819,20 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		if ((*itt)->m_DevID == DevID)
 		{
-			return (*itt)->SendShutdown();
+			switch (pSen->LIGHTING2.cmnd)
+			{
+			case light2_sOff:
+			case light2_sGroupOff:
+				return (*itt)->SendShutdown();
+			case light2_sStop:
+				(*itt)->SendCommand("stop");
+				return true;
+			case light2_sPause:
+				(*itt)->SendCommand("playpause");
+				return true;
+			default:
+				return true;
+			}
 		}
 	}
 
