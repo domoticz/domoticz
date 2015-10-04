@@ -1989,6 +1989,16 @@ bool GetLightCommand(
 			cmd=light2_sSetGroupLevel;
 			return true;
 		}
+		else if (switchcmd == "Stop")
+		{
+			cmd = light2_sStop;
+			return true;
+		}
+		else if (switchcmd == "Paused")
+		{
+			cmd = light2_sPause;
+			return true;
+		}
 		else
 			return false;
 		break;
