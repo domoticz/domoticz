@@ -611,8 +611,6 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 
 	void CHardwareMonitor::FetchUnixData()
 	{
-		if (ret!=0)
-			return;
 		char szTmp[300];
 		//Memory
 		float memusedpercentage = GetMemUsageLinux();
@@ -621,6 +619,8 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			//old (wrong) way
 			struct sysinfo mySysInfo;
 			int ret = sysinfo(&mySysInfo);
+			if (ret != 0)
+				return;
 			unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
 			memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
 		}
