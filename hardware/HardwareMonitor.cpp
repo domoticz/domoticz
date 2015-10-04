@@ -581,7 +581,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	float GetMemUsageLinux()
 	{
 		std::ifstream mfile("/proc/meminfo");
-		if (mfile.is_open())
+		if (!mfile.is_open())
 			return -1;
 		unsigned long MemTotal = -1;
 		unsigned long MemFree = -1;
