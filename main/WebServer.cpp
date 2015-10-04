@@ -6866,8 +6866,14 @@ namespace http {
 						}
 						bAllowDeviceToBeHidden = true;
 					}
-					sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
-					//_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
+						
+					if (order == "")
+						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+					else
+					{
+						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+					}
+					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -6878,7 +6884,8 @@ namespace http {
 						" A.StrParam2, A.Protected, 0 as XOffset,"
 						" 0 as YOffset, 0 as PlanID, A.Description "
 						"FROM DeviceStatus as A, SharedDevices as B "
-						"WHERE (B.DeviceRowID==a.ID)"
+						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
+						"WHERE (B.DeviceRowID==A.ID)"
 						" AND (B.SharedUserID==%lu) ORDER BY %s",
 						m_users[iUser].ID, szOrderBy);
 				}
