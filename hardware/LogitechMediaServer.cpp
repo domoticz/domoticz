@@ -224,8 +224,10 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 				if (root["power"].asString() == "0")
 					nStatus = MSTAT_OFF;
 				else {
-					nStatus = MSTAT_ON;
 					std::string sMode = root["mode"].asString();
+					if (sMode == "play") nStatus = MSTAT_AUDIO;
+					else if (sMode == "pause") nStatus = MSTAT_PAUSED;
+					else nStatus = MSTAT_ON;
 					std::string	sTitle = "";
 					std::string	sAlbum = "";
 					std::string	sArtist = "";
@@ -573,7 +575,6 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 		_log.Log(LOG_ERROR, "Logitech Media Server: (%d) Command: '%s'. Device not found.", ID, command.c_str());
 	}
 }
-
 
 void CLogitechMediaServer::SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration)
 {
