@@ -440,13 +440,12 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 				_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d temperature", index + 1);
 #endif
 		unsigned char cmd[2];
-		cmd[0] = 0x00; // read zone temperature
+		cmd[0] = 0x7D; // read zone temperature
 		cmd[1] = (index != 255) ? (index + 1) : 0;
 		if (SendCommand(cmd, 2, buffer) > 0)
 		{
-			unsigned int temp;
-			sscanf(reinterpret_cast<const char*>(&buffer[2]), "%d", &temp);
-			ReportTemperature(index + 1, temp);
+			uint16_t* pTemp = reinterpret_cast<uint16_t*>(&buffer[2]);
+			ReportTemperature(index + 1, *pTemp);
 		}
 		else
 		{
@@ -645,6 +644,11 @@ void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool viol
 	zone.id = (unsigned char)Idx;
 	zone.intval1 = violation ? 3 : 1;
 
+  if (m_mainworker.GetVerboseLevel() == EVBL_ALL)
+  {
+    _log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", zone.id, zone.intval1);
+  }
+  
 	sDecodeRXMessage(this, (const unsigned char *)&zone);}
 
 void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
@@ -720,7 +724,7 @@ void SatelIntegra::ReportTemperature(const unsigned long Idx, unsigned int temp)
 
 	temp = temp - 0x6E;
 	tsen.TEMP.tempsign=(temp>=0)?0:1;
-	int at10=round(abs(temp*10.0f));
+	int at10=round(abs(temp*5.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);

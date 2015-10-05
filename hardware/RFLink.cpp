@@ -74,7 +74,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "EV1527", sSwitchTypeEV1527 },         // p61
 	{ "Elmes", sSwitchTypeElmes },           // p65
 	{ "Aster", sSwitchTypeAster },           // p17
-	{ "Sartano", sSwitchTypeSartano },           // p17
+	{ "Sartano", sSwitchTypeSartano },       // p3
+	{ "Europe", sSwitchTypeEurope },         // p18
 	{ "", -1 }
 };
 
@@ -84,8 +85,21 @@ const _tRFLinkStringIntHelper rfswitchcommands[] =
 	{ "OFF", gswitch_sOff },
 	{ "ALLON", gswitch_sGroupOn },
 	{ "ALLOFF", gswitch_sGroupOff },
+	{ "DIM", gswitch_sDim },
+	{ "BRIGHT", gswitch_sBright },
 	{ "", -1 }
 };
+
+const _tRFLinkStringIntHelper rfblindcommands[] =
+{
+	{ "UP", blinds_sOpen },
+	{ "DOWN", blinds_sClose },
+	{ "STOP", blinds_sStop },
+	{ "CONFIRM", blinds_sConfirm },
+	{ "LIMIT", blinds_sLimit },
+	{ "", -1 }
+};
+
 
 int GetGeneralRFLinkFromString(const _tRFLinkStringIntHelper *pTable, const std::string &szType)
 {
@@ -770,7 +784,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 
 	if (bHaveUV)
 	{
-  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv);
+  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, "UV");
 	}
     
 	if (bHaveRain)
@@ -825,7 +839,7 @@ bool CRFLink::ParseLine(const std::string &sLine)
 	}
 	if (bHaveDistance)
 	{
-		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance);
+		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance, "Distance");
 	}
 	if (bHaveMeter)
 	{

@@ -21,6 +21,15 @@ bool CNotificationPushover::SendMessageImplementation(const std::string &Subject
 
 	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << Subject << "&message=" << Text;
 
+	size_t posDevice = ExtraData.find("|Device=");
+	if (posDevice != std::string::npos) {
+		posDevice += 8;
+		std::string sDevice = ExtraData.substr(posDevice, ExtraData.find("|", posDevice) - posDevice);
+		if (sDevice != "") {
+			sPostData << "&device=" << sDevice;
+		}
+	}
+
 	if (Sound != "") {
 		sPostData << "&sound=" << Sound;
 	}

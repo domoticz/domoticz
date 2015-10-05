@@ -102,7 +102,8 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1)
+            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1)
+				|| (text.indexOf("Logitech Media Server") >= 0))
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -202,6 +203,7 @@ define(['app'], function (app) {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=$("#hardwarecontent #divlogin #password").val();
                 var extra=$("#hardwarecontent #divmqtt #filename").val(); 
+                Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
                         "&address=" + address +
@@ -443,7 +445,8 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if (text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1 && text.indexOf("Integra") == -1)
+            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1 && text.indexOf("Integra") == -1)
+				|| (text.indexOf("Logitech Media Server") >= 0))
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -565,6 +568,7 @@ define(['app'], function (app) {
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
                 var extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
+                var mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
 
                 if ((text.indexOf("Harmony") >= 0) && (username == "")) {
                     ShowNotify($.t('Please enter a username!'), 2500, true);
@@ -577,7 +581,7 @@ define(['app'], function (app) {
                 }
 
                 $.ajax({
-                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + encodeURIComponent(extra),
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + encodeURIComponent(extra) + "&mode1=" + mode1,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -1351,7 +1355,7 @@ define(['app'], function (app) {
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
             $("#hardwarecontent #kodinodeparamstable #nodename").val("");
             $("#hardwarecontent #kodinodeparamstable #nodeip").val("");
-            $("#hardwarecontent #kodinodeparamstable #nodeport").val("8080");
+            $("#hardwarecontent #kodinodeparamstable #nodeport").val("9090");
 
             var oTable = $('#kodinodestable').dataTable();
             oTable.fnClearTable();
@@ -1386,7 +1390,7 @@ define(['app'], function (app) {
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
                     $("#hardwarecontent #kodinodeparamstable #nodename").val("");
                     $("#hardwarecontent #kodinodeparamstable #nodeip").val("");
-                    $("#hardwarecontent #kodinodeparamstable #nodeport").val("8080");
+                    $("#hardwarecontent #kodinodeparamstable #nodeport").val("9090");
                 }
                 else {
                     var oTable = $('#kodinodestable').dataTable();
@@ -1466,6 +1470,97 @@ define(['app'], function (app) {
             RefreshKodiNodeTable();
         }
 
+        RefreshLMSNodeTable = function () {
+            $('#modal').show();
+            $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+            $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+            $("#hardwarecontent #lmsnodeparamstable #nodename").val("");
+            $("#hardwarecontent #lmsnodeparamstable #nodeip").val("");
+            $("#hardwarecontent #lmsnodeparamstable #nodeport").val("8080");
+
+            var oTable = $('#lmsnodestable').dataTable();
+            oTable.fnClearTable();
+
+            $.ajax({
+                url: "json.htm?type=command&param=lmsgetnodes&idx=" + $.devIdx,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (typeof data.result != 'undefined') {
+                        $.each(data.result, function (i, item) {
+                            var addId = oTable.fnAddData({
+                                "DT_RowId": item.idx,
+                                "Name": item.Name,
+                                "IP": item.IP,
+                                "0": item.idx,
+                                "1": item.Name,
+                                "2": item.IP,
+                                "3": item.Port
+                            });
+                        });
+                    }
+                }
+            });
+
+            $('#modal').hide();
+        }
+
+        SetLMSSettings = function () {
+            var Mode1 = parseInt($("#hardwarecontent #lmssettingstable #pollinterval").val());
+            if (Mode1 < 1)
+                Mode1 = 30;
+            var Mode2 = parseInt($("#hardwarecontent #lmssettingstable #pingtimeout").val());
+            if (Mode2 < 500)
+                Mode2 = 500;
+            $.ajax({
+                url: "json.htm?type=command&param=lmssetmode" +
+                   "&idx=" + $.devIdx +
+                   "&mode1=" + Mode1 +
+                   "&mode2=" + Mode2,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    bootbox.alert($.t('Settings saved'));
+                },
+                error: function () {
+                    ShowNotify($.t('Problem Updating Settings!'), 2500, true);
+                }
+            });
+        }
+
+        EditLMS = function (idx, name, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
+            $.devIdx = idx;
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent = '<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent += $('#lms').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware') + htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            $("#hardwarecontent #lmssettingstable #pollinterval").val(Mode1);
+            $("#hardwarecontent #lmssettingstable #pingtimeout").val(Mode2);
+
+            var oTable = $('#lmsnodestable').dataTable({
+                "sDom": '<"H"lfrC>t<"F"ip>',
+                "oTableTools": {
+                    "sRowSelect": "single",
+                },
+                "aaSorting": [[0, "desc"]],
+                "bSortClasses": false,
+                "bProcessing": true,
+                "bStateSave": true,
+                "bJQueryUI": true,
+                "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                "iDisplayLength": 25,
+                "sPaginationType": "full_numbers",
+                language: $.DataTableLanguage
+            });
+
+            $('#hardwarecontent #idx').val(idx);
+
+            RefreshLMSNodeTable();
+        }
+	
         EditSBFSpot = function (idx, name, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6)
         {
             $.devIdx=idx;
@@ -2639,6 +2734,9 @@ define(['app'], function (app) {
                     else if (HwTypeStr.indexOf("Kodi") >= 0) {
                         HwTypeStr += ' <span class="label label-info lcursor" onclick="EditKodi(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
+                    else if (HwTypeStr.indexOf("Logitech Media Server") >= 0) {
+                        HwTypeStr += ' <span class="label label-info lcursor" onclick="EditLMS(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2 + ',' + item.Mode3 + ',' + item.Mode4 + ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
+                    }
                     else if (HwTypeStr.indexOf("P1 Smart Meter USB") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditP1USB(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
@@ -2780,7 +2878,7 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divremote #tcpaddress").val(data["Address"]);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                         }
@@ -2807,6 +2905,7 @@ define(['app'], function (app) {
                         }
                         if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
+                            $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
                         }                        
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||
@@ -2912,7 +3011,15 @@ define(['app'], function (app) {
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
             }
-            else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0))
+            else if (text.indexOf("Domoticz") >= 0)
+            {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").show();
+                $("#hardwarecontent #divlogin").show();
+                $("#hardwarecontent #divunderground").hide();
+                $("#hardwarecontent #hardwareparamsremote #tcpport").val(6144);
+            }
+            else if (text.indexOf("Harmony") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
@@ -2961,6 +3068,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #lblusername").hide();
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #divwinddelen").show();
+            }
+            else if (text.indexOf("Logitech Media Server") >= 0)
+            {
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").show();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
             }
             else
             {

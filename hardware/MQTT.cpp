@@ -16,7 +16,7 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password, const std::string CAfilename) :
+MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password, const std::string CAfilename, const int Topics) :
 m_szIPAddress(IPAddress),
 m_UserName(Username),
 m_Password(Password),
@@ -29,6 +29,7 @@ m_CAFilename(CAfilename)
 
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
+	m_publish_topics = (_ePublishTopics)Topics;
 }
 
 MQTT::~MQTT(void)
@@ -95,10 +96,14 @@ void MQTT::on_connect(int rc)
 	*/
 
 	if (rc == 0){
-		_log.Log(LOG_STATUS, "MQTT: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
-		m_IsConnected = true;
-		sOnConnected(this);
-		m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
+		if (m_IsConnected) {
+			_log.Log(LOG_STATUS, "MQTT: re-connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		} else {
+			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+			m_IsConnected = true;
+			sOnConnected(this);
+			m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
+		}
 		subscribe(NULL, TOPIC_IN);
 	}
 	else {
@@ -481,6 +486,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		int dSubType = atoi(sd[4].c_str());
 		int nvalue = atoi(sd[5].c_str());
 		std::string svalue = sd[6];
+		_eSwitchType switchType = (_eSwitchType)atoi(sd[7].c_str());
 		int RSSI = atoi(sd[8].c_str());
 		int BatteryLevel = atoi(sd[9].c_str());
 
@@ -492,6 +498,11 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 		root["name"] = name;
 		root["dtype"] = RFX_Type_Desc(dType,1);
 		root["stype"] = RFX_Type_SubType_Desc(dType, dSubType);
+
+		if (IsLightOrSwitch(dType, dSubType) == true) {
+			root["switchType"] = Switch_Type_Desc(switchType);
+		}
+
 		root["RSSI"] = RSSI;
 		root["Battery"] = BatteryLevel;
 		root["nvalue"] = nvalue;
@@ -509,7 +520,25 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowI
 			root[szQuery.str()] = *itt;
 			sIndex++;
 		}
-		SendMessage(TOPIC_OUT, root.toStyledString());
+		std::string message =  root.toStyledString();
+		if (m_publish_topics & PT_out)
+		{
+			SendMessage(TOPIC_OUT, message);
+		}
+
+		if (m_publish_topics & PT_floor_room) {
+			result = m_sql.safe_query("SELECT F.Name, P.Name, M.DeviceRowID FROM Plans as P, Floorplans as F, DeviceToPlansMap as M WHERE P.FloorplanID=F.ID and M.PlanID=P.ID and M.DeviceRowID=='%llu'", DeviceRowIdx);
+			for(size_t i=0 ; i<result.size(); i++)
+			{
+				std::vector<std::string> sd = result[i];
+				std::string floor = sd[0];
+				std::string room =  sd[1];
+				std::stringstream topic("");
+				topic << TOPIC_OUT << "/" << floor << "/" + room;
+
+				SendMessage(topic.str() , message);
+			}
+		}
 	}
 }
 

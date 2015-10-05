@@ -58,7 +58,7 @@ enum _eTimerCommand
 enum _eMediaStatus
 {
 	MSTAT_OFF = 0,
-	MSTAT_IDLE,
+	MSTAT_ON,
 	MSTAT_PAUSED,
 	MSTAT_VIDEO,
 	MSTAT_AUDIO,
@@ -127,6 +127,7 @@ enum _eHardwareTypes {
 	HTYPE_WINDDELEN,			//57
 	HTYPE_SatelIntegra,			//58
 	HTYPE_Tellstick,			//59
+	HTYPE_LogitechMediaServer,	//60
 	HTYPE_END
 };
 
@@ -153,6 +154,10 @@ enum _eNotificationTypes
 	NTYPE_DEWPOINT,
 	NTYPE_RPM,
 	NTYPE_SETPOINT,
+	NTYPE_VIDEO,
+	NTYPE_AUDIO,
+	NTYPE_PHOTO,
+	NTYPE_PAUSED
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);

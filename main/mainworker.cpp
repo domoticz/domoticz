@@ -75,6 +75,7 @@
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
+#include "../hardware/LogitechMediaServer.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -461,6 +462,11 @@ void MainWorker::SetVerboseLevel(eVerboseLevel Level)
 	m_verboselevel=Level;
 }
 
+eVerboseLevel MainWorker::GetVerboseLevel()
+{
+  return m_verboselevel;
+}
+
 void MainWorker::SetWebserverAddress(const std::string &Address)
 {
 	m_webserveraddress = Address;
@@ -681,7 +687,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MQTT:
 		//LAN
-		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename);
+		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
 		break;
 	case HTYPE_FRITZBOX:
 		//LAN
@@ -740,6 +746,10 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_SatelIntegra:
 		pHardware = new SatelIntegra(ID, Address, Port, Password);
+		break;
+	case HTYPE_LogitechMediaServer:
+		//Logitech Media Server
+		pHardware = new CLogitechMediaServer(ID, Address, Port, Mode1, Mode2);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:
@@ -11178,6 +11188,9 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		);
 	if (devidx == -1)
 		return false;
+
+	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
+	sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
 
 	std::stringstream sidx;
 	sidx << devidx;

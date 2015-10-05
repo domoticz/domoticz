@@ -412,7 +412,7 @@
         </tr>
         <tr>
             <td align="right" style="width:110px"><label for="nodeip"><span data-i18n="IP Address">IP Address</span>:</label></td>
-            <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;&nbsp;(<span data-i18n="Username"/>:<span data-i18n="Password"/>@<span data-i18n="IP Address" />)</td>
+            <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
             <td align="right" style="width:110px"><label for="nodetimeout"><span data-i18n="Port">Port</span>:</label></td>
@@ -423,6 +423,52 @@
             <td><a class="btnstyle3" onclick="AddKodiNode();" data-i18n="Add">Add</a></td>
         </tr>
     </table>
+</div>
+
+<div id="lms" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="lmssettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="SetLMSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+    </table>
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Devices">Devices</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="lmsnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="70" align="center" data-i18n="ID">ID</th>
+                <th width="250" align="left" data-i18n="Name">Name</th>
+                <th align="left" data-i18n="IP Address">IP Address</th>
+                <th width="70" align="center" data-i18n="Port">Port</th>
+            </tr>
+        </thead>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
 </div>
 
 <div id="rfxhardwaremode" style="display:none;">
@@ -816,6 +862,24 @@
 		<div id="divmqtt">
 			<br>
 			<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Publish Topic">Publish Topic</span>:</label></td>
+					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="1">Flat</option>
+						<option value="2">Hierarchical</option>
+						<option value="3">Combined</option>
+						<option value="0">None</option>
+						</select>
+					<br />
+					<span>Select the Topic('s) Domoticz will use to publish outgoing messages. </br>
+						<b>Flat</b> - publish outgoing messagen on topic domoticz/out.</br>
+						<b>Hierarchical</b> - publish outgoing messagen on topic domoticz/out/${floorplan name}/${plan name}.<br />
+						<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br />
+						<b>None</b> - disable outgoing messages.</br>
+						<br />
+						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan. 
+					</td>
+				</tr>
 				<tr>
 					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -838,7 +902,8 @@
 				<select id="sensortype" style="width:250px" class="combobox ui-corner-all">
 					<option value="249" data-i18n="Air Quality">Air Quality</option>
 					<option value="7" data-i18n="Alert">Alert</option>
-					<option value="9" data-i18n="Ampere">Ampere</option>
+					<option value="9" data-i18n="Ampere (3 Phase)">Ampere (3 Phase)"</option>
+					<option value="19" data-i18n="Ampere (1 Phase)">Ampere (1 Phase)</option>
 					<option value="11" data-i18n="Barometer">Barometer</option>
 					<option value="113" data-i18n="Counter">Counter</option>
 					<option value="14" data-i18n="Counter Incremental">Counter Incremental</option>

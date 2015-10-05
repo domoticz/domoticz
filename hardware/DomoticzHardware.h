@@ -99,6 +99,7 @@ private:
 	friend class CNetAtmoWeatherStation;
 	friend class CAnnaThermostat;
 	friend class SatelIntegra;
+	friend class CLogitechMediaServer;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
@@ -133,13 +134,15 @@ private:
 	void SendRainSensor(const int NodeID, const int BatteryLevel, const float RainCounter, const std::string &defaultname);
 	float GetRainSensorValue(const int NodeID, bool &bExists);
 	void SendWind(const int NodeID, const int BatteryLevel, const float WindDir, const float WindSpeed, const float WindGust, const float WindTemp, const float WindChill, const bool bHaveWindTemp, const std::string &defaultname);
-	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure);
-	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance);
+	void SendPressureSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float pressure, const std::string &defaultname);
+	void SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string &defaultname);
 	void SendMeterSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float metervalue, const std::string &defaultname);
-	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI);
+	void SendUVSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float UVI, const std::string &defaultname);
 	void SendBlindSensor(const int NodeID, const int ChildID, const int BatteryLevel, const int Command, const std::string &defaultname);
 	void SendSoundSensor(const int NodeID, const int BatteryLevel, const int sLevel, const std::string &defaultname);
 	void SendMoistureSensor(const int NodeID, const int BatteryLevel, const int mLevel, const std::string &defaultname);
+	void SendTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname);
+	std::string GetTextSensorText(const int NodeID, const int ChildID, bool &bExists);
 
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 
