@@ -318,22 +318,23 @@ void CLogitechMediaServer::GetPlayerInfo()
 			std::string ip = IPPort[0];
 			int port = atoi(IPPort[1].c_str());
 
-			//	slimp3		=> 'SliMP3'					?
-			//	Squeezebox	=> 'Squeezebox 1'			V
-			//	squeezebox2	=> 'Squeezebox 2'			V
-			//	squeezebox3	=> 'Squeezebox 3'			V
-			//	transporter	=> 'Transporter'			?
-			//	receiver	=> 'Squeezebox Receiver'	X
-			//	boom		=> 'Squeezebox Boom'		?
-			//	softsqueeze	=> 'Softsqueeze'			?
-			//	controller	=> 'Squeezebox Controller'	X
-			//	squeezeplay	=> 'SqueezePlay'			?
-			//	baby		=> 'Squeezebox Radio'		V
-			//	fab4		=> 'Squeezebox Touch'		V
-			//	squeezelite	=> 'Max2Play SqueezePlug'	V
-			//	iPengiPod	=> 'iPeng iOS App'			X
-
-			if ((model == "Squeezebox") || (model == "squeezebox2") || (model == "squeezebox3") || (model == "baby") || (model == "fab4") || (model == "squeezelite")) {
+			if (
+				//(model == "slimp3") ||			//SliMP3
+				(model == "Squeezebox") ||			//Squeezebox 1
+				(model == "squeezebox2") ||			//Squeezebox 2
+				(model == "squeezebox3") ||			//Squeezebox 3
+				//(model == "transporter") ||		//Transporter
+				(model == "receiver") ||			//Squeezebox Receiver
+				//(model == "boom") ||				//Squeezebox Boom
+				//(model == "softsqueeze") ||		//Softsqueeze
+				(model == "controller") ||			//Squeezebox Controller
+				//(model == "squeezeplay") ||		//SqueezePlay
+				(model == "baby") ||				//Squeezebox Radio
+				(model == "fab4") ||				//Squeezebox Touch
+				//(model == "iPengiPod") ||			//iPeng iOS App
+				(model == "squeezelite")			//Max2Play SqueezePlug
+				) 
+			{
 				InsertUpdatePlayer(name, ip, port);
 			}
 			else {

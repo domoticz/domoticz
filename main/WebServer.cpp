@@ -9237,6 +9237,9 @@ namespace http {
 			root["title"] = "Scenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
+			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			bool bDisplayHidden = (sDisplayHidden == "1");
+
 			std::string sLastUpdate = m_pWebEm->FindValue("lastupdate");
 
 			time_t LastUpdate = 0;
@@ -9266,7 +9269,7 @@ namespace http {
 					std::vector<std::string> sd = *itt;
 
 					std::string sName = sd[1];
-					if (sName[0] == '$')
+					if ((bDisplayHidden==false)&&(sName[0] == '$'))
 						continue;
 
 					std::string sLastUpdate = sd[6].c_str();
