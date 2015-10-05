@@ -15,6 +15,10 @@
 	#include <comdef.h>
 #elif defined __linux__
 	#include <sys/sysinfo.h>
+	#include <iostream>
+	#include <fstream>
+	#include <string>
+	#include <limits>
 	#include <sys/time.h>
 	#include <unistd.h>
 	#include <vector>
@@ -574,16 +578,52 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			(((double) tp.tv_usec) * 0.000001 );
 	}
 
+	float GetMemUsageLinux()
+	{
+		std::ifstream mfile("/proc/meminfo");
+		if (!mfile.is_open())
+			return -1;
+		unsigned long MemTotal = -1;
+		unsigned long MemFree = -1;
+		unsigned long MemBuffers = -1;
+		unsigned long  MemCached = -1;
+		std::string token;
+		while (mfile >> token) {
+			if (token == "MemTotal:") {
+				mfile >> MemTotal;
+			}
+			else if (token == "MemFree:") {
+				mfile >> MemFree;
+			}
+			else if (token == "Buffers:") {
+				mfile >> MemBuffers;
+			}
+			else if (token == "Cached:") {
+				mfile >> MemCached;
+			}
+			// ignore rest of the line
+			mfile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		}
+		unsigned long MemUsed = MemTotal - MemFree - MemBuffers - MemCached;
+		float memusedpercentage = (100.0f / float(MemTotal))*MemUsed;
+		return memusedpercentage;
+	}
+
 	void CHardwareMonitor::FetchUnixData()
 	{
-		struct sysinfo mySysInfo;
-		int ret=sysinfo(&mySysInfo);
-		if (ret!=0)
-			return;
 		char szTmp[300];
 		//Memory
-		unsigned long usedram=mySysInfo.totalram-mySysInfo.freeram;
-		float memusedpercentage=(100.0f/float(mySysInfo.totalram))*usedram;
+		float memusedpercentage = GetMemUsageLinux();
+		if (memusedpercentage == -1)
+		{
+			//old (wrong) way
+			struct sysinfo mySysInfo;
+			int ret = sysinfo(&mySysInfo);
+			if (ret != 0)
+				return;
+			unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
+			memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
+		}
 		sprintf(szTmp,"%.2f",memusedpercentage);
 		UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
 

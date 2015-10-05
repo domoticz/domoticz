@@ -73,6 +73,10 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     ENDIF(NOT _sourceFound)
   ENDIF(MSVC)
 
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-absolute-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
+  ENDIF()
+
   IF(CMAKE_COMPILER_IS_GNUCXX)
   #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
