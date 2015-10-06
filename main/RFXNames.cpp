@@ -1991,12 +1991,12 @@ bool GetLightCommand(
 		}
 		else if (switchcmd == "Stop")
 		{
-			cmd = light2_sStop;
+			cmd = gswitch_sStop;
 			return true;
 		}
 		else if (switchcmd == "Paused")
 		{
-			cmd = light2_sPause;
+			cmd = gswitch_sPause;
 			return true;
 		}
 		else

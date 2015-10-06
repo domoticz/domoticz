@@ -134,7 +134,7 @@
 #define gswitch_sSound8				0x10
 #define gswitch_sStop				0x11
 #define gswitch_sProgram			0x12
-
+#define gswitch_sPause				0x13
 //--------------
 
 #define pTypeLux		0xF6

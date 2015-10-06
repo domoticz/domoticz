@@ -7,7 +7,7 @@
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
-
+#include "../hardware/hardwaretypes.h"
 #include <boost/algorithm/string.hpp>
 
 #include <iostream>
@@ -824,10 +824,10 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 			case light2_sOff:
 			case light2_sGroupOff:
 				return (*itt)->SendShutdown();
-			case light2_sStop:
+			case gswitch_sStop:
 				(*itt)->SendCommand("stop");
 				return true;
-			case light2_sPause:
+			case gswitch_sPause:
 				(*itt)->SendCommand("playpause");
 				return true;
 			default:
