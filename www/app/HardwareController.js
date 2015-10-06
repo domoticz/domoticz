@@ -1476,7 +1476,7 @@ define(['app'], function (app) {
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
             $("#hardwarecontent #lmsnodeparamstable #nodename").val("");
             $("#hardwarecontent #lmsnodeparamstable #nodeip").val("");
-            $("#hardwarecontent #lmsnodeparamstable #nodeport").val("8080");
+            $("#hardwarecontent #lmsnodeparamstable #nodeport").val("9000");
 
             var oTable = $('#lmsnodestable').dataTable();
             oTable.fnClearTable();
@@ -1491,11 +1491,10 @@ define(['app'], function (app) {
                             var addId = oTable.fnAddData({
                                 "DT_RowId": item.idx,
                                 "Name": item.Name,
-                                "IP": item.IP,
+                                "Mac": item.Mac,
                                 "0": item.idx,
                                 "1": item.Name,
-                                "2": item.IP,
-                                "3": item.Port
+                                "2": item.Mac
                             });
                         });
                     }
