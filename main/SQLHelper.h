@@ -255,7 +255,7 @@ public:
 
 	std::vector<std::vector<std::string> > safe_query(const char *fmt, ...);
 	std::vector<std::vector<std::string> > safe_queryBlob(const char *fmt, ...);
-	bool DoesColumnExistsInTable(const std::string columnname, const std::string tablename);
+	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 	std::string DeleteUserVariable(const std::string &idx);
 	std::string SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);
 	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger);

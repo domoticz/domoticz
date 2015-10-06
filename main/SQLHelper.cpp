@@ -2150,7 +2150,7 @@ void CSQLHelper::SetDatabaseName(const std::string &DBName)
 	m_dbase_name=DBName;
 }
 
-bool CSQLHelper::DoesColumnExistsInTable(const std::string columnname, const std::string tablename)
+bool CSQLHelper::DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename)
 {
 	if (!m_dbase)
 	{

@@ -145,6 +145,9 @@ define(['app'], function (app) {
 						if ((subsystem=="http") || (subsystem=="kodi")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
 						}
+						else if (subsystem=="email") {
+							ShowNotify($.t('Problem sending Email, please check credentials!'), 3000, true);
+						}
 						else {
 							ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
 						}

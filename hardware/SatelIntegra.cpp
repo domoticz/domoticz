@@ -985,11 +985,11 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	if (send(m_socket, (const char*)cmdPayload.first, cmdPayload.second, 0) < 0)
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Send command '%02X' failed", cmdPayload.first[2]);
-		delete cmdPayload.first;
+		delete [] cmdPayload.first;
 		return -1;
 	}
 
-	delete cmdPayload.first;
+	delete [] cmdPayload.first;
 
 	unsigned char buffer[MAX_LENGTH_OF_ANSWER];
 	// Receive answer
