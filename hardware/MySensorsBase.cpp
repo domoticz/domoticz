@@ -1545,7 +1545,6 @@ void MySensorsBase::ParseLine()
 		else if (vType == V_TEXT)
 		{
 			bool bExits = false;
-			std::string tmpstr = GetTextSensorText(node_id, child_sensor_id, bExits);
 			if (!bExits)
 			{
 				SendTextSensor(node_id, child_sensor_id, 244, "-", (!pSensor->childName.empty()) ? pSensor->childName : "Text Sensor");
