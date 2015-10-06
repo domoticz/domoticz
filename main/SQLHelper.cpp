@@ -1888,13 +1888,13 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 5;
 		UpdatePreferencesVar("ShortLogInterval", nValue);
 	}
+	if (nValue < 1)
+		nValue = 5;
+	m_ShortLogInterval = 5;// nValue;
 	if (!GetPreferencesVar("DisplayPowerUsageInkWhGraph", nValue))
 	{
 		UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", 1);
 	}
-	if (nValue < 1)
-		nValue = 5;
-	m_ShortLogInterval = nValue;
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -2150,7 +2150,7 @@ void CSQLHelper::SetDatabaseName(const std::string &DBName)
 	m_dbase_name=DBName;
 }
 
-bool CSQLHelper::DoesColumnExistsInTable(const std::string columnname, const std::string tablename)
+bool CSQLHelper::DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename)
 {
 	if (!m_dbase)
 	{

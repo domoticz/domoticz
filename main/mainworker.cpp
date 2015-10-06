@@ -7809,7 +7809,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		}
 	}
 	float temp;
-	int volt;
+	int volt=0;
 	switch (pResponse->RFXSENSOR.subtype)
 	{
 	case sTypeRFXSensorTemp:
@@ -7848,7 +7848,6 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		case sTypeRFXSensorVolt:
 		{
 			m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, float(volt));
-
 		}
 		break;
 	}
@@ -11190,7 +11189,10 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		return false;
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
+	if (pHardware)
+	{
+		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
+	}
 
 	std::stringstream sidx;
 	sidx << devidx;

@@ -325,10 +325,10 @@ void CLogitechMediaServer::GetPlayerInfo()
 				(model == "squeezebox3") ||			//Squeezebox 3
 				//(model == "transporter") ||		//Transporter
 				(model == "receiver") ||			//Squeezebox Receiver
-				//(model == "boom") ||				//Squeezebox Boom
+				(model == "boom") ||				//Squeezebox Boom
 				//(model == "softsqueeze") ||		//Softsqueeze
 				(model == "controller") ||			//Squeezebox Controller
-				//(model == "squeezeplay") ||		//SqueezePlay
+				(model == "squeezeplay") ||			//SqueezePlay
 				(model == "baby") ||				//Squeezebox Radio
 				(model == "fab4") ||				//Squeezebox Touch
 				//(model == "iPengiPod") ||			//iPeng iOS App

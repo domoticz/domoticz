@@ -9,6 +9,7 @@
 CPush::CPush()
 {
 	m_bLinkActive = false;
+	m_DeviceRowIdx = -1;
 }
 
 // STATIC
