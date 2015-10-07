@@ -474,6 +474,8 @@ namespace http {
 			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
 
 			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1));
+			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1));
+			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1));
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -9975,6 +9977,31 @@ namespace http {
 
 			_log.Log(LOG_STATUS, "%s", smessage.c_str());
 		}
+
+		void CWebServer::Cmd_ClearShortLog(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+			root["status"] = "OK";
+			root["title"] = "ClearShortLog";
+
+			_log.Log(LOG_STATUS, "Clearing Short Log...");
+
+			m_sql.ClearShortLog();
+
+			_log.Log(LOG_STATUS, "Short Log Cleared!");
+		}
+
+		void CWebServer::Cmd_VacuumDatabase(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+			root["status"] = "OK";
+			root["title"] = "VacuumDatabase";
+
+			m_sql.VacuumDatabase();
+		}
+		
 		
 
 		void CWebServer::RType_GetTransfers(Json::Value &root)

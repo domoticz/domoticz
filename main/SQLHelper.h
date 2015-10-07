@@ -228,6 +228,9 @@ public:
 	void ScheduleShortlog();
 	void ScheduleDay();
 
+	void ClearShortLog();
+	void VacuumDatabase();
+
 	void DeleteHardware(const std::string &idx);
     
     void DeleteCamera(const std::string &idx);
