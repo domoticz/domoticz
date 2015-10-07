@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "LogitechMediaServer.h"
+#include <boost/lexical_cast.hpp>
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -629,7 +630,7 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 		std::string sLine2 = text;
 		std::string sFont = ""; //"huge";
 		std::string sBrightness = "4";
-		std::string sDuration = std::to_string(duration);
+		std::string sDuration = boost::lexical_cast<std::string>(duration);
 		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 	}
