@@ -4358,6 +4358,12 @@ namespace http {
 							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
 							ii++;
 						}
+						if (type == HTYPE_LogitechMediaServer) {
+							root["result"][ii]["val"] = NTYPE_STOPPED;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
+							ii++;
+						}
 					}
 				}
 				if (

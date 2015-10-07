@@ -88,6 +88,7 @@ _eNotificationTypes	CLogitechMediaServer::NotificationType(_eMediaStatus nStatus
 	case MSTAT_OFF:		return NTYPE_SWITCH_OFF;
 	case MSTAT_ON:		return NTYPE_SWITCH_ON;
 	case MSTAT_PAUSED:	return NTYPE_PAUSED;
+	case MSTAT_STOPPED:	return NTYPE_STOPPED;
 	case MSTAT_AUDIO:	return NTYPE_AUDIO;
 	default:			return NTYPE_SWITCH_OFF;
 	}
@@ -155,7 +156,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
 				// 1:	Update the DeviceStatus
-				if (nStatus == MSTAT_ON)
+				if ((nStatus == MSTAT_AUDIO) || (nStatus == MSTAT_PAUSED))
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				else
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
@@ -205,6 +206,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 {
 	bool bPingOK = false;
 	_eMediaStatus nStatus = MSTAT_UNKNOWN;
+	_eMediaStatus nOldStatus = Node.nStatus;
 	std::string	sPlayerId = Node.IP;
 	std::string	sStatus = "";
 
@@ -225,9 +227,20 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					nStatus = MSTAT_OFF;
 				else {
 					std::string sMode = root["mode"].asString();
-					if (sMode == "play") nStatus = MSTAT_AUDIO;
-					else if (sMode == "pause") nStatus = MSTAT_PAUSED;
-					else nStatus = MSTAT_ON;
+					if (sMode == "play") 
+						nStatus = MSTAT_AUDIO;
+					else if (sMode == "pause") 
+						if (nOldStatus == MSTAT_OFF)
+							nStatus = MSTAT_ON;
+						else
+							nStatus = MSTAT_PAUSED;
+					else if (sMode == "stop")
+						if (nOldStatus == MSTAT_OFF)
+							nStatus = MSTAT_ON;
+						else
+							nStatus = MSTAT_STOPPED;
+					else
+						nStatus = MSTAT_ON;
 					std::string	sTitle = "";
 					std::string	sAlbum = "";
 					std::string	sArtist = "";
