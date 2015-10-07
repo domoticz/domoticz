@@ -474,6 +474,8 @@ namespace http {
 			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
 
 			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1));
+			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1));
+			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1));
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -3769,6 +3771,10 @@ namespace http {
 					if (pBaseHardware->HwdType == HTYPE_RFLINK) {
 						if (dtype == pTypeLighting1){
 							dtype = pTypeGeneralSwitch;
+							std::stringstream s_strid;
+							s_strid << std::hex << atoi(devid.c_str());
+							devid = s_strid.str();
+							devid = "000000" + devid;                            
 						}
 						else
 							if (dtype == pTypeLighting2){
@@ -6877,8 +6883,14 @@ namespace http {
 						}
 						bAllowDeviceToBeHidden = true;
 					}
-					sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
-					//_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
+						
+					if (order == "")
+						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+					else
+					{
+						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+					}
+					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					result = m_sql.safe_query(
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
@@ -6886,10 +6898,11 @@ namespace http {
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, 0 as XOffset,"
-						" 0 as YOffset, 0 as PlanID, A.Description "
+						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
+						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
 						"FROM DeviceStatus as A, SharedDevices as B "
-						"WHERE (B.DeviceRowID==a.ID)"
+						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
+						"WHERE (B.DeviceRowID==A.ID)"
 						" AND (B.SharedUserID==%lu) ORDER BY %s",
 						m_users[iUser].ID, szOrderBy);
 				}
@@ -9248,6 +9261,9 @@ namespace http {
 			root["title"] = "Scenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
+			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			bool bDisplayHidden = (sDisplayHidden == "1");
+
 			std::string sLastUpdate = m_pWebEm->FindValue("lastupdate");
 
 			time_t LastUpdate = 0;
@@ -9277,7 +9293,7 @@ namespace http {
 					std::vector<std::string> sd = *itt;
 
 					std::string sName = sd[1];
-					if (sName[0] == '$')
+					if ((bDisplayHidden==false)&&(sName[0] == '$'))
 						continue;
 
 					std::string sLastUpdate = sd[6].c_str();
@@ -9976,6 +9992,31 @@ namespace http {
 
 			_log.Log(LOG_STATUS, "%s", smessage.c_str());
 		}
+
+		void CWebServer::Cmd_ClearShortLog(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+			root["status"] = "OK";
+			root["title"] = "ClearShortLog";
+
+			_log.Log(LOG_STATUS, "Clearing Short Log...");
+
+			m_sql.ClearShortLog();
+
+			_log.Log(LOG_STATUS, "Short Log Cleared!");
+		}
+
+		void CWebServer::Cmd_VacuumDatabase(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+			root["status"] = "OK";
+			root["title"] = "VacuumDatabase";
+
+			m_sql.VacuumDatabase();
+		}
+		
 		
 
 		void CWebServer::RType_GetTransfers(Json::Value &root)

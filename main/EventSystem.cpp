@@ -2932,6 +2932,10 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 			lstatus = "Closed";
 		}
 	}
+	else if (switchtype == STYPE_Media)
+	{
+		lstatus = Media_Player_States((const _eMediaStatus)nValue);
+	}
 	return lstatus;
 }
 

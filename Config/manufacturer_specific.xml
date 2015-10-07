@@ -64,7 +64,7 @@
                 <Product type="0003" id="0018" name="Smart Switch (2nd Edition)"/>
 		<Product type="0003" id="001a" name="Micro Switch (2nd Edition)"/>
 		<Product type="0003" id="001b" name="Micro Smart Energy Illuminator G2"/>
-		<Product type="0003" id="0012" name="Micro Smart Energy Switch G2" config="aeotec/ses.xml" />
+		<Product type="0003" id="0012" name="Micro Smart Energy Switch G2" config="aeotec/msesv2.xml" />
 		<Product type="0003" id="0013" name="Micro Smart Energy Dimmer v2" config="aeotec/msesv2.xml" />
 		<Product type="0003" id="004b" name="Smart Energy Switch Gen5" config="aeotec/ses2.xml"/>
 		<Product type="0003" id="004e" name="Heavy Duty Smart Switch Gen5" config="aeotec/hdss_gen5.xml" />
@@ -170,6 +170,9 @@
 	</Manufacturer>
 	<Manufacturer id="0030" name="Cytech Tech">
 		<Product type="0001" id="0001" name="Comfort 9000 with UCM/Zwave"/>
+	</Manufacturer>
+	<Manufacturer id="0108" name="D-Link Corporation">
+		<Product type="0002" id="000e" name="DCH-Z110 Door/Window 3 in 1 sensor" config="dlink/dch-z110.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0002" name="Danfoss">
 		<Product type="0005" id="0003" name="Z Thermostat" config="danfoss/z.xml"/>

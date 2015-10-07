@@ -1402,6 +1402,7 @@ define(['app'], function (app) {
 						var img="";
 						var img2="";
 						var img3="";
+						var status="";
 						
 						var bigtext=TranslateStatusShort(item.Status);
 						if (item.UsedByCamera==true) {
@@ -1652,6 +1653,7 @@ define(['app'], function (app) {
 					    }
 					    if (item.Status.length == 1) item.Status = "";
 					    status = item.Data;
+						if (status == '0') status = "";
                     }
 					else if (item.SwitchType == "Motion Sensor") {
 						if (

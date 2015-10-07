@@ -715,6 +715,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeElmes, "Elmes" },
 		{ pTypeGeneralSwitch, sSwitchTypeAster, "Aster" },
 		{ pTypeGeneralSwitch, sSwitchTypeSartano, "Sartano" },
+		{ pTypeGeneralSwitch, sSwitchTypeEurope, "Europe" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1986,6 +1987,16 @@ bool GetLightCommand(
 		else if (switchcmd=="Set Group Level")
 		{
 			cmd=light2_sSetGroupLevel;
+			return true;
+		}
+		else if (switchcmd == "Stop")
+		{
+			cmd = gswitch_sStop;
+			return true;
+		}
+		else if (switchcmd == "Paused")
+		{
+			cmd = gswitch_sPause;
 			return true;
 		}
 		else

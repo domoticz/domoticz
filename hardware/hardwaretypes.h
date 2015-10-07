@@ -112,6 +112,7 @@
 #define sSwitchTypeElmes			0x33
 #define sSwitchTypeAster			0x34
 #define sSwitchTypeSartano			0x35
+#define sSwitchTypeEurope			0x36
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -133,7 +134,7 @@
 #define gswitch_sSound8				0x10
 #define gswitch_sStop				0x11
 #define gswitch_sProgram			0x12
-
+#define gswitch_sPause				0x13
 //--------------
 
 #define pTypeLux		0xF6

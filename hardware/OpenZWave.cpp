@@ -2984,12 +2984,10 @@ bool COpenZWave::HardResetDevice()
 	if (m_pManager == NULL)
 		return false;
 
-	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID = '%q')",
-		m_HwdID);
+	m_sql.safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID = %d)", m_HwdID);
 
 	m_pManager->ResetController(m_controllerID);
 	_log.Log(LOG_STATUS, "OpenZWave: Hard Reset device executed...");
-
 	return true;
 }
 

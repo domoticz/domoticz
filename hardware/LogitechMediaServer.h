@@ -15,7 +15,6 @@ class CLogitechMediaServer : public CDomoticzHardwareBase
 		char			szDevID[40];
 		std::string		Name;
 		std::string		IP;
-		int				Port;
 		time_t			LastOK;
 		_eMediaStatus	nStatus;
 		std::string		sStatus;
@@ -40,7 +39,7 @@ private:
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
 	void Do_Work();
 	void GetPlayerInfo();
-	void InsertUpdatePlayer(const std::string &Name, const std::string &IPAddress, const int Port);
+	void InsertUpdatePlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress);
 
 	bool StartHardware();
 	bool StopHardware();
