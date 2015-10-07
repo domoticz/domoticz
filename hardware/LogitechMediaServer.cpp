@@ -3,6 +3,7 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
+#include "../notifications/NotificationHelper.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../main/localtime_r.h"
@@ -80,6 +81,19 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	return root["result"];
 }
 
+_eNotificationTypes	CLogitechMediaServer::NotificationType(_eMediaStatus nStatus)
+{
+	switch (nStatus)
+	{
+	case MSTAT_OFF:		return NTYPE_SWITCH_OFF;
+	case MSTAT_ON:		return NTYPE_SWITCH_ON;
+	case MSTAT_PAUSED:	return NTYPE_PAUSED;
+	case MSTAT_STOPPED:	return NTYPE_STOPPED;
+	case MSTAT_AUDIO:	return NTYPE_AUDIO;
+	default:			return NTYPE_SWITCH_OFF;
+	}
+}
+
 bool CLogitechMediaServer::StartHardware()
 {
 	StopHardware();
@@ -142,7 +156,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
 				// 1:	Update the DeviceStatus
-				if (nStatus == MSTAT_ON)
+				if ((nStatus == MSTAT_AUDIO) || (nStatus == MSTAT_PAUSED))
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				else
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
@@ -173,6 +187,12 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 					}
 				}
 
+				// 4:   Trigger Notifications & events on status change
+				if (itt->nStatus != nStatus)
+				{
+					m_notifications.CheckAndHandleNotification(itt->ID, itt->Name, NotificationType(nStatus), sStatus.c_str());
+				}
+
 				itt->nStatus = nStatus;
 				itt->sStatus = sStatus;
 				itt->sShortStatus = sShortStatus;
@@ -186,6 +206,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 {
 	bool bPingOK = false;
 	_eMediaStatus nStatus = MSTAT_UNKNOWN;
+	_eMediaStatus nOldStatus = Node.nStatus;
 	std::string	sPlayerId = Node.IP;
 	std::string	sStatus = "";
 
@@ -205,8 +226,21 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 				if (root["power"].asString() == "0")
 					nStatus = MSTAT_OFF;
 				else {
-					nStatus = MSTAT_ON;
 					std::string sMode = root["mode"].asString();
+					if (sMode == "play") 
+						nStatus = MSTAT_AUDIO;
+					else if (sMode == "pause") 
+						if (nOldStatus == MSTAT_OFF)
+							nStatus = MSTAT_ON;
+						else
+							nStatus = MSTAT_PAUSED;
+					else if (sMode == "stop")
+						if (nOldStatus == MSTAT_OFF)
+							nStatus = MSTAT_ON;
+						else
+							nStatus = MSTAT_STOPPED;
+					else
+						nStatus = MSTAT_ON;
 					std::string	sTitle = "";
 					std::string	sAlbum = "";
 					std::string	sArtist = "";
@@ -584,6 +618,20 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 	else
 	{
 		_log.Log(LOG_ERROR, "Logitech Media Server: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+	}
+}
+
+void CLogitechMediaServer::SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration)
+{
+	if ((playerIP != "") && (text != "") && (duration > 0))
+	{
+		std::string sLine1 = subject;
+		std::string sLine2 = text;
+		std::string sFont = ""; //"huge";
+		std::string sBrightness = "4";
+		std::string sDuration = std::to_string(duration);
+		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";
+		Json::Value root = Query(m_IP, m_Port, sPostdata);
 	}
 }
 

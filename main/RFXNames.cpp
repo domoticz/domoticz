@@ -271,6 +271,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_AUDIO, "Play Audio", "A" },
 		{ NTYPE_PHOTO, "View Photo", "X" },
 		{ NTYPE_PAUSED, "Pause Stream", "Y" },
+		{ NTYPE_STOPPED, "Stop Stream", "Q" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -307,6 +308,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_AUDIO, "" },
 		{ NTYPE_PHOTO, "" },
 		{ NTYPE_PAUSED, "" },
+		{ NTYPE_STOPPED, "" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -1000,6 +1002,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 		{ MSTAT_OFF, "Off" },
 		{ MSTAT_ON, "On" },
 		{ MSTAT_PAUSED, "Paused" },
+		{ MSTAT_STOPPED, "Stopped" },
 		{ MSTAT_VIDEO, "Video" },
 		{ MSTAT_AUDIO, "Audio" },
 		{ MSTAT_PHOTO, "Photo" },
