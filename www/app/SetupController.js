@@ -585,6 +585,27 @@ define(['app'], function (app) {
 				e.preventDefault();
 			});
 		}
+		
+		$scope.CleanupShortLog = function()
+		{
+			bootbox.confirm($.t("Are you sure to delete the Log?\n\nThis action can not be undone!"), function (result) {
+				if (result == true) {
+					$.ajax({
+						url: "json.htm?type=command&param=clearshortlog&idx=" + $.devIdx,
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							$window.location = '/#Dashboard';
+							$window.location.reload();
+						},
+						error: function () {
+							HideNotify();
+							ShowNotify($.t('Problem clearing the Log!'), 2500, true);
+						}
+					});
+				}
+			});
+		}
 
 		init();
 
