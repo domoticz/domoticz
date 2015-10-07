@@ -4930,7 +4930,6 @@ void CSQLHelper::AddCalendarUpdateFan()
 	}
 }
 
-
 void CSQLHelper::CleanupShortLog()
 {
 	int n5MinuteHistoryDays=1;
@@ -4978,6 +4977,24 @@ void CSQLHelper::CleanupShortLog()
 		sprintf(szQuery, "DELETE FROM Fan WHERE %s", szQueryFilter.c_str());
 		query(szQuery);
 	}
+}
+
+void CSQLHelper::ClearShortLog()
+{
+	query("DELETE FROM Temperature");
+	query("DELETE FROM Rain");
+	query("DELETE FROM Wind");
+	query("DELETE FROM UV");
+	query("DELETE FROM Meter");
+	query("DELETE FROM MultiMeter");
+	query("DELETE FROM Percentage");
+	query("DELETE FROM Fan");
+	VacuumDatabase();
+}
+
+void CSQLHelper::VacuumDatabase()
+{
+	query("VACUUM");
 }
 
 void CSQLHelper::DeleteHardware(const std::string &idx)
@@ -5482,13 +5499,20 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 		}
 	}
 #endif
-	return OpenDatabase();
+	if (!OpenDatabase())
+		return false;
+	//Cleanup the database
+	VacuumDatabase();
+	return true;
 }
 
 bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 {
 	if (!m_dbase)
 		return false; //database not open!
+
+	//First cleanup the database
+	VacuumDatabase();
 
 	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
 
