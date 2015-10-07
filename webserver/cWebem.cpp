@@ -8,6 +8,9 @@
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // uuid generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include "reply.hpp"
 #include "request.hpp"
 #include "mime_types.hpp"
@@ -1202,10 +1205,20 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 	rep.headers[ahsize].value = sstr.str();
 }
 
-std::string cWebemRequestHandler::generateSessionID(const std::string &sHost, const std::string &sUsername, const std::string &sPassword)
+std::string cWebemRequestHandler::generateSessionID()
 {
-	std::string token = "Username:" + sUsername + ";Password:" + sPassword + ";Host:" + sHost;
-	return GenerateMD5Hash(base64_encode((const unsigned char*)token.c_str(), token.size()));
+	// Session id should not be predictable
+	boost::uuids::random_generator gen;
+	std::stringstream ss;
+	std::string sessionId;
+	
+	boost::uuids::uuid u = gen();
+	ss << u;
+	sessionId = ss.str();
+
+	//_log.Log(LOG_STATUS, "generate new session id token %s", sessionId.c_str());
+
+	return GenerateMD5Hash(base64_encode((const unsigned char*)sessionId.c_str(), sessionId.size()));
 }
 
 void cWebemRequestHandler::send_cookie(reply& rep, const std::string &sSID, const time_t expires)
@@ -1359,7 +1372,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 						std::vector<_tWebUserPassword>::iterator itt;
 						for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
 						{
-							std::string tempSID = generateSessionID(sHost, itt->Username, itt->Password);
+							std::string tempSID = generateSessionID();
 							if (tempSID == sSID)
 							{
 								_tWebEmSession usession;
@@ -1580,7 +1593,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		{
 			if (itt->Username == usession.username)
 			{
-				std::string sSID = generateSessionID(sHost, myWebem->m_actualuser, itt->Password);
+				std::string sSID = generateSessionID();
 				myWebem->m_sessionids[sSID] = usession;
 				myWebem->m_actsessionid = sSID;
 				send_cookie(rep, sSID, usession.lasttouch);

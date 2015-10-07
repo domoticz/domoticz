@@ -155,6 +155,9 @@ define(['app'], function (app) {
 						if ((subsystem=="http") || (subsystem=="kodi") || (subsystem=="lms")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
 						}
+						else if (subsystem=="email") {
+							ShowNotify($.t('Problem sending Email, please check credentials!'), 3000, true);
+						}
 						else {
 							ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
 						}
@@ -601,6 +604,27 @@ define(['app'], function (app) {
 				var position = $(namescroll).offset();
 				scroll(0,position.top-60);
 				e.preventDefault();
+			});
+		}
+		
+		$scope.CleanupShortLog = function()
+		{
+			bootbox.confirm($.t("Are you sure to delete the Log?\n\nThis action can not be undone!"), function (result) {
+				if (result == true) {
+					$.ajax({
+						url: "json.htm?type=command&param=clearshortlog&idx=" + $.devIdx,
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							$window.location = '/#Dashboard';
+							$window.location.reload();
+						},
+						error: function () {
+							HideNotify();
+							ShowNotify($.t('Problem clearing the Log!'), 2500, true);
+						}
+					});
+				}
 			});
 		}
 
