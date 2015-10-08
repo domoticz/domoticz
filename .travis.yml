@@ -10,6 +10,7 @@ before_install:
   - sudo apt-get install -y nano cmake libboost1.48-all-dev libsqlite3-dev curl libcurl4-openssl-dev libusb-dev zlib1g-dev libssl-dev libudev-dev git
   - git clone https://github.com/OpenZWave/open-zwave.git
   - ln -s open-zwave open-zwave-read-only
+  - git fetch --unshallow
 script:
   - (cd open-zwave-read-only; make)
   - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
