@@ -12,6 +12,7 @@
 #include "../tcpserver/TCPServer.h"
 #include "DataPush.h"
 #include "HttpPush.h"
+#include "concurrent_queue.h"
 
 enum eVerboseLevel
 {
@@ -155,7 +156,6 @@ private:
 
 
 	boost::mutex m_devicemutex;
-	boost::mutex decodeRXMessageMutex;
 
 	std::string m_szDomoticzUpdateURL;
 	std::string m_szDomoticzUpdateChecksumURL;
@@ -195,6 +195,16 @@ private:
 	//message decoders
 	void decode_BateryLevel(bool bIsInPercentage, unsigned char level);
 	unsigned char get_BateryLevel(const CDomoticzHardwareBase *pHardware, bool bIsInPercentage, unsigned char level);
+
+	// RxMessage queue resources
+	boost::shared_ptr<boost::thread> m_rxMessageThread;
+	void Do_Work_On_Rx_Messages();
+	struct _tRxMessage {
+		const CDomoticzHardwareBase* pHardware;
+		RBUF rxCommand;
+	};
+	concurrent_queue<_tRxMessage> m_rxMessageQueue;
+	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 
 	//(RFX) Message decoders
 	unsigned long long decode_InterfaceMessage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);

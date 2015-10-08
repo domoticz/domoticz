@@ -314,8 +314,7 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
-//	boost::lock_guard<boost::mutex> l1(decodeRXMessageMutex);
-	boost::lock_guard<boost::mutex> l2(m_devicemutex);
+	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
@@ -883,6 +882,10 @@ bool MainWorker::Stop()
 		m_thread->join();
 		m_thread.reset();
 	}
+	if (m_rxMessageThread) {
+		m_rxMessageThread->join();
+		m_rxMessageThread.reset();
+	}
 	return true;
 }
 
@@ -931,8 +934,9 @@ bool MainWorker::StartThread()
 	}
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work, this)));
+	m_rxMessageThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work_On_Rx_Messages, this)));
 
-	return (m_thread!=NULL);
+	return (m_thread!=NULL) && (m_rxMessageThread!=NULL);
 }
 
 #define HEX( x ) \
@@ -1622,8 +1626,49 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 
 void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)
 {
-	boost::lock_guard<boost::mutex> l(decodeRXMessageMutex);
+	// Build queue item
+	_tRxMessage rxMessage;
+	rxMessage.pHardware = pHardware;
+	memset((void *) &rxMessage.rxCommand, 0, sizeof(RBUF));
+	memcpy((void *) &rxMessage.rxCommand, pRXCommand, pRXCommand[0] + 1);
+	// Push item to queue
+	m_rxMessageQueue.push(rxMessage);
+}
 
+void MainWorker::Do_Work_On_Rx_Messages() {
+	_log.Log(LOG_STATUS, "RxMessage queue worker started...");
+
+	while (true) {
+
+		if (m_stoprequested) {
+			// Server is stopping
+			break;
+		}
+
+		if (false) { //TODO : <ready to process messages>
+			// Hardware devices are not ready yet
+			sleep_milliseconds(500);
+			continue;
+		}
+
+		// Wait and pop next message
+		_tRxMessage rxMessage;
+		m_rxMessageQueue.wait_and_pop(rxMessage);
+		if ((rxMessage.pHardware != NULL) && (&rxMessage.rxCommand != NULL)) {
+			//_log.Log(LOG_STATUS, "MainWorker::Do_Work_On_Rx_Messages(hrdw=%d, type=%02X)",
+			//		rxMessage.pHardware->m_HwdID,
+			//		((const unsigned char *) &rxMessage.rxCommand)[1]);
+			ProcessRXMessage(rxMessage.pHardware,
+					(const unsigned char *) &rxMessage.rxCommand);
+		}
+
+	}
+
+	_log.Log(LOG_STATUS, "RxMessage queue worker stopped...");
+}
+
+void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)
+{
 	// current date/time based on current system
 	time_t now = time(0);
 
