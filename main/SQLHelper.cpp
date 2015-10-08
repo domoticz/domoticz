@@ -3132,6 +3132,8 @@ void CSQLHelper::ScheduleShortlog()
 		_log.Log(LOG_ERROR, "Domoticz: Error running the 5 minute schedule script!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+#else
+		(void)e;
 #endif
 		return;
 	}
@@ -3162,6 +3164,8 @@ void CSQLHelper::ScheduleDay()
 		_log.Log(LOG_ERROR, "Domoticz: Error running the daily minute schedule script!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR, "-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+#else
+		(void)e;
 #endif
 		return;
 	}
@@ -5437,6 +5441,7 @@ void CSQLHelper::EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks)
 
 bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 {
+	_log.Log(LOG_STATUS, "Restore Database: Starting...");
 	//write file to disk
 	std::string fpath("");
 #ifdef WIN32
@@ -5450,7 +5455,10 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	std::ofstream outfile;
 	outfile.open(outputfile.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
 	if (!outfile.is_open())
+	{
+		_log.Log(LOG_ERROR, "Restore Database: Could not open backup file for writing!");
 		return false;
+	}
 	outfile << dbase;
 	outfile.flush();
 	outfile.close();
@@ -5459,7 +5467,7 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	int rc = sqlite3_open(outputfile.c_str(), &dbase_restore);
 	if (rc)
 	{
-		_log.Log(LOG_ERROR,"Error opening SQLite3 database: %s", sqlite3_errmsg(dbase_restore));
+		_log.Log(LOG_ERROR,"Restore Database: Could not open SQLite3 database: %s", sqlite3_errmsg(dbase_restore));
 		sqlite3_close(dbase_restore);
 		return false;
 	}
@@ -5471,6 +5479,7 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	sqlite3_stmt *statement;
 	if(sqlite3_prepare_v2(dbase_restore, ss.str().c_str(), -1, &statement, 0) != SQLITE_OK)
 	{
+		_log.Log(LOG_ERROR, "Restore Database: Seems this is not our database, or it is corrupted!");
 		sqlite3_close(dbase_restore);
 		return false;
 	}
@@ -5483,7 +5492,10 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 	std::ofstream outfile2;
 	outfile2.open(m_dbase_name.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
 	if (!outfile2.is_open())
+	{
+		_log.Log(LOG_ERROR, "Restore Database: Could not open backup file for writing!");
 		return false;
+	}
 	outfile2 << dbase;
 	outfile2.flush();
 	outfile2.close();
@@ -5496,14 +5508,18 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 		int ret=chown(m_dbase_name.c_str(),pw->pw_uid,pw->pw_gid);
 		if (ret!=0)
 		{
-			_log.Log(LOG_ERROR, "Error setting database ownership (chown returned an error!)");
+			_log.Log(LOG_ERROR, "Restore Database: Could not set database ownership (chown returned an error!)");
 		}
 	}
 #endif
 	if (!OpenDatabase())
+	{
+		_log.Log(LOG_ERROR, "Restore Database: Error opening new database!");
 		return false;
+	}
 	//Cleanup the database
 	VacuumDatabase();
+	_log.Log(LOG_STATUS, "Restore Database: Succeeded!");
 	return true;
 }
 
