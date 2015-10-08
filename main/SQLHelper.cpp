@@ -2739,14 +2739,8 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				}
 			}
 
-			_eHardwareTypes type;
-			CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(HardwareID);
-			if (pBaseHardware != NULL) {
-				type = pBaseHardware->HwdType;
-			}
 			//Check for notifications
-			if (type != HTYPE_LogitechMediaServer)
-				m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+			m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
 			if (bIsLightSwitchOn)
 			{
 				if (AddjValue!=0) //Off Delay

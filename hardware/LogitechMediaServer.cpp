@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "LogitechMediaServer.h"
 #include <boost/lexical_cast.hpp>
+#include "../hardware/hardwaretypes.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -191,7 +192,10 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				// 4:   Trigger Notifications & events on status change
 				if (itt->nStatus != nStatus)
 				{
-					m_notifications.CheckAndHandleNotification(itt->ID, itt->Name, NotificationType(nStatus), sStatus.c_str());
+					//Don't notify on on/off here: that's already done by SQLHelper.UpdateValueInt...
+					if ((nStatus != MSTAT_ON) && (nStatus != MSTAT_OFF))
+						m_notifications.CheckAndHandleNotification(itt->ID, itt->Name, NotificationType(nStatus), sStatus.c_str());
+					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, itt->ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(itt->nStatus), sStatus.c_str(), itt->Name, 0);
 				}
 
 				itt->nStatus = nStatus;
@@ -482,18 +486,28 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 	{
 		if (itt->DevID == DevID)
 		{
-			std::string	sPlayerId = itt->IP;
-			std::string sPower = "0";
-
-			if (pSen->LIGHTING2.cmnd == light2_sOn)
+			switch (pSen->LIGHTING2.cmnd)
 			{
-				sPower = "1";
+			case light2_sOn:
+			case light2_sGroupOn:
+				SendCommand(itt->ID, "PowerOn");
+				return true;
+			case light2_sOff:
+			case light2_sGroupOff:
+				SendCommand(itt->ID, "PowerOff");
+				return true;
+			case gswitch_sPlay:
+				SendCommand(itt->ID, "Play");
+				return true;
+			case gswitch_sStop:
+				SendCommand(itt->ID, "Stop");
+				return true;
+			case gswitch_sPause:
+				SendCommand(itt->ID, "Pause");
+				return true;
+			default:
+				return true;
 			}
-
-			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"power\",\"" + sPower + "\"]]}";
-			Json::Value root = Query(m_IP, m_Port, sPostdata);
-
-			return true;
 		}
 	}
 
@@ -604,6 +618,12 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 		}
 		else if (command == "Forward") {
 			sLMSCmnd = "\"button\", \"fwd.single\"";
+		}
+		else if (command == "PowerOn") {
+			sLMSCmnd = "\"power\", \"1\"";
+		}
+		else if (command == "PowerOff") {
+			sLMSCmnd = "\"power\", \"0\"";
 		}
 
 		if (sLMSCmnd != "")

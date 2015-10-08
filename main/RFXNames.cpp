@@ -1997,9 +1997,14 @@ bool GetLightCommand(
 			cmd = gswitch_sStop;
 			return true;
 		}
-		else if (switchcmd == "Paused")
+		else if ((switchcmd == "Paused")||(switchcmd == "Pause"))
 		{
 			cmd = gswitch_sPause;
+			return true;
+		}
+		else if (switchcmd == "Play")
+		{
+			cmd = gswitch_sPlay;
 			return true;
 		}
 		else
