@@ -5061,6 +5061,7 @@ void CSQLHelper::DeleteDevice(const std::string &idx)
 	safe_query("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == '%q')",idx.c_str());
 	safe_query("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')",idx.c_str());
 	safe_query("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')",idx.c_str());
+	m_notifications.ReloadNotifications();
 
 
     //notify eventsystem device is no longer present
