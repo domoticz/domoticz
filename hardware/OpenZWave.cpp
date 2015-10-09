@@ -418,7 +418,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		return;
 
 	//Send 2 OZW control panel
-	OnCPNotification(_notification);
+	m_ozwcp.OnCPNotification(_notification);
 
 	OpenZWave::Manager* pManager = OpenZWave::Manager::Get();
 	if (!pManager)
@@ -1135,8 +1135,6 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 {
 	if (m_pManager == NULL)
 		return false;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
 	{
@@ -1278,7 +1276,6 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 {
 	if (m_pManager == NULL)
 		return false;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 
 	NodeInfo *pNode = GetNodeInfo(m_controllerID, nodeID);
 	if (!pNode)
@@ -1320,7 +1317,6 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 {
 	if (m_pManager == NULL)
 		return;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT, vID) == true)
 	{
@@ -3518,7 +3514,6 @@ void COpenZWave::SetThermostatMode(const int nodeID, const int instanceID, const
 {
 	if (m_pManager == NULL)
 		return;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, vID) == true)
 	{
@@ -3531,7 +3526,6 @@ void COpenZWave::SetThermostatFanMode(const int nodeID, const int instanceID, co
 {
 	if (m_pManager == NULL)
 		return;
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, vID) == true)
 	{
@@ -3542,6 +3536,7 @@ void COpenZWave::SetThermostatFanMode(const int nodeID, const int instanceID, co
 
 std::string COpenZWave::GetSupportedThermostatModes(const unsigned long ID)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	std::string retstr = "";
 	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
@@ -3555,7 +3550,6 @@ std::string COpenZWave::GetSupportedThermostatModes(const unsigned long ID)
 	const _tZWaveDevice* pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_MODE);
 	if (pDevice)
 	{
-		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_MODE, vID) == true)
 		{
@@ -3586,6 +3580,7 @@ std::string COpenZWave::GetSupportedThermostatModes(const unsigned long ID)
 
 std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 	std::string retstr = "";
 	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
 	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
@@ -3599,7 +3594,6 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 	const _tZWaveDevice* pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE);
 	if (pDevice)
 	{
-		boost::lock_guard<boost::mutex> l(m_NotificationMutex);
 		OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 		if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_FAN_MODE, vID) == true)
 		{
@@ -4754,7 +4748,7 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					pOZWHardware->SetAllNodesChanged();
+					pOZWHardware->m_ozwcp.SetAllNodesChanged();
 					std::string wwwFile = szWWWFolder + "/ozwcp/cp.html";
 					std::ifstream testFile(wwwFile.c_str(), std::ios::binary);
 					std::vector<char> fileContents((std::istreambuf_iterator<char>(testFile)),
@@ -4776,7 +4770,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->SendPollResponse();
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.SendPollResponse();
 					m_pWebEm->m_outputfilename = "poll.xml";
 				}
 			}
@@ -4798,7 +4793,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->SendNodeConfResponse(iNode);
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.SendNodeConfResponse(iNode);
 				}
 			}
 			return m_retstr;
@@ -4819,7 +4815,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->SendNodeValuesResponse(iNode);
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.SendNodeValuesResponse(iNode);
 				}
 			}
 			return m_retstr;
@@ -4838,7 +4835,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->SetNodeValue(strarray[0], strarray[1]);
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.SetNodeValue(strarray[0], strarray[1]);
 				}
 			}
 			return m_retstr;
@@ -4857,7 +4855,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->SetNodeButton(strarray[0], strarray[1]);
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.SetNodeButton(strarray[0], strarray[1]);
 				}
 			}
 			return m_retstr;
@@ -4878,7 +4877,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str()));
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.DoAdminCommand(sFun, atoi(sNode.c_str()), atoi(sButton.c_str()));
 				}
 			}
 			return m_retstr;
@@ -4902,7 +4902,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->DoNodeChange(sFun, atoi(sNode.c_str()), sValue);
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.DoNodeChange(sFun, atoi(sNode.c_str()), sValue);
 				}
 			}
 			return m_retstr;
@@ -4916,7 +4917,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->SaveConfig();
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.SaveConfig();
 				}
 			}
 			return m_retstr;
@@ -4930,7 +4932,8 @@ namespace http {
 				if (pHardware->HwdType == HTYPE_OpenZWave)
 				{
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-					m_retstr = pOZWHardware->GetCPTopo();
+					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
+					m_retstr = pOZWHardware->m_ozwcp.GetCPTopo();
 					m_pWebEm->m_outputfilename = "topo.xml";
 				}
 			}
@@ -4947,6 +4950,7 @@ namespace http {
 			if (pHardware->HwdType == HTYPE_OpenZWave)
 			{
 			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+			boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 			m_retstr = pOZWHardware->GetCPStats();
 			m_pWebEm->m_outputfilename = "stats.xml";
 			}
