@@ -64,6 +64,7 @@ enum _eMediaStatus
 	MSTAT_VIDEO,
 	MSTAT_AUDIO,
 	MSTAT_PHOTO,
+	MSTAT_PLAYING,
 	MSTAT_UNKNOWN
 };
 
@@ -159,7 +160,8 @@ enum _eNotificationTypes
 	NTYPE_AUDIO,
 	NTYPE_PHOTO,
 	NTYPE_PAUSED,
-	NTYPE_STOPPED
+	NTYPE_STOPPED,
+	NTYPE_PLAYING
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);

@@ -4344,11 +4344,11 @@ namespace http {
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
 						ii++;
-						root["result"][ii]["val"] = NTYPE_AUDIO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
-						ii++;
 						if (type == HTYPE_Kodi) {
+							root["result"][ii]["val"] = NTYPE_AUDIO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
+							ii++;
 							root["result"][ii]["val"] = NTYPE_VIDEO;
 							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
 							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
@@ -4359,6 +4359,10 @@ namespace http {
 							ii++;
 						}
 						if (type == HTYPE_LogitechMediaServer) {
+							root["result"][ii]["val"] = NTYPE_PLAYING;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
+							ii++;
 							root["result"][ii]["val"] = NTYPE_STOPPED;
 							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
 							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
