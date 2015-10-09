@@ -10,18 +10,16 @@
 class CHardwareMonitor : public CDomoticzHardwareBase
 {
 public:
-	CHardwareMonitor(void);
+	CHardwareMonitor(const int ID);
 	~CHardwareMonitor(void);
-	void StartHardwareMonitor();
-	void StopHardwareMonitor();
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
 private:
-	bool m_bEnabled;
+	bool StartHardware();
+	bool StopHardware();
 	double m_lastquerytime;
 	void Do_Work();	
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
-	void Init();
 	void FetchData();
 	void GetInternalTemperature();
 	void GetInternalVoltage();
@@ -32,16 +30,14 @@ private:
 	void SendTempSensor(const int Idx, const float Temp, const std::string &defaultname);
 	void SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname);
 	void SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname);
-	bool StartHardware() { return true; };
-	bool StopHardware() { return true; };
 #ifdef WIN32
-	void InitWMI();
+	bool InitWMI();
 	void ExitWMI();
 	bool IsOHMRunning();
 	void RunWMIQuery(const char* qTable, const std::string &qType);
-	IWbemLocator *pLocator; 
-	IWbemServices *pServicesOHM;
-	IWbemServices *pServicesSystem;
+	IWbemLocator *m_pLocator; 
+	IWbemServices *m_pServicesOHM;
+	IWbemServices *m_pServicesSystem;
 #elif defined __linux__
 	void FetchUnixData();
 	long long m_lastloadcpu;
