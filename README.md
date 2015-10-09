@@ -1,5 +1,7 @@
 # Domoticz
 
+![image](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true "Build Status")
+
 Domoticz is a Home Automation System that lets you monitor and configure various devices like: Lights, Switches, various sensors/meters like Temperature, Rain, Wind, UV, Electra, Gas, Water and much more. Notifications/Alerts can be sent to any mobile device
 
 ## Multi platform: Linux/Windows/Embedded Devices
