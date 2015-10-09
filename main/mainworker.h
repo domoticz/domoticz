@@ -4,7 +4,6 @@
 #include "../hardware/DomoticzHardware.h"
 #include "Scheduler.h"
 #include "EventSystem.h"
-#include "../hardware/HardwareMonitor.h"
 #include "Camera.h"
 #include <map>
 #include <deque>
@@ -114,7 +113,6 @@ public:
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
 	CDataPush m_datapush;
-	CHardwareMonitor m_hardwaremonitor;
 	CCameraHandler m_cameras;
 	CHttpPush m_httppush;
 

@@ -962,7 +962,11 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_System)	{
-				//All fine here
+				//There should be only one
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
+				if (!result.empty())
+					return;
 			}
 			else if (htype == HTYPE_1WIRE) {
 				//all fine here!
@@ -1165,7 +1169,16 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_System) {
-				//All fine here
+				//There should be only one, and with this ID
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
+				if (!result.empty())
+				{
+					int hID = atoi(result[0][0].c_str());
+					int aID = atoi(idx.c_str());
+					if (hID != aID)
+						return;
+				}
 			}
 			else if (htype == HTYPE_TE923) {
 				//All fine here
@@ -1295,21 +1308,9 @@ namespace http {
 					);
 			}
 
-			//Special case for internal system monitoring
-			if (htype == HTYPE_System)
-			{
-				m_mainworker.m_hardwaremonitor.StopHardwareMonitor();
-				if (bEnabled)
-				{
-					m_mainworker.m_hardwaremonitor.StartHardwareMonitor();
-				}
-			}
-			else
-			{
-				//re-add the device in our system
-				int ID = atoi(idx.c_str());
-				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
-			}
+			//re-add the device in our system
+			int ID = atoi(idx.c_str());
+			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 		}
 
 		void CWebServer::Cmd_GetDeviceValueOptions(Json::Value &root)

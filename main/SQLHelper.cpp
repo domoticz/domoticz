@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 82
+#define DB_VERSION 83
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1510,6 +1510,16 @@ bool CSQLHelper::OpenDatabase()
 				safe_query("UPDATE Meter SET Value=Value/100, Usage=Usage*10 WHERE DeviceRowID=%s", sd2[0].c_str());
 				//meter_calendar table
 				safe_query("UPDATE Meter_Calendar SET Value=Value/100, Counter=Counter/100 WHERE (DeviceRowID==%s)", sd2[0].c_str());
+			}
+		}
+		if (dbversion < 83)
+		{
+			//Add hardware monitor as normal hardware class (if not already added)
+			std::vector<std::vector<std::string> > result;
+			result = safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
+			if (result.size() < 1)
+			{
+				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
 			}
 		}
 	}

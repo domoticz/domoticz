@@ -8,7 +8,7 @@
 #include "../main/SQLHelper.h"
 #include <wchar.h>
 
-//Note, for windows we use OpenHardware Monitor
+//Note, for Windows we use OpenHardware Monitor
 //http://openhardwaremonitor.org/
 
 #ifdef WIN32
@@ -48,109 +48,91 @@ extern std::string szInternalCurrentCommand;
 
 #define round(a) ( int ) ( a + .5 )
 
-CHardwareMonitor::CHardwareMonitor()
+CHardwareMonitor::CHardwareMonitor(const int ID)
 {
+	m_HwdID = ID;
 	m_stoprequested=false;
-	m_bEnabled=true;
-	HwdType = HTYPE_System;
 	m_bOutputLog = false;
-	Name = "Motherboard sensors";
 #ifdef WIN32
-	InitWMI();
+	m_pLocator = NULL;
+	m_pServicesOHM = NULL;
+	m_pServicesSystem = NULL;
+	CoInitializeEx(0, COINIT_MULTITHREADED);
+	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 #endif
 }
 
 
 CHardwareMonitor::~CHardwareMonitor(void)
 {
+	StopHardware();
 #ifdef WIN32
-	ExitWMI();
+	CoUninitialize();
 #endif
-	StopHardwareMonitor();
-}
-void CHardwareMonitor::StartHardwareMonitor()
-{
-	Init();
-
-	if (m_bEnabled)
-	{
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHardwareMonitor::Do_Work, this)));
-	}
 }
 
-void CHardwareMonitor::StopHardwareMonitor()
+bool CHardwareMonitor::StartHardware()
 {
-	if (!m_bEnabled)
-		return;
+#ifdef __APPLE__
+	//sorry apple not supported for now
+	return false;
+#endif
+	StopHardware();
 
+#ifdef WIN32
+	if (!InitWMI())
+		return false;
+#endif
+
+	m_stoprequested = false;
+	m_lastquerytime = 0;
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHardwareMonitor::Do_Work, this)));
+	m_bIsStarted = true;
+	sOnConnected(this);
+	return true;
+}
+
+bool CHardwareMonitor::StopHardware()
+{
 	if (m_thread!=NULL)
 	{
 		m_stoprequested = true;
 		m_thread->join();
-		//if (pLocator!=NULL)
-		//pLocator->Release(); 
-		//if (pServicesOHM!=NULL)
-		//pServicesOHM->Release();
-		//if (pServicesSystem!=NULL)
-		//pServicesSystem->Release();
+		m_thread.reset();
 	}
-}
-
-void CHardwareMonitor::Init()
-{
-#ifdef __APPLE__
-	//sorry apple not supported for now
-	m_bEnabled=false;
-	return;
+#ifdef WIN32
+	ExitWMI();
 #endif
-	// Check if there is already a hardware devices for our class, if no add it.
-	m_lastquerytime=0;
-	m_HwdID = 0;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID,Enabled FROM Hardware WHERE (Type==%d) AND (Name=='Motherboard') LIMIT 1", HTYPE_System);
-	if (result.size()<1)
-	{
-		m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
-		result=m_sql.safe_query("SELECT MAX(ID) FROM Hardware");
-		if (result.size()>0)
-		{
-			std::vector<std::string> sd=result[0];
-			m_HwdID=atoi(sd[0].c_str());
-		}
-		result = m_sql.safe_query("SELECT ID,Enabled FROM Hardware WHERE (Type==%d) AND (Name=='Motherboard') LIMIT 1", HTYPE_System);
-	}
-	
-	if (result.size()>0)
-    {
-		std::vector<std::string> sd=result[0];
-		m_HwdID=atoi(sd[0].c_str());
-		m_bEnabled=atoi(sd[1].c_str())!=0;
-	}
-	sOnConnected(this);
+	m_bIsStarted = false;
+	return true;
 }
 
 void CHardwareMonitor::Do_Work()
 {
 	_log.Log(LOG_STATUS, "Hardware Monitor: Started");
 
-	m_stoprequested=false;
-	int sec_counter = 0;
+	int msec_counter = 0;
+	int sec_counter = POLL_INTERVAL - 3;
 	while (!m_stoprequested)
 	{
-		sleep_seconds(1);
-		sec_counter++;
-
-		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat = mytime(NULL);
-		}
-
-		if (sec_counter%POLL_INTERVAL == 0)
+		sleep_milliseconds(500);
+		msec_counter++;
+		if (msec_counter == 2)
 		{
-			FetchData();
+			msec_counter = 0;
+			sec_counter++;
+			if (sec_counter % 12 == 0) {
+				m_LastHeartbeat = mytime(NULL);
+			}
+
+			if (sec_counter%POLL_INTERVAL == 0)
+			{
+				FetchData();
+			}
 		}
 	}
-	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
 
+	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
 }
 
 void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
@@ -441,131 +423,132 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 }
 
 #ifdef WIN32
-void CHardwareMonitor::InitWMI()
+bool CHardwareMonitor::InitWMI()
 {
-	pLocator=0; 
-	pServicesOHM=0;
-	pServicesSystem=0;
 	HRESULT hr;
-	hr = CoInitializeEx(0, COINIT_MULTITHREADED);
-    if (SUCCEEDED(hr))
-	{
-		hr = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
-		if (SUCCEEDED(hr)) 
-		{
-			hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLocator);
-			if (SUCCEEDED(hr))
-			{
-				hr = pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &pServicesOHM);
-				hr = pLocator->ConnectServer(L"root\\CIMV2",NULL, NULL, NULL, 0, NULL, NULL, &pServicesSystem);
-			}
-		}
-	}
+	if (m_pLocator)
+		return true; //already initialized
+	hr = CoCreateInstance(CLSID_WbemAdministrativeLocator, NULL, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&m_pLocator);
+	if (FAILED(hr))
+		return false;
+	hr = m_pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesOHM);
+	if (FAILED(hr))
+		return false;
+	hr = m_pLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesSystem);
+	if (FAILED(hr))
+		return false;
+	return true;
 }
 
 void CHardwareMonitor::ExitWMI()
 {
-	if (pServicesOHM!=NULL)
-		pServicesOHM->Release();
-	if (pServicesSystem!=NULL)
-		pServicesSystem->Release();
-	if (pLocator!=NULL)
-		pLocator->Release();
-	CoUninitialize();
+	if (m_pServicesSystem != NULL)
+		m_pServicesSystem->Release();
+	m_pServicesSystem = NULL;
+	if (m_pServicesOHM!=NULL)
+		m_pServicesOHM->Release();
+	m_pServicesOHM = NULL;
+	if (m_pLocator!=NULL)
+		m_pLocator->Release();
+	m_pLocator = NULL;
 }
 
 
 bool CHardwareMonitor::IsOHMRunning()
 {
-	IEnumWbemClassObject* pEnumerator = NULL;  
+	bool bOHMRunning = false;
+	IEnumWbemClassObject* pEnumerator = NULL;
 	HRESULT hr;
-	hr = pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
+	hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
 	if (SUCCEEDED(hr))  
 	{
 		IWbemClassObject *pclsObj=NULL;  
 		ULONG uReturn = 0;  
 		hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);  
-		if ( (FAILED(hr)) || (0 == uReturn) )
+		if ((FAILED(hr)) || (0 == uReturn))
+		{
+			pEnumerator->Release();
 			return false;
+		}
 		VARIANT vtProp;  
 		VariantInit(&vtProp);  
 		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);  
 		int procId = static_cast<int>(vtProp.iVal);
-		if (procId) return true;
+		if (procId) {
+			bOHMRunning = true;
+		}
+		pclsObj->Release();
+		pEnumerator->Release();
 	}
-	return false;
+	return bOHMRunning;
 }
 
 void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 {
-	if (pServicesOHM && pServicesSystem)
+	if ((m_pServicesOHM == NULL) || (m_pServicesSystem == NULL))
+		return;
+	HRESULT hr;
+	int dindex = 0;
+	std::string query = "SELECT * FROM ";
+	query.append(qTable);
+	query.append(" WHERE SensorType = '");
+	query.append(qType);
+	query.append("'");
+	IEnumWbemClassObject* pEnumerator = NULL; 
+	hr = m_pServicesOHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+	if (!FAILED(hr))
 	{
-		HRESULT hr;
-		int dindex = 0;
-		std::string query = "SELECT * FROM ";
-		query.append(qTable);
-		query.append(" WHERE SensorType = '");
-		query.append(qType);
-		query.append("'");
-		IEnumWbemClassObject* pEnumerator = NULL; 
-		hr = pServicesOHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-		if (!FAILED(hr))
+		// Get the data from the query
+		IWbemClassObject *pclsObj = NULL;
+		while (pEnumerator)
 		{
-			// Get the data from the query
-			IWbemClassObject *pclsObj = NULL;
-			while (pEnumerator)
+			ULONG uReturn = 0;
+			HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
+			if (FAILED(hr) || (0 == uReturn))
 			{
-				ULONG uReturn = 0;
-				HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-				if (FAILED(hr) || (0 == uReturn))
-				{
-					break;
-				}
+				break;
+			}
 
-				VARIANT vtProp;
+			VARIANT vtProp;
 
-				hr = pclsObj->Get(L"Name", 0, &vtProp, 0, 0);
+			hr = pclsObj->Get(L"Name", 0, &vtProp, 0, 0);
+			if (SUCCEEDED(hr))
+			{
+				std::string itemName = _bstr_t(vtProp.bstrVal);
+				stdreplace(itemName, "#", "");
+				VariantClear(&vtProp);
+
+				hr = pclsObj->Get(L"Value", 0, &vtProp, 0, 0);
 				if (SUCCEEDED(hr))
 				{
-					std::string itemName = _bstr_t(vtProp.bstrVal);
-					stdreplace(itemName, "#", "");
+					float fItemValue = float(vtProp.fltVal);
+					std::ostringstream itemValue;
+					if ((qType == "Load") || (qType == "Temperature")) {
+						itemValue.precision(3);
+					}
+					itemValue << fItemValue;
 					VariantClear(&vtProp);
 
-					hr = pclsObj->Get(L"Value", 0, &vtProp, 0, 0);
+					//hr = pclsObj->Get(L"InstanceId", 0, &vtProp, 0, 0);
+					hr = pclsObj->Get(L"Identifier", 0, &vtProp, 0, 0); // instance id seems to drift
 					if (SUCCEEDED(hr))
 					{
-						float fItemValue = float(vtProp.fltVal);
-						std::ostringstream itemValue;
-						if ((qType == "Load") || (qType == "Temperature")) {
-							itemValue.precision(3);
-						}
-						itemValue << fItemValue;
-						VariantClear(&vtProp);
-
-						//hr = pclsObj->Get(L"InstanceId", 0, &vtProp, 0, 0);
-						hr = pclsObj->Get(L"Identifier", 0, &vtProp, 0, 0); // instance id seems to drift
-						if (SUCCEEDED(hr))
+						std::string itemId = _bstr_t(vtProp.bstrVal);
+						if (itemId.find("/hdd") != std::string::npos)
 						{
-							std::string itemId = _bstr_t(vtProp.bstrVal);
-							if (itemId.find("/hdd") != std::string::npos)
-							{
-								itemName = itemId + " " + itemName;
-							}
-							//itemId = "WMI"+itemId;
-							//_log.Log(LOG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
-							UpdateSystemSensor(qType, dindex, itemName, itemValue.str());
-							VariantClear(&vtProp);
-							dindex++;
+							itemName = itemId + " " + itemName;
 						}
+						//itemId = "WMI"+itemId;
+						//_log.Log(LOG_NORM, "Hardware Monitor: %s, %s, %s",itemId.c_str(), itemName.c_str(),itemValue.str().c_str());
+						UpdateSystemSensor(qType, dindex, itemName, itemValue.str());
+						VariantClear(&vtProp);
+						dindex++;
 					}
 				}
-				pclsObj->Release();
 			}
-			pEnumerator->Release();
+			pclsObj->Release();
 		}
-	}
-	else {
-		//_log.Log(LOG_NORM, "Hardware Monitor: pservices null");
+		pEnumerator->Release();
 	}
 }
 #elif defined __linux__
