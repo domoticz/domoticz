@@ -1,0 +1,19 @@
+branches:
+  except:
+    - /^[0-9]/
+language: cpp
+compiler:
+  - gcc
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y build-essential
+  - sudo apt-get install -y nano cmake libboost1.48-all-dev libsqlite3-dev curl libcurl4-openssl-dev libusb-dev zlib1g-dev libssl-dev libudev-dev git
+  - git clone https://github.com/OpenZWave/open-zwave.git
+  - ln -s open-zwave open-zwave-read-only
+  - git fetch --unshallow
+script:
+  - (cd open-zwave-read-only; make)
+  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
+  - make
+before_deploy:
+  - tar czf domoticz_${TRAVIS_BUILD_NUMBER}.tgz domoticz History.txt License.txt svnversion.h domoticz.sh --exclude .git www/ scripts/ Config/
