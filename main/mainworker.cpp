@@ -34,6 +34,7 @@
 #include "../hardware/BMP085.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
+#include "../hardware/HardwareMonitor.h"
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
 #include "../hardware/PiFace.h"
@@ -818,6 +819,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
 		break;
+	case HTYPE_System:
+		pHardware = new CHardwareMonitor(ID);
+		break;
 	case HTYPE_RaspberryGPIO:
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
@@ -873,7 +877,6 @@ bool MainWorker::Stop()
 		StopDomoticzHardware();
 		m_scheduler.StopScheduler();
 		m_eventsystem.StopEventSystem();
-		m_hardwaremonitor.StopHardwareMonitor();
 		m_datapush.Stop();
 		m_httppush.Stop();
 
@@ -912,9 +915,6 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
-	m_hardwaremonitor.sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2));
-	m_hardwaremonitor.sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
-	m_hardwaremonitor.StartHardwareMonitor();
 	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
 	m_cameras.ReloadCameras();
 
@@ -7809,7 +7809,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		}
 	}
 	float temp;
-	int volt;
+	int volt=0;
 	switch (pResponse->RFXSENSOR.subtype)
 	{
 	case sTypeRFXSensorTemp:
@@ -7848,7 +7848,6 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		case sTypeRFXSensorVolt:
 		{
 			m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, float(volt));
-
 		}
 		break;
 	}
@@ -11190,7 +11189,10 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		return false;
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
+	if (pHardware)
+	{
+		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
+	}
 
 	std::stringstream sidx;
 	sidx << devidx;

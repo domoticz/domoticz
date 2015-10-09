@@ -490,7 +490,6 @@ float CDomoticzHardwareBase::GetRainSensorValue(const int NodeID, bool &bExists)
 	int Unit = 0;
 
 	std::vector<std::vector<std::string> > results;
-	bool bDeviceExits = true;
 	results = m_sql.safe_query("SELECT ID,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, szIdx, Unit, int(pTypeRAIN), int(sTypeRAIN3));
 	if (results.size() < 1)
 	{
@@ -576,7 +575,6 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, bool &bExists)
 {
 	int Idx = (NodeID * 256) + ChildID;
-	double ret = 0;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, int(Idx), int(pTypeGeneral), int(sTypeKwh));
@@ -1188,7 +1186,6 @@ void CDomoticzHardwareBase::SendUVSensor(const int NodeID, const int ChildID, co
 	std::vector<std::vector<std::string> > result;
 
 	char szTmp[30];
-	std::string ID;
 	sprintf(szTmp, "%d", (NodeID * 256) + ChildID);
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",

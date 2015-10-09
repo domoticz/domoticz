@@ -7,7 +7,7 @@
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
-
+#include "../hardware/hardwaretypes.h"
 #include <boost/algorithm/string.hpp>
 
 #include <iostream>
@@ -351,6 +351,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						break;
 					case 4:		//Shutdown details response
 						{
+							m_Stoppable = false;
 							std::string	sAction = "Nothing";
 							if (root["result"].isMember("canshutdown"))
 							{
@@ -367,12 +368,13 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								bCanSuspend = root["result"]["cansuspend"].asBool();
 								if (bCanSuspend) sAction = "Suspend";
 							}
-							_log.Log(LOG_NORM, "Kodi: (%s) Switch Off: CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", m_Name.c_str(),
+							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Switch Off: CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", m_Name.c_str(),
 								bCanShutdown ? "true" : "false", bCanHibernate ? "true" : "false", bCanSuspend ? "true" : "false", sAction.c_str());
 
 							if (sAction != "Nothing")
 							{
-								std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":5}";
+								m_Stoppable = true;
+								std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":8}";
 								handleWrite(sMessage);
 							}
 						}
@@ -404,6 +406,10 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							bCanSuspend = root["result"]["cansuspend"].asBool();
 						}
 						m_Stoppable = (bCanShutdown || bCanHibernate || bCanSuspend);
+						break;
+					case 8:		//Shutdown response
+						if (root["result"] == "OK")
+							_log.Log(LOG_NORM, "Kodi: (%s) Shutdown command accepted.", m_Name.c_str());
 						break;
 					default:
 						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown ID found: '%s'", m_Name.c_str(), pMessage.c_str());
@@ -674,8 +680,6 @@ void CKodiNode::SendCommand(const std::string &command)
 
 bool CKodiNode::SendShutdown()
 {
-	//		{"id":1,"jsonrpc":"2.0","result":{"canhibernate":false,"canreboot":false,"canshutdown":false,"cansuspend":false}}
-
 	std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":4}";
 	handleWrite(sMessage);
 
@@ -824,10 +828,10 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 			case light2_sOff:
 			case light2_sGroupOff:
 				return (*itt)->SendShutdown();
-			case light2_sStop:
+			case gswitch_sStop:
 				(*itt)->SendCommand("stop");
 				return true;
-			case light2_sPause:
+			case gswitch_sPause:
 				(*itt)->SendCommand("playpause");
 				return true;
 			default:

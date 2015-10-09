@@ -417,8 +417,6 @@ SDK version 4.9
 #define light2_sGroupOff 0x3
 #define light2_sGroupOn 0x4
 #define light2_sSetGroupLevel 0x5
-#define light2_sStop 0x6
-#define light2_sPause 0x7
 
 #define pTypeLighting3 0x12
 #define sTypeKoppla 0x0

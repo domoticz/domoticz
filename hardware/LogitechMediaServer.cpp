@@ -310,7 +310,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 			std::string name = root["players_loop"][ii]["name"].asString();
 			std::string model = root["players_loop"][ii]["model"].asString();
 			std::string ipport = root["players_loop"][ii]["ip"].asString();
-			std::string mac = root["players_loop"][ii]["playerid"].asString();
+			std::string macaddress = root["players_loop"][ii]["playerid"].asString();
 			std::vector<std::string> IPPort;
 			StringSplit(ipport, ":", IPPort);
 			if (IPPort.size() < 2)
@@ -318,23 +318,24 @@ void CLogitechMediaServer::GetPlayerInfo()
 			std::string ip = IPPort[0];
 			int port = atoi(IPPort[1].c_str());
 
-			//	slimp3		=> 'SliMP3'					?
-			//	Squeezebox	=> 'Squeezebox 1'			V
-			//	squeezebox2	=> 'Squeezebox 2'			V
-			//	squeezebox3	=> 'Squeezebox 3'			V
-			//	transporter	=> 'Transporter'			?
-			//	receiver	=> 'Squeezebox Receiver'	X
-			//	boom		=> 'Squeezebox Boom'		?
-			//	softsqueeze	=> 'Softsqueeze'			?
-			//	controller	=> 'Squeezebox Controller'	X
-			//	squeezeplay	=> 'SqueezePlay'			?
-			//	baby		=> 'Squeezebox Radio'		V
-			//	fab4		=> 'Squeezebox Touch'		V
-			//	squeezelite	=> 'Max2Play SqueezePlug'	V
-			//	iPengiPod	=> 'iPeng iOS App'			X
-
-			if ((model == "Squeezebox") || (model == "squeezebox2") || (model == "squeezebox3") || (model == "baby") || (model == "fab4") || (model == "squeezelite")) {
-				InsertUpdatePlayer(name, ip, port);
+			if (
+				//(model == "slimp3") ||			//SliMP3
+				(model == "Squeezebox") ||			//Squeezebox 1
+				(model == "squeezebox2") ||			//Squeezebox 2
+				(model == "squeezebox3") ||			//Squeezebox 3
+				//(model == "transporter") ||		//Transporter
+				(model == "receiver") ||			//Squeezebox Receiver
+				(model == "boom") ||				//Squeezebox Boom
+				//(model == "softsqueeze") ||		//Softsqueeze
+				(model == "controller") ||			//Squeezebox Controller
+				(model == "squeezeplay") ||			//SqueezePlay
+				(model == "baby") ||				//Squeezebox Radio
+				(model == "fab4") ||				//Squeezebox Touch
+				//(model == "iPengiPod") ||			//iPeng iOS App
+				(model == "squeezelite")			//Max2Play SqueezePlug
+				) 
+			{
+				InsertUpdatePlayer(name, ip, macaddress);
 			}
 			else {
 				//show only once
@@ -352,17 +353,50 @@ void CLogitechMediaServer::GetPlayerInfo()
 	}
 }
 
-void CLogitechMediaServer::InsertUpdatePlayer(const std::string &Name, const std::string &IPAddress, const int Port)
+void CLogitechMediaServer::InsertUpdatePlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress)
 {
 	std::vector<std::vector<std::string> > result;
 
-	//Check if exists
-	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()>0)
-		return; //Already exists
-	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', %d)", m_HwdID, Name.c_str(), IPAddress.c_str(), Port);
+	//Check if exists...
+	//1) Check on MacAddress (default); Update Name in case it has been changed
+	result = m_sql.safe_query("SELECT Name FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, MacAddress.c_str());
+	if (result.size() > 0) {
+		if (result[0][0].c_str() != Name) {
+			m_sql.safe_query("UPDATE WOLNodes SET Name='%q' WHERE (HardwareID==%d) AND (MacAddress=='%q')", Name.c_str(), m_HwdID, MacAddress.c_str());
+			_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' renamed to '%s'", result[0][0].c_str(), Name.c_str());
+		}
+		return;
+	}
 
-	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
+	//2) Check on Name+IP (old format); Convert IP -> MacAddress
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", m_HwdID, Name.c_str(), IPAddress.c_str());
+	if (result.size()>0) {
+		m_sql.safe_query("UPDATE WOLNodes SET MacAddress='%q', Timeout=0 WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')", MacAddress.c_str(), m_HwdID, Name.c_str(), IPAddress.c_str());
+		_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' IP changed to MacAddress", Name.c_str());
+		return;
+	}
+
+	//3) Check on Name (old format), IP changed?; Convert IP -> MacAddress
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q')", m_HwdID, Name.c_str());
+	if (result.size()>0) {
+		m_sql.safe_query("UPDATE WOLNodes SET MacAddress='%q', Timeout=0 WHERE (HardwareID==%d) AND (Name=='%q')", MacAddress.c_str(), m_HwdID, Name.c_str());
+		_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' IP changed to MacAddress", Name.c_str());
+		return;
+	}
+
+	//4) Check on IP (old format), Name changed?; Convert IP -> MacAddress
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress=='%q')", m_HwdID, IPAddress.c_str());
+	if (result.size()>0) {
+		m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=0 WHERE (HardwareID==%d) AND (MacAddress=='%q')", Name.c_str(), MacAddress.c_str(), m_HwdID, IPAddress.c_str());
+		_log.Log(LOG_STATUS, "Logitech Media Server: Player '%s' IP changed to MacAddress", Name.c_str());
+		return;
+	}
+
+	//Player not found, add it...
+	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d, '%q', '%q', 0)", m_HwdID, Name.c_str(), MacAddress.c_str());
+	_log.Log(LOG_STATUS, "Logitech Media Server: New Player '%s' added", Name.c_str());
+
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (MacAddress='%q')", m_HwdID, MacAddress.c_str());
 	if (result.size()<1)
 		return;
 
@@ -435,7 +469,7 @@ void CLogitechMediaServer::ReloadNodes()
 {
 	m_nodes.clear();
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
+	result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -448,8 +482,6 @@ void CLogitechMediaServer::ReloadNodes()
 			sprintf(pnode.szDevID, "%X%02X%02X%02X", 0, 0, (pnode.DevID & 0xFF00) >> 8, pnode.DevID & 0xFF);
 			pnode.Name = sd[1];
 			pnode.IP = sd[2];
-			int Port = atoi(sd[3].c_str());
-			pnode.Port = (Port > 0) ? Port : 8080;
 			pnode.nStatus = MSTAT_UNKNOWN;
 			pnode.sStatus = "";
 			pnode.LastOK = mytime(NULL);
@@ -609,7 +641,7 @@ namespace http {
 			root["title"] = "LMSGetNodes";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID,Name,MacAddress,Timeout FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
+			result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", iHardwareID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -620,8 +652,7 @@ namespace http {
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["IP"] = sd[2];
-					root["result"][ii]["Port"] = atoi(sd[3].c_str());
+					root["result"][ii]["Mac"] = sd[2];
 					ii++;
 				}
 			}
