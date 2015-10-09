@@ -9443,6 +9443,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
+			else if (switchtype == STYPE_Media)
+			{
+				level = (level < 0) ? 0 : level;
+				level = (level > 100) ? 100 : level;
+			}
 			else 
 				level = (level > 15) ? 15 : level;
 
@@ -9469,7 +9474,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				}
 			}
 
-			if (!IsTesting) {
+			if ((!IsTesting) && (pHardware->HwdType != HTYPE_LogitechMediaServer)) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "LogitechMediaServer.h"
 #include <boost/lexical_cast.hpp>
+#include "../hardware/hardwaretypes.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -90,7 +91,7 @@ _eNotificationTypes	CLogitechMediaServer::NotificationType(_eMediaStatus nStatus
 	case MSTAT_ON:		return NTYPE_SWITCH_ON;
 	case MSTAT_PAUSED:	return NTYPE_PAUSED;
 	case MSTAT_STOPPED:	return NTYPE_STOPPED;
-	case MSTAT_AUDIO:	return NTYPE_AUDIO;
+	case MSTAT_PLAYING:	return NTYPE_PLAYING;
 	default:			return NTYPE_SWITCH_OFF;
 	}
 }
@@ -157,7 +158,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
 				// 1:	Update the DeviceStatus
-				if ((nStatus == MSTAT_AUDIO) || (nStatus == MSTAT_PAUSED))
+				if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED))
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				else
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
@@ -192,6 +193,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				if (itt->nStatus != nStatus)
 				{
 					m_notifications.CheckAndHandleNotification(itt->ID, itt->Name, NotificationType(nStatus), sStatus.c_str());
+					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, itt->ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(nStatus), sStatus.c_str(), itt->Name, 0);
 				}
 
 				itt->nStatus = nStatus;
@@ -229,7 +231,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 				else {
 					std::string sMode = root["mode"].asString();
 					if (sMode == "play") 
-						nStatus = MSTAT_AUDIO;
+						nStatus = MSTAT_PLAYING;
 					else if (sMode == "pause") 
 						if (nOldStatus == MSTAT_OFF)
 							nStatus = MSTAT_ON;
@@ -482,18 +484,34 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 	{
 		if (itt->DevID == DevID)
 		{
-			std::string	sPlayerId = itt->IP;
-			std::string sPower = "0";
-
-			if (pSen->LIGHTING2.cmnd == light2_sOn)
+			int iLevel = pSen->LIGHTING2.level;
+			std::string sLevel = boost::lexical_cast<std::string>(iLevel);
+			switch (pSen->LIGHTING2.cmnd)
 			{
-				sPower = "1";
+			case light2_sOn:
+			case light2_sGroupOn:
+				SendCommand(itt->ID, "PowerOn");
+				return true;
+			case light2_sOff:
+			case light2_sGroupOff:
+				SendCommand(itt->ID, "PowerOff");
+				return true;
+			case gswitch_sPlay:
+				SendCommand(itt->ID, "NowPlaying");
+				SendCommand(itt->ID, "Play");
+				return true;
+			case gswitch_sStop:
+				SendCommand(itt->ID, "Stop");
+				return true;
+			case gswitch_sPause:
+				SendCommand(itt->ID, "Pause");
+				return true;
+			case gswitch_sSetVolume:
+				SendCommand(itt->ID, "SetVolume", sLevel);
+				return true;
+			default:
+				return true;
 			}
-
-			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"power\",\"" + sPower + "\"]]}";
-			Json::Value root = Query(m_IP, m_Port, sPostdata);
-
-			return true;
 		}
 	}
 
@@ -535,7 +553,7 @@ void CLogitechMediaServer::ReloadNodes()
 	}
 }
 
-void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
+void CLogitechMediaServer::SendCommand(const int ID, const std::string &command, const std::string &param)
 {
 	std::vector<std::vector<std::string> > result;
 	std::string sPlayerId = "";
@@ -604,6 +622,15 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command)
 		}
 		else if (command == "Forward") {
 			sLMSCmnd = "\"button\", \"fwd.single\"";
+		}
+		else if (command == "PowerOn") {
+			sLMSCmnd = "\"power\", \"1\"";
+		}
+		else if (command == "PowerOff") {
+			sLMSCmnd = "\"power\", \"0\"";
+		}
+		else if (command == "SetVolume") {
+			sLMSCmnd = "\"mixer\", \"volume\", \"" + param + "\"";
 		}
 
 		if (sLMSCmnd != "")

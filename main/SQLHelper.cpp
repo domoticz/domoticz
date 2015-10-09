@@ -2739,13 +2739,13 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				}
 			}
 
-			_eHardwareTypes type;
-			CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(HardwareID);
-			if (pBaseHardware != NULL) {
-				type = pBaseHardware->HwdType;
-			}
+			_eHardwareTypes HWtype;
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
+			if (pHardware != NULL)
+				HWtype = pHardware->HwdType;
+
 			//Check for notifications
-			if (type != HTYPE_LogitechMediaServer)
+			if (HWtype != HTYPE_LogitechMediaServer) // Skip notifications for LMS here; is handled by the LMS plug-in
 				m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
 			if (bIsLightSwitchOn)
 			{
