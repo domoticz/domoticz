@@ -6,7 +6,7 @@ install:
 
 build_script:
 - cd msbuild
-- appveyor DownloadFile https://github.com/domoticz/win32-libraries/blob/master/WindowsLibraries.zip?raw=true
+- appveyor DownloadFile http://www.domoticz.com/WindowsLibraries.zip
 - '7z x WindowsLibraries.zip > NUL:'
 - cd ..
 - msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
