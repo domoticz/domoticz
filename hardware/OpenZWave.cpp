@@ -2482,6 +2482,7 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 
 	_tZWaveDevice *pDevice = NULL;
 	std::map<std::string, _tZWaveDevice>::iterator itt;
+	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 	std::string path_plus = path + ".";
 	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
 	{
@@ -2499,6 +2500,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 			}
 		}
 	}
+	devicesMutexLock.unlock();
+
 	if (pDevice == NULL)
 		return;
 

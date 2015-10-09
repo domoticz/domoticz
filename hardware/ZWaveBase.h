@@ -163,6 +163,7 @@ private:
 	time_t m_updateTime;
 	bool m_bInitState;
 	std::map<std::string,_tZWaveDevice> m_devices;
+	boost::shared_mutex m_devicesMutex;
 	boost::shared_ptr<boost::thread> m_thread;
 	bool m_stoprequested;
 };

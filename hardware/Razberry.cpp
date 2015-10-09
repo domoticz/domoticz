@@ -617,6 +617,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 	if (pDevice==NULL)
 	{
 		std::map<std::string,_tZWaveDevice>::iterator itt;
+		boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 		for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
 		{
 			std::string::size_type loc = path.find(itt->second.string_id,0);
@@ -696,6 +697,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 
 		bool bFoundInstance=false;
 		int oldinstance=_device.instanceID;
+		boost::shared_lock<boost::shared_mutex> devicesMutexLock1(m_devicesMutex);
 		for (int iInst=0; iInst<7; iInst++)
 		{
 			_device.instanceID=iInst;
@@ -707,6 +709,8 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 				break;
 			}
 		}
+		devicesMutexLock1.unlock();
+
 		if (!bFoundInstance)
 			_device.instanceID=oldinstance;
 
@@ -714,9 +718,11 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 
 		//find device again
 		std:: string devicestring_id=GenerateDeviceStringID(&_device);
+		boost::shared_lock<boost::shared_mutex> devicesMutexLock2(m_devicesMutex);
 		std::map<std::string,_tZWaveDevice>::iterator iDevice=m_devices.find(devicestring_id);
 		if (iDevice==m_devices.end())
 			return; //uhuh?
+		devicesMutexLock2.unlock();
 		pDevice=&iDevice->second;
 	}
 
@@ -830,6 +836,7 @@ void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceByScale(const int nodeID, const int scaleID, const int cmdID)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
+	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
 	{
 		if (
@@ -845,6 +852,7 @@ ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceByScale(const int nodeID, const i
 ZWaveBase::_tZWaveDevice* CRazberry::FindDeviceInstance(const int nodeID, const int instanceID, const int cmdID)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
+	boost::shared_lock<boost::shared_mutex> devicesMutexLock(m_devicesMutex);
 	for (itt=m_devices.begin(); itt!=m_devices.end(); ++itt)
 	{
 		if (
