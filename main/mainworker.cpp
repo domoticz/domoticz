@@ -1629,8 +1629,8 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	// Build queue item
 	_tRxMessage rxMessage;
 	rxMessage.pHardware = pHardware;
-	memset((void *) &rxMessage.rxCommand, 0, sizeof(RBUF));
-	memcpy((void *) &rxMessage.rxCommand, pRXCommand, pRXCommand[0] + 1);
+	std::vector<unsigned char> v(pRXCommand, pRXCommand + (pRXCommand[0] + 1));
+	rxMessage.rxCommand = v; // defensive copy
 	// Push item to queue
 	m_rxMessageQueue.push(rxMessage);
 }
@@ -1653,13 +1653,19 @@ void MainWorker::Do_Work_On_Rx_Messages() {
 
 		// Wait and pop next message
 		_tRxMessage rxMessage;
-		m_rxMessageQueue.wait_and_pop(rxMessage);
-		if ((rxMessage.pHardware != NULL) && (&rxMessage.rxCommand != NULL)) {
+		m_rxMessageQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(rxMessage,
+				boost::posix_time::milliseconds(5000));// (if no message for 5 seconds, returns anyway to check m_stoprequested)
+		if ((rxMessage.pHardware != NULL) && (!rxMessage.rxCommand.empty())) {
+
+			// Note : cannot get all CDomoticzHardwareBase* from m_hardwaredevices : m_hardwaredevices does not contain CHardwareMonitor instance.
+			const CDomoticzHardwareBase *pHardware = rxMessage.pHardware;
+			const unsigned char *pRXCommand = rxMessage.rxCommand.data();
+
 			//_log.Log(LOG_STATUS, "MainWorker::Do_Work_On_Rx_Messages(hrdw=%d, type=%02X)",
-			//		rxMessage.pHardware->m_HwdID,
-			//		((const unsigned char *) &rxMessage.rxCommand)[1]);
-			ProcessRXMessage(rxMessage.pHardware,
-					(const unsigned char *) &rxMessage.rxCommand);
+			//		pHardware->m_HwdID,
+			//		pRXCommand[1]);
+
+			ProcessRXMessage(pHardware, pRXCommand);
 		}
 
 	}

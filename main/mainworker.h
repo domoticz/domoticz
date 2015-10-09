@@ -201,7 +201,7 @@ private:
 	void Do_Work_On_Rx_Messages();
 	struct _tRxMessage {
 		const CDomoticzHardwareBase* pHardware;
-		RBUF rxCommand;
+		std::vector<unsigned char> rxCommand;
 	};
 	concurrent_queue<_tRxMessage> m_rxMessageQueue;
 	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
