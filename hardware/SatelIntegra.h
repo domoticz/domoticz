@@ -58,12 +58,16 @@ private:
 	bool GetInfo();
 	// Reads and reports zones violation
 	bool ReadZonesState(const bool firstTime = false);
+	// Reads and reports temperatures
+	bool ReadTemperatures(const bool firstTime = false);
 	// Reads and reports state of outputs
 	bool ReadOutputsState(const bool firstTime = false);
 	// Read state of arming
 	bool ReadArmState(const bool firstTime = false);
 	// Read alarm
 	bool ReadAlarm(const bool firstTime = false);
+	// Updates temperature name and type in database
+	void UpdateTempName(const unsigned int Idx, const unsigned char* name, const unsigned int partition);
 	// Updates zone name and type in database
 	void UpdateZoneName(const unsigned int Idx, const unsigned char* name, const unsigned int partition);
 	// Updates output name and type in database
@@ -79,7 +83,7 @@ private:
 	// Reports alarms to domoticz
 	void ReportAlarm(const bool isAlarm);
 	// Reports temperatures to domoticz
-	void ReportTemperature(const unsigned long Idx, unsigned int temp);
+	void ReportTemperature(const unsigned long Idx, int temp);
 	// arms given partitions
 	bool ArmPartitions(const unsigned char* partitions, const unsigned int mode = 0);
 	// disarms given partitions

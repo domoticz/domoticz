@@ -14,7 +14,8 @@
 	#define DEBUG_SatelIntegra
 #endif
 
-#define SATEL_POLL_INTERVAL 4
+#define SATEL_POLL_INTERVAL 2
+#define SATEL_TEMP_POLL_INTERVAL 120
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -151,6 +152,7 @@ void SatelIntegra::Do_Work()
 		ReadAlarm(true);
 		ReadArmState(true);
 		ReadZonesState(true);
+		ReadTemperatures(true);
 		ReadOutputsState(true);
 
 		UpdateAlarmAndArmName();
@@ -193,6 +195,14 @@ void SatelIntegra::Do_Work()
 						ReadOutputsState();
 					}
 				}
+			}
+
+			if (sec_counter % SATEL_TEMP_POLL_INTERVAL == 0)
+			{
+#ifdef DEBUG_SatelIntegra
+				_log.Log(LOG_STATUS, "Satel Integra: fetching temperature");
+#endif
+				ReadTemperatures();
 			}
 		}
 	}
@@ -429,33 +439,77 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 		return false;
 	}
 
+	return true;
+}
+
+bool SatelIntegra::ReadTemperatures(const bool firstTime)
+{
+	if (m_modelIndex == -1)
+	{
+		return false;
+	}
+
 	// Read temperatures from ATD100
 #ifdef DEBUG_SatelIntegra
 	_log.Log(LOG_STATUS, "Satel Integra: Read zones temperatures");
 #endif
-	for (unsigned int index = 0; index < zonesCount; ++index)
-	if (m_isTemperature[index])
+
+	unsigned char buffer[33];
+
+	unsigned int zonesCount = models[m_modelIndex].zones;
+	if ((zonesCount > 128) && (!m_data32))
 	{
-#ifdef DEBUG_SatelIntegra
-				_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d temperature", index + 1);
-#endif
-		unsigned char cmd[2];
-		cmd[0] = 0x7D; // read zone temperature
-		cmd[1] = (index != 255) ? (index + 1) : 0;
-		if (SendCommand(cmd, 2, buffer) > 0)
-		{
-			uint16_t* pTemp = reinterpret_cast<uint16_t*>(&buffer[2]);
-			ReportTemperature(index + 1, *pTemp);
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "Satel Integra: Send 'Read Temperature' failed");
-			return false;
-		}
+		zonesCount = 128;
 	}
+
+	for (unsigned int index = 0; index < zonesCount; ++index)
+		if (m_isTemperature[index])
+		{
+#ifdef DEBUG_SatelIntegra
+			_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d temperature", index + 1);
+#endif
+			unsigned char cmd[2];
+			cmd[0] = 0x7D; // read zone temperature
+			cmd[1] = (index != 255) ? (index + 1) : 0;
+			if (SendCommand(cmd, 2, buffer) > 0)
+			{
+				uint16_t* pTemp = reinterpret_cast<uint16_t*>(&buffer[2]);
+
+				if (firstTime)
+				{
+					unsigned char buffer[21];
+#ifdef DEBUG_SatelIntegra
+					_log.Log(LOG_STATUS, "Satel Integra: Reading temperature zone %d name", index + 1);
+#endif
+					unsigned char cmd[3];
+					cmd[0] = 0xEE;
+					cmd[1] = 0x05;
+					cmd[2] = (unsigned char)(index + 1);
+					if (SendCommand(cmd, 3, buffer) > 0)
+					{
+						ReportTemperature(index + 1, *pTemp);
+						UpdateTempName(index + 1, &buffer[4], 0);
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed", index + 1);
+					}
+				}
+				else
+				{
+					ReportTemperature(index + 1, *pTemp);
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Satel Integra: Send 'Read Temperature' failed");
+				return false;
+			}
+		}
 
 	return true;
 }
+
 
 bool SatelIntegra::ReadOutputsState(const bool firstTime)
 {
@@ -710,7 +764,7 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 }
 
 
-void SatelIntegra::ReportTemperature(const unsigned long Idx, unsigned int temp)
+void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
 {
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
@@ -724,7 +778,7 @@ void SatelIntegra::ReportTemperature(const unsigned long Idx, unsigned int temp)
 
 	temp = temp - 0x6E;
 	tsen.TEMP.tempsign=(temp>=0)?0:1;
-	int at10=round(abs(temp*5.0f));
+	int at10=round(abs(temp/2.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
@@ -881,6 +935,28 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to '%s:%s'", Idx, namePrefix.c_str(), shortName.c_str());
 #endif
 		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='%q:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", namePrefix.c_str(), shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
+	}
+}
+
+void SatelIntegra::UpdateTempName(const unsigned int Idx, const unsigned char* name, const unsigned int partition)
+{
+	std::vector<std::vector<std::string> > result;
+
+	char szTmp[4];
+	sprintf(szTmp, "%d", (unsigned int)Idx);
+
+	std::string shortName((char*)name, 16);
+	std::string::size_type pos = shortName.find_last_not_of(' ');
+	shortName.erase(pos + 1);
+
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Temp:%q') AND (Unit=0)", m_HwdID, szTmp, shortName.c_str());
+	if (result.size() < 1)
+	{
+		//Assign zone name from Integra
+#ifdef DEBUG_SatelIntegra
+		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to 'Temp:%s'", Idx, shortName.c_str());
+#endif
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Temp:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=0)", shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
 }
 
