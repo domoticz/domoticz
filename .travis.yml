@@ -16,7 +16,3 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
   - make
   - tar czf domoticz_${TRAVIS_OS_NAME}_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease --exclude .svn www/ scripts/ Config/
-addons:
-  artifacts:
-    paths:
-    - domoticz_${TRAVIS_OS_NAME}_x86_64.tgz
