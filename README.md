@@ -21,3 +21,7 @@ Some Information
 * Website: http://www.domoticz.com
 * Forum http://www.domoticz.com/forum
 * Wiki http://www.domoticz.com/wiki
+
+### Build Status
+![image](https://travis-ci.org/domoticz/domoticz.svg?branch=master "Linux Build Status")
+![image](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true "Windows Build Status")
