@@ -676,6 +676,24 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateMySensorsChilds);
 	query(sqlCreateToonDevices);
+	//Add indexes to log tables
+	query("create index if not exists f_idx on Fan(DeviceRowID);");
+	query("create index if not exists fc_idx on Fan_Calendar(DeviceRowID);");
+	query("create index if not exists l_idx on LightingLog(DeviceRowID);");
+	query("create index if not exists m_idx on Meter(DeviceRowID);");
+	query("create index if not exists mc_idx on Meter_Calendar(DeviceRowID);");
+	query("create index if not exists mm_idx on MultiMeter(DeviceRowID);");
+	query("create index if not exists mmc_idx on MultiMeter_Calendar(DeviceRowID);");
+	query("create index if not exists p_idx on Percentage(DeviceRowID);");
+	query("create index if not exists pc_idx on Percentage_Calendar(DeviceRowID);");
+	query("create index if not exists r_idx on Rain(DeviceRowID);");
+	query("create index if not exists rc_idx on Rain_Calendar(DeviceRowID);");
+	query("create index if not exists t_idx on Temperature(DeviceRowID);");
+	query("create index if not exists tc_idx on Temperature_Calendar(DeviceRowID);");
+	query("create index if not exists u_idx on UV(DeviceRowID);");
+	query("create index if not exists uv_idx on UV_Calendar(DeviceRowID);");
+	query("create index if not exists w_idx on Wind(DeviceRowID);");
+	query("create index if not exists wc_idx on Wind_Calendar(DeviceRowID);");
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
 	{

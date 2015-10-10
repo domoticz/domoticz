@@ -1109,8 +1109,13 @@ void MySensorsBase::ParseLine()
 	int ack = atoi(results[3].c_str());
 	int sub_type = atoi(results[4].c_str());
 	std::string payload = "";
-	if (results.size()>=6)
-		payload=results[5];
+	if (results.size() >= 6)
+	{
+		for (size_t ip = 0; ip < results.size() - 5; ip++)
+		{
+			payload = results[5+ip];
+		}
+	}
 
 	std::stringstream sstr;
 #ifdef _DEBUG
