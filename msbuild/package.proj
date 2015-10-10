@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="PackageDomoticz">
+
+    <!-- Files to include into the release zip -->
+    <ItemGroup>
+      <DomoticzInstaller Include="$(MSBuildStartupDirectory)\msbuild\WindowsInstaller\DomoticzSetup*.exe"/>
+      <ZipContents       Include="@(DomoticzInstaller)"/>
+      <ZipContents       Include="$(MSBuildStartupDirectory)\History.txt"/>
+      <ZipContents       Include="$(MSBuildStartupDirectory)\msbuild\WindowsInstaller\Readme.txt"/>
+    </ItemGroup>
+
+    <!-- Extract the version string (like '2_3267') from the installer file, and create the zip file name -->
+    <PropertyGroup>
+      <ZipFile>$(MSBuildStartupDirectory)\domoticz-win32-$([System.Text.RegularExpressions.Regex]::Match(%(DomoticzInstaller.FileName), `\d+_\d+`))-setup.zip</ZipFile>
+    </PropertyGroup>
+
+    <!-- Copy the files into the current dir for flattening the zip contents -->
+    <Copy SourceFiles="@(ZipContents)"
+          DestinationFolder="."/>
+
+    <!-- Create the zip file into the project root directory -->
+    <Exec Command="&quot;C:\Program Files\7-Zip\7z.exe&quot; a $(ZipFile) @(ZipContents -> '%(FileName)%(Extension)', ' ')"/>
+
+  </Target>
+
+</Project>

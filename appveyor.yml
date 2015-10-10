@@ -11,6 +11,7 @@ build_script:
 - cd ..
 - msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 - '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" msbuild\WindowsInstaller\DomoticzSetup.iss'
+- msbuild msbuild\package.proj
 
 artifacts:
-- path: msbuild\WindowsInstaller\DomoticzSetup*.exe
+- path: domoticz_*_setup.zip
