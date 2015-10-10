@@ -14,4 +14,4 @@ build_script:
 - msbuild msbuild\package.proj
 
 artifacts:
-- path: domoticz_*_setup.zip
+- path: domoticz-*-setup.zip
