@@ -196,7 +196,7 @@ private:
 	unsigned char get_BateryLevel(const CDomoticzHardwareBase *pHardware, bool bIsInPercentage, unsigned char level);
 
 	// RxMessage queue resources
-	boost::atomic<bool> m_stopRxMessageThread;
+	bool m_stopRxMessageThread;
 	boost::shared_ptr<boost::thread> m_rxMessageThread;
 	void Do_Work_On_Rx_Messages();
 	struct _tRxMessage {
