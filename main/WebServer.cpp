@@ -7121,11 +7121,12 @@ namespace http {
 								continue;
 						}
 					}
-
+	
 					// has this device already been seen, now with different plan?
 					// assume results are ordered such that same device is adjacent
-					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str()) {
-						//_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
+					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
+					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str() && RFX_Type_Desc(dType, 1) == root["result"][ii-1]["Type"].asString().c_str()) {
+						// _log.Log(LOG_NORM, "Duplicate found idx %s (Type %s): %s in plan %s", sd[0].c_str(), RFX_Type_Desc(dType, 1), sd[3].c_str(), sd[26].c_str());
 						root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
 						continue;
 					}
