@@ -11,6 +11,9 @@
 #include "../webserver/Base64.h"
 #include <boost/algorithm/string/join.hpp>
 
+#include <boost/crc.hpp>
+#include <algorithm>
+
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/RFXComSerial.h"
@@ -869,6 +872,12 @@ bool MainWorker::Start()
 
 bool MainWorker::Stop()
 {
+	if (m_rxMessageThread) {
+		// Stop RxMessage thread before hardware to avoid NULL pointer exception
+		m_stopRxMessageThread = true;
+		m_rxMessageThread->join();
+		m_rxMessageThread.reset();
+	}
 	if (m_thread)
 	{
 		m_webservers.StopServers();
@@ -884,10 +893,6 @@ bool MainWorker::Stop()
 		m_stoprequested = true;
 		m_thread->join();
 		m_thread.reset();
-	}
-	if (m_rxMessageThread) {
-		m_rxMessageThread->join();
-		m_rxMessageThread.reset();
 	}
 	return true;
 }
@@ -1628,19 +1633,26 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 {
 	// Build queue item
 	_tRxMessage rxMessage;
-	rxMessage.pHardware = pHardware;
-	std::vector<unsigned char> v(pRXCommand, pRXCommand + (pRXCommand[0] + 1));
-	rxMessage.rxCommand = v; // defensive copy
+	rxMessage.hardwareId = pHardware->m_HwdID;
+	// defensive copy
+	memset((void *) &rxMessage.rxCommand, 0, sizeof(RBUF));
+	memcpy((void *) &rxMessage.rxCommand, pRXCommand, pRXCommand[0] + 1);
+	// CRC
+	boost::crc_optimal<16, 0x1021, 0xFFFF, 0, false, false> crc_ccitt2;
+	crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + pRXCommand[0] + 1, crc_ccitt2);
+	rxMessage.crc = crc_ccitt2();
+
 	// Push item to queue
 	m_rxMessageQueue.push(rxMessage);
 }
 
 void MainWorker::Do_Work_On_Rx_Messages() {
-	_log.Log(LOG_STATUS, "RxMessage queue worker started...");
+	_log.Log(LOG_STATUS, "RxMessage: queue worker started...");
+	m_stopRxMessageThread = false;
 
 	while (true) {
 
-		if (m_stoprequested) {
+		if (m_stopRxMessageThread) {
 			// Server is stopping
 			break;
 		}
@@ -1651,26 +1663,51 @@ void MainWorker::Do_Work_On_Rx_Messages() {
 			continue;
 		}
 
-		// Wait and pop next message
+		// Wait and pop next message or timeout
 		_tRxMessage rxMessage;
 		m_rxMessageQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(rxMessage,
-				boost::posix_time::milliseconds(5000));// (if no message for 5 seconds, returns anyway to check m_stoprequested)
-		if ((rxMessage.pHardware != NULL) && (!rxMessage.rxCommand.empty())) {
+				boost::posix_time::milliseconds(2000));// (if no message for 2 seconds, returns anyway to check m_stopRxMessageThread)
 
-			// Note : cannot get all CDomoticzHardwareBase* from m_hardwaredevices : m_hardwaredevices does not contain CHardwareMonitor instance.
-			const CDomoticzHardwareBase *pHardware = rxMessage.pHardware;
-			const unsigned char *pRXCommand = rxMessage.rxCommand.data();
-
-			//_log.Log(LOG_STATUS, "MainWorker::Do_Work_On_Rx_Messages(hrdw=%d, type=%02X)",
-			//		pHardware->m_HwdID,
-			//		pRXCommand[1]);
-
-			ProcessRXMessage(pHardware, pRXCommand);
+		if ((rxMessage.hardwareId < 1) || (((const unsigned char *) &rxMessage.rxCommand) == NULL)) {
+			_log.Log(LOG_ERROR, "RxMessage: cannot process invalid message from hardware with id=%d, message is %s",
+					rxMessage.hardwareId,
+					(((const unsigned char *) &rxMessage.rxCommand) == NULL) ? "null" : "not null");
+			// cannot process message with invalid id or null message
+			continue;
 		}
+
+		const CDomoticzHardwareBase *pHardware = GetHardware(rxMessage.hardwareId);
+		const unsigned char *pRXCommand = (const unsigned char *) &rxMessage.rxCommand;
+		boost::uint16_t crc = rxMessage.crc;
+
+		if (pHardware == NULL) {
+			_log.Log(LOG_ERROR, "RxMessage: cannot retrieve hardware with id %d", rxMessage.hardwareId);
+			continue;
+		}
+		if (pRXCommand == NULL) {
+			_log.Log(LOG_ERROR, "RxMessage: cannot retrieve command with id %d", rxMessage.hardwareId);
+			continue;
+		}
+		// CRC
+		boost::crc_optimal<16, 0x1021, 0xFFFF, 0, false, false> crc_ccitt2;
+		crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + pRXCommand[0] + 1, crc_ccitt2);
+		if (crc != crc_ccitt2()) {
+			_log.Log(LOG_ERROR, "RxMessage: cannot process invalid message from hardware with id=%d (type %d)",
+					rxMessage.hardwareId,
+					pHardware->HwdType);
+			continue;
+		}
+
+		//_log.Log(LOG_STATUS, "Process a rxMessage (hrdw=%d, type=%02X, subtype=%02X)",
+		//		pHardware->m_HwdID,
+		//		pRXCommand[1],
+		//		pRXCommand[2]);
+
+		ProcessRXMessage(pHardware, pRXCommand);
 
 	}
 
-	_log.Log(LOG_STATUS, "RxMessage queue worker stopped...");
+	_log.Log(LOG_STATUS, "RxMessage: queue worker stopped...");
 }
 
 void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)

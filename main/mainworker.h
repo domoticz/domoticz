@@ -12,6 +12,7 @@
 #include "DataPush.h"
 #include "HttpPush.h"
 #include "concurrent_queue.h"
+#include <boost/cstdint.hpp>
 
 enum eVerboseLevel
 {
@@ -195,11 +196,13 @@ private:
 	unsigned char get_BateryLevel(const CDomoticzHardwareBase *pHardware, bool bIsInPercentage, unsigned char level);
 
 	// RxMessage queue resources
+	boost::atomic<bool> m_stopRxMessageThread;
 	boost::shared_ptr<boost::thread> m_rxMessageThread;
 	void Do_Work_On_Rx_Messages();
 	struct _tRxMessage {
-		const CDomoticzHardwareBase* pHardware;
-		std::vector<unsigned char> rxCommand;
+		int hardwareId;
+		RBUF rxCommand;
+		boost::uint16_t crc;
 	};
 	concurrent_queue<_tRxMessage> m_rxMessageQueue;
 	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
