@@ -9,7 +9,7 @@
 CNotificationLogitechMediaServer::CNotificationLogitechMediaServer() : CNotificationBase(std::string("lms"), OPTIONS_NONE)
 {
 	SetupConfig(std::string("LmsEnabled"), &m_IsEnabled);
-	SetupConfig(std::string("LmsPlayerIP"), _PlayerIP);
+	SetupConfig(std::string("LmsPlayerMac"), _PlayerMac);
 	SetupConfig(std::string("LmsDuration"), &_Duration);
 }
 
@@ -37,7 +37,7 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(const std::stri
 
 	// Loop through semi-colon separated IP Addresses
 	std::vector<std::string> results;
-	StringSplit(_PlayerIP, ";", results);
+	StringSplit(_PlayerMac, ";", results);
 
 	for (int i = 0; i < (int)results.size(); i++)
 	{
@@ -49,5 +49,5 @@ bool CNotificationLogitechMediaServer::SendMessageImplementation(const std::stri
 
 bool CNotificationLogitechMediaServer::IsConfigured()
 {
-	return (!_PlayerIP.empty());
+	return (!_PlayerMac.empty());
 }

@@ -1,0 +1,17 @@
+version: 1.0.{build}
+os: Visual Studio 2015
+
+install:
+- ps: cinst innosetup
+
+build_script:
+- cd msbuild
+- appveyor DownloadFile http://www.domoticz.com/WindowsLibraries.zip
+- '7z x WindowsLibraries.zip > NUL:'
+- cd ..
+- msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+- '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" msbuild\WindowsInstaller\DomoticzSetup.iss'
+- msbuild msbuild\package.proj
+
+artifacts:
+- path: domoticz-*-setup.zip

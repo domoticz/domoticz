@@ -48,7 +48,6 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false
 CLogitechMediaServer::~CLogitechMediaServer(void)
 {
 	m_bIsStarted = false;
-	m_bShowedUnsupported = false;
 }
 
 Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string sPostdata)
@@ -102,6 +101,7 @@ bool CLogitechMediaServer::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	m_iThreadsRunning = 0;
+	m_bShowedUnsupported = false;
 
 	StartHeartbeatThread();
 
@@ -219,7 +219,7 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 
 		if (!root.size())
-			nStatus = MSTAT_OFF;
+			nStatus = MSTAT_DISCONNECTED;
 		else
 		{
 			bPingOK = true;
@@ -233,15 +233,9 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					if (sMode == "play") 
 						nStatus = MSTAT_PLAYING;
 					else if (sMode == "pause") 
-						if (nOldStatus == MSTAT_OFF)
-							nStatus = MSTAT_ON;
-						else
-							nStatus = MSTAT_PAUSED;
+						nStatus = MSTAT_PAUSED;
 					else if (sMode == "stop")
-						if (nOldStatus == MSTAT_OFF)
-							nStatus = MSTAT_ON;
-						else
-							nStatus = MSTAT_STOPPED;
+						nStatus = MSTAT_STOPPED;
 					else
 						nStatus = MSTAT_ON;
 					std::string	sTitle = "";
@@ -276,6 +270,8 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 					sStatus = sLabel;
 				}
 			}
+			else
+				nStatus = MSTAT_DISCONNECTED;
 		}
 	}
 	catch (...)
@@ -366,9 +362,10 @@ void CLogitechMediaServer::GetPlayerInfo()
 				//(model == "softsqueeze") ||		//Softsqueeze
 				(model == "controller") ||			//Squeezebox Controller
 				(model == "squeezeplay") ||			//SqueezePlay
+				(model == "squeezeplayer") ||		//SqueezePlay
 				(model == "baby") ||				//Squeezebox Radio
 				(model == "fab4") ||				//Squeezebox Touch
-				//(model == "iPengiPod") ||			//iPeng iOS App
+				(model == "iPengiPod") ||			//iPeng iOS App
 				(model == "squeezelite")			//Max2Play SqueezePlug
 				) 
 			{

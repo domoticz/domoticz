@@ -162,6 +162,6 @@ function InitializeSetup: Boolean;
 begin
   if RegValueExists(HKEY_LOCAL_MACHINE,'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#emit StringChange(SetupSetting("AppId"),"{{","{")}_is1', 'UninstallString') then begin
     MsgBox('You are upgrading an existing installation of Domoticz.'+ chr(13) +'It is recommended to reboot your system after this upgrade'+ chr(13) +'in order to avoid com port issues.', mbInformation, MB_OK);
-  end
+  end;
   Result := True;
 end;
