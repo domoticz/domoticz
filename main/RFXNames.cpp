@@ -1009,6 +1009,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 		{ MSTAT_AUDIO, "Audio" },
 		{ MSTAT_PHOTO, "Photo" },
 		{ MSTAT_PLAYING, "Playing" },
+		{ MSTAT_DISCONNECTED, "Disconnected" },
 		{ MSTAT_UNKNOWN, "Unknown" },
 		{ 0, NULL, NULL }
 	};

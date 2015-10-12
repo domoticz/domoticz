@@ -134,13 +134,13 @@ define(['app'], function (app) {
 				break;
 			case "lms":
 				if (($("#lmstable #LmsDuration").val() == "") || !$.isNumeric($("#lmstable #LmsDuration").val())) $("#lmstable #LmsDuration").val("5");
-				var LmsPlayerIP=encodeURIComponent($("#lmstable #LmsPlayerIP").val());
+				var LmsPlayerMac=encodeURIComponent($("#lmstable #LmsPlayerMac").val());
 				var LmsDuration=encodeURIComponent($("#lmstable #LmsDuration").val());
-				if (LmsPlayerIP=="" || LmsDuration=="") {
+				if (LmsPlayerMac=="" || LmsDuration=="") {
 					ShowNotify($.t('All Logitech Media Server fields are required!...'), 3500, true);
 					return;
 				}
-				extraparams = 'LmsPlayerIP=' + $("#lmstable #LmsPlayerIP").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
+				extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
 				break;
 			default:
 				return;
@@ -325,8 +325,8 @@ define(['app'], function (app) {
 			  if (typeof data.LmsEnabled != 'undefined') {
   				$("#lmstable #LmsEnabled").prop('checked',data.LmsEnabled==1);
 			  }
-			  if (typeof data.LmsPlayerIP != 'undefined') {
-				$("#lmstable #LmsPlayerIP").val(data.LmsPlayerIP);
+			  if (typeof data.LmsPlayerMac != 'undefined') {
+				$("#lmstable #LmsPlayerMac").val(data.LmsPlayerMac);
 			  }
 			  $("#lmstable #LmsDuration").val("5");
 			  if (typeof data.LmsDuration != 'undefined') {

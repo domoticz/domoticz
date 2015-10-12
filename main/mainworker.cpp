@@ -9474,7 +9474,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				}
 			}
 
-			if ((!IsTesting) && (pHardware->HwdType != HTYPE_LogitechMediaServer)) {
+			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
