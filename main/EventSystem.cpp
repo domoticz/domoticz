@@ -2770,6 +2770,11 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		Action = Action.substr(0, 9);
 	}
 
+	if (Action.find("Set Volume") == 0)
+	{
+		_level = atoi(Action.substr(11).c_str());
+		Action = Action.substr(0, 10);
+	}
 
 	int DelayTime = 1;
 

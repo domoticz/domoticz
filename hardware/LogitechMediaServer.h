@@ -33,8 +33,10 @@ public:
 	void RemoveAllNodes();
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
 	void Restart();
-	void SendCommand(const int ID, const std::string &command);
+	void SendCommand(const int ID, const std::string &command, const std::string &param = "");
+	void SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration);
 private:
+	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
 	void Do_Work();
 	void GetPlayerInfo();
 	void InsertUpdatePlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress);

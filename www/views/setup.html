@@ -468,6 +468,7 @@
 										</td>
 									</tr>
 									</table>
+									<br>
 								</div>
 							</div>
 							<div class="row-fluid">
@@ -501,6 +502,32 @@
 									<br>
 								</div>
 								<div class="span6">
+									<h2><span data-i18n="Logitech Media Server"></span>:</h2>
+									<table class="display" id="lmstable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:80px"><label for="LmsEnabled"><span data-i18n="Enabled"></span>: </label></td>
+											<td><input type="checkbox" id="LmsEnabled" name="LmsEnabled"/></td>
+										</tr>
+										<tr>
+											<td align="right">
+												<label for="LmsPlayerMac"><span data-i18n="Player"></span> <span data-i18n="Mac Address"></span>: </label>
+											</td>
+											<td>
+												<input type="input" id="LmsPlayerMac" name="LmsPlayerMac" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('lms')">Test</button>
+											</td>
+										</tr>
+										<tr>
+											<td align="right" style="width:80px">
+												<label for="LmsDuration"><span data-i18n="Duration"></span>: </label>
+											</td>
+											<td>
+												<input type="input" id="LmsDuration" name="LmsDuration" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+											</td>
+										</tr>
+									</table>
+									<span style="color:red" data-i18n="This notifier only works when the Logitech Media Server hardware has been added/enabled"></span><br>
+									<br>
 								</div>
 							</div>
 							<br>

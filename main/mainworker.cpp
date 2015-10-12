@@ -9443,6 +9443,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
+			else if (switchtype == STYPE_Media)
+			{
+				level = (level < 0) ? 0 : level;
+				level = (level > 100) ? 100 : level;
+			}
 			else 
 				level = (level > 15) ? 15 : level;
 
