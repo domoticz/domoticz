@@ -80,10 +80,8 @@ bool CHardwareMonitor::StartHardware()
 	StopHardware();
 
 #ifdef WIN32
-	if (!InitWMI())
-		return false;
+	InitWMI();
 #endif
-
 	m_stoprequested = false;
 	m_lastquerytime = 0;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHardwareMonitor::Do_Work, this)));
@@ -361,6 +359,7 @@ void CHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
 		RunWMIQuery("Sensor","Voltage");
+		return;
 	}
 #elif defined __linux__
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
@@ -456,6 +455,8 @@ void CHardwareMonitor::ExitWMI()
 
 bool CHardwareMonitor::IsOHMRunning()
 {
+	if ((m_pServicesOHM == NULL) || (m_pServicesSystem == NULL))
+		return false;
 	bool bOHMRunning = false;
 	IEnumWbemClassObject* pEnumerator = NULL;
 	HRESULT hr;
