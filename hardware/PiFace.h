@@ -164,6 +164,3 @@ private:
 	boost::mutex m_queue_mutex;
 	std::vector<std::string> m_send_queue;
 };
-
-
-

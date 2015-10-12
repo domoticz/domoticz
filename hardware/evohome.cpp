@@ -235,6 +235,8 @@ bool CEvohome::OpenSerialDevice()
 		_log.Log(LOG_ERROR,"evohome: Error opening serial port: %s", m_szSerialPort.c_str());
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR,"-----------------\n%s\n----------------", boost::diagnostic_information(e).c_str());
+#else
+		(void)e;
 #endif
 		return false;
 	}

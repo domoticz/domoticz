@@ -324,6 +324,7 @@ void CPinger::Do_Ping_Worker(const PingNode &Node)
 	}
 	catch (std::exception& e)
 	{
+		(void)e;
 		bPingOK = false;
 	}
 	catch (...)
