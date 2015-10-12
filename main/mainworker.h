@@ -205,6 +205,7 @@ private:
 		boost::uint16_t crc;
 	};
 	concurrent_queue<_tRxMessage> m_rxMessageQueue;
+	void UnlockRxMessageQueue();
 	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 
 	//(RFX) Message decoders

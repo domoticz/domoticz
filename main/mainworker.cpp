@@ -875,6 +875,7 @@ bool MainWorker::Stop()
 	if (m_rxMessageThread) {
 		// Stop RxMessage thread before hardware to avoid NULL pointer exception
 		m_stopRxMessageThread = true;
+		UnlockRxMessageQueue();
 		m_rxMessageThread->join();
 		m_rxMessageThread.reset();
 	}
@@ -1631,6 +1632,18 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 
 void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)
 {
+	if ((pHardware->m_HwdID < 1) || (pRXCommand == NULL)) {
+		_log.Log(LOG_ERROR, "RxMessage: cannot push invalid message from hardware with id=%d (type=%d, name=%s), message is %s (type=%02X, subtype=%02X)",
+				pHardware->m_HwdID,
+				pHardware->HwdType,
+				pHardware->Name.c_str(),
+				(pRXCommand == NULL) ? "null" : "not null",
+				(pRXCommand == NULL) ? 0x0 : pRXCommand[1],
+				(pRXCommand == NULL) ? 0x0 : pRXCommand[2]);
+		// cannot push message with invalid id or null message
+		return;
+	}
+
 	// Build queue item
 	_tRxMessage rxMessage;
 	rxMessage.hardwareId = pHardware->m_HwdID;
@@ -1642,16 +1655,33 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + pRXCommand[0] + 1, crc_ccitt2);
 	rxMessage.crc = crc_ccitt2();
 
+	//_log.Log(LOG_STATUS, "Push a rxMessage (hrdwId=%d, hrdwType=%d, hrdwName=%s, type=%02X, subtype=%02X)",
+	//		pHardware->m_HwdID,
+	//		pHardware->HwdType,
+	//		pHardware->Name.c_str(),
+	//		pRXCommand[1],
+	//		pRXCommand[2]);
+
 	// Push item to queue
+	m_rxMessageQueue.push(rxMessage);
+}
+
+void MainWorker::UnlockRxMessageQueue()
+{
+	//_log.Log(LOG_STATUS, "RxMessage: unlock queue using dummy message");
+
+	// Push dummy message to unlock queue
+	_tRxMessage rxMessage;
+	rxMessage.hardwareId = -1;
+	memset((void *) &rxMessage.rxCommand, 0, sizeof(RBUF));
 	m_rxMessageQueue.push(rxMessage);
 }
 
 void MainWorker::Do_Work_On_Rx_Messages() {
 	_log.Log(LOG_STATUS, "RxMessage: queue worker started...");
+
 	m_stopRxMessageThread = false;
-
 	while (true) {
-
 		if (m_stopRxMessageThread) {
 			// Server is stopping
 			break;
@@ -1665,8 +1695,15 @@ void MainWorker::Do_Work_On_Rx_Messages() {
 
 		// Wait and pop next message or timeout
 		_tRxMessage rxMessage;
+		rxMessage.hardwareId = -1; // Set -1 to identify message returned on timeout
 		m_rxMessageQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(rxMessage,
-				boost::posix_time::milliseconds(2000));// (if no message for 2 seconds, returns anyway to check m_stopRxMessageThread)
+				boost::posix_time::milliseconds(5000));// (if no message for 2 seconds, returns anyway to check m_stopRxMessageThread)
+
+		if ((rxMessage.hardwareId == -1)) {
+			// Timeout occurred : message is empty
+			//_log.Log(LOG_STATUS, "RxMessage: message popped on timeout");
+			continue;
+		}
 
 		if ((rxMessage.hardwareId < 1) || (((const unsigned char *) &rxMessage.rxCommand) == NULL)) {
 			_log.Log(LOG_ERROR, "RxMessage: cannot process invalid message from hardware with id=%d, message is %s",
@@ -1698,8 +1735,10 @@ void MainWorker::Do_Work_On_Rx_Messages() {
 			continue;
 		}
 
-		//_log.Log(LOG_STATUS, "Process a rxMessage (hrdw=%d, type=%02X, subtype=%02X)",
+		//_log.Log(LOG_STATUS, "Process a rxMessage (hrdwId=%d, hrdwType=%d, hrdwName=%s, type=%02X, subtype=%02X)",
 		//		pHardware->m_HwdID,
+		//		pHardware->HwdType,
+		//		pHardware->Name.c_str(),
 		//		pRXCommand[1],
 		//		pRXCommand[2]);
 
