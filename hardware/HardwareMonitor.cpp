@@ -432,7 +432,10 @@ bool CHardwareMonitor::InitWMI()
 		return false;
 	hr = m_pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesOHM);
 	if (FAILED(hr))
+	{
+		_log.Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
 		return false;
+	}
 	hr = m_pLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesSystem);
 	if (FAILED(hr))
 		return false;
