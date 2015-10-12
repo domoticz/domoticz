@@ -271,6 +271,8 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_AUDIO, "Play Audio", "A" },
 		{ NTYPE_PHOTO, "View Photo", "X" },
 		{ NTYPE_PAUSED, "Pause Stream", "Y" },
+		{ NTYPE_STOPPED, "Stop Stream", "Q" },
+		{ NTYPE_PLAYING, "Play Stream", "a" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -307,6 +309,8 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_AUDIO, "" },
 		{ NTYPE_PHOTO, "" },
 		{ NTYPE_PAUSED, "" },
+		{ NTYPE_STOPPED, "" },
+		{ NTYPE_PLAYING, "" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -1000,9 +1004,12 @@ const char *Media_Player_States(const _eMediaStatus Status)
 		{ MSTAT_OFF, "Off" },
 		{ MSTAT_ON, "On" },
 		{ MSTAT_PAUSED, "Paused" },
+		{ MSTAT_STOPPED, "Stopped" },
 		{ MSTAT_VIDEO, "Video" },
 		{ MSTAT_AUDIO, "Audio" },
 		{ MSTAT_PHOTO, "Photo" },
+		{ MSTAT_PLAYING, "Playing" },
+		{ MSTAT_DISCONNECTED, "Disconnected" },
 		{ MSTAT_UNKNOWN, "Unknown" },
 		{ 0, NULL, NULL }
 	};
@@ -1994,9 +2001,19 @@ bool GetLightCommand(
 			cmd = gswitch_sStop;
 			return true;
 		}
-		else if (switchcmd == "Paused")
+		else if ((switchcmd == "Paused") || (switchcmd == "Pause"))
 		{
 			cmd = gswitch_sPause;
+			return true;
+		}
+		else if ((switchcmd == "Playing") || (switchcmd == "Play"))
+		{
+			cmd = gswitch_sPlay;
+			return true;
+		}
+		else if (switchcmd == "Set Volume")
+		{
+			cmd = gswitch_sSetVolume;
 			return true;
 		}
 		else

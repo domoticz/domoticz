@@ -9443,6 +9443,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
+			else if (switchtype == STYPE_Media)
+			{
+				level = (level < 0) ? 0 : level;
+				level = (level > 100) ? 100 : level;
+			}
 			else 
 				level = (level > 15) ? 15 : level;
 
@@ -11032,8 +11037,8 @@ void MainWorker::HeartbeatCheck()
 	typedef std::map<std::string, time_t>::iterator hb_components;
 	for (hb_components iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); iterator++) {
 		double dif = difftime(now, iterator->second);
-		//_log.Log(LOG_STATUS, "%s last checkin  %.2lf seconds ago", iterator->first.c_str(), dif);
-		if (dif > 20)
+		//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", iterator->first.c_str(), dif);
+		if (dif > 60)
 		{
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", iterator->first.c_str());
 		}
@@ -11052,7 +11057,7 @@ void MainWorker::HeartbeatCheck()
 			{
 				//Check Thread Timeout
 				double diff = difftime(now, pHardware->m_LastHeartbeat);
-				//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
+				//_log.Log(LOG_STATUS, "%d last checking  %.2lf seconds ago", iterator->first, dif);
 				if (diff > 60)
 				{
 					std::vector<std::vector<std::string> > result;

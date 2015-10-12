@@ -4328,22 +4328,47 @@ namespace http {
 					}
 					if (switchtype == STYPE_Media)
 					{
-						root["result"][ii]["val"] = NTYPE_VIDEO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
-						ii++;
-						root["result"][ii]["val"] = NTYPE_AUDIO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
-						ii++;
-						root["result"][ii]["val"] = NTYPE_PHOTO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
-						ii++;
+						std::string idx = m_pWebEm->FindValue("idx");
+						std::vector<std::vector<std::string> > result;
+						_eHardwareTypes type;
+
+						result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
+						if (result.size() == 1) {
+							std::string hdwid = result[0][0];
+							CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hdwid.c_str()));
+							if (pBaseHardware != NULL) {
+								type = pBaseHardware->HwdType;
+							}
+						}
+
 						root["result"][ii]["val"] = NTYPE_PAUSED;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
 						ii++;
+						if (type == HTYPE_Kodi) {
+							root["result"][ii]["val"] = NTYPE_AUDIO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
+							ii++;
+							root["result"][ii]["val"] = NTYPE_VIDEO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
+							ii++;
+							root["result"][ii]["val"] = NTYPE_PHOTO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
+							ii++;
+						}
+						if (type == HTYPE_LogitechMediaServer) {
+							root["result"][ii]["val"] = NTYPE_PLAYING;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
+							ii++;
+							root["result"][ii]["val"] = NTYPE_STOPPED;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
+							ii++;
+						}
 					}
 				}
 				if (
@@ -7121,13 +7146,22 @@ namespace http {
 								continue;
 						}
 					}
-
+	
 					// has this device already been seen, now with different plan?
 					// assume results are ordered such that same device is adjacent
-					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str()) {
-						//_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
-						root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
-						continue;
+					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
+					std::string thisIdx = sd[0];
+					if ((ii > 0) && thisIdx == root["result"][ii-1]["idx"].asString()) {
+						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
+						if (typeOfThisOne == root["result"][ii-1]["Type"].asString()) {
+							root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
+#ifdef _DEBUG
+							Json::StyledWriter jsonWriter;
+							std::string plansString = jsonWriter.write(root["result"][ii-1]["PlanIDs"]);
+							_log.Log(LOG_NORM, "Duplicate found idx %s (Type %s): %s in plans %s", sd[0].c_str(), typeOfThisOne.c_str(), sd[3].c_str(), plansString.c_str());
+#endif
+							continue;
+						}
 					}
 		
 					root["result"][ii]["HardwareID"] = hardwareID;

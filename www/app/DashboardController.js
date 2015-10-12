@@ -596,7 +596,11 @@ define(['app'], function (app) {
 										}
 										else if (item.SwitchType == "Media Player") {
 										    if (item.CustomImage == 0) item.Image = item.TypeImg;
-										    if ((item.Status != 'Off') && (item.Status != '0')) {
+											if (item.Status == 'Disconnected') {
+										        img = '<img src="images/' + item.Image + '48_Off.png" height="40" width="40">';
+										        img2 = '<img src="images/remote48.png" style="opacity:0.4"; height="40" width="40">';
+											}
+										    else if ((item.Status != 'Off') && (item.Status != '0')) {
 										        img = '<img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 										        img2 = '<img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ",'" + item.HardwareType + '\');" class="lcursor" height="40" width="40">';
 										    }
@@ -2007,7 +2011,11 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Media Player") {
 									    if (item.CustomImage == 0) item.Image = item.TypeImg;
-									    if ((item.Status != 'Off') && (item.Status != '0')) {
+										if (item.Status == 'Disconnected') {
+									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" height="40" width="40"></td>\n';
+									        xhtm += '\t      <td id="img2"><img src="images/remote48.png" style="opacity:0.4"; height="40" width="40"></td>\n';
+										}
+									    else if ((item.Status != 'Off') && (item.Status != '0')) {
 									        xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
 									        xhtm += '\t      <td id="img2"><img src="images/remote48.png" onclick="ShowMediaRemote(\'' + escape(item.Name) + "'," +  item.idx + ",'" + item.HardwareType + '\');" class="lcursor" height="40" width="40"></td>\n';
 									    }
