@@ -80,10 +80,8 @@ bool CHardwareMonitor::StartHardware()
 	StopHardware();
 
 #ifdef WIN32
-	if (!InitWMI())
-		return false;
+	InitWMI();
 #endif
-
 	m_stoprequested = false;
 	m_lastquerytime = 0;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHardwareMonitor::Do_Work, this)));
@@ -361,6 +359,7 @@ void CHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Load");
 		RunWMIQuery("Sensor","Fan");
 		RunWMIQuery("Sensor","Voltage");
+		return;
 	}
 #elif defined __linux__
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
@@ -433,7 +432,10 @@ bool CHardwareMonitor::InitWMI()
 		return false;
 	hr = m_pLocator->ConnectServer(L"root\\OpenHardwareMonitor",NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesOHM);
 	if (FAILED(hr))
+	{
+		_log.Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
 		return false;
+	}
 	hr = m_pLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesSystem);
 	if (FAILED(hr))
 		return false;
@@ -456,6 +458,8 @@ void CHardwareMonitor::ExitWMI()
 
 bool CHardwareMonitor::IsOHMRunning()
 {
+	if ((m_pServicesOHM == NULL) || (m_pServicesSystem == NULL))
+		return false;
 	bool bOHMRunning = false;
 	IEnumWbemClassObject* pEnumerator = NULL;
 	HRESULT hr;
