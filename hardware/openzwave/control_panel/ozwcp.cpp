@@ -1035,8 +1035,6 @@ void COpenZWaveControlPanel::web_get_values(int i, TiXmlElement *ep)
 */
 std::string COpenZWaveControlPanel::SendPollResponse()
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	TiXmlDocument doc;
 	struct stat buf;
 	const int logbufsz = 1024;	// max amount to send of log per poll
@@ -1189,24 +1187,18 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 
 std::string COpenZWaveControlPanel::SendNodeConfResponse(int node_id)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	Manager::Get()->RequestAllConfigParams(homeId, node_id);
 	return "OK";
 }
 
 std::string COpenZWaveControlPanel::SendNodeValuesResponse(int node_id)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	Manager::Get()->RequestNodeDynamic(homeId, node_id);
 	return "OK";
 }
 
 std::string COpenZWaveControlPanel::SetNodeValue(const std::string &arg1, const std::string &arg2)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	MyValue *val = MyNode::lookup(arg1);
 	if (val != NULL) {
 		if (!Manager::Get()->SetValue(val->getId(), arg2))
@@ -1221,8 +1213,6 @@ std::string COpenZWaveControlPanel::SetNodeValue(const std::string &arg1, const 
 
 std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const std::string &arg2)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	MyValue *val = MyNode::lookup(arg1);
 	if (val != NULL) {
 		if (arg2 == "true") {
@@ -1246,8 +1236,6 @@ std::string COpenZWaveControlPanel::SetNodeButton(const std::string &arg1, const
 }
 std::string COpenZWaveControlPanel::DoAdminCommand(const std::string &fun, const int node_id, const int button_id)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	if (fun == "cancel") { /* cancel controller function */
 		Manager::Get()->CancelControllerCommand(homeId);
 		setAdminState(false);
@@ -1369,8 +1357,6 @@ std::string COpenZWaveControlPanel::DoAdminCommand(const std::string &fun, const
 
 std::string COpenZWaveControlPanel::DoNodeChange(const std::string &fun, const int node_id, const std::string &svalue)
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	if (fun == "nam") { /* Node naming */
 		Manager::Get()->SetNodeName(homeId, node_id, svalue.c_str());
 	}
@@ -1384,16 +1370,12 @@ std::string COpenZWaveControlPanel::DoNodeChange(const std::string &fun, const i
 
 std::string COpenZWaveControlPanel::SaveConfig()
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	Manager::Get()->WriteConfig(homeId);
 	return "OK";
 }
 
 std::string COpenZWaveControlPanel::GetCPTopo()
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	TiXmlDocument doc;
 	char str[16];
 	unsigned int i, j, k;
@@ -1471,8 +1453,6 @@ TiXmlElement *COpenZWaveControlPanel::newstat(char const *tag, char const *label
 
 std::string COpenZWaveControlPanel::GetCPStats()
 {
-	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
-
 	TiXmlDocument doc;
 
 	TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "utf-8", "");

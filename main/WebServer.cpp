@@ -962,7 +962,11 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_System)	{
-				//All fine here
+				//There should be only one
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
+				if (!result.empty())
+					return;
 			}
 			else if (htype == HTYPE_1WIRE) {
 				//all fine here!
@@ -1165,7 +1169,16 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_System) {
-				//All fine here
+				//There should be only one, and with this ID
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
+				if (!result.empty())
+				{
+					int hID = atoi(result[0][0].c_str());
+					int aID = atoi(idx.c_str());
+					if (hID != aID)
+						return;
+				}
 			}
 			else if (htype == HTYPE_TE923) {
 				//All fine here
@@ -1295,21 +1308,9 @@ namespace http {
 					);
 			}
 
-			//Special case for internal system monitoring
-			if (htype == HTYPE_System)
-			{
-				m_mainworker.m_hardwaremonitor.StopHardwareMonitor();
-				if (bEnabled)
-				{
-					m_mainworker.m_hardwaremonitor.StartHardwareMonitor();
-				}
-			}
-			else
-			{
-				//re-add the device in our system
-				int ID = atoi(idx.c_str());
-				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
-			}
+			//re-add the device in our system
+			int ID = atoi(idx.c_str());
+			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 		}
 
 		void CWebServer::Cmd_GetDeviceValueOptions(Json::Value &root)
@@ -7145,13 +7146,22 @@ namespace http {
 								continue;
 						}
 					}
-
+	
 					// has this device already been seen, now with different plan?
 					// assume results are ordered such that same device is adjacent
-					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str()) {
-						//_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
-						root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
-						continue;
+					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
+					std::string thisIdx = sd[0];
+					if ((ii > 0) && thisIdx == root["result"][ii-1]["idx"].asString()) {
+						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
+						if (typeOfThisOne == root["result"][ii-1]["Type"].asString()) {
+							root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
+#ifdef _DEBUG
+							Json::StyledWriter jsonWriter;
+							std::string plansString = jsonWriter.write(root["result"][ii-1]["PlanIDs"]);
+							_log.Log(LOG_NORM, "Duplicate found idx %s (Type %s): %s in plans %s", sd[0].c_str(), typeOfThisOne.c_str(), sd[3].c_str(), plansString.c_str());
+#endif
+							continue;
+						}
 					}
 		
 					root["result"][ii]["HardwareID"] = hardwareID;

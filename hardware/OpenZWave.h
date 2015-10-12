@@ -22,7 +22,7 @@ namespace Json
 	class Value;
 }
 
-class COpenZWave : public AsyncSerial, public ZWaveBase, public COpenZWaveControlPanel
+class COpenZWave : public AsyncSerial, public ZWaveBase
 {
 public:
 	typedef struct  
@@ -127,8 +127,8 @@ public:
 
 	bool m_awakeNodesQueried;
 	bool m_allNodesQueried;
-
 	unsigned char m_controllerNodeId;
+	COpenZWaveControlPanel m_ozwcp;
 private:
 	void NodeQueried(int NodeID);
 	void DeleteNode(const unsigned int homeID, const int nodeID);
