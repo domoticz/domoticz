@@ -80,4 +80,43 @@ public:
 
 };
 
+class queue_element_trigger {
+private:
+	struct element_popped {
+		bool& popped;
+
+		element_popped(bool& popped_): popped(popped_) {}
+
+		bool operator()() const {
+			return popped;
+		}
+	};
+
+	mutable boost::mutex the_mutex;
+	boost::condition_variable the_condition_variable;
+	bool elementPopped;
+
+public:
+	queue_element_trigger() {
+		elementPopped = false;
+	}
+	void popped() {
+		boost::mutex::scoped_lock lock(the_mutex);
+		elementPopped = true;
+		the_condition_variable.notify_one();
+	}
+	void wait() {
+		boost::mutex::scoped_lock lock(the_mutex);
+		the_condition_variable.wait(lock, element_popped(elementPopped));
+	}
+	template<typename Duration>
+	bool timed_wait(Duration const& wait_duration) {
+		boost::mutex::scoped_lock lock(the_mutex);
+		if(!the_condition_variable.timed_wait(lock, wait_duration, element_popped(elementPopped))) {
+			return false;
+		}
+		return true;
+	}
+};
+
 #endif /* MAIN_CONCURRENT_QUEUE_H_ */

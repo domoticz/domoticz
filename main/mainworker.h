@@ -12,7 +12,7 @@
 #include "DataPush.h"
 #include "HttpPush.h"
 #include "concurrent_queue.h"
-#include <boost/cstdint.hpp>
+#include <boost/atomic.hpp>
 
 enum eVerboseLevel
 {
@@ -196,16 +196,25 @@ private:
 	unsigned char get_BateryLevel(const CDomoticzHardwareBase *pHardware, bool bIsInPercentage, unsigned char level);
 
 	// RxMessage queue resources
-	bool m_stopRxMessageThread;
+#define RX_COMMAND_SIZE 128
+	boost::atomic<bool> m_stopRxMessageThread;
+	boost::atomic<unsigned long> m_rxMessageIdx;
+	boost::atomic<bool> m_rxMessageDebug;
 	boost::shared_ptr<boost::thread> m_rxMessageThread;
 	void Do_Work_On_Rx_Messages();
 	struct _tRxMessage {
+		unsigned long rxMessageIdx;
 		int hardwareId;
-		RBUF rxCommand;
+		int rxCommandLength;
+		unsigned char rxCommand[RX_COMMAND_SIZE];
 		boost::uint16_t crc;
+		queue_element_trigger* trigger;
 	};
 	concurrent_queue<_tRxMessage> m_rxMessageQueue;
 	void UnlockRxMessageQueue();
+	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
+	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
+	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const bool wait);
 	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 
 	//(RFX) Message decoders
