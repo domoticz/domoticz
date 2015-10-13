@@ -7,7 +7,7 @@ compiler:
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y build-essential
-  - sudo apt-get install -y nano cmake libboost1.48-all-dev libsqlite3-dev curl libcurl4-openssl-dev libusb-dev zlib1g-dev libssl-dev libudev-dev git
+  - sudo apt-get install -y nano cmake libboost1.56-all-dev libsqlite3-dev curl libcurl4-openssl-dev libusb-dev zlib1g-dev libssl-dev libudev-dev git
   - git clone https://github.com/OpenZWave/open-zwave.git
   - ln -s open-zwave open-zwave-read-only
   - git fetch --unshallow
