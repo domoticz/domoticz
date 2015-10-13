@@ -4,10 +4,32 @@ branches:
 language: cpp
 compiler:
   - gcc
+cache:
+  - apt
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - boost-latest
+    packages:
+      - gcc-4.9
+      - g++-4.9
+      - libboost1.55-all-dev
+      - cmake
+      - libsqlite3-dev
+      - curl
+      - libcurl4-openssl-dev
+      - libusb-dev
+      - zlib1g-dev
+      - libssl-dev
+      - libudev-dev
+      - git
+update-alternatives:
+       - install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50
+       - install /usr/bin/g++ g++ /usr/bin/g++-4.9 50      
+sources:
+      - trusty
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y build-essential
-  - sudo apt-get install -y nano cmake libboost1.48-all-dev libsqlite3-dev curl libcurl4-openssl-dev libusb-dev zlib1g-dev libssl-dev libudev-dev git
   - git clone https://github.com/OpenZWave/open-zwave.git
   - ln -s open-zwave open-zwave-read-only
   - git fetch --unshallow
