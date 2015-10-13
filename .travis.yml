@@ -14,13 +14,13 @@ addons:
     packages:
       - gcc-4.9
       - g++-4.9
-      - libboost1.55-all-dev
+      - libboost1.56-all-dev
       - cmake
-      - nano
       - libsqlite3-dev
       - curl
       - libcurl4-openssl-dev
-      - libusb-dev zlib1g-dev
+      - libusb-dev
+      - zlib1g-dev
       - libssl-dev
       - libudev-dev
       - git
