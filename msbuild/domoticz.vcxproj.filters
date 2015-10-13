@@ -762,6 +762,9 @@
     <ClInclude Include="..\hardware\LogitechMediaServer.h">
       <Filter>Devices\Logitech Media Server</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationLogitechMediaServer.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1219,6 +1222,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\LogitechMediaServer.cpp">
       <Filter>Devices\Logitech Media Server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationLogitechMediaServer.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

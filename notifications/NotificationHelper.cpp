@@ -14,6 +14,7 @@
 #include "NotificationSMS.h"
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
+#include "NotificationLogitechMediaServer.h"
 #include <map>
 
 #if defined WIN32
@@ -36,6 +37,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationSMS());
 	AddNotifier(new CNotificationHTTP());
 	AddNotifier(new CNotificationKodi());
+	AddNotifier(new CNotificationLogitechMediaServer());
 	/* more notifiers can be added here */
 }
 
