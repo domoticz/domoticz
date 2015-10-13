@@ -157,9 +157,13 @@ m_LastSunriseSet("")
 	m_LastUpdateCheck = 0;
 	m_bHaveUpdate = false;
 	m_iRevision = 0;
-	
-	// Put RMessage queueing in debug mode
+
+	// Enable/disable RxMessage queueing debug
+#ifdef _DEBUG
+	m_rxMessageDebug = true;
+#else
 	m_rxMessageDebug = false;
+#endif
 }
 
 MainWorker::~MainWorker()
