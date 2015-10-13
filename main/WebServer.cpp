@@ -7155,11 +7155,6 @@ namespace http {
 						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
 						if (typeOfThisOne == root["result"][ii-1]["Type"].asString()) {
 							root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
-#ifdef _DEBUG
-							Json::StyledWriter jsonWriter;
-							std::string plansString = jsonWriter.write(root["result"][ii-1]["PlanIDs"]);
-							_log.Log(LOG_NORM, "Duplicate found idx %s (Type %s): %s in plans %s", sd[0].c_str(), typeOfThisOne.c_str(), sd[3].c_str(), plansString.c_str());
-#endif
 							continue;
 						}
 					}
