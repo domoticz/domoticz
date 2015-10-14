@@ -449,7 +449,7 @@ bool cWebem::CheckForAction( request& req )
 				std::string ret;
 				try
 				{
-					ret = pfun->second(this);
+					ret = pfun->second(req);
 				}
 				catch (...)
 				{
@@ -499,7 +499,7 @@ bool cWebem::CheckForAction( request& req )
 	std::string ret;
 	try
 	{
-		ret = pfun->second(this);
+		ret = pfun->second(req);
 	}
 	catch (...)
 	{
@@ -707,7 +707,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		std::string retstr;
 		try
 		{
-			retstr = pfun->second();
+			retstr = pfun->second(req);
 		}
 		catch (...)
 		{
@@ -791,7 +791,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	std::wstring wret;
 	try
 	{
-		wret = pfunW->second();
+		wret = pfunW->second(req);
 	}
 	catch (...)
 	{

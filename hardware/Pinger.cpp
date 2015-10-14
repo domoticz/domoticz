@@ -431,7 +431,7 @@ void CPinger::Restart()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_PingerGetNodes(Json::Value &root)
+		void CWebServer::Cmd_PingerGetNodes(const request& req, Json::Value &root)
 		{
 			std::string hwid = m_pWebEm->FindValue("idx");
 			if (hwid == "")
@@ -466,7 +466,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_PingerSetMode(Json::Value &root)
+		void CWebServer::Cmd_PingerSetMode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -506,7 +506,7 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_PingerAddNode(Json::Value &root)
+		void CWebServer::Cmd_PingerAddNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -538,7 +538,7 @@ namespace http {
 			pHardware->AddNode(name, ip, Timeout);
 		}
 
-		void CWebServer::Cmd_PingerUpdateNode(Json::Value &root)
+		void CWebServer::Cmd_PingerUpdateNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -573,7 +573,7 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, ip, Timeout);
 		}
 
-		void CWebServer::Cmd_PingerRemoveNode(Json::Value &root)
+		void CWebServer::Cmd_PingerRemoveNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -602,7 +602,7 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_PingerClearNodes(Json::Value &root)
+		void CWebServer::Cmd_PingerClearNodes(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{

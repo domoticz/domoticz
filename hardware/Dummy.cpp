@@ -45,7 +45,7 @@ bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_CreateVirtualSensor(Json::Value &root)
+		void CWebServer::RType_CreateVirtualSensor(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{

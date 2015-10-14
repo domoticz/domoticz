@@ -1694,7 +1694,7 @@ void CEvohome::Log(bool bDebug, int nLogLevel, const char* format, ... )
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_CreateEvohomeSensor(Json::Value &root)
+		void CWebServer::RType_CreateEvohomeSensor(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1776,7 +1776,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_BindEvohome(Json::Value &root)
+		void CWebServer::RType_BindEvohome(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{

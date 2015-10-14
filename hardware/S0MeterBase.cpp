@@ -333,7 +333,7 @@ void S0MeterBase::ParseLine()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetS0MeterType()
+		char * CWebServer::SetS0MeterType(const request& req)
 		{
 			m_retstr = "/index.html";
 			if (m_pWebEm->m_actualuser_rights != 2)

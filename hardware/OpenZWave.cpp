@@ -4052,7 +4052,7 @@ void COpenZWave::NightlyNodeHeal()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_OpenZWaveNodes(Json::Value &root)
+		void CWebServer::RType_OpenZWaveNodes(const request& req, Json::Value &root)
 		{
 			std::string hwid = m_pWebEm->FindValue("idx");
 			if (hwid == "")
@@ -4119,7 +4119,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveUpdateNode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveUpdateNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4164,7 +4164,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveDeleteNode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveDeleteNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4195,7 +4195,7 @@ namespace http {
 
 		}
 
-		void CWebServer::Cmd_ZWaveInclude(Json::Value &root)
+		void CWebServer::Cmd_ZWaveInclude(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4219,7 +4219,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveExclude(Json::Value &root)
+		void CWebServer::Cmd_ZWaveExclude(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4240,7 +4240,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveIsNodeIncluded(Json::Value & root)
+		void CWebServer::Cmd_ZWaveIsNodeIncluded(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -4268,7 +4268,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveIsNodeExcluded(Json::Value & root)
+		void CWebServer::Cmd_ZWaveIsNodeExcluded(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -4284,7 +4284,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveSoftReset(Json::Value &root)
+		void CWebServer::Cmd_ZWaveSoftReset(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4305,7 +4305,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveHardReset(Json::Value &root)
+		void CWebServer::Cmd_ZWaveHardReset(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4326,7 +4326,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveStateCheck(Json::Value &root)
+		void CWebServer::Cmd_ZWaveStateCheck(const request& req, Json::Value &root)
 		{
 			root["title"] = "ZWaveStateCheck";
 			std::string idx = m_pWebEm->FindValue("idx");
@@ -4343,7 +4343,7 @@ namespace http {
 			return;
 		}
 
-		void CWebServer::Cmd_ZWaveNetworkHeal(Json::Value &root)
+		void CWebServer::Cmd_ZWaveNetworkHeal(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4364,7 +4364,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveNodeHeal(Json::Value &root)
+		void CWebServer::Cmd_ZWaveNodeHeal(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4388,7 +4388,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveNetworkInfo(Json::Value &root)
+		void CWebServer::Cmd_ZWaveNetworkInfo(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4449,7 +4449,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRemoveGroupNode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveRemoveGroupNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4481,7 +4481,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveAddGroupNode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveAddGroupNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4513,7 +4513,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveGroupInfo(Json::Value &root)
+		void CWebServer::Cmd_ZWaveGroupInfo(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -4583,7 +4583,7 @@ namespace http {
 			root["title"] = "ZWaveGroupInfo";
 		}
 
-		void CWebServer::Cmd_ZWaveCancel(Json::Value &root)
+		void CWebServer::Cmd_ZWaveCancel(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -4598,7 +4598,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ApplyZWaveNodeConfig(Json::Value &root)
+		void CWebServer::Cmd_ApplyZWaveNodeConfig(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4632,7 +4632,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRequestNodeConfig(Json::Value &root)
+		void CWebServer::Cmd_ZWaveRequestNodeConfig(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -4655,7 +4655,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
+		void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4676,7 +4676,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(Json::Value &root)
+		void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4697,7 +4697,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveTransferPrimaryRole(Json::Value &root)
+		void CWebServer::Cmd_ZWaveTransferPrimaryRole(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4717,7 +4717,7 @@ namespace http {
 				root["title"] = "ZWaveTransferPrimaryRole";
 			}
 		}
-		std::string CWebServer::ZWaveGetConfigFile()
+		std::string CWebServer::ZWaveGetConfigFile(const request& req)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -4739,7 +4739,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPIndex()
+		std::string CWebServer::ZWaveCPIndex(const request& req)
 		{
 			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -4761,7 +4761,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPPollXml()
+		std::string CWebServer::ZWaveCPPollXml(const request& req)
 		{
 			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -4777,7 +4777,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeGetConf()
+		std::string CWebServer::ZWaveCPNodeGetConf(const request& req)
 		{
 			m_retstr = "";
 			if (m_pWebEm->m_ActualRequest.content.find("node") == std::string::npos)
@@ -4799,7 +4799,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeGetValues()
+		std::string CWebServer::ZWaveCPNodeGetValues(const request& req)
 		{
 			m_retstr = "";
 			if (m_pWebEm->m_ActualRequest.content.find("node") == std::string::npos)
@@ -4821,7 +4821,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeSetValue()
+		std::string CWebServer::ZWaveCPNodeSetValue(const request& req)
 		{
 			m_retstr = "";
 			std::vector<std::string> strarray;
@@ -4841,7 +4841,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeSetButton()
+		std::string CWebServer::ZWaveCPNodeSetButton(const request& req)
 		{
 			m_retstr = "";
 			std::vector<std::string> strarray;
@@ -4861,7 +4861,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPAdminCommand()
+		std::string CWebServer::ZWaveCPAdminCommand(const request& req)
 		{
 			m_retstr = "";
 			if (m_pWebEm->m_ActualRequest.content.find("fun") == std::string::npos)
@@ -4883,7 +4883,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeChange()
+		std::string CWebServer::ZWaveCPNodeChange(const request& req)
 		{
 			m_retstr = "";
 			if (m_pWebEm->m_ActualRequest.content.find("fun") == std::string::npos)
@@ -4908,7 +4908,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPSaveConfig()
+		std::string CWebServer::ZWaveCPSaveConfig(const request& req)
 		{
 			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -4923,7 +4923,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPGetTopo()
+		std::string CWebServer::ZWaveCPGetTopo(const request& req)
 		{
 			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -4939,7 +4939,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPGetStats()
+		std::string CWebServer::ZWaveCPGetStats(const request& req)
 		{
 			m_retstr = "";
 			//Crashes at OpenZWave::GetNodeStatistics::_data->m_sentTS = m_sentTS.GetAsString();
@@ -4961,7 +4961,7 @@ namespace http {
 
 
 
-		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -4982,7 +4982,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRemoveUserCode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveRemoveUserCode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -5018,7 +5018,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveGetNodeUserCodes(Json::Value &root)
+		void CWebServer::Cmd_ZWaveGetNodeUserCodes(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")

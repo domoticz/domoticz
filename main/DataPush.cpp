@@ -205,7 +205,7 @@ void CDataPush::DoFibaroPush()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_SaveFibaroLinkConfig(Json::Value &root)
+		void CWebServer::Cmd_SaveFibaroLinkConfig(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -242,7 +242,7 @@ namespace http {
 			root["title"] = "SaveFibaroLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetFibaroLinkConfig(Json::Value &root)
+		void CWebServer::Cmd_GetFibaroLinkConfig(const request& req, Json::Value &root)
 		{
 			std::string sValue;
 			int nValue;
@@ -280,7 +280,7 @@ namespace http {
 			root["title"] = "GetFibaroLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetFibaroLinks(Json::Value &root)
+		void CWebServer::Cmd_GetFibaroLinks(const request& req, Json::Value &root)
 		{
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
@@ -308,7 +308,7 @@ namespace http {
 			root["title"] = "GetFibaroLinks";
 		}
 
-		void CWebServer::Cmd_SaveFibaroLink(Json::Value &root)
+		void CWebServer::Cmd_SaveFibaroLink(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string deviceid = m_pWebEm->FindValue("deviceid");
@@ -358,7 +358,7 @@ namespace http {
 			root["title"] = "SaveFibaroLink";
 		}
 
-		void CWebServer::Cmd_DeleteFibaroLink(Json::Value &root)
+		void CWebServer::Cmd_DeleteFibaroLink(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{

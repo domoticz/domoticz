@@ -175,7 +175,7 @@ void P1MeterSerial::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetP1USBType()
+		char * CWebServer::SetP1USBType(const request& req)
 		{
 			m_retstr = "/index.html";
 			if (m_pWebEm->m_actualuser_rights != 2)

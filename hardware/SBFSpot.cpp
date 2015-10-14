@@ -662,7 +662,7 @@ void CSBFSpot::GetMeterDetails()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SBFSpotImportOldData()
+		char * CWebServer::SBFSpotImportOldData(const request& req)
 		{
 			m_retstr = "/index.html";
 			if (m_pWebEm->m_actualuser_rights != 2)

@@ -588,7 +588,7 @@ void CScheduler::DeleteExpiredTimers()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_Schedules(Json::Value &root)
+		void CWebServer::RType_Schedules(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Schedules";
@@ -631,7 +631,7 @@ namespace http {
 				ii++;
 			}
 		}
-		void CWebServer::RType_Timers(Json::Value &root)
+		void CWebServer::RType_Timers(const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
@@ -688,7 +688,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddTimer(Json::Value &root)
+		void CWebServer::Cmd_AddTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -762,7 +762,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateTimer(Json::Value &root)
+		void CWebServer::Cmd_UpdateTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -835,7 +835,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteTimer(Json::Value &root)
+		void CWebServer::Cmd_DeleteTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -855,7 +855,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableTimer(Json::Value &root)
+		void CWebServer::Cmd_EnableTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -875,7 +875,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableTimer(Json::Value &root)
+		void CWebServer::Cmd_DisableTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -895,7 +895,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearTimers(Json::Value &root)
+		void CWebServer::Cmd_ClearTimers(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -915,7 +915,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SetpointTimers(Json::Value &root)
+		void CWebServer::RType_SetpointTimers(const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
@@ -964,7 +964,7 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::Cmd_AddSetpointTimer(Json::Value &root)
+		void CWebServer::Cmd_AddSetpointTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1029,7 +1029,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateSetpointTimer(Json::Value &root)
+		void CWebServer::Cmd_UpdateSetpointTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1093,7 +1093,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteSetpointTimer(Json::Value &root)
+		void CWebServer::Cmd_DeleteSetpointTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1113,7 +1113,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearSetpointTimers(Json::Value &root)
+		void CWebServer::Cmd_ClearSetpointTimers(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1133,7 +1133,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SceneTimers(Json::Value &root)
+		void CWebServer::RType_SceneTimers(const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
@@ -1191,7 +1191,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_AddSceneTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1262,7 +1262,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_UpdateSceneTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1333,7 +1333,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_DeleteSceneTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1353,7 +1353,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_EnableSceneTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1373,7 +1373,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_DisableSceneTimer(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -1393,7 +1393,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearSceneTimers(Json::Value &root)
+		void CWebServer::Cmd_ClearSceneTimers(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{

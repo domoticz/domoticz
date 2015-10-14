@@ -663,7 +663,7 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_LMSSetMode(Json::Value &root)
+		void CWebServer::Cmd_LMSSetMode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -698,7 +698,7 @@ namespace http {
 			pHardware->Restart();
 		}
 
-		void CWebServer::Cmd_LMSGetNodes(Json::Value &root)
+		void CWebServer::Cmd_LMSGetNodes(const request& req, Json::Value &root)
 		{
 			std::string hwid = m_pWebEm->FindValue("idx");
 			if (hwid == "")
@@ -731,7 +731,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_LMSMediaCommand(Json::Value &root)
+		void CWebServer::Cmd_LMSMediaCommand(const request& req, Json::Value &root)
 		{
 			std::string sIdx = m_pWebEm->FindValue("idx");
 			std::string sAction = m_pWebEm->FindValue("action");

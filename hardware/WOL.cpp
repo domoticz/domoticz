@@ -101,7 +101,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 
 	bind(udpSocket, (struct sockaddr*)&udpClient, sizeof(udpClient));
 
-	/** …make the packet as shown above **/
+	/** ï¿½make the packet as shown above **/
 
 	/** set server end point (the broadcast addres)**/
 	udpServer.sin_family = AF_INET;
@@ -236,7 +236,7 @@ void CWOL::RemoveAllNodes()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_WOLGetNodes(Json::Value &root)
+		void CWebServer::Cmd_WOLGetNodes(const request& req, Json::Value &root)
 		{
 			std::string hwid = m_pWebEm->FindValue("idx");
 			if (hwid == "")
@@ -270,7 +270,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_WOLAddNode(Json::Value &root)
+		void CWebServer::Cmd_WOLAddNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -300,7 +300,7 @@ namespace http {
 			pHardware->AddNode(name, mac);
 		}
 
-		void CWebServer::Cmd_WOLUpdateNode(Json::Value &root)
+		void CWebServer::Cmd_WOLUpdateNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -333,7 +333,7 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, mac);
 		}
 
-		void CWebServer::Cmd_WOLRemoveNode(Json::Value &root)
+		void CWebServer::Cmd_WOLRemoveNode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -362,7 +362,7 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_WOLClearNodes(Json::Value &root)
+		void CWebServer::Cmd_WOLClearNodes(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{

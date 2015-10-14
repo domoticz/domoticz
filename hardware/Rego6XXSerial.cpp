@@ -458,7 +458,7 @@ bool CRego6XXSerial::ParseData()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetRego6XXType()
+		char * CWebServer::SetRego6XXType(const request& req)
 		{
 			m_retstr = "/index.html";
 			if (m_pWebEm->m_actualuser_rights != 2)

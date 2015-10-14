@@ -324,240 +324,240 @@ namespace http {
 			m_pWebEm->RegisterIncludeCode("timertypes", boost::bind(&CWebServer::DisplayTimerTypesCombo, this));
 			m_pWebEm->RegisterIncludeCode("combolanguage", boost::bind(&CWebServer::DisplayLanguageCombo, this));
 
-			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this));
-			m_pWebEm->RegisterPageCode("/uploadcustomicon", boost::bind(&CWebServer::Post_UploadCustomIcon, this));
-			m_pWebEm->RegisterPageCode("/html5.appcache", boost::bind(&CWebServer::GetAppCache, this));
-			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", boost::bind(&CWebServer::GetCameraSnapshot, this));
-			m_pWebEm->RegisterPageCode("/backupdatabase.php", boost::bind(&CWebServer::GetDatabaseBackup, this));
-			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this));
-			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this));
+			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this, _1));
+			m_pWebEm->RegisterPageCode("/uploadcustomicon", boost::bind(&CWebServer::Post_UploadCustomIcon, this, _1));
+			m_pWebEm->RegisterPageCode("/html5.appcache", boost::bind(&CWebServer::GetAppCache, this, _1));
+			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", boost::bind(&CWebServer::GetCameraSnapshot, this, _1));
+			m_pWebEm->RegisterPageCode("/backupdatabase.php", boost::bind(&CWebServer::GetDatabaseBackup, this, _1));
+			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1));
+			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1)); //TODO: fix me double
 
-			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this));
-			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this));
-			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this));
-			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1), true);
-			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this));
-			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this));
-			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this));
-			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this));
-			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this));
-			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this));
-			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this));
+			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1));
+			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1));
+			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this, _1));
+			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1, _2), true);
+			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1));
+			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1));
+			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1));
+			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1));
+			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1));
+			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1));
+			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this, _1));
 
-			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1), true);
-			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1), true);
+			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2), true);
+			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1, _2), true);
 
-			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1), true);
-			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1), true);
-			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1));
-			RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1), true);
+			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2), true);
+			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2), true);
+			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1, _2));
+			RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1, _2), true);
 
 			
-			RegisterCommandCode("gethardwaretypes", boost::bind(&CWebServer::Cmd_GetHardwareTypes, this, _1));
-			RegisterCommandCode("addhardware", boost::bind(&CWebServer::Cmd_AddHardware, this, _1));
-			RegisterCommandCode("updatehardware", boost::bind(&CWebServer::Cmd_UpdateHardware, this, _1));
-			RegisterCommandCode("deletehardware", boost::bind(&CWebServer::Cmd_DeleteHardware, this, _1));
+			RegisterCommandCode("gethardwaretypes", boost::bind(&CWebServer::Cmd_GetHardwareTypes, this, _1, _2));
+			RegisterCommandCode("addhardware", boost::bind(&CWebServer::Cmd_AddHardware, this, _1, _2));
+			RegisterCommandCode("updatehardware", boost::bind(&CWebServer::Cmd_UpdateHardware, this, _1, _2));
+			RegisterCommandCode("deletehardware", boost::bind(&CWebServer::Cmd_DeleteHardware, this, _1, _2));
 
-			RegisterCommandCode("wolgetnodes", boost::bind(&CWebServer::Cmd_WOLGetNodes, this, _1));
-			RegisterCommandCode("woladdnode", boost::bind(&CWebServer::Cmd_WOLAddNode, this, _1));
-			RegisterCommandCode("wolupdatenode", boost::bind(&CWebServer::Cmd_WOLUpdateNode, this, _1));
-			RegisterCommandCode("wolremovenode", boost::bind(&CWebServer::Cmd_WOLRemoveNode, this, _1));
-			RegisterCommandCode("wolclearnodes", boost::bind(&CWebServer::Cmd_WOLClearNodes, this, _1));
+			RegisterCommandCode("wolgetnodes", boost::bind(&CWebServer::Cmd_WOLGetNodes, this, _1, _2));
+			RegisterCommandCode("woladdnode", boost::bind(&CWebServer::Cmd_WOLAddNode, this, _1, _2));
+			RegisterCommandCode("wolupdatenode", boost::bind(&CWebServer::Cmd_WOLUpdateNode, this, _1, _2));
+			RegisterCommandCode("wolremovenode", boost::bind(&CWebServer::Cmd_WOLRemoveNode, this, _1, _2));
+			RegisterCommandCode("wolclearnodes", boost::bind(&CWebServer::Cmd_WOLClearNodes, this, _1, _2));
 
-			RegisterCommandCode("pingersetmode", boost::bind(&CWebServer::Cmd_PingerSetMode, this, _1));
-			RegisterCommandCode("pingergetnodes", boost::bind(&CWebServer::Cmd_PingerGetNodes, this, _1));
-			RegisterCommandCode("pingeraddnode", boost::bind(&CWebServer::Cmd_PingerAddNode, this, _1));
-			RegisterCommandCode("pingerupdatenode", boost::bind(&CWebServer::Cmd_PingerUpdateNode, this, _1));
-			RegisterCommandCode("pingerremovenode", boost::bind(&CWebServer::Cmd_PingerRemoveNode, this, _1));
-			RegisterCommandCode("pingerclearnodes", boost::bind(&CWebServer::Cmd_PingerClearNodes, this, _1));
+			RegisterCommandCode("pingersetmode", boost::bind(&CWebServer::Cmd_PingerSetMode, this, _1, _2));
+			RegisterCommandCode("pingergetnodes", boost::bind(&CWebServer::Cmd_PingerGetNodes, this, _1, _2));
+			RegisterCommandCode("pingeraddnode", boost::bind(&CWebServer::Cmd_PingerAddNode, this, _1, _2));
+			RegisterCommandCode("pingerupdatenode", boost::bind(&CWebServer::Cmd_PingerUpdateNode, this, _1, _2));
+			RegisterCommandCode("pingerremovenode", boost::bind(&CWebServer::Cmd_PingerRemoveNode, this, _1, _2));
+			RegisterCommandCode("pingerclearnodes", boost::bind(&CWebServer::Cmd_PingerClearNodes, this, _1, _2));
 
-			RegisterCommandCode("kodisetmode", boost::bind(&CWebServer::Cmd_KodiSetMode, this, _1));
-			RegisterCommandCode("kodigetnodes", boost::bind(&CWebServer::Cmd_KodiGetNodes, this, _1));
-			RegisterCommandCode("kodiaddnode", boost::bind(&CWebServer::Cmd_KodiAddNode, this, _1));
-			RegisterCommandCode("kodiupdatenode", boost::bind(&CWebServer::Cmd_KodiUpdateNode, this, _1));
-			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1));
-			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1));
-			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1));
+			RegisterCommandCode("kodisetmode", boost::bind(&CWebServer::Cmd_KodiSetMode, this, _1, _2));
+			RegisterCommandCode("kodigetnodes", boost::bind(&CWebServer::Cmd_KodiGetNodes, this, _1, _2));
+			RegisterCommandCode("kodiaddnode", boost::bind(&CWebServer::Cmd_KodiAddNode, this, _1, _2));
+			RegisterCommandCode("kodiupdatenode", boost::bind(&CWebServer::Cmd_KodiUpdateNode, this, _1, _2));
+			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1, _2));
+			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1, _2));
+			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1, _2));
 
-			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1));
-			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1));
-			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1));
+			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2));
+			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2));
+			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1, _2));
 
-			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1));
-			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1));
-			RegisterCommandCode("getfibarolinks", boost::bind(&CWebServer::Cmd_GetFibaroLinks, this, _1));
-			RegisterCommandCode("savefibarolink", boost::bind(&CWebServer::Cmd_SaveFibaroLink, this, _1));
-			RegisterCommandCode("deletefibarolink", boost::bind(&CWebServer::Cmd_DeleteFibaroLink, this, _1));
+			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1, _2));
+			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1, _2));
+			RegisterCommandCode("getfibarolinks", boost::bind(&CWebServer::Cmd_GetFibaroLinks, this, _1, _2));
+			RegisterCommandCode("savefibarolink", boost::bind(&CWebServer::Cmd_SaveFibaroLink, this, _1, _2));
+			RegisterCommandCode("deletefibarolink", boost::bind(&CWebServer::Cmd_DeleteFibaroLink, this, _1, _2));
 
-			RegisterCommandCode("savehttplinkconfig", boost::bind(&CWebServer::Cmd_SaveHttpLinkConfig, this, _1));
-			RegisterCommandCode("gethttplinkconfig", boost::bind(&CWebServer::Cmd_GetHttpLinkConfig, this, _1));
-			RegisterCommandCode("gethttplinks", boost::bind(&CWebServer::Cmd_GetHttpLinks, this, _1));
-			RegisterCommandCode("savehttplink", boost::bind(&CWebServer::Cmd_SaveHttpLink, this, _1));
-			RegisterCommandCode("deletehttplink", boost::bind(&CWebServer::Cmd_DeleteHttpLink, this, _1));
-			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1));
-			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1));
+			RegisterCommandCode("savehttplinkconfig", boost::bind(&CWebServer::Cmd_SaveHttpLinkConfig, this, _1, _2));
+			RegisterCommandCode("gethttplinkconfig", boost::bind(&CWebServer::Cmd_GetHttpLinkConfig, this, _1, _2));
+			RegisterCommandCode("gethttplinks", boost::bind(&CWebServer::Cmd_GetHttpLinks, this, _1, _2));
+			RegisterCommandCode("savehttplink", boost::bind(&CWebServer::Cmd_SaveHttpLink, this, _1, _2));
+			RegisterCommandCode("deletehttplink", boost::bind(&CWebServer::Cmd_DeleteHttpLink, this, _1, _2));
+			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1, _2));
+			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1, _2));
 
-			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1));
-			RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::Cmd_SaveUserVariable, this, _1));
-			RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::Cmd_UpdateUserVariable, this, _1));
-			RegisterCommandCode("getuservariables", boost::bind(&CWebServer::Cmd_GetUserVariables, this, _1));
-			RegisterCommandCode("getuservariable", boost::bind(&CWebServer::Cmd_GetUserVariable, this, _1));
+			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2));
+			RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::Cmd_SaveUserVariable, this, _1, _2));
+			RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::Cmd_UpdateUserVariable, this, _1, _2));
+			RegisterCommandCode("getuservariables", boost::bind(&CWebServer::Cmd_GetUserVariables, this, _1, _2));
+			RegisterCommandCode("getuservariable", boost::bind(&CWebServer::Cmd_GetUserVariable, this, _1, _2));
 
-			RegisterCommandCode("allownewhardware", boost::bind(&CWebServer::Cmd_AllowNewHardware, this, _1));
+			RegisterCommandCode("allownewhardware", boost::bind(&CWebServer::Cmd_AllowNewHardware, this, _1, _2));
 
-			RegisterCommandCode("addplan", boost::bind(&CWebServer::Cmd_AddPlan, this, _1));
-			RegisterCommandCode("updateplan", boost::bind(&CWebServer::Cmd_UpdatePlan, this, _1));
-			RegisterCommandCode("deleteplan", boost::bind(&CWebServer::Cmd_DeletePlan, this, _1));
-			RegisterCommandCode("getunusedplandevices", boost::bind(&CWebServer::Cmd_GetUnusedPlanDevices, this, _1));
-			RegisterCommandCode("addplanactivedevice", boost::bind(&CWebServer::Cmd_AddPlanActiveDevice, this, _1));
-			RegisterCommandCode("getplandevices", boost::bind(&CWebServer::Cmd_GetPlanDevices, this, _1));
-			RegisterCommandCode("deleteplandevice", boost::bind(&CWebServer::Cmd_DeletePlanDevice, this, _1));
-			RegisterCommandCode("setplandevicecoords", boost::bind(&CWebServer::Cmd_SetPlanDeviceCoords, this, _1));
-			RegisterCommandCode("deleteallplandevices", boost::bind(&CWebServer::Cmd_DeleteAllPlanDevices, this, _1));
-			RegisterCommandCode("changeplanorder", boost::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1));
-			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1));
+			RegisterCommandCode("addplan", boost::bind(&CWebServer::Cmd_AddPlan, this, _1, _2));
+			RegisterCommandCode("updateplan", boost::bind(&CWebServer::Cmd_UpdatePlan, this, _1, _2));
+			RegisterCommandCode("deleteplan", boost::bind(&CWebServer::Cmd_DeletePlan, this, _1, _2));
+			RegisterCommandCode("getunusedplandevices", boost::bind(&CWebServer::Cmd_GetUnusedPlanDevices, this, _1, _2));
+			RegisterCommandCode("addplanactivedevice", boost::bind(&CWebServer::Cmd_AddPlanActiveDevice, this, _1, _2));
+			RegisterCommandCode("getplandevices", boost::bind(&CWebServer::Cmd_GetPlanDevices, this, _1, _2));
+			RegisterCommandCode("deleteplandevice", boost::bind(&CWebServer::Cmd_DeletePlanDevice, this, _1, _2));
+			RegisterCommandCode("setplandevicecoords", boost::bind(&CWebServer::Cmd_SetPlanDeviceCoords, this, _1, _2));
+			RegisterCommandCode("deleteallplandevices", boost::bind(&CWebServer::Cmd_DeleteAllPlanDevices, this, _1, _2));
+			RegisterCommandCode("changeplanorder", boost::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1, _2));
+			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1, _2));
 
-			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1));
-			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1));
+			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1, _2));
+			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2));
 
-			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1),true);
-			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1));
-			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1));
-			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1));
-			RegisterCommandCode("udevices", boost::bind(&CWebServer::Cmd_UpdateDevices, this, _1));
-			RegisterCommandCode("thermostatstate", boost::bind(&CWebServer::Cmd_SetThermostatState, this, _1));
-			RegisterCommandCode("system_shutdown", boost::bind(&CWebServer::Cmd_SystemShutdown, this, _1));
-			RegisterCommandCode("system_reboot", boost::bind(&CWebServer::Cmd_SystemReboot, this, _1));
-			RegisterCommandCode("execute_script", boost::bind(&CWebServer::Cmd_ExcecuteScript, this, _1));
-			RegisterCommandCode("getcosts", boost::bind(&CWebServer::Cmd_GetCosts, this, _1));
-			RegisterCommandCode("checkforupdate", boost::bind(&CWebServer::Cmd_CheckForUpdate, this, _1));
-			RegisterCommandCode("downloadupdate", boost::bind(&CWebServer::Cmd_DownloadUpdate, this, _1));
-			RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1));
-			RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1));
+			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1, _2),true);
+			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1, _2));
+			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1, _2));
+			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1, _2));
+			RegisterCommandCode("udevices", boost::bind(&CWebServer::Cmd_UpdateDevices, this, _1, _2));
+			RegisterCommandCode("thermostatstate", boost::bind(&CWebServer::Cmd_SetThermostatState, this, _1, _2));
+			RegisterCommandCode("system_shutdown", boost::bind(&CWebServer::Cmd_SystemShutdown, this, _1, _2));
+			RegisterCommandCode("system_reboot", boost::bind(&CWebServer::Cmd_SystemReboot, this, _1, _2));
+			RegisterCommandCode("execute_script", boost::bind(&CWebServer::Cmd_ExcecuteScript, this, _1, _2));
+			RegisterCommandCode("getcosts", boost::bind(&CWebServer::Cmd_GetCosts, this, _1, _2));
+			RegisterCommandCode("checkforupdate", boost::bind(&CWebServer::Cmd_CheckForUpdate, this, _1, _2));
+			RegisterCommandCode("downloadupdate", boost::bind(&CWebServer::Cmd_DownloadUpdate, this, _1, _2));
+			RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1, _2));
+			RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1, _2));
 
-			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1));
-			RegisterCommandCode("updatetimer", boost::bind(&CWebServer::Cmd_UpdateTimer, this, _1));
-			RegisterCommandCode("deletetimer", boost::bind(&CWebServer::Cmd_DeleteTimer, this, _1));
-			RegisterCommandCode("enabletimer", boost::bind(&CWebServer::Cmd_EnableTimer, this, _1));
-			RegisterCommandCode("disabletimer", boost::bind(&CWebServer::Cmd_DisableTimer, this, _1));
-			RegisterCommandCode("cleartimers", boost::bind(&CWebServer::Cmd_ClearTimers, this, _1));
+			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1, _2));
+			RegisterCommandCode("updatetimer", boost::bind(&CWebServer::Cmd_UpdateTimer, this, _1, _2));
+			RegisterCommandCode("deletetimer", boost::bind(&CWebServer::Cmd_DeleteTimer, this, _1, _2));
+			RegisterCommandCode("enabletimer", boost::bind(&CWebServer::Cmd_EnableTimer, this, _1, _2));
+			RegisterCommandCode("disabletimer", boost::bind(&CWebServer::Cmd_DisableTimer, this, _1, _2));
+			RegisterCommandCode("cleartimers", boost::bind(&CWebServer::Cmd_ClearTimers, this, _1, _2));
 
-			RegisterCommandCode("addscenetimer", boost::bind(&CWebServer::Cmd_AddSceneTimer, this, _1));
-			RegisterCommandCode("updatescenetimer", boost::bind(&CWebServer::Cmd_UpdateSceneTimer, this, _1));
-			RegisterCommandCode("deletescenetimer", boost::bind(&CWebServer::Cmd_DeleteSceneTimer, this, _1));
-			RegisterCommandCode("enablescenetimer", boost::bind(&CWebServer::Cmd_EnableSceneTimer, this, _1));
-			RegisterCommandCode("disablescenetimer", boost::bind(&CWebServer::Cmd_DisableSceneTimer, this, _1));
-			RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1));
-			RegisterCommandCode("getsceneactivations", boost::bind(&CWebServer::Cmd_GetSceneActivations, this, _1));
-			RegisterCommandCode("addscenecode", boost::bind(&CWebServer::Cmd_AddSceneCode, this, _1));
-			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
-			RegisterCommandCode("clearscenecodes", boost::bind(&CWebServer::Cmd_ClearSceneCodes, this, _1));
-			RegisterCommandCode("renamescene", boost::bind(&CWebServer::Cmd_RenameScene, this, _1));
+			RegisterCommandCode("addscenetimer", boost::bind(&CWebServer::Cmd_AddSceneTimer, this, _1, _2));
+			RegisterCommandCode("updatescenetimer", boost::bind(&CWebServer::Cmd_UpdateSceneTimer, this, _1, _2));
+			RegisterCommandCode("deletescenetimer", boost::bind(&CWebServer::Cmd_DeleteSceneTimer, this, _1, _2));
+			RegisterCommandCode("enablescenetimer", boost::bind(&CWebServer::Cmd_EnableSceneTimer, this, _1, _2));
+			RegisterCommandCode("disablescenetimer", boost::bind(&CWebServer::Cmd_DisableSceneTimer, this, _1, _2));
+			RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1, _2));
+			RegisterCommandCode("getsceneactivations", boost::bind(&CWebServer::Cmd_GetSceneActivations, this, _1, _2));
+			RegisterCommandCode("addscenecode", boost::bind(&CWebServer::Cmd_AddSceneCode, this, _1, _2));
+			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1, _2));
+			RegisterCommandCode("clearscenecodes", boost::bind(&CWebServer::Cmd_ClearSceneCodes, this, _1, _2));
+			RegisterCommandCode("renamescene", boost::bind(&CWebServer::Cmd_RenameScene, this, _1, _2));
 
-			RegisterCommandCode("setsetpoint", boost::bind(&CWebServer::Cmd_SetSetpoint, this, _1));
-			RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1));
-			RegisterCommandCode("updatesetpointtimer", boost::bind(&CWebServer::Cmd_UpdateSetpointTimer, this, _1));
-			RegisterCommandCode("deletesetpointtimer", boost::bind(&CWebServer::Cmd_DeleteSetpointTimer, this, _1));
-			RegisterCommandCode("clearsetpointtimers", boost::bind(&CWebServer::Cmd_ClearSetpointTimers, this, _1));
+			RegisterCommandCode("setsetpoint", boost::bind(&CWebServer::Cmd_SetSetpoint, this, _1, _2));
+			RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1, _2));
+			RegisterCommandCode("updatesetpointtimer", boost::bind(&CWebServer::Cmd_UpdateSetpointTimer, this, _1, _2));
+			RegisterCommandCode("deletesetpointtimer", boost::bind(&CWebServer::Cmd_DeleteSetpointTimer, this, _1, _2));
+			RegisterCommandCode("clearsetpointtimers", boost::bind(&CWebServer::Cmd_ClearSetpointTimers, this, _1, _2));
 
-			RegisterCommandCode("serial_devices", boost::bind(&CWebServer::Cmd_GetSerialDevices, this, _1));
-			RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1));
-			RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1));
+			RegisterCommandCode("serial_devices", boost::bind(&CWebServer::Cmd_GetSerialDevices, this, _1, _2));
+			RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1, _2));
+			RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1, _2));
 
-			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_RegisterWithPhilipsHue, this, _1));
+			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_RegisterWithPhilipsHue, this, _1, _2));
 
-			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1));
-			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
-			RegisterCommandCode("updatecustomicon", boost::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1));
+			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1, _2));
+			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1, _2));
+			RegisterCommandCode("updatecustomicon", boost::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1, _2));
 
-			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
-			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
+			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1, _2));
+			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1, _2));
 
-			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1));
-			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1));
-			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1));
+			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1, _2));
+			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1, _2));
+			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1, _2));
 
-			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
-			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
-			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1));
-			RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1));
-			RegisterRType("events", boost::bind(&CWebServer::RType_Events, this, _1));
-			RegisterRType("hardware", boost::bind(&CWebServer::RType_Hardware, this, _1));
-			RegisterRType("devices", boost::bind(&CWebServer::RType_Devices, this, _1));
-			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1));
-			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1));
-			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1));
+			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2));
+			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2));
+			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1, _2));
+			RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1, _2));
+			RegisterRType("events", boost::bind(&CWebServer::RType_Events, this, _1, _2));
+			RegisterRType("hardware", boost::bind(&CWebServer::RType_Hardware, this, _1, _2));
+			RegisterRType("devices", boost::bind(&CWebServer::RType_Devices, this, _1, _2));
+			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1, _2));
+			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1, _2));
+			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1, _2));
 
-			RegisterRType("timers", boost::bind(&CWebServer::RType_Timers, this, _1));
-			RegisterRType("scenetimers", boost::bind(&CWebServer::RType_SceneTimers, this, _1));
-			RegisterRType("setpointtimers", boost::bind(&CWebServer::RType_SetpointTimers, this, _1));
+			RegisterRType("timers", boost::bind(&CWebServer::RType_Timers, this, _1, _2));
+			RegisterRType("scenetimers", boost::bind(&CWebServer::RType_SceneTimers, this, _1, _2));
+			RegisterRType("setpointtimers", boost::bind(&CWebServer::RType_SetpointTimers, this, _1, _2));
 
-			RegisterRType("gettransfers", boost::bind(&CWebServer::RType_GetTransfers, this, _1));
-			RegisterRType("transferdevice", boost::bind(&CWebServer::RType_TransferDevice, this, _1));
-			RegisterRType("notifications", boost::bind(&CWebServer::RType_Notifications, this, _1));
-			RegisterRType("schedules", boost::bind(&CWebServer::RType_Schedules, this, _1));
-			RegisterRType("getshareduserdevices", boost::bind(&CWebServer::RType_GetSharedUserDevices, this, _1));
-			RegisterRType("setshareduserdevices", boost::bind(&CWebServer::RType_SetSharedUserDevices, this, _1));
-			RegisterRType("setused", boost::bind(&CWebServer::RType_SetUsed, this, _1));
-			RegisterRType("scenes", boost::bind(&CWebServer::RType_Scenes, this, _1));
-			RegisterRType("addscene", boost::bind(&CWebServer::RType_AddScene, this, _1));
-			RegisterRType("deletescene", boost::bind(&CWebServer::RType_DeleteScene, this, _1));
-			RegisterRType("updatescene", boost::bind(&CWebServer::RType_UpdateScene, this, _1));
-			RegisterRType("createvirtualsensor", boost::bind(&CWebServer::RType_CreateVirtualSensor, this, _1));
+			RegisterRType("gettransfers", boost::bind(&CWebServer::RType_GetTransfers, this, _1, _2));
+			RegisterRType("transferdevice", boost::bind(&CWebServer::RType_TransferDevice, this, _1, _2));
+			RegisterRType("notifications", boost::bind(&CWebServer::RType_Notifications, this, _1, _2));
+			RegisterRType("schedules", boost::bind(&CWebServer::RType_Schedules, this, _1, _2));
+			RegisterRType("getshareduserdevices", boost::bind(&CWebServer::RType_GetSharedUserDevices, this, _1, _2));
+			RegisterRType("setshareduserdevices", boost::bind(&CWebServer::RType_SetSharedUserDevices, this, _1, _2));
+			RegisterRType("setused", boost::bind(&CWebServer::RType_SetUsed, this, _1, _2));
+			RegisterRType("scenes", boost::bind(&CWebServer::RType_Scenes, this, _1, _2));
+			RegisterRType("addscene", boost::bind(&CWebServer::RType_AddScene, this, _1, _2));
+			RegisterRType("deletescene", boost::bind(&CWebServer::RType_DeleteScene, this, _1, _2));
+			RegisterRType("updatescene", boost::bind(&CWebServer::RType_UpdateScene, this, _1, _2));
+			RegisterRType("createvirtualsensor", boost::bind(&CWebServer::RType_CreateVirtualSensor, this, _1, _2));
 
-			RegisterRType("createevohomesensor", boost::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1));
-			RegisterRType("bindevohome", boost::bind(&CWebServer::RType_BindEvohome, this, _1));
+			RegisterRType("createevohomesensor", boost::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1, _2));
+			RegisterRType("bindevohome", boost::bind(&CWebServer::RType_BindEvohome, this, _1, _2));
 
-			RegisterRType("custom_light_icons", boost::bind(&CWebServer::RType_CustomLightIcons, this, _1));
-			RegisterRType("plans", boost::bind(&CWebServer::RType_Plans, this, _1));
-			RegisterRType("floorplans", boost::bind(&CWebServer::RType_FloorPlans, this, _1));
+			RegisterRType("custom_light_icons", boost::bind(&CWebServer::RType_CustomLightIcons, this, _1, _2));
+			RegisterRType("plans", boost::bind(&CWebServer::RType_Plans, this, _1, _2));
+			RegisterRType("floorplans", boost::bind(&CWebServer::RType_FloorPlans, this, _1, _2));
 #ifdef WITH_OPENZWAVE
 			//ZWave
-			RegisterCommandCode("updatezwavenode", boost::bind(&CWebServer::Cmd_ZWaveUpdateNode, this, _1));
-			RegisterCommandCode("deletezwavenode", boost::bind(&CWebServer::Cmd_ZWaveDeleteNode, this, _1));
-			RegisterCommandCode("zwaveinclude", boost::bind(&CWebServer::Cmd_ZWaveInclude, this, _1));
-			RegisterCommandCode("zwaveexclude", boost::bind(&CWebServer::Cmd_ZWaveExclude, this, _1));
+			RegisterCommandCode("updatezwavenode", boost::bind(&CWebServer::Cmd_ZWaveUpdateNode, this, _1, _2));
+			RegisterCommandCode("deletezwavenode", boost::bind(&CWebServer::Cmd_ZWaveDeleteNode, this, _1, _2));
+			RegisterCommandCode("zwaveinclude", boost::bind(&CWebServer::Cmd_ZWaveInclude, this, _1, _2));
+			RegisterCommandCode("zwaveexclude", boost::bind(&CWebServer::Cmd_ZWaveExclude, this, _1, _2));
 
-			RegisterCommandCode("zwaveisnodeincluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1));
-			RegisterCommandCode("zwaveisnodeexcluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1));
+			RegisterCommandCode("zwaveisnodeincluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1, _2));
+			RegisterCommandCode("zwaveisnodeexcluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1, _2));
 
-			RegisterCommandCode("zwavesoftreset", boost::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1));
-			RegisterCommandCode("zwavehardreset", boost::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1));
-			RegisterCommandCode("zwavenetworkheal", boost::bind(&CWebServer::Cmd_ZWaveNetworkHeal, this, _1));
-			RegisterCommandCode("zwavenodeheal", boost::bind(&CWebServer::Cmd_ZWaveNodeHeal, this, _1));
-			RegisterCommandCode("zwavenetworkinfo", boost::bind(&CWebServer::Cmd_ZWaveNetworkInfo, this, _1));
-			RegisterCommandCode("zwaveremovegroupnode", boost::bind(&CWebServer::Cmd_ZWaveRemoveGroupNode, this, _1));
-			RegisterCommandCode("zwaveaddgroupnode", boost::bind(&CWebServer::Cmd_ZWaveAddGroupNode, this, _1));
-			RegisterCommandCode("zwavegroupinfo", boost::bind(&CWebServer::Cmd_ZWaveGroupInfo, this, _1));
-			RegisterCommandCode("zwavecancel", boost::bind(&CWebServer::Cmd_ZWaveCancel, this, _1));
-			RegisterCommandCode("applyzwavenodeconfig", boost::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig, this, _1));
-			RegisterCommandCode("requestzwavenodeconfig", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig, this, _1));
-			RegisterCommandCode("zwavestatecheck", boost::bind(&CWebServer::Cmd_ZWaveStateCheck, this, _1));
-			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller", boost::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController, this, _1));
-			RegisterCommandCode("zwavesendconfigurationtosecondcontroller", boost::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController, this, _1));
-			RegisterCommandCode("zwavetransferprimaryrole", boost::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole, this, _1));
-			RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1));
-			RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1));
-			RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1));
+			RegisterCommandCode("zwavesoftreset", boost::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1, _2));
+			RegisterCommandCode("zwavehardreset", boost::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1, _2));
+			RegisterCommandCode("zwavenetworkheal", boost::bind(&CWebServer::Cmd_ZWaveNetworkHeal, this, _1, _2));
+			RegisterCommandCode("zwavenodeheal", boost::bind(&CWebServer::Cmd_ZWaveNodeHeal, this, _1, _2));
+			RegisterCommandCode("zwavenetworkinfo", boost::bind(&CWebServer::Cmd_ZWaveNetworkInfo, this, _1, _2));
+			RegisterCommandCode("zwaveremovegroupnode", boost::bind(&CWebServer::Cmd_ZWaveRemoveGroupNode, this, _1, _2));
+			RegisterCommandCode("zwaveaddgroupnode", boost::bind(&CWebServer::Cmd_ZWaveAddGroupNode, this, _1, _2));
+			RegisterCommandCode("zwavegroupinfo", boost::bind(&CWebServer::Cmd_ZWaveGroupInfo, this, _1, _2));
+			RegisterCommandCode("zwavecancel", boost::bind(&CWebServer::Cmd_ZWaveCancel, this, _1, _2));
+			RegisterCommandCode("applyzwavenodeconfig", boost::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig, this, _1, _2));
+			RegisterCommandCode("requestzwavenodeconfig", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig, this, _1, _2));
+			RegisterCommandCode("zwavestatecheck", boost::bind(&CWebServer::Cmd_ZWaveStateCheck, this, _1, _2));
+			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller", boost::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController, this, _1, _2));
+			RegisterCommandCode("zwavesendconfigurationtosecondcontroller", boost::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController, this, _1, _2));
+			RegisterCommandCode("zwavetransferprimaryrole", boost::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole, this, _1, _2));
+			RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1, _2));
+			RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1, _2));
+			RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1, _2));
 
-			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile,	this));
+			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile,	this, _1));
 
-			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", boost::bind(&CWebServer::ZWaveCPPollXml, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", boost::bind(&CWebServer::ZWaveCPIndex, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetConf, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetValues, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", boost::bind(&CWebServer::ZWaveCPNodeSetValue, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", boost::bind(&CWebServer::ZWaveCPNodeSetButton, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", boost::bind(&CWebServer::ZWaveCPPollXml, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", boost::bind(&CWebServer::ZWaveCPIndex, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetConf, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetValues, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", boost::bind(&CWebServer::ZWaveCPNodeSetValue, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", boost::bind(&CWebServer::ZWaveCPNodeSetButton, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this, _1));
+			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this, _1));
 			//grouppost.html
 			//pollpost.html
 			//scenepost.html
 			//thpost.html
-			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1));
+			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2));
 #endif	
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
@@ -611,12 +611,12 @@ namespace http {
 			m_webrtypes.insert(std::pair<std::string, webserver_response_function >(std::string(idname), ResponseFunction));
 		}
 
-		void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
+		void CWebServer::HandleRType(const std::string &rtype, const request& req, Json::Value &root)
 		{
 			std::map < std::string, webserver_response_function >::iterator pf = m_webrtypes.find(rtype);
 			if (pf != m_webrtypes.end())
 			{
-				pf->second(root);
+				pf->second(req, root);
 			}
 		}
 
@@ -651,7 +651,7 @@ namespace http {
 			return 0;
 		}
 
-		std::string CWebServer::GetAppCache()
+		std::string CWebServer::GetAppCache(const request& req)
 		{
 			std::string response = "";
 			if (g_bDontCacheWWW)
@@ -731,7 +731,7 @@ namespace http {
 			return response;
 		}
 
-		std::string CWebServer::GetJSonPage()
+		std::string CWebServer::GetJSonPage(const request& req)
 		{
 			Json::Value root;
 			root["status"] = "ERR";
@@ -756,10 +756,10 @@ namespace http {
 					return m_retstr;
 
 				}
-				HandleCommand(cparam, root);
+				HandleCommand(cparam, req, root);
 			} //(rtype=="command")
 			else
-				HandleRType(rtype, root);
+				HandleRType(rtype, req, root);
 		exitjson:
 			std::string jcallback = m_pWebEm->FindValue("jsoncallback");
 			if (jcallback.size() == 0)
@@ -771,7 +771,7 @@ namespace http {
 			return m_retstr;
 		}
 
-		void CWebServer::Cmd_GetLanguage(Json::Value &root)
+		void CWebServer::Cmd_GetLanguage(const request& req, Json::Value &root)
 		{
 			std::string sValue;
 			if (m_sql.GetPreferencesVar("Language", sValue))
@@ -782,7 +782,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetThemes(Json::Value &root)
+		void CWebServer::Cmd_GetThemes(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetThemes";
@@ -796,7 +796,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_LoginCheck(Json::Value &root)
+		void CWebServer::Cmd_LoginCheck(const request& req, Json::Value &root)
 		{
 			std::string tmpusrname = m_pWebEm->FindValue("username");
 			std::string tmpusrpass = m_pWebEm->FindValue("password");
@@ -841,7 +841,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetHardwareTypes(Json::Value &root)
+		void CWebServer::Cmd_GetHardwareTypes(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetHardwareTypes";
@@ -900,7 +900,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddHardware(Json::Value &root)
+		void CWebServer::Cmd_AddHardware(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1108,7 +1108,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_UpdateHardware(Json::Value &root)
+		void CWebServer::Cmd_UpdateHardware(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1313,7 +1313,7 @@ namespace http {
 			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 		}
 
-		void CWebServer::Cmd_GetDeviceValueOptions(Json::Value &root)
+		void CWebServer::Cmd_GetDeviceValueOptions(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1340,7 +1340,7 @@ namespace http {
 			root["title"] = "GetDeviceValueOptions";
 		}
 
-		void CWebServer::Cmd_GetDeviceValueOptionWording(Json::Value &root)
+		void CWebServer::Cmd_GetDeviceValueOptionWording(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string pos = m_pWebEm->FindValue("pos");
@@ -1354,7 +1354,7 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_DeleteUserVariable(Json::Value &root)
+		void CWebServer::Cmd_DeleteUserVariable(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1364,7 +1364,7 @@ namespace http {
 			root["title"] = "DeleteUserVariable";
 		}
 
-		void CWebServer::Cmd_SaveUserVariable(Json::Value &root)
+		void CWebServer::Cmd_SaveUserVariable(const request& req, Json::Value &root)
 		{
 			std::string variablename = m_pWebEm->FindValue("vname");
 			std::string variablevalue = m_pWebEm->FindValue("vvalue");
@@ -1376,7 +1376,7 @@ namespace http {
 			root["title"] = "SaveUserVariable";
 		}
 
-		void CWebServer::Cmd_UpdateUserVariable(Json::Value &root)
+		void CWebServer::Cmd_UpdateUserVariable(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string variablename = m_pWebEm->FindValue("vname");
@@ -1402,7 +1402,7 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_GetUserVariables(Json::Value &root)
+		void CWebServer::Cmd_GetUserVariables(const request& req, Json::Value &root)
 		{
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
@@ -1427,7 +1427,7 @@ namespace http {
 			root["title"] = "GetUserVariables";
 		}
 
-		void CWebServer::Cmd_GetUserVariable(Json::Value &root)
+		void CWebServer::Cmd_GetUserVariable(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1458,7 +1458,7 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_AllowNewHardware(Json::Value &root)
+		void CWebServer::Cmd_AllowNewHardware(const request& req, Json::Value &root)
 		{
 			std::string sTimeout = m_pWebEm->FindValue("timeout");
 			if (sTimeout == "")
@@ -1470,7 +1470,7 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_DeleteHardware(Json::Value &root)
+		void CWebServer::Cmd_DeleteHardware(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1487,7 +1487,7 @@ namespace http {
 			m_sql.DeleteHardware(idx);
 		}
 
-		void CWebServer::Cmd_GetLog(Json::Value &root)
+		void CWebServer::Cmd_GetLog(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetLog";
@@ -1518,7 +1518,7 @@ namespace http {
 		}
 
 		//Plan Functions
-		void CWebServer::Cmd_AddPlan(Json::Value &root)
+		void CWebServer::Cmd_AddPlan(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1532,7 +1532,7 @@ namespace http {
 				);
 		}
 
-		void CWebServer::Cmd_UpdatePlan(Json::Value &root)
+		void CWebServer::Cmd_UpdatePlan(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1556,7 +1556,7 @@ namespace http {
 				);
 		}
 
-		void CWebServer::Cmd_DeletePlan(Json::Value &root)
+		void CWebServer::Cmd_DeletePlan(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1576,7 +1576,7 @@ namespace http {
 				);
 		}
 
-		void CWebServer::Cmd_GetUnusedPlanDevices(Json::Value &root)
+		void CWebServer::Cmd_GetUnusedPlanDevices(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetUnusedPlanDevices";
@@ -1641,7 +1641,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddPlanActiveDevice(Json::Value &root)
+		void CWebServer::Cmd_AddPlanActiveDevice(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1675,7 +1675,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetPlanDevices(Json::Value &root)
+		void CWebServer::Cmd_GetPlanDevices(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1733,7 +1733,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_DeletePlanDevice(Json::Value &root)
+		void CWebServer::Cmd_DeletePlanDevice(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1746,7 +1746,7 @@ namespace http {
 			m_sql.safe_query("DELETE FROM DeviceToPlansMap WHERE (ID == '%q')", idx.c_str());
 		}
 
-		void CWebServer::Cmd_SetPlanDeviceCoords(Json::Value &root)
+		void CWebServer::Cmd_SetPlanDeviceCoords(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string planidx = m_pWebEm->FindValue("planidx");
@@ -1763,7 +1763,7 @@ namespace http {
 			_log.Log(LOG_STATUS, "(Floorplan) Device '%s' coordinates set to '%s,%s' in plan '%s'.", idx.c_str(), xoffset.c_str(), yoffset.c_str(), planidx.c_str());
 		}
 
-		void CWebServer::Cmd_DeleteAllPlanDevices(Json::Value &root)
+		void CWebServer::Cmd_DeleteAllPlanDevices(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -1776,7 +1776,7 @@ namespace http {
 			m_sql.safe_query("DELETE FROM DeviceToPlansMap WHERE (PlanID == '%q')", idx.c_str());
 		}
 
-		void CWebServer::Cmd_ChangePlanOrder(Json::Value &root)
+		void CWebServer::Cmd_ChangePlanOrder(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -1825,7 +1825,7 @@ namespace http {
 				aOrder.c_str(), oID.c_str());
 		}
 
-		void CWebServer::Cmd_ChangePlanDeviceOrder(Json::Value &root)
+		void CWebServer::Cmd_ChangePlanDeviceOrder(const request& req, Json::Value &root)
 		{
 			std::string planid = m_pWebEm->FindValue("planid");
 			std::string idx = m_pWebEm->FindValue("idx");
@@ -1877,7 +1877,7 @@ namespace http {
 				aOrder.c_str(), oID.c_str());
 		}
 
-		void CWebServer::Cmd_GetVersion(Json::Value &root)
+		void CWebServer::Cmd_GetVersion(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
@@ -1900,7 +1900,7 @@ namespace http {
 			root["revision"] = m_mainworker.m_iRevision;
 		}
 
-		void CWebServer::Cmd_GetAuth(Json::Value &root)
+		void CWebServer::Cmd_GetAuth(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetAuth";
@@ -1908,7 +1908,7 @@ namespace http {
 			root["rights"] = m_pWebEm->m_actualuser_rights;
 		}
 
-		void CWebServer::Cmd_GetActualHistory(Json::Value &root)
+		void CWebServer::Cmd_GetActualHistory(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetActualHistory";
@@ -1935,7 +1935,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetNewHistory(Json::Value &root)
+		void CWebServer::Cmd_GetNewHistory(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetNewHistory";
@@ -1987,7 +1987,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetConfig(Json::Value &root)
+		void CWebServer::Cmd_GetConfig(const request& req, Json::Value &root)
 		{
 			//if (m_pWebEm->m_actualuser_rights != 2)
 				//return;//Only admin user allowed
@@ -2131,7 +2131,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_SendNotification(Json::Value &root)
+		void CWebServer::Cmd_SendNotification(const request& req, Json::Value &root)
 		{
 			std::string subject = m_pWebEm->FindValue("subject");
 			std::string body = m_pWebEm->FindValue("body");
@@ -2147,7 +2147,7 @@ namespace http {
 			root["title"] = "SendNotification";
 		}
 
-		void CWebServer::Cmd_EmailCameraSnapshot(Json::Value &root)
+		void CWebServer::Cmd_EmailCameraSnapshot(const request& req, Json::Value &root)
 		{
 			std::string camidx = m_pWebEm->FindValue("camidx");
 			std::string subject = m_pWebEm->FindValue("subject");
@@ -2278,7 +2278,7 @@ namespace http {
 			return 0;
 		}
 
-		void CWebServer::Cmd_UpdateDevices(Json::Value &root)
+		void CWebServer::Cmd_UpdateDevices(const request& req, Json::Value &root)
 		{
 			std::stringstream lua_DirT;
 #ifdef WIN32
@@ -2329,7 +2329,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_UpdateDevice(Json::Value &root)
+		void CWebServer::Cmd_UpdateDevice(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string hid = m_pWebEm->FindValue("hid");
@@ -2408,7 +2408,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_SetThermostatState(Json::Value &root)
+		void CWebServer::Cmd_SetThermostatState(const request& req, Json::Value &root)
 		{
 			std::string sstate = m_pWebEm->FindValue("state");
 			std::string idx = m_pWebEm->FindValue("idx");
@@ -2440,7 +2440,7 @@ namespace http {
 			m_mainworker.SetThermostatState(idx, iState);
 		}
 
-		void CWebServer::Cmd_SystemShutdown(Json::Value &root)
+		void CWebServer::Cmd_SystemShutdown(const request& req, Json::Value &root)
 		{
 #ifdef WIN32
 			int ret = system("shutdown -s -f -t 1 -d up:125:1");
@@ -2456,7 +2456,7 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_SystemReboot(Json::Value &root)
+		void CWebServer::Cmd_SystemReboot(const request& req, Json::Value &root)
 		{
 #ifdef WIN32
 			int ret = system("shutdown -r -f -t 1 -d up:125:1");
@@ -2472,7 +2472,7 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_ExcecuteScript(Json::Value &root)
+		void CWebServer::Cmd_ExcecuteScript(const request& req, Json::Value &root)
 		{
 			std::string scriptname = m_pWebEm->FindValue("scriptname");
 			if (scriptname == "")
@@ -2520,7 +2520,7 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_GetCosts(Json::Value &root)
+		void CWebServer::Cmd_GetCosts(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -2604,7 +2604,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_CheckForUpdate(Json::Value &root)
+		void CWebServer::Cmd_CheckForUpdate(const request& req, Json::Value &root)
 		{
 			bool bHaveUser = (m_pWebEm->m_actualuser != "");
 			int urights = 3;
@@ -2638,7 +2638,7 @@ namespace http {
 			root["revision"] = m_mainworker.m_iRevision;
 		}
 
-		void CWebServer::Cmd_DownloadUpdate(Json::Value &root)
+		void CWebServer::Cmd_DownloadUpdate(const request& req, Json::Value &root)
 		{
 			if (!m_mainworker.StartDownloadUpdate())
 				return;
@@ -2646,7 +2646,7 @@ namespace http {
 			root["title"] = "DownloadUpdate";
 		}
 
-		void CWebServer::Cmd_DownloadReady(Json::Value &root)
+		void CWebServer::Cmd_DownloadReady(const request& req, Json::Value &root)
 		{
 			if (!m_mainworker.m_bHaveDownloadedDomoticzUpdate)
 				return;
@@ -2655,7 +2655,7 @@ namespace http {
 			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
 		}
 
-		void CWebServer::Cmd_DeleteDatePoint(Json::Value &root)
+		void CWebServer::Cmd_DeleteDatePoint(const request& req, Json::Value &root)
 		{
 			const std::string idx = m_pWebEm->FindValue("idx");
 			const std::string Date = m_pWebEm->FindValue("date");
@@ -2669,12 +2669,12 @@ namespace http {
 			m_sql.DeleteDataPoint(idx.c_str(), Date);
 		}
 
-		void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
+		void CWebServer::HandleCommand(const std::string &cparam, const request& req, Json::Value &root)
 		{
 			std::map < std::string, webserver_response_function >::iterator pf = m_webcommands.find(cparam);
 			if (pf != m_webcommands.end())
 			{
-				pf->second(root);
+				pf->second(req, root);
 				return;
 			}
 
@@ -6233,7 +6233,7 @@ namespace http {
 			return false;
 		}
 
-		char * CWebServer::PostSettings()
+		char * CWebServer::PostSettings(const request& req)
 		{
 			m_retstr = "/index.html";
 
@@ -6512,7 +6512,7 @@ namespace http {
 			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::RestoreDatabase()
+		char * CWebServer::RestoreDatabase(const request& req)
 		{
 			m_retstr = "/index.html";
 			if (m_pWebEm->m_actualuser_rights != 2)
@@ -8996,7 +8996,7 @@ namespace http {
 			}
 		}
 
-		std::string CWebServer::GetDatabaseBackup()
+		std::string CWebServer::GetDatabaseBackup(const request& req)
 		{
 			m_retstr = "";
 			std::string OutputFileName = szUserDataFolder + "backup.db";
@@ -9014,7 +9014,7 @@ namespace http {
 			return m_retstr;
 		}
 
-		void CWebServer::RType_DeleteDevice(Json::Value &root)
+		void CWebServer::RType_DeleteDevice(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9029,7 +9029,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_AddScene(Json::Value &root)
+		void CWebServer::RType_AddScene(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9063,7 +9063,7 @@ namespace http {
 				);
 		}
 
-		void CWebServer::RType_DeleteScene(Json::Value &root)
+		void CWebServer::RType_DeleteScene(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9078,7 +9078,7 @@ namespace http {
 			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
 		}
 
-		void CWebServer::RType_UpdateScene(Json::Value &root)
+		void CWebServer::RType_UpdateScene(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9120,7 +9120,7 @@ namespace http {
 			return a.Title < b.Title;
 		}
 
-		void CWebServer::RType_CustomLightIcons(Json::Value &root)
+		void CWebServer::RType_CustomLightIcons(const request& req, Json::Value &root)
 		{
 			std::vector<_tCustomIcon>::const_iterator itt;
 			int ii = 0;
@@ -9140,7 +9140,7 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_Plans(Json::Value &root)
+		void CWebServer::RType_Plans(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Plans";
@@ -9183,7 +9183,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_FloorPlans(Json::Value &root)
+		void CWebServer::RType_FloorPlans(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Floorplans";
@@ -9270,7 +9270,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_Scenes(Json::Value &root)
+		void CWebServer::RType_Scenes(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Scenes";
@@ -9385,7 +9385,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_Hardware(Json::Value &root)
+		void CWebServer::RType_Hardware(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Hardware";
@@ -9440,7 +9440,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_Devices(Json::Value &root)
+		void CWebServer::RType_Devices(const request& req, Json::Value &root)
 		{
 			std::string rfilter = m_pWebEm->FindValue("filter");
 			std::string order = m_pWebEm->FindValue("order");
@@ -9466,7 +9466,7 @@ namespace http {
 			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate, false);
 		}
 
-		void CWebServer::RType_Users(Json::Value &root)
+		void CWebServer::RType_Users(const request& req, Json::Value &root)
 		{
 			bool bHaveUser = (m_pWebEm->m_actualuser != "");
 			int urights = 3;
@@ -9505,7 +9505,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_SetSetpoint(Json::Value &root)
+		void CWebServer::Cmd_SetSetpoint(const request& req, Json::Value &root)
 		{
 			bool bHaveUser = (m_pWebEm->m_actualuser != "");
 			int iUser = -1;
@@ -9537,7 +9537,7 @@ namespace http {
 			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())));
 		}
 
-		void CWebServer::Cmd_GetSceneActivations(Json::Value &root)
+		void CWebServer::Cmd_GetSceneActivations(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9609,7 +9609,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddSceneCode(Json::Value &root)
+		void CWebServer::Cmd_AddSceneCode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9675,7 +9675,7 @@ namespace http {
 			m_sql.safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activators.c_str(), sceneidx.c_str());
 		}
 
-		void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
+		void CWebServer::Cmd_RemoveSceneCode(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9750,7 +9750,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ClearSceneCodes(Json::Value &root)
+		void CWebServer::Cmd_ClearSceneCodes(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9764,7 +9764,7 @@ namespace http {
 			m_sql.safe_query("UPDATE Scenes SET Activators='' WHERE (ID==%q)", sceneidx.c_str());
 		}
 
-		void CWebServer::Cmd_GetSerialDevices(Json::Value &root)
+		void CWebServer::Cmd_GetSerialDevices(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetSerialDevices";
@@ -9782,7 +9782,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetDevicesList(Json::Value &root)
+		void CWebServer::Cmd_GetDevicesList(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetDevicesList";
@@ -9802,7 +9802,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetDevicesListOnOff(Json::Value &root)
+		void CWebServer::Cmd_GetDevicesListOnOff(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetDevicesListOnOff";
@@ -9828,7 +9828,7 @@ namespace http {
 			}
 		}
 
-		std::string CWebServer::Post_UploadCustomIcon()
+		std::string CWebServer::Post_UploadCustomIcon(const request& req)
 		{
 			Json::Value root;
 			root["title"] = "UploadCustomIcon";
@@ -9863,7 +9863,7 @@ namespace http {
 			return m_retstr;
 		}
 
-		void CWebServer::Cmd_GetCustomIconSet(Json::Value &root)
+		void CWebServer::Cmd_GetCustomIconSet(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetCustomIconSet";
@@ -9888,7 +9888,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_DeleteCustomIcon(Json::Value &root)
+		void CWebServer::Cmd_DeleteCustomIcon(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9920,7 +9920,7 @@ namespace http {
 			ReloadCustomSwitchIcons();
 		}
 
-		void CWebServer::Cmd_UpdateCustomIcon(Json::Value &root)
+		void CWebServer::Cmd_UpdateCustomIcon(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9943,7 +9943,7 @@ namespace http {
 			ReloadCustomSwitchIcons();
 		}
 
-		void CWebServer::Cmd_RenameDevice(Json::Value &root)
+		void CWebServer::Cmd_RenameDevice(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9963,7 +9963,7 @@ namespace http {
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
-		void CWebServer::Cmd_RenameScene(Json::Value &root)
+		void CWebServer::Cmd_RenameScene(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9983,7 +9983,7 @@ namespace http {
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
-		void CWebServer::Cmd_SetUnused(Json::Value &root)
+		void CWebServer::Cmd_SetUnused(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -9997,7 +9997,7 @@ namespace http {
 			m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)", idx);
 		}
 
-		void CWebServer::Cmd_AddLogMessage(Json::Value &root)
+		void CWebServer::Cmd_AddLogMessage(const request& req, Json::Value &root)
 		{
 			std::string smessage = m_pWebEm->FindValue("message");
 			if (smessage.empty())
@@ -10008,7 +10008,7 @@ namespace http {
 			_log.Log(LOG_STATUS, "%s", smessage.c_str());
 		}
 
-		void CWebServer::Cmd_ClearShortLog(Json::Value &root)
+		void CWebServer::Cmd_ClearShortLog(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -10022,7 +10022,7 @@ namespace http {
 			_log.Log(LOG_STATUS, "Short Log Cleared!");
 		}
 
-		void CWebServer::Cmd_VacuumDatabase(Json::Value &root)
+		void CWebServer::Cmd_VacuumDatabase(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -10034,7 +10034,7 @@ namespace http {
 		
 		
 
-		void CWebServer::RType_GetTransfers(Json::Value &root)
+		void CWebServer::RType_GetTransfers(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetTransfers";
@@ -10084,7 +10084,7 @@ namespace http {
 		//Will transfer Newest sensor log to OLD sensor,
 		//then set the HardwareID/DeviceID/Unit/Name/Type/Subtype/Unit for the OLD sensor to the NEW sensor ID/Type/Subtype/Unit
 		//then delete the NEW sensor
-		void CWebServer::RType_TransferDevice(Json::Value &root)
+		void CWebServer::RType_TransferDevice(const request& req, Json::Value &root)
 		{
 			std::string sidx = m_pWebEm->FindValue("idx");
 			if (sidx == "")
@@ -10156,7 +10156,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_Notifications(Json::Value &root)
+		void CWebServer::RType_Notifications(const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Notifications";
@@ -10200,7 +10200,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_GetSharedUserDevices(Json::Value &root)
+		void CWebServer::RType_GetSharedUserDevices(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			if (idx == "")
@@ -10224,7 +10224,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_SetSharedUserDevices(Json::Value &root)
+		void CWebServer::RType_SetSharedUserDevices(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string userdevices = m_pWebEm->FindValue("devices");
@@ -10246,7 +10246,7 @@ namespace http {
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::RType_SetUsed(Json::Value &root)
+		void CWebServer::RType_SetUsed(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 				return;//Only admin user allowed
@@ -10530,7 +10530,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_Settings(Json::Value &root)
+		void CWebServer::RType_Settings(const request& req, Json::Value &root)
 		{
 			std::vector<std::vector<std::string> > result;
 			char szTmp[100];
@@ -10820,7 +10820,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_LightLog(Json::Value &root)
+		void CWebServer::RType_LightLog(const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
@@ -10918,7 +10918,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_TextLog(Json::Value &root)
+		void CWebServer::RType_TextLog(const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
@@ -10952,7 +10952,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_HandleGraph(Json::Value &root)
+		void CWebServer::RType_HandleGraph(const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")

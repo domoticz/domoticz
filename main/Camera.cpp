@@ -345,7 +345,7 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_Cameras(Json::Value &root)
+		void CWebServer::RType_Cameras(const request& req, Json::Value &root)
 		{
 			std::string rused = m_pWebEm->FindValue("used");
 
@@ -379,7 +379,7 @@ namespace http {
 				}
 			}
 		}
-		std::string CWebServer::GetInternalCameraSnapshot()
+		std::string CWebServer::GetInternalCameraSnapshot(const request& req)
 		{
 			m_retstr = "";
 			std::vector<unsigned char> camimage;
@@ -399,7 +399,7 @@ namespace http {
 			return m_retstr;
 		}
 
-		std::string CWebServer::GetCameraSnapshot()
+		std::string CWebServer::GetCameraSnapshot(const request& req)
 		{
 			m_retstr = "";
 			std::vector<unsigned char> camimage;

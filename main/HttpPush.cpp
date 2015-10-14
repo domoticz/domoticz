@@ -281,7 +281,7 @@ void CHttpPush::DoHttpPush()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_SaveHttpLinkConfig(Json::Value &root)
+		void CWebServer::Cmd_SaveHttpLinkConfig(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{
@@ -321,7 +321,7 @@ namespace http {
 			root["title"] = "SaveHttpLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetHttpLinkConfig(Json::Value &root)
+		void CWebServer::Cmd_GetHttpLinkConfig(const request& req, Json::Value &root)
 		{
 			std::string sValue;
 			int nValue;
@@ -371,7 +371,7 @@ namespace http {
 			root["title"] = "GetHttpLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetHttpLinks(Json::Value &root)
+		void CWebServer::Cmd_GetHttpLinks(const request& req, Json::Value &root)
 		{
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM HttpLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
@@ -399,7 +399,7 @@ namespace http {
 			root["title"] = "GetHttpLinks";
 		}
 
-		void CWebServer::Cmd_SaveHttpLink(Json::Value &root)
+		void CWebServer::Cmd_SaveHttpLink(const request& req, Json::Value &root)
 		{
 			std::string idx = m_pWebEm->FindValue("idx");
 			std::string deviceid = m_pWebEm->FindValue("deviceid");
@@ -449,7 +449,7 @@ namespace http {
 			root["title"] = "SaveHttpLink";
 		}
 
-		void CWebServer::Cmd_DeleteHttpLink(Json::Value &root)
+		void CWebServer::Cmd_DeleteHttpLink(const request& req, Json::Value &root)
 		{
 			if (m_pWebEm->m_actualuser_rights != 2)
 			{

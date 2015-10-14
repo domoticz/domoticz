@@ -540,7 +540,7 @@ void OTGWBase::ParseLine()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetOpenThermSettings()
+		char * CWebServer::SetOpenThermSettings(const request& req)
 		{
 			m_retstr = "/index.html";
 			if (m_pWebEm->m_actualuser_rights != 2)
