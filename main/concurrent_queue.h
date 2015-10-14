@@ -10,11 +10,11 @@
 #ifndef MAIN_CONCURRENT_QUEUE_H_
 #define MAIN_CONCURRENT_QUEUE_H_
 
+#include <boost/noncopyable.hpp>
 #include <queue>
 
 template<typename Data>
-class concurrent_queue
-{
+class concurrent_queue : private boost::noncopyable {
 private:
 	struct queue_not_empty {
 		std::queue<Data>& queue;
@@ -80,7 +80,7 @@ public:
 
 };
 
-class queue_element_trigger {
+class queue_element_trigger : private boost::noncopyable {
 private:
 	struct element_popped {
 		bool& popped;
