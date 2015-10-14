@@ -1,18 +1,65 @@
 branches:
   except:
     - /^[0-9]/
+
 language: cpp
+
 compiler:
   - gcc
+
+os:
+  - linux
+  - osx
+
+cache:
+  - apt
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - boost-latest
+    packages:
+      - gcc-4.9
+      - g++-4.9
+      - libboost1.55-all-dev
+      - cmake
+      - libsqlite3-dev
+      - curl
+      - libcurl4-openssl-dev
+      - libusb-dev
+      - zlib1g-dev
+      - libssl-dev
+      - libudev-dev
+      - git
+    on:
+      os: linux
+
+update-alternatives:
+  - install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50
+  - install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
+
+sources:
+  - trusty
+
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -y build-essential
-  - sudo apt-get install -y nano cmake libboost1.48-all-dev libsqlite3-dev curl libcurl4-openssl-dev libusb-dev zlib1g-dev libssl-dev libudev-dev git
-  - git clone https://github.com/OpenZWave/open-zwave.git
-  - ln -s open-zwave open-zwave-read-only
+  - if [ ${TRAVIS_OS_NAME} == "linux" ]; then git clone https://github.com/OpenZWave/open-zwave.git; fi
+  - if [ ${TRAVIS_OS_NAME} == "linux" ]; then ln -s open-zwave open-zwave-read-only; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then brew install cmake; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then brew install boost || true; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then brew install libusb; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then brew install libusb-compat; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then brew install zlib || true; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then brew install openssl; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then brew link openssl --force; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then export LDFLAGS=-L/usr/local/opt/openssl/lib; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then export CPPFLAGS=-I/usr/local/opt/openssl/include; fi
   - git fetch --unshallow
+
 script:
-  - (cd open-zwave-read-only; make)
-  - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
+  - if [ ${TRAVIS_OS_NAME} == "linux" ]; then (cd open-zwave-read-only; make); fi
+  - if [ ${TRAVIS_OS_NAME} == "linux" ]; then cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then cmake -DCMAKE_BUILD_TYPE=Release; fi
   - make
-  - tar czf domoticz_${TRAVIS_OS_NAME}_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease --exclude .svn www/ scripts/ Config/
+  - if [ ${TRAVIS_OS_NAME} == "linux" ]; then tar czf domoticz_${TRAVIS_OS_NAME}_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease --exclude .svn www/ scripts/ Config/; fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ];   then tar czf domoticz_${TRAVIS_OS_NAME}_x86_64.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease; fi
