@@ -1033,11 +1033,6 @@ int cWebemRequestHandler::authorize(const request& req, reply& rep)
 			(pPos==std::string::npos)
 			)
 		{
-			if (myWebem->m_guestuser!="")
-			{
-				myWebem->m_actualuser=myWebem->m_guestuser;
-				return 1;
-			}
 			return 0;
 		}
 		size_t ulen=strlen("username=");

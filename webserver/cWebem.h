@@ -193,7 +193,6 @@ namespace http {
 			std::string m_zippassword;
 			std::string m_actualuser;
 			int m_actualuser_rights;
-			std::string m_guestuser;
 			std::string m_lastRequestPath;
 			std::string m_outputfilename;
 			request		m_ActualRequest;
