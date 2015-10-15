@@ -57,7 +57,6 @@ myRequestHandler( doc_root,this ), myPort( port ),
 myServer( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase ),
 m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
-m_actsessionid(""),
 m_actualuser(""),
 m_actTheme("")
 {
@@ -1293,7 +1292,6 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 
 bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const request& req, reply& rep)
 {
-	myWebem->m_actsessionid = "";
 	myWebem->m_actualuser = "";
 	myWebem->m_actualuser_rights = -1;
 	if (myWebem->m_bForceRelogin)
@@ -1361,7 +1359,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 				{
 					if (itt != myWebem->m_sessionids.end())
 					{
-						myWebem->m_actsessionid = sSID;
+						req.session.id = sSID;
 						myWebem->m_actualuser = myWebem->m_sessionids[sSID].username;
 						myWebem->m_actualuser_rights = myWebem->m_sessionids[sSID].rights;
 						return true;
@@ -1382,7 +1380,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 								usession.rights = myWebem->m_actualuser_rights;
 								usession.lasttouch = stime;
 								myWebem->m_sessionids[sSID] = usession;
-								myWebem->m_actsessionid = sSID;
+								req.session.id = sSID;
 								return true;
 							}
 						}
@@ -1459,7 +1457,6 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	rep.bIsGZIP = false;
 	myWebem->m_bAddNewSession=false;
 	myWebem->m_bRemoveCookie=false;
-	myWebem->m_actsessionid = "";
 
 	bool bCheckAuthentication = myWebem->IsPageOverride(req, rep);
 	if (req.uri.find("json.htm") != std::string::npos)
@@ -1483,7 +1480,6 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 					}
 				}
 			}
-			myWebem->m_actsessionid = "";
 			myWebem->m_actualuser = "";
 			myWebem->m_actualuser_rights = -1;
 			myWebem->m_bForceRelogin = true;
@@ -1595,7 +1591,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			{
 				std::string sSID = generateSessionID();
 				myWebem->m_sessionids[sSID] = usession;
-				myWebem->m_actsessionid = sSID;
+				req.session.id = sSID;
 				send_cookie(rep, sSID, usession.lasttouch);
 				break;
 			}
@@ -1605,16 +1601,16 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	{
 		send_remove_cookie(rep);
 	}
-	else if (myWebem->m_actsessionid.size()>0)
+	else if (req.session.id.size()>0)
 	{
-		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(myWebem->m_actsessionid);
+		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(req.session.id);
 		if (itt != myWebem->m_sessionids.end())
 		{
 			time_t atime = mytime(NULL);
-			if (myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch - 60 < atime)
+			if (myWebem->m_sessionids[req.session.id].lasttouch - 60 < atime)
 			{
-				myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch = atime + SESSION_TIMEOUT;
-				send_cookie(rep, myWebem->m_actsessionid, myWebem->m_sessionids[myWebem->m_actsessionid].lasttouch);
+				myWebem->m_sessionids[req.session.id].lasttouch = atime + SESSION_TIMEOUT;
+				send_cookie(rep, req.session.id, myWebem->m_sessionids[req.session.id].lasttouch);
 			}
 		}
 	}

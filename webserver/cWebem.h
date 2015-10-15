@@ -198,7 +198,6 @@ namespace http {
 			std::string m_outputfilename;
 			request		m_ActualRequest;
 			std::map<std::string,WebEmSession> m_sessionids;
-			std::string m_actsessionid;
 			_eAuthenticationMethod m_authmethod;
 			bool m_bForceRelogin;
 			bool m_bAddNewSession;
