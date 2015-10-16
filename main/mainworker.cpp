@@ -7829,7 +7829,15 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 	case sTypeRFXSensorVolt:
 		{
 			volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
-			sprintf(szTmp,"%d",volt);
+			if (
+				(pHardware->HwdType == HTYPE_RFXLAN) ||
+				(pHardware->HwdType == HTYPE_RFXtrx315) ||
+				(pHardware->HwdType == HTYPE_RFXtrx433)
+				)
+			{
+				volt /= 10;
+			}
+			sprintf(szTmp, "%d", volt);
 		}
 		break;
 	}
