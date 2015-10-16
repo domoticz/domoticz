@@ -14,6 +14,9 @@
 #include "../msbuild/WindowsHelper.h"
 #endif
 
+#include "RFXtrx.h"
+#include "../hardware/hardwaretypes.h"
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -540,4 +543,34 @@ void padLeft(std::string &str, const size_t num, const char paddingChar)
 {
 	if (num > str.size())
 		str.insert(0, num - str.size(), paddingChar);
+}
+
+bool IsLightOrSwitch(const int devType, const int subType)
+{
+	bool bIsLightSwitch = false;
+	switch (devType)
+	{
+	case pTypeLighting1:
+	case pTypeLighting2:
+	case pTypeLighting3:
+	case pTypeLighting4:
+	case pTypeLighting5:
+	case pTypeLighting6:
+	case pTypeLimitlessLights:
+	case pTypeSecurity1:
+	case pTypeSecurity2:
+	case pTypeCurtain:
+	case pTypeBlinds:
+	case pTypeRFY:
+	case pTypeThermostat2:
+	case pTypeThermostat3:
+	case pTypeRemote:
+	case pTypeGeneralSwitch:
+		bIsLightSwitch = true;
+		break;
+	case pTypeRadiator1:
+		bIsLightSwitch = (subType == sTypeSmartwaresSwitchRadiator);
+		break;
+	}
+	return bIsLightSwitch;
 }

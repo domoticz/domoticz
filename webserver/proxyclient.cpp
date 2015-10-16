@@ -192,29 +192,27 @@ void CProxyClient::HandleRequest(ProxyPdu *pdu)
 	/// The reply to be sent back to the client.
 	http::server::reply reply_;
 
-	// get url from request
+	// get common parts for the different subsystems
 	CValueLengthPart part(pdu);
 	char *originatingip;
 	int subsystem;
-	char *requesturl;
-	char *requestheaders;
-	char *requestbody;
-	size_t thelen, bodylen;
+	size_t thelen;
 	part.GetNextPart((void **)&originatingip, &thelen);
-	_log.Log(LOG_NORM, "PROXY: Originating ip %s.", originatingip);
 	part.GetNextValue((void **)&subsystem, &thelen);
-	_log.Log(LOG_NORM, "PROXY: Subsystem %d.", subsystem);
-	part.GetNextPart((void **)&requesturl, &thelen);
-	_log.Log(LOG_NORM, "PROXY: This is a request pdu for %s.", requesturl);
-	part.GetNextPart((void **)&requestheaders, &thelen);
-	part.GetNextPart((void **)&requestbody, &bodylen);
-	_log.Log(LOG_NORM, "PROXY: Body len: %ld.", bodylen);
-			
-	CValueLengthPart parameters;
+
+	CValueLengthPart parameters; // response parameters
 
 	switch (subsystem) {
 	case 1:
-		// "normal web request"
+		// "normal web request", get parameters
+		char *requesturl;
+		char *requestheaders;
+		char *requestbody;
+		size_t bodylen;
+		part.GetNextPart((void **)&requesturl, &thelen);
+		part.GetNextPart((void **)&requestheaders, &thelen);
+		part.GetNextPart((void **)&requestbody, &bodylen);
+
 		std::string request;
 		if (bodylen > 0) {
 			request = "POST ";
@@ -240,8 +238,6 @@ void CProxyClient::HandleRequest(ProxyPdu *pdu)
 		std::string responseheaders = GetResponseHeaders(reply_);
 
 
-		_log.Log(LOG_NORM, "PROXY: Response, status: %d.", reply_.status);
-		_log.Log(LOG_NORM, "PROXY: Response length: %ld.", reply_.content.length());
 		parameters.AddValue((void *)&reply_.status, SIZE_INT);
 		parameters.AddPart((void *)responseheaders.c_str(), responseheaders.length() + 1);
 		parameters.AddPart((void *)reply_.content.c_str(), reply_.content.length());

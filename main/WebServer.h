@@ -185,6 +185,8 @@ private:
 	void Cmd_DeleteHttpLink(Json::Value &root);
 	void Cmd_GetDevicesForHttpLink(Json::Value &root);
 	void Cmd_AddLogMessage(Json::Value &root);
+	void Cmd_ClearShortLog(Json::Value &root);
+	void Cmd_VacuumDatabase(Json::Value &root);
 
 	//RTypes
 	void RType_HandleGraph(Json::Value &root);

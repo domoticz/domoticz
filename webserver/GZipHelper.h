@@ -441,12 +441,15 @@ class CGZIP2AT
  }
  int write(char* buf,int count)
  {
-     if(buf==0) return 0;
+	 if (buf == 0)
+		 return 0;
 	 if(Length+count>m_CurrentBufferSize)
 	 {
 	   int nTimes=(Length+count)/t_nBufferLength +1;
 	   char *pTemp=psz;
 	   psz=static_cast<char*>( malloc(nTimes*t_nBufferLength+1));
+	   if (psz == 0)
+		   return 0;
 	   m_CurrentBufferSize=nTimes*t_nBufferLength;
 	   memset(psz,0,m_CurrentBufferSize+1);
 	   memcpy(psz,pTemp,Length);

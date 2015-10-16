@@ -115,7 +115,7 @@ namespace http {
 			bool CheckAuthentication(const std::string &sHost, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);
-			std::string generateSessionID(const std::string &sHost, const std::string &sUsername, const std::string &sPassword);
+			std::string generateSessionID();
 			void send_cookie(reply& rep, const std::string &sSID, const time_t expires);
 			bool AreWeInLocalNetwork(const std::string &sHost, const request& req);
 			int authorize(const request& req, reply& rep);

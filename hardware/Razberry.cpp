@@ -23,6 +23,7 @@
 //	#define DEBUG_ZWAVE_INT
 #endif
 
+#ifdef DEBUG_ZWAVE_INT
 static std::string readInputTestFile( const char *path )
 {
 	FILE *file = fopen( path, "rb" );
@@ -40,6 +41,7 @@ static std::string readInputTestFile( const char *path )
 	delete[] buffer;
 	return text;
 }
+#endif
 
 CRazberry::CRazberry(const int ID, const std::string &ipaddress, const int port, const std::string &username, const std::string &password):
 m_ipaddress(ipaddress),
@@ -189,6 +191,8 @@ bool CRazberry::GetUpdates()
 
 void CRazberry::parseDevices(const Json::Value &devroot)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	for (Json::Value::iterator itt=devroot.begin(); itt!=devroot.end(); ++itt)
 	{
 		const std::string devID=itt.key().asString();
@@ -486,6 +490,8 @@ void CRazberry::parseDevices(const Json::Value &devroot)
 
 void CRazberry::UpdateDevice(const std::string &path, const Json::Value &obj)
 {
+	boost::lock_guard<boost::mutex> l(m_NotificationMutex);
+
 	_tZWaveDevice *pDevice=NULL;
 
 	if (

@@ -366,7 +366,6 @@ void EnumSerialFromWMI(std::vector<int> &ports, std::vector<std::string> &friend
 		return;
 	}
 
-	int dindex = 0;
 	std::string query = "SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{4d36e978-e325-11ce-bfc1-08002be10318}\"";
 	IEnumWbemClassObject* pEnumerator = NULL;
 	hr = pServicesSystem->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);

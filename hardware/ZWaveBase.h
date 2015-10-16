@@ -123,6 +123,7 @@ public:
 	std::string m_LastIncludedNodeType;
 	bool m_bHaveLastIncludedNodeInfo;
 	int m_LastRemovedNode;
+	boost::mutex m_NotificationMutex;
 private:
 	void Do_Work();
 	void SendDevice2Domoticz(const _tZWaveDevice *pDevice);
