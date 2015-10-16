@@ -127,7 +127,7 @@ namespace http {
 
 		int CWebServerHelper::GetNrMyDomoticzThreads()
 		{
-			int nrThreads = 3; // default value
+			int nrThreads = 1; // default value
 			m_sql.GetPreferencesVar("MyDomoticzNrThreads", nrThreads);
 			return nrThreads;
 		}

@@ -94,7 +94,7 @@ void CProxyClient::LoginToService()
 	parameters.AddPart((void *)_instanceid.c_str(), _instanceid.length() + 1);
 	parameters.AddPart((void *)_password.c_str(), _password.length() + 1);
 	parameters.AddPart((void *) szAppVersion.c_str(), szAppVersion.length() + 1);
-	// todo: version
+	// todo: valid subsystems
 	MyWrite(PDU_AUTHENTICATE, &parameters);
 }
 
@@ -158,14 +158,10 @@ void CProxyClient::GetRequest(const std::string originatingip, boost::asio::muta
 	if (result)
 	{
 			m_pWebEm->myRequestHandler.handle_request(originatingip, request_, reply_);
-			//std::vector<boost::asio::const_buffer> replybuf = reply_.to_buffers();
-			//response = std::string(boost::asio::buffers_begin(replybuf), boost::asio::buffers_begin(replybuf) + boost::asio::buffer_size(replybuf));
 	}
 	else if (!result)
 	{
 		reply_ = http::server::reply::stock_reply(http::server::reply::bad_request);
-		//std::vector<boost::asio::const_buffer> replybuf = reply_.to_buffers();
-		//response = std::string(boost::asio::buffers_begin(replybuf), boost::asio::buffers_begin(replybuf) + boost::asio::buffer_size(replybuf));
 	}
 	else
 	{
@@ -376,12 +372,7 @@ void CProxyManager::StartThread()
 {
 	try {
 		boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::sslv23);
-#if 0	
-		ctx.set_verify_mode(boost::asio::ssl::context::verify_peer);
-		ctx.load_verify_file("ca.pem");
-#else
 		ctx.set_verify_mode(boost::asio::ssl::verify_none);
-#endif
 
 		proxyclient = new CProxyClient(io_service, ctx, m_pWebEm);
 
