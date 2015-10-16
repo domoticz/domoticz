@@ -431,7 +431,7 @@ void CPinger::Restart()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_PingerGetNodes(const request& req, Json::Value &root)
+		void CWebServer::Cmd_PingerGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string hwid = m_pWebEm->FindValue("idx");
 			if (hwid == "")
@@ -466,9 +466,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_PingerSetMode(const request& req, Json::Value &root)
+		void CWebServer::Cmd_PingerSetMode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -506,9 +506,9 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_PingerAddNode(const request& req, Json::Value &root)
+		void CWebServer::Cmd_PingerAddNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -538,9 +538,9 @@ namespace http {
 			pHardware->AddNode(name, ip, Timeout);
 		}
 
-		void CWebServer::Cmd_PingerUpdateNode(const request& req, Json::Value &root)
+		void CWebServer::Cmd_PingerUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -573,9 +573,9 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, ip, Timeout);
 		}
 
-		void CWebServer::Cmd_PingerRemoveNode(const request& req, Json::Value &root)
+		void CWebServer::Cmd_PingerRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -602,9 +602,9 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_PingerClearNodes(const request& req, Json::Value &root)
+		void CWebServer::Cmd_PingerClearNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;

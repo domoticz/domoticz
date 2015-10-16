@@ -57,16 +57,9 @@ myRequestHandler( doc_root,this ), myPort( port ),
 myServer( address, port, myRequestHandler, secure_cert_file, secure_cert_passphrase ),
 m_DigistRealm("Domoticz.com"),
 m_zippassword(""),
-m_actualuser(""),
 m_actTheme("")
 {
-	
-	m_actualuser_rights = -1;
 	m_authmethod=AUTH_LOGIN;
-	m_bForceRelogin=false;
-	m_bAddNewSession = false;
-	m_bRemoveCookie = false;
-	m_bRemembermeUser = false;
 }
 
 /**
@@ -349,7 +342,7 @@ used by server to handle form submissions.
 returns false is authentication is invalid
 
 */
-bool cWebem::CheckForAction( request& req )
+bool cWebem::CheckForAction(WebEmSession & session, request& req )
 {
 	myNameValues.clear();
 	// look for cWebem form action request
@@ -448,7 +441,7 @@ bool cWebem::CheckForAction( request& req )
 				std::string ret;
 				try
 				{
-					ret = pfun->second(req);
+					ret = pfun->second(session, req);
 				}
 				catch (...)
 				{
@@ -498,7 +491,7 @@ bool cWebem::CheckForAction( request& req )
 	std::string ret;
 	try
 	{
-		ret = pfun->second(req);
+		ret = pfun->second(session, req);
 	}
 	catch (...)
 	{
@@ -535,7 +528,7 @@ bool cWebem::IsPageOverride(const request& req, reply& rep)
 	return false;
 }
 
-bool cWebem::CheckForPageOverride(const request& req, reply& rep)
+bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, reply& rep)
 {
 	// Decode url to path.
 	std::string request_path;
@@ -545,7 +538,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		return false;
 	}
 
-	m_lastRequestPath = request_path;
+	session.lastRequestPath = request_path;
 
 	int paramPos = request_path.find_first_of('?');
 	if (paramPos != std::string::npos)
@@ -694,8 +687,6 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		}
 	}
 
-	m_ActualRequest = req;
-
 	std::map < std::string, webem_page_function >::iterator
 		pfun = myPages.find(  request_path );
 
@@ -706,7 +697,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 		std::string retstr;
 		try
 		{
-			retstr = pfun->second(req);
+			retstr = pfun->second(session, req);
 		}
 		catch (...)
 		{
@@ -790,7 +781,7 @@ bool cWebem::CheckForPageOverride(const request& req, reply& rep)
 	std::wstring wret;
 	try
 	{
-		wret = pfunW->second(req);
+		wret = pfunW->second(session, req);
 	}
 	catch (...)
 	{
@@ -1017,7 +1008,7 @@ int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 }
 
 // Authorize against the opened passwords file. Return 1 if authorized.
-int cWebemRequestHandler::authorize(const request& req, reply& rep)
+int cWebemRequestHandler::authorize(WebEmSession & session, const request& req, reply& rep)
 {
 	struct ah _ah;
 
@@ -1055,11 +1046,11 @@ int cWebemRequestHandler::authorize(const request& req, reply& rep)
 							m_failcounter++;
 							return 0;
 						}
-						myWebem->m_actualuser = itt->Username;
-						myWebem->m_actualuser_rights = itt->userrights;
+						session.isnew = true;
+						session.username = itt->Username;
+						session.rights = itt->userrights;
+						session.rememberme = false;
 						m_failcounter=0;
-						myWebem->m_bRemembermeUser = false;
-						myWebem->m_bAddNewSession = true;
 						return 1;
 					}
 				}
@@ -1080,11 +1071,11 @@ int cWebemRequestHandler::authorize(const request& req, reply& rep)
 				m_failcounter++;
 				return 0;
 			}
-			myWebem->m_actualuser = itt->Username;
-			myWebem->m_actualuser_rights = itt->userrights;
+			session.isnew = true;
+			session.username = itt->Username;
+			session.rights = itt->userrights;
+			session.rememberme = false;
 			m_failcounter=0;
-			myWebem->m_bRemembermeUser = false;
-			myWebem->m_bAddNewSession = true;
 			return 1;
 		}
 	}
@@ -1285,13 +1276,12 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 	return false;
 }
 
-bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const request& req, reply& rep)
+bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSession & session, const request& req, reply& rep)
 {
-	myWebem->m_actualuser = "";
-	myWebem->m_actualuser_rights = -1;
-	if (myWebem->m_bForceRelogin)
+	session.rights = -1; // no rights
+	if (session.forcelogin)
 	{
-		myWebem->m_bForceRelogin = false;
+		session.forcelogin = false;
 		if (myWebem->m_authmethod == AUTH_BASIC)
 		{
 			send_authorization_request(rep);
@@ -1301,13 +1291,13 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 
 	if (myWebem->m_userpasswords.size() == 0)
 	{
-		myWebem->m_actualuser_rights = 2;
+		session.rights = 2;
 		return true;//no username/password we are admin
 	}
 
 	if (AreWeInLocalNetwork(sHost, req))
 	{
-		myWebem->m_actualuser_rights = 2;
+		session.rights = 2;
 		return true;//we are in the local network, no authentication needed, we are admin
 	}
 
@@ -1354,9 +1344,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 				{
 					if (itt != myWebem->m_sessionids.end())
 					{
-						req.session.id = sSID;
-						myWebem->m_actualuser = myWebem->m_sessionids[sSID].username;
-						myWebem->m_actualuser_rights = myWebem->m_sessionids[sSID].rights;
+						session = itt->second;
 						return true;
 					}
 					else
@@ -1368,26 +1356,22 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 							std::string tempSID = generateSessionID();
 							if (tempSID == sSID)
 							{
-								_tWebEmSession usession;
-								myWebem->m_actualuser = itt->Username;
-								myWebem->m_actualuser_rights = itt->userrights;
-								usession.username = myWebem->m_actualuser;
-								usession.rights = myWebem->m_actualuser_rights;
-								usession.lasttouch = stime;
-								myWebem->m_sessionids[sSID] = usession;
-								req.session.id = sSID;
+								session.id = sSID;
+								session.username = itt->Username;
+								session.rights = itt->userrights;
+								session.lasttouch = stime;
+								myWebem->m_sessionids[sSID] = session;
 								return true;
 							}
 						}
-
-						myWebem->m_bRemoveCookie = true;
+						session.removecookie = true;
 					}
 				}
 			}
 			else
 			{
 				//invalid cookie
-				myWebem->m_bRemoveCookie = true;
+				session.removecookie = true;
 			}
 		}
 	}
@@ -1396,7 +1380,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 	if (req.uri.find("json.htm") != std::string::npos)
 	{
 		//Check first if we have a basic auth
-		if (authorize(req, rep))
+		if (authorize(session, req, rep))
 		{
 			return true;
 		}
@@ -1404,7 +1388,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 
 	if (myWebem->m_authmethod == AUTH_BASIC)
 	{
-		if (!authorize(req, rep))
+		if (!authorize(session, req, rep))
 		{
 			if (m_failcounter > 0) {
 				_log.Log(LOG_ERROR, "Webserver: Failed authentication attempt, ignoring client request (remote addresses: %s)", sHost.c_str());
@@ -1430,7 +1414,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, const r
 	}
 
 	rep = reply::stock_reply(reply::unauthorized);
-	if (myWebem->m_bRemoveCookie)
+	if (session.removecookie)
 	{
 		send_remove_cookie(rep);
 	}
@@ -1449,9 +1433,13 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 void cWebemRequestHandler::handle_request( const std::string &sHost, const request& req, reply& rep)
 {
 	//_log.Log(LOG_NORM, "www-request: %s", req.uri.c_str());
+
+	// Initialize session
+	WebEmSession session;
+	session.isnew = false;
+	session.removecookie = false;
+
 	rep.bIsGZIP = false;
-	myWebem->m_bAddNewSession=false;
-	myWebem->m_bRemoveCookie=false;
 
 	bool bCheckAuthentication = myWebem->IsPageOverride(req, rep);
 	if (req.uri.find("json.htm") != std::string::npos)
@@ -1475,14 +1463,14 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 					}
 				}
 			}
-			myWebem->m_actualuser = "";
-			myWebem->m_actualuser_rights = -1;
-			myWebem->m_bForceRelogin = true;
-			myWebem->m_bRemoveCookie = true;
+			session.username = "";
+			session.rights = -1;
+			session.forcelogin = true;
+			session.removecookie = true;
 		}
 		else
 		{
-			if (!CheckAuthentication(sHost, req, rep))
+			if (!CheckAuthentication(sHost, session, req, rep))
 				return;
 		}
 	}
@@ -1490,7 +1478,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	{
 		if (bCheckAuthentication)
 		{
-			if (!CheckAuthentication(sHost, req, rep))
+			if (!CheckAuthentication(sHost, session, req, rep))
 				return;
 		}
 	}
@@ -1510,17 +1498,17 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	if (q != -1)
 	{
 		//post actions only allowed when authenticated and user has admin rights
-		if (!CheckAuthentication(sHost, req, rep))
+		if (!CheckAuthentication(sHost, session, req, rep))
 			return;
-		if (myWebem->m_actualuser_rights != 2)
+		if (session.rights != 2)
 		{
 			rep = reply::stock_reply(reply::forbidden);
 			return;
 		}
-		myWebem->CheckForAction(req_modified);
+		myWebem->CheckForAction(session, req_modified);
 	}
 
-	if (!myWebem->CheckForPageOverride(req, rep))
+	if (!myWebem->CheckForPageOverride(session, req, rep))
 	{
 		// do normal handling
 		request_handler::handle_request( sHost, req_modified, rep);
@@ -1566,46 +1554,42 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			CompressWebOutput(req,rep);
 	}
 
-	if (myWebem->m_bAddNewSession == true)
+	if (session.isnew == true)
 	{
 		//Add new session ID
-		_tWebEmSession usession;
-		usession.username = myWebem->m_actualuser;
-		usession.rights = myWebem->m_actualuser_rights;
-		usession.lasttouch = mytime(NULL) + SESSION_TIMEOUT;
-		if (myWebem->m_bRemembermeUser)
+		session.lasttouch = mytime(NULL) + SESSION_TIMEOUT;
+		if (session.rememberme)
 		{
 			//Extend session by a year
-			usession.lasttouch += (86400 * 365);
+			session.lasttouch += (86400 * 365);
 		}
 
 		std::vector<_tWebUserPassword>::iterator itt;
 		for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
 		{
-			if (itt->Username == usession.username)
+			if (itt->Username == session.username)
 			{
-				std::string sSID = generateSessionID();
-				myWebem->m_sessionids[sSID] = usession;
-				req.session.id = sSID;
-				send_cookie(rep, sSID, usession.lasttouch);
+				session.id = generateSessionID();
+				myWebem->m_sessionids[session.id] = session;
+				send_cookie(rep, session.id, session.lasttouch);
 				break;
 			}
 		}
 	}
-	else if (myWebem->m_bRemoveCookie == true)
+	else if (session.removecookie == true)
 	{
 		send_remove_cookie(rep);
 	}
-	else if (req.session.id.size()>0)
+	else if (session.id.size()>0)
 	{
-		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(req.session.id);
+		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(session.id);
 		if (itt != myWebem->m_sessionids.end())
 		{
 			time_t atime = mytime(NULL);
-			if (myWebem->m_sessionids[req.session.id].lasttouch - 60 < atime)
+			if (myWebem->m_sessionids[session.id].lasttouch - 60 < atime)
 			{
-				myWebem->m_sessionids[req.session.id].lasttouch = atime + SESSION_TIMEOUT;
-				send_cookie(rep, req.session.id, myWebem->m_sessionids[req.session.id].lasttouch);
+				myWebem->m_sessionids[session.id].lasttouch = atime + SESSION_TIMEOUT;
+				send_cookie(rep, session.id, myWebem->m_sessionids[session.id].lasttouch);
 			}
 		}
 	}

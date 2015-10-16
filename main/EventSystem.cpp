@@ -3095,7 +3095,7 @@ namespace http {
 			std::string eventstatus;
 		};
 
-		void CWebServer::RType_Events(const request& req, Json::Value &root)
+		void CWebServer::RType_Events(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			//root["status"]="OK";
 			root["title"] = "Events";

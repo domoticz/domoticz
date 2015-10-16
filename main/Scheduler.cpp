@@ -588,7 +588,7 @@ void CScheduler::DeleteExpiredTimers()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_Schedules(const request& req, Json::Value &root)
+		void CWebServer::RType_Schedules(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Schedules";
@@ -631,7 +631,7 @@ namespace http {
 				ii++;
 			}
 		}
-		void CWebServer::RType_Timers(const request& req, Json::Value &root)
+		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
@@ -688,9 +688,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_AddTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -762,9 +762,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_UpdateTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -835,9 +835,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -855,9 +855,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_EnableTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -875,9 +875,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_DisableTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -895,9 +895,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearTimers(const request& req, Json::Value &root)
+		void CWebServer::Cmd_ClearTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -915,7 +915,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SetpointTimers(const request& req, Json::Value &root)
+		void CWebServer::RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
@@ -964,9 +964,9 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::Cmd_AddSetpointTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_AddSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1029,9 +1029,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateSetpointTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_UpdateSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1093,9 +1093,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteSetpointTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1113,9 +1113,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearSetpointTimers(const request& req, Json::Value &root)
+		void CWebServer::Cmd_ClearSetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1133,7 +1133,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SceneTimers(const request& req, Json::Value &root)
+		void CWebServer::RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
 			if (m_pWebEm->FindValue("idx") != "")
@@ -1191,9 +1191,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddSceneTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_AddSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1262,9 +1262,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateSceneTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_UpdateSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1333,9 +1333,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteSceneTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1353,9 +1353,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableSceneTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_EnableSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1373,9 +1373,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableSceneTimer(const request& req, Json::Value &root)
+		void CWebServer::Cmd_DisableSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -1393,9 +1393,9 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearSceneTimers(const request& req, Json::Value &root)
+		void CWebServer::Cmd_ClearSceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;

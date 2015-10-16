@@ -175,10 +175,10 @@ void P1MeterSerial::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetP1USBType(const request& req)
+		char * CWebServer::SetP1USBType(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();

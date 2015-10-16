@@ -236,7 +236,7 @@ void CWOL::RemoveAllNodes()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_WOLGetNodes(const request& req, Json::Value &root)
+		void CWebServer::Cmd_WOLGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string hwid = m_pWebEm->FindValue("idx");
 			if (hwid == "")
@@ -270,9 +270,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_WOLAddNode(const request& req, Json::Value &root)
+		void CWebServer::Cmd_WOLAddNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -300,9 +300,9 @@ namespace http {
 			pHardware->AddNode(name, mac);
 		}
 
-		void CWebServer::Cmd_WOLUpdateNode(const request& req, Json::Value &root)
+		void CWebServer::Cmd_WOLUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -333,9 +333,9 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, mac);
 		}
 
-		void CWebServer::Cmd_WOLRemoveNode(const request& req, Json::Value &root)
+		void CWebServer::Cmd_WOLRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -362,9 +362,9 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_WOLClearNodes(const request& req, Json::Value &root)
+		void CWebServer::Cmd_WOLClearNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;

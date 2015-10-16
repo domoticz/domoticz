@@ -869,10 +869,10 @@ bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::RFXComUpgradeFirmware(const request& req)
+		char * CWebServer::RFXComUpgradeFirmware(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
@@ -920,11 +920,11 @@ namespace http {
 			}
 			return (char*)m_retstr.c_str();
 		}
-		char * CWebServer::SetRFXCOMMode(const request& req)
+		char * CWebServer::SetRFXCOMMode(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
 
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
@@ -986,7 +986,7 @@ namespace http {
 
 			return (char*)m_retstr.c_str();
 		}
-		void CWebServer::Cmd_RFXComGetFirmwarePercentage(const request& req, Json::Value &root)
+		void CWebServer::Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "ERR";
 			root["title"] = "GetFirmwareUpgradePercentage";

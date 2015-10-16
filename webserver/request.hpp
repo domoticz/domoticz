@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 #include "header.hpp"
-#include "http_session.hpp"
 
 namespace http {
 namespace server {
@@ -31,7 +30,6 @@ public:
   int content_length;				// the expected length of the contents
   std::string content;				// the contents
   bool keep_alive;					// send Keep-Alive header
-  http_session session;				// current session
 
 
   static int mg_strcasecmp(const char *s1, const char *s2)

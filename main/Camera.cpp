@@ -345,7 +345,7 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_Cameras(const request& req, Json::Value &root)
+		void CWebServer::RType_Cameras(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string rused = m_pWebEm->FindValue("used");
 
@@ -379,11 +379,11 @@ namespace http {
 				}
 			}
 		}
-		std::string CWebServer::GetInternalCameraSnapshot(const request& req)
+		std::string CWebServer::GetInternalCameraSnapshot(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			std::vector<unsigned char> camimage;
-			if (m_pWebEm->m_lastRequestPath.find("raspberry") != std::string::npos)
+			if (session.lastRequestPath.find("raspberry") != std::string::npos)
 			{
 				if (!m_mainworker.m_cameras.TakeRaspberrySnapshot(camimage))
 					goto exitproc;
@@ -399,7 +399,7 @@ namespace http {
 			return m_retstr;
 		}
 
-		std::string CWebServer::GetCameraSnapshot(const request& req)
+		std::string CWebServer::GetCameraSnapshot(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			std::vector<unsigned char> camimage;

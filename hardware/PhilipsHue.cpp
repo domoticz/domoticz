@@ -591,7 +591,7 @@ bool CPhilipsHue::GetLightStates()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_RegisterWithPhilipsHue(const request& req, Json::Value &root)
+		void CWebServer::Cmd_RegisterWithPhilipsHue(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "RegisterOnHue";
 
