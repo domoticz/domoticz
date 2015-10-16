@@ -238,7 +238,7 @@ namespace http {
 	namespace server {
 		void CWebServer::Cmd_WOLGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = req.findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -278,9 +278,9 @@ namespace http {
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string mac = m_pWebEm->FindValue("mac");
+			std::string hwid = req.findValue(&req, "idx");
+			std::string name = req.findValue(&req, "name");
+			std::string mac = req.findValue(&req, "mac");
 			if (
 				(hwid == "") ||
 				(name == "") ||
@@ -308,10 +308,10 @@ namespace http {
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string mac = m_pWebEm->FindValue("mac");
+			std::string hwid = req.findValue(&req, "idx");
+			std::string nodeid = req.findValue(&req, "nodeid");
+			std::string name = req.findValue(&req, "name");
+			std::string mac = req.findValue(&req, "mac");
 			if (
 				(hwid == "") ||
 				(nodeid == "") ||
@@ -341,8 +341,8 @@ namespace http {
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string hwid = req.findValue(&req, "idx");
+			std::string nodeid = req.findValue(&req, "nodeid");
 			if (
 				(hwid == "") ||
 				(nodeid == "")
@@ -370,7 +370,7 @@ namespace http {
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = req.findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());

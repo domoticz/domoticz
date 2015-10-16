@@ -467,7 +467,7 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -478,7 +478,7 @@ namespace http {
 
 			unsigned char currentMode1 = atoi(result[0][0].c_str());
 
-			std::string sRego6XXType = m_pWebEm->FindValue("Rego6XXType");
+			std::string sRego6XXType = req.findValue(&req, "Rego6XXType");
 			unsigned char newMode1 = atoi(sRego6XXType.c_str());
 
 			if (currentMode1 != newMode1)

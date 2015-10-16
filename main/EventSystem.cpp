@@ -3100,10 +3100,10 @@ namespace http {
 			//root["status"]="OK";
 			root["title"] = "Events";
 
-			std::string cparam = m_pWebEm->FindValue("param");
+			std::string cparam = req.findValue(&req, "param");
 			if (cparam == "")
 			{
-				cparam = m_pWebEm->FindValue("dparam");
+				cparam = req.findValue(&req, "dparam");
 				if (cparam == "")
 				{
 					return;
@@ -3157,7 +3157,7 @@ namespace http {
 			{
 				root["title"] = "LoadEvent";
 
-				std::string idx = m_pWebEm->FindValue("event");
+				std::string idx = req.findValue(&req, "event");
 				if (idx == "")
 					return;
 
@@ -3192,22 +3192,22 @@ namespace http {
 
 				root["title"] = "AddEvent";
 
-				std::string eventname = m_pWebEm->FindValue("name");
+				std::string eventname = req.findValue(&req, "name");
 				if (eventname == "")
 					return;
 
-				std::string eventxml = m_pWebEm->FindValue("xml");
+				std::string eventxml = req.findValue(&req, "xml");
 				if (eventxml == "")
 					return;
 
-				std::string eventactive = m_pWebEm->FindValue("eventstatus");
+				std::string eventactive = req.findValue(&req, "eventstatus");
 				if (eventactive == "")
 					return;
 
-				std::string eventid = m_pWebEm->FindValue("eventid");
+				std::string eventid = req.findValue(&req, "eventid");
 
 
-				std::string eventlogic = m_pWebEm->FindValue("logicarray");
+				std::string eventlogic = req.findValue(&req, "logicarray");
 				if (eventlogic == "")
 					return;
 
@@ -3273,7 +3273,7 @@ namespace http {
 			else if (cparam == "delete")
 			{
 				root["title"] = "DeleteEvent";
-				std::string idx = m_pWebEm->FindValue("event");
+				std::string idx = req.findValue(&req, "event");
 				if (idx == "")
 					return;
 				m_sql.DeleteEvent(idx);

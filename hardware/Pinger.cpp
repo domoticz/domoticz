@@ -433,7 +433,7 @@ namespace http {
 	namespace server {
 		void CWebServer::Cmd_PingerGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = req.findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -473,9 +473,9 @@ namespace http {
 				//No admin user, and not allowed to be here
 				return;
 			}
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string mode1 = m_pWebEm->FindValue("mode1");
-			std::string mode2 = m_pWebEm->FindValue("mode2");
+			std::string hwid = req.findValue(&req, "idx");
+			std::string mode1 = req.findValue(&req, "mode1");
+			std::string mode2 = req.findValue(&req, "mode2");
 			if (
 				(hwid == "") ||
 				(mode1 == "") ||
@@ -514,10 +514,10 @@ namespace http {
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
+			std::string hwid = req.findValue(&req, "idx");
+			std::string name = req.findValue(&req, "name");
+			std::string ip = req.findValue(&req, "ip");
+			int Timeout = atoi(req.findValue(&req, "timeout").c_str());
 			if (
 				(hwid == "") ||
 				(name == "") ||
@@ -546,11 +546,11 @@ namespace http {
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
+			std::string hwid = req.findValue(&req, "idx");
+			std::string nodeid = req.findValue(&req, "nodeid");
+			std::string name = req.findValue(&req, "name");
+			std::string ip = req.findValue(&req, "ip");
+			int Timeout = atoi(req.findValue(&req, "timeout").c_str());
 			if (
 				(hwid == "") ||
 				(nodeid == "") ||
@@ -581,8 +581,8 @@ namespace http {
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string hwid = req.findValue(&req, "idx");
+			std::string nodeid = req.findValue(&req, "nodeid");
 			if (
 				(hwid == "") ||
 				(nodeid == "")
@@ -610,7 +610,7 @@ namespace http {
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = req.findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());

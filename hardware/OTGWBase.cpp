@@ -549,7 +549,7 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -562,7 +562,7 @@ namespace http {
 
 			int currentMode1 = atoi(result[0][0].c_str());
 
-			std::string sOutsideTempSensor = m_pWebEm->FindValue("combooutsidesensor");
+			std::string sOutsideTempSensor = req.findValue(&req, "combooutsidesensor");
 			int newMode1 = atoi(sOutsideTempSensor.c_str());
 
 			if (currentMode1 != newMode1)

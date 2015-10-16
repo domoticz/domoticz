@@ -53,8 +53,8 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string ssensortype = m_pWebEm->FindValue("sensortype");
+			std::string idx = req.findValue(&req, "idx");
+			std::string ssensortype = req.findValue(&req, "sensortype");
 			if ((idx == "") || (ssensortype == ""))
 				return;
 

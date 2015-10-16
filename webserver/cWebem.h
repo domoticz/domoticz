@@ -175,14 +175,7 @@ namespace http {
 			void RegisterWhitelistURLString(const char* idname);
 
 			bool CheckForAction(WebEmSession & session, request& req);
-			std::string& FindValue(const char* name);
-			bool HasValue(const char* name);
-			bool HasParams()
-			{
-				return !myNameValues.empty(); 
-			};
-
-			bool CheckForPageOverride(WebEmSession & session, const request& req, reply& rep);
+			bool CheckForPageOverride(WebEmSession & session, request& req, reply& rep);
 			bool IsPageOverride(const request& req, reply& rep);
 
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
@@ -196,7 +189,6 @@ namespace http {
 			void SetDigistRealm(std::string realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(std::string password);
-			void MakeValuesFromPostContent(const request *req);
 			std::string m_zippassword;
 			std::map<std::string,WebEmSession> m_sessions;
 			_eAuthenticationMethod m_authmethod;
@@ -215,8 +207,6 @@ namespace http {
 			std::map < std::string, webem_page_function > myPages;
 			/// store map between pages and application functions
 			std::map < std::string, webem_page_function_w > myPages_w;
-			/// store map between pages and application functions (wide char)
-			std::multimap  < std::string, std::string> myNameValues;
 			/// request handler specialized to handle webem requests
 			cWebemRequestHandler myRequestHandler;
 			/// boost::asio web server (RK: plain or secure)

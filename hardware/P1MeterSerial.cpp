@@ -184,7 +184,7 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -195,7 +195,7 @@ namespace http {
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
 
-			int Mode1 = atoi(m_pWebEm->FindValue("P1Baudrate").c_str());
+			int Mode1 = atoi(req.findValue(&req, "P1Baudrate").c_str());
 			int Mode2 = 0;
 			int Mode3 = 0;
 			int Mode4 = 0;

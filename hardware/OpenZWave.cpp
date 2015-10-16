@@ -4054,7 +4054,7 @@ namespace http {
 	namespace server {
 		void CWebServer::RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = req.findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -4127,11 +4127,11 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = m_pWebEm->FindValue("name");
-			std::string senablepolling = m_pWebEm->FindValue("EnablePolling");
+			std::string name = req.findValue(&req, "name");
+			std::string senablepolling = req.findValue(&req, "EnablePolling");
 			if (
 				(name == "") ||
 				(senablepolling == "")
@@ -4172,7 +4172,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			std::vector<std::vector<std::string> > result;
@@ -4203,10 +4203,10 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string ssecure = m_pWebEm->FindValue("secure");
+			std::string ssecure = req.findValue(&req, "secure");
 			bool bSecure = (ssecure == "true");
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
@@ -4227,7 +4227,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4242,7 +4242,7 @@ namespace http {
 
 		void CWebServer::Cmd_ZWaveIsNodeIncluded(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4270,7 +4270,7 @@ namespace http {
 
 		void CWebServer::Cmd_ZWaveIsNodeExcluded(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4292,7 +4292,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4313,7 +4313,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4329,7 +4329,7 @@ namespace http {
 		void CWebServer::Cmd_ZWaveStateCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "ZWaveStateCheck";
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4351,7 +4351,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4372,10 +4372,10 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string node = m_pWebEm->FindValue("node");
+			std::string node = req.findValue(&req, "node");
 			if (node == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4398,7 +4398,7 @@ namespace http {
 
 			root["title"] = "ZWaveNetworkInfo";
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			int hwID = atoi(idx.c_str());
@@ -4457,16 +4457,16 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string node = m_pWebEm->FindValue("node");
+			std::string node = req.findValue(&req, "node");
 			if (node == "")
 				return;
-			std::string group = m_pWebEm->FindValue("group");
+			std::string group = req.findValue(&req, "group");
 			if (group == "")
 				return;
-			std::string removenode = m_pWebEm->FindValue("removenode");
+			std::string removenode = req.findValue(&req, "removenode");
 			if (removenode == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4489,16 +4489,16 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string node = m_pWebEm->FindValue("node");
+			std::string node = req.findValue(&req, "node");
 			if (node == "")
 				return;
-			std::string group = m_pWebEm->FindValue("group");
+			std::string group = req.findValue(&req, "group");
 			if (group == "")
 				return;
-			std::string addnode = m_pWebEm->FindValue("addnode");
+			std::string addnode = req.findValue(&req, "addnode");
 			if (addnode == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4515,7 +4515,7 @@ namespace http {
 
 		void CWebServer::Cmd_ZWaveGroupInfo(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			int iHardwareID = atoi(idx.c_str());
@@ -4585,7 +4585,7 @@ namespace http {
 
 		void CWebServer::Cmd_ZWaveCancel(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4606,8 +4606,8 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string svaluelist = m_pWebEm->FindValue("valuelist");
+			std::string idx = req.findValue(&req, "idx");
+			std::string svaluelist = req.findValue(&req, "valuelist");
 			if (
 				(idx == "") ||
 				(svaluelist == "")
@@ -4634,7 +4634,7 @@ namespace http {
 
 		void CWebServer::Cmd_ZWaveRequestNodeConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			std::vector<std::vector<std::string> > result;
@@ -4663,7 +4663,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4684,7 +4684,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4705,7 +4705,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4719,7 +4719,7 @@ namespace http {
 		}
 		std::string CWebServer::ZWaveGetConfigFile(WebEmSession & session, const request& req)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return "";
 			m_retstr = "";
@@ -4782,8 +4782,9 @@ namespace http {
 			m_retstr = "";
 			if (req.content.find("node") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(&req);
-			std::string sNode = m_pWebEm->FindValue("node");
+			std::multimap<std::string, std::string> values;
+			req.makeValuesFromPostContent(&req, values);
+			std::string sNode = request::findValue(&values, "node");
 			if (sNode == "")
 				return m_retstr;
 			int iNode = atoi(sNode.c_str());
@@ -4804,8 +4805,9 @@ namespace http {
 			m_retstr = "";
 			if (req.content.find("node") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(&req);
-			std::string sNode = m_pWebEm->FindValue("node");
+			std::multimap<std::string, std::string> values;
+			req.makeValuesFromPostContent(&req, values);
+			std::string sNode = request::findValue(&values, "node");
 			if (sNode == "")
 				return m_retstr;
 			int iNode = atoi(sNode.c_str());
@@ -4866,10 +4868,11 @@ namespace http {
 			m_retstr = "";
 			if (req.content.find("fun") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(&req);
-			std::string sFun = m_pWebEm->FindValue("fun");
-			std::string sNode = m_pWebEm->FindValue("node");
-			std::string sButton = m_pWebEm->FindValue("button");
+			std::multimap<std::string, std::string> values;
+			req.makeValuesFromPostContent(&req, values);
+			std::string sFun = request::findValue(&values, "fun");
+			std::string sNode = request::findValue(&values, "node");
+			std::string sButton = request::findValue(&values, "button");
 
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)
@@ -4888,10 +4891,11 @@ namespace http {
 			m_retstr = "";
 			if (req.content.find("fun") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(&req);
-			std::string sFun = m_pWebEm->FindValue("fun");
-			std::string sNode = m_pWebEm->FindValue("node");
-			std::string sValue = m_pWebEm->FindValue("value");
+			std::multimap<std::string, std::string> values;
+			req.makeValuesFromPostContent(&req, values);
+			std::string sFun = request::findValue(&values, "fun");
+			std::string sNode = request::findValue(&values, "node");
+			std::string sValue = request::findValue(&values, "value");
 
 			if (sNode.size() > 4)
 				sNode = sNode.substr(4);
@@ -4969,7 +4973,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4990,8 +4994,8 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string scodeindex = m_pWebEm->FindValue("codeindex");
+			std::string idx = req.findValue(&req, "idx");
+			std::string scodeindex = req.findValue(&req, "codeindex");
 			if (
 				(idx == "") ||
 				(scodeindex == "")
@@ -5020,7 +5024,7 @@ namespace http {
 
 		void CWebServer::Cmd_ZWaveGetNodeUserCodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 

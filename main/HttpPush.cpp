@@ -289,14 +289,14 @@ namespace http {
 				return;
 			}
 
-			std::string url = m_pWebEm->FindValue("url");
-			std::string method = m_pWebEm->FindValue("method");
-			std::string data = m_pWebEm->FindValue("data");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string debugenabled = m_pWebEm->FindValue("debugenabled");
-			std::string auth = m_pWebEm->FindValue("auth");
-			std::string authbasiclogin = m_pWebEm->FindValue("authbasiclogin");
-			std::string authbasicpassword = m_pWebEm->FindValue("authbasicpassword");
+			std::string url = req.findValue(&req, "url");
+			std::string method = req.findValue(&req, "method");
+			std::string data = req.findValue(&req, "data");
+			std::string linkactive = req.findValue(&req, "linkactive");
+			std::string debugenabled = req.findValue(&req, "debugenabled");
+			std::string auth = req.findValue(&req, "auth");
+			std::string authbasiclogin = req.findValue(&req, "authbasiclogin");
+			std::string authbasicpassword = req.findValue(&req, "authbasicpassword");
 			if (
 				(url == "") ||
 				(data == "") ||
@@ -401,17 +401,17 @@ namespace http {
 
 		void CWebServer::Cmd_SaveHttpLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string deviceid = m_pWebEm->FindValue("deviceid");
+			std::string idx = req.findValue(&req, "idx");
+			std::string deviceid = req.findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
-			std::string valuetosend = m_pWebEm->FindValue("valuetosend");
-			std::string targettype = m_pWebEm->FindValue("targettype");
+			std::string valuetosend = req.findValue(&req, "valuetosend");
+			std::string targettype = req.findValue(&req, "targettype");
 			int targettypei = atoi(targettype.c_str());
-			std::string targetvariable = m_pWebEm->FindValue("targetvariable");
-			std::string targetdeviceid = m_pWebEm->FindValue("targetdeviceid");
-			std::string targetproperty = m_pWebEm->FindValue("targetproperty");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string includeunit = m_pWebEm->FindValue("includeunit");
+			std::string targetvariable = req.findValue(&req, "targetvariable");
+			std::string targetdeviceid = req.findValue(&req, "targetdeviceid");
+			std::string targetproperty = req.findValue(&req, "targetproperty");
+			std::string linkactive = req.findValue(&req, "linkactive");
+			std::string includeunit = req.findValue(&req, "includeunit");
 			if ((targettypei == 0) && (targetvariable == ""))
 				return;
 			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
@@ -457,7 +457,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			m_sql.safe_query("DELETE FROM HttpLink WHERE (ID=='%q')", idx.c_str());

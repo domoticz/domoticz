@@ -213,12 +213,12 @@ namespace http {
 				return;
 			}
 
-			std::string remote = m_pWebEm->FindValue("remote");
-			std::string username = m_pWebEm->FindValue("username");
-			std::string password = m_pWebEm->FindValue("password");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string isversion4 = m_pWebEm->FindValue("isversion4");
-			std::string debugenabled = m_pWebEm->FindValue("debugenabled");
+			std::string remote = req.findValue(&req, "remote");
+			std::string username = req.findValue(&req, "username");
+			std::string password = req.findValue(&req, "password");
+			std::string linkactive = req.findValue(&req, "linkactive");
+			std::string isversion4 = req.findValue(&req, "isversion4");
+			std::string debugenabled = req.findValue(&req, "debugenabled");
 			if (
 				(remote == "") ||
 				(username == "") ||
@@ -310,17 +310,17 @@ namespace http {
 
 		void CWebServer::Cmd_SaveFibaroLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string deviceid = m_pWebEm->FindValue("deviceid");
+			std::string idx = req.findValue(&req, "idx");
+			std::string deviceid = req.findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
-			std::string valuetosend = m_pWebEm->FindValue("valuetosend");
-			std::string targettype = m_pWebEm->FindValue("targettype");
+			std::string valuetosend = req.findValue(&req, "valuetosend");
+			std::string targettype = req.findValue(&req, "targettype");
 			int targettypei = atoi(targettype.c_str());
-			std::string targetvariable = m_pWebEm->FindValue("targetvariable");
-			std::string targetdeviceid = m_pWebEm->FindValue("targetdeviceid");
-			std::string targetproperty = m_pWebEm->FindValue("targetproperty");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string includeunit = m_pWebEm->FindValue("includeunit");
+			std::string targetvariable = req.findValue(&req, "targetvariable");
+			std::string targetdeviceid = req.findValue(&req, "targetdeviceid");
+			std::string targetproperty = req.findValue(&req, "targetproperty");
+			std::string linkactive = req.findValue(&req, "linkactive");
+			std::string includeunit = req.findValue(&req, "includeunit");
 			if ((targettypei == 0) && (targetvariable == ""))
 				return;
 			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
@@ -366,7 +366,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			m_sql.safe_query("DELETE FROM FibaroLink WHERE (ID=='%q')", idx.c_str());

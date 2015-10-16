@@ -735,13 +735,13 @@ namespace http {
 			Json::Value root;
 			root["status"] = "ERR";
 
-			std::string rtype = m_pWebEm->FindValue("type");
+			std::string rtype = req.findValue(&req, "type");
 			if (rtype == "command")
 			{
-				std::string cparam = m_pWebEm->FindValue("param");
+				std::string cparam = req.findValue(&req, "param");
 				if (cparam == "")
 				{
-					cparam = m_pWebEm->FindValue("dparam");
+					cparam = req.findValue(&req, "dparam");
 					if (cparam == "")
 					{
 						goto exitjson;
@@ -760,7 +760,7 @@ namespace http {
 			else
 				HandleRType(rtype, session, req, root);
 		exitjson:
-			std::string jcallback = m_pWebEm->FindValue("jsoncallback");
+			std::string jcallback = req.findValue(&req, "jsoncallback");
 			if (jcallback.size() == 0)
 				m_retstr = root.toStyledString();
 			else
@@ -797,15 +797,15 @@ namespace http {
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string tmpusrname = m_pWebEm->FindValue("username");
-			std::string tmpusrpass = m_pWebEm->FindValue("password");
+			std::string tmpusrname = req.findValue(&req, "username");
+			std::string tmpusrpass = req.findValue(&req, "password");
 			if (
 				(tmpusrname == "") ||
 				(tmpusrpass == "")
 				)
 				return;
 
-			std::string rememberme = m_pWebEm->FindValue("rememberme");
+			std::string rememberme = req.findValue(&req, "rememberme");
 
 			std::string usrname;
 			std::string usrpass;
@@ -904,15 +904,15 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = CURLEncode::URLDecode(m_pWebEm->FindValue("name"));
-			std::string senabled = m_pWebEm->FindValue("enabled");
-			std::string shtype = m_pWebEm->FindValue("htype");
-			std::string address = m_pWebEm->FindValue("address");
-			std::string sport = m_pWebEm->FindValue("port");
-			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
-			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
-			std::string extra = CURLEncode::URLDecode(m_pWebEm->FindValue("extra"));
-			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
+			std::string name = CURLEncode::URLDecode(req.findValue(&req, "name"));
+			std::string senabled = req.findValue(&req, "enabled");
+			std::string shtype = req.findValue(&req, "htype");
+			std::string address = req.findValue(&req, "address");
+			std::string sport = req.findValue(&req, "port");
+			std::string username = CURLEncode::URLDecode(req.findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(req.findValue(&req, "password"));
+			std::string extra = CURLEncode::URLDecode(req.findValue(&req, "extra"));
+			std::string sdatatimeout = req.findValue(&req, "datatimeout");
 			if (
 				(name == "") ||
 				(senabled == "") ||
@@ -943,7 +943,7 @@ namespace http {
 					return;
 
 				if (htype == HTYPE_MQTT) {
-					std::string modeqStr = m_pWebEm->FindValue("mode1");
+					std::string modeqStr = req.findValue(&req, "mode1");
 					if (!modeqStr.empty()) {
 						mode1 = atoi(modeqStr.c_str());
 					}
@@ -1034,7 +1034,7 @@ namespace http {
 					port = 80;
 			}
 			else if (htype == HTYPE_WINDDELEN) {
-					std::string mill_id = m_pWebEm->FindValue("Mode1");
+					std::string mill_id = req.findValue(&req, "Mode1");
 					if (
 					(mill_id == "") ||
 					(sport == "")
@@ -1112,18 +1112,18 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = CURLEncode::URLDecode(m_pWebEm->FindValue("name"));
-			std::string senabled = m_pWebEm->FindValue("enabled");
-			std::string shtype = m_pWebEm->FindValue("htype");
-			std::string address = m_pWebEm->FindValue("address");
-			std::string sport = m_pWebEm->FindValue("port");
-			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
-			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
-			std::string extra = CURLEncode::URLDecode(m_pWebEm->FindValue("extra"));
-			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
+			std::string name = CURLEncode::URLDecode(req.findValue(&req, "name"));
+			std::string senabled = req.findValue(&req, "enabled");
+			std::string shtype = req.findValue(&req, "htype");
+			std::string address = req.findValue(&req, "address");
+			std::string sport = req.findValue(&req, "port");
+			std::string username = CURLEncode::URLDecode(req.findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(req.findValue(&req, "password"));
+			std::string extra = CURLEncode::URLDecode(req.findValue(&req, "extra"));
+			std::string sdatatimeout = req.findValue(&req, "datatimeout");
 
 			if (
 				(name == "") ||
@@ -1252,7 +1252,7 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_WINDDELEN) {
-				std::string mill_id = m_pWebEm->FindValue("Mode1");
+				std::string mill_id = req.findValue(&req, "Mode1");
 				if (
 				  (mill_id == "") ||
 				  (sport == "")
@@ -1262,12 +1262,12 @@ namespace http {
 			else
 				return;
 
-			int mode1 = atoi(m_pWebEm->FindValue("Mode1").c_str());
-			int mode2 = atoi(m_pWebEm->FindValue("Mode2").c_str());
-			int mode3 = atoi(m_pWebEm->FindValue("Mode3").c_str());
-			int mode4 = atoi(m_pWebEm->FindValue("Mode4").c_str());
-			int mode5 = atoi(m_pWebEm->FindValue("Mode5").c_str());
-			int mode6 = atoi(m_pWebEm->FindValue("Mode6").c_str());
+			int mode1 = atoi(req.findValue(&req, "Mode1").c_str());
+			int mode2 = atoi(req.findValue(&req, "Mode2").c_str());
+			int mode3 = atoi(req.findValue(&req, "Mode3").c_str());
+			int mode4 = atoi(req.findValue(&req, "Mode4").c_str());
+			int mode5 = atoi(req.findValue(&req, "Mode5").c_str());
+			int mode6 = atoi(req.findValue(&req, "Mode6").c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
@@ -1314,7 +1314,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			std::vector<std::string> result;
@@ -1341,8 +1341,8 @@ namespace http {
 
 		void CWebServer::Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string pos = m_pWebEm->FindValue("pos");
+			std::string idx = req.findValue(&req, "idx");
+			std::string pos = req.findValue(&req, "pos");
 			if ((idx == "") || (pos == ""))
 				return;
 			std::string wording;
@@ -1355,7 +1355,7 @@ namespace http {
 
 		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -1365,9 +1365,9 @@ namespace http {
 
 		void CWebServer::Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string variablename = m_pWebEm->FindValue("vname");
-			std::string variablevalue = m_pWebEm->FindValue("vvalue");
-			std::string variabletype = m_pWebEm->FindValue("vtype");
+			std::string variablename = req.findValue(&req, "vname");
+			std::string variablevalue = req.findValue(&req, "vvalue");
+			std::string variabletype = req.findValue(&req, "vtype");
 			if ((variablename == "") || (variablevalue == "") || (variabletype == ""))
 				return;
 
@@ -1377,10 +1377,10 @@ namespace http {
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string variablename = m_pWebEm->FindValue("vname");
-			std::string variablevalue = m_pWebEm->FindValue("vvalue");
-			std::string variabletype = m_pWebEm->FindValue("vtype");
+			std::string idx = req.findValue(&req, "idx");
+			std::string variablename = req.findValue(&req, "vname");
+			std::string variablevalue = req.findValue(&req, "vvalue");
+			std::string variabletype = req.findValue(&req, "vtype");
 
 			if (idx.empty())
 			{
@@ -1428,7 +1428,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -1459,7 +1459,7 @@ namespace http {
 
 		void CWebServer::Cmd_AllowNewHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sTimeout = m_pWebEm->FindValue("timeout");
+			std::string sTimeout = req.findValue(&req, "timeout");
 			if (sTimeout == "")
 				return;
 			root["status"] = "OK";
@@ -1474,7 +1474,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			int hwID = atoi(idx.c_str());
@@ -1492,7 +1492,7 @@ namespace http {
 			root["title"] = "GetLog";
 
 			time_t lastlogtime = 0;
-			std::string slastlogtime = m_pWebEm->FindValue("lastlogtime");
+			std::string slastlogtime = req.findValue(&req, "lastlogtime");
 			if (slastlogtime != "")
 			{
 				std::stringstream s_str(slastlogtime);
@@ -1522,7 +1522,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = m_pWebEm->FindValue("name");
+			std::string name = req.findValue(&req, "name");
 			root["status"] = "OK";
 			root["title"] = "AddPlan";
 			m_sql.safe_query(
@@ -1536,10 +1536,10 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = m_pWebEm->FindValue("name");
+			std::string name = req.findValue(&req, "name");
 			if (
 				(name == "")
 				)
@@ -1560,7 +1560,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1579,7 +1579,7 @@ namespace http {
 		{
 			root["status"] = "OK";
 			root["title"] = "GetUnusedPlanDevices";
-			std::string sunique = m_pWebEm->FindValue("unique");
+			std::string sunique = req.findValue(&req, "unique");
 			if (sunique == "")
 				return;
 			int iUnique = (sunique == "true") ? 1 : 0;
@@ -1645,9 +1645,9 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string sactivetype = m_pWebEm->FindValue("activetype");
-			std::string activeidx = m_pWebEm->FindValue("activeidx");
+			std::string idx = req.findValue(&req, "idx");
+			std::string sactivetype = req.findValue(&req, "activetype");
+			std::string activeidx = req.findValue(&req, "activeidx");
 			if (
 				(idx == "") ||
 				(sactivetype == "") ||
@@ -1676,7 +1676,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetPlanDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1737,7 +1737,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1747,11 +1747,11 @@ namespace http {
 
 		void CWebServer::Cmd_SetPlanDeviceCoords(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string planidx = m_pWebEm->FindValue("planidx");
-			std::string xoffset = m_pWebEm->FindValue("xoffset");
-			std::string yoffset = m_pWebEm->FindValue("yoffset");
-			std::string type = m_pWebEm->FindValue("DevSceneType");
+			std::string idx = req.findValue(&req, "idx");
+			std::string planidx = req.findValue(&req, "planidx");
+			std::string xoffset = req.findValue(&req, "xoffset");
+			std::string yoffset = req.findValue(&req, "yoffset");
+			std::string type = req.findValue(&req, "DevSceneType");
 			if ((idx == "") || (planidx == "") || (xoffset == "") || (yoffset == ""))
 				return;
 			if (type != "1") type = "0";  // 0 = Device, 1 = Scene/Group
@@ -1767,7 +1767,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1777,10 +1777,10 @@ namespace http {
 
 		void CWebServer::Cmd_ChangePlanOrder(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string sway = m_pWebEm->FindValue("way");
+			std::string sway = req.findValue(&req, "way");
 			if (sway == "")
 				return;
 			bool bGoUp = (sway == "0");
@@ -1826,9 +1826,9 @@ namespace http {
 
 		void CWebServer::Cmd_ChangePlanDeviceOrder(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string planid = m_pWebEm->FindValue("planid");
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string sway = m_pWebEm->FindValue("way");
+			std::string planid = req.findValue(&req, "planid");
+			std::string idx = req.findValue(&req, "idx");
+			std::string sway = req.findValue(&req, "way");
 			if (
 				(planid == "") ||
 				(idx == "") ||
@@ -2132,8 +2132,8 @@ namespace http {
 
 		void CWebServer::Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string subject = m_pWebEm->FindValue("subject");
-			std::string body = m_pWebEm->FindValue("body");
+			std::string subject = req.findValue(&req, "subject");
+			std::string body = req.findValue(&req, "body");
 			if (
 				(subject == "") ||
 				(body == "")
@@ -2148,8 +2148,8 @@ namespace http {
 
 		void CWebServer::Cmd_EmailCameraSnapshot(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string camidx = m_pWebEm->FindValue("camidx");
-			std::string subject = m_pWebEm->FindValue("subject");
+			std::string camidx = req.findValue(&req, "camidx");
+			std::string subject = req.findValue(&req, "subject");
 			if (
 				(camidx == "") ||
 				(subject == "")
@@ -2287,7 +2287,7 @@ namespace http {
 #endif
 			std::string lua_Dir = lua_DirT.str();
 
-			std::string script = m_pWebEm->FindValue("script");
+			std::string script = req.findValue(&req, "script");
 			if (script.empty() )
 			{
 				return;
@@ -2330,15 +2330,15 @@ namespace http {
 
 		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string hid = m_pWebEm->FindValue("hid");
-			std::string did = m_pWebEm->FindValue("did");
-			std::string dunit = m_pWebEm->FindValue("dunit");
-			std::string dtype = m_pWebEm->FindValue("dtype");
-			std::string dsubtype = m_pWebEm->FindValue("dsubtype");
+			std::string idx = req.findValue(&req, "idx");
+			std::string hid = req.findValue(&req, "hid");
+			std::string did = req.findValue(&req, "did");
+			std::string dunit = req.findValue(&req, "dunit");
+			std::string dtype = req.findValue(&req, "dtype");
+			std::string dsubtype = req.findValue(&req, "dsubtype");
 
-			std::string nvalue = m_pWebEm->FindValue("nvalue");
-			std::string svalue = m_pWebEm->FindValue("svalue");
+			std::string nvalue = req.findValue(&req, "nvalue");
+			std::string svalue = req.findValue(&req, "svalue");
 
 			if ( (nvalue.empty() && svalue.empty()) )
 			{
@@ -2390,12 +2390,12 @@ namespace http {
 			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
 
 
-			std::string sSignalLevel = m_pWebEm->FindValue("rssi");
+			std::string sSignalLevel = req.findValue(&req, "rssi");
 			if (sSignalLevel != "")
 			{
 				signallevel = atoi(sSignalLevel.c_str());
 			}
-			std::string sBatteryLevel = m_pWebEm->FindValue("battery");
+			std::string sBatteryLevel = req.findValue(&req, "battery");
 			if (sBatteryLevel != "")
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
@@ -2409,8 +2409,8 @@ namespace http {
 
 		void CWebServer::Cmd_SetThermostatState(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sstate = m_pWebEm->FindValue("state");
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string sstate = req.findValue(&req, "state");
+			std::string idx = req.findValue(&req, "idx");
 			if (
 				(idx == "") ||
 				(sstate == "")
@@ -2473,7 +2473,7 @@ namespace http {
 
 		void CWebServer::Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string scriptname = m_pWebEm->FindValue("scriptname");
+			std::string scriptname = req.findValue(&req, "scriptname");
 			if (scriptname == "")
 				return;
 			if (scriptname.find("..") != std::string::npos)
@@ -2485,7 +2485,7 @@ namespace http {
 #endif
 			if (!file_exist(scriptname.c_str()))
 				return;
-			std::string script_params = m_pWebEm->FindValue("scriptparams");
+			std::string script_params = req.findValue(&req, "scriptparams");
 			std::string strparm = szUserDataFolder;
 			if (script_params != "")
 			{
@@ -2494,7 +2494,7 @@ namespace http {
 				else
 					strparm = script_params;
 			}
-			std::string sdirect = m_pWebEm->FindValue("direct");
+			std::string sdirect = req.findValue(&req, "direct");
 			if (sdirect == "true")
 			{
 				_log.Log(LOG_STATUS, "Executing script: %s", scriptname.c_str());
@@ -2521,7 +2521,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetCosts(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			char szTmp[100];
@@ -2631,7 +2631,7 @@ namespace http {
 				return;
 			}
 
-			bool bIsForced = (m_pWebEm->FindValue("forced") == "true");
+			bool bIsForced = (req.findValue(&req, "forced") == "true");
 
 			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
 			root["revision"] = m_mainworker.m_iRevision;
@@ -2656,8 +2656,8 @@ namespace http {
 
 		void CWebServer::Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			const std::string idx = m_pWebEm->FindValue("idx");
-			const std::string Date = m_pWebEm->FindValue("date");
+			const std::string idx = req.findValue(&req, "idx");
+			const std::string Date = req.findValue(&req, "date");
 			if (
 				(idx == "") ||
 				(Date == "")
@@ -2690,7 +2690,7 @@ namespace http {
 
 			if (cparam == "deleteallsubdevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2699,7 +2699,7 @@ namespace http {
 			}
 			else if (cparam == "deletesubdevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2708,8 +2708,8 @@ namespace http {
 			}
 			else if (cparam == "addsubdevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string subidx = m_pWebEm->FindValue("subidx");
+				std::string idx = req.findValue(&req, "idx");
+				std::string subidx = req.findValue(&req, "subidx");
 				if ((idx == "") || (subidx == ""))
 					return;
 				if (idx == subidx)
@@ -2732,12 +2732,12 @@ namespace http {
 			}
 			else if (cparam == "addscenedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string devidx = m_pWebEm->FindValue("devidx");
-				std::string isscene = m_pWebEm->FindValue("isscene");
-				std::string scommand = m_pWebEm->FindValue("command");
-				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
-				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
+				std::string idx = req.findValue(&req, "idx");
+				std::string devidx = req.findValue(&req, "devidx");
+				std::string isscene = req.findValue(&req, "isscene");
+				std::string scommand = req.findValue(&req, "command");
+				int ondelay = atoi(req.findValue(&req, "ondelay").c_str());
+				int offdelay = atoi(req.findValue(&req, "offdelay").c_str());
 
 				if (
 					(idx == "") ||
@@ -2745,8 +2745,8 @@ namespace http {
 					(isscene == "")
 					)
 					return;
-				int level = atoi(m_pWebEm->FindValue("level").c_str());
-				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
+				int level = atoi(req.findValue(&req, "level").c_str());
+				int hue = atoi(req.findValue(&req, "hue").c_str());
 
 				unsigned char command=0;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID=='%q')",
@@ -2831,11 +2831,11 @@ namespace http {
 			}
 			else if (cparam == "updatescenedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string devidx = m_pWebEm->FindValue("devidx");
-				std::string scommand = m_pWebEm->FindValue("command");
-				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
-				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
+				std::string idx = req.findValue(&req, "idx");
+				std::string devidx = req.findValue(&req, "devidx");
+				std::string scommand = req.findValue(&req, "command");
+				int ondelay = atoi(req.findValue(&req, "ondelay").c_str());
+				int offdelay = atoi(req.findValue(&req, "offdelay").c_str());
 
 				if (
 					(idx == "") ||
@@ -2854,8 +2854,8 @@ namespace http {
 					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
 					GetLightCommand(dType, sType, switchtype, scommand, command);
 				}
-				int level = atoi(m_pWebEm->FindValue("level").c_str());
-				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
+				int level = atoi(req.findValue(&req, "level").c_str());
+				int hue = atoi(req.findValue(&req, "hue").c_str());
 				root["status"] = "OK";
 				root["title"] = "UpdateSceneDevice";
 				result = m_sql.safe_query(
@@ -2864,7 +2864,7 @@ namespace http {
 			}
 			else if (cparam == "deletescenedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2874,7 +2874,7 @@ namespace http {
 			}
 			else if (cparam == "getsubdevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -2983,8 +2983,8 @@ namespace http {
 			}
 			else if (cparam == "getscenedevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string isscene = m_pWebEm->FindValue("isscene");
+				std::string idx = req.findValue(&req, "idx");
+				std::string isscene = req.findValue(&req, "isscene");
 
 				if (
 					(idx == "") ||
@@ -3040,10 +3040,10 @@ namespace http {
 			}
 			else if (cparam == "changescenedeviceorder")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string sway = m_pWebEm->FindValue("way");
+				std::string sway = req.findValue(&req, "way");
 				if (sway == "")
 					return;
 				bool bGoUp = (sway == "0");
@@ -3090,7 +3090,7 @@ namespace http {
 			}
 			else if (cparam == "deleteallscenedevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3321,7 +3321,7 @@ namespace http {
 			}
 			else if (cparam == "getcamactivedevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3380,11 +3380,11 @@ namespace http {
 			}
 			else if (cparam == "addcamactivedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string activeidx = m_pWebEm->FindValue("activeidx");
-				std::string sactivetype = m_pWebEm->FindValue("activetype");
-				std::string sactivewhen = m_pWebEm->FindValue("activewhen");
-				std::string sactivedelay = m_pWebEm->FindValue("activedelay");
+				std::string idx = req.findValue(&req, "idx");
+				std::string activeidx = req.findValue(&req, "activeidx");
+				std::string sactivetype = req.findValue(&req, "activetype");
+				std::string sactivewhen = req.findValue(&req, "activewhen");
+				std::string sactivedelay = req.findValue(&req, "activedelay");
 
 				if (
 					(idx == "") ||
@@ -3425,7 +3425,7 @@ namespace http {
 			}
 			else if (cparam == "deleteamactivedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3435,7 +3435,7 @@ namespace http {
 			}
 			else if (cparam == "deleteallactivecamdevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3447,9 +3447,9 @@ namespace http {
 			{
 				std::string notification_Title = "Domoticz test";
 				std::string notification_Message = "Domoticz test message!";
-				std::string subsystem = m_pWebEm->FindValue("subsystem");
+				std::string subsystem = req.findValue(&req, "subsystem");
 
-				m_notifications.ConfigFromGetvars(m_pWebEm, false);
+				m_notifications.ConfigFromGetvars(req, false);
 				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message, std::string(""), false)) {
 					root["status"] = "OK";
 				}
@@ -3458,9 +3458,9 @@ namespace http {
 			}
 			else if (cparam == "testswitch")
 			{
-				std::string hwdid = m_pWebEm->FindValue("hwdid");
-				std::string sswitchtype = m_pWebEm->FindValue("switchtype");
-				std::string slighttype = m_pWebEm->FindValue("lighttype");
+				std::string hwdid = req.findValue(&req, "hwdid");
+				std::string sswitchtype = req.findValue(&req, "switchtype");
+				std::string slighttype = req.findValue(&req, "lighttype");
 				if (
 					(hwdid == "") ||
 					(sswitchtype == "") ||
@@ -3479,8 +3479,8 @@ namespace http {
 					//EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
-					std::string sgroupcode = m_pWebEm->FindValue("groupcode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string sgroupcode = req.findValue(&req, "groupcode");
+					sunitcode = req.findValue(&req, "unitcode");
 					int iUnitTest = atoi(sunitcode.c_str());	//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
 					if (
 						(sunitcode == "") ||
@@ -3516,7 +3516,7 @@ namespace http {
 					dtype = pTypeLighting1;
 					subtype = sTypeIMPULS;
 					devid = "0";
-					sunitcode = m_pWebEm->FindValue("unitcode"); //Unit code = GPIO number
+					sunitcode = req.findValue(&req, "unitcode"); //Unit code = GPIO number
 
 					if (sunitcode == "") {
 						root["status"] = "ERROR";
@@ -3560,8 +3560,8 @@ namespace http {
 				{
 					dtype = pTypeLighting1;
 					subtype = lighttype;
-					std::string shousecode = m_pWebEm->FindValue("housecode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string shousecode = req.findValue(&req, "housecode");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -3573,8 +3573,8 @@ namespace http {
 				{
 					dtype = pTypeLighting2;
 					subtype = lighttype - 20;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = req.findValue(&req, "id");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3586,8 +3586,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = req.findValue(&req, "id");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3603,9 +3603,9 @@ namespace http {
 					//Blyss
 					dtype = pTypeLighting6;
 					subtype = lighttype - 60;
-					std::string sgroupcode = m_pWebEm->FindValue("groupcode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
-					std::string id = m_pWebEm->FindValue("id");
+					std::string sgroupcode = req.findValue(&req, "groupcode");
+					sunitcode = req.findValue(&req, "unitcode");
+					std::string id = req.findValue(&req, "id");
 					if (
 						(sgroupcode == "") ||
 						(sunitcode == "") ||
@@ -3621,8 +3621,8 @@ namespace http {
 						//Chime/ByronSX
 						dtype = pTypeChime;
 						subtype = sTypeByronSX;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = req.findValue(&req, "id");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3665,8 +3665,8 @@ namespace http {
 						//Curtain Harrison
 						dtype = pTypeCurtain;
 						subtype = sTypeHarrison;
-						std::string shousecode = m_pWebEm->FindValue("housecode");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string shousecode = req.findValue(&req, "housecode");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(shousecode == "") ||
 							(sunitcode == "")
@@ -3679,8 +3679,8 @@ namespace http {
 						//RFY
 						dtype = pTypeRFY;
 						subtype = sTypeRFY;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = req.findValue(&req, "id");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3693,7 +3693,7 @@ namespace http {
 						//Meiantech
 						dtype = pTypeSecurity1;
 						subtype = sTypeMeiantech;
-						std::string id = m_pWebEm->FindValue("id");
+						std::string id = req.findValue(&req, "id");
 						if (
 							(id == "")
 							)
@@ -3706,7 +3706,7 @@ namespace http {
 						//HE105
 						dtype = pTypeThermostat2;
 						subtype = sTypeHE105;
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (sunitcode == "")
 							return;
 						//convert to hex, and we have our Unit Code
@@ -3723,8 +3723,8 @@ namespace http {
 						//ASA
 						dtype = pTypeRFY;
 						subtype = sTypeASA;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = req.findValue(&req, "id");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3736,8 +3736,8 @@ namespace http {
 					{
 						dtype = pTypeBlinds;
 						subtype = lighttype-200;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = req.findValue(&req, "id");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3753,8 +3753,8 @@ namespace http {
 						//Smartwares Radiator
 						dtype = pTypeRadiator1;
 						subtype = sTypeSmartwaresSwitchRadiator;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = req.findValue(&req, "id");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3823,11 +3823,11 @@ namespace http {
 			}
 			else if (cparam == "addswitch")
 			{
-				std::string hwdid = m_pWebEm->FindValue("hwdid");
-				std::string name = m_pWebEm->FindValue("name");
-				std::string sswitchtype = m_pWebEm->FindValue("switchtype");
-				std::string slighttype = m_pWebEm->FindValue("lighttype");
-				std::string maindeviceidx = m_pWebEm->FindValue("maindeviceidx");
+				std::string hwdid = req.findValue(&req, "hwdid");
+				std::string name = req.findValue(&req, "name");
+				std::string sswitchtype = req.findValue(&req, "switchtype");
+				std::string slighttype = req.findValue(&req, "lighttype");
+				std::string maindeviceidx = req.findValue(&req, "maindeviceidx");
 
 				if (
 					(hwdid == "") ||
@@ -3848,8 +3848,8 @@ namespace http {
 					//EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
-					sunitcode = m_pWebEm->FindValue("unitcode");
-					std::string sgroupcode = m_pWebEm->FindValue("groupcode");
+					sunitcode = req.findValue(&req, "unitcode");
+					std::string sgroupcode = req.findValue(&req, "groupcode");
 					int iUnitTest = atoi(sunitcode.c_str());	//gives us 128 devices we can control, should be enough!
 					if (
 						(sunitcode == "") ||
@@ -3895,7 +3895,7 @@ namespace http {
 					dtype = pTypeLighting1;
 					subtype = sTypeIMPULS;
 					devid = "0";
-					sunitcode = m_pWebEm->FindValue("unitcode"); //Unit code = GPIO number
+					sunitcode = req.findValue(&req, "unitcode"); //Unit code = GPIO number
 
 					if (sunitcode == "") {
 						return;
@@ -3922,8 +3922,8 @@ namespace http {
 				{
 					dtype = pTypeLighting1;
 					subtype = lighttype;
-					std::string shousecode = m_pWebEm->FindValue("housecode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string shousecode = req.findValue(&req, "housecode");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -3935,8 +3935,8 @@ namespace http {
 				{
 					dtype = pTypeLighting2;
 					subtype = lighttype - 20;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = req.findValue(&req, "id");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3948,8 +3948,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = req.findValue(&req, "id");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3965,9 +3965,9 @@ namespace http {
 					//Blyss
 					dtype = pTypeLighting6;
 					subtype = lighttype - 60;
-					std::string sgroupcode = m_pWebEm->FindValue("groupcode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
-					std::string id = m_pWebEm->FindValue("id");
+					std::string sgroupcode = req.findValue(&req, "groupcode");
+					sunitcode = req.findValue(&req, "unitcode");
+					std::string id = req.findValue(&req, "id");
 					if (
 						(sgroupcode == "") ||
 						(sunitcode == "") ||
@@ -3981,8 +3981,8 @@ namespace http {
 					//Curtain Harrison
 					dtype = pTypeCurtain;
 					subtype = sTypeHarrison;
-					std::string shousecode = m_pWebEm->FindValue("housecode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string shousecode = req.findValue(&req, "housecode");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -3995,8 +3995,8 @@ namespace http {
 					//RFY
 					dtype = pTypeRFY;
 					subtype = sTypeRFY;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = req.findValue(&req, "id");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -4009,7 +4009,7 @@ namespace http {
 					//Meiantech
 					dtype = pTypeSecurity1;
 					subtype = sTypeMeiantech;
-					std::string id = m_pWebEm->FindValue("id");
+					std::string id = req.findValue(&req, "id");
 					if (
 						(id == "")
 						)
@@ -4022,7 +4022,7 @@ namespace http {
 					//HE105
 					dtype = pTypeThermostat2;
 					subtype = sTypeHE105;
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (sunitcode == "")
 						return;
 					//convert to hex, and we have our Unit Code
@@ -4039,8 +4039,8 @@ namespace http {
 					//ASA
 					dtype = pTypeRFY;
 					subtype = sTypeASA;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = req.findValue(&req, "id");
+					sunitcode = req.findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -4055,8 +4055,8 @@ namespace http {
 						//Chime/ByronSX
 						dtype = pTypeChime;
 						subtype = sTypeByronSX;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = req.findValue(&req, "id");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4099,7 +4099,7 @@ namespace http {
 						//HE105
 						dtype = pTypeThermostat2;
 						subtype = sTypeHE105;
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (sunitcode == "")
 							return;
 						//convert to hex, and we have our Unit Code
@@ -4115,8 +4115,8 @@ namespace http {
 					{
 						dtype = pTypeBlinds;
 						subtype = lighttype-200;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = req.findValue(&req, "id");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4130,8 +4130,8 @@ namespace http {
 					else if (lighttype == 301)
 					{
 						//Smartwares Radiator
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = req.findValue(&req, "id");
+						sunitcode = req.findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4272,7 +4272,7 @@ namespace http {
 			}
 			else if (cparam == "getnotificationtypes")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				//First get Device Type/SubType
@@ -4327,7 +4327,7 @@ namespace http {
 					}
 					if (switchtype == STYPE_Media)
 					{
-						std::string idx = m_pWebEm->FindValue("idx");
+						std::string idx = req.findValue(&req, "idx");
 						std::vector<std::vector<std::string> > result;
 						_eHardwareTypes type;
 
@@ -4692,17 +4692,17 @@ namespace http {
 			}
 			else if (cparam == "addnotification")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 
-				std::string stype = m_pWebEm->FindValue("ttype");
-				std::string swhen = m_pWebEm->FindValue("twhen");
-				std::string svalue = m_pWebEm->FindValue("tvalue");
-				std::string scustommessage = m_pWebEm->FindValue("tmsg");
-				std::string sactivesystems = m_pWebEm->FindValue("tsystems");
-				std::string spriority = m_pWebEm->FindValue("tpriority");
-				std::string ssendalways = m_pWebEm->FindValue("tsendalways");
+				std::string stype = req.findValue(&req, "ttype");
+				std::string swhen = req.findValue(&req, "twhen");
+				std::string svalue = req.findValue(&req, "tvalue");
+				std::string scustommessage = req.findValue(&req, "tmsg");
+				std::string sactivesystems = req.findValue(&req, "tsystems");
+				std::string spriority = req.findValue(&req, "tpriority");
+				std::string ssendalways = req.findValue(&req, "tsendalways");
 				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()))
 					return;
 
@@ -4730,18 +4730,18 @@ namespace http {
 			}
 			else if (cparam == "updatenotification")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string devidx = m_pWebEm->FindValue("devidx");
+				std::string idx = req.findValue(&req, "idx");
+				std::string devidx = req.findValue(&req, "devidx");
 				if ((idx == "") || (devidx == ""))
 					return;
 
-				std::string stype = m_pWebEm->FindValue("ttype");
-				std::string swhen = m_pWebEm->FindValue("twhen");
-				std::string svalue = m_pWebEm->FindValue("tvalue");
-				std::string scustommessage = m_pWebEm->FindValue("tmsg");
-				std::string sactivesystems = m_pWebEm->FindValue("tsystems");
-				std::string spriority = m_pWebEm->FindValue("tpriority");
-				std::string ssendalways = m_pWebEm->FindValue("tsendalways");
+				std::string stype = req.findValue(&req, "ttype");
+				std::string swhen = req.findValue(&req, "twhen");
+				std::string svalue = req.findValue(&req, "tvalue");
+				std::string scustommessage = req.findValue(&req, "tmsg");
+				std::string sactivesystems = req.findValue(&req, "tsystems");
+				std::string spriority = req.findValue(&req, "tpriority");
+				std::string ssendalways = req.findValue(&req, "tsendalways");
 
 				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()))
 					return;
@@ -4771,7 +4771,7 @@ namespace http {
 			}
 			else if (cparam == "deletenotification")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -4782,11 +4782,11 @@ namespace http {
 			}
 			else if (cparam == "switchdeviceorder")
 			{
-				std::string idx1 = m_pWebEm->FindValue("idx1");
-				std::string idx2 = m_pWebEm->FindValue("idx2");
+				std::string idx1 = req.findValue(&req, "idx1");
+				std::string idx2 = req.findValue(&req, "idx2");
 				if ((idx1 == "") || (idx2 == ""))
 					return;
-				std::string sroomid = m_pWebEm->FindValue("roomid");
+				std::string sroomid = req.findValue(&req, "roomid");
 				int roomid = atoi(sroomid.c_str());
 
 				std::string Order1, Order2;
@@ -4864,8 +4864,8 @@ namespace http {
 			}
 			else if (cparam == "switchsceneorder")
 			{
-				std::string idx1 = m_pWebEm->FindValue("idx1");
-				std::string idx2 = m_pWebEm->FindValue("idx2");
+				std::string idx1 = req.findValue(&req, "idx1");
+				std::string idx2 = req.findValue(&req, "idx2");
 				if ((idx1 == "") || (idx2 == ""))
 					return;
 
@@ -4905,7 +4905,7 @@ namespace http {
 			}
 			else if (cparam == "clearnotifications")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -4916,13 +4916,13 @@ namespace http {
 			}
 			else if (cparam == "addcamera")
 			{
-				std::string name = m_pWebEm->FindValue("name");
-				std::string senabled = m_pWebEm->FindValue("enabled");
-				std::string address = m_pWebEm->FindValue("address");
-				std::string sport = m_pWebEm->FindValue("port");
-				std::string username = m_pWebEm->FindValue("username");
-				std::string password = m_pWebEm->FindValue("password");
-				std::string timageurl = m_pWebEm->FindValue("imageurl");
+				std::string name = req.findValue(&req, "name");
+				std::string senabled = req.findValue(&req, "enabled");
+				std::string address = req.findValue(&req, "address");
+				std::string sport = req.findValue(&req, "port");
+				std::string username = req.findValue(&req, "username");
+				std::string password = req.findValue(&req, "password");
+				std::string timageurl = req.findValue(&req, "imageurl");
 				if (
 					(name == "") ||
 					(address == "") ||
@@ -4953,16 +4953,16 @@ namespace http {
 			}
 			else if (cparam == "updatecamera")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string name = m_pWebEm->FindValue("name");
-				std::string senabled = m_pWebEm->FindValue("enabled");
-				std::string address = m_pWebEm->FindValue("address");
-				std::string sport = m_pWebEm->FindValue("port");
-				std::string username = m_pWebEm->FindValue("username");
-				std::string password = m_pWebEm->FindValue("password");
-				std::string timageurl = m_pWebEm->FindValue("imageurl");
+				std::string name = req.findValue(&req, "name");
+				std::string senabled = req.findValue(&req, "enabled");
+				std::string address = req.findValue(&req, "address");
+				std::string sport = req.findValue(&req, "port");
+				std::string username = req.findValue(&req, "username");
+				std::string password = req.findValue(&req, "password");
+				std::string timageurl = req.findValue(&req, "imageurl");
 				if (
 					(name == "") ||
 					(senabled == "") ||
@@ -4997,7 +4997,7 @@ namespace http {
 			}
 			else if (cparam == "deletecamera")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5020,12 +5020,12 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string senabled = m_pWebEm->FindValue("enabled");
-				std::string username = m_pWebEm->FindValue("username");
-				std::string password = m_pWebEm->FindValue("password");
-				std::string srights = m_pWebEm->FindValue("rights");
-				std::string sRemoteSharing = m_pWebEm->FindValue("RemoteSharing");
-				std::string sTabsEnabled = m_pWebEm->FindValue("TabsEnabled");
+				std::string senabled = req.findValue(&req, "enabled");
+				std::string username = req.findValue(&req, "username");
+				std::string password = req.findValue(&req, "password");
+				std::string srights = req.findValue(&req, "rights");
+				std::string sRemoteSharing = req.findValue(&req, "RemoteSharing");
+				std::string sTabsEnabled = req.findValue(&req, "TabsEnabled");
 				if (
 					(senabled == "") ||
 					(username == "") ||
@@ -5071,15 +5071,15 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string senabled = m_pWebEm->FindValue("enabled");
-				std::string username = m_pWebEm->FindValue("username");
-				std::string password = m_pWebEm->FindValue("password");
-				std::string srights = m_pWebEm->FindValue("rights");
-				std::string sRemoteSharing = m_pWebEm->FindValue("RemoteSharing");
-				std::string sTabsEnabled = m_pWebEm->FindValue("TabsEnabled");
+				std::string senabled = req.findValue(&req, "enabled");
+				std::string username = req.findValue(&req, "username");
+				std::string password = req.findValue(&req, "password");
+				std::string srights = req.findValue(&req, "rights");
+				std::string sRemoteSharing = req.findValue(&req, "RemoteSharing");
+				std::string sTabsEnabled = req.findValue(&req, "TabsEnabled");
 				if (
 					(senabled == "") ||
 					(username == "") ||
@@ -5127,7 +5127,7 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -5142,7 +5142,7 @@ namespace http {
 			}
 			else if (cparam == "clearlightlog")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				//First get Device Type/SubType
@@ -5225,8 +5225,8 @@ namespace http {
 			} //learnsw
 			else if (cparam == "makefavorite")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string sisfavorite = m_pWebEm->FindValue("isfavorite");
+				std::string idx = req.findValue(&req, "idx");
+				std::string sisfavorite = req.findValue(&req, "isfavorite");
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
@@ -5237,8 +5237,8 @@ namespace http {
 			} //makefavorite
 			else if (cparam == "makescenefavorite")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string sisfavorite = m_pWebEm->FindValue("isfavorite");
+				std::string idx = req.findValue(&req, "idx");
+				std::string sisfavorite = req.findValue(&req, "isfavorite");
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
@@ -5263,8 +5263,8 @@ namespace http {
 				if (urights < 1)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string switchcmd = m_pWebEm->FindValue("switchcmd");
+				std::string idx = req.findValue(&req, "idx");
+				std::string switchcmd = req.findValue(&req, "switchcmd");
 
 				if ((idx == "") || (switchcmd == ""))
 					return;
@@ -5293,7 +5293,7 @@ namespace http {
 			}
 			else if (cparam == "verifypasscode")
 			{
-				std::string passcode = m_pWebEm->FindValue("passcode");
+				std::string passcode = req.findValue(&req, "passcode");
 				if (passcode == "")
 					return;
 				//Check if passcode is correct
@@ -5324,18 +5324,18 @@ namespace http {
 				if (urights<1)
 					return;
 
-				std::string idx=m_pWebEm->FindValue("idx");
-				std::string switchcmd=m_pWebEm->FindValue("status");
-				std::string until=m_pWebEm->FindValue("until");//optional until date / time as applicable
-				std::string action=m_pWebEm->FindValue("action");//Run action or not (update status only)
-				std::string onlyonchange=m_pWebEm->FindValue("ooc");//No update unless the value changed (check if updated)
+				std::string idx=req.findValue(&req, "idx");
+				std::string switchcmd=req.findValue(&req, "status");
+				std::string until=req.findValue(&req, "until");//optional until date / time as applicable
+				std::string action=req.findValue(&req, "action");//Run action or not (update status only)
+				std::string onlyonchange=req.findValue(&req, "ooc");//No update unless the value changed (check if updated)
 				//The on action is used to call a script to update the real device so we only want to use it when altering the status in the Domoticz Web Client
 				//If we're posting the status from the real device to domoticz we don't want to run the on action script ("action"!=1) to avoid loops and contention
 				//""... we only want to log a change (and trigger an event) when the status has actually changed ("ooc"==1) i.e. suppress non transient updates
 				if ((idx=="")||(switchcmd==""))
 					return;
 
-				std::string passcode=m_pWebEm->FindValue("passcode");
+				std::string passcode=req.findValue(&req, "passcode");
 				if (passcode.size()>0) 
 				{
 					//Check if passcode is correct
@@ -5374,14 +5374,14 @@ namespace http {
 				if (urights < 1)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string switchcmd = m_pWebEm->FindValue("switchcmd");
-				std::string level = m_pWebEm->FindValue("level");
-				std::string onlyonchange=m_pWebEm->FindValue("ooc");//No update unless the value changed (check if updated)
+				std::string idx = req.findValue(&req, "idx");
+				std::string switchcmd = req.findValue(&req, "switchcmd");
+				std::string level = req.findValue(&req, "level");
+				std::string onlyonchange=req.findValue(&req, "ooc");//No update unless the value changed (check if updated)
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = m_pWebEm->FindValue("passcode");
+				std::string passcode = req.findValue(&req, "passcode");
 				if (passcode.size() > 0)
 				{
 					//Check if passcode is correct
@@ -5442,12 +5442,12 @@ namespace http {
 				if (urights < 1)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string switchcmd = m_pWebEm->FindValue("switchcmd");
+				std::string idx = req.findValue(&req, "idx");
+				std::string switchcmd = req.findValue(&req, "switchcmd");
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = m_pWebEm->FindValue("passcode");
+				std::string passcode = req.findValue(&req, "passcode");
 				if (passcode.size() > 0)
 				{
 					//Check if passcode is correct
@@ -5515,8 +5515,8 @@ namespace http {
 			}
 			else if (cparam == "setsecstatus")
 			{
-				std::string ssecstatus = m_pWebEm->FindValue("secstatus");
-				std::string seccode = m_pWebEm->FindValue("seccode");
+				std::string ssecstatus = req.findValue(&req, "secstatus");
+				std::string seccode = req.findValue(&req, "seccode");
 				if ((ssecstatus == "") || (seccode == ""))
 				{
 					root["message"] = "WRONG CODE";
@@ -5538,10 +5538,10 @@ namespace http {
 			}
 			else if (cparam == "setcolbrightnessvalue")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string hue = m_pWebEm->FindValue("hue");
-				std::string brightness = m_pWebEm->FindValue("brightness");
-				std::string iswhite = m_pWebEm->FindValue("iswhite");
+				std::string idx = req.findValue(&req, "idx");
+				std::string hue = req.findValue(&req, "hue");
+				std::string brightness = req.findValue(&req, "brightness");
+				std::string iswhite = req.findValue(&req, "iswhite");
 
 				if ((idx == "") || (hue == "") || (brightness == "") || (iswhite == ""))
 				{
@@ -5571,7 +5571,7 @@ namespace http {
 			}
 			else if (cparam == "brightnessup")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5587,7 +5587,7 @@ namespace http {
 			}
 			else if (cparam == "brightnessdown")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5603,7 +5603,7 @@ namespace http {
 			}
 			else if (cparam == "discoup")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5619,7 +5619,7 @@ namespace http {
 			}
 			else if (cparam == "discodown")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5635,7 +5635,7 @@ namespace http {
 			}
 			else if (cparam == "speedup")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5651,7 +5651,7 @@ namespace http {
 			}
 			else if (cparam == "speeduplong")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5667,7 +5667,7 @@ namespace http {
 			}
 			else if (cparam == "speeddown")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5683,7 +5683,7 @@ namespace http {
 			}
 			else if (cparam == "warmer")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5699,7 +5699,7 @@ namespace http {
 			}
 			else if (cparam == "cooler")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5715,7 +5715,7 @@ namespace http {
 			}
 			else if (cparam == "fulllight")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5731,7 +5731,7 @@ namespace http {
 			}
 			else if (cparam == "nightlight")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5794,9 +5794,9 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string name = m_pWebEm->FindValue("name");
-				std::string imagefile = m_pWebEm->FindValue("image");
-				std::string scalefactor = m_pWebEm->FindValue("scalefactor");
+				std::string name = req.findValue(&req, "name");
+				std::string imagefile = req.findValue(&req, "image");
+				std::string scalefactor = req.findValue(&req, "scalefactor");
 				if (
 					(name == "") ||
 					(imagefile == "") ||
@@ -5828,12 +5828,12 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string name = m_pWebEm->FindValue("name");
-				std::string imagefile = m_pWebEm->FindValue("image");
-				std::string scalefactor = m_pWebEm->FindValue("scalefactor");
+				std::string name = req.findValue(&req, "name");
+				std::string imagefile = req.findValue(&req, "image");
+				std::string scalefactor = req.findValue(&req, "scalefactor");
 				if (
 					(name == "") ||
 					(imagefile == "")
@@ -5866,7 +5866,7 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5889,10 +5889,10 @@ namespace http {
 			}
 			else if (cparam == "changefloorplanorder")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string sway = m_pWebEm->FindValue("way");
+				std::string sway = req.findValue(&req, "way");
 				if (sway == "")
 					return;
 				bool bGoUp = (sway == "0");
@@ -5958,7 +5958,7 @@ namespace http {
 			}
 			else if (cparam == "getfloorplanplans")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5997,8 +5997,8 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string planidx = m_pWebEm->FindValue("planidx");
+				std::string idx = req.findValue(&req, "idx");
+				std::string planidx = req.findValue(&req, "planidx");
 				if (
 					(idx == "") ||
 					(planidx == "")
@@ -6028,8 +6028,8 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string planidx = m_pWebEm->FindValue("planidx");
-				std::string planarea = m_pWebEm->FindValue("area");
+				std::string planidx = req.findValue(&req, "planidx");
+				std::string planarea = req.findValue(&req, "area");
 				if (planidx == "")
 					return;
 				root["status"] = "OK";
@@ -6056,7 +6056,7 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = req.findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -6242,53 +6242,53 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string Latitude = m_pWebEm->FindValue("Latitude");
-			std::string Longitude = m_pWebEm->FindValue("Longitude");
+			std::string Latitude = req.findValue(&req, "Latitude");
+			std::string Longitude = req.findValue(&req, "Longitude");
 			if ((Latitude != "") && (Longitude != ""))
 			{
 				std::string LatLong = Latitude + ";" + Longitude;
 				m_sql.UpdatePreferencesVar("Location", LatLong.c_str());
 				m_mainworker.GetSunSettings();
 			}
-			m_notifications.ConfigFromGetvars(m_pWebEm, true);
-			std::string DashboardType = m_pWebEm->FindValue("DashboardType");
+			m_notifications.ConfigFromGetvars(req, true);
+			std::string DashboardType = req.findValue(&req, "DashboardType");
 			m_sql.UpdatePreferencesVar("DashboardType", atoi(DashboardType.c_str()));
-			std::string MobileType = m_pWebEm->FindValue("MobileType");
+			std::string MobileType = req.findValue(&req, "MobileType");
 			m_sql.UpdatePreferencesVar("MobileType", atoi(MobileType.c_str()));
 
-			int nUnit = atoi(m_pWebEm->FindValue("WindUnit").c_str());
+			int nUnit = atoi(req.findValue(&req, "WindUnit").c_str());
 			m_sql.UpdatePreferencesVar("WindUnit", nUnit);
 			m_sql.m_windunit = (_eWindUnit)nUnit;
 
-			nUnit = atoi(m_pWebEm->FindValue("TempUnit").c_str());
+			nUnit = atoi(req.findValue(&req, "TempUnit").c_str());
 			m_sql.UpdatePreferencesVar("TempUnit", nUnit);
 			m_sql.m_tempunit = (_eTempUnit)nUnit;
 
 			m_sql.SetUnitsAndScale();
 
-			std::string AuthenticationMethod = m_pWebEm->FindValue("AuthenticationMethod");
+			std::string AuthenticationMethod = req.findValue(&req, "AuthenticationMethod");
 			_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
 			m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
 			m_pWebEm->SetAuthenticationMethod(amethod);
 
-			std::string ReleaseChannel = m_pWebEm->FindValue("ReleaseChannel");
+			std::string ReleaseChannel = req.findValue(&req, "ReleaseChannel");
 			m_sql.UpdatePreferencesVar("ReleaseChannel", atoi(ReleaseChannel.c_str()));
 
-			std::string LightHistoryDays = m_pWebEm->FindValue("LightHistoryDays");
+			std::string LightHistoryDays = req.findValue(&req, "LightHistoryDays");
 			m_sql.UpdatePreferencesVar("LightHistoryDays", atoi(LightHistoryDays.c_str()));
 
-			std::string s5MinuteHistoryDays = m_pWebEm->FindValue("ShortLogDays");
+			std::string s5MinuteHistoryDays = req.findValue(&req, "ShortLogDays");
 			m_sql.UpdatePreferencesVar("5MinuteHistoryDays", atoi(s5MinuteHistoryDays.c_str()));
 
-			std::string sElectricVoltage = m_pWebEm->FindValue("ElectricVoltage");
+			std::string sElectricVoltage = req.findValue(&req, "ElectricVoltage");
 			m_sql.UpdatePreferencesVar("ElectricVoltage", atoi(sElectricVoltage.c_str()));
 
-			std::string sCM113DisplayType = m_pWebEm->FindValue("CM113DisplayType");
+			std::string sCM113DisplayType = req.findValue(&req, "CM113DisplayType");
 			m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(sCM113DisplayType.c_str()));
 
-			std::string WebUserName = m_pWebEm->FindValue("WebUserName");
-			std::string WebPassword = m_pWebEm->FindValue("WebPassword");
-			std::string WebLocalNetworks = m_pWebEm->FindValue("WebLocalNetworks");
+			std::string WebUserName = req.findValue(&req, "WebUserName");
+			std::string WebPassword = req.findValue(&req, "WebPassword");
+			std::string WebLocalNetworks = req.findValue(&req, "WebLocalNetworks");
 			WebUserName = CURLEncode::URLDecode(WebUserName);
 			WebPassword = CURLEncode::URLDecode(WebPassword);
 			WebLocalNetworks = CURLEncode::URLDecode(WebLocalNetworks);
@@ -6326,7 +6326,7 @@ namespace http {
 				session.rights = -1;
 			}
 
-			std::string SecPassword = m_pWebEm->FindValue("SecPassword");
+			std::string SecPassword = req.findValue(&req, "SecPassword");
 			SecPassword = CURLEncode::URLDecode(SecPassword);
 			if (SecPassword.size() != 32)
 			{
@@ -6334,7 +6334,7 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("SecPassword", SecPassword.c_str());
 
-			std::string ProtectionPassword = m_pWebEm->FindValue("ProtectionPassword");
+			std::string ProtectionPassword = req.findValue(&req, "ProtectionPassword");
 			ProtectionPassword = CURLEncode::URLDecode(ProtectionPassword);
 			if (ProtectionPassword.size() != 32)
 			{
@@ -6342,9 +6342,9 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword.c_str());
 
-			int EnergyDivider = atoi(m_pWebEm->FindValue("EnergyDivider").c_str());
-			int GasDivider = atoi(m_pWebEm->FindValue("GasDivider").c_str());
-			int WaterDivider = atoi(m_pWebEm->FindValue("WaterDivider").c_str());
+			int EnergyDivider = atoi(req.findValue(&req, "EnergyDivider").c_str());
+			int GasDivider = atoi(req.findValue(&req, "GasDivider").c_str());
+			int WaterDivider = atoi(req.findValue(&req, "WaterDivider").c_str());
 			if (EnergyDivider < 1)
 				EnergyDivider = 1000;
 			if (GasDivider < 1)
@@ -6355,16 +6355,16 @@ namespace http {
 			m_sql.UpdatePreferencesVar("MeterDividerGas", GasDivider);
 			m_sql.UpdatePreferencesVar("MeterDividerWater", WaterDivider);
 
-			std::string scheckforupdates = m_pWebEm->FindValue("checkforupdates");
+			std::string scheckforupdates = req.findValue(&req, "checkforupdates");
 			m_sql.UpdatePreferencesVar("UseAutoUpdate", (scheckforupdates == "on" ? 1 : 0));
 
-			std::string senableautobackup = m_pWebEm->FindValue("enableautobackup");
+			std::string senableautobackup = req.findValue(&req, "enableautobackup");
 			m_sql.UpdatePreferencesVar("UseAutoBackup", (senableautobackup == "on" ? 1 : 0));
 
-			float CostEnergy = static_cast<float>(atof(m_pWebEm->FindValue("CostEnergy").c_str()));
-			float CostEnergyT2 = static_cast<float>(atof(m_pWebEm->FindValue("CostEnergyT2").c_str()));
-			float CostGas = static_cast<float>(atof(m_pWebEm->FindValue("CostGas").c_str()));
-			float CostWater = static_cast<float>(atof(m_pWebEm->FindValue("CostWater").c_str()));
+			float CostEnergy = static_cast<float>(atof(req.findValue(&req, "CostEnergy").c_str()));
+			float CostEnergyT2 = static_cast<float>(atof(req.findValue(&req, "CostEnergyT2").c_str()));
+			float CostGas = static_cast<float>(atof(req.findValue(&req, "CostGas").c_str()));
+			float CostWater = static_cast<float>(atof(req.findValue(&req, "CostWater").c_str()));
 			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy*10000.0f));
 			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2*10000.0f));
 			m_sql.UpdatePreferencesVar("CostGas", int(CostGas*10000.0f));
@@ -6374,59 +6374,59 @@ namespace http {
 			int rnvalue = 0;
 
 			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
-			rnvalue = atoi(m_pWebEm->FindValue("ActiveTimerPlan").c_str());
+			rnvalue = atoi(req.findValue(&req, "ActiveTimerPlan").c_str());
 			if (rnOldvalue != rnvalue)
 			{
 				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
 				m_sql.m_ActiveTimerPlan = rnvalue;
 				m_mainworker.m_scheduler.ReloadSchedules();
 			}
-			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
-			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
-			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(m_pWebEm->FindValue("DisplayPowerUsageInkWhGraph").c_str()));
+			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(req.findValue(&req, "DoorbellCommand").c_str()));
+			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(req.findValue(&req, "SmartMeterType").c_str()));
+			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(req.findValue(&req, "DisplayPowerUsageInkWhGraph").c_str()));
 
-			std::string EnableTabFloorplans = m_pWebEm->FindValue("EnableTabFloorplans");
+			std::string EnableTabFloorplans = req.findValue(&req, "EnableTabFloorplans");
 			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
-			std::string EnableTabLights = m_pWebEm->FindValue("EnableTabLights");
+			std::string EnableTabLights = req.findValue(&req, "EnableTabLights");
 			m_sql.UpdatePreferencesVar("EnableTabLights", (EnableTabLights == "on" ? 1 : 0));
-			std::string EnableTabTemp = m_pWebEm->FindValue("EnableTabTemp");
+			std::string EnableTabTemp = req.findValue(&req, "EnableTabTemp");
 			m_sql.UpdatePreferencesVar("EnableTabTemp", (EnableTabTemp == "on" ? 1 : 0));
-			std::string EnableTabWeather = m_pWebEm->FindValue("EnableTabWeather");
+			std::string EnableTabWeather = req.findValue(&req, "EnableTabWeather");
 			m_sql.UpdatePreferencesVar("EnableTabWeather", (EnableTabWeather == "on" ? 1 : 0));
-			std::string EnableTabUtility = m_pWebEm->FindValue("EnableTabUtility");
+			std::string EnableTabUtility = req.findValue(&req, "EnableTabUtility");
 			m_sql.UpdatePreferencesVar("EnableTabUtility", (EnableTabUtility == "on" ? 1 : 0));
-			std::string EnableTabScenes = m_pWebEm->FindValue("EnableTabScenes");
+			std::string EnableTabScenes = req.findValue(&req, "EnableTabScenes");
 			m_sql.UpdatePreferencesVar("EnableTabScenes", (EnableTabScenes == "on" ? 1 : 0));
-			std::string EnableTabCustom = m_pWebEm->FindValue("EnableTabCustom");
+			std::string EnableTabCustom = req.findValue(&req, "EnableTabCustom");
 			m_sql.UpdatePreferencesVar("EnableTabCustom", (EnableTabCustom == "on" ? 1 : 0));
 
-			m_sql.UpdatePreferencesVar("NotificationSensorInterval", atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
-			m_sql.UpdatePreferencesVar("NotificationSwitchInterval", atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
+			m_sql.UpdatePreferencesVar("NotificationSensorInterval", atoi(req.findValue(&req, "NotificationSensorInterval").c_str()));
+			m_sql.UpdatePreferencesVar("NotificationSwitchInterval", atoi(req.findValue(&req, "NotificationSwitchInterval").c_str()));
 
-			std::string RaspCamParams = m_pWebEm->FindValue("RaspCamParams");
+			std::string RaspCamParams = req.findValue(&req, "RaspCamParams");
 			if (RaspCamParams != "")
 				m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
 			
-            std::string UVCParams = m_pWebEm->FindValue("UVCParams");
+            std::string UVCParams = req.findValue(&req, "UVCParams");
 			if (UVCParams != "")
 				m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
 
-			std::string EnableNewHardware = m_pWebEm->FindValue("AcceptNewHardware");
+			std::string EnableNewHardware = req.findValue(&req, "AcceptNewHardware");
 			int iEnableNewHardware = (EnableNewHardware == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AcceptNewHardware", iEnableNewHardware);
 			m_sql.m_bAcceptNewHardware = (iEnableNewHardware == 1);
 
-			std::string HideDisabledHardwareSensors = m_pWebEm->FindValue("HideDisabledHardwareSensors");
+			std::string HideDisabledHardwareSensors = req.findValue(&req, "HideDisabledHardwareSensors");
 			int iHideDisabledHardwareSensors = (HideDisabledHardwareSensors == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", iHideDisabledHardwareSensors);
 
-			std::string ShowUpdateEffect = m_pWebEm->FindValue("ShowUpdateEffect");
+			std::string ShowUpdateEffect = req.findValue(&req, "ShowUpdateEffect");
 			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
-			std::string DisableEventScriptSystem = m_pWebEm->FindValue("DisableEventScriptSystem");
+			std::string DisableEventScriptSystem = req.findValue(&req, "DisableEventScriptSystem");
 			int iDisableEventScriptSystem = (DisableEventScriptSystem == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("DisableEventScriptSystem", iDisableEventScriptSystem);
 			m_sql.m_bDisableEventSystem = (iDisableEventScriptSystem == 1);
@@ -6436,7 +6436,7 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
-			std::string EnableWidgetOrdering = m_pWebEm->FindValue("AllowWidgetOrdering");
+			std::string EnableWidgetOrdering = req.findValue(&req, "AllowWidgetOrdering");
 			int iEnableAllowWidgetOrdering = (EnableWidgetOrdering == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AllowWidgetOrdering", iEnableAllowWidgetOrdering);
 			m_sql.m_bAllowWidgetOrdering = (iEnableAllowWidgetOrdering == 1);
@@ -6444,7 +6444,7 @@ namespace http {
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
 
-			m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(m_pWebEm->FindValue("RemoteSharedPort").c_str()));
+			m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(req.findValue(&req, "RemoteSharedPort").c_str()));
 
 			rnvalue = 0;
 			m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
@@ -6461,27 +6461,27 @@ namespace http {
 				}
 			}
 
-			m_sql.UpdatePreferencesVar("Language", m_pWebEm->FindValue("Language").c_str());
-			std::string SelectedTheme = m_pWebEm->FindValue("Themes");
+			m_sql.UpdatePreferencesVar("Language", req.findValue(&req, "Language").c_str());
+			std::string SelectedTheme = req.findValue(&req, "Themes");
 			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
 			m_pWebEm->SetWebTheme(SelectedTheme);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
-			rnvalue = atoi(m_pWebEm->FindValue("RandomSpread").c_str());
+			rnvalue = atoi(req.findValue(&req, "RandomSpread").c_str());
 			if (rnOldvalue != rnvalue)
 			{
 				m_sql.UpdatePreferencesVar("RandomTimerFrame", rnvalue);
 				m_mainworker.m_scheduler.ReloadSchedules();
 			}
 
-			m_sql.UpdatePreferencesVar("SecOnDelay", atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
+			m_sql.UpdatePreferencesVar("SecOnDelay", atoi(req.findValue(&req, "SecOnDelay").c_str()));
 
-			int sensortimeout = atoi(m_pWebEm->FindValue("SensorTimeout").c_str());
+			int sensortimeout = atoi(req.findValue(&req, "SensorTimeout").c_str());
 			if (sensortimeout < 10)
 				sensortimeout = 10;
 			m_sql.UpdatePreferencesVar("SensorTimeout", sensortimeout);
 
-			int batterylowlevel = atoi(m_pWebEm->FindValue("BatterLowLevel").c_str());
+			int batterylowlevel = atoi(req.findValue(&req, "BatterLowLevel").c_str());
 			if (batterylowlevel > 100)
 				batterylowlevel = 100;
 			m_sql.GetPreferencesVar("BatteryLowNotification", rnOldvalue);
@@ -6490,21 +6490,21 @@ namespace http {
 				m_sql.CheckBatteryLow();
 
 			int nValue = 0;
-			nValue = atoi(m_pWebEm->FindValue("FloorplanPopupDelay").c_str());
+			nValue = atoi(req.findValue(&req, "FloorplanPopupDelay").c_str());
 			m_sql.UpdatePreferencesVar("FloorplanPopupDelay", nValue);
-			std::string FloorplanFullscreenMode = m_pWebEm->FindValue("FloorplanFullscreenMode");
+			std::string FloorplanFullscreenMode = req.findValue(&req, "FloorplanFullscreenMode");
 			m_sql.UpdatePreferencesVar("FloorplanFullscreenMode", (FloorplanFullscreenMode == "on" ? 1 : 0));
-			std::string FloorplanAnimateZoom = m_pWebEm->FindValue("FloorplanAnimateZoom");
+			std::string FloorplanAnimateZoom = req.findValue(&req, "FloorplanAnimateZoom");
 			m_sql.UpdatePreferencesVar("FloorplanAnimateZoom", (FloorplanAnimateZoom == "on" ? 1 : 0));
-			std::string FloorplanShowSensorValues = m_pWebEm->FindValue("FloorplanShowSensorValues");
+			std::string FloorplanShowSensorValues = req.findValue(&req, "FloorplanShowSensorValues");
 			m_sql.UpdatePreferencesVar("FloorplanShowSensorValues", (FloorplanShowSensorValues == "on" ? 1 : 0));
-			std::string FloorplanShowSwitchValues = m_pWebEm->FindValue("FloorplanShowSwitchValues");
+			std::string FloorplanShowSwitchValues = req.findValue(&req, "FloorplanShowSwitchValues");
 			m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (FloorplanShowSwitchValues == "on" ? 1 : 0));
-			std::string FloorplanShowSceneNames = m_pWebEm->FindValue("FloorplanShowSceneNames");
+			std::string FloorplanShowSceneNames = req.findValue(&req, "FloorplanShowSceneNames");
 			m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (FloorplanShowSceneNames == "on" ? 1 : 0));
-			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(m_pWebEm->FindValue("FloorplanRoomColour").c_str()).c_str());
-			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(m_pWebEm->FindValue("FloorplanActiveOpacity").c_str()));
-			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(m_pWebEm->FindValue("FloorplanInactiveOpacity").c_str()));
+			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(req.findValue(&req, "FloorplanRoomColour").c_str()).c_str());
+			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(req.findValue(&req, "FloorplanActiveOpacity").c_str()));
+			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(req.findValue(&req, "FloorplanInactiveOpacity").c_str()));
 
 			m_notifications.LoadConfig();
 
@@ -6520,7 +6520,7 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string dbasefile = m_pWebEm->FindValue("dbasefile");
+			std::string dbasefile = req.findValue(&req, "dbasefile");
 			if (dbasefile == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -9015,7 +9015,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -9030,14 +9030,14 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = m_pWebEm->FindValue("name");
+			std::string name = req.findValue(&req, "name");
 			if (name == "")
 			{
 				root["status"] = "ERR";
 				root["message"] = "No Scene Name specified!";
 				return;
 			}
-			std::string stype = m_pWebEm->FindValue("scenetype");
+			std::string stype = req.findValue(&req, "scenetype");
 			if (stype == "")
 			{
 				root["status"] = "ERR";
@@ -9064,7 +9064,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -9079,23 +9079,23 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string description = m_pWebEm->FindValue("description");
+			std::string idx = req.findValue(&req, "idx");
+			std::string name = req.findValue(&req, "name");
+			std::string description = req.findValue(&req, "description");
 			if ((idx == "") || (name == ""))
 				return;
-			std::string stype = m_pWebEm->FindValue("scenetype");
+			std::string stype = req.findValue(&req, "scenetype");
 			if (stype == "")
 			{
 				root["status"] = "ERR";
 				root["message"] = "No Scene Type specified!";
 				return;
 			}
-			std::string tmpstr = m_pWebEm->FindValue("protected");
+			std::string tmpstr = req.findValue(&req, "protected");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string onaction = base64_decode(m_pWebEm->FindValue("onaction"));
-			std::string offaction = base64_decode(m_pWebEm->FindValue("offaction"));
+			std::string onaction = base64_decode(req.findValue(&req, "onaction"));
+			std::string offaction = base64_decode(req.findValue(&req, "offaction"));
 
 
 			root["status"] = "OK";
@@ -9141,7 +9141,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Plans";
 
-			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			std::string sDisplayHidden = req.findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
 
 			std::vector<std::vector<std::string> > result, result2;
@@ -9272,10 +9272,10 @@ namespace http {
 			root["title"] = "Scenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
-			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			std::string sDisplayHidden = req.findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
 
-			std::string sLastUpdate = m_pWebEm->FindValue("lastupdate");
+			std::string sLastUpdate = req.findValue(&req, "lastupdate");
 
 			time_t LastUpdate = 0;
 			if (sLastUpdate != "")
@@ -9438,15 +9438,15 @@ namespace http {
 
 		void CWebServer::RType_Devices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string rfilter = m_pWebEm->FindValue("filter");
-			std::string order = m_pWebEm->FindValue("order");
-			std::string rused = m_pWebEm->FindValue("used");
-			std::string rid = m_pWebEm->FindValue("rid");
-			std::string planid = m_pWebEm->FindValue("plan");
-			std::string floorid = m_pWebEm->FindValue("floor");
-			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			std::string rfilter = req.findValue(&req, "filter");
+			std::string order = req.findValue(&req, "order");
+			std::string rused = req.findValue(&req, "used");
+			std::string rid = req.findValue(&req, "rid");
+			std::string planid = req.findValue(&req, "plan");
+			std::string floorid = req.findValue(&req, "floor");
+			std::string sDisplayHidden = req.findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
-			std::string sLastUpdate = m_pWebEm->FindValue("lastupdate");
+			std::string sLastUpdate = req.findValue(&req, "lastupdate");
 
 			time_t LastUpdate = 0;
 			if (sLastUpdate != "")
@@ -9517,8 +9517,8 @@ namespace http {
 			if (urights < 1)
 				return;
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string setpoint = m_pWebEm->FindValue("setpoint");
+			std::string idx = req.findValue(&req, "idx");
+			std::string setpoint = req.findValue(&req, "setpoint");
 			if (
 				(idx == "") ||
 				(setpoint == "")
@@ -9538,7 +9538,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -9610,9 +9610,9 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string cmnd = m_pWebEm->FindValue("cmnd");
+			std::string sceneidx = req.findValue(&req, "sceneidx");
+			std::string idx = req.findValue(&req, "idx");
+			std::string cmnd = req.findValue(&req, "cmnd");
 			if (
 				(sceneidx == "") ||
 				(idx == "") ||
@@ -9676,9 +9676,9 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string code = m_pWebEm->FindValue("code");
+			std::string sceneidx = req.findValue(&req, "sceneidx");
+			std::string idx = req.findValue(&req, "idx");
+			std::string code = req.findValue(&req, "code");
 			if (
 				(idx == "") ||
 				(sceneidx == "") ||
@@ -9751,7 +9751,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
+			std::string sceneidx = req.findValue(&req, "sceneidx");
 			if (sceneidx == "")
 				return;
 			root["status"] = "OK";
@@ -9833,7 +9833,7 @@ namespace http {
 			if (session.rights == 2)
 			{
 				//Only admin user allowed
-				std::string zipfile = m_pWebEm->FindValue("file");
+				std::string zipfile = req.findValue(&req, "file");
 				if (zipfile != "")
 				{
 					std::string ErrorMessage;
@@ -9849,7 +9849,7 @@ namespace http {
 					}
 				}
 			}
-			std::string jcallback = m_pWebEm->FindValue("jsoncallback");
+			std::string jcallback = req.findValue(&req, "jsoncallback");
 			if (jcallback.size() == 0)
 				m_retstr = root.toStyledString();
 			else
@@ -9889,7 +9889,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sidx = req.findValue(&req, "idx");
 			if (sidx == "")
 				return;
 			int idx = atoi(sidx.c_str());
@@ -9921,9 +9921,9 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
-			std::string sname = m_pWebEm->FindValue("name");
-			std::string sdescription = m_pWebEm->FindValue("description");
+			std::string sidx = req.findValue(&req, "idx");
+			std::string sname = req.findValue(&req, "name");
+			std::string sdescription = req.findValue(&req, "description");
 			if (
 				(sidx.empty()) ||
 				(sname.empty()) ||
@@ -9944,8 +9944,8 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
-			std::string sname = m_pWebEm->FindValue("name");
+			std::string sidx = req.findValue(&req, "idx");
+			std::string sname = req.findValue(&req, "name");
 			if (
 				(sidx == "")||
 				(sname == "")
@@ -9964,8 +9964,8 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
-			std::string sname = m_pWebEm->FindValue("name");
+			std::string sidx = req.findValue(&req, "idx");
+			std::string sname = req.findValue(&req, "name");
 			if (
 				(sidx == "") ||
 				(sname == "")
@@ -9984,7 +9984,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sidx = req.findValue(&req, "idx");
 			if (sidx.empty())
 				return;
 			int idx = atoi(sidx.c_str());
@@ -9995,7 +9995,7 @@ namespace http {
 
 		void CWebServer::Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string smessage = m_pWebEm->FindValue("message");
+			std::string smessage = req.findValue(&req, "message");
 			if (smessage.empty())
 				return;
 			root["status"] = "OK";
@@ -10036,9 +10036,9 @@ namespace http {
 			root["title"] = "GetTransfers";
 
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (req.findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(req.findValue(&req, "idx"));
 				s_str >> idx;
 			}
 
@@ -10082,11 +10082,11 @@ namespace http {
 		//then delete the NEW sensor
 		void CWebServer::RType_TransferDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sidx = req.findValue(&req, "idx");
 			if (sidx == "")
 				return;
 
-			std::string newidx = m_pWebEm->FindValue("newidx");
+			std::string newidx = req.findValue(&req, "newidx");
 			if (newidx == "")
 				return;
 
@@ -10169,9 +10169,9 @@ namespace http {
 			}
 
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (req.findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(req.findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
@@ -10198,7 +10198,7 @@ namespace http {
 
 		void CWebServer::RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = req.findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -10222,8 +10222,8 @@ namespace http {
 
 		void CWebServer::RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string userdevices = m_pWebEm->FindValue("devices");
+			std::string idx = req.findValue(&req, "idx");
+			std::string userdevices = req.findValue(&req, "devices");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -10247,31 +10247,31 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string deviceid = m_pWebEm->FindValue("deviceid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string description = m_pWebEm->FindValue("description");
-			std::string sused = m_pWebEm->FindValue("used");
-			std::string sswitchtype = m_pWebEm->FindValue("switchtype");
-			std::string maindeviceidx = m_pWebEm->FindValue("maindeviceidx");
-			std::string addjvalue = m_pWebEm->FindValue("addjvalue");
-			std::string addjmulti = m_pWebEm->FindValue("addjmulti");
-			std::string addjvalue2 = m_pWebEm->FindValue("addjvalue2");
-			std::string addjmulti2 = m_pWebEm->FindValue("addjmulti2");
-			std::string setPoint = m_pWebEm->FindValue("setpoint");
-			std::string state = m_pWebEm->FindValue("state");
-			std::string mode = m_pWebEm->FindValue("mode");
-			std::string until = m_pWebEm->FindValue("until");
-			std::string clock = m_pWebEm->FindValue("clock");
-			std::string tmode = m_pWebEm->FindValue("tmode");
-			std::string fmode = m_pWebEm->FindValue("fmode");
-			std::string sCustomImage = m_pWebEm->FindValue("customimage");
+			std::string idx = req.findValue(&req, "idx");
+			std::string deviceid = req.findValue(&req, "deviceid");
+			std::string name = req.findValue(&req, "name");
+			std::string description = req.findValue(&req, "description");
+			std::string sused = req.findValue(&req, "used");
+			std::string sswitchtype = req.findValue(&req, "switchtype");
+			std::string maindeviceidx = req.findValue(&req, "maindeviceidx");
+			std::string addjvalue = req.findValue(&req, "addjvalue");
+			std::string addjmulti = req.findValue(&req, "addjmulti");
+			std::string addjvalue2 = req.findValue(&req, "addjvalue2");
+			std::string addjmulti2 = req.findValue(&req, "addjmulti2");
+			std::string setPoint = req.findValue(&req, "setpoint");
+			std::string state = req.findValue(&req, "state");
+			std::string mode = req.findValue(&req, "mode");
+			std::string until = req.findValue(&req, "until");
+			std::string clock = req.findValue(&req, "clock");
+			std::string tmode = req.findValue(&req, "tmode");
+			std::string fmode = req.findValue(&req, "fmode");
+			std::string sCustomImage = req.findValue(&req, "customimage");
 
-			std::string strunit = m_pWebEm->FindValue("unit");
-			std::string strParam1 = base64_decode(m_pWebEm->FindValue("strparam1"));
-			std::string strParam2 = base64_decode(m_pWebEm->FindValue("strparam2"));
-			std::string tmpstr = m_pWebEm->FindValue("protected");
-			bool bHasstrParam1 = m_pWebEm->HasValue("strparam1");
+			std::string strunit = req.findValue(&req, "unit");
+			std::string strParam1 = base64_decode(req.findValue(&req, "strparam1"));
+			std::string strParam2 = base64_decode(req.findValue(&req, "strparam2"));
+			std::string tmpstr = req.findValue(&req, "protected");
+			bool bHasstrParam1 = req.hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
 			char szTmp[200];
@@ -10483,7 +10483,7 @@ namespace http {
 
 			if (used == 0)
 			{
-				bool bRemoveSubDevices = (m_pWebEm->FindValue("RemoveSubDevices") == "true");
+				bool bRemoveSubDevices = (req.findValue(&req, "RemoveSubDevices") == "true");
 
 				if (bRemoveSubDevices)
 				{
@@ -10819,9 +10819,9 @@ namespace http {
 		void CWebServer::RType_LightLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (req.findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(req.findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -10917,9 +10917,9 @@ namespace http {
 		void CWebServer::RType_TextLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (req.findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(req.findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -10951,19 +10951,19 @@ namespace http {
 		void CWebServer::RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (req.findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(req.findValue(&req, "idx"));
 				s_str >> idx;
 			}
 
 			std::vector<std::vector<std::string> > result;
 			char szTmp[300];
 
-			std::string sensor = m_pWebEm->FindValue("sensor");
+			std::string sensor = req.findValue(&req, "sensor");
 			if (sensor == "")
 				return;
-			std::string srange = m_pWebEm->FindValue("range");
+			std::string srange = req.findValue(&req, "range");
 			if (srange == "")
 				return;
 
@@ -11723,7 +11723,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value,[Usage], Date FROM %s WHERE (DeviceRowID==%llu) ORDER BY Date ASC", dbasetable.c_str(), idx);
 
 						int method = 0;
-						std::string sMethod = m_pWebEm->FindValue("method");
+						std::string sMethod = req.findValue(&req, "method");
 						if (sMethod.size() > 0)
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
@@ -11886,7 +11886,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%llu) ORDER BY Date ASC", dbasetable.c_str(), idx);
 
 						int method = 0;
-						std::string sMethod = m_pWebEm->FindValue("method");
+						std::string sMethod = req.findValue(&req, "method");
 						if (sMethod.size() > 0)
 							method = atoi(sMethod.c_str());
 
@@ -12668,8 +12668,8 @@ namespace http {
 				char szDateStartPrev[40];
 				char szDateEndPrev[40];
 
-				std::string sactmonth = m_pWebEm->FindValue("actmonth");
-				std::string sactyear = m_pWebEm->FindValue("actyear");
+				std::string sactmonth = req.findValue(&req, "actmonth");
+				std::string sactyear = req.findValue(&req, "actyear");
 
 				int actMonth = atoi(sactmonth.c_str());
 				int actYear = atoi(sactyear.c_str());
@@ -14199,13 +14199,13 @@ namespace http {
 			{
 				std::string szDateStart = srange.substr(0, 10);
 				std::string szDateEnd = srange.substr(11, 10);
-				std::string sgraphtype = m_pWebEm->FindValue("graphtype");
-				std::string sgraphTemp = m_pWebEm->FindValue("graphTemp");
-				std::string sgraphChill = m_pWebEm->FindValue("graphChill");
-				std::string sgraphHum = m_pWebEm->FindValue("graphHum");
-				std::string sgraphBaro = m_pWebEm->FindValue("graphBaro");
-				std::string sgraphDew = m_pWebEm->FindValue("graphDew");
-				std::string sgraphSet = m_pWebEm->FindValue("graphSet");
+				std::string sgraphtype = req.findValue(&req, "graphtype");
+				std::string sgraphTemp = req.findValue(&req, "graphTemp");
+				std::string sgraphChill = req.findValue(&req, "graphChill");
+				std::string sgraphHum = req.findValue(&req, "graphHum");
+				std::string sgraphBaro = req.findValue(&req, "graphBaro");
+				std::string sgraphDew = req.findValue(&req, "graphDew");
+				std::string sgraphSet = req.findValue(&req, "graphSet");
 
 				if (sensor == "temp") {
 					root["status"] = "OK";

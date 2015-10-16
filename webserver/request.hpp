@@ -22,42 +22,114 @@ namespace server {
 class request
 {
 public:
-  std::string method;
-  std::string uri;
-  int http_version_major;
-  int http_version_minor;
-  std::vector<header> headers;
-  int content_length;				// the expected length of the contents
-  std::string content;				// the contents
-  bool keep_alive;					// send Keep-Alive header
+	std::string method;
+	std::string uri;
+	int http_version_major;
+	int http_version_minor;
+	std::vector<header> headers;
+	int content_length;				// the expected length of the contents
+	std::string content;				// the contents
+	bool keep_alive;					// send Keep-Alive header
 
+	/// store map between pages and application functions (wide char)
+	std::multimap<std::string, std::string> parameters;
 
-  static int mg_strcasecmp(const char *s1, const char *s2)
-  {
-	  int diff;
+	/** Check existing values */
+	static const bool hasParams(const request *preq) {
+		return !preq->parameters.empty();
+	};
 
-	  do {
-		  diff = lowercase(s1++) - lowercase(s2++);
-	  } while (diff == 0 && s1[-1] != '\0');
+	/** Find the value of a name set by a form submit action */
+	static const std::string& findValue(const request *preq, const char* name) {
+		return findValue(&preq->parameters, name);
+	}
+	/** Find the value of a name set by a form submit action */
+	static const std::string& findValue(
+			const std::multimap<std::string, std::string> *values,
+			const char* name) {
+		static std::string ret("");
+		std::multimap<std::string, std::string>::const_iterator iter;
+		iter = values->find(name);
+		if (iter != values->end()) {
+			try {
+				ret = iter->second;
+			} catch (...) {
 
-	  return diff;
-  }
-  static int lowercase(const char *s) {
-	  return tolower(* (const unsigned char *) s);
-  }
+			}
+		}
+		return ret;
+	}
 
-  // Return HTTP header value, or NULL if not found.
-  static const char *get_req_header(const request *preq, const char *name) 
-  {
-	  std::vector<header>::const_iterator itt;
+	static const bool hasValue(const request *preq, const char* name) {
+		std::multimap<std::string, std::string>::const_iterator iter;
+		iter = preq->parameters.find(name);
+		return (iter != preq->parameters.end());
+	}
 
-	  for (itt=preq->headers.begin(); itt!=preq->headers.end(); ++itt)
-	  {
-		  if (!mg_strcasecmp(name, itt->name.c_str()))
-			  return itt->value.c_str();
-	  }
-	  return NULL;
-  }
+	static void makeValuesFromPostContent(const request *preq, std::multimap<std::string, std::string> &values)
+	{
+		values.clear();
+		std::string name;
+		std::string value;
+
+		std::string uri = preq->content;
+		int q = 0;
+		int p = q;
+		int flag_done = 0;
+		while (!flag_done) {
+			q = uri.find("=", p);
+			if (q == -1) {
+				return;
+			}
+			name = uri.substr(p, q - p);
+			p = q + 1;
+			q = uri.find("&", p);
+			if (q != -1) {
+				value = uri.substr(p, q - p);
+			} else {
+				value = uri.substr(p);
+				flag_done = 1;
+			}
+			// the browser sends blanks as +
+			while (1) {
+				int p = value.find("+");
+				if (p == -1) {
+					break;
+				}
+				value.replace(p, 1, " ");
+			}
+
+			values.insert(std::pair< std::string, std::string >(name, value));
+			p = q + 1;
+		}
+	}
+
+	static int mg_strcasecmp(const char *s1, const char *s2)
+	{
+		int diff;
+
+		do {
+			diff = lowercase(s1++) - lowercase(s2++);
+		} while (diff == 0 && s1[-1] != '\0');
+
+		return diff;
+	}
+	static int lowercase(const char *s) {
+		return tolower(* (const unsigned char *) s);
+	}
+
+	// Return HTTP header value, or NULL if not found.
+	static const char *get_req_header(const request *preq, const char *name)
+	{
+		std::vector<header>::const_iterator itt;
+
+		for (itt=preq->headers.begin(); itt!=preq->headers.end(); ++itt)
+		{
+			if (!mg_strcasecmp(name, itt->name.c_str()))
+				return itt->value.c_str();
+		}
+		return NULL;
+	}
 
 };
 

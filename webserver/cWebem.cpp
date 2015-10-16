@@ -35,9 +35,6 @@ int m_failcounter=0;
 namespace http {
 	namespace server {
 
-	typedef std::multimap  < std::string, std::string> webem_mmp_name_value;
-	typedef std::multimap  < std::string, std::string>::iterator webem_iter_name_value;
-
 /**
 
 Webem constructor
@@ -297,43 +294,6 @@ std::istream & safeGetline( std::istream & is, std::string & line ) {
 	return is;
 }
 
-//Make Name values from post content
-void cWebem::MakeValuesFromPostContent(const request *req)
-{
-	myNameValues.clear();
-	std::string name;
-	std::string value;
-
-	std::string uri = req->content;
-	int q = 0;
-	int p = q;
-	int flag_done = 0;
-	while (!flag_done) {
-		q = uri.find("=", p);
-		if (q == -1)
-			return;
-		name = uri.substr(p, q - p);
-		p = q + 1;
-		q = uri.find("&", p);
-		if (q != -1)
-			value = uri.substr(p, q - p);
-		else {
-			value = uri.substr(p);
-			flag_done = 1;
-		}
-		// the browser sends blanks as +
-		while (1) {
-			int p = value.find("+");
-			if (p == -1)
-				break;
-			value.replace(p, 1, " ");
-		}
-
-		myNameValues.insert(std::pair< std::string, std::string >(name, value));
-		p = q + 1;
-	}
-}
-
 /**
 
 Do not call from application code,
@@ -344,7 +304,7 @@ returns false is authentication is invalid
 */
 bool cWebem::CheckForAction(WebEmSession & session, request& req )
 {
-	myNameValues.clear();
+	req.parameters.clear();
 	// look for cWebem form action request
 	std::string uri = req.uri;
 	int q = 0;
@@ -426,7 +386,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 					if (pos == std::string::npos)
 						return true;
 					szValue = szContent.substr(0, pos - 2);
-					myNameValues.insert(std::pair< std::string, std::string >(szVariable, szValue));
+					req.parameters.insert(std::pair< std::string, std::string >(szVariable, szValue));
 
 					szContent=szContent.substr(pos + szBoundary.size());
 					pos = szContent.find("\r\n");
@@ -435,7 +395,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 					szContent = szContent.substr(pos + 2);
 				}
 				//we should have at least one value
-				if (myNameValues.empty())
+				if (req.parameters.empty())
 					return true;
 				// call the function
 				std::string ret;
@@ -483,7 +443,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 			value.replace( p, 1, " " );
 		}
 
-		myNameValues.insert( std::pair< std::string,std::string > ( name, value ) );
+		req.parameters.insert( std::pair< std::string,std::string > ( name, value ) );
 		p = q+1;
 	}
 
@@ -528,7 +488,7 @@ bool cWebem::IsPageOverride(const request& req, reply& rep)
 	return false;
 }
 
-bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, reply& rep)
+bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& rep)
 {
 	// Decode url to path.
 	std::string request_path;
@@ -559,7 +519,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, re
 	{
 		request_path += "index.html";
 	}
-	myNameValues.clear();
+	req.parameters.clear();
 
 	request_path = req.uri; // we need the raw request string to parse the get-request
 	paramPos=request_path.find_first_of('?');
@@ -599,7 +559,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, re
 			// now, url-decode only the value
 			std::string decoded;
 			request_handler::url_decode(value, decoded);
-			myNameValues.insert( std::pair< std::string,std::string > ( name, decoded ) );
+			req.parameters.insert( std::pair< std::string,std::string > ( name, decoded ) );
 			p = q+1;
 		}
 
@@ -663,7 +623,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, re
 								std::string szContent;
 								size_t bpos = size_t(ss.tellg());
 								szContent = req.content.substr(bpos, ss.rdbuf()->str().size() - bpos - szBoundary.size() - 6);
-								myNameValues.insert(std::pair< std::string, std::string >(vName, szContent));
+								req.parameters.insert(std::pair< std::string, std::string >(vName, szContent));
 								break;
 							}
 						}
@@ -939,37 +899,6 @@ void cWebem::SetZipPassword(std::string password)
 	m_zippassword = password;
 }
 
-/**
-
-  Find the value of a name set by a form submit action
-
-*/
-std::string& cWebem::FindValue( const char* name )
-{
-	static std::string ret;
-	ret = "";
-	webem_iter_name_value iter = myNameValues.find( name );
-	if (iter != myNameValues.end())
-	{
-		try
-		{
-			ret = iter->second;
-		}
-		catch (...)
-		{
-			
-		}
-	}
-
-	return ret;
-}
-
-bool cWebem::HasValue(const char* name)
-{
-	webem_iter_name_value iter = myNameValues.find(name);
-	return (iter != myNameValues.end());
-}
-
 // Check the user's password, return 1 if OK
 static int check_password(struct ah *ah, const std::string &ha1, const std::string &realm)
 {
@@ -1122,14 +1051,14 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 	{
 		//We could be using a proxy server
 		//Check if we have the "X-Forwarded-For" (connection via proxy)
-		const char *host_header=request::get_req_header(&req, "X-Forwarded-For");
+		const char *host_header=req.get_req_header(&req, "X-Forwarded-For");
 		if (host_header!=NULL)
 		{
 			host=host_header;
 			if (strstr(host_header,",")!=NULL)
 			{
 				//Multiple proxies are used... this is not very common
-				host_header=request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+				host_header=req.get_req_header(&req, "X-Real-IP"); //try our NGINX header
 				if (!host_header)
 				{
 					_log.Log(LOG_ERROR,"Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote addresses: %s)",host.c_str());
@@ -1302,7 +1231,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 	}
 
 	//Check cookie if still valid
-	const char* cookie_header = request::get_req_header(&req, "Cookie");
+	const char* cookie_header = req.get_req_header(&req, "Cookie");
 	if (cookie_header != NULL)
 	{
 		std::string scookie = cookie_header;
@@ -1448,7 +1377,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		{
 			//Remove session id based on cookie
 			const char *cookie;
-			cookie = request::get_req_header(&req, "Cookie");
+			cookie = req.get_req_header(&req, "Cookie");
 			if (cookie!=NULL)
 			{
 				std::string scookie = cookie;
@@ -1508,7 +1437,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		myWebem->CheckForAction(session, req_modified);
 	}
 
-	if (!myWebem->CheckForPageOverride(session, req, rep))
+	if (!myWebem->CheckForPageOverride(session, req_modified, rep))
 	{
 		// do normal handling
 		request_handler::handle_request( sHost, req_modified, rep);
