@@ -838,7 +838,7 @@ void cWebem::AddUserPassword(const unsigned long ID, const std::string &username
 void cWebem::ClearUserPasswords()
 {
 	m_userpasswords.clear();
-	m_sessionids.clear();
+	m_sessions.clear();
 }
 
 void cWebem::AddLocalNetworks(std::string network)
@@ -1314,7 +1314,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 			{
 				std::string sSID = scookie.substr(fpos + 4, ppos-fpos-4);
 				std::string szTime = scookie.substr(ppos + 1);
-				std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(sSID);
+				std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
 
 				time_t stime;
 				std::stringstream sstr;
@@ -1326,9 +1326,9 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 				{
 					//timeout, remove session
 					m_failcounter = 0;
-					if (itt != myWebem->m_sessionids.end())
+					if (itt != myWebem->m_sessions.end())
 					{
-						myWebem->m_sessionids.erase(itt);
+						myWebem->m_sessions.erase(itt);
 					}
 					if (myWebem->m_authmethod == AUTH_BASIC)
 					{
@@ -1342,7 +1342,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 				}
 				else
 				{
-					if (itt != myWebem->m_sessionids.end())
+					if (itt != myWebem->m_sessions.end())
 					{
 						session = itt->second;
 						return true;
@@ -1360,7 +1360,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 								session.username = itt->Username;
 								session.rights = itt->userrights;
 								session.lasttouch = stime;
-								myWebem->m_sessionids[sSID] = session;
+								myWebem->m_sessions[sSID] = session;
 								return true;
 							}
 						}
@@ -1456,10 +1456,10 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 				if (fpos != std::string::npos)
 				{
 					std::string sSID = scookie.substr(fpos + 4);
-					std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(sSID);
-					if (itt != myWebem->m_sessionids.end())
+					std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
+					if (itt != myWebem->m_sessions.end())
 					{
-						myWebem->m_sessionids.erase(itt);
+						myWebem->m_sessions.erase(itt);
 					}
 				}
 			}
@@ -1570,7 +1570,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			if (itt->Username == session.username)
 			{
 				session.id = generateSessionID();
-				myWebem->m_sessionids[session.id] = session;
+				myWebem->m_sessions[session.id] = session;
 				send_cookie(rep, session.id, session.lasttouch);
 				break;
 			}
@@ -1582,14 +1582,14 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	}
 	else if (session.id.size()>0)
 	{
-		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessionids.find(session.id);
-		if (itt != myWebem->m_sessionids.end())
+		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(session.id);
+		if (itt != myWebem->m_sessions.end())
 		{
 			time_t atime = mytime(NULL);
-			if (myWebem->m_sessionids[session.id].lasttouch - 60 < atime)
+			if (myWebem->m_sessions[session.id].lasttouch - 60 < atime)
 			{
-				myWebem->m_sessionids[session.id].lasttouch = atime + SESSION_TIMEOUT;
-				send_cookie(rep, session.id, myWebem->m_sessionids[session.id].lasttouch);
+				myWebem->m_sessions[session.id].lasttouch = atime + SESSION_TIMEOUT;
+				send_cookie(rep, session.id, myWebem->m_sessions[session.id].lasttouch);
 			}
 		}
 	}

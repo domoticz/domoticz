@@ -198,7 +198,7 @@ namespace http {
 			void MakeValuesFromPostContent(const request *req);
 			std::string m_zippassword;
 			std::string m_outputfilename;
-			std::map<std::string,WebEmSession> m_sessionids;
+			std::map<std::string,WebEmSession> m_sessions;
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
