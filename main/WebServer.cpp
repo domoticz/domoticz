@@ -477,6 +477,8 @@ namespace http {
 			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
 
 			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1));
+			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1));
+			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1));
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
@@ -963,7 +965,11 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_System)	{
-				//All fine here
+				//There should be only one
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
+				if (!result.empty())
+					return;
 			}
 			else if (htype == HTYPE_1WIRE) {
 				//all fine here!
@@ -1166,7 +1172,16 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_System) {
-				//All fine here
+				//There should be only one, and with this ID
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_System);
+				if (!result.empty())
+				{
+					int hID = atoi(result[0][0].c_str());
+					int aID = atoi(idx.c_str());
+					if (hID != aID)
+						return;
+				}
 			}
 			else if (htype == HTYPE_TE923) {
 				//All fine here
@@ -1296,21 +1311,9 @@ namespace http {
 					);
 			}
 
-			//Special case for internal system monitoring
-			if (htype == HTYPE_System)
-			{
-				m_mainworker.m_hardwaremonitor.StopHardwareMonitor();
-				if (bEnabled)
-				{
-					m_mainworker.m_hardwaremonitor.StartHardwareMonitor();
-				}
-			}
-			else
-			{
-				//re-add the device in our system
-				int ID = atoi(idx.c_str());
-				m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
-			}
+			//re-add the device in our system
+			int ID = atoi(idx.c_str());
+			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 		}
 
 		void CWebServer::Cmd_GetDeviceValueOptions(Json::Value &root)
@@ -3772,6 +3775,10 @@ namespace http {
 					if (pBaseHardware->HwdType == HTYPE_RFLINK) {
 						if (dtype == pTypeLighting1){
 							dtype = pTypeGeneralSwitch;
+							std::stringstream s_strid;
+							s_strid << std::hex << atoi(devid.c_str());
+							devid = s_strid.str();
+							devid = "000000" + devid;                            
 						}
 						else
 							if (dtype == pTypeLighting2){
@@ -4324,22 +4331,47 @@ namespace http {
 					}
 					if (switchtype == STYPE_Media)
 					{
-						root["result"][ii]["val"] = NTYPE_VIDEO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
-						ii++;
-						root["result"][ii]["val"] = NTYPE_AUDIO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
-						ii++;
-						root["result"][ii]["val"] = NTYPE_PHOTO;
-						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
-						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
-						ii++;
+						std::string idx = m_pWebEm->FindValue("idx");
+						std::vector<std::vector<std::string> > result;
+						_eHardwareTypes type;
+
+						result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
+						if (result.size() == 1) {
+							std::string hdwid = result[0][0];
+							CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hdwid.c_str()));
+							if (pBaseHardware != NULL) {
+								type = pBaseHardware->HwdType;
+							}
+						}
+
 						root["result"][ii]["val"] = NTYPE_PAUSED;
 						root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PAUSED, 0);
 						root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PAUSED, 1);
 						ii++;
+						if (type == HTYPE_Kodi) {
+							root["result"][ii]["val"] = NTYPE_AUDIO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_AUDIO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_AUDIO, 1);
+							ii++;
+							root["result"][ii]["val"] = NTYPE_VIDEO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_VIDEO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_VIDEO, 1);
+							ii++;
+							root["result"][ii]["val"] = NTYPE_PHOTO;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PHOTO, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PHOTO, 1);
+							ii++;
+						}
+						if (type == HTYPE_LogitechMediaServer) {
+							root["result"][ii]["val"] = NTYPE_PLAYING;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_PLAYING, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PLAYING, 1);
+							ii++;
+							root["result"][ii]["val"] = NTYPE_STOPPED;
+							root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_STOPPED, 0);
+							root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_STOPPED, 1);
+							ii++;
+						}
 					}
 				}
 				if (
@@ -6671,6 +6703,12 @@ namespace http {
 							unsigned char scenetype = atoi(sd[5].c_str());
 							int iProtected = atoi(sd[6].c_str());
 
+							std::string sSceneName = sd[1];
+							if (!bDisplayHidden && sSceneName[0] == '$')
+							{
+								continue;
+							}
+
 							if (scenetype == 0)
 							{
 								root["result"][ii]["Type"] = "Scene";
@@ -6682,7 +6720,7 @@ namespace http {
 								root["result"][ii]["TypeImg"] = "group";
 							}
 							root["result"][ii]["idx"] = sd[0];
-							root["result"][ii]["Name"] = sd[1];
+							root["result"][ii]["Name"] = sSceneName;
 							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
@@ -6811,11 +6849,11 @@ namespace http {
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
-						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
-						"FROM DeviceStatus as A, SharedDevices as B LEFT OUTER JOIN DeviceToPlansMap as C "
-						"ON (C.DeviceRowID==a.ID) "
-						"WHERE (B.SharedUserID==%lu) AND (A.ID=='%q')",
+						" A.StrParam2, A.Protected, 0 as XOffset,"
+						" 0 as YOffset, 0 as PlanID, A.Description "
+						"FROM DeviceStatus as A, SharedDevices as B "
+						"WHERE (B.DeviceRowID==a.ID)"
+						" AND (B.SharedUserID==%lu) AND (A.ID=='%q')",
 						m_users[iUser].ID, rowid.c_str());
 				}
 				else if ((planID != "") && (planID != "0"))
@@ -6871,10 +6909,16 @@ namespace http {
 						}
 						bAllowDeviceToBeHidden = true;
 					}
-					sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
-					//_log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
+						
+					if (order == "")
+						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+					else
+					{
+						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+					}
+					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					result = m_sql.safe_query(
-						"SELECT DISTINCT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
+						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
 						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
@@ -6882,8 +6926,10 @@ namespace http {
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
 						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description "
-						"FROM DeviceStatus as A LEFT OUTER JOIN SharedDevices as B, DeviceToPlansMap as C "
-						"ON (C.DeviceRowID==a.ID) AND (B.SharedUserID==%lu) ORDER BY %s",
+						"FROM DeviceStatus as A, SharedDevices as B "
+						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
+						"WHERE (B.DeviceRowID==A.ID)"
+						" AND (B.SharedUserID==%lu) ORDER BY %s",
 						m_users[iUser].ID, szOrderBy);
 				}
 			}
@@ -7115,13 +7161,17 @@ namespace http {
 								continue;
 						}
 					}
-
+	
 					// has this device already been seen, now with different plan?
 					// assume results are ordered such that same device is adjacent
-					if ((ii > 0) && sd[0] == root["result"][ii-1]["idx"].asString().c_str()) {
-						//_log.Log(LOG_NORM, "Duplicate found idx %s: %s in plan %s", sd[0].c_str(), sd[3].c_str(), sd[26].c_str());
-						root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
-						continue;
+					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
+					std::string thisIdx = sd[0];
+					if ((ii > 0) && thisIdx == root["result"][ii-1]["idx"].asString()) {
+						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
+						if (typeOfThisOne == root["result"][ii-1]["Type"].asString()) {
+							root["result"][ii-1]["PlanIDs"].append(atoi(sd[26].c_str()));
+							continue;
+						}
 					}
 		
 					root["result"][ii]["HardwareID"] = hardwareID;
@@ -9241,6 +9291,9 @@ namespace http {
 			root["title"] = "Scenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
+			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			bool bDisplayHidden = (sDisplayHidden == "1");
+
 			std::string sLastUpdate = m_pWebEm->FindValue("lastupdate");
 
 			time_t LastUpdate = 0;
@@ -9270,7 +9323,7 @@ namespace http {
 					std::vector<std::string> sd = *itt;
 
 					std::string sName = sd[1];
-					if (sName[0] == '$')
+					if ((bDisplayHidden==false)&&(sName[0] == '$'))
 						continue;
 
 					std::string sLastUpdate = sd[6].c_str();
@@ -9969,6 +10022,31 @@ namespace http {
 
 			_log.Log(LOG_STATUS, "%s", smessage.c_str());
 		}
+
+		void CWebServer::Cmd_ClearShortLog(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+			root["status"] = "OK";
+			root["title"] = "ClearShortLog";
+
+			_log.Log(LOG_STATUS, "Clearing Short Log...");
+
+			m_sql.ClearShortLog();
+
+			_log.Log(LOG_STATUS, "Short Log Cleared!");
+		}
+
+		void CWebServer::Cmd_VacuumDatabase(Json::Value &root)
+		{
+			if (m_pWebEm->m_actualuser_rights != 2)
+				return;//Only admin user allowed
+			root["status"] = "OK";
+			root["title"] = "VacuumDatabase";
+
+			m_sql.VacuumDatabase();
+		}
+		
 		
 
 		void CWebServer::RType_GetTransfers(Json::Value &root)
@@ -11679,7 +11757,7 @@ namespace http {
 						if (bHaveUsage == false)
 							method = 0;
 
-						int iDisplayInPower = 0;
+						int iDisplayInPower = 1;
 						m_sql.GetPreferencesVar("DisplayPowerUsageInkWhGraph", iDisplayInPower);
 						if (!iDisplayInPower)
 						{

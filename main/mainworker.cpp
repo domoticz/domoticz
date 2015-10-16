@@ -34,6 +34,7 @@
 #include "../hardware/BMP085.h"
 #include "../hardware/Wunderground.h"
 #include "../hardware/ForecastIO.h"
+#include "../hardware/HardwareMonitor.h"
 #include "../hardware/Dummy.h"
 #include "../hardware/Tellstick.h"
 #include "../hardware/PiFace.h"
@@ -818,6 +819,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
 		break;
+	case HTYPE_System:
+		pHardware = new CHardwareMonitor(ID);
+		break;
 	case HTYPE_RaspberryGPIO:
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
@@ -873,7 +877,6 @@ bool MainWorker::Stop()
 		StopDomoticzHardware();
 		m_scheduler.StopScheduler();
 		m_eventsystem.StopEventSystem();
-		m_hardwaremonitor.StopHardwareMonitor();
 		m_datapush.Stop();
 		m_httppush.Stop();
 
@@ -912,9 +915,6 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
-	m_hardwaremonitor.sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2));
-	m_hardwaremonitor.sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
-	m_hardwaremonitor.StartHardwareMonitor();
 	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
 	m_cameras.ReloadCameras();
 
@@ -7809,7 +7809,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		}
 	}
 	float temp;
-	int volt;
+	int volt=0;
 	switch (pResponse->RFXSENSOR.subtype)
 	{
 	case sTypeRFXSensorTemp:
@@ -7829,7 +7829,15 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 	case sTypeRFXSensorVolt:
 		{
 			volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
-			sprintf(szTmp,"%d",volt);
+			if (
+				(pHardware->HwdType == HTYPE_RFXLAN) ||
+				(pHardware->HwdType == HTYPE_RFXtrx315) ||
+				(pHardware->HwdType == HTYPE_RFXtrx433)
+				)
+			{
+				volt /= 10;
+			}
+			sprintf(szTmp, "%d", volt);
 		}
 		break;
 	}
@@ -7848,7 +7856,6 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		case sTypeRFXSensorVolt:
 		{
 			m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, float(volt));
-
 		}
 		break;
 	}
@@ -9444,6 +9451,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
+			else if (switchtype == STYPE_Media)
+			{
+				level = (level < 0) ? 0 : level;
+				level = (level > 100) ? 100 : level;
+			}
 			else 
 				level = (level > 15) ? 15 : level;
 
@@ -11033,8 +11045,8 @@ void MainWorker::HeartbeatCheck()
 	typedef std::map<std::string, time_t>::iterator hb_components;
 	for (hb_components iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); iterator++) {
 		double dif = difftime(now, iterator->second);
-		//_log.Log(LOG_STATUS, "%s last checkin  %.2lf seconds ago", iterator->first.c_str(), dif);
-		if (dif > 20)
+		//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", iterator->first.c_str(), dif);
+		if (dif > 60)
 		{
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", iterator->first.c_str());
 		}
@@ -11053,7 +11065,7 @@ void MainWorker::HeartbeatCheck()
 			{
 				//Check Thread Timeout
 				double diff = difftime(now, pHardware->m_LastHeartbeat);
-				//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
+				//_log.Log(LOG_STATUS, "%d last checking  %.2lf seconds ago", iterator->first, dif);
 				if (diff > 60)
 				{
 					std::vector<std::vector<std::string> > result;
@@ -11190,7 +11202,10 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		return false;
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
+	if (pHardware)
+	{
+		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
+	}
 
 	std::stringstream sidx;
 	sidx << devidx;

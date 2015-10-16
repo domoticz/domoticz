@@ -131,6 +131,8 @@ bool KMTronic433::OpenSerialDevice()
 		_log.Log(LOG_ERROR, "KMTronic: Error opening serial port!");
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
+#else
+		(void)e;
 #endif
 		return false;
 	}

@@ -6,16 +6,15 @@
 #include "../notifications/NotificationHelper.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
-#include "../webserver/cWebem.h"
-#include "../httpclient/HTTPClient.h"
-
+#include "../main/EventSystem.h"
+#include "../hardware/hardwaretypes.h"
 #include <boost/algorithm/string.hpp>
 
 #include <iostream>
 
 #define round(a) ( int ) ( a + .5 )
 #define MAX_TITLE_LEN 40
-#define DEBUG_LOGGING false
+#define DEBUG_LOGGING (m_Port<0)
 
 void CKodiNode::CKodiStatus::Clear()
 {
@@ -154,8 +153,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	sprintf(m_szDevID, "%X%02X%02X%02X", 0, 0, (m_DevID & 0xFF00) >> 8, m_DevID & 0xFF);
 	m_Name = pName;
 	m_IP = pIP;
-	int iPort = atoi(pPort.c_str());
-	m_Port = (iPort > 0) ? iPort : 9090;
+	m_Port = atoi(pPort.c_str());
 	m_iTimeoutCnt = (pTimeoutMs > 999) ? pTimeoutMs / 1000 : pTimeoutMs;
 	m_iPollIntSec = PollIntervalsec;
 	m_iMissedPongs = 0;
@@ -353,6 +351,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 						break;
 					case 4:		//Shutdown details response
 						{
+							m_Stoppable = false;
 							std::string	sAction = "Nothing";
 							if (root["result"].isMember("canshutdown"))
 							{
@@ -369,12 +368,13 @@ void CKodiNode::handleMessage(std::string& pMessage)
 								bCanSuspend = root["result"]["cansuspend"].asBool();
 								if (bCanSuspend) sAction = "Suspend";
 							}
-							_log.Log(LOG_NORM, "Kodi: (%s) Switch Off: CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", m_Name.c_str(),
+							if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Switch Off: CanShutdown:%s, CanHibernate:%s, CanSuspend:%s. %s requested.", m_Name.c_str(),
 								bCanShutdown ? "true" : "false", bCanHibernate ? "true" : "false", bCanSuspend ? "true" : "false", sAction.c_str());
 
 							if (sAction != "Nothing")
 							{
-								std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":5}";
+								m_Stoppable = true;
+								std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System." + sAction + "\",\"id\":8}";
 								handleWrite(sMessage);
 							}
 						}
@@ -406,6 +406,10 @@ void CKodiNode::handleMessage(std::string& pMessage)
 							bCanSuspend = root["result"]["cansuspend"].asBool();
 						}
 						m_Stoppable = (bCanShutdown || bCanHibernate || bCanSuspend);
+						break;
+					case 8:		//Shutdown response
+						if (root["result"] == "OK")
+							_log.Log(LOG_NORM, "Kodi: (%s) Shutdown command accepted.", m_Name.c_str());
 						break;
 					default:
 						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown ID found: '%s'", m_Name.c_str(), pMessage.c_str());
@@ -451,10 +455,11 @@ void CKodiNode::UpdateStatus()
 		}
 	}
 
-	// 4:	Trigger Notifications on status change
+	// 4:	Trigger Notifications & events on status change
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status())
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), m_Name.c_str(), 0);
 	}
 
 	m_PreviousStatus = m_CurrentStatus;
@@ -466,12 +471,12 @@ void CKodiNode::handleConnect()
 	{
 		m_iMissedPongs = 0;
 		boost::system::error_code ec;
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(m_IP), m_Port);
+		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(m_IP), (m_Port>0 ? m_Port : m_Port*-1));
 		m_Socket = new boost::asio::ip::tcp::socket(*m_Ios);
 		m_Socket->connect(endpoint, ec);
 		if (!ec)
 		{
-			_log.Log(LOG_NORM, "Kodi: (%s) Connected.", m_Name.c_str());
+			_log.Log(LOG_NORM, "Kodi: (%s) Connected to '%s:%d'.", m_Name.c_str(), m_IP.c_str(), m_Port);
 			if (m_CurrentStatus.Status() == MSTAT_OFF)
 			{
 				m_CurrentStatus.Clear();
@@ -486,7 +491,7 @@ void CKodiNode::handleConnect()
 		{
 			if ((ec.value() != 113) && (ec.value() != 111) &&
 				(ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064) && (ec.value() != 10061)) // Connection failed due to no response, no route or active refusal
-				_log.Log(LOG_NORM, "Kodi: (%s) Connect failed: (%d) %s", m_Name.c_str(), ec.value(), ec.message().c_str());
+				_log.Log(LOG_NORM, "Kodi: (%s) Connect to '%s:%d' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), m_Port, ec.value(), ec.message().c_str());
 			delete m_Socket;
 			m_Socket = NULL;
 			m_CurrentStatus.Clear();
@@ -537,14 +542,18 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 
 void CKodiNode::handleWrite(std::string pMessage)
 {
-	if (!m_stoprequested)
+	if (!m_stoprequested) {
 		if (m_Socket)
 		{
 			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Sending data: '%s'", m_Name.c_str(), pMessage.c_str());
 			m_Socket->write_some(boost::asio::buffer(pMessage.c_str(), pMessage.length()));
 			m_sLastMessage = pMessage;
 		}
-		else _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to NULL socket: '%s'", m_Name.c_str(), pMessage.c_str());
+		else 
+    {
+      _log.Log(LOG_ERROR, "Kodi: (%s) Data not sent to NULL socket: '%s'", m_Name.c_str(), pMessage.c_str());
+    }
+  }
 }
 
 void CKodiNode::handleDisconnect()
@@ -671,8 +680,6 @@ void CKodiNode::SendCommand(const std::string &command)
 
 bool CKodiNode::SendShutdown()
 {
-	//		{"id":1,"jsonrpc":"2.0","result":{"canhibernate":false,"canreboot":false,"canshutdown":false,"cansuspend":false}}
-
 	std::string	sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":4}";
 	handleWrite(sMessage);
 
@@ -809,10 +816,6 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 	if (packettype != pTypeLighting2)
 		return false;
 
-	if (pSen->LIGHTING2.cmnd != light2_sOff)
-	{
-		return true;
-	}
 	long	DevID = (pSen->LIGHTING2.id3 << 8) | pSen->LIGHTING2.id4;
 
 	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
@@ -820,7 +823,20 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		if ((*itt)->m_DevID == DevID)
 		{
-			return (*itt)->SendShutdown();
+			switch (pSen->LIGHTING2.cmnd)
+			{
+			case light2_sOff:
+			case light2_sGroupOff:
+				return (*itt)->SendShutdown();
+			case gswitch_sStop:
+				(*itt)->SendCommand("stop");
+				return true;
+			case gswitch_sPause:
+				(*itt)->SendCommand("playpause");
+				return true;
+			default:
+				return true;
+			}
 		}
 	}
 
@@ -921,11 +937,11 @@ void CKodi::ReloadNodes()
 		// start the threads to control each kodi
 		for (std::vector<boost::shared_ptr<CKodiNode> >::iterator itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
 		{
-			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
+			_log.Log(LOG_NORM, "Kodi: (%s) Starting thread.", (*itt)->m_Name.c_str());
 			boost::thread* tAsync = new boost::thread(&CKodiNode::Do_Work, (*itt));
 		}
 		sleep_milliseconds(100);
-		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
+		_log.Log(LOG_NORM, "Kodi: Starting I/O service thread.");
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &m_ios));
 	}
 }
@@ -947,7 +963,7 @@ void CKodi::UnloadNodes()
 			(*itt)->StopRequest();
 			if (!(*itt)->IsBusy())
 			{
-				if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Removing device.", (*itt)->m_Name.c_str());
+				_log.Log(LOG_NORM, "Kodi: (%s) Removing device.", (*itt)->m_Name.c_str());
 				m_pNodes.erase(itt);
 				break;
 			}

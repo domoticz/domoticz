@@ -561,7 +561,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 				if (pSensorKwh) {
 					float Kwh;
 					if (pSensorKwh->GetValue(V_KWH, Kwh))
-						SendKwhMeterOldWay(pSensorKwh->nodeID, pSensorKwh->childID, pSensorKwh->batValue, floatValue / 1000.0f, Kwh, (!pChild->childName.empty()) ? pChild->childName : "Meter");
+						SendKwhMeter(pSensorKwh->nodeID, pSensorKwh->childID, pSensorKwh->batValue, floatValue, Kwh, (!pChild->childName.empty()) ? pChild->childName : "Meter");
 				}
 				else {
 					SendWattMeter(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Usage");
@@ -576,10 +576,10 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			if (pSensorWatt) {
 				float Watt;
 				if (pSensorWatt->GetValue(V_WATT, Watt))
-					SendKwhMeterOldWay(pChild->nodeID, pChild->childID, pChild->batValue, Watt / 1000.0f, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Meter");
+					SendKwhMeter(pChild->nodeID, pChild->childID, pChild->batValue, Watt, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Meter");
 			}
 			else {
-				SendKwhMeterOldWay(pChild->nodeID, pChild->childID, pChild->batValue, 0, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Meter");
+				SendKwhMeter(pChild->nodeID, pChild->childID, pChild->batValue, 0, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Meter");
 			}
 		}
 		break;
@@ -1109,8 +1109,13 @@ void MySensorsBase::ParseLine()
 	int ack = atoi(results[3].c_str());
 	int sub_type = atoi(results[4].c_str());
 	std::string payload = "";
-	if (results.size()>=6)
-		payload=results[5];
+	if (results.size() >= 6)
+	{
+		for (size_t ip = 0; ip < results.size() - 5; ip++)
+		{
+			payload = results[5+ip];
+		}
+	}
 
 	std::stringstream sstr;
 #ifdef _DEBUG
@@ -1545,7 +1550,6 @@ void MySensorsBase::ParseLine()
 		else if (vType == V_TEXT)
 		{
 			bool bExits = false;
-			std::string tmpstr = GetTextSensorText(node_id, child_sensor_id, bExits);
 			if (!bExits)
 			{
 				SendTextSensor(node_id, child_sensor_id, 244, "-", (!pSensor->childName.empty()) ? pSensor->childName : "Text Sensor");

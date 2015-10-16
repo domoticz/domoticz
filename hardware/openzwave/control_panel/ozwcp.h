@@ -115,7 +115,6 @@ class COpenZWaveControlPanel
 public:
 	COpenZWaveControlPanel();
 	~COpenZWaveControlPanel();
-	boost::mutex m_NotificationMutex;
 	void OnCPNotification(Notification const* _notification);
 	std::string SendPollResponse();
 	std::string SendNodeConfResponse(int node_id);
