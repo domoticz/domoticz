@@ -9004,7 +9004,7 @@ namespace http {
 				if (fileContents.size() > 0)
 				{
 					m_retstr.insert(m_retstr.begin(), fileContents.begin(), fileContents.end());
-					m_pWebEm->m_outputfilename = "domoticz.db";
+					session.outputfilename = "domoticz.db";
 				}
 			}
 			return m_retstr;

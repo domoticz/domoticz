@@ -692,7 +692,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, re
 
 	if (pfun!=myPages.end())
 	{
-		m_outputfilename="";
+		session.outputfilename="";
 		rep.status = reply::ok;
 		std::string retstr;
 		try
@@ -708,12 +708,12 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, re
 
 		std::string strMimeType=mime_types::extension_to_type(extension);
 		int extraheaders=0;
-		if (m_outputfilename!="")
+		if (session.outputfilename!="")
 		{
-			std::size_t last_dot_pos = m_outputfilename.find_last_of(".");
+			std::size_t last_dot_pos = session.outputfilename.find_last_of(".");
 			if (last_dot_pos != std::string::npos)
 			{
-				extension = m_outputfilename.substr(last_dot_pos + 1);
+				extension = session.outputfilename.substr(last_dot_pos + 1);
 				strMimeType=mime_types::extension_to_type(extension);
 			}
 			extraheaders=1;
@@ -743,10 +743,10 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, re
 				rep.headers[iHeader].name = "Keep-Alive";
 				rep.headers[iHeader++].value = "max=20, timeout=10";
 			}
-			if (m_outputfilename != "")
+			if (session.outputfilename != "")
 			{
 				rep.headers[iHeader].name = "Content-Disposition";
-				rep.headers[iHeader++].value = "attachment; filename=" + m_outputfilename;
+				rep.headers[iHeader++].value = "attachment; filename=" + session.outputfilename;
 			}
 		}
 		else
@@ -764,10 +764,10 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, const request& req, re
 				rep.headers[iHeader].name = "Keep-Alive";
 				rep.headers[iHeader++].value = "max=20, timeout=10";
 			}
-			if (m_outputfilename != "")
+			if (session.outputfilename != "")
 			{
 				rep.headers[iHeader].name = "Content-Disposition";
-				rep.headers[iHeader++].value = "attachment; filename=" + m_outputfilename;
+				rep.headers[iHeader++].value = "attachment; filename=" + session.outputfilename;
 			}
 		}
 		return true;

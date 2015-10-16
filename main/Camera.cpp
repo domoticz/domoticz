@@ -394,7 +394,7 @@ namespace http {
 					goto exitproc;
 			}
 			m_retstr.insert(m_retstr.begin(), camimage.begin(), camimage.end());
-			m_pWebEm->m_outputfilename = "snapshot.jpg";
+			session.outputfilename = "snapshot.jpg";
 		exitproc:
 			return m_retstr;
 		}
@@ -410,7 +410,7 @@ namespace http {
 			if (!m_mainworker.m_cameras.TakeSnapshot(idx, camimage))
 				goto exitproc;
 			m_retstr.insert(m_retstr.begin(), camimage.begin(), camimage.end());
-			m_pWebEm->m_outputfilename = "snapshot.jpg";
+			session.outputfilename = "snapshot.jpg";
 		exitproc:
 			return m_retstr;
 		}

@@ -38,6 +38,7 @@ namespace http {
 			bool removecookie;
 			bool forcelogin;
 			std::string lastRequestPath;
+			std::string outputfilename;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
@@ -197,7 +198,6 @@ namespace http {
 			void SetZipPassword(std::string password);
 			void MakeValuesFromPostContent(const request *req);
 			std::string m_zippassword;
-			std::string m_outputfilename;
 			std::map<std::string,WebEmSession> m_sessions;
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)

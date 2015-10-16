@@ -4733,7 +4733,7 @@ namespace http {
 					m_retstr = pOZWHardware->GetConfigFile(szConfigFile);
 					if (m_retstr != "")
 					{
-						m_pWebEm->m_outputfilename = szConfigFile;
+						session.outputfilename = szConfigFile;
 					}
 				}
 			}
@@ -4772,7 +4772,7 @@ namespace http {
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 					m_retstr = pOZWHardware->m_ozwcp.SendPollResponse();
-					m_pWebEm->m_outputfilename = "poll.xml";
+					session.outputfilename = "poll.xml";
 				}
 			}
 			return m_retstr;
@@ -4934,7 +4934,7 @@ namespace http {
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 					m_retstr = pOZWHardware->m_ozwcp.GetCPTopo();
-					m_pWebEm->m_outputfilename = "topo.xml";
+					session.outputfilename = "topo.xml";
 				}
 			}
 			return m_retstr;
@@ -4952,7 +4952,7 @@ namespace http {
 			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 			boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 			m_retstr = pOZWHardware->GetCPStats();
-			m_pWebEm->m_outputfilename = "stats.xml";
+			session.outputfilename = "stats.xml";
 			}
 			}
 			*/
