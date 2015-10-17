@@ -385,7 +385,8 @@ void CLogitechMediaServer::GetPlayerInfo()
 					(model == "squeezeplayer") ||		//SqueezePlay
 					(model == "baby") ||				//Squeezebox Radio
 					(model == "fab4") ||				//Squeezebox Touch
-					(model == "iPengiPod") ||			//iPeng iOS App
+					(model == "iPengiPod") ||			//iPeng iPhone App
+					(model == "iPengiPad") ||			//iPeng iPad App
 					(model == "squeezelite")			//Max2Play SqueezePlug
 					)
 				{
