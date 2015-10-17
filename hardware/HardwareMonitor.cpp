@@ -57,8 +57,8 @@ CHardwareMonitor::CHardwareMonitor(const int ID)
 	m_pLocator = NULL;
 	m_pServicesOHM = NULL;
 	m_pServicesSystem = NULL;
-	CoInitializeEx(0, COINIT_MULTITHREADED);
-	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
+//	CoInitializeEx(0, COINIT_MULTITHREADED);
+//	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 #endif
 }
 
@@ -67,7 +67,7 @@ CHardwareMonitor::~CHardwareMonitor(void)
 {
 	StopHardware();
 #ifdef WIN32
-	CoUninitialize();
+//	CoUninitialize();
 #endif
 }
 
@@ -439,6 +439,11 @@ bool CHardwareMonitor::InitWMI()
 	hr = m_pLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesSystem);
 	if (FAILED(hr))
 		return false;
+	if (!IsOHMRunning())
+	{
+		_log.Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
+		return false;
+	}
 	return true;
 }
 

@@ -1016,9 +1016,6 @@
     <ClCompile Include="..\hardware\PhilipsHue.cpp">
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
-      <Filter>Devices\ZWave\OpenZWave</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
       <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
     </ClCompile>
@@ -1225,6 +1222,9 @@
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationLogitechMediaServer.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
+      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
