@@ -7835,7 +7835,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 				(pHardware->HwdType == HTYPE_RFXtrx433)
 				)
 			{
-				volt /= 10;
+				volt *= 10;
 			}
 			sprintf(szTmp, "%d", volt);
 		}
