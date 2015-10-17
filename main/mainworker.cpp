@@ -7829,7 +7829,15 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 	case sTypeRFXSensorVolt:
 		{
 			volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
-			sprintf(szTmp,"%d",volt);
+			if (
+				(pHardware->HwdType == HTYPE_RFXLAN) ||
+				(pHardware->HwdType == HTYPE_RFXtrx315) ||
+				(pHardware->HwdType == HTYPE_RFXtrx433)
+				)
+			{
+				volt *= 10;
+			}
+			sprintf(szTmp, "%d", volt);
 		}
 		break;
 	}
@@ -11037,8 +11045,8 @@ void MainWorker::HeartbeatCheck()
 	typedef std::map<std::string, time_t>::iterator hb_components;
 	for (hb_components iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); iterator++) {
 		double dif = difftime(now, iterator->second);
-		//_log.Log(LOG_STATUS, "%s last checkin  %.2lf seconds ago", iterator->first.c_str(), dif);
-		if (dif > 20)
+		//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", iterator->first.c_str(), dif);
+		if (dif > 60)
 		{
 			_log.Log(LOG_ERROR, "%s thread seems to have ended unexpectedly", iterator->first.c_str());
 		}
@@ -11057,7 +11065,7 @@ void MainWorker::HeartbeatCheck()
 			{
 				//Check Thread Timeout
 				double diff = difftime(now, pHardware->m_LastHeartbeat);
-				//_log.Log(LOG_STATUS, "%d last checkin  %.2lf seconds ago", iterator->first, dif);
+				//_log.Log(LOG_STATUS, "%d last checking  %.2lf seconds ago", iterator->first, dif);
 				if (diff > 60)
 				{
 					std::vector<std::vector<std::string> > result;

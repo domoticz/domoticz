@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1074
+# ref 1078
 
 CACHE:
 # CSS
@@ -504,7 +504,6 @@ js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
 secpanel/js/less.js
-secpanel/js/ion.sound.js
 ozwcp/cp.js
 
 #Dynamic theme

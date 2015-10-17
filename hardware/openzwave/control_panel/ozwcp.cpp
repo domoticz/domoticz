@@ -1121,11 +1121,21 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 			if (nodes[i] != NULL && nodes[i]->getChanged()) {
 				bool listening;
 				bool flirs;
+				bool zwaveplus;
 				TiXmlElement* nodeElement = new TiXmlElement("node");
 				pollElement->LinkEndChild(nodeElement);
 				nodeElement->SetAttribute("id", i);
-				nodeElement->SetAttribute("btype", nodeBasicStr(Manager::Get()->GetNodeBasic(homeId, i)));
-				nodeElement->SetAttribute("gtype", Manager::Get()->GetNodeType(homeId, i).c_str());
+				zwaveplus = Manager::Get()->IsNodeZWavePlus(homeId, i); 
+				if (zwaveplus) {
+					string value = Manager::Get()->GetNodePlusTypeString(homeId, i);
+					value += " " + Manager::Get()->GetNodeRoleString(homeId, i);
+					nodeElement->SetAttribute("btype", value.c_str());
+					nodeElement->SetAttribute("gtype", Manager::Get()->GetNodeDeviceTypeString(homeId, i).c_str());
+				}
+				else {
+					nodeElement->SetAttribute("btype", nodeBasicStr(Manager::Get()->GetNodeBasic(homeId, i)));
+					nodeElement->SetAttribute("gtype", Manager::Get()->GetNodeType(homeId, i).c_str());
+				}
 				nodeElement->SetAttribute("name", Manager::Get()->GetNodeName(homeId, i).c_str());
 				nodeElement->SetAttribute("location", Manager::Get()->GetNodeLocation(homeId, i).c_str());
 				nodeElement->SetAttribute("manufacturer", Manager::Get()->GetNodeManufacturerName(homeId, i).c_str());
@@ -1134,10 +1144,11 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 				nodeElement->SetAttribute("listening", listening ? "true" : "false");
 				flirs = Manager::Get()->IsNodeFrequentListeningDevice(homeId, i);
 				nodeElement->SetAttribute("frequent", flirs ? "true" : "false");
+				nodeElement->SetAttribute("zwaveplus", zwaveplus ? "true" : "false");
 				nodeElement->SetAttribute("beam", Manager::Get()->IsNodeBeamingDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("routing", Manager::Get()->IsNodeRoutingDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("security", Manager::Get()->IsNodeSecurityDevice(homeId, i) ? "true" : "false");
-				nodeElement->SetAttribute("time", (uint32)nodes[i]->getTime());
+				nodeElement->SetAttribute("time", nodes[i]->getTime()); 
 #ifdef OZW_WRITE_LOG
 				Log::Write(LogLevel_Info,"i=%d failed=%d\n", i, Manager::Get()->IsNodeFailed(homeId, i));
 				Log::Write(LogLevel_Info,"i=%d awake=%d\n", i, Manager::Get()->IsNodeAwake(homeId, i));
@@ -1159,7 +1170,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 							s = s + (Manager::Get()->IsNodeAwake(homeId, i) ? " (awake)" : " (sleeping)");
 						nodeElement->SetAttribute("status", s.c_str());
 					}
-				}
+				} 
 				web_get_groups(i, nodeElement);
 				// Don't think the UI needs these
 				//web_get_genre(ValueID::ValueGenre_Basic, i, nodeElement);
@@ -1242,115 +1253,75 @@ std::string COpenZWaveControlPanel::DoAdminCommand(const std::string &fun, const
 	}
 	else if (fun == "addd") {
 		setAdminFunction("Add Device");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_AddDevice,
-			web_controller_update, this, true));
+		setAdminState(Manager::Get()->AddNode(homeId, false));
+	}
+	else if (fun == "addds") {
+		setAdminFunction("Add Device");
+		setAdminState(Manager::Get()->AddNode(homeId, true));
 	}
 	else if (fun == "cprim") {
 		setAdminFunction("Create Primary");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_CreateNewPrimary,
-			web_controller_update, this, true));
+		setAdminState(Manager::Get()->CreateNewPrimary(homeId));
 	}
 	else if (fun == "rconf") {
 		setAdminFunction("Receive Configuration");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_ReceiveConfiguration,
-			web_controller_update, this, true));
+		setAdminState(Manager::Get()->ReceiveConfiguration(homeId));
 	}
 	else if (fun == "remd") {
 		setAdminFunction("Remove Device");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_RemoveDevice,
-			web_controller_update, this, true));
+		setAdminState(Manager::Get()->RemoveNode(homeId));
 	}
 	else if (fun == "hnf") {
 		setAdminFunction("Has Node Failed");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_HasNodeFailed,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->HasNodeFailed(homeId, node_id));
 	}
 	else if (fun == "remfn") {
 		setAdminFunction("Remove Failed Node");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_RemoveFailedNode,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->RemoveFailedNode(homeId, node_id));
 	}
 	else if (fun == "repfn") {
 		setAdminFunction("Replace Failed Node");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_ReplaceFailedNode,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->ReplaceFailedNode(homeId, node_id));
 	}
 	else if (fun == "tranpr") {
 		setAdminFunction("Transfer Primary Role");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_TransferPrimaryRole,
-			web_controller_update, this, true));
+		setAdminState(Manager::Get()->TransferPrimaryRole(homeId));
 	}
 	else if (fun == "reqnu") {
 		setAdminFunction("Request Network Update");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_RequestNetworkUpdate,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->RequestNetworkUpdate(homeId, node_id));
 	}
 	else if (fun == "reqnnu") {
 		setAdminFunction("Request Node Neighbor Update");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_RequestNodeNeighborUpdate,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->RequestNodeNeighborUpdate(homeId, node_id));
 	}
 	else if (fun == "assrr") {
 		setAdminFunction("Assign Return Route");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_AssignReturnRoute,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->AssignReturnRoute(homeId, node_id));
 	}
 	else if (fun == "delarr") {
 		setAdminFunction("Delete All Return Routes");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_DeleteAllReturnRoutes,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->DeleteAllReturnRoutes(homeId, node_id));
 	}
 	else if (fun == "snif") {
 		setAdminFunction("Send Node Information");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_SendNodeInformation,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->SendNodeInformation(homeId, node_id));
 	}
 	else if (fun == "reps") {
 		setAdminFunction("Replication Send");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_ReplicationSend,
-			web_controller_update, this, true, node_id));
+		setAdminState(Manager::Get()->ReplicationSend(homeId, node_id));
 	}
 	else if (fun == "addbtn") {
 		setAdminFunction("Add Button");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_CreateButton,
-			web_controller_update, this, true, node_id, button_id));
+		setAdminState(Manager::Get()->CreateButton(homeId, node_id, button_id));
 	}
 	else if (fun == "delbtn") {
 		setAdminFunction("Delete Button");
-		setAdminState(
-			Manager::Get()->BeginControllerCommand(homeId,
-			Driver::ControllerCommand_DeleteButton,
-			web_controller_update, this, true, node_id, button_id));
+		setAdminState(Manager::Get()->DeleteButton(homeId, node_id, button_id));
+	}
+	else if (fun == "refreshnode") {
+		//duo a possible bug in openzwave, this is now disabled (you could end up with miljions of log lines)
+		//Manager::Get()->RefreshNodeInfo(homeId, node_id);
 	}
 	return "OK";
 }
