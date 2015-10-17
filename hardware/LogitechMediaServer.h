@@ -19,7 +19,6 @@ class CLogitechMediaServer : public CDomoticzHardwareBase
 		_eMediaStatus	nStatus;
 		std::string		sStatus;
 		std::string		sShortStatus;
-		//		boost::mutex	mutDevice;
 	};
 public:
 	CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms);
@@ -55,7 +54,7 @@ private:
 	int m_iPingTimeoutms;
 	std::string	m_IP;
 	int	m_Port;
-	bool m_bShowedUnsupported;
+	bool m_bShowedStartupMessage;
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
