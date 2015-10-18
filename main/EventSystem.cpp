@@ -3100,10 +3100,10 @@ namespace http {
 			//root["status"]="OK";
 			root["title"] = "Events";
 
-			std::string cparam = req.findValue(&req, "param");
+			std::string cparam = request::findValue(&req, "param");
 			if (cparam == "")
 			{
-				cparam = req.findValue(&req, "dparam");
+				cparam = request::findValue(&req, "dparam");
 				if (cparam == "")
 				{
 					return;
@@ -3157,7 +3157,7 @@ namespace http {
 			{
 				root["title"] = "LoadEvent";
 
-				std::string idx = req.findValue(&req, "event");
+				std::string idx = request::findValue(&req, "event");
 				if (idx == "")
 					return;
 
@@ -3192,22 +3192,22 @@ namespace http {
 
 				root["title"] = "AddEvent";
 
-				std::string eventname = req.findValue(&req, "name");
+				std::string eventname = request::findValue(&req, "name");
 				if (eventname == "")
 					return;
 
-				std::string eventxml = req.findValue(&req, "xml");
+				std::string eventxml = request::findValue(&req, "xml");
 				if (eventxml == "")
 					return;
 
-				std::string eventactive = req.findValue(&req, "eventstatus");
+				std::string eventactive = request::findValue(&req, "eventstatus");
 				if (eventactive == "")
 					return;
 
-				std::string eventid = req.findValue(&req, "eventid");
+				std::string eventid = request::findValue(&req, "eventid");
 
 
-				std::string eventlogic = req.findValue(&req, "logicarray");
+				std::string eventlogic = request::findValue(&req, "logicarray");
 				if (eventlogic == "")
 					return;
 
@@ -3273,7 +3273,7 @@ namespace http {
 			else if (cparam == "delete")
 			{
 				root["title"] = "DeleteEvent";
-				std::string idx = req.findValue(&req, "event");
+				std::string idx = request::findValue(&req, "event");
 				if (idx == "")
 					return;
 				m_sql.DeleteEvent(idx);

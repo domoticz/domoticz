@@ -671,7 +671,7 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}

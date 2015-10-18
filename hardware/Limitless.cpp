@@ -525,7 +525,7 @@ namespace http {
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -536,7 +536,7 @@ namespace http {
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
 
-			int Mode1 = atoi(req.findValue(&req, "LimitlessType").c_str());
+			int Mode1 = atoi(request::findValue(&req, "LimitlessType").c_str());
 			int Mode2 = atoi(result[0][1].c_str());
 			int Mode3 = atoi(result[0][2].c_str());
 			int Mode4 = atoi(result[0][3].c_str());

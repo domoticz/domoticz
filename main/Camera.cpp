@@ -347,7 +347,7 @@ namespace http {
 	namespace server {
 		void CWebServer::RType_Cameras(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string rused = req.findValue(&req, "used");
+			std::string rused = request::findValue(&req, "used");
 
 			root["status"] = "OK";
 			root["title"] = "Cameras";
@@ -403,7 +403,7 @@ namespace http {
 		{
 			m_retstr = "";
 			std::vector<unsigned char> camimage;
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				goto exitproc;
 

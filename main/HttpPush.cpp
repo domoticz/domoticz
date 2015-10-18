@@ -289,14 +289,14 @@ namespace http {
 				return;
 			}
 
-			std::string url = req.findValue(&req, "url");
-			std::string method = req.findValue(&req, "method");
-			std::string data = req.findValue(&req, "data");
-			std::string linkactive = req.findValue(&req, "linkactive");
-			std::string debugenabled = req.findValue(&req, "debugenabled");
-			std::string auth = req.findValue(&req, "auth");
-			std::string authbasiclogin = req.findValue(&req, "authbasiclogin");
-			std::string authbasicpassword = req.findValue(&req, "authbasicpassword");
+			std::string url = request::findValue(&req, "url");
+			std::string method = request::findValue(&req, "method");
+			std::string data = request::findValue(&req, "data");
+			std::string linkactive = request::findValue(&req, "linkactive");
+			std::string debugenabled = request::findValue(&req, "debugenabled");
+			std::string auth = request::findValue(&req, "auth");
+			std::string authbasiclogin = request::findValue(&req, "authbasiclogin");
+			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
 			if (
 				(url == "") ||
 				(data == "") ||
@@ -401,17 +401,17 @@ namespace http {
 
 		void CWebServer::Cmd_SaveHttpLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
-			std::string deviceid = req.findValue(&req, "deviceid");
+			std::string idx = request::findValue(&req, "idx");
+			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
-			std::string valuetosend = req.findValue(&req, "valuetosend");
-			std::string targettype = req.findValue(&req, "targettype");
+			std::string valuetosend = request::findValue(&req, "valuetosend");
+			std::string targettype = request::findValue(&req, "targettype");
 			int targettypei = atoi(targettype.c_str());
-			std::string targetvariable = req.findValue(&req, "targetvariable");
-			std::string targetdeviceid = req.findValue(&req, "targetdeviceid");
-			std::string targetproperty = req.findValue(&req, "targetproperty");
-			std::string linkactive = req.findValue(&req, "linkactive");
-			std::string includeunit = req.findValue(&req, "includeunit");
+			std::string targetvariable = request::findValue(&req, "targetvariable");
+			std::string targetdeviceid = request::findValue(&req, "targetdeviceid");
+			std::string targetproperty = request::findValue(&req, "targetproperty");
+			std::string linkactive = request::findValue(&req, "linkactive");
+			std::string includeunit = request::findValue(&req, "includeunit");
 			if ((targettypei == 0) && (targetvariable == ""))
 				return;
 			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
@@ -457,7 +457,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			m_sql.safe_query("DELETE FROM HttpLink WHERE (ID=='%q')", idx.c_str());

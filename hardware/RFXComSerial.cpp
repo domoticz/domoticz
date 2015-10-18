@@ -878,8 +878,8 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string hardwareid = req.findValue(&req, "hardwareid");
-			std::string firmwarefile = req.findValue(&req, "firmwarefile");
+			std::string hardwareid = request::findValue(&req, "hardwareid");
+			std::string firmwarefile = request::findValue(&req, "firmwarefile");
 
 			if (firmwarefile.empty())
 			{
@@ -930,7 +930,7 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -956,31 +956,31 @@ namespace http {
 			Response.ICMND.msg5 = Mode5;
 			Response.ICMND.msg6 = Mode6;
 
-			Response.IRESPONSE.UNDECODEDenabled = (req.findValue(&req, "undecon") == "on") ? 1 : 0;
-			Response.IRESPONSE.X10enabled = (req.findValue(&req, "X10") == "on") ? 1 : 0;
-			Response.IRESPONSE.ARCenabled = (req.findValue(&req, "ARC") == "on") ? 1 : 0;
-			Response.IRESPONSE.ACenabled = (req.findValue(&req, "AC") == "on") ? 1 : 0;
-			Response.IRESPONSE.HEEUenabled = (req.findValue(&req, "HomeEasyEU") == "on") ? 1 : 0;
-			Response.IRESPONSE.MEIANTECHenabled = (req.findValue(&req, "Meiantech") == "on") ? 1 : 0;
-			Response.IRESPONSE.OREGONenabled = (req.findValue(&req, "OregonScientific") == "on") ? 1 : 0;
-			Response.IRESPONSE.ATIenabled = (req.findValue(&req, "ATIremote") == "on") ? 1 : 0;
-			Response.IRESPONSE.VISONICenabled = (req.findValue(&req, "Visonic") == "on") ? 1 : 0;
-			Response.IRESPONSE.MERTIKenabled = (req.findValue(&req, "Mertik") == "on") ? 1 : 0;
-			Response.IRESPONSE.LWRFenabled = (req.findValue(&req, "ADLightwaveRF") == "on") ? 1 : 0;
-			Response.IRESPONSE.HIDEKIenabled = (req.findValue(&req, "HidekiUPM") == "on") ? 1 : 0;
-			Response.IRESPONSE.LACROSSEenabled = (req.findValue(&req, "LaCrosse") == "on") ? 1 : 0;
-			Response.IRESPONSE.FS20enabled = (req.findValue(&req, "FS20") == "on") ? 1 : 0;
-			Response.IRESPONSE.PROGUARDenabled = (req.findValue(&req, "ProGuard") == "on") ? 1 : 0;
-			Response.IRESPONSE.BLINDST0enabled = (req.findValue(&req, "BlindT0") == "on") ? 1 : 0;
-			Response.IRESPONSE.BLINDST1enabled = (req.findValue(&req, "BlindT1T2T3T4") == "on") ? 1 : 0;
-			Response.IRESPONSE.AEenabled = (req.findValue(&req, "AEBlyss") == "on") ? 1 : 0;
-			Response.IRESPONSE.RUBICSONenabled = (req.findValue(&req, "Rubicson") == "on") ? 1 : 0;
-			Response.IRESPONSE.FINEOFFSETenabled = (req.findValue(&req, "FineOffsetViking") == "on") ? 1 : 0;
-			Response.IRESPONSE.LIGHTING4enabled = (req.findValue(&req, "Lighting4") == "on") ? 1 : 0;
-			Response.IRESPONSE.RSLenabled = (req.findValue(&req, "RSL") == "on") ? 1 : 0;
-			Response.IRESPONSE.SXenabled = (req.findValue(&req, "ByronSX") == "on") ? 1 : 0;
-			Response.IRESPONSE.IMAGINTRONIXenabled = (req.findValue(&req, "ImaginTronix") == "on") ? 1 : 0;
-			Response.IRESPONSE.KEELOQenabled = (req.findValue(&req, "Keeloq") == "on") ? 1 : 0;
+			Response.IRESPONSE.UNDECODEDenabled = (request::findValue(&req, "undecon") == "on") ? 1 : 0;
+			Response.IRESPONSE.X10enabled = (request::findValue(&req, "X10") == "on") ? 1 : 0;
+			Response.IRESPONSE.ARCenabled = (request::findValue(&req, "ARC") == "on") ? 1 : 0;
+			Response.IRESPONSE.ACenabled = (request::findValue(&req, "AC") == "on") ? 1 : 0;
+			Response.IRESPONSE.HEEUenabled = (request::findValue(&req, "HomeEasyEU") == "on") ? 1 : 0;
+			Response.IRESPONSE.MEIANTECHenabled = (request::findValue(&req, "Meiantech") == "on") ? 1 : 0;
+			Response.IRESPONSE.OREGONenabled = (request::findValue(&req, "OregonScientific") == "on") ? 1 : 0;
+			Response.IRESPONSE.ATIenabled = (request::findValue(&req, "ATIremote") == "on") ? 1 : 0;
+			Response.IRESPONSE.VISONICenabled = (request::findValue(&req, "Visonic") == "on") ? 1 : 0;
+			Response.IRESPONSE.MERTIKenabled = (request::findValue(&req, "Mertik") == "on") ? 1 : 0;
+			Response.IRESPONSE.LWRFenabled = (request::findValue(&req, "ADLightwaveRF") == "on") ? 1 : 0;
+			Response.IRESPONSE.HIDEKIenabled = (request::findValue(&req, "HidekiUPM") == "on") ? 1 : 0;
+			Response.IRESPONSE.LACROSSEenabled = (request::findValue(&req, "LaCrosse") == "on") ? 1 : 0;
+			Response.IRESPONSE.FS20enabled = (request::findValue(&req, "FS20") == "on") ? 1 : 0;
+			Response.IRESPONSE.PROGUARDenabled = (request::findValue(&req, "ProGuard") == "on") ? 1 : 0;
+			Response.IRESPONSE.BLINDST0enabled = (request::findValue(&req, "BlindT0") == "on") ? 1 : 0;
+			Response.IRESPONSE.BLINDST1enabled = (request::findValue(&req, "BlindT1T2T3T4") == "on") ? 1 : 0;
+			Response.IRESPONSE.AEenabled = (request::findValue(&req, "AEBlyss") == "on") ? 1 : 0;
+			Response.IRESPONSE.RUBICSONenabled = (request::findValue(&req, "Rubicson") == "on") ? 1 : 0;
+			Response.IRESPONSE.FINEOFFSETenabled = (request::findValue(&req, "FineOffsetViking") == "on") ? 1 : 0;
+			Response.IRESPONSE.LIGHTING4enabled = (request::findValue(&req, "Lighting4") == "on") ? 1 : 0;
+			Response.IRESPONSE.RSLenabled = (request::findValue(&req, "RSL") == "on") ? 1 : 0;
+			Response.IRESPONSE.SXenabled = (request::findValue(&req, "ByronSX") == "on") ? 1 : 0;
+			Response.IRESPONSE.IMAGINTRONIXenabled = (request::findValue(&req, "ImaginTronix") == "on") ? 1 : 0;
+			Response.IRESPONSE.KEELOQenabled = (request::findValue(&req, "Keeloq") == "on") ? 1 : 0;
 
 			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
 
@@ -990,7 +990,7 @@ namespace http {
 		{
 			root["status"] = "ERR";
 			root["title"] = "GetFirmwareUpgradePercentage";
-			std::string hardwareid = req.findValue(&req, "hardwareid");
+			std::string hardwareid = request::findValue(&req, "hardwareid");
 
 			CDomoticzHardwareBase *pHardware = NULL;
 			if ((!hardwareid.empty()) && (hardwareid != "undefined"))

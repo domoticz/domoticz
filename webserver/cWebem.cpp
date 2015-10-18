@@ -324,7 +324,7 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 
 	if( req.method == "POST" )
 	{
-		const char *pContent_Type=req.get_req_header(&req,"Content-Type");
+		const char *pContent_Type=request::get_req_header(&req,"Content-Type");
 		if (pContent_Type)
 		{
 			if (strstr(pContent_Type,"multipart/form-data")!=NULL)
@@ -566,7 +566,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		request_path=request_path.substr(0,paramPos);
 	}
 	if (req.method == "POST") {
-		const char *pContent_Type = req.get_req_header(&req, "Content-Type");
+		const char *pContent_Type = request::get_req_header(&req, "Content-Type");
 		if (pContent_Type)
 		{
 			if (strstr(pContent_Type, "multipart") != NULL)
@@ -798,7 +798,7 @@ void cWebem::AddUserPassword(const unsigned long ID, const std::string &username
 void cWebem::ClearUserPasswords()
 {
 	m_userpasswords.clear();
-	m_sessions.clear();
+	m_sessions.clear(); //TODO : check if it is really necessary
 }
 
 void cWebem::AddLocalNetworks(std::string network)
@@ -917,7 +917,7 @@ int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 {
 	const char *auth_header;
 
-	if ((auth_header = req.get_req_header(&req, "Authorization")) == NULL)
+	if ((auth_header = request::get_req_header(&req, "Authorization")) == NULL)
 	{
 		return 0;
 	}
@@ -1051,14 +1051,14 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 	{
 		//We could be using a proxy server
 		//Check if we have the "X-Forwarded-For" (connection via proxy)
-		const char *host_header=req.get_req_header(&req, "X-Forwarded-For");
+		const char *host_header=request::get_req_header(&req, "X-Forwarded-For");
 		if (host_header!=NULL)
 		{
 			host=host_header;
 			if (strstr(host_header,",")!=NULL)
 			{
 				//Multiple proxies are used... this is not very common
-				host_header=req.get_req_header(&req, "X-Real-IP"); //try our NGINX header
+				host_header=request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
 				if (!host_header)
 				{
 					_log.Log(LOG_ERROR,"Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote addresses: %s)",host.c_str());
@@ -1179,7 +1179,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 
 	const char *encoding_header;
 	//check gzip support if yes, send it back in gzip format
-	if ((encoding_header = req.get_req_header(&req, "Accept-Encoding")) != NULL)
+	if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != NULL)
 	{
 		//see if we support gzip
 		bool bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
@@ -1231,7 +1231,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 	}
 
 	//Check cookie if still valid
-	const char* cookie_header = req.get_req_header(&req, "Cookie");
+	const char* cookie_header = request::get_req_header(&req, "Cookie");
 	if (cookie_header != NULL)
 	{
 		std::string scookie = cookie_header;
@@ -1278,6 +1278,9 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 					}
 					else
 					{
+						// TODO: replace the following code to retrieve (username,auth_token,lasttouch) from database with sSID
+						// If auth_tokens match then authenticate the user otherwise do nothing else but remove cookie.
+
 						//Session ID not found, lets add it if its correct
 						std::vector<_tWebUserPassword>::iterator itt;
 						for (itt = myWebem->m_userpasswords.begin(); itt != myWebem->m_userpasswords.end(); ++itt)
@@ -1367,6 +1370,8 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	WebEmSession session;
 	session.isnew = false;
 	session.removecookie = false;
+	session.forcelogin = false;
+	session.rememberme = false;
 
 	rep.bIsGZIP = false;
 
@@ -1377,7 +1382,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		{
 			//Remove session id based on cookie
 			const char *cookie;
-			cookie = req.get_req_header(&req, "Cookie");
+			cookie = request::get_req_header(&req, "Cookie");
 			if (cookie!=NULL)
 			{
 				std::string scookie = cookie;
@@ -1399,16 +1404,18 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		}
 		else
 		{
-			if (!CheckAuthentication(sHost, session, req, rep))
+			if (!CheckAuthentication(sHost, session, req, rep)) {
 				return;
+			}
 		}
 	}
 	else 
 	{
 		if (bCheckAuthentication)
 		{
-			if (!CheckAuthentication(sHost, session, req, rep))
+			if (!CheckAuthentication(sHost, session, req, rep)) {
 				return;
+			}
 		}
 	}
 
@@ -1420,15 +1427,15 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	int q = -1;
 	if (req.method != "POST") {
 		q = uri.find(".webem");
-	}
-	else {
+	} else {
 		q = uri.find(".webem");
 	}
 	if (q != -1)
 	{
 		//post actions only allowed when authenticated and user has admin rights
-		if (!CheckAuthentication(sHost, session, req, rep))
+		if (!CheckAuthentication(sHost, session, req, rep)) {
 			return;
+		}
 		if (session.rights != 2)
 		{
 			rep = reply::stock_reply(reply::forbidden);
@@ -1499,6 +1506,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			if (itt->Username == session.username)
 			{
 				session.id = generateSessionID();
+				// TODO : generate new auth_token, add it to session, cookie and database (as hash)
 				myWebem->m_sessions[session.id] = session;
 				send_cookie(rep, session.id, session.lasttouch);
 				break;
@@ -1507,6 +1515,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	}
 	else if (session.removecookie == true)
 	{
+		// TODO : delete auth_token from database
 		send_remove_cookie(rep);
 	}
 	else if (session.id.size()>0)
@@ -1518,6 +1527,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			if (myWebem->m_sessions[session.id].lasttouch - 60 < atime)
 			{
 				myWebem->m_sessions[session.id].lasttouch = atime + SESSION_TIMEOUT;
+				// TODO : generate new auth_token, add it to session, cookie and database (as hash)
 				send_cookie(rep, session.id, myWebem->m_sessions[session.id].lasttouch);
 			}
 		}

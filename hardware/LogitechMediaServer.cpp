@@ -670,9 +670,9 @@ namespace http {
 				//No admin user, and not allowed to be here
 				return;
 			}
-			std::string hwid = req.findValue(&req, "idx");
-			std::string mode1 = req.findValue(&req, "mode1");
-			std::string mode2 = req.findValue(&req, "mode2");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string mode1 = request::findValue(&req, "mode1");
+			std::string mode2 = request::findValue(&req, "mode2");
 			if (
 				(hwid == "") ||
 				(mode1 == "") ||
@@ -700,7 +700,7 @@ namespace http {
 
 		void CWebServer::Cmd_LMSGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = req.findValue(&req, "idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -733,8 +733,8 @@ namespace http {
 
 		void CWebServer::Cmd_LMSMediaCommand(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sIdx = req.findValue(&req, "idx");
-			std::string sAction = req.findValue(&req, "action");
+			std::string sIdx = request::findValue(&req, "idx");
+			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
 			int idx = atoi(sIdx.c_str());

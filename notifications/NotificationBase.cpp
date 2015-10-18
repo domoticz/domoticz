@@ -148,8 +148,8 @@ std::string CNotificationBase::GetSubsystemId()
 void CNotificationBase::ConfigFromGetvars(const request& req, const bool save)
 {
 	for (it_conf_type iter = _configValues.begin(); iter != _configValues.end(); ++iter) {
-		if (req.hasValue(&req, iter->first.c_str())) {
-			std::string Value = CURLEncode::URLDecode(std::string(req.findValue(&req, iter->first.c_str())));
+		if (request::hasValue(&req, iter->first.c_str())) {
+			std::string Value = CURLEncode::URLDecode(std::string(request::findValue(&req, iter->first.c_str())));
 			*(iter->second) = Value;
 			if (save) {
 				m_sql.UpdatePreferencesVar(iter->first, Value);
@@ -158,8 +158,8 @@ void CNotificationBase::ConfigFromGetvars(const request& req, const bool save)
 	}
 	for (it_conf_type_int iter2 = _configValuesInt.begin(); iter2 != _configValuesInt.end(); ++iter2) {
 		int Value = 0;
-		if (req.hasValue(&req, iter2->first.c_str())) {
-			std::string sValue = req.findValue(&req, iter2->first.c_str());
+		if (request::hasValue(&req, iter2->first.c_str())) {
+			std::string sValue = request::findValue(&req, iter2->first.c_str());
 			if (sValue == "on")
 				Value = 1;
 			else if (sValue == "off")
@@ -173,8 +173,8 @@ void CNotificationBase::ConfigFromGetvars(const request& req, const bool save)
 		}
 	}
 	for (it_conf_type iter3 = _configValuesBase64.begin(); iter3 != _configValuesBase64.end(); ++iter3) {
-		if (req.hasValue(&req, iter3->first.c_str())) {
-			std::string Value = CURLEncode::URLDecode(std::string(req.findValue(&req, iter3->first.c_str())));
+		if (request::hasValue(&req, iter3->first.c_str())) {
+			std::string Value = CURLEncode::URLDecode(std::string(request::findValue(&req, iter3->first.c_str())));
 			*(iter3->second) = Value;
 			if (save) {
 				std::string ValueBase64 = base64_encode((const unsigned char*)Value.c_str(), Value.size());

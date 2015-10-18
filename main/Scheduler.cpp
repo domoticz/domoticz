@@ -634,9 +634,9 @@ namespace http {
 		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (req.findValue(&req, "idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(req.findValue(&req, "idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			if (idx == 0)
@@ -696,17 +696,17 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string active = req.findValue(&req, "active");
-			std::string stimertype = req.findValue(&req, "timertype");
-			std::string sdate = req.findValue(&req, "date");
-			std::string shour = req.findValue(&req, "hour");
-			std::string smin = req.findValue(&req, "min");
-			std::string randomness = req.findValue(&req, "randomness");
-			std::string scmd = req.findValue(&req, "command");
-			std::string sdays = req.findValue(&req, "days");
-			std::string slevel = req.findValue(&req, "level");	//in percentage
-			std::string shue = req.findValue(&req, "hue");
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string randomness = request::findValue(&req, "randomness");
+			std::string scmd = request::findValue(&req, "command");
+			std::string sdays = request::findValue(&req, "days");
+			std::string slevel = request::findValue(&req, "level");	//in percentage
+			std::string shue = request::findValue(&req, "hue");
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -770,17 +770,17 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string active = req.findValue(&req, "active");
-			std::string stimertype = req.findValue(&req, "timertype");
-			std::string sdate = req.findValue(&req, "date");
-			std::string shour = req.findValue(&req, "hour");
-			std::string smin = req.findValue(&req, "min");
-			std::string randomness = req.findValue(&req, "randomness");
-			std::string scmd = req.findValue(&req, "command");
-			std::string sdays = req.findValue(&req, "days");
-			std::string slevel = req.findValue(&req, "level");	//in percentage
-			std::string shue = req.findValue(&req, "hue");
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string randomness = request::findValue(&req, "randomness");
+			std::string scmd = request::findValue(&req, "command");
+			std::string sdays = request::findValue(&req, "days");
+			std::string slevel = request::findValue(&req, "level");	//in percentage
+			std::string shue = request::findValue(&req, "hue");
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -843,7 +843,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -863,7 +863,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -883,7 +883,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -903,7 +903,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -918,9 +918,9 @@ namespace http {
 		void CWebServer::RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (req.findValue(&req, "idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(req.findValue(&req, "idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			if (idx == 0)
@@ -972,14 +972,14 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string active = req.findValue(&req, "active");
-			std::string stimertype = req.findValue(&req, "timertype");
-			std::string sdate = req.findValue(&req, "date");
-			std::string shour = req.findValue(&req, "hour");
-			std::string smin = req.findValue(&req, "min");
-			std::string stvalue = req.findValue(&req, "tvalue");
-			std::string sdays = req.findValue(&req, "days");
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string stvalue = request::findValue(&req, "tvalue");
+			std::string sdays = request::findValue(&req, "days");
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1037,14 +1037,14 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string active = req.findValue(&req, "active");
-			std::string stimertype = req.findValue(&req, "timertype");
-			std::string sdate = req.findValue(&req, "date");
-			std::string shour = req.findValue(&req, "hour");
-			std::string smin = req.findValue(&req, "min");
-			std::string stvalue = req.findValue(&req, "tvalue");
-			std::string sdays = req.findValue(&req, "days");
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string stvalue = request::findValue(&req, "tvalue");
+			std::string sdays = request::findValue(&req, "days");
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1101,7 +1101,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1121,7 +1121,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1136,9 +1136,9 @@ namespace http {
 		void CWebServer::RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (req.findValue(&req, "idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(req.findValue(&req, "idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			if (idx == 0)
@@ -1199,16 +1199,16 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string active = req.findValue(&req, "active");
-			std::string stimertype = req.findValue(&req, "timertype");
-			std::string sdate = req.findValue(&req, "date");
-			std::string shour = req.findValue(&req, "hour");
-			std::string smin = req.findValue(&req, "min");
-			std::string randomness = req.findValue(&req, "randomness");
-			std::string scmd = req.findValue(&req, "command");
-			std::string sdays = req.findValue(&req, "days");
-			std::string slevel = req.findValue(&req, "level");	//in percentage
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string randomness = request::findValue(&req, "randomness");
+			std::string scmd = request::findValue(&req, "command");
+			std::string sdays = request::findValue(&req, "days");
+			std::string slevel = request::findValue(&req, "level");	//in percentage
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1270,16 +1270,16 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string active = req.findValue(&req, "active");
-			std::string stimertype = req.findValue(&req, "timertype");
-			std::string sdate = req.findValue(&req, "date");
-			std::string shour = req.findValue(&req, "hour");
-			std::string smin = req.findValue(&req, "min");
-			std::string randomness = req.findValue(&req, "randomness");
-			std::string scmd = req.findValue(&req, "command");
-			std::string sdays = req.findValue(&req, "days");
-			std::string slevel = req.findValue(&req, "level");	//in percentage
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string randomness = request::findValue(&req, "randomness");
+			std::string scmd = request::findValue(&req, "command");
+			std::string sdays = request::findValue(&req, "days");
+			std::string slevel = request::findValue(&req, "level");	//in percentage
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1341,7 +1341,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1361,7 +1361,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1381,7 +1381,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1401,7 +1401,7 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";

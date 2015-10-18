@@ -735,13 +735,13 @@ namespace http {
 			Json::Value root;
 			root["status"] = "ERR";
 
-			std::string rtype = req.findValue(&req, "type");
+			std::string rtype = request::findValue(&req, "type");
 			if (rtype == "command")
 			{
-				std::string cparam = req.findValue(&req, "param");
+				std::string cparam = request::findValue(&req, "param");
 				if (cparam == "")
 				{
-					cparam = req.findValue(&req, "dparam");
+					cparam = request::findValue(&req, "dparam");
 					if (cparam == "")
 					{
 						goto exitjson;
@@ -757,10 +757,11 @@ namespace http {
 				}
 				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
-			else
+			else {
 				HandleRType(rtype, session, req, root);
+			}
 		exitjson:
-			std::string jcallback = req.findValue(&req, "jsoncallback");
+			std::string jcallback = request::findValue(&req, "jsoncallback");
 			if (jcallback.size() == 0)
 				m_retstr = root.toStyledString();
 			else
@@ -797,15 +798,15 @@ namespace http {
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string tmpusrname = req.findValue(&req, "username");
-			std::string tmpusrpass = req.findValue(&req, "password");
+			std::string tmpusrname = request::findValue(&req, "username");
+			std::string tmpusrpass = request::findValue(&req, "password");
 			if (
 				(tmpusrname == "") ||
 				(tmpusrpass == "")
 				)
 				return;
 
-			std::string rememberme = req.findValue(&req, "rememberme");
+			std::string rememberme = request::findValue(&req, "rememberme");
 
 			std::string usrname;
 			std::string usrpass;
@@ -904,15 +905,15 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = CURLEncode::URLDecode(req.findValue(&req, "name"));
-			std::string senabled = req.findValue(&req, "enabled");
-			std::string shtype = req.findValue(&req, "htype");
-			std::string address = req.findValue(&req, "address");
-			std::string sport = req.findValue(&req, "port");
-			std::string username = CURLEncode::URLDecode(req.findValue(&req, "username"));
-			std::string password = CURLEncode::URLDecode(req.findValue(&req, "password"));
-			std::string extra = CURLEncode::URLDecode(req.findValue(&req, "extra"));
-			std::string sdatatimeout = req.findValue(&req, "datatimeout");
+			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string senabled = request::findValue(&req, "enabled");
+			std::string shtype = request::findValue(&req, "htype");
+			std::string address = request::findValue(&req, "address");
+			std::string sport = request::findValue(&req, "port");
+			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
+			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 			if (
 				(name == "") ||
 				(senabled == "") ||
@@ -943,7 +944,7 @@ namespace http {
 					return;
 
 				if (htype == HTYPE_MQTT) {
-					std::string modeqStr = req.findValue(&req, "mode1");
+					std::string modeqStr = request::findValue(&req, "mode1");
 					if (!modeqStr.empty()) {
 						mode1 = atoi(modeqStr.c_str());
 					}
@@ -1034,7 +1035,7 @@ namespace http {
 					port = 80;
 			}
 			else if (htype == HTYPE_WINDDELEN) {
-					std::string mill_id = req.findValue(&req, "Mode1");
+					std::string mill_id = request::findValue(&req, "Mode1");
 					if (
 					(mill_id == "") ||
 					(sport == "")
@@ -1112,18 +1113,18 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = CURLEncode::URLDecode(req.findValue(&req, "name"));
-			std::string senabled = req.findValue(&req, "enabled");
-			std::string shtype = req.findValue(&req, "htype");
-			std::string address = req.findValue(&req, "address");
-			std::string sport = req.findValue(&req, "port");
-			std::string username = CURLEncode::URLDecode(req.findValue(&req, "username"));
-			std::string password = CURLEncode::URLDecode(req.findValue(&req, "password"));
-			std::string extra = CURLEncode::URLDecode(req.findValue(&req, "extra"));
-			std::string sdatatimeout = req.findValue(&req, "datatimeout");
+			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string senabled = request::findValue(&req, "enabled");
+			std::string shtype = request::findValue(&req, "htype");
+			std::string address = request::findValue(&req, "address");
+			std::string sport = request::findValue(&req, "port");
+			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
+			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 
 			if (
 				(name == "") ||
@@ -1252,7 +1253,7 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_WINDDELEN) {
-				std::string mill_id = req.findValue(&req, "Mode1");
+				std::string mill_id = request::findValue(&req, "Mode1");
 				if (
 				  (mill_id == "") ||
 				  (sport == "")
@@ -1262,12 +1263,12 @@ namespace http {
 			else
 				return;
 
-			int mode1 = atoi(req.findValue(&req, "Mode1").c_str());
-			int mode2 = atoi(req.findValue(&req, "Mode2").c_str());
-			int mode3 = atoi(req.findValue(&req, "Mode3").c_str());
-			int mode4 = atoi(req.findValue(&req, "Mode4").c_str());
-			int mode5 = atoi(req.findValue(&req, "Mode5").c_str());
-			int mode6 = atoi(req.findValue(&req, "Mode6").c_str());
+			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
+			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
+			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
+			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
+			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
+			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
@@ -1314,7 +1315,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			std::vector<std::string> result;
@@ -1341,8 +1342,8 @@ namespace http {
 
 		void CWebServer::Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
-			std::string pos = req.findValue(&req, "pos");
+			std::string idx = request::findValue(&req, "idx");
+			std::string pos = request::findValue(&req, "pos");
 			if ((idx == "") || (pos == ""))
 				return;
 			std::string wording;
@@ -1355,7 +1356,7 @@ namespace http {
 
 		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -1365,9 +1366,9 @@ namespace http {
 
 		void CWebServer::Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string variablename = req.findValue(&req, "vname");
-			std::string variablevalue = req.findValue(&req, "vvalue");
-			std::string variabletype = req.findValue(&req, "vtype");
+			std::string variablename = request::findValue(&req, "vname");
+			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variabletype = request::findValue(&req, "vtype");
 			if ((variablename == "") || (variablevalue == "") || (variabletype == ""))
 				return;
 
@@ -1377,10 +1378,10 @@ namespace http {
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
-			std::string variablename = req.findValue(&req, "vname");
-			std::string variablevalue = req.findValue(&req, "vvalue");
-			std::string variabletype = req.findValue(&req, "vtype");
+			std::string idx = request::findValue(&req, "idx");
+			std::string variablename = request::findValue(&req, "vname");
+			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variabletype = request::findValue(&req, "vtype");
 
 			if (idx.empty())
 			{
@@ -1428,7 +1429,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -1459,7 +1460,7 @@ namespace http {
 
 		void CWebServer::Cmd_AllowNewHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sTimeout = req.findValue(&req, "timeout");
+			std::string sTimeout = request::findValue(&req, "timeout");
 			if (sTimeout == "")
 				return;
 			root["status"] = "OK";
@@ -1474,7 +1475,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			int hwID = atoi(idx.c_str());
@@ -1492,7 +1493,7 @@ namespace http {
 			root["title"] = "GetLog";
 
 			time_t lastlogtime = 0;
-			std::string slastlogtime = req.findValue(&req, "lastlogtime");
+			std::string slastlogtime = request::findValue(&req, "lastlogtime");
 			if (slastlogtime != "")
 			{
 				std::stringstream s_str(slastlogtime);
@@ -1522,7 +1523,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = req.findValue(&req, "name");
+			std::string name = request::findValue(&req, "name");
 			root["status"] = "OK";
 			root["title"] = "AddPlan";
 			m_sql.safe_query(
@@ -1536,10 +1537,10 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = req.findValue(&req, "name");
+			std::string name = request::findValue(&req, "name");
 			if (
 				(name == "")
 				)
@@ -1560,7 +1561,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1579,7 +1580,7 @@ namespace http {
 		{
 			root["status"] = "OK";
 			root["title"] = "GetUnusedPlanDevices";
-			std::string sunique = req.findValue(&req, "unique");
+			std::string sunique = request::findValue(&req, "unique");
 			if (sunique == "")
 				return;
 			int iUnique = (sunique == "true") ? 1 : 0;
@@ -1645,9 +1646,9 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string sactivetype = req.findValue(&req, "activetype");
-			std::string activeidx = req.findValue(&req, "activeidx");
+			std::string idx = request::findValue(&req, "idx");
+			std::string sactivetype = request::findValue(&req, "activetype");
+			std::string activeidx = request::findValue(&req, "activeidx");
 			if (
 				(idx == "") ||
 				(sactivetype == "") ||
@@ -1676,7 +1677,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetPlanDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1737,7 +1738,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1747,11 +1748,11 @@ namespace http {
 
 		void CWebServer::Cmd_SetPlanDeviceCoords(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
-			std::string planidx = req.findValue(&req, "planidx");
-			std::string xoffset = req.findValue(&req, "xoffset");
-			std::string yoffset = req.findValue(&req, "yoffset");
-			std::string type = req.findValue(&req, "DevSceneType");
+			std::string idx = request::findValue(&req, "idx");
+			std::string planidx = request::findValue(&req, "planidx");
+			std::string xoffset = request::findValue(&req, "xoffset");
+			std::string yoffset = request::findValue(&req, "yoffset");
+			std::string type = request::findValue(&req, "DevSceneType");
 			if ((idx == "") || (planidx == "") || (xoffset == "") || (yoffset == ""))
 				return;
 			if (type != "1") type = "0";  // 0 = Device, 1 = Scene/Group
@@ -1767,7 +1768,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1777,10 +1778,10 @@ namespace http {
 
 		void CWebServer::Cmd_ChangePlanOrder(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string sway = req.findValue(&req, "way");
+			std::string sway = request::findValue(&req, "way");
 			if (sway == "")
 				return;
 			bool bGoUp = (sway == "0");
@@ -1826,9 +1827,9 @@ namespace http {
 
 		void CWebServer::Cmd_ChangePlanDeviceOrder(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string planid = req.findValue(&req, "planid");
-			std::string idx = req.findValue(&req, "idx");
-			std::string sway = req.findValue(&req, "way");
+			std::string planid = request::findValue(&req, "planid");
+			std::string idx = request::findValue(&req, "idx");
+			std::string sway = request::findValue(&req, "way");
 			if (
 				(planid == "") ||
 				(idx == "") ||
@@ -2132,8 +2133,8 @@ namespace http {
 
 		void CWebServer::Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string subject = req.findValue(&req, "subject");
-			std::string body = req.findValue(&req, "body");
+			std::string subject = request::findValue(&req, "subject");
+			std::string body = request::findValue(&req, "body");
 			if (
 				(subject == "") ||
 				(body == "")
@@ -2148,8 +2149,8 @@ namespace http {
 
 		void CWebServer::Cmd_EmailCameraSnapshot(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string camidx = req.findValue(&req, "camidx");
-			std::string subject = req.findValue(&req, "subject");
+			std::string camidx = request::findValue(&req, "camidx");
+			std::string subject = request::findValue(&req, "subject");
 			if (
 				(camidx == "") ||
 				(subject == "")
@@ -2287,7 +2288,7 @@ namespace http {
 #endif
 			std::string lua_Dir = lua_DirT.str();
 
-			std::string script = req.findValue(&req, "script");
+			std::string script = request::findValue(&req, "script");
 			if (script.empty() )
 			{
 				return;
@@ -2330,15 +2331,15 @@ namespace http {
 
 		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
-			std::string hid = req.findValue(&req, "hid");
-			std::string did = req.findValue(&req, "did");
-			std::string dunit = req.findValue(&req, "dunit");
-			std::string dtype = req.findValue(&req, "dtype");
-			std::string dsubtype = req.findValue(&req, "dsubtype");
+			std::string idx = request::findValue(&req, "idx");
+			std::string hid = request::findValue(&req, "hid");
+			std::string did = request::findValue(&req, "did");
+			std::string dunit = request::findValue(&req, "dunit");
+			std::string dtype = request::findValue(&req, "dtype");
+			std::string dsubtype = request::findValue(&req, "dsubtype");
 
-			std::string nvalue = req.findValue(&req, "nvalue");
-			std::string svalue = req.findValue(&req, "svalue");
+			std::string nvalue = request::findValue(&req, "nvalue");
+			std::string svalue = request::findValue(&req, "svalue");
 
 			if ( (nvalue.empty() && svalue.empty()) )
 			{
@@ -2390,12 +2391,12 @@ namespace http {
 			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
 
 
-			std::string sSignalLevel = req.findValue(&req, "rssi");
+			std::string sSignalLevel = request::findValue(&req, "rssi");
 			if (sSignalLevel != "")
 			{
 				signallevel = atoi(sSignalLevel.c_str());
 			}
-			std::string sBatteryLevel = req.findValue(&req, "battery");
+			std::string sBatteryLevel = request::findValue(&req, "battery");
 			if (sBatteryLevel != "")
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
@@ -2409,8 +2410,8 @@ namespace http {
 
 		void CWebServer::Cmd_SetThermostatState(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sstate = req.findValue(&req, "state");
-			std::string idx = req.findValue(&req, "idx");
+			std::string sstate = request::findValue(&req, "state");
+			std::string idx = request::findValue(&req, "idx");
 			if (
 				(idx == "") ||
 				(sstate == "")
@@ -2473,7 +2474,7 @@ namespace http {
 
 		void CWebServer::Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string scriptname = req.findValue(&req, "scriptname");
+			std::string scriptname = request::findValue(&req, "scriptname");
 			if (scriptname == "")
 				return;
 			if (scriptname.find("..") != std::string::npos)
@@ -2485,7 +2486,7 @@ namespace http {
 #endif
 			if (!file_exist(scriptname.c_str()))
 				return;
-			std::string script_params = req.findValue(&req, "scriptparams");
+			std::string script_params = request::findValue(&req, "scriptparams");
 			std::string strparm = szUserDataFolder;
 			if (script_params != "")
 			{
@@ -2494,7 +2495,7 @@ namespace http {
 				else
 					strparm = script_params;
 			}
-			std::string sdirect = req.findValue(&req, "direct");
+			std::string sdirect = request::findValue(&req, "direct");
 			if (sdirect == "true")
 			{
 				_log.Log(LOG_STATUS, "Executing script: %s", scriptname.c_str());
@@ -2521,7 +2522,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetCosts(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			char szTmp[100];
@@ -2631,7 +2632,7 @@ namespace http {
 				return;
 			}
 
-			bool bIsForced = (req.findValue(&req, "forced") == "true");
+			bool bIsForced = (request::findValue(&req, "forced") == "true");
 
 			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
 			root["revision"] = m_mainworker.m_iRevision;
@@ -2656,8 +2657,8 @@ namespace http {
 
 		void CWebServer::Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			const std::string idx = req.findValue(&req, "idx");
-			const std::string Date = req.findValue(&req, "date");
+			const std::string idx = request::findValue(&req, "idx");
+			const std::string Date = request::findValue(&req, "date");
 			if (
 				(idx == "") ||
 				(Date == "")
@@ -2690,7 +2691,7 @@ namespace http {
 
 			if (cparam == "deleteallsubdevices")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2699,7 +2700,7 @@ namespace http {
 			}
 			else if (cparam == "deletesubdevice")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2708,8 +2709,8 @@ namespace http {
 			}
 			else if (cparam == "addsubdevice")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string subidx = req.findValue(&req, "subidx");
+				std::string idx = request::findValue(&req, "idx");
+				std::string subidx = request::findValue(&req, "subidx");
 				if ((idx == "") || (subidx == ""))
 					return;
 				if (idx == subidx)
@@ -2732,12 +2733,12 @@ namespace http {
 			}
 			else if (cparam == "addscenedevice")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string devidx = req.findValue(&req, "devidx");
-				std::string isscene = req.findValue(&req, "isscene");
-				std::string scommand = req.findValue(&req, "command");
-				int ondelay = atoi(req.findValue(&req, "ondelay").c_str());
-				int offdelay = atoi(req.findValue(&req, "offdelay").c_str());
+				std::string idx = request::findValue(&req, "idx");
+				std::string devidx = request::findValue(&req, "devidx");
+				std::string isscene = request::findValue(&req, "isscene");
+				std::string scommand = request::findValue(&req, "command");
+				int ondelay = atoi(request::findValue(&req, "ondelay").c_str());
+				int offdelay = atoi(request::findValue(&req, "offdelay").c_str());
 
 				if (
 					(idx == "") ||
@@ -2745,8 +2746,8 @@ namespace http {
 					(isscene == "")
 					)
 					return;
-				int level = atoi(req.findValue(&req, "level").c_str());
-				int hue = atoi(req.findValue(&req, "hue").c_str());
+				int level = atoi(request::findValue(&req, "level").c_str());
+				int hue = atoi(request::findValue(&req, "hue").c_str());
 
 				unsigned char command=0;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID=='%q')",
@@ -2831,11 +2832,11 @@ namespace http {
 			}
 			else if (cparam == "updatescenedevice")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string devidx = req.findValue(&req, "devidx");
-				std::string scommand = req.findValue(&req, "command");
-				int ondelay = atoi(req.findValue(&req, "ondelay").c_str());
-				int offdelay = atoi(req.findValue(&req, "offdelay").c_str());
+				std::string idx = request::findValue(&req, "idx");
+				std::string devidx = request::findValue(&req, "devidx");
+				std::string scommand = request::findValue(&req, "command");
+				int ondelay = atoi(request::findValue(&req, "ondelay").c_str());
+				int offdelay = atoi(request::findValue(&req, "offdelay").c_str());
 
 				if (
 					(idx == "") ||
@@ -2854,8 +2855,8 @@ namespace http {
 					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
 					GetLightCommand(dType, sType, switchtype, scommand, command);
 				}
-				int level = atoi(req.findValue(&req, "level").c_str());
-				int hue = atoi(req.findValue(&req, "hue").c_str());
+				int level = atoi(request::findValue(&req, "level").c_str());
+				int hue = atoi(request::findValue(&req, "hue").c_str());
 				root["status"] = "OK";
 				root["title"] = "UpdateSceneDevice";
 				result = m_sql.safe_query(
@@ -2864,7 +2865,7 @@ namespace http {
 			}
 			else if (cparam == "deletescenedevice")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2874,7 +2875,7 @@ namespace http {
 			}
 			else if (cparam == "getsubdevices")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -2983,8 +2984,8 @@ namespace http {
 			}
 			else if (cparam == "getscenedevices")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string isscene = req.findValue(&req, "isscene");
+				std::string idx = request::findValue(&req, "idx");
+				std::string isscene = request::findValue(&req, "isscene");
 
 				if (
 					(idx == "") ||
@@ -3040,10 +3041,10 @@ namespace http {
 			}
 			else if (cparam == "changescenedeviceorder")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string sway = req.findValue(&req, "way");
+				std::string sway = request::findValue(&req, "way");
 				if (sway == "")
 					return;
 				bool bGoUp = (sway == "0");
@@ -3090,7 +3091,7 @@ namespace http {
 			}
 			else if (cparam == "deleteallscenedevices")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3321,7 +3322,7 @@ namespace http {
 			}
 			else if (cparam == "getcamactivedevices")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3380,11 +3381,11 @@ namespace http {
 			}
 			else if (cparam == "addcamactivedevice")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string activeidx = req.findValue(&req, "activeidx");
-				std::string sactivetype = req.findValue(&req, "activetype");
-				std::string sactivewhen = req.findValue(&req, "activewhen");
-				std::string sactivedelay = req.findValue(&req, "activedelay");
+				std::string idx = request::findValue(&req, "idx");
+				std::string activeidx = request::findValue(&req, "activeidx");
+				std::string sactivetype = request::findValue(&req, "activetype");
+				std::string sactivewhen = request::findValue(&req, "activewhen");
+				std::string sactivedelay = request::findValue(&req, "activedelay");
 
 				if (
 					(idx == "") ||
@@ -3425,7 +3426,7 @@ namespace http {
 			}
 			else if (cparam == "deleteamactivedevice")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3435,7 +3436,7 @@ namespace http {
 			}
 			else if (cparam == "deleteallactivecamdevices")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3447,7 +3448,7 @@ namespace http {
 			{
 				std::string notification_Title = "Domoticz test";
 				std::string notification_Message = "Domoticz test message!";
-				std::string subsystem = req.findValue(&req, "subsystem");
+				std::string subsystem = request::findValue(&req, "subsystem");
 
 				m_notifications.ConfigFromGetvars(req, false);
 				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message, std::string(""), false)) {
@@ -3458,9 +3459,9 @@ namespace http {
 			}
 			else if (cparam == "testswitch")
 			{
-				std::string hwdid = req.findValue(&req, "hwdid");
-				std::string sswitchtype = req.findValue(&req, "switchtype");
-				std::string slighttype = req.findValue(&req, "lighttype");
+				std::string hwdid = request::findValue(&req, "hwdid");
+				std::string sswitchtype = request::findValue(&req, "switchtype");
+				std::string slighttype = request::findValue(&req, "lighttype");
 				if (
 					(hwdid == "") ||
 					(sswitchtype == "") ||
@@ -3479,8 +3480,8 @@ namespace http {
 					//EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
-					std::string sgroupcode = req.findValue(&req, "groupcode");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
 					int iUnitTest = atoi(sunitcode.c_str());	//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
 					if (
 						(sunitcode == "") ||
@@ -3516,7 +3517,7 @@ namespace http {
 					dtype = pTypeLighting1;
 					subtype = sTypeIMPULS;
 					devid = "0";
-					sunitcode = req.findValue(&req, "unitcode"); //Unit code = GPIO number
+					sunitcode = request::findValue(&req, "unitcode"); //Unit code = GPIO number
 
 					if (sunitcode == "") {
 						root["status"] = "ERROR";
@@ -3560,8 +3561,8 @@ namespace http {
 				{
 					dtype = pTypeLighting1;
 					subtype = lighttype;
-					std::string shousecode = req.findValue(&req, "housecode");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -3573,8 +3574,8 @@ namespace http {
 				{
 					dtype = pTypeLighting2;
 					subtype = lighttype - 20;
-					std::string id = req.findValue(&req, "id");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3586,8 +3587,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
-					std::string id = req.findValue(&req, "id");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3603,9 +3604,9 @@ namespace http {
 					//Blyss
 					dtype = pTypeLighting6;
 					subtype = lighttype - 60;
-					std::string sgroupcode = req.findValue(&req, "groupcode");
-					sunitcode = req.findValue(&req, "unitcode");
-					std::string id = req.findValue(&req, "id");
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
 					if (
 						(sgroupcode == "") ||
 						(sunitcode == "") ||
@@ -3621,8 +3622,8 @@ namespace http {
 						//Chime/ByronSX
 						dtype = pTypeChime;
 						subtype = sTypeByronSX;
-						std::string id = req.findValue(&req, "id");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3665,8 +3666,8 @@ namespace http {
 						//Curtain Harrison
 						dtype = pTypeCurtain;
 						subtype = sTypeHarrison;
-						std::string shousecode = req.findValue(&req, "housecode");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string shousecode = request::findValue(&req, "housecode");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(shousecode == "") ||
 							(sunitcode == "")
@@ -3679,8 +3680,8 @@ namespace http {
 						//RFY
 						dtype = pTypeRFY;
 						subtype = sTypeRFY;
-						std::string id = req.findValue(&req, "id");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3693,7 +3694,7 @@ namespace http {
 						//Meiantech
 						dtype = pTypeSecurity1;
 						subtype = sTypeMeiantech;
-						std::string id = req.findValue(&req, "id");
+						std::string id = request::findValue(&req, "id");
 						if (
 							(id == "")
 							)
@@ -3706,7 +3707,7 @@ namespace http {
 						//HE105
 						dtype = pTypeThermostat2;
 						subtype = sTypeHE105;
-						sunitcode = req.findValue(&req, "unitcode");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (sunitcode == "")
 							return;
 						//convert to hex, and we have our Unit Code
@@ -3723,8 +3724,8 @@ namespace http {
 						//ASA
 						dtype = pTypeRFY;
 						subtype = sTypeASA;
-						std::string id = req.findValue(&req, "id");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3736,8 +3737,8 @@ namespace http {
 					{
 						dtype = pTypeBlinds;
 						subtype = lighttype-200;
-						std::string id = req.findValue(&req, "id");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3753,8 +3754,8 @@ namespace http {
 						//Smartwares Radiator
 						dtype = pTypeRadiator1;
 						subtype = sTypeSmartwaresSwitchRadiator;
-						std::string id = req.findValue(&req, "id");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3823,11 +3824,11 @@ namespace http {
 			}
 			else if (cparam == "addswitch")
 			{
-				std::string hwdid = req.findValue(&req, "hwdid");
-				std::string name = req.findValue(&req, "name");
-				std::string sswitchtype = req.findValue(&req, "switchtype");
-				std::string slighttype = req.findValue(&req, "lighttype");
-				std::string maindeviceidx = req.findValue(&req, "maindeviceidx");
+				std::string hwdid = request::findValue(&req, "hwdid");
+				std::string name = request::findValue(&req, "name");
+				std::string sswitchtype = request::findValue(&req, "switchtype");
+				std::string slighttype = request::findValue(&req, "lighttype");
+				std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
 
 				if (
 					(hwdid == "") ||
@@ -3848,8 +3849,8 @@ namespace http {
 					//EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
-					sunitcode = req.findValue(&req, "unitcode");
-					std::string sgroupcode = req.findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string sgroupcode = request::findValue(&req, "groupcode");
 					int iUnitTest = atoi(sunitcode.c_str());	//gives us 128 devices we can control, should be enough!
 					if (
 						(sunitcode == "") ||
@@ -3895,7 +3896,7 @@ namespace http {
 					dtype = pTypeLighting1;
 					subtype = sTypeIMPULS;
 					devid = "0";
-					sunitcode = req.findValue(&req, "unitcode"); //Unit code = GPIO number
+					sunitcode = request::findValue(&req, "unitcode"); //Unit code = GPIO number
 
 					if (sunitcode == "") {
 						return;
@@ -3922,8 +3923,8 @@ namespace http {
 				{
 					dtype = pTypeLighting1;
 					subtype = lighttype;
-					std::string shousecode = req.findValue(&req, "housecode");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -3935,8 +3936,8 @@ namespace http {
 				{
 					dtype = pTypeLighting2;
 					subtype = lighttype - 20;
-					std::string id = req.findValue(&req, "id");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3948,8 +3949,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
-					std::string id = req.findValue(&req, "id");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3965,9 +3966,9 @@ namespace http {
 					//Blyss
 					dtype = pTypeLighting6;
 					subtype = lighttype - 60;
-					std::string sgroupcode = req.findValue(&req, "groupcode");
-					sunitcode = req.findValue(&req, "unitcode");
-					std::string id = req.findValue(&req, "id");
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
 					if (
 						(sgroupcode == "") ||
 						(sunitcode == "") ||
@@ -3981,8 +3982,8 @@ namespace http {
 					//Curtain Harrison
 					dtype = pTypeCurtain;
 					subtype = sTypeHarrison;
-					std::string shousecode = req.findValue(&req, "housecode");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -3995,8 +3996,8 @@ namespace http {
 					//RFY
 					dtype = pTypeRFY;
 					subtype = sTypeRFY;
-					std::string id = req.findValue(&req, "id");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -4009,7 +4010,7 @@ namespace http {
 					//Meiantech
 					dtype = pTypeSecurity1;
 					subtype = sTypeMeiantech;
-					std::string id = req.findValue(&req, "id");
+					std::string id = request::findValue(&req, "id");
 					if (
 						(id == "")
 						)
@@ -4022,7 +4023,7 @@ namespace http {
 					//HE105
 					dtype = pTypeThermostat2;
 					subtype = sTypeHE105;
-					sunitcode = req.findValue(&req, "unitcode");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (sunitcode == "")
 						return;
 					//convert to hex, and we have our Unit Code
@@ -4039,8 +4040,8 @@ namespace http {
 					//ASA
 					dtype = pTypeRFY;
 					subtype = sTypeASA;
-					std::string id = req.findValue(&req, "id");
-					sunitcode = req.findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -4055,8 +4056,8 @@ namespace http {
 						//Chime/ByronSX
 						dtype = pTypeChime;
 						subtype = sTypeByronSX;
-						std::string id = req.findValue(&req, "id");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4099,7 +4100,7 @@ namespace http {
 						//HE105
 						dtype = pTypeThermostat2;
 						subtype = sTypeHE105;
-						sunitcode = req.findValue(&req, "unitcode");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (sunitcode == "")
 							return;
 						//convert to hex, and we have our Unit Code
@@ -4115,8 +4116,8 @@ namespace http {
 					{
 						dtype = pTypeBlinds;
 						subtype = lighttype-200;
-						std::string id = req.findValue(&req, "id");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4130,8 +4131,8 @@ namespace http {
 					else if (lighttype == 301)
 					{
 						//Smartwares Radiator
-						std::string id = req.findValue(&req, "id");
-						sunitcode = req.findValue(&req, "unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4272,7 +4273,7 @@ namespace http {
 			}
 			else if (cparam == "getnotificationtypes")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				//First get Device Type/SubType
@@ -4327,7 +4328,7 @@ namespace http {
 					}
 					if (switchtype == STYPE_Media)
 					{
-						std::string idx = req.findValue(&req, "idx");
+						std::string idx = request::findValue(&req, "idx");
 						std::vector<std::vector<std::string> > result;
 						_eHardwareTypes type;
 
@@ -4692,17 +4693,17 @@ namespace http {
 			}
 			else if (cparam == "addnotification")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
-				std::string stype = req.findValue(&req, "ttype");
-				std::string swhen = req.findValue(&req, "twhen");
-				std::string svalue = req.findValue(&req, "tvalue");
-				std::string scustommessage = req.findValue(&req, "tmsg");
-				std::string sactivesystems = req.findValue(&req, "tsystems");
-				std::string spriority = req.findValue(&req, "tpriority");
-				std::string ssendalways = req.findValue(&req, "tsendalways");
+				std::string stype = request::findValue(&req, "ttype");
+				std::string swhen = request::findValue(&req, "twhen");
+				std::string svalue = request::findValue(&req, "tvalue");
+				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string sactivesystems = request::findValue(&req, "tsystems");
+				std::string spriority = request::findValue(&req, "tpriority");
+				std::string ssendalways = request::findValue(&req, "tsendalways");
 				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()))
 					return;
 
@@ -4730,18 +4731,18 @@ namespace http {
 			}
 			else if (cparam == "updatenotification")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string devidx = req.findValue(&req, "devidx");
+				std::string idx = request::findValue(&req, "idx");
+				std::string devidx = request::findValue(&req, "devidx");
 				if ((idx == "") || (devidx == ""))
 					return;
 
-				std::string stype = req.findValue(&req, "ttype");
-				std::string swhen = req.findValue(&req, "twhen");
-				std::string svalue = req.findValue(&req, "tvalue");
-				std::string scustommessage = req.findValue(&req, "tmsg");
-				std::string sactivesystems = req.findValue(&req, "tsystems");
-				std::string spriority = req.findValue(&req, "tpriority");
-				std::string ssendalways = req.findValue(&req, "tsendalways");
+				std::string stype = request::findValue(&req, "ttype");
+				std::string swhen = request::findValue(&req, "twhen");
+				std::string svalue = request::findValue(&req, "tvalue");
+				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string sactivesystems = request::findValue(&req, "tsystems");
+				std::string spriority = request::findValue(&req, "tpriority");
+				std::string ssendalways = request::findValue(&req, "tsendalways");
 
 				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()))
 					return;
@@ -4771,7 +4772,7 @@ namespace http {
 			}
 			else if (cparam == "deletenotification")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -4782,11 +4783,11 @@ namespace http {
 			}
 			else if (cparam == "switchdeviceorder")
 			{
-				std::string idx1 = req.findValue(&req, "idx1");
-				std::string idx2 = req.findValue(&req, "idx2");
+				std::string idx1 = request::findValue(&req, "idx1");
+				std::string idx2 = request::findValue(&req, "idx2");
 				if ((idx1 == "") || (idx2 == ""))
 					return;
-				std::string sroomid = req.findValue(&req, "roomid");
+				std::string sroomid = request::findValue(&req, "roomid");
 				int roomid = atoi(sroomid.c_str());
 
 				std::string Order1, Order2;
@@ -4864,8 +4865,8 @@ namespace http {
 			}
 			else if (cparam == "switchsceneorder")
 			{
-				std::string idx1 = req.findValue(&req, "idx1");
-				std::string idx2 = req.findValue(&req, "idx2");
+				std::string idx1 = request::findValue(&req, "idx1");
+				std::string idx2 = request::findValue(&req, "idx2");
 				if ((idx1 == "") || (idx2 == ""))
 					return;
 
@@ -4905,7 +4906,7 @@ namespace http {
 			}
 			else if (cparam == "clearnotifications")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -4916,13 +4917,13 @@ namespace http {
 			}
 			else if (cparam == "addcamera")
 			{
-				std::string name = req.findValue(&req, "name");
-				std::string senabled = req.findValue(&req, "enabled");
-				std::string address = req.findValue(&req, "address");
-				std::string sport = req.findValue(&req, "port");
-				std::string username = req.findValue(&req, "username");
-				std::string password = req.findValue(&req, "password");
-				std::string timageurl = req.findValue(&req, "imageurl");
+				std::string name = request::findValue(&req, "name");
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string address = request::findValue(&req, "address");
+				std::string sport = request::findValue(&req, "port");
+				std::string username = request::findValue(&req, "username");
+				std::string password = request::findValue(&req, "password");
+				std::string timageurl = request::findValue(&req, "imageurl");
 				if (
 					(name == "") ||
 					(address == "") ||
@@ -4953,16 +4954,16 @@ namespace http {
 			}
 			else if (cparam == "updatecamera")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string name = req.findValue(&req, "name");
-				std::string senabled = req.findValue(&req, "enabled");
-				std::string address = req.findValue(&req, "address");
-				std::string sport = req.findValue(&req, "port");
-				std::string username = req.findValue(&req, "username");
-				std::string password = req.findValue(&req, "password");
-				std::string timageurl = req.findValue(&req, "imageurl");
+				std::string name = request::findValue(&req, "name");
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string address = request::findValue(&req, "address");
+				std::string sport = request::findValue(&req, "port");
+				std::string username = request::findValue(&req, "username");
+				std::string password = request::findValue(&req, "password");
+				std::string timageurl = request::findValue(&req, "imageurl");
 				if (
 					(name == "") ||
 					(senabled == "") ||
@@ -4997,7 +4998,7 @@ namespace http {
 			}
 			else if (cparam == "deletecamera")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5020,12 +5021,12 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string senabled = req.findValue(&req, "enabled");
-				std::string username = req.findValue(&req, "username");
-				std::string password = req.findValue(&req, "password");
-				std::string srights = req.findValue(&req, "rights");
-				std::string sRemoteSharing = req.findValue(&req, "RemoteSharing");
-				std::string sTabsEnabled = req.findValue(&req, "TabsEnabled");
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string username = request::findValue(&req, "username");
+				std::string password = request::findValue(&req, "password");
+				std::string srights = request::findValue(&req, "rights");
+				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
+				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
 				if (
 					(senabled == "") ||
 					(username == "") ||
@@ -5071,15 +5072,15 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string senabled = req.findValue(&req, "enabled");
-				std::string username = req.findValue(&req, "username");
-				std::string password = req.findValue(&req, "password");
-				std::string srights = req.findValue(&req, "rights");
-				std::string sRemoteSharing = req.findValue(&req, "RemoteSharing");
-				std::string sTabsEnabled = req.findValue(&req, "TabsEnabled");
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string username = request::findValue(&req, "username");
+				std::string password = request::findValue(&req, "password");
+				std::string srights = request::findValue(&req, "rights");
+				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
+				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
 				if (
 					(senabled == "") ||
 					(username == "") ||
@@ -5127,7 +5128,7 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -5142,7 +5143,7 @@ namespace http {
 			}
 			else if (cparam == "clearlightlog")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				//First get Device Type/SubType
@@ -5225,8 +5226,8 @@ namespace http {
 			} //learnsw
 			else if (cparam == "makefavorite")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string sisfavorite = req.findValue(&req, "isfavorite");
+				std::string idx = request::findValue(&req, "idx");
+				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
@@ -5237,8 +5238,8 @@ namespace http {
 			} //makefavorite
 			else if (cparam == "makescenefavorite")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string sisfavorite = req.findValue(&req, "isfavorite");
+				std::string idx = request::findValue(&req, "idx");
+				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
@@ -5263,8 +5264,8 @@ namespace http {
 				if (urights < 1)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
-				std::string switchcmd = req.findValue(&req, "switchcmd");
+				std::string idx = request::findValue(&req, "idx");
+				std::string switchcmd = request::findValue(&req, "switchcmd");
 
 				if ((idx == "") || (switchcmd == ""))
 					return;
@@ -5293,7 +5294,7 @@ namespace http {
 			}
 			else if (cparam == "verifypasscode")
 			{
-				std::string passcode = req.findValue(&req, "passcode");
+				std::string passcode = request::findValue(&req, "passcode");
 				if (passcode == "")
 					return;
 				//Check if passcode is correct
@@ -5324,18 +5325,18 @@ namespace http {
 				if (urights<1)
 					return;
 
-				std::string idx=req.findValue(&req, "idx");
-				std::string switchcmd=req.findValue(&req, "status");
-				std::string until=req.findValue(&req, "until");//optional until date / time as applicable
-				std::string action=req.findValue(&req, "action");//Run action or not (update status only)
-				std::string onlyonchange=req.findValue(&req, "ooc");//No update unless the value changed (check if updated)
+				std::string idx=request::findValue(&req, "idx");
+				std::string switchcmd=request::findValue(&req, "status");
+				std::string until=request::findValue(&req, "until");//optional until date / time as applicable
+				std::string action=request::findValue(&req, "action");//Run action or not (update status only)
+				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
 				//The on action is used to call a script to update the real device so we only want to use it when altering the status in the Domoticz Web Client
 				//If we're posting the status from the real device to domoticz we don't want to run the on action script ("action"!=1) to avoid loops and contention
 				//""... we only want to log a change (and trigger an event) when the status has actually changed ("ooc"==1) i.e. suppress non transient updates
 				if ((idx=="")||(switchcmd==""))
 					return;
 
-				std::string passcode=req.findValue(&req, "passcode");
+				std::string passcode=request::findValue(&req, "passcode");
 				if (passcode.size()>0) 
 				{
 					//Check if passcode is correct
@@ -5374,14 +5375,14 @@ namespace http {
 				if (urights < 1)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
-				std::string switchcmd = req.findValue(&req, "switchcmd");
-				std::string level = req.findValue(&req, "level");
-				std::string onlyonchange=req.findValue(&req, "ooc");//No update unless the value changed (check if updated)
+				std::string idx = request::findValue(&req, "idx");
+				std::string switchcmd = request::findValue(&req, "switchcmd");
+				std::string level = request::findValue(&req, "level");
+				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = req.findValue(&req, "passcode");
+				std::string passcode = request::findValue(&req, "passcode");
 				if (passcode.size() > 0)
 				{
 					//Check if passcode is correct
@@ -5442,12 +5443,12 @@ namespace http {
 				if (urights < 1)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
-				std::string switchcmd = req.findValue(&req, "switchcmd");
+				std::string idx = request::findValue(&req, "idx");
+				std::string switchcmd = request::findValue(&req, "switchcmd");
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = req.findValue(&req, "passcode");
+				std::string passcode = request::findValue(&req, "passcode");
 				if (passcode.size() > 0)
 				{
 					//Check if passcode is correct
@@ -5515,8 +5516,8 @@ namespace http {
 			}
 			else if (cparam == "setsecstatus")
 			{
-				std::string ssecstatus = req.findValue(&req, "secstatus");
-				std::string seccode = req.findValue(&req, "seccode");
+				std::string ssecstatus = request::findValue(&req, "secstatus");
+				std::string seccode = request::findValue(&req, "seccode");
 				if ((ssecstatus == "") || (seccode == ""))
 				{
 					root["message"] = "WRONG CODE";
@@ -5538,10 +5539,10 @@ namespace http {
 			}
 			else if (cparam == "setcolbrightnessvalue")
 			{
-				std::string idx = req.findValue(&req, "idx");
-				std::string hue = req.findValue(&req, "hue");
-				std::string brightness = req.findValue(&req, "brightness");
-				std::string iswhite = req.findValue(&req, "iswhite");
+				std::string idx = request::findValue(&req, "idx");
+				std::string hue = request::findValue(&req, "hue");
+				std::string brightness = request::findValue(&req, "brightness");
+				std::string iswhite = request::findValue(&req, "iswhite");
 
 				if ((idx == "") || (hue == "") || (brightness == "") || (iswhite == ""))
 				{
@@ -5571,7 +5572,7 @@ namespace http {
 			}
 			else if (cparam == "brightnessup")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5587,7 +5588,7 @@ namespace http {
 			}
 			else if (cparam == "brightnessdown")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5603,7 +5604,7 @@ namespace http {
 			}
 			else if (cparam == "discoup")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5619,7 +5620,7 @@ namespace http {
 			}
 			else if (cparam == "discodown")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5635,7 +5636,7 @@ namespace http {
 			}
 			else if (cparam == "speedup")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5651,7 +5652,7 @@ namespace http {
 			}
 			else if (cparam == "speeduplong")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5667,7 +5668,7 @@ namespace http {
 			}
 			else if (cparam == "speeddown")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5683,7 +5684,7 @@ namespace http {
 			}
 			else if (cparam == "warmer")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5699,7 +5700,7 @@ namespace http {
 			}
 			else if (cparam == "cooler")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5715,7 +5716,7 @@ namespace http {
 			}
 			else if (cparam == "fulllight")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5731,7 +5732,7 @@ namespace http {
 			}
 			else if (cparam == "nightlight")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5794,9 +5795,9 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string name = req.findValue(&req, "name");
-				std::string imagefile = req.findValue(&req, "image");
-				std::string scalefactor = req.findValue(&req, "scalefactor");
+				std::string name = request::findValue(&req, "name");
+				std::string imagefile = request::findValue(&req, "image");
+				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
 					(name == "") ||
 					(imagefile == "") ||
@@ -5828,12 +5829,12 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string name = req.findValue(&req, "name");
-				std::string imagefile = req.findValue(&req, "image");
-				std::string scalefactor = req.findValue(&req, "scalefactor");
+				std::string name = request::findValue(&req, "name");
+				std::string imagefile = request::findValue(&req, "image");
+				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
 					(name == "") ||
 					(imagefile == "")
@@ -5866,7 +5867,7 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5889,10 +5890,10 @@ namespace http {
 			}
 			else if (cparam == "changefloorplanorder")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string sway = req.findValue(&req, "way");
+				std::string sway = request::findValue(&req, "way");
 				if (sway == "")
 					return;
 				bool bGoUp = (sway == "0");
@@ -5958,7 +5959,7 @@ namespace http {
 			}
 			else if (cparam == "getfloorplanplans")
 			{
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5997,8 +5998,8 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
-				std::string planidx = req.findValue(&req, "planidx");
+				std::string idx = request::findValue(&req, "idx");
+				std::string planidx = request::findValue(&req, "planidx");
 				if (
 					(idx == "") ||
 					(planidx == "")
@@ -6028,8 +6029,8 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string planidx = req.findValue(&req, "planidx");
-				std::string planarea = req.findValue(&req, "area");
+				std::string planidx = request::findValue(&req, "planidx");
+				std::string planarea = request::findValue(&req, "area");
 				if (planidx == "")
 					return;
 				root["status"] = "OK";
@@ -6056,7 +6057,7 @@ namespace http {
 				if (urights < 2)
 					return;
 
-				std::string idx = req.findValue(&req, "idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -6242,8 +6243,8 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string Latitude = req.findValue(&req, "Latitude");
-			std::string Longitude = req.findValue(&req, "Longitude");
+			std::string Latitude = request::findValue(&req, "Latitude");
+			std::string Longitude = request::findValue(&req, "Longitude");
 			if ((Latitude != "") && (Longitude != ""))
 			{
 				std::string LatLong = Latitude + ";" + Longitude;
@@ -6251,44 +6252,44 @@ namespace http {
 				m_mainworker.GetSunSettings();
 			}
 			m_notifications.ConfigFromGetvars(req, true);
-			std::string DashboardType = req.findValue(&req, "DashboardType");
+			std::string DashboardType = request::findValue(&req, "DashboardType");
 			m_sql.UpdatePreferencesVar("DashboardType", atoi(DashboardType.c_str()));
-			std::string MobileType = req.findValue(&req, "MobileType");
+			std::string MobileType = request::findValue(&req, "MobileType");
 			m_sql.UpdatePreferencesVar("MobileType", atoi(MobileType.c_str()));
 
-			int nUnit = atoi(req.findValue(&req, "WindUnit").c_str());
+			int nUnit = atoi(request::findValue(&req, "WindUnit").c_str());
 			m_sql.UpdatePreferencesVar("WindUnit", nUnit);
 			m_sql.m_windunit = (_eWindUnit)nUnit;
 
-			nUnit = atoi(req.findValue(&req, "TempUnit").c_str());
+			nUnit = atoi(request::findValue(&req, "TempUnit").c_str());
 			m_sql.UpdatePreferencesVar("TempUnit", nUnit);
 			m_sql.m_tempunit = (_eTempUnit)nUnit;
 
 			m_sql.SetUnitsAndScale();
 
-			std::string AuthenticationMethod = req.findValue(&req, "AuthenticationMethod");
+			std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
 			_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
 			m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
 			m_pWebEm->SetAuthenticationMethod(amethod);
 
-			std::string ReleaseChannel = req.findValue(&req, "ReleaseChannel");
+			std::string ReleaseChannel = request::findValue(&req, "ReleaseChannel");
 			m_sql.UpdatePreferencesVar("ReleaseChannel", atoi(ReleaseChannel.c_str()));
 
-			std::string LightHistoryDays = req.findValue(&req, "LightHistoryDays");
+			std::string LightHistoryDays = request::findValue(&req, "LightHistoryDays");
 			m_sql.UpdatePreferencesVar("LightHistoryDays", atoi(LightHistoryDays.c_str()));
 
-			std::string s5MinuteHistoryDays = req.findValue(&req, "ShortLogDays");
+			std::string s5MinuteHistoryDays = request::findValue(&req, "ShortLogDays");
 			m_sql.UpdatePreferencesVar("5MinuteHistoryDays", atoi(s5MinuteHistoryDays.c_str()));
 
-			std::string sElectricVoltage = req.findValue(&req, "ElectricVoltage");
+			std::string sElectricVoltage = request::findValue(&req, "ElectricVoltage");
 			m_sql.UpdatePreferencesVar("ElectricVoltage", atoi(sElectricVoltage.c_str()));
 
-			std::string sCM113DisplayType = req.findValue(&req, "CM113DisplayType");
+			std::string sCM113DisplayType = request::findValue(&req, "CM113DisplayType");
 			m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(sCM113DisplayType.c_str()));
 
-			std::string WebUserName = req.findValue(&req, "WebUserName");
-			std::string WebPassword = req.findValue(&req, "WebPassword");
-			std::string WebLocalNetworks = req.findValue(&req, "WebLocalNetworks");
+			std::string WebUserName = request::findValue(&req, "WebUserName");
+			std::string WebPassword = request::findValue(&req, "WebPassword");
+			std::string WebLocalNetworks = request::findValue(&req, "WebLocalNetworks");
 			WebUserName = CURLEncode::URLDecode(WebUserName);
 			WebPassword = CURLEncode::URLDecode(WebPassword);
 			WebLocalNetworks = CURLEncode::URLDecode(WebLocalNetworks);
@@ -6326,7 +6327,7 @@ namespace http {
 				session.rights = -1;
 			}
 
-			std::string SecPassword = req.findValue(&req, "SecPassword");
+			std::string SecPassword = request::findValue(&req, "SecPassword");
 			SecPassword = CURLEncode::URLDecode(SecPassword);
 			if (SecPassword.size() != 32)
 			{
@@ -6334,7 +6335,7 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("SecPassword", SecPassword.c_str());
 
-			std::string ProtectionPassword = req.findValue(&req, "ProtectionPassword");
+			std::string ProtectionPassword = request::findValue(&req, "ProtectionPassword");
 			ProtectionPassword = CURLEncode::URLDecode(ProtectionPassword);
 			if (ProtectionPassword.size() != 32)
 			{
@@ -6342,9 +6343,9 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword.c_str());
 
-			int EnergyDivider = atoi(req.findValue(&req, "EnergyDivider").c_str());
-			int GasDivider = atoi(req.findValue(&req, "GasDivider").c_str());
-			int WaterDivider = atoi(req.findValue(&req, "WaterDivider").c_str());
+			int EnergyDivider = atoi(request::findValue(&req, "EnergyDivider").c_str());
+			int GasDivider = atoi(request::findValue(&req, "GasDivider").c_str());
+			int WaterDivider = atoi(request::findValue(&req, "WaterDivider").c_str());
 			if (EnergyDivider < 1)
 				EnergyDivider = 1000;
 			if (GasDivider < 1)
@@ -6355,16 +6356,16 @@ namespace http {
 			m_sql.UpdatePreferencesVar("MeterDividerGas", GasDivider);
 			m_sql.UpdatePreferencesVar("MeterDividerWater", WaterDivider);
 
-			std::string scheckforupdates = req.findValue(&req, "checkforupdates");
+			std::string scheckforupdates = request::findValue(&req, "checkforupdates");
 			m_sql.UpdatePreferencesVar("UseAutoUpdate", (scheckforupdates == "on" ? 1 : 0));
 
-			std::string senableautobackup = req.findValue(&req, "enableautobackup");
+			std::string senableautobackup = request::findValue(&req, "enableautobackup");
 			m_sql.UpdatePreferencesVar("UseAutoBackup", (senableautobackup == "on" ? 1 : 0));
 
-			float CostEnergy = static_cast<float>(atof(req.findValue(&req, "CostEnergy").c_str()));
-			float CostEnergyT2 = static_cast<float>(atof(req.findValue(&req, "CostEnergyT2").c_str()));
-			float CostGas = static_cast<float>(atof(req.findValue(&req, "CostGas").c_str()));
-			float CostWater = static_cast<float>(atof(req.findValue(&req, "CostWater").c_str()));
+			float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
+			float CostEnergyT2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyT2").c_str()));
+			float CostGas = static_cast<float>(atof(request::findValue(&req, "CostGas").c_str()));
+			float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
 			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy*10000.0f));
 			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2*10000.0f));
 			m_sql.UpdatePreferencesVar("CostGas", int(CostGas*10000.0f));
@@ -6374,59 +6375,59 @@ namespace http {
 			int rnvalue = 0;
 
 			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
-			rnvalue = atoi(req.findValue(&req, "ActiveTimerPlan").c_str());
+			rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
 			if (rnOldvalue != rnvalue)
 			{
 				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
 				m_sql.m_ActiveTimerPlan = rnvalue;
 				m_mainworker.m_scheduler.ReloadSchedules();
 			}
-			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(req.findValue(&req, "DoorbellCommand").c_str()));
-			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(req.findValue(&req, "SmartMeterType").c_str()));
-			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(req.findValue(&req, "DisplayPowerUsageInkWhGraph").c_str()));
+			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str()));
+			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str()));
+			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(request::findValue(&req, "DisplayPowerUsageInkWhGraph").c_str()));
 
-			std::string EnableTabFloorplans = req.findValue(&req, "EnableTabFloorplans");
+			std::string EnableTabFloorplans = request::findValue(&req, "EnableTabFloorplans");
 			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
-			std::string EnableTabLights = req.findValue(&req, "EnableTabLights");
+			std::string EnableTabLights = request::findValue(&req, "EnableTabLights");
 			m_sql.UpdatePreferencesVar("EnableTabLights", (EnableTabLights == "on" ? 1 : 0));
-			std::string EnableTabTemp = req.findValue(&req, "EnableTabTemp");
+			std::string EnableTabTemp = request::findValue(&req, "EnableTabTemp");
 			m_sql.UpdatePreferencesVar("EnableTabTemp", (EnableTabTemp == "on" ? 1 : 0));
-			std::string EnableTabWeather = req.findValue(&req, "EnableTabWeather");
+			std::string EnableTabWeather = request::findValue(&req, "EnableTabWeather");
 			m_sql.UpdatePreferencesVar("EnableTabWeather", (EnableTabWeather == "on" ? 1 : 0));
-			std::string EnableTabUtility = req.findValue(&req, "EnableTabUtility");
+			std::string EnableTabUtility = request::findValue(&req, "EnableTabUtility");
 			m_sql.UpdatePreferencesVar("EnableTabUtility", (EnableTabUtility == "on" ? 1 : 0));
-			std::string EnableTabScenes = req.findValue(&req, "EnableTabScenes");
+			std::string EnableTabScenes = request::findValue(&req, "EnableTabScenes");
 			m_sql.UpdatePreferencesVar("EnableTabScenes", (EnableTabScenes == "on" ? 1 : 0));
-			std::string EnableTabCustom = req.findValue(&req, "EnableTabCustom");
+			std::string EnableTabCustom = request::findValue(&req, "EnableTabCustom");
 			m_sql.UpdatePreferencesVar("EnableTabCustom", (EnableTabCustom == "on" ? 1 : 0));
 
-			m_sql.UpdatePreferencesVar("NotificationSensorInterval", atoi(req.findValue(&req, "NotificationSensorInterval").c_str()));
-			m_sql.UpdatePreferencesVar("NotificationSwitchInterval", atoi(req.findValue(&req, "NotificationSwitchInterval").c_str()));
+			m_sql.UpdatePreferencesVar("NotificationSensorInterval", atoi(request::findValue(&req, "NotificationSensorInterval").c_str()));
+			m_sql.UpdatePreferencesVar("NotificationSwitchInterval", atoi(request::findValue(&req, "NotificationSwitchInterval").c_str()));
 
-			std::string RaspCamParams = req.findValue(&req, "RaspCamParams");
+			std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
 			if (RaspCamParams != "")
 				m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
 			
-            std::string UVCParams = req.findValue(&req, "UVCParams");
+            std::string UVCParams = request::findValue(&req, "UVCParams");
 			if (UVCParams != "")
 				m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
 
-			std::string EnableNewHardware = req.findValue(&req, "AcceptNewHardware");
+			std::string EnableNewHardware = request::findValue(&req, "AcceptNewHardware");
 			int iEnableNewHardware = (EnableNewHardware == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AcceptNewHardware", iEnableNewHardware);
 			m_sql.m_bAcceptNewHardware = (iEnableNewHardware == 1);
 
-			std::string HideDisabledHardwareSensors = req.findValue(&req, "HideDisabledHardwareSensors");
+			std::string HideDisabledHardwareSensors = request::findValue(&req, "HideDisabledHardwareSensors");
 			int iHideDisabledHardwareSensors = (HideDisabledHardwareSensors == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", iHideDisabledHardwareSensors);
 
-			std::string ShowUpdateEffect = req.findValue(&req, "ShowUpdateEffect");
+			std::string ShowUpdateEffect = request::findValue(&req, "ShowUpdateEffect");
 			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
-			std::string DisableEventScriptSystem = req.findValue(&req, "DisableEventScriptSystem");
+			std::string DisableEventScriptSystem = request::findValue(&req, "DisableEventScriptSystem");
 			int iDisableEventScriptSystem = (DisableEventScriptSystem == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("DisableEventScriptSystem", iDisableEventScriptSystem);
 			m_sql.m_bDisableEventSystem = (iDisableEventScriptSystem == 1);
@@ -6436,7 +6437,7 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
-			std::string EnableWidgetOrdering = req.findValue(&req, "AllowWidgetOrdering");
+			std::string EnableWidgetOrdering = request::findValue(&req, "AllowWidgetOrdering");
 			int iEnableAllowWidgetOrdering = (EnableWidgetOrdering == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AllowWidgetOrdering", iEnableAllowWidgetOrdering);
 			m_sql.m_bAllowWidgetOrdering = (iEnableAllowWidgetOrdering == 1);
@@ -6444,7 +6445,7 @@ namespace http {
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
 
-			m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(req.findValue(&req, "RemoteSharedPort").c_str()));
+			m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(request::findValue(&req, "RemoteSharedPort").c_str()));
 
 			rnvalue = 0;
 			m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
@@ -6461,27 +6462,27 @@ namespace http {
 				}
 			}
 
-			m_sql.UpdatePreferencesVar("Language", req.findValue(&req, "Language").c_str());
-			std::string SelectedTheme = req.findValue(&req, "Themes");
+			m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language").c_str());
+			std::string SelectedTheme = request::findValue(&req, "Themes");
 			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
 			m_pWebEm->SetWebTheme(SelectedTheme);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
-			rnvalue = atoi(req.findValue(&req, "RandomSpread").c_str());
+			rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
 			if (rnOldvalue != rnvalue)
 			{
 				m_sql.UpdatePreferencesVar("RandomTimerFrame", rnvalue);
 				m_mainworker.m_scheduler.ReloadSchedules();
 			}
 
-			m_sql.UpdatePreferencesVar("SecOnDelay", atoi(req.findValue(&req, "SecOnDelay").c_str()));
+			m_sql.UpdatePreferencesVar("SecOnDelay", atoi(request::findValue(&req, "SecOnDelay").c_str()));
 
-			int sensortimeout = atoi(req.findValue(&req, "SensorTimeout").c_str());
+			int sensortimeout = atoi(request::findValue(&req, "SensorTimeout").c_str());
 			if (sensortimeout < 10)
 				sensortimeout = 10;
 			m_sql.UpdatePreferencesVar("SensorTimeout", sensortimeout);
 
-			int batterylowlevel = atoi(req.findValue(&req, "BatterLowLevel").c_str());
+			int batterylowlevel = atoi(request::findValue(&req, "BatterLowLevel").c_str());
 			if (batterylowlevel > 100)
 				batterylowlevel = 100;
 			m_sql.GetPreferencesVar("BatteryLowNotification", rnOldvalue);
@@ -6490,21 +6491,21 @@ namespace http {
 				m_sql.CheckBatteryLow();
 
 			int nValue = 0;
-			nValue = atoi(req.findValue(&req, "FloorplanPopupDelay").c_str());
+			nValue = atoi(request::findValue(&req, "FloorplanPopupDelay").c_str());
 			m_sql.UpdatePreferencesVar("FloorplanPopupDelay", nValue);
-			std::string FloorplanFullscreenMode = req.findValue(&req, "FloorplanFullscreenMode");
+			std::string FloorplanFullscreenMode = request::findValue(&req, "FloorplanFullscreenMode");
 			m_sql.UpdatePreferencesVar("FloorplanFullscreenMode", (FloorplanFullscreenMode == "on" ? 1 : 0));
-			std::string FloorplanAnimateZoom = req.findValue(&req, "FloorplanAnimateZoom");
+			std::string FloorplanAnimateZoom = request::findValue(&req, "FloorplanAnimateZoom");
 			m_sql.UpdatePreferencesVar("FloorplanAnimateZoom", (FloorplanAnimateZoom == "on" ? 1 : 0));
-			std::string FloorplanShowSensorValues = req.findValue(&req, "FloorplanShowSensorValues");
+			std::string FloorplanShowSensorValues = request::findValue(&req, "FloorplanShowSensorValues");
 			m_sql.UpdatePreferencesVar("FloorplanShowSensorValues", (FloorplanShowSensorValues == "on" ? 1 : 0));
-			std::string FloorplanShowSwitchValues = req.findValue(&req, "FloorplanShowSwitchValues");
+			std::string FloorplanShowSwitchValues = request::findValue(&req, "FloorplanShowSwitchValues");
 			m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (FloorplanShowSwitchValues == "on" ? 1 : 0));
-			std::string FloorplanShowSceneNames = req.findValue(&req, "FloorplanShowSceneNames");
+			std::string FloorplanShowSceneNames = request::findValue(&req, "FloorplanShowSceneNames");
 			m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (FloorplanShowSceneNames == "on" ? 1 : 0));
-			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(req.findValue(&req, "FloorplanRoomColour").c_str()).c_str());
-			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(req.findValue(&req, "FloorplanActiveOpacity").c_str()));
-			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(req.findValue(&req, "FloorplanInactiveOpacity").c_str()));
+			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour").c_str()).c_str());
+			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str()));
+			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str()));
 
 			m_notifications.LoadConfig();
 
@@ -6520,7 +6521,7 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string dbasefile = req.findValue(&req, "dbasefile");
+			std::string dbasefile = request::findValue(&req, "dbasefile");
 			if (dbasefile == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -9015,7 +9016,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -9030,14 +9031,14 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = req.findValue(&req, "name");
+			std::string name = request::findValue(&req, "name");
 			if (name == "")
 			{
 				root["status"] = "ERR";
 				root["message"] = "No Scene Name specified!";
 				return;
 			}
-			std::string stype = req.findValue(&req, "scenetype");
+			std::string stype = request::findValue(&req, "scenetype");
 			if (stype == "")
 			{
 				root["status"] = "ERR";
@@ -9064,7 +9065,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -9079,23 +9080,23 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string name = req.findValue(&req, "name");
-			std::string description = req.findValue(&req, "description");
+			std::string idx = request::findValue(&req, "idx");
+			std::string name = request::findValue(&req, "name");
+			std::string description = request::findValue(&req, "description");
 			if ((idx == "") || (name == ""))
 				return;
-			std::string stype = req.findValue(&req, "scenetype");
+			std::string stype = request::findValue(&req, "scenetype");
 			if (stype == "")
 			{
 				root["status"] = "ERR";
 				root["message"] = "No Scene Type specified!";
 				return;
 			}
-			std::string tmpstr = req.findValue(&req, "protected");
+			std::string tmpstr = request::findValue(&req, "protected");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string onaction = base64_decode(req.findValue(&req, "onaction"));
-			std::string offaction = base64_decode(req.findValue(&req, "offaction"));
+			std::string onaction = base64_decode(request::findValue(&req, "onaction"));
+			std::string offaction = base64_decode(request::findValue(&req, "offaction"));
 
 
 			root["status"] = "OK";
@@ -9141,7 +9142,7 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Plans";
 
-			std::string sDisplayHidden = req.findValue(&req, "displayhidden");
+			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
 
 			std::vector<std::vector<std::string> > result, result2;
@@ -9272,10 +9273,10 @@ namespace http {
 			root["title"] = "Scenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
-			std::string sDisplayHidden = req.findValue(&req, "displayhidden");
+			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
 
-			std::string sLastUpdate = req.findValue(&req, "lastupdate");
+			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
 			time_t LastUpdate = 0;
 			if (sLastUpdate != "")
@@ -9438,15 +9439,15 @@ namespace http {
 
 		void CWebServer::RType_Devices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string rfilter = req.findValue(&req, "filter");
-			std::string order = req.findValue(&req, "order");
-			std::string rused = req.findValue(&req, "used");
-			std::string rid = req.findValue(&req, "rid");
-			std::string planid = req.findValue(&req, "plan");
-			std::string floorid = req.findValue(&req, "floor");
-			std::string sDisplayHidden = req.findValue(&req, "displayhidden");
+			std::string rfilter = request::findValue(&req, "filter");
+			std::string order = request::findValue(&req, "order");
+			std::string rused = request::findValue(&req, "used");
+			std::string rid = request::findValue(&req, "rid");
+			std::string planid = request::findValue(&req, "plan");
+			std::string floorid = request::findValue(&req, "floor");
+			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
-			std::string sLastUpdate = req.findValue(&req, "lastupdate");
+			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
 			time_t LastUpdate = 0;
 			if (sLastUpdate != "")
@@ -9517,8 +9518,8 @@ namespace http {
 			if (urights < 1)
 				return;
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string setpoint = req.findValue(&req, "setpoint");
+			std::string idx = request::findValue(&req, "idx");
+			std::string setpoint = request::findValue(&req, "setpoint");
 			if (
 				(idx == "") ||
 				(setpoint == "")
@@ -9538,7 +9539,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -9610,9 +9611,9 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = req.findValue(&req, "sceneidx");
-			std::string idx = req.findValue(&req, "idx");
-			std::string cmnd = req.findValue(&req, "cmnd");
+			std::string sceneidx = request::findValue(&req, "sceneidx");
+			std::string idx = request::findValue(&req, "idx");
+			std::string cmnd = request::findValue(&req, "cmnd");
 			if (
 				(sceneidx == "") ||
 				(idx == "") ||
@@ -9676,9 +9677,9 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = req.findValue(&req, "sceneidx");
-			std::string idx = req.findValue(&req, "idx");
-			std::string code = req.findValue(&req, "code");
+			std::string sceneidx = request::findValue(&req, "sceneidx");
+			std::string idx = request::findValue(&req, "idx");
+			std::string code = request::findValue(&req, "code");
 			if (
 				(idx == "") ||
 				(sceneidx == "") ||
@@ -9751,7 +9752,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = req.findValue(&req, "sceneidx");
+			std::string sceneidx = request::findValue(&req, "sceneidx");
 			if (sceneidx == "")
 				return;
 			root["status"] = "OK";
@@ -9833,7 +9834,7 @@ namespace http {
 			if (session.rights == 2)
 			{
 				//Only admin user allowed
-				std::string zipfile = req.findValue(&req, "file");
+				std::string zipfile = request::findValue(&req, "file");
 				if (zipfile != "")
 				{
 					std::string ErrorMessage;
@@ -9849,7 +9850,7 @@ namespace http {
 					}
 				}
 			}
-			std::string jcallback = req.findValue(&req, "jsoncallback");
+			std::string jcallback = request::findValue(&req, "jsoncallback");
 			if (jcallback.size() == 0)
 				m_retstr = root.toStyledString();
 			else
@@ -9889,7 +9890,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = req.findValue(&req, "idx");
+			std::string sidx = request::findValue(&req, "idx");
 			if (sidx == "")
 				return;
 			int idx = atoi(sidx.c_str());
@@ -9921,9 +9922,9 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = req.findValue(&req, "idx");
-			std::string sname = req.findValue(&req, "name");
-			std::string sdescription = req.findValue(&req, "description");
+			std::string sidx = request::findValue(&req, "idx");
+			std::string sname = request::findValue(&req, "name");
+			std::string sdescription = request::findValue(&req, "description");
 			if (
 				(sidx.empty()) ||
 				(sname.empty()) ||
@@ -9944,8 +9945,8 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = req.findValue(&req, "idx");
-			std::string sname = req.findValue(&req, "name");
+			std::string sidx = request::findValue(&req, "idx");
+			std::string sname = request::findValue(&req, "name");
 			if (
 				(sidx == "")||
 				(sname == "")
@@ -9964,8 +9965,8 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = req.findValue(&req, "idx");
-			std::string sname = req.findValue(&req, "name");
+			std::string sidx = request::findValue(&req, "idx");
+			std::string sname = request::findValue(&req, "name");
 			if (
 				(sidx == "") ||
 				(sname == "")
@@ -9984,7 +9985,7 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = req.findValue(&req, "idx");
+			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
 			int idx = atoi(sidx.c_str());
@@ -9995,7 +9996,7 @@ namespace http {
 
 		void CWebServer::Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string smessage = req.findValue(&req, "message");
+			std::string smessage = request::findValue(&req, "message");
 			if (smessage.empty())
 				return;
 			root["status"] = "OK";
@@ -10036,9 +10037,9 @@ namespace http {
 			root["title"] = "GetTransfers";
 
 			unsigned long long idx = 0;
-			if (req.findValue(&req, "idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(req.findValue(&req, "idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 
@@ -10082,11 +10083,11 @@ namespace http {
 		//then delete the NEW sensor
 		void CWebServer::RType_TransferDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sidx = req.findValue(&req, "idx");
+			std::string sidx = request::findValue(&req, "idx");
 			if (sidx == "")
 				return;
 
-			std::string newidx = req.findValue(&req, "newidx");
+			std::string newidx = request::findValue(&req, "newidx");
 			if (newidx == "")
 				return;
 
@@ -10169,9 +10170,9 @@ namespace http {
 			}
 
 			unsigned long long idx = 0;
-			if (req.findValue(&req, "idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(req.findValue(&req, "idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
@@ -10198,7 +10199,7 @@ namespace http {
 
 		void CWebServer::RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -10222,8 +10223,8 @@ namespace http {
 
 		void CWebServer::RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = req.findValue(&req, "idx");
-			std::string userdevices = req.findValue(&req, "devices");
+			std::string idx = request::findValue(&req, "idx");
+			std::string userdevices = request::findValue(&req, "devices");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -10247,31 +10248,31 @@ namespace http {
 			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string deviceid = req.findValue(&req, "deviceid");
-			std::string name = req.findValue(&req, "name");
-			std::string description = req.findValue(&req, "description");
-			std::string sused = req.findValue(&req, "used");
-			std::string sswitchtype = req.findValue(&req, "switchtype");
-			std::string maindeviceidx = req.findValue(&req, "maindeviceidx");
-			std::string addjvalue = req.findValue(&req, "addjvalue");
-			std::string addjmulti = req.findValue(&req, "addjmulti");
-			std::string addjvalue2 = req.findValue(&req, "addjvalue2");
-			std::string addjmulti2 = req.findValue(&req, "addjmulti2");
-			std::string setPoint = req.findValue(&req, "setpoint");
-			std::string state = req.findValue(&req, "state");
-			std::string mode = req.findValue(&req, "mode");
-			std::string until = req.findValue(&req, "until");
-			std::string clock = req.findValue(&req, "clock");
-			std::string tmode = req.findValue(&req, "tmode");
-			std::string fmode = req.findValue(&req, "fmode");
-			std::string sCustomImage = req.findValue(&req, "customimage");
+			std::string idx = request::findValue(&req, "idx");
+			std::string deviceid = request::findValue(&req, "deviceid");
+			std::string name = request::findValue(&req, "name");
+			std::string description = request::findValue(&req, "description");
+			std::string sused = request::findValue(&req, "used");
+			std::string sswitchtype = request::findValue(&req, "switchtype");
+			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
+			std::string addjvalue = request::findValue(&req, "addjvalue");
+			std::string addjmulti = request::findValue(&req, "addjmulti");
+			std::string addjvalue2 = request::findValue(&req, "addjvalue2");
+			std::string addjmulti2 = request::findValue(&req, "addjmulti2");
+			std::string setPoint = request::findValue(&req, "setpoint");
+			std::string state = request::findValue(&req, "state");
+			std::string mode = request::findValue(&req, "mode");
+			std::string until = request::findValue(&req, "until");
+			std::string clock = request::findValue(&req, "clock");
+			std::string tmode = request::findValue(&req, "tmode");
+			std::string fmode = request::findValue(&req, "fmode");
+			std::string sCustomImage = request::findValue(&req, "customimage");
 
-			std::string strunit = req.findValue(&req, "unit");
-			std::string strParam1 = base64_decode(req.findValue(&req, "strparam1"));
-			std::string strParam2 = base64_decode(req.findValue(&req, "strparam2"));
-			std::string tmpstr = req.findValue(&req, "protected");
-			bool bHasstrParam1 = req.hasValue(&req, "strparam1");
+			std::string strunit = request::findValue(&req, "unit");
+			std::string strParam1 = base64_decode(request::findValue(&req, "strparam1"));
+			std::string strParam2 = base64_decode(request::findValue(&req, "strparam2"));
+			std::string tmpstr = request::findValue(&req, "protected");
+			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
 			char szTmp[200];
@@ -10483,7 +10484,7 @@ namespace http {
 
 			if (used == 0)
 			{
-				bool bRemoveSubDevices = (req.findValue(&req, "RemoveSubDevices") == "true");
+				bool bRemoveSubDevices = (request::findValue(&req, "RemoveSubDevices") == "true");
 
 				if (bRemoveSubDevices)
 				{
@@ -10819,9 +10820,9 @@ namespace http {
 		void CWebServer::RType_LightLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (req.findValue(&req, "idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(req.findValue(&req, "idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -10917,9 +10918,9 @@ namespace http {
 		void CWebServer::RType_TextLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (req.findValue(&req, "idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(req.findValue(&req, "idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -10951,19 +10952,19 @@ namespace http {
 		void CWebServer::RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (req.findValue(&req, "idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(req.findValue(&req, "idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 
 			std::vector<std::vector<std::string> > result;
 			char szTmp[300];
 
-			std::string sensor = req.findValue(&req, "sensor");
+			std::string sensor = request::findValue(&req, "sensor");
 			if (sensor == "")
 				return;
-			std::string srange = req.findValue(&req, "range");
+			std::string srange = request::findValue(&req, "range");
 			if (srange == "")
 				return;
 
@@ -11723,7 +11724,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value,[Usage], Date FROM %s WHERE (DeviceRowID==%llu) ORDER BY Date ASC", dbasetable.c_str(), idx);
 
 						int method = 0;
-						std::string sMethod = req.findValue(&req, "method");
+						std::string sMethod = request::findValue(&req, "method");
 						if (sMethod.size() > 0)
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
@@ -11886,7 +11887,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%llu) ORDER BY Date ASC", dbasetable.c_str(), idx);
 
 						int method = 0;
-						std::string sMethod = req.findValue(&req, "method");
+						std::string sMethod = request::findValue(&req, "method");
 						if (sMethod.size() > 0)
 							method = atoi(sMethod.c_str());
 
@@ -12668,8 +12669,8 @@ namespace http {
 				char szDateStartPrev[40];
 				char szDateEndPrev[40];
 
-				std::string sactmonth = req.findValue(&req, "actmonth");
-				std::string sactyear = req.findValue(&req, "actyear");
+				std::string sactmonth = request::findValue(&req, "actmonth");
+				std::string sactyear = request::findValue(&req, "actyear");
 
 				int actMonth = atoi(sactmonth.c_str());
 				int actYear = atoi(sactyear.c_str());
@@ -14199,13 +14200,13 @@ namespace http {
 			{
 				std::string szDateStart = srange.substr(0, 10);
 				std::string szDateEnd = srange.substr(11, 10);
-				std::string sgraphtype = req.findValue(&req, "graphtype");
-				std::string sgraphTemp = req.findValue(&req, "graphTemp");
-				std::string sgraphChill = req.findValue(&req, "graphChill");
-				std::string sgraphHum = req.findValue(&req, "graphHum");
-				std::string sgraphBaro = req.findValue(&req, "graphBaro");
-				std::string sgraphDew = req.findValue(&req, "graphDew");
-				std::string sgraphSet = req.findValue(&req, "graphSet");
+				std::string sgraphtype = request::findValue(&req, "graphtype");
+				std::string sgraphTemp = request::findValue(&req, "graphTemp");
+				std::string sgraphChill = request::findValue(&req, "graphChill");
+				std::string sgraphHum = request::findValue(&req, "graphHum");
+				std::string sgraphBaro = request::findValue(&req, "graphBaro");
+				std::string sgraphDew = request::findValue(&req, "graphDew");
+				std::string sgraphSet = request::findValue(&req, "graphSet");
 
 				if (sensor == "temp") {
 					root["status"] = "OK";

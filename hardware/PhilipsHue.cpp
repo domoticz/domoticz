@@ -595,9 +595,9 @@ namespace http {
 		{
 			root["title"] = "RegisterOnHue";
 
-			std::string sipaddress = req.findValue(&req, "ipaddress");
-			std::string sport = req.findValue(&req, "port");
-			std::string susername = req.findValue(&req, "username");
+			std::string sipaddress = request::findValue(&req, "ipaddress");
+			std::string sport = request::findValue(&req, "port");
+			std::string susername = request::findValue(&req, "username");
 			if (
 				(sipaddress == "") ||
 				(sport == "")

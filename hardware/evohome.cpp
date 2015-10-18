@@ -1702,8 +1702,8 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string ssensortype = req.findValue(&req, "sensortype");
+			std::string idx = request::findValue(&req, "idx");
+			std::string ssensortype = request::findValue(&req, "sensortype");
 			if ((idx == "") || (ssensortype == ""))
 				return;
 
@@ -1784,8 +1784,8 @@ namespace http {
 				return;
 			}
 
-			std::string idx = req.findValue(&req, "idx");
-			std::string type = req.findValue(&req, "devtype");
+			std::string idx = request::findValue(&req, "idx");
+			std::string type = request::findValue(&req, "devtype");
 			int HwdID = atoi(idx.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HwdID);
 			if (pHardware == NULL)

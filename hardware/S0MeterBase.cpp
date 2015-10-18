@@ -342,24 +342,24 @@ namespace http {
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = req.findValue(&req, "idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
 
 			std::stringstream szAddress;
 
-			std::string S0M1Type = req.findValue(&req, "S0M1Type");
-			std::string S0M2Type = req.findValue(&req, "S0M2Type");
-			std::string S0M3Type = req.findValue(&req, "S0M3Type");
-			std::string S0M4Type = req.findValue(&req, "S0M4Type");
-			std::string S0M5Type = req.findValue(&req, "S0M5Type");
+			std::string S0M1Type = request::findValue(&req, "S0M1Type");
+			std::string S0M2Type = request::findValue(&req, "S0M2Type");
+			std::string S0M3Type = request::findValue(&req, "S0M3Type");
+			std::string S0M4Type = request::findValue(&req, "S0M4Type");
+			std::string S0M5Type = request::findValue(&req, "S0M5Type");
 
-			std::string M1PulsesPerHour = req.findValue(&req, "M1PulsesPerHour");
-			std::string M2PulsesPerHour = req.findValue(&req, "M2PulsesPerHour");
-			std::string M3PulsesPerHour = req.findValue(&req, "M3PulsesPerHour");
-			std::string M4PulsesPerHour = req.findValue(&req, "M4PulsesPerHour");
-			std::string M5PulsesPerHour = req.findValue(&req, "M5PulsesPerHour");
+			std::string M1PulsesPerHour = request::findValue(&req, "M1PulsesPerHour");
+			std::string M2PulsesPerHour = request::findValue(&req, "M2PulsesPerHour");
+			std::string M3PulsesPerHour = request::findValue(&req, "M3PulsesPerHour");
+			std::string M4PulsesPerHour = request::findValue(&req, "M4PulsesPerHour");
+			std::string M5PulsesPerHour = request::findValue(&req, "M5PulsesPerHour");
 
 			szAddress <<
 				S0M1Type << ";" << M1PulsesPerHour << ";" <<
