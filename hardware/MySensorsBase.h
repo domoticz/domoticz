@@ -147,12 +147,14 @@ public:
 		int intvalue;
 		bool bValidValue;
 		std::string stringValue;
+		time_t lastreceived;
 
 		_tMySensorValue()
 		{
 			floatValue = 0;
 			intvalue = 0;
 			bValidValue = false;
+			lastreceived = 0;
 		}
 	};
 
@@ -221,16 +223,19 @@ public:
 		{
 			values[vType].intvalue = intValue;
 			values[vType].bValidValue = true;
+			values[vType].lastreceived = time(NULL);
 		}
 		void SetValue(const _eSetType vType, const float floatValue)
 		{
 			values[vType].floatValue = floatValue;
 			values[vType].bValidValue = true;
+			values[vType].lastreceived = time(NULL);
 		}
 		void SetValue(const _eSetType vType, const std::string &stringValue)
 		{
 			values[vType].stringValue = stringValue;
 			values[vType].bValidValue = true;
+			values[vType].lastreceived = time(NULL);
 		}
 	};
 

@@ -1420,6 +1420,7 @@ void MySensorsBase::ParseLine()
 			if (pChild == NULL)
 				return;
 		}
+		pChild->lastreceived = pNode->lastreceived;
 
 		_eSetType vType = (_eSetType)sub_type;
 		bool bHaveValue = false;
@@ -1874,15 +1875,22 @@ namespace http {
 						root["result"][ii]["childs"][jj]["type"] = MySensorsBase::GetMySensorsPresentationTypeStr((MySensorsBase::_ePresentationType)atoi(sd2[1].c_str()));
 						root["result"][ii]["childs"][jj]["name"] = sd2[2];
 						root["result"][ii]["childs"][jj]["use_ack"] = (sd2[3] != "0") ? "true" : "false";
-						MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
-						if (pChild != NULL)
+						if (pNode != NULL)
 						{
-							if (pChild->lastreceived != 0)
+							MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
+							if (pChild != NULL)
 							{
-								struct tm loctime;
-								localtime_r(&pChild->lastreceived, &loctime);
-								strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
-								root["result"][ii]["childs"][jj]["LastReceived"] = szTmp;
+								if (pChild->lastreceived != 0)
+								{
+									struct tm loctime;
+									localtime_r(&pChild->lastreceived, &loctime);
+									strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
+									root["result"][ii]["childs"][jj]["LastReceived"] = szTmp;
+								}
+								else
+								{
+									root["result"][ii]["childs"][jj]["LastReceived"] = "-";
+								}
 							}
 							else
 							{
