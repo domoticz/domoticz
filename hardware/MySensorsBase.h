@@ -175,6 +175,7 @@ public:
 
 		_tMySensorChild()
 		{
+			lastreceived = 0;
 			nodeID = -1;
 			childID = 1;
 			hasBattery = false;
@@ -328,6 +329,11 @@ public:
 	~MySensorsBase(void);
 	std::string m_szSerialPort;
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+	_tMySensorNode* FindNode(const int nodeID);
+	void RemoveNode(const int nodeID);
+	void RemoveChild(const int nodeID, const int childID);
+	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
+	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);
@@ -352,9 +358,7 @@ private:
 
 	void MakeAndSendWindSensor(const int nodeID, const std::string &sname);
 
-	_tMySensorNode* FindNode(const int nodeID);
 	_tMySensorNode* InsertNode(const int nodeID);
-	void RemoveNode(const int nodeID);
 	int FindNextNodeID();
 	_tMySensorChild* FindSensorWithPresentationType(const int nodeID, const _ePresentationType presType);
 	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType);

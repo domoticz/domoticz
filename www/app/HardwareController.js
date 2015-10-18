@@ -1232,6 +1232,204 @@ define(['app'], function (app) {
 
             RefreshPingerNodeTable();
         }
+        
+        MySensorsDeleteNode = function(nodeid)
+        {
+            if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
+                return;
+            }
+            bootbox.confirm($.t("Are you sure to remove this Node?"), function(result) {
+                if (result==true) {
+                    $.ajax({
+                         url: "json.htm?type=command&param=mysensorsremovenode" +
+                            "&idx=" + $.devIdx +
+                            "&nodeid=" + nodeid,
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            RefreshMySensorsNodeTable();
+                         },
+                         error: function(){
+                            ShowNotify($.t('Problem Deleting Node!'), 2500, true);
+                         }
+                    });
+                }
+            });
+        }
+        MySensorsDeleteChild = function(nodeid,childid)
+        {
+            if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
+                return;
+            }
+            bootbox.confirm($.t("Are you sure to remove this Child?"), function(result) {
+                if (result==true) {
+                    $.ajax({
+                         url: "json.htm?type=command&param=mysensorsremovechild" +
+                            "&idx=" + $.devIdx +
+                            "&nodeid=" + nodeid +
+                            "&childid=" + childid,
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+							var oTable = $('#mysensorsactivetable').dataTable();
+							oTable.fnClearTable();
+                            RefreshMySensorsNodeTable();
+                         },
+                         error: function(){
+                            ShowNotify($.t('Problem Deleting Child!'), 2500, true);
+                         }
+                    });
+                }
+            });
+        }
+
+		MySensorsRefreshActiveDevicesTable = function()
+		{
+			//$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+			var oTable = $('#mysensorsactivetable').dataTable();
+			oTable.fnClearTable();
+			if (typeof $.childs != 'undefined') {
+				$.each($.childs, function(i,item){
+					var addId = oTable.fnAddData( {
+						"DT_RowId": item.child_id,
+						"0": item.child_id,
+						"1": item.type,
+						"2": item.name,
+						"3": item.use_ack,
+                        "4": item.LastReceived
+					} );
+				});
+			}
+			/* Add a click handler to the rows - this could be used as a callback */
+			$("#mysensorsactivetable tbody").off();
+			$("#mysensorsactivetable tbody").on( 'click', 'tr', function () {
+				if ( $(this).hasClass('row_selected') ) {
+					$(this).removeClass('row_selected');
+					$('#delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+				}
+				else {
+					var oTable = $('#mysensorsactivetable').dataTable();
+					oTable.$('tr.row_selected').removeClass('row_selected');
+					$(this).addClass('row_selected');
+					$('#activedevicedelete').attr("class", "btnstyle3");
+					var anSelected = fnGetSelected( oTable );
+					if ( anSelected.length !== 0 ) {
+						var data = oTable.fnGetData( anSelected[0] );
+						var idx= data["DT_RowId"];
+						$("#activedevicedelete").attr("href", "javascript:MySensorsDeleteChild(" + $.nodeid + "," + idx + ")");
+					}
+				}
+			}); 
+
+		  $('#modal').hide();
+		}
+
+        RefreshMySensorsNodeTable = function()
+        {
+          $('#modal').show();
+          var oTable = $('#mysensorsnodestable').dataTable();
+          oTable.fnClearTable();
+
+          $.ajax({
+             url: "json.htm?type=command&param=mysensorsgetnodes&idx="+$.devIdx,
+             async: false,
+             dataType: 'json',
+             success: function(data) {
+              if (typeof data.result != 'undefined') {
+                $.each(data.result, function(i,item){
+                
+					var num_childs="-";
+					if (typeof item.childs != 'undefined') {
+						num_childs=item.childs.length;
+					}
+                
+                    var addId = oTable.fnAddData( {
+                        "DT_RowId": item.idx,
+                        "Name": item.Name,
+                        "Version": item.Version,
+                        "Childs": item.childs,
+                        "0": item.idx,
+                        "1": item.Name,
+                        "2": item.Version,
+                        "3": num_childs,
+                        "4": item.LastReceived
+                    } );
+                });
+              }
+             }
+          });
+
+            /* Add a click handler to the rows - this could be used as a callback */
+            $("#mysensorsnodestable tbody").off();
+            $("#mysensorsnodestable tbody").on( 'click', 'tr', function () {
+                $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+                if ( $(this).hasClass('row_selected') ) {
+                    $(this).removeClass('row_selected');
+                }
+                else {
+                    var oTable = $('#mysensorsnodestable').dataTable();
+                    oTable.$('tr.row_selected').removeClass('row_selected');
+                    $(this).addClass('row_selected');
+                    var anSelected = fnGetSelected( oTable );
+                    if ( anSelected.length !== 0 ) {
+                        var data = oTable.fnGetData( anSelected[0] );
+                        var idx= data["DT_RowId"];
+                        $('#updelclr #nodedelete').attr("class", "btnstyle3");
+                        $("#updelclr #nodedelete").attr("href", "javascript:MySensorsDeleteNode(" + idx + ")");
+                        $.childs = data["Childs"];
+                        $.nodeid = idx;
+                        MySensorsRefreshActiveDevicesTable();
+                    }
+                }
+            });
+
+          $('#modal').hide();
+        }
+
+        EditMySensors = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
+        {
+            $.devIdx=idx;
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent+=$('#mysensors').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            var oTable = $('#mysensorsnodestable').dataTable( {
+              "sDom": '<"H"lfrC>t<"F"ip>',
+              "oTableTools": {
+                "sRowSelect": "single"
+              },
+              "aaSorting": [[ 0, "asc" ]],
+              "bSortClasses": false,
+              "bProcessing": true,
+              "bStateSave": true,
+              "bJQueryUI": true,
+              "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+              "iDisplayLength" : 25,
+              "sPaginationType": "full_numbers",
+              language: $.DataTableLanguage
+            } );
+			oTable = $('#mysensorsactivetable').dataTable( {
+				"sDom": '<"H"lfrC>t<"F"ip>',
+					"oTableTools": {
+					"sRowSelect": "single"
+				},
+				"aaSorting": [[ 0, "asc" ]],
+				"bSortClasses": false,
+				"bProcessing": true,
+				"bStateSave": true,
+				"bJQueryUI": true,
+				"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+				"iDisplayLength" : 25,
+				"sPaginationType": "full_numbers",
+				language: $.DataTableLanguage
+			});
+
+            $('#hardwarecontent #idx').val(idx);
+			RefreshMySensorsNodeTable();
+        }
 
         AddKodiNode = function () {
             var name = $("#hardwarecontent #kodinodeparamstable #nodename").val();
@@ -2716,6 +2914,9 @@ define(['app'], function (app) {
                     }
                     else if (HwTypeStr.indexOf("SBFSpot") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
+                    }
+                    else if (HwTypeStr.indexOf("MySensors") >= 0) {
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditMySensors(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
