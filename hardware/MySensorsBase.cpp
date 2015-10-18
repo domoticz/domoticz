@@ -1319,7 +1319,10 @@ void MySensorsBase::ParseLine()
 			payload = results[5+ip];
 		}
 	}
-
+	if (node_id == 11)
+	{
+		_asm nop;
+	}
 	std::stringstream sstr;
 #ifdef _DEBUG
 	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());
@@ -1624,7 +1627,7 @@ void MySensorsBase::ParseLine()
 	else if (message_type == MT_Presentation)
 	{
 		//Ignored for now
-		if ((node_id == 255) || (child_sensor_id == 255))
+		if (node_id == 255)
 			return;
 
 		bool bDoAdd = false;
