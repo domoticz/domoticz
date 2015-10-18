@@ -702,6 +702,8 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Error: Winsock could not be initialized!");
 		}
 	}
+	CoInitializeEx(0, COINIT_MULTITHREADED);
+	CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
 #endif
 #ifndef WIN32
 	if (cmdLine.HasSwitch("-daemon"))
@@ -789,6 +791,7 @@ int main(int argc, char**argv)
 #else
 	// Release WinSock
 	WSACleanup();
+	CoUninitialize();
 #endif
 	return 0;
 }

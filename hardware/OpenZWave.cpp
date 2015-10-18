@@ -178,6 +178,14 @@ const char *cclassStr(uint8 cc)
 		return "BASIC WINDOW COVERING";
 	case 0x51:
 		return "MTP WINDOW COVERING";
+	case 0x56:
+		return "CRC16 ENCAP";
+	case 0x5A:
+		return "DEVICE RESET LOCALLY";
+	case 0x5B:
+		return "CENTRAL SCENE";
+	case 0x5E:
+		return "ZWAVE PLUS INFO"; 
 	case 0x60:
 		return "MULTI INSTANCE";
 	case 0x62:
@@ -4873,6 +4881,11 @@ namespace http {
 			std::string sFun = request::findValue(&values, "fun");
 			std::string sNode = request::findValue(&values, "node");
 			std::string sButton = request::findValue(&values, "button");
+
+			if (sNode.find("node") != std::string::npos)
+			{
+				sNode = sNode.substr(4);
+			}
 
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
 			if (pHardware != NULL)

@@ -101,7 +101,7 @@ bool CLogitechMediaServer::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	m_iThreadsRunning = 0;
-	m_bShowedUnsupported = false;
+	m_bShowedStartupMessage = false;
 
 	StartHeartbeatThread();
 
@@ -151,6 +151,14 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 		if (itt->ID == Node.ID)
 		{
 			//Found it
+			//Retrieve devicename instead of playername in case it was renamed...
+			std::string sDevName = itt->Name;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE DeviceID=='%q'", itt->szDevID);
+			if (result.size() == 1)	{
+				std::vector<std::string> sd = result[0];
+				sDevName = sd[0];
+			}
 			bool	bUseOnOff = false;
 			if (((nStatus == MSTAT_OFF) && bPingOK) || ((nStatus != MSTAT_OFF) && !bPingOK)) bUseOnOff = true;
 			time_t atime = mytime(NULL);
@@ -158,7 +166,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 			if ((itt->nStatus != nStatus) || (itt->sStatus != sStatus))
 			{
 				// 1:	Update the DeviceStatus
-				if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED))
+				if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED) || (nStatus == MSTAT_STOPPED))
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s - '%s'", Node.Name.c_str(), Media_Player_States(nStatus), sStatus.c_str());
 				else
 					_log.Log(LOG_NORM, "Logitech Media Server: (%s) %s", Node.Name.c_str(), Media_Player_States(nStatus));
@@ -175,7 +183,8 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				if ((itt->nStatus != nStatus) || (itt->sShortStatus != sShortStatus))
 				{
 					std::string sLongStatus = Media_Player_States(nStatus);
-					if (sShortStatus.length()) sLongStatus += " - " + sShortStatus;
+					if ((nStatus == MSTAT_PLAYING) || (nStatus == MSTAT_PAUSED) || (nStatus == MSTAT_STOPPED))
+						if (sShortStatus.length()) sLongStatus += " - " + sShortStatus;
 					result = m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES (%d, %d, '%q')", itt->ID, int(nStatus), sLongStatus.c_str());
 				}
 
@@ -192,8 +201,8 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				// 4:   Trigger Notifications & events on status change
 				if (itt->nStatus != nStatus)
 				{
-					m_notifications.CheckAndHandleNotification(itt->ID, itt->Name, NotificationType(nStatus), sStatus.c_str());
-					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, itt->ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(nStatus), sStatus.c_str(), itt->Name, 0);
+					m_notifications.CheckAndHandleNotification(itt->ID, sDevName, NotificationType(nStatus), sStatus.c_str());
+					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, itt->ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(nStatus), sStatus.c_str(), sDevName, 0);
 				}
 
 				itt->nStatus = nStatus;
@@ -231,11 +240,20 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 				else {
 					std::string sMode = root["mode"].asString();
 					if (sMode == "play") 
-						nStatus = MSTAT_PLAYING;
-					else if (sMode == "pause") 
-						nStatus = MSTAT_PAUSED;
+						if ((nOldStatus == MSTAT_OFF) || (nOldStatus == MSTAT_DISCONNECTED))
+							nStatus = MSTAT_ON;
+						else
+							nStatus = MSTAT_PLAYING;
+					else if (sMode == "pause")
+						if ((nOldStatus == MSTAT_OFF) || (nOldStatus == MSTAT_DISCONNECTED))
+							nStatus = MSTAT_ON;
+						else
+							nStatus = MSTAT_PAUSED;
 					else if (sMode == "stop")
-						nStatus = MSTAT_STOPPED;
+						if ((nOldStatus == MSTAT_OFF) || (nOldStatus == MSTAT_DISCONNECTED))
+							nStatus = MSTAT_ON;
+						else
+							nStatus = MSTAT_STOPPED;
 					else
 						nStatus = MSTAT_ON;
 					std::string	sTitle = "";
@@ -331,56 +349,60 @@ void CLogitechMediaServer::GetPlayerInfo()
 	{
 		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"\",[\"serverstatus\",0,999]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
-		bool bSHowedWarning = false;
 
 		int totPlayers = root["player count"].asInt();
-		for (int ii = 0; ii < totPlayers; ii++)
-		{
-			if (root["players_loop"][ii]["name"].empty())
-				continue;
-
-			int isplayer = root["players_loop"][ii]["isplayer"].asInt();
-			std::string name = root["players_loop"][ii]["name"].asString();
-			std::string model = root["players_loop"][ii]["model"].asString();
-			std::string ipport = root["players_loop"][ii]["ip"].asString();
-			std::string macaddress = root["players_loop"][ii]["playerid"].asString();
-			std::vector<std::string> IPPort;
-			StringSplit(ipport, ":", IPPort);
-			if (IPPort.size() < 2)
-				continue; //invalid ip:port
-			std::string ip = IPPort[0];
-			int port = atoi(IPPort[1].c_str());
-
-			if (
-				//(model == "slimp3") ||			//SliMP3
-				(model == "Squeezebox") ||			//Squeezebox 1
-				(model == "squeezebox2") ||			//Squeezebox 2
-				(model == "squeezebox3") ||			//Squeezebox 3
-				//(model == "transporter") ||		//Transporter
-				(model == "receiver") ||			//Squeezebox Receiver
-				(model == "boom") ||				//Squeezebox Boom
-				//(model == "softsqueeze") ||		//Softsqueeze
-				(model == "controller") ||			//Squeezebox Controller
-				(model == "squeezeplay") ||			//SqueezePlay
-				(model == "squeezeplayer") ||		//SqueezePlay
-				(model == "baby") ||				//Squeezebox Radio
-				(model == "fab4") ||				//Squeezebox Touch
-				(model == "iPengiPod") ||			//iPeng iOS App
-				(model == "squeezelite")			//Max2Play SqueezePlug
-				) 
+		if (totPlayers > 0) {
+			if (!m_bShowedStartupMessage)
+				_log.Log(LOG_STATUS, "Logitech Media Server: %i connected player(s) found.", totPlayers);
+			for (int ii = 0; ii < totPlayers; ii++)
 			{
-				InsertUpdatePlayer(name, ip, macaddress);
-			}
-			else {
-				//show only once
-				if (!m_bShowedUnsupported) {
-					_log.Log(LOG_ERROR, "Logitech Media Server: model '%s' not supported.", model.c_str());
-					bSHowedWarning = true;
+				if (root["players_loop"][ii]["name"].empty())
+					continue;
+
+				int isplayer = root["players_loop"][ii]["isplayer"].asInt();
+				std::string name = root["players_loop"][ii]["name"].asString();
+				std::string model = root["players_loop"][ii]["model"].asString();
+				std::string ipport = root["players_loop"][ii]["ip"].asString();
+				std::string macaddress = root["players_loop"][ii]["playerid"].asString();
+				std::vector<std::string> IPPort;
+				StringSplit(ipport, ":", IPPort);
+				if (IPPort.size() < 2)
+					continue; //invalid ip:port
+				std::string ip = IPPort[0];
+				int port = atoi(IPPort[1].c_str());
+
+				if (
+					//(model == "slimp3") ||			//SliMP3
+					(model == "Squeezebox") ||			//Squeezebox 1
+					(model == "squeezebox2") ||			//Squeezebox 2
+					(model == "squeezebox3") ||			//Squeezebox 3
+					//(model == "transporter") ||		//Transporter
+					(model == "receiver") ||			//Squeezebox Receiver
+					(model == "boom") ||				//Squeezebox Boom
+					//(model == "softsqueeze") ||		//Softsqueeze
+					(model == "controller") ||			//Squeezebox Controller
+					(model == "squeezeplay") ||			//SqueezePlay
+					(model == "squeezeplayer") ||		//SqueezePlay
+					(model == "baby") ||				//Squeezebox Radio
+					(model == "fab4") ||				//Squeezebox Touch
+					(model == "iPengiPod") ||			//iPeng iPhone App
+					(model == "iPengiPad") ||			//iPeng iPad App
+					(model == "squeezelite")			//Max2Play SqueezePlug
+					)
+				{
+					InsertUpdatePlayer(name, ip, macaddress);
+				}
+				else {
+					if (!m_bShowedStartupMessage)
+						_log.Log(LOG_ERROR, "Logitech Media Server: model '%s' not supported.", model.c_str());
 				}
 			}
 		}
-		if (!m_bShowedUnsupported)
-			m_bShowedUnsupported = bSHowedWarning;
+		else {
+			if (!m_bShowedStartupMessage)
+				_log.Log(LOG_ERROR, "Logitech Media Server: No connected players found.");
+		}
+		m_bShowedStartupMessage = true;
 	}
 	catch (...)
 	{
@@ -481,8 +503,8 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 	{
 		if (itt->DevID == DevID)
 		{
-			int iLevel = pSen->LIGHTING2.level;
-			std::string sLevel = boost::lexical_cast<std::string>(iLevel);
+			int iParam = pSen->LIGHTING2.level;
+			std::string sParam;
 			switch (pSen->LIGHTING2.cmnd)
 			{
 			case light2_sOn:
@@ -504,7 +526,8 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 				SendCommand(itt->ID, "Pause");
 				return true;
 			case gswitch_sSetVolume:
-				SendCommand(itt->ID, "SetVolume", sLevel);
+				sParam = boost::lexical_cast<std::string>(iParam);
+				SendCommand(itt->ID, "SetVolume", sParam);
 				return true;
 			default:
 				return true;
@@ -522,6 +545,7 @@ void CLogitechMediaServer::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
+		_log.Log(LOG_STATUS, "Logitech Media Server: %i player-switch(es) found.", result.size());
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
@@ -548,6 +572,8 @@ void CLogitechMediaServer::ReloadNodes()
 			m_nodes.push_back(pnode);
 		}
 	}
+	else
+		_log.Log(LOG_ERROR, "Logitech Media Server: No player-switches found.");
 }
 
 void CLogitechMediaServer::SendCommand(const int ID, const std::string &command, const std::string &param)
