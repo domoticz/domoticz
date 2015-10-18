@@ -363,6 +363,11 @@ namespace http {
 			RegisterCommandCode("wolremovenode", boost::bind(&CWebServer::Cmd_WOLRemoveNode, this, _1, _2, _3));
 			RegisterCommandCode("wolclearnodes", boost::bind(&CWebServer::Cmd_WOLClearNodes, this, _1, _2, _3));
 
+			RegisterCommandCode("mysensorsgetnodes", boost::bind(&CWebServer::Cmd_MySensorsGetNodes, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsgetchilds", boost::bind(&CWebServer::Cmd_MySensorsGetChilds, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsremovenode", boost::bind(&CWebServer::Cmd_MySensorsRemoveNode, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsremovechild", boost::bind(&CWebServer::Cmd_MySensorsRemoveChild, this, _1, _2, _3));
+
 			RegisterCommandCode("pingersetmode", boost::bind(&CWebServer::Cmd_PingerSetMode, this, _1, _2, _3));
 			RegisterCommandCode("pingergetnodes", boost::bind(&CWebServer::Cmd_PingerGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("pingeraddnode", boost::bind(&CWebServer::Cmd_PingerAddNode, this, _1, _2, _3));
@@ -7228,7 +7233,12 @@ namespace http {
 					root["result"][ii]["Description"] = Description;
 					root["result"][ii]["Used"] = used;
 					root["result"][ii]["Favorite"] = favorite;
-					root["result"][ii]["SignalLevel"] = atoi(sd[7].c_str());
+
+					int iSignalLevel = atoi(sd[7].c_str());
+					if (iSignalLevel<12)
+						root["result"][ii]["SignalLevel"] = iSignalLevel;
+					else
+						root["result"][ii]["SignalLevel"] = "-";
 					root["result"][ii]["BatteryLevel"] = atoi(sd[8].c_str());
 					root["result"][ii]["LastUpdate"] = sLastUpdate;
 					root["result"][ii]["CustomImage"] = CustomImage;

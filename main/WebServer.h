@@ -89,6 +89,10 @@ private:
 	void Cmd_WOLUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_WOLRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_WOLClearNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_MySensorsGetNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_MySensorsGetChilds(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_MySensorsRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_MySensorsRemoveChild(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PingerSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PingerGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PingerAddNode(WebEmSession & session, const request& req, Json::Value &root);
