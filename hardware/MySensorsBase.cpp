@@ -1319,10 +1319,6 @@ void MySensorsBase::ParseLine()
 			payload = results[5+ip];
 		}
 	}
-	if (node_id == 11)
-	{
-		_asm nop;
-	}
 	std::stringstream sstr;
 #ifdef _DEBUG
 	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());
