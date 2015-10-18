@@ -1414,7 +1414,10 @@ void MySensorsBase::ParseLine()
 			mSensor.nodeID = node_id;
 			mSensor.childID = child_sensor_id;
 			//Get Info from database if child already existed
-			GetChildDBInfo(node_id, child_sensor_id, mSensor.presType, mSensor.childName, mSensor.useAck);
+			if (!GetChildDBInfo(node_id, child_sensor_id, mSensor.presType, mSensor.childName, mSensor.useAck))
+			{
+				UpdateChildDBInfo(node_id, child_sensor_id, S_UNKNOWN, "", (ack!=0));
+			}
 			pNode->m_childs.push_back(mSensor);
 			pChild = pNode->FindChild(child_sensor_id);
 			if (pChild == NULL)
@@ -1828,7 +1831,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result, result2;
 			char szTmp[100];
 
-			result = m_sql.safe_query("SELECT ID,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d)",
+			result = m_sql.safe_query("SELECT ID,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC",
 				iHardwareID);
 			if (result.size() > 0)
 			{
@@ -1865,48 +1868,81 @@ namespace http {
 					{
 						root["result"][ii]["LastReceived"] = "-";
 					}
-					result2 = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck FROM MySensorsChilds WHERE(NodeID == %d)", NodeID);
-					int jj = 0;
-					for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+					result2 = m_sql.safe_query("SELECT COUNT(*) FROM MySensorsChilds WHERE(NodeID == %d)", NodeID);
+					int totChilds = 0;
+					if (!result2.empty())
 					{
-						std::vector<std::string> sd2 = *itt2;
-						int ChildID = atoi(sd[0].c_str());
-						root["result"][ii]["childs"][jj]["child_id"] = ChildID;
-						root["result"][ii]["childs"][jj]["type"] = MySensorsBase::GetMySensorsPresentationTypeStr((MySensorsBase::_ePresentationType)atoi(sd2[1].c_str()));
-						root["result"][ii]["childs"][jj]["name"] = sd2[2];
-						root["result"][ii]["childs"][jj]["use_ack"] = (sd2[3] != "0") ? "true" : "false";
-						if (pNode != NULL)
-						{
-							MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
-							if (pChild != NULL)
-							{
-								if (pChild->lastreceived != 0)
-								{
-									struct tm loctime;
-									localtime_r(&pChild->lastreceived, &loctime);
-									strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
-									root["result"][ii]["childs"][jj]["LastReceived"] = szTmp;
-								}
-								else
-								{
-									root["result"][ii]["childs"][jj]["LastReceived"] = "-";
-								}
-							}
-							else
-							{
-								root["result"][ii]["childs"][jj]["LastReceived"] = "-";
-							}
-						}
-						else
-						{
-							root["result"][ii]["childs"][jj]["LastReceived"] = "-";
-						}
-
-						jj++;
+						totChilds = atoi(result2[0][0].c_str());
 					}
-
+					root["result"][ii]["Childs"] = totChilds;
 					ii++;
 				}
+			}
+		}
+		void CWebServer::Cmd_MySensorsGetChilds(Json::Value &root)
+		{
+			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			if (
+				(hwid == "")||
+				(nodeid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (
+				(pHardware->HwdType != HTYPE_MySensorsUSB) &&
+				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				)
+				return;
+			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pHardware;
+
+			root["status"] = "OK";
+			root["title"] = "MySensorsGetChilds";
+			int NodeID = atoi(nodeid.c_str());
+			MySensorsBase::_tMySensorNode* pNode = pMySensorsHardware->FindNode(NodeID);
+			std::vector<std::vector<std::string> >::const_iterator itt2;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck FROM MySensorsChilds WHERE(NodeID == %d) ORDER BY ChildID ASC", NodeID);
+			int ii = 0;
+			for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
+			{
+				std::vector<std::string> sd2 = *itt2;
+				int ChildID = atoi(sd2[0].c_str());
+				root["result"][ii]["child_id"] = ChildID;
+				root["result"][ii]["type"] = MySensorsBase::GetMySensorsPresentationTypeStr((MySensorsBase::_ePresentationType)atoi(sd2[1].c_str()));
+				root["result"][ii]["name"] = sd2[2];
+				root["result"][ii]["use_ack"] = (sd2[3] != "0") ? "true" : "false";
+				std::string szDate = "-";
+				std::string szValues = "";
+				if (pNode != NULL)
+				{
+					MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
+					if (pChild != NULL)
+					{
+						std::vector<MySensorsBase::_eSetType> cvalues = pChild->GetChildValueTypes();
+						std::vector<MySensorsBase::_eSetType>::const_iterator citt;
+						for (citt = cvalues.begin(); citt != cvalues.end(); ++citt)
+						{
+							if (!szValues.empty())
+								szValues += ", ";
+							szValues += MySensorsBase::GetMySensorsValueTypeStr(*citt);
+						}
+						if (pChild->lastreceived != 0)
+						{
+							char szTmp[100];
+							struct tm loctime;
+							localtime_r(&pChild->lastreceived, &loctime);
+							strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
+							szDate = szTmp;
+						}
+					}
+				}
+				root["result"][ii]["Values"] = szValues;
+				root["result"][ii]["LastReceived"] = szDate;
+				ii++;
 			}
 		}
 		void CWebServer::Cmd_MySensorsRemoveNode(Json::Value &root)

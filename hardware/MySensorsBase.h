@@ -185,7 +185,16 @@ public:
 			presType = S_UNKNOWN;
 			useAck = false;
 		}
-
+		std::vector<_eSetType> GetChildValueTypes()
+		{
+			std::vector<_eSetType> ret;
+			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
+			for (itt = values.begin(); itt != values.end(); ++itt)
+			{
+				ret.push_back(itt->first);
+			}
+			return ret;
+		}
 		bool GetValue(const _eSetType vType, int &intValue)
 		{
 			std::map<_eSetType, _tMySensorValue>::const_iterator itt;

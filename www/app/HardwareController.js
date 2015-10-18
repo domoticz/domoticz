@@ -1271,9 +1271,7 @@ define(['app'], function (app) {
                          async: false,
                          dataType: 'json',
                          success: function(data) {
-							var oTable = $('#mysensorsactivetable').dataTable();
-							oTable.fnClearTable();
-                            RefreshMySensorsNodeTable();
+                            MySensorsRefreshActiveDevicesTable();
                          },
                          error: function(){
                             ShowNotify($.t('Problem Deleting Child!'), 2500, true);
@@ -1288,18 +1286,32 @@ define(['app'], function (app) {
 			//$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
 			var oTable = $('#mysensorsactivetable').dataTable();
 			oTable.fnClearTable();
-			if (typeof $.childs != 'undefined') {
-				$.each($.childs, function(i,item){
-					var addId = oTable.fnAddData( {
-						"DT_RowId": item.child_id,
-						"0": item.child_id,
-						"1": item.type,
-						"2": item.name,
-						"3": item.use_ack,
-                        "4": item.LastReceived
-					} );
-				});
+			if ($.nodeid==-1) {
+				return;
 			}
+			$.ajax({
+				url: "json.htm?type=command&param=mysensorsgetchilds" +
+					"&idx=" + $.devIdx + 
+					"&nodeid=" + $.nodeid, 
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (typeof data.result != 'undefined') {
+						var totalItems=data.result.length;
+						$.each(data.result, function(i,item){
+							var addId = oTable.fnAddData( {
+								"DT_RowId": item.child_id,
+								"0": item.child_id,
+								"1": item.type,
+								"2": item.name,
+								"3": item.Values,
+								"4": item.use_ack,
+								"5": item.LastReceived
+							});
+						});
+					}
+				}
+			});
 			/* Add a click handler to the rows - this could be used as a callback */
 			$("#mysensorsactivetable tbody").off();
 			$("#mysensorsactivetable tbody").on( 'click', 'tr', function () {
@@ -1329,7 +1341,7 @@ define(['app'], function (app) {
           $('#modal').show();
           var oTable = $('#mysensorsnodestable').dataTable();
           oTable.fnClearTable();
-
+		  $.nodeid=-1;
           $.ajax({
              url: "json.htm?type=command&param=mysensorsgetnodes&idx="+$.devIdx,
              async: false,
@@ -1337,21 +1349,14 @@ define(['app'], function (app) {
              success: function(data) {
               if (typeof data.result != 'undefined') {
                 $.each(data.result, function(i,item){
-                
-					var num_childs="-";
-					if (typeof item.childs != 'undefined') {
-						num_childs=item.childs.length;
-					}
-                
                     var addId = oTable.fnAddData( {
                         "DT_RowId": item.idx,
                         "Name": item.Name,
                         "Version": item.Version,
-                        "Childs": item.childs,
                         "0": item.idx,
                         "1": item.Name,
                         "2": item.Version,
-                        "3": num_childs,
+                        "3": item.Childs,
                         "4": item.LastReceived
                     } );
                 });
@@ -1376,7 +1381,6 @@ define(['app'], function (app) {
                         var idx= data["DT_RowId"];
                         $('#updelclr #nodedelete').attr("class", "btnstyle3");
                         $("#updelclr #nodedelete").attr("href", "javascript:MySensorsDeleteNode(" + idx + ")");
-                        $.childs = data["Childs"];
                         $.nodeid = idx;
                         MySensorsRefreshActiveDevicesTable();
                     }

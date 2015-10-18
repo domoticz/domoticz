@@ -271,7 +271,8 @@
 			<tr valign="middle">
 				<th width="40" align="center" data-i18n="ChildID">ChildID</th>
 				<th width="160" align="left" data-i18n="Type">Type</th>
-				<th align="left" data-i18n="Name">Name</th>
+				<th align="80" data-i18n="Name">Name</th>
+				<th data-i18n="Values">Values</th>
 				<th width="80" align="left" data-i18n="Ack">Ack</th>
 				<th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
 			</tr>
@@ -281,6 +282,9 @@
 		<tr>
 			<td>
 				<a class="btnstyle3-dis" id="activedevicedelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="MySensorsRefreshActiveDevicesTable();">Refresh</a>
 			</td>
 		</tr>
 	</table>

@@ -88,6 +88,7 @@ private:
 	void Cmd_WOLRemoveNode(Json::Value &root);
 	void Cmd_WOLClearNodes(Json::Value &root);
 	void Cmd_MySensorsGetNodes(Json::Value &root);
+	void Cmd_MySensorsGetChilds(Json::Value &root);
 	void Cmd_MySensorsRemoveNode(Json::Value &root);
 	void Cmd_MySensorsRemoveChild(Json::Value &root);
 	void Cmd_PingerSetMode(Json::Value &root);
