@@ -36,9 +36,11 @@ bool CWunderground::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWunderground::Do_Work, this)));
+	if (!m_thread)
+		return false;
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return true;
 }
 
 bool CWunderground::StopHardware()
@@ -56,6 +58,8 @@ bool CWunderground::StopHardware()
 void CWunderground::Do_Work()
 {
 	int sec_counter = 590;
+	_log.Log(LOG_STATUS, "Wunderground: Worker started...");
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -118,7 +122,6 @@ void CWunderground::GetMeterDetails()
 		_log.Log(LOG_ERROR,"Wunderground: Error getting http data!");
 		return;
 	}
-
 #endif
 	Json::Value root;
 
