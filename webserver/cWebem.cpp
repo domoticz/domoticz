@@ -1389,11 +1389,15 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 				int fpos = scookie.find("SID=");
 				if (fpos != std::string::npos)
 				{
-					std::string sSID = scookie.substr(fpos + 4);
-					std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
-					if (itt != myWebem->m_sessions.end())
+					int ppos = scookie.find(".");
+					if (ppos != std::string::npos)
 					{
-						myWebem->m_sessions.erase(itt);
+						std::string sSID = scookie.substr(fpos + 4, ppos - fpos - 4);
+						std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
+						if (itt != myWebem->m_sessions.end())
+						{
+							myWebem->m_sessions.erase(itt);
+						}
 					}
 				}
 			}
