@@ -98,10 +98,10 @@ void CNotificationHelper::SetConfigValue(const std::string &key, const std::stri
 	}
 }
 
-void CNotificationHelper::ConfigFromGetvars(http::server::cWebem *webEm, const bool save)
+void CNotificationHelper::ConfigFromGetvars(const request& req, const bool save)
 {
 	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
-		iter->second->ConfigFromGetvars(webEm, save);
+		iter->second->ConfigFromGetvars(req, save);
 	}
 }
 

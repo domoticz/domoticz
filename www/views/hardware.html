@@ -225,6 +225,72 @@
 	<input type="hidden" id="idx" name="nodeidx" value="-1">
 </div>
 
+<div id="mysensors" style="display:none;">
+	<div class="page-header-small">
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<h1 data-i18n="Nodes">Nodes</h1>
+				</td>
+			</tr>
+		</table>
+	</div>
+    <table class="display" id="mysensorsnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="80" align="center" data-i18n="NodeID">NodeID</th>
+                <th align="left" data-i18n="Name">Name</th>
+                <th width="60" align="left" data-i18n="Version">Version</th>
+                <th width="60" align="left" data-i18n="Childs">Childs</th>
+                <th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshMySensorsNodeTable();">Refresh</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<div class="page-header-small">
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<h1 data-i18n="Childs">Childs</h1>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<table class="display" id="mysensorsactivetable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="40" align="center" data-i18n="ChildID">ChildID</th>
+				<th width="160" align="left" data-i18n="Type">Type</th>
+				<th align="80" data-i18n="Name">Name</th>
+				<th data-i18n="Values">Values</th>
+				<th width="80" align="left" data-i18n="Ack">Ack</th>
+				<th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
+			</tr>
+		</thead>
+	</table>
+    <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="activedevicedelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="MySensorsRefreshActiveDevicesTable();">Refresh</a>
+			</td>
+		</tr>
+	</table>
+	<input type="hidden" id="idx" name="idx" value="-1">
+</div>
+
 <div id="wakeonlan" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
