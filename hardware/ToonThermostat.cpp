@@ -14,7 +14,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	#define DEBUG_ToonThermostat
+//	#define DEBUG_ToonThermostat
 #endif
 
 #ifdef DEBUG_ToonThermostat2
