@@ -333,33 +333,33 @@ void S0MeterBase::ParseLine()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetS0MeterType()
+		char * CWebServer::SetS0MeterType(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
 
 			std::stringstream szAddress;
 
-			std::string S0M1Type = m_pWebEm->FindValue("S0M1Type");
-			std::string S0M2Type = m_pWebEm->FindValue("S0M2Type");
-			std::string S0M3Type = m_pWebEm->FindValue("S0M3Type");
-			std::string S0M4Type = m_pWebEm->FindValue("S0M4Type");
-			std::string S0M5Type = m_pWebEm->FindValue("S0M5Type");
+			std::string S0M1Type = request::findValue(&req, "S0M1Type");
+			std::string S0M2Type = request::findValue(&req, "S0M2Type");
+			std::string S0M3Type = request::findValue(&req, "S0M3Type");
+			std::string S0M4Type = request::findValue(&req, "S0M4Type");
+			std::string S0M5Type = request::findValue(&req, "S0M5Type");
 
-			std::string M1PulsesPerHour = m_pWebEm->FindValue("M1PulsesPerHour");
-			std::string M2PulsesPerHour = m_pWebEm->FindValue("M2PulsesPerHour");
-			std::string M3PulsesPerHour = m_pWebEm->FindValue("M3PulsesPerHour");
-			std::string M4PulsesPerHour = m_pWebEm->FindValue("M4PulsesPerHour");
-			std::string M5PulsesPerHour = m_pWebEm->FindValue("M5PulsesPerHour");
+			std::string M1PulsesPerHour = request::findValue(&req, "M1PulsesPerHour");
+			std::string M2PulsesPerHour = request::findValue(&req, "M2PulsesPerHour");
+			std::string M3PulsesPerHour = request::findValue(&req, "M3PulsesPerHour");
+			std::string M4PulsesPerHour = request::findValue(&req, "M4PulsesPerHour");
+			std::string M5PulsesPerHour = request::findValue(&req, "M5PulsesPerHour");
 
 			szAddress <<
 				S0M1Type << ";" << M1PulsesPerHour << ";" <<

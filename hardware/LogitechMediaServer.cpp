@@ -385,7 +385,8 @@ void CLogitechMediaServer::GetPlayerInfo()
 					(model == "squeezeplayer") ||		//SqueezePlay
 					(model == "baby") ||				//Squeezebox Radio
 					(model == "fab4") ||				//Squeezebox Touch
-					(model == "iPengiPod") ||			//iPeng iOS App
+					(model == "iPengiPod") ||			//iPeng iPhone App
+					(model == "iPengiPad") ||			//iPeng iPad App
 					(model == "squeezelite")			//Max2Play SqueezePlug
 					)
 				{
@@ -688,16 +689,16 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_LMSSetMode(Json::Value &root)
+		void CWebServer::Cmd_LMSSetMode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string mode1 = m_pWebEm->FindValue("mode1");
-			std::string mode2 = m_pWebEm->FindValue("mode2");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string mode1 = request::findValue(&req, "mode1");
+			std::string mode2 = request::findValue(&req, "mode2");
 			if (
 				(hwid == "") ||
 				(mode1 == "") ||
@@ -723,9 +724,9 @@ namespace http {
 			pHardware->Restart();
 		}
 
-		void CWebServer::Cmd_LMSGetNodes(Json::Value &root)
+		void CWebServer::Cmd_LMSGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -756,10 +757,10 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_LMSMediaCommand(Json::Value &root)
+		void CWebServer::Cmd_LMSMediaCommand(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sIdx = m_pWebEm->FindValue("idx");
-			std::string sAction = m_pWebEm->FindValue("action");
+			std::string sIdx = request::findValue(&req, "idx");
+			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
 			int idx = atoi(sIdx.c_str());

@@ -1,5 +1,6 @@
 #pragma once
 #include "../webserver/cWebem.h"
+#include "../webserver/request.hpp"
 
 #define OPTIONS_NONE 0
 #define OPTIONS_URL_SUBJECT 1
@@ -7,6 +8,8 @@
 #define OPTIONS_HTML_SUBJECT 4
 #define OPTIONS_HTML_BODY 8
 #define OPTIONS_URL_PARAMS 16
+
+using namespace http::server;
 
 class CNotificationBase {
 	friend class CNotificationHelper;
@@ -21,7 +24,7 @@ protected:
 	bool IsInConfigString(const std::string &Key);
 	bool IsInConfigInt(const std::string &Key);
 	bool IsInConfigBase64(const std::string &Key);
-	void ConfigFromGetvars(http::server::cWebem *webEm, const bool save);
+	void ConfigFromGetvars(const request& req, const bool save);
 	virtual bool IsConfigured() = 0;
 	void SetupConfig(const std::string &Key, std::string& Value);
 	void SetupConfig(const std::string &Key, int *Value);

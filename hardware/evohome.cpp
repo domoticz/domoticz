@@ -1694,16 +1694,16 @@ void CEvohome::Log(bool bDebug, int nLogLevel, const char* format, ... )
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_CreateEvohomeSensor(Json::Value &root)
+		void CWebServer::RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string ssensortype = m_pWebEm->FindValue("sensortype");
+			std::string idx = request::findValue(&req, "idx");
+			std::string ssensortype = request::findValue(&req, "sensortype");
 			if ((idx == "") || (ssensortype == ""))
 				return;
 
@@ -1776,16 +1776,16 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_BindEvohome(Json::Value &root)
+		void CWebServer::RType_BindEvohome(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string type = m_pWebEm->FindValue("devtype");
+			std::string idx = request::findValue(&req, "idx");
+			std::string type = request::findValue(&req, "devtype");
 			int HwdID = atoi(idx.c_str());
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HwdID);
 			if (pHardware == NULL)

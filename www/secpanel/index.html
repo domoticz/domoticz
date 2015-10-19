@@ -398,6 +398,22 @@
 			}
 
 		}
+		
+		function SetLanguageEx(lng) {
+			$.i18n.init({
+				resGetPath: '/i18n/domoticz-__lng__.json',
+				fallbackLng: false,
+				getAsync: false,
+				debug: false,
+				useCookie: false,
+				nsseparator: 'aadd',
+				keyseparator: 'bbcc',
+				lng: lng
+			});
+			$(".nav").i18n();
+			MakeDatatableTranslations();
+		}
+		
 		$(document).ready(function() {
 			$.ajax({
 				 url: "../json.htm?type=command&param=getlanguage",
@@ -405,10 +421,10 @@
 				 dataType: 'json',
 				 success: function(data) {
 					if (typeof data.language != 'undefined') {
-						SetLanguage(data.language);
+						SetLanguageEx(data.language);
 					}
 					else {
-						SetLanguage('en');
+						SetLanguageEx('en');
 					}
 				 },
 				 error: function(){
