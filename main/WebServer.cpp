@@ -8,7 +8,6 @@
 #include "Helper.h"
 #include "localtime_r.h"
 #include "EventSystem.h"
-#include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
@@ -324,245 +323,245 @@ namespace http {
 			m_pWebEm->RegisterIncludeCode("timertypes", boost::bind(&CWebServer::DisplayTimerTypesCombo, this));
 			m_pWebEm->RegisterIncludeCode("combolanguage", boost::bind(&CWebServer::DisplayLanguageCombo, this));
 
-			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this));
-			m_pWebEm->RegisterPageCode("/uploadcustomicon", boost::bind(&CWebServer::Post_UploadCustomIcon, this));
-			m_pWebEm->RegisterPageCode("/html5.appcache", boost::bind(&CWebServer::GetAppCache, this));
-			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", boost::bind(&CWebServer::GetCameraSnapshot, this));
-			m_pWebEm->RegisterPageCode("/backupdatabase.php", boost::bind(&CWebServer::GetDatabaseBackup, this));
-			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this));
-			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this));
+			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/uploadcustomicon", boost::bind(&CWebServer::Post_UploadCustomIcon, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/html5.appcache", boost::bind(&CWebServer::GetAppCache, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", boost::bind(&CWebServer::GetCameraSnapshot, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/backupdatabase.php", boost::bind(&CWebServer::GetDatabaseBackup, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2)); //TODO: fix me double
 
-			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this));
-			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this));
-			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this));
-			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1), true);
-			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this));
-			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this));
-			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this));
-			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this));
-			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this));
-			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this));
-			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this));
+			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2));
+			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1, _2));
+			m_pWebEm->RegisterActionCode("rfxupgradefirmware", boost::bind(&CWebServer::RFXComUpgradeFirmware, this, _1, _2));
+			RegisterCommandCode("rfxfirmwaregetpercentage", boost::bind(&CWebServer::Cmd_RFXComGetFirmwarePercentage, this, _1, _2, _3), true);
+			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2));
+			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2));
+			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2));
+			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2));
+			m_pWebEm->RegisterActionCode("setp1usbtype", boost::bind(&CWebServer::SetP1USBType, this, _1, _2));
+			m_pWebEm->RegisterActionCode("restoredatabase", boost::bind(&CWebServer::RestoreDatabase, this, _1, _2));
+			m_pWebEm->RegisterActionCode("sbfspotimportolddata", boost::bind(&CWebServer::SBFSpotImportOldData, this, _1, _2));
 
-			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1), true);
-			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1), true);
+			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2, _3), true);
+			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1, _2, _3), true);
 
-			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1), true);
-			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1), true);
-			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1));
-			RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1), true);
+			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
+			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
+			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1, _2, _3));
+			RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1, _2, _3), true);
 
 			
-			RegisterCommandCode("gethardwaretypes", boost::bind(&CWebServer::Cmd_GetHardwareTypes, this, _1));
-			RegisterCommandCode("addhardware", boost::bind(&CWebServer::Cmd_AddHardware, this, _1));
-			RegisterCommandCode("updatehardware", boost::bind(&CWebServer::Cmd_UpdateHardware, this, _1));
-			RegisterCommandCode("deletehardware", boost::bind(&CWebServer::Cmd_DeleteHardware, this, _1));
+			RegisterCommandCode("gethardwaretypes", boost::bind(&CWebServer::Cmd_GetHardwareTypes, this, _1, _2, _3));
+			RegisterCommandCode("addhardware", boost::bind(&CWebServer::Cmd_AddHardware, this, _1, _2, _3));
+			RegisterCommandCode("updatehardware", boost::bind(&CWebServer::Cmd_UpdateHardware, this, _1, _2, _3));
+			RegisterCommandCode("deletehardware", boost::bind(&CWebServer::Cmd_DeleteHardware, this, _1, _2, _3));
 
-			RegisterCommandCode("wolgetnodes", boost::bind(&CWebServer::Cmd_WOLGetNodes, this, _1));
-			RegisterCommandCode("woladdnode", boost::bind(&CWebServer::Cmd_WOLAddNode, this, _1));
-			RegisterCommandCode("wolupdatenode", boost::bind(&CWebServer::Cmd_WOLUpdateNode, this, _1));
-			RegisterCommandCode("wolremovenode", boost::bind(&CWebServer::Cmd_WOLRemoveNode, this, _1));
-			RegisterCommandCode("wolclearnodes", boost::bind(&CWebServer::Cmd_WOLClearNodes, this, _1));
+			RegisterCommandCode("wolgetnodes", boost::bind(&CWebServer::Cmd_WOLGetNodes, this, _1, _2, _3));
+			RegisterCommandCode("woladdnode", boost::bind(&CWebServer::Cmd_WOLAddNode, this, _1, _2, _3));
+			RegisterCommandCode("wolupdatenode", boost::bind(&CWebServer::Cmd_WOLUpdateNode, this, _1, _2, _3));
+			RegisterCommandCode("wolremovenode", boost::bind(&CWebServer::Cmd_WOLRemoveNode, this, _1, _2, _3));
+			RegisterCommandCode("wolclearnodes", boost::bind(&CWebServer::Cmd_WOLClearNodes, this, _1, _2, _3));
 
-			RegisterCommandCode("mysensorsgetnodes", boost::bind(&CWebServer::Cmd_MySensorsGetNodes, this, _1));
-			RegisterCommandCode("mysensorsgetchilds", boost::bind(&CWebServer::Cmd_MySensorsGetChilds, this, _1));
-			RegisterCommandCode("mysensorsremovenode", boost::bind(&CWebServer::Cmd_MySensorsRemoveNode, this, _1));
-			RegisterCommandCode("mysensorsremovechild", boost::bind(&CWebServer::Cmd_MySensorsRemoveChild, this, _1));
+			RegisterCommandCode("mysensorsgetnodes", boost::bind(&CWebServer::Cmd_MySensorsGetNodes, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsgetchilds", boost::bind(&CWebServer::Cmd_MySensorsGetChilds, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsremovenode", boost::bind(&CWebServer::Cmd_MySensorsRemoveNode, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsremovechild", boost::bind(&CWebServer::Cmd_MySensorsRemoveChild, this, _1, _2, _3));
 
-			RegisterCommandCode("pingersetmode", boost::bind(&CWebServer::Cmd_PingerSetMode, this, _1));
-			RegisterCommandCode("pingergetnodes", boost::bind(&CWebServer::Cmd_PingerGetNodes, this, _1));
-			RegisterCommandCode("pingeraddnode", boost::bind(&CWebServer::Cmd_PingerAddNode, this, _1));
-			RegisterCommandCode("pingerupdatenode", boost::bind(&CWebServer::Cmd_PingerUpdateNode, this, _1));
-			RegisterCommandCode("pingerremovenode", boost::bind(&CWebServer::Cmd_PingerRemoveNode, this, _1));
-			RegisterCommandCode("pingerclearnodes", boost::bind(&CWebServer::Cmd_PingerClearNodes, this, _1));
+			RegisterCommandCode("pingersetmode", boost::bind(&CWebServer::Cmd_PingerSetMode, this, _1, _2, _3));
+			RegisterCommandCode("pingergetnodes", boost::bind(&CWebServer::Cmd_PingerGetNodes, this, _1, _2, _3));
+			RegisterCommandCode("pingeraddnode", boost::bind(&CWebServer::Cmd_PingerAddNode, this, _1, _2, _3));
+			RegisterCommandCode("pingerupdatenode", boost::bind(&CWebServer::Cmd_PingerUpdateNode, this, _1, _2, _3));
+			RegisterCommandCode("pingerremovenode", boost::bind(&CWebServer::Cmd_PingerRemoveNode, this, _1, _2, _3));
+			RegisterCommandCode("pingerclearnodes", boost::bind(&CWebServer::Cmd_PingerClearNodes, this, _1, _2, _3));
 
-			RegisterCommandCode("kodisetmode", boost::bind(&CWebServer::Cmd_KodiSetMode, this, _1));
-			RegisterCommandCode("kodigetnodes", boost::bind(&CWebServer::Cmd_KodiGetNodes, this, _1));
-			RegisterCommandCode("kodiaddnode", boost::bind(&CWebServer::Cmd_KodiAddNode, this, _1));
-			RegisterCommandCode("kodiupdatenode", boost::bind(&CWebServer::Cmd_KodiUpdateNode, this, _1));
-			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1));
-			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1));
-			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1));
+			RegisterCommandCode("kodisetmode", boost::bind(&CWebServer::Cmd_KodiSetMode, this, _1, _2, _3));
+			RegisterCommandCode("kodigetnodes", boost::bind(&CWebServer::Cmd_KodiGetNodes, this, _1, _2, _3));
+			RegisterCommandCode("kodiaddnode", boost::bind(&CWebServer::Cmd_KodiAddNode, this, _1, _2, _3));
+			RegisterCommandCode("kodiupdatenode", boost::bind(&CWebServer::Cmd_KodiUpdateNode, this, _1, _2, _3));
+			RegisterCommandCode("kodiremovenode", boost::bind(&CWebServer::Cmd_KodiRemoveNode, this, _1, _2, _3));
+			RegisterCommandCode("kodiclearnodes", boost::bind(&CWebServer::Cmd_KodiClearNodes, this, _1, _2, _3));
+			RegisterCommandCode("kodimediacommand", boost::bind(&CWebServer::Cmd_KodiMediaCommand, this, _1, _2, _3));
 
-			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1));
-			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1));
-			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1));
+			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2, _3));
+			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
+			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1, _2, _3));
 
-			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1));
-			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1));
-			RegisterCommandCode("getfibarolinks", boost::bind(&CWebServer::Cmd_GetFibaroLinks, this, _1));
-			RegisterCommandCode("savefibarolink", boost::bind(&CWebServer::Cmd_SaveFibaroLink, this, _1));
-			RegisterCommandCode("deletefibarolink", boost::bind(&CWebServer::Cmd_DeleteFibaroLink, this, _1));
+			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1, _2, _3));
+			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1, _2, _3));
+			RegisterCommandCode("getfibarolinks", boost::bind(&CWebServer::Cmd_GetFibaroLinks, this, _1, _2, _3));
+			RegisterCommandCode("savefibarolink", boost::bind(&CWebServer::Cmd_SaveFibaroLink, this, _1, _2, _3));
+			RegisterCommandCode("deletefibarolink", boost::bind(&CWebServer::Cmd_DeleteFibaroLink, this, _1, _2, _3));
 
-			RegisterCommandCode("savehttplinkconfig", boost::bind(&CWebServer::Cmd_SaveHttpLinkConfig, this, _1));
-			RegisterCommandCode("gethttplinkconfig", boost::bind(&CWebServer::Cmd_GetHttpLinkConfig, this, _1));
-			RegisterCommandCode("gethttplinks", boost::bind(&CWebServer::Cmd_GetHttpLinks, this, _1));
-			RegisterCommandCode("savehttplink", boost::bind(&CWebServer::Cmd_SaveHttpLink, this, _1));
-			RegisterCommandCode("deletehttplink", boost::bind(&CWebServer::Cmd_DeleteHttpLink, this, _1));
-			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1));
-			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1));
+			RegisterCommandCode("savehttplinkconfig", boost::bind(&CWebServer::Cmd_SaveHttpLinkConfig, this, _1, _2, _3));
+			RegisterCommandCode("gethttplinkconfig", boost::bind(&CWebServer::Cmd_GetHttpLinkConfig, this, _1, _2, _3));
+			RegisterCommandCode("gethttplinks", boost::bind(&CWebServer::Cmd_GetHttpLinks, this, _1, _2, _3));
+			RegisterCommandCode("savehttplink", boost::bind(&CWebServer::Cmd_SaveHttpLink, this, _1, _2, _3));
+			RegisterCommandCode("deletehttplink", boost::bind(&CWebServer::Cmd_DeleteHttpLink, this, _1, _2, _3));
+			RegisterCommandCode("getdevicevalueoptions", boost::bind(&CWebServer::Cmd_GetDeviceValueOptions, this, _1, _2, _3));
+			RegisterCommandCode("getdevicevalueoptionwording", boost::bind(&CWebServer::Cmd_GetDeviceValueOptionWording, this, _1, _2, _3));
 
-			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1));
-			RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::Cmd_SaveUserVariable, this, _1));
-			RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::Cmd_UpdateUserVariable, this, _1));
-			RegisterCommandCode("getuservariables", boost::bind(&CWebServer::Cmd_GetUserVariables, this, _1));
-			RegisterCommandCode("getuservariable", boost::bind(&CWebServer::Cmd_GetUserVariable, this, _1));
+			RegisterCommandCode("deleteuservariable", boost::bind(&CWebServer::Cmd_DeleteUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("saveuservariable", boost::bind(&CWebServer::Cmd_SaveUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("updateuservariable", boost::bind(&CWebServer::Cmd_UpdateUserVariable, this, _1, _2, _3));
+			RegisterCommandCode("getuservariables", boost::bind(&CWebServer::Cmd_GetUserVariables, this, _1, _2, _3));
+			RegisterCommandCode("getuservariable", boost::bind(&CWebServer::Cmd_GetUserVariable, this, _1, _2, _3));
 
-			RegisterCommandCode("allownewhardware", boost::bind(&CWebServer::Cmd_AllowNewHardware, this, _1));
+			RegisterCommandCode("allownewhardware", boost::bind(&CWebServer::Cmd_AllowNewHardware, this, _1, _2, _3));
 
-			RegisterCommandCode("addplan", boost::bind(&CWebServer::Cmd_AddPlan, this, _1));
-			RegisterCommandCode("updateplan", boost::bind(&CWebServer::Cmd_UpdatePlan, this, _1));
-			RegisterCommandCode("deleteplan", boost::bind(&CWebServer::Cmd_DeletePlan, this, _1));
-			RegisterCommandCode("getunusedplandevices", boost::bind(&CWebServer::Cmd_GetUnusedPlanDevices, this, _1));
-			RegisterCommandCode("addplanactivedevice", boost::bind(&CWebServer::Cmd_AddPlanActiveDevice, this, _1));
-			RegisterCommandCode("getplandevices", boost::bind(&CWebServer::Cmd_GetPlanDevices, this, _1));
-			RegisterCommandCode("deleteplandevice", boost::bind(&CWebServer::Cmd_DeletePlanDevice, this, _1));
-			RegisterCommandCode("setplandevicecoords", boost::bind(&CWebServer::Cmd_SetPlanDeviceCoords, this, _1));
-			RegisterCommandCode("deleteallplandevices", boost::bind(&CWebServer::Cmd_DeleteAllPlanDevices, this, _1));
-			RegisterCommandCode("changeplanorder", boost::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1));
-			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1));
+			RegisterCommandCode("addplan", boost::bind(&CWebServer::Cmd_AddPlan, this, _1, _2, _3));
+			RegisterCommandCode("updateplan", boost::bind(&CWebServer::Cmd_UpdatePlan, this, _1, _2, _3));
+			RegisterCommandCode("deleteplan", boost::bind(&CWebServer::Cmd_DeletePlan, this, _1, _2, _3));
+			RegisterCommandCode("getunusedplandevices", boost::bind(&CWebServer::Cmd_GetUnusedPlanDevices, this, _1, _2, _3));
+			RegisterCommandCode("addplanactivedevice", boost::bind(&CWebServer::Cmd_AddPlanActiveDevice, this, _1, _2, _3));
+			RegisterCommandCode("getplandevices", boost::bind(&CWebServer::Cmd_GetPlanDevices, this, _1, _2, _3));
+			RegisterCommandCode("deleteplandevice", boost::bind(&CWebServer::Cmd_DeletePlanDevice, this, _1, _2, _3));
+			RegisterCommandCode("setplandevicecoords", boost::bind(&CWebServer::Cmd_SetPlanDeviceCoords, this, _1, _2, _3));
+			RegisterCommandCode("deleteallplandevices", boost::bind(&CWebServer::Cmd_DeleteAllPlanDevices, this, _1, _2, _3));
+			RegisterCommandCode("changeplanorder", boost::bind(&CWebServer::Cmd_ChangePlanOrder, this, _1, _2, _3));
+			RegisterCommandCode("changeplandeviceorder", boost::bind(&CWebServer::Cmd_ChangePlanDeviceOrder, this, _1, _2, _3));
 
-			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1));
-			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1));
+			RegisterCommandCode("getactualhistory", boost::bind(&CWebServer::Cmd_GetActualHistory, this, _1, _2, _3));
+			RegisterCommandCode("getnewhistory", boost::bind(&CWebServer::Cmd_GetNewHistory, this, _1, _2, _3));
 
-			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1),true);
-			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1));
-			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1));
-			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1));
-			RegisterCommandCode("udevices", boost::bind(&CWebServer::Cmd_UpdateDevices, this, _1));
-			RegisterCommandCode("thermostatstate", boost::bind(&CWebServer::Cmd_SetThermostatState, this, _1));
-			RegisterCommandCode("system_shutdown", boost::bind(&CWebServer::Cmd_SystemShutdown, this, _1));
-			RegisterCommandCode("system_reboot", boost::bind(&CWebServer::Cmd_SystemReboot, this, _1));
-			RegisterCommandCode("execute_script", boost::bind(&CWebServer::Cmd_ExcecuteScript, this, _1));
-			RegisterCommandCode("getcosts", boost::bind(&CWebServer::Cmd_GetCosts, this, _1));
-			RegisterCommandCode("checkforupdate", boost::bind(&CWebServer::Cmd_CheckForUpdate, this, _1));
-			RegisterCommandCode("downloadupdate", boost::bind(&CWebServer::Cmd_DownloadUpdate, this, _1));
-			RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1));
-			RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1));
+			RegisterCommandCode("getconfig", boost::bind(&CWebServer::Cmd_GetConfig, this, _1, _2, _3),true);
+			RegisterCommandCode("sendnotification", boost::bind(&CWebServer::Cmd_SendNotification, this, _1, _2, _3));
+			RegisterCommandCode("emailcamerasnapshot", boost::bind(&CWebServer::Cmd_EmailCameraSnapshot, this, _1, _2, _3));
+			RegisterCommandCode("udevice", boost::bind(&CWebServer::Cmd_UpdateDevice, this, _1, _2, _3));
+			RegisterCommandCode("udevices", boost::bind(&CWebServer::Cmd_UpdateDevices, this, _1, _2, _3));
+			RegisterCommandCode("thermostatstate", boost::bind(&CWebServer::Cmd_SetThermostatState, this, _1, _2, _3));
+			RegisterCommandCode("system_shutdown", boost::bind(&CWebServer::Cmd_SystemShutdown, this, _1, _2, _3));
+			RegisterCommandCode("system_reboot", boost::bind(&CWebServer::Cmd_SystemReboot, this, _1, _2, _3));
+			RegisterCommandCode("execute_script", boost::bind(&CWebServer::Cmd_ExcecuteScript, this, _1, _2, _3));
+			RegisterCommandCode("getcosts", boost::bind(&CWebServer::Cmd_GetCosts, this, _1, _2, _3));
+			RegisterCommandCode("checkforupdate", boost::bind(&CWebServer::Cmd_CheckForUpdate, this, _1, _2, _3));
+			RegisterCommandCode("downloadupdate", boost::bind(&CWebServer::Cmd_DownloadUpdate, this, _1, _2, _3));
+			RegisterCommandCode("downloadready", boost::bind(&CWebServer::Cmd_DownloadReady, this, _1, _2, _3));
+			RegisterCommandCode("deletedatapoint", boost::bind(&CWebServer::Cmd_DeleteDatePoint, this, _1, _2, _3));
 
-			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1));
-			RegisterCommandCode("updatetimer", boost::bind(&CWebServer::Cmd_UpdateTimer, this, _1));
-			RegisterCommandCode("deletetimer", boost::bind(&CWebServer::Cmd_DeleteTimer, this, _1));
-			RegisterCommandCode("enabletimer", boost::bind(&CWebServer::Cmd_EnableTimer, this, _1));
-			RegisterCommandCode("disabletimer", boost::bind(&CWebServer::Cmd_DisableTimer, this, _1));
-			RegisterCommandCode("cleartimers", boost::bind(&CWebServer::Cmd_ClearTimers, this, _1));
+			RegisterCommandCode("addtimer", boost::bind(&CWebServer::Cmd_AddTimer, this, _1, _2, _3));
+			RegisterCommandCode("updatetimer", boost::bind(&CWebServer::Cmd_UpdateTimer, this, _1, _2, _3));
+			RegisterCommandCode("deletetimer", boost::bind(&CWebServer::Cmd_DeleteTimer, this, _1, _2, _3));
+			RegisterCommandCode("enabletimer", boost::bind(&CWebServer::Cmd_EnableTimer, this, _1, _2, _3));
+			RegisterCommandCode("disabletimer", boost::bind(&CWebServer::Cmd_DisableTimer, this, _1, _2, _3));
+			RegisterCommandCode("cleartimers", boost::bind(&CWebServer::Cmd_ClearTimers, this, _1, _2, _3));
 
-			RegisterCommandCode("addscenetimer", boost::bind(&CWebServer::Cmd_AddSceneTimer, this, _1));
-			RegisterCommandCode("updatescenetimer", boost::bind(&CWebServer::Cmd_UpdateSceneTimer, this, _1));
-			RegisterCommandCode("deletescenetimer", boost::bind(&CWebServer::Cmd_DeleteSceneTimer, this, _1));
-			RegisterCommandCode("enablescenetimer", boost::bind(&CWebServer::Cmd_EnableSceneTimer, this, _1));
-			RegisterCommandCode("disablescenetimer", boost::bind(&CWebServer::Cmd_DisableSceneTimer, this, _1));
-			RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1));
-			RegisterCommandCode("getsceneactivations", boost::bind(&CWebServer::Cmd_GetSceneActivations, this, _1));
-			RegisterCommandCode("addscenecode", boost::bind(&CWebServer::Cmd_AddSceneCode, this, _1));
-			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1));
-			RegisterCommandCode("clearscenecodes", boost::bind(&CWebServer::Cmd_ClearSceneCodes, this, _1));
-			RegisterCommandCode("renamescene", boost::bind(&CWebServer::Cmd_RenameScene, this, _1));
+			RegisterCommandCode("addscenetimer", boost::bind(&CWebServer::Cmd_AddSceneTimer, this, _1, _2, _3));
+			RegisterCommandCode("updatescenetimer", boost::bind(&CWebServer::Cmd_UpdateSceneTimer, this, _1, _2, _3));
+			RegisterCommandCode("deletescenetimer", boost::bind(&CWebServer::Cmd_DeleteSceneTimer, this, _1, _2, _3));
+			RegisterCommandCode("enablescenetimer", boost::bind(&CWebServer::Cmd_EnableSceneTimer, this, _1, _2, _3));
+			RegisterCommandCode("disablescenetimer", boost::bind(&CWebServer::Cmd_DisableSceneTimer, this, _1, _2, _3));
+			RegisterCommandCode("clearscenetimers", boost::bind(&CWebServer::Cmd_ClearSceneTimers, this, _1, _2, _3));
+			RegisterCommandCode("getsceneactivations", boost::bind(&CWebServer::Cmd_GetSceneActivations, this, _1, _2, _3));
+			RegisterCommandCode("addscenecode", boost::bind(&CWebServer::Cmd_AddSceneCode, this, _1, _2, _3));
+			RegisterCommandCode("removescenecode", boost::bind(&CWebServer::Cmd_RemoveSceneCode, this, _1, _2, _3));
+			RegisterCommandCode("clearscenecodes", boost::bind(&CWebServer::Cmd_ClearSceneCodes, this, _1, _2, _3));
+			RegisterCommandCode("renamescene", boost::bind(&CWebServer::Cmd_RenameScene, this, _1, _2, _3));
 
-			RegisterCommandCode("setsetpoint", boost::bind(&CWebServer::Cmd_SetSetpoint, this, _1));
-			RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1));
-			RegisterCommandCode("updatesetpointtimer", boost::bind(&CWebServer::Cmd_UpdateSetpointTimer, this, _1));
-			RegisterCommandCode("deletesetpointtimer", boost::bind(&CWebServer::Cmd_DeleteSetpointTimer, this, _1));
-			RegisterCommandCode("clearsetpointtimers", boost::bind(&CWebServer::Cmd_ClearSetpointTimers, this, _1));
+			RegisterCommandCode("setsetpoint", boost::bind(&CWebServer::Cmd_SetSetpoint, this, _1, _2, _3));
+			RegisterCommandCode("addsetpointtimer", boost::bind(&CWebServer::Cmd_AddSetpointTimer, this, _1, _2, _3));
+			RegisterCommandCode("updatesetpointtimer", boost::bind(&CWebServer::Cmd_UpdateSetpointTimer, this, _1, _2, _3));
+			RegisterCommandCode("deletesetpointtimer", boost::bind(&CWebServer::Cmd_DeleteSetpointTimer, this, _1, _2, _3));
+			RegisterCommandCode("clearsetpointtimers", boost::bind(&CWebServer::Cmd_ClearSetpointTimers, this, _1, _2, _3));
 
-			RegisterCommandCode("serial_devices", boost::bind(&CWebServer::Cmd_GetSerialDevices, this, _1));
-			RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1));
-			RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1));
+			RegisterCommandCode("serial_devices", boost::bind(&CWebServer::Cmd_GetSerialDevices, this, _1, _2, _3));
+			RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1, _2, _3));
+			RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1, _2, _3));
 
-			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_RegisterWithPhilipsHue, this, _1));
+			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_RegisterWithPhilipsHue, this, _1, _2, _3));
 
-			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1));
-			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1));
-			RegisterCommandCode("updatecustomicon", boost::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1));
+			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1, _2, _3));
+			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1, _2, _3));
+			RegisterCommandCode("updatecustomicon", boost::bind(&CWebServer::Cmd_UpdateCustomIcon, this, _1, _2, _3));
 
-			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1));
-			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1));
+			RegisterCommandCode("renamedevice", boost::bind(&CWebServer::Cmd_RenameDevice, this, _1, _2, _3));
+			RegisterCommandCode("setunused", boost::bind(&CWebServer::Cmd_SetUnused, this, _1, _2, _3));
 
-			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1));
-			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1));
-			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1));
+			RegisterCommandCode("addlogmessage", boost::bind(&CWebServer::Cmd_AddLogMessage, this, _1, _2, _3));
+			RegisterCommandCode("clearshortlog", boost::bind(&CWebServer::Cmd_ClearShortLog, this, _1, _2, _3));
+			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1, _2, _3));
 
-			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1));
-			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1));
-			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1));
-			RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1));
-			RegisterRType("events", boost::bind(&CWebServer::RType_Events, this, _1));
-			RegisterRType("hardware", boost::bind(&CWebServer::RType_Hardware, this, _1));
-			RegisterRType("devices", boost::bind(&CWebServer::RType_Devices, this, _1));
-			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1));
-			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1));
-			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1));
+			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
+			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
+			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1, _2, _3));
+			RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1, _2, _3));
+			RegisterRType("events", boost::bind(&CWebServer::RType_Events, this, _1, _2, _3));
+			RegisterRType("hardware", boost::bind(&CWebServer::RType_Hardware, this, _1, _2, _3));
+			RegisterRType("devices", boost::bind(&CWebServer::RType_Devices, this, _1, _2, _3));
+			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1, _2, _3));
+			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1, _2, _3));
+			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1, _2, _3));
 
-			RegisterRType("timers", boost::bind(&CWebServer::RType_Timers, this, _1));
-			RegisterRType("scenetimers", boost::bind(&CWebServer::RType_SceneTimers, this, _1));
-			RegisterRType("setpointtimers", boost::bind(&CWebServer::RType_SetpointTimers, this, _1));
+			RegisterRType("timers", boost::bind(&CWebServer::RType_Timers, this, _1, _2, _3));
+			RegisterRType("scenetimers", boost::bind(&CWebServer::RType_SceneTimers, this, _1, _2, _3));
+			RegisterRType("setpointtimers", boost::bind(&CWebServer::RType_SetpointTimers, this, _1, _2, _3));
 
-			RegisterRType("gettransfers", boost::bind(&CWebServer::RType_GetTransfers, this, _1));
-			RegisterRType("transferdevice", boost::bind(&CWebServer::RType_TransferDevice, this, _1));
-			RegisterRType("notifications", boost::bind(&CWebServer::RType_Notifications, this, _1));
-			RegisterRType("schedules", boost::bind(&CWebServer::RType_Schedules, this, _1));
-			RegisterRType("getshareduserdevices", boost::bind(&CWebServer::RType_GetSharedUserDevices, this, _1));
-			RegisterRType("setshareduserdevices", boost::bind(&CWebServer::RType_SetSharedUserDevices, this, _1));
-			RegisterRType("setused", boost::bind(&CWebServer::RType_SetUsed, this, _1));
-			RegisterRType("scenes", boost::bind(&CWebServer::RType_Scenes, this, _1));
-			RegisterRType("addscene", boost::bind(&CWebServer::RType_AddScene, this, _1));
-			RegisterRType("deletescene", boost::bind(&CWebServer::RType_DeleteScene, this, _1));
-			RegisterRType("updatescene", boost::bind(&CWebServer::RType_UpdateScene, this, _1));
-			RegisterRType("createvirtualsensor", boost::bind(&CWebServer::RType_CreateVirtualSensor, this, _1));
+			RegisterRType("gettransfers", boost::bind(&CWebServer::RType_GetTransfers, this, _1, _2, _3));
+			RegisterRType("transferdevice", boost::bind(&CWebServer::RType_TransferDevice, this, _1, _2, _3));
+			RegisterRType("notifications", boost::bind(&CWebServer::RType_Notifications, this, _1, _2, _3));
+			RegisterRType("schedules", boost::bind(&CWebServer::RType_Schedules, this, _1, _2, _3));
+			RegisterRType("getshareduserdevices", boost::bind(&CWebServer::RType_GetSharedUserDevices, this, _1, _2, _3));
+			RegisterRType("setshareduserdevices", boost::bind(&CWebServer::RType_SetSharedUserDevices, this, _1, _2, _3));
+			RegisterRType("setused", boost::bind(&CWebServer::RType_SetUsed, this, _1, _2, _3));
+			RegisterRType("scenes", boost::bind(&CWebServer::RType_Scenes, this, _1, _2, _3));
+			RegisterRType("addscene", boost::bind(&CWebServer::RType_AddScene, this, _1, _2, _3));
+			RegisterRType("deletescene", boost::bind(&CWebServer::RType_DeleteScene, this, _1, _2, _3));
+			RegisterRType("updatescene", boost::bind(&CWebServer::RType_UpdateScene, this, _1, _2, _3));
+			RegisterRType("createvirtualsensor", boost::bind(&CWebServer::RType_CreateVirtualSensor, this, _1, _2, _3));
 
-			RegisterRType("createevohomesensor", boost::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1));
-			RegisterRType("bindevohome", boost::bind(&CWebServer::RType_BindEvohome, this, _1));
+			RegisterRType("createevohomesensor", boost::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1, _2, _3));
+			RegisterRType("bindevohome", boost::bind(&CWebServer::RType_BindEvohome, this, _1, _2, _3));
 
-			RegisterRType("custom_light_icons", boost::bind(&CWebServer::RType_CustomLightIcons, this, _1));
-			RegisterRType("plans", boost::bind(&CWebServer::RType_Plans, this, _1));
-			RegisterRType("floorplans", boost::bind(&CWebServer::RType_FloorPlans, this, _1));
+			RegisterRType("custom_light_icons", boost::bind(&CWebServer::RType_CustomLightIcons, this, _1, _2, _3));
+			RegisterRType("plans", boost::bind(&CWebServer::RType_Plans, this, _1, _2, _3));
+			RegisterRType("floorplans", boost::bind(&CWebServer::RType_FloorPlans, this, _1, _2, _3));
 #ifdef WITH_OPENZWAVE
 			//ZWave
-			RegisterCommandCode("updatezwavenode", boost::bind(&CWebServer::Cmd_ZWaveUpdateNode, this, _1));
-			RegisterCommandCode("deletezwavenode", boost::bind(&CWebServer::Cmd_ZWaveDeleteNode, this, _1));
-			RegisterCommandCode("zwaveinclude", boost::bind(&CWebServer::Cmd_ZWaveInclude, this, _1));
-			RegisterCommandCode("zwaveexclude", boost::bind(&CWebServer::Cmd_ZWaveExclude, this, _1));
+			RegisterCommandCode("updatezwavenode", boost::bind(&CWebServer::Cmd_ZWaveUpdateNode, this, _1, _2, _3));
+			RegisterCommandCode("deletezwavenode", boost::bind(&CWebServer::Cmd_ZWaveDeleteNode, this, _1, _2, _3));
+			RegisterCommandCode("zwaveinclude", boost::bind(&CWebServer::Cmd_ZWaveInclude, this, _1, _2, _3));
+			RegisterCommandCode("zwaveexclude", boost::bind(&CWebServer::Cmd_ZWaveExclude, this, _1, _2, _3));
 
-			RegisterCommandCode("zwaveisnodeincluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1));
-			RegisterCommandCode("zwaveisnodeexcluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1));
+			RegisterCommandCode("zwaveisnodeincluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeIncluded, this, _1, _2, _3));
+			RegisterCommandCode("zwaveisnodeexcluded", boost::bind(&CWebServer::Cmd_ZWaveIsNodeExcluded, this, _1, _2, _3));
 
-			RegisterCommandCode("zwavesoftreset", boost::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1));
-			RegisterCommandCode("zwavehardreset", boost::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1));
-			RegisterCommandCode("zwavenetworkheal", boost::bind(&CWebServer::Cmd_ZWaveNetworkHeal, this, _1));
-			RegisterCommandCode("zwavenodeheal", boost::bind(&CWebServer::Cmd_ZWaveNodeHeal, this, _1));
-			RegisterCommandCode("zwavenetworkinfo", boost::bind(&CWebServer::Cmd_ZWaveNetworkInfo, this, _1));
-			RegisterCommandCode("zwaveremovegroupnode", boost::bind(&CWebServer::Cmd_ZWaveRemoveGroupNode, this, _1));
-			RegisterCommandCode("zwaveaddgroupnode", boost::bind(&CWebServer::Cmd_ZWaveAddGroupNode, this, _1));
-			RegisterCommandCode("zwavegroupinfo", boost::bind(&CWebServer::Cmd_ZWaveGroupInfo, this, _1));
-			RegisterCommandCode("zwavecancel", boost::bind(&CWebServer::Cmd_ZWaveCancel, this, _1));
-			RegisterCommandCode("applyzwavenodeconfig", boost::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig, this, _1));
-			RegisterCommandCode("requestzwavenodeconfig", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig, this, _1));
-			RegisterCommandCode("zwavestatecheck", boost::bind(&CWebServer::Cmd_ZWaveStateCheck, this, _1));
-			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller", boost::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController, this, _1));
-			RegisterCommandCode("zwavesendconfigurationtosecondcontroller", boost::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController, this, _1));
-			RegisterCommandCode("zwavetransferprimaryrole", boost::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole, this, _1));
-			RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1));
-			RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1));
-			RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1));
+			RegisterCommandCode("zwavesoftreset", boost::bind(&CWebServer::Cmd_ZWaveSoftReset, this, _1, _2, _3));
+			RegisterCommandCode("zwavehardreset", boost::bind(&CWebServer::Cmd_ZWaveHardReset, this, _1, _2, _3));
+			RegisterCommandCode("zwavenetworkheal", boost::bind(&CWebServer::Cmd_ZWaveNetworkHeal, this, _1, _2, _3));
+			RegisterCommandCode("zwavenodeheal", boost::bind(&CWebServer::Cmd_ZWaveNodeHeal, this, _1, _2, _3));
+			RegisterCommandCode("zwavenetworkinfo", boost::bind(&CWebServer::Cmd_ZWaveNetworkInfo, this, _1, _2, _3));
+			RegisterCommandCode("zwaveremovegroupnode", boost::bind(&CWebServer::Cmd_ZWaveRemoveGroupNode, this, _1, _2, _3));
+			RegisterCommandCode("zwaveaddgroupnode", boost::bind(&CWebServer::Cmd_ZWaveAddGroupNode, this, _1, _2, _3));
+			RegisterCommandCode("zwavegroupinfo", boost::bind(&CWebServer::Cmd_ZWaveGroupInfo, this, _1, _2, _3));
+			RegisterCommandCode("zwavecancel", boost::bind(&CWebServer::Cmd_ZWaveCancel, this, _1, _2, _3));
+			RegisterCommandCode("applyzwavenodeconfig", boost::bind(&CWebServer::Cmd_ApplyZWaveNodeConfig, this, _1, _2, _3));
+			RegisterCommandCode("requestzwavenodeconfig", boost::bind(&CWebServer::Cmd_ZWaveRequestNodeConfig, this, _1, _2, _3));
+			RegisterCommandCode("zwavestatecheck", boost::bind(&CWebServer::Cmd_ZWaveStateCheck, this, _1, _2, _3));
+			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller", boost::bind(&CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController, this, _1, _2, _3));
+			RegisterCommandCode("zwavesendconfigurationtosecondcontroller", boost::bind(&CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController, this, _1, _2, _3));
+			RegisterCommandCode("zwavetransferprimaryrole", boost::bind(&CWebServer::Cmd_ZWaveTransferPrimaryRole, this, _1, _2, _3));
+			RegisterCommandCode("zwavestartusercodeenrollmentmode", boost::bind(&CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode, this, _1, _2, _3));
+			RegisterCommandCode("zwavegetusercodes", boost::bind(&CWebServer::Cmd_ZWaveGetNodeUserCodes, this, _1, _2, _3));
+			RegisterCommandCode("zwaveremoveusercode", boost::bind(&CWebServer::Cmd_ZWaveRemoveUserCode, this, _1, _2, _3));
 
-			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile,	this));
+			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", boost::bind(&CWebServer::ZWaveGetConfigFile,	this, _1, _2));
 
-			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", boost::bind(&CWebServer::ZWaveCPPollXml, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", boost::bind(&CWebServer::ZWaveCPIndex, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetConf, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetValues, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", boost::bind(&CWebServer::ZWaveCPNodeSetValue, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", boost::bind(&CWebServer::ZWaveCPNodeSetButton, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this));
-			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this));
+			m_pWebEm->RegisterPageCode("/ozwcp/poll.xml", boost::bind(&CWebServer::ZWaveCPPollXml, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/cp.html", boost::bind(&CWebServer::ZWaveCPIndex, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/confparmpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetConf, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/refreshpost.html", boost::bind(&CWebServer::ZWaveCPNodeGetValues, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/valuepost.html", boost::bind(&CWebServer::ZWaveCPNodeSetValue, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/buttonpost.html", boost::bind(&CWebServer::ZWaveCPNodeSetButton, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/admpost.html", boost::bind(&CWebServer::ZWaveCPAdminCommand, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/nodepost.html", boost::bind(&CWebServer::ZWaveCPNodeChange, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/savepost.html", boost::bind(&CWebServer::ZWaveCPSaveConfig, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/topopost.html", boost::bind(&CWebServer::ZWaveCPGetTopo, this, _1, _2));
+			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", boost::bind(&CWebServer::ZWaveCPGetStats, this, _1, _2));
 			//grouppost.html
 			//pollpost.html
 			//scenepost.html
 			//thpost.html
-			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1));
+			RegisterRType("openzwavenodes", boost::bind(&CWebServer::RType_OpenZWaveNodes, this, _1, _2, _3));
 #endif	
 
 			m_pWebEm->RegisterWhitelistURLString("/html5.appcache");
@@ -616,12 +615,12 @@ namespace http {
 			m_webrtypes.insert(std::pair<std::string, webserver_response_function >(std::string(idname), ResponseFunction));
 		}
 
-		void CWebServer::HandleRType(const std::string &rtype, Json::Value &root)
+		void CWebServer::HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::map < std::string, webserver_response_function >::iterator pf = m_webrtypes.find(rtype);
 			if (pf != m_webrtypes.end())
 			{
-				pf->second(root);
+				pf->second(session, req, root);
 			}
 		}
 
@@ -656,7 +655,7 @@ namespace http {
 			return 0;
 		}
 
-		std::string CWebServer::GetAppCache()
+		std::string CWebServer::GetAppCache(WebEmSession & session, const request& req)
 		{
 			std::string response = "";
 			if (g_bDontCacheWWW)
@@ -736,18 +735,18 @@ namespace http {
 			return response;
 		}
 
-		std::string CWebServer::GetJSonPage()
+		std::string CWebServer::GetJSonPage(WebEmSession & session, const request& req)
 		{
 			Json::Value root;
 			root["status"] = "ERR";
 
-			std::string rtype = m_pWebEm->FindValue("type");
+			std::string rtype = request::findValue(&req, "type");
 			if (rtype == "command")
 			{
-				std::string cparam = m_pWebEm->FindValue("param");
+				std::string cparam = request::findValue(&req, "param");
 				if (cparam == "")
 				{
-					cparam = m_pWebEm->FindValue("dparam");
+					cparam = request::findValue(&req, "dparam");
 					if (cparam == "")
 					{
 						goto exitjson;
@@ -761,12 +760,13 @@ namespace http {
 					return m_retstr;
 
 				}
-				HandleCommand(cparam, root);
+				HandleCommand(cparam, session, req, root);
 			} //(rtype=="command")
-			else
-				HandleRType(rtype, root);
+			else {
+				HandleRType(rtype, session, req, root);
+			}
 		exitjson:
-			std::string jcallback = m_pWebEm->FindValue("jsoncallback");
+			std::string jcallback = request::findValue(&req, "jsoncallback");
 			if (jcallback.size() == 0)
 				m_retstr = root.toStyledString();
 			else
@@ -776,7 +776,7 @@ namespace http {
 			return m_retstr;
 		}
 
-		void CWebServer::Cmd_GetLanguage(Json::Value &root)
+		void CWebServer::Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string sValue;
 			if (m_sql.GetPreferencesVar("Language", sValue))
@@ -787,7 +787,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetThemes(Json::Value &root)
+		void CWebServer::Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetThemes";
@@ -801,17 +801,17 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_LoginCheck(Json::Value &root)
+		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string tmpusrname = m_pWebEm->FindValue("username");
-			std::string tmpusrpass = m_pWebEm->FindValue("password");
+			std::string tmpusrname = request::findValue(&req, "username");
+			std::string tmpusrpass = request::findValue(&req, "password");
 			if (
 				(tmpusrname == "") ||
 				(tmpusrpass == "")
 				)
 				return;
 
-			std::string rememberme = m_pWebEm->FindValue("rememberme");
+			std::string rememberme = request::findValue(&req, "rememberme");
 
 			std::string usrname;
 			std::string usrpass;
@@ -836,17 +836,17 @@ namespace http {
 					root["status"] = "OK";
 					root["version"] = szAppVersion;
 					root["title"] = "logincheck";
-					m_pWebEm->m_actualuser = m_users[iUser].Username;
-					m_pWebEm->m_actualuser_rights = m_users[iUser].userrights;
-					m_pWebEm->m_bAddNewSession = true;
-					m_pWebEm->m_bRemembermeUser = (rememberme == "true");
-					root["user"] = m_pWebEm->m_actualuser;
-					root["rights"] = m_pWebEm->m_actualuser_rights;
+					session.isnew = true;
+					session.username = m_users[iUser].Username;
+					session.rights = m_users[iUser].userrights;
+					session.rememberme = (rememberme == "true");
+					root["user"] = session.username;
+					root["rights"] = session.rights;
 				}
 			}
 		}
 
-		void CWebServer::Cmd_GetHardwareTypes(Json::Value &root)
+		void CWebServer::Cmd_GetHardwareTypes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetHardwareTypes";
@@ -905,20 +905,20 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddHardware(Json::Value &root)
+		void CWebServer::Cmd_AddHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = CURLEncode::URLDecode(m_pWebEm->FindValue("name"));
-			std::string senabled = m_pWebEm->FindValue("enabled");
-			std::string shtype = m_pWebEm->FindValue("htype");
-			std::string address = m_pWebEm->FindValue("address");
-			std::string sport = m_pWebEm->FindValue("port");
-			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
-			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
-			std::string extra = CURLEncode::URLDecode(m_pWebEm->FindValue("extra"));
-			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
+			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string senabled = request::findValue(&req, "enabled");
+			std::string shtype = request::findValue(&req, "htype");
+			std::string address = request::findValue(&req, "address");
+			std::string sport = request::findValue(&req, "port");
+			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
+			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 			if (
 				(name == "") ||
 				(senabled == "") ||
@@ -949,7 +949,7 @@ namespace http {
 					return;
 
 				if (htype == HTYPE_MQTT) {
-					std::string modeqStr = m_pWebEm->FindValue("mode1");
+					std::string modeqStr = request::findValue(&req, "mode1");
 					if (!modeqStr.empty()) {
 						mode1 = atoi(modeqStr.c_str());
 					}
@@ -1040,7 +1040,7 @@ namespace http {
 					port = 80;
 			}
 			else if (htype == HTYPE_WINDDELEN) {
-					std::string mill_id = m_pWebEm->FindValue("Mode1");
+					std::string mill_id = request::findValue(&req, "Mode1");
 					if (
 					(mill_id == "") ||
 					(sport == "")
@@ -1113,23 +1113,23 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_UpdateHardware(Json::Value &root)
+		void CWebServer::Cmd_UpdateHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = CURLEncode::URLDecode(m_pWebEm->FindValue("name"));
-			std::string senabled = m_pWebEm->FindValue("enabled");
-			std::string shtype = m_pWebEm->FindValue("htype");
-			std::string address = m_pWebEm->FindValue("address");
-			std::string sport = m_pWebEm->FindValue("port");
-			std::string username = CURLEncode::URLDecode(m_pWebEm->FindValue("username"));
-			std::string password = CURLEncode::URLDecode(m_pWebEm->FindValue("password"));
-			std::string extra = CURLEncode::URLDecode(m_pWebEm->FindValue("extra"));
-			std::string sdatatimeout = m_pWebEm->FindValue("datatimeout");
+			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string senabled = request::findValue(&req, "enabled");
+			std::string shtype = request::findValue(&req, "htype");
+			std::string address = request::findValue(&req, "address");
+			std::string sport = request::findValue(&req, "port");
+			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
+			std::string sdatatimeout = request::findValue(&req, "datatimeout");
 
 			if (
 				(name == "") ||
@@ -1258,7 +1258,7 @@ namespace http {
 					return;
 			}
 			else if (htype == HTYPE_WINDDELEN) {
-				std::string mill_id = m_pWebEm->FindValue("Mode1");
+				std::string mill_id = request::findValue(&req, "Mode1");
 				if (
 				  (mill_id == "") ||
 				  (sport == "")
@@ -1268,12 +1268,12 @@ namespace http {
 			else
 				return;
 
-			int mode1 = atoi(m_pWebEm->FindValue("Mode1").c_str());
-			int mode2 = atoi(m_pWebEm->FindValue("Mode2").c_str());
-			int mode3 = atoi(m_pWebEm->FindValue("Mode3").c_str());
-			int mode4 = atoi(m_pWebEm->FindValue("Mode4").c_str());
-			int mode5 = atoi(m_pWebEm->FindValue("Mode5").c_str());
-			int mode6 = atoi(m_pWebEm->FindValue("Mode6").c_str());
+			int mode1 = atoi(request::findValue(&req, "Mode1").c_str());
+			int mode2 = atoi(request::findValue(&req, "Mode2").c_str());
+			int mode3 = atoi(request::findValue(&req, "Mode3").c_str());
+			int mode4 = atoi(request::findValue(&req, "Mode4").c_str());
+			int mode5 = atoi(request::findValue(&req, "Mode5").c_str());
+			int mode6 = atoi(request::findValue(&req, "Mode6").c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
@@ -1318,9 +1318,9 @@ namespace http {
 			m_mainworker.AddHardwareFromParams(ID, name, bEnabled, htype, address, port, sport, username, password, extra, mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
 		}
 
-		void CWebServer::Cmd_GetDeviceValueOptions(Json::Value &root)
+		void CWebServer::Cmd_GetDeviceValueOptions(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			std::vector<std::string> result;
@@ -1345,10 +1345,10 @@ namespace http {
 			root["title"] = "GetDeviceValueOptions";
 		}
 
-		void CWebServer::Cmd_GetDeviceValueOptionWording(Json::Value &root)
+		void CWebServer::Cmd_GetDeviceValueOptionWording(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string pos = m_pWebEm->FindValue("pos");
+			std::string idx = request::findValue(&req, "idx");
+			std::string pos = request::findValue(&req, "pos");
 			if ((idx == "") || (pos == ""))
 				return;
 			std::string wording;
@@ -1359,9 +1359,9 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_DeleteUserVariable(Json::Value &root)
+		void CWebServer::Cmd_DeleteUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -1369,11 +1369,11 @@ namespace http {
 			root["title"] = "DeleteUserVariable";
 		}
 
-		void CWebServer::Cmd_SaveUserVariable(Json::Value &root)
+		void CWebServer::Cmd_SaveUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string variablename = m_pWebEm->FindValue("vname");
-			std::string variablevalue = m_pWebEm->FindValue("vvalue");
-			std::string variabletype = m_pWebEm->FindValue("vtype");
+			std::string variablename = request::findValue(&req, "vname");
+			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variabletype = request::findValue(&req, "vtype");
 			if ((variablename == "") || (variablevalue == "") || (variabletype == ""))
 				return;
 
@@ -1381,12 +1381,12 @@ namespace http {
 			root["title"] = "SaveUserVariable";
 		}
 
-		void CWebServer::Cmd_UpdateUserVariable(Json::Value &root)
+		void CWebServer::Cmd_UpdateUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string variablename = m_pWebEm->FindValue("vname");
-			std::string variablevalue = m_pWebEm->FindValue("vvalue");
-			std::string variabletype = m_pWebEm->FindValue("vtype");
+			std::string idx = request::findValue(&req, "idx");
+			std::string variablename = request::findValue(&req, "vname");
+			std::string variablevalue = request::findValue(&req, "vvalue");
+			std::string variabletype = request::findValue(&req, "vtype");
 
 			if (idx.empty())
 			{
@@ -1407,7 +1407,7 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_GetUserVariables(Json::Value &root)
+		void CWebServer::Cmd_GetUserVariables(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::stringstream szQuery;
 			std::vector<std::vector<std::string> > result;
@@ -1432,9 +1432,9 @@ namespace http {
 			root["title"] = "GetUserVariables";
 		}
 
-		void CWebServer::Cmd_GetUserVariable(Json::Value &root)
+		void CWebServer::Cmd_GetUserVariable(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -1463,9 +1463,9 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_AllowNewHardware(Json::Value &root)
+		void CWebServer::Cmd_AllowNewHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sTimeout = m_pWebEm->FindValue("timeout");
+			std::string sTimeout = request::findValue(&req, "timeout");
 			if (sTimeout == "")
 				return;
 			root["status"] = "OK";
@@ -1475,12 +1475,12 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_DeleteHardware(Json::Value &root)
+		void CWebServer::Cmd_DeleteHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			int hwID = atoi(idx.c_str());
@@ -1492,13 +1492,13 @@ namespace http {
 			m_sql.DeleteHardware(idx);
 		}
 
-		void CWebServer::Cmd_GetLog(Json::Value &root)
+		void CWebServer::Cmd_GetLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetLog";
 
 			time_t lastlogtime = 0;
-			std::string slastlogtime = m_pWebEm->FindValue("lastlogtime");
+			std::string slastlogtime = request::findValue(&req, "lastlogtime");
 			if (slastlogtime != "")
 			{
 				std::stringstream s_str(slastlogtime);
@@ -1523,12 +1523,12 @@ namespace http {
 		}
 
 		//Plan Functions
-		void CWebServer::Cmd_AddPlan(Json::Value &root)
+		void CWebServer::Cmd_AddPlan(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = m_pWebEm->FindValue("name");
+			std::string name = request::findValue(&req, "name");
 			root["status"] = "OK";
 			root["title"] = "AddPlan";
 			m_sql.safe_query(
@@ -1537,15 +1537,15 @@ namespace http {
 				);
 		}
 
-		void CWebServer::Cmd_UpdatePlan(Json::Value &root)
+		void CWebServer::Cmd_UpdatePlan(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = m_pWebEm->FindValue("name");
+			std::string name = request::findValue(&req, "name");
 			if (
 				(name == "")
 				)
@@ -1561,12 +1561,12 @@ namespace http {
 				);
 		}
 
-		void CWebServer::Cmd_DeletePlan(Json::Value &root)
+		void CWebServer::Cmd_DeletePlan(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1581,11 +1581,11 @@ namespace http {
 				);
 		}
 
-		void CWebServer::Cmd_GetUnusedPlanDevices(Json::Value &root)
+		void CWebServer::Cmd_GetUnusedPlanDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetUnusedPlanDevices";
-			std::string sunique = m_pWebEm->FindValue("unique");
+			std::string sunique = request::findValue(&req, "unique");
 			if (sunique == "")
 				return;
 			int iUnique = (sunique == "true") ? 1 : 0;
@@ -1646,14 +1646,14 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddPlanActiveDevice(Json::Value &root)
+		void CWebServer::Cmd_AddPlanActiveDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string sactivetype = m_pWebEm->FindValue("activetype");
-			std::string activeidx = m_pWebEm->FindValue("activeidx");
+			std::string idx = request::findValue(&req, "idx");
+			std::string sactivetype = request::findValue(&req, "activetype");
+			std::string activeidx = request::findValue(&req, "activeidx");
 			if (
 				(idx == "") ||
 				(sactivetype == "") ||
@@ -1680,9 +1680,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetPlanDevices(Json::Value &root)
+		void CWebServer::Cmd_GetPlanDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1738,12 +1738,12 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_DeletePlanDevice(Json::Value &root)
+		void CWebServer::Cmd_DeletePlanDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1751,13 +1751,13 @@ namespace http {
 			m_sql.safe_query("DELETE FROM DeviceToPlansMap WHERE (ID == '%q')", idx.c_str());
 		}
 
-		void CWebServer::Cmd_SetPlanDeviceCoords(Json::Value &root)
+		void CWebServer::Cmd_SetPlanDeviceCoords(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string planidx = m_pWebEm->FindValue("planidx");
-			std::string xoffset = m_pWebEm->FindValue("xoffset");
-			std::string yoffset = m_pWebEm->FindValue("yoffset");
-			std::string type = m_pWebEm->FindValue("DevSceneType");
+			std::string idx = request::findValue(&req, "idx");
+			std::string planidx = request::findValue(&req, "planidx");
+			std::string xoffset = request::findValue(&req, "xoffset");
+			std::string yoffset = request::findValue(&req, "yoffset");
+			std::string type = request::findValue(&req, "DevSceneType");
 			if ((idx == "") || (planidx == "") || (xoffset == "") || (yoffset == ""))
 				return;
 			if (type != "1") type = "0";  // 0 = Device, 1 = Scene/Group
@@ -1768,12 +1768,12 @@ namespace http {
 			_log.Log(LOG_STATUS, "(Floorplan) Device '%s' coordinates set to '%s,%s' in plan '%s'.", idx.c_str(), xoffset.c_str(), yoffset.c_str(), planidx.c_str());
 		}
 
-		void CWebServer::Cmd_DeleteAllPlanDevices(Json::Value &root)
+		void CWebServer::Cmd_DeleteAllPlanDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1781,12 +1781,12 @@ namespace http {
 			m_sql.safe_query("DELETE FROM DeviceToPlansMap WHERE (PlanID == '%q')", idx.c_str());
 		}
 
-		void CWebServer::Cmd_ChangePlanOrder(Json::Value &root)
+		void CWebServer::Cmd_ChangePlanOrder(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string sway = m_pWebEm->FindValue("way");
+			std::string sway = request::findValue(&req, "way");
 			if (sway == "")
 				return;
 			bool bGoUp = (sway == "0");
@@ -1830,11 +1830,11 @@ namespace http {
 				aOrder.c_str(), oID.c_str());
 		}
 
-		void CWebServer::Cmd_ChangePlanDeviceOrder(Json::Value &root)
+		void CWebServer::Cmd_ChangePlanDeviceOrder(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string planid = m_pWebEm->FindValue("planid");
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string sway = m_pWebEm->FindValue("way");
+			std::string planid = request::findValue(&req, "planid");
+			std::string idx = request::findValue(&req, "idx");
+			std::string sway = request::findValue(&req, "way");
 			if (
 				(planid == "") ||
 				(idx == "") ||
@@ -1882,7 +1882,7 @@ namespace http {
 				aOrder.c_str(), oID.c_str());
 		}
 
-		void CWebServer::Cmd_GetVersion(Json::Value &root)
+		void CWebServer::Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetVersion";
@@ -1893,7 +1893,7 @@ namespace http {
 			int nValue = 1;
 			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//only admin users will receive the update notification
 				root["haveupdate"] = false;
@@ -1905,15 +1905,15 @@ namespace http {
 			root["revision"] = m_mainworker.m_iRevision;
 		}
 
-		void CWebServer::Cmd_GetAuth(Json::Value &root)
+		void CWebServer::Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetAuth";
-			root["user"] = m_pWebEm->m_actualuser;
-			root["rights"] = m_pWebEm->m_actualuser_rights;
+			root["user"] = session.username;
+			root["rights"] = session.rights;
 		}
 
-		void CWebServer::Cmd_GetActualHistory(Json::Value &root)
+		void CWebServer::Cmd_GetActualHistory(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetActualHistory";
@@ -1940,7 +1940,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetNewHistory(Json::Value &root)
+		void CWebServer::Cmd_GetNewHistory(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetNewHistory";
@@ -1992,21 +1992,21 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetConfig(Json::Value &root)
+		void CWebServer::Cmd_GetConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			//if (m_pWebEm->m_actualuser_rights != 2)
+			//if (session.rights != 2)
 				//return;//Only admin user allowed
 
 			root["status"] = "OK";
 			root["title"] = "GetConfig";
 
-			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			bool bHaveUser = (session.username != "");
 			int urights = 3;
 			unsigned long UserID = 0;
 			if (bHaveUser)
 			{
 				int iUser = -1;
-				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+				iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 				{
 					urights = static_cast<int>(m_users[iUser].userrights);
@@ -2136,10 +2136,10 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_SendNotification(Json::Value &root)
+		void CWebServer::Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string subject = m_pWebEm->FindValue("subject");
-			std::string body = m_pWebEm->FindValue("body");
+			std::string subject = request::findValue(&req, "subject");
+			std::string body = request::findValue(&req, "body");
 			if (
 				(subject == "") ||
 				(body == "")
@@ -2152,10 +2152,10 @@ namespace http {
 			root["title"] = "SendNotification";
 		}
 
-		void CWebServer::Cmd_EmailCameraSnapshot(Json::Value &root)
+		void CWebServer::Cmd_EmailCameraSnapshot(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string camidx = m_pWebEm->FindValue("camidx");
-			std::string subject = m_pWebEm->FindValue("subject");
+			std::string camidx = request::findValue(&req, "camidx");
+			std::string subject = request::findValue(&req, "subject");
 			if (
 				(camidx == "") ||
 				(subject == "")
@@ -2283,7 +2283,7 @@ namespace http {
 			return 0;
 		}
 
-		void CWebServer::Cmd_UpdateDevices(Json::Value &root)
+		void CWebServer::Cmd_UpdateDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::stringstream lua_DirT;
 #ifdef WIN32
@@ -2293,12 +2293,12 @@ namespace http {
 #endif
 			std::string lua_Dir = lua_DirT.str();
 
-			std::string script = m_pWebEm->FindValue("script");
+			std::string script = request::findValue(&req, "script");
 			if (script.empty() )
 			{
 				return;
 			}
-			std::string content = m_pWebEm->m_ActualRequest.content;
+			std::string content = req.content;
 
 			lua_State *lua_state;
 			lua_state = luaL_newstate();
@@ -2334,17 +2334,17 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_UpdateDevice(Json::Value &root)
+		void CWebServer::Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string hid = m_pWebEm->FindValue("hid");
-			std::string did = m_pWebEm->FindValue("did");
-			std::string dunit = m_pWebEm->FindValue("dunit");
-			std::string dtype = m_pWebEm->FindValue("dtype");
-			std::string dsubtype = m_pWebEm->FindValue("dsubtype");
+			std::string idx = request::findValue(&req, "idx");
+			std::string hid = request::findValue(&req, "hid");
+			std::string did = request::findValue(&req, "did");
+			std::string dunit = request::findValue(&req, "dunit");
+			std::string dtype = request::findValue(&req, "dtype");
+			std::string dsubtype = request::findValue(&req, "dsubtype");
 
-			std::string nvalue = m_pWebEm->FindValue("nvalue");
-			std::string svalue = m_pWebEm->FindValue("svalue");
+			std::string nvalue = request::findValue(&req, "nvalue");
+			std::string svalue = request::findValue(&req, "svalue");
 
 			if ( (nvalue.empty() && svalue.empty()) )
 			{
@@ -2396,12 +2396,12 @@ namespace http {
 			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
 
 
-			std::string sSignalLevel = m_pWebEm->FindValue("rssi");
+			std::string sSignalLevel = request::findValue(&req, "rssi");
 			if (sSignalLevel != "")
 			{
 				signallevel = atoi(sSignalLevel.c_str());
 			}
-			std::string sBatteryLevel = m_pWebEm->FindValue("battery");
+			std::string sBatteryLevel = request::findValue(&req, "battery");
 			if (sBatteryLevel != "")
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
@@ -2413,10 +2413,10 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_SetThermostatState(Json::Value &root)
+		void CWebServer::Cmd_SetThermostatState(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sstate = m_pWebEm->FindValue("state");
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string sstate = request::findValue(&req, "state");
+			std::string idx = request::findValue(&req, "idx");
 			if (
 				(idx == "") ||
 				(sstate == "")
@@ -2425,11 +2425,11 @@ namespace http {
 			int iState = atoi(sstate.c_str());
 
 			int urights = 3;
-			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			bool bHaveUser = (session.username != "");
 			if (bHaveUser)
 			{
 				int iUser = -1;
-				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+				iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 				{
 					urights = static_cast<int>(m_users[iUser].userrights);
@@ -2445,7 +2445,7 @@ namespace http {
 			m_mainworker.SetThermostatState(idx, iState);
 		}
 
-		void CWebServer::Cmd_SystemShutdown(Json::Value &root)
+		void CWebServer::Cmd_SystemShutdown(WebEmSession & session, const request& req, Json::Value &root)
 		{
 #ifdef WIN32
 			int ret = system("shutdown -s -f -t 1 -d up:125:1");
@@ -2461,7 +2461,7 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_SystemReboot(Json::Value &root)
+		void CWebServer::Cmd_SystemReboot(WebEmSession & session, const request& req, Json::Value &root)
 		{
 #ifdef WIN32
 			int ret = system("shutdown -r -f -t 1 -d up:125:1");
@@ -2477,9 +2477,9 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_ExcecuteScript(Json::Value &root)
+		void CWebServer::Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string scriptname = m_pWebEm->FindValue("scriptname");
+			std::string scriptname = request::findValue(&req, "scriptname");
 			if (scriptname == "")
 				return;
 			if (scriptname.find("..") != std::string::npos)
@@ -2491,7 +2491,7 @@ namespace http {
 #endif
 			if (!file_exist(scriptname.c_str()))
 				return;
-			std::string script_params = m_pWebEm->FindValue("scriptparams");
+			std::string script_params = request::findValue(&req, "scriptparams");
 			std::string strparm = szUserDataFolder;
 			if (script_params != "")
 			{
@@ -2500,7 +2500,7 @@ namespace http {
 				else
 					strparm = script_params;
 			}
-			std::string sdirect = m_pWebEm->FindValue("direct");
+			std::string sdirect = request::findValue(&req, "direct");
 			if (sdirect == "true")
 			{
 				_log.Log(LOG_STATUS, "Executing script: %s", scriptname.c_str());
@@ -2525,9 +2525,9 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_GetCosts(Json::Value &root)
+		void CWebServer::Cmd_GetCosts(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			char szTmp[100];
@@ -2609,14 +2609,14 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_CheckForUpdate(Json::Value &root)
+		void CWebServer::Cmd_CheckForUpdate(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			bool bHaveUser = (session.username != "");
 			int urights = 3;
 			if (bHaveUser)
 			{
 				int iUser = -1;
-				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+				iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 					urights = static_cast<int>(m_users[iUser].userrights);
 			}
@@ -2627,7 +2627,7 @@ namespace http {
 			root["HaveUpdate"] = false;
 			root["revision"] = m_mainworker.m_iRevision;
 
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return; //Only admin users may update
 
 			int nValue = 0;
@@ -2637,13 +2637,13 @@ namespace http {
 				return;
 			}
 
-			bool bIsForced = (m_pWebEm->FindValue("forced") == "true");
+			bool bIsForced = (request::findValue(&req, "forced") == "true");
 
 			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
 			root["revision"] = m_mainworker.m_iRevision;
 		}
 
-		void CWebServer::Cmd_DownloadUpdate(Json::Value &root)
+		void CWebServer::Cmd_DownloadUpdate(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (!m_mainworker.StartDownloadUpdate())
 				return;
@@ -2651,7 +2651,7 @@ namespace http {
 			root["title"] = "DownloadUpdate";
 		}
 
-		void CWebServer::Cmd_DownloadReady(Json::Value &root)
+		void CWebServer::Cmd_DownloadReady(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (!m_mainworker.m_bHaveDownloadedDomoticzUpdate)
 				return;
@@ -2660,10 +2660,10 @@ namespace http {
 			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
 		}
 
-		void CWebServer::Cmd_DeleteDatePoint(Json::Value &root)
+		void CWebServer::Cmd_DeleteDatePoint(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			const std::string idx = m_pWebEm->FindValue("idx");
-			const std::string Date = m_pWebEm->FindValue("date");
+			const std::string idx = request::findValue(&req, "idx");
+			const std::string Date = request::findValue(&req, "date");
 			if (
 				(idx == "") ||
 				(Date == "")
@@ -2674,12 +2674,12 @@ namespace http {
 			m_sql.DeleteDataPoint(idx.c_str(), Date);
 		}
 
-		void CWebServer::HandleCommand(const std::string &cparam, Json::Value &root)
+		void CWebServer::HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::map < std::string, webserver_response_function >::iterator pf = m_webcommands.find(cparam);
 			if (pf != m_webcommands.end())
 			{
-				pf->second(root);
+				pf->second(session, req, root);
 				return;
 			}
 
@@ -2687,16 +2687,16 @@ namespace http {
 			std::vector<std::vector<std::string> > result2;
 			char szTmp[300];
 
-			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			bool bHaveUser = (session.username != "");
 			int iUser = -1;
 			if (bHaveUser)
 			{
-				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+				iUser = FindUser(session.username.c_str());
 			}
 
 			if (cparam == "deleteallsubdevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2705,7 +2705,7 @@ namespace http {
 			}
 			else if (cparam == "deletesubdevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2714,8 +2714,8 @@ namespace http {
 			}
 			else if (cparam == "addsubdevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string subidx = m_pWebEm->FindValue("subidx");
+				std::string idx = request::findValue(&req, "idx");
+				std::string subidx = request::findValue(&req, "subidx");
 				if ((idx == "") || (subidx == ""))
 					return;
 				if (idx == subidx)
@@ -2738,12 +2738,12 @@ namespace http {
 			}
 			else if (cparam == "addscenedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string devidx = m_pWebEm->FindValue("devidx");
-				std::string isscene = m_pWebEm->FindValue("isscene");
-				std::string scommand = m_pWebEm->FindValue("command");
-				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
-				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
+				std::string idx = request::findValue(&req, "idx");
+				std::string devidx = request::findValue(&req, "devidx");
+				std::string isscene = request::findValue(&req, "isscene");
+				std::string scommand = request::findValue(&req, "command");
+				int ondelay = atoi(request::findValue(&req, "ondelay").c_str());
+				int offdelay = atoi(request::findValue(&req, "offdelay").c_str());
 
 				if (
 					(idx == "") ||
@@ -2751,8 +2751,8 @@ namespace http {
 					(isscene == "")
 					)
 					return;
-				int level = atoi(m_pWebEm->FindValue("level").c_str());
-				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
+				int level = atoi(request::findValue(&req, "level").c_str());
+				int hue = atoi(request::findValue(&req, "hue").c_str());
 
 				unsigned char command=0;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID=='%q')",
@@ -2837,11 +2837,11 @@ namespace http {
 			}
 			else if (cparam == "updatescenedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string devidx = m_pWebEm->FindValue("devidx");
-				std::string scommand = m_pWebEm->FindValue("command");
-				int ondelay = atoi(m_pWebEm->FindValue("ondelay").c_str());
-				int offdelay = atoi(m_pWebEm->FindValue("offdelay").c_str());
+				std::string idx = request::findValue(&req, "idx");
+				std::string devidx = request::findValue(&req, "devidx");
+				std::string scommand = request::findValue(&req, "command");
+				int ondelay = atoi(request::findValue(&req, "ondelay").c_str());
+				int offdelay = atoi(request::findValue(&req, "offdelay").c_str());
 
 				if (
 					(idx == "") ||
@@ -2860,8 +2860,8 @@ namespace http {
 					_eSwitchType switchtype = (_eSwitchType)atoi(result[0][5].c_str());
 					GetLightCommand(dType, sType, switchtype, scommand, command);
 				}
-				int level = atoi(m_pWebEm->FindValue("level").c_str());
-				int hue = atoi(m_pWebEm->FindValue("hue").c_str());
+				int level = atoi(request::findValue(&req, "level").c_str());
+				int hue = atoi(request::findValue(&req, "hue").c_str());
 				root["status"] = "OK";
 				root["title"] = "UpdateSceneDevice";
 				result = m_sql.safe_query(
@@ -2870,7 +2870,7 @@ namespace http {
 			}
 			else if (cparam == "deletescenedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -2880,7 +2880,7 @@ namespace http {
 			}
 			else if (cparam == "getsubdevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -2989,8 +2989,8 @@ namespace http {
 			}
 			else if (cparam == "getscenedevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string isscene = m_pWebEm->FindValue("isscene");
+				std::string idx = request::findValue(&req, "idx");
+				std::string isscene = request::findValue(&req, "isscene");
 
 				if (
 					(idx == "") ||
@@ -3046,10 +3046,10 @@ namespace http {
 			}
 			else if (cparam == "changescenedeviceorder")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string sway = m_pWebEm->FindValue("way");
+				std::string sway = request::findValue(&req, "way");
 				if (sway == "")
 					return;
 				bool bGoUp = (sway == "0");
@@ -3096,7 +3096,7 @@ namespace http {
 			}
 			else if (cparam == "deleteallscenedevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3327,7 +3327,7 @@ namespace http {
 			}
 			else if (cparam == "getcamactivedevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3386,11 +3386,11 @@ namespace http {
 			}
 			else if (cparam == "addcamactivedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string activeidx = m_pWebEm->FindValue("activeidx");
-				std::string sactivetype = m_pWebEm->FindValue("activetype");
-				std::string sactivewhen = m_pWebEm->FindValue("activewhen");
-				std::string sactivedelay = m_pWebEm->FindValue("activedelay");
+				std::string idx = request::findValue(&req, "idx");
+				std::string activeidx = request::findValue(&req, "activeidx");
+				std::string sactivetype = request::findValue(&req, "activetype");
+				std::string sactivewhen = request::findValue(&req, "activewhen");
+				std::string sactivedelay = request::findValue(&req, "activedelay");
 
 				if (
 					(idx == "") ||
@@ -3431,7 +3431,7 @@ namespace http {
 			}
 			else if (cparam == "deleteamactivedevice")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3441,7 +3441,7 @@ namespace http {
 			}
 			else if (cparam == "deleteallactivecamdevices")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -3453,9 +3453,9 @@ namespace http {
 			{
 				std::string notification_Title = "Domoticz test";
 				std::string notification_Message = "Domoticz test message!";
-				std::string subsystem = m_pWebEm->FindValue("subsystem");
+				std::string subsystem = request::findValue(&req, "subsystem");
 
-				m_notifications.ConfigFromGetvars(m_pWebEm, false);
+				m_notifications.ConfigFromGetvars(req, false);
 				if (m_notifications.SendMessage(subsystem, notification_Title, notification_Message, std::string(""), false)) {
 					root["status"] = "OK";
 				}
@@ -3464,9 +3464,9 @@ namespace http {
 			}
 			else if (cparam == "testswitch")
 			{
-				std::string hwdid = m_pWebEm->FindValue("hwdid");
-				std::string sswitchtype = m_pWebEm->FindValue("switchtype");
-				std::string slighttype = m_pWebEm->FindValue("lighttype");
+				std::string hwdid = request::findValue(&req, "hwdid");
+				std::string sswitchtype = request::findValue(&req, "switchtype");
+				std::string slighttype = request::findValue(&req, "lighttype");
 				if (
 					(hwdid == "") ||
 					(sswitchtype == "") ||
@@ -3485,8 +3485,8 @@ namespace http {
 					//EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
-					std::string sgroupcode = m_pWebEm->FindValue("groupcode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
 					int iUnitTest = atoi(sunitcode.c_str());	//only First Rocker_ID at the moment, gives us 128 devices we can control, should be enough!
 					if (
 						(sunitcode == "") ||
@@ -3522,7 +3522,7 @@ namespace http {
 					dtype = pTypeLighting1;
 					subtype = sTypeIMPULS;
 					devid = "0";
-					sunitcode = m_pWebEm->FindValue("unitcode"); //Unit code = GPIO number
+					sunitcode = request::findValue(&req, "unitcode"); //Unit code = GPIO number
 
 					if (sunitcode == "") {
 						root["status"] = "ERROR";
@@ -3566,8 +3566,8 @@ namespace http {
 				{
 					dtype = pTypeLighting1;
 					subtype = lighttype;
-					std::string shousecode = m_pWebEm->FindValue("housecode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -3579,8 +3579,8 @@ namespace http {
 				{
 					dtype = pTypeLighting2;
 					subtype = lighttype - 20;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3592,8 +3592,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3609,9 +3609,9 @@ namespace http {
 					//Blyss
 					dtype = pTypeLighting6;
 					subtype = lighttype - 60;
-					std::string sgroupcode = m_pWebEm->FindValue("groupcode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
-					std::string id = m_pWebEm->FindValue("id");
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
 					if (
 						(sgroupcode == "") ||
 						(sunitcode == "") ||
@@ -3627,8 +3627,8 @@ namespace http {
 						//Chime/ByronSX
 						dtype = pTypeChime;
 						subtype = sTypeByronSX;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3671,8 +3671,8 @@ namespace http {
 						//Curtain Harrison
 						dtype = pTypeCurtain;
 						subtype = sTypeHarrison;
-						std::string shousecode = m_pWebEm->FindValue("housecode");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string shousecode = request::findValue(&req, "housecode");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(shousecode == "") ||
 							(sunitcode == "")
@@ -3685,8 +3685,8 @@ namespace http {
 						//RFY
 						dtype = pTypeRFY;
 						subtype = sTypeRFY;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3699,7 +3699,7 @@ namespace http {
 						//Meiantech
 						dtype = pTypeSecurity1;
 						subtype = sTypeMeiantech;
-						std::string id = m_pWebEm->FindValue("id");
+						std::string id = request::findValue(&req, "id");
 						if (
 							(id == "")
 							)
@@ -3712,7 +3712,7 @@ namespace http {
 						//HE105
 						dtype = pTypeThermostat2;
 						subtype = sTypeHE105;
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (sunitcode == "")
 							return;
 						//convert to hex, and we have our Unit Code
@@ -3729,8 +3729,8 @@ namespace http {
 						//ASA
 						dtype = pTypeRFY;
 						subtype = sTypeASA;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3742,8 +3742,8 @@ namespace http {
 					{
 						dtype = pTypeBlinds;
 						subtype = lighttype-200;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3759,8 +3759,8 @@ namespace http {
 						//Smartwares Radiator
 						dtype = pTypeRadiator1;
 						subtype = sTypeSmartwaresSwitchRadiator;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -3829,11 +3829,11 @@ namespace http {
 			}
 			else if (cparam == "addswitch")
 			{
-				std::string hwdid = m_pWebEm->FindValue("hwdid");
-				std::string name = m_pWebEm->FindValue("name");
-				std::string sswitchtype = m_pWebEm->FindValue("switchtype");
-				std::string slighttype = m_pWebEm->FindValue("lighttype");
-				std::string maindeviceidx = m_pWebEm->FindValue("maindeviceidx");
+				std::string hwdid = request::findValue(&req, "hwdid");
+				std::string name = request::findValue(&req, "name");
+				std::string sswitchtype = request::findValue(&req, "switchtype");
+				std::string slighttype = request::findValue(&req, "lighttype");
+				std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
 
 				if (
 					(hwdid == "") ||
@@ -3854,8 +3854,8 @@ namespace http {
 					//EnOcean (Lighting2 with Base_ID offset)
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
-					sunitcode = m_pWebEm->FindValue("unitcode");
-					std::string sgroupcode = m_pWebEm->FindValue("groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string sgroupcode = request::findValue(&req, "groupcode");
 					int iUnitTest = atoi(sunitcode.c_str());	//gives us 128 devices we can control, should be enough!
 					if (
 						(sunitcode == "") ||
@@ -3901,7 +3901,7 @@ namespace http {
 					dtype = pTypeLighting1;
 					subtype = sTypeIMPULS;
 					devid = "0";
-					sunitcode = m_pWebEm->FindValue("unitcode"); //Unit code = GPIO number
+					sunitcode = request::findValue(&req, "unitcode"); //Unit code = GPIO number
 
 					if (sunitcode == "") {
 						return;
@@ -3928,8 +3928,8 @@ namespace http {
 				{
 					dtype = pTypeLighting1;
 					subtype = lighttype;
-					std::string shousecode = m_pWebEm->FindValue("housecode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -3941,8 +3941,8 @@ namespace http {
 				{
 					dtype = pTypeLighting2;
 					subtype = lighttype - 20;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3954,8 +3954,8 @@ namespace http {
 				{
 					dtype = pTypeLighting5;
 					subtype = lighttype - 50;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -3971,9 +3971,9 @@ namespace http {
 					//Blyss
 					dtype = pTypeLighting6;
 					subtype = lighttype - 60;
-					std::string sgroupcode = m_pWebEm->FindValue("groupcode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
-					std::string id = m_pWebEm->FindValue("id");
+					std::string sgroupcode = request::findValue(&req, "groupcode");
+					sunitcode = request::findValue(&req, "unitcode");
+					std::string id = request::findValue(&req, "id");
 					if (
 						(sgroupcode == "") ||
 						(sunitcode == "") ||
@@ -3987,8 +3987,8 @@ namespace http {
 					//Curtain Harrison
 					dtype = pTypeCurtain;
 					subtype = sTypeHarrison;
-					std::string shousecode = m_pWebEm->FindValue("housecode");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string shousecode = request::findValue(&req, "housecode");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(shousecode == "") ||
 						(sunitcode == "")
@@ -4001,8 +4001,8 @@ namespace http {
 					//RFY
 					dtype = pTypeRFY;
 					subtype = sTypeRFY;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -4015,7 +4015,7 @@ namespace http {
 					//Meiantech
 					dtype = pTypeSecurity1;
 					subtype = sTypeMeiantech;
-					std::string id = m_pWebEm->FindValue("id");
+					std::string id = request::findValue(&req, "id");
 					if (
 						(id == "")
 						)
@@ -4028,7 +4028,7 @@ namespace http {
 					//HE105
 					dtype = pTypeThermostat2;
 					subtype = sTypeHE105;
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (sunitcode == "")
 						return;
 					//convert to hex, and we have our Unit Code
@@ -4045,8 +4045,8 @@ namespace http {
 					//ASA
 					dtype = pTypeRFY;
 					subtype = sTypeASA;
-					std::string id = m_pWebEm->FindValue("id");
-					sunitcode = m_pWebEm->FindValue("unitcode");
+					std::string id = request::findValue(&req, "id");
+					sunitcode = request::findValue(&req, "unitcode");
 					if (
 						(id == "") ||
 						(sunitcode == "")
@@ -4061,8 +4061,8 @@ namespace http {
 						//Chime/ByronSX
 						dtype = pTypeChime;
 						subtype = sTypeByronSX;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4105,7 +4105,7 @@ namespace http {
 						//HE105
 						dtype = pTypeThermostat2;
 						subtype = sTypeHE105;
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (sunitcode == "")
 							return;
 						//convert to hex, and we have our Unit Code
@@ -4121,8 +4121,8 @@ namespace http {
 					{
 						dtype = pTypeBlinds;
 						subtype = lighttype-200;
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4136,8 +4136,8 @@ namespace http {
 					else if (lighttype == 301)
 					{
 						//Smartwares Radiator
-						std::string id = m_pWebEm->FindValue("id");
-						sunitcode = m_pWebEm->FindValue("unitcode");
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
 						if (
 							(id == "") ||
 							(sunitcode == "")
@@ -4278,7 +4278,7 @@ namespace http {
 			}
 			else if (cparam == "getnotificationtypes")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				//First get Device Type/SubType
@@ -4333,7 +4333,7 @@ namespace http {
 					}
 					if (switchtype == STYPE_Media)
 					{
-						std::string idx = m_pWebEm->FindValue("idx");
+						std::string idx = request::findValue(&req, "idx");
 						std::vector<std::vector<std::string> > result;
 						_eHardwareTypes type;
 
@@ -4698,17 +4698,17 @@ namespace http {
 			}
 			else if (cparam == "addnotification")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
-				std::string stype = m_pWebEm->FindValue("ttype");
-				std::string swhen = m_pWebEm->FindValue("twhen");
-				std::string svalue = m_pWebEm->FindValue("tvalue");
-				std::string scustommessage = m_pWebEm->FindValue("tmsg");
-				std::string sactivesystems = m_pWebEm->FindValue("tsystems");
-				std::string spriority = m_pWebEm->FindValue("tpriority");
-				std::string ssendalways = m_pWebEm->FindValue("tsendalways");
+				std::string stype = request::findValue(&req, "ttype");
+				std::string swhen = request::findValue(&req, "twhen");
+				std::string svalue = request::findValue(&req, "tvalue");
+				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string sactivesystems = request::findValue(&req, "tsystems");
+				std::string spriority = request::findValue(&req, "tpriority");
+				std::string ssendalways = request::findValue(&req, "tsendalways");
 				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()))
 					return;
 
@@ -4736,18 +4736,18 @@ namespace http {
 			}
 			else if (cparam == "updatenotification")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string devidx = m_pWebEm->FindValue("devidx");
+				std::string idx = request::findValue(&req, "idx");
+				std::string devidx = request::findValue(&req, "devidx");
 				if ((idx == "") || (devidx == ""))
 					return;
 
-				std::string stype = m_pWebEm->FindValue("ttype");
-				std::string swhen = m_pWebEm->FindValue("twhen");
-				std::string svalue = m_pWebEm->FindValue("tvalue");
-				std::string scustommessage = m_pWebEm->FindValue("tmsg");
-				std::string sactivesystems = m_pWebEm->FindValue("tsystems");
-				std::string spriority = m_pWebEm->FindValue("tpriority");
-				std::string ssendalways = m_pWebEm->FindValue("tsendalways");
+				std::string stype = request::findValue(&req, "ttype");
+				std::string swhen = request::findValue(&req, "twhen");
+				std::string svalue = request::findValue(&req, "tvalue");
+				std::string scustommessage = request::findValue(&req, "tmsg");
+				std::string sactivesystems = request::findValue(&req, "tsystems");
+				std::string spriority = request::findValue(&req, "tpriority");
+				std::string ssendalways = request::findValue(&req, "tsendalways");
 
 				if ((stype.empty()) || (swhen.empty()) || (svalue.empty()) || (spriority.empty()) || (ssendalways.empty()))
 					return;
@@ -4777,7 +4777,7 @@ namespace http {
 			}
 			else if (cparam == "deletenotification")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -4788,11 +4788,11 @@ namespace http {
 			}
 			else if (cparam == "switchdeviceorder")
 			{
-				std::string idx1 = m_pWebEm->FindValue("idx1");
-				std::string idx2 = m_pWebEm->FindValue("idx2");
+				std::string idx1 = request::findValue(&req, "idx1");
+				std::string idx2 = request::findValue(&req, "idx2");
 				if ((idx1 == "") || (idx2 == ""))
 					return;
-				std::string sroomid = m_pWebEm->FindValue("roomid");
+				std::string sroomid = request::findValue(&req, "roomid");
 				int roomid = atoi(sroomid.c_str());
 
 				std::string Order1, Order2;
@@ -4870,8 +4870,8 @@ namespace http {
 			}
 			else if (cparam == "switchsceneorder")
 			{
-				std::string idx1 = m_pWebEm->FindValue("idx1");
-				std::string idx2 = m_pWebEm->FindValue("idx2");
+				std::string idx1 = request::findValue(&req, "idx1");
+				std::string idx2 = request::findValue(&req, "idx2");
 				if ((idx1 == "") || (idx2 == ""))
 					return;
 
@@ -4911,7 +4911,7 @@ namespace http {
 			}
 			else if (cparam == "clearnotifications")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -4922,13 +4922,13 @@ namespace http {
 			}
 			else if (cparam == "addcamera")
 			{
-				std::string name = m_pWebEm->FindValue("name");
-				std::string senabled = m_pWebEm->FindValue("enabled");
-				std::string address = m_pWebEm->FindValue("address");
-				std::string sport = m_pWebEm->FindValue("port");
-				std::string username = m_pWebEm->FindValue("username");
-				std::string password = m_pWebEm->FindValue("password");
-				std::string timageurl = m_pWebEm->FindValue("imageurl");
+				std::string name = request::findValue(&req, "name");
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string address = request::findValue(&req, "address");
+				std::string sport = request::findValue(&req, "port");
+				std::string username = request::findValue(&req, "username");
+				std::string password = request::findValue(&req, "password");
+				std::string timageurl = request::findValue(&req, "imageurl");
 				if (
 					(name == "") ||
 					(address == "") ||
@@ -4959,16 +4959,16 @@ namespace http {
 			}
 			else if (cparam == "updatecamera")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string name = m_pWebEm->FindValue("name");
-				std::string senabled = m_pWebEm->FindValue("enabled");
-				std::string address = m_pWebEm->FindValue("address");
-				std::string sport = m_pWebEm->FindValue("port");
-				std::string username = m_pWebEm->FindValue("username");
-				std::string password = m_pWebEm->FindValue("password");
-				std::string timageurl = m_pWebEm->FindValue("imageurl");
+				std::string name = request::findValue(&req, "name");
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string address = request::findValue(&req, "address");
+				std::string sport = request::findValue(&req, "port");
+				std::string username = request::findValue(&req, "username");
+				std::string password = request::findValue(&req, "password");
+				std::string timageurl = request::findValue(&req, "imageurl");
 				if (
 					(name == "") ||
 					(senabled == "") ||
@@ -5003,7 +5003,7 @@ namespace http {
 			}
 			else if (cparam == "deletecamera")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5014,24 +5014,24 @@ namespace http {
 			}
 			else if (cparam == "adduser")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string senabled = m_pWebEm->FindValue("enabled");
-				std::string username = m_pWebEm->FindValue("username");
-				std::string password = m_pWebEm->FindValue("password");
-				std::string srights = m_pWebEm->FindValue("rights");
-				std::string sRemoteSharing = m_pWebEm->FindValue("RemoteSharing");
-				std::string sTabsEnabled = m_pWebEm->FindValue("TabsEnabled");
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string username = request::findValue(&req, "username");
+				std::string password = request::findValue(&req, "password");
+				std::string srights = request::findValue(&req, "rights");
+				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
+				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
 				if (
 					(senabled == "") ||
 					(username == "") ||
@@ -5065,27 +5065,27 @@ namespace http {
 			}
 			else if (cparam == "updateuser")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string senabled = m_pWebEm->FindValue("enabled");
-				std::string username = m_pWebEm->FindValue("username");
-				std::string password = m_pWebEm->FindValue("password");
-				std::string srights = m_pWebEm->FindValue("rights");
-				std::string sRemoteSharing = m_pWebEm->FindValue("RemoteSharing");
-				std::string sTabsEnabled = m_pWebEm->FindValue("TabsEnabled");
+				std::string senabled = request::findValue(&req, "enabled");
+				std::string username = request::findValue(&req, "username");
+				std::string password = request::findValue(&req, "password");
+				std::string srights = request::findValue(&req, "rights");
+				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
+				std::string sTabsEnabled = request::findValue(&req, "TabsEnabled");
 				if (
 					(senabled == "") ||
 					(username == "") ||
@@ -5121,19 +5121,19 @@ namespace http {
 			}
 			else if (cparam == "deleteuser")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 
@@ -5148,7 +5148,7 @@ namespace http {
 			}
 			else if (cparam == "clearlightlog")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				//First get Device Type/SubType
@@ -5231,8 +5231,8 @@ namespace http {
 			} //learnsw
 			else if (cparam == "makefavorite")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string sisfavorite = m_pWebEm->FindValue("isfavorite");
+				std::string idx = request::findValue(&req, "idx");
+				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
@@ -5243,8 +5243,8 @@ namespace http {
 			} //makefavorite
 			else if (cparam == "makescenefavorite")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string sisfavorite = m_pWebEm->FindValue("isfavorite");
+				std::string idx = request::findValue(&req, "idx");
+				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx == "") || (sisfavorite == ""))
 					return;
 				int isfavorite = atoi(sisfavorite.c_str());
@@ -5259,7 +5259,7 @@ namespace http {
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -5269,8 +5269,8 @@ namespace http {
 				if (urights < 1)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string switchcmd = m_pWebEm->FindValue("switchcmd");
+				std::string idx = request::findValue(&req, "idx");
+				std::string switchcmd = request::findValue(&req, "switchcmd");
 
 				if ((idx == "") || (switchcmd == ""))
 					return;
@@ -5299,7 +5299,7 @@ namespace http {
 			}
 			else if (cparam == "verifypasscode")
 			{
-				std::string passcode = m_pWebEm->FindValue("passcode");
+				std::string passcode = request::findValue(&req, "passcode");
 				if (passcode == "")
 					return;
 				//Check if passcode is correct
@@ -5320,7 +5320,7 @@ namespace http {
 				if (bHaveUser)
 				{
 					int iUser=-1;
-					iUser=FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser=FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = (int)m_users[iUser].userrights;
@@ -5330,18 +5330,18 @@ namespace http {
 				if (urights<1)
 					return;
 
-				std::string idx=m_pWebEm->FindValue("idx");
-				std::string switchcmd=m_pWebEm->FindValue("status");
-				std::string until=m_pWebEm->FindValue("until");//optional until date / time as applicable
-				std::string action=m_pWebEm->FindValue("action");//Run action or not (update status only)
-				std::string onlyonchange=m_pWebEm->FindValue("ooc");//No update unless the value changed (check if updated)
+				std::string idx=request::findValue(&req, "idx");
+				std::string switchcmd=request::findValue(&req, "status");
+				std::string until=request::findValue(&req, "until");//optional until date / time as applicable
+				std::string action=request::findValue(&req, "action");//Run action or not (update status only)
+				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
 				//The on action is used to call a script to update the real device so we only want to use it when altering the status in the Domoticz Web Client
 				//If we're posting the status from the real device to domoticz we don't want to run the on action script ("action"!=1) to avoid loops and contention
 				//""... we only want to log a change (and trigger an event) when the status has actually changed ("ooc"==1) i.e. suppress non transient updates
 				if ((idx=="")||(switchcmd==""))
 					return;
 
-				std::string passcode=m_pWebEm->FindValue("passcode");
+				std::string passcode=request::findValue(&req, "passcode");
 				if (passcode.size()>0) 
 				{
 					//Check if passcode is correct
@@ -5370,7 +5370,7 @@ namespace http {
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -5380,14 +5380,14 @@ namespace http {
 				if (urights < 1)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string switchcmd = m_pWebEm->FindValue("switchcmd");
-				std::string level = m_pWebEm->FindValue("level");
-				std::string onlyonchange=m_pWebEm->FindValue("ooc");//No update unless the value changed (check if updated)
+				std::string idx = request::findValue(&req, "idx");
+				std::string switchcmd = request::findValue(&req, "switchcmd");
+				std::string level = request::findValue(&req, "level");
+				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = m_pWebEm->FindValue("passcode");
+				std::string passcode = request::findValue(&req, "passcode");
 				if (passcode.size() > 0)
 				{
 					//Check if passcode is correct
@@ -5441,19 +5441,19 @@ namespace http {
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 1)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string switchcmd = m_pWebEm->FindValue("switchcmd");
+				std::string idx = request::findValue(&req, "idx");
+				std::string switchcmd = request::findValue(&req, "switchcmd");
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = m_pWebEm->FindValue("passcode");
+				std::string passcode = request::findValue(&req, "passcode");
 				if (passcode.size() > 0)
 				{
 					//Check if passcode is correct
@@ -5521,8 +5521,8 @@ namespace http {
 			}
 			else if (cparam == "setsecstatus")
 			{
-				std::string ssecstatus = m_pWebEm->FindValue("secstatus");
-				std::string seccode = m_pWebEm->FindValue("seccode");
+				std::string ssecstatus = request::findValue(&req, "secstatus");
+				std::string seccode = request::findValue(&req, "seccode");
 				if ((ssecstatus == "") || (seccode == ""))
 				{
 					root["message"] = "WRONG CODE";
@@ -5544,10 +5544,10 @@ namespace http {
 			}
 			else if (cparam == "setcolbrightnessvalue")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string hue = m_pWebEm->FindValue("hue");
-				std::string brightness = m_pWebEm->FindValue("brightness");
-				std::string iswhite = m_pWebEm->FindValue("iswhite");
+				std::string idx = request::findValue(&req, "idx");
+				std::string hue = request::findValue(&req, "hue");
+				std::string brightness = request::findValue(&req, "brightness");
+				std::string iswhite = request::findValue(&req, "iswhite");
 
 				if ((idx == "") || (hue == "") || (brightness == "") || (iswhite == ""))
 				{
@@ -5577,7 +5577,7 @@ namespace http {
 			}
 			else if (cparam == "brightnessup")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5593,7 +5593,7 @@ namespace http {
 			}
 			else if (cparam == "brightnessdown")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5609,7 +5609,7 @@ namespace http {
 			}
 			else if (cparam == "discoup")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5625,7 +5625,7 @@ namespace http {
 			}
 			else if (cparam == "discodown")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5641,7 +5641,7 @@ namespace http {
 			}
 			else if (cparam == "speedup")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5657,7 +5657,7 @@ namespace http {
 			}
 			else if (cparam == "speeduplong")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5673,7 +5673,7 @@ namespace http {
 			}
 			else if (cparam == "speeddown")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5689,7 +5689,7 @@ namespace http {
 			}
 			else if (cparam == "warmer")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5705,7 +5705,7 @@ namespace http {
 			}
 			else if (cparam == "cooler")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5721,7 +5721,7 @@ namespace http {
 			}
 			else if (cparam == "fulllight")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5737,7 +5737,7 @@ namespace http {
 			}
 			else if (cparam == "nightlight")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 
 				if (idx == "")
 				{
@@ -5788,21 +5788,21 @@ namespace http {
 			}
 			else if (cparam == "addfloorplan")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string name = m_pWebEm->FindValue("name");
-				std::string imagefile = m_pWebEm->FindValue("image");
-				std::string scalefactor = m_pWebEm->FindValue("scalefactor");
+				std::string name = request::findValue(&req, "name");
+				std::string imagefile = request::findValue(&req, "image");
+				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
 					(name == "") ||
 					(imagefile == "") ||
@@ -5822,24 +5822,24 @@ namespace http {
 			}
 			else if (cparam == "updatefloorplan")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string name = m_pWebEm->FindValue("name");
-				std::string imagefile = m_pWebEm->FindValue("image");
-				std::string scalefactor = m_pWebEm->FindValue("scalefactor");
+				std::string name = request::findValue(&req, "name");
+				std::string imagefile = request::findValue(&req, "image");
+				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
 					(name == "") ||
 					(imagefile == "")
@@ -5860,19 +5860,19 @@ namespace http {
 			}
 			else if (cparam == "deletefloorplan")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5895,10 +5895,10 @@ namespace http {
 			}
 			else if (cparam == "changefloorplanorder")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
-				std::string sway = m_pWebEm->FindValue("way");
+				std::string sway = request::findValue(&req, "way");
 				if (sway == "")
 					return;
 				bool bGoUp = (sway == "0");
@@ -5964,7 +5964,7 @@ namespace http {
 			}
 			else if (cparam == "getfloorplanplans")
 			{
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -5991,20 +5991,20 @@ namespace http {
 			}
 			else if (cparam == "addfloorplanplan")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
-				std::string planidx = m_pWebEm->FindValue("planidx");
+				std::string idx = request::findValue(&req, "idx");
+				std::string planidx = request::findValue(&req, "planidx");
 				if (
 					(idx == "") ||
 					(planidx == "")
@@ -6022,20 +6022,20 @@ namespace http {
 			}
 			else if (cparam == "updatefloorplanplan")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string planidx = m_pWebEm->FindValue("planidx");
-				std::string planarea = m_pWebEm->FindValue("area");
+				std::string planidx = request::findValue(&req, "planidx");
+				std::string planarea = request::findValue(&req, "area");
 				if (planidx == "")
 					return;
 				root["status"] = "OK";
@@ -6050,19 +6050,19 @@ namespace http {
 			}
 			else if (cparam == "deletefloorplanplan")
 			{
-				bool bHaveUser = (m_pWebEm->m_actualuser != "");
+				bool bHaveUser = (session.username != "");
 				int urights = 3;
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 						urights = static_cast<int>(m_users[iUser].userrights);
 				}
 				if (urights < 2)
 					return;
 
-				std::string idx = m_pWebEm->FindValue("idx");
+				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
 				root["status"] = "OK";
@@ -6238,63 +6238,63 @@ namespace http {
 			return false;
 		}
 
-		char * CWebServer::PostSettings()
+		char * CWebServer::PostSettings(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
 
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string Latitude = m_pWebEm->FindValue("Latitude");
-			std::string Longitude = m_pWebEm->FindValue("Longitude");
+			std::string Latitude = request::findValue(&req, "Latitude");
+			std::string Longitude = request::findValue(&req, "Longitude");
 			if ((Latitude != "") && (Longitude != ""))
 			{
 				std::string LatLong = Latitude + ";" + Longitude;
 				m_sql.UpdatePreferencesVar("Location", LatLong.c_str());
 				m_mainworker.GetSunSettings();
 			}
-			m_notifications.ConfigFromGetvars(m_pWebEm, true);
-			std::string DashboardType = m_pWebEm->FindValue("DashboardType");
+			m_notifications.ConfigFromGetvars(req, true);
+			std::string DashboardType = request::findValue(&req, "DashboardType");
 			m_sql.UpdatePreferencesVar("DashboardType", atoi(DashboardType.c_str()));
-			std::string MobileType = m_pWebEm->FindValue("MobileType");
+			std::string MobileType = request::findValue(&req, "MobileType");
 			m_sql.UpdatePreferencesVar("MobileType", atoi(MobileType.c_str()));
 
-			int nUnit = atoi(m_pWebEm->FindValue("WindUnit").c_str());
+			int nUnit = atoi(request::findValue(&req, "WindUnit").c_str());
 			m_sql.UpdatePreferencesVar("WindUnit", nUnit);
 			m_sql.m_windunit = (_eWindUnit)nUnit;
 
-			nUnit = atoi(m_pWebEm->FindValue("TempUnit").c_str());
+			nUnit = atoi(request::findValue(&req, "TempUnit").c_str());
 			m_sql.UpdatePreferencesVar("TempUnit", nUnit);
 			m_sql.m_tempunit = (_eTempUnit)nUnit;
 
 			m_sql.SetUnitsAndScale();
 
-			std::string AuthenticationMethod = m_pWebEm->FindValue("AuthenticationMethod");
+			std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
 			_eAuthenticationMethod amethod = (_eAuthenticationMethod)atoi(AuthenticationMethod.c_str());
 			m_sql.UpdatePreferencesVar("AuthenticationMethod", static_cast<int>(amethod));
 			m_pWebEm->SetAuthenticationMethod(amethod);
 
-			std::string ReleaseChannel = m_pWebEm->FindValue("ReleaseChannel");
+			std::string ReleaseChannel = request::findValue(&req, "ReleaseChannel");
 			m_sql.UpdatePreferencesVar("ReleaseChannel", atoi(ReleaseChannel.c_str()));
 
-			std::string LightHistoryDays = m_pWebEm->FindValue("LightHistoryDays");
+			std::string LightHistoryDays = request::findValue(&req, "LightHistoryDays");
 			m_sql.UpdatePreferencesVar("LightHistoryDays", atoi(LightHistoryDays.c_str()));
 
-			std::string s5MinuteHistoryDays = m_pWebEm->FindValue("ShortLogDays");
+			std::string s5MinuteHistoryDays = request::findValue(&req, "ShortLogDays");
 			m_sql.UpdatePreferencesVar("5MinuteHistoryDays", atoi(s5MinuteHistoryDays.c_str()));
 
-			std::string sElectricVoltage = m_pWebEm->FindValue("ElectricVoltage");
+			std::string sElectricVoltage = request::findValue(&req, "ElectricVoltage");
 			m_sql.UpdatePreferencesVar("ElectricVoltage", atoi(sElectricVoltage.c_str()));
 
-			std::string sCM113DisplayType = m_pWebEm->FindValue("CM113DisplayType");
+			std::string sCM113DisplayType = request::findValue(&req, "CM113DisplayType");
 			m_sql.UpdatePreferencesVar("CM113DisplayType", atoi(sCM113DisplayType.c_str()));
 
-			std::string WebUserName = m_pWebEm->FindValue("WebUserName");
-			std::string WebPassword = m_pWebEm->FindValue("WebPassword");
-			std::string WebLocalNetworks = m_pWebEm->FindValue("WebLocalNetworks");
+			std::string WebUserName = request::findValue(&req, "WebUserName");
+			std::string WebPassword = request::findValue(&req, "WebPassword");
+			std::string WebLocalNetworks = request::findValue(&req, "WebLocalNetworks");
 			WebUserName = CURLEncode::URLDecode(WebUserName);
 			WebPassword = CURLEncode::URLDecode(WebPassword);
 			WebLocalNetworks = CURLEncode::URLDecode(WebLocalNetworks);
@@ -6326,13 +6326,13 @@ namespace http {
 			//add local hostname
 			m_pWebEm->AddLocalNetworks("");
 
-			if (m_pWebEm->m_actualuser == "")
+			if (session.username == "")
 			{
 				//Local network could be changed so lets for a check here
-				m_pWebEm->m_actualuser_rights = -1;
+				session.rights = -1;
 			}
 
-			std::string SecPassword = m_pWebEm->FindValue("SecPassword");
+			std::string SecPassword = request::findValue(&req, "SecPassword");
 			SecPassword = CURLEncode::URLDecode(SecPassword);
 			if (SecPassword.size() != 32)
 			{
@@ -6340,7 +6340,7 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("SecPassword", SecPassword.c_str());
 
-			std::string ProtectionPassword = m_pWebEm->FindValue("ProtectionPassword");
+			std::string ProtectionPassword = request::findValue(&req, "ProtectionPassword");
 			ProtectionPassword = CURLEncode::URLDecode(ProtectionPassword);
 			if (ProtectionPassword.size() != 32)
 			{
@@ -6348,9 +6348,9 @@ namespace http {
 			}
 			m_sql.UpdatePreferencesVar("ProtectionPassword", ProtectionPassword.c_str());
 
-			int EnergyDivider = atoi(m_pWebEm->FindValue("EnergyDivider").c_str());
-			int GasDivider = atoi(m_pWebEm->FindValue("GasDivider").c_str());
-			int WaterDivider = atoi(m_pWebEm->FindValue("WaterDivider").c_str());
+			int EnergyDivider = atoi(request::findValue(&req, "EnergyDivider").c_str());
+			int GasDivider = atoi(request::findValue(&req, "GasDivider").c_str());
+			int WaterDivider = atoi(request::findValue(&req, "WaterDivider").c_str());
 			if (EnergyDivider < 1)
 				EnergyDivider = 1000;
 			if (GasDivider < 1)
@@ -6361,16 +6361,16 @@ namespace http {
 			m_sql.UpdatePreferencesVar("MeterDividerGas", GasDivider);
 			m_sql.UpdatePreferencesVar("MeterDividerWater", WaterDivider);
 
-			std::string scheckforupdates = m_pWebEm->FindValue("checkforupdates");
+			std::string scheckforupdates = request::findValue(&req, "checkforupdates");
 			m_sql.UpdatePreferencesVar("UseAutoUpdate", (scheckforupdates == "on" ? 1 : 0));
 
-			std::string senableautobackup = m_pWebEm->FindValue("enableautobackup");
+			std::string senableautobackup = request::findValue(&req, "enableautobackup");
 			m_sql.UpdatePreferencesVar("UseAutoBackup", (senableautobackup == "on" ? 1 : 0));
 
-			float CostEnergy = static_cast<float>(atof(m_pWebEm->FindValue("CostEnergy").c_str()));
-			float CostEnergyT2 = static_cast<float>(atof(m_pWebEm->FindValue("CostEnergyT2").c_str()));
-			float CostGas = static_cast<float>(atof(m_pWebEm->FindValue("CostGas").c_str()));
-			float CostWater = static_cast<float>(atof(m_pWebEm->FindValue("CostWater").c_str()));
+			float CostEnergy = static_cast<float>(atof(request::findValue(&req, "CostEnergy").c_str()));
+			float CostEnergyT2 = static_cast<float>(atof(request::findValue(&req, "CostEnergyT2").c_str()));
+			float CostGas = static_cast<float>(atof(request::findValue(&req, "CostGas").c_str()));
+			float CostWater = static_cast<float>(atof(request::findValue(&req, "CostWater").c_str()));
 			m_sql.UpdatePreferencesVar("CostEnergy", int(CostEnergy*10000.0f));
 			m_sql.UpdatePreferencesVar("CostEnergyT2", int(CostEnergyT2*10000.0f));
 			m_sql.UpdatePreferencesVar("CostGas", int(CostGas*10000.0f));
@@ -6380,59 +6380,59 @@ namespace http {
 			int rnvalue = 0;
 
 			m_sql.GetPreferencesVar("ActiveTimerPlan", rnOldvalue);
-			rnvalue = atoi(m_pWebEm->FindValue("ActiveTimerPlan").c_str());
+			rnvalue = atoi(request::findValue(&req, "ActiveTimerPlan").c_str());
 			if (rnOldvalue != rnvalue)
 			{
 				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
 				m_sql.m_ActiveTimerPlan = rnvalue;
 				m_mainworker.m_scheduler.ReloadSchedules();
 			}
-			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(m_pWebEm->FindValue("DoorbellCommand").c_str()));
-			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(m_pWebEm->FindValue("SmartMeterType").c_str()));
-			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(m_pWebEm->FindValue("DisplayPowerUsageInkWhGraph").c_str()));
+			m_sql.UpdatePreferencesVar("DoorbellCommand", atoi(request::findValue(&req, "DoorbellCommand").c_str()));
+			m_sql.UpdatePreferencesVar("SmartMeterType", atoi(request::findValue(&req, "SmartMeterType").c_str()));
+			m_sql.UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", atoi(request::findValue(&req, "DisplayPowerUsageInkWhGraph").c_str()));
 
-			std::string EnableTabFloorplans = m_pWebEm->FindValue("EnableTabFloorplans");
+			std::string EnableTabFloorplans = request::findValue(&req, "EnableTabFloorplans");
 			m_sql.UpdatePreferencesVar("EnableTabFloorplans", (EnableTabFloorplans == "on" ? 1 : 0));
-			std::string EnableTabLights = m_pWebEm->FindValue("EnableTabLights");
+			std::string EnableTabLights = request::findValue(&req, "EnableTabLights");
 			m_sql.UpdatePreferencesVar("EnableTabLights", (EnableTabLights == "on" ? 1 : 0));
-			std::string EnableTabTemp = m_pWebEm->FindValue("EnableTabTemp");
+			std::string EnableTabTemp = request::findValue(&req, "EnableTabTemp");
 			m_sql.UpdatePreferencesVar("EnableTabTemp", (EnableTabTemp == "on" ? 1 : 0));
-			std::string EnableTabWeather = m_pWebEm->FindValue("EnableTabWeather");
+			std::string EnableTabWeather = request::findValue(&req, "EnableTabWeather");
 			m_sql.UpdatePreferencesVar("EnableTabWeather", (EnableTabWeather == "on" ? 1 : 0));
-			std::string EnableTabUtility = m_pWebEm->FindValue("EnableTabUtility");
+			std::string EnableTabUtility = request::findValue(&req, "EnableTabUtility");
 			m_sql.UpdatePreferencesVar("EnableTabUtility", (EnableTabUtility == "on" ? 1 : 0));
-			std::string EnableTabScenes = m_pWebEm->FindValue("EnableTabScenes");
+			std::string EnableTabScenes = request::findValue(&req, "EnableTabScenes");
 			m_sql.UpdatePreferencesVar("EnableTabScenes", (EnableTabScenes == "on" ? 1 : 0));
-			std::string EnableTabCustom = m_pWebEm->FindValue("EnableTabCustom");
+			std::string EnableTabCustom = request::findValue(&req, "EnableTabCustom");
 			m_sql.UpdatePreferencesVar("EnableTabCustom", (EnableTabCustom == "on" ? 1 : 0));
 
-			m_sql.UpdatePreferencesVar("NotificationSensorInterval", atoi(m_pWebEm->FindValue("NotificationSensorInterval").c_str()));
-			m_sql.UpdatePreferencesVar("NotificationSwitchInterval", atoi(m_pWebEm->FindValue("NotificationSwitchInterval").c_str()));
+			m_sql.UpdatePreferencesVar("NotificationSensorInterval", atoi(request::findValue(&req, "NotificationSensorInterval").c_str()));
+			m_sql.UpdatePreferencesVar("NotificationSwitchInterval", atoi(request::findValue(&req, "NotificationSwitchInterval").c_str()));
 
-			std::string RaspCamParams = m_pWebEm->FindValue("RaspCamParams");
+			std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
 			if (RaspCamParams != "")
 				m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
 			
-            std::string UVCParams = m_pWebEm->FindValue("UVCParams");
+            std::string UVCParams = request::findValue(&req, "UVCParams");
 			if (UVCParams != "")
 				m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
 
-			std::string EnableNewHardware = m_pWebEm->FindValue("AcceptNewHardware");
+			std::string EnableNewHardware = request::findValue(&req, "AcceptNewHardware");
 			int iEnableNewHardware = (EnableNewHardware == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AcceptNewHardware", iEnableNewHardware);
 			m_sql.m_bAcceptNewHardware = (iEnableNewHardware == 1);
 
-			std::string HideDisabledHardwareSensors = m_pWebEm->FindValue("HideDisabledHardwareSensors");
+			std::string HideDisabledHardwareSensors = request::findValue(&req, "HideDisabledHardwareSensors");
 			int iHideDisabledHardwareSensors = (HideDisabledHardwareSensors == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("HideDisabledHardwareSensors", iHideDisabledHardwareSensors);
 
-			std::string ShowUpdateEffect = m_pWebEm->FindValue("ShowUpdateEffect");
+			std::string ShowUpdateEffect = request::findValue(&req, "ShowUpdateEffect");
 			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
-			std::string DisableEventScriptSystem = m_pWebEm->FindValue("DisableEventScriptSystem");
+			std::string DisableEventScriptSystem = request::findValue(&req, "DisableEventScriptSystem");
 			int iDisableEventScriptSystem = (DisableEventScriptSystem == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("DisableEventScriptSystem", iDisableEventScriptSystem);
 			m_sql.m_bDisableEventSystem = (iDisableEventScriptSystem == 1);
@@ -6442,7 +6442,7 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
-			std::string EnableWidgetOrdering = m_pWebEm->FindValue("AllowWidgetOrdering");
+			std::string EnableWidgetOrdering = request::findValue(&req, "AllowWidgetOrdering");
 			int iEnableAllowWidgetOrdering = (EnableWidgetOrdering == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("AllowWidgetOrdering", iEnableAllowWidgetOrdering);
 			m_sql.m_bAllowWidgetOrdering = (iEnableAllowWidgetOrdering == 1);
@@ -6450,7 +6450,7 @@ namespace http {
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("RemoteSharedPort", rnOldvalue);
 
-			m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(m_pWebEm->FindValue("RemoteSharedPort").c_str()));
+			m_sql.UpdatePreferencesVar("RemoteSharedPort", atoi(request::findValue(&req, "RemoteSharedPort").c_str()));
 
 			rnvalue = 0;
 			m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
@@ -6467,27 +6467,27 @@ namespace http {
 				}
 			}
 
-			m_sql.UpdatePreferencesVar("Language", m_pWebEm->FindValue("Language").c_str());
-			std::string SelectedTheme = m_pWebEm->FindValue("Themes");
+			m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language").c_str());
+			std::string SelectedTheme = request::findValue(&req, "Themes");
 			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
 			m_pWebEm->SetWebTheme(SelectedTheme);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
-			rnvalue = atoi(m_pWebEm->FindValue("RandomSpread").c_str());
+			rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
 			if (rnOldvalue != rnvalue)
 			{
 				m_sql.UpdatePreferencesVar("RandomTimerFrame", rnvalue);
 				m_mainworker.m_scheduler.ReloadSchedules();
 			}
 
-			m_sql.UpdatePreferencesVar("SecOnDelay", atoi(m_pWebEm->FindValue("SecOnDelay").c_str()));
+			m_sql.UpdatePreferencesVar("SecOnDelay", atoi(request::findValue(&req, "SecOnDelay").c_str()));
 
-			int sensortimeout = atoi(m_pWebEm->FindValue("SensorTimeout").c_str());
+			int sensortimeout = atoi(request::findValue(&req, "SensorTimeout").c_str());
 			if (sensortimeout < 10)
 				sensortimeout = 10;
 			m_sql.UpdatePreferencesVar("SensorTimeout", sensortimeout);
 
-			int batterylowlevel = atoi(m_pWebEm->FindValue("BatterLowLevel").c_str());
+			int batterylowlevel = atoi(request::findValue(&req, "BatterLowLevel").c_str());
 			if (batterylowlevel > 100)
 				batterylowlevel = 100;
 			m_sql.GetPreferencesVar("BatteryLowNotification", rnOldvalue);
@@ -6496,37 +6496,37 @@ namespace http {
 				m_sql.CheckBatteryLow();
 
 			int nValue = 0;
-			nValue = atoi(m_pWebEm->FindValue("FloorplanPopupDelay").c_str());
+			nValue = atoi(request::findValue(&req, "FloorplanPopupDelay").c_str());
 			m_sql.UpdatePreferencesVar("FloorplanPopupDelay", nValue);
-			std::string FloorplanFullscreenMode = m_pWebEm->FindValue("FloorplanFullscreenMode");
+			std::string FloorplanFullscreenMode = request::findValue(&req, "FloorplanFullscreenMode");
 			m_sql.UpdatePreferencesVar("FloorplanFullscreenMode", (FloorplanFullscreenMode == "on" ? 1 : 0));
-			std::string FloorplanAnimateZoom = m_pWebEm->FindValue("FloorplanAnimateZoom");
+			std::string FloorplanAnimateZoom = request::findValue(&req, "FloorplanAnimateZoom");
 			m_sql.UpdatePreferencesVar("FloorplanAnimateZoom", (FloorplanAnimateZoom == "on" ? 1 : 0));
-			std::string FloorplanShowSensorValues = m_pWebEm->FindValue("FloorplanShowSensorValues");
+			std::string FloorplanShowSensorValues = request::findValue(&req, "FloorplanShowSensorValues");
 			m_sql.UpdatePreferencesVar("FloorplanShowSensorValues", (FloorplanShowSensorValues == "on" ? 1 : 0));
-			std::string FloorplanShowSwitchValues = m_pWebEm->FindValue("FloorplanShowSwitchValues");
+			std::string FloorplanShowSwitchValues = request::findValue(&req, "FloorplanShowSwitchValues");
 			m_sql.UpdatePreferencesVar("FloorplanShowSwitchValues", (FloorplanShowSwitchValues == "on" ? 1 : 0));
-			std::string FloorplanShowSceneNames = m_pWebEm->FindValue("FloorplanShowSceneNames");
+			std::string FloorplanShowSceneNames = request::findValue(&req, "FloorplanShowSceneNames");
 			m_sql.UpdatePreferencesVar("FloorplanShowSceneNames", (FloorplanShowSceneNames == "on" ? 1 : 0));
-			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(m_pWebEm->FindValue("FloorplanRoomColour").c_str()).c_str());
-			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(m_pWebEm->FindValue("FloorplanActiveOpacity").c_str()));
-			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(m_pWebEm->FindValue("FloorplanInactiveOpacity").c_str()));
+			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour").c_str()).c_str());
+			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str()));
+			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str()));
 
 			m_notifications.LoadConfig();
 
 			return (char*)m_retstr.c_str();
 		}
 
-		char * CWebServer::RestoreDatabase()
+		char * CWebServer::RestoreDatabase(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string dbasefile = m_pWebEm->FindValue("dbasefile");
+			std::string dbasefile = request::findValue(&req, "dbasefile");
 			if (dbasefile == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -6547,7 +6547,7 @@ namespace http {
 			bool Enabled;
 		} tHardwareList;
 
-		void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const bool bSkipUserCheck)
+		void CWebServer::GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const std::string &username)
 		{
 			std::vector<std::vector<std::string> > result;
 
@@ -6617,22 +6617,19 @@ namespace http {
 			int iUser = -1;
 			unsigned int totUserDevices = 0;
 			bool bShowScenes = true;
-			if (!bSkipUserCheck)
+			bHaveUser = (username != "");
+			if (bHaveUser)
 			{
-				bHaveUser = (m_pWebEm->m_actualuser != "");
-				if (bHaveUser)
+				iUser = FindUser(username.c_str());
+				if (iUser != -1)
 				{
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
-					if (iUser != -1)
+					_eUserRights urights = m_users[iUser].userrights;
+					if (urights != URIGHTS_ADMIN)
 					{
-						_eUserRights urights = m_users[iUser].userrights;
-						if (urights != URIGHTS_ADMIN)
-						{
-							result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %lu)",
-								m_users[iUser].ID);
-							totUserDevices = (unsigned int)result.size();
-							bShowScenes = (m_users[iUser].ActiveTabs&(1 << 1)) != 0;
-						}
+						result = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %lu)",
+							m_users[iUser].ID);
+						totUserDevices = (unsigned int)result.size();
+						bShowScenes = (m_users[iUser].ActiveTabs&(1 << 1)) != 0;
 					}
 				}
 			}
@@ -9006,7 +9003,7 @@ namespace http {
 			}
 		}
 
-		std::string CWebServer::GetDatabaseBackup()
+		std::string CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			std::string OutputFileName = szUserDataFolder + "backup.db";
@@ -9018,18 +9015,18 @@ namespace http {
 				if (fileContents.size() > 0)
 				{
 					m_retstr.insert(m_retstr.begin(), fileContents.begin(), fileContents.end());
-					m_pWebEm->m_outputfilename = "domoticz.db";
+					session.outputfilename = "domoticz.db";
 				}
 			}
 			return m_retstr;
 		}
 
-		void CWebServer::RType_DeleteDevice(Json::Value &root)
+		void CWebServer::RType_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -9039,19 +9036,19 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_AddScene(Json::Value &root)
+		void CWebServer::RType_AddScene(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string name = m_pWebEm->FindValue("name");
+			std::string name = request::findValue(&req, "name");
 			if (name == "")
 			{
 				root["status"] = "ERR";
 				root["message"] = "No Scene Name specified!";
 				return;
 			}
-			std::string stype = m_pWebEm->FindValue("scenetype");
+			std::string stype = request::findValue(&req, "scenetype");
 			if (stype == "")
 			{
 				root["status"] = "ERR";
@@ -9073,12 +9070,12 @@ namespace http {
 				);
 		}
 
-		void CWebServer::RType_DeleteScene(Json::Value &root)
+		void CWebServer::RType_DeleteScene(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -9088,28 +9085,28 @@ namespace http {
 			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
 		}
 
-		void CWebServer::RType_UpdateScene(Json::Value &root)
+		void CWebServer::RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string description = m_pWebEm->FindValue("description");
+			std::string idx = request::findValue(&req, "idx");
+			std::string name = request::findValue(&req, "name");
+			std::string description = request::findValue(&req, "description");
 			if ((idx == "") || (name == ""))
 				return;
-			std::string stype = m_pWebEm->FindValue("scenetype");
+			std::string stype = request::findValue(&req, "scenetype");
 			if (stype == "")
 			{
 				root["status"] = "ERR";
 				root["message"] = "No Scene Type specified!";
 				return;
 			}
-			std::string tmpstr = m_pWebEm->FindValue("protected");
+			std::string tmpstr = request::findValue(&req, "protected");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string onaction = base64_decode(m_pWebEm->FindValue("onaction"));
-			std::string offaction = base64_decode(m_pWebEm->FindValue("offaction"));
+			std::string onaction = base64_decode(request::findValue(&req, "onaction"));
+			std::string offaction = base64_decode(request::findValue(&req, "offaction"));
 
 
 			root["status"] = "OK";
@@ -9130,7 +9127,7 @@ namespace http {
 			return a.Title < b.Title;
 		}
 
-		void CWebServer::RType_CustomLightIcons(Json::Value &root)
+		void CWebServer::RType_CustomLightIcons(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::vector<_tCustomIcon>::const_iterator itt;
 			int ii = 0;
@@ -9150,12 +9147,12 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::RType_Plans(Json::Value &root)
+		void CWebServer::RType_Plans(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Plans";
 
-			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
 
 			std::vector<std::vector<std::string> > result, result2;
@@ -9193,7 +9190,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_FloorPlans(Json::Value &root)
+		void CWebServer::RType_FloorPlans(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Floorplans";
@@ -9280,16 +9277,16 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_Scenes(Json::Value &root)
+		void CWebServer::RType_Scenes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Scenes";
 			root["AllowWidgetOrdering"] = m_sql.m_bAllowWidgetOrdering;
 
-			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
 
-			std::string sLastUpdate = m_pWebEm->FindValue("lastupdate");
+			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
 			time_t LastUpdate = 0;
 			if (sLastUpdate != "")
@@ -9395,7 +9392,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_Hardware(Json::Value &root)
+		void CWebServer::RType_Hardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Hardware";
@@ -9450,17 +9447,17 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_Devices(Json::Value &root)
+		void CWebServer::RType_Devices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string rfilter = m_pWebEm->FindValue("filter");
-			std::string order = m_pWebEm->FindValue("order");
-			std::string rused = m_pWebEm->FindValue("used");
-			std::string rid = m_pWebEm->FindValue("rid");
-			std::string planid = m_pWebEm->FindValue("plan");
-			std::string floorid = m_pWebEm->FindValue("floor");
-			std::string sDisplayHidden = m_pWebEm->FindValue("displayhidden");
+			std::string rfilter = request::findValue(&req, "filter");
+			std::string order = request::findValue(&req, "order");
+			std::string rused = request::findValue(&req, "used");
+			std::string rid = request::findValue(&req, "rid");
+			std::string planid = request::findValue(&req, "plan");
+			std::string floorid = request::findValue(&req, "floor");
+			std::string sDisplayHidden = request::findValue(&req, "displayhidden");
 			bool bDisplayHidden = (sDisplayHidden == "1");
-			std::string sLastUpdate = m_pWebEm->FindValue("lastupdate");
+			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
 			time_t LastUpdate = 0;
 			if (sLastUpdate != "")
@@ -9473,17 +9470,17 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "Devices";
 
-			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate, false);
+			GetJSonDevices(root, rused, rfilter, order, rid, planid, floorid, bDisplayHidden, LastUpdate, session.username);
 		}
 
-		void CWebServer::RType_Users(Json::Value &root)
+		void CWebServer::RType_Users(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			bool bHaveUser = (session.username != "");
 			int urights = 3;
 			if (bHaveUser)
 			{
 				int iUser = -1;
-				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+				iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 					urights = static_cast<int>(m_users[iUser].userrights);
 			}
@@ -9515,14 +9512,14 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_SetSetpoint(Json::Value &root)
+		void CWebServer::Cmd_SetSetpoint(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			bool bHaveUser = (session.username != "");
 			int iUser = -1;
 			int urights = 3;
 			if (bHaveUser)
 			{
-				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+				iUser = FindUser(session.username.c_str());
 				if (iUser != -1)
 				{
 					urights = static_cast<int>(m_users[iUser].userrights);
@@ -9531,8 +9528,8 @@ namespace http {
 			if (urights < 1)
 				return;
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string setpoint = m_pWebEm->FindValue("setpoint");
+			std::string idx = request::findValue(&req, "idx");
+			std::string setpoint = request::findValue(&req, "setpoint");
 			if (
 				(idx == "") ||
 				(setpoint == "")
@@ -9547,12 +9544,12 @@ namespace http {
 			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())));
 		}
 
-		void CWebServer::Cmd_GetSceneActivations(Json::Value &root)
+		void CWebServer::Cmd_GetSceneActivations(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 
@@ -9619,14 +9616,14 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddSceneCode(Json::Value &root)
+		void CWebServer::Cmd_AddSceneCode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string cmnd = m_pWebEm->FindValue("cmnd");
+			std::string sceneidx = request::findValue(&req, "sceneidx");
+			std::string idx = request::findValue(&req, "idx");
+			std::string cmnd = request::findValue(&req, "cmnd");
 			if (
 				(sceneidx == "") ||
 				(idx == "") ||
@@ -9685,14 +9682,14 @@ namespace http {
 			m_sql.safe_query("UPDATE Scenes SET Activators='%q' WHERE (ID==%q)", Activators.c_str(), sceneidx.c_str());
 		}
 
-		void CWebServer::Cmd_RemoveSceneCode(Json::Value &root)
+		void CWebServer::Cmd_RemoveSceneCode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string code = m_pWebEm->FindValue("code");
+			std::string sceneidx = request::findValue(&req, "sceneidx");
+			std::string idx = request::findValue(&req, "idx");
+			std::string code = request::findValue(&req, "code");
 			if (
 				(idx == "") ||
 				(sceneidx == "") ||
@@ -9760,12 +9757,12 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ClearSceneCodes(Json::Value &root)
+		void CWebServer::Cmd_ClearSceneCodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sceneidx = m_pWebEm->FindValue("sceneidx");
+			std::string sceneidx = request::findValue(&req, "sceneidx");
 			if (sceneidx == "")
 				return;
 			root["status"] = "OK";
@@ -9774,7 +9771,7 @@ namespace http {
 			m_sql.safe_query("UPDATE Scenes SET Activators='' WHERE (ID==%q)", sceneidx.c_str());
 		}
 
-		void CWebServer::Cmd_GetSerialDevices(Json::Value &root)
+		void CWebServer::Cmd_GetSerialDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetSerialDevices";
@@ -9792,7 +9789,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetDevicesList(Json::Value &root)
+		void CWebServer::Cmd_GetDevicesList(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetDevicesList";
@@ -9812,7 +9809,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_GetDevicesListOnOff(Json::Value &root)
+		void CWebServer::Cmd_GetDevicesListOnOff(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetDevicesListOnOff";
@@ -9838,16 +9835,16 @@ namespace http {
 			}
 		}
 
-		std::string CWebServer::Post_UploadCustomIcon()
+		std::string CWebServer::Post_UploadCustomIcon(WebEmSession & session, const request& req)
 		{
 			Json::Value root;
 			root["title"] = "UploadCustomIcon";
 			root["status"] = "ERROR";
 			root["error"] = "Invalid";
-			if (m_pWebEm->m_actualuser_rights == 2)
+			if (session.rights == 2)
 			{
 				//Only admin user allowed
-				std::string zipfile = m_pWebEm->FindValue("file");
+				std::string zipfile = request::findValue(&req, "file");
 				if (zipfile != "")
 				{
 					std::string ErrorMessage;
@@ -9863,7 +9860,7 @@ namespace http {
 					}
 				}
 			}
-			std::string jcallback = m_pWebEm->FindValue("jsoncallback");
+			std::string jcallback = request::findValue(&req, "jsoncallback");
 			if (jcallback.size() == 0)
 				m_retstr = root.toStyledString();
 			else
@@ -9873,7 +9870,7 @@ namespace http {
 			return m_retstr;
 		}
 
-		void CWebServer::Cmd_GetCustomIconSet(Json::Value &root)
+		void CWebServer::Cmd_GetCustomIconSet(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetCustomIconSet";
@@ -9898,12 +9895,12 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_DeleteCustomIcon(Json::Value &root)
+		void CWebServer::Cmd_DeleteCustomIcon(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sidx = request::findValue(&req, "idx");
 			if (sidx == "")
 				return;
 			int idx = atoi(sidx.c_str());
@@ -9930,14 +9927,14 @@ namespace http {
 			ReloadCustomSwitchIcons();
 		}
 
-		void CWebServer::Cmd_UpdateCustomIcon(Json::Value &root)
+		void CWebServer::Cmd_UpdateCustomIcon(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
-			std::string sname = m_pWebEm->FindValue("name");
-			std::string sdescription = m_pWebEm->FindValue("description");
+			std::string sidx = request::findValue(&req, "idx");
+			std::string sname = request::findValue(&req, "name");
+			std::string sdescription = request::findValue(&req, "description");
 			if (
 				(sidx.empty()) ||
 				(sname.empty()) ||
@@ -9953,13 +9950,13 @@ namespace http {
 			ReloadCustomSwitchIcons();
 		}
 
-		void CWebServer::Cmd_RenameDevice(Json::Value &root)
+		void CWebServer::Cmd_RenameDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
-			std::string sname = m_pWebEm->FindValue("name");
+			std::string sidx = request::findValue(&req, "idx");
+			std::string sname = request::findValue(&req, "name");
 			if (
 				(sidx == "")||
 				(sname == "")
@@ -9973,13 +9970,13 @@ namespace http {
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
-		void CWebServer::Cmd_RenameScene(Json::Value &root)
+		void CWebServer::Cmd_RenameScene(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
-			std::string sname = m_pWebEm->FindValue("name");
+			std::string sidx = request::findValue(&req, "idx");
+			std::string sname = request::findValue(&req, "name");
 			if (
 				(sidx == "") ||
 				(sname == "")
@@ -9993,12 +9990,12 @@ namespace http {
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
-		void CWebServer::Cmd_SetUnused(Json::Value &root)
+		void CWebServer::Cmd_SetUnused(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
 			int idx = atoi(sidx.c_str());
@@ -10007,9 +10004,9 @@ namespace http {
 			m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)", idx);
 		}
 
-		void CWebServer::Cmd_AddLogMessage(Json::Value &root)
+		void CWebServer::Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string smessage = m_pWebEm->FindValue("message");
+			std::string smessage = request::findValue(&req, "message");
 			if (smessage.empty())
 				return;
 			root["status"] = "OK";
@@ -10018,9 +10015,9 @@ namespace http {
 			_log.Log(LOG_STATUS, "%s", smessage.c_str());
 		}
 
-		void CWebServer::Cmd_ClearShortLog(Json::Value &root)
+		void CWebServer::Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 			root["status"] = "OK";
 			root["title"] = "ClearShortLog";
@@ -10032,9 +10029,9 @@ namespace http {
 			_log.Log(LOG_STATUS, "Short Log Cleared!");
 		}
 
-		void CWebServer::Cmd_VacuumDatabase(Json::Value &root)
+		void CWebServer::Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 			root["status"] = "OK";
 			root["title"] = "VacuumDatabase";
@@ -10044,15 +10041,15 @@ namespace http {
 		
 		
 
-		void CWebServer::RType_GetTransfers(Json::Value &root)
+		void CWebServer::RType_GetTransfers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "GetTransfers";
 
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 
@@ -10094,13 +10091,13 @@ namespace http {
 		//Will transfer Newest sensor log to OLD sensor,
 		//then set the HardwareID/DeviceID/Unit/Name/Type/Subtype/Unit for the OLD sensor to the NEW sensor ID/Type/Subtype/Unit
 		//then delete the NEW sensor
-		void CWebServer::RType_TransferDevice(Json::Value &root)
+		void CWebServer::RType_TransferDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sidx = m_pWebEm->FindValue("idx");
+			std::string sidx = request::findValue(&req, "idx");
 			if (sidx == "")
 				return;
 
-			std::string newidx = m_pWebEm->FindValue("newidx");
+			std::string newidx = request::findValue(&req, "newidx");
 			if (newidx == "")
 				return;
 
@@ -10166,7 +10163,7 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_Notifications(Json::Value &root)
+		void CWebServer::RType_Notifications(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Notifications";
@@ -10183,9 +10180,9 @@ namespace http {
 			}
 
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<_tNotification> notifications = m_notifications.GetNotifications(idx);
@@ -10210,9 +10207,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_GetSharedUserDevices(Json::Value &root)
+		void CWebServer::RType_GetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -10234,10 +10231,10 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_SetSharedUserDevices(Json::Value &root)
+		void CWebServer::RType_SetSharedUserDevices(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string userdevices = m_pWebEm->FindValue("devices");
+			std::string idx = request::findValue(&req, "idx");
+			std::string userdevices = request::findValue(&req, "devices");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -10256,45 +10253,45 @@ namespace http {
 			m_mainworker.LoadSharedUsers();
 		}
 
-		void CWebServer::RType_SetUsed(Json::Value &root)
+		void CWebServer::RType_SetUsed(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 				return;//Only admin user allowed
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string deviceid = m_pWebEm->FindValue("deviceid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string description = m_pWebEm->FindValue("description");
-			std::string sused = m_pWebEm->FindValue("used");
-			std::string sswitchtype = m_pWebEm->FindValue("switchtype");
-			std::string maindeviceidx = m_pWebEm->FindValue("maindeviceidx");
-			std::string addjvalue = m_pWebEm->FindValue("addjvalue");
-			std::string addjmulti = m_pWebEm->FindValue("addjmulti");
-			std::string addjvalue2 = m_pWebEm->FindValue("addjvalue2");
-			std::string addjmulti2 = m_pWebEm->FindValue("addjmulti2");
-			std::string setPoint = m_pWebEm->FindValue("setpoint");
-			std::string state = m_pWebEm->FindValue("state");
-			std::string mode = m_pWebEm->FindValue("mode");
-			std::string until = m_pWebEm->FindValue("until");
-			std::string clock = m_pWebEm->FindValue("clock");
-			std::string tmode = m_pWebEm->FindValue("tmode");
-			std::string fmode = m_pWebEm->FindValue("fmode");
-			std::string sCustomImage = m_pWebEm->FindValue("customimage");
+			std::string idx = request::findValue(&req, "idx");
+			std::string deviceid = request::findValue(&req, "deviceid");
+			std::string name = request::findValue(&req, "name");
+			std::string description = request::findValue(&req, "description");
+			std::string sused = request::findValue(&req, "used");
+			std::string sswitchtype = request::findValue(&req, "switchtype");
+			std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
+			std::string addjvalue = request::findValue(&req, "addjvalue");
+			std::string addjmulti = request::findValue(&req, "addjmulti");
+			std::string addjvalue2 = request::findValue(&req, "addjvalue2");
+			std::string addjmulti2 = request::findValue(&req, "addjmulti2");
+			std::string setPoint = request::findValue(&req, "setpoint");
+			std::string state = request::findValue(&req, "state");
+			std::string mode = request::findValue(&req, "mode");
+			std::string until = request::findValue(&req, "until");
+			std::string clock = request::findValue(&req, "clock");
+			std::string tmode = request::findValue(&req, "tmode");
+			std::string fmode = request::findValue(&req, "fmode");
+			std::string sCustomImage = request::findValue(&req, "customimage");
 
-			std::string strunit = m_pWebEm->FindValue("unit");
-			std::string strParam1 = base64_decode(m_pWebEm->FindValue("strparam1"));
-			std::string strParam2 = base64_decode(m_pWebEm->FindValue("strparam2"));
-			std::string tmpstr = m_pWebEm->FindValue("protected");
-			bool bHasstrParam1 = m_pWebEm->HasValue("strparam1");
+			std::string strunit = request::findValue(&req, "unit");
+			std::string strParam1 = base64_decode(request::findValue(&req, "strparam1"));
+			std::string strParam2 = base64_decode(request::findValue(&req, "strparam2"));
+			std::string tmpstr = request::findValue(&req, "protected");
+			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
 			char szTmp[200];
 
-			bool bHaveUser = (m_pWebEm->m_actualuser != "");
+			bool bHaveUser = (session.username != "");
 			int iUser = -1;
 			if (bHaveUser)
 			{
-				iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+				iUser = FindUser(session.username.c_str());
 			}
 
 			int switchtype = -1;
@@ -10387,7 +10384,7 @@ namespace http {
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -10409,7 +10406,7 @@ namespace http {
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -10426,7 +10423,7 @@ namespace http {
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -10443,7 +10440,7 @@ namespace http {
 				if (bHaveUser)
 				{
 					int iUser = -1;
-					iUser = FindUser(m_pWebEm->m_actualuser.c_str());
+					iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
@@ -10497,7 +10494,7 @@ namespace http {
 
 			if (used == 0)
 			{
-				bool bRemoveSubDevices = (m_pWebEm->FindValue("RemoveSubDevices") == "true");
+				bool bRemoveSubDevices = (request::findValue(&req, "RemoveSubDevices") == "true");
 
 				if (bRemoveSubDevices)
 				{
@@ -10540,7 +10537,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_Settings(Json::Value &root)
+		void CWebServer::RType_Settings(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::vector<std::vector<std::string> > result;
 			char szTmp[100];
@@ -10830,12 +10827,12 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_LightLog(Json::Value &root)
+		void CWebServer::RType_LightLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -10928,12 +10925,12 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_TextLog(Json::Value &root)
+		void CWebServer::RType_TextLog(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			std::vector<std::vector<std::string> > result;
@@ -10962,22 +10959,22 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_HandleGraph(Json::Value &root)
+		void CWebServer::RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 
 			std::vector<std::vector<std::string> > result;
 			char szTmp[300];
 
-			std::string sensor = m_pWebEm->FindValue("sensor");
+			std::string sensor = request::findValue(&req, "sensor");
 			if (sensor == "")
 				return;
-			std::string srange = m_pWebEm->FindValue("range");
+			std::string srange = request::findValue(&req, "range");
 			if (srange == "")
 				return;
 
@@ -11737,7 +11734,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value,[Usage], Date FROM %s WHERE (DeviceRowID==%llu) ORDER BY Date ASC", dbasetable.c_str(), idx);
 
 						int method = 0;
-						std::string sMethod = m_pWebEm->FindValue("method");
+						std::string sMethod = request::findValue(&req, "method");
 						if (sMethod.size() > 0)
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
@@ -11900,7 +11897,7 @@ namespace http {
 						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%llu) ORDER BY Date ASC", dbasetable.c_str(), idx);
 
 						int method = 0;
-						std::string sMethod = m_pWebEm->FindValue("method");
+						std::string sMethod = request::findValue(&req, "method");
 						if (sMethod.size() > 0)
 							method = atoi(sMethod.c_str());
 
@@ -12682,8 +12679,8 @@ namespace http {
 				char szDateStartPrev[40];
 				char szDateEndPrev[40];
 
-				std::string sactmonth = m_pWebEm->FindValue("actmonth");
-				std::string sactyear = m_pWebEm->FindValue("actyear");
+				std::string sactmonth = request::findValue(&req, "actmonth");
+				std::string sactyear = request::findValue(&req, "actyear");
 
 				int actMonth = atoi(sactmonth.c_str());
 				int actYear = atoi(sactyear.c_str());
@@ -14213,13 +14210,13 @@ namespace http {
 			{
 				std::string szDateStart = srange.substr(0, 10);
 				std::string szDateEnd = srange.substr(11, 10);
-				std::string sgraphtype = m_pWebEm->FindValue("graphtype");
-				std::string sgraphTemp = m_pWebEm->FindValue("graphTemp");
-				std::string sgraphChill = m_pWebEm->FindValue("graphChill");
-				std::string sgraphHum = m_pWebEm->FindValue("graphHum");
-				std::string sgraphBaro = m_pWebEm->FindValue("graphBaro");
-				std::string sgraphDew = m_pWebEm->FindValue("graphDew");
-				std::string sgraphSet = m_pWebEm->FindValue("graphSet");
+				std::string sgraphtype = request::findValue(&req, "graphtype");
+				std::string sgraphTemp = request::findValue(&req, "graphTemp");
+				std::string sgraphChill = request::findValue(&req, "graphChill");
+				std::string sgraphHum = request::findValue(&req, "graphHum");
+				std::string sgraphBaro = request::findValue(&req, "graphBaro");
+				std::string sgraphDew = request::findValue(&req, "graphDew");
+				std::string sgraphSet = request::findValue(&req, "graphSet");
 
 				if (sensor == "temp") {
 					root["status"] = "OK";

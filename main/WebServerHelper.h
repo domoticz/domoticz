@@ -17,7 +17,7 @@ namespace http {
 			void SetWebTheme(const std::string &themename);
 			void ClearUserPasswords();
 			// called from OTGWBase()
-			void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const bool bSkipUserCheck);
+			void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const std::string &username);
 			// called from CSQLHelper
 			void ReloadCustomSwitchIcons();
 		private:

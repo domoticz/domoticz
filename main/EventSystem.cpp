@@ -3095,15 +3095,15 @@ namespace http {
 			std::string eventstatus;
 		};
 
-		void CWebServer::RType_Events(Json::Value &root)
+		void CWebServer::RType_Events(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			//root["status"]="OK";
 			root["title"] = "Events";
 
-			std::string cparam = m_pWebEm->FindValue("param");
+			std::string cparam = request::findValue(&req, "param");
 			if (cparam == "")
 			{
-				cparam = m_pWebEm->FindValue("dparam");
+				cparam = request::findValue(&req, "dparam");
 				if (cparam == "")
 				{
 					return;
@@ -3157,7 +3157,7 @@ namespace http {
 			{
 				root["title"] = "LoadEvent";
 
-				std::string idx = m_pWebEm->FindValue("event");
+				std::string idx = request::findValue(&req, "event");
 				if (idx == "")
 					return;
 
@@ -3192,22 +3192,22 @@ namespace http {
 
 				root["title"] = "AddEvent";
 
-				std::string eventname = m_pWebEm->FindValue("name");
+				std::string eventname = request::findValue(&req, "name");
 				if (eventname == "")
 					return;
 
-				std::string eventxml = m_pWebEm->FindValue("xml");
+				std::string eventxml = request::findValue(&req, "xml");
 				if (eventxml == "")
 					return;
 
-				std::string eventactive = m_pWebEm->FindValue("eventstatus");
+				std::string eventactive = request::findValue(&req, "eventstatus");
 				if (eventactive == "")
 					return;
 
-				std::string eventid = m_pWebEm->FindValue("eventid");
+				std::string eventid = request::findValue(&req, "eventid");
 
 
-				std::string eventlogic = m_pWebEm->FindValue("logicarray");
+				std::string eventlogic = request::findValue(&req, "logicarray");
 				if (eventlogic == "")
 					return;
 
@@ -3273,7 +3273,7 @@ namespace http {
 			else if (cparam == "delete")
 			{
 				root["title"] = "DeleteEvent";
-				std::string idx = m_pWebEm->FindValue("event");
+				std::string idx = request::findValue(&req, "event");
 				if (idx == "")
 					return;
 				m_sql.DeleteEvent(idx);

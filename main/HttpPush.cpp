@@ -281,22 +281,22 @@ void CHttpPush::DoHttpPush()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_SaveHttpLinkConfig(Json::Value &root)
+		void CWebServer::Cmd_SaveHttpLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string url = m_pWebEm->FindValue("url");
-			std::string method = m_pWebEm->FindValue("method");
-			std::string data = m_pWebEm->FindValue("data");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string debugenabled = m_pWebEm->FindValue("debugenabled");
-			std::string auth = m_pWebEm->FindValue("auth");
-			std::string authbasiclogin = m_pWebEm->FindValue("authbasiclogin");
-			std::string authbasicpassword = m_pWebEm->FindValue("authbasicpassword");
+			std::string url = request::findValue(&req, "url");
+			std::string method = request::findValue(&req, "method");
+			std::string data = request::findValue(&req, "data");
+			std::string linkactive = request::findValue(&req, "linkactive");
+			std::string debugenabled = request::findValue(&req, "debugenabled");
+			std::string auth = request::findValue(&req, "auth");
+			std::string authbasiclogin = request::findValue(&req, "authbasiclogin");
+			std::string authbasicpassword = request::findValue(&req, "authbasicpassword");
 			if (
 				(url == "") ||
 				(data == "") ||
@@ -321,7 +321,7 @@ namespace http {
 			root["title"] = "SaveHttpLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetHttpLinkConfig(Json::Value &root)
+		void CWebServer::Cmd_GetHttpLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string sValue;
 			int nValue;
@@ -371,7 +371,7 @@ namespace http {
 			root["title"] = "GetHttpLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetHttpLinks(Json::Value &root)
+		void CWebServer::Cmd_GetHttpLinks(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM HttpLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
@@ -399,19 +399,19 @@ namespace http {
 			root["title"] = "GetHttpLinks";
 		}
 
-		void CWebServer::Cmd_SaveHttpLink(Json::Value &root)
+		void CWebServer::Cmd_SaveHttpLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string deviceid = m_pWebEm->FindValue("deviceid");
+			std::string idx = request::findValue(&req, "idx");
+			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
-			std::string valuetosend = m_pWebEm->FindValue("valuetosend");
-			std::string targettype = m_pWebEm->FindValue("targettype");
+			std::string valuetosend = request::findValue(&req, "valuetosend");
+			std::string targettype = request::findValue(&req, "targettype");
 			int targettypei = atoi(targettype.c_str());
-			std::string targetvariable = m_pWebEm->FindValue("targetvariable");
-			std::string targetdeviceid = m_pWebEm->FindValue("targetdeviceid");
-			std::string targetproperty = m_pWebEm->FindValue("targetproperty");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string includeunit = m_pWebEm->FindValue("includeunit");
+			std::string targetvariable = request::findValue(&req, "targetvariable");
+			std::string targetdeviceid = request::findValue(&req, "targetdeviceid");
+			std::string targetproperty = request::findValue(&req, "targetproperty");
+			std::string linkactive = request::findValue(&req, "linkactive");
+			std::string includeunit = request::findValue(&req, "includeunit");
 			if ((targettypei == 0) && (targetvariable == ""))
 				return;
 			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
@@ -449,15 +449,15 @@ namespace http {
 			root["title"] = "SaveHttpLink";
 		}
 
-		void CWebServer::Cmd_DeleteHttpLink(Json::Value &root)
+		void CWebServer::Cmd_DeleteHttpLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			m_sql.safe_query("DELETE FROM HttpLink WHERE (ID=='%q')", idx.c_str());
