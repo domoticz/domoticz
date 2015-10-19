@@ -101,7 +101,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 
 	bind(udpSocket, (struct sockaddr*)&udpClient, sizeof(udpClient));
 
-	/** �make the packet as shown above **/
+	/** make the packet as shown above **/
 
 	/** set server end point (the broadcast addres)**/
 	udpServer.sin_family = AF_INET;

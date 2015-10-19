@@ -89,14 +89,14 @@ const unsigned char RGBWSetColorToWhiteGroup4[3]={0xCB,0x0,0x55};	//SET COLOR TO
 unsigned char RGBWSetBrightnessLevel[3]={0x4E,0,0x55};
 //LIMITLESSLED RGBW DIRECT BRIGHTNESS SETTING is by a 3BYTE COMMAND: (First send the Group ON for the group you want to set the brightness for. You send the group ON command 100ms before sending the 4E 00 55)
 //Byte1: 0x4E (decimal: 78)
-//Byte2: 0�00 to 0xFF (full brightness 0x3B)
-//Byte3: Always 0�55 (decimal: 85)
+//Byte2: 0x00 to 0xFF (full brightness 0x3B)
+//Byte3: Always 0x55 (decimal: 85)
 
 unsigned char RGBWSetColor[3]={0x40,0,0x55};
 //LIMITLESSLED RGBW COLOR SETTING is by a 3BYTE COMMAND: (First send the Group ON for the group you want to set the color for. You send the group ON command 100ms before sending the 40)
-//Byte1: 0�40 (decimal: 64)
-//Byte2: 0�00 to 0xFF (255 colors) Color Matrix Chart [COMING SOON]
-//Byte3: Always 0�55 (decimal: 85)
+//Byte1: 0x40 (decimal: 64)
+//Byte2: 0x00 to 0xFF (255 colors) Color Matrix Chart [COMING SOON]
+//Byte3: Always 0x55 (decimal: 85)
 
 //White LEDs
 const unsigned char WhiteBrightnessUp[3] = { 0x3C, 0x0, 0x55 };
