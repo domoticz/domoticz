@@ -5970,9 +5970,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetFloorplanPlans";
 				std::vector<std::vector<std::string> > result;
-				std::stringstream szQuery;
 				int ii = 0;
-
 				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name",
 					idx.c_str());
 				if (result.size() > 0)
@@ -7356,8 +7354,6 @@ namespace http {
 
 						bool bIsSubDevice = false;
 						std::vector<std::vector<std::string> > resultSD;
-						std::stringstream szQuerySD;
-
 						resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')",
 							sd[0].c_str());
 						bIsSubDevice = (resultSD.size() > 0);
