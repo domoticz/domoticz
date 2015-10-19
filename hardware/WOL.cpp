@@ -101,7 +101,7 @@ bool CWOL::SendWOLPacket(const unsigned char *pPacket)
 
 	bind(udpSocket, (struct sockaddr*)&udpClient, sizeof(udpClient));
 
-	/** …make the packet as shown above **/
+	/** make the packet as shown above **/
 
 	/** set server end point (the broadcast addres)**/
 	udpServer.sin_family = AF_INET;
@@ -236,9 +236,9 @@ void CWOL::RemoveAllNodes()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_WOLGetNodes(Json::Value &root)
+		void CWebServer::Cmd_WOLGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -270,17 +270,17 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_WOLAddNode(Json::Value &root)
+		void CWebServer::Cmd_WOLAddNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string mac = m_pWebEm->FindValue("mac");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string name = request::findValue(&req, "name");
+			std::string mac = request::findValue(&req, "mac");
 			if (
 				(hwid == "") ||
 				(name == "") ||
@@ -300,18 +300,18 @@ namespace http {
 			pHardware->AddNode(name, mac);
 		}
 
-		void CWebServer::Cmd_WOLUpdateNode(Json::Value &root)
+		void CWebServer::Cmd_WOLUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string mac = m_pWebEm->FindValue("mac");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
+			std::string name = request::findValue(&req, "name");
+			std::string mac = request::findValue(&req, "mac");
 			if (
 				(hwid == "") ||
 				(nodeid == "") ||
@@ -333,16 +333,16 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, mac);
 		}
 
-		void CWebServer::Cmd_WOLRemoveNode(Json::Value &root)
+		void CWebServer::Cmd_WOLRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
 			if (
 				(hwid == "") ||
 				(nodeid == "")
@@ -362,15 +362,15 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_WOLClearNodes(Json::Value &root)
+		void CWebServer::Cmd_WOLClearNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());

@@ -205,20 +205,20 @@ void CDataPush::DoFibaroPush()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_SaveFibaroLinkConfig(Json::Value &root)
+		void CWebServer::Cmd_SaveFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string remote = m_pWebEm->FindValue("remote");
-			std::string username = m_pWebEm->FindValue("username");
-			std::string password = m_pWebEm->FindValue("password");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string isversion4 = m_pWebEm->FindValue("isversion4");
-			std::string debugenabled = m_pWebEm->FindValue("debugenabled");
+			std::string remote = request::findValue(&req, "remote");
+			std::string username = request::findValue(&req, "username");
+			std::string password = request::findValue(&req, "password");
+			std::string linkactive = request::findValue(&req, "linkactive");
+			std::string isversion4 = request::findValue(&req, "isversion4");
+			std::string debugenabled = request::findValue(&req, "debugenabled");
 			if (
 				(remote == "") ||
 				(username == "") ||
@@ -242,7 +242,7 @@ namespace http {
 			root["title"] = "SaveFibaroLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetFibaroLinkConfig(Json::Value &root)
+		void CWebServer::Cmd_GetFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::string sValue;
 			int nValue;
@@ -280,7 +280,7 @@ namespace http {
 			root["title"] = "GetFibaroLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetFibaroLinks(Json::Value &root)
+		void CWebServer::Cmd_GetFibaroLinks(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM FibaroLink as A, DeviceStatus as B WHERE (A.DeviceID==B.ID)");
@@ -308,19 +308,19 @@ namespace http {
 			root["title"] = "GetFibaroLinks";
 		}
 
-		void CWebServer::Cmd_SaveFibaroLink(Json::Value &root)
+		void CWebServer::Cmd_SaveFibaroLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string deviceid = m_pWebEm->FindValue("deviceid");
+			std::string idx = request::findValue(&req, "idx");
+			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
-			std::string valuetosend = m_pWebEm->FindValue("valuetosend");
-			std::string targettype = m_pWebEm->FindValue("targettype");
+			std::string valuetosend = request::findValue(&req, "valuetosend");
+			std::string targettype = request::findValue(&req, "targettype");
 			int targettypei = atoi(targettype.c_str());
-			std::string targetvariable = m_pWebEm->FindValue("targetvariable");
-			std::string targetdeviceid = m_pWebEm->FindValue("targetdeviceid");
-			std::string targetproperty = m_pWebEm->FindValue("targetproperty");
-			std::string linkactive = m_pWebEm->FindValue("linkactive");
-			std::string includeunit = m_pWebEm->FindValue("includeunit");
+			std::string targetvariable = request::findValue(&req, "targetvariable");
+			std::string targetdeviceid = request::findValue(&req, "targetdeviceid");
+			std::string targetproperty = request::findValue(&req, "targetproperty");
+			std::string linkactive = request::findValue(&req, "linkactive");
+			std::string includeunit = request::findValue(&req, "includeunit");
 			if ((targettypei == 0) && (targetvariable == ""))
 				return;
 			if ((targettypei == 1) && ((targetdeviceid == "") || (targetproperty == "")))
@@ -358,15 +358,15 @@ namespace http {
 			root["title"] = "SaveFibaroLink";
 		}
 
-		void CWebServer::Cmd_DeleteFibaroLink(Json::Value &root)
+		void CWebServer::Cmd_DeleteFibaroLink(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			m_sql.safe_query("DELETE FROM FibaroLink WHERE (ID=='%q')", idx.c_str());

@@ -314,17 +314,17 @@
 		// firefox & ie fix
 		if (contextClass && (navigator.userAgent.toLowerCase().indexOf('firefox') <= -1) && (navigator.userAgent.toLowerCase().indexOf('msie') <= -1)) {
 
-			var context1 = new webkitAudioContext();
+			var context1 = new AudioContext();
 			oscillator1 = context1.createOscillator();
 			oscillator1.type = 'square';
 			oscillator1.frequency.value = 1600;
 			
-			var context2 = new webkitAudioContext();
+			var context2 = new AudioContext();
 			oscillator2 = context2.createOscillator();
 			oscillator2.type = 'square';
 			oscillator2.frequency.value = 2000;
 
-			var context3 = new webkitAudioContext();
+			var context3 = new AudioContext();
 			oscillator3 = context3.createOscillator();
 			oscillator3.type = 'square';
 			oscillator3.frequency.value = 1800;
@@ -344,9 +344,9 @@
 			volume1.connect(context1.destination);
 			volume2.connect(context2.destination);
 			volume3.connect(context3.destination);
-			oscillator1.noteOn(0);
-			oscillator2.noteOn(0);
-			oscillator3.noteOn(0);
+			oscillator1.start();
+			oscillator2.start(0);
+			oscillator3.start(0);
 		}
 		else contextClass="";
 
@@ -398,6 +398,22 @@
 			}
 
 		}
+		
+		function SetLanguageEx(lng) {
+			$.i18n.init({
+				resGetPath: '/i18n/domoticz-__lng__.json',
+				fallbackLng: false,
+				getAsync: false,
+				debug: false,
+				useCookie: false,
+				nsseparator: 'aadd',
+				keyseparator: 'bbcc',
+				lng: lng
+			});
+			$(".nav").i18n();
+			MakeDatatableTranslations();
+		}
+		
 		$(document).ready(function() {
 			$.ajax({
 				 url: "../json.htm?type=command&param=getlanguage",
@@ -405,10 +421,10 @@
 				 dataType: 'json',
 				 success: function(data) {
 					if (typeof data.language != 'undefined') {
-						SetLanguage(data.language);
+						SetLanguageEx(data.language);
 					}
 					else {
-						SetLanguage('en');
+						SetLanguageEx('en');
 					}
 				 },
 				 error: function(){

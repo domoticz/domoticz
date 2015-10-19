@@ -374,8 +374,6 @@ bool C1WireByOWFS::IsValidDir(const struct dirent*const de)
         return false;
 
     // Check dir name format (must be something like xx.xxxxxxxxxxxx where x is hexa)
-    // To not add Regex boost lib, replace this test
-    // if (!boost::regex_match(dirname, boost::regex("[[:xdigit:]]{2}.[[:xdigit:]]{12}")))
     if (dirname.size()!=15||
        dirname[2]!='.'||
        !isxdigit(dirname[0])||!isxdigit(dirname[1])||

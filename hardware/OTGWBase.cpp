@@ -224,7 +224,7 @@ bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << m_OutsideTemperatureIdx;
-	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, 0, true);
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, 0, "");
 
 	size_t tsize = tempjson.size();
 	if (tsize < 1)
@@ -540,16 +540,16 @@ void OTGWBase::ParseLine()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetOpenThermSettings()
+		char * CWebServer::SetOpenThermSettings(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -562,7 +562,7 @@ namespace http {
 
 			int currentMode1 = atoi(result[0][0].c_str());
 
-			std::string sOutsideTempSensor = m_pWebEm->FindValue("combooutsidesensor");
+			std::string sOutsideTempSensor = request::findValue(&req, "combooutsidesensor");
 			int newMode1 = atoi(sOutsideTempSensor.c_str());
 
 			if (currentMode1 != newMode1)

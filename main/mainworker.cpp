@@ -7829,7 +7829,15 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 	case sTypeRFXSensorVolt:
 		{
 			volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
-			sprintf(szTmp,"%d",volt);
+			if (
+				(pHardware->HwdType == HTYPE_RFXLAN) ||
+				(pHardware->HwdType == HTYPE_RFXtrx315) ||
+				(pHardware->HwdType == HTYPE_RFXtrx433)
+				)
+			{
+				volt *= 10;
+			}
+			sprintf(szTmp, "%d", volt);
 		}
 		break;
 	}
@@ -9475,6 +9483,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 
 			if (!IsTesting) {
+				//Skip for LMS SetVolume
+				if ((pHardware->HwdType == HTYPE_LogitechMediaServer) && (lcmd.LIGHTING2.cmnd == gswitch_sSetVolume))
+					return true;
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}

@@ -662,16 +662,16 @@ void CSBFSpot::GetMeterDetails()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SBFSpotImportOldData()
+		char * CWebServer::SBFSpotImportOldData(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
