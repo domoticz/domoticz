@@ -992,9 +992,9 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_KodiGetNodes(Json::Value &root)
+		void CWebServer::Cmd_KodiGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -1026,16 +1026,16 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_KodiSetMode(Json::Value &root)
+		void CWebServer::Cmd_KodiSetMode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string mode1 = m_pWebEm->FindValue("mode1");
-			std::string mode2 = m_pWebEm->FindValue("mode2");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string mode1 = request::findValue(&req, "mode1");
+			std::string mode2 = request::findValue(&req, "mode2");
 			if (
 				(hwid == "") ||
 				(mode1 == "") ||
@@ -1061,18 +1061,18 @@ namespace http {
 			pHardware->Restart();
 		}
 
-		void CWebServer::Cmd_KodiAddNode(Json::Value &root)
+		void CWebServer::Cmd_KodiAddNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Port = atoi(m_pWebEm->FindValue("port").c_str());
+			std::string hwid = request::findValue(&req, "idx");
+			std::string name = request::findValue(&req, "name");
+			std::string ip = request::findValue(&req, "ip");
+			int Port = atoi(request::findValue(&req, "port").c_str());
 			if (
 				(hwid == "") ||
 				(name == "") ||
@@ -1093,19 +1093,19 @@ namespace http {
 			pHardware->AddNode(name, ip, Port);
 		}
 
-		void CWebServer::Cmd_KodiUpdateNode(Json::Value &root)
+		void CWebServer::Cmd_KodiUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Port = atoi(m_pWebEm->FindValue("port").c_str());
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
+			std::string name = request::findValue(&req, "name");
+			std::string ip = request::findValue(&req, "ip");
+			int Port = atoi(request::findValue(&req, "port").c_str());
 			if (
 				(hwid == "") ||
 				(nodeid == "") ||
@@ -1128,16 +1128,16 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, ip, Port);
 		}
 
-		void CWebServer::Cmd_KodiRemoveNode(Json::Value &root)
+		void CWebServer::Cmd_KodiRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
 			if (
 				(hwid == "") ||
 				(nodeid == "")
@@ -1157,15 +1157,15 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_KodiClearNodes(Json::Value &root)
+		void CWebServer::Cmd_KodiClearNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -1181,10 +1181,10 @@ namespace http {
 			pHardware->RemoveAllNodes();
 		}
 
-		void CWebServer::Cmd_KodiMediaCommand(Json::Value &root)
+		void CWebServer::Cmd_KodiMediaCommand(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string sIdx = m_pWebEm->FindValue("idx");
-			std::string sAction = m_pWebEm->FindValue("action");
+			std::string sIdx = request::findValue(&req, "idx");
+			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())
 				return;
 			int idx = atoi(sIdx.c_str());

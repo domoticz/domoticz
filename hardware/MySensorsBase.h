@@ -147,12 +147,14 @@ public:
 		int intvalue;
 		bool bValidValue;
 		std::string stringValue;
+		time_t lastreceived;
 
 		_tMySensorValue()
 		{
 			floatValue = 0;
 			intvalue = 0;
 			bValidValue = false;
+			lastreceived = 0;
 		}
 	};
 
@@ -175,6 +177,7 @@ public:
 
 		_tMySensorChild()
 		{
+			lastreceived = 0;
 			nodeID = -1;
 			childID = 1;
 			hasBattery = false;
@@ -182,7 +185,16 @@ public:
 			presType = S_UNKNOWN;
 			useAck = false;
 		}
-
+		std::vector<_eSetType> GetChildValueTypes()
+		{
+			std::vector<_eSetType> ret;
+			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
+			for (itt = values.begin(); itt != values.end(); ++itt)
+			{
+				ret.push_back(itt->first);
+			}
+			return ret;
+		}
 		bool GetValue(const _eSetType vType, int &intValue)
 		{
 			std::map<_eSetType, _tMySensorValue>::const_iterator itt;
@@ -220,16 +232,19 @@ public:
 		{
 			values[vType].intvalue = intValue;
 			values[vType].bValidValue = true;
+			values[vType].lastreceived = time(NULL);
 		}
 		void SetValue(const _eSetType vType, const float floatValue)
 		{
 			values[vType].floatValue = floatValue;
 			values[vType].bValidValue = true;
+			values[vType].lastreceived = time(NULL);
 		}
 		void SetValue(const _eSetType vType, const std::string &stringValue)
 		{
 			values[vType].stringValue = stringValue;
 			values[vType].bValidValue = true;
+			values[vType].lastreceived = time(NULL);
 		}
 	};
 
@@ -328,6 +343,11 @@ public:
 	~MySensorsBase(void);
 	std::string m_szSerialPort;
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+	_tMySensorNode* FindNode(const int nodeID);
+	void RemoveNode(const int nodeID);
+	void RemoveChild(const int nodeID, const int childID);
+	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
+	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);
@@ -352,9 +372,7 @@ private:
 
 	void MakeAndSendWindSensor(const int nodeID, const std::string &sname);
 
-	_tMySensorNode* FindNode(const int nodeID);
 	_tMySensorNode* InsertNode(const int nodeID);
-	void RemoveNode(const int nodeID);
 	int FindNextNodeID();
 	_tMySensorChild* FindSensorWithPresentationType(const int nodeID, const _ePresentationType presType);
 	_tMySensorChild* FindChildWithValueType(const int nodeID, const _eSetType valType);

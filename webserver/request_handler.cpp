@@ -142,7 +142,7 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 	  )
   {
 	  const char *encoding_header;
-	  if ((encoding_header = req.get_req_header(&req, "Accept-Encoding")) != NULL)
+	  if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != NULL)
 	  {
 		  //see if we support gzip
 		  bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);

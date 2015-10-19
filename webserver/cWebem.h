@@ -29,9 +29,16 @@ namespace http {
 
 		typedef struct _tWebEmSession
 		{
+			std::string id;
+			bool isnew;
 			std::string username;
 			time_t lasttouch;
 			int rights;
+			bool rememberme;
+			bool removecookie;
+			bool forcelogin;
+			std::string lastRequestPath;
+			std::string outputfilename;
 		} WebEmSession;
 
 		typedef struct _tIPNetwork
@@ -83,9 +90,9 @@ namespace http {
 		class cWebem;
 		typedef boost::function< char*() > webem_include_function;
 		typedef boost::function< wchar_t*() > webem_include_function_w;
-		typedef boost::function< char*( cWebem* ) > webem_action_function;
-		typedef boost::function< std::string() > webem_page_function;
-		typedef boost::function< wchar_t*() > webem_page_function_w;
+		typedef boost::function< char*( WebEmSession & session, const request& ) > webem_action_function;
+		typedef boost::function< std::string( WebEmSession & session, const request& ) > webem_page_function;
+		typedef boost::function< wchar_t*( WebEmSession & session, const request& ) > webem_page_function_w;
 
 
 		/**
@@ -102,23 +109,23 @@ namespace http {
 		public:
 			/// Construct with a directory containing files to be served.
 			cWebemRequestHandler( const std::string& doc_root, cWebem* webem ) :
-			  request_handler( doc_root, webem ),
-			  m_doc_root ( doc_root ),
-			  myWebem(webem)
-			  {}
+				request_handler( doc_root, webem ),
+				m_doc_root ( doc_root ),
+				myWebem(webem)
+				{}
 
-			  /// Handle a request and produce a reply.
-			  virtual void handle_request( const std::string &sHost, const request& req, reply& rep);
+			/// Handle a request and produce a reply.
+			virtual void handle_request( const std::string &sHost, const request& req, reply& rep);
 		private:
 			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);
-			bool CheckAuthentication(const std::string &sHost, const request& req, reply& rep);
+			bool CheckAuthentication(const std::string &sHost, WebEmSession & session, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);
 			std::string generateSessionID();
 			void send_cookie(reply& rep, const std::string &sSID, const time_t expires);
 			bool AreWeInLocalNetwork(const std::string &sHost, const request& req);
-			int authorize(const request& req, reply& rep);
+			int authorize(WebEmSession & session, const request& req, reply& rep);
 			void Logout();
 			int parse_auth_header(const request& req, struct ah *ah) ;
 			std::string m_doc_root;
@@ -167,15 +174,8 @@ namespace http {
 
 			void RegisterWhitelistURLString(const char* idname);
 
-			bool CheckForAction( request& req );
-			std::string& FindValue(const char* name);
-			bool HasValue(const char* name);
-			bool HasParams()
-			{
-				return !myNameValues.empty(); 
-			};
-
-			bool CheckForPageOverride(const request& req, reply& rep);
+			bool CheckForAction(WebEmSession & session, request& req);
+			bool CheckForPageOverride(WebEmSession & session, request& req, reply& rep);
 			bool IsPageOverride(const request& req, reply& rep);
 
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
@@ -189,21 +189,9 @@ namespace http {
 			void SetDigistRealm(std::string realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(std::string password);
-			void MakeValuesFromPostContent(const request *req);
 			std::string m_zippassword;
-			std::string m_actualuser;
-			int m_actualuser_rights;
-			std::string m_guestuser;
-			std::string m_lastRequestPath;
-			std::string m_outputfilename;
-			request		m_ActualRequest;
-			std::map<std::string,WebEmSession> m_sessionids;
-			std::string m_actsessionid;
+			std::map<std::string,WebEmSession> m_sessions;
 			_eAuthenticationMethod m_authmethod;
-			bool m_bForceRelogin;
-			bool m_bAddNewSession;
-			bool m_bRemoveCookie;
-			bool m_bRemembermeUser;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
 			// actual theme selected
@@ -219,8 +207,6 @@ namespace http {
 			std::map < std::string, webem_page_function > myPages;
 			/// store map between pages and application functions
 			std::map < std::string, webem_page_function_w > myPages_w;
-			/// store map between pages and application functions (wide char)
-			std::multimap  < std::string, std::string> myNameValues;
 			/// request handler specialized to handle webem requests
 			cWebemRequestHandler myRequestHandler;
 			/// boost::asio web server (RK: plain or secure)
