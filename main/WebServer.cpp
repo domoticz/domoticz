@@ -14885,8 +14885,8 @@ namespace http {
 			localtime_r(&session.expires,&ltime);
 			strftime(szExpires, sizeof(szExpires), "%Y-%m-%d %H:%M:%S", &ltime);
 
-			std::string remote_host = (session.remote_host.size() <= 256) ?
-					session.remote_host : session.remote_host.substr(0, 256);
+			std::string remote_host = (session.remote_host.size() <= 50) ? // IPv4 : 15, IPv6 : (39|45)
+					session.remote_host : session.remote_host.substr(0, 50);
 
 			WebEmStoredSession storedSession = GetSession(session.id);
 			if (storedSession.id.empty()) {
