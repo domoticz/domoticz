@@ -902,6 +902,9 @@ void cWebem::SetZipPassword(std::string password)
 
 void cWebem::SetSessionStore(session_store* sessionStore) {
 	mySessionStore = sessionStore;
+	if (mySessionStore != NULL) {
+		mySessionStore->CleanSessions();
+	}
 }
 
 session_store* cWebem::GetSessionStore() {
@@ -1160,6 +1163,7 @@ std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session
 	randomValue = ss.str();
 
 	std::string authToken = base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size());
+
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "generate new authentication token %s", authToken.c_str());
 #endif

@@ -38,6 +38,11 @@ public:
 	 * Remove user session from store
 	 */
 	virtual void RemoveSession(const std::string & sessionId)=0;
+
+	/**
+	 * Remove expired user sessions from store
+	 */
+	virtual void CleanSessions()=0;
 };
 
 }
