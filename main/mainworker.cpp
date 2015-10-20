@@ -8774,6 +8774,20 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		if (DevRowIdx == -1)
 			return -1;
 	}
+	else if (subType == sTypeTemperature)
+	{
+		float temp = 0;
+		float AddjValue = 0.0f;
+		float AddjMulti = 1.0f;
+		m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+		temp = pMeter->floatval1 + AddjValue;
+
+		sprintf(szTmp, "%.1f", temp);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, temp, szTmp, m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
+		m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_TEMPERATURE, temp);
+	}
 
 	if (m_verboselevel == EVBL_ALL)
 	{

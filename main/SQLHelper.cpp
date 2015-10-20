@@ -3228,7 +3228,7 @@ void CSQLHelper::UpdateTemperatureLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
+	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d))",
 		pTypeTEMP,
 		pTypeHUM,
 		pTypeTEMP_HUM,
@@ -3244,7 +3244,8 @@ void CSQLHelper::UpdateTemperatureLog()
 		pTypeRadiator1,
 		pTypeGeneral,sTypeSystemTemp,
 		pTypeThermostat,sTypeThermSetpoint,
-		pTypeGeneral, sTypeBaro
+		pTypeGeneral, sTypeBaro,
+		pTypeGeneral, sTypeTemperature
 		);
 	if (result.size()>0)
 	{
@@ -3375,7 +3376,7 @@ void CSQLHelper::UpdateTemperatureLog()
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				break;
 			case pTypeGeneral:
-				if (dSubType == sTypeSystemTemp)
+				if ((dSubType == sTypeSystemTemp) || (dSubType == sTypeTemperature))
 				{
 					temp = static_cast<float>(atof(splitresults[0].c_str()));
 				}
