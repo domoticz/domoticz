@@ -14910,7 +14910,6 @@ namespace http {
 		void CWebServer::RemoveSession(const std::string & sessionId) {
 			//_log.Log(LOG_STATUS, "SessionStore : remove...");
 			if (sessionId.empty()) {
-				_log.Log(LOG_ERROR, "SessionStore : cannot remove session without id.");
 				return;
 			}
 			m_sql.safe_query(
