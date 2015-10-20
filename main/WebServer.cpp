@@ -296,6 +296,7 @@ namespace http {
 				_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
+			m_pWebEm->SetSessionStore(this);
 
 			if (!bIgnoreUsernamePassword)
 			{
@@ -14844,6 +14845,48 @@ namespace http {
 					}
 				}
 			}//custom range
+		}
+
+		// session_store interface
+		const WebEmStoredSession CWebServer::GetSession(const std::string & sessionId) {
+			//_log.Log(LOG_STATUS, "SessionStore : get...");
+			WebEmStoredSession session;
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT SessionID, Username, AuthToken FROM UserSessions WHERE SessionID = '%q'",
+					sessionId.c_str());
+			if (result.size() > 0) {
+				session.id = result[0][0].c_str();
+				session.username = base64_decode(result[0][1]);
+				session.auth_token = result[0][2].c_str();
+			}
+
+			return session;
+		}
+
+		void CWebServer::StoreSession(const WebEmStoredSession & session) {
+			//_log.Log(LOG_STATUS, "SessionStore : store...");
+			RemoveSession(session.id);
+			char szExpires[30];
+			struct tm ltime;
+			localtime_r(&session.expires,&ltime);
+			strftime(szExpires, sizeof(szExpires), "%Y-%m-%d %H:%M:%S", &ltime);
+			m_sql.safe_query(
+					"INSERT INTO UserSessions (SessionID, Username, AuthToken, ExpirationDate) VALUES ('%q', '%q', '%q', '%q')",
+					session.id.c_str(),
+					base64_encode((const unsigned char*) session.username.c_str(), session.username.size()).c_str(),
+					session.auth_token.c_str(),
+					szExpires);
+		}
+
+		void CWebServer::RemoveSession(const std::string & sessionId) {
+			//_log.Log(LOG_STATUS, "SessionStore : remove...");
+			if (sessionId.empty()) {
+				return;
+			}
+			m_sql.safe_query(
+					"DELETE FROM UserSessions WHERE SessionID = '%q'",
+					sessionId.c_str());
 		}
 
 	} //server

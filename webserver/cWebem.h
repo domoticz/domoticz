@@ -3,6 +3,7 @@
 #include <map>
 #include <boost/function.hpp>
 #include "server.hpp"
+#include "session_store.hpp"
 
 namespace http {
 	namespace server {
@@ -30,9 +31,10 @@ namespace http {
 		typedef struct _tWebEmSession
 		{
 			std::string id;
+			std::string auth_token;
 			bool isnew;
 			std::string username;
-			time_t lasttouch;
+			time_t expires;
 			int rights;
 			bool rememberme;
 			bool removecookie;
@@ -123,11 +125,14 @@ namespace http {
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);
 			std::string generateSessionID();
-			void send_cookie(reply& rep, const std::string &sSID, const time_t expires);
+			void send_cookie(reply& rep, const WebEmSession & session);
 			bool AreWeInLocalNetwork(const std::string &sHost, const request& req);
 			int authorize(WebEmSession & session, const request& req, reply& rep);
 			void Logout();
-			int parse_auth_header(const request& req, struct ah *ah) ;
+			int parse_auth_header(const request& req, struct ah *ah);
+			std::string generateAuthToken(const WebEmSession & session, const request & req);
+			bool checkAuthToken(const WebEmSession & session);
+			void removeAuthToken(const std::string & sessionId);
 			std::string m_doc_root;
 			// Webem link to application code
 			cWebem* myWebem;
@@ -189,6 +194,11 @@ namespace http {
 			void SetDigistRealm(std::string realm);
 			std::string m_DigistRealm;
 			void SetZipPassword(std::string password);
+
+			// Session store manager
+			void SetSessionStore(session_store* sessionStore);
+			session_store* GetSessionStore();
+
 			std::string m_zippassword;
 			std::map<std::string,WebEmSession> m_sessions;
 			_eAuthenticationMethod m_authmethod;
@@ -213,6 +223,8 @@ namespace http {
 			server myServer;
 			/// port server is listening on
 			std::string myPort;
+			/// session store
+			session_store* mySessionStore;
 		};
 
 	}
