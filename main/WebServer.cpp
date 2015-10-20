@@ -14848,7 +14848,7 @@ namespace http {
 		}
 
 		/**
-		 * Retrieve user session from store, without expiration date and remote host.
+		 * Retrieve user session from store, without remote host.
 		 */
 		const WebEmStoredSession CWebServer::GetSession(const std::string & sessionId) {
 			//_log.Log(LOG_STATUS, "SessionStore : get...");
@@ -14858,13 +14858,27 @@ namespace http {
 				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
 			} else {
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken FROM UserSessions WHERE SessionID = '%q'",
+				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'",
 						sessionId.c_str());
 				if (result.size() > 0) {
 					session.id = result[0][0].c_str();
 					session.username = base64_decode(result[0][1]);
 					session.auth_token = result[0][2].c_str();
-					// ExpirationDate is not used to restore the session
+
+					std::string sExpirationDate = result[0][3];
+					time_t now = mytime(NULL);
+					struct tm tm1;
+					localtime_r(&now, &tm1);
+					struct tm tExpirationDate;
+					tExpirationDate.tm_isdst = tm1.tm_isdst;
+					tExpirationDate.tm_year = atoi(sExpirationDate.substr(0, 4).c_str()) - 1900;
+					tExpirationDate.tm_mon = atoi(sExpirationDate.substr(5, 2).c_str()) - 1;
+					tExpirationDate.tm_mday = atoi(sExpirationDate.substr(8, 2).c_str());
+					tExpirationDate.tm_hour = atoi(sExpirationDate.substr(11, 2).c_str());
+					tExpirationDate.tm_min = atoi(sExpirationDate.substr(14, 2).c_str());
+					tExpirationDate.tm_sec = atoi(sExpirationDate.substr(17, 2).c_str());
+					session.expires = mktime(&tExpirationDate);
+
 					// RemoteHost is not used to restore the session
 					// LastUpdate is not used to restore the session
 				}
