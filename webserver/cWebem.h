@@ -132,7 +132,7 @@ namespace http {
 			void Logout();
 			int parse_auth_header(const request& req, struct ah *ah);
 			std::string generateAuthToken(const WebEmSession & session, const request & req);
-			bool checkAuthToken(const WebEmSession & session);
+			bool checkAuthToken(WebEmSession & session);
 			void removeAuthToken(const std::string & sessionId);
 			std::string m_doc_root;
 			// Webem link to application code

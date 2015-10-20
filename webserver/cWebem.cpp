@@ -1326,7 +1326,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				session.id = sSID;
 			}
 			session.auth_token = sAuthToken;
-			// Check authen_token
+			// Check authen_token and restore session
 			if (checkAuthToken(session)) {
 				// user is authenticated
 				return true;
@@ -1386,7 +1386,10 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 	return false;
 }
 
-bool cWebemRequestHandler::checkAuthToken(const WebEmSession & session) {
+/**
+ * Check authentication token if exists and restore the user session if necessary
+ */
+bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 	session_store* sstore = myWebem->GetSessionStore();
 	if (sstore == NULL) {
 		_log.Log(LOG_ERROR, "CheckAuthToken([%s_%s]) : no store defined", session.id.c_str(), session.auth_token.c_str());
@@ -1408,10 +1411,32 @@ bool cWebemRequestHandler::checkAuthToken(const WebEmSession & session) {
 		return false;
 	}
 
-	// TODO : Restore session ?
-	//session.username = base64_decode(storedSession.username);
-
 	_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+
+	if (session.username.empty()) {
+		// Restore session if user exists and session does not already exist
+		bool userExists = false;
+		session.username = storedSession.username;
+		std::vector<_tWebUserPassword>::iterator ittu;
+		for (ittu=myWebem->m_userpasswords.begin(); ittu!=myWebem->m_userpasswords.end(); ++ittu) {
+			if (ittu->Username == session.username) { // the user still exists
+				userExists = true;
+				session.rights = ittu->userrights;
+				break;
+			}
+		}
+		if (!userExists) {
+			_log.Log(LOG_ERROR, "CheckAuthToken(%s_%s) : cannot restore session user not found", session.id.c_str(), session.auth_token.c_str());
+			removeAuthToken(session.id);
+			return false;
+		}
+		std::map<std::string, WebEmSession>::iterator itts = myWebem->m_sessions.find(session.id);
+		if (itts == myWebem->m_sessions.end()) {
+			_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : restore session", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+			myWebem->m_sessions[session.id] = session;
+		}
+	}
+
 	return true;
 }
 
