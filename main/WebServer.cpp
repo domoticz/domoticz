@@ -14902,7 +14902,7 @@ namespace http {
 					remote_host.c_str());
 			} else {
 				m_sql.safe_query(
-					"UPDATE UserSessions set AuthToken = '%q', ExpirationDate = '%q', RemoteHost = '%q' WHERE SessionID = '%q'",
+					"UPDATE UserSessions set AuthToken = '%q', ExpirationDate = '%q', RemoteHost = '%q', LastUpdate = datetime('now', 'localtime') WHERE SessionID = '%q'",
 					session.auth_token.c_str(),
 					szExpires,
 					remote_host.c_str(),
