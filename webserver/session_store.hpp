@@ -20,7 +20,7 @@ typedef struct _tWebEmStoredSession {
 } WebEmStoredSession;
 
 /**
- * Gives access to the user session datastore.
+ * Gives access to the user session store.
  */
 class session_store {
 public:

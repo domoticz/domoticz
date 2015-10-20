@@ -14848,7 +14848,7 @@ namespace http {
 		}
 
 		/**
-		 * Retrieve user session from store
+		 * Retrieve user session from store, without expiration date and remote host.
 		 */
 		const WebEmStoredSession CWebServer::GetSession(const std::string & sessionId) {
 			//_log.Log(LOG_STATUS, "SessionStore : get...");
@@ -14873,6 +14873,9 @@ namespace http {
 			return session;
 		}
 
+		/**
+		 * Save user session.
+		 */
 		void CWebServer::StoreSession(const WebEmStoredSession & session) {
 			//_log.Log(LOG_STATUS, "SessionStore : store...");
 			if (session.id.empty()) {
@@ -14907,6 +14910,9 @@ namespace http {
 			}
 		}
 
+		/**
+		 * Remove user session and expired sessions.
+		 */
 		void CWebServer::RemoveSession(const std::string & sessionId) {
 			//_log.Log(LOG_STATUS, "SessionStore : remove...");
 			if (sessionId.empty()) {
