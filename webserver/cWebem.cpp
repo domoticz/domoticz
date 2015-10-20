@@ -1141,7 +1141,9 @@ std::string cWebemRequestHandler::generateSessionID()
 
 	std::string sessionId = GenerateMD5Hash(base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size()));
 
-	//_log.Log(LOG_STATUS, "generate new session id token %s", sessionId.c_str());
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS, "generate new session id token %s", sessionId.c_str());
+#endif
 
 	return sessionId;
 }
@@ -1411,8 +1413,9 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 		removeAuthToken(session.id);
 		return false;
 	}
+
 #ifdef _DEBUG
-	//_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+	_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
 
 	if (session.username.empty()) {
