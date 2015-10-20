@@ -562,6 +562,7 @@ const char *sqlCreateUserSessions =
 	" [Username] VARCHAR(100) NOT NULL,"
 	" [AuthToken] VARCHAR(100) UNIQUE NOT NULL,"
 	" [ExpirationDate] DATETIME NOT NULL,"
+	" [RemoteHost] VARCHAR(256) NOT NULL,"
 	" [LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')),"
 	" PRIMARY KEY([SessionID]));";
 

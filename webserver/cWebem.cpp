@@ -1133,15 +1133,17 @@ std::string cWebemRequestHandler::generateSessionID()
 	// Session id should not be predictable
 	boost::uuids::random_generator gen;
 	std::stringstream ss;
-	std::string sessionId;
+	std::string randomValue;
 	
 	boost::uuids::uuid u = gen();
 	ss << u;
-	sessionId = ss.str();
+	randomValue = ss.str();
+
+	std::string sessionId = GenerateMD5Hash(base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size()));
 
 	//_log.Log(LOG_STATUS, "generate new session id token %s", sessionId.c_str());
 
-	return GenerateMD5Hash(base64_encode((const unsigned char*)sessionId.c_str(), sessionId.size()));
+	return sessionId;
 }
 
 std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session, const request & req)
@@ -1163,9 +1165,10 @@ std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session
 	if (sstore != NULL) {
 		WebEmStoredSession storedSession;
 		storedSession.id = session.id;
-		storedSession.auth_token = GenerateMD5Hash(authToken);
+		storedSession.auth_token = GenerateMD5Hash(authToken); // only save the hash to avoid a security issue if database is stolen
 		storedSession.username = session.username;
 		storedSession.expires = session.expires;
+		storedSession.remote_host = session.remote_host; // to trace host
 		sstore->StoreSession(storedSession); // only one place to do that
 	}
 
@@ -1242,7 +1245,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 	return false;
 }
 
-bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSession & session, const request& req, reply& rep)
+bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 {
 	session.rights = -1; // no rights
 	if (session.forcelogin)
@@ -1261,7 +1264,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 		return true;//no username/password we are admin
 	}
 
-	if (AreWeInLocalNetwork(sHost, req))
+	if (AreWeInLocalNetwork(session.remote_host, req))
 	{
 		session.rights = 2;
 		return true;//we are in the local network, no authentication needed, we are admin
@@ -1353,7 +1356,7 @@ bool cWebemRequestHandler::CheckAuthentication(const std::string &sHost, WebEmSe
 		if (!authorize(session, req, rep))
 		{
 			if (m_failcounter > 0) {
-				_log.Log(LOG_ERROR, "Webserver: Failed authentication attempt, ignoring client request (remote addresses: %s)", sHost.c_str());
+				_log.Log(LOG_ERROR, "Webserver: Failed authentication attempt, ignoring client request (remote addresses: %s)", session.remote_host.c_str());
 			}
 			if (m_failcounter > 2)
 			{
@@ -1389,6 +1392,7 @@ bool cWebemRequestHandler::checkAuthToken(const WebEmSession & session) {
 		_log.Log(LOG_ERROR, "CheckAuthToken([%s_%s]) : no store defined", session.id.c_str(), session.auth_token.c_str());
 		return true;
 	}
+
 	if (session.id.empty() || session.auth_token.empty()) {
 		_log.Log(LOG_ERROR, "CheckAuthToken(%s_%s) : session id or auth token is empty", session.id.c_str(), session.auth_token.c_str());
 		return false;
@@ -1403,7 +1407,11 @@ bool cWebemRequestHandler::checkAuthToken(const WebEmSession & session) {
 		removeAuthToken(session.id);
 		return false;
 	}
-	//_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str());
+
+	// TODO : Restore session ?
+	//session.username = base64_decode(storedSession.username);
+
+	_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 	return true;
 }
 
@@ -1429,6 +1437,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 
 	// Initialize session
 	WebEmSession session;
+	session.remote_host = sHost;
 	session.isnew = false;
 	session.removecookie = false;
 	session.forcelogin = false;
@@ -1468,7 +1477,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		}
 		else
 		{
-			if (!CheckAuthentication(sHost, session, req, rep)) {
+			if (!CheckAuthentication(session, req, rep)) {
 				return;
 			}
 		}
@@ -1477,7 +1486,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	{
 		if (bCheckAuthentication)
 		{
-			if (!CheckAuthentication(sHost, session, req, rep)) {
+			if (!CheckAuthentication(session, req, rep)) {
 				return;
 			}
 		}
@@ -1497,7 +1506,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	if (q != -1)
 	{
 		//post actions only allowed when authenticated and user has admin rights
-		if (!CheckAuthentication(sHost, session, req, rep)) {
+		if (!CheckAuthentication(session, req, rep)) {
 			return;
 		}
 		if (session.rights != 2)
@@ -1563,7 +1572,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			//Extend session by a year
 			session.expires += (86400 * 365);
 		}
-		session.auth_token = generateAuthToken(session, req); // do it after expires
+		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
 		session.isnew = false;
 		myWebem->m_sessions[session.id] = session;
 		send_cookie(rep, session);
@@ -1584,7 +1593,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			if (myWebem->m_sessions[session.id].expires - 60 < atime)
 			{
 				myWebem->m_sessions[session.id].expires = atime + SESSION_TIMEOUT;
-				myWebem->m_sessions[session.id].auth_token = generateAuthToken(session, req); // do it after expires
+				myWebem->m_sessions[session.id].auth_token = generateAuthToken(session, req); // do it after expires to save it also
 				send_cookie(rep, myWebem->m_sessions[session.id]);
 			}
 		}

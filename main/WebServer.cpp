@@ -14847,18 +14847,27 @@ namespace http {
 			}//custom range
 		}
 
-		// session_store interface
+		/**
+		 * Retrieve user session from store
+		 */
 		const WebEmStoredSession CWebServer::GetSession(const std::string & sessionId) {
 			//_log.Log(LOG_STATUS, "SessionStore : get...");
 			WebEmStoredSession session;
 
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT SessionID, Username, AuthToken FROM UserSessions WHERE SessionID = '%q'",
-					sessionId.c_str());
-			if (result.size() > 0) {
-				session.id = result[0][0].c_str();
-				session.username = base64_decode(result[0][1]);
-				session.auth_token = result[0][2].c_str();
+			if (sessionId.empty()) {
+				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
+			} else {
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken FROM UserSessions WHERE SessionID = '%q'",
+						sessionId.c_str());
+				if (result.size() > 0) {
+					session.id = result[0][0].c_str();
+					session.username = base64_decode(result[0][1]);
+					session.auth_token = result[0][2].c_str();
+					// ExpirationDate is not used to restore the session
+					// RemoteHost is not used to restore the session
+					// LastUpdate is not used to restore the session
+				}
 			}
 
 			return session;
@@ -14866,22 +14875,42 @@ namespace http {
 
 		void CWebServer::StoreSession(const WebEmStoredSession & session) {
 			//_log.Log(LOG_STATUS, "SessionStore : store...");
-			RemoveSession(session.id);
+			if (session.id.empty()) {
+				_log.Log(LOG_ERROR, "SessionStore : cannot store session without id.");
+				return;
+			}
+
 			char szExpires[30];
 			struct tm ltime;
 			localtime_r(&session.expires,&ltime);
 			strftime(szExpires, sizeof(szExpires), "%Y-%m-%d %H:%M:%S", &ltime);
-			m_sql.safe_query(
-					"INSERT INTO UserSessions (SessionID, Username, AuthToken, ExpirationDate) VALUES ('%q', '%q', '%q', '%q')",
+
+			std::string remote_host = (session.remote_host.size() <= 256) ?
+					session.remote_host : session.remote_host.substr(0, 256);
+
+			WebEmStoredSession storedSession = GetSession(session.id);
+			if (storedSession.id.empty()) {
+				m_sql.safe_query(
+					"INSERT INTO UserSessions (SessionID, Username, AuthToken, ExpirationDate, RemoteHost) VALUES ('%q', '%q', '%q', '%q', '%q')",
 					session.id.c_str(),
 					base64_encode((const unsigned char*) session.username.c_str(), session.username.size()).c_str(),
 					session.auth_token.c_str(),
-					szExpires);
+					szExpires,
+					remote_host.c_str());
+			} else {
+				m_sql.safe_query(
+					"UPDATE UserSessions set AuthToken = '%q', ExpirationDate = '%q', RemoteHost = '%q' WHERE SessionID = '%q'",
+					session.auth_token.c_str(),
+					szExpires,
+					remote_host.c_str(),
+					session.id.c_str());
+			}
 		}
 
 		void CWebServer::RemoveSession(const std::string & sessionId) {
 			//_log.Log(LOG_STATUS, "SessionStore : remove...");
 			if (sessionId.empty()) {
+				_log.Log(LOG_ERROR, "SessionStore : cannot remove session without id.");
 				return;
 			}
 			m_sql.safe_query(

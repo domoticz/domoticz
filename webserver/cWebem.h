@@ -31,12 +31,13 @@ namespace http {
 		typedef struct _tWebEmSession
 		{
 			std::string id;
+			std::string remote_host;
 			std::string auth_token;
-			bool isnew;
 			std::string username;
 			time_t expires;
 			int rights;
 			bool rememberme;
+			bool isnew;
 			bool removecookie;
 			bool forcelogin;
 			std::string lastRequestPath;
@@ -121,7 +122,7 @@ namespace http {
 		private:
 			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);
-			bool CheckAuthentication(const std::string &sHost, WebEmSession & session, const request& req, reply& rep);
+			bool CheckAuthentication(WebEmSession & session, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);
 			std::string generateSessionID();
