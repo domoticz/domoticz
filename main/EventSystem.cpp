@@ -517,6 +517,16 @@ void CEventSystem::GetCurrentMeasurementStates()
 				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 				isUtility = true;
 			}
+			if (sitem.subType == sTypeAlert)
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			if (sitem.subType == sTypeTemperature)
+			{
+				temp = static_cast<float>(atof(splitresults[0].c_str()));
+				isTemp = true;
+			}
 			if (sitem.subType == sTypeDistance)
 			{
 				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
