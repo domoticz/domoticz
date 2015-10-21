@@ -77,6 +77,7 @@ public:
 	const WebEmStoredSession GetSession(const std::string & sessionId);
 	void StoreSession(const WebEmStoredSession & session);
 	void RemoveSession(const std::string & sessionId);
+	void CleanSessions();
 
 private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
