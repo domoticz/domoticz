@@ -1320,8 +1320,7 @@ std::string COpenZWaveControlPanel::DoAdminCommand(const std::string &fun, const
 		setAdminState(Manager::Get()->DeleteButton(homeId, node_id, button_id));
 	}
 	else if (fun == "refreshnode") {
-		//duo a possible bug in openzwave, this is now disabled (you could end up with miljions of log lines)
-		//Manager::Get()->RefreshNodeInfo(homeId, node_id);
+		Manager::Get()->RefreshNodeInfo(homeId, node_id);
 	}
 	return "OK";
 }

@@ -17,7 +17,7 @@
 //	#define DEBUG_ToonThermostat
 #endif
 
-#ifdef DEBUG_ToonThermostat
+#ifdef DEBUG_ToonThermostat2
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -27,6 +27,8 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+#endif
+#ifdef DEBUG_ToonThermostat
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -100,8 +102,6 @@ m_Password(Password)
 	m_p1gas.type = pTypeP1Gas;
 	m_p1gas.subtype = sTypeP1Gas;
 	m_p1gas.ID = 1;
-
-	Init();
 }
 
 CToonThermostat::~CToonThermostat(void)
@@ -117,6 +117,35 @@ void CToonThermostat::Init()
 	m_lastSharedSendGas = 0;
 	m_lastgasusage = 0;
 	m_lastelectrausage = 0;
+	m_lastelectradeliv = 0;
+
+	m_LastUsage1=0;
+	m_LastUsage2=0;
+	m_OffsetUsage1=0;
+	m_OffsetUsage2=0;
+	m_LastDeliv1 = 0;
+	m_LastDeliv2 = 0;
+	m_OffsetDeliv1 = 0;
+	m_OffsetDeliv2 = 0;
+
+	//Get Last meter counter values for Usage/Delivered
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==1) AND ([Type]==%d) AND (SubType==%d)", m_HwdID, pTypeP1Power, sTypeP1Power);
+	if (!result.empty())
+	{
+		unsigned long devID = (unsigned long)atol(result[0][0].c_str());
+		result = m_sql.safe_query("SELECT MAX(Counter1), MAX(Counter2), MAX(Counter3), MAX(Counter4) FROM Multimeter_Calendar WHERE (DeviceRowID==%ld)", devID);
+		if (result.size() > 0)
+		{
+			std::vector<std::string> sd = *result.begin();
+			m_OffsetUsage1 = (unsigned long)atol(sd[0].c_str());
+			m_OffsetDeliv1 = (unsigned long)atol(sd[1].c_str());
+			m_OffsetUsage2 = (unsigned long)atol(sd[2].c_str());
+			m_OffsetDeliv2 = (unsigned long)atol(sd[3].c_str());
+		}
+	}
+
+
 	m_bDoLogin = true;
 }
 
@@ -750,18 +779,46 @@ void CToonThermostat::GetMeterDetails()
 		m_p1power.powerusage1 = (unsigned long)(root["powerUsage"]["meterReadingLow"].asFloat());
 		m_p1power.powerusage2 = (unsigned long)(root["powerUsage"]["meterReading"].asFloat());
 
+		if ((m_p1power.powerusage1 == 0) && (m_p1power.powerusage2 == 0))
+		{
+			//New firmware does not provide meter readings anymore
+			unsigned long usage1 = (unsigned long)(root["powerUsage"]["dayUsage"].asFloat());
+			unsigned long usage2 = (unsigned long)(root["powerUsage"]["dayLowUsage"].asFloat());
+			if (usage1 < m_LastUsage1)
+			{
+				m_OffsetUsage1 += m_LastUsage1;
+			}
+			if (usage2 < m_LastUsage2)
+			{
+				m_OffsetUsage2 += m_LastUsage2;
+			}
+			m_p1power.powerusage1 = m_OffsetUsage1 + usage1;
+			m_p1power.powerusage2 = m_OffsetUsage2 + usage2;
+			m_LastUsage1 = usage1;
+			m_LastUsage2 = usage2;
+		}
+
 		if (root["powerUsage"]["meterReadingProdu"].empty() == false)
 		{
 			m_p1power.powerdeliv1 = (unsigned long)(root["powerUsage"]["meterReadingLowProdu"].asFloat());
 			m_p1power.powerdeliv2 = (unsigned long)(root["powerUsage"]["meterReadingProdu"].asFloat());
+
+			if ((m_p1power.powerdeliv1 == 0) && (m_p1power.powerdeliv2 == 0))
+			{
+				//Have not received an example from a user that has produced with the new firmware
+				//for now ignoring
+			}
 		}
 
 		m_p1power.usagecurrent = (unsigned long)(root["powerUsage"]["value"].asFloat());	//Watt
+		m_p1power.delivcurrent = (unsigned long)(root["powerUsage"]["valueProduced"].asFloat());	//Watt
+		
 	}
 
 	//Send Electra if value changed, or at least every 5 minutes
 	if (
 		(m_p1power.usagecurrent != m_lastelectrausage) ||
+		(m_p1power.delivcurrent != m_lastelectradeliv) ||
 		(atime - m_lastSharedSendElectra >= 300)
 		)
 	{
@@ -769,6 +826,7 @@ void CToonThermostat::GetMeterDetails()
 		{
 			m_lastSharedSendElectra = atime;
 			m_lastelectrausage = m_p1power.usagecurrent;
+			m_lastelectradeliv = m_p1power.delivcurrent;
 			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
 		}
 	}

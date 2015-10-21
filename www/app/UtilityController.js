@@ -1174,7 +1174,6 @@ define(['app'], function (app) {
 					}
 				  }
 				  else if (item.Type == "Current") {
-					alert(item.Name + " - " + item.Type + " - " + item.displaytype);
 					xhtm+='<a class="btnsmall" onclick="ShowCurrentLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';

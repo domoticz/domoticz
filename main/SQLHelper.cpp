@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 83
+#define DB_VERSION 84
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -556,6 +556,16 @@ const char *sqlCreateToonDevices =
 	" [HardwareID] INTEGER NOT NULL,"
 	" [UUID] VARCHAR(100) NOT NULL);";
 
+const char *sqlCreateUserSessions =
+	"CREATE TABLE IF NOT EXISTS [UserSessions]("
+	" [SessionID] VARCHAR(100) NOT NULL,"
+	" [Username] VARCHAR(100) NOT NULL,"
+	" [AuthToken] VARCHAR(100) UNIQUE NOT NULL,"
+	" [ExpirationDate] DATETIME NOT NULL,"
+	" [RemoteHost] VARCHAR(50) NOT NULL,"
+	" [LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')),"
+	" PRIMARY KEY([SessionID]));";
+
 extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -676,6 +686,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateMySensorsChilds);
 	query(sqlCreateToonDevices);
+	query(sqlCreateUserSessions);
 	//Add indexes to log tables
 	query("create index if not exists f_idx on Fan(DeviceRowID);");
 	query("create index if not exists fc_idx on Fan_Calendar(DeviceRowID);");
