@@ -1419,7 +1419,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 	}
 
 #ifdef _DEBUG
-	_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+	//_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
 
 	if (session.username.empty()) {
