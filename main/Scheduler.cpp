@@ -588,7 +588,7 @@ void CScheduler::DeleteExpiredTimers()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_Schedules(Json::Value &root)
+		void CWebServer::RType_Schedules(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "OK";
 			root["title"] = "Schedules";
@@ -631,12 +631,12 @@ namespace http {
 				ii++;
 			}
 		}
-		void CWebServer::RType_Timers(Json::Value &root)
+		void CWebServer::RType_Timers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			if (idx == 0)
@@ -688,25 +688,25 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddTimer(Json::Value &root)
+		void CWebServer::Cmd_AddTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string active = m_pWebEm->FindValue("active");
-			std::string stimertype = m_pWebEm->FindValue("timertype");
-			std::string sdate = m_pWebEm->FindValue("date");
-			std::string shour = m_pWebEm->FindValue("hour");
-			std::string smin = m_pWebEm->FindValue("min");
-			std::string randomness = m_pWebEm->FindValue("randomness");
-			std::string scmd = m_pWebEm->FindValue("command");
-			std::string sdays = m_pWebEm->FindValue("days");
-			std::string slevel = m_pWebEm->FindValue("level");	//in percentage
-			std::string shue = m_pWebEm->FindValue("hue");
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string randomness = request::findValue(&req, "randomness");
+			std::string scmd = request::findValue(&req, "command");
+			std::string sdays = request::findValue(&req, "days");
+			std::string slevel = request::findValue(&req, "level");	//in percentage
+			std::string shue = request::findValue(&req, "hue");
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -762,25 +762,25 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateTimer(Json::Value &root)
+		void CWebServer::Cmd_UpdateTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string active = m_pWebEm->FindValue("active");
-			std::string stimertype = m_pWebEm->FindValue("timertype");
-			std::string sdate = m_pWebEm->FindValue("date");
-			std::string shour = m_pWebEm->FindValue("hour");
-			std::string smin = m_pWebEm->FindValue("min");
-			std::string randomness = m_pWebEm->FindValue("randomness");
-			std::string scmd = m_pWebEm->FindValue("command");
-			std::string sdays = m_pWebEm->FindValue("days");
-			std::string slevel = m_pWebEm->FindValue("level");	//in percentage
-			std::string shue = m_pWebEm->FindValue("hue");
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string randomness = request::findValue(&req, "randomness");
+			std::string scmd = request::findValue(&req, "command");
+			std::string sdays = request::findValue(&req, "days");
+			std::string slevel = request::findValue(&req, "level");	//in percentage
+			std::string shue = request::findValue(&req, "hue");
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -835,15 +835,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteTimer(Json::Value &root)
+		void CWebServer::Cmd_DeleteTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -855,15 +855,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableTimer(Json::Value &root)
+		void CWebServer::Cmd_EnableTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -875,15 +875,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableTimer(Json::Value &root)
+		void CWebServer::Cmd_DisableTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -895,15 +895,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearTimers(Json::Value &root)
+		void CWebServer::Cmd_ClearTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -915,12 +915,12 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SetpointTimers(Json::Value &root)
+		void CWebServer::RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			if (idx == 0)
@@ -964,22 +964,22 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::Cmd_AddSetpointTimer(Json::Value &root)
+		void CWebServer::Cmd_AddSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string active = m_pWebEm->FindValue("active");
-			std::string stimertype = m_pWebEm->FindValue("timertype");
-			std::string sdate = m_pWebEm->FindValue("date");
-			std::string shour = m_pWebEm->FindValue("hour");
-			std::string smin = m_pWebEm->FindValue("min");
-			std::string stvalue = m_pWebEm->FindValue("tvalue");
-			std::string sdays = m_pWebEm->FindValue("days");
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string stvalue = request::findValue(&req, "tvalue");
+			std::string sdays = request::findValue(&req, "days");
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1029,22 +1029,22 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateSetpointTimer(Json::Value &root)
+		void CWebServer::Cmd_UpdateSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string active = m_pWebEm->FindValue("active");
-			std::string stimertype = m_pWebEm->FindValue("timertype");
-			std::string sdate = m_pWebEm->FindValue("date");
-			std::string shour = m_pWebEm->FindValue("hour");
-			std::string smin = m_pWebEm->FindValue("min");
-			std::string stvalue = m_pWebEm->FindValue("tvalue");
-			std::string sdays = m_pWebEm->FindValue("days");
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string stvalue = request::findValue(&req, "tvalue");
+			std::string sdays = request::findValue(&req, "days");
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1093,15 +1093,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteSetpointTimer(Json::Value &root)
+		void CWebServer::Cmd_DeleteSetpointTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1113,15 +1113,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearSetpointTimers(Json::Value &root)
+		void CWebServer::Cmd_ClearSetpointTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1133,12 +1133,12 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::RType_SceneTimers(Json::Value &root)
+		void CWebServer::RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			unsigned long long idx = 0;
-			if (m_pWebEm->FindValue("idx") != "")
+			if (request::findValue(&req, "idx") != "")
 			{
-				std::stringstream s_str(m_pWebEm->FindValue("idx"));
+				std::stringstream s_str(request::findValue(&req, "idx"));
 				s_str >> idx;
 			}
 			if (idx == 0)
@@ -1191,24 +1191,24 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_AddSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string active = m_pWebEm->FindValue("active");
-			std::string stimertype = m_pWebEm->FindValue("timertype");
-			std::string sdate = m_pWebEm->FindValue("date");
-			std::string shour = m_pWebEm->FindValue("hour");
-			std::string smin = m_pWebEm->FindValue("min");
-			std::string randomness = m_pWebEm->FindValue("randomness");
-			std::string scmd = m_pWebEm->FindValue("command");
-			std::string sdays = m_pWebEm->FindValue("days");
-			std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string randomness = request::findValue(&req, "randomness");
+			std::string scmd = request::findValue(&req, "command");
+			std::string sdays = request::findValue(&req, "days");
+			std::string slevel = request::findValue(&req, "level");	//in percentage
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1262,24 +1262,24 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_UpdateSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string active = m_pWebEm->FindValue("active");
-			std::string stimertype = m_pWebEm->FindValue("timertype");
-			std::string sdate = m_pWebEm->FindValue("date");
-			std::string shour = m_pWebEm->FindValue("hour");
-			std::string smin = m_pWebEm->FindValue("min");
-			std::string randomness = m_pWebEm->FindValue("randomness");
-			std::string scmd = m_pWebEm->FindValue("command");
-			std::string sdays = m_pWebEm->FindValue("days");
-			std::string slevel = m_pWebEm->FindValue("level");	//in percentage
+			std::string idx = request::findValue(&req, "idx");
+			std::string active = request::findValue(&req, "active");
+			std::string stimertype = request::findValue(&req, "timertype");
+			std::string sdate = request::findValue(&req, "date");
+			std::string shour = request::findValue(&req, "hour");
+			std::string smin = request::findValue(&req, "min");
+			std::string randomness = request::findValue(&req, "randomness");
+			std::string scmd = request::findValue(&req, "command");
+			std::string sdays = request::findValue(&req, "days");
+			std::string slevel = request::findValue(&req, "level");	//in percentage
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1333,15 +1333,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_DeleteSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1353,15 +1353,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_EnableSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1373,15 +1373,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableSceneTimer(Json::Value &root)
+		void CWebServer::Cmd_DisableSceneTimer(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";
@@ -1393,15 +1393,15 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearSceneTimers(Json::Value &root)
+		void CWebServer::Cmd_ClearSceneTimers(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			root["status"] = "OK";

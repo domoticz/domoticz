@@ -175,16 +175,16 @@ void P1MeterSerial::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetP1USBType()
+		char * CWebServer::SetP1USBType(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -195,7 +195,7 @@ namespace http {
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
 
-			int Mode1 = atoi(m_pWebEm->FindValue("P1Baudrate").c_str());
+			int Mode1 = atoi(request::findValue(&req, "P1Baudrate").c_str());
 			int Mode2 = 0;
 			int Mode3 = 0;
 			int Mode4 = 0;

@@ -591,13 +591,13 @@ bool CPhilipsHue::GetLightStates()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_RegisterWithPhilipsHue(Json::Value &root)
+		void CWebServer::Cmd_RegisterWithPhilipsHue(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "RegisterOnHue";
 
-			std::string sipaddress = m_pWebEm->FindValue("ipaddress");
-			std::string sport = m_pWebEm->FindValue("port");
-			std::string susername = m_pWebEm->FindValue("username");
+			std::string sipaddress = request::findValue(&req, "ipaddress");
+			std::string sport = request::findValue(&req, "port");
+			std::string susername = request::findValue(&req, "username");
 			if (
 				(sipaddress == "") ||
 				(sport == "")

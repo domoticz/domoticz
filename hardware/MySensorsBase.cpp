@@ -1808,9 +1808,9 @@ void MySensorsBase::ParseLine()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_MySensorsGetNodes(Json::Value &root)
+		void CWebServer::Cmd_MySensorsGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -1878,10 +1878,10 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::Cmd_MySensorsGetChilds(Json::Value &root)
+		void CWebServer::Cmd_MySensorsGetChilds(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
 			if (
 				(hwid == "")||
 				(nodeid == "")
@@ -1944,16 +1944,16 @@ namespace http {
 				ii++;
 			}
 		}
-		void CWebServer::Cmd_MySensorsRemoveNode(Json::Value &root)
+		void CWebServer::Cmd_MySensorsRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
 			if (
 				(hwid == "") ||
 				(nodeid == "")
@@ -1974,17 +1974,17 @@ namespace http {
 			root["title"] = "MySensorsRemoveNode";
 			pMySensorsHardware->RemoveNode(NodeID);
 		}
-		void CWebServer::Cmd_MySensorsRemoveChild(Json::Value &root)
+		void CWebServer::Cmd_MySensorsRemoveChild(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string childid = m_pWebEm->FindValue("childid");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
+			std::string childid = request::findValue(&req, "childid");
 			if (
 				(hwid == "") ||
 				(nodeid == "") ||
