@@ -473,7 +473,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 			cmd[1] = (index != 255) ? (index + 1) : 0;
 			if (SendCommand(cmd, 2, buffer) > 0)
 			{
-				uint16_t* pTemp = reinterpret_cast<uint16_t*>(&buffer[2]);
+				uint16_t temp = buffer[2] * 256 + buffer[3];
 
 				if (firstTime)
 				{
@@ -487,7 +487,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 					cmd[2] = (unsigned char)(index + 1);
 					if (SendCommand(cmd, 3, buffer) > 0)
 					{
-						ReportTemperature(index + 1, *pTemp);
+						ReportTemperature(index + 1, temp);
 						UpdateTempName(index + 1, &buffer[4], 0);
 					}
 					else
@@ -497,7 +497,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 				}
 				else
 				{
-					ReportTemperature(index + 1, *pTemp);
+					ReportTemperature(index + 1, temp);
 				}
 			}
 			else
@@ -778,7 +778,7 @@ void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
 
 	temp = temp - 0x6E;
 	tsen.TEMP.tempsign=(temp>=0)?0:1;
-	int at10=round(abs(temp/2.0f));
+	int at10=round(abs(temp*5.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);

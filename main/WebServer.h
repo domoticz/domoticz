@@ -4,6 +4,7 @@
 #include <vector>
 #include "../webserver/cWebem.h"
 #include "../webserver/request.hpp"
+#include "../webserver/session_store.hpp"
 
 struct lua_State;
 struct lua_Debug;
@@ -17,7 +18,7 @@ namespace http {
 	namespace server {
 		class cWebem;
 		struct _tWebUserPassword;
-class CWebServer
+class CWebServer : public session_store
 {
 	typedef boost::function< void(WebEmSession & session, const request& req, Json::Value &root) > webserver_response_function;
 public:
@@ -71,6 +72,13 @@ public:
 	std::vector<_tWebUserPassword> m_users;
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const std::string &username);
+
+	// SessionStore interface
+	const WebEmStoredSession GetSession(const std::string & sessionId);
+	void StoreSession(const WebEmStoredSession & session);
+	void RemoveSession(const std::string & sessionId);
+	void CleanSessions();
+
 private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 	void HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root);

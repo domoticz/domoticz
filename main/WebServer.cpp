@@ -296,6 +296,7 @@ namespace http {
 				_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
+			m_pWebEm->SetSessionStore(this);
 
 			if (!bIgnoreUsernamePassword)
 			{
@@ -5970,9 +5971,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetFloorplanPlans";
 				std::vector<std::vector<std::string> > result;
-				std::stringstream szQuery;
 				int ii = 0;
-
 				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name",
 					idx.c_str());
 				if (result.size() > 0)
@@ -7356,8 +7355,6 @@ namespace http {
 
 						bool bIsSubDevice = false;
 						std::vector<std::vector<std::string> > resultSD;
-						std::stringstream szQuerySD;
-
 						resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')",
 							sd[0].c_str());
 						bIsSubDevice = (resultSD.size() > 0);
@@ -14848,6 +14845,105 @@ namespace http {
 					}
 				}
 			}//custom range
+		}
+
+		/**
+		 * Retrieve user session from store, without remote host.
+		 */
+		const WebEmStoredSession CWebServer::GetSession(const std::string & sessionId) {
+			//_log.Log(LOG_STATUS, "SessionStore : get...");
+			WebEmStoredSession session;
+
+			if (sessionId.empty()) {
+				_log.Log(LOG_ERROR, "SessionStore : cannot get session without id.");
+			} else {
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT SessionID, Username, AuthToken, ExpirationDate FROM UserSessions WHERE SessionID = '%q'",
+						sessionId.c_str());
+				if (result.size() > 0) {
+					session.id = result[0][0].c_str();
+					session.username = base64_decode(result[0][1]);
+					session.auth_token = result[0][2].c_str();
+
+					std::string sExpirationDate = result[0][3];
+					time_t now = mytime(NULL);
+					struct tm tm1;
+					localtime_r(&now, &tm1);
+					struct tm tExpirationDate;
+					tExpirationDate.tm_isdst = tm1.tm_isdst;
+					tExpirationDate.tm_year = atoi(sExpirationDate.substr(0, 4).c_str()) - 1900;
+					tExpirationDate.tm_mon = atoi(sExpirationDate.substr(5, 2).c_str()) - 1;
+					tExpirationDate.tm_mday = atoi(sExpirationDate.substr(8, 2).c_str());
+					tExpirationDate.tm_hour = atoi(sExpirationDate.substr(11, 2).c_str());
+					tExpirationDate.tm_min = atoi(sExpirationDate.substr(14, 2).c_str());
+					tExpirationDate.tm_sec = atoi(sExpirationDate.substr(17, 2).c_str());
+					session.expires = mktime(&tExpirationDate);
+
+					// RemoteHost is not used to restore the session
+					// LastUpdate is not used to restore the session
+				}
+			}
+
+			return session;
+		}
+
+		/**
+		 * Save user session.
+		 */
+		void CWebServer::StoreSession(const WebEmStoredSession & session) {
+			//_log.Log(LOG_STATUS, "SessionStore : store...");
+			if (session.id.empty()) {
+				_log.Log(LOG_ERROR, "SessionStore : cannot store session without id.");
+				return;
+			}
+
+			char szExpires[30];
+			struct tm ltime;
+			localtime_r(&session.expires,&ltime);
+			strftime(szExpires, sizeof(szExpires), "%Y-%m-%d %H:%M:%S", &ltime);
+
+			std::string remote_host = (session.remote_host.size() <= 50) ? // IPv4 : 15, IPv6 : (39|45)
+					session.remote_host : session.remote_host.substr(0, 50);
+
+			WebEmStoredSession storedSession = GetSession(session.id);
+			if (storedSession.id.empty()) {
+				m_sql.safe_query(
+					"INSERT INTO UserSessions (SessionID, Username, AuthToken, ExpirationDate, RemoteHost) VALUES ('%q', '%q', '%q', '%q', '%q')",
+					session.id.c_str(),
+					base64_encode((const unsigned char*) session.username.c_str(), session.username.size()).c_str(),
+					session.auth_token.c_str(),
+					szExpires,
+					remote_host.c_str());
+			} else {
+				m_sql.safe_query(
+					"UPDATE UserSessions set AuthToken = '%q', ExpirationDate = '%q', RemoteHost = '%q', LastUpdate = datetime('now', 'localtime') WHERE SessionID = '%q'",
+					session.auth_token.c_str(),
+					szExpires,
+					remote_host.c_str(),
+					session.id.c_str());
+			}
+		}
+
+		/**
+		 * Remove user session and expired sessions.
+		 */
+		void CWebServer::RemoveSession(const std::string & sessionId) {
+			//_log.Log(LOG_STATUS, "SessionStore : remove...");
+			if (sessionId.empty()) {
+				return;
+			}
+			m_sql.safe_query(
+					"DELETE FROM UserSessions WHERE SessionID = '%q'",
+					sessionId.c_str());
+		}
+
+		/**
+		 * Remove all expired user sessions.
+		 */
+		void CWebServer::CleanSessions() {
+			//_log.Log(LOG_STATUS, "SessionStore : clean...");
+			m_sql.safe_query(
+					"DELETE FROM UserSessions WHERE ExpirationDate < datetime('now', 'localtime')");
 		}
 
 	} //server
