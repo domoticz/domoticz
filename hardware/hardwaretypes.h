@@ -137,6 +137,7 @@
 #define gswitch_sPause				0x13
 #define gswitch_sPlay				0x14
 #define gswitch_sSetVolume			0x15
+#define gswitch_sPlayPlaylist		0x16
 //--------------
 
 #define pTypeLux		0xF6

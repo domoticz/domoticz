@@ -108,6 +108,7 @@ private:
 	void Cmd_KodiMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSGetNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_LMSGetPlaylists(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SaveFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
