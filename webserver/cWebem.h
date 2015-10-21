@@ -180,9 +180,11 @@ namespace http {
 
 			void RegisterWhitelistURLString(const char* idname);
 
+			bool IsAction(const request& req);
 			bool CheckForAction(WebEmSession & session, request& req);
-			bool CheckForPageOverride(WebEmSession & session, request& req, reply& rep);
+
 			bool IsPageOverride(const request& req, reply& rep);
+			bool CheckForPageOverride(WebEmSession & session, request& req, reply& rep);
 
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
