@@ -911,6 +911,9 @@ void cWebem::SetZipPassword(std::string password)
 
 void cWebem::SetSessionStore(session_store* sessionStore) {
 	mySessionStore = sessionStore;
+	if (mySessionStore != NULL) {
+		mySessionStore->CleanSessions();
+	}
 }
 
 session_store* cWebem::GetSessionStore() {
@@ -1150,7 +1153,9 @@ std::string cWebemRequestHandler::generateSessionID()
 
 	std::string sessionId = GenerateMD5Hash(base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size()));
 
-	//_log.Log(LOG_STATUS, "generate new session id token %s", sessionId.c_str());
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS, "generate new session id token %s", sessionId.c_str());
+#endif
 
 	return sessionId;
 }
@@ -1167,6 +1172,7 @@ std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session
 	randomValue = ss.str();
 
 	std::string authToken = base64_encode((const unsigned char*)randomValue.c_str(), randomValue.size());
+
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "generate new authentication token %s", authToken.c_str());
 #endif
@@ -1420,6 +1426,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 		removeAuthToken(session.id);
 		return false;
 	}
+
 #ifdef _DEBUG
 	//_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
@@ -1428,6 +1435,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 		// Restore session if user exists and session does not already exist
 		bool userExists = false;
 		session.username = storedSession.username;
+		session.expires = storedSession.expires;
 		std::vector<_tWebUserPassword>::iterator ittu;
 		for (ittu=myWebem->m_userpasswords.begin(); ittu!=myWebem->m_userpasswords.end(); ++ittu) {
 			if (ittu->Username == session.username) { // the user still exists
@@ -1436,6 +1444,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 				break;
 			}
 		}
+
 		if (!userExists) {
 #ifdef _DEBUG
 			_log.Log(LOG_ERROR, "CheckAuthToken(%s_%s) : cannot restore session user not found", session.id.c_str(), session.auth_token.c_str());
@@ -1443,6 +1452,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 			removeAuthToken(session.id);
 			return false;
 		}
+
 		std::map<std::string, WebEmSession>::iterator itts = myWebem->m_sessions.find(session.id);
 		if (itts == myWebem->m_sessions.end()) {
 #ifdef _DEBUG
@@ -1617,8 +1627,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			if (myWebem->m_sessions[session.id].expires - 60 < atime)
 			{
 				myWebem->m_sessions[session.id].expires = atime + SESSION_TIMEOUT;
-				session.expires = myWebem->m_sessions[session.id].expires;
-				myWebem->m_sessions[session.id].auth_token = generateAuthToken(session, req); // do it after expires to save it also
+				myWebem->m_sessions[session.id].auth_token = generateAuthToken(myWebem->m_sessions[session.id], req); // do it after expires to save it also
 				send_cookie(rep, myWebem->m_sessions[session.id]);
 			}
 		}
