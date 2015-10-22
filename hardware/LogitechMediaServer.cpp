@@ -12,11 +12,23 @@
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 
+CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const std::string User, const std::string Pwd, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
+{
+	m_HwdID = ID;
+	m_IP = IPAddress;
+	m_Port = Port;
+	m_User = User;
+	m_Pwd = Pwd;
+	SetSettings(PollIntervalsec, PingTimeoutms);
+}
+
 CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
 	m_IP = IPAddress;
 	m_Port = Port;
+	m_User = "";
+	m_Pwd = "";
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
@@ -25,6 +37,8 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAdd
 	m_HwdID = ID;
 	m_IP = IPAddress;
 	m_Port = Port;
+	m_User = "";
+	m_Pwd = "";
 	SetSettings(10, 3000);
 }
 
@@ -61,6 +75,7 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
 	sPostData << sPostdata;
 	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
+	HTTPClient::SetUserPwd(m_User, m_Pwd);
 	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
 
 	if (!bRetVal)
@@ -71,7 +86,11 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	bRetVal = jReader.parse(sResult, root);
 	if (!bRetVal)
 	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
+		size_t aFind = sResult.find("401 Authorization Required");
+		if ((aFind > 0) && (aFind != std::string::npos))
+			_log.Log(LOG_ERROR, "Logitech Media Server: Username and/or password are incorrect. Check Logitech Media Server settings.");
+		else
+			_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
 		return root;
 	}
 	if (root["method"].empty())
