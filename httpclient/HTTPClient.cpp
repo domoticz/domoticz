@@ -13,6 +13,8 @@ bool		HTTPClient::m_bCurlGlobalInitialized = false;
 long		HTTPClient::m_iConnectionTimeout=10;
 long		HTTPClient::m_iTimeout=90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent="domoticz/1.0";
+std::string HTTPClient::m_sUser="";
+std::string HTTPClient::m_sPwd="";
 
 size_t write_curl_data(void *contents, size_t size, size_t nmemb, void *userp) {
 	size_t realsize = size * nmemb;
@@ -75,6 +77,12 @@ void HTTPClient::SetTimeout(const long timeout)
 void HTTPClient::SetUserAgent(const std::string &useragent)
 {
 	m_sUserAgent=useragent;
+}
+
+void  HTTPClient::SetUserPwd(const std::string &user, const std::string &pwd)
+{
+	m_sUser = user;
+	m_sPwd = pwd;
 }
 
 bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
@@ -178,6 +186,11 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
+
+		if (m_sUser != "")
+			curl_easy_setopt(curl, CURLOPT_USERNAME, m_sUser.c_str());
+		if (m_sPwd != "")
+			curl_easy_setopt(curl, CURLOPT_PASSWORD, m_sPwd.c_str());
 
 		struct curl_slist *headers=NULL;
 		if (ExtraHeaders.size()>0) {
