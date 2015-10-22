@@ -6,6 +6,7 @@
 #include "SQLHelper.h"
 #include "Logger.h"
 #include "../hardware/hardwaretypes.h"
+#include "../hardware/LogitechMediaServer.h"
 #include <iostream>
 #include "../httpclient/HTTPClient.h"
 #include "localtime_r.h"
@@ -2705,7 +2706,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 	std::vector<std::vector<std::string> > result;
 
 	if (isScene) {
-		result = m_sql.safe_query("SELECT ID FROM	Scenes WHERE (Name == '%q')",
+		result = m_sql.safe_query("SELECT ID FROM Scenes WHERE (Name == '%q')",
 			deviceName.c_str());
 	}
 	else {
@@ -2774,6 +2775,19 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	{
 		_level = atoi(Action.substr(11).c_str());
 		Action = Action.substr(0, 10);
+	}
+
+	if (Action.find("Play Playlist") == 0)
+	{
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
+		if (pBaseHardware == NULL) return false;
+		CLogitechMediaServer *pHardware = (CLogitechMediaServer*)pBaseHardware;
+
+		int iPlaylistID = pHardware->GetPlaylistRefID(Action.substr(14).c_str());
+		if (iPlaylistID == 0) return false;
+
+		_level = iPlaylistID;
+		Action = Action.substr(0, 13);
 	}
 
 	int DelayTime = 1;
