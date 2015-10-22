@@ -2012,6 +2012,11 @@ bool GetLightCommand(
 			cmd = gswitch_sPlay;
 			return true;
 		}
+		else if (switchcmd == "Play Playlist")
+		{
+			cmd = gswitch_sPlayPlaylist;
+			return true;
+		}
 		else if (switchcmd == "Set Volume")
 		{
 			cmd = gswitch_sSetVolume;

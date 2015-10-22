@@ -9669,8 +9669,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			else if (switchtype == STYPE_Media)
 			{
-				level = (level < 0) ? 0 : level;
-				level = (level > 100) ? 100 : level;
+				if (switchcmd == "Set Volume") {
+					level = (level < 0) ? 0 : level;
+					level = (level > 100) ? 100 : level;
+				}
 			}
 			else 
 				level = (level > 15) ? 15 : level;
@@ -9699,9 +9701,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 
 			if (!IsTesting) {
-				//Skip for LMS SetVolume
-				if ((pHardware->HwdType == HTYPE_LogitechMediaServer) && (lcmd.LIGHTING2.cmnd == gswitch_sSetVolume))
-					return true;
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
 			}
