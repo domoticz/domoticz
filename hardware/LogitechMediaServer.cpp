@@ -542,6 +542,8 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 			case gswitch_sPlayPlaylist:
 				sParam = GetPlaylistByRefID(iParam);
 				return SendCommand(itt->ID, "PlayPlaylist", sParam);
+			case gswitch_sPlayFavorites:
+				return SendCommand(itt->ID, "PlayFavorites");
 			case gswitch_sStop:
 				return SendCommand(itt->ID, "Stop");
 			case gswitch_sPause:
@@ -701,6 +703,9 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 			if (param == "") return false;
 			sLMSCmnd = "\"playlist\", \"play\", \"" + param + "\"";
 		}
+		else if (command == "PlayFavorites") {
+			sLMSCmnd = "\"favorites\", \"playlist\", \"play\"";
+		}
 		else if (command == "Pause") {
 			sLMSCmnd = "\"button\", \"pause.single\"";
 		}
@@ -738,6 +743,8 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 				else if (command == "Play")
 					return sMode == "play";
 				else if (command == "PlayPlaylist")
+					return sMode == "play";
+				else if (command == "PlayFavorites")
 					return sMode == "play";
 				else if (command == "PowerOn")
 					return sPower == "1";
