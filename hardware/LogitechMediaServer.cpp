@@ -47,13 +47,17 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false
 	m_HwdID = ID;
 	m_IP = "";
 	m_Port = 0;
+	m_User = "";
+	m_Pwd = "";
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Address, Port FROM Hardware WHERE ID==%d", m_HwdID);
+	result = m_sql.safe_query("SELECT Address, Port, Username, Password FROM Hardware WHERE ID==%d", m_HwdID);
 
 	if (result.size() > 0)
 	{
 		m_IP = result[0][0];
 		m_Port = atoi(result[0][1].c_str());
+		m_User = result[0][2];
+		m_Pwd = result[0][3];
 	}
 
 	SetSettings(10, 3000);
@@ -72,10 +76,13 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	std::stringstream sURL;
 	std::stringstream sPostData;
 
-	sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
+	if ((m_User != "") && (m_Pwd != ""))
+		sURL << "http://" << m_User << ":" << m_Pwd << "@" << sIP << ":" << iPort << "/jsonrpc.js";
+	else
+		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
+
 	sPostData << sPostdata;
 	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
-	HTTPClient::SetUserPwd(m_User, m_Pwd);
 	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
 
 	if (!bRetVal)
