@@ -22,7 +22,7 @@ const std::string THERMOSMART_SETPOINT_PATH = "https://api.thermosmart.com/therm
 const std::string THERMOSMART_SET_PAUZE = "https://api.thermosmart.com/thermostat/[TID]/pause?access_token=[access_token]";
 
 #ifdef _DEBUG
-	#define DEBUG_ThermosmartThermostat_read
+	//#define DEBUG_ThermosmartThermostat_read
 #endif
 
 #ifdef DEBUG_ThermosmartThermostat
