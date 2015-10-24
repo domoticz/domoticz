@@ -383,14 +383,18 @@ secpanel/bg.jpg
 # Audio
 media/click.wav
 media/delete.wav
-secpanel/sounds/armed.mp3
-secpanel/sounds/armed.ogg
-secpanel/sounds/bleep.mp3
-secpanel/sounds/bleep.ogg
-secpanel/sounds/disarmed.mp3
-secpanel/sounds/disarmed.ogg
-secpanel/sounds/wrong.mp3
-secpanel/sounds/wrong.ogg
+secpanel/media/arm.aac
+secpanel/media/arm.mp3
+secpanel/media/arm.ogg
+secpanel/media/disarm.aac
+secpanel/media/disarm.mp3
+secpanel/media/disarm.ogg
+secpanel/media/key.aac
+secpanel/media/key.mp3
+secpanel/media/key.ogg
+secpanel/media/wrongcode.aac
+secpanel/media/wrongcode.mp3
+secpanel/media/wrongcode.ogg
 
 # Languages
 i18n/domoticz-ar.json
