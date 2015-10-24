@@ -15,3 +15,17 @@ build_script:
 
 artifacts:
 - path: domoticz-*-setup.zip
+
+test: off
+
+deploy:
+- provider: FTP
+  host: 62.84.241.110
+  protocol: ftps
+  username: uploads@domoticz.com
+  password:
+    secure: GgWxZgJZT1AvNQvCd0XhUg==
+  on:
+    APPVEYOR_REPO_NAME: domoticz/domoticz
+    APPVEYOR_REPO_BRANCH: master  
+
