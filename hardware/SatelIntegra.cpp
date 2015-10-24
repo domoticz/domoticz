@@ -146,6 +146,14 @@ void SatelIntegra::Do_Work()
 	_log.Log(LOG_STATUS, "Satel Integra: Start work");
 #endif
 
+	//unsigned char buffer[33];
+	//buffer[2] = 0;
+	//buffer[3] = 0x01;
+	//uint16_t temp = buffer[2] * 256 + buffer[3];
+	//ReportTemperature(233, temp);
+	//const unsigned char aa = 'a';
+	//UpdateTempName(233, &aa, 1);
+
 	if (GetInfo())
 	{
 
@@ -766,24 +774,34 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 
 void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
 {
-	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP10;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=12;
-	tsen.TEMP.id1=(BYTE)Idx;
-	tsen.TEMP.id2=0;
+	//RBUF tsen;
+	//memset(&tsen,0,sizeof(RBUF));
+	//tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
+	//tsen.TEMP.packettype=pTypeTEMP;
+	//tsen.TEMP.subtype=sTypeTEMP10;
+	//tsen.TEMP.battery_level=9;
+	//tsen.TEMP.rssi=12;
+	//tsen.TEMP.id1=(BYTE)Idx;
+	//tsen.TEMP.id2=0;
+
+	//temp = temp - 0x6E;
+	//tsen.TEMP.tempsign=(temp>=0)?0:1;
+	//int at10=round(abs(temp*5.0f));
+	//tsen.TEMP.temperatureh=(BYTE)(at10/256);
+	//at10-=(tsen.TEMP.temperatureh*256);
+	//tsen.TEMP.temperaturel=(BYTE)(at10);
+
+	//sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 
 	temp = temp - 0x6E;
-	tsen.TEMP.tempsign=(temp>=0)?0:1;
-	int at10=round(abs(temp*5.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+	_tGeneralDevice tempDevice;
+	tempDevice.subtype = sTypeTemperature;
+	tempDevice.id = (unsigned char)Idx;
+	tempDevice.floatval1 = temp / 2.0f;
+
+	sDecodeRXMessage(this, (const unsigned char *)&tempDevice);
+
 }
 
 bool SatelIntegra::ArmPartitions(const unsigned char* partitions, const unsigned int mode)
@@ -924,7 +942,7 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 	if (shortName.find("ATD100") != std::string::npos)
 	{
 		m_isTemperature[Idx - 1] = true;
-		namePrefix = "Temp";
+		namePrefix = "ATD100";
 	}
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='%q:%q') AND (Unit=1)", m_HwdID, szTmp, namePrefix.c_str(), shortName.c_str());
@@ -949,14 +967,14 @@ void SatelIntegra::UpdateTempName(const unsigned int Idx, const unsigned char* n
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Temp:%q') AND (Unit=0)", m_HwdID, szTmp, shortName.c_str());
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Temp:%q') AND (Unit=1)", m_HwdID, szTmp, shortName.c_str());
 	if (result.size() < 1)
 	{
 		//Assign zone name from Integra
 #ifdef DEBUG_SatelIntegra
 		_log.Log(LOG_STATUS, "Satel Integra: update name for %d to 'Temp:%s'", Idx, shortName.c_str());
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Temp:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=0)", shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Temp:%q', SwitchType=%d, Unit=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=1)", shortName.c_str(), STYPE_Contact, partition, m_HwdID, szTmp);
 	}
 }
 

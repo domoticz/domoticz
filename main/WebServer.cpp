@@ -4395,7 +4395,8 @@ namespace http {
 					((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 					((dType == pTypeWIND) && (dSubType == sTypeWIND4)) ||
 					((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp)) ||
-					((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))
+					((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
+					((dType == pTypeGeneral) && (dSubType == sTypeTemperature))
 					)
 				{
 					root["result"][ii]["val"] = NTYPE_TEMPERATURE;
@@ -7061,6 +7062,7 @@ namespace http {
 								(!((dType == pTypeWIND) && (dSubType == sTypeWINDNoTemp))) &&
 								(!((dType == pTypeUV) && (dSubType == sTypeUV3))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeTemperature))) &&
 								(dType != pTypeThermostat1) &&
 								(!((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))) &&
 								(dType != pTypeRego6XXTemp)
@@ -8689,6 +8691,17 @@ namespace http {
 							root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "temperature";
 							root["result"][ii]["Type"] = "temperature";
+						}
+						else if (dSubType == sTypeTemperature)
+						{
+							double tvalue = ConvertTemperature(atof(sValue.c_str()), tempsign);
+							root["result"][ii]["Temp"] = tvalue;
+							sprintf(szData, "%.1f %c", tvalue, tempsign);
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["Image"] = "temperature";
+							root["result"][ii]["TypeImg"] = "temperature";
+							root["result"][ii]["Type"] = "Temp";
 						}
 						else if (dSubType == sTypePercentage)
 						{
@@ -11103,6 +11116,7 @@ namespace http {
 								(dType == pTypeRadiator1) ||
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
+								((dType == pTypeGeneral) && (dSubType == sTypeTemperature)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeBaro)) ||
 								((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
 								(dType == pTypeEvohomeZone) ||
@@ -12766,6 +12780,7 @@ namespace http {
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
+								((dType == pTypeGeneral) && (dSubType == sTypeTemperature)) ||
 								((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
 								(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)||
 								((dType == pTypeGeneral) && (dSubType == sTypeBaro))
@@ -12944,6 +12959,7 @@ namespace http {
 								((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp)) ||
 								((dType == pTypeUV) && (dSubType == sTypeUV3)) ||
 								((dType == pTypeGeneral) && (dSubType == sTypeSystemTemp)) ||
+								((dType == pTypeGeneral) && (dSubType == sTypeTemperature)) ||
 								((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint)) ||
 								(dType == pTypeEvohomeZone) || (dType == pTypeEvohomeWater)
 								)
