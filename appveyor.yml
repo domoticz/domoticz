@@ -26,4 +26,6 @@ deploy:
   password:
     secure: GgWxZgJZT1AvNQvCd0XhUg==
   on:
-    branch: master
+    APPVEYOR_REPO_NAME: domoticz/domoticz
+    APPVEYOR_REPO_BRANCH: master  
+
