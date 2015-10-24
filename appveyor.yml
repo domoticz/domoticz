@@ -19,10 +19,10 @@ artifacts:
 deploy:
 - provider: FTP
   host: 62.84.241.110
-  protocol: sftp
+  protocol: ftps
   username: uploads@domoticz.com
   password:
-    secure: FW/UEGtkFhLoFWbqekzYtA==
+    secure: GgWxZgJZT1AvNQvCd0XhUg==
   artifact: domoticz-*-setup.zip
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
