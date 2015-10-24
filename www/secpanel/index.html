@@ -309,7 +309,7 @@
 			
 			
 		}
-				
+
 		var contextClass = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.oAudioContext || window.msAudioContext);
 		// firefox & ie fix
 		if (contextClass && (navigator.userAgent.toLowerCase().indexOf('firefox') <= -1) && (navigator.userAgent.toLowerCase().indexOf('msie') <= -1)) {
@@ -348,9 +348,11 @@
 			oscillator2.start(0);
 			oscillator3.start(0);
 		}
-		else contextClass="";
+		else
+		 contextClass="";
 
 		function beep(tone) {
+			return;
 			if (contextClass) {
 				var frequency;
 				if (tone=="error") {
@@ -383,20 +385,8 @@
 				}
 			}
 			else {
-			var snd='';
-				if (tone=="error") {
-					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*750)*127+128); }
-				}
-				else if (tone=="set") {
-					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*850)*127+128); }
-				}
-				else {
-					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*800)*127+128); }
-				}
-				snd = new Audio('data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAA\BAAEARKwAAESsAAABAAgAZGF0YREr'+btoa('\0\0'+snd));
-				snd.play();
+				//No HTML5 audio context support
 			}
-
 		}
 		
 		function SetLanguageEx(lng) {
