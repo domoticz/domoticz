@@ -27,7 +27,6 @@ public:
 	static void SetConnectionTimeout(const long timeout);
 	static void SetTimeout(const long timeout);
 	static void SetUserAgent(const std::string &useragent);
-	static void SetUserPwd(const std::string &user, const std::string &pwd);
 private:
 	static void SetGlobalOptions(void *curlobj);
 	static bool CheckIfGlobalInitDone();
@@ -36,7 +35,5 @@ private:
 	static long	m_iConnectionTimeout;
 	static long	m_iTimeout;
 	static std::string m_sUserAgent;
-	static std::string m_sUser;
-	static std::string m_sPwd;
 };
 
