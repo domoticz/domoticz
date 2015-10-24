@@ -11719,10 +11719,10 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::stringstream s_str1(result[0][0]);
-							unsigned long long minValue;
+							long long minValue;
 							s_str1 >> minValue;
 							std::stringstream s_str2(result[0][1]);
-							unsigned long long maxValue;
+							long long maxValue;
 							s_str2 >> maxValue;
 							if ((minValue == 0) && (maxValue == 0))
 							{
@@ -11763,9 +11763,9 @@ namespace http {
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						float FirstValue = 0;
-						unsigned long long ulFirstRealValue = 0;
-						unsigned long long ulFirstValue = 0;
-						unsigned long long ulLastValue = 0;
+						long long ulFirstRealValue = 0;
+						long long ulFirstValue = 0;
+						long long ulLastValue = 0;
 						std::string LastDateTime = "";
 						time_t lastTime = 0;
 
@@ -11786,7 +11786,7 @@ namespace http {
 										{
 											root["result"][ii]["d"] = LastDateTime + ":00";
 
-											unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
+											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
 											{
 												//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
@@ -11817,7 +11817,7 @@ namespace http {
 										bHaveFirstValue = false;
 									}
 									std::stringstream s_str1(sd[0]);
-									unsigned long long actValue;
+									long long actValue;
 									s_str1 >> actValue;
 
 									if (actValue >= ulLastValue)
@@ -11837,7 +11837,7 @@ namespace http {
 								else
 								{
 									std::stringstream s_str1(sd[1]);
-									unsigned long long actValue;
+									long long actValue;
 									s_str1 >> actValue;
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);
