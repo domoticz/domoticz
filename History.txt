@@ -118,6 +118,9 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Dummy Hardware, Ampere Single (single ampere value, other ampere sensor expects 3 values)
 - Implemented: Settings/Log, option to clear all short-log data
 - Implemented: Settings/Backup/Restore, when performing a database backup/restore the database is cleaned
+- Implemented: Hebrew translation (big thanks to mickeyv!!)
+- Implemented: Arabic translation (big thanks to Mo7sen!!)
+
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
