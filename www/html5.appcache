@@ -510,6 +510,7 @@ js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
 secpanel/js/less.js
+secpanel/js/ion.sound.min.js
 ozwcp/cp.js
 
 #Dynamic theme
