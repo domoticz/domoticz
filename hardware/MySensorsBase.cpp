@@ -212,6 +212,11 @@ std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresenta
 MySensorsBase::MySensorsBase(void)
 {
 	m_bufferpos = 0;
+	m_bAckReceived = false;
+	m_AckNodeID = -1;
+	m_AckChildID = -1;
+	m_AckSetType = V_UNKNOWN;
+	m_GatewayVersion = "?";
 }
 
 
@@ -1031,10 +1036,34 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	return true;
 }
 
-void MySensorsBase::SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload)
+bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload)
+{
+	m_bAckReceived = false;
+	m_AckNodeID = NodeID;
+	m_AckChildID = ChildID;
+	m_AckSetType = SubType;
+
+	SendCommandInt(NodeID, ChildID, messageType, true, SubType, Payload);
+	//Wait some time till we receive an ACK (should be received in 1000ms, but we wait 1200ms)
+	int waitRetries = 0;
+	while ((!m_bAckReceived) && (waitRetries < 12))
+	{
+		sleep_milliseconds(100);
+		waitRetries++;
+	}
+	return m_bAckReceived;
+}
+
+void MySensorsBase::SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload)
+{
+	SendCommandInt(NodeID, ChildID, messageType, false, SubType, Payload);
+}
+
+void MySensorsBase::SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload)
 {
 	std::stringstream sstr;
-	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";0;" << SubType << ";" << Payload << '\n';
+	std::string szAck = (UseAck == true) ? "1" : "0";
+	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";" <<szAck << ";" << SubType << ";" << Payload << '\n';
 	WriteInt(sstr.str());
 }
 
@@ -1069,17 +1098,17 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				if (FindChildWithValueType(node_id, V_LOCK_STATUS) != NULL)
 				{
 					//Door lock
-					SendCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState);
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState);
 				}
 				else if ((FindChildWithValueType(node_id, V_SCENE_ON) != NULL) || (FindChildWithValueType(node_id, V_SCENE_OFF) != NULL))
 				{
 					//Scene Controller
-					SendCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState);
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState);
 				}
 				else
 				{
 					//normal
-					SendCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
 				}
 			}
 			else if (light_command == light2_sSetLevel)
@@ -1091,7 +1120,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 				std::stringstream sstr;
 				sstr << svalue;
-				SendCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
 			}
 		}
 		else {
@@ -1126,7 +1155,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
 					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
-				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
 			}
 			else if (pLed->command == Limitless_SetColorToWhite)
 			{
@@ -1144,7 +1173,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 					sstr << "#000000"
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
 				}
-				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
 			}
 			else if (pLed->command == Limitless_SetBrightnessLevel)
 			{
@@ -1154,12 +1183,12 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 					svalue = 100;
 				std::stringstream sstr;
 				sstr << svalue;
-				SendCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
 			}
 			else if ((pLed->command == Limitless_LedOff) || (pLed->command == Limitless_LedOn))
 			{
 				std::string lState = (pLed->command == Limitless_LedOn) ? "1" : "0";
-				SendCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
 			}
 		}
 		else
@@ -1178,15 +1207,15 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 		{
 			if (pCmd->BLINDS1.cmnd == blinds_sOpen)
 			{
-				SendCommand(node_id, child_sensor_id, MT_Set, V_UP, "");
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_UP, "");
 			}
 			else if (pCmd->BLINDS1.cmnd == blinds_sClose)
 			{
-				SendCommand(node_id, child_sensor_id, MT_Set, V_DOWN, "");
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_DOWN, "");
 			}
 			else if (pCmd->BLINDS1.cmnd == blinds_sStop)
 			{
-				SendCommand(node_id, child_sensor_id, MT_Set, V_STOP, "");
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STOP, "");
 			}
 		}
 		else {
@@ -1201,11 +1230,11 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 		int node_id = pMeter->id2;
 		int child_sensor_id = pMeter->id3;
-		int vtype_id = pMeter->id4;
+		_eSetType vtype_id = (_eSetType)pMeter->id4;
 
 		char szTmp[10];
 		sprintf(szTmp, "%.1f", pMeter->temp);
-		SendCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp);
+		return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp);
 	}
 	else if (packettype == pTypeGeneralSwitch)
 	{
@@ -1222,7 +1251,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			{
 				std::stringstream sstr;
 				sstr << ir_code;
-				SendCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str());
+				return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str());
 			}
 		}
 	}
@@ -1328,6 +1357,19 @@ void MySensorsBase::ParseLine()
 	{
 		switch (sub_type)
 		{
+		case I_VERSION:
+			{
+				if ((node_id == 0) && (child_sensor_id == 0))
+				{
+					//Store gateway version
+					m_GatewayVersion = payload;
+					_log.Log(LOG_NORM, "MySensors: Gateway Version: %s", payload.c_str());
+				}
+				else {
+					_log.Log(LOG_NORM, "MySensors: VERSION from NodeID: %d, ChildID: %d, Payload: %s", node_id, child_sensor_id, payload.c_str());
+				}
+			}
+		break;
 		case I_ID_REQUEST:
 			{
 				//Set a unique node id from the controller
@@ -1335,14 +1377,14 @@ void MySensorsBase::ParseLine()
 				if (newID != -1)
 				{
 					sstr << newID;
-					SendCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, sstr.str());
+					SendNodeCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, sstr.str());
 				}
 			}
 			break;
 		case I_CONFIG:
 			// (M)etric or (I)mperal back to sensor.
 			//Set a unique node id from the controller
-			SendCommand(node_id, child_sensor_id, message_type, I_CONFIG, "M");
+			SendNodeCommand(node_id, child_sensor_id, message_type, I_CONFIG, "M");
 			break;
 		case I_SKETCH_NAME:
 			_log.Log(LOG_STATUS, "MySensors: Node: %d, Sketch Name: %s", node_id, payload.c_str());
@@ -1378,6 +1420,8 @@ void MySensorsBase::ParseLine()
 			break;
 		case I_GATEWAY_READY:
 			_log.Log(LOG_NORM, "MySensors: Gateway Ready...");
+			//Request Gateway Version
+			SendCommandInt(0, 0, MT_Internal, false, I_VERSION, "Get Version");
 			break;
 		case I_TIME:
 			//send time in seconds from 1970 with timezone offset
@@ -1386,7 +1430,7 @@ void MySensorsBase::ParseLine()
 				boost::posix_time::time_duration dur = tlocal - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1));
 				time_t fltime(dur.total_seconds());
 				sstr << fltime;
-				SendCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
+				SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
 			}
 			break;
 		default:
@@ -1396,6 +1440,8 @@ void MySensorsBase::ParseLine()
 	}
 	else if (message_type == MT_Set)
 	{
+		_eSetType vType = (_eSetType)sub_type;
+
 		_tMySensorNode *pNode = FindNode(node_id);
 		if (pNode == NULL)
 		{
@@ -1415,7 +1461,7 @@ void MySensorsBase::ParseLine()
 			//Get Info from database if child already existed
 			if (!GetChildDBInfo(node_id, child_sensor_id, mSensor.presType, mSensor.childName, mSensor.useAck))
 			{
-				UpdateChildDBInfo(node_id, child_sensor_id, S_UNKNOWN, "", (ack!=0));
+				UpdateChildDBInfo(node_id, child_sensor_id, S_UNKNOWN, "", (ack != 0));
 			}
 			pNode->m_childs.push_back(mSensor);
 			pChild = pNode->FindChild(child_sensor_id);
@@ -1424,7 +1470,23 @@ void MySensorsBase::ParseLine()
 		}
 		pChild->lastreceived = pNode->lastreceived;
 
-		_eSetType vType = (_eSetType)sub_type;
+		if (
+			(ack == 1) &&
+			(node_id == m_AckNodeID) &&
+			(child_sensor_id == m_AckChildID) &&
+			(vType == m_AckSetType))
+		{
+			m_AckNodeID = m_AckChildID = -1;
+			m_AckSetType = V_UNKNOWN;
+			m_bAckReceived = true;
+		}
+
+		if (ack == 1)
+		{
+			//No need to process ack commands
+			return;
+		}
+
 		bool bHaveValue = false;
 		switch (vType)
 		{
@@ -1773,7 +1835,7 @@ void MySensorsBase::ParseLine()
 		case V_RGB:
 		case V_RGBW:
 			if (GetSwitchValue(node_id, child_sensor_id, sub_type, tmpstr))
-				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+				SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;
 		case V_VAR1:
 		case V_VAR2:
@@ -1783,14 +1845,14 @@ void MySensorsBase::ParseLine()
 			//send back a previous stored custom variable
 			tmpstr = "";
 			GetVar(node_id, child_sensor_id, sub_type, tmpstr);
-			SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+			SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;
 		case V_TEXT:
 			{
 				//Get Text sensor value from the database
 				bool bExits = false;
 				tmpstr = GetTextSensorText(node_id, child_sensor_id, bExits);
-				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+				SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			}
 			break;
 		default:
