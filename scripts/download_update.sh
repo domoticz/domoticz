@@ -29,11 +29,10 @@ then
 fi
 
 # Download archive file
-# Download checksum
 wget -q ${base_url}/${archive_file} -O update.tgz
 if [ $? -ne 0 ]
 then
-        echo "Error downloading checksum file!...";
+        echo "Error downloading archive file!...";
         exit 1
 fi
 
@@ -48,4 +47,3 @@ then
         exit 1;
   fi
 fi
-

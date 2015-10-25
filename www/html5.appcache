@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1085
+# ref 1090
 
 CACHE:
 # CSS
@@ -461,6 +461,7 @@ js/angular-md5-min.js
 js/angular-round-progress-directive.js
 js/angular-route.min.js
 js/angular-sanitize.min.js
+js/angular-scrollglue.js
 js/angular-tree-control.js
 js/angular.min.js
 js/angularAMD.min.js

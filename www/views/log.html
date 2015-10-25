@@ -1,4 +1,10 @@
 <div id="logcontent" class="logcontent container">
-	<div id="logdata" class="log">
+	<div style="text-align:right">
+		<span data-i18n="Filter">Filter</span>: <input ng-model='filterExpr'>
+	</div>
+	<div id="logdata" class="log" scroll-glue>
+		<div ng-repeat='item in filtered = (logitems | filter:filterExpr) track by $index'>
+			<span class="{{item.mclass}}">{{item.text}}</span>
+		</div>
 	</div>
 </div>

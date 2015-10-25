@@ -2,6 +2,7 @@ define(['app'], function (app) {
 	app.controller('LogController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
 	
 		$scope.LastLogTime=0;
+		$scope.logitems = [];
 		
 		$scope.RefreshLog = function()
 		{
@@ -22,43 +23,35 @@ define(['app'], function (app) {
 			}
 			var lastscrolltop=$("#logcontent #logdata").scrollTop();
 
-			var htmlcontent = '';
-
 			$.ajax({
 			 url: "json.htm?type=command&param=getlog&lastlogtime=" + $scope.LastLogTime,
 			 async: false, 
 			 dataType: 'json',
 			 success: function(data) {
 			  if (typeof data.result != 'undefined') {
-						if (typeof data.LastLogTime != 'undefined') {
-							$scope.LastLogTime=parseInt(data.LastLogTime);
+					if (typeof data.LastLogTime != 'undefined') {
+						$scope.LastLogTime=parseInt(data.LastLogTime);
+					}
+					$.each(data.result, function(i,item){
+						var message=item.message.replace(/\n/gi,"<br>");
+						var logclass="";
+						if (item.level==0) {
+							logclass="lognorm";
 						}
-				$.each(data.result, function(i,item){
-							if (item.level==0) {
-								htmlcontent+='<span class="lognorm">';
-							}
-							else if (item.level==1) {
-								htmlcontent+='<span class="logerror">';
-							}
-							else {
-								htmlcontent+='<span class="logstatus">';
-							}
-							var message=item.message.replace(/\n/gi,"<br>");
-							htmlcontent+=message;
-							htmlcontent+='</span><br>\n';
+						else if (item.level==1) {
+							logclass="logerror";
+						}
+						else {
+							logclass="logstatus";
+						}
+						$scope.logitems = $scope.logitems.concat({
+							mclass: logclass, 
+							text: message
+						});
 				});
 			  }
 			 }
 			});
-			if (htmlcontent!="") {
-				$("#logcontent #logdata").append(htmlcontent);
-				if ((bWasAtBottom==true)||(lastscrolltop==null)) {
-					$("#logcontent #logdata").scrollTop($("#logcontent #logdata")[0].scrollHeight);
-				}
-				else {
-						$("#logcontent #logdata").scrollTop(lastscrolltop);
-				}
-			}
 			$scope.mytimer=$interval(function() {
 				$scope.RefreshLog();
 			}, 5000);
@@ -74,6 +67,7 @@ define(['app'], function (app) {
 
 		function init()
 		{
+			$("#logcontent").i18n();
 			$scope.LastLogTime=0;
 			$scope.RefreshLog();
 			$(window).resize(function() { $scope.ResizeLogWindow(); });
