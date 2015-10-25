@@ -144,6 +144,10 @@
 				var titleA = $(value).find("title")[0];
 				return "utilitydevice["+$(titleA).text()+"]";
 			}
+			else if (variableType.indexOf("weathervariables") >= 0) {
+				var titleA = $(value).find("title")[0];
+				return "weatherdevice["+$(titleA).text()+"]";
+			}
 			else {
 				var titleB = $(value).find("title")[0];
 				if ($(titleB).attr("name") == "State") {
@@ -284,7 +288,9 @@
 					var valueB = $(this).find("value[name='B']")[0];
 					var titleB = $(valueB).find("title")[0];
 					var blockB = $(valueB).children("block:first");
-					setString += '="'+encodeURIComponent($(titleB).text())+'"'; 
+					var variableTypeB = $(valueB).children("block:first").attr("type");
+					var dtext=GetValueText(valueB,variableTypeB);
+					setString += '="'+dtext+'"'; 
 					setArray.push(setString);
 								
 				}

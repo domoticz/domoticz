@@ -87,6 +87,7 @@ private:
 	void EvaluateEvent(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
 	void EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
 	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const unsigned long long eventID);
+	std::string ProcessVariableArgument(const std::string &Argument);
 #ifdef ENABLE_PYTHON
 	void EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long varId);
 	void EvaluatePython(const std::string &reason, const std::string &filename);
