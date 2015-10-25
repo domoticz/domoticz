@@ -20,7 +20,7 @@ typedef struct _tWebEmStoredSession {
 } WebEmStoredSession;
 
 /**
- * Gives access to the user session datastore.
+ * Gives access to the user session store.
  */
 class session_store {
 public:
@@ -38,6 +38,11 @@ public:
 	 * Remove user session from store
 	 */
 	virtual void RemoveSession(const std::string & sessionId)=0;
+
+	/**
+	 * Remove expired user sessions from store
+	 */
+	virtual void CleanSessions()=0;
 };
 
 }

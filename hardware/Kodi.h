@@ -72,6 +72,7 @@ public:
 	~CKodiNode(void);
 	void			Do_Work();
 	void			SendCommand(const std::string&);
+	void			SendCommand(const std::string&, const int iValue);
 	bool			SendShutdown();
 	void			StopRequest() { m_stoprequested = true; };
 	bool			IsBusy() { return m_Busy; };

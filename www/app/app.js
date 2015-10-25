@@ -1,5 +1,5 @@
-define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress'], function (angularAMD) {
-	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress']);
+define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.scrollglue'], function (angularAMD) {
+	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.directives-round-progress','angular.scrollglue']);
 
 		isOnline=false;
 		dashboardType=1;
@@ -176,15 +176,18 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/DPFibaro', angularAMD.route({
 				templateUrl: 'views/dpfibaro.html',
-				controller: 'DPFibaroController'
+				controller: 'DPFibaroController',
+				permission: 'Admin'
 			  })).
 			  when('/DPHttp', angularAMD.route({
 				templateUrl: 'views/dphttp.html',
-				controller: 'DPHttpController'
+				controller: 'DPHttpController',
+				permission: 'Admin'
 			  })).
 			  when('/Events', angularAMD.route({
 				templateUrl: 'views/events.html',
-				controller: 'EventsController'
+				controller: 'EventsController',
+				permission: 'Admin'
 			  })).
 			  when('/Floorplans', angularAMD.route({
 				templateUrl: 'views/floorplans.html',
@@ -192,7 +195,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Floorplanedit', angularAMD.route({
 				templateUrl: 'views/floorplanedit.html',
-				controller: 'FloorplanEditController'
+				controller: 'FloorplanEditController',
+				permission: 'Admin'
 			  })).
 			  when('/Forecast', angularAMD.route({
 				templateUrl: 'views/forecast.html',
@@ -204,7 +208,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Hardware', angularAMD.route({
 				templateUrl: 'views/hardware.html',
-				controller: 'HardwareController'
+				controller: 'HardwareController',
+				permission: 'Admin'
 			  })).
 			  when('/History', angularAMD.route({
 				templateUrl: 'views/history.html',
@@ -220,7 +225,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Log', angularAMD.route({
 				templateUrl: 'views/log.html',
-				controller: 'LogController'
+				controller: 'LogController',
+				permission: 'Admin'
 			  })).
 			  when('/Login', angularAMD.route({
 				templateUrl: 'views/login.html',
@@ -236,27 +242,33 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Notification', angularAMD.route({
 				templateUrl: 'views/notification.html',
-				controller: 'NotificationController'
+				controller: 'NotificationController',
+				permission: 'Admin'
 			  })).
 			  when('/RestoreDatabase', angularAMD.route({
 				templateUrl: 'views/restoredatabase.html',
-				controller: 'RestoreDatabaseController'
+				controller: 'RestoreDatabaseController',
+				permission: 'Admin'
 			  })).
 			  when('/RFXComFirmware', angularAMD.route({
 				templateUrl: 'views/rfxcomfirmware.html',
-				controller: 'RFXComFirmwareController'
+				controller: 'RFXComFirmwareController',
+				permission: 'Admin'
 			  })).
 			  when('/Cam', angularAMD.route({
 				templateUrl: 'views/cam.html',
-				controller: 'CamController'
+				controller: 'CamController',
+				permission: 'Admin'
 			  })).
 			  when('/CustomIcons', angularAMD.route({
 				templateUrl: 'views/customicons.html',
-				controller: 'CustomIconsController'
+				controller: 'CustomIconsController',
+				permission: 'Admin'
 			  })).
 			  when('/Roomplan', angularAMD.route({
 				templateUrl: 'views/roomplan.html',
-				controller: 'RoomplanController'
+				controller: 'RoomplanController',
+				permission: 'Admin'
 			  })).
 			  when('/Scenes', angularAMD.route({
 				templateUrl: 'views/scenes.html',
@@ -273,15 +285,18 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/Update', angularAMD.route({
 				templateUrl: 'views/update.html',
-				controller: 'UpdateController'
+				controller: 'UpdateController',
+				permission: 'Admin'
 			  })).
 			  when('/Users', angularAMD.route({
 				templateUrl: 'views/users.html',
-				controller: 'UsersController'
+				controller: 'UsersController',
+				permission: 'Admin'
 			  })).
 			  when('/UserVariables', angularAMD.route({
 				templateUrl: 'views/uservariables.html',
-				controller: 'UserVariablesController'
+				controller: 'UserVariablesController',
+				permission: 'Admin'
 			  })).
 			  when('/Utility', angularAMD.route({
 				templateUrl: 'views/utility.html',
@@ -293,7 +308,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			  })).
 			  when('/ZWaveTopology', angularAMD.route({
 				templateUrl: 'zwavetopology.html',
-				controller: 'ZWaveTopologyController'
+				controller: 'ZWaveTopologyController',
+				permission: 'Admin'
 			  })).
 			  when('/About', angularAMD.route({
 				templateUrl: 'views/about.html',
