@@ -97,3 +97,4 @@ deploy:
   script: echo curl --ftp-ssl -T domoticz_${TRAVIS_OS_NAME}_x86_64_latest.tgz -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST"
   on:
     branch: master
+    repo: domoticz/domoticz
