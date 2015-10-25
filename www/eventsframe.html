@@ -192,7 +192,7 @@
 				}
 				return compareString;						
 			}
-			else if (variableType == "utilityvariables") {
+			else if (variableType.indexOf("utilityvariables") >= 0) {
 				var titleA = $(valueA).find("title")[0];
 				var valueB = $(thisBlock).children("value[name='B']")[0];
 				var titleB = $(valueB).find("title")[0];
@@ -201,7 +201,7 @@
 					compareString += locOperand;
 					compareString += $(titleB).text(); 
 				}
-				return compareString;						
+				return compareString;
 			}
 			else {
 				return "unknown comparevariable "+variableType;
@@ -839,7 +839,10 @@
 			   	<block type="weathervariables"></block>
 		   	</category>
 		   	<category name="Utility">
-			   	<block type="utilityvariables"></block>
+			   	<block type="utilityvariablesAF"></block>
+			   	<block type="utilityvariablesGL"></block>
+			   	<block type="utilityvariablesMR"></block>
+			   	<block type="utilityvariablesSZ"></block>
 		   	</category>
 		   	<category name="Scenes/groups">
 			   	<block type="scenevariables"></block>

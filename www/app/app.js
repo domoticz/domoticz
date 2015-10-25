@@ -1,5 +1,5 @@
-define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress'], function (angularAMD) {
-	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress']);
+define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.scrollglue'], function (angularAMD) {
+	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.directives-round-progress','angular.scrollglue']);
 
 		isOnline=false;
 		dashboardType=1;
