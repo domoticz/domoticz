@@ -122,6 +122,7 @@ Version 2.xxx (xxxx 2015)
 - Fixed: MySensors, corrected sending localtime
 - Fixed: Display correct energy graph in devices view (spline instead of bars for short log)
 
+
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!
 - Implemented: RFXCom, support for Blinds T9/T10
