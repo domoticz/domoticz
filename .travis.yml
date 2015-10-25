@@ -20,8 +20,6 @@ env:
   global:
     - "FTP_HOST=62.84.241.110"
     - "FTP_USER=uploads@domoticz.com"
-    - "FTP_PASSWORD=password"
-
 
 # What to install before the build
 before_install:
