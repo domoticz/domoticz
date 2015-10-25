@@ -12,20 +12,14 @@
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
+CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const std::string User, const std::string Pwd, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
 	m_IP = IPAddress;
 	m_Port = Port;
+	m_User = User;
+	m_Pwd = Pwd;
 	SetSettings(PollIntervalsec, PingTimeoutms);
-}
-
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port) : m_stoprequested(false), m_iThreadsRunning(0)
-{
-	m_HwdID = ID;
-	m_IP = IPAddress;
-	m_Port = Port;
-	SetSettings(10, 3000);
 }
 
 CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
@@ -33,13 +27,17 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false
 	m_HwdID = ID;
 	m_IP = "";
 	m_Port = 0;
+	m_User = "";
+	m_Pwd = "";
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Address, Port FROM Hardware WHERE ID==%d", m_HwdID);
+	result = m_sql.safe_query("SELECT Address, Port, Username, Password FROM Hardware WHERE ID==%d", m_HwdID);
 
 	if (result.size() > 0)
 	{
 		m_IP = result[0][0];
 		m_Port = atoi(result[0][1].c_str());
+		m_User = result[0][2];
+		m_Pwd = result[0][3];
 	}
 
 	SetSettings(10, 3000);
@@ -58,7 +56,11 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	std::stringstream sURL;
 	std::stringstream sPostData;
 
-	sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
+	if ((m_User != "") && (m_Pwd != ""))
+		sURL << "http://" << m_User << ":" << m_Pwd << "@" << sIP << ":" << iPort << "/jsonrpc.js";
+	else
+		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
+
 	sPostData << sPostdata;
 	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
 	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
@@ -71,7 +73,11 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	bRetVal = jReader.parse(sResult, root);
 	if (!bRetVal)
 	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
+		size_t aFind = sResult.find("401 Authorization Required");
+		if ((aFind > 0) && (aFind != std::string::npos))
+			_log.Log(LOG_ERROR, "Logitech Media Server: Username and/or password are incorrect. Check Logitech Media Server settings.");
+		else
+			_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
 		return root;
 	}
 	if (root["method"].empty())
@@ -523,6 +529,8 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 			case gswitch_sPlayPlaylist:
 				sParam = GetPlaylistByRefID(iParam);
 				return SendCommand(itt->ID, "PlayPlaylist", sParam);
+			case gswitch_sPlayFavorites:
+				return SendCommand(itt->ID, "PlayFavorites");
 			case gswitch_sStop:
 				return SendCommand(itt->ID, "Stop");
 			case gswitch_sPause:
@@ -682,6 +690,9 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 			if (param == "") return false;
 			sLMSCmnd = "\"playlist\", \"play\", \"" + param + "\"";
 		}
+		else if (command == "PlayFavorites") {
+			sLMSCmnd = "\"favorites\", \"playlist\", \"play\"";
+		}
 		else if (command == "Pause") {
 			sLMSCmnd = "\"button\", \"pause.single\"";
 		}
@@ -719,6 +730,8 @@ bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 				else if (command == "Play")
 					return sMode == "play";
 				else if (command == "PlayPlaylist")
+					return sMode == "play";
+				else if (command == "PlayFavorites")
 					return sMode == "play";
 				else if (command == "PowerOn")
 					return sPower == "1";
