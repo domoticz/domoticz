@@ -11,9 +11,14 @@
       <ZipContents       Include="$(MSBuildStartupDirectory)\msbuild\WindowsInstaller\Readme.txt"/>
     </ItemGroup>
 
-    <!-- Extract the version string (like '2_3267') from the installer file, and create the zip file name -->
+    <!-- Extract the version string (like '2_3267') from the installer file, and create the zip file name
+         * Request from gizmocuz, rather always use the same filename
+    -->
     <PropertyGroup>
+<!--
       <ZipFile>$(MSBuildStartupDirectory)\domoticz-win32-$([System.Text.RegularExpressions.Regex]::Match(%(DomoticzInstaller.FileName), `\d+_\d+`))-setup.zip</ZipFile>
+-->
+      <ZipFile>$(MSBuildStartupDirectory)\domoticz-win32-latest.zip</ZipFile>
     </PropertyGroup>
 
     <!-- Copy the files into the current dir for flattening the zip contents -->

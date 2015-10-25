@@ -21,6 +21,7 @@ test: off
 deploy:
 - provider: FTP
   host: 62.84.241.110
+  folder: beta
   protocol: ftps
   username: uploads@domoticz.com
   password:
