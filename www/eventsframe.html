@@ -115,97 +115,64 @@
       function parseXmlBlocks(xml,pairId) {
       	var boolString = "";
      
+		function GetValueText(value, variableType) {
+			if (variableType.indexOf("switchvariables") >= 0) {
+				var titleA = $(value).find("title")[0];
+				return "device["+$(titleA).text()+"]";
+			}
+			else if (variableType.indexOf("uservariables") >= 0) {
+				var titleA = $(valueA).find("title")[0];
+				return "variable["+$(titleA).text()+"]";
+			}
+			else if (variableType == "temperaturevariables") {
+				var titleA = $(value).find("title")[0];
+				return "temperaturedevice["+$(titleA).text()+"]";
+			}
+			else if (variableType == "humidityvariables") {
+				var titleA = $(value).find("title")[0];
+				return "humiditydevice["+$(titleA).text()+"]";
+			}
+			else if (variableType == "dewpointvariables") {
+				var titleA = $(value).find("title")[0];
+				return "dewpointdevice["+$(titleA).text()+"]";
+			}
+			else if (variableType == "barometervariables") {
+				var titleA = $(value).find("title")[0];
+				return "barometerdevice["+$(titleA).text()+"]";
+			}
+			else if (variableType.indexOf("utilityvariables") >= 0) {
+				var titleA = $(value).find("title")[0];
+				return "utilitydevice["+$(titleA).text()+"]";
+			}
+			else {
+				var titleB = $(value).find("title")[0];
+				if ($(titleB).attr("name") == "State") {
+					return '"'+$(titleB).text()+'"'; 
+				}
+				else if ($(titleB).attr("name") == "TEXT") {
+					return '"'+encodeURIComponent($(titleB).text())+'"'; 
+				}
+				else if ($(titleB).attr("name") == "NUM") {
+					return $(titleB).text(); 
+				}
+				return "unknown comparevariable "+variableType;
+			}
+		}
+     
 		function parseLogicCompare(thisBlock){
 			var locOperand = opSymbol($($(thisBlock).children("title:first")).text());
 			var valueA = $(thisBlock).children("value[name='A']")[0];
-			var variableType = $(valueA).children("block:first").attr("type");
-			
-			if (variableType.indexOf("switchvariables") >= 0) {
-				var titleA = $(valueA).find("title")[0];
-				var valueB = $(thisBlock).children("value[name='B']")[0];
-				var titleB = $(valueB).find("title")[0];
-				var compareString = "device["+$(titleA).text()+"]";
-				if ($(titleB).attr("name") == "State") {
-					compareString += locOperand;
-					compareString += '"'+$(titleB).text()+'"'; 
-				}
-				return compareString;
-			}
-			if (variableType.indexOf("uservariables") >= 0) {
-				var compareString = "";
-				var titleA = $(valueA).find("title")[0];
-				var valueB = $(thisBlock).children("value[name='B']")[0];
-				var titleB = $(valueB).find("title")[0];
-				if ($(titleB).attr("name") == "TEXT") {
-					compareString = "variable["+$(titleA).text()+"]";
-					compareString += locOperand;
-					compareString += '"'+encodeURIComponent($(titleB).text())+'"'; 
-				}
-				else if ($(titleB).attr("name") == "NUM") {
-					compareString = "variable["+$(titleA).text()+"]";
-					compareString += locOperand;
-					compareString += $(titleB).text(); 
-				}
-				return compareString;
-			}
-			else if (variableType == "temperaturevariables") {
-				var titleA = $(valueA).find("title")[0];
-				var valueB = $(thisBlock).children("value[name='B']")[0];
-				var titleB = $(valueB).find("title")[0];
-				var compareString = "temperaturedevice["+$(titleA).text()+"]";
-				if ($(titleB).attr("name") == "NUM") {
-					compareString += locOperand;
-					compareString += $(titleB).text(); 
-				}
-				return compareString;						
-			}
-			else if (variableType == "humidityvariables") {
-				var titleA = $(valueA).find("title")[0];
-				var valueB = $(thisBlock).children("value[name='B']")[0];
-				var titleB = $(valueB).find("title")[0];
-				var compareString = "humiditydevice["+$(titleA).text()+"]";
-				if ($(titleB).attr("name") == "NUM") {
-					compareString += locOperand;
-					compareString += +$(titleB).text(); 
-				}
-				return compareString;						
-			}
-			else if (variableType == "dewpointvariables") {
-				var titleA = $(valueA).find("title")[0];
-				var valueB = $(thisBlock).children("value[name='B']")[0];
-				var titleB = $(valueB).find("title")[0];
-				var compareString = "dewpointdevice["+$(titleA).text()+"]";
-				if ($(titleB).attr("name") == "NUM") {
-					compareString += locOperand;
-					compareString += $(titleB).text(); 
-				}
-				return compareString;						
-			}
-			else if (variableType == "barometervariables") {
-				var titleA = $(valueA).find("title")[0];
-				var valueB = $(thisBlock).children("value[name='B']")[0];
-				var titleB = $(valueB).find("title")[0];
-				var compareString = "barometerdevice["+$(titleA).text()+"]";
-				if ($(titleB).attr("name") == "NUM") {
-					compareString += locOperand;
-					compareString += $(titleB).text(); 
-				}
-				return compareString;						
-			}
-			else if (variableType.indexOf("utilityvariables") >= 0) {
-				var titleA = $(valueA).find("title")[0];
-				var valueB = $(thisBlock).children("value[name='B']")[0];
-				var titleB = $(valueB).find("title")[0];
-				var compareString = "utilitydevice["+$(titleA).text()+"]";
-				if ($(titleB).attr("name") == "NUM") {
-					compareString += locOperand;
-					compareString += $(titleB).text(); 
-				}
-				return compareString;
-			}
-			else {
-				return "unknown comparevariable "+variableType;
-			}
+			var variableTypeA = $(valueA).children("block:first").attr("type");
+			var valueB = $(thisBlock).children("value[name='B']")[0];
+			var variableTypeB = $(valueB).children("block:first").attr("type");
+
+			var varTextA=GetValueText(valueA,variableTypeA);
+			var varTextB=GetValueText(valueB,variableTypeB);
+
+			var compareString = varTextA;
+			compareString += locOperand;
+			compareString += varTextB; 
+			return compareString;
 		}
 		
 		function parseLogicTimeOfDay(thisBlock) {

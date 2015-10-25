@@ -66,6 +66,7 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Logwindow, Added option to filter text
 - Implemented: Support for the Plugwise Anna Thermostat (NEM)
 - Implemented: Blockly, Split Utility Sensors into multiple groups
+- Implemented: Blockly, Option to compare sensor value against another sensor value
 - Changed: KMTronic LAN, now using actual On/Off commands instead of 'Toggle'
 - Changed: EventSystem, not adding sensors from disable hardware
 - Changed: json "udevice" Perecentage sensor, you might get new ID's, now also creates an event for blockly/lua
