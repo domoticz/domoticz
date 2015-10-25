@@ -24,7 +24,7 @@ deploy:
   protocol: ftps
   username: uploads@domoticz.com
   password:
-    secure: GgWxZgJZT1AvNQvCd0XhUg==
+    secure: 0O9f8y4I8JN+RYfEJ3f3cg==
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
     APPVEYOR_REPO_BRANCH: master  
