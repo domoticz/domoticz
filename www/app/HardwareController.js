@@ -384,8 +384,8 @@ define(['app'], function (app) {
                      }
                 });
             }
-			else if (text.indexOf("Logitech Media Server") >= 0)
-			{
+            else if (text.indexOf("Logitech Media Server") >= 0)
+            {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
                 {
@@ -426,7 +426,7 @@ define(['app'], function (app) {
                             ShowNotify($.t('Problem updating hardware!'), 2500, true);
                      }
                 });
-			}
+            }
         }
 
         AddHardware = function()

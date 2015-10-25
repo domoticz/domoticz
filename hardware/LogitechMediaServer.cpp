@@ -22,26 +22,6 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAdd
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
-{
-	m_HwdID = ID;
-	m_IP = IPAddress;
-	m_Port = Port;
-	m_User = "";
-	m_Pwd = "";
-	SetSettings(PollIntervalsec, PingTimeoutms);
-}
-
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port) : m_stoprequested(false), m_iThreadsRunning(0)
-{
-	m_HwdID = ID;
-	m_IP = IPAddress;
-	m_Port = Port;
-	m_User = "";
-	m_Pwd = "";
-	SetSettings(10, 3000);
-}
-
 CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
