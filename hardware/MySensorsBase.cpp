@@ -1036,6 +1036,11 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	return true;
 }
 
+std::string MySensorsBase::GetGatewayVersion()
+{
+	return m_GatewayVersion;
+}
+
 bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload)
 {
 	m_bAckReceived = false;

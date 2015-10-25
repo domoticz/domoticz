@@ -348,6 +348,7 @@ public:
 	void RemoveChild(const int nodeID, const int childID);
 	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
 	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
+	std::string GetGatewayVersion();
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);
