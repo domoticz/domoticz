@@ -63,8 +63,6 @@ matrix:
       - (cd open-zwave-read-only; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
-    before_deploy:
-      - tar czf domoticz_${TRAVIS_OS_NAME}_x86_64_latest.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease --exclude .svn www/ scripts/ Config/
   # Apple OSX
   - os: osx
     compiler:
@@ -83,12 +81,12 @@ matrix:
     script:
       - cmake -DCMAKE_BUILD_TYPE=Release
       - make
-    before_deploy:
-      - tar czf domoticz_${TRAVIS_OS_NAME}_x86_64_latest.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease
 
 
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
+before_deploy:
+  - tar czf domoticz_${TRAVIS_OS_NAME}_x86_64_latest.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
 deploy:
   skip_cleanup: true
   provider: script
