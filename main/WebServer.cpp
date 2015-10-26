@@ -20,6 +20,7 @@
 #include "../hardware/ForecastIO.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
+#include "../hardware/MySensorsBase.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -68,14 +69,16 @@ struct _tGuiLanguage {
 static const _tGuiLanguage guiLanguage[] =
 {
 	{ "en", "English" },
+	{ "ar", "Arabic" },
 	{ "bg", "Bulgarian" },
 	{ "cs", "Czech" },
-	{ "nl", "Dutch" },
 	{ "da", "Danish" },
+	{ "nl", "Dutch" },
 	{ "de", "German" },
 	{ "el", "Greek" },
 	{ "fr", "French" },
 	{ "fi", "Finnish" },
+	{ "he", "Hebrew" },
 	{ "hu", "Hungarian" },
 	{ "it", "Italian" },
 	{ "lt", "Lithuanian" },
@@ -2698,6 +2701,9 @@ namespace http {
 
 			if (cparam == "deleteallsubdevices")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -2707,6 +2713,9 @@ namespace http {
 			}
 			else if (cparam == "deletesubdevice")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -2716,6 +2725,9 @@ namespace http {
 			}
 			else if (cparam == "addsubdevice")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				std::string subidx = request::findValue(&req, "subidx");
 				if ((idx == "") || (subidx == ""))
@@ -2740,6 +2752,9 @@ namespace http {
 			}
 			else if (cparam == "addscenedevice")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				std::string devidx = request::findValue(&req, "devidx");
 				std::string isscene = request::findValue(&req, "isscene");
@@ -2839,6 +2854,9 @@ namespace http {
 			}
 			else if (cparam == "updatescenedevice")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				std::string devidx = request::findValue(&req, "devidx");
 				std::string scommand = request::findValue(&req, "command");
@@ -2872,6 +2890,9 @@ namespace http {
 			}
 			else if (cparam == "deletescenedevice")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -3048,6 +3069,9 @@ namespace http {
 			}
 			else if (cparam == "changescenedeviceorder")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -3098,6 +3122,9 @@ namespace http {
 			}
 			else if (cparam == "deleteallscenedevices")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -3388,6 +3415,9 @@ namespace http {
 			}
 			else if (cparam == "addcamactivedevice")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				std::string activeidx = request::findValue(&req, "activeidx");
 				std::string sactivetype = request::findValue(&req, "activetype");
@@ -3433,6 +3463,9 @@ namespace http {
 			}
 			else if (cparam == "deleteamactivedevice")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -3443,6 +3476,9 @@ namespace http {
 			}
 			else if (cparam == "deleteallactivecamdevices")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -3453,6 +3489,9 @@ namespace http {
 			}
 			else if (cparam == "testnotification")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string notification_Title = "Domoticz test";
 				std::string notification_Message = "Domoticz test message!";
 				std::string subsystem = request::findValue(&req, "subsystem");
@@ -3466,6 +3505,9 @@ namespace http {
 			}
 			else if (cparam == "testswitch")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string hwdid = request::findValue(&req, "hwdid");
 				std::string sswitchtype = request::findValue(&req, "switchtype");
 				std::string slighttype = request::findValue(&req, "lighttype");
@@ -3831,6 +3873,9 @@ namespace http {
 			}
 			else if (cparam == "addswitch")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string hwdid = request::findValue(&req, "hwdid");
 				std::string name = request::findValue(&req, "name");
 				std::string sswitchtype = request::findValue(&req, "switchtype");
@@ -4280,6 +4325,9 @@ namespace http {
 			}
 			else if (cparam == "getnotificationtypes")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -4700,6 +4748,9 @@ namespace http {
 			}
 			else if (cparam == "addnotification")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -4738,6 +4789,9 @@ namespace http {
 			}
 			else if (cparam == "updatenotification")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				std::string devidx = request::findValue(&req, "devidx");
 				if ((idx == "") || (devidx == ""))
@@ -4779,6 +4833,9 @@ namespace http {
 			}
 			else if (cparam == "deletenotification")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -4790,6 +4847,9 @@ namespace http {
 			}
 			else if (cparam == "switchdeviceorder")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx1 = request::findValue(&req, "idx1");
 				std::string idx2 = request::findValue(&req, "idx2");
 				if ((idx1 == "") || (idx2 == ""))
@@ -4872,6 +4932,9 @@ namespace http {
 			}
 			else if (cparam == "switchsceneorder")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx1 = request::findValue(&req, "idx1");
 				std::string idx2 = request::findValue(&req, "idx2");
 				if ((idx1 == "") || (idx2 == ""))
@@ -4913,6 +4976,9 @@ namespace http {
 			}
 			else if (cparam == "clearnotifications")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -4924,6 +4990,9 @@ namespace http {
 			}
 			else if (cparam == "addcamera")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string name = request::findValue(&req, "name");
 				std::string senabled = request::findValue(&req, "enabled");
 				std::string address = request::findValue(&req, "address");
@@ -4961,6 +5030,9 @@ namespace http {
 			}
 			else if (cparam == "updatecamera")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -5005,6 +5077,9 @@ namespace http {
 			}
 			else if (cparam == "deletecamera")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -5016,17 +5091,8 @@ namespace http {
 			}
 			else if (cparam == "adduser")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string senabled = request::findValue(&req, "enabled");
 				std::string username = request::findValue(&req, "username");
@@ -5067,17 +5133,8 @@ namespace http {
 			}
 			else if (cparam == "updateuser")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5123,17 +5180,8 @@ namespace http {
 			}
 			else if (cparam == "deleteuser")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5150,6 +5198,9 @@ namespace http {
 			}
 			else if (cparam == "clearlightlog")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -5196,6 +5247,9 @@ namespace http {
 			}
 			else if (cparam == "learnsw")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				m_sql.AllowNewHardwareTimer(5);
 				m_sql.m_LastSwitchID = "";
 				bool bReceivedSwitch = false;
@@ -5233,6 +5287,9 @@ namespace http {
 			} //learnsw
 			else if (cparam == "makefavorite")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx == "") || (sisfavorite == ""))
@@ -5245,6 +5302,9 @@ namespace http {
 			} //makefavorite
 			else if (cparam == "makescenefavorite")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				std::string sisfavorite = request::findValue(&req, "isfavorite");
 				if ((idx == "") || (sisfavorite == ""))
@@ -5257,20 +5317,6 @@ namespace http {
 			} //makescenefavorite
 			else if (cparam == "resetsecuritystatus")
 			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a security status reset command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
-
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "switchcmd");
 
@@ -5790,17 +5836,8 @@ namespace http {
 			}
 			else if (cparam == "addfloorplan")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string name = request::findValue(&req, "name");
 				std::string imagefile = request::findValue(&req, "image");
@@ -5824,17 +5861,8 @@ namespace http {
 			}
 			else if (cparam == "updatefloorplan")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5862,17 +5890,8 @@ namespace http {
 			}
 			else if (cparam == "deletefloorplan")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -5897,6 +5916,9 @@ namespace http {
 			}
 			else if (cparam == "changefloorplanorder")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
 					return;
@@ -5945,6 +5967,9 @@ namespace http {
 			}
 			else if (cparam == "getunusedfloorplanplans")
 			{
+				if (session.rights < 2)
+					return;//Only admin user allowed
+
 				root["status"] = "OK";
 				root["title"] = "GetUnusedFloorplanPlans";
 				int ii = 0;
@@ -5991,17 +6016,8 @@ namespace http {
 			}
 			else if (cparam == "addfloorplanplan")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string planidx = request::findValue(&req, "planidx");
@@ -6022,17 +6038,8 @@ namespace http {
 			}
 			else if (cparam == "updatefloorplanplan")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string planidx = request::findValue(&req, "planidx");
 				std::string planarea = request::findValue(&req, "area");
@@ -6050,17 +6057,8 @@ namespace http {
 			}
 			else if (cparam == "deletefloorplanplan")
 			{
-				bool bHaveUser = (session.username != "");
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 2)
-					return;
+				if (session.rights < 2)
+					return;//Only admin user allowed
 
 				std::string idx = request::findValue(&req, "idx");
 				if (idx == "")
@@ -9427,19 +9425,27 @@ namespace http {
 					root["result"][ii]["Mode6"] = atoi(sd[15].c_str());
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 
-#ifdef WITH_OPENZWAVE
 					//Special case for openzwave (status for nodes queried)
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
 					if (pHardware != NULL)
 					{
-						if (pHardware->HwdType == HTYPE_OpenZWave)
+						if ((pHardware->HwdType == HTYPE_MySensorsUSB) || (pHardware->HwdType == HTYPE_MySensorsTCP))
 						{
-							COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
-							root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
-							root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
+							MySensorsBase *pMyHardware = (MySensorsBase*)pHardware;
+							root["result"][ii]["version"] = pMyHardware->GetGatewayVersion();
+						}
+						else
+						{
+#ifdef WITH_OPENZWAVE
+							if (pHardware->HwdType == HTYPE_OpenZWave)
+							{
+								COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
+								root["result"][ii]["version"] = pOZWHardware->GetVersionLong();
+								root["result"][ii]["NodesQueried"] = (pOZWHardware->m_awakeNodesQueried || pOZWHardware->m_allNodesQueried);
+							}
+#endif
 						}
 					}
-#endif
 					ii++;
 				}
 			}
@@ -11717,10 +11723,10 @@ namespace http {
 						if (result.size() > 0)
 						{
 							std::stringstream s_str1(result[0][0]);
-							unsigned long long minValue;
+							long long minValue;
 							s_str1 >> minValue;
 							std::stringstream s_str2(result[0][1]);
-							unsigned long long maxValue;
+							long long maxValue;
 							s_str2 >> maxValue;
 							if ((minValue == 0) && (maxValue == 0))
 							{
@@ -11761,9 +11767,9 @@ namespace http {
 						bool bHaveFirstValue = false;
 						bool bHaveFirstRealValue = false;
 						float FirstValue = 0;
-						unsigned long long ulFirstRealValue = 0;
-						unsigned long long ulFirstValue = 0;
-						unsigned long long ulLastValue = 0;
+						long long ulFirstRealValue = 0;
+						long long ulFirstValue = 0;
+						long long ulLastValue = 0;
 						std::string LastDateTime = "";
 						time_t lastTime = 0;
 
@@ -11784,7 +11790,7 @@ namespace http {
 										{
 											root["result"][ii]["d"] = LastDateTime + ":00";
 
-											unsigned long long ulTotalValue = ulLastValue - ulFirstValue;
+											long long ulTotalValue = ulLastValue - ulFirstValue;
 											if (ulTotalValue == 0)
 											{
 												//Could be the P1 Gas Meter, only transmits one every 1 a 2 hours
@@ -11815,7 +11821,7 @@ namespace http {
 										bHaveFirstValue = false;
 									}
 									std::stringstream s_str1(sd[0]);
-									unsigned long long actValue;
+									long long actValue;
 									s_str1 >> actValue;
 
 									if (actValue >= ulLastValue)
@@ -11835,7 +11841,7 @@ namespace http {
 								else
 								{
 									std::stringstream s_str1(sd[1]);
-									unsigned long long actValue;
+									long long actValue;
 									s_str1 >> actValue;
 
 									root["result"][ii]["d"] = sd[2].substr(0, 16);

@@ -518,7 +518,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 				isUtility = true;
 			}
-			if (sitem.subType == sTypeDistance)
+			else if (sitem.subType == sTypeAlert)
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
+			else if (sitem.subType == sTypeDistance)
 			{
 				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 				isUtility = true;
@@ -1505,6 +1510,172 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 	lua_close(lua_state);
 }
 
+static inline long long GetIndexFromDevice(std::string devline)
+{
+	size_t fpos = devline.find('[');
+	if (fpos == std::string::npos)
+		return -1;
+	devline = devline.substr(fpos + 1);
+	fpos = devline.find(']');
+	if (fpos == std::string::npos)
+		return -1;
+	devline = devline.substr(0, fpos);
+	return atoll(devline.c_str());
+}
+
+std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
+{
+	std::string ret = Argument;
+	long long dindex = GetIndexFromDevice(Argument);
+	if (dindex == -1)
+		return ret;
+
+	if (Argument.find("temperaturedevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_tempValuesByID.find(dindex);
+		if (itt != m_tempValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("dewpointdevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_dewValuesByID.find(dindex);
+		if (itt != m_dewValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("humiditydevice") == 0)
+	{
+		std::map<unsigned long long, unsigned char>::const_iterator itt = m_humValuesByID.find(dindex);
+		if (itt != m_humValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("barometerdevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_baroValuesByID.find(dindex);
+		if (itt != m_baroValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("utilitydevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_utilityValuesByID.find(dindex);
+		if (itt != m_utilityValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("raindevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_rainValuesByID.find(dindex);
+		if (itt != m_rainValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("rainlasthourdevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_rainLastHourValuesByID.find(dindex);
+		if (itt != m_rainLastHourValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("uvdevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_uvValuesByID.find(dindex);
+		if (itt != m_uvValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("winddirdevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_winddirValuesByID.find(dindex);
+		if (itt != m_winddirValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("windspeeddevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_windspeedValuesByID.find(dindex);
+		if (itt != m_windspeedValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("windgustdevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_windgustValuesByID.find(dindex);
+		if (itt != m_windgustValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	else if (Argument.find("weatherdevice") == 0)
+	{
+		//This was a bad implementation from the original blockly author!
+		//We need to split all different types here, and also in blockly
+		//we try our best to find the value you are looking for
+		std::map<unsigned long long, float>::const_iterator itt = m_uvValuesByID.find(dindex);
+		if (itt != m_uvValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+		itt = m_windspeedValuesByID.find(dindex);
+		if (itt != m_windspeedValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+		itt = m_windgustValuesByID.find(dindex);
+		if (itt != m_windgustValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+		itt = m_rainLastHourValuesByID.find(dindex);
+		if (itt != m_rainLastHourValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
+	return ret;
+}
 
 bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::string &eventName, const unsigned long long eventID)
 {
@@ -1579,6 +1750,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					afterTimerSeconds = atoi(delayString.c_str());
 					doWhat = newAction;
 				}
+				doWhat = ProcessVariableArgument(doWhat);
 				if (afterTimerSeconds == 0)
 				{
 					std::vector<std::vector<std::string> > result;
@@ -2543,6 +2715,9 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if (result.size() > 0)
 		{
 			std::vector<std::string> sd = result[0];
+			
+			variableValue = ProcessVariableArgument(variableValue);
+
 			if (afterTimerSeconds == 0)
 			{
 				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);

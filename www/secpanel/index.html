@@ -6,11 +6,27 @@
 	<title>Domoticz Security Panel</title>
 	<link href="css/style.less" rel="stylesheet/less" />
 	<script src="js/less.js"></script>
+	<script src="js/ion.sound.min.js"></script>
 	<script src="../js/jquery-1.11.3.min.js"></script>
 	<script src="../js/i18next-1.8.0.min.js"></script> 
 	<script src="../js/domoticz.js"></script>
 	<script src="../js/md5.js"></script>
 	<script type="text/javascript">
+		ion.sound({
+			sounds: [
+				{name: "arm"},
+				{name: "disarm"},
+				{name: "key"},
+				{name: "wrongcode"}
+			],
+
+			// main config
+			path: "media/",
+			preload: true,
+			multiplay: true,
+			volume: 0.9
+		});
+	
 		function ShowError(error) {
 			if (error=="NoConnect") {
 				$('#digitdisplay').val("no connect");
@@ -198,6 +214,7 @@
 		}
 
 		function SetSecStatus(status, zonearray, seccode, setzone) {
+			clearInterval(CountdownTimer);
 			if (typeof(seccode) == "undefined") seccode=$('#password').val();
 			if (isNaN(seccode)) {
 				beep('error');
@@ -306,97 +323,24 @@
 
 			$('#digitdisplay').val(codeinput);
 			$('#password').val(newtext);
-			
-			
 		}
-				
-		var contextClass = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.oAudioContext || window.msAudioContext);
-		// firefox & ie fix
-		if (contextClass && (navigator.userAgent.toLowerCase().indexOf('firefox') <= -1) && (navigator.userAgent.toLowerCase().indexOf('msie') <= -1)) {
-
-			var context1 = new AudioContext();
-			oscillator1 = context1.createOscillator();
-			oscillator1.type = 'square';
-			oscillator1.frequency.value = 1600;
-			
-			var context2 = new AudioContext();
-			oscillator2 = context2.createOscillator();
-			oscillator2.type = 'square';
-			oscillator2.frequency.value = 2000;
-
-			var context3 = new AudioContext();
-			oscillator3 = context3.createOscillator();
-			oscillator3.type = 'square';
-			oscillator3.frequency.value = 1800;
-
-			var volume1 = context1.createGain();
-			volume1.gain.value = 0;
-
-			var volume2 = context2.createGain();
-			volume2.gain.value = 0;
-
-			var volume3 = context3.createGain();
-			volume3.gain.value = 0;
-
-			oscillator1.connect(volume1);
-			oscillator2.connect(volume2);
-			oscillator3.connect(volume3);
-			volume1.connect(context1.destination);
-			volume2.connect(context2.destination);
-			volume3.connect(context3.destination);
-			oscillator1.start();
-			oscillator2.start(0);
-			oscillator3.start(0);
-		}
-		else contextClass="";
-
+		
 		function beep(tone) {
-			if (contextClass) {
-				var frequency;
-				if (tone=="error") {
-					volume1.gain.value = 0.1;
-					setTimeout("volume1.gain.value = 0;", 200)
-				}
-				else if (tone=="set") {
-					volume2.gain.value = 0.1;
-					setTimeout("volume2.gain.value = 0;", 200)
-				}
-				else if (tone=="in") {
-					setTimeout("volume1.gain.value = 0.1;", 0)
-					setTimeout("volume1.gain.value = 0;", 200)
-					setTimeout("volume3.gain.value = 0.1;", 200)
-					setTimeout("volume3.gain.value = 0;", 400)
-					setTimeout("volume2.gain.value = 0.1;", 400)
-					setTimeout("volume2.gain.value = 0;", 600)
-				}
-				else if (tone=="out") {
-					setTimeout("volume2.gain.value = 0.1;", 0)
-					setTimeout("volume2.gain.value = 0;", 200)
-					setTimeout("volume3.gain.value = 0.1;", 200)
-					setTimeout("volume3.gain.value = 0;", 400)
-					setTimeout("volume1.gain.value = 0.1;", 400)
-					setTimeout("volume1.gain.value = 0;", 600)
-				}
-				else {
-					volume3.gain.value = 0.1;
-					setTimeout("volume3.gain.value = 0;", 200)
-				}
+			if (tone=="error") {
+				ion.sound.play("wrongcode");
+			}
+			else if (tone=="set") {
+				ion.sound.play("key");
+			}
+			else if (tone=="in") {
+				ion.sound.play("arm");
+			}
+			else if (tone=="out") {
+				ion.sound.play("disarm");
 			}
 			else {
-			var snd='';
-				if (tone=="error") {
-					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*750)*127+128); }
-				}
-				else if (tone=="set") {
-					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*850)*127+128); }
-				}
-				else {
-					for(k = 11025; k--;) { snd += String.fromCharCode(Math.sin(k/44100*2*Math.PI*800)*127+128); }
-				}
-				snd = new Audio('data:audio/wav;base64,UklGRjUrAABXQVZFZm10IBAAAAA\BAAEARKwAAESsAAABAAgAZGF0YREr'+btoa('\0\0'+snd));
-				snd.play();
+				ion.sound.play("key");
 			}
-
 		}
 		
 		function SetLanguageEx(lng) {
@@ -413,7 +357,6 @@
 			$(".nav").i18n();
 			MakeDatatableTranslations();
 		}
-		
 		$(document).ready(function() {
 			$.ajax({
 				 url: "../json.htm?type=command&param=getlanguage",

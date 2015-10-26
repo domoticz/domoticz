@@ -102,8 +102,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1)
-				|| (text.indexOf("Logitech Media Server") >= 0))
+            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1))
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -385,6 +384,49 @@ define(['app'], function (app) {
                      }
                 });
             }
+            else if (text.indexOf("Logitech Media Server") >= 0)
+            {
+                var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                if (address=="")
+                {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port=$("#hardwarecontent #divremote #tcpport").val();
+                if (port=="")
+                {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+                var username=$("#hardwarecontent #divlogin #username").val();
+                var password=$("#hardwarecontent #divlogin #password").val();
+
+                $.ajax({
+                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                        "&address=" + address +
+                        "&port=" + port +
+                        "&username=" + encodeURIComponent(username) +
+                        "&password=" + encodeURIComponent(password) +
+                        "&name=" + encodeURIComponent(name) +
+                        "&enabled=" + bEnabled +
+                        "&idx=" + idx +
+                        "&datatimeout=" + datatimeout +
+                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                     }
+                });
+            }
         }
 
         AddHardware = function()
@@ -441,8 +483,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1 && text.indexOf("Integra") == -1)
-				|| (text.indexOf("Logitech Media Server") >= 0))
+            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1 && text.indexOf("Integra") == -1))
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -542,7 +583,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("ETH8020") >= 0) || (text.indexOf("Anna") >= 0) || (text.indexOf("KMTronic") >= 0) || (text.indexOf("MQTT") >= 0))
+            else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("ETH8020") >= 0) || (text.indexOf("Anna") >= 0) || (text.indexOf("KMTronic") >= 0) || (text.indexOf("MQTT") >= 0) || (text.indexOf("Logitech Media Server") >= 0))
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -2920,6 +2961,7 @@ define(['app'], function (app) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("MySensors") >= 0) {
+                        HwTypeStr+='<br>Version: ' + item.version;
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditMySensors(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
@@ -3078,11 +3120,11 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divremote #tcpaddress").val(data["Address"]);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -3103,7 +3145,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
                         }
-                        if (data["Type"].indexOf("MQTT") >= 0) {
+                        else if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
                         }                        
@@ -3119,7 +3161,8 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("KMTronic") >= 0)||
                             (data["Type"].indexOf("MQTT") >= 0)||
                             (data["Type"].indexOf("Netatmo Weather Station") >= 0)||
-                            (data["Type"].indexOf("Thermosmart") >= 0)
+                            (data["Type"].indexOf("Thermosmart") >= 0) ||
+							(data["Type"].indexOf("Logitech Media Server") >= 0)
                             )
                         {
                             $("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
@@ -3273,7 +3316,7 @@ define(['app'], function (app) {
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
-                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
             }
             else

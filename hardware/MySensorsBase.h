@@ -348,6 +348,7 @@ public:
 	void RemoveChild(const int nodeID, const int childID);
 	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
 	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
+	std::string GetGatewayVersion();
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);
@@ -356,7 +357,11 @@ private:
 	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name, const bool UseAck);
 	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
 
-	void SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
+	void SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload);
+	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload);
+	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
+
+
 	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
 
 	bool GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
@@ -383,6 +388,13 @@ private:
 	bool GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue);
 
 	std::map<int, _tMySensorNode> m_nodes;
+
+	std::string m_GatewayVersion;
+
+	bool m_bAckReceived;
+	int m_AckNodeID;
+	int m_AckChildID;
+	_eSetType m_AckSetType;
 
 	unsigned char m_buffer[1028];
 	int m_bufferpos;

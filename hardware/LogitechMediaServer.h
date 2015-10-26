@@ -28,8 +28,7 @@ public:
 		std::string		Name;
 	};
 
-	CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms);
-	CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port);
+	CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const std::string User, const std::string Pwd, const int PollIntervalsec, const int PingTimeoutms);
 	CLogitechMediaServer(const int ID);
 	~CLogitechMediaServer(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
@@ -66,6 +65,8 @@ private:
 	int m_iPingTimeoutms;
 	std::string	m_IP;
 	int	m_Port;
+	std::string m_User;
+	std::string m_Pwd;
 	bool m_bShowedStartupMessage;
 
 	boost::shared_ptr<boost::thread> m_thread;

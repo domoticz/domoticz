@@ -1,5 +1,34 @@
 #!/usr/bin/perl -w
 
+=head1 buienradar_rain.pl
+
+Installation:
+
+In Domoticz create a Dummy Percentage sensor.
+Next go to the Devices overview, and write down the 'idx' value of the sensor.
+
+Copy this file to another location and edit the setting below to match your situation.
+
+cp /home/pi/domoticz/scripts/buienradar_rain_example.pl /home/pi/domoticz/buienradar_rain.pl
+nano /home/pi/domoticz/buienradar_rain.pl
+
+You might have to install perl or additional modules
+
+LWP: http://lwp.interglacial.com/ch01_03.htm
+sudo apt-get install libjson-perl
+
+Next add a Crontab rule:
+
+crontab -e
+
+Add the following line at the end:
+
+*/5 * * * * perl /home/pi/domoticz/buienradar_rain.pl
+
+In 5 minutes, the sensor should work
+
+=cut
+
 use strict;
 use LWP::UserAgent;
 use HTTP::Cookies;
