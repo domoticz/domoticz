@@ -166,9 +166,8 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 			  rep.bIsGZIP=true;
 			  // Fill out the reply to be sent to the client.
 			  rep.status = reply::ok;
-			  char buf[512];
-			  while (is.read(buf, sizeof(buf)).gcount() > 0)
-				  rep.content.append(buf, (unsigned int)is.gcount());
+			  rep.content.append((std::istreambuf_iterator<char>(is)),
+				  (std::istreambuf_iterator<char>()));
 		  }
 	  }
 	  if (!bHaveLoadedgzip)
@@ -184,14 +183,10 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 			  if (is.is_open())
 			  {
 				  bHaveLoadedgzip = true;
-				  is.seekg(0, is.end);
-				  std::streampos size = is.tellg();
-				  size_t sourceSize = static_cast<size_t>(size);
-				  boost::scoped_array<char> memblock(new char[sourceSize]);
-				  is.seekg(0, std::ios::beg);
-				  is.read(memblock.get(), size);
+				  std::string gzcontent((std::istreambuf_iterator<char>(is)),
+					  (std::istreambuf_iterator<char>()));
 
-				  CGZIP2AT<> decompress(reinterpret_cast<LPGZIP>(memblock.get()), sourceSize);
+				  CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
 
 				  rep.status = reply::ok;
 				  // Fill out the reply to be sent to the client.
@@ -220,9 +215,8 @@ void request_handler::handle_request(const std::string &sHost, const request& re
 		  {
 			  // Fill out the reply to be sent to the client.
 			  rep.status = reply::ok;
-			  char buf[512];
-			  while (is.read(buf, sizeof(buf)).gcount() > 0)
-				  rep.content.append(buf, (unsigned int)is.gcount());
+			  rep.content.append((std::istreambuf_iterator<char>(is)),
+				  (std::istreambuf_iterator<char>()));
 		  }
 	  }
   }
