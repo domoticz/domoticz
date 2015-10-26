@@ -32,15 +32,15 @@ before_install:
 
 # Build matrix definition
 # * Two builds
-#   1. Linux amd64
+#   1. Linux x86_64
 #   2. Apple OSX
 matrix:
   include:
-  # Linux amd64
+  # Linux x86_64
   - os: linux
     compiler:
       - gcc
-    env: TARGET_ARCHITECTURE=amd64
+    env: TARGET_ARCHITECTURE=x86_64
     addons:
       apt:
         sources:
@@ -59,6 +59,7 @@ matrix:
           - libssl-dev
           - libudev-dev
           - git
+          - libdigest-sha-perl
     script:
       - (cd open-zwave-read-only; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
@@ -67,7 +68,7 @@ matrix:
   - os: osx
     compiler:
       - gcc
-    env: TARGET_ARCHITECTURE=amd64
+    env: TARGET_ARCHITECTURE=x86_64
     install:
       - brew install cmake
       - brew install boost|| true
@@ -76,6 +77,7 @@ matrix:
       - brew install zlib || true
       - brew install openssl
       - brew link openssl --force
+      - brew install md5sha1sum
       - export LDFLAGS=-L/usr/local/opt/openssl/lib
       - export CPPFLAGS=-I/usr/local/opt/openssl/include
     script:
@@ -86,11 +88,14 @@ matrix:
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
 before_deploy:
-  - tar czf domoticz_${TRAVIS_OS_NAME}_x86_64_latest.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
+  - tar czf domoticz_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE)_latest.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
+  - shasum -a 256 domoticz_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE)_latest.tgz > domoticz_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE)_latest.tgz.sha256sum
+  - cp appversion.h.txt version_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE).h
+  - cp History.txt history_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE).txt
 deploy:
   skip_cleanup: true
   provider: script
-  script: curl --ftp-ssl -T domoticz_${TRAVIS_OS_NAME}_x86_64_latest.tgz -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
+  script: curl --ftp-ssl -T domoticz_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE)_latest.tgz -T domoticz_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE)_latest.tgz.sha256sum -T version_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE).h -T history_${TRAVIS_OS_NAME}_$(TARGET_ARCHITECTURE).txt -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
   on:
     branch: master
     repo: domoticz/domoticz
