@@ -77,6 +77,7 @@ public:
 	const WebEmStoredSession GetSession(const std::string & sessionId);
 	void StoreSession(const WebEmStoredSession & session);
 	void RemoveSession(const std::string & sessionId);
+	void CleanSessions();
 
 private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
@@ -115,6 +116,7 @@ private:
 	void Cmd_KodiMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSGetNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_LMSGetPlaylists(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LMSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SaveFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root);

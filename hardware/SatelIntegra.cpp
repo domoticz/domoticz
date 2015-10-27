@@ -778,7 +778,7 @@ void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
 
 	temp = temp - 0x6E;
 	tsen.TEMP.tempsign=(temp>=0)?0:1;
-	int at10=round(abs(temp/2.0f));
+	int at10=round(abs(temp*5.0f));
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);

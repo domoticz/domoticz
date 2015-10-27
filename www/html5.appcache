@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1084
+# ref 1090
 
 CACHE:
 # CSS
@@ -383,25 +383,31 @@ secpanel/bg.jpg
 # Audio
 media/click.wav
 media/delete.wav
-secpanel/sounds/armed.mp3
-secpanel/sounds/armed.ogg
-secpanel/sounds/bleep.mp3
-secpanel/sounds/bleep.ogg
-secpanel/sounds/disarmed.mp3
-secpanel/sounds/disarmed.ogg
-secpanel/sounds/wrong.mp3
-secpanel/sounds/wrong.ogg
+secpanel/media/arm.aac
+secpanel/media/arm.mp3
+secpanel/media/arm.ogg
+secpanel/media/disarm.aac
+secpanel/media/disarm.mp3
+secpanel/media/disarm.ogg
+secpanel/media/key.aac
+secpanel/media/key.mp3
+secpanel/media/key.ogg
+secpanel/media/wrongcode.aac
+secpanel/media/wrongcode.mp3
+secpanel/media/wrongcode.ogg
 
 # Languages
+i18n/domoticz-ar.json
 i18n/domoticz-bg.json
 i18n/domoticz-cs.json
 i18n/domoticz-da.json
 i18n/domoticz-de.json
+i18n/domoticz-el.json
 i18n/domoticz-en.json
 i18n/domoticz-es.json
-i18n/domoticz-el.json
 i18n/domoticz-fi.json
 i18n/domoticz-fr.json
+i18n/domoticz-he.json
 i18n/domoticz-hu.json
 i18n/domoticz-it.json
 i18n/domoticz-lt.json
@@ -455,6 +461,7 @@ js/angular-md5-min.js
 js/angular-round-progress-directive.js
 js/angular-route.min.js
 js/angular-sanitize.min.js
+js/angular-scrollglue.js
 js/angular-tree-control.js
 js/angular.min.js
 js/angularAMD.min.js
@@ -504,6 +511,7 @@ js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
 secpanel/js/less.js
+secpanel/js/ion.sound.min.js
 ozwcp/cp.js
 
 #Dynamic theme

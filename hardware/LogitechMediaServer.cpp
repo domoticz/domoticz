@@ -12,20 +12,14 @@
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
+CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const std::string User, const std::string Pwd, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
 	m_IP = IPAddress;
 	m_Port = Port;
+	m_User = User;
+	m_Pwd = Pwd;
 	SetSettings(PollIntervalsec, PingTimeoutms);
-}
-
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port) : m_stoprequested(false), m_iThreadsRunning(0)
-{
-	m_HwdID = ID;
-	m_IP = IPAddress;
-	m_Port = Port;
-	SetSettings(10, 3000);
 }
 
 CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false), m_iThreadsRunning(0)
@@ -33,13 +27,17 @@ CLogitechMediaServer::CLogitechMediaServer(const int ID) : m_stoprequested(false
 	m_HwdID = ID;
 	m_IP = "";
 	m_Port = 0;
+	m_User = "";
+	m_Pwd = "";
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Address, Port FROM Hardware WHERE ID==%d", m_HwdID);
+	result = m_sql.safe_query("SELECT Address, Port, Username, Password FROM Hardware WHERE ID==%d", m_HwdID);
 
 	if (result.size() > 0)
 	{
 		m_IP = result[0][0];
 		m_Port = atoi(result[0][1].c_str());
+		m_User = result[0][2];
+		m_Pwd = result[0][3];
 	}
 
 	SetSettings(10, 3000);
@@ -58,7 +56,11 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	std::stringstream sURL;
 	std::stringstream sPostData;
 
-	sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
+	if ((m_User != "") && (m_Pwd != ""))
+		sURL << "http://" << m_User << ":" << m_Pwd << "@" << sIP << ":" << iPort << "/jsonrpc.js";
+	else
+		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
+
 	sPostData << sPostdata;
 	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
 	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
@@ -71,7 +73,11 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	bRetVal = jReader.parse(sResult, root);
 	if (!bRetVal)
 	{
-		_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
+		size_t aFind = sResult.find("401 Authorization Required");
+		if ((aFind > 0) && (aFind != std::string::npos))
+			_log.Log(LOG_ERROR, "Logitech Media Server: Username and/or password are incorrect. Check Logitech Media Server settings.");
+		else
+			_log.Log(LOG_ERROR, "Logitech Media Server: PARSE ERROR: %s", sResult.c_str());
 		return root;
 	}
 	if (root["method"].empty())
@@ -104,8 +110,6 @@ bool CLogitechMediaServer::StartHardware()
 	m_bShowedStartupMessage = false;
 
 	StartHeartbeatThread();
-
-	ReloadNodes();
 
 	//Start worker thread
 	m_stoprequested = false;
@@ -282,9 +286,12 @@ void CLogitechMediaServer::Do_Node_Work(const LogitechMediaServerNode &Node)
 						if (sYear == "0") sYear = "";
 						if (sYear != "")
 							sYear = " (" + sYear + ")";
-					}
 
-					sLabel = sArtist + " - " + sTitle + sYear;
+						sLabel = sArtist + " - " + sTitle + sYear;
+					}
+					else
+						sLabel = "(empty playlist)";
+
 					sStatus = sLabel;
 				}
 			}
@@ -307,6 +314,9 @@ void CLogitechMediaServer::Do_Work()
 	bool bFirstTime = true;
 
 	_log.Log(LOG_STATUS, "Logitech Media Server: Worker started...");
+
+	ReloadNodes();
+	ReloadPlaylists();
 
 	while (!m_stoprequested)
 	{
@@ -509,26 +519,25 @@ bool CLogitechMediaServer::WriteToHardware(const char *pdata, const unsigned cha
 			{
 			case light2_sOn:
 			case light2_sGroupOn:
-				SendCommand(itt->ID, "PowerOn");
-				return true;
+				return SendCommand(itt->ID, "PowerOn");
 			case light2_sOff:
 			case light2_sGroupOff:
-				SendCommand(itt->ID, "PowerOff");
-				return true;
+				return SendCommand(itt->ID, "PowerOff");
 			case gswitch_sPlay:
 				SendCommand(itt->ID, "NowPlaying");
-				SendCommand(itt->ID, "Play");
-				return true;
+				return SendCommand(itt->ID, "Play");
+			case gswitch_sPlayPlaylist:
+				sParam = GetPlaylistByRefID(iParam);
+				return SendCommand(itt->ID, "PlayPlaylist", sParam);
+			case gswitch_sPlayFavorites:
+				return SendCommand(itt->ID, "PlayFavorites");
 			case gswitch_sStop:
-				SendCommand(itt->ID, "Stop");
-				return true;
+				return SendCommand(itt->ID, "Stop");
 			case gswitch_sPause:
-				SendCommand(itt->ID, "Pause");
-				return true;
+				return SendCommand(itt->ID, "Pause");
 			case gswitch_sSetVolume:
 				sParam = boost::lexical_cast<std::string>(iParam);
-				SendCommand(itt->ID, "SetVolume", sParam);
-				return true;
+				return SendCommand(itt->ID, "SetVolume", sParam);
 			default:
 				return true;
 			}
@@ -576,7 +585,44 @@ void CLogitechMediaServer::ReloadNodes()
 		_log.Log(LOG_ERROR, "Logitech Media Server: No player-switches found.");
 }
 
-void CLogitechMediaServer::SendCommand(const int ID, const std::string &command, const std::string &param)
+void CLogitechMediaServer::ReloadPlaylists()
+{
+	m_playlists.clear();
+
+	std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"\",[\"playlists\",0,999]]}";
+	Json::Value root = Query(m_IP, m_Port, sPostdata);
+
+	int totPlaylists = root["count"].asInt();
+	if (totPlaylists > 0) {
+		_log.Log(LOG_STATUS, "Logitech Media Server: %i playlist(s) found.", totPlaylists);
+		for (int ii = 0; ii < totPlaylists; ii++)
+		{
+			LMSPlaylistNode pnode;
+
+			pnode.ID = root["playlists_loop"][ii]["id"].asInt();
+			pnode.Name = root["playlists_loop"][ii]["playlist"].asString();
+			pnode.refID = pnode.ID % 256;
+
+			m_playlists.push_back(pnode);
+		}
+	}
+	else
+		_log.Log(LOG_STATUS, "Logitech Media Server: No playlists found.");
+}
+
+std::string CLogitechMediaServer::GetPlaylistByRefID(const int ID)
+{
+	std::vector<CLogitechMediaServer::LMSPlaylistNode>::const_iterator itt;
+
+	for (itt = m_playlists.begin(); itt != m_playlists.end(); ++itt) {
+		if (itt->refID == ID) return itt->Name;
+	}
+
+	_log.Log(LOG_ERROR, "Logitech Media Server: Playlist ID %d not found.", ID);
+	return "";
+}
+
+bool CLogitechMediaServer::SendCommand(const int ID, const std::string &command, const std::string &param)
 {
 	std::vector<std::vector<std::string> > result;
 	std::string sPlayerId = "";
@@ -640,6 +686,13 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 		else if (command == "Play") {
 			sLMSCmnd = "\"button\", \"play.single\"";
 		}
+		else if (command == "PlayPlaylist") {
+			if (param == "") return false;
+			sLMSCmnd = "\"playlist\", \"play\", \"" + param + "\"";
+		}
+		else if (command == "PlayFavorites") {
+			sLMSCmnd = "\"favorites\", \"playlist\", \"play\"";
+		}
 		else if (command == "Pause") {
 			sLMSCmnd = "\"button\", \"pause.single\"";
 		}
@@ -653,6 +706,7 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 			sLMSCmnd = "\"power\", \"0\"";
 		}
 		else if (command == "SetVolume") {
+			if (param == "") return false;
 			sLMSCmnd = "\"mixer\", \"volume\", \"" + param + "\"";
 		}
 
@@ -660,15 +714,45 @@ void CLogitechMediaServer::SendCommand(const int ID, const std::string &command,
 		{
 			std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[" + sLMSCmnd + "]]}";
 			Json::Value root = Query(m_IP, m_Port, sPostdata);
+
+			sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + sPlayerId + "\",[\"status\",\"-\",1,\"tags:uB\"]]}";
+			root = Query(m_IP, m_Port, sPostdata);
+
+			if (root["player_connected"].asString() == "1")
+			{
+				std::string sPower = root["power"].asString();
+				std::string sMode = root["mode"].asString();
+
+				if (command == "Stop")
+					return sMode == "stop";
+				else if (command == "Pause")
+					return sMode == "pause";
+				else if (command == "Play")
+					return sMode == "play";
+				else if (command == "PlayPlaylist")
+					return sMode == "play";
+				else if (command == "PlayFavorites")
+					return sMode == "play";
+				else if (command == "PowerOn")
+					return sPower == "1";
+				else if (command == "PowerOff")
+					return sPower == "0";
+				else
+					return false;
+			}
+			else
+				return false;
 		}
 		else
 		{
 			_log.Log(LOG_ERROR, "Logitech Media Server: (%s) Command: '%s'. Unknown command.", result[0][0].c_str(), command.c_str());
+			return false;
 		}
 	}
 	else
 	{
 		_log.Log(LOG_ERROR, "Logitech Media Server: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+		return false;
 	}
 }
 
@@ -684,6 +768,23 @@ void CLogitechMediaServer::SendText(const std::string &playerIP, const std::stri
 		std::string sPostdata = "{\"id\":1,\"method\":\"slim.request\",\"params\":[\"" + playerIP + "\",[\"show\",\"line1:" + sLine1 + "\",\"line2:" + sLine2 + "\",\"duration:" + sDuration + "\",\"brightness:" + sBrightness + "\",\"font:" + sFont + "\"]]}";
 		Json::Value root = Query(m_IP, m_Port, sPostdata);
 	}
+}
+
+std::vector<CLogitechMediaServer::LMSPlaylistNode> CLogitechMediaServer::GetPlaylists()
+{
+	return m_playlists;
+}
+
+int CLogitechMediaServer::GetPlaylistRefID(const std::string &name)
+{
+	std::vector<CLogitechMediaServer::LMSPlaylistNode>::const_iterator itt;
+
+	for (itt = m_playlists.begin(); itt != m_playlists.end(); ++itt) {
+		if (itt->Name == name) return itt->refID;
+	}
+
+	_log.Log(LOG_ERROR, "Logitech Media Server: Playlist '%s' not found.", name.c_str());
+	return 0;
 }
 
 //Webserver helpers
@@ -754,6 +855,34 @@ namespace http {
 					root["result"][ii]["Mac"] = sd[2];
 					ii++;
 				}
+			}
+		}
+
+		void CWebServer::Cmd_LMSGetPlaylists(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string hwid = request::findValue(&req, "idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (pBaseHardware->HwdType != HTYPE_LogitechMediaServer)
+				return;
+			CLogitechMediaServer *pHardware = (CLogitechMediaServer*)pBaseHardware;
+
+			root["status"] = "OK";
+			root["title"] = "Cmd_LMSGetPlaylists";
+
+			std::vector<CLogitechMediaServer::LMSPlaylistNode> m_nodes = pHardware->GetPlaylists();
+			std::vector<CLogitechMediaServer::LMSPlaylistNode>::const_iterator itt;
+
+			int ii = 0;
+			for (itt = m_nodes.begin(); itt != m_nodes.end(); ++itt) {
+				root["result"][ii]["id"] = itt->ID;
+				root["result"][ii]["refid"] = itt->refID;
+				root["result"][ii]["Name"] = itt->Name;
+				ii++;
 			}
 		}
 

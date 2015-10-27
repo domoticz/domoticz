@@ -21,8 +21,14 @@ class CLogitechMediaServer : public CDomoticzHardwareBase
 		std::string		sShortStatus;
 	};
 public:
-	CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const int PollIntervalsec, const int PingTimeoutms);
-	CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port);
+	struct LMSPlaylistNode
+	{
+		int				ID;
+		int				refID;
+		std::string		Name;
+	};
+
+	CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const std::string User, const std::string Pwd, const int PollIntervalsec, const int PingTimeoutms);
 	CLogitechMediaServer(const int ID);
 	~CLogitechMediaServer(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
@@ -32,8 +38,10 @@ public:
 	void RemoveAllNodes();
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
 	void Restart();
-	void SendCommand(const int ID, const std::string &command, const std::string &param = "");
+	bool SendCommand(const int ID, const std::string &command, const std::string &param = "");
 	void SendText(const std::string &playerIP, const std::string &subject, const std::string &text, const int duration);
+	std::vector<LMSPlaylistNode> GetPlaylists();
+	int GetPlaylistRefID(const std::string &name);
 private:
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
 	void Do_Work();
@@ -46,14 +54,19 @@ private:
 	void Do_Node_Work(const LogitechMediaServerNode &Node);
 	void UpdateNodeStatus(const LogitechMediaServerNode &Node, const _eMediaStatus nStatus, const std::string sStatus, const bool bPingOK);
 	void ReloadNodes();
+	void ReloadPlaylists();
+	std::string GetPlaylistByRefID(const int ID);
 
 	std::vector<LogitechMediaServerNode> m_nodes;
+	std::vector<LMSPlaylistNode> m_playlists;
 
 	int m_iThreadsRunning;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::string	m_IP;
 	int	m_Port;
+	std::string m_User;
+	std::string m_Pwd;
 	bool m_bShowedStartupMessage;
 
 	boost::shared_ptr<boost::thread> m_thread;
