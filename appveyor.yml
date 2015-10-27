@@ -14,17 +14,17 @@ build_script:
 - msbuild msbuild\package.proj
 
 artifacts:
-- path: domoticz-*-setup.zip
+- path: domoticz-*-latest.zip
 
 test: off
 
 deploy:
 - provider: FTP
   host: 62.84.241.110
+  folder: beta
   protocol: ftps
   username: uploads@domoticz.com
-  password:
-    secure: 0O9f8y4I8JN+RYfEJ3f3cg==
+  password: $(FTP_PASSWORD)
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
     APPVEYOR_REPO_BRANCH: master  
