@@ -925,6 +925,9 @@ std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, co
 	} else {
 		//_log.Log(LOG_STATUS,"EventSystem: insert device %llu",ulDevID);
 		_tDeviceStatus newitem;
+		newitem.devType = devType;
+		newitem.subType = subType;
+		newitem.switchtype = switchType;
 		newitem.ID = ulDevID;
 		newitem.deviceName = l_deviceName;
 		newitem.nValue = nValue;
