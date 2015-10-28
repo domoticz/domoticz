@@ -1637,16 +1637,27 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(session.id);
 		if (itt != myWebem->m_sessions.end())
 		{
-			time_t atime = mytime(NULL);
-			if (myWebem->m_sessions[session.id].expires - 60 < atime)
+			time_t now = mytime(NULL);
+			if (myWebem->m_sessions[session.id].expires - 60 < now)
 			{
-				myWebem->m_sessions[session.id].expires = atime + SESSION_TIMEOUT;
+				myWebem->m_sessions[session.id].expires = now + SESSION_TIMEOUT;
 				myWebem->m_sessions[session.id].auth_token = generateAuthToken(myWebem->m_sessions[session.id], req); // do it after expires to save it also
 				send_cookie(rep, myWebem->m_sessions[session.id]);
 			}
 		}
 	}
 
+}
+
+void cWebemRequestHandler::cleanTimedOutSessions() {
+	time_t now = mytime(NULL);
+	// Note : no mutex needed because we receive only one request at a time.
+	std::map<std::string, WebEmSession>::iterator itt;
+	for (itt=myWebem->m_sessions.begin(); itt!=myWebem->m_sessions.end(); ++itt) {
+		if (itt->second.timeout < now) {
+			myWebem->m_sessions.erase(itt);
+		}
+	}
 }
 
 } //namespace server {
