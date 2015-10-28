@@ -1300,6 +1300,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		int fpos = scookie.find("SID=");
 		int upos = scookie.find("_");
 		int ppos = scookie.find(".");
+		time_t now = mytime(NULL);
 		if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 		{
 			sSID = scookie.substr(fpos + 4, upos-fpos-4);
@@ -1311,12 +1312,15 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 			sstr << szTime;
 			sstr >> stime;
 
-			time_t now = mytime(NULL);
 			expired = stime < now;
 		}
 
 		if (!(sSID.empty() || sAuthToken.empty() || szTime.empty())) {
 			std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
+			if (itt != myWebem->m_sessions.end() && (itt->second.expires < now)) {
+				// Check if session stored in memory is not expired (prevent from spoofing expiration time)
+				expired = true;
+			}
 			if (expired)
 			{
 				//timeout, remove session
@@ -1324,7 +1328,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				send_remove_cookie(rep);
 				if (itt != myWebem->m_sessions.end())
 				{
-					// session exists
+					// session exists (delete it from memory and database)
 					myWebem->m_sessions.erase(itt);
 					rep = reply::stock_reply(reply::unauthorized);
 				}
