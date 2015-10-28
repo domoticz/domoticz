@@ -207,7 +207,6 @@ namespace http {
 
 			std::string m_zippassword;
 			std::map<std::string,WebEmSession> m_sessions;
-			time_t nextSessionCleanup;
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
@@ -232,6 +231,9 @@ namespace http {
 			std::string myPort;
 			/// session store
 			session_store* mySessionStore;
+			/// next timed out session cleanup time
+			time_t myNextSessionCleanup;
+
 		};
 
 	}

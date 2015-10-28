@@ -58,7 +58,7 @@ m_actTheme("")
 {
 	m_authmethod=AUTH_LOGIN;
 	mySessionStore = NULL;
-	nextSessionCleanup = mytime(NULL) + 15 * 60; // in 15 minutes
+	myNextSessionCleanup = mytime(NULL) + 15 * 60; // in 15 minutes
 }
 
 /**
@@ -939,8 +939,8 @@ void cWebem::CleanTimedOutSessions() {
 	// TODO : Check if a mutex and an atomic<unsigned long> are needed in case multiple requests are received at the same time.
 
 	time_t now = mytime(NULL);
-	if (nextSessionCleanup >= now) {
-		nextSessionCleanup = now + 15 * 60; // in 15 minutes
+	if (myNextSessionCleanup >= now) {
+		myNextSessionCleanup = now + 15 * 60; // in 15 minutes
 
 		std::map<std::string, WebEmSession>::iterator itt;
 		for (itt=m_sessions.begin(); itt!=m_sessions.end(); ++itt) {
