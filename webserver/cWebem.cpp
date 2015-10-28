@@ -58,6 +58,7 @@ m_actTheme("")
 {
 	m_authmethod=AUTH_LOGIN;
 	mySessionStore = NULL;
+	nextSessionCleanup = mytime(NULL) + 15 * 60; // in 15 minutes
 }
 
 /**
@@ -933,6 +934,24 @@ static int check_password(struct ah *ah, const std::string &ha1, const std::stri
 	return 0;
 }
 
+void cWebem::CleanTimedOutSessions() {
+
+	// TODO : Check if a mutex and an atomic<unsigned long> are needed in case multiple requests are received at the same time.
+
+	time_t now = mytime(NULL);
+	if (nextSessionCleanup >= now) {
+		nextSessionCleanup = mytime(NULL) + 15 * 60; // in 15 minutes
+
+		std::map<std::string, WebEmSession>::iterator itt;
+		for (itt=m_sessions.begin(); itt!=m_sessions.end(); ++itt) {
+			if (itt->second.timeout < now) {
+				m_sessions.erase(itt);
+			}
+		}
+
+	}
+}
+
 // Return 1 on success. Always initializes the ah structure.
 int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 {
@@ -1609,7 +1628,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SESSION_TIMEOUT;
 	// Clean up timed out sessions
-	cleanTimedOutSessions();
+	myWebem->CleanTimedOutSessions();
 
 	if (session.isnew == true)
 	{
@@ -1647,17 +1666,6 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		}
 	}
 
-}
-
-void cWebemRequestHandler::cleanTimedOutSessions() {
-	time_t now = mytime(NULL);
-	// Note : no mutex needed because we receive only one request at a time.
-	std::map<std::string, WebEmSession>::iterator itt;
-	for (itt=myWebem->m_sessions.begin(); itt!=myWebem->m_sessions.end(); ++itt) {
-		if (itt->second.timeout < now) {
-			myWebem->m_sessions.erase(itt);
-		}
-	}
 }
 
 } //namespace server {

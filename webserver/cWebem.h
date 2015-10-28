@@ -135,7 +135,6 @@ namespace http {
 			std::string generateAuthToken(const WebEmSession & session, const request & req);
 			bool checkAuthToken(WebEmSession & session);
 			void removeAuthToken(const std::string & sessionId);
-			void cleanTimedOutSessions();
 			std::string m_doc_root;
 			// Webem link to application code
 			cWebem* myWebem;
@@ -204,8 +203,11 @@ namespace http {
 			void SetSessionStore(session_store* sessionStore);
 			session_store* GetSessionStore();
 
+			void CleanTimedOutSessions();
+
 			std::string m_zippassword;
 			std::map<std::string,WebEmSession> m_sessions;
+			time_t nextSessionCleanup;
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
