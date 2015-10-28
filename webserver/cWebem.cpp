@@ -1606,13 +1606,18 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			CompressWebOutput(req,rep);
 	}
 
+	// Set timeout to make session in use
+	session.timeout = mytime(NULL) + SESSION_TIMEOUT;
+	// Clean up timed out sessions
+	cleanTimedOutSessions();
+
 	if (session.isnew == true)
 	{
 		// Create a new session ID
 		session.id = generateSessionID();
-		session.expires = mytime(NULL) + SESSION_TIMEOUT;
+		session.expires = session.timeout;
 		if (session.rememberme) {
-			//Extend session by a year
+			// Extend session by a year
 			session.expires += (86400 * 365);
 		}
 		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also

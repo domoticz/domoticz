@@ -34,6 +34,7 @@ namespace http {
 			std::string remote_host;
 			std::string auth_token;
 			std::string username;
+			time_t timeout;
 			time_t expires;
 			int rights;
 			bool rememberme;
@@ -134,6 +135,7 @@ namespace http {
 			std::string generateAuthToken(const WebEmSession & session, const request & req);
 			bool checkAuthToken(WebEmSession & session);
 			void removeAuthToken(const std::string & sessionId);
+			void cleanTimedOutSessions();
 			std::string m_doc_root;
 			// Webem link to application code
 			cWebem* myWebem;
