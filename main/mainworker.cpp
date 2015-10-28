@@ -278,6 +278,7 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	if (
 		(pHardware->HwdType != HTYPE_RFXtrx315) &&
 		(pHardware->HwdType != HTYPE_RFXtrx433) &&
+		(pHardware->HwdType != HTYPE_RFXtrx868) &&
 		(pHardware->HwdType != HTYPE_RFXLAN)
 		)
 	{
@@ -566,6 +567,7 @@ bool MainWorker::AddHardwareFromParams(
 	{
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
+	case HTYPE_RFXtrx868:
 	case HTYPE_P1SmartMeter:
 	case HTYPE_Rego6XX:
 	case HTYPE_DavisVantage:
@@ -584,8 +586,9 @@ bool MainWorker::AddHardwareFromParams(
 	{
 			//USB/Serial
 			if (
-				(Type==HTYPE_RFXtrx315)||
-				(Type==HTYPE_RFXtrx433)
+				(Type == HTYPE_RFXtrx315) ||
+				(Type == HTYPE_RFXtrx433) ||
+				(Type == HTYPE_RFXtrx868)
 				)
 			{
 				pHardware = new RFXComSerial(ID, SerialPort, 38400);
@@ -636,9 +639,9 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type == HTYPE_OpenZWave)
 			{
-#ifdef WITH_OPENZWAVE
+	#ifdef WITH_OPENZWAVE
 				pHardware = new COpenZWave(ID, SerialPort);
-#endif
+	#endif
 			}
 			else if (Type==HTYPE_EnOceanESP2)
 			{
@@ -656,7 +659,7 @@ bool MainWorker::AddHardwareFromParams(
 			{
 				pHardware = new CRFLink(ID, SerialPort);
 			}
-	}
+		}
 		break;
 	case HTYPE_RFXLAN:
 		//LAN
@@ -7832,7 +7835,8 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 			if (
 				(pHardware->HwdType == HTYPE_RFXLAN) ||
 				(pHardware->HwdType == HTYPE_RFXtrx315) ||
-				(pHardware->HwdType == HTYPE_RFXtrx433)
+				(pHardware->HwdType == HTYPE_RFXtrx433) ||
+				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
 				volt *= 10;

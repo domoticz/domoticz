@@ -181,6 +181,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	}
 	else if (szCommand == "setuservariable")
 	{
+		if (root["idx"].empty())
+			goto mqttinvaliddata;
+		if (!root["idx"].isInt64())
+			goto mqttinvaliddata;
+
+		idx = (unsigned long long)root["idx"].asInt64();
 		result = m_sql.safe_query("SELECT Name FROM UserVariables WHERE (ID==%llu)", idx);
 		if (result.empty())
 		{

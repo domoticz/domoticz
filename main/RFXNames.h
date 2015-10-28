@@ -131,6 +131,7 @@ enum _eHardwareTypes {
 	HTYPE_SatelIntegra,			//58
 	HTYPE_Tellstick,			//59
 	HTYPE_LogitechMediaServer,	//60
+	HTYPE_RFXtrx868,			//61
 	HTYPE_END
 };
 

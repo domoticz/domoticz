@@ -38,9 +38,13 @@ const unsigned char PKT_DLE = 0x05;
 #define PKT_eraseblock 2048
 #define PKT_maxpacket 261
 #define PKT_bytesperaddr 2
-//#define PKT_pmrangelow	0x001A00
+
 #define PKT_pmrangelow	0x001800
 #define PKT_pmrangehigh	0x00A7FF
+
+#define PKT_pmrangelow868	0x001000
+#define PKT_pmrangehigh868 0x0147FF
+
 #define PKT_userresetvector 0x100
 #define PKT_bootdelay 0x102
 
@@ -228,6 +232,13 @@ bool RFXComSerial::UploadFirmware(const std::string &szFilename)
 
 bool RFXComSerial::UpgradeFirmware()
 {
+	int AddressLow = PKT_pmrangelow;
+	int AddressHigh = PKT_pmrangehigh;
+	if (HwdType == HTYPE_RFXtrx868)
+	{
+		AddressLow = PKT_pmrangelow868;
+		AddressHigh = PKT_pmrangehigh868;
+	}
 	m_FirmwareUploadPercentage = 0;
 	m_bStartFirmwareUpload = false;
 	std::map<unsigned long, std::string> firmwareBuffer;
@@ -267,7 +278,7 @@ bool RFXComSerial::UpgradeFirmware()
 	}
 	_log.Log(LOG_STATUS, "RFXCOM: bootloader version v%d.%d", m_rx_input_buffer[3], m_rx_input_buffer[2]);
 
-	if (!EraseMemory(PKT_pmrangelow, PKT_pmrangehigh))
+	if (!EraseMemory(AddressLow, AddressHigh))
 	{
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
@@ -326,7 +337,7 @@ bool RFXComSerial::UpgradeFirmware()
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
 
-		//if ((Address >= PKT_pmrangelow) && (Address <= PKT_pmrangehigh))
+		//if ((Address >= AddressLow) && (Address <= AddressHigh))
 		{
 			std::stringstream saddress;
 			saddress << "Programming Address: 0x" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << Address;
@@ -893,11 +904,15 @@ namespace http {
 			}
 			if (pHardware==NULL)
 			{
-				//Try to find the RFXCom hardware
+				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
 				if (pHardware==NULL)
 				{
-					return (char*)m_retstr.c_str();
+					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
+					if (pHardware == NULL)
+					{
+						return (char*)m_retstr.c_str();
+					}
 				}
 			}
 
@@ -911,8 +926,9 @@ namespace http {
 			outfile.close();
 
 			if (
-				(pHardware->HwdType == HTYPE_RFXtrx315)||
-				(pHardware->HwdType == HTYPE_RFXtrx433)
+				(pHardware->HwdType == HTYPE_RFXtrx315) ||
+				(pHardware->HwdType == HTYPE_RFXtrx433) ||
+				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
 				RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
@@ -999,14 +1015,19 @@ namespace http {
 			}
 			if (pHardware == NULL)
 			{
-				//Try to find the RFXCom hardware
+				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
+				if (pHardware == NULL)
+				{
+					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
+				}
 			}
 			if (pHardware != NULL)
 			{
 				if (
 					(pHardware->HwdType == HTYPE_RFXtrx315) ||
-					(pHardware->HwdType == HTYPE_RFXtrx433)
+					(pHardware->HwdType == HTYPE_RFXtrx433) ||
+					(pHardware->HwdType == HTYPE_RFXtrx868)
 					)
 				{
 					RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;

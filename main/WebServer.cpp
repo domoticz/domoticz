@@ -3154,6 +3154,7 @@ namespace http {
 						case HTYPE_RFXLAN:
 						case HTYPE_RFXtrx315:
 						case HTYPE_RFXtrx433:
+						case HTYPE_RFXtrx868:
 						case HTYPE_EnOceanESP2:
 						case HTYPE_EnOceanESP3:
 						case HTYPE_Dummy:
