@@ -1323,13 +1323,14 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 			}
 			if (expired)
 			{
-				//timeout, remove session
+				//expired session, remove session
 				m_failcounter = 0;
 				send_remove_cookie(rep);
 				if (itt != myWebem->m_sessions.end())
 				{
 					// session exists (delete it from memory and database)
 					myWebem->m_sessions.erase(itt);
+					removeAuthToken(sSID);
 					rep = reply::stock_reply(reply::unauthorized);
 				}
 				if (myWebem->m_authmethod == AUTH_BASIC)
