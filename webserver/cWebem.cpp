@@ -940,7 +940,7 @@ void cWebem::CleanTimedOutSessions() {
 
 	time_t now = mytime(NULL);
 	if (nextSessionCleanup >= now) {
-		nextSessionCleanup = mytime(NULL) + 15 * 60; // in 15 minutes
+		nextSessionCleanup = now + 15 * 60; // in 15 minutes
 
 		std::map<std::string, WebEmSession>::iterator itt;
 		for (itt=m_sessions.begin(); itt!=m_sessions.end(); ++itt) {
