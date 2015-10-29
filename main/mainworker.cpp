@@ -63,7 +63,8 @@
 #include "../hardware/MQTT.h"
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
-#include "../hardware/RFLink.h"
+#include "../hardware/RFLinkSerial.h"
+#include "../hardware/RFLinkTCP.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
 #include "../hardware/KMTronic433.h"
@@ -582,7 +583,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EnOceanESP3:
 	case HTYPE_Meteostick:
 	case HTYPE_EVOHOME_SERIAL:
-	case HTYPE_RFLINK:
+	case HTYPE_RFLINKUSB:
 	{
 			//USB/Serial
 			if (
@@ -655,9 +656,9 @@ bool MainWorker::AddHardwareFromParams(
 			{
 				pHardware = new CEvohome(ID,SerialPort);
 			}
-			else if (Type == HTYPE_RFLINK)
+			else if (Type == HTYPE_RFLINKUSB)
 			{
-				pHardware = new CRFLink(ID, SerialPort);
+				pHardware = new CRFLinkSerial(ID, SerialPort);
 			}
 		}
 		break;
@@ -688,6 +689,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_MySensorsTCP:
 		//LAN
 		pHardware = new MySensorsTCP(ID, Address, Port);
+		break;
+	case HTYPE_RFLINKTCP:
+		//LAN
+		pHardware = new CRFLinkTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN
