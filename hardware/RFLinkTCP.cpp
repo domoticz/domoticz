@@ -41,6 +41,7 @@ bool CRFLinkTCP::StopHardware()
 	{
 		try {
 			disconnect();
+			close();
 		} catch(...)
 		{
 			//Don't throw from a Stop command
@@ -70,11 +71,13 @@ void CRFLinkTCP::OnConnect()
 	m_rfbufferpos = 0;
 	m_LastReceivedTime = mytime(NULL);
 	sOnConnected(this);
+	write("10;PING;\n");
 }
 
 void CRFLinkTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS,"RFLink: disconnected");
+	m_bDoRestart = true;
 }
 
 void CRFLinkTCP::Do_Work()
@@ -86,13 +89,13 @@ void CRFLinkTCP::Do_Work()
 		sleep_seconds(1);
 		sec_counter++;
 
+		time_t atime = mytime(NULL);
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat= atime;
 		}
-		if (sec_counter % 20 == 0)
+		if ((sec_counter % 20 == 0) && (mIsConnected))
 		{
 			//Send ping (keep alive)
-			time_t atime = mytime(NULL);
 			if (atime - m_LastReceivedTime > 30)
 			{
 				//Timeout
@@ -101,6 +104,7 @@ void CRFLinkTCP::Do_Work()
 				m_LastReceivedTime = atime;
 				try {
 					disconnect();
+					close();
 					m_bDoRestart = true;
 				}
 				catch (...)
@@ -115,6 +119,17 @@ void CRFLinkTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime=false;
+			if (mIsConnected)
+			{
+				try {
+					disconnect();
+					close();
+				}
+				catch (...)
+				{
+					//Don't throw from a Stop command
+				}
+			}
 			connect(m_szIPAddress,m_usIPPort);
 		}
 		else
@@ -143,6 +158,8 @@ void CRFLinkTCP::OnError(const std::exception e)
 void CRFLinkTCP::OnError(const boost::system::error_code& error)
 {
 	_log.Log(LOG_ERROR,"RFLink: Error: %s",error.message().c_str());
+	m_LastReceivedTime = mytime(NULL);
+	m_bDoRestart = true;
 }
 
 bool CRFLinkTCP::WriteInt(const std::string &sendString)
