@@ -53,8 +53,6 @@ Source: "..\..\www\*"; DestDir: {app}\www; Flags: recursesubdirs createallsubdir
 Source: "..\..\Config\*"; DestDir: {app}\Config; Flags: recursesubdirs createallsubdirs ignoreversion;
 Source: "..\..\scripts\*"; DestDir: {app}\scripts; Flags: recursesubdirs createallsubdirs ignoreversion;
 Source: "..\Debug\libcurl.dll"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\Debug\libeay32.dll"; DestDir: {app}; Flags: ignoreversion;
-Source: "..\Debug\ssleay32.dll"; DestDir: {app}; Flags: ignoreversion;
 ;Source: "..\Windows Libraries\OpenZwave\Release\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\Manual\DomoticzManual.pdf"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\History.txt"; DestDir: {app}; Flags: ignoreversion;
@@ -162,6 +160,6 @@ function InitializeSetup: Boolean;
 begin
   if RegValueExists(HKEY_LOCAL_MACHINE,'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#emit StringChange(SetupSetting("AppId"),"{{","{")}_is1', 'UninstallString') then begin
     MsgBox('You are upgrading an existing installation of Domoticz.'+ chr(13) +'It is recommended to reboot your system after this upgrade'+ chr(13) +'in order to avoid com port issues.', mbInformation, MB_OK);
-  end
+  end;
   Result := True;
 end;
