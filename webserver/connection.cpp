@@ -167,7 +167,7 @@ void connection::handle_read_secure(const boost::system::error_code& error, std:
 			keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
 			request_.keep_alive = keepalive_;
 			request_handler_.handle_request(host_endpoint_, request_, reply_);
-			boost::asio::async_write(*sslsocket_, reply_.to_buffers(),
+			boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
 				boost::bind(&connection::handle_write_secure, shared_from_this(),
 				boost::asio::placeholders::error));
 		}
@@ -175,7 +175,7 @@ void connection::handle_read_secure(const boost::system::error_code& error, std:
 		{
 			keepalive_ = false;
 			reply_ = reply::stock_reply(reply::bad_request);
-			boost::asio::async_write(*sslsocket_, reply_.to_buffers(),
+			boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
 				boost::bind(&connection::handle_write_secure, shared_from_this(),
 				boost::asio::placeholders::error));
 		}
@@ -256,7 +256,7 @@ void connection::handle_read_plain(const boost::system::error_code& error, std::
 			keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
 			request_.keep_alive = keepalive_;
 			request_handler_.handle_request(host_endpoint_, request_, reply_);
-			boost::asio::async_write(*socket_, reply_.to_buffers(),
+			boost::asio::async_write(*socket_, reply_.to_buffers(request_.method),
 				boost::bind(&connection::handle_write_plain, shared_from_this(),
 				boost::asio::placeholders::error));
 		}
@@ -264,7 +264,7 @@ void connection::handle_read_plain(const boost::system::error_code& error, std::
 		{
 			keepalive_ = false;
 			reply_ = reply::stock_reply(reply::bad_request);
-			boost::asio::async_write(*socket_, reply_.to_buffers(),
+			boost::asio::async_write(*socket_, reply_.to_buffers(request_.method),
 				boost::bind(&connection::handle_write_plain, shared_from_this(),
 				boost::asio::placeholders::error));
 		}
