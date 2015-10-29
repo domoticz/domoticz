@@ -132,6 +132,16 @@ define(['app'], function (app) {
 				if (($("#koditable #KodiTimeToLive").val() == "") || !$.isNumeric($("#koditable #KodiTimeToLive").val())) $("#koditable #KodiTimeToLive").val("5");
 				extraparams = 'KodiIPAddress=' + $("#koditable #KodiIPAddress").val() + '&KodiPort=' + $("#koditable #KodiPort").val() + "&KodiTimeToLive=" + $("#koditable #KodiTimeToLive").val();
 				break;
+			case "lms":
+				if (($("#lmstable #LmsDuration").val() == "") || !$.isNumeric($("#lmstable #LmsDuration").val())) $("#lmstable #LmsDuration").val("5");
+				var LmsPlayerMac=encodeURIComponent($("#lmstable #LmsPlayerMac").val());
+				var LmsDuration=encodeURIComponent($("#lmstable #LmsDuration").val());
+				if (LmsPlayerMac=="" || LmsDuration=="") {
+					ShowNotify($.t('All Logitech Media Server fields are required!...'), 3500, true);
+					return;
+				}
+				extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
+				break;
 			default:
 				return;
 			}
@@ -142,8 +152,11 @@ define(['app'], function (app) {
 				success: function(data) {
 					if (data.status != "OK") {
 						HideNotify();
-						if ((subsystem=="http") || (subsystem=="kodi")) {
+						if ((subsystem=="http") || (subsystem=="kodi") || (subsystem=="lms")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
+						}
+						else if (subsystem=="email") {
+							ShowNotify($.t('Problem sending Email, please check credentials!'), 3000, true);
 						}
 						else {
 							ShowNotify($.t('Problem sending notification, please check the API key!'), 3000, true);
@@ -307,6 +320,17 @@ define(['app'], function (app) {
 			  $("#koditable #KodiTimeToLive").val("5");
 			  if (typeof data.KodiTimeToLive != 'undefined') {
 				$("#koditable #KodiTimeToLive").val(data.KodiTimeToLive);
+			  }
+
+			  if (typeof data.LmsEnabled != 'undefined') {
+  				$("#lmstable #LmsEnabled").prop('checked',data.LmsEnabled==1);
+			  }
+			  if (typeof data.LmsPlayerMac != 'undefined') {
+				$("#lmstable #LmsPlayerMac").val(data.LmsPlayerMac);
+			  }
+			  $("#lmstable #LmsDuration").val("5");
+			  if (typeof data.LmsDuration != 'undefined') {
+				$("#lmstable #LmsDuration").val(data.LmsDuration);
 			  }
 
 			  if (typeof data.LightHistoryDays != 'undefined') {
@@ -589,6 +613,27 @@ define(['app'], function (app) {
 				var position = $(namescroll).offset();
 				scroll(0,position.top-60);
 				e.preventDefault();
+			});
+		}
+		
+		$scope.CleanupShortLog = function()
+		{
+			bootbox.confirm($.t("Are you sure to delete the Log?\n\nThis action can not be undone!"), function (result) {
+				if (result == true) {
+					$.ajax({
+						url: "json.htm?type=command&param=clearshortlog&idx=" + $.devIdx,
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							$window.location = '/#Dashboard';
+							$window.location.reload();
+						},
+						error: function () {
+							HideNotify();
+							ShowNotify($.t('Problem clearing the Log!'), 2500, true);
+						}
+					});
+				}
 			});
 		}
 

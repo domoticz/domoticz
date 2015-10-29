@@ -213,6 +213,7 @@ function PollReply()
 		     manufacturer: elem[i].getAttribute('manufacturer'), product: elem[i].getAttribute('product'),
 		     name: elem[i].getAttribute('name'), location: elem[i].getAttribute('location'),
 		     listening: elem[i].getAttribute('listening') == 'true', frequent: elem[i].getAttribute('frequent') == 'true',
+		     zwaveplus: elem[i].getAttribute('zwaveplus') == 'true',
 		     beam: elem[i].getAttribute('beam') == 'true', routing: elem[i].getAttribute('routing') == 'true',
 		     security: elem[i].getAttribute('security') == 'true', status: elem[i].getAttribute('status'),
 		     values: null, groups: null};
@@ -330,6 +331,10 @@ function PollReply()
 	    ext = ext + 'S';
 	    exthelp = exthelp + 'security, ';
 	  }
+	  if (nodes[i].zwaveplus) {
+	    ext = ext + "+";
+	    exthelp = exthelp + 'ZwavePlus, ';
+	  }
 	  if (exthelp.length > 0)
 	    exthelp = exthelp.substr(0, exthelp.length - 2);
 	  stuff=stuff+'<tr id="node'+i+'" onmouseover="this.className=\'highlight\';" onmouseout="if (this.id == curnode) this.className=\'click\'; else this.className=\'normal\';" onclick="return SaveNode(this.id);" ondblClick="ClearNode(); return DisplayNode();"><td onmouseover="ShowToolTip(\''+exthelp+'\',0);" onmouseout="HideToolTip();">'+nodes[i].id+ext+'</td><td>'+nodes[i].btype+'</td><td>'+nodes[i].gtype+'</td><td>'+nodes[i].manufacturer+' '+nodes[i].product+'</td><td>'+nodes[i].name+'</td><td>'+nodes[i].location+'</td><td>'+val+'</td><td>'+ts+'</td><td>'+nodes[i].status+'</td></tr>';
@@ -352,7 +357,7 @@ function PollReply()
 function BED()
 {
   var forms = document.forms;
-  var off = false;(document.DevPost.devname.value.length == 0) && !document.DevPost.usbb.checked;
+  var off = false;
   var info;
 
   tt.setAttribute('id','tt');
@@ -370,16 +375,12 @@ function BED()
     if (forms[i].name == '')
       continue;
     for (var j = 0; j < forms[i].elements.length; j++) {
-	if ((forms[i].elements[j].name == 'initialize') ||
-	    (forms[i].elements[j].name == 'devname') ||
-	    (forms[i].elements[j].name == 'usbb'))
-	    continue;
-	if ((forms[i].elements[j].tagName == 'BUTTON') ||
-	    (forms[i].elements[j].tagName == 'SELECT') ||
-	    (forms[i].elements[j].tagName == 'INPUT'))
-        forms[i].elements[j].disabled = off;
-      else
-	forms[i].elements[j].disabled = !off;
+		if ((forms[i].elements[j].tagName == 'BUTTON') ||
+			(forms[i].elements[j].tagName == 'SELECT') ||
+			(forms[i].elements[j].tagName == 'INPUT'))
+			forms[i].elements[j].disabled = off;
+		else
+			forms[i].elements[j].disabled = !off;
     }
   }
   document.getElementById('configcur').disabled = off;
@@ -408,7 +409,7 @@ function BED()
     document.getElementById('homeid').value = '';
     document.getElementById('cmode').value = ''; 
     document.getElementById('nodecount').value = '';
-    document.getElementById('sucnode').value = '';
+    document.getElementById('sucnodeid').value = '';
     document.getElementById('saveinfo').style.display = 'none';
     document.getElementById('tbody').innerHTML= '';
     document.getElementById('divconfigcur').innerHTML = '';
@@ -503,17 +504,23 @@ function DoConfig(id)
     return false;
   }
 }
-function DoValue(id)
+function DoValue(id, convert)
 {
   if (curnode != null) {
     var posthttp;
     var params;
     var arg=document.getElementById(id).value;
 
-    if (arg.toLowerCase() == 'off')
-      arg = 'false';
-    else if (arg.toLowerCase() == 'on')
-      arg = 'true';
+    if (typeof convert == 'undefined') {
+        convert = true;
+    }
+
+    if (convert) {
+	    if (arg.toLowerCase() == 'off')
+	      arg = 'false';
+	    else if (arg.toLowerCase() == 'on')
+	      arg = 'true';
+    }
     params=id+'='+arg;
     if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
       posthttp=new XMLHttpRequest();
@@ -549,18 +556,12 @@ function DoButton(id,pushed)
   }
   return false;
 }
-function DoDevUSB()
-{
-  document.DevPost.devname.disabled = document.DevPost.usbb.checked;
-  return true;
-}
 function DoDevPost(fun)
 {
-  if (document.DevPost.devname.value.length > 0 || document.DevPost.usbb.checked) {
     var posthttp;
     var params;
 
-    params = 'dev='+document.DevPost.devname.value+'&fn='+fun+'&usb='+document.DevPost.usbb.checked;
+    params = 'dev=domoticz&fn='+fun+'&usb=1';
     if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
       posthttp=new XMLHttpRequest();
     } else {
@@ -569,12 +570,7 @@ function DoDevPost(fun)
     posthttp.open('POST','devpost.html', true);
     posthttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     posthttp.send(params);
-    if (fun == 'close') {
-      document.DevPost.devname = '';
-      document.DevPost.usbb.checked = false;
-    }
     BED();
-  }
   return false;
 }
 function DoNetHelp()
@@ -677,7 +673,7 @@ function DoAdmPost(can)
 
   if (fun == 'hnf' || fun == 'remfn' || fun == 'repfn' || fun == 'reqnu' ||
       fun == 'reqnnu' || fun == 'assrr' || fun == 'delarr' || fun == 'reps' ||
-      fun == 'addbtn' || fun == 'delbtn') {
+      fun == 'addbtn' || fun == 'delbtn' || fun == 'refreshnode' ) {
     if (curnode == null) {
       ainfo = document.getElementById('adminfo');
       ainfo.innerHTML = 'Must select a node below for this function.';
@@ -727,6 +723,9 @@ function DoAdmHelp()
   document.AdmPost.admgo.style.display = 'inline';
   if (document.AdmPost.adminops.value == 'addd') {
     ainfo.innerHTML = 'Add a new device or controller to the Z-Wave network.';
+    ainfo.style.display = 'block';
+  } else if (document.AdmPost.adminops.value == 'addds') {
+    ainfo.innerHTML = 'Add a new device or controller to the Z-Wave Network (Secure Option).';
     ainfo.style.display = 'block';
   } else if (document.AdmPost.adminops.value == 'cprim') {
     ainfo.innerHTML = 'Create new primary controller in place of dead old controller.';
@@ -783,6 +782,9 @@ function DoAdmHelp()
       ainfo.innerHTML = 'Add a button from a handheld.';
     else
       ainfo.innerHTML = 'Remove a button from a handheld.';
+    ainfo.style.display = 'block';
+  } else if (document.AdmPost.adminops.value == 'refreshnode') {
+    ainfo.innerHTML = 'Refresh Node Info';
     ainfo.style.display = 'block';
   } else {
     ainfo.style.display = 'none';
@@ -1527,7 +1529,7 @@ function CreateList(i,j,vid)
   var data='<tr><td style="float: right;"';
   if (nodes[i].values[j].help.length > 0)
     data=data+' onmouseover="ShowToolTip(\''+quotestring(nodes[i].values[j].help)+'\',0);" onmouseout="HideToolTip();"';
-  data=data+'><label><span class="legend">'+nodes[i].values[j].label+':&nbsp;</span></label></td><td><select id="'+vid+'" onchange="return DoValue(\''+vid+'\');"';
+  data=data+'><label><span class="legend">'+nodes[i].values[j].label+':&nbsp;</span></label></td><td><select id="'+vid+'" onchange="return DoValue(\''+vid+'\', false);"';
   if (nodes[i].values[j].help.length > 0)
     data=data+' onmouseover="ShowToolTip(\''+quotestring(nodes[i].values[j].help)+'\',0);" onmouseout="HideToolTip();"';
   if (nodes[i].values[j].readonly)
@@ -1587,7 +1589,7 @@ function CreateDivs(genre,divto,ind)
       } else if (nodes[ind].values[i].type == 'list') {
 	divto[ind]=divto[ind]+CreateList(ind,i,vid);
       } else if (nodes[ind].values[i].type == 'string') {
-	divto[ind]=divto[ind]+CreateLabel(ind,i,vid);
+	divto[ind]=divto[ind]+CreateTextBox(ind,i,vid);
       } else if (nodes[ind].values[i].type == 'button') {
 	divto[ind]=divto[ind]+CreateButton(ind,i,vid);
       } else if (nodes[ind].values[i].type == 'raw') {
@@ -1627,18 +1629,37 @@ function CreateGroup(ind)
   grp = 1;
   for (i = 0; i < nodes[ind].groups.length; i++) {
     nodegrp[ind]=nodegrp[ind]+'<option value="'+nodes[ind].groups[i].id+'">'+nodes[ind].groups[i].label+' ('+nodes[ind].groups[i].id+')</option>';
-    nodegrpgrp[ind][grp] = '<td><div id="nodegrp" name="nodegrp" style="float: right;"><select id="groups" multiple size="4" style="vertical-align: top; margin-left: 5px;">';
+    nodegrpgrp[ind][grp] = '<td><div id="nodegrp" name="nodegrp" style="float: right;"><select id="groups" multiple size="8" style="vertical-align: top; margin-left: 5px;">';
     k = 0;
     for (j = 1; j < nodes.length; j++) {
       if (nodes[j] == null)
 	continue;
+
+	  // build a list of instances 
+      var instances = [ String(j) ];
+      for (var l = 0; l < nodes[j].values.length; l++) {
+	  	instances[ l + 1] =  j + '.' + nodes[j].values[l].instance;
+	  	instances.push( j + '.' + nodes[j].values[l].instance);
+      }	
+	
+		// make unique
+	  instances = instances.filter(function(item, i, ar){ return ar.indexOf(item) === i; });
+
+	  // only show when we have found multiple instances
+	  if ( instances.length <= 2 ) {
+		instances = [ String(j) ];
+	  }
+
       if (nodes[ind].groups[i].nodes != null)
 	while (k < nodes[ind].groups[i].nodes.length && nodes[ind].groups[i].nodes[k] < j)
 	  k++;
-      if (nodes[ind].groups[i].nodes[k] == j)
-	nodegrpgrp[ind][grp]=nodegrpgrp[ind][grp]+'<option selected="true">'+j+'</option>';
+	  
+	  for (var l=0; l< instances.length; l++) { 
+	      if (nodes[ind].groups[i].nodes.indexOf(instances[l]) != -1 )
+			nodegrpgrp[ind][grp]=nodegrpgrp[ind][grp]+'<option selected="true">'+instances[l]+'</option>';
       else
-	nodegrpgrp[ind][grp]=nodegrpgrp[ind][grp]+'<option>'+j+'</option>';
+			nodegrpgrp[ind][grp]=nodegrpgrp[ind][grp]+'<option>'+instances[l]+'</option>';
+	  }			
     }
     nodegrpgrp[ind][grp]=nodegrpgrp[ind][grp]+'</select></td><td><button type="submit" style="margin-left: 5px;" onclick="return DoGrpPost();">Submit</button></div></td></tr>';
     grp++;
