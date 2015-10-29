@@ -44,33 +44,10 @@
 	<div style="margin-left: auto; margin-right: auto; width: 350px; height: 100px;">
 	  <fieldset>
 	    <legend> Controller </legend>
-	    <div style="text-align: center;">
-	      <span style="font-family: Arial;">Interface</span>
-	    </div>
-	    <br>
-	    <form name="DevPost" method="post">
-	      <input name="devhidden" class="hide" value="hidden">
-	      <div style="text-align: left;">
-		<label><span style="font-family: Arial;">Device name:&nbsp;</span> </label>
-		<input type="text" name="devname" id="devname">
-	      </div>
-	      <div style="text-align: left;">
-		<label><span style="font-family: Arial;">USB&nbsp;</span></label>
-		<input name="usbb" id="usbb" type="checkbox" onchange="return DoDevUSB();">
-	      </div>
-	      <br>
-	      <div style="float: left;">
-		<button name="reset" type="submit" style="text-align: center;" onclick="var r=confirm('Do you really want to completely reset the  interface?'); if (r) return DoDevPost('reset'); else return false;">Reset</button>
-	      </div>
-	      <div style="float: left; padding-left: 7px;">
-		<button name="sreset" type="submit" style="text-align: center;" onclick="return DoDevPost('sreset');">Soft Reset</button>
-	      </div>
-	      <div style="float: right;">
-		<button name="initialize" type="submit" style="text-align: center;" onclick="return DoDevPost('open');">Initialize</button>
-	      </div>
-	      <div style="float: right; padding-right: 7px;">
-		<button name="close" type="submit" style="text-align: left;" onclick=" return DoDevPost('close');">Close</button>
-	      </div>
+			<div style="text-align: center;">
+				<button name="reset" type="submit" style="text-align: center;" onclick="var r=confirm('Do you really want to completely reset the  interface?'); if (r) return DoDevPost('reset'); else return false;">Reset</button>
+				<button name="sreset" type="submit" style="text-align: center;" onclick="return DoDevPost('sreset');">Soft Reset</button>
+			</div>
 	    </form>
 	  </fieldset>
 	</div>
@@ -124,14 +101,14 @@
 	</div>
       </div>
       <div style="padding: 0pt; width: 24%; float: left;">
-	<div style="margin-left: auto; margin-right: auto; width: 200px; height: 100px;">
+	<div style="margin-left: auto; margin-right: auto; width: 200px;">
 	  <fieldset> <legend> Backup Controller </legend>
 	    <form name="BackPost" method="post"> 
 	      <input name="devhidden" class="hide" value="hidden">
-	      <div class="stack" style="position: relative; height: 50px;">
+	      <div class="stack" style="position: relative;">
 		<button id="save" name="save" onclick="return DoSavePost();" type="submit">Save...</button>
 	      </div>
-	      <div class="stack" style="position: relative; height: 50px;"> 
+	      <div class="stack" style="position: relative; height: 30px;"> 
 		<span id="saveinfo" name="saveinfo" class="legend" style="display: none;">Changes need saving...</span>
 	      </div>
 	    </form>
@@ -387,6 +364,7 @@
 	    <select id="adminops" onchange="return DoAdmHelp();">
 	      <option value="choice" selected="true">Select an operation:</option>
 	      <option value="addd">Add Device</option>
+	      <option value="addds">Add Device (Secure)</option>
 	      <option value="cprim">Create Primary</option>
 	      <option value="rconf">Receive Configuration</option>
 	      <option value="remd">Remove Device</option>
@@ -402,6 +380,7 @@
 	      <option value="reps">Replication Send</option>
 	      <option value="addbtn">Add Button</option>
 	      <option value="delbtn">Delete Button</option>
+	      <option value="refreshnode">Refresh Node Info</option>
 	    </select>
 	  </div>
 	  <div id="admcntl" name="admcntl" class="rsb" style="display: none;"></div>

@@ -80,7 +80,7 @@
 										<td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 									</tr>
 									</table>
-									<span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span data-i18n="Here"></span></a><br>
+									<span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span class="norm-link" data-i18n="Here"></span></a><br>
 								</div>
 							</div>
 							<br>
@@ -227,60 +227,23 @@
 									<br>			
 								</div>
 							</div>
-							<div class="row-fluid">
-								<div class="span6">
-									<div id="NewHardware">
-										<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
-										<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
-											<tr>
-												<td colspan="2">
-													<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
-												</td>
-											</tr>
-											<tr>
-												<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
-											</tr>
-											<tr>
-												<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"/> <span data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</span></td>
-											</tr>
-										</table>
-									</div>
-								</div>
-								<div class="span6">
-									<div id="MyDomoticzTab">
-										<h2><span data-i18n="MyDomoticzSettings">MyDomoticz settings</span>:</h2>
-										<table class="display" id="mydomoticztable" border="0" cellpadding="0" cellspacing="0">
-											<tr>
-												<td>
-													<span data-i18n="MyInstanceId">MyDomoticz Instance ID</span>
-												</td>
-												<td>
-													<span id="mydomoticzinstanceidid">(none)</span>
-												</td>
-											</tr>
-											<tr>
-												<td>
-													<span data-i18n="MyApid">MyDomoticz User ID</span>
-												</td>
-												<td>
-													<span id="mydomoticzuseridid"><input type="text" name="MyDomoticzUserId" id="MyDomoticzUserId" value="" class="text ui-widget-content ui-corner-all" /></span>
-												</td>
-											</tr>
-											<tr>
-												<td>
-													<span data-i18n="Password">MyDomoticz password</span>
-												</td>
-												<td>
-													<span id="mydomoticzpasswordid"><input type="password" name="MyDomoticzPassword" id="MyDomoticzPassword" value="" class="text ui-widget-content ui-corner-all" /></span>
-												</td>
-											</tr>
-										</table>
-										<br/>
-										To register for a MyDomoticz account, click <a href="https://my.domoticz.com/login" target="_blank">here</a>.
-									</div>
-								</div>
+							<div id="NewHardware">
+								<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
+								<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td colspan="2">
+											<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
+										</td>
+									</tr>
+									<tr>
+										<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
+									</tr>
+									<tr>
+										<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"/> <span data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</span></td>
+									</tr>
+								</table>
 							</div>
-							<br/>			
+							<br>			
 							<div id="ActiveTabs">
 								<h2><span data-i18n="ActiveMenus"></span>:</h2>
 								<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
@@ -336,7 +299,7 @@
 									<option value="5">5</option>
 									<option value="6">6</option>
 									<option value="7">7</option>
-								</select></td>
+								</select>&nbsp;&nbsp;<button data-i18n="Clear" class="btn btn-danger" ng-click="CleanupShortLog()">Clear</button></td>
 							</tr>
 							</table>
 						</section>
@@ -361,7 +324,7 @@
 										<td><input type="input" id="ProwlAPI" name="ProwlAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('prowl')">Test</button></td>
 									</tr>
 									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
+									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.prowlapp.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
 									<br>
 								</div>
 								<div class="span6">
@@ -376,7 +339,24 @@
 										<td><input type="input" id="NMAAPI" name="NMAAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('nma')">Test</button></td>
 									</tr>
 									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.notifymyandroid.com/" class="norm-link" target="_blank"><span data-i18n="Here"></span></a><br>
+									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.notifymyandroid.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Pushbullet"></span>:</h2>
+									<table class="display" id="pushbullettable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="PushbulletEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="PushbulletEnabled" name="PushbulletEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="PushbulletAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="PushbulletAPI" name="PushbulletAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushbullet')">Test</button></td>
+									</tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.pushbullet.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
 									<br>
 								</div>
 							</div>
@@ -397,7 +377,7 @@
 										<td><input type="input" id="PushoverAPI" name="PushoverAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushover')">Test</button></td>
 									</tr>
 									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span data-i18n="Here"></span></a><br>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushover.net" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
 									<br>
 								</div>
 								<div class="span6">
@@ -412,7 +392,7 @@
 										<td><input type="input" id="PushALotAPI" name="PushALotAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushalot')">Test</button></td>
 									</tr>
 									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="https://pushalot.com/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
 									<br>
 								</div>
 							</div>
@@ -449,7 +429,7 @@
 										<td><span data-i18n="(Separate by a semicolon, For Example"></span>: +3123456789;+44567890)</td>
 									</tr>
 									</table>
-									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.clickatell.com/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<span data-i18n="To get a free account/API key click"></span> <a class="norm-link" href="http://www.clickatell.com/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
 									<br>
 								</div>
 								<div class="span6">
@@ -488,6 +468,7 @@
 										</td>
 									</tr>
 									</table>
+									<br>
 								</div>
 							</div>
 							<div class="row-fluid">
@@ -516,11 +497,37 @@
 											</td>
 										</tr>
 									</table>
-									<span data-i18n="Test with default settings before changing. Learn about Kodi"></span> <a class="norm-link" href="http://kodi.tv/" target="_blank"><span data-i18n="Here"></span></a><br>
+									<span data-i18n="Test with default settings before changing. Learn about Kodi"></span> <a class="norm-link" href="http://kodi.tv/" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
 									<span>(e.g 224.0.0.1, 192.168.1.100;192.168.1.101;...)</span><br>
 									<br>
 								</div>
 								<div class="span6">
+									<h2><span data-i18n="Logitech Media Server"></span>:</h2>
+									<table class="display" id="lmstable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:80px"><label for="LmsEnabled"><span data-i18n="Enabled"></span>: </label></td>
+											<td><input type="checkbox" id="LmsEnabled" name="LmsEnabled"/></td>
+										</tr>
+										<tr>
+											<td align="right">
+												<label for="LmsPlayerMac"><span data-i18n="Player"></span> <span data-i18n="Mac Address"></span>: </label>
+											</td>
+											<td>
+												<input type="input" id="LmsPlayerMac" name="LmsPlayerMac" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+												<button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('lms')">Test</button>
+											</td>
+										</tr>
+										<tr>
+											<td align="right" style="width:80px">
+												<label for="LmsDuration"><span data-i18n="Duration"></span>: </label>
+											</td>
+											<td>
+												<input type="input" id="LmsDuration" name="LmsDuration" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+											</td>
+										</tr>
+									</table>
+									<span style="color:red" data-i18n="This notifier only works when the Logitech Media Server hardware has been added/enabled"></span><br>
+									<br>
 								</div>
 							</div>
 							<br>
@@ -722,6 +729,17 @@
 									<td><select id="comboP1MeterType" name="SmartMeterType" style="width:180px" class="combobox ui-corner-all">
 										<option data-i18n="With Decimals" value="0">With Decimals</option>
 										<option data-i18n="No Decimals" value="1">No Decimals</option>
+									</select></td>
+								</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="General/kWh Day Graph with Power">General/kWh Day Graph with Power</span>:</h2>
+							<table class="display" id="kwhshortlogtable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+									<td><select id="combokWhShotlogDisplay" name="DisplayPowerUsageInkWhGraph" style="width:180px" class="combobox ui-corner-all">
+										<option value="0" data-i18n="Energy day graph">Energy day graph</option>
+										<option value="1" data-i18n="Power day graph">Power day graph</option>
 									</select></td>
 								</tr>
 							</table>

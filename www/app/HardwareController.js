@@ -406,12 +406,8 @@ define(['app'], function (app) {
             var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-            if (text.indexOf("Motherboard") >= 0) {
-                ShowNotify($.t('This device is maintained by the system. Please do not add it manually.'), 3000, true);
-                return;
-            }
 
-            if ((text.indexOf("TE923") >= 0) || (text.indexOf("Volcraft") >= 0) || (text.indexOf("1-Wire") >= 0) || (text.indexOf("BMP085") >= 0) || (text.indexOf("Dummy") >= 0) || (text.indexOf("System Alive") >= 0) || (text.indexOf("Kodi") >= 0) || (text.indexOf("PiFace") >= 0) || (text.indexOf("GPIO") >= 0) || (text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) || (text.indexOf("Tellstick") >= 0))
+            if ((text.indexOf("TE923") >= 0) || (text.indexOf("Volcraft") >= 0) || (text.indexOf("1-Wire") >= 0) || (text.indexOf("BMP085") >= 0) || (text.indexOf("Dummy") >= 0) || (text.indexOf("System Alive") >= 0) || (text.indexOf("Kodi") >= 0) || (text.indexOf("PiFace") >= 0) || (text.indexOf("GPIO") >= 0) || (text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) || (text.indexOf("Tellstick") >= 0) || (text.indexOf("Motherboard") >= 0))
             {
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
@@ -1476,7 +1472,7 @@ define(['app'], function (app) {
             $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
             $("#hardwarecontent #lmsnodeparamstable #nodename").val("");
             $("#hardwarecontent #lmsnodeparamstable #nodeip").val("");
-            $("#hardwarecontent #lmsnodeparamstable #nodeport").val("8080");
+            $("#hardwarecontent #lmsnodeparamstable #nodeport").val("9000");
 
             var oTable = $('#lmsnodestable').dataTable();
             oTable.fnClearTable();
@@ -1491,11 +1487,10 @@ define(['app'], function (app) {
                             var addId = oTable.fnAddData({
                                 "DT_RowId": item.idx,
                                 "Name": item.Name,
-                                "IP": item.IP,
+                                "Mac": item.Mac,
                                 "0": item.idx,
                                 "1": item.Name,
-                                "2": item.IP,
-                                "3": item.Port
+                                "2": item.Mac
                             });
                         });
                     }
