@@ -296,6 +296,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_rainValuesByName.clear();
 	m_rainLastHourValuesByName.clear();
 	m_uvValuesByName.clear();
+	m_weatherValuesByName.clear();
 	m_winddirValuesByName.clear();
 	m_windspeedValuesByName.clear();
 	m_windgustValuesByName.clear();
@@ -308,6 +309,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_rainValuesByID.clear();
 	m_rainLastHourValuesByID.clear();
 	m_uvValuesByID.clear();
+	m_weatherValuesByID.clear();
 	m_winddirValuesByID.clear();
 	m_windspeedValuesByID.clear();
 	m_windgustValuesByID.clear();
@@ -354,6 +356,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		float uv = 0;
 		float dewpoint = 0;
 		float utilityval = 0;
+		float weatherval = 0;
 		float winddir = 0;
 		float windspeed = 0;
 		float windgust = 0;
@@ -364,6 +367,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 		bool isBaro = false;
 		bool isBaroFloat = false;
 		bool isUtility = false;
+		bool isWeather = false;
 		bool isRain = false;
 		bool isUV = false;
 		bool isWindDir = false;
@@ -448,6 +452,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				uv = static_cast<float>(atof(splitresults[0].c_str()));
 				isUV = true;
+				weatherval = uv;
+				isWeather = true;
 
 				if (sitem.subType == sTypeUV3)
 				{
@@ -472,6 +478,16 @@ void CEventSystem::GetCurrentMeasurementStates()
 				int intGust = atoi(splitresults[3].c_str());
 				windgust = float(intGust) * 0.1f; //m/s
 				isWindGust = true;
+				if ((windgust == 0) && (windspeed != 0))
+				{
+					weatherval = windspeed;
+					isWeather = true;
+				}
+				else
+				{
+					weatherval = windgust;
+					isWeather = true;
+				}
 				if ((sitem.subType == sTypeWIND4) || (sitem.subType == sTypeWINDNoTemp))
 				{
 					temp = static_cast<float>(atof(splitresults[4].c_str()));
@@ -525,6 +541,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 				isUtility = true;
+				weatherval = utilityval;
+				isWeather = true;
 			}
 			else if (sitem.subType == sTypeAlert)
 			{
@@ -540,6 +558,8 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 				isUtility = true;
+				weatherval = utilityval;
+				isWeather = true;
 			}
 			else if (sitem.subType == sTypePercentage)
 			{
@@ -683,6 +703,9 @@ void CEventSystem::GetCurrentMeasurementStates()
 					//total_real*=AddjMulti;
 					rainmm = float(total_real);
 					isRain = true;
+					weatherval = rainmm;
+					isWeather = true;
+
 					//Calculate Last Hour
 					szQuery.clear();
 					szQuery.str("");
@@ -844,6 +867,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 			m_rainValuesByID[sitem.ID] = rainmm;
 			m_rainLastHourValuesByName[sitem.deviceName] = rainmmlasthour;
 			m_rainLastHourValuesByID[sitem.ID] = rainmmlasthour;
+		}
+		if (isWeather)
+		{
+			m_weatherValuesByName[sitem.deviceName] = weatherval;
+			m_weatherValuesByID[sitem.ID] = weatherval;
 		}
 		if (isUV) {
 			m_uvValuesByName[sitem.deviceName] = uv;
@@ -1243,6 +1271,17 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 			}
 			lua_setglobal(lua_state, "utilitydevice");
 		}
+		if (m_weatherValuesByID.size() > 0) {
+			lua_createtable(lua_state, (int)m_weatherValuesByID.size(), 0);
+			std::map<unsigned long long, float>::iterator p;
+			for (p = m_weatherValuesByID.begin(); p != m_weatherValuesByID.end(); ++p)
+			{
+				lua_pushnumber(lua_state, (lua_Number)p->first);
+				lua_pushnumber(lua_state, (lua_Number)p->second);
+				lua_rawset(lua_state, -3);
+			}
+			lua_setglobal(lua_state, "weatherdevice");
+		}
 		if (m_rainValuesByID.size()>0) {
 			lua_createtable(lua_state, (int)m_rainValuesByID.size(), 0);
 			std::map<unsigned long long, float>::iterator p;
@@ -1591,6 +1630,16 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
+	else if (Argument.find("weatherdevice") == 0)
+	{
+		std::map<unsigned long long, float>::const_iterator itt = m_weatherValuesByID.find(dindex);
+		if (itt != m_weatherValuesByID.end())
+		{
+			std::stringstream sstr;
+			sstr << itt->second;
+			return sstr.str();
+		}
+	}
 	else if (Argument.find("raindevice") == 0)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_rainValuesByID.find(dindex);
@@ -1645,40 +1694,6 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	{
 		std::map<unsigned long long, float>::const_iterator itt = m_windgustValuesByID.find(dindex);
 		if (itt != m_windgustValuesByID.end())
-		{
-			std::stringstream sstr;
-			sstr << itt->second;
-			return sstr.str();
-		}
-	}
-	else if (Argument.find("weatherdevice") == 0)
-	{
-		//This was a bad implementation from the original blockly author!
-		//We need to split all different types here, and also in blockly
-		//we try our best to find the value you are looking for
-		std::map<unsigned long long, float>::const_iterator itt = m_uvValuesByID.find(dindex);
-		if (itt != m_uvValuesByID.end())
-		{
-			std::stringstream sstr;
-			sstr << itt->second;
-			return sstr.str();
-		}
-		itt = m_windspeedValuesByID.find(dindex);
-		if (itt != m_windspeedValuesByID.end())
-		{
-			std::stringstream sstr;
-			sstr << itt->second;
-			return sstr.str();
-		}
-		itt = m_windgustValuesByID.find(dindex);
-		if (itt != m_windgustValuesByID.end())
-		{
-			std::stringstream sstr;
-			sstr << itt->second;
-			return sstr.str();
-		}
-		itt = m_rainLastHourValuesByID.find(dindex);
-		if (itt != m_rainLastHourValuesByID.end())
 		{
 			std::stringstream sstr;
 			sstr << itt->second;

@@ -117,6 +117,7 @@ private:
 	std::map<std::string, float> m_rainValuesByName;
 	std::map<std::string, float> m_rainLastHourValuesByName;
 	std::map<std::string, float> m_uvValuesByName;
+	std::map<std::string, float> m_weatherValuesByName;
 	std::map<std::string, unsigned char> m_humValuesByName;
 	std::map<std::string, float> m_baroValuesByName;
 	std::map<std::string, float> m_utilityValuesByName;
@@ -129,6 +130,7 @@ private:
 	std::map<unsigned long long, float> m_rainValuesByID;
 	std::map<unsigned long long, float> m_rainLastHourValuesByID;
 	std::map<unsigned long long, float> m_uvValuesByID;
+	std::map<unsigned long long, float> m_weatherValuesByID;
 	std::map<unsigned long long, unsigned char> m_humValuesByID;
 	std::map<unsigned long long, float> m_baroValuesByID;
 	std::map<unsigned long long, float> m_utilityValuesByID;
