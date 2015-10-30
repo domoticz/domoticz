@@ -1136,13 +1136,12 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 	EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording, varId);
 }
 
-void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+lua_State *CEventSystem::CreateBlocklyLuaState()
 {
-//#ifdef _DEBUG
-	//    _log.Log(LOG_STATUS,"EventSystem: blockly %s trigger",reason.c_str());
-//#endif
+	lua_State *lua_state = luaL_newstate();
+	if (lua_state == NULL)
+		return NULL;
 
-	lua_State *lua_state;
 	lua_state = luaL_newstate();
 
 	// load Lua libraries
@@ -1189,13 +1188,13 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
 	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
 		_tUserVariable uvitem = iterator->second;
-		if (uvitem.variableType == 0)  {
+		if (uvitem.variableType == 0) {
 			//Integer
 			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
 			lua_rawset(lua_state, -3);
 		}
-		else if (uvitem.variableType == 1)  {
+		else if (uvitem.variableType == 1) {
 			//Float
 			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
@@ -1211,161 +1210,166 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 	lua_setglobal(lua_state, "variable");
 	uservariablesMutexLock.unlock();
 
-	{
-		boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
-		GetCurrentMeasurementStates();
+	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
+	GetCurrentMeasurementStates();
 
-		if (m_tempValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_tempValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_tempValuesByID.begin(); p != m_tempValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "temperaturedevice");
+	if (m_tempValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_tempValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_tempValuesByID.begin(); p != m_tempValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_dewValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_dewValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_dewValuesByID.begin(); p != m_dewValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "dewpointdevice");
+		lua_setglobal(lua_state, "temperaturedevice");
+	}
+	if (m_dewValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_dewValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_dewValuesByID.begin(); p != m_dewValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_humValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_humValuesByID.size(), 0);
-			std::map<unsigned long long, unsigned char>::iterator p;
-			for (p = m_humValuesByID.begin(); p != m_humValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "humiditydevice");
+		lua_setglobal(lua_state, "dewpointdevice");
+	}
+	if (m_humValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_humValuesByID.size(), 0);
+		std::map<unsigned long long, unsigned char>::iterator p;
+		for (p = m_humValuesByID.begin(); p != m_humValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_baroValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_baroValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_baroValuesByID.begin(); p != m_baroValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "barometerdevice");
+		lua_setglobal(lua_state, "humiditydevice");
+	}
+	if (m_baroValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_baroValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_baroValuesByID.begin(); p != m_baroValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_utilityValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_utilityValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_utilityValuesByID.begin(); p != m_utilityValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "utilitydevice");
+		lua_setglobal(lua_state, "barometerdevice");
+	}
+	if (m_utilityValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_utilityValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_utilityValuesByID.begin(); p != m_utilityValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_weatherValuesByID.size() > 0) {
-			lua_createtable(lua_state, (int)m_weatherValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_weatherValuesByID.begin(); p != m_weatherValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "weatherdevice");
+		lua_setglobal(lua_state, "utilitydevice");
+	}
+	if (m_weatherValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_weatherValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_weatherValuesByID.begin(); p != m_weatherValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_rainValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_rainValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_rainValuesByID.begin(); p != m_rainValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "raindevice");
+		lua_setglobal(lua_state, "weatherdevice");
+	}
+	if (m_rainValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_rainValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_rainValuesByID.begin(); p != m_rainValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_rainLastHourValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_rainLastHourValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_rainLastHourValuesByID.begin(); p != m_rainLastHourValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "rainlasthourdevice");
+		lua_setglobal(lua_state, "raindevice");
+	}
+	if (m_rainLastHourValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_rainLastHourValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_rainLastHourValuesByID.begin(); p != m_rainLastHourValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_uvValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_uvValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_uvValuesByID.begin(); p != m_uvValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "uvdevice");
+		lua_setglobal(lua_state, "rainlasthourdevice");
+	}
+	if (m_uvValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_uvValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_uvValuesByID.begin(); p != m_uvValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_winddirValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_winddirValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_winddirValuesByID.begin(); p != m_winddirValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "winddirdevice");
+		lua_setglobal(lua_state, "uvdevice");
+	}
+	if (m_winddirValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_winddirValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_winddirValuesByID.begin(); p != m_winddirValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_windspeedValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_windspeedValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_windspeedValuesByID.begin(); p != m_windspeedValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "windspeeddevice");
+		lua_setglobal(lua_state, "winddirdevice");
+	}
+	if (m_windspeedValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_windspeedValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_windspeedValuesByID.begin(); p != m_windspeedValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
-		if (m_windgustValuesByID.size()>0) {
-			lua_createtable(lua_state, (int)m_windgustValuesByID.size(), 0);
-			std::map<unsigned long long, float>::iterator p;
-			for (p = m_windgustValuesByID.begin(); p != m_windgustValuesByID.end(); ++p)
-			{
-				lua_pushnumber(lua_state, (lua_Number)p->first);
-				lua_pushnumber(lua_state, (lua_Number)p->second);
-				lua_rawset(lua_state, -3);
-			}
-			lua_setglobal(lua_state, "windgustdevice");
+		lua_setglobal(lua_state, "windspeeddevice");
+	}
+	if (m_windgustValuesByID.size() > 0) {
+		lua_createtable(lua_state, (int)m_windgustValuesByID.size(), 0);
+		std::map<unsigned long long, float>::iterator p;
+		for (p = m_windgustValuesByID.begin(); p != m_windgustValuesByID.end(); ++p)
+		{
+			lua_pushnumber(lua_state, (lua_Number)p->first);
+			lua_pushnumber(lua_state, (lua_Number)p->second);
+			lua_rawset(lua_state, -3);
 		}
+		lua_setglobal(lua_state, "windgustdevice");
 	}
 
 	lua_pushnumber(lua_state, (lua_Number)m_SecStatus);
 	lua_setglobal(lua_state, "securitystatus");
 
+	return lua_state;
+}
+
+void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+{
+//#ifdef _DEBUG
+	//    _log.Log(LOG_STATUS,"EventSystem: blockly %s trigger",reason.c_str());
+//#endif
+
+	lua_State *lua_state=NULL;
+
 	if ((reason == "device") && (DeviceID >0)) {
 		std::size_t found;
-		bool eventActive = false;
-
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			eventActive = false;
+			bool eventActive = (it->EventStatus == 1);
 			std::stringstream sstr;
 			sstr << "device[" << DeviceID << "]";
 			std::string conditions (it->Conditions);
 			found = conditions.find(sstr.str());
-			if (it->EventStatus == 1) { eventActive = true; };
-
 			if ((eventActive) && (found != std::string::npos)) {
 				// Replace Sunrise and sunset placeholder with actual time for query
 				if (conditions.find("@Sunrise") != std::string::npos) {
@@ -1382,6 +1386,14 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				}
 
 				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
+
+				if (lua_state == NULL)
+				{
+					lua_state = CreateBlocklyLuaState();
+					if (lua_state == NULL)
+						return;
+				}
+
 				//_log.Log(LOG_STATUS,"EventSystem: ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
@@ -1404,17 +1416,14 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 	else if (reason == "security") {
 		// security status change
 		std::size_t found;
-		bool eventActive = false;
-
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			eventActive = false;
+			bool eventActive = (it->EventStatus == 1);
 			std::stringstream sstr;
 			sstr << "securitystatus";
 			std::string conditions (it->Conditions);
 			found = conditions.find(sstr.str());
-			if (it->EventStatus == 1) { eventActive = true; };
 
 			if ((eventActive) && (found != std::string::npos)) {
 
@@ -1433,6 +1442,14 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				}
 
 				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
+
+				if (lua_state == NULL)
+				{
+					lua_state = CreateBlocklyLuaState();
+					if (lua_state == NULL)
+						return;
+				}
+
 				//_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
@@ -1453,12 +1470,10 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 		}
 	}
 	else if (reason == "time") {
-		bool eventActive = false;
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			eventActive = false;
-			if (it->EventStatus == 1) { eventActive = true; };
+			bool eventActive = (it->EventStatus == 1);
 			if (eventActive) {
 				// time rules will only run when time or date based critera are found
 				std::string conditions (it->Conditions);
@@ -1479,6 +1494,14 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					}
 
 					std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
+
+					if (lua_state == NULL)
+					{
+						lua_state = CreateBlocklyLuaState();
+						if (lua_state == NULL)
+							return;
+					}
+
 					//_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
 					if (luaL_dostring(lua_state, ifCondition.c_str()))
 					{
@@ -1500,17 +1523,14 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 	}
 	else if ((reason == "uservariable") && (varId >0)) {
 		std::size_t found;
-		bool eventActive = false;
-
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			eventActive = false;
+			bool eventActive = (it->EventStatus == 1);
 			std::stringstream sstr;
 			sstr << "variable[" << varId << "]";
 			std::string conditions (it->Conditions);
 			found = conditions.find(sstr.str());
-			if (it->EventStatus == 1) { eventActive = true; };
 
 			if ((eventActive) && (found != std::string::npos)) {
 
@@ -1528,6 +1548,14 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					stdreplace(conditions, "@Sunset", ssSet.str());
 				}
 				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
+
+				if (lua_state == NULL)
+				{
+					lua_state = CreateBlocklyLuaState();
+					if (lua_state == NULL)
+						return;
+				}
+
 				//_log.Log(LOG_STATUS,"ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
 				{
@@ -1548,7 +1576,10 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 		}
 	}
 
-	lua_close(lua_state);
+	if (lua_state != NULL)
+	{
+		lua_close(lua_state);
+	}
 }
 
 static inline long long GetIndexFromDevice(std::string devline)
@@ -2555,13 +2586,12 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		{
 			//_log.Log(LOG_ERROR, "EventSystem: lua script completed");
 		}
-		
-		
 	}
 	else
 	{
 		report_errors(lua_state, status);
 		lua_close(lua_state);
+		return;
 	}
 
 	/*
@@ -2593,10 +2623,8 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	{
 		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
 	}
-
-	lua_close(lua_state);
 	*/
-
+	lua_close(lua_state);
 }
 
 void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)

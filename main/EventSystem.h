@@ -106,6 +106,7 @@ private:
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	void UpdateDevice(const std::string &DevParams);
+	lua_State *CreateBlocklyLuaState();
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
 	
