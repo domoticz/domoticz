@@ -2382,9 +2382,7 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	localtime_r(&now,&ltime);
 
 	//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
-	result = safe_query("SELECT ParentID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (DeviceRowID!=ParentID)",
-		idx.c_str()
-		);
+	result = safe_query("SELECT A.ParentID, B.Name, B.HardwareID, B.[Type], B.[SubType], B.Unit FROM LightSubDevices as A, DeviceStatus as B WHERE (A.DeviceRowID=='%q') AND (A.DeviceRowID!=A.ParentID) AND (B.[ID] == A.ParentID)", idx.c_str());
 	if (result.size()>0)
 	{
 		//This is a sub/slave device for another main device
@@ -2400,11 +2398,15 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				sd[0].c_str()
 				);
 
-			//------
-			//Should call eventsystem for the main switch here
-			//m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
-			//------
-
+			//Call the EventSystem for the main switch
+			unsigned long long ParentID = (unsigned long long)atoll(sd[0].c_str());
+			std::string ParentName = sd[1];
+			int ParentHardwareID = atoi(sd[2].c_str());
+			unsigned char ParentType = (unsigned char)atoi(sd[3].c_str());
+			unsigned char ParentSubType = (unsigned char)atoi(sd[4].c_str());
+			unsigned char ParentUnit = (unsigned char)atoi(sd[5].c_str());
+			m_mainworker.m_eventsystem.ProcessDevice(ParentHardwareID, ParentID, ParentUnit, ParentType, ParentSubType, signallevel, batterylevel, nValue, sValue, ParentName, 0);
+			
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 			result2 = safe_query(

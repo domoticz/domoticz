@@ -63,7 +63,8 @@
 #include "../hardware/MQTT.h"
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
-#include "../hardware/RFLink.h"
+#include "../hardware/RFLinkSerial.h"
+#include "../hardware/RFLinkTCP.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
 #include "../hardware/KMTronic433.h"
@@ -278,6 +279,7 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	if (
 		(pHardware->HwdType != HTYPE_RFXtrx315) &&
 		(pHardware->HwdType != HTYPE_RFXtrx433) &&
+		(pHardware->HwdType != HTYPE_RFXtrx868) &&
 		(pHardware->HwdType != HTYPE_RFXLAN)
 		)
 	{
@@ -566,6 +568,7 @@ bool MainWorker::AddHardwareFromParams(
 	{
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
+	case HTYPE_RFXtrx868:
 	case HTYPE_P1SmartMeter:
 	case HTYPE_Rego6XX:
 	case HTYPE_DavisVantage:
@@ -580,12 +583,13 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EnOceanESP3:
 	case HTYPE_Meteostick:
 	case HTYPE_EVOHOME_SERIAL:
-	case HTYPE_RFLINK:
+	case HTYPE_RFLINKUSB:
 	{
 			//USB/Serial
 			if (
-				(Type==HTYPE_RFXtrx315)||
-				(Type==HTYPE_RFXtrx433)
+				(Type == HTYPE_RFXtrx315) ||
+				(Type == HTYPE_RFXtrx433) ||
+				(Type == HTYPE_RFXtrx868)
 				)
 			{
 				pHardware = new RFXComSerial(ID, SerialPort, 38400);
@@ -636,9 +640,9 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type == HTYPE_OpenZWave)
 			{
-#ifdef WITH_OPENZWAVE
+	#ifdef WITH_OPENZWAVE
 				pHardware = new COpenZWave(ID, SerialPort);
-#endif
+	#endif
 			}
 			else if (Type==HTYPE_EnOceanESP2)
 			{
@@ -652,11 +656,11 @@ bool MainWorker::AddHardwareFromParams(
 			{
 				pHardware = new CEvohome(ID,SerialPort);
 			}
-			else if (Type == HTYPE_RFLINK)
+			else if (Type == HTYPE_RFLINKUSB)
 			{
-				pHardware = new CRFLink(ID, SerialPort);
+				pHardware = new CRFLinkSerial(ID, SerialPort);
 			}
-	}
+		}
 		break;
 	case HTYPE_RFXLAN:
 		//LAN
@@ -685,6 +689,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_MySensorsTCP:
 		//LAN
 		pHardware = new MySensorsTCP(ID, Address, Port);
+		break;
+	case HTYPE_RFLINKTCP:
+		//LAN
+		pHardware = new CRFLinkTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN
@@ -7832,7 +7840,8 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 			if (
 				(pHardware->HwdType == HTYPE_RFXLAN) ||
 				(pHardware->HwdType == HTYPE_RFXtrx315) ||
-				(pHardware->HwdType == HTYPE_RFXtrx433)
+				(pHardware->HwdType == HTYPE_RFXtrx433) ||
+				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
 				volt *= 10;

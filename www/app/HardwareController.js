@@ -808,6 +808,40 @@ define(['app'], function (app) {
             });
         }
 
+        EditRFXCOMMode868 = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
+        {
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent+=$('#rfx868hardwaremode').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            $('#hardwarecontent #submitbutton').click(function (e) {
+                e.preventDefault();
+                SetRFXCOMMode868();
+            });
+            $('#hardwarecontent #firmwarebutton').click(function (e) {
+                e.preventDefault();
+                $rootScope.hwidx = $('#hardwarecontent #idx').val();
+                SwitchLayout('RFXComFirmware');
+            });
+
+            $('#hardwarecontent #idx').val(idx);
+
+            $('#hardwarecontent #defaultbutton').click(function (e) {
+                e.preventDefault();
+                $('#hardwarecontent #LaCrosse').prop('checked',false);
+                $('#hardwarecontent #Alecto').prop('checked',false);
+                $('#hardwarecontent #FS20').prop('checked',false);
+                $('#hardwarecontent #ProGuard').prop('checked',false);
+                $('#hardwarecontent #VionicPowerCode').prop('checked',false);
+                $('#hardwarecontent #Hideki').prop('checked',false);
+                $('#hardwarecontent #FHT8').prop('checked',false);
+                $('#hardwarecontent #VionicCodeSecure').prop('checked',false);
+            });
+        }
+
         EditRego6XXType = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
         {
             cursordefault();
@@ -2938,7 +2972,12 @@ define(['app'], function (app) {
                     if (HwTypeStr.indexOf("RFXCOM") >= 0)
                     {
                         HwTypeStr+='<br>Firmware version: ' + item.Mode2;
-                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
+                        if (HwTypeStr.indexOf("868") >= 0) {
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode868(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
+                        }
+                        else {
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
+						}
                     }
                     else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';

@@ -599,6 +599,52 @@
 </form>
 </center>
 </div>
+
+<div id="rfx868hardwaremode" style="display:none;">
+<center>
+<form id="settings">
+	<table>
+		<tr>
+			<td align="left" style="width:150px"><font color="yellow">868.30MHz</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.30MHz FSK</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.35MHz</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.35MHz FSK</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.95MHz</font></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse (not IT+)</label></td>
+			<td><input type="checkbox" id="Alecto" name="Alecto">&nbsp;<label for="Alecto">Alecto</label></td>
+			<td><input type="checkbox" id="FS20" name="FS20">&nbsp;<label for="FS20">FS20</label></td>
+			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
+			<td><input type="checkbox" id="VionicPowerCode" name="VionicPowerCode">&nbsp;<label for="VionicPowerCode">VionicPowerCode</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="Hideki" name="Hideki">&nbsp;<label for="Hideki">Hideki<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Cresta<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Honeywell<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Irox<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Mebux<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Nexus</label></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="FHT8" name="FHT8">&nbsp;<label for="FHT8">FHT8</label></td>
+			<td></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="VionicCodeSecure" name="VionicCodeSecure">&nbsp;<label for="VionicCodeSecure">VionicCodeSecure</label></td>
+		</tr>
+	</table>
+	<br>
+	You can only enable protocols for the same frequency!
+	<br>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-warning" id="defaultbutton">Default</button>
+	<button class="btn btn-danger" id="submitbutton">Set Mode</button>
+	<br>
+	<br>
+	<button class="btn btn-info" id="firmwarebutton">Upgrade Firmware</button>
+</form>
+</center>
+</div>
+
 <div id="rego6xxtypeedit" style="display:none;">
 <center>
 <form id="regotype">

@@ -947,7 +947,7 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra)
+				(htype == HTYPE_ETH8020) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP)
 				) {
 				//Lan
 				if (address == "")
@@ -1167,7 +1167,7 @@ namespace http {
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || 
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || 
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || 
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra)
+				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP)
 				){
 				//Lan
 				if (address == "")
@@ -3154,6 +3154,7 @@ namespace http {
 						case HTYPE_RFXLAN:
 						case HTYPE_RFXtrx315:
 						case HTYPE_RFXtrx433:
+						case HTYPE_RFXtrx868:
 						case HTYPE_EnOceanESP2:
 						case HTYPE_EnOceanESP3:
 						case HTYPE_Dummy:
@@ -3161,8 +3162,9 @@ namespace http {
 						case HTYPE_EVOHOME_SCRIPT:
 						case HTYPE_EVOHOME_SERIAL:
 						case HTYPE_RaspberryGPIO:
-						case HTYPE_RFLINK:
-                        root["result"][ii]["idx"] = ID;
+						case HTYPE_RFLINKUSB:
+						case HTYPE_RFLINKTCP:
+							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
 							break;
@@ -3818,7 +3820,7 @@ namespace http {
                 CDomoticzHardwareBase *pBaseHardware = (CDomoticzHardwareBase*)m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != NULL)
 				{
-					if (pBaseHardware->HwdType == HTYPE_RFLINK) {
+					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB)|| (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
 						if (dtype == pTypeLighting1){
 							dtype = pTypeGeneralSwitch;
 							std::stringstream s_strid;
@@ -4249,7 +4251,7 @@ namespace http {
                 CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(atoi(hwdid.c_str()));
 				if (pBaseHardware != NULL)
 				{
-					if (pBaseHardware->HwdType == HTYPE_RFLINK) {
+					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB)|| (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
 						if (dtype == pTypeLighting1){
 							dtype = pTypeGeneralSwitch;
 
@@ -8542,6 +8544,7 @@ namespace http {
 							{
 								sprintf(szData, "%.3f kWh", total);
 								root["result"][ii]["Data"] = szData;
+								root["result"][ii]["CounterToday"] = szData;
 								if ((dType == pTypeENERGY) || (dType == pTypePOWER))
 								{
 									sprintf(szData, "%ld Watt", atol(strarray[0].c_str()));
