@@ -13,7 +13,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	#define DEBUG_WUNDERGROUND
+	//#define DEBUG_WUNDERGROUND
 #endif
 
 #ifdef DEBUG_WUNDERGROUND2
