@@ -1138,10 +1138,9 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 
 void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
 {
-
-	//#ifdef _DEBUG
+//#ifdef _DEBUG
 	//    _log.Log(LOG_STATUS,"EventSystem: blockly %s trigger",reason.c_str());
-	//#endif
+//#endif
 
 	lua_State *lua_state;
 	lua_state = luaL_newstate();
@@ -1354,7 +1353,6 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 	lua_setglobal(lua_state, "securitystatus");
 
 	if ((reason == "device") && (DeviceID >0)) {
-
 		std::size_t found;
 		bool eventActive = false;
 
@@ -1369,7 +1367,6 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 			if (it->EventStatus == 1) { eventActive = true; };
 
 			if ((eventActive) && (found != std::string::npos)) {
-
 				// Replace Sunrise and sunset placeholder with actual time for query
 				if (conditions.find("@Sunrise") != std::string::npos) {
 					int intRise = getSunRiseSunSetMinutes("Sunrise");
@@ -1390,9 +1387,9 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				{
 					_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 				}
-				else {
+				else 
+				{
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-
 					if (ruleTrue != 0)
 					{
 						if (parseBlocklyActions(it->Actions, it->Name, it->ID))
@@ -1455,11 +1452,8 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 			}
 		}
 	}
-
 	else if (reason == "time") {
-
 		bool eventActive = false;
-
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
@@ -1504,9 +1498,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 			}
 		}
 	}
-
-	if ((reason == "uservariable") && (varId >0)) {
-
+	else if ((reason == "uservariable") && (varId >0)) {
 		std::size_t found;
 		bool eventActive = false;
 
@@ -1535,7 +1527,6 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 					ssSet << intSet;
 					stdreplace(conditions, "@Sunset", ssSet.str());
 				}
-
 				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
 				//_log.Log(LOG_STATUS,"ifc: %s",ifCondition.c_str());
 				if (luaL_dostring(lua_state, ifCondition.c_str()))
@@ -2176,6 +2167,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		float thisDeviceWindDir = 0;
 		float thisDeviceWindSpeed = 0;
 		float thisDeviceWindGust = 0;
+		float thisDeviceWeather = 0;
 
 		if (m_tempValuesByName.size()>0)
 		{
@@ -2342,6 +2334,21 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			}
 			lua_setglobal(lua_state, "otherdevices_windgust");
 		}
+		if (m_weatherValuesByName.size() > 0)
+		{
+			lua_createtable(lua_state, (int)m_weatherValuesByName.size(), 0);
+			std::map<std::string, float>::iterator p;
+			for (p = m_weatherValuesByName.begin(); p != m_weatherValuesByName.end(); ++p)
+			{
+				lua_pushstring(lua_state, p->first.c_str());
+				lua_pushnumber(lua_state, (lua_Number)p->second);
+				lua_rawset(lua_state, -3);
+				if (p->first == devname) {
+					thisDeviceWeather = p->second;
+				}
+			}
+			lua_setglobal(lua_state, "otherdevices_weather");
+		}
 
 		if (reason == "device")
 		{
@@ -2384,6 +2391,13 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 				utilityName += "_Utility";
 				lua_pushstring(lua_state, utilityName.c_str());
 				lua_pushnumber(lua_state, (lua_Number)thisDeviceUtility);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisDeviceWeather != 0) {
+				std::string weatherName = devname;
+				weatherName += "_Weather";
+				lua_pushstring(lua_state, weatherName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceWeather);
 				lua_rawset(lua_state, -3);
 			}
 			if (thisDeviceRain != 0)
