@@ -381,8 +381,16 @@ void CEventSystem::GetCurrentMeasurementStates()
 			isTemp = true;
 			break;
 		case pTypeThermostat:
-			temp = static_cast<float>(atof(splitresults[0].c_str()));
-			isTemp = true;
+			if (sitem.subType == sTypeThermTemperature)
+			{
+				temp = static_cast<float>(atof(splitresults[0].c_str()));
+				isTemp = true;
+			}
+			else
+			{
+				utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+				isUtility = true;
+			}
 			break;
 		case pTypeThermostat1:
 			temp = static_cast<float>(atof(splitresults[0].c_str()));
