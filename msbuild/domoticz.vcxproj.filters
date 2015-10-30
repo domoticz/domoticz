@@ -585,9 +585,6 @@
     <ClInclude Include="..\hardware\ETH8020.h">
       <Filter>Devices\ETH8020</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\RFLink.h">
-      <Filter>Devices\RFLink</Filter>
-    </ClInclude>
     <ClInclude Include="..\notifications\NotificationBase.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -764,6 +761,15 @@
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationLogitechMediaServer.h">
       <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFLinkSerial.h">
+      <Filter>Devices\RFLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFLinkBase.h">
+      <Filter>Devices\RFLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFLinkTCP.h">
+      <Filter>Devices\RFLink</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1055,9 +1061,6 @@
     <ClCompile Include="..\hardware\ETH8020.cpp">
       <Filter>Devices\ETH8020</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\RFLink.cpp">
-      <Filter>Devices\RFLink</Filter>
-    </ClCompile>
     <ClCompile Include="..\notifications\NotificationBase.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
@@ -1225,6 +1228,15 @@
     </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
       <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFLinkSerial.cpp">
+      <Filter>Devices\RFLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFLinkBase.cpp">
+      <Filter>Devices\RFLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFLinkTCP.cpp">
+      <Filter>Devices\RFLink</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -29,6 +29,11 @@ ZWaveBase::ZWaveBase()
 	m_bControllerCommandInProgress=false;
 	m_bControllerCommandCanceled = false;
 	m_updateTime = 0;
+	m_bHaveLastIncludedNodeInfo = false;
+	m_LastRemovedNode = -1;
+	m_ControllerCommandStartTime = 0;
+	m_bInitState = true;
+	m_stoprequested = false;
 }
 
 
@@ -870,7 +875,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 	const _tZWaveDevice* pDevice=NULL;
 
-	tRBUF *pSen=(tRBUF*)pdata;
+	const tRBUF *pSen= reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype=pSen->ICMND.packettype;
 	unsigned char subtype=pSen->ICMND.subtype;
@@ -918,8 +923,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 	else if ((packettype==pTypeThermostat)&&(subtype==sTypeThermSetpoint))
 	{
 		//Set Point
-		_tThermostat *pMeter=(_tThermostat *)pSen;
-
+		const _tThermostat *pMeter= reinterpret_cast<const _tThermostat *>(pSen);
 		int nodeID=(pMeter->id2<<8)|pMeter->id3;
 		int instanceID=pMeter->id4;
 		int indexID=pMeter->id1;
@@ -933,7 +937,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveClock))
 	{
-		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice *>(pSen);
 		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
@@ -956,7 +960,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatMode))
 	{
-		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice *>(pSen);
 		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
@@ -975,7 +979,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatFanMode))
 	{
-		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice *>(pSen);
 		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
@@ -994,7 +998,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if (packettype == pTypeLimitlessLights)
 	{
-		_tLimitlessLights *pLed = (_tLimitlessLights*)pSen;
+		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pSen);
 		unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);

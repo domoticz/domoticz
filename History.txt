@@ -11,6 +11,9 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Danish translation (big thanks to jokkemokke!!)
 - Implemented: Devices Tab, now displaying scenes/groups
 - Implemented: Dummy Hardware, Ampere Single (single ampere value, other ampere sensor expects 3 values)
+- Implemented: EventSystem, now also reacts on master switches when a slave switch state changes
+- Implemented: EventSystem, now supports Weather sensors: UV/Distance, Wind Gust (or speed when gust is not available), Solar Radiation and Rain
+- Implemented: EventSystem, optimized Blockly calls (saves a lot of calls and cpu)
 - Implemented: Hebrew translation (big thanks to mickeyv!!)
 - Implemented: HTTP Data push, new types for Type/SubType/Hostname/Device Name
 - Implemented: HTTPS support for On/Off actions
@@ -105,6 +108,7 @@ Version 2.xxx (xxxx 2015)
 - Fixed: EventSystem, asctime is not thread-safe (replaced with strftime) (cgaudry)
 - Fixed: EventSystem, SIGSEGV (cgaudry)
 - Fixed: EventSystem, splitresults has missing values because m_devicestates is modified while using an iterator on the map (cgaudry)
+- Fixed: EventSystem, fixed memory leak when calling lua scripts
 - Fixed: HTTP Push table localization (thanks to cgaudry)
 - Fixed: Icon Uploader, uploading went wrong with large files
 - Fixed: MySensors, corrected sending localtime

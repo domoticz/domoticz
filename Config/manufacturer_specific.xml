@@ -73,8 +73,17 @@
         <!-- US-market products start with type prefix "01" -->
 		<Product type="0101" id="005a" name="Z-Stick Gen5" config="aeotec/zstickgen5.xml"/>
 		<Product type="0102" id="0059" name="Recessed Door Sensor Gen5" config="aeotec/recessed_doorsensor_gen5.xml"/>
-	        <Product type="0104" id="0038" name="DoorBell Gen5" />
-	        <Product type="0102" id="0061" name="Dry Contact Sensor Gen5" />
+	        <Product type="0004" id="0038" name="DoorBell Gen5" config="aeotec/doorbell_gen5.xml" />
+	        <Product type="0104" id="0038" name="DoorBell Gen5" config="aeotec/doorbell_gen5.xml" />
+	        <Product type="0204" id="0038" name="DoorBell Gen5" config="aeotec/doorbell_gen5.xml" />
+		<Product type="0304" id="0038" name="DoorBell Gen5" config="aeotec/doorbell_gen5.xml" />
+	        <Product type="0904" id="0038" name="DoorBell Gen5" config="aeotec/doorbell_gen5.xml" />
+		<Product type="1D04" id="0038" name="DoorBell Gen5" config="aeotec/doorbell_gen5.xml" />
+		<Product type="1A04" id="0038" name="DoorBell Gen5" config="aeotec/doorbell_gen5.xml" />
+		<Product type="0A04" id="0038" name="DoorBell Gen5" config="aeotec/doorbell_gen5.xml" />
+	        <Product type="0002" id="0061" name="Dry Contact Sensor Gen5" config="aeotec/drycontactsensor.xml" />
+	        <Product type="0102" id="0061" name="Dry Contact Sensor Gen5" config="aeotec/drycontactsensor.xml" />
+	        <Product type="0202" id="0061" name="Dry Contact Sensor Gen5" config="aeotec/drycontactsensor.xml" />
         <!-- AU-market products start with type prefix "02" -->
 		<Product type="0202" id="0059" name="Recessed Door Sensor Gen5" config="aeotec/recessed_doorsensor_gen5.xml"/>
 		<Product type="0003" id="0060" name="Smart Switch 6" config="aeotec/ss6.xml" />
@@ -441,8 +450,8 @@
 		<Product type="1102" id="0243" name="VRCS2-MRZ 2-Button Scene Controller with Switches"/>
 	</Manufacturer>
 	<Manufacturer id="014f" name="Linear">
-                <Product type="4450" id="3030" name="PD300Z-2 Plug-in Dimmer Module"/>
-                <Product type="4457" id="3034" name="WD500Z-1 Wall Dimmer Switch"/>
+                <Product type="4450" id="3030" name="PD300Z-2 Plug-in Dimmer Module" config="linear/PD300Z-2.xml"/>
+                <Product type="4457" id="3034" name="WD500Z-1 Wall Dimmer Switch" config="linear/WD500Z-1.xml"/>
                 <Product type="4457" id="3331" name="WD1000Z-1 Wall Dimmer Switch"/>
                 <Product type="5246" id="3133" name="FS20Z Isolated Contact Fixture Module"/>
                 <Product type="5250" id="3030" name="PS15Z-2 Plug-in Appliance Module"/>
@@ -640,6 +649,9 @@
 	</Manufacturer>
 	<Manufacturer id="010c" name="There">
 		<Product type="0001" id="0001" name="ThereGate"/>
+	</Manufacturer>
+	<Manufacturer id="019b" name="Thermo-Floor (Heatit)">
+		<Product type="0001" id="0001" name="Multireg Z-Wave thermostat TF 016" config="thermofloor/multireg.xml"/>
 	</Manufacturer>
 	<Manufacturer id="008b" name="Trane">
 		<Product type="5452" id="5431" name="Model TZEMT400AB32MAA" config="trane/TZEMT400AB32MAA.xml"/>

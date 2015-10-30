@@ -228,7 +228,9 @@ hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
-hardware/RFLink.cpp
+hardware/RFLinkBase.cpp
+hardware/RFLinkSerial.cpp
+hardware/RFLinkTCP.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
 hardware/S0MeterBase.cpp

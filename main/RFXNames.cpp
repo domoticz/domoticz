@@ -184,7 +184,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface" },
 		{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface" },
 		{ HTYPE_ETH8020, "ETH8020 Relay board with LAN interface" },
-		{ HTYPE_RFLINK, "RFLink Gateway USB" },
+		{ HTYPE_RFLINKUSB, "RFLink Gateway USB" },
 		{ HTYPE_KMTronicUSB, "KMTronic Gateway USB" },
 		{ HTYPE_KMTronicTCP, "KMTronic Gateway with LAN interface" },
 		{ HTYPE_SOLARMAXTCP, "SolarMax via LAN interface" },
@@ -197,7 +197,9 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
 		{ HTYPE_SatelIntegra, "Satel Integra via LAN interface" },
 		{ HTYPE_LogitechMediaServer, "Logitech Media Server" },
-  		{ 0, NULL, NULL }
+		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
+		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
+		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
 }
@@ -2732,9 +2734,9 @@ const char *Get_Alert_Desc(const int level)
 bool IsSerialDevice(const _eHardwareTypes htype)
 {
 	return (
-		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) ||
+		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) ||
 		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
 		(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
+		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
 		);
 }
