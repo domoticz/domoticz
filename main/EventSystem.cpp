@@ -2623,8 +2623,8 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	{
 		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
 	}
-	*/
 	lua_close(lua_state);
+	*/
 }
 
 void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
