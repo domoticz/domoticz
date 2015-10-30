@@ -11,6 +11,8 @@ Version 2.xxx (xxxx 2015)
 - Implemented: Danish translation (big thanks to jokkemokke!!)
 - Implemented: Devices Tab, now displaying scenes/groups
 - Implemented: Dummy Hardware, Ampere Single (single ampere value, other ampere sensor expects 3 values)
+- Implemented: EventSystem now also reacts on master switches when a slave switch state changes
+- Implemented: EventSyste now supports Weather sensors: UV/Distance, Wind Gust (or speed when gust is not available), Solar Radiation and Rain
 - Implemented: Hebrew translation (big thanks to mickeyv!!)
 - Implemented: HTTP Data push, new types for Type/SubType/Hostname/Device Name
 - Implemented: HTTPS support for On/Off actions
