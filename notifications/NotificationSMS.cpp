@@ -33,11 +33,11 @@ bool CNotificationSMS::SendMessageImplementation(const std::string &Subject, con
 	std::string MsgFrom = _clickatellFrom;
 	stdreplace(MsgFrom, "+", "");
 	stdreplace(MsgFrom, " ", "");
-	MsgFrom = stdstring_trim(CURLEncode::URLDecode(MsgFrom));
+	MsgFrom = stdstring_trim(CURLEncode::URLDecode(MsgFrom.c_str()));
 	if (MsgFrom.empty())
 		return false;
 
-	std::string thisTo = CURLEncode::URLDecode(_clickatellTo);
+	std::string thisTo = CURLEncode::URLDecode(_clickatellTo.c_str());
 
 	stdreplace(thisTo, "+", "");
 	stdreplace(thisTo, " ", "");
