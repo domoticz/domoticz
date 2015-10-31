@@ -1938,7 +1938,6 @@ namespace http {
 			seconds = (int)tuptime;
 			root["status"] = "OK";
 			root["title"] = "GetUptime";
-			root["uptime"] = (int64_t)tuptime;
 			root["days"] = (int64_t)days;
 			root["hours"] = (int64_t)hours;
 			root["minutes"] = (int64_t)minutes;
