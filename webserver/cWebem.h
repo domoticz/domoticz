@@ -34,6 +34,7 @@ namespace http {
 			std::string remote_host;
 			std::string auth_token;
 			std::string username;
+			time_t timeout;
 			time_t expires;
 			int rights;
 			bool rememberme;
@@ -202,6 +203,8 @@ namespace http {
 			void SetSessionStore(session_store* sessionStore);
 			session_store* GetSessionStore();
 
+			void CleanTimedOutSessions();
+
 			std::string m_zippassword;
 			std::map<std::string,WebEmSession> m_sessions;
 			_eAuthenticationMethod m_authmethod;
@@ -228,6 +231,9 @@ namespace http {
 			std::string myPort;
 			/// session store
 			session_store* mySessionStore;
+			/// next timed out session cleanup time
+			time_t myNextSessionCleanup;
+
 		};
 
 	}
