@@ -124,6 +124,7 @@ std::string szAppVersion="???";
 std::string szAppHash="???";
 std::string szAppDate="???";
 int ActYear;
+time_t m_StartTime=time(NULL);
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -740,6 +741,7 @@ int main(int argc, char**argv)
 	{
 		return 1;
 	}
+	m_StartTime = time(NULL);
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32

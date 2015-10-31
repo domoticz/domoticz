@@ -1,10 +1,43 @@
 define(['app'], function (app) {
 	app.controller('AboutController', [ '$scope', '$rootScope', '$location', '$http', '$interval', function($scope,$rootScope,$location,$http,$interval) {
-		init();
 
-		function init()
+		$scope.strupptime = "-";
+		
+		$scope.RefreshUptime = function() {
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+			$http({
+			 url: "json.htm?type=command&param=getuptime",
+			 async: true, 
+			 dataType: 'json'
+			}).success(function(data) {
+				if (typeof data.status != 'undefined') {
+					var szUpdate = "";
+					if (data.days!=0) {
+						szUpdate+=data.days + " " + $.t("Days") + ", ";
+					}
+					if (data.hours!=0) {
+						szUpdate+=data.hours + " " + $.t("Hours") + ", ";
+					}
+					if (data.minutes!=0) {
+						szUpdate+=data.minutes + " " + $.t("Minutes") + ", ";
+					}
+					 szUpdate+=data.seconds + " " + $.t("Seconds");
+					$scope.strupptime = szUpdate;
+					$scope.mytimer=$interval(function() {
+						$scope.RefreshUptime();
+					}, 5000);
+				}
+			});
+		}
+		
+		$scope.init = function()
 		{
 			$scope.MakeGlobalConfig();
+			$scope.RefreshUptime();
+			
 			// The canvas element we are drawing into.
 			// Credits to http://www.professorcloud.com/    
 			var	$canvas = $('#canvas');
@@ -71,5 +104,14 @@ define(['app'], function (app) {
 			$(img).bind('load',null, function() {  ctx3.drawImage(img, 0,0, 570, 570);	loop(); });
 			img.src = 'images/nebula.jpg';
 		};
+
+		$scope.init();
+
+		$scope.$on('$destroy', function(){
+			if (typeof $scope.mytimer != 'undefined') {
+				$interval.cancel($scope.mytimer);
+				$scope.mytimer = undefined;
+			}
+		}); 
 	} ]);
 });

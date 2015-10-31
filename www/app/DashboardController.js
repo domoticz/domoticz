@@ -3058,8 +3058,7 @@ define(['app'], function (app) {
 							status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
-							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
-							status+=' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + $.t("Set") +'</button> ';
+							status=' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign +'</button> ';
 						}
 						else if (item.SubType=="Smartwares") {
 							status=item.Data + '\u00B0 ' + $scope.config.TempSign;

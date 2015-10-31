@@ -59,6 +59,8 @@ extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
 
+extern time_t m_StartTime;
+
 extern bool g_bDontCacheWWW;
 
 struct _tGuiLanguage {
@@ -354,6 +356,7 @@ namespace http {
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
 			RegisterCommandCode("getlog", boost::bind(&CWebServer::Cmd_GetLog, this, _1, _2, _3));
 			RegisterCommandCode("getauth", boost::bind(&CWebServer::Cmd_GetAuth, this, _1, _2, _3), true);
+			RegisterCommandCode("getuptime", boost::bind(&CWebServer::Cmd_GetUptime, this, _1, _2, _3), true);
 
 			
 			RegisterCommandCode("gethardwaretypes", boost::bind(&CWebServer::Cmd_GetHardwareTypes, this, _1, _2, _3));
@@ -1916,6 +1919,30 @@ namespace http {
 			root["title"] = "GetAuth";
 			root["user"] = session.username;
 			root["rights"] = session.rights;
+		}
+
+		void CWebServer::Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			//this is used in the about page, we are going to round the seconds a bit to display nicer
+			time_t atime = mytime(NULL);
+			time_t tuptime = atime - m_StartTime;
+			//round to 5 seconds (nicer in about page)
+			tuptime = ((tuptime / 5) * 5) + 5;
+			int days, hours, minutes, seconds;
+			days = (int)(tuptime / 86400);
+			tuptime -= (days * 86400);
+			hours = (int)(tuptime / 3600);
+			tuptime -= (hours * 3600);
+			minutes = (int)(tuptime / 60);
+			tuptime -= (minutes * 60);
+			seconds = (int)tuptime;
+			root["status"] = "OK";
+			root["title"] = "GetUptime";
+			root["uptime"] = (int64_t)tuptime;
+			root["days"] = (int64_t)days;
+			root["hours"] = (int64_t)hours;
+			root["minutes"] = (int64_t)minutes;
+			root["seconds"] = (int64_t)seconds;
 		}
 
 		void CWebServer::Cmd_GetActualHistory(WebEmSession & session, const request& req, Json::Value &root)
