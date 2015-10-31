@@ -44,12 +44,15 @@ public:
 	void LogSequenceAddNoLF(const char* logline);
 	void LogSequenceEnd(const _eLogLevel level);
 
+	void EnableLogTimestamps(const bool bEnableTimestamps);
+
 	std::list<_tLogLineStruct> GetLog();
 private:
 	boost::mutex m_mutex;
 	std::ofstream m_outputfile;
 	std::deque<_tLogLineStruct> m_lastlog;
 	bool m_bInSequenceMode;
+	bool m_bEnableLogTimestamps;
 	std::stringstream m_sequencestring;
 	_eLogFileVerboseLevel m_verbose_level;
 };
