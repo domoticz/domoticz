@@ -1,4 +1,4 @@
-Version 2.xxx (xxxx 2015)
+Version 3.521 (October 31th 2015)
 - Implemented "Stop" state in blockly in switch states
 - Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)
 - Implemented: Added Logitech Media Server support (thanks to EddyK69!!)
