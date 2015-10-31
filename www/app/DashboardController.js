@@ -2430,9 +2430,28 @@ define(['app'], function (app) {
 					}
 					var xhtm="";
 								if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
+									var vname=item.Name;
+									if (typeof item.UVI != 'undefined') {
+										vname='<img src="images/next.png" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+									}
+									else if (typeof item.Visibility != 'undefined') {
+										vname='<img src="images/next.png" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');" height="16" width="16">' + " " + item.Name;
+									}
+									else if (typeof item.Radiation != 'undefined') {
+										vname='<img src="images/next.png" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');" height="16" width="16">' + " " + item.Name;
+									}
+									else if (typeof item.Direction != 'undefined') {
+										vname='<img src="images/next.png" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+									}
+									else if (typeof item.Rain != 'undefined') {
+										vname='<img src="images/next.png" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+									}
+									else if (typeof item.Barometer != 'undefined') {
+										vname='<img src="images/next.png" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+									}
 									xhtm+=
 											'\t    <tr id="weather_' + item.idx +'">\n' +
-											'\t      <td id="name">' + item.Name + '</td>\n';
+											'\t      <td id="name">' + vname + '</td>\n';
 									var status="";
 									if (typeof item.Rain != 'undefined') {
 										status+=item.Rain + ' mm';
@@ -2925,9 +2944,72 @@ define(['app'], function (app) {
 					}
 					var xhtm="";
 					if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
-						xhtm+=
-								'\t    <tr id="utility_' + item.idx +'">\n' +
-								'\t      <td id="name">' + item.Name + '</td>\n';
+						var vname = item.Name;
+						if (typeof item.Counter != 'undefined') {
+							if (item.Type == "RFXMeter") {
+								vname='<img src="images/next.png" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
+							}
+							else {
+								if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
+									vname='<img src="images/next.png" onclick="ShowSmartLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
+								}
+								else if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Gas")) {
+									vname='<img src="images/next.png" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
+								}
+								else {
+									vname='<img src="images/next.png" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
+								}
+							}
+						}
+						else if (item.Type == "Current") {
+							vname='<img src="images/next.png" onclick="ShowCurrentLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');" height="16" width="16">' + " " + item.Name;
+						}
+						else if ((item.Type == "Energy")||(item.SubType=="kWh")||(item.Type == "Current/Energy")) {
+							vname='<img src="images/next.png" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.Type == "Air Quality") {
+							vname='<img src="images/next.png" onclick="ShowAirQualityLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.SubType == "Percentage") {
+							vname='<img src="images/next.png" onclick="ShowPercentageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.Type == "Fan") {
+							vname='<img src="images/next.png" onclick="ShowFanLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+						}				
+						else if (item.Type == "Lux") {
+							vname='<img src="images/next.png" onclick="ShowLuxLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.Type == "Usage") {
+							vname='<img src="images/next.png" onclick="ShowUsageLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.SubType=="Soil Moisture") {
+							vname='<img src="images/next.png" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.SubType=="Distance") {
+							vname='<img src="images/next.png" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal +', \'DistanceGeneral\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if ((item.SubType=="Voltage")||(item.SubType=="Current")||(item.SubType=="A/D")) {
+							vname='<img src="images/next.png" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal +', \'VoltageGeneral\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.SubType=="Text") {
+							vname='<img src="images/next.png" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.SubType=="Alert") {
+							vname='<img src="images/next.png" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if (item.SubType=="Pressure") {
+							vname='<img src="images/next.png" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="16" width="16">' + " " + item.Name;
+						}
+						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
+							vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;						
+						}
+						else if (item.SubType=="Smartwares") {
+							vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;						
+						}
+						else if (item.SubType=="Sound Level") {
+							vname='<img src="images/next.png" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="16" width="16">' + " " + item.Name;
+						}
+
 						var status="";
 						if (typeof item.Counter != 'undefined') {
 							if ($scope.config.DashboardType==0) {
@@ -2977,9 +3059,11 @@ define(['app'], function (app) {
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
+							status+=' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + $.t("Set") +'</button> ';
 						}
 						else if (item.SubType=="Smartwares") {
 							status=item.Data + '\u00B0 ' + $scope.config.TempSign;
+							status+=' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + $.t("Set") +'</button> ';
 						}
 						else if ((item.SubType=="Thermostat Mode")||(item.SubType=="Thermostat Fan Mode")) {
 							status=item.Data;
@@ -3005,8 +3089,10 @@ define(['app'], function (app) {
 							}
 						}
 						xhtm+=
-									'\t      <td id="status">' + status + '</td>\n' +
-									'\t    </tr>\n';
+								'\t    <tr id="utility_' + item.idx +'">\n' +
+								'\t      <td id="name">' + vname + '</td>\n' +
+								'\t      <td id="status">' + status + '</td>\n' +
+								'\t    </tr>\n';
 					}
 					else {
 						if ($scope.config.DashboardType==0) {
