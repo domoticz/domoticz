@@ -1064,10 +1064,6 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 	std::string host=sHost;
 	std::vector<_tIPNetwork>::const_iterator itt;
 
-	/* RK, check IPv6 prefix */
-	if (host.substr(0, 7) == "::ffff:") {
-		host = host.substr(7);
-	}
 	if (host=="127.0.0.1")
 	{
 		//We could be using a proxy server
@@ -1481,13 +1477,13 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 	return buffer;
 }
 
-void cWebemRequestHandler::handle_request( const std::string &sHost, const request& req, reply& rep)
+void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
 	//_log.Log(LOG_NORM, "www-request: %s", req.uri.c_str());
 
 	// Initialize session
 	WebEmSession session;
-	session.remote_host = sHost;
+	session.remote_host = req.host;
 	session.isnew = false;
 	session.removecookie = false;
 	session.forcelogin = false;
@@ -1554,7 +1550,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 	{
 		// do normal handling
-		request_handler::handle_request( sHost, requestCopy, rep);
+		request_handler::handle_request(requestCopy, rep);
 
 		if (rep.headers[1].value == "text/html" 
 			|| rep.headers[1].value == "text/plain" 

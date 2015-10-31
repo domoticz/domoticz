@@ -82,7 +82,7 @@ int request_handler::do_extract_currentfile(unzFile uf, const char* password, st
 }
 #endif
 
-void request_handler::handle_request(const std::string &sHost, const request& req, reply& rep)
+void request_handler::handle_request(const request& req, reply& rep)
 {
   // Decode url to path.
   std::string request_path;
