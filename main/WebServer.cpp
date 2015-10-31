@@ -1938,10 +1938,10 @@ namespace http {
 			seconds = (int)tuptime;
 			root["status"] = "OK";
 			root["title"] = "GetUptime";
-			root["days"] = (int64_t)days;
-			root["hours"] = (int64_t)hours;
-			root["minutes"] = (int64_t)minutes;
-			root["seconds"] = (int64_t)seconds;
+			root["days"] = days;
+			root["hours"] = hours;
+			root["minutes"] = minutes;
+			root["seconds"] = seconds;
 		}
 
 		void CWebServer::Cmd_GetActualHistory(WebEmSession & session, const request& req, Json::Value &root)
