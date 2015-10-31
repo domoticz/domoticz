@@ -67,6 +67,7 @@ void S0MeterBase::ReloadLastTotals()
 
 		std::vector<std::vector<std::string> > result;
 		std::vector<std::string> results;
+		
 		/*
 		result=m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%d' AND Unit=0 AND Type=%d AND SubType=%d)",m_HwdID, ii+1, pTypeENERGY, sTypeELEC2);
 		if (result.size()==1)
@@ -78,8 +79,24 @@ void S0MeterBase::ReloadLastTotals()
 			}
 		}
 		*/
+		
+		int metertype = m_meters[ii].m_type;
+		int hardware_type;
+		if (metertype == MTYPE_ENERGY)
+		{
+			hardware_type = pTypeGeneral;
+		}
+		else if (metertype == MTYPE_GAS)
+		{
+			hardware_type = pTypeP1Gas;
+		}
+		else
+		{
+			hardware_type = pTypeRFXMeter;
+		}
 
-		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID=%d)", m_HwdID, (ii+1));
+		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND Type=%d AND DeviceID LIKE('%%%d'))", m_HwdID, hardware_type, (ii+1));
+		
 		if (result.size() == 1)
 		{
 			StringSplit(result[0][0], ";", results);
