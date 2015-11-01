@@ -3268,6 +3268,7 @@ namespace http {
 						case pTypeRemote:
 						case pTypeRadiator1:
 						case pTypeGeneralSwitch:
+						case pTypeHomeConfort:
 							bdoAdd = true;
 							if (!used)
 							{
@@ -3344,6 +3345,7 @@ namespace http {
 							case pTypeThermostat3:
 							case pTypeRemote:
 							case pTypeGeneralSwitch:
+							case pTypeHomeConfort:
 								root["result"][ii]["type"] = 0;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
@@ -3840,6 +3842,29 @@ namespace http {
 							return;
 						devid = id;
 					}
+					else if (lighttype == 302)
+					{
+						//Home Confort
+						dtype = pTypeHomeConfort;
+						subtype = sTypeHomeConfortTEL010;
+						std::string id = request::findValue(&req, "id");
+
+						std::string shousecode = request::findValue(&req, "housecode");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(id.empty()) ||
+							(shousecode.empty()) ||
+							(sunitcode.empty())
+							)
+							return;
+
+						int iUnitCode = atoi(sunitcode.c_str());
+						sprintf(szTmp, "%d", iUnitCode);
+						sunitcode = szTmp;
+						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+						shousecode = szTmp;
+						devid = id + shousecode;
+					}
 				}
                 
                 // ----------- RFlink "Test Switch" Fix -----------
@@ -3847,27 +3872,26 @@ namespace http {
 				if (pBaseHardware != NULL)
 				{
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB)|| (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
-						if (dtype == pTypeLighting1){
+						if (dtype == pTypeLighting1) {
 							dtype = pTypeGeneralSwitch;
 							std::stringstream s_strid;
 							s_strid << std::hex << atoi(devid.c_str());
 							devid = s_strid.str();
-							devid = "000000" + devid;                            
+							devid = "000000" + devid;
 						}
-						else
-							if (dtype == pTypeLighting2){
-								dtype = pTypeGeneralSwitch;
-                                if (subtype == sTypeAC){ // 0
-                                   subtype = sSwitchTypeAC;
-                                }
-                                if (subtype == sTypeHEU){ // 1
-                                   subtype = sSwitchTypeHEU;
-                                   devid = "7" + devid;
-                                }
-                                if (subtype == sTypeKambrook){ // 3
-                                   subtype = sSwitchTypeKambrook;
-                                }
+						else if (dtype == pTypeLighting2) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeAC) { // 0
+								subtype = sSwitchTypeAC;
 							}
+							if (subtype == sTypeHEU) { // 1
+								subtype = sSwitchTypeHEU;
+								devid = "7" + devid;
+							}
+							if (subtype == sTypeKambrook) { // 3
+								subtype = sSwitchTypeKambrook;
+							}
+						}
 					}
 				}
                 // -----------------------------------------------
@@ -4258,7 +4282,29 @@ namespace http {
 						//Now continue to insert the switch
 						dtype = pTypeRadiator1;
 						subtype = sTypeSmartwaresSwitchRadiator;
+					}
+					else if (lighttype == 302)
+					{
+						//Home Confort
+						dtype = pTypeHomeConfort;
+						subtype = sTypeHomeConfortTEL010;
+						std::string id = request::findValue(&req, "id");
 
+						std::string shousecode = request::findValue(&req, "housecode");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(id.empty()) ||
+							(shousecode.empty()) ||
+							(sunitcode.empty())
+							)
+							return;
+
+						int iUnitCode = atoi(sunitcode.c_str());
+						sprintf(szTmp, "%d", iUnitCode);
+						sunitcode = szTmp;
+						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
+						shousecode = szTmp;
+						devid = id + shousecode;
 					}
 				}
 
@@ -4392,6 +4438,7 @@ namespace http {
 					(dType == pTypeThermostat3) ||
 					(dType == pTypeRemote) ||
 					(dType == pTypeGeneralSwitch) ||
+					(dType == pTypeHomeConfort) ||
 					((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))
 					)
 				{
@@ -5261,6 +5308,7 @@ namespace http {
 					(dType != pTypeThermostat3) &&
 					(dType != pTypeRemote) &&
 					(dType != pTypeGeneralSwitch) &&
+					(dType != pTypeHomeConfort) &&
 					(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))&&
 					(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) &&
 					(!((dType == pTypeGeneral) && (dSubType == sTypeAlert)))
@@ -7065,6 +7113,7 @@ namespace http {
 								(dType != pTypeThermostat3) &&
 								(dType != pTypeRemote) &&
 								(dType != pTypeGeneralSwitch) &&
+								(dType != pTypeHomeConfort) &&
 								(dType != pTypeChime) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))) &&
 								(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
@@ -7302,6 +7351,7 @@ namespace http {
 						(dType == pTypeThermostat3) ||
 						(dType == pTypeRemote)||
 						(dType == pTypeGeneralSwitch) ||
+						(dType == pTypeHomeConfort) ||
 						((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) ||
 						((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
 						)
@@ -10900,6 +10950,7 @@ namespace http {
 				(dType != pTypeThermostat3) &&
 				(dType != pTypeRemote)&&
 				(dType != pTypeGeneralSwitch) &&
+				(dType != pTypeHomeConfort) &&
 				(!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)))
 				)
 				return; //no light device! we should not be here!

@@ -1,3 +1,6 @@
+Version 3.xxx
+- Implemented: RFXCom, support for Home Confort TEL-010
+
 Version 3.521 (October 31th 2015)
 - Implemented "Stop" state in blockly in switch states
 - Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)

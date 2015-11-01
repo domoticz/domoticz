@@ -381,6 +381,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLighting4, "Lighting 4" , "lightbulb", },
 		{ pTypeLighting5, "Lighting 5" , "lightbulb", },
 		{ pTypeLighting6, "Lighting 6" , "lightbulb", },
+		{ pTypeHomeConfort, "Home Confort" , "lightbulb" },
 		{ pTypeLimitlessLights, "Lighting Limitless/Applamp" , "lightbulb" },
 		{ pTypeCurtain, "Curtain" , "blinds" },
 		{ pTypeBlinds, "Blinds" , "blinds" },
@@ -535,8 +536,11 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeEurodomest, "Eurodomest" },
 		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo Appliance" },
 		{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
+		{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
+
+		{ pTypeHomeConfort, sTypeHomeConfortTEL010 , "TEL-010" },
 
 		{ pTypeCurtain, sTypeHarrison, "Harrison" },
 
@@ -824,8 +828,11 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeEurodomest, "Status" },
 		{ pTypeLighting5, sTypeLivoloAppliance, "Status" },
 		{ pTypeLighting5, sTypeRGB432W, "Status" },
+		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
+
+		{ pTypeHomeConfort, sTypeHomeConfortTEL010, "Status" },
 
 		{ pTypeCurtain, sTypeHarrison, "Status" },
 
@@ -1484,6 +1491,29 @@ void GetLightStatus(
 			}
 		}
 		break;
+	case pTypeHomeConfort:
+		switch (dSubType)
+		{
+		case sTypeHomeConfortTEL010:
+			bHaveGroupCmd = true;
+			switch (nValue)
+			{
+			case HomeConfort_sOff:
+				lstatus = "Off";
+				break;
+			case HomeConfort_sOn:
+				lstatus = "On";
+				break;
+			case HomeConfort_sGroupOn:
+				lstatus = "Group On";
+				break;
+			case HomeConfort_sGroupOff:
+				lstatus = "Group Off";
+				break;
+			}
+			break;
+		}
+		break;
 	case pTypeGeneralSwitch:
 		maxDimLevel = 100;
 
@@ -2130,6 +2160,40 @@ bool GetLightCommand(
 		else if (switchcmd=="Group On")
 		{
 			cmd=light6_sGroupOn;
+			return true;
+		}
+		else
+			return false;
+		break;
+	case pTypeHomeConfort:
+		if (switchtype == STYPE_Doorbell)
+		{
+			if ((switchcmd == "On") || (switchcmd == "Group On"))
+			{
+				cmd = HomeConfort_sGroupOn;
+				return true;
+			}
+			//no other combinations for the door switch
+			return false;
+		}
+		if (switchcmd == "Off")
+		{
+			cmd = HomeConfort_sOff;
+			return true;
+		}
+		else if (switchcmd == "On")
+		{
+			cmd = HomeConfort_sOn;
+			return true;
+		}
+		else if (switchcmd == "Group Off")
+		{
+			cmd = HomeConfort_sGroupOff;
+			return true;
+		}
+		else if (switchcmd == "Group On")
+		{
+			cmd = HomeConfort_sGroupOn;
 			return true;
 		}
 		else
