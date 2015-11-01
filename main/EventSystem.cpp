@@ -2867,27 +2867,67 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		std::stringstream s_str(idx);
 		s_str >> ulIdx;
 
-		int idtype = atoi(dtype.c_str());
-		int idsubtype = atoi(dsubtype.c_str());
+		int devType = atoi(dtype.c_str());
+		int subType = atoi(dsubtype.c_str());
 
-		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), idtype, idsubtype, dswitchtype, szLastUpdate, dlastlevel);
+		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel);
+
+		//Check if we need to log this event
+		switch (devType)
+		{
+		case pTypeRego6XXValue:
+			if (subType != sTypeRego6XXStatus)
+			{
+				break;
+			}
+		case pTypeGeneral:
+			if ((devType == pTypeGeneral) && (subType != sTypeTextStatus) && (subType != sTypeAlert))
+			{
+				break;
+			}
+		case pTypeLighting1:
+		case pTypeLighting2:
+		case pTypeLighting3:
+		case pTypeLighting4:
+		case pTypeLighting5:
+		case pTypeLighting6:
+		case pTypeLimitlessLights:
+		case pTypeSecurity1:
+		case pTypeSecurity2:
+		case pTypeEvohome:
+		case pTypeEvohomeRelay:
+		case pTypeCurtain:
+		case pTypeBlinds:
+		case pTypeRFY:
+		case pTypeChime:
+		case pTypeThermostat2:
+		case pTypeThermostat3:
+		case pTypeRemote:
+		case pTypeGeneralSwitch:
+		case pTypeHomeConfort:
+		case pTypeRadiator1:
+			if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
+				break;
+			//Add Lighting log
+			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%llu', '%d', '%q')", ulIdx, atoi(nvalue.c_str()), svalue.c_str());
+			break;
+		}
 
 		//Check if it's a setpoint device, and if so, set the actual setpoint
-
 		if (
-			((idtype == pTypeThermostat) && (idsubtype == sTypeThermSetpoint)) ||
-			(idtype == pTypeRadiator1)
+			((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
+			(devType == pTypeRadiator1)
 			)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device....");
 			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(svalue.c_str())));
 		}
-		else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatMode))
+		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode))
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device....");
 			m_mainworker.SetZWaveThermostatMode(idx, atoi(nvalue.c_str()));
 		}
-		else if ((idtype == pTypeGeneral) && (idsubtype == sTypeZWaveThermostatFanMode))
+		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode))
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
 			m_mainworker.SetZWaveThermostatFanMode(idx, atoi(nvalue.c_str()));

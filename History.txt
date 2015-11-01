@@ -1,4 +1,4 @@
-Version 3.530
+Version 3.530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
 - Implemented: RFXCom, support for Home Confort TEL-010
 - Fixed: Segmentation fault while cleaning timed out sessions (#180)
