@@ -232,6 +232,7 @@ $(document).ready(function() {
 		windsign: "m/s",
 		tempscale: 1.0,
 		tempsign: "C",
+		DegreeDaysBaseTemperature: 18.0,
 		historytype : 1,
 		LastPlanSelected: 0,
 		DashboardType: 0
@@ -1038,6 +1039,7 @@ $(document).ready(function() {
 		<br>
 		<span data-i18n="Hottest Day">Hottest Day</span>: <span id="mhigh">-</span><br>
 		<span data-i18n="Coldest Day">Coldest Day</span>: <span id="mlow">-</span><br>
+		<div id="ddays"><span data-i18n="Degree Days">Degree Days</span>: <span id="mddays">-</span><br></div>
 		<br>
 	</div>
 	<div id="toptextyearreporttemp" style="display:none;">
@@ -1064,6 +1066,7 @@ $(document).ready(function() {
 		<br>
 		<span data-i18n="Hottest Day">Hottest Day</span>: <span id="mhigh">-</span><br>
 		<span data-i18n="Coldest Day">Coldest Day</span>: <span id="mlow">-</span><br>
+		<div id="ddays"><span data-i18n="Degree Days">Degree Days</span>: <span id="mddays">-</span><br></div>
 		<br>
 	</div>
 	<div id="reportviewtemp" style="display:none;">

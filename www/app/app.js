@@ -416,6 +416,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			if (typeof $rootScope.config.TempSign != 'undefined') {
 				$.myglobals.tempsign=$rootScope.config.TempSign;
 			}
+			if (typeof $rootScope.config.DegreeDaysBaseTemperature != 'undefined') {
+				$.myglobals.DegreeDaysBaseTemperature=$rootScope.config.DegreeDaysBaseTemperature;
+			}
 		}
 		
 		$rootScope.config={
@@ -434,6 +437,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				Longitude: "5.169528",
 				MobileType: 0,
 				TempScale: 1.0,
+				DegreeDaysBaseTemperature: 18.0,
 				TempSign: "C",
 				WindScale: 3.600000143051148,
 				WindSign: "km/h",
@@ -475,6 +479,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					$rootScope.config.EnableTabWeather=data.result.EnableTabWeather;
 					$rootScope.config.EnableTabUtility=data.result.EnableTabUtility;
 					$rootScope.config.ShowUpdatedEffect=data.result.ShowUpdatedEffect;
+					$rootScope.config.DegreeDaysBaseTemperature=data.result.DegreeDaysBaseTemperature;
 				
 					SetLanguage(data.language);
 					
