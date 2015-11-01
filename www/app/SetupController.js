@@ -502,6 +502,11 @@ define(['app'], function (app) {
 			  if (typeof data.ShowUpdateEffect!= 'undefined') {
 				$("#acceptnewhardwaretable #ShowUpdateEffect").prop('checked',data.ShowUpdateEffect==1);
 			  }
+
+			  if (typeof data.DegreeDaysBaseTemperature!= 'undefined') {
+				$("#ddaystable #DegreeDaysBaseTemperature").val(data.DegreeDaysBaseTemperature);
+			  }
+			  
 			  if (typeof data.DisableEventScriptSystem!= 'undefined') {
 				$("#eventsystemtable #DisableEventScriptSystem").prop('checked',data.DisableEventScriptSystem==1);
 			  }

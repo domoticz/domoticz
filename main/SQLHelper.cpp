@@ -1912,6 +1912,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("TempComfort", "22.0");
 	}
+	if ((!GetPreferencesVar("DegreeDaysBaseTemperature", sValue)) || (sValue.empty()))
+	{
+		UpdatePreferencesVar("DegreeDaysBaseTemperature", "18.0");
+	}
 	if ((!GetPreferencesVar("HTTPURL", sValue)) || (sValue.empty()))
 	{
 		sValue = "https://www.somegateway.com/pushurl.php?username=#FIELD1&password=#FIELD2&apikey=#FIELD3&from=#FIELD4&to=#TO&message=#MESSAGE";
@@ -2030,6 +2034,7 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting6:
 					case pTypeLimitlessLights:
 					case pTypeGeneralSwitch:
+					case pTypeHomeConfort:
 						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
 						break;
 					case pTypeSecurity1:
@@ -2471,6 +2476,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 					case pTypeGeneralSwitch:
 						newnValue = gswitch_sOff;
 						break;
+					case pTypeHomeConfort:
+						newnValue = HomeConfort_sOff;
+						break;
 					default:
 						continue;
 					}
@@ -2549,6 +2557,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				break;
 			case pTypeGeneralSwitch:
 				newnValue = gswitch_sOff;
+				break;
+			case pTypeHomeConfort:
+				newnValue = HomeConfort_sOff;
 				break;
 			default:
 				continue;
@@ -2671,6 +2682,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeThermostat3:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
+	case pTypeHomeConfort:
 	case pTypeRadiator1:
 		if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 			break;
@@ -2847,6 +2859,10 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							break;
 						case pTypeGeneralSwitch:
 							cmd = gswitch_sOff;
+							bAdd2DelayQueue = true;
+							break;
+						case pTypeHomeConfort:
+							cmd = HomeConfort_sOff;
 							bAdd2DelayQueue = true;
 							break;
 						}
@@ -5658,6 +5674,49 @@ void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char su
 		GroupCmd);
 }
 
+unsigned long long CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
+	const unsigned char devType, const unsigned char subType,
+	const unsigned char signallevel, const unsigned char batterylevel,
+	const int nValue, const char* sValue,
+	std::string &devname,
+	const bool bUseOnOffAction)
+{
+	// We only have to update all others units within the ID group. If the current unit does not have the same value, 
+	// it will be updated too. The reason we choose the UpdateValue is the propagation of the change to all units involved, including LogUpdate. 
+
+	unsigned long long devRowIndex = -1;
+	typedef std::vector<std::vector<std::string> > VectorVectorString;
+
+	VectorVectorString result = safe_query("SELECT Unit FROM DeviceStatus WHERE ((DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (nValue!=%d))",
+		ID,
+		pTypeHomeConfort,
+		subType,
+		nValue);
+
+	for (VectorVectorString::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+	{
+		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
+		devRowIndex = UpdateValue(HardwareID, ID, theUnit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
+	}
+	return devRowIndex;
+}
+
+void CSQLHelper::HomeConfortGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
+{
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+		GroupCmd,
+		"OFF",
+		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		ID.c_str(),
+		pTypeHomeConfort,
+		subType,
+		GroupCmd);
+}
+
 void CSQLHelper::GeneralSwitchGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
 {
 	safe_query("UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d)", GroupCmd, ID.c_str(), pTypeGeneralSwitch, subType);
@@ -5839,7 +5898,7 @@ void CSQLHelper::CheckDeviceTimeout()
 
 	std::vector<std::vector<std::string> > result;
 	result = safe_query(
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -5857,7 +5916,8 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeThermostat2,
 		pTypeThermostat3,
 		pTypeRemote,
-		pTypeGeneralSwitch
+		pTypeGeneralSwitch,
+		pTypeHomeConfort
 		);
 	if (result.size()<1)
 		return;

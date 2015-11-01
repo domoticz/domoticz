@@ -27,6 +27,12 @@ portions of this file.
 */
 
 /*
+SDK version 9.03
+	MDremote version 107 added
+
+SDK version 9.02
+	Home Confort added
+
 SDK version 9.01
 	RFY - ASA blinds added
 
@@ -382,6 +388,7 @@ SDK version 4.9
 #define sTypeUrgb 0x13
 #define sTypeUrfy 0x14
 #define sTypeUselectplus 0x15
+#define sTypeUhomeconfort 0x16
 
 //types for Lighting
 #define pTypeLighting1 0x10
@@ -451,6 +458,7 @@ SDK version 4.9
 #define sTypeEurodomest 0x09
 #define sTypeLivoloAppliance 0x0A
 #define sTypeRGB432W 0x0B
+#define sTypeMDREMOTE107 0x0C
 
 #define light5_sOff 0x0
 #define light5_sOn 0x1
@@ -500,6 +508,15 @@ SDK version 4.9
 #define light5_sRGBdim 0x03
 #define light5_sRGBcolorplus 0x04
 #define light5_sRGBcolormin 0x05
+#define light5_sMD107_Power 0x0
+#define light5_sMD107_Bright 0x1
+#define light5_sMD107_Dim 0x2
+#define light5_sMD107_100 0x3
+#define light5_sMD107_80 0x4
+#define light5_sMD107_60 0x5
+#define light5_sMD107_40 0x6
+#define light5_sMD107_20 0x7
+#define light5_sMD107_10 0x8
 
 #define pTypeLighting6 0x15
 #define sTypeBlyss 0x0
@@ -600,6 +617,14 @@ SDK version 4.9
 #define rfy_s2SecDown 0x12
 #define rfy_sEnableSunWind 0x13
 #define rfy_sDisableSun 0x14
+
+//types for Home Confort
+#define pTypeHomeConfort 0x1B
+#define sTypeHomeConfortTEL010 0x0
+#define HomeConfort_sOff 0x0
+#define HomeConfort_sOn 0x1
+#define HomeConfort_sGroupOff 0x2
+#define HomeConfort_sGroupOn 0x3
 
 //types for Security1
 #define pTypeSecurity1 0x20
@@ -1146,7 +1171,27 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} LIGHTING6;
-
+	struct {
+		BYTE packetlength;
+		BYTE packettype;
+		BYTE subtype;
+		BYTE seqnbr;
+		BYTE id1;
+		BYTE id2;
+		BYTE id3;
+		BYTE housecode;
+		BYTE unitcode;
+		BYTE cmnd;
+		BYTE rfu1;
+		BYTE rfu2;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} HOMECONFORT;
 	struct {
 		BYTE	packetlength;
 		BYTE	packettype;

@@ -941,14 +941,18 @@ void cWebem::CleanTimedOutSessions() {
 	time_t now = mytime(NULL);
 	if (myNextSessionCleanup >= now) {
 		myNextSessionCleanup = now + 15 * 60; // in 15 minutes
-
+		std::vector<std::string> ssids;
 		std::map<std::string, WebEmSession>::iterator itt;
 		for (itt=m_sessions.begin(); itt!=m_sessions.end(); ++itt) {
 			if (itt->second.timeout < now) {
-				m_sessions.erase(itt);
+				ssids.push_back(itt->second.id);
 			}
 		}
-
+		std::vector<std::string>::iterator ssitt;
+		for (ssitt=ssids.begin(); ssitt!=ssids.end(); ++ssitt) {
+			std::string ssid = *ssitt;
+			m_sessions.erase(ssid);
+		}
 	}
 }
 
