@@ -2053,6 +2053,10 @@ namespace http {
 			{
 				root["language"] = sValue;
 			}
+			if (m_sql.GetPreferencesVar("DegreeDaysBaseTemperature", sValue))
+			{
+				root["DegreeDaysBaseTemperature"] = atof(sValue.c_str());
+			}
 
 			nValue = 0;
 			int iDashboardType = 0;
@@ -6504,6 +6508,9 @@ namespace http {
 			int iShowUpdateEffect = (ShowUpdateEffect == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
+			std::string DegreeDaysBaseTemperature = request::findValue(&req, "DegreeDaysBaseTemperature");
+			m_sql.UpdatePreferencesVar("ShowUpdateEffect", DegreeDaysBaseTemperature);
+
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
 			std::string DisableEventScriptSystem = request::findValue(&req, "DisableEventScriptSystem");
@@ -10846,6 +10853,10 @@ namespace http {
 				else if (Key == "ShowUpdateEffect")
 				{
 					root["ShowUpdateEffect"] = nValue;
+				}
+				else if (Key == "DegreeDaysBaseTemperature")
+				{
+					root["DegreeDaysBaseTemperature"] = sValue;
 				}
 				else if (Key == "DisableEventScriptSystem")
 				{

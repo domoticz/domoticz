@@ -1912,6 +1912,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("TempComfort", "22.0");
 	}
+	if ((!GetPreferencesVar("DegreeDaysBaseTemperature", sValue)) || (sValue.empty()))
+	{
+		UpdatePreferencesVar("DegreeDaysBaseTemperature", "18.0");
+	}
 	if ((!GetPreferencesVar("HTTPURL", sValue)) || (sValue.empty()))
 	{
 		sValue = "https://www.somegateway.com/pushurl.php?username=#FIELD1&password=#FIELD2&apikey=#FIELD3&from=#FIELD4&to=#TO&message=#MESSAGE";
