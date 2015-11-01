@@ -6364,6 +6364,12 @@ namespace http {
 			std::string s5MinuteHistoryDays = request::findValue(&req, "ShortLogDays");
 			m_sql.UpdatePreferencesVar("5MinuteHistoryDays", atoi(s5MinuteHistoryDays.c_str()));
 
+			int iShortLogInterval = atoi(request::findValue(&req, "ShortLogInterval").c_str());
+			if (iShortLogInterval < 1)
+				iShortLogInterval = 5;
+			m_sql.UpdatePreferencesVar("ShortLogInterval", iShortLogInterval);
+			m_sql.m_ShortLogInterval = iShortLogInterval;
+
 			std::string sElectricVoltage = request::findValue(&req, "ElectricVoltage");
 			m_sql.UpdatePreferencesVar("ElectricVoltage", atoi(sElectricVoltage.c_str()));
 
@@ -10682,6 +10688,10 @@ namespace http {
 				{
 					root["ShortLogDays"] = nValue;
 				}
+				else if (Key == "ShortLogInterval")
+				{
+					root["ShortLogInterval"] = nValue;
+				}
 				else if (Key == "WebUserName")
 				{
 					root["WebUserName"] = base64_decode(sValue);
@@ -12352,7 +12362,7 @@ namespace http {
 						{
 							std::vector<std::string> sd = *itt;
 							float fdirection = static_cast<float>(atof(sd[0].c_str()));
-							if (fdirection == 360)
+							if (fdirection >= 360)
 								fdirection = 0;
 							int direction = int(fdirection);
 							float speed = static_cast<float>(atof(sd[1].c_str())) * m_sql.m_windscale;

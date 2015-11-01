@@ -339,6 +339,9 @@ define(['app'], function (app) {
 			  if (typeof data.ShortLogDays != 'undefined') {
 				$("#shortlogtable #comboshortlogdays").val(data.ShortLogDays);
 			  }
+			  if (typeof data.ShortLogInterval != 'undefined') {
+				$("#shortlogtable #comboshortloginterval").val(data.ShortLogInterval);
+			  }
 			  if (typeof data.DashboardType != 'undefined') {
 				$("#dashmodetable #combosdashtype").val(data.DashboardType);
 			  }

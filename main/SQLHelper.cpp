@@ -1933,7 +1933,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if (nValue < 1)
 		nValue = 5;
-	m_ShortLogInterval = 5;// nValue;
+	m_ShortLogInterval = nValue;
 	if (!GetPreferencesVar("DisplayPowerUsageInkWhGraph", nValue))
 	{
 		UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", 1);
