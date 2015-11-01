@@ -6,6 +6,7 @@
 #include "SQLHelper.h"
 #include "Logger.h"
 #include "../hardware/hardwaretypes.h"
+#include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
 #include <iostream>
 #include "../httpclient/HTTPClient.h"
@@ -3022,17 +3023,39 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 	if (Action.find("Play Playlist") == 0)
 	{
-		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
-		if (pBaseHardware == NULL) return false;
-		CLogitechMediaServer *pHardware = (CLogitechMediaServer*)pBaseHardware;
+		std::string	sParams = Action.substr(14);
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
+		if (pBaseHardware != NULL)
+		{
+			CKodi			*pHardware = (CKodi*)pBaseHardware;
+			std::string		sPlayList = sParams;
+			size_t			iLastSpace = sParams.find_last_of(' ', sParams.length());
 
-		int iPlaylistID = pHardware->GetPlaylistRefID(Action.substr(14).c_str());
-		if (iPlaylistID == 0) return false;
+			if (iLastSpace != std::string::npos)
+			{
+				sPlayList = sParams.substr(0, iLastSpace);
+				_level = atoi(sParams.substr(iLastSpace).c_str());
+			}
+			if (!pHardware->SetPlaylist(deviceID, sPlayList.c_str()))
+			{
+				pBaseHardware = NULL; // Kodi hardware exists, but the device for the event is not a Kodi
+			}
+		}
 
-		_level = iPlaylistID;
+		if (pBaseHardware == NULL)  // if not handled try Logitech
+		{
+			pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_LogitechMediaServer);
+			if (pBaseHardware == NULL) return false;
+			CLogitechMediaServer *pHardware = (CLogitechMediaServer*)pBaseHardware;
+
+			int iPlaylistID = pHardware->GetPlaylistRefID(Action.substr(14).c_str());
+			if (iPlaylistID == 0) return false;
+
+			_level = iPlaylistID;
+		}
+
 		Action = Action.substr(0, 13);
 	}
-
 	int DelayTime = 1;
 
 	if (randomTimer > 0) {

@@ -186,7 +186,9 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		Json::Reader jReader;
 		Json::Value root;
 		std::string	sMessage;
+		std::stringstream ssMessage;
 
+		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Handling message: '%s'.", m_Name.c_str(), pMessage.c_str());
 		bool	bRetVal = jReader.parse(pMessage, root);
 		if (!bRetVal)
 		{
@@ -194,8 +196,21 @@ void CKodiNode::handleMessage(std::string& pMessage)
 		}
 		else if (root["error"].empty() != true)
 		{
-			/* e.g {"error":{"code":-32100,"message":"Failed to execute method."},"id":1001,"jsonrpc":"2.0"}	*/
-			_log.Log(LOG_ERROR, "Kodi: (%s) Code %d Text '%s' ID '%d' Request '%s'", m_Name.c_str(), root["error"]["code"].asInt(), root["error"]["message"].asCString(), root["id"].asInt(), m_sLastMessage.c_str());
+			int		iMessageID = root["id"].asInt();
+			switch (iMessageID)
+			{
+			case 2002: // attempt to start music playlist (error is because playlist does not exist, try video)
+				m_PlaylistType = "1";
+				ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":" << m_PlaylistType << ",\"item\":{\"directory\": \"special://profile/playlists/video/" << m_Playlist << ".xsp\", \"media\":\"video\"}},\"id\":2003}";
+				handleWrite(ssMessage.str());
+				break;
+			case 2003: // error because video playlist does not exist, stop.
+				_log.Log(LOG_ERROR, "Kodi: (%s) Playlist '%s' could not be added, probably does not exist.", m_Name.c_str(), m_Playlist.c_str());
+				break;
+			default:
+				/* e.g {"error":{"code":-32100,"message":"Failed to execute method."},"id":1001,"jsonrpc":"2.0"}	*/
+				_log.Log(LOG_ERROR, "Kodi: (%s) Code %d Text '%s' ID '%d' Request '%s'", m_Name.c_str(), root["error"]["code"].asInt(), root["error"]["message"].asCString(), root["id"].asInt(), m_sLastMessage.c_str());
+			}
 		}
 		else
 		{
@@ -228,9 +243,11 @@ void CKodiNode::handleMessage(std::string& pMessage)
 									m_CurrentStatus.Status(MSTAT_VIDEO);
 								else if (root["params"]["data"]["item"]["type"] == "song")
 									m_CurrentStatus.Status(MSTAT_AUDIO);
+								else if (root["params"]["data"]["item"]["type"] == "musicvideo")
+									m_CurrentStatus.Status(MSTAT_VIDEO);
 								else
 								{
-									_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
+									if (DEBUG_LOGGING) _log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown type in OnPlay message: '%s' from '%s'", m_Name.c_str(), root["params"]["data"]["item"]["type"].asCString(), pMessage.c_str());
 								}
 
 								if (m_CurrentStatus.PlayerID() != "")  // if we now have a player id then request more details
@@ -423,6 +440,23 @@ void CKodiNode::handleMessage(std::string& pMessage)
 					case 1009:		//SetVolume response
 						_log.Log(LOG_NORM, "Kodi: (%s) Volume set to %d.", m_Name.c_str(), root["result"].asInt());
 						break;
+					// 2000+ messages relate to playlist triggering functionality
+					case 2000: // clear video playlist response
+						handleWrite("{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":1},\"id\":2001}");
+						break;
+					case 2001: // clear music playlist response
+						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":" << m_PlaylistType << ",\"item\":{\"directory\": \"special://profile/playlists/music/" << m_Playlist << ".xsp\", \"media\":\"music\"}},\"id\":2002}";
+						handleWrite(ssMessage.str());
+						break;
+					case 2002: // attempt to add playlist response
+					case 2003: 
+						ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"playlistid\":" << m_PlaylistType << ",\"position\":" << m_PlaylistPosition << "}},\"id\":2004}";
+						handleWrite(ssMessage.str());
+						break;
+					case 2004: // signal outcome
+						if (root["result"] == "OK")
+							_log.Log(LOG_NORM, "Kodi: (%s) Playlist command '%s' at position %d accepted.", m_Name.c_str(), m_Playlist.c_str(), m_PlaylistPosition);
+						break;
 					default:
 						_log.Log(LOG_ERROR, "Kodi: (%s) Message error, unknown ID found: '%s'", m_Name.c_str(), pMessage.c_str());
 					}
@@ -519,16 +553,27 @@ void CKodiNode::handleRead(const boost::system::error_code& e, std::size_t bytes
 	{
 		//do something with the data
 		std::string sData(m_Buffer.begin(), bytes_transferred);
-		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Kodi: (%s) Parsing data: '%s'.", m_Name.c_str(), sData.c_str());
-		int	iStart = 0;
-		int iLength;
-		do {
-			iLength = sData.find("}{", iStart) + 1;		//  Look for message separater in case there is more than one
-			if (!iLength) iLength = bytes_transferred;
-			std::string sMessage = sData.substr(iStart, iLength);
-			handleMessage(sMessage);
-			iStart = iLength;
-		} while (iLength != bytes_transferred);
+		sData = m_RetainedData + sData;  // if there was some data left over from last time add it back in
+		int iPos = 1;
+		while (iPos) {
+			iPos = sData.find("}{", 0) + 1;		//  Look for message separater in case there is more than one
+			if (!iPos) // no, just one or part of one
+			{
+				if ((sData.substr(sData.length()-1, 1) == "}") &&
+					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so process
+				{
+					handleMessage(sData);
+					sData = "";
+				}
+			}
+			else  // more than one message so process the first one
+			{
+				std::string sMessage = sData.substr(0, iPos);
+				sData = sData.substr(iPos);
+				handleMessage(sMessage);
+			}
+		}
+		m_RetainedData = sData;
 
 		//ready for next read
 		if (!m_stoprequested && m_Socket)
@@ -702,6 +747,13 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 		sMessage = ssMessage.str();
 	}
 
+	if (command == "playlist")
+	{
+		// clear any current playlists starting with audio, state machine in handleMessage will take care of the rest
+		m_PlaylistPosition = iValue;
+		sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":0},\"id\":2000}";
+	}
+
 	if (sMessage.length())
 	{
 		if (m_Socket != NULL)
@@ -728,6 +780,19 @@ bool CKodiNode::SendShutdown()
 	if (m_Stoppable) _log.Log(LOG_NORM, "Kodi: (%s) Shutdown requested and is supported.", m_Name.c_str());
 	else 			 _log.Log(LOG_NORM, "Kodi: (%s) Shutdown requested but is probably not supported.", m_Name.c_str());
 	return m_Stoppable;
+}
+
+void CKodiNode::SetPlaylist(const std::string& playlist)
+{
+	m_Playlist = playlist;
+	m_PlaylistType = "0";
+	if (m_Playlist.length() > 0)
+	{
+		if (m_CurrentStatus.IsStreaming())  // Stop Kodi if it is currently stream media
+		{
+			SendCommand("stop");
+		}
+	}
 }
 
 std::vector<boost::shared_ptr<CKodiNode> > CKodi::m_pNodes;
@@ -877,11 +942,9 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 			case gswitch_sSetVolume:
 				(*itt)->SendCommand("setvolume", iParam);
 				return true;
-/*
 			case gswitch_sPlayPlaylist:
-				sParam = GetPlaylistByRefID(iParam);
-				return SendCommand(itt->ID, "PlayPlaylist", sParam);
-*/
+				(*itt)->SendCommand("playlist", iParam);
+				return true;
 			default:
 				return true;
 			}
@@ -1035,6 +1098,20 @@ void CKodi::SendCommand(const int ID, const std::string &command)
 	}
 
 	_log.Log(LOG_ERROR, "Kodi: (%d) Command: '%s'. Device not found.", ID, command.c_str());
+}
+
+bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
+{
+	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	{
+		if ((*itt)->m_ID == ID)
+		{
+			(*itt)->SetPlaylist(playlist);
+			return true;
+		}
+	}
+	return false;
 }
 
 //Webserver helpers
