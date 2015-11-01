@@ -26,7 +26,7 @@ before_install:
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
   # OpenZWave
-  - git clone https://github.com/OpenZWave/open-zwave.git
+  - git clone --depth 1 https://github.com/OpenZWave/open-zwave.git
   - ln -s open-zwave open-zwave-read-only
 
 
@@ -40,7 +40,9 @@ matrix:
   - os: linux
     compiler:
       - gcc
-    env: TARGET_ARCHITECTURE=x86_64
+    env:
+      - "TARGET_ARCHITECTURE=x86_64"
+      - "SHACMD=sha256sum"
     addons:
       apt:
         sources:
@@ -59,16 +61,46 @@ matrix:
           - libssl-dev
           - libudev-dev
           - git
-          - libdigest-sha-perl
     script:
       - (cd open-zwave-read-only; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
+  # Linux armv7 (Raspberry Pi 1) on Docker'zed crosscompiler, see
+  # * https://hub.docker.com/r/tonia/buildroot-rpi-crosscompiler
+  # * https://github.com/ToniA/buildroot-rpi-crosscompiler
+  - os: linux
+    compiler:
+      - gcc
+    env:
+      - "TARGET_ARCHITECTURE=armv7"
+      - "DOCKER_IMAGE=tonia/buildroot-rpi-crosscompiler:kernel_3.18"
+      - "TOOLCHAIN_ARCHITECTURE=gnueabihf"
+      - "SHACMD=sha256sum"
+    addons:
+      apt:
+        packages:
+          - git
+    sudo: required
+    services:
+      - docker
+    install:
+      - docker pull ${DOCKER_IMAGE}
+    script: >
+      docker run -v ${TRAVIS_BUILD_DIR}:/build ${DOCKER_IMAGE} /bin/sh -c "
+        #cd /build/open-zwave-read-only; make -e CROSS_COMPILE=arm-buildroot-linux-${TOOLCHAIN_ARCHITECTURE}- &&
+        #ln -s /build/open-zwave-read-only/libopenzwave.a /tmp/buildroot/output/host/usr/arm-buildroot-linux-${TOOLCHAIN_ARCHITECTURE}/sysroot/usr/lib/libopenzwave.a &&
+        cd /build &&
+        cmake -DCMAKE_TOOLCHAIN_FILE=/tmp/buildroot/output/host/usr/share/buildroot/toolchainfile.cmake -DCMAKE_BUILD_TYPE=Release -DOPENSSL_INCLUDE_DIR=/tmp/buildroot/output/host/usr/arm-buildroot-linux-${TOOLCHAIN_ARCHITECTURE}/sysroot/usr/include/openssl &&
+        make"
   # Apple OSX
   - os: osx
     compiler:
       - gcc
-    env: TARGET_ARCHITECTURE=x86_64
+    env:
+      - "TARGET_ARCHITECTURE=x86_64"
+      - "SHACMD=shasum"
+      - "SHAARGS1=-a"
+      - "SHAARGS2=256"
     install:
       - brew install cmake
       - brew install boost|| true
@@ -89,7 +121,7 @@ matrix:
 # - Upload to the Domoticz file server
 before_deploy:
   - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
-  - shasum -a 256 domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz > domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz.sha256sum
+  - ${SHACMD} ${SHAARGS1} ${SHAARGS2} domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz > domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz.sha256sum
   - cp appversion.h.txt version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h
   - cp History.txt history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt
 deploy:
