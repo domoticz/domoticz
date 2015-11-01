@@ -73,6 +73,7 @@ public:
 	void			Do_Work();
 	void			SendCommand(const std::string&);
 	void			SendCommand(const std::string&, const int iValue);
+	void			SetPlaylist(const std::string& playlist);
 	bool			SendShutdown();
 	void			StopRequest() { m_stoprequested = true; };
 	bool			IsBusy() { return m_Busy; };
@@ -104,13 +105,19 @@ private:
 	CKodiStatus		m_CurrentStatus;
 	void			UpdateStatus();
 
+	std::string		m_PlaylistType;
+	std::string		m_Playlist;
+	int				m_PlaylistPosition;
+
+	std::string		m_RetainedData;
+
 	int				m_iTimeoutCnt;
 	int				m_iPollIntSec;
 	int				m_iMissedPongs;
 	std::string		m_sLastMessage;
 	boost::asio::io_service *m_Ios;
 	boost::asio::ip::tcp::socket *m_Socket;
-	boost::array<char, 4096> m_Buffer;
+	boost::array<char, 256> m_Buffer;
 };
 
 class CKodi : public CDomoticzHardwareBase
@@ -127,6 +134,7 @@ public:
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
 	void Restart();
 	void SendCommand(const int ID, const std::string &command);
+	bool SetPlaylist(const int ID, const std::string &playlist);
 private:
 	void Do_Work();
 
