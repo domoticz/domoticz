@@ -1,9 +1,6 @@
 #include "stdafx.h"
 #include "WebServer.h"
 #include <boost/bind.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <fstream>
 #include "mainworker.h"
@@ -2356,7 +2353,7 @@ namespace http {
 			// Keep the url content on the right of the '?'
 			std::vector<std::string> allParts;
 			StringSplit(req.uri, "?", allParts);
-			if (allParts.size() > 0)
+			if (!allParts.empty())
 			{
 				// Split all url parts separated by a '&'
 				std::vector<std::string> allParameters;
@@ -2364,8 +2361,9 @@ namespace http {
 
 				// Push all url parameters as a map indexed by the parameter name
 				// Each entry will be uri[<param name>] = <param value>
-				lua_createtable(lua_state, allParameters.size(), 0);
-				for (unsigned int i = 0; i < allParameters.size(); i++)
+				int totParameters = (int)allParameters.size();
+				lua_createtable(lua_state, totParameters, 0);
+				for (int i = 0; i < totParameters; i++)
 				{
 					std::vector<std::string> parameterCouple;
 					StringSplit(allParameters[i], "=", parameterCouple);
