@@ -1,5 +1,6 @@
 Version 3.xxx
 - Fixed: Log display in webgui for log items containing multiple lines
+- Fixed: Edit Light/Switch Security sensors protected checkbox
 
 Version 3.530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

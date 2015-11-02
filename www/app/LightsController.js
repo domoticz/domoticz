@@ -1082,6 +1082,7 @@ define(['app'], function (app) {
 				$("#lightcontent #SwitchIconDiv").hide();
 				$("#lightcontent #onaction").val(atob(strParam1));
 				$("#lightcontent #offaction").val(atob(strParam2));
+				$('#lightcontent #protected').prop('checked',(bIsProtected==true));
 			}
 			else {
 				$("#lightcontent #SwitchType").show();
@@ -1130,7 +1131,7 @@ define(['app'], function (app) {
 				
 				$("#lightcontent #onaction").val(atob(strParam1));
 				$("#lightcontent #offaction").val(atob(strParam2));
-				
+
 				$('#lightcontent #protected').prop('checked',(bIsProtected==true));
 				
 				$.each($.LightsAndSwitches, function(i,item){
