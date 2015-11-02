@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "WebServer.h"
 #include <boost/bind.hpp>
-#include <boost/algorithm/string/join.hpp>
 #include <iostream>
 #include <fstream>
 #include "mainworker.h"
@@ -2237,7 +2236,7 @@ namespace http {
 			{
 				// Supported format ares :
 				// - idx (integer), svalue (string), nvalue (string), [rssi(integer)], [battery(integer)]
-				// - idx (integer), svalue (string,) nvalue (integer), [rssi(integer)], [battery(integer)]
+				// - idx (integer), svalue (string), nvalue (integer), [rssi(integer)], [battery(integer)]
 				if (lua_isnumber(lua_state, 1) && (lua_isstring(lua_state, 2) || lua_isnumber(lua_state, 2)) && lua_isstring(lua_state, 3))
 				{
 					// Extract the parameters from the lua 'updateDevice' function	
@@ -2351,8 +2350,34 @@ namespace http {
 			lua_rawset(lua_state, -3);
 			lua_setglobal(lua_state, "request");
 
-			std::string fullfilename = lua_Dir + script;
+			// Keep the url content on the right of the '?'
+			std::vector<std::string> allParts;
+			StringSplit(req.uri, "?", allParts);
+			if (!allParts.empty())
+			{
+				// Split all url parts separated by a '&'
+				std::vector<std::string> allParameters;
+				StringSplit(allParts[1], "&", allParameters);
 
+				// Push all url parameters as a map indexed by the parameter name
+				// Each entry will be uri[<param name>] = <param value>
+				int totParameters = (int)allParameters.size();
+				lua_createtable(lua_state, totParameters, 0);
+				for (int i = 0; i < totParameters; i++)
+				{
+					std::vector<std::string> parameterCouple;
+					StringSplit(allParameters[i], "=", parameterCouple);
+					if (parameterCouple.size() == 2) {
+						// Add an url parameter after 'url' decoding it
+						lua_pushstring(lua_state, CURLEncode::URLDecode(parameterCouple[0]).c_str());
+						lua_pushstring(lua_state, CURLEncode::URLDecode(parameterCouple[1]).c_str());
+						lua_rawset(lua_state, -3);
+					}
+				}
+				lua_setglobal(lua_state, "uri");
+			}
+
+			std::string fullfilename = lua_Dir + script;
 			int status = luaL_loadfile(lua_state, fullfilename.c_str());
 			if (status == 0)
 			{
@@ -6364,6 +6389,12 @@ namespace http {
 			std::string s5MinuteHistoryDays = request::findValue(&req, "ShortLogDays");
 			m_sql.UpdatePreferencesVar("5MinuteHistoryDays", atoi(s5MinuteHistoryDays.c_str()));
 
+			int iShortLogInterval = atoi(request::findValue(&req, "ShortLogInterval").c_str());
+			if (iShortLogInterval < 1)
+				iShortLogInterval = 5;
+			m_sql.UpdatePreferencesVar("ShortLogInterval", iShortLogInterval);
+			m_sql.m_ShortLogInterval = iShortLogInterval;
+
 			std::string sElectricVoltage = request::findValue(&req, "ElectricVoltage");
 			m_sql.UpdatePreferencesVar("ElectricVoltage", atoi(sElectricVoltage.c_str()));
 
@@ -8823,7 +8854,10 @@ namespace http {
 						{
 							sprintf(szData, "Level: %d", nValue);
 							root["result"][ii]["Data"] = szData;
-							root["result"][ii]["Desc"] = Get_Alert_Desc(nValue);
+							if (!sValue.empty())
+								root["result"][ii]["Desc"] = sValue;
+							else
+								root["result"][ii]["Desc"] = Get_Alert_Desc(nValue);
 							root["result"][ii]["TypeImg"] = "Alert";
 							root["result"][ii]["Level"] = nValue;
 							root["result"][ii]["HaveTimeout"] = false;
@@ -10682,6 +10716,10 @@ namespace http {
 				{
 					root["ShortLogDays"] = nValue;
 				}
+				else if (Key == "ShortLogInterval")
+				{
+					root["ShortLogInterval"] = nValue;
+				}
 				else if (Key == "WebUserName")
 				{
 					root["WebUserName"] = base64_decode(sValue);
@@ -12352,7 +12390,7 @@ namespace http {
 						{
 							std::vector<std::string> sd = *itt;
 							float fdirection = static_cast<float>(atof(sd[0].c_str()));
-							if (fdirection == 360)
+							if (fdirection >= 360)
 								fdirection = 0;
 							int direction = int(fdirection);
 							float speed = static_cast<float>(atof(sd[1].c_str())) * m_sql.m_windscale;

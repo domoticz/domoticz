@@ -4,7 +4,7 @@
 	</div>
 	<div id="logdata" class="log" scroll-glue>
 		<div ng-repeat='item in filtered = (logitems | filter:filterExpr) track by $index'>
-			<span class="{{item.mclass}}">{{item.text}}</span>
+			<span class="{{item.mclass}}" ng-bind-html='item.text' />
 		</div>
 	</div>
 </div>
