@@ -148,7 +148,7 @@ namespace http {
 		*/
 		class cWebem
 		{
-		friend CProxyClient;
+		friend class CProxyClient;
 		public:
 			cWebem(
 				const std::string& address,
