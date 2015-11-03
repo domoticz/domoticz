@@ -107,6 +107,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 			Manufacturer_id = -1;
 			Product_id = -1;
 			Product_type = -1;
+			lastreceived = 0;
 		}
 	};
 public:

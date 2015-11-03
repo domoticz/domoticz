@@ -86,7 +86,9 @@ private:
 	friend class MQTT;
 	friend class FritzboxTCP;
 	friend class CETH8020;
-	friend class CRFLink;
+	friend class CRFLinkSerial;
+	friend class CRFLinkTCP;
+	friend class CRFLinkBase;
 	friend class KMTronicBase;
 	friend class KMTronicSerial;
 	friend class KMTronicTCP;

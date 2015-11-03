@@ -4060,9 +4060,9 @@ void COpenZWave::NightlyNodeHeal()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_OpenZWaveNodes(Json::Value &root)
+		void CWebServer::RType_OpenZWaveNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -4127,19 +4127,19 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveUpdateNode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string name = m_pWebEm->FindValue("name");
-			std::string senablepolling = m_pWebEm->FindValue("EnablePolling");
+			std::string name = request::findValue(&req, "name");
+			std::string senablepolling = request::findValue(&req, "EnablePolling");
 			if (
 				(name == "") ||
 				(senablepolling == "")
@@ -4172,15 +4172,15 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveDeleteNode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveDeleteNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			std::vector<std::vector<std::string> > result;
@@ -4203,18 +4203,18 @@ namespace http {
 
 		}
 
-		void CWebServer::Cmd_ZWaveInclude(Json::Value &root)
+		void CWebServer::Cmd_ZWaveInclude(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string ssecure = m_pWebEm->FindValue("secure");
+			std::string ssecure = request::findValue(&req, "secure");
 			bool bSecure = (ssecure == "true");
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
 			if (pHardware != NULL)
@@ -4227,15 +4227,15 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveExclude(Json::Value &root)
+		void CWebServer::Cmd_ZWaveExclude(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4248,9 +4248,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveIsNodeIncluded(Json::Value & root)
+		void CWebServer::Cmd_ZWaveIsNodeIncluded(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4276,9 +4276,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveIsNodeExcluded(Json::Value & root)
+		void CWebServer::Cmd_ZWaveIsNodeExcluded(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4292,15 +4292,15 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveSoftReset(Json::Value &root)
+		void CWebServer::Cmd_ZWaveSoftReset(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4313,15 +4313,15 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveHardReset(Json::Value &root)
+		void CWebServer::Cmd_ZWaveHardReset(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4334,10 +4334,10 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveStateCheck(Json::Value &root)
+		void CWebServer::Cmd_ZWaveStateCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "ZWaveStateCheck";
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4351,15 +4351,15 @@ namespace http {
 			return;
 		}
 
-		void CWebServer::Cmd_ZWaveNetworkHeal(Json::Value &root)
+		void CWebServer::Cmd_ZWaveNetworkHeal(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4372,18 +4372,18 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveNodeHeal(Json::Value &root)
+		void CWebServer::Cmd_ZWaveNodeHeal(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string node = m_pWebEm->FindValue("node");
+			std::string node = request::findValue(&req, "node");
 			if (node == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4396,9 +4396,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveNetworkInfo(Json::Value &root)
+		void CWebServer::Cmd_ZWaveNetworkInfo(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
@@ -4406,7 +4406,7 @@ namespace http {
 
 			root["title"] = "ZWaveNetworkInfo";
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			int hwID = atoi(idx.c_str());
@@ -4457,24 +4457,24 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRemoveGroupNode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveRemoveGroupNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string node = m_pWebEm->FindValue("node");
+			std::string node = request::findValue(&req, "node");
 			if (node == "")
 				return;
-			std::string group = m_pWebEm->FindValue("group");
+			std::string group = request::findValue(&req, "group");
 			if (group == "")
 				return;
-			std::string removenode = m_pWebEm->FindValue("removenode");
+			std::string removenode = request::findValue(&req, "removenode");
 			if (removenode == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4489,24 +4489,24 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveAddGroupNode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveAddGroupNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
-			std::string node = m_pWebEm->FindValue("node");
+			std::string node = request::findValue(&req, "node");
 			if (node == "")
 				return;
-			std::string group = m_pWebEm->FindValue("group");
+			std::string group = request::findValue(&req, "group");
 			if (group == "")
 				return;
-			std::string addnode = m_pWebEm->FindValue("addnode");
+			std::string addnode = request::findValue(&req, "addnode");
 			if (addnode == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4521,9 +4521,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveGroupInfo(Json::Value &root)
+		void CWebServer::Cmd_ZWaveGroupInfo(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			int iHardwareID = atoi(idx.c_str());
@@ -4591,9 +4591,9 @@ namespace http {
 			root["title"] = "ZWaveGroupInfo";
 		}
 
-		void CWebServer::Cmd_ZWaveCancel(Json::Value &root)
+		void CWebServer::Cmd_ZWaveCancel(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4606,16 +4606,16 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ApplyZWaveNodeConfig(Json::Value &root)
+		void CWebServer::Cmd_ApplyZWaveNodeConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string svaluelist = m_pWebEm->FindValue("valuelist");
+			std::string idx = request::findValue(&req, "idx");
+			std::string svaluelist = request::findValue(&req, "valuelist");
 			if (
 				(idx == "") ||
 				(svaluelist == "")
@@ -4640,9 +4640,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRequestNodeConfig(Json::Value &root)
+		void CWebServer::Cmd_ZWaveRequestNodeConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			std::vector<std::vector<std::string> > result;
@@ -4663,15 +4663,15 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(Json::Value &root)
+		void CWebServer::Cmd_ZWaveReceiveConfigurationFromOtherController(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4684,15 +4684,15 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(Json::Value &root)
+		void CWebServer::Cmd_ZWaveSendConfigurationToSecondaryController(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4705,15 +4705,15 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveTransferPrimaryRole(Json::Value &root)
+		void CWebServer::Cmd_ZWaveTransferPrimaryRole(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4725,9 +4725,9 @@ namespace http {
 				root["title"] = "ZWaveTransferPrimaryRole";
 			}
 		}
-		std::string CWebServer::ZWaveGetConfigFile()
+		std::string CWebServer::ZWaveGetConfigFile(WebEmSession & session, const request& req)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return "";
 			m_retstr = "";
@@ -4741,13 +4741,13 @@ namespace http {
 					m_retstr = pOZWHardware->GetConfigFile(szConfigFile);
 					if (m_retstr != "")
 					{
-						m_pWebEm->m_outputfilename = szConfigFile;
+						session.outputfilename = szConfigFile;
 					}
 				}
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPIndex()
+		std::string CWebServer::ZWaveCPIndex(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -4769,7 +4769,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPPollXml()
+		std::string CWebServer::ZWaveCPPollXml(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -4780,18 +4780,19 @@ namespace http {
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 					m_retstr = pOZWHardware->m_ozwcp.SendPollResponse();
-					m_pWebEm->m_outputfilename = "poll.xml";
+					session.outputfilename = "poll.xml";
 				}
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeGetConf()
+		std::string CWebServer::ZWaveCPNodeGetConf(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
-			if (m_pWebEm->m_ActualRequest.content.find("node") == std::string::npos)
+			if (req.content.find("node") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
-			std::string sNode = m_pWebEm->FindValue("node");
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sNode = request::findValue(&values, "node");
 			if (sNode == "")
 				return m_retstr;
 			int iNode = atoi(sNode.c_str());
@@ -4807,13 +4808,14 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeGetValues()
+		std::string CWebServer::ZWaveCPNodeGetValues(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
-			if (m_pWebEm->m_ActualRequest.content.find("node") == std::string::npos)
+			if (req.content.find("node") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
-			std::string sNode = m_pWebEm->FindValue("node");
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sNode = request::findValue(&values, "node");
 			if (sNode == "")
 				return m_retstr;
 			int iNode = atoi(sNode.c_str());
@@ -4829,11 +4831,11 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeSetValue()
+		std::string CWebServer::ZWaveCPNodeSetValue(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			std::vector<std::string> strarray;
-			StringSplit(m_pWebEm->m_ActualRequest.content, "=", strarray);
+			StringSplit(req.content, "=", strarray);
 			if (strarray.size() != 2)
 				return "";
 
@@ -4849,11 +4851,11 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeSetButton()
+		std::string CWebServer::ZWaveCPNodeSetButton(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			std::vector<std::string> strarray;
-			StringSplit(m_pWebEm->m_ActualRequest.content, "=", strarray);
+			StringSplit(req.content, "=", strarray);
 			if (strarray.size() != 2)
 				return "";
 
@@ -4869,15 +4871,16 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPAdminCommand()
+		std::string CWebServer::ZWaveCPAdminCommand(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
-			if (m_pWebEm->m_ActualRequest.content.find("fun") == std::string::npos)
+			if (req.content.find("fun") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
-			std::string sFun = m_pWebEm->FindValue("fun");
-			std::string sNode = m_pWebEm->FindValue("node");
-			std::string sButton = m_pWebEm->FindValue("button");
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sFun = request::findValue(&values, "fun");
+			std::string sNode = request::findValue(&values, "node");
+			std::string sButton = request::findValue(&values, "button");
 
 			if (sNode.find("node") != std::string::npos)
 			{
@@ -4896,15 +4899,16 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPNodeChange()
+		std::string CWebServer::ZWaveCPNodeChange(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
-			if (m_pWebEm->m_ActualRequest.content.find("fun") == std::string::npos)
+			if (req.content.find("fun") == std::string::npos)
 				return "";
-			m_pWebEm->MakeValuesFromPostContent(&m_pWebEm->m_ActualRequest);
-			std::string sFun = m_pWebEm->FindValue("fun");
-			std::string sNode = m_pWebEm->FindValue("node");
-			std::string sValue = m_pWebEm->FindValue("value");
+			std::multimap<std::string, std::string> values;
+			request::makeValuesFromPostContent(&req, values);
+			std::string sFun = request::findValue(&values, "fun");
+			std::string sNode = request::findValue(&values, "node");
+			std::string sValue = request::findValue(&values, "value");
 
 			if (sNode.size() > 4)
 				sNode = sNode.substr(4);
@@ -4921,7 +4925,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPSaveConfig()
+		std::string CWebServer::ZWaveCPSaveConfig(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -4936,7 +4940,7 @@ namespace http {
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPGetTopo()
+		std::string CWebServer::ZWaveCPGetTopo(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(m_ZW_Hwidx);
@@ -4947,12 +4951,12 @@ namespace http {
 					COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 					boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 					m_retstr = pOZWHardware->m_ozwcp.GetCPTopo();
-					m_pWebEm->m_outputfilename = "topo.xml";
+					session.outputfilename = "topo.xml";
 				}
 			}
 			return m_retstr;
 		}
-		std::string CWebServer::ZWaveCPGetStats()
+		std::string CWebServer::ZWaveCPGetStats(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
 			//Crashes at OpenZWave::GetNodeStatistics::_data->m_sentTS = m_sentTS.GetAsString();
@@ -4965,7 +4969,7 @@ namespace http {
 			COpenZWave *pOZWHardware = (COpenZWave*)pHardware;
 			boost::lock_guard<boost::mutex> l(pOZWHardware->m_NotificationMutex);
 			m_retstr = pOZWHardware->GetCPStats();
-			m_pWebEm->m_outputfilename = "stats.xml";
+			session.outputfilename = "stats.xml";
 			}
 			}
 			*/
@@ -4974,15 +4978,15 @@ namespace http {
 
 
 
-		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveSetUserCodeEnrollmentMode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(atoi(idx.c_str()));
@@ -4995,16 +4999,16 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveRemoveUserCode(Json::Value &root)
+		void CWebServer::Cmd_ZWaveRemoveUserCode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
-			std::string scodeindex = m_pWebEm->FindValue("codeindex");
+			std::string idx = request::findValue(&req, "idx");
+			std::string scodeindex = request::findValue(&req, "codeindex");
 			if (
 				(idx == "") ||
 				(scodeindex == "")
@@ -5031,9 +5035,9 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_ZWaveGetNodeUserCodes(Json::Value &root)
+		void CWebServer::Cmd_ZWaveGetNodeUserCodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "")
 				return;
 

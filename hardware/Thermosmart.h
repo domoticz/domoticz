@@ -13,6 +13,7 @@ public:
 	void SetSetpoint(const int idx, const float temp);
 private:
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
+	void SetPauseStatus(const bool bIsPause);
 	bool Login();
 	void Logout();
 

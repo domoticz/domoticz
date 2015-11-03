@@ -458,16 +458,16 @@ bool CRego6XXSerial::ParseData()
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetRego6XXType()
+		char * CWebServer::SetRego6XXType(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -478,7 +478,7 @@ namespace http {
 
 			unsigned char currentMode1 = atoi(result[0][0].c_str());
 
-			std::string sRego6XXType = m_pWebEm->FindValue("Rego6XXType");
+			std::string sRego6XXType = request::findValue(&req, "Rego6XXType");
 			unsigned char newMode1 = atoi(sRego6XXType.c_str());
 
 			if (currentMode1 != newMode1)

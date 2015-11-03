@@ -124,6 +124,7 @@ std::string szAppVersion="???";
 std::string szAppHash="???";
 std::string szAppDate="???";
 int ActYear;
+time_t m_StartTime=time(NULL);
 
 MainWorker m_mainworker;
 CLogger _log;
@@ -711,10 +712,22 @@ int main(int argc, char**argv)
 		g_bRunAsDaemon = true;
 	}
 
+	std::string daemonname = DAEMON_NAME;
+	if (cmdLine.HasSwitch("-daemonname"))
+	{
+		daemonname = cmdLine.GetSafeArgument("-daemonname", 0, DAEMON_NAME);
+	}
+
+	std::string pidfile = PID_FILE;
+	if (cmdLine.HasSwitch("-pidfile"))
+	{
+		pidfile = cmdLine.GetSafeArgument("-pidfile", 0, PID_FILE);
+	}
+
 	if ((g_bRunAsDaemon)||(g_bUseSyslog))
 	{
 		setlogmask(LOG_UPTO(LOG_INFO));
-		openlog(DAEMON_NAME, LOG_CONS | LOG_PERROR, LOG_USER);
+		openlog(daemonname.c_str(), LOG_CONS | LOG_PERROR, LOG_USER);
 
 		syslog(LOG_INFO, "Domoticz is starting up....");
 	}
@@ -722,7 +735,7 @@ int main(int argc, char**argv)
 	if (g_bRunAsDaemon)
 	{
 		/* Deamonize */
-		daemonize(szStartupFolder.c_str(), PID_FILE);
+		daemonize(szStartupFolder.c_str(), pidfile.c_str());
 	}
 	if ((g_bRunAsDaemon) || (g_bUseSyslog))
 	{
@@ -740,6 +753,7 @@ int main(int argc, char**argv)
 	{
 		return 1;
 	}
+	m_StartTime = time(NULL);
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
@@ -786,7 +800,7 @@ int main(int argc, char**argv)
 		daemonShutdown();
 
 		// Delete PID file
-		remove(PID_FILE);
+		remove(pidfile.c_str());
 	}
 #else
 	// Release WinSock

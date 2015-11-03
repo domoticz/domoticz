@@ -1,123 +1,143 @@
-Version 2.xxx (xxxx 2015)
-- Implemented: Notifications, new option "Ignore Interval"
-- Improved: Notifications
-- Implemented: MySensors added support for S_SMOKE/S_DIMMER
-- Fixed: Tooltip bug for the Dusk sensor in the Lights tab
+Version 2.xxxx
+- Fixed: Log display in webgui for log items containing multiple lines
+- Fixed: Edit Light/Switch Security sensors protected checkbox
+- Fixed: Alert Sensor, displaying sValue again
+- Fixed: EventSystem, now also handling sensors that only uses numbers instead of strings for data
+- Fixed: S0 Meter, fix for reloading totals of (#179)
+
+Version 2.3530 (November 1th 2015)
+- Implemented: Degree Days in Temperature report
+- Implemented: RFXCom, support for Home Confort TEL-010
+- Fixed: Segmentation fault while cleaning timed out sessions (#180)
+
+Version 2.3521 (October 31th 2015)
+- Implemented "Stop" state in blockly in switch states
+- Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)
+- Implemented: Added Logitech Media Server support (thanks to EddyK69!!)
+- Implemented: Added pushbullet notifications (thanks to tofra!!)
+- Implemented: Arabic translation (big thanks to Mo7sen!!)
+- Implemented: Blockly, Option to compare sensor value against another sensor value
+- Implemented: Blockly, Split Utility Sensors into multiple groups
 - Implemented: Blockly/Lua SendSMS
-- Fixed: Battery low (typo) notification
-- Changed: EventSystem, not adding sensors from disable hardware
+- Implemented: Catch SIGHUP signal for log rotation (LarsForum)
+- Implemented: Danish translation (big thanks to jokkemokke!!)
+- Implemented: Devices Tab, now displaying scenes/groups
+- Implemented: Dummy Hardware, Ampere Single (single ampere value, other ampere sensor expects 3 values)
+- Implemented: EventSystem, now also reacts on master switches when a slave switch state changes
+- Implemented: EventSystem, now supports Weather sensors: UV/Distance, Wind Gust (or speed when gust is not available), Solar Radiation and Rain
+- Implemented: EventSystem, optimized Blockly calls (saves a lot of calls and cpu)
+- Implemented: Hebrew translation (big thanks to mickeyv!!)
 - Implemented: HTTP Data push, new types for Type/SubType/Hostname/Device Name
 - Implemented: HTTPS support for On/Off actions
-- Implemented: Rain Report
-- Implemented: Temperature Report
-- Fixed: 1-Wire negative values
-- Implemented: Netatmo Weather Station (Big thanks to Sebastien!)
-- Changed: json "udevice" Perecentage sensor, you might get new ID's, now also creates an event for blockly/lua
-- Implemented: Text/Alert Sensor logging (when called from json api)
-- Implemented: Support for browsers that do not support gzip compression (thanks to ash77)
-- Implemented: When clicking on the log button, browser page now always go to the top
-- Implemented "Stop" state in blockly in switch states
+- Implemented: Icon Uploader, now possible to edit name and description
+- Implemented: Icon Uploader, now possible to upload zip files with multiple folders
+- Implemented: Icons for RFXMeter Gas/Water
 - Implemented: Kodi Hardware device (Big thanks to dnpwwo!)
-- Fixed: Devices Tab, set device to unused
-- Changed: Air Quality chart will now not begin at 0
+- Implemented: Logwindow, Added option to filter text
 - Implemented: Mochad secure support (thanks to Simon)
-- Fixed: HTTP Push table localization (thanks to cgaudry)
-- Changed: OpenZWave, when receiving a timeout notification, do not flag node as 'dead', only log the message
-- Fixed: Davis Logger
-- Changed: Short Log cleanup method
-- Implemented: Option to flash sensors when an update is received (enable in the settings page)
-- Changed: Lowered HTTP connection timeout to 10 seconds
-- Fixed: Post command handling
-- Changed: BMP085, when forecast is unknown, its calculated directly based on the pressure
-- Implemented: Option to rename unused devices
-- Implemented: RFXCom (Serial) option to update the firmware via the web interface
-- Implemented: OpenZWave, multi instance association support (thanks to xs4!!!)
-- Fixed: OpenZWave with large homeid values
-- Fixed: pushover sound notification (thanks to Eduard)
-- Implemented: Danish translation (big thanks to jokkemokke!!)
-- Add Kodi media command interface to web server
-- Implemented: RFLink SmokeDetector support
-- Changed: KMTronic LAN, now using actual On/Off commands instead of 'Toggle'
+- Implemented: MySensors added support for S_SCENE_CONTROLLER, V_SCENE_ON, V_SCENE_OFF
+- Implemented: MySensors added support for S_SMOKE/S_DIMMER
+- Implemented: MySensors added support for V_IMPEDANCE
+- Implemented: MySensors, now using ACK for node commands (and fails if no ACK is received)
+- Implemented: MySensors, renamed V_LIGHT to V_STATUS and V_DIMMER to V_PERCENTAGE to be compliant to the 1.5 API
+- Implemented: MySensors, some more default naming of sensors if they where presented with a name
+- Implemented: MySensors, V_IR_RECEIVE and V_IR_SEND
+- Implemented: MySensors, V_TEXT, V_HVAC_SETPOINT_COOL and V_HVAC_SETPOINT_HEAT
+- Implemented: Netatmo Weather Station (Big thanks to Sebastien!)
+- Implemented: Notifications, new option "Ignore Interval"
 - Implemented: OpenZWave, added Ultraviolet sensor type support
+- Implemented: OpenZWave, Include/Exclude progress dialog-
+- Implemented: OpenZWave, multi instance association support (thanks to xs4!!!)
+- Implemented: Option for Dummy device to create Soil Moisture,Leaf Wetness, RGB Switch
+- Implemented: Option how to display the kWh day graph (Power or (k)W/h)
+- Implemented: Option to add a log message via the json api (see wiki)
+- Implemented: Option to enter a description for each sensor/switch/scene
+- Implemented: Option to flash sensors when an update is received (enable in the settings page)
+- Implemented: Option to hide scenes/groups (placing a $ in front of the name)
+- Implemented: Option to rename unused devices
+- Implemented: Option to replace an Energy device
+- Implemented: Rain Report
 - Implemented: Revolt, added support for Voltage/PowerFactor/Frequency
-- Fixed: Revolt, Enery Graph
-- Fixed: EventSystem, SIGSEGV (cgaudry)
-- Fixed: EventSystem, splitresults has missing values because m_devicestates is modified while using an iterator on the map (cgaudry)
-- Fixed: EventSystem, _tEventItem.Conditions should not be modified while reading m_events (cgaudry)
-- Fixed: EventSystem, asctime is not thread-safe (replaced with strftime) (cgaudry)
-- Changed: Main, dumptrace is not logged because the stderr handle is closed on startup (cgaudry)
-- Changed: Main, signal code received is not logged (cgaudry)
-- Changed: Main, application should be stopped after fatal signal receiving (cgaudry)
-- Changed: Main, all fatal signals where not handled (e.g. SIGILL, SIGABRT,SIGFPE) (cgaudry)
-- Changed: SQLHelper, spelling mistake (cgaudry)
-- Changed: RFXCom, fixed confusing logs (cgaudry)
-- Fixed: Security Panel delay, now again possible to set delay to 0 (directly)
-- Implemented: Support for the Plugwise Anna Thermostat (NEM)
-- Fixed: Temperatures not updated on UI without refreshing browser or changing tabs
-- Fixed: Email Notifications where always enabled after restart
-- Changed: SQL Queries, now using safe_query to escape all strings (big thanks to Thibaut!)
-- Changed: Internal HTML/JS changes to support all types of characters in the sensors name
-- Changed: disabled timeout for smartwares thermostat (no incomming data from device)
+- Implemented: RFLink SmokeDetector support
+- Implemented: RFLink: Added various sensors/devices (stuntteam)
+- Implemented: RFXCom (Serial) option to update the firmware via the web interface
+- Implemented: RFXtrx ASA protocol implemented
+- Implemented: RGB Popup to select color/on/off
+- Implemented: Satel Integra hardware support (big thanks to Fantom)
+- Implemented: Scene codes now handles again seperate status (on/off)
+- Implemented: Scene, option for 'stop'
+- Implemented: Serbian language support, big thanks to siklosi!!
+- Implemented: Settings/Backup/Restore, when performing a database backup/restore the database is cleaned
+- Implemented: Settings/Log, option to clear all short-log data
+- Implemented: Slovenian language support, big thanks to eden86!!
+- Implemented: smartwares thermostat, Logging of Day/Night switch
+- Implemented: smartwares thermostat, Logging of setpoint value
 - Implemented: smartwares thermostat, Setpoint popup
 - Implemented: smartwares thermostat, Setpoint, now always logged
-- Fixed: MySensors, switch names where always set to default name (was caused by safe_query changes)
-- Implemented: RGB Popup to select color/on/off
-- Implemented: RFLink: Added various sensors/devices (stuntteam)
-- Implemented: smartwares thermostat, Logging of setpoint value
-- Implemented: smartwares thermostat, Logging of Day/Night switch
-- Implemented: Web Server can now be bind to specific address (-wwwbind) (seb)
-- Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)
-- Implemented: Option to enter a description for each sensor/switch/scene
-- Changed: OpenZWave, Alarm/Notification mappings update (xs4)
-- Changed: Windows serial port Enumeration (now also supports windows 10)
-- Implemented: Thermosmart Thermostat
-- Implemented: Option for Dummy device to create Soil Moisture,Leaf Wetness, RGB Switch
-- Implemented: Catch SIGHUP signal for log rotation (LarsForum)
-- Implemented: MySensors added support for S_SCENE_CONTROLLER, V_SCENE_ON, V_SCENE_OFF
-- Implemented: MySensors, renamed V_LIGHT to V_STATUS and V_DIMMER to V_PERCENTAGE to be compliant to the 1.5 API
-- Fixed: Scenes RFY switch command now correctly handled
-- Fixed: MySensors, Negative temperature sensor
-- Implemented: MySensors added support for V_IMPEDANCE
-- Changed: MySensors, rebuild
-- Changed: migrated to github
-- Implemented: Option to add a log message via the json api (see wiki)
-- Fixed: MySensors, S_LIGHT now creates an initial switch again
-- Fixed: Netatmo, Rain Sensor
-- Fixed: upgrading via the web interface (some users had experienced a problem)
-- Implemented: Satel Integra hardware support (big thanks to Fantom)
-- Fixed: Icon Uploader, uploading went wrong with large files
-- Implemented: Icon Uploader, now possible to upload zip files with multiple folders
-- Implemented: Icon Uploader, now possible to edit name and description
-- Changed: Switch icon picker now has a fixed height
-- Fixed: Counter Incremental small icon display on devices tab
-- Changed: forced fixed icon sizes on some locations (in case of to big user defined icons)
-- Fixed: Weather tab, nofications
-- Changed: EnOcean rocker inclusion (thanks to zorgluf!)
-- Implemented: Icons for RFXMeter Gas/Water
-- Fixed: MySensors, corrected sending localtime
-- Implemented: OpenZWave, Include/Exclude progress dialog-
-- Changed: non-windows systems, scripts can now use a relative patch to the scripts folder if script does not start with a '/'
+- Implemented: Support for browsers that do not support gzip compression (thanks to ash77)
 - Implemented: Support for multiple scene/group codes
-- Implemented: Devices Tab, now displaying scenes/groups
-- Implemented: Option to hide scenes/groups (placing a $ in front of the name)
-- Implemented: Scene codes now handles again seperate status (on/off)
-- Implemented: RFXtrx ASA protocol implemented
-- Implemented: Scene, option for 'stop'
-- Implemented: MySensors, V_TEXT, V_HVAC_SETPOINT_COOL and V_HVAC_SETPOINT_HEAT
-- Implemented: MySensors, V_IR_RECEIVE and V_IR_SEND
-- Implemented: Serbian language support, big thanks to siklosi!!
-- Implemented: Slovenian language support, big thanks to eden86!!
-- Implemented: Option to replace an Energy device
-- Changed: OpenZWave, Fibaro Wall Plug, now using multisensor for power reading
-- Fixed: Display correct energy graph in devices view (spline instead of bars for short log)
-- Implemented: MySensors, some more default naming of sensors if they where presented with a name
+- Implemented: Support for the Plugwise Anna Thermostat (NEM)
+- Implemented: Temperature Report
+- Implemented: Text/Alert Sensor logging (when called from json api)
+- Implemented: Thermosmart Thermostat
+- Implemented: Web Server can now be bind to specific address (-wwwbind) (seb)
+- Implemented: When clicking on the log button, browser page now always go to the top
+- Changed: Air Quality chart will now not begin at 0
 - Changed: All Energy sensors have been transfered to General kWh sensors (more accurate)
-- Implemented: Added pushbullet notifications (thanks to tofra!!)
-- Implemented: Added Logitech Media Server support (thanks to EddyK69!!)
-- Implemented: Option how to display the kWh day graph (Power or (k)W/h)
-- Implemented: Dummy Hardware, Ampere Single (single ampere value, other ampere sensor expects 3 values)
-- Implemented: Settings/Log, option to clear all short-log data
-- Implemented: Settings/Backup/Restore, when performing a database backup/restore the database is cleaned
+- Changed: BMP085, when forecast is unknown, its calculated directly based on the pressure
+- Changed: disabled timeout for smartwares thermostat (no incomming data from device)
+- Changed: EnOcean rocker inclusion (thanks to zorgluf!)
+- Changed: EventSystem, not adding sensors from disable hardware
+- Changed: forced fixed icon sizes on some locations (in case of to big user defined icons)
+- Changed: Internal HTML/JS changes to support all types of characters in the sensors name
+- Changed: json "udevice" Perecentage sensor, you might get new ID's, now also creates an event for blockly/lua
+- Changed: KMTronic LAN, now using actual On/Off commands instead of 'Toggle'
+- Changed: Lowered HTTP connection timeout to 10 seconds
+- Changed: Main, all fatal signals where not handled (e.g. SIGILL, SIGABRT,SIGFPE) (cgaudry)
+- Changed: Main, application should be stopped after fatal signal receiving (cgaudry)
+- Changed: Main, dumptrace is not logged because the stderr handle is closed on startup (cgaudry)
+- Changed: Main, signal code received is not logged (cgaudry)
+- Changed: migrated to github
+- Changed: MySensors, rebuild
+- Changed: non-windows systems, scripts can now use a relative patch to the scripts folder if script does not start with a '/'
+- Changed: OpenZWave, Alarm/Notification mappings update (xs4)
+- Changed: OpenZWave, Fibaro Wall Plug, now using multisensor for power reading
+- Changed: OpenZWave, when receiving a timeout notification, do not flag node as 'dead', only log the message
+- Changed: RFXCom, fixed confusing logs (cgaudry)
+- Changed: Short Log cleanup method
+- Changed: SQL Queries, now using safe_query to escape all strings (big thanks to Thibaut!)
+- Changed: SQLHelper, spelling mistake (cgaudry)
+- Changed: Switch icon picker now has a fixed height
+- Changed: Windows serial port Enumeration (now also supports windows 10)
+- Fixed: 1-Wire negative values
+- Fixed: Battery low (typo) notification
+- Fixed: Counter Incremental small icon display on devices tab
+- Fixed: Davis Logger
+- Fixed: Devices Tab, set device to unused
+- Fixed: Display correct energy graph in devices view (spline instead of bars for short log)
+- Fixed: Email Notifications where always enabled after restart
+- Fixed: EventSystem, _tEventItem.Conditions should not be modified while reading m_events (cgaudry)
+- Fixed: EventSystem, asctime is not thread-safe (replaced with strftime) (cgaudry)
+- Fixed: EventSystem, SIGSEGV (cgaudry)
+- Fixed: EventSystem, splitresults has missing values because m_devicestates is modified while using an iterator on the map (cgaudry)
+- Fixed: EventSystem, fixed memory leak when calling lua scripts
+- Fixed: HTTP Push table localization (thanks to cgaudry)
+- Fixed: Icon Uploader, uploading went wrong with large files
+- Fixed: MySensors, corrected sending localtime
+- Fixed: MySensors, Negative temperature sensor
+- Fixed: MySensors, S_LIGHT now creates an initial switch again
+- Fixed: MySensors, switch names where always set to default name (was caused by safe_query changes)
+- Fixed: Netatmo, Rain Sensor
+- Fixed: OpenZWave with large homeid values
+- Fixed: Post command handling
+- Fixed: pushover sound notification (thanks to Eduard)
+- Fixed: Revolt, Enery Graph
+- Fixed: Scenes RFY switch command now correctly handled
+- Fixed: Security Panel delay, now again possible to set delay to 0 (directly)
+- Fixed: Temperatures not updated on UI without refreshing browser or changing tabs
+- Fixed: Tooltip bug for the Dusk sensor in the Lights tab
+- Fixed: upgrading via the web interface (some users had experienced a problem)
+- Fixed: Weather tab, nofications
 
 Version 2.2563 (June 14th 2015)
 - Implemented: WebServer, native SSL and keep-alive, big thanks to chimit!!!!

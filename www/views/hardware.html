@@ -225,6 +225,72 @@
 	<input type="hidden" id="idx" name="nodeidx" value="-1">
 </div>
 
+<div id="mysensors" style="display:none;">
+	<div class="page-header-small">
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<h1 data-i18n="Nodes">Nodes</h1>
+				</td>
+			</tr>
+		</table>
+	</div>
+    <table class="display" id="mysensorsnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="80" align="center" data-i18n="NodeID">NodeID</th>
+                <th align="left" data-i18n="Name">Name</th>
+                <th width="60" align="left" data-i18n="Version">Version</th>
+                <th width="60" align="left" data-i18n="Childs">Childs</th>
+                <th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
+            </tr>
+        </thead>
+    </table>
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="RefreshMySensorsNodeTable();">Refresh</a>
+			</td>
+		</tr>
+	</table>
+	<br>
+	<div class="page-header-small">
+		<table border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<h1 data-i18n="Childs">Childs</h1>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<table class="display" id="mysensorsactivetable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th width="40" align="center" data-i18n="ChildID">ChildID</th>
+				<th width="160" align="left" data-i18n="Type">Type</th>
+				<th align="80" data-i18n="Name">Name</th>
+				<th data-i18n="Values">Values</th>
+				<th width="80" align="left" data-i18n="Ack">Ack</th>
+				<th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
+			</tr>
+		</thead>
+	</table>
+    <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<tr>
+			<td>
+				<a class="btnstyle3-dis" id="activedevicedelete" data-i18n="Delete">Delete</a>
+			</td>
+			<td align="right">
+				<a class="btnstyle3" id="nodelistrefresh" data-i18n="Refresh" onclick="MySensorsRefreshActiveDevicesTable();">Refresh</a>
+			</td>
+		</tr>
+	</table>
+	<input type="hidden" id="idx" name="idx" value="-1">
+</div>
+
 <div id="wakeonlan" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -533,6 +599,52 @@
 </form>
 </center>
 </div>
+
+<div id="rfx868hardwaremode" style="display:none;">
+<center>
+<form id="settings">
+	<table>
+		<tr>
+			<td align="left" style="width:150px"><font color="yellow">868.30MHz</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.30MHz FSK</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.35MHz</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.35MHz FSK</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.95MHz</font></td>
+		</tr>
+		<tr>
+			<td><input type="checkbox" id="LaCrosse" name="LaCrosse">&nbsp;<label for="LaCrosse">LaCrosse (not IT+)</label></td>
+			<td><input type="checkbox" id="Alecto" name="Alecto">&nbsp;<label for="Alecto">Alecto</label></td>
+			<td><input type="checkbox" id="FS20" name="FS20">&nbsp;<label for="FS20">FS20</label></td>
+			<td><input type="checkbox" id="ProGuard" name="ProGuard">&nbsp;<label for="ProGuard">ProGuard</label></td>
+			<td><input type="checkbox" id="VionicPowerCode" name="VionicPowerCode">&nbsp;<label for="VionicPowerCode">VionicPowerCode</label></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="Hideki" name="Hideki">&nbsp;<label for="Hideki">Hideki<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Cresta<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Honeywell<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Irox<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Mebux<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Nexus</label></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="FHT8" name="FHT8">&nbsp;<label for="FHT8">FHT8</label></td>
+			<td></td>
+			<td style="vertical-align:top;"><input type="checkbox" id="VionicCodeSecure" name="VionicCodeSecure">&nbsp;<label for="VionicCodeSecure">VionicCodeSecure</label></td>
+		</tr>
+	</table>
+	<br>
+	You can only enable protocols for the same frequency!
+	<br>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-warning" id="defaultbutton">Default</button>
+	<button class="btn btn-danger" id="submitbutton">Set Mode</button>
+	<br>
+	<br>
+	<button class="btn btn-info" id="firmwarebutton">Upgrade Firmware</button>
+</form>
+</center>
+</div>
+
 <div id="rego6xxtypeedit" style="display:none;">
 <center>
 <form id="regotype">

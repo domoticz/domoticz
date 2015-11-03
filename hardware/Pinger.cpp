@@ -431,9 +431,9 @@ void CPinger::Restart()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_PingerGetNodes(Json::Value &root)
+		void CWebServer::Cmd_PingerGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());
@@ -466,16 +466,16 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_PingerSetMode(Json::Value &root)
+		void CWebServer::Cmd_PingerSetMode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string mode1 = m_pWebEm->FindValue("mode1");
-			std::string mode2 = m_pWebEm->FindValue("mode2");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string mode1 = request::findValue(&req, "mode1");
+			std::string mode2 = request::findValue(&req, "mode2");
 			if (
 				(hwid == "") ||
 				(mode1 == "") ||
@@ -506,18 +506,18 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_PingerAddNode(Json::Value &root)
+		void CWebServer::Cmd_PingerAddNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
+			std::string hwid = request::findValue(&req, "idx");
+			std::string name = request::findValue(&req, "name");
+			std::string ip = request::findValue(&req, "ip");
+			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
 			if (
 				(hwid == "") ||
 				(name == "") ||
@@ -538,19 +538,19 @@ namespace http {
 			pHardware->AddNode(name, ip, Timeout);
 		}
 
-		void CWebServer::Cmd_PingerUpdateNode(Json::Value &root)
+		void CWebServer::Cmd_PingerUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
-			std::string name = m_pWebEm->FindValue("name");
-			std::string ip = m_pWebEm->FindValue("ip");
-			int Timeout = atoi(m_pWebEm->FindValue("timeout").c_str());
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
+			std::string name = request::findValue(&req, "name");
+			std::string ip = request::findValue(&req, "ip");
+			int Timeout = atoi(request::findValue(&req, "timeout").c_str());
 			if (
 				(hwid == "") ||
 				(nodeid == "") ||
@@ -573,16 +573,16 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, ip, Timeout);
 		}
 
-		void CWebServer::Cmd_PingerRemoveNode(Json::Value &root)
+		void CWebServer::Cmd_PingerRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
-			std::string nodeid = m_pWebEm->FindValue("nodeid");
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
 			if (
 				(hwid == "") ||
 				(nodeid == "")
@@ -602,15 +602,15 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_PingerClearNodes(Json::Value &root)
+		void CWebServer::Cmd_PingerClearNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return;
 			}
 
-			std::string hwid = m_pWebEm->FindValue("idx");
+			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
 			int iHardwareID = atoi(hwid.c_str());

@@ -37,7 +37,7 @@ public:
   ~request_handler();
 
   /// Handle a request and produce a reply.
-  virtual void handle_request(const std::string &sHost, const request& req, reply& rep);
+  virtual void handle_request(const request& req, reply& rep);
 
   /// Perform URL-decoding on a string. Returns false if the encoding was
   /// invalid.

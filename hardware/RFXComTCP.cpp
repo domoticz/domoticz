@@ -42,6 +42,7 @@ bool RFXComTCP::StopHardware()
 	{
 		try {
 			disconnect();
+			close();
 			if (m_thread != NULL)
 			{
 				m_thread->join();

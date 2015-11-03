@@ -184,7 +184,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_MQTT, "MQTT Client Gateway with LAN interface" },
 		{ HTYPE_FRITZBOX, "Fritzbox Callmonitor via LAN interface" },
 		{ HTYPE_ETH8020, "ETH8020 Relay board with LAN interface" },
-		{ HTYPE_RFLINK, "RFLink Gateway USB" },
+		{ HTYPE_RFLINKUSB, "RFLink Gateway USB" },
 		{ HTYPE_KMTronicUSB, "KMTronic Gateway USB" },
 		{ HTYPE_KMTronicTCP, "KMTronic Gateway with LAN interface" },
 		{ HTYPE_SOLARMAXTCP, "SolarMax via LAN interface" },
@@ -197,7 +197,9 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
 		{ HTYPE_SatelIntegra, "Satel Integra via LAN interface" },
 		{ HTYPE_LogitechMediaServer, "Logitech Media Server" },
-  		{ 0, NULL, NULL }
+		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
+		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
+		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
 }
@@ -379,6 +381,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLighting4, "Lighting 4" , "lightbulb", },
 		{ pTypeLighting5, "Lighting 5" , "lightbulb", },
 		{ pTypeLighting6, "Lighting 6" , "lightbulb", },
+		{ pTypeHomeConfort, "Home Confort" , "lightbulb" },
 		{ pTypeLimitlessLights, "Lighting Limitless/Applamp" , "lightbulb" },
 		{ pTypeCurtain, "Curtain" , "blinds" },
 		{ pTypeBlinds, "Blinds" , "blinds" },
@@ -533,8 +536,11 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeEurodomest, "Eurodomest" },
 		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo Appliance" },
 		{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
+		{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
+
+		{ pTypeHomeConfort, sTypeHomeConfortTEL010 , "TEL-010" },
 
 		{ pTypeCurtain, sTypeHarrison, "Harrison" },
 
@@ -720,6 +726,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeAster, "Aster" },
 		{ pTypeGeneralSwitch, sSwitchTypeSartano, "Sartano" },
 		{ pTypeGeneralSwitch, sSwitchTypeEurope, "Europe" },
+		{ pTypeGeneralSwitch, sSwitchTypeAvidsen, "Avidsen" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -821,8 +828,11 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeEurodomest, "Status" },
 		{ pTypeLighting5, sTypeLivoloAppliance, "Status" },
 		{ pTypeLighting5, sTypeRGB432W, "Status" },
+		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
+
+		{ pTypeHomeConfort, sTypeHomeConfortTEL010, "Status" },
 
 		{ pTypeCurtain, sTypeHarrison, "Status" },
 
@@ -1481,6 +1491,29 @@ void GetLightStatus(
 			}
 		}
 		break;
+	case pTypeHomeConfort:
+		switch (dSubType)
+		{
+		case sTypeHomeConfortTEL010:
+			bHaveGroupCmd = true;
+			switch (nValue)
+			{
+			case HomeConfort_sOff:
+				lstatus = "Off";
+				break;
+			case HomeConfort_sOn:
+				lstatus = "On";
+				break;
+			case HomeConfort_sGroupOn:
+				lstatus = "Group On";
+				break;
+			case HomeConfort_sGroupOff:
+				lstatus = "Group Off";
+				break;
+			}
+			break;
+		}
+		break;
 	case pTypeGeneralSwitch:
 		maxDimLevel = 100;
 
@@ -2011,6 +2044,16 @@ bool GetLightCommand(
 			cmd = gswitch_sPlay;
 			return true;
 		}
+		else if (switchcmd == "Play Playlist")
+		{
+			cmd = gswitch_sPlayPlaylist;
+			return true;
+		}
+		else if (switchcmd == "Play Favorites")
+		{
+			cmd = gswitch_sPlayFavorites;
+			return true;
+		}
 		else if (switchcmd == "Set Volume")
 		{
 			cmd = gswitch_sSetVolume;
@@ -2117,6 +2160,40 @@ bool GetLightCommand(
 		else if (switchcmd=="Group On")
 		{
 			cmd=light6_sGroupOn;
+			return true;
+		}
+		else
+			return false;
+		break;
+	case pTypeHomeConfort:
+		if (switchtype == STYPE_Doorbell)
+		{
+			if ((switchcmd == "On") || (switchcmd == "Group On"))
+			{
+				cmd = HomeConfort_sGroupOn;
+				return true;
+			}
+			//no other combinations for the door switch
+			return false;
+		}
+		if (switchcmd == "Off")
+		{
+			cmd = HomeConfort_sOff;
+			return true;
+		}
+		else if (switchcmd == "On")
+		{
+			cmd = HomeConfort_sOn;
+			return true;
+		}
+		else if (switchcmd == "Group Off")
+		{
+			cmd = HomeConfort_sGroupOff;
+			return true;
+		}
+		else if (switchcmd == "Group On")
+		{
+			cmd = HomeConfort_sGroupOn;
 			return true;
 		}
 		else
@@ -2721,9 +2798,9 @@ const char *Get_Alert_Desc(const int level)
 bool IsSerialDevice(const _eHardwareTypes htype)
 {
 	return (
-		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) ||
+		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) ||
 		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
 		(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINK) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
+		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
 		);
 }

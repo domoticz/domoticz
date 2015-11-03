@@ -5,6 +5,8 @@
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
+#include "../main/WebServer.h"
+#include "../main/mainworker.h"
 #include "hardwaretypes.h"
 #include <string>
 #include <sstream>
@@ -12,14 +14,209 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
+#include "../webserver/cWebem.h"
+#include "../json/json.h"
 
 #include <ctime>
 
 #define round(a) ( int ) ( a + .5 )
 
+std::string MySensorsBase::GetMySensorsValueTypeStr(const enum _eSetType vType)
+{
+	switch (vType)
+	{
+	case V_TEMP:
+		return "V_TEMP";
+	case V_HUM:
+		return "V_HUM";
+	case V_STATUS: //V_LIGHT
+		return "V_STATUS";
+	case V_PERCENTAGE: //V_DIMMER
+		return "V_PERCENTAGE";
+	case V_PRESSURE:
+		return "V_PRESSURE";
+	case V_FORECAST:
+		return "V_FORECAST";
+	case V_RAIN:
+		return "V_RAIN";
+	case V_RAINRATE:
+		return "V_RAINRATE";
+	case V_WIND:
+		return "V_WIND";
+	case V_GUST:
+		return "V_GUST";
+	case V_DIRECTION:
+		return "V_DIRECTION";
+	case V_UV:
+		return "V_UV";
+	case V_WEIGHT:
+		return "V_WEIGHT";
+	case V_DISTANCE:
+		return "V_DISTANCE";
+	case V_IMPEDANCE:
+		return "V_IMPEDANCE";
+	case V_ARMED:
+		return "V_ARMED";
+	case V_TRIPPED:
+		return "V_TRIPPED";
+	case V_WATT:
+		return "V_WATT";
+	case V_KWH:
+		return "V_KWH";
+	case V_SCENE_ON:
+		return "V_SCENE_ON";
+	case V_SCENE_OFF:
+		return "V_SCENE_OFF";
+	case V_HVAC_FLOW_STATE:
+		return "V_HVAC_FLOW_STATE";
+	case V_HVAC_SPEED:
+		return "V_HVAC_SPEED";
+	case V_LIGHT_LEVEL:
+		return "V_LIGHT_LEVEL";
+	case V_VAR1:
+		return "V_VAR1";
+	case V_VAR2:
+		return "V_VAR2";
+	case V_VAR3:
+		return "V_VAR3";
+	case V_VAR4:
+		return "V_VAR4";
+	case V_VAR5:
+		return "V_VAR5";
+	case V_UP:
+		return "V_UP";
+	case V_DOWN:
+		return "V_DOWN";
+	case V_STOP:
+		return "V_STOP";
+	case V_IR_SEND:
+		return "V_IR_SEND";
+	case V_IR_RECEIVE:
+		return "V_IR_RECEIVE";
+	case V_FLOW:
+		return "V_FLOW";
+	case V_VOLUME:
+		return "V_VOLUME";
+	case V_LOCK_STATUS:
+		return "V_LOCK_STATUS";
+	case V_LEVEL:
+		return "V_LEVEL";
+	case V_VOLTAGE:
+		return "V_VOLTAGE";
+	case V_CURRENT:
+		return "V_CURRENT";
+	case V_RGB:
+		return "V_RGB";
+	case V_RGBW:
+		return "V_RGBW";
+	case V_ID:
+		return "V_ID";
+	case V_UNIT_PREFIX:
+		return "V_UNIT_PREFIX";
+	case V_HVAC_SETPOINT_COOL:
+		return "V_HVAC_SETPOINT_COOL";
+	case V_HVAC_SETPOINT_HEAT:
+		return "V_HVAC_SETPOINT_HEAT";
+	case V_HVAC_FLOW_MODE:
+		return "V_HVAC_FLOW_MODE";
+	case V_TEXT:
+		return "V_TEXT";
+	}
+	return "Unknown!";
+}
+
+std::string MySensorsBase::GetMySensorsPresentationTypeStr(const enum _ePresentationType pType)
+{
+	switch (pType)
+	{
+	case S_DOOR:
+		return "S_DOOR";
+	case S_MOTION:
+		return "S_MOTION";
+	case S_SMOKE:
+		return "S_SMOKE";
+	case S_LIGHT:
+		return "S_LIGHT/S_BINARY";
+	case S_DIMMER:
+		return "S_DIMMER";
+	case S_COVER:
+		return "S_COVER";
+	case S_TEMP:
+		return "S_TEMP";
+	case S_HUM:
+		return "S_HUM";
+	case S_BARO:
+		return "S_BARO";
+	case S_WIND:
+		return "S_WIND";
+	case S_RAIN:
+		return "S_RAIN";
+	case S_UV:
+		return "S_UV";
+	case S_WEIGHT:
+		return "S_WEIGHT";
+	case S_POWER:
+		return "S_POWER";
+	case S_HEATER:
+		return "S_HEATER";
+	case S_DISTANCE:
+		return "S_DISTANCE";
+	case S_LIGHT_LEVEL:
+		return "S_LIGHT_LEVEL";
+	case S_ARDUINO_NODE:
+		return "S_ARDUINO_NODE";
+	case S_ARDUINO_REPEATER_NODE:
+		return "S_ARDUINO_REPEATER_NODE";
+	case S_LOCK:
+		return "S_LOCK";
+	case S_IR:
+		return "S_IR";
+	case S_WATER:
+		return "S_WATER";
+	case S_AIR_QUALITY:
+		return "S_AIR_QUALITY";
+	case S_CUSTOM:
+		return "S_CUSTOM";
+	case S_DUST:
+		return "S_DUST";
+	case S_SCENE_CONTROLLER:
+		return "S_SCENE_CONTROLLER";
+	case S_RGB_LIGHT:
+		return "S_RGB_LIGHT";
+	case S_RGBW_LIGHT:
+		return "S_RGBW_LIGHT";
+	case S_COLOR_SENSOR:
+		return "S_COLOR_SENSOR";
+	case S_HVAC:
+		return "S_HVAC";
+	case S_MULTIMETER:
+		return "S_MULTIMETER";
+	case S_SPRINKLER:
+		return "S_SPRINKLER";
+	case S_WATER_LEAK:
+		return "S_WATER_LEAK";
+	case S_SOUND:
+		return "S_SOUND";
+	case S_VIBRATION:
+		return "S_VIBRATION";
+	case S_MOISTURE:
+		return "S_MOISTURE";
+	case S_INFO:
+		return "S_INFO";
+	case S_GAS:
+		return "S_GAS";
+	}
+	return "Unknown!";
+}
+
 MySensorsBase::MySensorsBase(void)
 {
 	m_bufferpos = 0;
+	m_bAckReceived = false;
+	m_AckNodeID = -1;
+	m_AckChildID = -1;
+	m_AckSetType = V_UNKNOWN;
+	m_GatewayVersion = "?";
 }
 
 
@@ -49,7 +246,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 			mNode.nodeID = ID;
 			mNode.SketchName = SkectName;
 			mNode.SketchVersion = SkectVersion;
-			mNode.lastreceived = mytime(NULL);
+			mNode.lastreceived = 0;
 			m_nodes[ID] = mNode;
 		}
 	}
@@ -104,10 +301,21 @@ MySensorsBase::_tMySensorNode* MySensorsBase::InsertNode(const int nodeID)
 	mNode.nodeID = nodeID;
 	mNode.SketchName = "Unknown";
 	mNode.SketchVersion = "1.0";
-	mNode.lastreceived = time(NULL);
+	mNode.lastreceived = 0;
 	m_nodes[mNode.nodeID] = mNode;
 	Add2Database(mNode.nodeID, mNode.SketchName, mNode.SketchVersion);
 	return FindNode(nodeID);
+}
+
+void MySensorsBase::RemoveNode(const int nodeID)
+{
+	m_sql.safe_query("DELETE FROM MySensors WHERE (HardwareID==%d) AND (ID==%d)", m_HwdID, nodeID);
+	m_sql.safe_query("DELETE FROM MySensorsChilds WHERE (HardwareID==%d) AND (NodeID=='%d')",m_HwdID, nodeID);
+}
+
+void MySensorsBase::RemoveChild(const int nodeID, const int childID)
+{
+	m_sql.safe_query("DELETE FROM MySensorsChilds WHERE (HardwareID==%d) AND (NodeID=='%d') AND (ChildID=='%d')", m_HwdID, nodeID, childID);
 }
 
 //Find any sensor with presentation type
@@ -828,10 +1036,39 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	return true;
 }
 
-void MySensorsBase::SendCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload)
+std::string MySensorsBase::GetGatewayVersion()
+{
+	return m_GatewayVersion;
+}
+
+bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload)
+{
+	m_bAckReceived = false;
+	m_AckNodeID = NodeID;
+	m_AckChildID = ChildID;
+	m_AckSetType = SubType;
+
+	SendCommandInt(NodeID, ChildID, messageType, true, SubType, Payload);
+	//Wait some time till we receive an ACK (should be received in 1000ms, but we wait 1200ms)
+	int waitRetries = 0;
+	while ((!m_bAckReceived) && (waitRetries < 12))
+	{
+		sleep_milliseconds(100);
+		waitRetries++;
+	}
+	return m_bAckReceived;
+}
+
+void MySensorsBase::SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload)
+{
+	SendCommandInt(NodeID, ChildID, messageType, false, SubType, Payload);
+}
+
+void MySensorsBase::SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload)
 {
 	std::stringstream sstr;
-	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";0;" << SubType << ";" << Payload << '\n';
+	std::string szAck = (UseAck == true) ? "1" : "0";
+	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";" <<szAck << ";" << SubType << ";" << Payload << '\n';
 	WriteInt(sstr.str());
 }
 
@@ -866,17 +1103,17 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				if (FindChildWithValueType(node_id, V_LOCK_STATUS) != NULL)
 				{
 					//Door lock
-					SendCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState);
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState);
 				}
 				else if ((FindChildWithValueType(node_id, V_SCENE_ON) != NULL) || (FindChildWithValueType(node_id, V_SCENE_OFF) != NULL))
 				{
 					//Scene Controller
-					SendCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState);
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState);
 				}
 				else
 				{
 					//normal
-					SendCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
+					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
 				}
 			}
 			else if (light_command == light2_sSetLevel)
@@ -888,7 +1125,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 				std::stringstream sstr;
 				sstr << svalue;
-				SendCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
 			}
 		}
 		else {
@@ -923,7 +1160,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
 					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
-				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
 			}
 			else if (pLed->command == Limitless_SetColorToWhite)
 			{
@@ -941,7 +1178,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 					sstr << "#000000"
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
 				}
-				SendCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str());
 			}
 			else if (pLed->command == Limitless_SetBrightnessLevel)
 			{
@@ -951,12 +1188,12 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 					svalue = 100;
 				std::stringstream sstr;
 				sstr << svalue;
-				SendCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str());
 			}
 			else if ((pLed->command == Limitless_LedOff) || (pLed->command == Limitless_LedOn))
 			{
 				std::string lState = (pLed->command == Limitless_LedOn) ? "1" : "0";
-				SendCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState);
 			}
 		}
 		else
@@ -975,15 +1212,15 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 		{
 			if (pCmd->BLINDS1.cmnd == blinds_sOpen)
 			{
-				SendCommand(node_id, child_sensor_id, MT_Set, V_UP, "");
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_UP, "");
 			}
 			else if (pCmd->BLINDS1.cmnd == blinds_sClose)
 			{
-				SendCommand(node_id, child_sensor_id, MT_Set, V_DOWN, "");
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_DOWN, "");
 			}
 			else if (pCmd->BLINDS1.cmnd == blinds_sStop)
 			{
-				SendCommand(node_id, child_sensor_id, MT_Set, V_STOP, "");
+				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STOP, "");
 			}
 		}
 		else {
@@ -998,11 +1235,11 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 
 		int node_id = pMeter->id2;
 		int child_sensor_id = pMeter->id3;
-		int vtype_id = pMeter->id4;
+		_eSetType vtype_id = (_eSetType)pMeter->id4;
 
 		char szTmp[10];
 		sprintf(szTmp, "%.1f", pMeter->temp);
-		SendCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp);
+		return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, vtype_id, szTmp);
 	}
 	else if (packettype == pTypeGeneralSwitch)
 	{
@@ -1019,7 +1256,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			{
 				std::stringstream sstr;
 				sstr << ir_code;
-				SendCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str());
+				return SendNodeSetCommand(node_id, pChild->childID, MT_Set, V_IR_SEND, sstr.str());
 			}
 		}
 	}
@@ -1116,7 +1353,6 @@ void MySensorsBase::ParseLine()
 			payload = results[5+ip];
 		}
 	}
-
 	std::stringstream sstr;
 #ifdef _DEBUG
 	_log.Log(LOG_NORM, "MySensors: NodeID: %d, ChildID: %d, MessageType: %d, Ack: %d, SubType: %d, Payload: %s",node_id,child_sensor_id,message_type,ack,sub_type,payload.c_str());
@@ -1126,6 +1362,19 @@ void MySensorsBase::ParseLine()
 	{
 		switch (sub_type)
 		{
+		case I_VERSION:
+			{
+				if ((node_id == 0) && (child_sensor_id == 0))
+				{
+					//Store gateway version
+					m_GatewayVersion = payload;
+					_log.Log(LOG_NORM, "MySensors: Gateway Version: %s", payload.c_str());
+				}
+				else {
+					_log.Log(LOG_NORM, "MySensors: VERSION from NodeID: %d, ChildID: %d, Payload: %s", node_id, child_sensor_id, payload.c_str());
+				}
+			}
+		break;
 		case I_ID_REQUEST:
 			{
 				//Set a unique node id from the controller
@@ -1133,14 +1382,14 @@ void MySensorsBase::ParseLine()
 				if (newID != -1)
 				{
 					sstr << newID;
-					SendCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, sstr.str());
+					SendNodeCommand(node_id, child_sensor_id, message_type, I_ID_RESPONSE, sstr.str());
 				}
 			}
 			break;
 		case I_CONFIG:
 			// (M)etric or (I)mperal back to sensor.
 			//Set a unique node id from the controller
-			SendCommand(node_id, child_sensor_id, message_type, I_CONFIG, "M");
+			SendNodeCommand(node_id, child_sensor_id, message_type, I_CONFIG, "M");
 			break;
 		case I_SKETCH_NAME:
 			_log.Log(LOG_STATUS, "MySensors: Node: %d, Sketch Name: %s", node_id, payload.c_str());
@@ -1176,6 +1425,8 @@ void MySensorsBase::ParseLine()
 			break;
 		case I_GATEWAY_READY:
 			_log.Log(LOG_NORM, "MySensors: Gateway Ready...");
+			//Request Gateway Version
+			SendCommandInt(0, 0, MT_Internal, false, I_VERSION, "Get Version");
 			break;
 		case I_TIME:
 			//send time in seconds from 1970 with timezone offset
@@ -1184,7 +1435,7 @@ void MySensorsBase::ParseLine()
 				boost::posix_time::time_duration dur = tlocal - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1));
 				time_t fltime(dur.total_seconds());
 				sstr << fltime;
-				SendCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
+				SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
 			}
 			break;
 		default:
@@ -1194,6 +1445,8 @@ void MySensorsBase::ParseLine()
 	}
 	else if (message_type == MT_Set)
 	{
+		_eSetType vType = (_eSetType)sub_type;
+
 		_tMySensorNode *pNode = FindNode(node_id);
 		if (pNode == NULL)
 		{
@@ -1211,15 +1464,34 @@ void MySensorsBase::ParseLine()
 			mSensor.nodeID = node_id;
 			mSensor.childID = child_sensor_id;
 			//Get Info from database if child already existed
-			GetChildDBInfo(node_id, child_sensor_id, mSensor.presType, mSensor.childName, mSensor.useAck);
+			if (!GetChildDBInfo(node_id, child_sensor_id, mSensor.presType, mSensor.childName, mSensor.useAck))
+			{
+				UpdateChildDBInfo(node_id, child_sensor_id, S_UNKNOWN, "", (ack != 0));
+			}
 			pNode->m_childs.push_back(mSensor);
 			pChild = pNode->FindChild(child_sensor_id);
 			if (pChild == NULL)
 				return;
 		}
-		pChild->lastreceived = mytime(NULL);
+		pChild->lastreceived = pNode->lastreceived;
 
-		_eSetType vType = (_eSetType)sub_type;
+		if (
+			(ack == 1) &&
+			(node_id == m_AckNodeID) &&
+			(child_sensor_id == m_AckChildID) &&
+			(vType == m_AckSetType))
+		{
+			m_AckNodeID = m_AckChildID = -1;
+			m_AckSetType = V_UNKNOWN;
+			m_bAckReceived = true;
+		}
+
+		if (ack == 1)
+		{
+			//No need to process ack commands
+			return;
+		}
+
 		bool bHaveValue = false;
 		switch (vType)
 		{
@@ -1418,7 +1690,7 @@ void MySensorsBase::ParseLine()
 	else if (message_type == MT_Presentation)
 	{
 		//Ignored for now
-		if ((node_id == 255) || (child_sensor_id == 255))
+		if (node_id == 255)
 			return;
 
 		bool bDoAdd = false;
@@ -1550,9 +1822,10 @@ void MySensorsBase::ParseLine()
 		else if (vType == V_TEXT)
 		{
 			bool bExits = false;
+			std::string mtext=GetTextSensorText(node_id, child_sensor_id, bExits);
 			if (!bExits)
 			{
-				SendTextSensor(node_id, child_sensor_id, 244, "-", (!pSensor->childName.empty()) ? pSensor->childName : "Text Sensor");
+				SendTextSensor(node_id, child_sensor_id, 255, "-", (!pSensor->childName.empty()) ? pSensor->childName : "Text Sensor");
 			}
 		}
 	}
@@ -1567,7 +1840,7 @@ void MySensorsBase::ParseLine()
 		case V_RGB:
 		case V_RGBW:
 			if (GetSwitchValue(node_id, child_sensor_id, sub_type, tmpstr))
-				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+				SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;
 		case V_VAR1:
 		case V_VAR2:
@@ -1577,14 +1850,14 @@ void MySensorsBase::ParseLine()
 			//send back a previous stored custom variable
 			tmpstr = "";
 			GetVar(node_id, child_sensor_id, sub_type, tmpstr);
-			SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+			SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			break;
 		case V_TEXT:
 			{
 				//Get Text sensor value from the database
 				bool bExits = false;
 				tmpstr = GetTextSensorText(node_id, child_sensor_id, bExits);
-				SendCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
+				SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, tmpstr);
 			}
 			break;
 		default:
@@ -1599,3 +1872,207 @@ void MySensorsBase::ParseLine()
 	}
 }
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_MySensorsGetNodes(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string hwid = request::findValue(&req, "idx");
+			if (hwid == "")
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (
+				(pHardware->HwdType != HTYPE_MySensorsUSB)&&
+				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				)
+				return;
+			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pHardware;
+
+			root["status"] = "OK";
+			root["title"] = "MySensorsGetNodes";
+
+			std::vector<std::vector<std::string> > result, result2;
+			char szTmp[100];
+
+			result = m_sql.safe_query("SELECT ID,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC",
+				iHardwareID);
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				std::vector<std::vector<std::string> >::const_iterator itt2;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					int NodeID = atoi(sd[0].c_str());
+
+					root["result"][ii]["idx"] = NodeID;
+					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Version"] = sd[2];
+
+					MySensorsBase::_tMySensorNode* pNode = pMySensorsHardware->FindNode(NodeID);
+
+					if (pNode != NULL)
+					{
+						if (pNode->lastreceived != 0)
+						{
+							struct tm loctime;
+							localtime_r(&pNode->lastreceived, &loctime);
+							strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
+							root["result"][ii]["LastReceived"] = szTmp;
+						}
+						else
+						{
+							root["result"][ii]["LastReceived"] = "-";
+						}
+					}
+					else
+					{
+						root["result"][ii]["LastReceived"] = "-";
+					}
+					result2 = m_sql.safe_query("SELECT COUNT(*) FROM MySensorsChilds WHERE(NodeID == %d)", NodeID);
+					int totChilds = 0;
+					if (!result2.empty())
+					{
+						totChilds = atoi(result2[0][0].c_str());
+					}
+					root["result"][ii]["Childs"] = totChilds;
+					ii++;
+				}
+			}
+		}
+		void CWebServer::Cmd_MySensorsGetChilds(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
+			if (
+				(hwid == "")||
+				(nodeid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pHardware == NULL)
+				return;
+			if (
+				(pHardware->HwdType != HTYPE_MySensorsUSB) &&
+				(pHardware->HwdType != HTYPE_MySensorsTCP)
+				)
+				return;
+			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pHardware;
+
+			root["status"] = "OK";
+			root["title"] = "MySensorsGetChilds";
+			int NodeID = atoi(nodeid.c_str());
+			MySensorsBase::_tMySensorNode* pNode = pMySensorsHardware->FindNode(NodeID);
+			std::vector<std::vector<std::string> >::const_iterator itt2;
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck FROM MySensorsChilds WHERE(NodeID == %d) ORDER BY ChildID ASC", NodeID);
+			int ii = 0;
+			for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
+			{
+				std::vector<std::string> sd2 = *itt2;
+				int ChildID = atoi(sd2[0].c_str());
+				root["result"][ii]["child_id"] = ChildID;
+				root["result"][ii]["type"] = MySensorsBase::GetMySensorsPresentationTypeStr((MySensorsBase::_ePresentationType)atoi(sd2[1].c_str()));
+				root["result"][ii]["name"] = sd2[2];
+				root["result"][ii]["use_ack"] = (sd2[3] != "0") ? "true" : "false";
+				std::string szDate = "-";
+				std::string szValues = "";
+				if (pNode != NULL)
+				{
+					MySensorsBase::_tMySensorChild*  pChild = pNode->FindChild(ChildID);
+					if (pChild != NULL)
+					{
+						std::vector<MySensorsBase::_eSetType> cvalues = pChild->GetChildValueTypes();
+						std::vector<MySensorsBase::_eSetType>::const_iterator citt;
+						for (citt = cvalues.begin(); citt != cvalues.end(); ++citt)
+						{
+							if (!szValues.empty())
+								szValues += ", ";
+							szValues += MySensorsBase::GetMySensorsValueTypeStr(*citt);
+						}
+						if (pChild->lastreceived != 0)
+						{
+							char szTmp[100];
+							struct tm loctime;
+							localtime_r(&pChild->lastreceived, &loctime);
+							strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
+							szDate = szTmp;
+						}
+					}
+				}
+				root["result"][ii]["Values"] = szValues;
+				root["result"][ii]["LastReceived"] = szDate;
+				ii++;
+			}
+		}
+		void CWebServer::Cmd_MySensorsRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
+			if (
+				(hwid == "") ||
+				(nodeid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (
+				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				)
+				return;
+			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "MySensorsRemoveNode";
+			pMySensorsHardware->RemoveNode(NodeID);
+		}
+		void CWebServer::Cmd_MySensorsRemoveChild(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
+			std::string childid = request::findValue(&req, "childid");
+			if (
+				(hwid == "") ||
+				(nodeid == "") ||
+				(childid == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (
+				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				)
+				return;
+			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			int NodeID = atoi(nodeid.c_str());
+			int ChildID = atoi(childid.c_str());
+			root["status"] = "OK";
+			root["title"] = "MySensorsRemoveChild";
+			pMySensorsHardware->RemoveChild(NodeID,ChildID);
+		}
+	}
+}

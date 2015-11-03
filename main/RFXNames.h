@@ -116,7 +116,7 @@ enum _eHardwareTypes {
 	HTYPE_MQTT,					//43
 	HTYPE_FRITZBOX,				//44
 	HTYPE_ETH8020,				//45
-	HTYPE_RFLINK,				//46
+	HTYPE_RFLINKUSB,			//46
 	HTYPE_KMTronicUSB,			//47
 	HTYPE_KMTronicTCP,			//48
 	HTYPE_SOLARMAXTCP,			//49
@@ -131,6 +131,8 @@ enum _eHardwareTypes {
 	HTYPE_SatelIntegra,			//58
 	HTYPE_Tellstick,			//59
 	HTYPE_LogitechMediaServer,	//60
+	HTYPE_RFXtrx868,			//61
+	HTYPE_RFLINKTCP,			//62
 	HTYPE_END
 };
 

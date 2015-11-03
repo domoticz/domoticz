@@ -12,7 +12,39 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-//#define DEBUG_WUNDERGROUND
+#ifdef _DEBUG
+	//#define DEBUG_WUNDERGROUND
+#endif
+
+#ifdef DEBUG_WUNDERGROUND2
+void SaveString2Disk(std::string str, std::string filename)
+{
+	FILE *fOut = fopen(filename.c_str(), "wb+");
+	if (fOut)
+	{
+		fwrite(str.c_str(), 1, str.size(), fOut);
+		fclose(fOut);
+	}
+}
+#endif
+#ifdef DEBUG_WUNDERGROUND
+std::string ReadFile(std::string filename)
+{
+	std::ifstream file;
+	std::string sResult = "";
+	file.open(filename.c_str());
+	if (!file.is_open())
+		return "";
+	std::string sLine;
+	while (!file.eof())
+	{
+		getline(file, sLine);
+		sResult += sLine;
+	}
+	file.close();
+	return sResult;
+}
+#endif
 
 CWunderground::CWunderground(const int ID, const std::string APIKey, const std::string Location)
 {
@@ -36,9 +68,11 @@ bool CWunderground::StartHardware()
 	Init();
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CWunderground::Do_Work, this)));
+	if (!m_thread)
+		return false;
 	m_bIsStarted=true;
 	sOnConnected(this);
-	return (m_thread!=NULL);
+	return true;
 }
 
 bool CWunderground::StopHardware()
@@ -56,6 +90,8 @@ bool CWunderground::StopHardware()
 void CWunderground::Do_Work()
 {
 	int sec_counter = 590;
+	_log.Log(LOG_STATUS, "Wunderground: Worker started...");
+
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -63,7 +99,11 @@ void CWunderground::Do_Work()
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
+#ifdef DEBUG_WUNDERGROUND
+		if (sec_counter % 10 == 0)
+#else
 		if (sec_counter % 600 == 0)
+#endif
 		{
 			GetMeterDetails();
 		}
@@ -76,23 +116,6 @@ bool CWunderground::WriteToHardware(const char *pdata, const unsigned char lengt
 	return false;
 }
 
-static std::string readWUndergroundTestFile( const char *path )
-{
-	FILE *file = fopen( path, "rb" );
-	if ( !file )
-		return std::string("");
-	fseek( file, 0, SEEK_END );
-	long size = ftell( file );
-	fseek( file, 0, SEEK_SET );
-	std::string text;
-	char *buffer = new char[size+1];
-	buffer[size] = 0;
-	if ( fread( buffer, 1, size, file ) == (unsigned long)size )
-		text = buffer;
-	fclose( file );
-	delete[] buffer;
-	return text;
-}
 std::string CWunderground::GetForecastURL()
 {
 	std::stringstream sURL;
@@ -105,7 +128,7 @@ void CWunderground::GetMeterDetails()
 {
 	std::string sResult;
 #ifdef DEBUG_WUNDERGROUND
-	sResult=readWUndergroundTestFile("E:\\underground.json");
+	sResult= ReadFile("E:\\wu.json");
 #else
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
@@ -118,7 +141,9 @@ void CWunderground::GetMeterDetails()
 		_log.Log(LOG_ERROR,"Wunderground: Error getting http data!");
 		return;
 	}
-
+#ifdef DEBUG_WUNDERGROUND2
+	SaveString2Disk(sResult, "E:\\wu.json");
+#endif
 #endif
 	Json::Value root;
 

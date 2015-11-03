@@ -91,12 +91,12 @@ var
  
 function GetParams(Value: string): string;
 begin
-  Result := '-www '+ConfigPage.Values[0]+' -sslwww '+ConfigPage.Values[1]+' -log "'+ LogConfigPage.Values[0] +'\domoticz.log"';
+  Result := '-www '+ConfigPage.Values[0]+' -sslwww '+ConfigPage.Values[1];
 end;
 
 function GetParamsService(Value: string): string;
 begin
-  Result := '-www '+ConfigPage.Values[0]+' -sslwww '+ConfigPage.Values[1]+' -log ""'+ LogConfigPage.Values[0] +'\domoticz.log""';
+  Result := '-www '+ConfigPage.Values[0]+' -sslwww '+ConfigPage.Values[1];
 end;
 
 procedure InitializeWizard;
