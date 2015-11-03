@@ -63,7 +63,8 @@
 #include "../hardware/MQTT.h"
 #include "../hardware/FritzboxTCP.h"
 #include "../hardware/ETH8020.h"
-#include "../hardware/RFLink.h"
+#include "../hardware/RFLinkSerial.h"
+#include "../hardware/RFLinkTCP.h"
 #include "../hardware/KMTronicSerial.h"
 #include "../hardware/KMTronicTCP.h"
 #include "../hardware/KMTronic433.h"
@@ -278,6 +279,7 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	if (
 		(pHardware->HwdType != HTYPE_RFXtrx315) &&
 		(pHardware->HwdType != HTYPE_RFXtrx433) &&
+		(pHardware->HwdType != HTYPE_RFXtrx868) &&
 		(pHardware->HwdType != HTYPE_RFXLAN)
 		)
 	{
@@ -566,6 +568,7 @@ bool MainWorker::AddHardwareFromParams(
 	{
 	case HTYPE_RFXtrx315:
 	case HTYPE_RFXtrx433:
+	case HTYPE_RFXtrx868:
 	case HTYPE_P1SmartMeter:
 	case HTYPE_Rego6XX:
 	case HTYPE_DavisVantage:
@@ -580,12 +583,13 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EnOceanESP3:
 	case HTYPE_Meteostick:
 	case HTYPE_EVOHOME_SERIAL:
-	case HTYPE_RFLINK:
+	case HTYPE_RFLINKUSB:
 	{
 			//USB/Serial
 			if (
-				(Type==HTYPE_RFXtrx315)||
-				(Type==HTYPE_RFXtrx433)
+				(Type == HTYPE_RFXtrx315) ||
+				(Type == HTYPE_RFXtrx433) ||
+				(Type == HTYPE_RFXtrx868)
 				)
 			{
 				pHardware = new RFXComSerial(ID, SerialPort, 38400);
@@ -636,9 +640,9 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type == HTYPE_OpenZWave)
 			{
-#ifdef WITH_OPENZWAVE
+	#ifdef WITH_OPENZWAVE
 				pHardware = new COpenZWave(ID, SerialPort);
-#endif
+	#endif
 			}
 			else if (Type==HTYPE_EnOceanESP2)
 			{
@@ -652,11 +656,11 @@ bool MainWorker::AddHardwareFromParams(
 			{
 				pHardware = new CEvohome(ID,SerialPort);
 			}
-			else if (Type == HTYPE_RFLINK)
+			else if (Type == HTYPE_RFLINKUSB)
 			{
-				pHardware = new CRFLink(ID, SerialPort);
+				pHardware = new CRFLinkSerial(ID, SerialPort);
 			}
-	}
+		}
 		break;
 	case HTYPE_RFXLAN:
 		//LAN
@@ -685,6 +689,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_MySensorsTCP:
 		//LAN
 		pHardware = new MySensorsTCP(ID, Address, Port);
+		break;
+	case HTYPE_RFLINKTCP:
+		//LAN
+		pHardware = new CRFLinkTCP(ID, Address, Port);
 		break;
 	case HTYPE_MQTT:
 		//LAN
@@ -750,7 +758,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_LogitechMediaServer:
 		//Logitech Media Server
-		pHardware = new CLogitechMediaServer(ID, Address, Port, Mode1, Mode2);
+		pHardware = new CLogitechMediaServer(ID, Address, Port, Username, Password, Mode1, Mode2);
 		break;
 #ifndef WIN32
 	case HTYPE_TE923:
@@ -1513,6 +1521,12 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 		ID = szTmp;
 		Unit=pResponse->LIGHTING6.unitcode;
 	}
+	else if (devType == pTypeHomeConfort)
+	{
+		sprintf(szTmp, "%02X%02X%02X%02X", pResponse->HOMECONFORT.id1, pResponse->HOMECONFORT.id2, pResponse->HOMECONFORT.id3, pResponse->HOMECONFORT.housecode);
+		ID = szTmp;
+		Unit = pResponse->HOMECONFORT.unitcode;
+	}
 	else if ((devType == pTypeRadiator1) && (subType == sTypeSmartwaresSwitchRadiator))
 	{
 		sprintf(szTmp, "%X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
@@ -1694,6 +1708,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			case pTypeThermostat3:
 			case pTypeRadiator1:
 			case pTypeGeneralSwitch:
+			case pTypeHomeConfort:
 				//we received a control message from a domoticz client,
 				//and should actually perform this command ourself switch
 				DeviceRowIdx = PerformRealActionFromDomoticzClient(pRXCommand, &pOrgHardware);
@@ -1894,6 +1909,9 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 			break;
 		case pTypeGeneralSwitch:
 			DeviceRowIdx = decode_GeneralSwitch(pHardware, HwdID, (tRBUF *)pRXCommand);
+			break;
+		case pTypeHomeConfort:
+			DeviceRowIdx = decode_HomeConfort(pHardware, HwdID, (tRBUF *)pRXCommand);
 			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
@@ -4675,6 +4693,84 @@ unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHa
 			break;
 		}
 		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING6.rssi);
+		WriteMessage(szTmp);
+		WriteMessageEnd();
+	}
+	return DevRowIdx;
+}
+
+unsigned long long MainWorker::decode_HomeConfort(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+{
+	char szTmp[100];
+	unsigned char devType = pTypeHomeConfort;
+	unsigned char subType = pResponse->HOMECONFORT.subtype;
+	sprintf(szTmp, "%02X%02X%02X%02X", pResponse->HOMECONFORT.id1, pResponse->HOMECONFORT.id2, pResponse->HOMECONFORT.id3, pResponse->HOMECONFORT.housecode);
+	std::string ID = szTmp;
+	unsigned char Unit = pResponse->HOMECONFORT.unitcode;
+	unsigned char cmnd = pResponse->HOMECONFORT.cmnd;
+	unsigned char SignalLevel = pResponse->HOMECONFORT.rssi;
+
+	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, m_LastDeviceName);
+
+	bool isGroupCommand = ((cmnd == HomeConfort_sGroupOff) || (cmnd == HomeConfort_sGroupOn));
+	unsigned char single_cmnd = cmnd;
+
+	if (isGroupCommand)
+	{
+		single_cmnd = (cmnd == HomeConfort_sGroupOff) ? HomeConfort_sOff : HomeConfort_sOn;
+
+		// We write the GROUP_CMD into the log to differentiate between manual turn off/on and group_off/group_on
+		m_sql.UpdateValueHomeConfortGroupCmd(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, m_LastDeviceName);
+
+		//set the status of all lights with the same code to on/off
+		m_sql.HomeConfortGroupCmd(ID, subType, single_cmnd);
+	}
+
+	if (DevRowIdx == -1)
+		return -1;
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
+
+	if (m_verboselevel == EVBL_ALL)
+	{
+		WriteMessageStart();
+		switch (pResponse->HOMECONFORT.subtype)
+		{
+		case sTypeHomeConfortTEL010:
+			WriteMessage("subtype       = TEL-010");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->HOMECONFORT.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->HOMECONFORT.id1, pResponse->HOMECONFORT.id2, pResponse->HOMECONFORT.id3);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "housecode     = %d", pResponse->HOMECONFORT.housecode);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "unitcode      = %d", pResponse->HOMECONFORT.unitcode);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->HOMECONFORT.cmnd)
+			{
+			case HomeConfort_sOff:
+				WriteMessage("Off");
+				break;
+			case HomeConfort_sOn:
+				WriteMessage("On");
+				break;
+			case HomeConfort_sGroupOff:
+				WriteMessage("Group Off");
+				break;
+			case HomeConfort_sGroupOn:
+				WriteMessage("Group On");
+				break;
+			default:
+				WriteMessage("UNKNOWN");
+				break;
+			}
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->HOMECONFORT.packettype, pResponse->HOMECONFORT.subtype);
+			WriteMessage(szTmp);
+			break;
+		}
+		sprintf(szTmp, "Signal level  = %d", pResponse->HOMECONFORT.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -7832,10 +7928,11 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 			if (
 				(pHardware->HwdType == HTYPE_RFXLAN) ||
 				(pHardware->HwdType == HTYPE_RFXtrx315) ||
-				(pHardware->HwdType == HTYPE_RFXtrx433)
+				(pHardware->HwdType == HTYPE_RFXtrx433) ||
+				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
-				volt /= 10;
+				volt *= 10;
 			}
 			sprintf(szTmp, "%d", volt);
 		}
@@ -9453,8 +9550,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			else if (switchtype == STYPE_Media)
 			{
-				level = (level < 0) ? 0 : level;
-				level = (level > 100) ? 100 : level;
+				if (switchcmd == "Set Volume") {
+					level = (level < 0) ? 0 : level;
+					level = (level > 100) ? 100 : level;
+				}
 			}
 			else 
 				level = (level > 15) ? 15 : level;
@@ -9668,6 +9767,32 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				DecodeRXMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd);
+			}
+			return true;
+		}
+		break;
+	case pTypeHomeConfort:
+		{
+			tRBUF lcmd;
+			lcmd.HOMECONFORT.packetlength = sizeof(lcmd.HOMECONFORT) - 1;
+			lcmd.HOMECONFORT.packettype = dType;
+			lcmd.HOMECONFORT.subtype = dSubType;
+			lcmd.HOMECONFORT.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.HOMECONFORT.id1 = ID1;
+			lcmd.HOMECONFORT.id2 = ID2;
+			lcmd.HOMECONFORT.id3 = ID3;
+			lcmd.HOMECONFORT.housecode = ID4;
+			lcmd.HOMECONFORT.unitcode = Unit;
+
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.HOMECONFORT.cmnd))
+				return false;
+			lcmd.HOMECONFORT.filler = 0;
+			lcmd.HOMECONFORT.rssi = 7;
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.HOMECONFORT)))
+				return false;
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				DecodeRXMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd);
 			}
 			return true;
 		}

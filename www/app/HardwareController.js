@@ -102,8 +102,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1)
-				|| (text.indexOf("Logitech Media Server") >= 0))
+            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("Integra") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1))
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -385,6 +384,49 @@ define(['app'], function (app) {
                      }
                 });
             }
+            else if (text.indexOf("Logitech Media Server") >= 0)
+            {
+                var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                if (address=="")
+                {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                var port=$("#hardwarecontent #divremote #tcpport").val();
+                if (port=="")
+                {
+                    ShowNotify($.t('Please enter an Port!'), 2500, true);
+                    return;
+                }
+                var intRegex = /^\d+$/;
+                if(!intRegex.test(port)) {
+                    ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
+                    return;
+                }
+                var username=$("#hardwarecontent #divlogin #username").val();
+                var password=$("#hardwarecontent #divlogin #password").val();
+
+                $.ajax({
+                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                        "&address=" + address +
+                        "&port=" + port +
+                        "&username=" + encodeURIComponent(username) +
+                        "&password=" + encodeURIComponent(password) +
+                        "&name=" + encodeURIComponent(name) +
+                        "&enabled=" + bEnabled +
+                        "&idx=" + idx +
+                        "&datatimeout=" + datatimeout +
+                        "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                     }
+                });
+            }
         }
 
         AddHardware = function()
@@ -441,8 +483,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1 && text.indexOf("Integra") == -1)
-				|| (text.indexOf("Logitech Media Server") >= 0))
+            else if ((text.indexOf("LAN") >= 0 && text.indexOf("YouLess") == -1 && text.indexOf("ETH8020") == -1 && text.indexOf("Anna") == -1 && text.indexOf("KMTronic") == -1 && text.indexOf("MQTT") == -1 && text.indexOf("Integra") == -1))
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -542,7 +583,7 @@ define(['app'], function (app) {
                      }
                 });
             }
-            else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("ETH8020") >= 0) || (text.indexOf("Anna") >= 0) || (text.indexOf("KMTronic") >= 0) || (text.indexOf("MQTT") >= 0))
+            else if ((text.indexOf("Domoticz") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("ETH8020") >= 0) || (text.indexOf("Anna") >= 0) || (text.indexOf("KMTronic") >= 0) || (text.indexOf("MQTT") >= 0) || (text.indexOf("Logitech Media Server") >= 0))
             {
                 var address=$("#hardwarecontent #divremote #tcpaddress").val();
                 if (address=="")
@@ -764,6 +805,40 @@ define(['app'], function (app) {
                 $('#hardwarecontent #RSL').prop('checked',false);
                 $('#hardwarecontent #ByronSX').prop('checked',false);
                 $('#hardwarecontent #ImaginTronix').prop('checked',false);
+            });
+        }
+
+        EditRFXCOMMode868 = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
+        {
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent+=$('#rfx868hardwaremode').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            $('#hardwarecontent #submitbutton').click(function (e) {
+                e.preventDefault();
+                SetRFXCOMMode868();
+            });
+            $('#hardwarecontent #firmwarebutton').click(function (e) {
+                e.preventDefault();
+                $rootScope.hwidx = $('#hardwarecontent #idx').val();
+                SwitchLayout('RFXComFirmware');
+            });
+
+            $('#hardwarecontent #idx').val(idx);
+
+            $('#hardwarecontent #defaultbutton').click(function (e) {
+                e.preventDefault();
+                $('#hardwarecontent #LaCrosse').prop('checked',false);
+                $('#hardwarecontent #Alecto').prop('checked',false);
+                $('#hardwarecontent #FS20').prop('checked',false);
+                $('#hardwarecontent #ProGuard').prop('checked',false);
+                $('#hardwarecontent #VionicPowerCode').prop('checked',false);
+                $('#hardwarecontent #Hideki').prop('checked',false);
+                $('#hardwarecontent #FHT8').prop('checked',false);
+                $('#hardwarecontent #VionicCodeSecure').prop('checked',false);
             });
         }
 
@@ -1231,6 +1306,208 @@ define(['app'], function (app) {
             $('#hardwarecontent #idx').val(idx);
 
             RefreshPingerNodeTable();
+        }
+        
+        MySensorsDeleteNode = function(nodeid)
+        {
+            if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
+                return;
+            }
+            bootbox.confirm($.t("Are you sure to remove this Node?"), function(result) {
+                if (result==true) {
+                    $.ajax({
+                         url: "json.htm?type=command&param=mysensorsremovenode" +
+                            "&idx=" + $.devIdx +
+                            "&nodeid=" + nodeid,
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            RefreshMySensorsNodeTable();
+                         },
+                         error: function(){
+                            ShowNotify($.t('Problem Deleting Node!'), 2500, true);
+                         }
+                    });
+                }
+            });
+        }
+        MySensorsDeleteChild = function(nodeid,childid)
+        {
+            if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
+                return;
+            }
+            bootbox.confirm($.t("Are you sure to remove this Child?"), function(result) {
+                if (result==true) {
+                    $.ajax({
+                         url: "json.htm?type=command&param=mysensorsremovechild" +
+                            "&idx=" + $.devIdx +
+                            "&nodeid=" + nodeid +
+                            "&childid=" + childid,
+                         async: false,
+                         dataType: 'json',
+                         success: function(data) {
+                            MySensorsRefreshActiveDevicesTable();
+                         },
+                         error: function(){
+                            ShowNotify($.t('Problem Deleting Child!'), 2500, true);
+                         }
+                    });
+                }
+            });
+        }
+
+		MySensorsRefreshActiveDevicesTable = function()
+		{
+			//$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+			var oTable = $('#mysensorsactivetable').dataTable();
+			oTable.fnClearTable();
+			if ($.nodeid==-1) {
+				return;
+			}
+			$.ajax({
+				url: "json.htm?type=command&param=mysensorsgetchilds" +
+					"&idx=" + $.devIdx + 
+					"&nodeid=" + $.nodeid, 
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (typeof data.result != 'undefined') {
+						var totalItems=data.result.length;
+						$.each(data.result, function(i,item){
+							var addId = oTable.fnAddData( {
+								"DT_RowId": item.child_id,
+								"0": item.child_id,
+								"1": item.type,
+								"2": item.name,
+								"3": item.Values,
+								"4": item.use_ack,
+								"5": item.LastReceived
+							});
+						});
+					}
+				}
+			});
+			/* Add a click handler to the rows - this could be used as a callback */
+			$("#mysensorsactivetable tbody").off();
+			$("#mysensorsactivetable tbody").on( 'click', 'tr', function () {
+				if ( $(this).hasClass('row_selected') ) {
+					$(this).removeClass('row_selected');
+					$('#delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+				}
+				else {
+					var oTable = $('#mysensorsactivetable').dataTable();
+					oTable.$('tr.row_selected').removeClass('row_selected');
+					$(this).addClass('row_selected');
+					$('#activedevicedelete').attr("class", "btnstyle3");
+					var anSelected = fnGetSelected( oTable );
+					if ( anSelected.length !== 0 ) {
+						var data = oTable.fnGetData( anSelected[0] );
+						var idx= data["DT_RowId"];
+						$("#activedevicedelete").attr("href", "javascript:MySensorsDeleteChild(" + $.nodeid + "," + idx + ")");
+					}
+				}
+			}); 
+
+		  $('#modal').hide();
+		}
+
+        RefreshMySensorsNodeTable = function()
+        {
+          $('#modal').show();
+          var oTable = $('#mysensorsnodestable').dataTable();
+          oTable.fnClearTable();
+		  $.nodeid=-1;
+          $.ajax({
+             url: "json.htm?type=command&param=mysensorsgetnodes&idx="+$.devIdx,
+             async: false,
+             dataType: 'json',
+             success: function(data) {
+              if (typeof data.result != 'undefined') {
+                $.each(data.result, function(i,item){
+                    var addId = oTable.fnAddData( {
+                        "DT_RowId": item.idx,
+                        "Name": item.Name,
+                        "Version": item.Version,
+                        "0": item.idx,
+                        "1": item.Name,
+                        "2": item.Version,
+                        "3": item.Childs,
+                        "4": item.LastReceived
+                    } );
+                });
+              }
+             }
+          });
+
+            /* Add a click handler to the rows - this could be used as a callback */
+            $("#mysensorsnodestable tbody").off();
+            $("#mysensorsnodestable tbody").on( 'click', 'tr', function () {
+                $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+                if ( $(this).hasClass('row_selected') ) {
+                    $(this).removeClass('row_selected');
+                }
+                else {
+                    var oTable = $('#mysensorsnodestable').dataTable();
+                    oTable.$('tr.row_selected').removeClass('row_selected');
+                    $(this).addClass('row_selected');
+                    var anSelected = fnGetSelected( oTable );
+                    if ( anSelected.length !== 0 ) {
+                        var data = oTable.fnGetData( anSelected[0] );
+                        var idx= data["DT_RowId"];
+                        $('#updelclr #nodedelete').attr("class", "btnstyle3");
+                        $("#updelclr #nodedelete").attr("href", "javascript:MySensorsDeleteNode(" + idx + ")");
+                        $.nodeid = idx;
+                        MySensorsRefreshActiveDevicesTable();
+                    }
+                }
+            });
+
+          $('#modal').hide();
+        }
+
+        EditMySensors = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
+        {
+            $.devIdx=idx;
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent+=$('#mysensors').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            var oTable = $('#mysensorsnodestable').dataTable( {
+              "sDom": '<"H"lfrC>t<"F"ip>',
+              "oTableTools": {
+                "sRowSelect": "single"
+              },
+              "aaSorting": [[ 0, "asc" ]],
+              "bSortClasses": false,
+              "bProcessing": true,
+              "bStateSave": true,
+              "bJQueryUI": true,
+              "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+              "iDisplayLength" : 25,
+              "sPaginationType": "full_numbers",
+              language: $.DataTableLanguage
+            } );
+			oTable = $('#mysensorsactivetable').dataTable( {
+				"sDom": '<"H"lfrC>t<"F"ip>',
+					"oTableTools": {
+					"sRowSelect": "single"
+				},
+				"aaSorting": [[ 0, "asc" ]],
+				"bSortClasses": false,
+				"bProcessing": true,
+				"bStateSave": true,
+				"bJQueryUI": true,
+				"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+				"iDisplayLength" : 25,
+				"sPaginationType": "full_numbers",
+				language: $.DataTableLanguage
+			});
+
+            $('#hardwarecontent #idx').val(idx);
+			RefreshMySensorsNodeTable();
         }
 
         AddKodiNode = function () {
@@ -2695,7 +2972,12 @@ define(['app'], function (app) {
                     if (HwTypeStr.indexOf("RFXCOM") >= 0)
                     {
                         HwTypeStr+='<br>Firmware version: ' + item.Mode2;
-                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
+                        if (HwTypeStr.indexOf("868") >= 0) {
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode868(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
+                        }
+                        else {
+							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
+						}
                     }
                     else if (HwTypeStr.indexOf("S0 Meter USB") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditS0MeterType(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
@@ -2716,6 +2998,10 @@ define(['app'], function (app) {
                     }
                     else if (HwTypeStr.indexOf("SBFSpot") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditSBFSpot(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
+                    }
+                    else if (HwTypeStr.indexOf("MySensors") >= 0) {
+                        HwTypeStr+='<br>Version: ' + item.version;
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditMySensors(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
@@ -2873,11 +3159,11 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divremote #tcpaddress").val(data["Address"]);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0) ||(data["Type"].indexOf("Satel") >= 0) ||(data["Type"].indexOf("Logitech Media Server") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                             $("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -2898,7 +3184,7 @@ define(['app'], function (app) {
                             $("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
                             $("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
                         }
-                        if (data["Type"].indexOf("MQTT") >= 0) {
+                        else if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
                         }                        
@@ -2914,7 +3200,8 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("KMTronic") >= 0)||
                             (data["Type"].indexOf("MQTT") >= 0)||
                             (data["Type"].indexOf("Netatmo Weather Station") >= 0)||
-                            (data["Type"].indexOf("Thermosmart") >= 0)
+                            (data["Type"].indexOf("Thermosmart") >= 0) ||
+							(data["Type"].indexOf("Logitech Media Server") >= 0)
                             )
                         {
                             $("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
@@ -3068,7 +3355,7 @@ define(['app'], function (app) {
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
-                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divlogin").show();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
             }
             else

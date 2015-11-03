@@ -308,9 +308,6 @@ define(['app'], function (app) {
 				  else if (item.SubType=="Sound Level") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
 				  }
-				  else if (item.Type.indexOf("Current")==0) {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCurrentLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">';
-				  }
 				  else if (typeof item.Counter != 'undefined') {
 					  if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
 						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowSmartLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
@@ -330,6 +327,9 @@ define(['app'], function (app) {
 				  }
 				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType == "kWh")) {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLogSpline(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+				  }
+				  else if (item.Type.indexOf("Current")==0) {
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCurrentLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">';
 				  }
 				  else if (item.Type == "Air Quality") {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowAirQualityLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';

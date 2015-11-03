@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 83
+#define DB_VERSION 84
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -556,6 +556,16 @@ const char *sqlCreateToonDevices =
 	" [HardwareID] INTEGER NOT NULL,"
 	" [UUID] VARCHAR(100) NOT NULL);";
 
+const char *sqlCreateUserSessions =
+	"CREATE TABLE IF NOT EXISTS [UserSessions]("
+	" [SessionID] VARCHAR(100) NOT NULL,"
+	" [Username] VARCHAR(100) NOT NULL,"
+	" [AuthToken] VARCHAR(100) UNIQUE NOT NULL,"
+	" [ExpirationDate] DATETIME NOT NULL,"
+	" [RemoteHost] VARCHAR(50) NOT NULL,"
+	" [LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime')),"
+	" PRIMARY KEY([SessionID]));";
+
 extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper(void)
@@ -676,6 +686,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateMySensorsChilds);
 	query(sqlCreateToonDevices);
+	query(sqlCreateUserSessions);
 	//Add indexes to log tables
 	query("create index if not exists f_idx on Fan(DeviceRowID);");
 	query("create index if not exists fc_idx on Fan_Calendar(DeviceRowID);");
@@ -1901,6 +1912,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("TempComfort", "22.0");
 	}
+	if ((!GetPreferencesVar("DegreeDaysBaseTemperature", sValue)) || (sValue.empty()))
+	{
+		UpdatePreferencesVar("DegreeDaysBaseTemperature", "18.0");
+	}
 	if ((!GetPreferencesVar("HTTPURL", sValue)) || (sValue.empty()))
 	{
 		sValue = "https://www.somegateway.com/pushurl.php?username=#FIELD1&password=#FIELD2&apikey=#FIELD3&from=#FIELD4&to=#TO&message=#MESSAGE";
@@ -1918,7 +1933,7 @@ bool CSQLHelper::OpenDatabase()
 	}
 	if (nValue < 1)
 		nValue = 5;
-	m_ShortLogInterval = 5;// nValue;
+	m_ShortLogInterval = nValue;
 	if (!GetPreferencesVar("DisplayPowerUsageInkWhGraph", nValue))
 	{
 		UpdatePreferencesVar("DisplayPowerUsageInkWhGraph", 1);
@@ -2019,6 +2034,7 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting6:
 					case pTypeLimitlessLights:
 					case pTypeGeneralSwitch:
+					case pTypeHomeConfort:
 						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
 						break;
 					case pTypeSecurity1:
@@ -2371,9 +2387,7 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 	localtime_r(&now,&ltime);
 
 	//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
-	result = safe_query("SELECT ParentID FROM LightSubDevices WHERE (DeviceRowID=='%q') AND (DeviceRowID!=ParentID)",
-		idx.c_str()
-		);
+	result = safe_query("SELECT A.ParentID, B.Name, B.HardwareID, B.[Type], B.[SubType], B.Unit FROM LightSubDevices as A, DeviceStatus as B WHERE (A.DeviceRowID=='%q') AND (A.DeviceRowID!=A.ParentID) AND (B.[ID] == A.ParentID)", idx.c_str());
 	if (result.size()>0)
 	{
 		//This is a sub/slave device for another main device
@@ -2389,11 +2403,15 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				sd[0].c_str()
 				);
 
-			//------
-			//Should call eventsystem for the main switch here
-			//m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
-			//------
-
+			//Call the EventSystem for the main switch
+			unsigned long long ParentID = (unsigned long long)atoll(sd[0].c_str());
+			std::string ParentName = sd[1];
+			int ParentHardwareID = atoi(sd[2].c_str());
+			unsigned char ParentType = (unsigned char)atoi(sd[3].c_str());
+			unsigned char ParentSubType = (unsigned char)atoi(sd[4].c_str());
+			unsigned char ParentUnit = (unsigned char)atoi(sd[5].c_str());
+			m_mainworker.m_eventsystem.ProcessDevice(ParentHardwareID, ParentID, ParentUnit, ParentType, ParentSubType, signallevel, batterylevel, nValue, sValue, ParentName, 0);
+			
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 			result2 = safe_query(
@@ -2457,6 +2475,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 						break;
 					case pTypeGeneralSwitch:
 						newnValue = gswitch_sOff;
+						break;
+					case pTypeHomeConfort:
+						newnValue = HomeConfort_sOff;
 						break;
 					default:
 						continue;
@@ -2536,6 +2557,9 @@ unsigned long long CSQLHelper::UpdateValue(const int HardwareID, const char* ID,
 				break;
 			case pTypeGeneralSwitch:
 				newnValue = gswitch_sOff;
+				break;
+			case pTypeHomeConfort:
+				newnValue = HomeConfort_sOff;
 				break;
 			default:
 				continue;
@@ -2658,6 +2682,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 	case pTypeThermostat3:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
+	case pTypeHomeConfort:
 	case pTypeRadiator1:
 		if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 			break;
@@ -2767,14 +2792,16 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				}
 			}
 
-			_eHardwareTypes HWtype;
+			_eHardwareTypes HWtype= HTYPE_Domoticz; //just a value
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
 			if (pHardware != NULL)
 				HWtype = pHardware->HwdType;
 
 			//Check for notifications
 			if (HWtype != HTYPE_LogitechMediaServer) // Skip notifications for LMS here; is handled by the LMS plug-in
+			{
 				m_notifications.CheckAndHandleSwitchNotification(ulID, devname, (bIsLightSwitchOn) ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF);
+			}
 			if (bIsLightSwitchOn)
 			{
 				if (AddjValue!=0) //Off Delay
@@ -2832,6 +2859,10 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 							break;
 						case pTypeGeneralSwitch:
 							cmd = gswitch_sOff;
+							bAdd2DelayQueue = true;
+							break;
+						case pTypeHomeConfort:
+							cmd = HomeConfort_sOff;
 							bAdd2DelayQueue = true;
 							break;
 						}
@@ -5643,6 +5674,49 @@ void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char su
 		GroupCmd);
 }
 
+unsigned long long CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit,
+	const unsigned char devType, const unsigned char subType,
+	const unsigned char signallevel, const unsigned char batterylevel,
+	const int nValue, const char* sValue,
+	std::string &devname,
+	const bool bUseOnOffAction)
+{
+	// We only have to update all others units within the ID group. If the current unit does not have the same value, 
+	// it will be updated too. The reason we choose the UpdateValue is the propagation of the change to all units involved, including LogUpdate. 
+
+	unsigned long long devRowIndex = -1;
+	typedef std::vector<std::vector<std::string> > VectorVectorString;
+
+	VectorVectorString result = safe_query("SELECT Unit FROM DeviceStatus WHERE ((DeviceID=='%q') AND (Type==%d) AND (SubType==%d) AND (nValue!=%d))",
+		ID,
+		pTypeHomeConfort,
+		subType,
+		nValue);
+
+	for (VectorVectorString::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+	{
+		unsigned char theUnit = atoi((*itt)[0].c_str()); // get the unit value
+		devRowIndex = UpdateValue(HardwareID, ID, theUnit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction);
+	}
+	return devRowIndex;
+}
+
+void CSQLHelper::HomeConfortGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
+{
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+
+	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+		GroupCmd,
+		"OFF",
+		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		ID.c_str(),
+		pTypeHomeConfort,
+		subType,
+		GroupCmd);
+}
+
 void CSQLHelper::GeneralSwitchGroupCmd(const std::string &ID, const unsigned char subType, const unsigned char GroupCmd)
 {
 	safe_query("UPDATE DeviceStatus SET nValue = %d WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d)", GroupCmd, ID.c_str(), pTypeGeneralSwitch, subType);
@@ -5824,7 +5898,7 @@ void CSQLHelper::CheckDeviceTimeout()
 
 	std::vector<std::vector<std::string> > result;
 	result = safe_query(
-		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
+		"SELECT ID,Name,LastUpdate FROM DeviceStatus WHERE (Used!=0 AND LastUpdate<='%04d-%02d-%02d %02d:%02d:%02d' AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d AND Type!=%d) ORDER BY Name",
 		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		pTypeLighting1,
 		pTypeLighting2,
@@ -5842,7 +5916,8 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeThermostat2,
 		pTypeThermostat3,
 		pTypeRemote,
-		pTypeGeneralSwitch
+		pTypeGeneralSwitch,
+		pTypeHomeConfort
 		);
 	if (result.size()<1)
 		return;

@@ -38,9 +38,13 @@ const unsigned char PKT_DLE = 0x05;
 #define PKT_eraseblock 2048
 #define PKT_maxpacket 261
 #define PKT_bytesperaddr 2
-//#define PKT_pmrangelow	0x001A00
+
 #define PKT_pmrangelow	0x001800
 #define PKT_pmrangehigh	0x00A7FF
+
+#define PKT_pmrangelow868	0x001000
+#define PKT_pmrangehigh868 0x0147FF
+
 #define PKT_userresetvector 0x100
 #define PKT_bootdelay 0x102
 
@@ -228,6 +232,13 @@ bool RFXComSerial::UploadFirmware(const std::string &szFilename)
 
 bool RFXComSerial::UpgradeFirmware()
 {
+	int AddressLow = PKT_pmrangelow;
+	int AddressHigh = PKT_pmrangehigh;
+	if (HwdType == HTYPE_RFXtrx868)
+	{
+		AddressLow = PKT_pmrangelow868;
+		AddressHigh = PKT_pmrangehigh868;
+	}
 	m_FirmwareUploadPercentage = 0;
 	m_bStartFirmwareUpload = false;
 	std::map<unsigned long, std::string> firmwareBuffer;
@@ -267,7 +278,7 @@ bool RFXComSerial::UpgradeFirmware()
 	}
 	_log.Log(LOG_STATUS, "RFXCOM: bootloader version v%d.%d", m_rx_input_buffer[3], m_rx_input_buffer[2]);
 
-	if (!EraseMemory(PKT_pmrangelow, PKT_pmrangehigh))
+	if (!EraseMemory(AddressLow, AddressHigh))
 	{
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
@@ -326,7 +337,7 @@ bool RFXComSerial::UpgradeFirmware()
 		if (m_FirmwareUploadPercentage > 100)
 			m_FirmwareUploadPercentage = 100;
 
-		//if ((Address >= PKT_pmrangelow) && (Address <= PKT_pmrangehigh))
+		//if ((Address >= AddressLow) && (Address <= AddressHigh))
 		{
 			std::stringstream saddress;
 			saddress << "Programming Address: 0x" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << Address;
@@ -869,17 +880,17 @@ bool RFXComSerial::WriteToHardware(const char *pdata, const unsigned char length
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::RFXComUpgradeFirmware()
+		char * CWebServer::RFXComUpgradeFirmware(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string hardwareid = m_pWebEm->FindValue("hardwareid");
-			std::string firmwarefile = m_pWebEm->FindValue("firmwarefile");
+			std::string hardwareid = request::findValue(&req, "hardwareid");
+			std::string firmwarefile = request::findValue(&req, "firmwarefile");
 
 			if (firmwarefile.empty())
 			{
@@ -893,11 +904,15 @@ namespace http {
 			}
 			if (pHardware==NULL)
 			{
-				//Try to find the RFXCom hardware
+				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
 				if (pHardware==NULL)
 				{
-					return (char*)m_retstr.c_str();
+					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
+					if (pHardware == NULL)
+					{
+						return (char*)m_retstr.c_str();
+					}
 				}
 			}
 
@@ -911,8 +926,9 @@ namespace http {
 			outfile.close();
 
 			if (
-				(pHardware->HwdType == HTYPE_RFXtrx315)||
-				(pHardware->HwdType == HTYPE_RFXtrx433)
+				(pHardware->HwdType == HTYPE_RFXtrx315) ||
+				(pHardware->HwdType == HTYPE_RFXtrx433) ||
+				(pHardware->HwdType == HTYPE_RFXtrx868)
 				)
 			{
 				RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;
@@ -920,17 +936,17 @@ namespace http {
 			}
 			return (char*)m_retstr.c_str();
 		}
-		char * CWebServer::SetRFXCOMMode()
+		char * CWebServer::SetRFXCOMMode(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
 
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
 
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -956,41 +972,41 @@ namespace http {
 			Response.ICMND.msg5 = Mode5;
 			Response.ICMND.msg6 = Mode6;
 
-			Response.IRESPONSE.UNDECODEDenabled = (m_pWebEm->FindValue("undecon") == "on") ? 1 : 0;
-			Response.IRESPONSE.X10enabled = (m_pWebEm->FindValue("X10") == "on") ? 1 : 0;
-			Response.IRESPONSE.ARCenabled = (m_pWebEm->FindValue("ARC") == "on") ? 1 : 0;
-			Response.IRESPONSE.ACenabled = (m_pWebEm->FindValue("AC") == "on") ? 1 : 0;
-			Response.IRESPONSE.HEEUenabled = (m_pWebEm->FindValue("HomeEasyEU") == "on") ? 1 : 0;
-			Response.IRESPONSE.MEIANTECHenabled = (m_pWebEm->FindValue("Meiantech") == "on") ? 1 : 0;
-			Response.IRESPONSE.OREGONenabled = (m_pWebEm->FindValue("OregonScientific") == "on") ? 1 : 0;
-			Response.IRESPONSE.ATIenabled = (m_pWebEm->FindValue("ATIremote") == "on") ? 1 : 0;
-			Response.IRESPONSE.VISONICenabled = (m_pWebEm->FindValue("Visonic") == "on") ? 1 : 0;
-			Response.IRESPONSE.MERTIKenabled = (m_pWebEm->FindValue("Mertik") == "on") ? 1 : 0;
-			Response.IRESPONSE.LWRFenabled = (m_pWebEm->FindValue("ADLightwaveRF") == "on") ? 1 : 0;
-			Response.IRESPONSE.HIDEKIenabled = (m_pWebEm->FindValue("HidekiUPM") == "on") ? 1 : 0;
-			Response.IRESPONSE.LACROSSEenabled = (m_pWebEm->FindValue("LaCrosse") == "on") ? 1 : 0;
-			Response.IRESPONSE.FS20enabled = (m_pWebEm->FindValue("FS20") == "on") ? 1 : 0;
-			Response.IRESPONSE.PROGUARDenabled = (m_pWebEm->FindValue("ProGuard") == "on") ? 1 : 0;
-			Response.IRESPONSE.BLINDST0enabled = (m_pWebEm->FindValue("BlindT0") == "on") ? 1 : 0;
-			Response.IRESPONSE.BLINDST1enabled = (m_pWebEm->FindValue("BlindT1T2T3T4") == "on") ? 1 : 0;
-			Response.IRESPONSE.AEenabled = (m_pWebEm->FindValue("AEBlyss") == "on") ? 1 : 0;
-			Response.IRESPONSE.RUBICSONenabled = (m_pWebEm->FindValue("Rubicson") == "on") ? 1 : 0;
-			Response.IRESPONSE.FINEOFFSETenabled = (m_pWebEm->FindValue("FineOffsetViking") == "on") ? 1 : 0;
-			Response.IRESPONSE.LIGHTING4enabled = (m_pWebEm->FindValue("Lighting4") == "on") ? 1 : 0;
-			Response.IRESPONSE.RSLenabled = (m_pWebEm->FindValue("RSL") == "on") ? 1 : 0;
-			Response.IRESPONSE.SXenabled = (m_pWebEm->FindValue("ByronSX") == "on") ? 1 : 0;
-			Response.IRESPONSE.IMAGINTRONIXenabled = (m_pWebEm->FindValue("ImaginTronix") == "on") ? 1 : 0;
-			Response.IRESPONSE.KEELOQenabled = (m_pWebEm->FindValue("Keeloq") == "on") ? 1 : 0;
+			Response.IRESPONSE.UNDECODEDenabled = (request::findValue(&req, "undecon") == "on") ? 1 : 0;
+			Response.IRESPONSE.X10enabled = (request::findValue(&req, "X10") == "on") ? 1 : 0;
+			Response.IRESPONSE.ARCenabled = (request::findValue(&req, "ARC") == "on") ? 1 : 0;
+			Response.IRESPONSE.ACenabled = (request::findValue(&req, "AC") == "on") ? 1 : 0;
+			Response.IRESPONSE.HEEUenabled = (request::findValue(&req, "HomeEasyEU") == "on") ? 1 : 0;
+			Response.IRESPONSE.MEIANTECHenabled = (request::findValue(&req, "Meiantech") == "on") ? 1 : 0;
+			Response.IRESPONSE.OREGONenabled = (request::findValue(&req, "OregonScientific") == "on") ? 1 : 0;
+			Response.IRESPONSE.ATIenabled = (request::findValue(&req, "ATIremote") == "on") ? 1 : 0;
+			Response.IRESPONSE.VISONICenabled = (request::findValue(&req, "Visonic") == "on") ? 1 : 0;
+			Response.IRESPONSE.MERTIKenabled = (request::findValue(&req, "Mertik") == "on") ? 1 : 0;
+			Response.IRESPONSE.LWRFenabled = (request::findValue(&req, "ADLightwaveRF") == "on") ? 1 : 0;
+			Response.IRESPONSE.HIDEKIenabled = (request::findValue(&req, "HidekiUPM") == "on") ? 1 : 0;
+			Response.IRESPONSE.LACROSSEenabled = (request::findValue(&req, "LaCrosse") == "on") ? 1 : 0;
+			Response.IRESPONSE.FS20enabled = (request::findValue(&req, "FS20") == "on") ? 1 : 0;
+			Response.IRESPONSE.PROGUARDenabled = (request::findValue(&req, "ProGuard") == "on") ? 1 : 0;
+			Response.IRESPONSE.BLINDST0enabled = (request::findValue(&req, "BlindT0") == "on") ? 1 : 0;
+			Response.IRESPONSE.BLINDST1enabled = (request::findValue(&req, "BlindT1T2T3T4") == "on") ? 1 : 0;
+			Response.IRESPONSE.AEenabled = (request::findValue(&req, "AEBlyss") == "on") ? 1 : 0;
+			Response.IRESPONSE.RUBICSONenabled = (request::findValue(&req, "Rubicson") == "on") ? 1 : 0;
+			Response.IRESPONSE.FINEOFFSETenabled = (request::findValue(&req, "FineOffsetViking") == "on") ? 1 : 0;
+			Response.IRESPONSE.LIGHTING4enabled = (request::findValue(&req, "Lighting4") == "on") ? 1 : 0;
+			Response.IRESPONSE.RSLenabled = (request::findValue(&req, "RSL") == "on") ? 1 : 0;
+			Response.IRESPONSE.SXenabled = (request::findValue(&req, "ByronSX") == "on") ? 1 : 0;
+			Response.IRESPONSE.IMAGINTRONIXenabled = (request::findValue(&req, "ImaginTronix") == "on") ? 1 : 0;
+			Response.IRESPONSE.KEELOQenabled = (request::findValue(&req, "Keeloq") == "on") ? 1 : 0;
 
 			m_mainworker.SetRFXCOMHardwaremodes(atoi(idx.c_str()), Response.ICMND.freqsel, Response.ICMND.xmitpwr, Response.ICMND.msg3, Response.ICMND.msg4, Response.ICMND.msg5, Response.ICMND.msg6);
 
 			return (char*)m_retstr.c_str();
 		}
-		void CWebServer::Cmd_RFXComGetFirmwarePercentage(Json::Value &root)
+		void CWebServer::Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["status"] = "ERR";
 			root["title"] = "GetFirmwareUpgradePercentage";
-			std::string hardwareid = m_pWebEm->FindValue("hardwareid");
+			std::string hardwareid = request::findValue(&req, "hardwareid");
 
 			CDomoticzHardwareBase *pHardware = NULL;
 			if ((!hardwareid.empty()) && (hardwareid != "undefined"))
@@ -999,14 +1015,19 @@ namespace http {
 			}
 			if (pHardware == NULL)
 			{
-				//Try to find the RFXCom hardware
+				//Direct Entry, try to find the RFXCom hardware
 				pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx433);
+				if (pHardware == NULL)
+				{
+					pHardware = m_mainworker.GetHardwareByType(HTYPE_RFXtrx868);
+				}
 			}
 			if (pHardware != NULL)
 			{
 				if (
 					(pHardware->HwdType == HTYPE_RFXtrx315) ||
-					(pHardware->HwdType == HTYPE_RFXtrx433)
+					(pHardware->HwdType == HTYPE_RFXtrx433) ||
+					(pHardware->HwdType == HTYPE_RFXtrx868)
 					)
 				{
 					RFXComSerial *pRFXComSerial = (RFXComSerial *)pHardware;

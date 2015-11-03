@@ -19,9 +19,10 @@ const std::string THERMOSMART_DECISION_PATH = "https://api.thermosmart.com/oauth
 const std::string THERMOSMART_TOKEN_PATH = "https://username:password@api.thermosmart.com/oauth2/token";
 const std::string THERMOSMART_ACCESS_PATH = "https://api.thermosmart.com/thermostat/[TID]?access_token=[access_token]";
 const std::string THERMOSMART_SETPOINT_PATH = "https://api.thermosmart.com/thermostat/[TID]?access_token=[access_token]";
+const std::string THERMOSMART_SET_PAUZE = "https://api.thermosmart.com/thermostat/[TID]/pause?access_token=[access_token]";
 
 #ifdef _DEBUG
-	//#define DEBUG_ThermosmartThermostat
+	//#define DEBUG_ThermosmartThermostat_read
 #endif
 
 #ifdef DEBUG_ThermosmartThermostat
@@ -34,6 +35,8 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+#endif
+#ifdef DEBUG_ThermosmartThermostat_read
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -297,32 +300,31 @@ void CThermosmart::Logout()
 
 bool CThermosmart::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (m_UserName.size() == 0)
-		return false;
-	if (m_Password.size() == 0)
-		return false;
-
 	tRBUF *pCmd = (tRBUF *)pdata;
-	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
-		return false; //later add RGB support, if someone can provide access
+	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
+	{
+		//Light command
 
-	int node_id = pCmd->LIGHTING2.id4;
-
-	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
-
+		int node_id = pCmd->LIGHTING2.id4;
+		bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
+		if (node_id == 1)
+		{
+			//Pause Switch
+			SetPauseStatus(bIsOn);
+			return true;
+		}
+	}
 	return false;
 }
 
 void CThermosmart::GetMeterDetails()
 {
-	if (m_UserName.size()==0)
-		return;
-	if (m_Password.size()==0)
+	if (m_UserName.empty() || m_Password.empty() )
 		return;
 	std::string sResult;
-/*
+#ifdef DEBUG_ThermosmartThermostat_read
 	sResult = ReadFile("E:\\thermosmart_getdata.txt");
-*/
+#else	
 	if (m_bDoLogin)
 	{
 		if (!Login())
@@ -341,7 +343,7 @@ void CThermosmart::GetMeterDetails()
 #ifdef DEBUG_ThermosmartThermostat
 	SaveString2Disk(sResult, "E:\\thermosmart_getdata.txt");
 #endif
-
+#endif
 	Json::Value root;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root);
@@ -371,6 +373,12 @@ void CThermosmart::GetMeterDetails()
 		temperature = (float)root["outside_temperature"].asFloat();
 		SendTempSensor(3, 255, temperature, "outside temperature");
 	}
+	if (!root["source"].empty())
+	{
+		std::string actSource = root["source"].asString();
+		bool bPauzeOn = (actSource == "pause");
+		SendSwitch(1, 1, 255, bPauzeOn, 0, "Thermostat Pause");
+	}
 }
 
 void CThermosmart::SetSetpoint(const int idx, const float temp)
@@ -399,4 +407,31 @@ void CThermosmart::SetSetpoint(const int idx, const float temp)
 		return;
 	}
 	SendSetPointSensor(1, temp, "target temperature");
+}
+
+void CThermosmart::SetPauseStatus(const bool bIsPause)
+{
+	if (m_bDoLogin)
+	{
+		if (!Login())
+			return;
+	}
+	std::string sURL;
+	std::stringstream sstr;
+	std::string pState = (bIsPause == true) ? "true" : "false";
+	sstr << "pause=" << pState;
+	std::string szPostdata = sstr.str();
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+	sURL = THERMOSMART_SET_PAUZE;
+	stdreplace(sURL, "[TID]", m_ThermostatID);
+	stdreplace(sURL, "[access_token]", m_AccessToken);
+
+	if (!HTTPClient::POST(sURL, szPostdata, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error setting Pause status!");
+		m_bDoLogin = true;
+		return;
+	}
 }

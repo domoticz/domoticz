@@ -13,7 +13,8 @@ require.config({
         'angular-tree-control': '../js/angular-tree-control',
         'ngDraggable': '../js/ngDraggable',
 		'ui.bootstrap': '../js/ui-bootstrap.min',
-		'angular.directives-round-progress': '../js/angular-round-progress-directive'
+		'angular.directives-round-progress': '../js/angular-round-progress-directive',
+		'angular.scrollglue': '../js/angular-scrollglue'
     },
     shim: { 
 		'angularAMD': ['angular'], 
@@ -27,7 +28,8 @@ require.config({
 		'angular-tree-control': ['angular'],
         'ui.bootstrap': ['angular'],
 		'ngDraggable': ['angular'],
-		'angular.directives-round-progress' : ['angular']
+		'angular.directives-round-progress' : ['angular'],
+		'angular.scrollglue' : ['angular'],
 	},
     deps: ['app']
 });

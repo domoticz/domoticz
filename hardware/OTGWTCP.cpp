@@ -42,6 +42,7 @@ bool OTGWTCP::StopHardware()
 	{
 		try {
 			disconnect();
+			close();
 		} catch(...)
 		{
 			//Don't throw from a Stop command

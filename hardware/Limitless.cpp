@@ -89,14 +89,14 @@ const unsigned char RGBWSetColorToWhiteGroup4[3]={0xCB,0x0,0x55};	//SET COLOR TO
 unsigned char RGBWSetBrightnessLevel[3]={0x4E,0,0x55};
 //LIMITLESSLED RGBW DIRECT BRIGHTNESS SETTING is by a 3BYTE COMMAND: (First send the Group ON for the group you want to set the brightness for. You send the group ON command 100ms before sending the 4E 00 55)
 //Byte1: 0x4E (decimal: 78)
-//Byte2: 0×00 to 0xFF (full brightness 0x3B)
-//Byte3: Always 0×55 (decimal: 85)
+//Byte2: 0x00 to 0xFF (full brightness 0x3B)
+//Byte3: Always 0x55 (decimal: 85)
 
 unsigned char RGBWSetColor[3]={0x40,0,0x55};
 //LIMITLESSLED RGBW COLOR SETTING is by a 3BYTE COMMAND: (First send the Group ON for the group you want to set the color for. You send the group ON command 100ms before sending the 40)
-//Byte1: 0×40 (decimal: 64)
-//Byte2: 0×00 to 0xFF (255 colors) Color Matrix Chart [COMING SOON]
-//Byte3: Always 0×55 (decimal: 85)
+//Byte1: 0x40 (decimal: 64)
+//Byte2: 0x00 to 0xFF (255 colors) Color Matrix Chart [COMING SOON]
+//Byte3: Always 0x55 (decimal: 85)
 
 //White LEDs
 const unsigned char WhiteBrightnessUp[3] = { 0x3C, 0x0, 0x55 };
@@ -517,15 +517,15 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 //Webserver helpers
 namespace http {
 	namespace server {
-		char * CWebServer::SetLimitlessType()
+		char * CWebServer::SetLimitlessType(WebEmSession & session, const request& req)
 		{
 			m_retstr = "/index.html";
-			if (m_pWebEm->m_actualuser_rights != 2)
+			if (session.rights != 2)
 			{
 				//No admin user, and not allowed to be here
 				return (char*)m_retstr.c_str();
 			}
-			std::string idx = m_pWebEm->FindValue("idx");
+			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return (char*)m_retstr.c_str();
 			}
@@ -536,7 +536,7 @@ namespace http {
 			if (result.size() < 1)
 				return (char*)m_retstr.c_str();
 
-			int Mode1 = atoi(m_pWebEm->FindValue("LimitlessType").c_str());
+			int Mode1 = atoi(request::findValue(&req, "LimitlessType").c_str());
 			int Mode2 = atoi(result[0][1].c_str());
 			int Mode3 = atoi(result[0][2].c_str());
 			int Mode4 = atoi(result[0][3].c_str());
