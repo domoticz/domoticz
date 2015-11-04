@@ -1,14 +1,16 @@
-Version 3.xxx
+Version 2.xxxx
 - Fixed: Log display in webgui for log items containing multiple lines
 - Fixed: Edit Light/Switch Security sensors protected checkbox
 - Fixed: Alert Sensor, displaying sValue again
+- Fixed: EventSystem, now also handling sensors that only uses numbers instead of strings for data
+- Fixed: S0 Meter, fix for reloading totals of (#179)
 
-Version 3.530 (November 1th 2015)
+Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
 - Implemented: RFXCom, support for Home Confort TEL-010
 - Fixed: Segmentation fault while cleaning timed out sessions (#180)
 
-Version 3.521 (October 31th 2015)
+Version 2.3521 (October 31th 2015)
 - Implemented "Stop" state in blockly in switch states
 - Implemented: Ability to parse data coming from an HTTP POST data with a lua script (seb)
 - Implemented: Added Logitech Media Server support (thanks to EddyK69!!)
