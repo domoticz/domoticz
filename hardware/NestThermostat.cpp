@@ -385,6 +385,7 @@ void CNestThermostat::SetSetpoint(const int idx, const float temp)
 		m_bDoLogin = true;
 		return;
 	}
+	GetMeterDetails();
 }
 
 bool CNestThermostat::SetAway(const bool bIsAway)
