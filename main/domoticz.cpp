@@ -100,6 +100,7 @@ const char *szHelp=
 	"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
 	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
+	"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
 #ifndef WIN32
 	"\t-daemon (run as background daemon)\n"
 	"\t-syslog (use syslog as log output)\n"
@@ -426,6 +427,10 @@ int main(int argc, char**argv)
 		}
 		int Level = atoi(cmdLine.GetSafeArgument("-loglevel", 0, "").c_str());
 		_log.SetVerboseLevel((_eLogFileVerboseLevel)Level);
+	}
+	if (cmdLine.HasSwitch("-notimestamps"))
+	{
+		_log.EnableLogTimestamps(false);
 	}
 
 	if (cmdLine.HasSwitch("-approot"))
