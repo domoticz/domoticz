@@ -4,7 +4,8 @@ Version 2.xxxx
 - Fixed: Alert Sensor, displaying sValue again
 - Fixed: EventSystem, now also handling sensors that only uses numbers instead of strings for data
 - Fixed: S0 Meter, fix for reloading totals of (#179)
-- Fxied: Nest Thermostat, setting set point in Fahrenheit
+- Fixed: Nest Thermostat, setting set point in Fahrenheit
+- Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
