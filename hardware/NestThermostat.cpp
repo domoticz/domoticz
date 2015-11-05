@@ -251,11 +251,11 @@ bool CNestThermostat::WriteToHardware(const char *pdata, const unsigned char len
 
 void CNestThermostat::GetMeterDetails()
 {
+	std::string sResult;
 	if (m_UserName.size()==0)
 		return;
 	if (m_Password.size()==0)
 		return;
-	std::string sResult;
 	if (m_bDoLogin)
 	{
 		if (!Login())
@@ -276,7 +276,6 @@ void CNestThermostat::GetMeterDetails()
 		m_bDoLogin = true;
 		return;
 	}
-
 	Json::Value root;
 	Json::Reader jReader;
 	if (!jReader.parse(sResult, root))
@@ -341,8 +340,6 @@ void CNestThermostat::GetMeterDetails()
 		bool bIsAway = vStructure["away"].asBool();
 		SendSwitch(3, 1, 255, bIsAway, 0, "Away");
 	}
-
-
 }
 
 void CNestThermostat::SetSetpoint(const int idx, const float temp)
@@ -366,9 +363,18 @@ void CNestThermostat::SetSetpoint(const int idx, const float temp)
 	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
 	ExtraHeaders.push_back("X-nl-protocol-version:1");
 
+	float tempDest = temp;
+	unsigned char tSign = m_sql.m_tempsign[0];
+	if (tSign == 'F')
+	{
+		//Maybe this should be done in the main app, so all other devices will also do this
+		//Convert to Celcius
+		tempDest = (tempDest - 32.0f) / 1.8f;
+	}
+
 	Json::Value root;
 	root["target_change_pending"] = true;
-	root["target_temperature"] = temp;
+	root["target_temperature"] = tempDest;
 
 	std::string sResult;
 
