@@ -2129,9 +2129,9 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 						WriteMessage("La Crosse         disabled");
 
 					if (pResponse->IRESPONSE.FS20enabled)
-						WriteMessage("FS20              enabled");
+						WriteMessage("FS20/Legrand      enabled");
 					else
-						WriteMessage("FS20              disabled");
+						WriteMessage("FS20/Legrand      disabled");
 
 					if (pResponse->IRESPONSE.PROGUARDenabled)
 						WriteMessage("ProGuard          enabled");
@@ -2187,6 +2187,11 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 						WriteMessage("KEELOQ            enabled");
 					else
 						WriteMessage("KEELOQ            disabled");
+
+					if (pResponse->IRESPONSE.HCEnabled)
+						WriteMessage("Home Confort      enabled");
+					else
+						WriteMessage("Home Confort      disabled");
 				}
 				break;
 			case cmdSAVE:
@@ -4618,6 +4623,13 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 				break;
 			}
 			break;
+		case sTypeLegrandCAD:
+			WriteMessage("subtype       = Legrand CAD");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = Toggle");
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING5.packettype, pResponse->LIGHTING5.subtype);
 			WriteMessage(szTmp);

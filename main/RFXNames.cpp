@@ -537,6 +537,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo Appliance" },
 		{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
+		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -830,6 +831,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeLivoloAppliance, "Status" },
 		{ pTypeLighting5, sTypeRGB432W, "Status" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
+		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 

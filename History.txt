@@ -7,6 +7,7 @@ Version 2.xxxx
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
+- Implemented: RFXCom support for Legrand CAD
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
