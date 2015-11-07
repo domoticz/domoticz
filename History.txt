@@ -1,4 +1,4 @@
-Version 2.xxxx
+Version 2.3xxx
 - Fixed: Log display in webgui for log items containing multiple lines
 - Fixed: Edit Light/Switch Security sensors protected checkbox
 - Fixed: Alert Sensor, displaying sValue again
@@ -8,6 +8,11 @@ Version 2.xxxx
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
 - Implemented: RFXCom support for Legrand CAD
+- Updated: OpenZWave, configuration files
+- Changed: OpenZWave, Ranamed internally 'Color Control' to 'Color"
+- Changed: OpenZWave, Control Panel log starts displaying from the end when entering for the first time
+- Fixed: Dummy RGB sensor creation (was created with wrong ID)
+- Fixed: RGB sensor now also uses the RGB popup system
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

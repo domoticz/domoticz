@@ -2187,7 +2187,7 @@ define(['app'], function (app) {
 						'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 						'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 					if (item.SwitchType == "Dimmer") {
-						if (item.SubType=="RGBW") {
+						if ((item.SubType=="RGBW")||(item.SubType=="RGB")) {
 						}
 						else {
 							xhtm+='<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';

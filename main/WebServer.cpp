@@ -5728,6 +5728,8 @@ namespace http {
 				}
 				sleep_milliseconds(100);
 				m_mainworker.SwitchLight(ID, "Set Brightness", (unsigned char)atoi(brightness.c_str()), -1,false,0);
+				root["status"] = "OK";
+				root["title"] = "SetColBrightnessValue";
 			}
 			else if (cparam == "brightnessup")
 			{

@@ -440,22 +440,22 @@ void OTGWBase::ParseLine()
 		_status.MsgID=results[idx++];
 		if (_status.MsgID.size()==17)
 		{
-			bool bCH_enabled=(_status.MsgID[7]=='1');										UpdateSwitch(101,bCH_enabled,"CH_enabled");
-			bool bDHW_enabled=(_status.MsgID[6]=='1');										UpdateSwitch(102,bDHW_enabled,"DHW_enabled");
-			bool bCooling_enable=(_status.MsgID[5]=='1');									UpdateSwitch(103,bCooling_enable,"Cooling_enable");
-			bool bOTC_active=(_status.MsgID[4]=='1');										UpdateSwitch(104,bOTC_active,"OTC_active");
-			bool bCH2_enabled=(_status.MsgID[3]=='1');										UpdateSwitch(105,bCH2_enabled,"CH2_enabled");
+			bool bCH_enabled=(_status.MsgID[7]=='1');														UpdateSwitch(101,bCH_enabled,"CH_enabled");
+			bool bDHW_enabled=(_status.MsgID[6]=='1');														UpdateSwitch(102,bDHW_enabled,"DHW_enabled");
+			bool bCooling_enable=(_status.MsgID[5]=='1');													UpdateSwitch(103,bCooling_enable,"Cooling_enable");
+			bool bOTC_active=(_status.MsgID[4]=='1');														UpdateSwitch(104,bOTC_active,"OTC_active");
+			bool bCH2_enabled=(_status.MsgID[3]=='1');														UpdateSwitch(105,bCH2_enabled,"CH2_enabled");
 
-			bool bFault_indication=(_status.MsgID[9+7]=='1');								UpdateSwitch(110,bFault_indication,"Fault_indication");
-			bool bCH_active=(_status.MsgID[9+6]=='1');										UpdateSwitch(111,bCH_active,"CH_active");
-			bool bDHW_active=(_status.MsgID[9+5]=='1');										UpdateSwitch(112,bDHW_active,"DHW_active");
-			bool bFlameOn=(_status.MsgID[9+4]=='1');										UpdateSwitch(113,bFlameOn,"FlameOn");
-			bool bCooling_Mode_Active=(_status.MsgID[9+3]=='1');							UpdateSwitch(114,bCooling_Mode_Active,"Cooling_Mode_Active");
-			bool bCH2_Active=(_status.MsgID[9+2]=='1');										UpdateSwitch(115,bCH2_Active,"CH2_Active");
-			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');								UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
+			bool bFault_indication=(_status.MsgID[9+7]=='1');												UpdateSwitch(110,bFault_indication,"Fault_indication");
+			bool bCH_active=(_status.MsgID[9+6]=='1');														UpdateSwitch(111,bCH_active,"CH_active");
+			bool bDHW_active=(_status.MsgID[9+5]=='1');														UpdateSwitch(112,bDHW_active,"DHW_active");
+			bool bFlameOn=(_status.MsgID[9+4]=='1');														UpdateSwitch(113,bFlameOn,"FlameOn");
+			bool bCooling_Mode_Active=(_status.MsgID[9+3]=='1');											UpdateSwitch(114,bCooling_Mode_Active,"Cooling_Mode_Active");
+			bool bCH2_Active=(_status.MsgID[9+2]=='1');														UpdateSwitch(115,bCH2_Active,"CH2_Active");
+			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');												UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
 		
-		_status.Control_setpoint=static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
+		_status.Control_setpoint=static_cast<float>(atof(results[idx++].c_str()));							UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
 		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
 		bool bExists = CheckPercentageSensorExists(idx - 1, 1);
@@ -480,8 +480,8 @@ void OTGWBase::ParseLine()
 
 		_status.Room_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.Room_temperature, "Room Temperature");
 		_status.Boiler_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				UpdateTempSensor(idx - 1, _status.Boiler_water_temperature, "Boiler Water Temperature");
-		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.DHW_temperature, "DHW Temperature");
-		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));					UpdateTempSensor(idx - 1, _status.Outside_temperature, "Outside Temperature");
+		_status.DHW_temperature = static_cast<float>(atof(results[idx++].c_str()));							UpdateTempSensor(idx - 1, _status.DHW_temperature, "DHW Temperature");
+		_status.Outside_temperature = static_cast<float>(atof(results[idx++].c_str()));						UpdateTempSensor(idx - 1, _status.Outside_temperature, "Outside Temperature");
 		_status.Return_water_temperature = static_cast<float>(atof(results[idx++].c_str()));				UpdateTempSensor(idx - 1, _status.Return_water_temperature, "Return Water Temperature");
 		_status.DHW_setpoint_boundaries=results[idx++];
 		_status.Max_CH_setpoint_boundaries=results[idx++];
