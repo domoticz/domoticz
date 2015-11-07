@@ -1014,7 +1014,7 @@ namespace http {
 				(htype == HTYPE_ICYTHERMOSTAT) || 
 				(htype == HTYPE_TOONTHERMOSTAT) || 
 				(htype == HTYPE_PVOUTPUT_INPUT) || 
-				(htype == HTYPE_NESTTHERMOSTAT) ||
+				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_NetatmoWeatherStation)
@@ -1230,7 +1230,7 @@ namespace http {
 				(htype == HTYPE_ICYTHERMOSTAT) || 
 				(htype == HTYPE_TOONTHERMOSTAT) || 
 				(htype == HTYPE_PVOUTPUT_INPUT) || 
-				(htype == HTYPE_NESTTHERMOSTAT) ||
+				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_NetatmoWeatherStation)
@@ -5730,6 +5730,8 @@ namespace http {
 				}
 				sleep_milliseconds(100);
 				m_mainworker.SwitchLight(ID, "Set Brightness", (unsigned char)atoi(brightness.c_str()), -1,false,0);
+				root["status"] = "OK";
+				root["title"] = "SetColBrightnessValue";
 			}
 			else if (cparam == "brightnessup")
 			{
@@ -6543,7 +6545,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
 			std::string DegreeDaysBaseTemperature = request::findValue(&req, "DegreeDaysBaseTemperature");
-			m_sql.UpdatePreferencesVar("ShowUpdateEffect", DegreeDaysBaseTemperature);
+			m_sql.UpdatePreferencesVar("DegreeDaysBaseTemperature", DegreeDaysBaseTemperature);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
