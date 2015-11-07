@@ -190,7 +190,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SOLARMAXTCP, "SolarMax via LAN interface" },
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
-		{ HTYPE_NESTTHERMOSTAT, "Nest Thermostat" },
+		{ HTYPE_NEST, "Nest Thermostat/Protect" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
 		{ HTYPE_Kodi, "Kodi Media Server" },

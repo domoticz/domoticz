@@ -13,6 +13,7 @@ Version 2.3xxx
 - Changed: OpenZWave, Control Panel log starts displaying from the end when entering for the first time
 - Fixed: Dummy RGB sensor creation (was created with wrong ID)
 - Fixed: RGB sensor now also uses the RGB popup system
+- Implemented: Nest Protect
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

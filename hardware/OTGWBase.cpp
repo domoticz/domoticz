@@ -118,7 +118,6 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 		//Assign default name for device
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szIdx);
 	}
-
 }
 
 void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)

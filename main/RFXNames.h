@@ -122,7 +122,7 @@ enum _eHardwareTypes {
 	HTYPE_SOLARMAXTCP,			//49
 	HTYPE_KMTronic433,			//50
 	HTYPE_Pinger,				//51
-	HTYPE_NESTTHERMOSTAT,		//52
+	HTYPE_NEST,		//52
 	HTYPE_THERMOSMART,			//53
 	HTYPE_NetatmoWeatherStation,//54
 	HTYPE_Kodi,					//55

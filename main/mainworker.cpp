@@ -70,7 +70,7 @@
 #include "../hardware/KMTronic433.h"
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
-#include "../hardware/NestThermostat.h"
+#include "../hardware/Nest.h"
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/NetatmoWeatherStation.h"
@@ -795,8 +795,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_TOONTHERMOSTAT:
 		pHardware = new CToonThermostat(ID, Username, Password);
 		break;
-	case HTYPE_NESTTHERMOSTAT:
-		pHardware = new CNestThermostat(ID, Username, Password);
+	case HTYPE_NEST:
+		pHardware = new CNest(ID, Username, Password);
 		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
@@ -10447,7 +10447,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
-		(pHardware->HwdType == HTYPE_NESTTHERMOSTAT) ||
+		(pHardware->HwdType == HTYPE_NEST) ||
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
@@ -10474,9 +10474,9 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CToonThermostat *pGateway = (CToonThermostat*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_NESTTHERMOSTAT)
+		else if (pHardware->HwdType == HTYPE_NEST)
 		{
-			CNestThermostat *pGateway = (CNestThermostat*)pHardware;
+			CNest *pGateway = (CNest*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
@@ -10715,9 +10715,9 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_NESTTHERMOSTAT)
+	else if (pHardware->HwdType == HTYPE_NEST)
 	{
-		CNestThermostat *pGateway = (CNestThermostat*)pHardware;
+		CNest *pGateway = (CNest*)pHardware;
 		pGateway->SetProgramState(newState);
 		return true;
 	}
