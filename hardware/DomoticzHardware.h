@@ -99,6 +99,7 @@ private:
 	friend class CThermosmart;
 	friend class CKodi;
 	friend class CNetAtmoWeatherStation;
+	friend class CNetAtmoThermostat;
 	friend class CAnnaThermostat;
 	friend class SatelIntegra;
 	friend class CLogitechMediaServer;

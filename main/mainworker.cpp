@@ -74,6 +74,7 @@
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/NetatmoWeatherStation.h"
+#include "../hardware/NetatmoThermostat.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
@@ -785,6 +786,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_NetatmoWeatherStation:
 		pHardware = new CNetAtmoWeatherStation(ID,Username,Password);
+		break;
+	case HTYPE_NetatmoThermostat:
+		pHardware = new CNetAtmoThermostat(ID,Username,Password);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);

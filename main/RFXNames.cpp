@@ -193,6 +193,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_NESTTHERMOSTAT, "Nest Thermostat" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
+		{ HTYPE_NetatmoThermostat, "Netatmo Thermostat" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
 		{ HTYPE_SatelIntegra, "Satel Integra via LAN interface" },

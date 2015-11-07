@@ -1018,6 +1018,7 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_NetatmoWeatherStation)
+				(htype == HTYPE_NetatmoThermostat)
 				)
 			{
 				if (
@@ -1233,6 +1234,7 @@ namespace http {
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_NetatmoWeatherStation)
+				(htype == HTYPE_NetatmoThermostat)
 				)
 			{
 				if (
