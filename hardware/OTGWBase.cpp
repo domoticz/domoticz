@@ -25,6 +25,7 @@ OTGWBase::OTGWBase(void)
 {
 	m_OutsideTemperatureIdx=0;//use build in
 	m_bufferpos = 0;
+	m_OverrideTemperature = 0.0f;
 }
 
 OTGWBase::~OTGWBase(void)
@@ -329,6 +330,8 @@ void OTGWBase::GetGatewayDetails()
 	char szCmd[30];
 	strcpy(szCmd, "PR=G\r\n");
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+	strcpy(szCmd, "PR=O\r\n");
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	strcpy(szCmd, "PS=1\r\n");
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 }
@@ -392,6 +395,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 		sprintf(szCmd, "SH=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	}
+	GetGatewayDetails();
 }
 
 void OTGWBase::ParseLine()
@@ -460,7 +464,7 @@ void OTGWBase::ParseLine()
 			SendPercentageSensor(idx - 1, 1, 255, _status.Maximum_relative_modulation_level, "Maximum Relative Modulation Level");
 		}
 		_status.Boiler_capacity_and_modulation_limits=results[idx++];
-		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, _status.Room_Setpoint, "Room Setpoint");
+		_status.Room_Setpoint = static_cast<float>(atof(results[idx++].c_str()));							UpdateSetPointSensor(idx - 1, ((m_OverrideTemperature!=0.0f) ? m_OverrideTemperature : _status.Room_Setpoint), "Room Setpoint");
 		_status.Relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
 		bExists = CheckPercentageSensorExists(idx - 1, 1);
 		if ((_status.Relative_modulation_level != 0) || (bExists))
@@ -519,6 +523,17 @@ void OTGWBase::ParseLine()
 			else
 			{
 				// Remove device (how?)
+			}
+		}
+                else if (sLine.find("PR: O")!=std::string::npos)
+                {
+			// Check if setpoint is overriden
+ 			m_OverrideTemperature=0.0f;
+			char status=sLine[6];
+			if (status == 'c' || status == 't')
+			{
+				// Get override setpoint value
+				m_OverrideTemperature=static_cast<float>(atof(sLine.substr(7).c_str()));
 			}
 		}
 		else
