@@ -207,7 +207,7 @@ hardware/MQTT.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
 hardware/MySensorsTCP.cpp
-hardware/NestThermostat.cpp
+hardware/Nest.cpp
 hardware/NetatmoWeatherStation.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp

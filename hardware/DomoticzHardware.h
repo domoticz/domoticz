@@ -95,7 +95,7 @@ private:
 	friend class KMTronic433;
 	friend class SolarMaxTCP;
 	friend class CPinger;
-	friend class CNestThermostat;
+	friend class CNest;
 	friend class CThermosmart;
 	friend class CKodi;
 	friend class CNetAtmoWeatherStation;

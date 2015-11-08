@@ -1070,7 +1070,13 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 	bcnt = logbytes;
 	if (stat("./Config/OZW_Log.txt", &buf) != -1 &&
 		buf.st_size > bcnt &&
-		(fp = fopen("./Config/OZW_Log.txt", "r")) != NULL) {
+		(fp = fopen("./Config/OZW_Log.txt", "r")) != NULL) 
+	{
+		if (bcnt == 0)
+		{
+			if (buf.st_size > 100)
+				bcnt = buf.st_size - 100;
+		}
 		if (fseek(fp, bcnt, SEEK_SET) != -1) {
 			logread = fread(logbuffer, 1, logbufsz, fp);
 			while (logread > 0 && logbuffer[--logread] != '\n')
@@ -1148,7 +1154,7 @@ std::string COpenZWaveControlPanel::SendPollResponse()
 				nodeElement->SetAttribute("beam", Manager::Get()->IsNodeBeamingDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("routing", Manager::Get()->IsNodeRoutingDevice(homeId, i) ? "true" : "false");
 				nodeElement->SetAttribute("security", Manager::Get()->IsNodeSecurityDevice(homeId, i) ? "true" : "false");
-				nodeElement->SetAttribute("time", nodes[i]->getTime()); 
+				nodeElement->SetAttribute("time", (int)nodes[i]->getTime()); 
 #ifdef OZW_WRITE_LOG
 				Log::Write(LogLevel_Info,"i=%d failed=%d\n", i, Manager::Get()->IsNodeFailed(homeId, i));
 				Log::Write(LogLevel_Info,"i=%d awake=%d\n", i, Manager::Get()->IsNodeAwake(homeId, i));

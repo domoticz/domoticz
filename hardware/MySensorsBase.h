@@ -115,7 +115,7 @@ public:
 		V_HVAC_FLOW_MODE = 46,			//Flow mode for HVAC("Auto", "ContinuousOn", "PeriodicOn")	S_HVAC
 
 		V_TEXT = 47,					//Text/Info message S_INFO
-
+		V_CUSTOM = 48, 					// Custom messages used for controller/inter node specific commands, preferably using S_CUSTOM device type. 
 		V_UNKNOWN = 200					//No value received
 	};
 

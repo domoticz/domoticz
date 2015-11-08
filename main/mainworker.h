@@ -45,7 +45,7 @@ public:
 	void HeartbeatCheck();
 
 	void SetVerboseLevel(eVerboseLevel Level);
-  eVerboseLevel GetVerboseLevel();
+	eVerboseLevel GetVerboseLevel();
 	void SetWebserverAddress(const std::string &Address);
 	void SetWebserverPort(const std::string &Port);
 	std::string GetWebserverAddress();
@@ -106,6 +106,7 @@ public:
 
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
 	void SetInternalSecStatus();
+	bool GetSensorData(const unsigned long long idx, int &nValue, std::string &sValue);
 
 	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel);
 

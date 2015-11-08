@@ -420,7 +420,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				$.myglobals.DegreeDaysBaseTemperature=$rootScope.config.DegreeDaysBaseTemperature;
 			}
 		}
-		
+		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config={
 				EnableTabDashboard: false,
 				EnableTabFloorplans: false,

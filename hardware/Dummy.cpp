@@ -86,22 +86,22 @@ namespace http {
 			{
 			case 1:
 				//Pressure (Bar)
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
+					bCreated = true;
+				}
+				break;
 			case 2:
 				//Percentage
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
+					bCreated = true;
+				}
+				break;
 			case 3:
 				//Gas
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Gas, sTypeP1Gas, 12, 255, 0, "0", devname);
@@ -109,34 +109,34 @@ namespace http {
 				break;
 			case 4:
 				//Voltage
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, "0.000", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, "0.000", devname);
+					bCreated = true;
+				}
+				break;
 			case 5:
 				//Text
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, "Hello World", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, "Hello World", devname);
+					bCreated = true;
+				}
+				break;
 			case 6:
 				//Switch
-			{
-				unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
-				unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
-				unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
-				unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
-				sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+					unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+					m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
+					bCreated = true;
+				}
+				break;
 			case 7:
 				//Alert
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeAlert, 12, 255, 0, "No Alert!", devname);
@@ -144,16 +144,16 @@ namespace http {
 				break;
 			case 8:
 				//Thermostat Setpoint
-			{
-				unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
-				unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
-				unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
-				unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
-				sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-			}
-			m_sql.UpdateValue(HwdID, ID, 1, pTypeThermostat, sTypeThermSetpoint, 12, 255, 0, "20.5", devname);
-			bCreated = true;
-			break;
+				{
+					unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+					unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+				}
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeThermostat, sTypeThermSetpoint, 12, 255, 0, "20.5", devname);
+				bCreated = true;
+				break;
 			case 9:
 				//Current/Ampere
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeCURRENT, sTypeELEC1, 12, 255, 0, "0.0;0.0;0.0", devname);
@@ -161,22 +161,22 @@ namespace http {
 				break;
 			case 10:
 				//Sound Level
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoundLevel, 12, 255, 0, "65", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoundLevel, 12, 255, 0, "65", devname);
+					bCreated = true;
+				}
+				break;
 			case 11:
 				//Barometer (hPa)
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeBaro, 12, 255, 0, "1021.34;0", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeBaro, 12, 255, 0, "1021.34;0", devname);
+					bCreated = true;
+				}
+				break;
 			case 12:
 				//Visibility (km)
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeVisibility, 12, 255, 0, "10.3", devname);
@@ -184,66 +184,75 @@ namespace http {
 				break;
 			case 13:
 				//Distance (cm)
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeDistance, 12, 255, 0, "123.4", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeDistance, 12, 255, 0, "123.4", devname);
+					bCreated = true;
+				}
+				break;
 			case 14: //Counter Incremental
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeCounterIncremental, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case 15:
 				//Soil Moisture
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoilMoisture, 12, 255, 3, devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoilMoisture, 12, 255, 3, devname);
+					bCreated = true;
+				}
+				break;
 			case 16:
 				//Leaf Wetness
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeLeafWetness, 12, 255, 2, devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeLeafWetness, 12, 255, 2, devname);
+					bCreated = true;
+				}
+				break;
 			case 17:
 				//Thermostat Clock
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeZWaveClock, 12, 255, 0, "24:12:00", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeZWaveClock, 12, 255, 0, "24:12:00", devname);
+					bCreated = true;
+				}
+				break;
 			case 18:
 				//kWh
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeKwh, 12, 255, 0, "0;0.0", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeKwh, 12, 255, 0, "0;0.0", devname);
+					bCreated = true;
+				}
+				break;
 			case 19:
 				//Current (Single)
-			{
-				std::string rID = std::string(ID);
-				padLeft(rID, 8, '0');
-				m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeCurrent, 12, 255, 0, "6.4", devname);
-				bCreated = true;
-			}
-			break;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeCurrent, 12, 255, 0, "6.4", devname);
+					bCreated = true;
+				}
+				break;
 			case pTypeLimitlessLights:
 				//RGB switch
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
-				bCreated = true;
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					unsigned long long devidx = m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
+					if (devidx != -1)
+					{
+						//Set switch type to dimmer
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Dimmer, devidx);
+					}
+					bCreated = true;
+				}
 				break;
 			case pTypeTEMP:
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 12, 255, 0, "0.0", devname);
