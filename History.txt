@@ -15,6 +15,7 @@ Version 2.3xxx
 - Fixed: RGB sensor now also uses the RGB popup system
 - Implemented: Nest Protect
 - Implemented: MySensors, Implemented V_CUSTOM
+- Changed: EventSystem, don't process unused devices
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

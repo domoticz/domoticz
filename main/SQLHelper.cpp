@@ -2582,9 +2582,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		return -1;
 
 	unsigned long long ulID=0;
-
+	bool bDeviceUsed = false;
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID,Name, Used FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	if (result.size()==0)
 	{
 		//Insert
@@ -2623,6 +2623,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		s_str >> ulID;
 
 		devname=result[0][1];
+		bDeviceUsed= atoi(result[0][2].c_str())!=0;
 
 		time_t now = time(0);
 		struct tm ltime;
@@ -2695,6 +2696,8 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			ulID,
 			nValue,sValue);
 
+		if (!bDeviceUsed)
+			return ulID;	//don't process further as the device is not used
 		std::string lstatus="";
 		int llevel=0;
 		bool bHaveDimmer=false;
@@ -2909,7 +2912,8 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
-	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
+	if (bDeviceUsed)
+		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
 	return ulID;
 }
 
