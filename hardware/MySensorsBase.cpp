@@ -1120,7 +1120,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			else if (light_command == light2_sSetLevel)
 			{
-				float fvalue = (100.0f / 15.0f)*float(pCmd->LIGHTING2.level);
+				float fvalue = (100.0f / 14.0f)*float(pCmd->LIGHTING2.level);
 				if (fvalue > 100.0f)
 					fvalue = 100.0f; //99 is fully on
 				int svalue = round(fvalue);
