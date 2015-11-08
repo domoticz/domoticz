@@ -9379,7 +9379,7 @@ bool MainWorker::GetSensorData(const unsigned long long idx, int &nValue, std::s
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[100];
-	result = m_sql.safe_query("SELECT [Type],[SubType],[nValue],[sValue] FROM DeviceStatus WHERE (ID==%llu)", idx);
+	result = m_sql.safe_query("SELECT [Type],[SubType],[nValue],[sValue],[SwitchType] FROM DeviceStatus WHERE (ID==%llu)", idx);
 	if (result.empty())
 		return false;
 	std::vector<std::string> sd = result[0];
@@ -9387,6 +9387,7 @@ bool MainWorker::GetSensorData(const unsigned long long idx, int &nValue, std::s
 	int subType = atoi(sd[1].c_str());
 	nValue = atoi(sd[2].c_str());
 	sValue = sd[3];
+	_eMeterType metertype = (_eMeterType)atoi(sd[4].c_str());
 
 	//Special cases
 	if ((devType == pTypeP1Power) && (subType == sTypeP1Power))
@@ -9432,8 +9433,7 @@ bool MainWorker::GetSensorData(const unsigned long long idx, int &nValue, std::s
 
 		std::vector<std::vector<std::string> > result2;
 		strcpy(szTmp, "0");
-		result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
-			sd[0].c_str(), szDate);
+		result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%q')", idx, szDate);
 		if (result2.size() > 0)
 		{
 			std::vector<std::string> sd2 = result2[0];
@@ -9452,6 +9452,81 @@ bool MainWorker::GetSensorData(const unsigned long long idx, int &nValue, std::s
 		else
 		{
 			sprintf(szTmp, "%.03f", 0.0f);
+		}
+		nValue = 0;
+		sValue = szTmp;
+	}
+	else if (devType == pTypeRFXMeter)
+	{
+		float EnergyDivider = 1000.0f;
+		float GasDivider = 100.0f;
+		float WaterDivider = 100.0f;
+		int tValue;
+		if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+		{
+			EnergyDivider = float(tValue);
+		}
+		if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+		{
+			GasDivider = float(tValue);
+		}
+		if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+		{
+			WaterDivider = float(tValue);
+		}
+
+		//get value of today
+		time_t now = mytime(NULL);
+		struct tm tm1;
+		localtime_r(&now, &tm1);
+
+		struct tm ltime;
+		ltime.tm_isdst = tm1.tm_isdst;
+		ltime.tm_hour = 0;
+		ltime.tm_min = 0;
+		ltime.tm_sec = 0;
+		ltime.tm_year = tm1.tm_year;
+		ltime.tm_mon = tm1.tm_mon;
+		ltime.tm_mday = tm1.tm_mday;
+
+		char szDate[40];
+		sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+		std::vector<std::vector<std::string> > result2;
+		strcpy(szTmp, "0");
+		result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%q')", idx, szDate);
+		if (result2.size() > 0)
+		{
+			std::vector<std::string> sd2 = result2[0];
+
+			unsigned long long total_min, total_max, total_real;
+
+			std::stringstream s_str1(sd2[0]);
+			s_str1 >> total_min;
+			std::stringstream s_str2(sd2[1]);
+			s_str2 >> total_max;
+			total_real = total_max - total_min;
+			sprintf(szTmp, "%llu", total_real);
+
+			float musage = 0;
+			switch (metertype)
+			{
+			case MTYPE_ENERGY:
+			case MTYPE_ENERGY_GENERATED:
+				musage = float(total_real) / EnergyDivider;
+				sprintf(szTmp, "%.03f", musage);
+				break;
+			case MTYPE_GAS:
+				musage = float(total_real) / GasDivider;
+				sprintf(szTmp, "%.03f", musage);
+				break;
+			case MTYPE_WATER:
+				sprintf(szTmp, "%llu", total_real);
+				break;
+			case MTYPE_COUNTER:
+				sprintf(szTmp, "%llu", total_real);
+				break;
+			}
 		}
 		nValue = 0;
 		sValue = szTmp;
