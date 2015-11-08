@@ -121,6 +121,8 @@ std::string MySensorsBase::GetMySensorsValueTypeStr(const enum _eSetType vType)
 		return "V_HVAC_FLOW_MODE";
 	case V_TEXT:
 		return "V_TEXT";
+	case V_CUSTOM:
+		return "V_CUSTOM";
 	}
 	return "Unknown!";
 }
@@ -1670,6 +1672,25 @@ void MySensorsBase::ParseLine()
 		case V_IR_RECEIVE:
 			pChild->SetValue(vType, (int)boost::lexical_cast<unsigned int>(payload));
 			bHaveValue = true;
+			break;
+		case V_CUSTOM:
+			//Request for a sensor state
+		{
+			if (!payload.empty())
+			{
+				unsigned long long idx = boost::lexical_cast<unsigned long long>(payload);
+				int nValue;
+				std::string sValue;
+				if (m_mainworker.GetSensorData(idx, nValue, sValue))
+				{
+					std::stringstream sstr;
+					sstr << idx << ";" << nValue << ";" << sValue;
+					std::string sPayload = sstr.str();
+					stdreplace(sPayload, ";", "#"); //cant send payload with ;
+					SendNodeCommand(node_id, child_sensor_id, message_type, sub_type, sPayload);
+				}
+			}
+		}
 			break;
 		default:
 			if (sub_type > V_CURRENT)

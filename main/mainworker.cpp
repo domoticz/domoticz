@@ -9375,6 +9375,90 @@ unsigned long long MainWorker::decode_FS20(const CDomoticzHardwareBase *pHardwar
 	return -1;
 }
 
+bool MainWorker::GetSensorData(const unsigned long long idx, int &nValue, std::string &sValue)
+{
+	std::vector<std::vector<std::string> > result;
+	char szTmp[100];
+	result = m_sql.safe_query("SELECT [Type],[SubType],[nValue],[sValue] FROM DeviceStatus WHERE (ID==%llu)", idx);
+	if (result.empty())
+		return false;
+	std::vector<std::string> sd = result[0];
+	int devType = atoi(sd[0].c_str());
+	int subType = atoi(sd[1].c_str());
+	nValue = atoi(sd[2].c_str());
+	sValue = sd[3];
+
+	//Special cases
+	if ((devType == pTypeP1Power) && (subType == sTypeP1Power))
+	{
+		std::vector<std::string> results;
+		StringSplit(sValue, ";", results);
+		if (results.size() < 6)
+			return false; //invalid data
+		//Return usage or delivery
+		long usagecurrent = atol(results[4].c_str());
+		long delivcurrent = atol(results[5].c_str());
+		std::stringstream ssvalue;
+		if (delivcurrent > 0)
+		{
+			ssvalue << "-" << delivcurrent;
+		}
+		else
+		{
+			ssvalue << usagecurrent;
+		}
+		nValue = 0;
+		sValue = ssvalue.str();
+	}
+	else if ((devType == pTypeP1Gas) && (subType == sTypeP1Gas))
+	{
+		float GasDivider = 1000.0f;
+		//get lowest value of today
+		time_t now = mytime(NULL);
+		struct tm tm1;
+		localtime_r(&now, &tm1);
+
+		struct tm ltime;
+		ltime.tm_isdst = tm1.tm_isdst;
+		ltime.tm_hour = 0;
+		ltime.tm_min = 0;
+		ltime.tm_sec = 0;
+		ltime.tm_year = tm1.tm_year;
+		ltime.tm_mon = tm1.tm_mon;
+		ltime.tm_mday = tm1.tm_mday;
+
+		char szDate[40];
+		sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+		std::vector<std::vector<std::string> > result2;
+		strcpy(szTmp, "0");
+		result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%q' AND Date>='%q')",
+			sd[0].c_str(), szDate);
+		if (result2.size() > 0)
+		{
+			std::vector<std::string> sd2 = result2[0];
+
+			unsigned long long total_min_gas, total_real_gas;
+			unsigned long long gasactual;
+
+			std::stringstream s_str1(sd2[0]);
+			s_str1 >> total_min_gas;
+			std::stringstream s_str2(sValue);
+			s_str2 >> gasactual;
+			total_real_gas = gasactual - total_min_gas;
+			float musage = float(total_real_gas) / GasDivider;
+			sprintf(szTmp, "%.03f", musage);
+		}
+		else
+		{
+			sprintf(szTmp, "%.03f", 0.0f);
+		}
+		nValue = 0;
+		sValue = szTmp;
+	}
+	return true;
+}
+
 bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6)
 {
 	int hindex=FindDomoticzHardware(HardwareID);
