@@ -42,14 +42,13 @@ bool MySensorsSerial::StartHardware()
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsSerial::Do_Work, this)));
-
+	StartSendQueue();
 	return (m_thread != NULL);
-
-	return true;
 }
 
 bool MySensorsSerial::StopHardware()
 {
+	StopSendQueue();
 	m_stoprequested = true;
 	if (m_thread != NULL)
 		m_thread->join();

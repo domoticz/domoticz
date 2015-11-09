@@ -1090,7 +1090,7 @@ void MySensorsBase::SendCommandInt(const int NodeID, const int ChildID, const _e
 	std::stringstream sstr;
 	std::string szAck = (UseAck == true) ? "1" : "0";
 	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";" <<szAck << ";" << SubType << ";" << Payload << '\n';
-	WriteInt(sstr.str());
+	AddToSendQueue(sstr.str().c_str(), sstr.str().size());
 }
 
 bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
@@ -1948,12 +1948,50 @@ void MySensorsBase::ParseLine()
 		while (1==0);
 	}
 }
+
+bool MySensorsBase::StartSendQueue()
+{
+	//Start worker thread
+	m_send_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsBase::Do_Send_Work, this)));
+	return (m_send_thread != NULL);
+}
+
+void MySensorsBase::StopSendQueue()
+{
+	if (m_send_thread != NULL)
+	{
+		assert(m_send_thread);
+		//Add a dummy queue item, so we stop
+		std::vector<unsigned char> desend;
+		m_sendQueue.push(desend);
+		m_send_thread->join();
+	}
+}
+
+void MySensorsBase::Do_Send_Work()
+{
+	while (true)
+	{
+		std::vector<unsigned char> toSend;
+		bool hasPopped = m_sendQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(toSend, boost::posix_time::milliseconds(2000));
+		if (!hasPopped) {
+			continue;
+		}
+		if (toSend.empty())
+		{
+			//Exit thread
+			return;
+		}
+		std::string sString(toSend.begin(), toSend.begin() + toSend.size());
+		WriteInt(sString);
+	}
+}
+
 void MySensorsBase::AddToSendQueue(const char *pDate, const int Length)
 {
-	boost::lock_guard<boost::mutex> l(sendQueueMutex);
 	std::vector<unsigned char> desend;
 	desend.insert(desend.begin(), pDate, pDate + Length);
-	m_sendQueue.push_back(desend);
+	m_sendQueue.push(desend);
 }
 
 //Webserver helpers

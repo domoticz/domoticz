@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "../main/concurrent_queue.h"
 
 class MySensorsBase : public CDomoticzHardwareBase
 {
@@ -390,11 +391,12 @@ private:
 
 	std::map<int, _tMySensorNode> m_nodes;
 
-	boost::mutex sendQueueMutex;
-	std::vector<std::vector<unsigned char> > m_sendQueue;
+	concurrent_queue<std::vector<unsigned char> > m_sendQueue;
 	void AddToSendQueue(const char *pDate, const int Length);
 	boost::shared_ptr<boost::thread> m_send_thread;
-	volatile bool m_stopsendrequested;
+	bool StartSendQueue();
+	void StopSendQueue();
+	void Do_Send_Work();
 
 	std::string m_GatewayVersion;
 
