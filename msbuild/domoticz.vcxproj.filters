@@ -771,6 +771,9 @@
     <ClInclude Include="..\hardware\Nest.h">
       <Filter>Devices\Nest</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\concurrent_queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

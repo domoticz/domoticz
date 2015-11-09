@@ -14,6 +14,10 @@ Version 2.3xxx
 - Fixed: Dummy RGB sensor creation (was created with wrong ID)
 - Fixed: RGB sensor now also uses the RGB popup system
 - Implemented: Nest Protect
+- Implemented: MySensors, Implemented V_CUSTOM
+- Changed: EventSystem, don't process unused devices
+- Implemented: MySensors, Option to Enable/Disable using ACK per Child sensor from the MySensors hardware setup page
+- Implemented: MySensors, Option to Name a node
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

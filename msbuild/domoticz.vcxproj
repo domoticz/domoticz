@@ -206,6 +206,7 @@
     <ClInclude Include="..\hardware\DomoticzHardware.h" />
     <ClInclude Include="..\hardware\DomoticzTCP.h" />
     <ClInclude Include="..\hardware\hardwaretypes.h" />
+    <ClInclude Include="..\main\concurrent_queue.h" />
     <ClInclude Include="..\main\DataPush.h" />
     <ClInclude Include="..\main\dirent_windows.h" />
     <ClInclude Include="..\main\EventSystem.h" />

@@ -724,9 +724,6 @@ define(['app'], function (app) {
 									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var vname='<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
 									}
-									if ($(id + " #name").html()!=vname) {
-										$(id + " #name").html(vname);
-									}
 									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var status="";
 										var bHaveBefore=false;
@@ -846,9 +843,6 @@ define(['app'], function (app) {
 								id="#dashcontent #weather_" + item.idx;
 								var obj=$(id);
 								if (typeof obj != 'undefined') {
-									if ($(id + " #name").html()!=item.Name) {
-										$(id + " #name").html(item.Name);
-									}
 									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var status="";
 										if (typeof item.Rain != 'undefined') {
@@ -1009,9 +1003,6 @@ define(['app'], function (app) {
 								id="#dashcontent #security_" + item.idx;
 								var obj=$(id);
 								if (typeof obj != 'undefined') {
-									if ($(id + " #name").html()!=item.Name) {
-										$(id + " #name").html(item.Name);
-									}
 									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var tmpStatus=TranslateStatus(item.Status);
 										if (item.SubType=="Security Panel") {
@@ -1132,9 +1123,6 @@ define(['app'], function (app) {
 								id="#dashcontent #evohome_" + item.idx;
 								var obj=$(id);
 								if (typeof obj != 'undefined') {
-									if ($(id + " #name").html()!=item.Name) {
-										$(id + " #name").html(item.Name);
-									}
 									if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 										var img="";
 										if (item.SubType=="Evohome") {
@@ -1216,9 +1204,6 @@ define(['app'], function (app) {
 						id="#dashcontent #utility_" + item.idx;
 						var obj=$(id);
 						if (typeof obj != 'undefined') {
-							if ($(id + " #name").html()!=item.Name) {
-								$(id + " #name").html(item.Name);
-							}
 							if (($scope.config.DashboardType==2)||(window.myglobals.ismobile==true)) {
 								var status="";
 								if (typeof item.Counter != 'undefined') {
