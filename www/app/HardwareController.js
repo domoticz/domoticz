@@ -1307,6 +1307,28 @@ define(['app'], function (app) {
 
             RefreshPingerNodeTable();
         }
+
+        MySensorsUpdateNode = function(nodeid)
+        {
+            if ($('#updelclr #nodeupdate').attr("class")=="btnstyle3-dis") {
+                return;
+            }
+            var name = $("#updelclr #nodename").val();
+			$.ajax({
+				 url: "json.htm?type=command&param=mysensorsupdatenode" +
+					"&idx=" + $.devIdx +
+					"&nodeid=" + nodeid +
+                   "&name=" + encodeURIComponent(name),
+				 async: false,
+				 dataType: 'json',
+				 success: function(data) {
+					RefreshMySensorsNodeTable();
+				 },
+				 error: function(){
+					ShowNotify($.t('Problem Updating Node!'), 2500, true);
+				 }
+			});
+        }
         
         MySensorsDeleteNode = function(nodeid)
         {
@@ -1331,6 +1353,7 @@ define(['app'], function (app) {
                 }
             });
         }
+
         MySensorsDeleteChild = function(nodeid,childid)
         {
             if ($('#updelclr #activedevicedelete').attr("class")=="btnstyle3-dis") {
@@ -1443,6 +1466,7 @@ define(['app'], function (app) {
         RefreshMySensorsNodeTable = function()
         {
 		  $('#delclractive #trChildSettings').hide();
+		  $('#updelclr #trNodeSettings').hide();
           $('#modal').show();
           var oTable = $('#mysensorsnodestable').dataTable();
           oTable.fnClearTable();
@@ -1457,12 +1481,14 @@ define(['app'], function (app) {
                     var addId = oTable.fnAddData( {
                         "DT_RowId": item.idx,
                         "Name": item.Name,
+                        "SketchName": item.SketchName,
                         "Version": item.Version,
                         "0": item.idx,
                         "1": item.Name,
-                        "2": item.Version,
-                        "3": item.Childs,
-                        "4": item.LastReceived
+                        "2": item.SketchName,
+                        "3": item.Version,
+                        "4": item.Childs,
+                        "5": item.LastReceived
                     } );
                 });
               }
@@ -1473,6 +1499,8 @@ define(['app'], function (app) {
             $("#mysensorsnodestable tbody").off();
             $("#mysensorsnodestable tbody").on( 'click', 'tr', function () {
                 $('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
+                $('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
+				$('#updelclr #trNodeSettings').hide();
                 if ( $(this).hasClass('row_selected') ) {
                     $(this).removeClass('row_selected');
                 }
@@ -1485,6 +1513,10 @@ define(['app'], function (app) {
                         var data = oTable.fnGetData( anSelected[0] );
                         var idx= data["DT_RowId"];
                         $('#updelclr #nodedelete').attr("class", "btnstyle3");
+                        $('#updelclr #nodeupdate').attr("class", "btnstyle3");
+						$('#updelclr #nodename').val(data["Name"]);
+						$('#updelclr #trNodeSettings').show();
+                        $("#updelclr #nodeupdate").attr("href", "javascript:MySensorsUpdateNode(" + idx + ")");
                         $("#updelclr #nodedelete").attr("href", "javascript:MySensorsDeleteNode(" + idx + ")");
                         $.nodeid = idx;
                         MySensorsRefreshActiveDevicesTable();

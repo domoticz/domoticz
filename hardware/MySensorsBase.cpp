@@ -232,7 +232,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 	m_nodes.clear();
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=%d) ORDER BY ID ASC", m_HwdID);
+	result = m_sql.safe_query("SELECT ID, Name, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=%d) ORDER BY ID ASC", m_HwdID);
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -241,11 +241,13 @@ void MySensorsBase::LoadDevicesFromDatabase()
 			std::vector<std::string> sd = *itt;
 
 			int ID = atoi(sd[0].c_str());
-			std::string SkectName = sd[1];
-			std::string SkectVersion = sd[2];
+			std::string Name = sd[1];
+			std::string SkectName = sd[2];
+			std::string SkectVersion = sd[3];
 
 			_tMySensorNode mNode;
 			mNode.nodeID = ID;
+			mNode.Name = Name;
 			mNode.SketchName = SkectName;
 			mNode.SketchVersion = SkectVersion;
 			mNode.lastreceived = 0;
@@ -256,7 +258,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 
 void MySensorsBase::Add2Database(const int nodeID, const std::string &SketchName, const std::string &SketchVersion)
 {
-	m_sql.safe_query("INSERT INTO MySensors (HardwareID, ID, SketchName, SketchVersion) VALUES (%d,%d, '%q', '%q')", m_HwdID, nodeID, SketchName.c_str(), SketchVersion.c_str());
+	m_sql.safe_query("INSERT INTO MySensors (HardwareID, ID, Name, SketchName, SketchVersion) VALUES (%d,%d, '%q', '%q', '%q')", m_HwdID, nodeID, SketchName.c_str(), SketchName.c_str(), SketchVersion.c_str());
 }
 
 void MySensorsBase::DatabaseUpdateSketchName(const int nodeID, const std::string &SketchName)
@@ -301,12 +303,26 @@ MySensorsBase::_tMySensorNode* MySensorsBase::InsertNode(const int nodeID)
 {
 	_tMySensorNode mNode;
 	mNode.nodeID = nodeID;
+	mNode.Name = "Unknown";
 	mNode.SketchName = "Unknown";
 	mNode.SketchVersion = "1.0";
 	mNode.lastreceived = 0;
 	m_nodes[mNode.nodeID] = mNode;
 	Add2Database(mNode.nodeID, mNode.SketchName, mNode.SketchVersion);
 	return FindNode(nodeID);
+}
+
+void MySensorsBase::UpdateNode(const int nodeID, const std::string &name)
+{
+	if (_tMySensorNode *pNode = FindNode(nodeID))
+	{
+		m_sql.safe_query("UPDATE MySensors SET [Name]='%q' WHERE (HardwareID==%d) AND (ID=='%d')", name.c_str(), m_HwdID, nodeID);
+		pNode->Name = name;
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "MySensors: Update command received for unknown node_id: %d", nodeID);
+	}
 }
 
 void MySensorsBase::RemoveNode(const int nodeID)
@@ -1090,7 +1106,7 @@ void MySensorsBase::SendCommandInt(const int NodeID, const int ChildID, const _e
 	std::stringstream sstr;
 	std::string szAck = (UseAck == true) ? "1" : "0";
 	sstr << NodeID << ";" << ChildID << ";" << int(messageType) << ";" <<szAck << ";" << SubType << ";" << Payload << '\n';
-	AddToSendQueue(sstr.str().c_str(), sstr.str().size());
+	m_sendQueue.push(sstr.str());
 }
 
 bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char length)
@@ -1962,8 +1978,8 @@ void MySensorsBase::StopSendQueue()
 	{
 		assert(m_send_thread);
 		//Add a dummy queue item, so we stop
-		std::vector<unsigned char> desend;
-		m_sendQueue.push(desend);
+		std::string emptyString;
+		m_sendQueue.push(emptyString);
 		m_send_thread->join();
 	}
 }
@@ -1972,7 +1988,7 @@ void MySensorsBase::Do_Send_Work()
 {
 	while (true)
 	{
-		std::vector<unsigned char> toSend;
+		std::string toSend;
 		bool hasPopped = m_sendQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(toSend, boost::posix_time::milliseconds(2000));
 		if (!hasPopped) {
 			continue;
@@ -1982,16 +1998,8 @@ void MySensorsBase::Do_Send_Work()
 			//Exit thread
 			return;
 		}
-		std::string sString(toSend.begin(), toSend.begin() + toSend.size());
-		WriteInt(sString);
+		WriteInt(toSend);
 	}
-}
-
-void MySensorsBase::AddToSendQueue(const char *pDate, const int Length)
-{
-	std::vector<unsigned char> desend;
-	desend.insert(desend.begin(), pDate, pDate + Length);
-	m_sendQueue.push(desend);
 }
 
 //Webserver helpers
@@ -2019,7 +2027,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result, result2;
 			char szTmp[100];
 
-			result = m_sql.safe_query("SELECT ID,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC",
+			result = m_sql.safe_query("SELECT ID,Name,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC",
 				iHardwareID);
 			if (result.size() > 0)
 			{
@@ -2034,7 +2042,8 @@ namespace http {
 
 					root["result"][ii]["idx"] = NodeID;
 					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Version"] = sd[2];
+					root["result"][ii]["SketchName"] = sd[2];
+					root["result"][ii]["Version"] = sd[3];
 
 					MySensorsBase::_tMySensorNode* pNode = pMySensorsHardware->FindNode(NodeID);
 
@@ -2132,6 +2141,38 @@ namespace http {
 				root["result"][ii]["LastReceived"] = szDate;
 				ii++;
 			}
+		}
+		void CWebServer::Cmd_MySensorsUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return;
+			}
+
+			std::string hwid = request::findValue(&req, "idx");
+			std::string nodeid = request::findValue(&req, "nodeid");
+			std::string name = request::findValue(&req, "name");
+			if (
+				(hwid == "") ||
+				(nodeid == "") ||
+				(name == "")
+				)
+				return;
+			int iHardwareID = atoi(hwid.c_str());
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(iHardwareID);
+			if (pBaseHardware == NULL)
+				return;
+			if (
+				(pBaseHardware->HwdType != HTYPE_MySensorsUSB) &&
+				(pBaseHardware->HwdType != HTYPE_MySensorsTCP)
+				)
+				return;
+			MySensorsBase *pMySensorsHardware = (MySensorsBase*)pBaseHardware;
+			int NodeID = atoi(nodeid.c_str());
+			root["status"] = "OK";
+			root["title"] = "MySensorsUpdateNode";
+			pMySensorsHardware->UpdateNode(NodeID, name);
 		}
 		void CWebServer::Cmd_MySensorsRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{

@@ -252,6 +252,7 @@ public:
 	struct _tMySensorNode
 	{
 		int nodeID;
+		std::string Name;
 		std::string SketchName;
 		std::string SketchVersion;
 		time_t lastreceived;
@@ -345,6 +346,7 @@ public:
 	std::string m_szSerialPort;
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	_tMySensorNode* FindNode(const int nodeID);
+	void UpdateNode(const int nodeID, const std::string &name);
 	void RemoveNode(const int nodeID);
 	void RemoveChild(const int nodeID, const int childID);
 	void UpdateChild(const int nodeID, const int childID, const bool UseAck);
@@ -391,8 +393,7 @@ private:
 
 	std::map<int, _tMySensorNode> m_nodes;
 
-	concurrent_queue<std::vector<unsigned char> > m_sendQueue;
-	void AddToSendQueue(const char *pDate, const int Length);
+	concurrent_queue<std::string > m_sendQueue;
 	boost::shared_ptr<boost::thread> m_send_thread;
 	bool StartSendQueue();
 	void StopSendQueue();
