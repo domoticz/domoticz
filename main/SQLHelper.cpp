@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 84
+#define DB_VERSION 86
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -531,6 +531,7 @@ const char *sqlCreateMySensors =
 	"CREATE TABLE IF NOT EXISTS [MySensors]("
 	" [HardwareID] INTEGER NOT NULL,"
 	" [ID] INTEGER NOT NULL,"
+	" [Name] VARCHAR(100) DEFAULT Unknown,"
 	" [SketchName] VARCHAR(100) DEFAULT Unknown,"
 	" [SketchVersion] VARCHAR(40) DEFAULT(1.0));";
 
@@ -1550,6 +1551,17 @@ bool CSQLHelper::OpenDatabase()
 			{
 				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
 			}
+		}
+		if (dbversion < 85)
+		{
+			//MySensors, default use ACK for Childs
+			safe_query("UPDATE MySensorsChilds SET[UseAck] = 1 WHERE(ChildID != 255)");
+		}
+		if (dbversion < 86)
+		{
+			//MySensors add Name field
+			query("ALTER TABLE MySensors ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			safe_query("UPDATE MySensors SET [Name] = [SketchName]");
 		}
 	}
 	else if (bNewInstall)
