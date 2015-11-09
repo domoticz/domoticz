@@ -1017,7 +1017,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_NetatmoWeatherStation)
+				(htype == HTYPE_NetatmoWeatherStation) ||
 				(htype == HTYPE_NetatmoThermostat)
 				)
 			{
@@ -1233,7 +1233,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_NetatmoWeatherStation)
+				(htype == HTYPE_NetatmoWeatherStation)||
 				(htype == HTYPE_NetatmoThermostat)
 				)
 			{
