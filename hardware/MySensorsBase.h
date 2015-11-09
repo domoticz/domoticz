@@ -346,6 +346,7 @@ public:
 	_tMySensorNode* FindNode(const int nodeID);
 	void RemoveNode(const int nodeID);
 	void RemoveChild(const int nodeID, const int childID);
+	void UpdateChild(const int nodeID, const int childID, const bool UseAck);
 	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
 	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
 	std::string GetGatewayVersion();
@@ -354,11 +355,11 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 
-	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name, const bool UseAck);
+	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name);
 	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
 
 	void SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload);
-	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload);
+	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck);
 	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 
 
@@ -388,6 +389,12 @@ private:
 	bool GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue);
 
 	std::map<int, _tMySensorNode> m_nodes;
+
+	boost::mutex sendQueueMutex;
+	std::vector<std::vector<unsigned char> > m_sendQueue;
+	void AddToSendQueue(const char *pDate, const int Length);
+	boost::shared_ptr<boost::thread> m_send_thread;
+	volatile bool m_stopsendrequested;
 
 	std::string m_GatewayVersion;
 

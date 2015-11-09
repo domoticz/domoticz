@@ -16,6 +16,7 @@ Version 2.3xxx
 - Implemented: Nest Protect
 - Implemented: MySensors, Implemented V_CUSTOM
 - Changed: EventSystem, don't process unused devices
+- Implemented: MySensors, Option to Enable/Disable using ACK per Child sensor from the MySensors hardware setup page
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
