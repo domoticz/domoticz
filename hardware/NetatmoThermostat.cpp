@@ -9,40 +9,6 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-#ifdef _DEBUG
-//	#define DEBUG_NetatmoThermostatR
-#endif
-
-#ifdef DEBUG_NetatmoThermostatW
-void SaveString2Disk(std::string str, std::string filename)
-{
-	FILE *fOut = fopen(filename.c_str(), "wb+");
-	if (fOut)
-	{
-		fwrite(str.c_str(), 1, str.size(), fOut);
-		fclose(fOut);
-	}
-}
-#endif
-#ifdef DEBUG_NetatmoThermostatR
-std::string ReadFile(std::string filename)
-{
-	std::ifstream file;
-	std::string sResult = "";
-	file.open(filename.c_str());
-	if (!file.is_open())
-		return "";
-	std::string sLine;
-	while (!file.eof())
-	{
-		getline(file, sLine);
-		sResult += sLine;
-	}
-	file.close();
-	return sResult;
-}
-#endif
-
 CNetAtmoThermostat::CNetAtmoThermostat(const int ID, const std::string& username, const std::string& password) :
 m_username(username),
 m_password(password)
@@ -65,8 +31,6 @@ CNetAtmoThermostat::~CNetAtmoThermostat(void)
 
 void CNetAtmoThermostat::Init()
 {
-	m_RainOffset.clear();
-	m_OldRainCounter.clear();
 }
 
 bool CNetAtmoThermostat::StartHardware()
