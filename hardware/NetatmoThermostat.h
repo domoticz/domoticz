@@ -37,6 +37,10 @@ private:
 	bool RefreshToken();
 	bool m_isLogged;
 
+	void SetSetpoint(const int idx, const float temp);
+	bool SetAway(const bool bIsAway);
+	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
+
 	int GetBatteryLevel(const std::string &ModuleType, const int battery_vp);
 	bool ParseDashboard(const Json::Value &root, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp);
 };

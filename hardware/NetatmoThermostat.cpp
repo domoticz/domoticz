@@ -6,8 +6,11 @@
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
+#include "../main/SQLHelper.h"
 
 #define round(a) ( int ) ( a + .5 )
+
+const std::string NETATMO_LOGIN_PATH = "https://api.netatmo.net/oauth2/token";
 
 CNetAtmoThermostat::CNetAtmoThermostat(const int ID, const std::string& username, const std::string& password) :
 m_username(username),
@@ -165,7 +168,8 @@ bool CNetAtmoThermostat::Login()
 	ExtraHeaders.push_back("Host: api.netatmo.net");
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
 
-	std::string httpUrl("https://api.netatmo.net/oauth2/token");
+	std::string sURL = NETATMO_LOGIN_PATH;
+	std::string httpUrl(sURL);
 	std::string sResult;
 	bool ret = HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult);
 	if (!ret)
@@ -277,22 +281,60 @@ int CNetAtmoThermostat::GetBatteryLevel(const std::string &ModuleType, const int
 
 bool CNetAtmoThermostat::ParseDashboard(const Json::Value &root, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp)
 {
-	bool bHaveTemp = false;
-
-	float temp;
 
 	int batValue = GetBatteryLevel(ModuleType, battery_vp);
-
-	if (!root["measured"]["temperature"].empty())
+	if (!root["measured"].empty())
 	{
-		bHaveTemp = true;
-		temp = root["measured"]["temperature"].asFloat();
-	}
-	if (bHaveTemp)
-	{
+		float temp = root["measured"]["temperature"].asFloat();
+		float currentSetpoint = root["measured"]["setpoint_temp"].asFloat();
 		SendTempSensor(ID, batValue, temp, name);
+		SendSetPointSensor(ID, currentSetpoint, name);
 	}
 	return true;
+}
+
+void CNetAtmoThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
+
+{
+
+	bool bDeviceExits=true;
+
+	char szID[10];
+
+	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
+
+	std::vector<std::vector<std::string> > result;
+
+	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
+
+	if (result.size()<1)
+	{
+		bDeviceExits=false;
+	}
+
+	_tThermostat thermos;
+
+	thermos.subtype=sTypeThermSetpoint;
+
+	thermos.id1=0;
+
+	thermos.id2=0;
+
+	thermos.id3=0;
+
+	thermos.id4=Idx;
+
+	thermos.dunit=0;
+
+	thermos.temp=Temp;
+
+	sDecodeRXMessage(this, (const unsigned char *)&thermos);
+
+	if (!bDeviceExits)
+	{
+		//Assign default name for device
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
+	}
 }
 
 void CNetAtmoThermostat::GetMeterDetails()
