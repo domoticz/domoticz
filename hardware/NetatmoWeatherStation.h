@@ -27,8 +27,8 @@ private:
 
 	time_t m_nextRefreshTs;
 
-	float m_RainOffset;
-	float m_OldRainCounter;
+	std::map<int,float> m_RainOffset;
+	std::map<int, float> m_OldRainCounter;
 
 	void Init();
 	bool StartHardware();

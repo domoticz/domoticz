@@ -10,10 +10,10 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_NetatmoWeatherStation
+//	#define DEBUG_NetatmoWeatherStationR
 #endif
 
-#ifdef DEBUG_NetatmoWeatherStation
+#ifdef DEBUG_NetatmoWeatherStationW
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -23,6 +23,8 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+#endif
+#ifdef DEBUG_NetatmoWeatherStationR
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -40,6 +42,14 @@ std::string ReadFile(std::string filename)
 	return sResult;
 }
 #endif
+
+struct _tNetatmoDevice
+{
+	std::string ID;
+	std::string ModuleName;
+	std::string StationName;
+	std::vector<std::string> Modules;
+};
 
 CNetAtmoWeatherStation::CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password) :
 m_username(username),
@@ -63,8 +73,8 @@ CNetAtmoWeatherStation::~CNetAtmoWeatherStation(void)
 
 void CNetAtmoWeatherStation::Init()
 {
-	m_RainOffset=0;
-	m_OldRainCounter=0;
+	m_RainOffset.clear();
+	m_OldRainCounter.clear();
 }
 
 bool CNetAtmoWeatherStation::StartHardware()
@@ -444,22 +454,31 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 
 	if (bHaveRain)
 	{
-		if ((m_RainOffset == 0) && (m_OldRainCounter == 0))
+		bool bRefetchData = (m_RainOffset.find(ID) == m_RainOffset.end());
+		if (!bRefetchData)
+		{
+			bRefetchData = ((m_RainOffset[ID] == 0) && (m_OldRainCounter[ID] == 0));
+		}
+		if (bRefetchData)
 		{
 			//get last rain counter from the database
 			bool bExists=false;
-			m_RainOffset = GetRainSensorValue(ID, bExists);
-			m_RainOffset -= rain;
-			if (m_RainOffset < 0)
-				m_RainOffset = 0;
+			m_RainOffset[ID] = GetRainSensorValue(ID, bExists);
+			m_RainOffset[ID] -= rain;
+			if (m_RainOffset[ID] < 0)
+				m_RainOffset[ID] = 0;
+			if (m_OldRainCounter.find(ID) == m_OldRainCounter.end())
+			{
+				m_OldRainCounter[ID] = 0;
+			}
 		}
-		if (rain < m_OldRainCounter)
+		if (rain < m_OldRainCounter[ID])
 		{
 			//daily counter went to zero
-			m_RainOffset += m_OldRainCounter;
+			m_RainOffset[ID] += m_OldRainCounter[ID];
 		}
-		m_OldRainCounter = rain;
-		SendRainSensor(ID, batValue, m_RainOffset+ m_OldRainCounter, name);
+		m_OldRainCounter[ID] = rain;
+		SendRainSensor(ID, batValue, m_RainOffset[ID] + m_OldRainCounter[ID], name);
 	}
 
 	if (bHaveCO2)
@@ -494,7 +513,7 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-#ifdef DEBUG_NetatmoWeatherStation
+#ifdef DEBUG_NetatmoWeatherStationR
 	sResult = ReadFile("E:\\netatmo_mdetails.json");
 	bool ret = true;
 #else
@@ -505,7 +524,7 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 		return;
 	}
 #endif
-#ifdef DEBUG_NetatmoWeatherStation2
+#ifdef DEBUG_NetatmoWeatherStationW
 	SaveString2Disk(sResult, "E:\\netatmo_mdetails.json");
 #endif
 	Json::Value root;
@@ -516,75 +535,137 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
 		return;
 	}
-
-	if (!root["body"].empty() && !root["body"]["devices"].empty())
+	bool bHaveDevices = true;
+	if (root["body"].empty())
 	{
-		if (root["body"]["devices"].isArray())
-		{
-			for (Json::Value::iterator itDevice=root["body"]["devices"].begin(); itDevice!=root["body"]["devices"].end(); ++itDevice)
-			{
-				Json::Value device = *itDevice;
-				if (!device["_id"].empty())
-				{
-					if (!device["dashboard_data"].empty())
-					{
-						std::string id = device["_id"].asString();
-						std::string type = device["type"].asString();
-						std::string name = device["module_name"].asString();
-						stdreplace(name, "'", "");
+		bHaveDevices = false;
+	}
+	else if (root["body"]["devices"].empty())
+	{
+		bHaveDevices = false;
+	}
+	else if (!root["body"]["devices"].isArray())
+	{
+		bHaveDevices = false;
+	}
+	if (!bHaveDevices)
+	{
+		_log.Log(LOG_STATUS, "Netatmo: No Devices defined!...");
+		return;
+	}
 
-						int battery_vp = 0;
-						if (device["battery_vp"].empty() == false)
+	std::vector<_tNetatmoDevice> _netatmo_devices;
+
+	for (Json::Value::iterator itDevice=root["body"]["devices"].begin(); itDevice!=root["body"]["devices"].end(); ++itDevice)
+	{
+		Json::Value device = *itDevice;
+		if (!device["_id"].empty())
+		{
+			if (!device["dashboard_data"].empty())
+			{
+				std::string id = device["_id"].asString();
+				std::string type = device["type"].asString();
+				std::string name = device["module_name"].asString();
+				std::string station_name = device["station_name"].asString();
+
+				stdreplace(name, "'", "");
+				stdreplace(station_name, "'", "");
+
+				_tNetatmoDevice nDevice;
+				nDevice.ID = id;
+				nDevice.ModuleName = name;
+				nDevice.StationName = station_name;
+
+				if (!device["modules"].empty())
+				{
+					if (device["modules"].isArray())
+					{
+						//Add modules for this device
+						for (Json::Value::iterator itModule = device["modules"].begin(); itModule != device["modules"].end(); ++itModule)
 						{
-							battery_vp = device["battery_vp"].asInt();
+							Json::Value module = *itModule;
+							nDevice.Modules.push_back(module.asString());
 						}
-						//std::set<std::string> dataTypes;
-						//for (Json::Value::iterator itDataType = device["data_type"].begin(); itDataType != device["data_type"].end(); ++itDataType)
-						//{
-						//	dataTypes.insert((*itDataType).asCString());
-						//}
-						int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
-						ParseDashboard(device["dashboard_data"], crcId, name, type, battery_vp);
-						//getData(type, name, dataTypes, id, std::string(""), battery_vp);
 					}
 				}
+				_netatmo_devices.push_back(nDevice);
+
+				int battery_vp = 0;
+				if (device["battery_vp"].empty() == false)
+				{
+					battery_vp = device["battery_vp"].asInt();
+				}
+				int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
+				ParseDashboard(device["dashboard_data"], crcId, name, type, battery_vp);
 			}
 		}
 	}
-	if (!root["body"].empty() && !root["body"]["modules"].empty())
-	{
-		if (root["body"]["modules"].isArray())
-		{
-			for (Json::Value::iterator itModule=root["body"]["modules"].begin(); itModule!=root["body"]["modules"].end(); ++itModule)
-			{
-				Json::Value module = *itModule;
-				if (!module["_id"].empty())
-				{
-					if (!module["dashboard_data"].empty())
-					{
-						std::string id = module["_id"].asString();
-						std::string type = module["type"].asString();
-						std::string deviceId = module["main_device"].asString();
-						std::string name = module["module_name"].asString();
-						int battery_vp = 0;
-						if (module["battery_vp"] == false)
-						{
-							battery_vp = module["battery_vp"].asInt();
-						}
-						stdreplace(name, "'", " ");
 
-						//std::set<std::string> dataTypes;
-						//for (Json::Value::iterator itDataType = module["data_type"].begin(); itDataType != module["data_type"].end(); ++itDataType)
-						//{
-						//	dataTypes.insert((*itDataType).asCString());
-						//}
-						int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
-						ParseDashboard(module["dashboard_data"], crcId, name, type, battery_vp);
-						//getData(type, name, dataTypes, deviceId, id, battery_vp);
+	if (root["body"]["modules"].empty())
+	{
+		//No additional modules defined
+		return;
+	}
+	if (!root["body"]["modules"].isArray())
+	{
+		//No additional modules defined
+		return;
+	}
+	for (Json::Value::iterator itModule=root["body"]["modules"].begin(); itModule!=root["body"]["modules"].end(); ++itModule)
+	{
+		Json::Value module = *itModule;
+		if (module["_id"].empty())
+			continue;
+		if (module["dashboard_data"].empty())
+			continue;
+		std::string id = module["_id"].asString();
+		std::string type = module["type"].asString();
+		std::string deviceId = module["main_device"].asString();
+		std::string name = "Unknown";
+		if (!module["module_name"].empty())
+		{
+			name = module["module_name"].asString();
+		}
+		else
+		{
+			//Try to look up a name from the above _netatmo_devices structure
+			bool bHaveName = false;
+			std::vector<_tNetatmoDevice>::const_iterator ittND;
+			for (ittND = _netatmo_devices.begin(); ittND != _netatmo_devices.end(); ++ittND)
+			{
+				std::vector<std::string>::const_iterator ittNM;
+				for (ittNM = ittND->Modules.begin(); ittNM != ittND->Modules.end(); ++ittNM)
+				{
+					if (*ittNM == id)
+					{
+						if (!ittND->ModuleName.empty())
+							name = ittND->ModuleName;
+						else if (!ittND->StationName.empty())
+							name = ittND->StationName;
+						bHaveName = true;
+						break;
 					}
 				}
+				if (bHaveName == true)
+					break;
 			}
+
 		}
+		int battery_vp = 0;
+		if (!module["battery_vp"].empty())
+		{
+			battery_vp = module["battery_vp"].asInt();
+		}
+		stdreplace(name, "'", " ");
+
+		//std::set<std::string> dataTypes;
+		//for (Json::Value::iterator itDataType = module["data_type"].begin(); itDataType != module["data_type"].end(); ++itDataType)
+		//{
+		//	dataTypes.insert((*itDataType).asCString());
+		//}
+		int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
+		ParseDashboard(module["dashboard_data"], crcId, name, type, battery_vp);
+		//getData(type, name, dataTypes, deviceId, id, battery_vp);
 	}
 }
 
