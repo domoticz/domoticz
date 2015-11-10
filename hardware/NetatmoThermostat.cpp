@@ -7,10 +7,12 @@
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
 #include "../main/SQLHelper.h"
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 #define round(a) ( int ) ( a + .5 )
 
 const std::string NETATMO_LOGIN_PATH = "https://api.netatmo.net/oauth2/token";
+const std::string NETATMO_SETTERMPOINT  = "https://api.netatmo.net/api/setthermpoint";
 
 CNetAtmoThermostat::CNetAtmoThermostat(const int ID, const std::string& username, const std::string& password) :
 m_username(username),
@@ -83,7 +85,7 @@ void CNetAtmoThermostat::Do_Work()
 		{
 			if (RefreshToken())
 			{
-				if ((sec_counter % 240 == 0) || (bFirstTime))
+				if ((sec_counter % 3600 == 0) || (bFirstTime))
 				{
 					bFirstTime = false;
 					GetMeterDetails();
@@ -390,6 +392,7 @@ void CNetAtmoThermostat::GetMeterDetails()
 		if (!device["_id"].empty())
 		{
 			std::string station_name = device["station_name"].asString();
+			m_deviceId = device["_id"].asString();
 			stdreplace(station_name, "'", "");
 			if (!device["modules"].empty())
 			{
@@ -400,6 +403,7 @@ void CNetAtmoThermostat::GetMeterDetails()
 					{
 						Json::Value module = *itModule;
 						std::string module_id = module["_id"].asString();
+						m_moduleId = module_id;
 						std::string module_name = module["module_name"].asString();
 						std::string type = module["type"].asString();
 						int battery_vp = 0;
@@ -416,3 +420,58 @@ void CNetAtmoThermostat::GetMeterDetails()
 	}
 }
 
+void CNetAtmoThermostat::SetSetpoint(const int idx, const float temp)
+{
+	if (!m_isLogged == true)
+	{
+		if (!Login())
+			return;
+	}
+
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("Host: api.netatmo.net");
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
+
+	float tempDest = temp;
+	unsigned char tSign = m_sql.m_tempsign[0];
+
+	if (tSign == 'F')
+	{
+		tempDest = (tempDest - 32.0f) / 1.8f;
+	}
+
+
+	std::stringstream sstr;
+	sstr << "access_token=" << m_accessToken << "&";
+	sstr << "device_id=" << m_deviceId << "&";
+	sstr << "module_id=" << m_moduleId << "&";
+	sstr << "setpoint_mode=manual&";
+	sstr << "setpoint_temp=" << tempDest << "&";
+	sstr << "setpoint_endtime=" << GetEndTime() << "&";
+
+	std::string httpData = sstr.str();
+
+	std::string sResult;
+
+	std::string sURL = NETATMO_SETTERMPOINT;
+
+	if (!HTTPClient::POST(sURL, httpData, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: Error setting setpoint!");
+		return;
+	}
+
+	//GetMeterDetails();
+}
+
+long CNetAtmoThermostat::GetEndTime()
+{
+	using namespace boost::posix_time;
+	using boost::gregorian::date;
+	ptime now(second_clock::universal_time());
+	ptime expire = now + hours(1);
+	ptime myEpoch(date(1970,boost::gregorian::Jan,1));
+	time_duration timespan = expire - myEpoch;
+	return timespan.total_seconds();
+}
