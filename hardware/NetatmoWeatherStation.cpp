@@ -43,6 +43,14 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
+struct _tNetatmoDevice
+{
+	std::string ID;
+	std::string ModuleName;
+	std::string StationName;
+	std::vector<std::string> Modules;
+};
+
 CNetAtmoWeatherStation::CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password) :
 m_username(username),
 m_password(password)
@@ -546,13 +554,6 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 		return;
 	}
 
-	struct _tNetatmoDevice
-	{
-		std::string ID;
-		std::string ModuleName;
-		std::string StationName;
-		std::vector<std::string> Modules;
-	};
 	std::vector<_tNetatmoDevice> _netatmo_devices;
 
 	for (Json::Value::iterator itDevice=root["body"]["devices"].begin(); itDevice!=root["body"]["devices"].end(); ++itDevice)
