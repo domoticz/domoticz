@@ -191,7 +191,7 @@ bool CNetAtmoThermostat::Login()
 	sstr << "client_secret=" << m_clientSecret << "&";
 	sstr << "username=" << m_username << "&";
 	sstr << "password=" << m_password << "&";
-	sstr << "scope=read_station";
+	sstr << "scope=read_thermostat write_thermostat";
 
 	std::string httpData = sstr.str();
 	std::vector<std::string> ExtraHeaders;
@@ -345,7 +345,7 @@ int CNetAtmoThermostat::GetBatteryLevel(const std::string &ModuleType, const int
 	return batValue;
 }
 
-bool CNetAtmoThermostat::ParseDashboard(const Json::Value &root, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp)
+bool CNetAtmoThermostat::ParseDashboard(const Json::Value &root, const int ID, const std::string &name, const std::string &ModuleType, const int wifi_status)
 {
 	bool bHaveTemp = false;
 	bool bHaveHum = false;
@@ -367,7 +367,7 @@ bool CNetAtmoThermostat::ParseDashboard(const Json::Value &root, const int ID, c
 	float wind_strength = 0;
 	float wind_gust = 0;
 
-	int batValue = GetBatteryLevel(ModuleType, battery_vp);
+	int batValue = 0; //GetBatteryLevel(ModuleType, battery_vp);
 
 	if (!root["Temperature"].empty())
 	{
@@ -485,29 +485,20 @@ void CNetAtmoThermostat::GetMeterDetails()
 		return;
 
 	std::stringstream sstr2;
-	sstr2 << "https://api.netatmo.net/api/devicelist";
+	sstr2 << "https://api.netatmo.net/api/getthermostatsdata";
 	sstr2 << "?";
 	sstr2 << "access_token=" << m_accessToken;
-	sstr2 << "&" << "get_favorites=" << "true";
 	std::string httpUrl = sstr2.str();
 
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-#ifdef DEBUG_NetatmoThermostat
-	sResult = ReadFile("E:\\netatmo_mdetails.json");
-	bool ret = true;
-#else
 	bool ret=HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
 	if (!ret)
 	{
 		_log.Log(LOG_STATUS, "Netatmo: Error connecting to Server...");
 		return;
 	}
-#endif
-#ifdef DEBUG_NetatmoThermostat
-	SaveString2Disk(sResult, "E:\\netatmo_mdetails.json");
-#endif
 	Json::Value root;
 	Json::Reader jReader;
 	ret=jReader.parse(sResult,root);
@@ -526,27 +517,18 @@ void CNetAtmoThermostat::GetMeterDetails()
 				Json::Value device = *itDevice;
 				if (!device["_id"].empty())
 				{
-					if (!device["dashboard_data"].empty())
-					{
-						std::string id = device["_id"].asString();
-						std::string type = device["type"].asString();
-						std::string name = device["module_name"].asString();
-						stdreplace(name, "'", "");
+					std::string id = device["_id"].asString();
+					std::string type = device["type"].asString();
+					std::string name = device["station_name"].asString();
+					stdreplace(name, "'", "");
 
-						int battery_vp = 0;
-						if (device["battery_vp"].empty() == false)
-						{
-							battery_vp = device["battery_vp"].asInt();
-						}
-						//std::set<std::string> dataTypes;
-						//for (Json::Value::iterator itDataType = device["data_type"].begin(); itDataType != device["data_type"].end(); ++itDataType)
-						//{
-						//	dataTypes.insert((*itDataType).asCString());
-						//}
-						int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
-						ParseDashboard(device["dashboard_data"], crcId, name, type, battery_vp);
-						//getData(type, name, dataTypes, id, std::string(""), battery_vp);
+					int wifi_status  = 0;
+					if (device["wifi_status"].empty() == false)
+					{
+						wifi_status  = device["wifi_status"].asInt();
 					}
+					int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
+					ParseDashboard(device, crcId, name, type, wifi_status);
 				}
 			}
 		}
@@ -573,14 +555,8 @@ void CNetAtmoThermostat::GetMeterDetails()
 						}
 						stdreplace(name, "'", " ");
 
-						//std::set<std::string> dataTypes;
-						//for (Json::Value::iterator itDataType = module["data_type"].begin(); itDataType != module["data_type"].end(); ++itDataType)
-						//{
-						//	dataTypes.insert((*itDataType).asCString());
-						//}
 						int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
 						ParseDashboard(module["dashboard_data"], crcId, name, type, battery_vp);
-						//getData(type, name, dataTypes, deviceId, id, battery_vp);
 					}
 				}
 			}
