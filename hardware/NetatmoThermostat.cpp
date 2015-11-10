@@ -10,10 +10,10 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_NetatmoThermostat
+//	#define DEBUG_NetatmoThermostatR
 #endif
 
-#ifdef DEBUG_NetatmoThermostat
+#ifdef DEBUG_NetatmoThermostatW
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -23,6 +23,8 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+#endif
+#ifdef DEBUG_NetatmoThermostatR
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -63,8 +65,8 @@ CNetAtmoThermostat::~CNetAtmoThermostat(void)
 
 void CNetAtmoThermostat::Init()
 {
-	m_RainOffset=0;
-	m_OldRainCounter=0;
+	m_RainOffset.clear();
+	m_OldRainCounter.clear();
 }
 
 bool CNetAtmoThermostat::StartHardware()
@@ -293,45 +295,9 @@ int CNetAtmoThermostat::GetBatteryLevel(const std::string &ModuleType, const int
 	if (battery_vp == 0)
 		return batValue; //no battery
 
-	bool bIsIndoorSensor = ((ModuleType == "NAMain") || (ModuleType == "NAModule4"));
-	bool bIsOutdoorSensor = ((ModuleType == "NAModule1") || (ModuleType == "NAModule3"));
-	bool bIsWindGaugeSensor = (ModuleType == "NAModule2");
 	bool bIsThermostatSensor = (ModuleType == "NATherm1");
 
-	if (bIsIndoorSensor)
-	{
-		/* Battery range: 6000 ... 4200
-		5640 full
-		5280 high
-		4920 medium
-		4560 low
-		Below 4560: very low */
-		if (battery_vp <= 4560)
-			batValue = 0;
-	}
-	else if (bIsOutdoorSensor)
-	{
-		/*Battery range : 6000 ... 3600 * /
-		5500 full
-		5000 high
-		4500 medium
-		4000 low
-		below 4000: very low */
-		if (battery_vp <= 4000)
-			batValue = 0;
-	}
-	else if (bIsWindGaugeSensor)
-	{
-		/* Battery range: 6000 ... 3950
-		5590 full
-		5180 high
-		4770 medium
-		4360 low
-		below 4360: very low*/
-		if (battery_vp <= 4360)
-			batValue = 0;
-	}
-	else if (bIsThermostatSensor)
+	if (bIsThermostatSensor)
 	{
 		/* Battery range: 4500 ... 3000
 		4100 full
@@ -345,136 +311,22 @@ int CNetAtmoThermostat::GetBatteryLevel(const std::string &ModuleType, const int
 	return batValue;
 }
 
-bool CNetAtmoThermostat::ParseDashboard(const Json::Value &root, const int ID, const std::string &name, const std::string &ModuleType, const int wifi_status)
+bool CNetAtmoThermostat::ParseDashboard(const Json::Value &root, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp)
 {
 	bool bHaveTemp = false;
-	bool bHaveHum = false;
-	bool bHaveBaro = false;
-	bool bHaveCO2 = false;
-	bool bHaveRain = false;
-	bool bHaveSound = false;
-	bool bHaveWind = false;
 
 	float temp;
-	int hum;
-	float baro;
-	int co2;
-	float rain;
-	int sound;
 
-	float wind_angle = 0;
-	int wind_gust_angle = 0;
-	float wind_strength = 0;
-	float wind_gust = 0;
+	int batValue = GetBatteryLevel(ModuleType, battery_vp);
 
-	int batValue = 0; //GetBatteryLevel(ModuleType, battery_vp);
-
-	if (!root["Temperature"].empty())
+	if (!root["measured"]["temperature"].empty())
 	{
 		bHaveTemp = true;
-		temp = root["Temperature"].asFloat();
+		temp = root["measured"]["temperature"].asFloat();
 	}
-	if (!root["Humidity"].empty())
-	{
-		bHaveHum = true;
-		hum = root["Humidity"].asInt();
-	}
-	if (!root["Pressure"].empty())
-	{
-		bHaveBaro = true;
-		baro = root["Pressure"].asFloat();
-	}
-	if (!root["Noise"].empty())
-	{
-		bHaveSound = true;
-		sound = root["Noise"].asInt();
-	}
-	if (!root["CO2"].empty())
-	{
-		bHaveCO2 = true;
-		co2 = root["CO2"].asInt();
-	}
-	if (!root["sum_rain_24"].empty())
-	{
-		bHaveRain = true;
-		rain = root["sum_rain_24"].asFloat();
-	}
-	if (!root["WindAngle"].empty())
-	{
-		if (
-			(!root["WindAngle"].empty()) &&
-			(!root["WindStrength"].empty()) &&
-			(!root["GustAngle"].empty()) &&
-			(!root["GustStrength"].empty())
-			)
-		{
-			bHaveWind = true;
-			wind_angle = float(root["WindAngle"].asInt())/16.0f;
-			wind_gust_angle = root["GustAngle"].asInt();
-			wind_strength = root["WindStrength"].asFloat()/ 3.6f;
-			wind_gust = root["GustStrength"].asFloat() / 3.6f;
-		}
-	}
-
-	if (bHaveTemp && bHaveHum && bHaveBaro)
-	{
-		int nforecast = wsbaroforcast_some_clouds;
-		float pressure = baro;
-		if (pressure <= 980)
-			nforecast = wsbaroforcast_heavy_rain;
-		else if (pressure <= 995)
-		{
-			if (temp > 1)
-				nforecast = wsbaroforcast_rain;
-			else
-				nforecast = wsbaroforcast_snow;
-		}
-		else if (pressure >= 1029)
-			nforecast = wsbaroforcast_sunny;
-		SendTempHumBaroSensorFloat(ID, batValue, temp, hum, baro, nforecast, name);
-	}
-	else if (bHaveTemp && bHaveHum)
-	{
-		SendTempHumSensor(ID, batValue, temp, hum, name);
-	}
-	else if (bHaveTemp)
+	if (bHaveTemp)
 	{
 		SendTempSensor(ID, batValue, temp, name);
-	}
-
-	if (bHaveRain)
-	{
-		if ((m_RainOffset == 0) && (m_OldRainCounter == 0))
-		{
-			//get last rain counter from the database
-			bool bExists=false;
-			m_RainOffset = GetRainSensorValue(ID, bExists);
-			m_RainOffset -= rain;
-			if (m_RainOffset < 0)
-				m_RainOffset = 0;
-		}
-		if (rain < m_OldRainCounter)
-		{
-			//daily counter went to zero
-			m_RainOffset += m_OldRainCounter;
-		}
-		m_OldRainCounter = rain;
-		SendRainSensor(ID, batValue, m_RainOffset+ m_OldRainCounter, name);
-	}
-
-	if (bHaveCO2)
-	{
-		SendAirQualitySensor((ID & 0xFF00) >> 8, ID & 0xFF, batValue, co2, name);
-	}
-
-	if (bHaveSound)
-	{
-		SendSoundSensor(ID, batValue, sound, name);
-	}
-	
-	if (bHaveWind)
-	{
-		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, name);
 	}
 	return true;
 }
@@ -507,56 +359,50 @@ void CNetAtmoThermostat::GetMeterDetails()
 		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
 		return;
 	}
-
-	if (!root["body"].empty() && !root["body"]["devices"].empty())
+	bool bHaveDevices = true;
+	if (root["body"].empty())
 	{
-		if (root["body"]["devices"].isArray())
-		{
-			for (Json::Value::iterator itDevice=root["body"]["devices"].begin(); itDevice!=root["body"]["devices"].end(); ++itDevice)
-			{
-				Json::Value device = *itDevice;
-				if (!device["_id"].empty())
-				{
-					std::string id = device["_id"].asString();
-					std::string type = device["type"].asString();
-					std::string name = device["station_name"].asString();
-					stdreplace(name, "'", "");
-
-					int wifi_status  = 0;
-					if (device["wifi_status"].empty() == false)
-					{
-						wifi_status  = device["wifi_status"].asInt();
-					}
-					int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
-					ParseDashboard(device, crcId, name, type, wifi_status);
-				}
-			}
-		}
+		bHaveDevices = false;
 	}
-	if (!root["body"].empty() && !root["body"]["modules"].empty())
+	else if (root["body"]["devices"].empty())
 	{
-		if (root["body"]["modules"].isArray())
+		bHaveDevices = false;
+	}
+	else if (!root["body"]["devices"].isArray())
+	{
+		bHaveDevices = false;
+	}
+	if (!bHaveDevices)
+	{
+		_log.Log(LOG_STATUS, "Netatmo: No Devices defined!...");
+		return;
+	}
+
+	for (Json::Value::iterator itDevice=root["body"]["devices"].begin(); itDevice!=root["body"]["devices"].end(); ++itDevice)
+	{
+		Json::Value device = *itDevice;
+		if (!device["_id"].empty())
 		{
-			for (Json::Value::iterator itModule=root["body"]["modules"].begin(); itModule!=root["body"]["modules"].end(); ++itModule)
+			std::string station_name = device["station_name"].asString();
+			stdreplace(station_name, "'", "");
+			if (!device["modules"].empty())
 			{
-				Json::Value module = *itModule;
-				if (!module["_id"].empty())
+				if (device["modules"].isArray())
 				{
-					if (!module["dashboard_data"].empty())
+					//Add modules for this device
+					for (Json::Value::iterator itModule = device["modules"].begin(); itModule != device["modules"].end(); ++itModule)
 					{
-						std::string id = module["_id"].asString();
+						Json::Value module = *itModule;
+						std::string module_id = module["_id"].asString();
+						std::string module_name = module["module_name"].asString();
 						std::string type = module["type"].asString();
-						std::string deviceId = module["main_device"].asString();
-						std::string name = module["module_name"].asString();
 						int battery_vp = 0;
-						if (module["battery_vp"] == false)
+						if (module["battery_vp"].empty() == false)
 						{
 							battery_vp = module["battery_vp"].asInt();
 						}
-						stdreplace(name, "'", " ");
-
-						int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
-						ParseDashboard(module["dashboard_data"], crcId, name, type, battery_vp);
+						int crcId = Crc32(0, (const unsigned char *)module_id.c_str(), module_id.length());
+						ParseDashboard(module, crcId, station_name + " " + module_name, type, battery_vp);
 					}
 				}
 			}
