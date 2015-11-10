@@ -19,6 +19,7 @@ Version 2.3xxx
 - Implemented: MySensors, Option to Enable/Disable using ACK per Child sensor from the MySensors hardware setup page
 - Implemented: MySensors, Option to Name a node
 - Implemented: Netatmo, support for multiple weather stations (from the weathermap) and multiple rain sensors
+- Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different zipato bulbs
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
