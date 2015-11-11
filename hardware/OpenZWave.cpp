@@ -2541,6 +2541,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		return;
 
 	pDevice->bValidValue = true;
+	pDevice->orgInstanceID = vOrgInstance;
+	pDevice->orgIndexID = vOrgIndex;
 
 	switch (pDevice->devType)
 	{

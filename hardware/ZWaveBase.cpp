@@ -838,6 +838,22 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 	return NULL;
 }
 
+//Used for power/energy devices
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const int nodeID, const int instanceID, const _eZWaveDeviceType devType)
+{
+	std::map<std::string, _tZWaveDevice>::iterator itt;
+	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+	{
+		if (
+			(itt->second.nodeID == nodeID) &&
+			(itt->second.instanceID == instanceID) &&
+			(itt->second.devType == devType)
+			)
+			return &itt->second;
+	}
+	return NULL;
+}
+
 ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType)
 {
 	std::map<std::string,_tZWaveDevice>::iterator itt;
@@ -879,6 +895,9 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 	unsigned char packettype=pSen->ICMND.packettype;
 	unsigned char subtype=pSen->ICMND.subtype;
+
+	// Forget any battery value from the last received data - it's probably not going to be related to this node. (its powered)
+	m_iLastSendNodeBatteryValue = 255;
 
 	if (packettype==pTypeLighting2)
 	{
