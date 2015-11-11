@@ -1104,8 +1104,8 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					int wWhite = round((255.0f / 100.0f)*float(Brightness));
 					int cWhite = 0;
 					sstr << "#000000"
-						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
-						//<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
 					instanceID = 1;
 					return SwitchColor(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, sstr.str());
 				}
@@ -1125,8 +1125,8 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue
-						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
-						//<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
 
 					std::string sColor = sstr.str();
 

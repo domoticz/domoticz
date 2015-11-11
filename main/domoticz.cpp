@@ -103,6 +103,7 @@ const char *szHelp=
 	"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
 #ifndef WIN32
 	"\t-daemon (run as background daemon)\n"
+	"\t-pidfile pid file location (for example /var/run/domoticz.pid)\n"
 	"\t-syslog (use syslog as log output)\n"
 #endif
 	"";
