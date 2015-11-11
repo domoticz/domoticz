@@ -23,8 +23,8 @@ m_password(password)
 
 	m_HwdID=ID;
 
-	m_clientId = "5620e3e02baa3c28b98b46cc";
-	m_clientSecret = "hj329BDqYOWVCeMO3TX49U24M3mLSZ";
+	m_clientId = "5588029e485a88af28f4a3c4";
+	m_clientSecret = "6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2";
 	m_stoprequested=false;
 
 	Init();
