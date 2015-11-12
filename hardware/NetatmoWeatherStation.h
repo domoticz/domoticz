@@ -14,6 +14,7 @@ public:
 	~CNetAtmoWeatherStation(void);
 
 	bool WriteToHardware(const char *,const unsigned char) { return false; }
+	void SetSetpoint(const int idx, const float temp);
 private:
 	std::string m_clientId;
 	std::string m_clientSecret;
@@ -21,6 +22,8 @@ private:
 	std::string m_password;
 	std::string m_accessToken;
 	std::string m_refreshToken;
+	std::string m_thermostatDeviceID;
+	std::string m_thermostatModuleID;
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;

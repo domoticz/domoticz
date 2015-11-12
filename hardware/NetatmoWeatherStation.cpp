@@ -2,6 +2,7 @@
 #include "NetatmoWeatherStation.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
+#include "../main/SQLHelper.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
@@ -364,8 +365,9 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	bool bHaveRain = false;
 	bool bHaveSound = false;
 	bool bHaveWind = false;
+	bool bHaveSetpoint = false;
 
-	float temp;
+	float temp,sp_temp;
 	int hum;
 	float baro;
 	int co2;
@@ -383,6 +385,11 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	{
 		bHaveTemp = true;
 		temp = root["Temperature"].asFloat();
+	}
+	if (!root["Sp_Temperature"].empty())
+	{
+		bHaveSetpoint = true;
+		sp_temp = root["Temperature"].asFloat();
 	}
 	if (!root["Humidity"].empty())
 	{
@@ -452,6 +459,11 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 		SendTempSensor(ID, batValue, temp, name);
 	}
 
+	if (bHaveSetpoint)
+	{
+		SendSetPointSensor(0, 0, ID & 0xFF, sp_temp, "SetPoint");
+	}
+
 	if (bHaveRain)
 	{
 		bool bRefetchData = (m_RainOffset.find(ID) == m_RainOffset.end());
@@ -496,6 +508,56 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 		SendWind(ID, batValue, wind_angle, wind_strength, wind_gust, 0, 0, false, name);
 	}
 	return true;
+}
+
+void CNetAtmoWeatherStation::SetSetpoint(const int idx, const float temp)
+{
+	if ((m_thermostatDeviceID.empty()) || (m_thermostatModuleID.empty()))
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
+		return;
+	}
+	if (!m_isLogged == true)
+	{
+		if (!Login())
+			return;
+	}
+
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("Host: api.netatmo.net");
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
+
+	float tempDest = temp;
+	unsigned char tSign = m_sql.m_tempsign[0];
+
+	if (tSign == 'F')
+	{
+		//convert back to Celcius
+		tempDest = (tempDest - 32.0f) / 1.8f;
+	}
+
+
+	std::stringstream sstr;
+	sstr << "access_token=" << m_accessToken;
+	sstr << "&device_id=" << m_thermostatDeviceID;
+	sstr << "&module_id=" << m_thermostatModuleID;
+	sstr << "&setpoint_mode=manual";
+	sstr << "&setpoint_temp=" << tempDest;
+	//sstr << "&setpoint_endtime=" << GetEndTime();
+
+	std::string httpData = sstr.str();
+
+	std::string httpUrl("https://api.netatmo.net/api/setthermpoint");
+	std::string sResult;
+
+	if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: Error setting setpoint!");
+		return;
+	}
+
+	GetMeterDetails();
 }
 
 void CNetAtmoWeatherStation::GetMeterDetails()
@@ -622,35 +684,48 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 		std::string type = module["type"].asString();
 		std::string deviceId = module["main_device"].asString();
 		std::string name = "Unknown";
+
+		//Find the corresponding _tNetatmoDevice
+		_tNetatmoDevice nDevice;
+		bool bHaveFoundND = false;
+		std::vector<_tNetatmoDevice>::const_iterator ittND;
+		for (ittND = _netatmo_devices.begin(); ittND != _netatmo_devices.end(); ++ittND)
+		{
+			std::vector<std::string>::const_iterator ittNM;
+			for (ittNM = ittND->Modules.begin(); ittNM != ittND->Modules.end(); ++ittNM)
+			{
+				if (*ittNM == id)
+				{
+					nDevice = *ittND;
+					bHaveFoundND = true;
+					break;
+				}
+			}
+			if (bHaveFoundND == true)
+				break;
+		}
+
 		if (!module["module_name"].empty())
 		{
 			name = module["module_name"].asString();
 		}
 		else
 		{
-			//Try to look up a name from the above _netatmo_devices structure
-			bool bHaveName = false;
-			std::vector<_tNetatmoDevice>::const_iterator ittND;
-			for (ittND = _netatmo_devices.begin(); ittND != _netatmo_devices.end(); ++ittND)
+			if (bHaveFoundND)
 			{
-				std::vector<std::string>::const_iterator ittNM;
-				for (ittNM = ittND->Modules.begin(); ittNM != ittND->Modules.end(); ++ittNM)
-				{
-					if (*ittNM == id)
-					{
-						if (!ittND->ModuleName.empty())
-							name = ittND->ModuleName;
-						else if (!ittND->StationName.empty())
-							name = ittND->StationName;
-						bHaveName = true;
-						break;
-					}
-				}
-				if (bHaveName == true)
-					break;
+				if (!nDevice.ModuleName.empty())
+					name = nDevice.ModuleName;
+				else if (!nDevice.StationName.empty())
+					name = nDevice.StationName;
 			}
-
 		}
+
+		if (type == "NATherm1")
+		{
+			m_thermostatDeviceID = nDevice.ID;
+			m_thermostatModuleID = id;
+		}
+
 		int battery_vp = 0;
 		if (!module["battery_vp"].empty())
 		{
