@@ -68,6 +68,9 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Sartano", sSwitchTypeSartano },       // p3
 	{ "Europe", sSwitchTypeEurope },         // p18
 	{ "Avidsen", sSwitchTypeAvidsen },       // p..
+	{ "BofuMotor", sSwitchTypeBofu },        // p..
+	{ "BrelMotor", sSwitchTypeBrel },        // p..
+	{ "SomeFy", sSwitchTypeSomeFy },        // p..
 	{ "", -1 }
 };
 
