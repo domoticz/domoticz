@@ -440,20 +440,25 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&umeter);
 
 		//Search Energy Device
-		const _tZWaveDevice *pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
+		const _tZWaveDevice *pEnergyDevice;
+		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWERENERGYMETER);
 		if (pEnergyDevice == NULL)
 		{
-			pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWERENERGYMETER);
+			pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
 			if (pEnergyDevice == NULL)
 			{
-				if (
-					(pDevice->Manufacturer_id == 0x010F) &&
-					(pDevice->Product_type == 0x0600) &&
-					(pDevice->Product_id == 0x1000)
-					)
+				pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWERENERGYMETER);
+				if (pEnergyDevice == NULL)
 				{
-					//Fibaro Wallplug, find energy sensor
-					pEnergyDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
+					if (
+						(pDevice->Manufacturer_id == 0x010F) &&
+						(pDevice->Product_type == 0x0600) &&
+						(pDevice->Product_id == 0x1000)
+						)
+					{
+						//Fibaro Wallplug, find energy sensor
+						pEnergyDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
+					}
 				}
 			}
 		}
@@ -463,6 +468,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			{
 				SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
 			}
+		}
+		else
+		{
+			//No kWh meter, send as normal Power device
+			SendWattMeter(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, "Power Meter");
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_POWERENERGYMETER)
@@ -484,7 +494,9 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		else
 		{
-			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+			pPowerDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWER);
+			if (pPowerDevice == NULL)
+				pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 		}
 		if (pPowerDevice == NULL)
 		{
