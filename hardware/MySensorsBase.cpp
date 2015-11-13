@@ -2027,8 +2027,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result, result2;
 			char szTmp[100];
 
-			result = m_sql.safe_query("SELECT ID,Name,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC",
-				iHardwareID);
+			result = m_sql.safe_query("SELECT ID,Name,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC", iHardwareID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2065,7 +2064,7 @@ namespace http {
 					{
 						root["result"][ii]["LastReceived"] = "-";
 					}
-					result2 = m_sql.safe_query("SELECT COUNT(*) FROM MySensorsChilds WHERE(NodeID == %d)", NodeID);
+					result2 = m_sql.safe_query("SELECT COUNT(*) FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID == %d)", iHardwareID, NodeID);
 					int totChilds = 0;
 					if (!result2.empty())
 					{
@@ -2102,7 +2101,7 @@ namespace http {
 			MySensorsBase::_tMySensorNode* pNode = pMySensorsHardware->FindNode(NodeID);
 			std::vector<std::vector<std::string> >::const_iterator itt2;
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck FROM MySensorsChilds WHERE(NodeID == %d) ORDER BY ChildID ASC", NodeID);
+			result = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID == %d) ORDER BY ChildID ASC", iHardwareID, NodeID);
 			int ii = 0;
 			for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
 			{
