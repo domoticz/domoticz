@@ -106,7 +106,8 @@ bool CNetAtmoWeatherStation::StopHardware()
 void CNetAtmoWeatherStation::Do_Work()
 {
 	int sec_counter = 28;
-	bool bFirstTime = true;
+	bool bFirstTimeWS = true;
+	bool bFirstTimeTH = true;
 	_log.Log(LOG_STATUS, "Netatmo: Worker started...");
 	while (!m_stoprequested)
 	{
@@ -129,11 +130,22 @@ void CNetAtmoWeatherStation::Do_Work()
 		{
 			if (RefreshToken())
 			{
-				if ((sec_counter % 240 == 0) || (bFirstTime))
+				if ((sec_counter % 600 == 0) || (bFirstTimeWS))
 				{
-					bFirstTime = false;
+					//Weather station data is updated every 10 minutes
+					bFirstTimeWS = false;
 					GetMeterDetails();
 				}
+				if (m_bPollThermostat)
+				{
+					//Thermostat data is updated every hour
+					if ((sec_counter % 3600 == 0) || (bFirstTimeTH))
+					{
+						bFirstTimeTH = false;
+						GetThermostatDetails();
+					}
+				}
+
 			}
 		}
 	}
@@ -896,13 +908,7 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 	//SaveString2Disk(sResult, "E:\\netatmo_mdetails.json");
 	SaveString2Disk(sResult, "E:\\netatmo_getstationdata.json");
 #endif
-	if (ParseNetatmoGetResponse(sResult,false))
-	{
-		if (m_bPollThermostat)
-		{
-			GetThermostatDetails();
-		}
-	}
+	ParseNetatmoGetResponse(sResult, false);
 }
 
 void CNetAtmoWeatherStation::GetThermostatDetails()
