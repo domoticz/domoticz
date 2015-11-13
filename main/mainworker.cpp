@@ -10898,6 +10898,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
+	else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+	{
+		CNetAtmoWeatherStation *pGateway = (CNetAtmoWeatherStation *)pHardware;
+		pGateway->SetProgramState(newState);
+		return true;
+	}
 	return false;
 }
 
