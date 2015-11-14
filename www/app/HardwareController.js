@@ -1383,7 +1383,7 @@ define(['app'], function (app) {
             if ($('#updelclr #activedeviceupdate').attr("class")=="btnstyle3-dis") {
                 return;
             }
-            var bUseAck=$('#delclractive #Ack').is(":checked");
+            var bUseAck=$('#hardwarecontent #mchildsettings #Ack').is(":checked");
 			$.ajax({
 				 url: "json.htm?type=command&param=mysensorsupdatechild" +
 					"&idx=" + $.devIdx +
@@ -1453,7 +1453,7 @@ define(['app'], function (app) {
 					if ( anSelected.length !== 0 ) {
 						var data = oTable.fnGetData( anSelected[0] );
 						var idx= data["DT_RowId"];
-						$('#delclractive #Ack').prop('checked',(data["AckEnabled"]=="true"));
+						$('#hardwarecontent #mchildsettings #Ack').prop('checked',(data["AckEnabled"]=="true"));
 						$("#activedevicedelete").attr("href", "javascript:MySensorsDeleteChild(" + $.nodeid + "," + idx + ")");
 						$("#activedeviceupdate").attr("href", "javascript:MySensorsUpdateChild(" + $.nodeid + "," + idx + ")");
 					}

@@ -4026,6 +4026,7 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
+	WriteMessageStart();
 	WriteMessage("");
 
 	char szTmp[100];
@@ -4069,6 +4070,7 @@ unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHa
 	}
 	sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING3.rssi);
 	WriteMessage(szTmp);
+	WriteMessageEnd();
 	return DevRowIdx;
 }
 
