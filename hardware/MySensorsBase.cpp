@@ -1396,7 +1396,7 @@ void MySensorsBase::UpdateChildDBInfo(const int NodeID, const int ChildID, const
 	if (result.size() < 1)
 	{
 		//Insert
-		bool bUseAck = false;// default no ACK (ChildID == 255) ? false : true;
+		bool bUseAck = (ChildID == 255) ? false : true;
 		m_sql.safe_query("INSERT INTO MySensorsChilds (HardwareID, NodeID, ChildID, [Type], [Name], UseAck) VALUES (%d, %d, %d, %d, '%q', %d)", m_HwdID, NodeID, ChildID, pType, Name.c_str(), (bUseAck) ? 1 : 0);
 	}
 	else
