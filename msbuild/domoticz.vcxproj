@@ -159,7 +159,7 @@
     <ClInclude Include="..\hardware\MySensorsBase.h" />
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
-    <ClInclude Include="..\hardware\NestThermostat.h" />
+    <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\NetatmoWeatherStation.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
@@ -206,6 +206,7 @@
     <ClInclude Include="..\hardware\DomoticzHardware.h" />
     <ClInclude Include="..\hardware\DomoticzTCP.h" />
     <ClInclude Include="..\hardware\hardwaretypes.h" />
+    <ClInclude Include="..\main\concurrent_queue.h" />
     <ClInclude Include="..\main\DataPush.h" />
     <ClInclude Include="..\main\dirent_windows.h" />
     <ClInclude Include="..\main\EventSystem.h" />
@@ -346,7 +347,7 @@
     <ClCompile Include="..\hardware\MySensorsBase.cpp" />
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
-    <ClCompile Include="..\hardware\NestThermostat.cpp" />
+    <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\NetatmoWeatherStation.cpp" />
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />

@@ -24,6 +24,8 @@ MySensorsTCP::~MySensorsTCP(void)
 
 bool MySensorsTCP::StartHardware()
 {
+	LoadDevicesFromDatabase();
+
 	m_stoprequested=false;
 	m_bDoRestart=false;
 
@@ -33,11 +35,13 @@ bool MySensorsTCP::StartHardware()
 
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MySensorsTCP::Do_Work, this)));
+	StartSendQueue();
 	return (m_thread!=NULL);
 }
 
 bool MySensorsTCP::StopHardware()
 {
+	StopSendQueue();
 	m_stoprequested=true;
 	if (isConnected())
 	{

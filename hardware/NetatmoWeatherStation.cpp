@@ -2,18 +2,20 @@
 #include "NetatmoWeatherStation.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
-#include "hardwaretypes.h"
+#include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
+#include "../main/RFXtrx.h"
+#include "hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
 
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_NetatmoWeatherStation
+	//#define DEBUG_NetatmoWeatherStationW
 #endif
 
-#ifdef DEBUG_NetatmoWeatherStation
+#ifdef DEBUG_NetatmoWeatherStationW
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -23,6 +25,8 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+#endif
+#ifdef DEBUG_NetatmoWeatherStationR
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -41,6 +45,15 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
+struct _tNetatmoDevice
+{
+	std::string ID;
+	std::string ModuleName;
+	std::string StationName;
+	std::vector<std::string> ModulesIDs;
+	//Json::Value Modules;
+};
+
 CNetAtmoWeatherStation::CNetAtmoWeatherStation(const int ID, const std::string& username, const std::string& password) :
 m_username(username),
 m_password(password)
@@ -53,6 +66,7 @@ m_password(password)
 	m_clientId = "5588029e485a88af28f4a3c4";
 	m_clientSecret = "6vIpQVjNsL2A74Bd8tINscklLw2LKv7NhE9uW2";
 	m_stoprequested=false;
+	m_bPollThermostat = true;
 
 	Init();
 }
@@ -63,8 +77,9 @@ CNetAtmoWeatherStation::~CNetAtmoWeatherStation(void)
 
 void CNetAtmoWeatherStation::Init()
 {
-	m_RainOffset=0;
-	m_OldRainCounter=0;
+	m_RainOffset.clear();
+	m_OldRainCounter.clear();
+	m_bPollThermostat = true;
 }
 
 bool CNetAtmoWeatherStation::StartHardware()
@@ -91,7 +106,8 @@ bool CNetAtmoWeatherStation::StopHardware()
 void CNetAtmoWeatherStation::Do_Work()
 {
 	int sec_counter = 28;
-	bool bFirstTime = true;
+	bool bFirstTimeWS = true;
+	bool bFirstTimeTH = true;
 	_log.Log(LOG_STATUS, "Netatmo: Worker started...");
 	while (!m_stoprequested)
 	{
@@ -114,11 +130,22 @@ void CNetAtmoWeatherStation::Do_Work()
 		{
 			if (RefreshToken())
 			{
-				if ((sec_counter % 240 == 0) || (bFirstTime))
+				if ((sec_counter % 600 == 0) || (bFirstTimeWS))
 				{
-					bFirstTime = false;
+					//Weather station data is updated every 10 minutes
+					bFirstTimeWS = false;
 					GetMeterDetails();
 				}
+				if (m_bPollThermostat)
+				{
+					//Thermostat data is updated every hour
+					if ((sec_counter % 3600 == 0) || (bFirstTimeTH))
+					{
+						bFirstTimeTH = false;
+						GetThermostatDetails();
+					}
+				}
+
 			}
 		}
 	}
@@ -191,7 +218,7 @@ bool CNetAtmoWeatherStation::Login()
 	sstr << "client_secret=" << m_clientSecret << "&";
 	sstr << "username=" << m_username << "&";
 	sstr << "password=" << m_password << "&";
-	sstr << "scope=read_station";
+	sstr << "scope=read_station read_thermostat write_thermostat";
 
 	std::string httpData = sstr.str();
 	std::vector<std::string> ExtraHeaders;
@@ -228,6 +255,7 @@ bool CNetAtmoWeatherStation::Login()
 	int expires = root["expires_in"].asInt();
 	m_nextRefreshTs = mytime(NULL) + expires;
 	m_isLogged = true;
+	m_bPollThermostat = true;
 	return true;
 }
 
@@ -354,8 +382,9 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	bool bHaveRain = false;
 	bool bHaveSound = false;
 	bool bHaveWind = false;
+	bool bHaveSetpoint = false;
 
-	float temp;
+	float temp,sp_temp;
 	int hum;
 	float baro;
 	int co2;
@@ -373,6 +402,21 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	{
 		bHaveTemp = true;
 		temp = root["Temperature"].asFloat();
+	}
+	else if (!root["temperature"].empty())
+	{
+		bHaveTemp = true;
+		temp = root["temperature"].asFloat();
+	}
+	if (!root["Sp_Temperature"].empty())
+	{
+		bHaveSetpoint = true;
+		sp_temp = root["Temperature"].asFloat();
+	}
+	else if (!root["setpoint_temp"].empty())
+	{
+		bHaveSetpoint = true;
+		sp_temp = root["setpoint_temp"].asFloat();
 	}
 	if (!root["Humidity"].empty())
 	{
@@ -442,24 +486,38 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 		SendTempSensor(ID, batValue, temp, name);
 	}
 
+	if (bHaveSetpoint)
+	{
+		SendSetPointSensor(0, 0, ID & 0xFF, sp_temp, "SetPoint");
+	}
+
 	if (bHaveRain)
 	{
-		if ((m_RainOffset == 0) && (m_OldRainCounter == 0))
+		bool bRefetchData = (m_RainOffset.find(ID) == m_RainOffset.end());
+		if (!bRefetchData)
+		{
+			bRefetchData = ((m_RainOffset[ID] == 0) && (m_OldRainCounter[ID] == 0));
+		}
+		if (bRefetchData)
 		{
 			//get last rain counter from the database
 			bool bExists=false;
-			m_RainOffset = GetRainSensorValue(ID, bExists);
-			m_RainOffset -= rain;
-			if (m_RainOffset < 0)
-				m_RainOffset = 0;
+			m_RainOffset[ID] = GetRainSensorValue(ID, bExists);
+			m_RainOffset[ID] -= rain;
+			if (m_RainOffset[ID] < 0)
+				m_RainOffset[ID] = 0;
+			if (m_OldRainCounter.find(ID) == m_OldRainCounter.end())
+			{
+				m_OldRainCounter[ID] = 0;
+			}
 		}
-		if (rain < m_OldRainCounter)
+		if (rain < m_OldRainCounter[ID])
 		{
 			//daily counter went to zero
-			m_RainOffset += m_OldRainCounter;
+			m_RainOffset[ID] += m_OldRainCounter[ID];
 		}
-		m_OldRainCounter = rain;
-		SendRainSensor(ID, batValue, m_RainOffset+ m_OldRainCounter, name);
+		m_OldRainCounter[ID] = rain;
+		SendRainSensor(ID, batValue, m_RainOffset[ID] + m_OldRainCounter[ID], name);
 	}
 
 	if (bHaveCO2)
@@ -479,13 +537,353 @@ bool CNetAtmoWeatherStation::ParseDashboard(const Json::Value &root, const int I
 	return true;
 }
 
+bool CNetAtmoWeatherStation::WriteToHardware(const char *pdata, const unsigned char length)
+{
+	if ((m_thermostatDeviceID.empty()) || (m_thermostatModuleID.empty()))
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
+		return false;
+	}
+
+	tRBUF *pCmd = (tRBUF *)pdata;
+	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
+		return false; //later add RGB support, if someone can provide access
+
+	int node_id = pCmd->LIGHTING2.id4;
+
+	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
+
+	if (node_id == 3)
+	{
+		//Away
+		return SetAway(bIsOn);
+	}
+
+	return false;
+}
+
+bool CNetAtmoWeatherStation::SetAway(const bool bIsAway)
+{
+	return SetProgramState((bIsAway == true) ? 1 : 0);
+}
+
+bool CNetAtmoWeatherStation::SetProgramState(const int newState)
+{
+	if ((m_thermostatDeviceID.empty()) || (m_thermostatModuleID.empty()))
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
+		return false;
+	}
+	if (!m_isLogged == true)
+	{
+		if (!Login())
+			return false;
+	}
+	std::string thermState;
+	switch (newState)
+	{
+	case 0:
+		thermState = "program"; //The Thermostat is currently following its weekly schedule
+		break;
+	case 1:
+		thermState = "away"; //The Thermostat is currently applying the away temperature
+		break;
+	case 2:
+		thermState = "hg"; //he Thermostat is currently applying the frost-guard temperature
+		break;
+	case 3:
+		thermState = "off"; //The Thermostat is off
+		break;
+	default:
+		_log.Log(LOG_ERROR, "NetatmoThermostat: Invalid thermostat state!");
+		return false;
+	}
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("Host: api.netatmo.net");
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
+
+	std::stringstream sstr;
+	sstr << "access_token=" << m_accessToken;
+	sstr << "&device_id=" << m_thermostatDeviceID;
+	sstr << "&module_id=" << m_thermostatModuleID;
+	sstr << "&setpoint_mode=" << thermState;
+
+	std::string httpData = sstr.str();
+
+	std::string httpUrl("https://api.netatmo.net/api/setthermpoint");
+	std::string sResult;
+
+	if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: Error setting setpoint state!");
+		return false;
+	}
+	GetThermostatDetails();
+	return true;
+}
+
+void CNetAtmoWeatherStation::SetSetpoint(const int idx, const float temp)
+{
+	if ((m_thermostatDeviceID.empty()) || (m_thermostatModuleID.empty()))
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
+		return;
+	}
+	if (!m_isLogged == true)
+	{
+		if (!Login())
+			return;
+	}
+
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("Host: api.netatmo.net");
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded;charset=UTF-8");
+
+	float tempDest = temp;
+	unsigned char tSign = m_sql.m_tempsign[0];
+
+	if (tSign == 'F')
+	{
+		//convert back to Celcius
+		tempDest = (tempDest - 32.0f) / 1.8f;
+	}
+
+	time_t end_time = time(NULL);
+	end_time += 3600; //One hour
+
+	std::stringstream sstr;
+	sstr << "access_token=" << m_accessToken;
+	sstr << "&device_id=" << m_thermostatDeviceID;
+	sstr << "&module_id=" << m_thermostatModuleID;
+	sstr << "&setpoint_mode=manual";
+	sstr << "&setpoint_temp=" << tempDest;
+	sstr << "&setpoint_endtime=" << end_time;
+
+	std::string httpData = sstr.str();
+
+	std::string httpUrl("https://api.netatmo.net/api/setthermpoint");
+	std::string sResult;
+
+	if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "NetatmoThermostat: Error setting setpoint!");
+		return;
+	}
+	GetThermostatDetails();
+}
+
+bool CNetAtmoWeatherStation::ParseNetatmoGetResponse(const std::string &sResult, const bool bIsThermostat)
+{
+	Json::Value root;
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
+		return false;
+	}
+	bool bHaveDevices = true;
+	if (root["body"].empty())
+	{
+		bHaveDevices = false;
+	}
+	else if (root["body"]["devices"].empty())
+	{
+		bHaveDevices = false;
+	}
+	else if (!root["body"]["devices"].isArray())
+	{
+		bHaveDevices = false;
+	}
+	if (!bHaveDevices)
+	{
+		if (!bIsThermostat)
+		{
+			//Do not warn if we check if we have a Thermostat device
+			_log.Log(LOG_STATUS, "Netatmo: No Devices defined!...");
+		}
+		return false;
+	}
+
+	std::vector<_tNetatmoDevice> _netatmo_devices;
+
+	for (Json::Value::iterator itDevice = root["body"]["devices"].begin(); itDevice != root["body"]["devices"].end(); ++itDevice)
+	{
+		Json::Value device = *itDevice;
+		if (!device["_id"].empty())
+		{
+			std::string id = device["_id"].asString();
+			std::string type = device["type"].asString();
+			std::string name = device["module_name"].asString();
+			std::string station_name = device["station_name"].asString();
+
+			stdreplace(name, "'", "");
+			stdreplace(station_name, "'", "");
+
+			_tNetatmoDevice nDevice;
+			nDevice.ID = id;
+			nDevice.ModuleName = name;
+			nDevice.StationName = station_name;
+
+			if (!device["modules"].empty())
+			{
+				if (device["modules"].isArray())
+				{
+					//Add modules for this device
+					for (Json::Value::iterator itModule = device["modules"].begin(); itModule != device["modules"].end(); ++itModule)
+					{
+						Json::Value module = *itModule;
+						if (module.isObject())
+						{
+							//New Method (getstationsdata and getthermostatsdata)
+							if (module["_id"].empty())
+								continue;
+							std::string mid = module["_id"].asString();
+							std::string mtype = module["type"].asString();
+							std::string mname = module["module_name"].asString();
+							if (mname.empty())
+								mname = nDevice.ModuleName;
+							int mbattery_vp = 0;
+							if (module["battery_vp"].empty() == false)
+							{
+								mbattery_vp = module["battery_vp"].asInt();
+							}
+							int crcId = Crc32(0, (const unsigned char *)mid.c_str(), mid.length());
+							if (!module["dashboard_data"].empty())
+							{
+								ParseDashboard(module["dashboard_data"], crcId, mname, mtype, mbattery_vp);
+							}
+							else if (!module["measured"].empty())
+							{
+								ParseDashboard(module["measured"], crcId, mname, mtype, mbattery_vp);
+								if (mtype == "NATherm1")
+								{
+									m_thermostatDeviceID = nDevice.ID;
+									m_thermostatModuleID = mid;
+
+									if (!module["setpoint"].empty())
+									{
+										if (!module["setpoint"]["setpoint_mode"].empty())
+										{
+											std::string setpoint_mode = module["setpoint"]["setpoint_mode"].asString();
+											bool bIsAway = (setpoint_mode == "away");
+											SendSwitch(3, 1, 255, bIsAway, 0, "Away");
+										}
+									}
+								}
+							}
+						}
+						else
+							nDevice.ModulesIDs.push_back(module.asString());
+					}
+				}
+			}
+			_netatmo_devices.push_back(nDevice);
+
+			int battery_vp = 0;
+			if (device["battery_vp"].empty() == false)
+			{
+				battery_vp = device["battery_vp"].asInt();
+			}
+			int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
+			if (!device["dashboard_data"].empty())
+			{
+				ParseDashboard(device["dashboard_data"], crcId, name, type, battery_vp);
+			}
+		}
+	}
+
+	if (root["body"]["modules"].empty())
+	{
+		//No additional modules defined
+		return (!_netatmo_devices.empty());
+	}
+	if (!root["body"]["modules"].isArray())
+	{
+		//No additional modules defined
+		return (!_netatmo_devices.empty());
+	}
+	for (Json::Value::iterator itModule = root["body"]["modules"].begin(); itModule != root["body"]["modules"].end(); ++itModule)
+	{
+		Json::Value module = *itModule;
+		if (module["_id"].empty())
+			continue;
+		std::string id = module["_id"].asString();
+		std::string type = module["type"].asString();
+		std::string name = "Unknown";
+
+		//Find the corresponding _tNetatmoDevice
+		_tNetatmoDevice nDevice;
+		bool bHaveFoundND = false;
+		std::vector<_tNetatmoDevice>::const_iterator ittND;
+		for (ittND = _netatmo_devices.begin(); ittND != _netatmo_devices.end(); ++ittND)
+		{
+			std::vector<std::string>::const_iterator ittNM;
+			for (ittNM = ittND->ModulesIDs.begin(); ittNM != ittND->ModulesIDs.end(); ++ittNM)
+			{
+				if (*ittNM == id)
+				{
+					nDevice = *ittND;
+					bHaveFoundND = true;
+					break;
+				}
+			}
+			if (bHaveFoundND == true)
+				break;
+		}
+
+		if (!module["module_name"].empty())
+		{
+			name = module["module_name"].asString();
+		}
+		else
+		{
+			if (bHaveFoundND)
+			{
+				if (!nDevice.ModuleName.empty())
+					name = nDevice.ModuleName;
+				else if (!nDevice.StationName.empty())
+					name = nDevice.StationName;
+			}
+		}
+
+		if (type == "NATherm1")
+		{
+			m_thermostatDeviceID = nDevice.ID;
+			m_thermostatModuleID = id;
+		}
+
+		int battery_vp = 0;
+		if (!module["battery_vp"].empty())
+		{
+			battery_vp = module["battery_vp"].asInt();
+		}
+		stdreplace(name, "'", " ");
+
+		//std::set<std::string> dataTypes;
+		//for (Json::Value::iterator itDataType = module["data_type"].begin(); itDataType != module["data_type"].end(); ++itDataType)
+		//{
+		//	dataTypes.insert((*itDataType).asCString());
+		//}
+		int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
+		if (!module["dashboard_data"].empty())
+		{
+			ParseDashboard(module["dashboard_data"], crcId, name, type, battery_vp);
+		}
+	}
+	return (!_netatmo_devices.empty());
+}
+
 void CNetAtmoWeatherStation::GetMeterDetails()
 {
 	if (!m_isLogged)
 		return;
 
 	std::stringstream sstr2;
-	sstr2 << "https://api.netatmo.net/api/devicelist";
+//	sstr2 << "https://api.netatmo.net/api/devicelist";
+	sstr2 << "https://api.netatmo.net/api/getstationsdata";
 	sstr2 << "?";
 	sstr2 << "access_token=" << m_accessToken;
 	sstr2 << "&" << "get_favorites=" << "true";
@@ -494,8 +892,9 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 
-#ifdef DEBUG_NetatmoWeatherStation
-	sResult = ReadFile("E:\\netatmo_mdetails.json");
+#ifdef DEBUG_NetatmoWeatherStationR
+	//sResult = ReadFile("E:\\netatmo_mdetails.json");
+	sResult = ReadFile("E:\\netatmo_getstationdata.json");
 	bool ret = true;
 #else
 	bool ret=HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
@@ -505,86 +904,41 @@ void CNetAtmoWeatherStation::GetMeterDetails()
 		return;
 	}
 #endif
-#ifdef DEBUG_NetatmoWeatherStation2
-	SaveString2Disk(sResult, "E:\\netatmo_mdetails.json");
+#ifdef DEBUG_NetatmoWeatherStationW
+	//SaveString2Disk(sResult, "E:\\netatmo_mdetails.json");
+	SaveString2Disk(sResult, "E:\\netatmo_getstationdata.json");
 #endif
-	Json::Value root;
-	Json::Reader jReader;
-	ret=jReader.parse(sResult,root);
+	ParseNetatmoGetResponse(sResult, false);
+}
+
+void CNetAtmoWeatherStation::GetThermostatDetails()
+{
+	std::stringstream sstr2;
+	sstr2 << "https://api.netatmo.net/api/getthermostatsdata";
+	sstr2 << "?";
+	sstr2 << "access_token=" << m_accessToken;
+	std::string httpUrl = sstr2.str();
+
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+#ifdef DEBUG_NetatmoWeatherStationR
+	sResult = ReadFile("E:\\netatmo_mdetails_thermostat.json");
+	bool ret = true;
+#else
+	bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
 	if (!ret)
 	{
-		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
+		_log.Log(LOG_STATUS, "Netatmo: Error connecting to Server...");
 		return;
 	}
-
-	if (!root["body"].empty() && !root["body"]["devices"].empty())
+#endif
+#ifdef DEBUG_NetatmoWeatherStationW
+	SaveString2Disk(sResult, "E:\\netatmo_mdetails_thermostat.json");
+#endif
+	if (!ParseNetatmoGetResponse(sResult,true))
 	{
-		if (root["body"]["devices"].isArray())
-		{
-			for (Json::Value::iterator itDevice=root["body"]["devices"].begin(); itDevice!=root["body"]["devices"].end(); ++itDevice)
-			{
-				Json::Value device = *itDevice;
-				if (!device["_id"].empty())
-				{
-					if (!device["dashboard_data"].empty())
-					{
-						std::string id = device["_id"].asString();
-						std::string type = device["type"].asString();
-						std::string name = device["module_name"].asString();
-						stdreplace(name, "'", "");
-
-						int battery_vp = 0;
-						if (device["battery_vp"].empty() == false)
-						{
-							battery_vp = device["battery_vp"].asInt();
-						}
-						//std::set<std::string> dataTypes;
-						//for (Json::Value::iterator itDataType = device["data_type"].begin(); itDataType != device["data_type"].end(); ++itDataType)
-						//{
-						//	dataTypes.insert((*itDataType).asCString());
-						//}
-						int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
-						ParseDashboard(device["dashboard_data"], crcId, name, type, battery_vp);
-						//getData(type, name, dataTypes, id, std::string(""), battery_vp);
-					}
-				}
-			}
-		}
-	}
-	if (!root["body"].empty() && !root["body"]["modules"].empty())
-	{
-		if (root["body"]["modules"].isArray())
-		{
-			for (Json::Value::iterator itModule=root["body"]["modules"].begin(); itModule!=root["body"]["modules"].end(); ++itModule)
-			{
-				Json::Value module = *itModule;
-				if (!module["_id"].empty())
-				{
-					if (!module["dashboard_data"].empty())
-					{
-						std::string id = module["_id"].asString();
-						std::string type = module["type"].asString();
-						std::string deviceId = module["main_device"].asString();
-						std::string name = module["module_name"].asString();
-						int battery_vp = 0;
-						if (module["battery_vp"] == false)
-						{
-							battery_vp = module["battery_vp"].asInt();
-						}
-						stdreplace(name, "'", " ");
-
-						//std::set<std::string> dataTypes;
-						//for (Json::Value::iterator itDataType = module["data_type"].begin(); itDataType != module["data_type"].end(); ++itDataType)
-						//{
-						//	dataTypes.insert((*itDataType).asCString());
-						//}
-						int crcId = Crc32(0, (const unsigned char *)id.c_str(), id.length());
-						ParseDashboard(module["dashboard_data"], crcId, name, type, battery_vp);
-						//getData(type, name, dataTypes, deviceId, id, battery_vp);
-					}
-				}
-			}
-		}
+		m_bPollThermostat = false;
 	}
 }
 

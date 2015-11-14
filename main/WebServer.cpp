@@ -84,6 +84,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "hu", "Hungarian" },
 	{ "it", "Italian" },
 	{ "lt", "Lithuanian" },
+	{ "mk", "Macedonian" },
 	{ "no", "Norwegian" },
 	{ "pl", "Polish" },
 	{ "pt", "Portuguese" },
@@ -374,8 +375,10 @@ namespace http {
 
 			RegisterCommandCode("mysensorsgetnodes", boost::bind(&CWebServer::Cmd_MySensorsGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("mysensorsgetchilds", boost::bind(&CWebServer::Cmd_MySensorsGetChilds, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsupdatenode", boost::bind(&CWebServer::Cmd_MySensorsUpdateNode, this, _1, _2, _3));
 			RegisterCommandCode("mysensorsremovenode", boost::bind(&CWebServer::Cmd_MySensorsRemoveNode, this, _1, _2, _3));
 			RegisterCommandCode("mysensorsremovechild", boost::bind(&CWebServer::Cmd_MySensorsRemoveChild, this, _1, _2, _3));
+			RegisterCommandCode("mysensorsupdatechild", boost::bind(&CWebServer::Cmd_MySensorsUpdateChild, this, _1, _2, _3));
 
 			RegisterCommandCode("pingersetmode", boost::bind(&CWebServer::Cmd_PingerSetMode, this, _1, _2, _3));
 			RegisterCommandCode("pingergetnodes", boost::bind(&CWebServer::Cmd_PingerGetNodes, this, _1, _2, _3));
@@ -1016,7 +1019,7 @@ namespace http {
 				(htype == HTYPE_ICYTHERMOSTAT) || 
 				(htype == HTYPE_TOONTHERMOSTAT) || 
 				(htype == HTYPE_PVOUTPUT_INPUT) || 
-				(htype == HTYPE_NESTTHERMOSTAT) ||
+				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_NetatmoWeatherStation)
@@ -1231,7 +1234,7 @@ namespace http {
 				(htype == HTYPE_ICYTHERMOSTAT) || 
 				(htype == HTYPE_TOONTHERMOSTAT) || 
 				(htype == HTYPE_PVOUTPUT_INPUT) || 
-				(htype == HTYPE_NESTTHERMOSTAT) ||
+				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
 				(htype == HTYPE_NetatmoWeatherStation)
@@ -5730,6 +5733,8 @@ namespace http {
 				}
 				sleep_milliseconds(100);
 				m_mainworker.SwitchLight(ID, "Set Brightness", (unsigned char)atoi(brightness.c_str()), -1,false,0);
+				root["status"] = "OK";
+				root["title"] = "SetColBrightnessValue";
 			}
 			else if (cparam == "brightnessup")
 			{
@@ -6543,7 +6548,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("ShowUpdateEffect", iShowUpdateEffect);
 
 			std::string DegreeDaysBaseTemperature = request::findValue(&req, "DegreeDaysBaseTemperature");
-			m_sql.UpdatePreferencesVar("ShowUpdateEffect", DegreeDaysBaseTemperature);
+			m_sql.UpdatePreferencesVar("DegreeDaysBaseTemperature", DegreeDaysBaseTemperature);
 
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);

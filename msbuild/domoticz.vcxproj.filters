@@ -639,9 +639,6 @@
     <ClInclude Include="..\hardware\Pinger.h">
       <Filter>Devices\Ping</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\NestThermostat.h">
-      <Filter>Devices\Nest</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\HttpPush.h">
       <Filter>Devices\HttpLink</Filter>
     </ClInclude>
@@ -776,6 +773,12 @@
     </ClInclude>
     <ClInclude Include="..\hardware\RFLinkTCP.h">
       <Filter>Devices\RFLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Nest.h">
+      <Filter>Devices\Nest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\concurrent_queue.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1121,9 +1124,6 @@
     <ClCompile Include="..\hardware\Pinger.cpp">
       <Filter>Devices\Ping</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\NestThermostat.cpp">
-      <Filter>Devices\Nest</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\HttpPush.cpp">
       <Filter>Devices\HttpLink</Filter>
     </ClCompile>
@@ -1249,6 +1249,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\RFLinkTCP.cpp">
       <Filter>Devices\RFLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Nest.cpp">
+      <Filter>Devices\Nest</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
