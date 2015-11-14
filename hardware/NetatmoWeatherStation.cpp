@@ -80,6 +80,7 @@ void CNetAtmoWeatherStation::Init()
 	m_RainOffset.clear();
 	m_OldRainCounter.clear();
 	m_bPollThermostat = true;
+	m_bForceSetpointUpdate=false;
 }
 
 bool CNetAtmoWeatherStation::StartHardware()
@@ -143,6 +144,15 @@ void CNetAtmoWeatherStation::Do_Work()
 					{
 						bFirstTimeTH = false;
 						GetThermostatDetails();
+					}
+					if (m_bForceSetpointUpdate)
+					{
+						time_t atime = time(NULL);
+						if (atime >= m_tSetpointUpdateTime)
+						{
+							m_bForceSetpointUpdate = false;
+							GetThermostatDetails();
+						}
 					}
 				}
 
@@ -672,6 +682,8 @@ void CNetAtmoWeatherStation::SetSetpoint(const int idx, const float temp)
 		return;
 	}
 	GetThermostatDetails();
+	m_tSetpointUpdateTime = time(NULL) + 60;
+	m_bForceSetpointUpdate = true;
 }
 
 bool CNetAtmoWeatherStation::ParseNetatmoGetResponse(const std::string &sResult, const bool bIsThermostat)

@@ -26,6 +26,8 @@ private:
 	std::string m_thermostatDeviceID;
 	std::string m_thermostatModuleID;
 	bool m_bPollThermostat;
+	bool m_bForceSetpointUpdate;
+	time_t m_tSetpointUpdateTime;
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
