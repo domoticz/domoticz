@@ -1819,6 +1819,12 @@ void GetLightStatus(
 				lstatus = "On";
 			}
 			break;
+		case rfy_sEnableSunWind:
+			lstatus = "SunWindChange";
+			break;
+		case rfy_sDisableSun:
+			lstatus = "SunWindChange";
+			break;
 		}
 		break;
 	case pTypeChime:
@@ -2666,6 +2672,14 @@ bool GetLightCommand(
 			else if (switchcmd == "Down2Seconds")
 			{
 				cmd = rfy_s2SecDown;
+			}
+			else if (switchcmd == "EnableSunWind")
+			{
+				cmd = rfy_sEnableSunWind;
+			}
+			else if (switchcmd == "DisableSunWind")
+			{
+				cmd = rfy_sDisableSun;
 			}
 			else
 			{
