@@ -63,5 +63,6 @@ private:
 	unsigned char m_buffer[1028];
 	int m_bufferpos;
 	int m_OutsideTemperatureIdx;
+	float m_OverrideTemperature;
 };
 

@@ -52,6 +52,7 @@ public:
 		std::string						Product_type;
 		std::string						Product_id;
 		std::string						Product_name;
+		int								Application_version;
 
 		std::map<int, std::map<int, NodeCommandClass> >	Instances;
 

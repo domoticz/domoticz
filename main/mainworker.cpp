@@ -70,7 +70,7 @@
 #include "../hardware/KMTronic433.h"
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
-#include "../hardware/NestThermostat.h"
+#include "../hardware/Nest.h"
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/NetatmoWeatherStation.h"
@@ -795,8 +795,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_TOONTHERMOSTAT:
 		pHardware = new CToonThermostat(ID, Username, Password);
 		break;
-	case HTYPE_NESTTHERMOSTAT:
-		pHardware = new CNestThermostat(ID, Username, Password);
+	case HTYPE_NEST:
+		pHardware = new CNest(ID, Username, Password);
 		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
@@ -2129,9 +2129,9 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 						WriteMessage("La Crosse         disabled");
 
 					if (pResponse->IRESPONSE.FS20enabled)
-						WriteMessage("FS20              enabled");
+						WriteMessage("FS20/Legrand      enabled");
 					else
-						WriteMessage("FS20              disabled");
+						WriteMessage("FS20/Legrand      disabled");
 
 					if (pResponse->IRESPONSE.PROGUARDenabled)
 						WriteMessage("ProGuard          enabled");
@@ -2187,6 +2187,11 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 						WriteMessage("KEELOQ            enabled");
 					else
 						WriteMessage("KEELOQ            disabled");
+
+					if (pResponse->IRESPONSE.HCEnabled)
+						WriteMessage("Home Confort      enabled");
+					else
+						WriteMessage("Home Confort      disabled");
 				}
 				break;
 			case cmdSAVE:
@@ -4021,6 +4026,7 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
+	WriteMessageStart();
 	WriteMessage("");
 
 	char szTmp[100];
@@ -4064,6 +4070,7 @@ unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHa
 	}
 	sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING3.rssi);
 	WriteMessage(szTmp);
+	WriteMessageEnd();
 	return DevRowIdx;
 }
 
@@ -4618,6 +4625,13 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 				break;
 			}
 			break;
+		case sTypeLegrandCAD:
+			WriteMessage("subtype       = Legrand CAD");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = Toggle");
 		default:
 			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING5.packettype, pResponse->LIGHTING5.subtype);
 			WriteMessage(szTmp);
@@ -9363,6 +9377,165 @@ unsigned long long MainWorker::decode_FS20(const CDomoticzHardwareBase *pHardwar
 	return -1;
 }
 
+bool MainWorker::GetSensorData(const unsigned long long idx, int &nValue, std::string &sValue)
+{
+	std::vector<std::vector<std::string> > result;
+	char szTmp[100];
+	result = m_sql.safe_query("SELECT [Type],[SubType],[nValue],[sValue],[SwitchType] FROM DeviceStatus WHERE (ID==%llu)", idx);
+	if (result.empty())
+		return false;
+	std::vector<std::string> sd = result[0];
+	int devType = atoi(sd[0].c_str());
+	int subType = atoi(sd[1].c_str());
+	nValue = atoi(sd[2].c_str());
+	sValue = sd[3];
+	_eMeterType metertype = (_eMeterType)atoi(sd[4].c_str());
+
+	//Special cases
+	if ((devType == pTypeP1Power) && (subType == sTypeP1Power))
+	{
+		std::vector<std::string> results;
+		StringSplit(sValue, ";", results);
+		if (results.size() < 6)
+			return false; //invalid data
+		//Return usage or delivery
+		long usagecurrent = atol(results[4].c_str());
+		long delivcurrent = atol(results[5].c_str());
+		std::stringstream ssvalue;
+		if (delivcurrent > 0)
+		{
+			ssvalue << "-" << delivcurrent;
+		}
+		else
+		{
+			ssvalue << usagecurrent;
+		}
+		nValue = 0;
+		sValue = ssvalue.str();
+	}
+	else if ((devType == pTypeP1Gas) && (subType == sTypeP1Gas))
+	{
+		float GasDivider = 1000.0f;
+		//get lowest value of today
+		time_t now = mytime(NULL);
+		struct tm tm1;
+		localtime_r(&now, &tm1);
+
+		struct tm ltime;
+		ltime.tm_isdst = tm1.tm_isdst;
+		ltime.tm_hour = 0;
+		ltime.tm_min = 0;
+		ltime.tm_sec = 0;
+		ltime.tm_year = tm1.tm_year;
+		ltime.tm_mon = tm1.tm_mon;
+		ltime.tm_mday = tm1.tm_mday;
+
+		char szDate[40];
+		sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+		std::vector<std::vector<std::string> > result2;
+		strcpy(szTmp, "0");
+		result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%q')", idx, szDate);
+		if (result2.size() > 0)
+		{
+			std::vector<std::string> sd2 = result2[0];
+
+			unsigned long long total_min_gas, total_real_gas;
+			unsigned long long gasactual;
+
+			std::stringstream s_str1(sd2[0]);
+			s_str1 >> total_min_gas;
+			std::stringstream s_str2(sValue);
+			s_str2 >> gasactual;
+			total_real_gas = gasactual - total_min_gas;
+			float musage = float(total_real_gas) / GasDivider;
+			sprintf(szTmp, "%.03f", musage);
+		}
+		else
+		{
+			sprintf(szTmp, "%.03f", 0.0f);
+		}
+		nValue = 0;
+		sValue = szTmp;
+	}
+	else if (devType == pTypeRFXMeter)
+	{
+		float EnergyDivider = 1000.0f;
+		float GasDivider = 100.0f;
+		float WaterDivider = 100.0f;
+		int tValue;
+		if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+		{
+			EnergyDivider = float(tValue);
+		}
+		if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+		{
+			GasDivider = float(tValue);
+		}
+		if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+		{
+			WaterDivider = float(tValue);
+		}
+
+		//get value of today
+		time_t now = mytime(NULL);
+		struct tm tm1;
+		localtime_r(&now, &tm1);
+
+		struct tm ltime;
+		ltime.tm_isdst = tm1.tm_isdst;
+		ltime.tm_hour = 0;
+		ltime.tm_min = 0;
+		ltime.tm_sec = 0;
+		ltime.tm_year = tm1.tm_year;
+		ltime.tm_mon = tm1.tm_mon;
+		ltime.tm_mday = tm1.tm_mday;
+
+		char szDate[40];
+		sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+
+		std::vector<std::vector<std::string> > result2;
+		strcpy(szTmp, "0");
+		result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID='%llu' AND Date>='%q')", idx, szDate);
+		if (result2.size() > 0)
+		{
+			std::vector<std::string> sd2 = result2[0];
+
+			unsigned long long total_min, total_max, total_real;
+
+			std::stringstream s_str1(sd2[0]);
+			s_str1 >> total_min;
+			std::stringstream s_str2(sd2[1]);
+			s_str2 >> total_max;
+			total_real = total_max - total_min;
+			sprintf(szTmp, "%llu", total_real);
+
+			float musage = 0;
+			switch (metertype)
+			{
+			case MTYPE_ENERGY:
+			case MTYPE_ENERGY_GENERATED:
+				musage = float(total_real) / EnergyDivider;
+				sprintf(szTmp, "%.03f", musage);
+				break;
+			case MTYPE_GAS:
+				musage = float(total_real) / GasDivider;
+				sprintf(szTmp, "%.03f", musage);
+				break;
+			case MTYPE_WATER:
+				sprintf(szTmp, "%llu", total_real);
+				break;
+			case MTYPE_COUNTER:
+				sprintf(szTmp, "%llu", total_real);
+				break;
+			}
+		}
+		nValue = 0;
+		sValue = szTmp;
+	}
+	return true;
+}
+
 bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6)
 {
 	int hindex=FindDomoticzHardware(HardwareID);
@@ -10435,11 +10608,12 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
-		(pHardware->HwdType == HTYPE_NESTTHERMOSTAT) ||
+		(pHardware->HwdType == HTYPE_NEST) ||
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
-		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
+		(pHardware->HwdType == HTYPE_NetatmoWeatherStation)
 		)
 	{
 		if (pHardware->HwdType==HTYPE_OpenThermGateway)
@@ -10462,9 +10636,9 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CToonThermostat *pGateway = (CToonThermostat*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_NESTTHERMOSTAT)
+		else if (pHardware->HwdType == HTYPE_NEST)
 		{
-			CNestThermostat *pGateway = (CNestThermostat*)pHardware;
+			CNest *pGateway = (CNest*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
@@ -10475,6 +10649,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_THERMOSMART)
 		{
 			CThermosmart *pGateway = (CThermosmart*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+		{
+			CNetAtmoWeatherStation *pGateway = (CNetAtmoWeatherStation*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
@@ -10703,9 +10882,9 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 		pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_NESTTHERMOSTAT)
+	else if (pHardware->HwdType == HTYPE_NEST)
 	{
-		CNestThermostat *pGateway = (CNestThermostat*)pHardware;
+		CNest *pGateway = (CNest*)pHardware;
 		pGateway->SetProgramState(newState);
 		return true;
 	}
@@ -10719,6 +10898,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 	{
 		CThermosmart *pGateway = (CThermosmart *)pHardware;
 		//pGateway->SetProgramState(newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+	{
+		CNetAtmoWeatherStation *pGateway = (CNetAtmoWeatherStation *)pHardware;
+		pGateway->SetProgramState(newState);
 		return true;
 	}
 	return false;

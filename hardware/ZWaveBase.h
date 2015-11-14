@@ -46,6 +46,8 @@ class ZWaveBase : public CDomoticzHardwareBase
 		int commandClassID;
 		int instanceID;
 		int indexID;
+		int orgInstanceID;
+		int orgIndexID;
 		_eZWaveDeviceType devType;
 		int scaleID;
 		int scaleMultiply;
@@ -100,6 +102,8 @@ class ZWaveBase : public CDomoticzHardwareBase
 			commandClassID=0;
 			instanceID=0;
 			indexID=0;
+			orgInstanceID=0;
+			orgIndexID=0;
 			devType = ZDTYPE_SWITCH_NORMAL;
 			basicType=0;
 			genericType=0;
@@ -133,6 +137,7 @@ private:
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID);
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const _eZWaveDeviceType devType);
 	_tZWaveDevice* FindDevice(const int nodeID, const int instanceID, const int indexID, const int CommandClassID, const _eZWaveDeviceType devType);
+	_tZWaveDevice* FindDeviceEx(const int nodeID, const int instanceID, const _eZWaveDeviceType devType);
 
 	void ForceUpdateForNodeDevices(const unsigned int homeID, const int nodeID);
 	bool IsNodeRGBW(const unsigned int homeID, const int nodeID);

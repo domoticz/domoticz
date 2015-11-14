@@ -114,6 +114,10 @@
 #define sSwitchTypeSartano			0x35
 #define sSwitchTypeEurope			0x36
 #define sSwitchTypeAvidsen			0x37
+#define sSwitchTypeBofu				0x38
+#define sSwitchTypeBrel				0x39
+#define sSwitchTypeSomeFy			0x3a
+
 
 //Switch commands
 #define gswitch_sOff				0x00

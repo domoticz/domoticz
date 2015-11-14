@@ -27,7 +27,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 84
+#define DB_VERSION 86
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -531,6 +531,7 @@ const char *sqlCreateMySensors =
 	"CREATE TABLE IF NOT EXISTS [MySensors]("
 	" [HardwareID] INTEGER NOT NULL,"
 	" [ID] INTEGER NOT NULL,"
+	" [Name] VARCHAR(100) DEFAULT Unknown,"
 	" [SketchName] VARCHAR(100) DEFAULT Unknown,"
 	" [SketchVersion] VARCHAR(40) DEFAULT(1.0));";
 
@@ -1550,6 +1551,17 @@ bool CSQLHelper::OpenDatabase()
 			{
 				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Motherboard',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_System);
 			}
+		}
+		if (dbversion < 85)
+		{
+			//MySensors, default use ACK for Childs
+			safe_query("UPDATE MySensorsChilds SET[UseAck] = 1 WHERE(ChildID != 255)");
+		}
+		if (dbversion < 86)
+		{
+			//MySensors add Name field
+			query("ALTER TABLE MySensors ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
+			safe_query("UPDATE MySensors SET [Name] = [SketchName]");
 		}
 	}
 	else if (bNewInstall)
@@ -2582,9 +2594,9 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		return -1;
 
 	unsigned long long ulID=0;
-
+	bool bDeviceUsed = false;
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID,Name, Used FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
 	if (result.size()==0)
 	{
 		//Insert
@@ -2623,6 +2635,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		s_str >> ulID;
 
 		devname=result[0][1];
+		bDeviceUsed= atoi(result[0][2].c_str())!=0;
 
 		time_t now = time(0);
 		struct tm ltime;
@@ -2695,6 +2708,8 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 			ulID,
 			nValue,sValue);
 
+		if (!bDeviceUsed)
+			return ulID;	//don't process further as the device is not used
 		std::string lstatus="";
 		int llevel=0;
 		bool bHaveDimmer=false;
@@ -2909,7 +2924,8 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		CheckSceneStatusWithDevice(ulID);
 		break;
 	}
-	m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
+	if (bDeviceUsed)
+		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
 	return ulID;
 }
 
@@ -5148,6 +5164,7 @@ void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newid
 	safe_query("UPDATE LightSubDevices SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
 	safe_query("UPDATE Notifications SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
 
+	//Rain
 	result=safe_query("SELECT Date FROM Rain WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1",newidx.c_str());
 	if (result.size()>0)
 		safe_query("UPDATE Rain SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
@@ -5160,12 +5177,12 @@ void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newid
 	else
 		safe_query("UPDATE Rain_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
 
+	//Temperature
 	result=safe_query("SELECT Date FROM Temperature WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1",newidx.c_str());
 	if (result.size()>0)
 		safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
 	else
 		safe_query("UPDATE Temperature SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
-
 
 	result=safe_query("SELECT Date FROM Temperature_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1",newidx.c_str());
 	if (result.size()>0)
@@ -5175,6 +5192,7 @@ void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newid
 
 	safe_query("UPDATE Timers SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
 
+	//UV
 	result=safe_query("SELECT Date FROM UV WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1",newidx.c_str());
 	if (result.size()>0)
 		safe_query("UPDATE UV SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
@@ -5187,6 +5205,7 @@ void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newid
 	else
 		safe_query("UPDATE UV_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
 
+	//Wind
 	result=safe_query("SELECT Date FROM Wind WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1",newidx.c_str());
 	if (result.size()>0)
 		safe_query("UPDATE Wind SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
@@ -5199,6 +5218,7 @@ void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newid
 	else
 		safe_query("UPDATE Wind_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
 
+	//Meter
 	result=safe_query("SELECT Date FROM Meter WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1",newidx.c_str());
 	if (result.size()>0)
 		safe_query("UPDATE Meter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
@@ -5211,6 +5231,7 @@ void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newid
 	else
 		safe_query("UPDATE Meter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
 
+	//Multimeter
 	result=safe_query("SELECT Date FROM MultiMeter WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1",newidx.c_str());
 	if (result.size()>0)
 		safe_query("UPDATE MultiMeter SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
@@ -5222,6 +5243,19 @@ void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newid
 		safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')",newidx.c_str(),idx.c_str(),result[0][0].c_str());
 	else
 		safe_query("UPDATE MultiMeter_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')",newidx.c_str(),idx.c_str());
+
+	//Percentage
+	result = safe_query("SELECT Date FROM Percentage WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
+	if (result.size() > 0)
+		safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
+	else
+		safe_query("UPDATE Percentage SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
+
+	result = safe_query("SELECT Date FROM Percentage_Calendar WHERE (DeviceRowID == '%q') ORDER BY Date ASC LIMIT 1", newidx.c_str());
+	if (result.size() > 0)
+		safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q') AND (Date<'%q')", newidx.c_str(), idx.c_str(), result[0][0].c_str());
+	else
+		safe_query("UPDATE Percentage_Calendar SET DeviceRowID='%q' WHERE (DeviceRowID == '%q')", newidx.c_str(), idx.c_str());
 }
 
 void CSQLHelper::CheckAndUpdateDeviceOrder()

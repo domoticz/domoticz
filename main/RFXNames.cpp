@@ -190,7 +190,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SOLARMAXTCP, "SolarMax via LAN interface" },
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
-		{ HTYPE_NESTTHERMOSTAT, "Nest Thermostat" },
+		{ HTYPE_NEST, "Nest Thermostat/Protect" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
@@ -537,6 +537,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting5, sTypeLivoloAppliance, "Livolo Appliance" },
 		{ pTypeLighting5, sTypeRGB432W, "RGB432W" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "MDRemote 107" },
+		{ pTypeLighting5, sTypeLegrandCAD, "Legrand CAD" },
 
 		{ pTypeLighting6, sTypeBlyss, "Blyss" },
 
@@ -712,14 +713,15 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus, "SelectPlus" },
 		{ pTypeGeneralSwitch, sSwitchTypeSelectPlus3, "SelectPlus3" },
 		{ pTypeGeneralSwitch, sSwitchTypeFA20, "FA20RF" },
-		{ pTypeGeneralSwitch, sSwitchTypePowerfix, "Powerfix" },
-		{ pTypeGeneralSwitch, sSwitchTypeTriState, "TriState" },
-		{ pTypeGeneralSwitch, sSwitchTypeDeltronic, "Deltronic" },
 		{ pTypeGeneralSwitch, sSwitchTypeChuango, "Chuango" },
 		{ pTypeGeneralSwitch, sSwitchTypePlieger, "Plieger" },
 		{ pTypeGeneralSwitch, sSwitchTypeSilvercrest, "SilverCrest" },
 		{ pTypeGeneralSwitch, sSwitchTypeMertik, "Mertik" },
 		{ pTypeGeneralSwitch, sSwitchTypeHomeConfort, "HomeConfort" },
+		{ pTypeGeneralSwitch, sSwitchTypePowerfix, "Powerfix" },
+		{ pTypeGeneralSwitch, sSwitchTypeTriState, "TriState" },
+		{ pTypeGeneralSwitch, sSwitchTypeDeltronic, "Deltronic" },
+		{ pTypeGeneralSwitch, sSwitchTypeFA500, "FA500" },
 		{ pTypeGeneralSwitch, sSwitchTypeHT12E, "HT12E" },
 		{ pTypeGeneralSwitch, sSwitchTypeEV1527, "EV1527" },
 		{ pTypeGeneralSwitch, sSwitchTypeElmes, "Elmes" },
@@ -727,6 +729,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeSartano, "Sartano" },
 		{ pTypeGeneralSwitch, sSwitchTypeEurope, "Europe" },
 		{ pTypeGeneralSwitch, sSwitchTypeAvidsen, "Avidsen" },
+		{ pTypeGeneralSwitch, sSwitchTypeBofu, "BofuMotor" },
+		{ pTypeGeneralSwitch, sSwitchTypeBrel, "BrelMotor" },
+		{ pTypeGeneralSwitch, sSwitchTypeSomeFy, "SomeFy" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -829,6 +834,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting5, sTypeLivoloAppliance, "Status" },
 		{ pTypeLighting5, sTypeRGB432W, "Status" },
 		{ pTypeLighting5, sTypeMDREMOTE107, "Status" },
+		{ pTypeLighting5, sTypeLegrandCAD, "Status" },
 
 		{ pTypeLighting6, sTypeBlyss, "Status" },
 

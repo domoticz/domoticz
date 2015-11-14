@@ -1,9 +1,26 @@
-Version 2.xxxx
+Version 2.3xxx
 - Fixed: Log display in webgui for log items containing multiple lines
 - Fixed: Edit Light/Switch Security sensors protected checkbox
 - Fixed: Alert Sensor, displaying sValue again
 - Fixed: EventSystem, now also handling sensors that only uses numbers instead of strings for data
 - Fixed: S0 Meter, fix for reloading totals of (#179)
+- Fixed: Nest Thermostat, setting set point in Fahrenheit
+- Implemented: Option to transfer old Percentage sensors to new Percentage sensors
+- Implemented: Macedonian translation (Big thanks to jocogvg!!!)
+- Implemented: RFXCom support for Legrand CAD
+- Updated: OpenZWave, configuration files
+- Changed: OpenZWave, Ranamed internally 'Color Control' to 'Color"
+- Changed: OpenZWave, Control Panel log starts displaying from the end when entering for the first time
+- Fixed: Dummy RGB sensor creation (was created with wrong ID)
+- Fixed: RGB sensor now also uses the RGB popup system
+- Implemented: Nest Protect
+- Implemented: MySensors, Implemented V_CUSTOM
+- Changed: EventSystem, don't process unused devices
+- Implemented: MySensors, Option to Enable/Disable using ACK per Child sensor from the MySensors hardware setup page
+- Implemented: MySensors, Option to Name a node
+- Implemented: Netatmo, support for multiple weather stations (from the weathermap) and multiple rain sensors
+- Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different zipato bulbs
+- Changed: OpenZwave, kWh sensor now maybe compatible with more hardware
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
