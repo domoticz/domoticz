@@ -24,6 +24,8 @@ MySensorsTCP::~MySensorsTCP(void)
 
 bool MySensorsTCP::StartHardware()
 {
+	LoadDevicesFromDatabase();
+
 	m_stoprequested=false;
 	m_bDoRestart=false;
 
