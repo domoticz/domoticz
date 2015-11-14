@@ -68,7 +68,7 @@ namespace http {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "PROXY: Connect failed, error %d. Reconnecting", error);
+				_log.Log(LOG_ERROR, "PROXY: Connect failed, reconnecting: %s", error.message().c_str());
 				if (!doStop) {
 					boost::this_thread::sleep_for(boost::chrono::seconds(10));
 					Reconnect();
@@ -111,7 +111,7 @@ namespace http {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "PROXY: Handshake failed, error %d. Reconnecting.", error);
+				_log.Log(LOG_ERROR, "PROXY: Handshake failed, reconnecting: %s", error.message().c_str());
 				Reconnect();
 			}
 		}
@@ -135,7 +135,7 @@ namespace http {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "PROXY: Write failed, error %d", error);
+				_log.Log(LOG_ERROR, "PROXY: Write failed: %s", error.message().c_str());
 			}
 		}
 
@@ -326,7 +326,7 @@ namespace http {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "PROXY: Read failed, error %d, reconnecting.", error);
+				_log.Log(LOG_ERROR, "PROXY: Read failed, reconnecting: %s", error.message().c_str());
 				// Initiate graceful connection closure.
 				_socket.lowest_layer().close();
 				if (doStop) {
