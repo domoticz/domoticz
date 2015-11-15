@@ -74,6 +74,7 @@
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/NetatmoWeatherStation.h"
+#include "../hardware/NetatmoThermostat.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
@@ -785,6 +786,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_NetatmoWeatherStation:
 		pHardware = new CNetAtmoWeatherStation(ID,Username,Password);
+		break;
+	case HTYPE_NetatmoThermostat:
+		pHardware = new CNetAtmoThermostat(ID,Username,Password);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
@@ -10609,6 +10613,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_NEST) ||
+		(pHardware->HwdType == HTYPE_NetatmoThermostat) ||
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
@@ -10639,6 +10644,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_NEST)
 		{
 			CNest *pGateway = (CNest*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_NetatmoThermostat)
+		{
+			CNetAtmoThermostat *pGateway = (CNetAtmoThermostat *)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
