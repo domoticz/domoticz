@@ -231,7 +231,7 @@ void MySensorsBase::LoadDevicesFromDatabase()
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	m_nodes.clear();
 
-	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result,result2;
 	result = m_sql.safe_query("SELECT ID, Name, SketchName, SketchVersion FROM MySensors WHERE (HardwareID=%d) ORDER BY ID ASC", m_HwdID);
 	if (result.size() > 0)
 	{
@@ -251,6 +251,23 @@ void MySensorsBase::LoadDevicesFromDatabase()
 			mNode.SketchName = SkectName;
 			mNode.SketchVersion = SkectVersion;
 			mNode.lastreceived = 0;
+			//Load the Childs
+			result2 = m_sql.safe_query("SELECT ChildID, [Type], [Name], UseAck FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID=%d) ORDER BY ChildID ASC", m_HwdID, ID);
+			if (result2.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt2;
+				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+				{
+					std::vector<std::string> sd2 = *itt2;
+					_tMySensorChild mSensor;
+					mSensor.nodeID = ID;
+					mSensor.childID = atoi(sd2[0].c_str());
+					mSensor.presType = (_ePresentationType)atoi(sd2[1].c_str());
+					mSensor.childName = sd2[2];
+					mSensor.useAck = atoi(sd2[3].c_str()) != 0;
+					mNode.m_childs.push_back(mSensor);
+				}
+			}
 			m_nodes[ID] = mNode;
 		}
 	}
@@ -1144,12 +1161,12 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			if ((light_command == light2_sOn) || (light_command == light2_sOff))
 			{
 				std::string lState = (light_command == light2_sOn) ? "1" : "0";
-				if (FindChildWithValueType(node_id, V_LOCK_STATUS) != NULL)
+				if (pChild->presType == S_LOCK)
 				{
 					//Door lock
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck);
 				}
-				else if ((FindChildWithValueType(node_id, V_SCENE_ON) != NULL) || (FindChildWithValueType(node_id, V_SCENE_OFF) != NULL))
+				else if (pChild->presType == S_SCENE_CONTROLLER)
 				{
 					//Scene Controller
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck);
@@ -2027,8 +2044,7 @@ namespace http {
 			std::vector<std::vector<std::string> > result, result2;
 			char szTmp[100];
 
-			result = m_sql.safe_query("SELECT ID,Name,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC",
-				iHardwareID);
+			result = m_sql.safe_query("SELECT ID,Name,SketchName,SketchVersion FROM MySensors WHERE (HardwareID==%d) ORDER BY ID ASC", iHardwareID);
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2065,7 +2081,7 @@ namespace http {
 					{
 						root["result"][ii]["LastReceived"] = "-";
 					}
-					result2 = m_sql.safe_query("SELECT COUNT(*) FROM MySensorsChilds WHERE(NodeID == %d)", NodeID);
+					result2 = m_sql.safe_query("SELECT COUNT(*) FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID == %d)", iHardwareID, NodeID);
 					int totChilds = 0;
 					if (!result2.empty())
 					{
@@ -2102,7 +2118,7 @@ namespace http {
 			MySensorsBase::_tMySensorNode* pNode = pMySensorsHardware->FindNode(NodeID);
 			std::vector<std::vector<std::string> >::const_iterator itt2;
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck FROM MySensorsChilds WHERE(NodeID == %d) ORDER BY ChildID ASC", NodeID);
+			result = m_sql.safe_query("SELECT ChildID, [Type], Name, UseAck FROM MySensorsChilds WHERE (HardwareID=%d) AND (NodeID == %d) ORDER BY ChildID ASC", iHardwareID, NodeID);
 			int ii = 0;
 			for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
 			{

@@ -290,7 +290,7 @@
 					var blockB = $(valueB).children("block:first");
 					var variableTypeB = $(valueB).children("block:first").attr("type");
 					var dtext=GetValueText(valueB,variableTypeB);
-					setString += '="'+dtext+'"'; 
+					setString += '='+dtext+''; 
 					setArray.push(setString);
 								
 				}
@@ -345,7 +345,7 @@
 						var valueB = $(this).find("value[name='B']")[0];
 						var titleB = $(valueB).find("title")[0];
 						var blockB = $(valueB).children("block:first");
-						setString += '="'+$(titleB).text()+'"'; 
+						setString += '='+$(titleB).text()+''; 
 						setString += ' AFTER '+ $(titleC).text()+'"'; 
 						setArray.push(setString);
 					}

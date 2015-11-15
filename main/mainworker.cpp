@@ -4242,6 +4242,7 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
+	WriteMessageStart();
 	WriteMessage("");
 
 	char szTmp[100];
@@ -4285,6 +4286,7 @@ unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHa
 	}
 	sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING3.rssi);
 	WriteMessage(szTmp);
+	WriteMessageEnd();
 	return DevRowIdx;
 }
 
@@ -10826,7 +10828,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
-		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
+		(pHardware->HwdType == HTYPE_NetatmoWeatherStation)
 		)
 	{
 		if (pHardware->HwdType==HTYPE_OpenThermGateway)
@@ -10862,6 +10865,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_THERMOSMART)
 		{
 			CThermosmart *pGateway = (CThermosmart*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+		{
+			CNetAtmoWeatherStation *pGateway = (CNetAtmoWeatherStation*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
@@ -11106,6 +11114,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 	{
 		CThermosmart *pGateway = (CThermosmart *)pHardware;
 		//pGateway->SetProgramState(newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+	{
+		CNetAtmoWeatherStation *pGateway = (CNetAtmoWeatherStation *)pHardware;
+		pGateway->SetProgramState(newState);
 		return true;
 	}
 	return false;

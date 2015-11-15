@@ -140,13 +140,29 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 	}
 	else if (vType == "Speed")
 	{
-		int intSpeed=atoi(rawsendValue.c_str());
-		sprintf(szData,"%.1f",float(intSpeed) * m_sql.m_windscale);
+		int intSpeed = atoi(rawsendValue.c_str());
+		if (m_sql.m_windunit != WINDUNIT_Beaufort)
+		{
+			sprintf(szData, "%.1f", float(intSpeed) * m_sql.m_windscale);
+		}
+		else
+		{
+			float speedms = float(intSpeed)*0.1f;
+			sprintf(szData, "%d", MStoBeaufort(speedms));
+		}
 	}
 	else if (vType == "Gust")
 	{
 		int intGust=atoi(rawsendValue.c_str());
-		sprintf(szData,"%.1f",float(intGust) *m_sql.m_windscale);
+		if (m_sql.m_windunit != WINDUNIT_Beaufort)
+		{
+			sprintf(szData, "%.1f", float(intGust) *m_sql.m_windscale);
+		}
+		else
+		{
+			float gustms = float(intGust)*0.1f;
+			sprintf(szData, "%.1f", MStoBeaufort(gustms));
+		}
 	}
 	else if (vType == "Chill")
 	{

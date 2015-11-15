@@ -18,6 +18,12 @@ Version 2.3xxx
 - Changed: EventSystem, don't process unused devices
 - Implemented: MySensors, Option to Enable/Disable using ACK per Child sensor from the MySensors hardware setup page
 - Implemented: MySensors, Option to Name a node
+- Implemented: Netatmo, support for multiple weather stations (from the weathermap) and multiple rain sensors
+- Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different zipato bulbs
+- Changed: OpenZwave, kWh sensor now maybe compatible with more hardware
+- Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
+- Implemented: Wind Graph, option to delete a short-log data point
+- Implemented: Wind Beaufort scale
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

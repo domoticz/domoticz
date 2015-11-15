@@ -68,6 +68,9 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Sartano", sSwitchTypeSartano },       // p3
 	{ "Europe", sSwitchTypeEurope },         // p18
 	{ "Avidsen", sSwitchTypeAvidsen },       // p..
+	{ "BofuMotor", sSwitchTypeBofu },        // p..
+	{ "BrelMotor", sSwitchTypeBrel },        // p..
+	{ "SomeFy", sSwitchTypeSomeFy },        // p..
 	{ "", -1 }
 };
 
@@ -600,11 +603,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	}
 	else if (bHaveTemp&&bHaveHum)
 	{
-		SendTempHumSensor(ID, BatteryLevel, temp, humidity, "TempHum");
+        std::string tmp_Name = results[2];        
+		SendTempHumSensor(ID, BatteryLevel, temp, humidity, tmp_Name);
 	}
 	else if (bHaveTemp)
 	{
-		SendTempSensor(ID, BatteryLevel, temp,"Temp");
+        std::string tmp_Name = results[2];    
+		SendTempSensor(ID, BatteryLevel, temp, tmp_Name);
 	}
 	else if (bHaveHum)
 	{
@@ -617,83 +622,101 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 
 	if (bHaveLux)
 	{
-		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux, "Lux");
+        std::string tmp_Name = results[2];        
+		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux, tmp_Name);
 	}
 
 	if (bHaveUV)
 	{
-  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, "UV");
+        std::string tmp_Name = results[2];        
+  		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, tmp_Name);
 	}
     
 	if (bHaveRain)
 	{
-		SendRainSensor(ID, BatteryLevel, float(raincounter), "Rain");
+        std::string tmp_Name = results[2];        
+		SendRainSensor(ID, BatteryLevel, float(raincounter), tmp_Name);
 	}
 
 	if (bHaveWindDir && bHaveWindSpeed && bHaveWindGust && bHaveWindChill)
 	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, "Wind");
+        std::string tmp_Name = results[2];        
+		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
 	else if (bHaveWindDir && bHaveWindGust)
 	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, "Wind");
+        std::string tmp_Name = results[2];        
+		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
 	else if (bHaveWindSpeed)
 	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, "Wind");
+        std::string tmp_Name = results[2];        
+		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
     
 	if (bHaveCO2)
 	{
-		SendAirQualitySensor((ID & 0xFF00) >> 8, ID & 0xFF, BatteryLevel, co2, "CO2");
+        std::string tmp_Name = results[2];        
+		SendAirQualitySensor((ID & 0xFF00) >> 8, ID & 0xFF, BatteryLevel, co2, tmp_Name);
 	}
 	if (bHaveSound)
 	{
-		SendSoundSensor(ID, BatteryLevel, sound, "Sound");
+        std::string tmp_Name = results[2];        
+		SendSoundSensor(ID, BatteryLevel, sound, tmp_Name);
 	}
 
 	if (bHaveRGB)
 	{
 		//RRGGBB
-		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgb, false, "RGB Light");
+        std::string tmp_Name = results[2];        
+		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgb, false, tmp_Name);
 	}
 	if (bHaveRGBW)
 	{
 		//RRGGBBWW
-		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgbw, true, "RGBW Light");
+        std::string tmp_Name = results[2];        
+		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgbw, true, tmp_Name);
 	}
 	if (bHaveBlind)
 	{
-		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, "Blinds/Window");
+        std::string tmp_Name = results[2];        
+		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, tmp_Name);
 	}
 
 	if (bHaveKWatt)
 	{
-		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, kwatt / 1000.0f, kwatt, "Meter");
+        std::string tmp_Name = results[2];        
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, kwatt / 1000.0f, kwatt, tmp_Name);
 	}
 	if (bHaveWatt)
 	{
-		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, 0, watt, "Meter");
+        std::string tmp_Name = results[2];        
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, 0, watt, tmp_Name);
 	}
 	if (bHaveDistance)
 	{
-		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance, "Distance");
+        std::string tmp_Name = results[2];        
+		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance, tmp_Name);
 	}
 	if (bHaveMeter)
 	{
-		SendMeterSensor(Node_ID, Child_ID, BatteryLevel, meter, "Meter");
+        std::string tmp_Name = results[2];        
+		SendMeterSensor(Node_ID, Child_ID, BatteryLevel, meter, tmp_Name);
 	}
 	if (bHaveVoltage)
 	{
-		SendVoltageSensor(Node_ID, Child_ID, BatteryLevel, voltage, "Voltage");
+        std::string tmp_Name = results[2];        
+		SendVoltageSensor(Node_ID, Child_ID, BatteryLevel, voltage, tmp_Name);
 	}
 	if (bHaveCurrent)
 	{
-		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, "Current");
+        std::string tmp_Name = results[2];        
+		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, tmp_Name);
 	}
 	if (bHaveImpedance)
 	{
-		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, "Impedance");
+        std::string tmp_Name = results[2];        
+		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, tmp_Name);
 	}
 	if (bHaveSwitch && bHaveSwitchCmd)
 	{
