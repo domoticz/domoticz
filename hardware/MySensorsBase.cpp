@@ -1161,12 +1161,12 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			if ((light_command == light2_sOn) || (light_command == light2_sOff))
 			{
 				std::string lState = (light_command == light2_sOn) ? "1" : "0";
-				if (pChild->presType == S_LOCK)//if (FindChildWithValueType(node_id, V_LOCK_STATUS) != NULL)
+				if (pChild->presType == S_LOCK)
 				{
 					//Door lock
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_LOCK_STATUS, lState, pChild->useAck);
 				}
-				else if (pChild->presType == S_SCENE_CONTROLLER) //((FindChildWithValueType(node_id, V_SCENE_ON) != NULL) || (FindChildWithValueType(node_id, V_SCENE_OFF) != NULL))
+				else if (pChild->presType == S_SCENE_CONTROLLER)
 				{
 					//Scene Controller
 					return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (light_command == light2_sOn) ? V_SCENE_ON : V_SCENE_OFF, lState, pChild->useAck);
