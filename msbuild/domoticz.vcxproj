@@ -160,7 +160,7 @@
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
     <ClInclude Include="..\hardware\Nest.h" />
-    <ClInclude Include="..\hardware\NetatmoWeatherStation.h" />
+    <ClInclude Include="..\hardware\Netatmo.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.h" />
@@ -346,7 +346,7 @@
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
-    <ClCompile Include="..\hardware\NetatmoWeatherStation.cpp" />
+    <ClCompile Include="..\hardware\Netatmo.cpp" />
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.cpp" />

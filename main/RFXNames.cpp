@@ -192,7 +192,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NEST, "Nest Thermostat/Protect" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
-		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
+		{ HTYPE_Netatmo, "Netatmo" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
 		{ HTYPE_SatelIntegra, "Satel Integra via LAN interface" },
