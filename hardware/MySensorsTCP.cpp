@@ -81,6 +81,8 @@ void MySensorsTCP::OnConnect()
 void MySensorsTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS,"MySensors: disconnected");
+	if (!m_stoprequested)
+		m_bDoRestart = true;
 }
 
 void MySensorsTCP::Do_Work()
@@ -99,6 +101,7 @@ void MySensorsTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime=false;
+			_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
 		}
 		else
@@ -106,6 +109,7 @@ void MySensorsTCP::Do_Work()
 			time_t atime=time(NULL);
 			if ((m_bDoRestart)&&(atime%30==0))
 			{
+				_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 				connect(m_szIPAddress,m_usIPPort);
 			}
 			update();

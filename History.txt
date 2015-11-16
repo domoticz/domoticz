@@ -24,6 +24,7 @@ Version 2.3xxx
 - Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
 - Implemented: Wind Graph, option to delete a short-log data point
 - Implemented: Wind Beaufort scale
+- Implemented: Nest Thermostat, support for multiple thermostats
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
