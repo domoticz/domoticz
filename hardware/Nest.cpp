@@ -19,7 +19,7 @@ const std::string NEST_SET_SHARED = "/v2/put/shared.";
 const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 
 #ifdef _DEBUG
-	#define DEBUG_NextThermostatR
+	//#define DEBUG_NextThermostatR
 #endif
 
 #ifdef DEBUG_NextThermostatW
@@ -345,9 +345,6 @@ void CNest::GetMeterDetails()
 	}
 #endif
 
-#ifdef DEBUG_NextThermostatW
-	SaveString2Disk(sResult,"E:\\Nest_DoubleTherm.json");
-#endif
 	Json::Value root;
 	Json::Reader jReader;
 	if (!jReader.parse(sResult, root))
