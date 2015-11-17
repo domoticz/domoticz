@@ -144,18 +144,6 @@ bool ASyncTCP::set_tcp_keepalive()
 }
 */
 
-void ASyncTCP::read()
-{
-	if(!mIsConnected) return;
-	if(mIsClosing) return;
-
-	mSocket.async_read_some(boost::asio::buffer(m_buffer,sizeof(m_buffer)),
-		boost::bind(&ASyncTCP::handle_read,
-		this,
-		boost::asio::placeholders::error,
-		boost::asio::placeholders::bytes_transferred));
-}
-
 // callbacks
 
 void ASyncTCP::handle_connect(const boost::system::error_code& error) 
@@ -191,12 +179,24 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 	}
 }
 
+void ASyncTCP::read()
+{
+	if (!mIsConnected) return;
+	if (mIsClosing) return;
+
+	mSocket.async_read_some(boost::asio::buffer(m_buffer, sizeof(m_buffer)),
+		boost::bind(&ASyncTCP::handle_read,
+			this,
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+}
+
 void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 {
 	if (!error)
 	{
-		//Read next
 		OnData(m_buffer,bytes_transferred);
+		//Read next
 		//This gives some work to the io_service before it is started
 		mIos.post(boost::bind(&ASyncTCP::read, this));
 	}

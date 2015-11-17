@@ -76,6 +76,10 @@ void MySensorsTCP::OnConnect()
 	m_bufferpos=0;
 
 	sOnConnected(this);
+
+	//Request gateway version
+	std::string sRequest = "0;0;3;0;2;\n";
+	WriteInt(sRequest);
 }
 
 void MySensorsTCP::OnDisconnect()
