@@ -140,6 +140,8 @@ public:
 		I_REQUEST_SIGNING = 15,			//Used between sensors when initiating signing.
 		I_GET_NONCE = 16,				//Used between sensors when requesting nonce.
 		I_GET_NONCE_RESPONSE = 17,		//Used between sensors for nonce response.
+		I_HEARTBEAT = 18,
+		I_PRESENTATION = 19
 	};
 
 	struct _tMySensorValue

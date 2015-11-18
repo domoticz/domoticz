@@ -73,7 +73,7 @@
 #include "../hardware/Nest.h"
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
-#include "../hardware/NetatmoWeatherStation.h"
+#include "../hardware/Netatmo.h"
 #include "../hardware/AnnaThermostat.h"
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
@@ -783,8 +783,8 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
 		break;
-	case HTYPE_NetatmoWeatherStation:
-		pHardware = new CNetAtmoWeatherStation(ID,Username,Password);
+	case HTYPE_Netatmo:
+		pHardware = new CNetatmo(ID,Username,Password);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
@@ -10613,7 +10613,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
-		(pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+		(pHardware->HwdType == HTYPE_Netatmo)
 		)
 	{
 		if (pHardware->HwdType==HTYPE_OpenThermGateway)
@@ -10651,9 +10651,9 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CThermosmart *pGateway = (CThermosmart*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+		else if (pHardware->HwdType == HTYPE_Netatmo)
 		{
-			CNetAtmoWeatherStation *pGateway = (CNetAtmoWeatherStation*)pHardware;
+			CNetatmo *pGateway = (CNetatmo*)pHardware;
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
@@ -10900,9 +10900,9 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 		//pGateway->SetProgramState(newState);
 		return true;
 	}
-	else if (pHardware->HwdType == HTYPE_NetatmoWeatherStation)
+	else if (pHardware->HwdType == HTYPE_Netatmo)
 	{
-		CNetAtmoWeatherStation *pGateway = (CNetAtmoWeatherStation *)pHardware;
+		CNetatmo *pGateway = (CNetatmo *)pHardware;
 		pGateway->SetProgramState(newState);
 		return true;
 	}

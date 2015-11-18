@@ -5779,6 +5779,11 @@ void CSQLHelper::SetUnitsAndScale()
 		m_windsign="kn";
 		m_windscale=0.1943844492457398f;
 	}
+	else if (m_windunit == WINDUNIT_Beaufort)
+	{
+		m_windsign = "bf";
+		m_windscale = 1;
+	}
 
 	//Temp
 	if (m_tempunit==TEMPUNIT_C)

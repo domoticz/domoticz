@@ -1391,7 +1391,6 @@ define(['app'], function (app) {
 				if (typeof data.ActTime != 'undefined') {
 					$.LastUpdateTime=parseInt(data.ActTime);
 				}
-				
 				$.each(data.result, function(i,item){
 					id="#lightcontent #" + item.idx;
 					var obj=$(id);
@@ -1408,7 +1407,7 @@ define(['app'], function (app) {
 						var bigtext=TranslateStatusShort(item.Status);
 						if (item.UsedByCamera==true) {
 							var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-							streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+							var streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 							bigtext+="&nbsp;"+streamurl;
 						}
 						
@@ -1888,8 +1887,14 @@ define(['app'], function (app) {
 				  var bigtext=TranslateStatusShort(item.Status);
 				  if (item.UsedByCamera==true) {
 					var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="16" width="16">';
-					streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
+					var streamurl="<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 					bigtext+="&nbsp;"+streamurl;
+				  }
+				  if (permissions.hasPermission("Admin")) {
+					  if (item.Type=="RFY") {
+						var rfysetup='<img src="images/devices.png" title="' + $.t('Setup') +'" height="16" width="16" onclick="ShowRFYPopup(event, ' + item.idx + ', ShowLights, ' + item.Protected +');">';
+						bigtext+="&nbsp;"+rfysetup;
+					  }
 				  }
 				  xhtm+=bigtext+'</td>\n';
 				  if (item.SubType=="Security Panel") {

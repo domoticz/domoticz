@@ -82,6 +82,9 @@ const _tRFLinkStringIntHelper rfswitchcommands[] =
 	{ "ALLOFF", gswitch_sGroupOff },
 	{ "DIM", gswitch_sDim },
 	{ "BRIGHT", gswitch_sBright },
+	{ "UP", blinds_sOpen },
+	{ "DOWN", blinds_sClose },
+	{ "STOP", blinds_sStop },
 	{ "", -1 }
 };
 
@@ -256,13 +259,13 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 
 	int svalue=level;
 	if (cmnd==-1) {
-		if (switchcmd.compare(0, 9, "SETLEVEL=") ){
+		if (switchcmd.compare(0, 9, "SETLEVEL=") == 0 ){
 			cmnd=gswitch_sSetLevel;
 			std::string str2 = switchcmd.substr(10);
 			svalue=atoi(str2.c_str()); 
-	  		//_log.Log(LOG_STATUS, "RFLink: %d level: %d", cmnd, svalue);
+	  		_log.Log(LOG_STATUS, "RFLink: %d level: %d", cmnd, svalue);
 		}
-    }
+	}
     
 	if (cmnd==-1)
 	{
@@ -482,13 +485,13 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			bHaveWindSpeed = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]);
-			windspeed = float(iTemp) * 0.0277778f; //convert to m/s
+			windspeed = (float(iTemp) * 0.0277778f)/10; //convert to m/s
 		}
 		else if (results[ii].find("WINGS") != std::string::npos)
 		{
 			bHaveWindGust = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]);
-			windgust = float(iTemp) * 0.0277778f; //convert to m/s
+			windgust = (float(iTemp) * 0.0277778f)/10; //convert to m/s
 		}
 		else if (results[ii].find("WINTMP") != std::string::npos)
 		{

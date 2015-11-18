@@ -19,10 +19,10 @@ const std::string NEST_SET_SHARED = "/v2/put/shared.";
 const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
 
 #ifdef _DEBUG
-//	#define DEBUG_NextThermostat
+	//#define DEBUG_NextThermostatR
 #endif
 
-#ifdef DEBUG_NextThermostat
+#ifdef DEBUG_NextThermostatW
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -32,6 +32,8 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+#endif
+#ifdef DEBUG_NextThermostatR
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -240,10 +242,10 @@ bool CNest::WriteToHardware(const char *pdata, const unsigned char length)
 
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
-	if (node_id == 3)
+	if (node_id % 3 == 0)
 	{
 		//Away
-		return SetAway(bIsOn);
+		return SetAway(node_id, bIsOn);
 	}
 
 	return false;
@@ -314,8 +316,8 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 void CNest::GetMeterDetails()
 {
 	std::string sResult;
-#ifdef DEBUG_NextThermostat
-	sResult = ReadFile("E:\\nest_protect.json");
+#ifdef DEBUG_NextThermostatR
+	sResult = ReadFile("E:\\Nest_DoubleTherm.json");
 #else
 	if (m_UserName.size()==0)
 		return;
@@ -342,6 +344,7 @@ void CNest::GetMeterDetails()
 		return;
 	}
 #endif
+
 	Json::Value root;
 	Json::Reader jReader;
 	if (!jReader.parse(sResult, root))
@@ -490,48 +493,51 @@ void CNest::GetMeterDetails()
 		return;
 	}
 
-	Json::Value::Members members = root["shared"].getMemberNames();
-	if (members.size() < 1)
-	{
-		_log.Log(LOG_ERROR, "Nest: request not successful, restarting..!");
-		m_bDoLogin = true;
-		return;
-	}
-	//Get Serial
-	m_Serial = *members.begin();
+	Json::Value::Members members;
 
-	//Get Structure
-	members = root["structure"].getMemberNames();
-	if (members.size() < 1)
+	size_t iThermostat = 0;
+	for (Json::Value::iterator itShared = root["shared"].begin(); itShared != root["shared"].end(); ++itShared)
 	{
-		_log.Log(LOG_ERROR, "Nest: request not successful, restarting..!");
-		m_bDoLogin = true;
-		return;
-	}
-	m_StructureID = *members.begin();
+		Json::Value nshared = *itShared;
+		if (nshared.isObject())
+		{
+			std::string Serial = itShared.key().asString();
+			members = root["structure"].getMemberNames();
+			if (iThermostat>members.size())
+				continue;
+			std::string StructureID = *(members.begin()+iThermostat);
+			if (root["structure"][StructureID].empty())
+				continue;
+			std::string Name = root["structure"][StructureID]["name"].asString();
 
-	Json::Value vShared = *root["shared"].begin();
+			_tNestThemostat ntherm;
+			ntherm.Serial = Serial;
+			ntherm.StructureID = StructureID;
+			ntherm.Name = Name;
+			m_thermostats[iThermostat] = ntherm;
 
-	//Setpoint
-	if (!vShared["target_temperature"].empty())
-	{
-		float currentSetpoint = vShared["target_temperature"].asFloat();
-		SendSetPointSensor(1, currentSetpoint, "Room Setpoint");
-	}
-	//Room Temperature/Humidity
-	if (!vShared["current_temperature"].empty())
-	{
-		float currentTemp = vShared["current_temperature"].asFloat();
-		int Humidity = root["device"][m_Serial]["current_humidity"].asInt();
-		SendTempHumSensor(2, 255, currentTemp, Humidity, "Room TempHum");
-	}
+			//Setpoint
+			if (!nshared["target_temperature"].empty())
+			{
+				float currentSetpoint = nshared["target_temperature"].asFloat();
+				SendSetPointSensor((const unsigned char)(iThermostat * 3) + 1, currentSetpoint, Name + " Setpoint");
+			}
+			//Room Temperature/Humidity
+			if (!nshared["current_temperature"].empty())
+			{
+				float currentTemp = nshared["current_temperature"].asFloat();
+				int Humidity = root["device"][Serial]["current_humidity"].asInt();
+				SendTempHumSensor((iThermostat * 3) + 2, 255, currentTemp, Humidity, Name + " TempHum");
+			}
 
-	//Away
-	Json::Value vStructure = *root["structure"].begin();
-	if (!vStructure["away"].empty())
-	{
-		bool bIsAway = vStructure["away"].asBool();
-		SendSwitch(3, 1, 255, bIsAway, 0, "Away");
+			//Away
+			if (!root["structure"][StructureID]["away"].empty())
+			{
+				bool bIsAway = root["structure"][StructureID]["away"].asBool();
+				SendSwitch((iThermostat * 3) + 3, 1, 255, bIsAway, 0, Name + " Away");
+			}
+			iThermostat++;
+		}
 	}
 }
 
@@ -547,8 +553,9 @@ void CNest::SetSetpoint(const int idx, const float temp)
 		if (!Login())
 			return;
 	}
-	if (m_Serial.size() == 0)
-		GetMeterDetails();
+	size_t iThermostat = (idx - 1) / 3;
+	if (iThermostat > m_thermostats.size())
+		return;
 
 	std::vector<std::string> ExtraHeaders;
 
@@ -561,7 +568,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 	if (tSign == 'F')
 	{
 		//Maybe this should be done in the main app, so all other devices will also do this
-		//Convert to Celcius
+		//Convert to Celsius
 		tempDest = (tempDest - 32.0f) / 1.8f;
 	}
 
@@ -571,7 +578,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 
 	std::string sResult;
 
-	std::string sURL = m_TransportURL + NEST_SET_SHARED + m_Serial;
+	std::string sURL = m_TransportURL + NEST_SET_SHARED + m_thermostats[iThermostat].Serial;
 	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Nest: Error setting setpoint!");
@@ -581,7 +588,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 	GetMeterDetails();
 }
 
-bool CNest::SetAway(const bool bIsAway)
+bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 {
 	if (m_UserName.size() == 0)
 		return false;
@@ -593,8 +600,10 @@ bool CNest::SetAway(const bool bIsAway)
 		if (!Login())
 			return false;
 	}
-	if (m_StructureID.size() == 0)
-		GetMeterDetails();
+
+	size_t iThermostat = (Idx - 3) / 3;
+	if (iThermostat > m_thermostats.size())
+		return false;
 
 	std::vector<std::string> ExtraHeaders;
 
@@ -609,7 +618,7 @@ bool CNest::SetAway(const bool bIsAway)
 
 	std::string sResult;
 
-	std::string sURL = m_TransportURL + NEST_SET_STRUCTURE + m_StructureID;
+	std::string sURL = m_TransportURL + NEST_SET_STRUCTURE + m_thermostats[iThermostat].StructureID;
 	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Nest: Error setting away mode!");

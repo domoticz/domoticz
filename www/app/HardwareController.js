@@ -1404,6 +1404,7 @@ define(['app'], function (app) {
 		MySensorsRefreshActiveDevicesTable = function()
 		{
 			//$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+			$('#hardwarecontent #trChildSettings').hide();
 			var oTable = $('#mysensorsactivetable').dataTable();
 			oTable.fnClearTable();
 			if ($.nodeid==-1) {
@@ -1440,7 +1441,7 @@ define(['app'], function (app) {
 					$(this).removeClass('row_selected');
 					$('#delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
 					$('#delclractive #activedeviceupdate').attr("class", "btnstyle3-dis");
-					$('#delclractive #trChildSettings').hide();
+					$('#hardwarecontent #trChildSettings').hide();
 				}
 				else {
 					var oTable = $('#mysensorsactivetable').dataTable();
@@ -1448,7 +1449,7 @@ define(['app'], function (app) {
 					$(this).addClass('row_selected');
 					$('#activedevicedelete').attr("class", "btnstyle3");
 					$('#activedeviceupdate').attr("class", "btnstyle3");
-					$('#delclractive #trChildSettings').show();
+					$('#hardwarecontent #trChildSettings').show();
 					var anSelected = fnGetSelected( oTable );
 					if ( anSelected.length !== 0 ) {
 						var data = oTable.fnGetData( anSelected[0] );
@@ -1465,7 +1466,7 @@ define(['app'], function (app) {
 
         RefreshMySensorsNodeTable = function()
         {
-		  $('#delclractive #trChildSettings').hide();
+		  $('#hardwarecontent #trChildSettings').hide();
 		  $('#updelclr #trNodeSettings').hide();
           $('#modal').show();
           var oTable = $('#mysensorsnodestable').dataTable();
