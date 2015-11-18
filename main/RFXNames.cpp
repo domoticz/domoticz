@@ -737,6 +737,141 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 	return findTableID1ID2(Table, dType, sType);
 }
 
+const char *RFX_Type_SubType_ValueNames(const unsigned char dType, const unsigned char sType)
+{
+	STR_TABLE_ID1_ID2	Table[] =
+	{
+		{ pTypeTEMP, sTypeTEMP1, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP2, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP3, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP4, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP5, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP, sTypeTEMP6, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP7, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP8, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP9, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP10, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP11, "Temperature:te" },
+		{ pTypeTEMP, sTypeTEMP_SYSTEM, "Temperature:te" },
+
+		{ pTypeHUM, sTypeHUM1, "Temperature:te,Humidity:hu" },
+		{ pTypeHUM, sTypeHUM2, "Humidity:hu" },
+
+		{ pTypeTEMP_HUM, sTypeTH1, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH2, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH3, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH4, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH5, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH6, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH7, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH8, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH9, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH10, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH11, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH12, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH13, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH14, "Temperature:te,Humidity:hu" },
+		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "Temperature:te,Humidity:hu" },
+
+		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "Temperature:te,Humidity:hu,Barometer:ba" },
+		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "Temperature:te,Humidity:hu,Barometer:ba" },
+		{ pTypeTEMP_HUM_BARO, sTypeTHBFloat, "Temperature:te,Humidity:hu,Barometer:ba" },
+
+		{ pTypeRAIN, sTypeRAIN1, "Total rain:mm" },
+		{ pTypeRAIN, sTypeRAIN2, "Total rain:mm" },
+		{ pTypeRAIN, sTypeRAIN3, "Total rain:mm" },
+		{ pTypeRAIN, sTypeRAIN4, "Total rain:mm" },
+		{ pTypeRAIN, sTypeRAIN5, "Total rain:mm" },
+		{ pTypeRAIN, sTypeRAIN6, "Total rain:mm" },
+		{ pTypeRAIN, sTypeRAINWU, "Total rain:mm" },
+
+		{ pTypeWIND, sTypeWIND1, "Direction:di,Speed:sp,Gust:gu" },
+		{ pTypeWIND, sTypeWIND2, "Direction:di,Speed:sp,Gust:gu" },
+		{ pTypeWIND, sTypeWIND3, "Direction:di,Speed:sp,Gust:gu" },
+		{ pTypeWIND, sTypeWIND4, "Direction:di,Speed:sp,Gust:gu,Temperature:te" },
+		{ pTypeWIND, sTypeWIND5, "Direction:di,Speed:sp,Gust:gu" },
+		{ pTypeWIND, sTypeWIND6, "Direction:di,Speed:sp,Gust:gu" },
+		{ pTypeWIND, sTypeWIND7, "Direction:di,Speed:sp,Gust:gu" },
+		{ pTypeWIND, sTypeWINDNoTemp, "Direction:di,Speed:sp,Gust:gu,Temperature:te" },
+
+		{ pTypeUV, sTypeUV1, "UV:uvi" },
+		{ pTypeUV, sTypeUV2, "UV:uvi" },
+		{ pTypeUV, sTypeUV3, "UV:uvi,Temperature:te" },
+
+		{ pTypeThermostat1, sTypeDigimax, "Temperature:te" },
+		{ pTypeThermostat1, sTypeDigimaxShort, "Temperature:te" },
+
+		{ pTypeRadiator1, sTypeSmartwares, "Temperature:te" },
+		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Temperature:te" },
+
+		{ pTypeCURRENT, sTypeELEC1, "Current 1:v1,Current 2:v2,Current 3:v3" },
+
+		{ pTypeENERGY, sTypeELEC2, "Usage:v" },
+		{ pTypeENERGY, sTypeELEC3, "Usage:v" },
+		{ pTypeENERGY, sTypeZWaveUsage, "Usage:v" },
+
+		{ pTypeCURRENTENERGY, sTypeELEC4, "Current 1:v1,Current 2:v2,Current 3:v3" },
+
+		{ pTypeWEIGHT, sTypeWEIGHT1, "Weight:v" },
+		{ pTypeWEIGHT, sTypeWEIGHT2, "Weight:v" },
+
+		{ pTypeRFXSensor, sTypeRFXSensorTemp, "Temperature:te" },
+		{ pTypeRFXSensor, sTypeRFXSensorAD, "Voltage:v" },
+		{ pTypeRFXSensor, sTypeRFXSensorVolt, "Voltage:v" },
+
+		{ pTypeRFXMeter, sTypeRFXMeterCount, "Counter" },
+
+		{ pTypeP1Power, sTypeP1Power, "Usage 1:v,Usage 2:v2,Delivery 1:r1,Delivery 2:r2,Usage current:eu,Delivery current:eg" },
+		{ pTypeP1Gas, sTypeP1Gas, "Gas usage:v" },
+
+		{ pTypeYouLess, sTypeYouLess, "Usage:v" },
+
+		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "Temperature:te" },
+		{ pTypeRego6XXValue, sTypeRego6XXCounter, "Counter:v" },
+
+		{ pTypeAirQuality, sTypeVoltcraft, "Concentration:co2" },
+
+		{ pTypeUsage, sTypeElectric, "Usage:u" },
+
+		{ pTypeTEMP_BARO, sTypeBMP085, "Temperature:te,Barometer:ba" },
+
+		{ pTypeLux, sTypeLux, "Lux:lux" },
+
+		{ pTypeGeneral, sTypeVisibility, "Visibility:v" },
+		{ pTypeGeneral, sTypeSolarRadiation, "Solar Radiation:v" },
+		{ pTypeGeneral, sTypeSoilMoisture, "Soil Moisture:v" },
+		{ pTypeGeneral, sTypeLeafWetness, "Leaf Wetness:v" },
+		{ pTypeGeneral, sTypeSystemTemp, "Temperature:te" },
+		{ pTypeGeneral, sTypePercentage, "Percentage:v" },
+		{ pTypeGeneral, sTypeFan, "Fanspeed:v" },
+		{ pTypeGeneral, sTypeVoltage, "Voltage:v" },
+		{ pTypeGeneral, sTypeCurrent, "Current:v" },
+		{ pTypeGeneral, sTypePressure, "Pressure:v" },
+		{ pTypeGeneral, sTypeBaro, "Barometer:ba" },
+		{ pTypeGeneral, sTypeSetPoint, "Temperature:te" },
+		{ pTypeGeneral, sTypeTemperature, "Temperature:te" },
+		{ pTypeGeneral, sTypeSoundLevel, "Sound Level:v" },
+		{ pTypeGeneral, sTypeDistance, "Distance:v" },
+		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental:v" },
+		{ pTypeGeneral, sTypeKwh, "Usage:v" },
+
+		{ pTypeThermostat, sTypeThermSetpoint, "Temperature:te" },
+		{ pTypeThermostat, sTypeThermTemperature, "Temperature:te" },
+
+		{ pTypeTEMP_RAIN, sTypeTR1, "Temperature,Total rain" },
+
+		{ pTypeBBQ, sTypeBBQ1, "Temperature 1,Temperature 2" },
+
+		{ pTypePOWER, sTypeELEC5, "Usage:v" },
+
+		{ pTypeEvohomeZone, sTypeEvohomeZone, "Temperature:te,Set point:se" },
+		{ pTypeEvohomeWater, sTypeEvohomeWater, "Temperature:te,State:se" },
+
+		{ 0,0,NULL }
+	};
+	return findTableID1ID2(Table, dType, sType);
+}
+
 const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
 {
 	STR_TABLE_ID1_ID2	Table[] =

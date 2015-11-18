@@ -3252,6 +3252,131 @@ void CSQLHelper::ScheduleDay()
 	}
 }
 
+std::string CSQLHelper::detectSensor(unsigned long long idx)
+{
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%llu' AND (Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR Type=%d OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d)))",
+		idx,
+		pTypeTEMP,
+		pTypeHUM,
+		pTypeTEMP_HUM,
+		pTypeTEMP_HUM_BARO,
+		pTypeTEMP_BARO,
+		pTypeUV,
+		pTypeWIND,
+		pTypeThermostat1,
+		pTypeRFXSensor,
+		pTypeRego6XXTemp,
+		pTypeEvohomeZone,
+		pTypeEvohomeWater,
+		pTypeRadiator1,
+		pTypeGeneral, sTypeSystemTemp,
+		pTypeThermostat, sTypeThermSetpoint,
+		pTypeGeneral, sTypeBaro
+		);
+	if (result.size() > 0)
+	{
+		return "temp";
+	}
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%llu' AND Type=%d)", idx, pTypeRAIN);
+	if (result.size() > 0)
+	{
+		return "rain";
+	}
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%llu' AND Type=%d)", idx, pTypeWIND);
+	if (result.size() > 0)
+	{
+		return "wind";
+	}
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%llu' AND Type=%d)", pTypeUV);
+	if (result.size() > 0)
+	{
+		return "uv";
+	}
+	result = safe_query(
+		"SELECT ID FROM DeviceStatus WHERE (ID='%llu' AND ("
+		"Type=%d OR " //pTypeRFXMeter
+		"Type=%d OR " //pTypeP1Gas
+		"Type=%d OR " //pTypeYouLess
+		"Type=%d OR " //pTypeENERGY
+		"Type=%d OR " //pTypePOWER
+		"Type=%d OR " //pTypeAirQuality
+		"Type=%d OR " //pTypeUsage
+		"Type=%d OR " //pTypeLux
+		"Type=%d OR " //pTypeWEIGHT
+		"(Type=%d AND SubType=%d) OR " //pTypeRego6XXValue,sTypeRego6XXCounter
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeVisibility
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeSolarRadiation
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeSoilMoisture
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeLeafWetness
+		"(Type=%d AND SubType=%d) OR " //pTypeRFXSensor,sTypeRFXSensorAD
+		"(Type=%d AND SubType=%d) OR" //pTypeRFXSensor,sTypeRFXSensorVolt
+		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeVoltage
+		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeCurrent
+		"(Type=%d AND SubType=%d) OR"  //pTypeGeneral,sTypeSoundLevel
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeDistance
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypePressure
+		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeCounterIncremental
+		"(Type=%d AND SubType=%d)"     //pTypeGeneral,sTypeKwh
+		"))",
+		idx,
+		pTypeRFXMeter,
+		pTypeP1Gas,
+		pTypeYouLess,
+		pTypeENERGY,
+		pTypePOWER,
+		pTypeAirQuality,
+		pTypeUsage,
+		pTypeLux,
+		pTypeWEIGHT,
+		pTypeRego6XXValue, sTypeRego6XXCounter,
+		pTypeGeneral, sTypeVisibility,
+		pTypeGeneral, sTypeSolarRadiation,
+		pTypeGeneral, sTypeSoilMoisture,
+		pTypeGeneral, sTypeLeafWetness,
+		pTypeRFXSensor, sTypeRFXSensorAD,
+		pTypeRFXSensor, sTypeRFXSensorVolt,
+		pTypeGeneral, sTypeVoltage,
+		pTypeGeneral, sTypeCurrent,
+		pTypeGeneral, sTypeSoundLevel,
+		pTypeGeneral, sTypeDistance,
+		pTypeGeneral, sTypePressure,
+		pTypeGeneral, sTypeCounterIncremental,
+		pTypeGeneral, sTypeKwh
+		);
+	if (result.size() > 0)
+	{
+		return "counter";
+	}
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%llu' AND (Type=%d OR Type=%d OR Type=%d))",
+		idx,
+		pTypeP1Power,
+		pTypeCURRENT,
+		pTypeCURRENTENERGY
+		);
+	if (result.size() > 0)
+	{
+		return "counter";
+	}
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%llu' AND (Type=%d AND SubType=%d))",
+		idx,
+		pTypeGeneral, sTypePercentage
+		);
+	if (result.size() > 0)
+	{
+		return "percentage";
+	}
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%llu' AND (Type=%d AND SubType=%d))",
+		idx,
+		pTypeGeneral, sTypeFan
+		);
+	if (result.size() > 0)
+	{
+		return "fan";
+	}
+	return "unknown";
+}
+
 void CSQLHelper::UpdateTemperatureLog()
 {
 	time_t now = mytime(NULL);

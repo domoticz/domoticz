@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "WebServer.h"
 #include <boost/bind.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <iostream>
 #include <fstream>
 #include "mainworker.h"
@@ -6825,6 +6826,12 @@ namespace http {
 							}
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Name"] = sSceneName;
+
+							unsigned long long idx;
+							std::stringstream s_str(sd[0]);
+							s_str >> idx;
+							root["result"][ii]["Sensor"] = m_sql.detectSensor(idx);
+
 							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
@@ -7294,6 +7301,19 @@ namespace http {
 					}
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Protected"] = (iProtected != 0);
+
+					unsigned long long idx;
+					std::stringstream s_str(sd[0]);
+					s_str >> idx;
+					root["result"][ii]["Sensor"] = m_sql.detectSensor(idx);
+
+					const char* valueNames = RFX_Type_SubType_ValueNames(dType, dSubType);
+					std::vector<std::string> strarray;
+					StringSplit(valueNames, ",", strarray);
+					for (unsigned int iii = 0;iii < strarray.size(); iii++)
+					{
+						root["result"][ii]["SensorNames"][iii] = strarray[iii];
+					}
 
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
 					if (pHardware != NULL)
