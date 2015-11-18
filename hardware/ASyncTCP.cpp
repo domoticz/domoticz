@@ -14,7 +14,8 @@
 
 ASyncTCP::ASyncTCP()
 	: mIsConnected(false), mIsClosing(false),
-	mSocket(mIos), mReconnectTimer(mIos)
+	mSocket(mIos), mReconnectTimer(mIos),
+	mDoReconnect(true), mIsReconnecting(false)
 {	
 }
 
@@ -171,11 +172,21 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 		mIsConnected = false;
 
 		OnError(error);
-		_log.Log(LOG_ERROR,"TCP: Error: %s", error.message().c_str());
+		OnErrorInt(error);
 
-		// schedule a timer to reconnect after 30 seconds		
-		mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
-		mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
+		if (!mDoReconnect)
+		{
+			OnDisconnect();
+			return;
+		}
+		if (!mIsReconnecting)
+		{
+			mIsReconnecting = true;
+			_log.Log(LOG_STATUS, "TCP: Reconnecting in %d seconds...", RECONNECT_TIME);
+			// schedule a timer to reconnect after 30 seconds		
+			mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
+			mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
+		}
 	}
 }
 
@@ -209,10 +220,19 @@ void ASyncTCP::handle_read(const boost::system::error_code& error, size_t bytes_
 
 			// let listeners know
 			OnError(error);
-			
-			// schedule a timer to reconnect after 30 seconds
-			mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
-			mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
+			if (!mDoReconnect)
+			{
+				OnDisconnect();
+				return;
+			}
+			if (!mIsReconnecting)
+			{
+				mIsReconnecting = true;
+				_log.Log(LOG_STATUS, "TCP: Reconnecting in %d seconds...", RECONNECT_TIME);
+				// schedule a timer to reconnect after 30 seconds
+				mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
+				mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
+			}
 		}
 		else
 			do_close();
@@ -229,9 +249,20 @@ void ASyncTCP::write_end(const boost::system::error_code& error)
 			OnError(error);
 
 			mIsConnected = false;
-			// schedule a timer to reconnect after 30 seconds
-			mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
-			mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
+
+			if (!mDoReconnect)
+			{
+				OnDisconnect();
+				return;
+			}
+			if (!mIsReconnecting)
+			{
+				mIsReconnecting = true;
+				_log.Log(LOG_STATUS, "TCP: Reconnecting in %d seconds...", RECONNECT_TIME);
+				// schedule a timer to reconnect after 30 seconds
+				mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
+				mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
+			}
 		}
 	}
 }
@@ -270,7 +301,37 @@ void ASyncTCP::do_reconnect(const boost::system::error_code& error)
 	// close current socket if necessary
 	mSocket.close();
 
+	if (!mDoReconnect)
+	{
+		return;
+	}
+	mReconnectTimer.cancel();
 	// try to reconnect, then call handle_connect
+	_log.Log(LOG_STATUS, "TCP: Reconnecting...");
 	mSocket.async_connect(mEndPoint,
         boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
+	mIsReconnecting = false;
+}
+
+void ASyncTCP::OnErrorInt(const boost::system::error_code& error)
+{
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_STATUS, "TCP: Connection problem (Unable to connect to specified IP/Port)");
+	}
+	else if (
+		(error == boost::asio::error::eof) ||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "TCP: Connection reset! (Disconnected)");
+	}
+	else
+		_log.Log(LOG_ERROR, "TCP: Error: %s", error.message().c_str());
 }

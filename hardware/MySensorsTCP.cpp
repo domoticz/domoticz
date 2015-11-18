@@ -41,8 +41,8 @@ bool MySensorsTCP::StartHardware()
 
 bool MySensorsTCP::StopHardware()
 {
+	m_stoprequested = true;
 	StopSendQueue();
-	m_stoprequested=true;
 	if (isConnected())
 	{
 		try {
@@ -117,6 +117,15 @@ void MySensorsTCP::Do_Work()
 				connect(m_szIPAddress,m_usIPPort);
 			}
 			update();
+			if (isConnected())
+			{
+				if (sec_counter % 10 == 0)
+				{
+					//Send a Heartbeat message
+					std::string sRequest = "0;0;3;0;18;PING\n";
+					WriteInt(sRequest);
+				}
+			}
 		}
 	}
 	_log.Log(LOG_STATUS,"MySensors: TCP/IP Worker stopped...");
@@ -130,12 +139,30 @@ void MySensorsTCP::OnData(const unsigned char *pData, size_t length)
 
 void MySensorsTCP::OnError(const std::exception e)
 {
-	_log.Log(LOG_ERROR,"MySensors: Error: %s",e.what());
+	_log.Log(LOG_ERROR,"MySensors: %s",e.what());
 }
 
 void MySensorsTCP::OnError(const boost::system::error_code& error)
 {
-	_log.Log(LOG_ERROR,"MySensors: Error: %s",error.message().c_str());
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_STATUS, "MySensors: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else if (
+		(error == boost::asio::error::eof)||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "MySensors: Connection reset!");
+	}
+	else
+		_log.Log(LOG_ERROR, "MySensors: %s", error.message().c_str());
 }
 
 void MySensorsTCP::WriteInt(const std::string &sendStr)

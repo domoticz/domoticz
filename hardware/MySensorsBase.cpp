@@ -1532,6 +1532,10 @@ void MySensorsBase::ParseLine()
 				SendNodeCommand(node_id, child_sensor_id, message_type, I_TIME, sstr.str());
 			}
 			break;
+		case I_HEARTBEAT:
+			//Received a heartbeat
+			while (1 == 0);
+			break;
 		default:
 			while (1==0);
 			break;
