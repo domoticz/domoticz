@@ -192,7 +192,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NEST, "Nest Thermostat/Protect" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
-		{ HTYPE_NetatmoWeatherStation, "Netatmo Weather Station" },
+		{ HTYPE_Netatmo, "Netatmo" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
 		{ HTYPE_ANNATHERMOSTAT, "Plugwise Anna Thermostat via LAN interface" },
 		{ HTYPE_SatelIntegra, "Satel Integra via LAN interface" },
@@ -1819,6 +1819,12 @@ void GetLightStatus(
 				lstatus = "On";
 			}
 			break;
+		case rfy_sEnableSunWind:
+			lstatus = "SunWindChange";
+			break;
+		case rfy_sDisableSun:
+			lstatus = "SunWindChange";
+			break;
 		}
 		break;
 	case pTypeChime:
@@ -2666,6 +2672,14 @@ bool GetLightCommand(
 			else if (switchcmd == "Down2Seconds")
 			{
 				cmd = rfy_s2SecDown;
+			}
+			else if (switchcmd == "EnableSunWind")
+			{
+				cmd = rfy_sEnableSunWind;
+			}
+			else if (switchcmd == "DisableSunWind")
+			{
+				cmd = rfy_sDisableSun;
 			}
 			else
 			{

@@ -159,7 +159,25 @@ void RFXComTCP::OnError(const std::exception e)
 
 void RFXComTCP::OnError(const boost::system::error_code& error)
 {
-	_log.Log(LOG_ERROR, "RFXCOM: Error: %s", error.message().c_str());
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_STATUS, "RFXCOM: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else if (
+		(error == boost::asio::error::eof) ||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "RFXCOM: Connection reset!");
+	}
+	else
+		_log.Log(LOG_ERROR, "RFXCOM: %s", error.message().c_str());
 }
 
 bool RFXComTCP::WriteToHardware(const char *pdata, const unsigned char length)

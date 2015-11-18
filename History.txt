@@ -21,6 +21,11 @@ Version 2.3xxx
 - Implemented: Netatmo, support for multiple weather stations (from the weathermap) and multiple rain sensors
 - Changed: OpenZwave, not sending cold-white in the colorclass, solved issues on different zipato bulbs
 - Changed: OpenZwave, kWh sensor now maybe compatible with more hardware
+- Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
+- Implemented: Wind Graph, option to delete a short-log data point
+- Implemented: Wind Beaufort scale
+- Implemented: Nest Thermostat, support for multiple thermostats
+- Implemented: MySensors Ethernet gateway will now request the gateway version on startup
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

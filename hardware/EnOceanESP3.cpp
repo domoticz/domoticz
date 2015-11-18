@@ -136,8 +136,8 @@ typedef enum
 	CO_RD_FILTER		= 15,	//! Read supplied filters
 	CO_WR_WAIT_MATURITY	= 16,	//! Waiting till end of maturity time before received radio telegrams will transmitted
 	CO_WR_SUBTEL		= 17,	//! Enable/Disable transmitting additional subtelegram info
-	CO_WR_MEM			= 18,	//! Write x bytes of the Flash, XRAM, RAM0 ….
-	CO_RD_MEM			= 19,	//! Read x bytes of the Flash, XRAM, RAM0 ….
+	CO_WR_MEM			= 18,	//! Write x bytes of the Flash, XRAM, RAM0 â€¦.
+	CO_RD_MEM			= 19,	//! Read x bytes of the Flash, XRAM, RAM0 â€¦.
 	CO_RD_MEM_ADDRESS	= 20,	//! Feedback about the used address and length of the config area and the Smart Ack Table
 	CO_RD_SECURITY		= 21,	//! Read security informations (level, keys)
 	CO_WR_SECURITY		= 22,	//! Write security informations (level, keys)
@@ -1194,8 +1194,8 @@ void CEnOceanESP3::ParseRadioDatagram()
 							// [Eltako FTR55D, FTR55H, Thermokon SR04 *, Thanos SR *, untested]
 							// DATA_BYTE3 is the fan speed or night reduction for Eltako
 							// DATA_BYTE2 is the setpoint where 0x00 = min ... 0xFF = max or
-							// reference temperature for Eltako where 0x00 = 0°C ... 0xFF = 40°C
-							// DATA_BYTE1 is the temperature where 0x00 = +40°C ... 0xFF = 0°C
+							// reference temperature for Eltako where 0x00 = 0Â°C ... 0xFF = 40Â°C
+							// DATA_BYTE1 is the temperature where 0x00 = +40Â°C ... 0xFF = 0Â°C
 							// DATA_BYTE0_bit_0 is the occupy button, pushbutton or slide switch
 							float temp=GetValueRange(DATA_BYTE1,0,40);
 							if (Manufacturer == 0x0D) 
@@ -1344,7 +1344,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.temperaturel=(BYTE)(at10);
 						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
 					}
-					else if (szST == "TempHum")
+					else if (szST.find("TempHum")==0)
 					{
 						//(EPP A5-04 01/02)
 						float ScaleMax = 0;

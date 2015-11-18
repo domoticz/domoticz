@@ -98,7 +98,7 @@ private:
 	friend class CNest;
 	friend class CThermosmart;
 	friend class CKodi;
-	friend class CNetAtmoWeatherStation;
+	friend class CNetatmo;
 	friend class CAnnaThermostat;
 	friend class SatelIntegra;
 	friend class CLogitechMediaServer;

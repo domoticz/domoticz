@@ -148,7 +148,25 @@ void FritzboxTCP::OnError(const std::exception e)
 
 void FritzboxTCP::OnError(const boost::system::error_code& error)
 {
-	_log.Log(LOG_ERROR,"Fritzbox: Error: %s",error.message().c_str());
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_STATUS, "Fritzbox: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else if (
+		(error == boost::asio::error::eof) ||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "Fritzbox: Connection reset!");
+	}
+	else
+		_log.Log(LOG_ERROR, "Fritzbox: %s", error.message().c_str());
 }
 
 bool FritzboxTCP::WriteToHardware(const char *pdata, const unsigned char length)

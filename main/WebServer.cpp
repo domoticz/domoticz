@@ -1022,7 +1022,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_NetatmoWeatherStation)
+				(htype == HTYPE_Netatmo)
 				)
 			{
 				if (
@@ -1237,7 +1237,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_NetatmoWeatherStation)
+				(htype == HTYPE_Netatmo)
 				)
 			{
 				if (
@@ -7918,16 +7918,32 @@ namespace http {
 							if (dSubType != sTypeWIND5)
 							{
 								int intSpeed = atoi(strarray[2].c_str());
-								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+								if (m_sql.m_windunit != WINDUNIT_Beaufort)
+								{
+									sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+								}
+								else
+								{
+									float windms= float(intSpeed) * 0.1f;
+									sprintf(szTmp, "%d", MStoBeaufort(windms));
+								}
 								root["result"][ii]["Speed"] = szTmp;
 							}
 
 							//if (dSubType!=sTypeWIND6) //problem in RFXCOM firmware? gust=speed?
-					{
-						int intGust = atoi(strarray[3].c_str());
-						sprintf(szTmp, "%.1f", float(intGust) *m_sql.m_windscale);
-						root["result"][ii]["Gust"] = szTmp;
-					}
+							{
+								int intGust = atoi(strarray[3].c_str());
+								if (m_sql.m_windunit != WINDUNIT_Beaufort)
+								{
+									sprintf(szTmp, "%.1f", float(intGust) *m_sql.m_windscale);
+								}
+								else
+								{
+									float gustms = float(intGust) * 0.1f;
+									sprintf(szTmp, "%d", MStoBeaufort(gustms));
+								}
+								root["result"][ii]["Gust"] = szTmp;
+							}
 							if ((dSubType == sTypeWIND4) || (dSubType == sTypeWINDNoTemp))
 							{
 								if (dSubType == sTypeWIND4)
@@ -12328,11 +12344,23 @@ namespace http {
 							root["result"][ii]["di"] = sd[0];
 
 							int intSpeed = atoi(sd[1].c_str());
-							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-							root["result"][ii]["sp"] = szTmp;
 							int intGust = atoi(sd[2].c_str());
-							sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-							root["result"][ii]["gu"] = szTmp;
+							if (m_sql.m_windunit != WINDUNIT_Beaufort)
+							{
+								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+								root["result"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+								root["result"][ii]["gu"] = szTmp;
+							}
+							else
+							{
+								float windspeedms = float(intSpeed)*0.1f;
+								float windgustms = float(intGust)*0.1f;
+								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+								root["result"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+								root["result"][ii]["gu"] = szTmp;
+							}
 							ii++;
 						}
 					}
@@ -12403,6 +12431,16 @@ namespace http {
 							szLegendLabels[5] = "34-41 " + m_sql.m_windsign;
 							szLegendLabels[6] = "&gt; 41" + m_sql.m_windsign;
 						}
+						else if (m_sql.m_windunit == WINDUNIT_Beaufort)
+						{
+							szLegendLabels[0] = "&lt; 2 " + m_sql.m_windsign;
+							szLegendLabels[1] = "2-4 " + m_sql.m_windsign;
+							szLegendLabels[2] = "4-6 " + m_sql.m_windsign;
+							szLegendLabels[3] = "6-8 " + m_sql.m_windsign;
+							szLegendLabels[4] = "8-10 " + m_sql.m_windsign;
+							szLegendLabels[5] = "10-12 " + m_sql.m_windsign;
+							szLegendLabels[6] = "&gt; 12" + m_sql.m_windsign;
+						}
 						else {
 							//Todo !
 							szLegendLabels[0] = "&lt; 0.5 " + m_sql.m_windsign;
@@ -12423,7 +12461,8 @@ namespace http {
 								fdirection = 0;
 							int direction = int(fdirection);
 							float speed = static_cast<float>(atof(sd[1].c_str())) * m_sql.m_windscale;
-							float gust = static_cast<float>(atof(sd[2].c_str())) * m_sql.m_windscale;
+							float gustOrg = static_cast<float>(atof(sd[2].c_str()));
+							float gust = gustOrg * m_sql.m_windscale;
 							int bucket = int(fdirection / 22.5f);
 
 							int speedpos = 0;
@@ -12466,6 +12505,18 @@ namespace http {
 								else if (gust < 27.0f) speedpos = 3;
 								else if (gust < 34.0f) speedpos = 4;
 								else if (gust < 41.0f) speedpos = 5;
+								else speedpos = 6;
+							}
+							else if (m_sql.m_windunit == WINDUNIT_Beaufort)
+							{
+								float gustms = gustOrg*0.1f;
+								int iBeaufort = MStoBeaufort(gustms);
+								if (iBeaufort < 2) speedpos = 0;
+								else if (iBeaufort < 4) speedpos = 1;
+								else if (iBeaufort < 6) speedpos = 2;
+								else if (iBeaufort < 8) speedpos = 3;
+								else if (iBeaufort < 10) speedpos = 4;
+								else if (iBeaufort < 12) speedpos = 5;
 								else speedpos = 6;
 							}
 							else
@@ -14337,11 +14388,23 @@ namespace http {
 							root["result"][ii]["di"] = sd[0];
 
 							int intSpeed = atoi(sd[2].c_str());
-							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-							root["result"][ii]["sp"] = szTmp;
 							int intGust = atoi(sd[4].c_str());
-							sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-							root["result"][ii]["gu"] = szTmp;
+							if (m_sql.m_windunit != WINDUNIT_Beaufort)
+							{
+								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+								root["result"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+								root["result"][ii]["gu"] = szTmp;
+							}
+							else
+							{
+								float windspeedms = float(intSpeed)*0.1f;
+								float windgustms = float(intGust)*0.1f;
+								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+								root["result"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+								root["result"][ii]["gu"] = szTmp;
+							}
 							ii++;
 						}
 					}
@@ -14359,11 +14422,23 @@ namespace http {
 						root["result"][ii]["di"] = sd[0];
 
 						int intSpeed = atoi(sd[2].c_str());
-						sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-						root["result"][ii]["sp"] = szTmp;
 						int intGust = atoi(sd[4].c_str());
-						sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-						root["result"][ii]["gu"] = szTmp;
+						if (m_sql.m_windunit != WINDUNIT_Beaufort)
+						{
+							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+							root["result"][ii]["sp"] = szTmp;
+							sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+							root["result"][ii]["gu"] = szTmp;
+						}
+						else
+						{
+							float windspeedms = float(intSpeed)*0.1f;
+							float windgustms = float(intGust)*0.1f;
+							sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+							root["result"][ii]["sp"] = szTmp;
+							sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+							root["result"][ii]["gu"] = szTmp;
+						}
 						ii++;
 					}
 				}
@@ -14981,11 +15056,23 @@ namespace http {
 							root["result"][ii]["di"] = sd[0];
 
 							int intSpeed = atoi(sd[2].c_str());
-							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-							root["result"][ii]["sp"] = szTmp;
 							int intGust = atoi(sd[4].c_str());
-							sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-							root["result"][ii]["gu"] = szTmp;
+							if (m_sql.m_windunit != WINDUNIT_Beaufort)
+							{
+								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+								root["result"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+								root["result"][ii]["gu"] = szTmp;
+							}
+							else
+							{
+								float windspeedms = float(intSpeed)*0.1f;
+								float windgustms = float(intGust)*0.1f;
+								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+								root["result"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+								root["result"][ii]["gu"] = szTmp;
+							}
 							ii++;
 						}
 					}
@@ -15001,11 +15088,23 @@ namespace http {
 						root["result"][ii]["di"] = sd[0];
 
 						int intSpeed = atoi(sd[2].c_str());
-						sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
-						root["result"][ii]["sp"] = szTmp;
 						int intGust = atoi(sd[4].c_str());
-						sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
-						root["result"][ii]["gu"] = szTmp;
+						if (m_sql.m_windunit != WINDUNIT_Beaufort)
+						{
+							sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+							root["result"][ii]["sp"] = szTmp;
+							sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+							root["result"][ii]["gu"] = szTmp;
+						}
+						else
+						{
+							float windspeedms = float(intSpeed)*0.1f;
+							float windgustms = float(intGust)*0.1f;
+							sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+							root["result"][ii]["sp"] = szTmp;
+							sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+							root["result"][ii]["gu"] = szTmp;
+						}
 						ii++;
 					}
 				}

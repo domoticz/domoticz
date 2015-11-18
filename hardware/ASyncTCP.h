@@ -44,9 +44,13 @@ protected:
 	virtual void OnError(const std::exception e)=0;
 	virtual void OnError(const boost::system::error_code& error)=0;
 
+	void OnErrorInt(const boost::system::error_code& error);
+
 protected:
 	bool							mIsConnected;
 	bool							mIsClosing;
+	bool							mDoReconnect;
+	bool							mIsReconnecting;
 
 	boost::asio::ip::tcp::endpoint	mEndPoint;
 

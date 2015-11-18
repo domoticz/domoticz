@@ -5,7 +5,7 @@ define(['app'], function (app) {
 		{
 			$.devIdx = idx;
 			if (name!='Unknown') {
-				$( "#dialog-adddevice #devicename" ).val(itemname);
+				$( "#dialog-adddevice #devicename" ).val(unescape(itemname));
 			}
 			$("#dialog-adddevice").i18n();
 			$("#dialog-adddevice").dialog( "open" );
@@ -16,7 +16,7 @@ define(['app'], function (app) {
 			$.devType=itype;
 			$.devIdx = idx;
 			if (name!='Unknown') {
-				$( "#dialog-renamedevice #devicename" ).val(itemname);
+				$( "#dialog-renamedevice #devicename" ).val(unescape(itemname));
 			}
 			$("#dialog-renamedevice").i18n();
 			$("#dialog-renamedevice").dialog( "open" );
@@ -36,7 +36,7 @@ define(['app'], function (app) {
 				$("#dialog-addlightdevicedev #combosubdevice").val(0);
 			
 			if (name!='Unknown') {
-				$( "#dialog-addlightdevicedev #devicename" ).val(name);
+				$( "#dialog-addlightdevicedev #devicename" ).val(unescape(name));
 			}
 			$("#dialog-addlightdevicedev").i18n();
 			$("#dialog-addlightdevicedev" ).dialog( "open" );
@@ -262,12 +262,12 @@ define(['app'], function (app) {
 				  }
 				  if ((item.Type == "Group")||(item.Type == "Scene")) {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';
-					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + item.Name + '\')">';
+					itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + escape(item.Name) + '\')">';
 				  }
 				  else {
 					  if ((item.Used!=0)&&(item.Name.charAt(0)!="$")) {
 						itemSubIcons+='<img src="images/remove.png" title="' + $.t('Set Unused') +'" onclick="SetUnused(' + item.idx +')">';
-						itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type+'\',\'' + item.Name + '\')">';
+						itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type+'\',\'' + escape(item.Name) + '\')">';
 					  }
 					  else {
 						if (
@@ -275,12 +275,12 @@ define(['app'], function (app) {
 								(item.Type.indexOf("Security")==0)
 							 )
 						{
-							itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Light/Switch Device') + '" onclick="AddLightDeviceDev(' + item.idx +',\'' + item.Name + '\')">';
+							itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Light/Switch Device') + '" onclick="AddLightDeviceDev(' + item.idx +',\'' + escape(item.Name) + '\')">';
 						}
 						else {
-							itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + item.Name + '\')">';
+							itemSubIcons+='<img src="images/add.png" title="' + $.t('Add Device') +'" onclick="AddDevice(' + item.idx +',\'' + escape(item.Name) + '\')">';
 						}
-						itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + item.Name + '\')">';
+						itemSubIcons+='<img src="images/rename.png" title="' + $.t('Rename Device') +'" onclick="RenameDevice(' + item.idx +',\'' + item.Type +'\',\'' + escape(item.Name) + '\')">';
 					  }
 				  }
 				  if (
@@ -291,72 +291,72 @@ define(['app'], function (app) {
 						(item.Type.indexOf("ASA")==0)
 					 )
 				  {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + item.Name  + '\', \'#devicescontent\', \'ShowDevices\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#devicescontent\', \'ShowDevices\');">';
 				  }
 				  else if ((item.Type.indexOf("Temp")==0)||(item.Type.indexOf("Thermostat")==0)||(item.Type.indexOf("Humidity")==0)) {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
 				  else if (item.SubType=="Voltage") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'VoltageGeneral\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'VoltageGeneral\');">';
 				  }
 				  else if (item.SubType=="Current") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'CurrentGeneral\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'CurrentGeneral\');">';
 				  }
 				  else if (item.SubType == "Percentage") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowPercentageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowPercentageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
 				  else if (item.SubType=="Sound Level") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
 				  }
 				  else if (typeof item.Counter != 'undefined') {
 					  if ((item.Type == "P1 Smart Meter")&&(item.SubType=="Energy")) {
-						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowSmartLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowSmartLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
 					  }
 					  else {
-						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+						itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
 					  }
 				  }
 				  else if (typeof item.Direction != 'undefined') {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowWindLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowWindLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
 				  else if (typeof item.UVI != 'undefined') {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowUVLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowUVLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
 				  else if (typeof item.Rain != 'undefined') {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowRainLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowRainLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
 				  else if ((item.Type == "Energy")||(item.Type == "Current/Energy")||(item.SubType == "kWh")) {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLogSpline(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCounterLogSpline(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
 				  }
 				  else if (item.Type.indexOf("Current")==0) {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCurrentLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.displaytype + ');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowCurrentLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.displaytype + ');">';
 				  }
 				  else if (item.Type == "Air Quality") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowAirQualityLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowAirQualityLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
 				  else if (item.Type == "Lux") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLuxLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowLuxLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
 				  }
 				  else if (item.Type == "Usage") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowUsageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\', ' + item.SwitchTypeVal + ');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowUsageLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');">';
 				  }
 				  else if (item.SubType == "Solar Radiation") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'Radiation\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Radiation\');">';
 				  }
 				  else if (item.SubType == "Visibility") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'Visibility\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'Visibility\');">';
 				  }
 				  else if (item.SubType == "Distance") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'DistanceGeneral\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'DistanceGeneral\');">';
 				  }
 				  else if (item.SubType == "Barometer") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowBaroLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowBaroLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
 				  else if ((item.SubType == "Text") || (item.SubType == "Alert")) {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTextLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTextLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
 				  else if (item.SubType == "Soil Moisture") {
-					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + item.Name + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
+					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
 				  }
 				  else {
 					itemSubIcons+='&nbsp;<img src="images/empty16.png">';

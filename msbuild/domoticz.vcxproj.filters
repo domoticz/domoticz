@@ -723,9 +723,6 @@
     <ClInclude Include="..\hardware\P1MeterTCP.h">
       <Filter>Devices\P1Smart Meter</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\NetatmoWeatherStation.h">
-      <Filter>Devices\Netatmo</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\Push.h">
       <Filter>Devices\PushBase</Filter>
     </ClInclude>
@@ -779,6 +776,9 @@
     </ClInclude>
     <ClInclude Include="..\main\concurrent_queue.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Netatmo.h">
+      <Filter>Devices\Netatmo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1196,9 +1196,6 @@
     <ClCompile Include="..\hardware\P1MeterTCP.cpp">
       <Filter>Devices\P1Smart Meter</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\NetatmoWeatherStation.cpp">
-      <Filter>Devices\Netatmo</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\Push.cpp">
       <Filter>Devices\PushBase</Filter>
     </ClCompile>
@@ -1252,6 +1249,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Nest.cpp">
       <Filter>Devices\Nest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Netatmo.cpp">
+      <Filter>Devices\Netatmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
