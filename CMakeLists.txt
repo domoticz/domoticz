@@ -1,10 +1,20 @@
 cmake_minimum_required(VERSION 2.6)
 
-add_subdirectory (lua)
-get_directory_property (CMAKE_LUA_INCLUDES DIRECTORY lua
-    DEFINITION LUA_INCLUDE_DIRS)
-get_directory_property (CMAKE_LUA_LIBRARIES DIRECTORY lua
+option(USE_BUILTIN_LUA "Use builtin lua library" YES)
+IF(USE_BUILTIN_LUA)
+  add_subdirectory (lua)
+  get_directory_property (LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
+ELSE(USE_BUILTIN_SQLITE)
+  find_package(PkgConfig)
+  pkg_check_modules(LUA lua>=5.2)
+  IF(LUA_FOUND)
+    INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIRS})
+    add_definitions(-DWITH_EXTERNAL_LUA)
+  ELSE(LUA_FOUND)
+    MESSAGE(FATAL_ERROR "LUA not found but USE_BUILTIN_LUA=NO")
+  ENDIF(LUA_FOUND)
+ENDIF(USE_BUILTIN_LUA)
 
 add_subdirectory (MQTT)
 get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
@@ -455,9 +465,9 @@ else()
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
