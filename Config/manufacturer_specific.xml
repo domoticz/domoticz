@@ -85,6 +85,7 @@
 	        <Product type="0102" id="0061" name="Dry Contact Sensor Gen5" config="aeotec/drycontactsensor.xml" />
 	        <Product type="0202" id="0061" name="Dry Contact Sensor Gen5" config="aeotec/drycontactsensor.xml" />
         <!-- AU-market products start with type prefix "02" -->
+		<Product type="0201" id="005a" name="Z-Stick Gen5" config="aeotec/zstickgen5.xml"/>
 		<Product type="0202" id="0059" name="Recessed Door Sensor Gen5" config="aeotec/recessed_doorsensor_gen5.xml"/>
 		<Product type="0003" id="0060" name="Smart Switch 6" config="aeotec/ss6.xml" />
 		<Product type="0103" id="0060" name="Smart Switch 6" config="aeotec/ss6.xml" />
