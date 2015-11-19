@@ -233,8 +233,6 @@ public:
 	void ClearShortLog();
 	void VacuumDatabase();
 
-	std::string detectSensor(unsigned long long idx);
-
 	void DeleteHardware(const std::string &idx);
     
     void DeleteCamera(const std::string &idx);

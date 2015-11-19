@@ -16,7 +16,7 @@ typedef struct _STR_TABLE_ID1_ID2 {
 	const char   *str1;
 } STR_TABLE_ID1_ID2;
 
-const char *findTableIDSingle1 (STR_TABLE_SINGLE *t, unsigned long id)
+const char *findTableIDSingle1 (const STR_TABLE_SINGLE *t, unsigned long id)
 {
 	while (t->str1) {
 		if (t->id == id)
@@ -26,7 +26,7 @@ const char *findTableIDSingle1 (STR_TABLE_SINGLE *t, unsigned long id)
 	return "Unknown";
 }
 
-const char *findTableIDSingle2 (STR_TABLE_SINGLE *t, unsigned long id)
+const char *findTableIDSingle2 (const STR_TABLE_SINGLE *t, unsigned long id)
 {
 	while (t->str2) {
 		if (t->id == id)
@@ -36,7 +36,7 @@ const char *findTableIDSingle2 (STR_TABLE_SINGLE *t, unsigned long id)
 	return "Unknown";
 }
 
-const char *findTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2)
+const char *findTableID1ID2 (const _STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2)
 {
 	while (t->str1) {
 		if ( (t->id1 == id1) && (t->id2 == id2) )
@@ -46,9 +46,19 @@ const char *findTableID1ID2 (_STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned 
 	return "Unknown";
 }
 
+const char *findTableID1ID2OrNull(const _STR_TABLE_ID1_ID2 *t, unsigned long id1, unsigned long id2)
+{
+	while (t->str1) {
+		if ((t->id1 == id1) && (t->id2 == id2))
+			return t->str1;
+		t++;
+	}
+	return NULL;
+}
+
 const char *RFX_Humidity_Status_Desc(const unsigned char status)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ humstat_normal, "Normal" },
 		{ humstat_comfort, "Comfortable" },
@@ -72,7 +82,7 @@ unsigned char Get_Humidity_Level(const unsigned char hlevel)
 
 const char *Security_Status_Desc(const unsigned char status)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ sStatusNormal, "Normal" },
 		{ sStatusNormalDelayed, "Normal Delayed" },
@@ -108,7 +118,7 @@ const char *Security_Status_Desc(const unsigned char status)
 
 const char *Timer_Type_Desc(const int tType)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ TTYPE_BEFORESUNRISE, "Before Sunrise" },
 		{ TTYPE_AFTERSUNRISE, "After Sunrise" },
@@ -123,7 +133,7 @@ const char *Timer_Type_Desc(const int tType)
 
 const char *Timer_Cmd_Desc(const int tType)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ TCMD_ON, "On" },
 		{ TCMD_OFF, "Off" },
@@ -134,7 +144,7 @@ const char *Timer_Cmd_Desc(const int tType)
 
 const char *Hardware_Type_Desc(int hType)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ HTYPE_RFXtrx315, "RFXCOM - RFXtrx315 USB 315MHz Transceiver" },
 		{ HTYPE_RFXtrx433, "RFXCOM - RFXtrx433 USB 433.92MHz Transceiver" },
@@ -206,7 +216,7 @@ const char *Hardware_Type_Desc(int hType)
 
 const char *Switch_Type_Desc(const _eSwitchType sType)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ STYPE_OnOff, "On/Off" },
 		{ STYPE_Doorbell, "Doorbell" },
@@ -233,7 +243,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 
 const char *Meter_Type_Desc(const _eMeterType sType)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ MTYPE_ENERGY, "Energy" },
 		{ MTYPE_GAS, "Gas" },
@@ -247,7 +257,7 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 
 const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ NTYPE_TEMPERATURE, "Temperature","T" },
 		{ NTYPE_HUMIDITY, "Humidity","H" },
@@ -285,7 +295,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 
 const char *Notification_Type_Label(const int nType)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ NTYPE_TEMPERATURE, "degrees" },
 		{ NTYPE_HUMIDITY, "%%" },
@@ -320,7 +330,7 @@ const char *Notification_Type_Label(const int nType)
 
 const char *RFX_Forecast_Desc(const unsigned char Forecast)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ baroForecastNoInfo, "No Info" },
 		{ baroForecastSunny, "Sunny" },
@@ -334,7 +344,7 @@ const char *RFX_Forecast_Desc(const unsigned char Forecast)
 
 const char *RFX_WSForecast_Desc(const unsigned char Forecast)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ wsbaroforcast_heavy_snow,"Heavy Snow" },
 		{ wsbaroforcast_snow, "Snow" },
@@ -353,7 +363,7 @@ const char *RFX_WSForecast_Desc(const unsigned char Forecast)
 
 const char *BMP_Forecast_Desc(const unsigned char Forecast)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ bmpbaroforecast_stable, "Stable" },
 		{ bmpbaroforecast_sunny, "Sunny" },
@@ -369,7 +379,7 @@ const char *BMP_Forecast_Desc(const unsigned char Forecast)
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ pTypeInterfaceControl, "Interface Control", "unknown" },
 		{ pTypeInterfaceMessage, "Interface Message", "unknown" },
@@ -442,7 +452,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 
 const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char sType)
 {
-	STR_TABLE_ID1_ID2	Table[] =
+	static const STR_TABLE_ID1_ID2	Table[] =
 	{
 		{ pTypeTEMP, sTypeTEMP1, "THR128/138, THC138" },
 		{ pTypeTEMP, sTypeTEMP2, "THC238/268, THN132, THWR288, THRN122, THN122, AW129/131" },
@@ -739,7 +749,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 const char *RFX_Type_SubType_ValueNames(const unsigned char dType, const unsigned char sType)
 {
-	STR_TABLE_ID1_ID2	Table[] =
+	static const STR_TABLE_ID1_ID2	Table[] =
 	{
 		{ pTypeTEMP, sTypeTEMP1, "Temperature:te" },
 		{ pTypeTEMP, sTypeTEMP2, "Temperature:te" },
@@ -872,9 +882,138 @@ const char *RFX_Type_SubType_ValueNames(const unsigned char dType, const unsigne
 	return findTableID1ID2(Table, dType, sType);
 }
 
+const char *RFX_Type_SubType_Sensor(const unsigned char dType, const unsigned char sType)
+{
+	static const STR_TABLE_ID1_ID2	Table[] =
+	{
+		{ pTypeTEMP, sTypeTEMP1, "temp" },
+		{ pTypeTEMP, sTypeTEMP2, "temp" },
+		{ pTypeTEMP, sTypeTEMP3, "temp" },
+		{ pTypeTEMP, sTypeTEMP4, "temp" },
+		{ pTypeTEMP, sTypeTEMP5, "temp" },
+		{ pTypeTEMP, sTypeTEMP6, "temp" },
+		{ pTypeTEMP, sTypeTEMP7, "temp" },
+		{ pTypeTEMP, sTypeTEMP8, "temp" },
+		{ pTypeTEMP, sTypeTEMP9, "temp" },
+		{ pTypeTEMP, sTypeTEMP10, "temp" },
+		{ pTypeTEMP, sTypeTEMP11, "temp" },
+		{ pTypeTEMP, sTypeTEMP_SYSTEM, "temp" },
+
+		{ pTypeHUM, sTypeHUM1, "temp" },
+		{ pTypeHUM, sTypeHUM2, "temp" },
+
+		{ pTypeTEMP_HUM, sTypeTH1, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH2, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH3, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH4, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH5, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH6, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH7, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH8, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH9, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH10, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH11, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH12, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH13, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH14, "temp" },
+		{ pTypeTEMP_HUM, sTypeTH_LC_TC, "temp" },
+
+		{ pTypeTEMP_HUM_BARO, sTypeTHB1, "temp" },
+		{ pTypeTEMP_HUM_BARO, sTypeTHB2, "temp" },
+		{ pTypeTEMP_HUM_BARO, sTypeTHBFloat, "temp" },
+
+		{ pTypeRAIN, sTypeRAIN1, "rain" },
+		{ pTypeRAIN, sTypeRAIN2, "rain" },
+		{ pTypeRAIN, sTypeRAIN3, "rain" },
+		{ pTypeRAIN, sTypeRAIN4, "rain" },
+		{ pTypeRAIN, sTypeRAIN5, "rain" },
+		{ pTypeRAIN, sTypeRAIN6, "rain" },
+		{ pTypeRAIN, sTypeRAINWU, "rain" },
+
+		{ pTypeWIND, sTypeWIND1, "wind" },
+		{ pTypeWIND, sTypeWIND2, "wind" },
+		{ pTypeWIND, sTypeWIND3, "wind" },
+		{ pTypeWIND, sTypeWIND4, "wind" },
+		{ pTypeWIND, sTypeWIND5, "wind" },
+		{ pTypeWIND, sTypeWIND6, "wind" },
+		{ pTypeWIND, sTypeWIND7, "wind" },
+		{ pTypeWIND, sTypeWINDNoTemp, "wind" },
+
+		{ pTypeUV, sTypeUV1, "wind" },
+		{ pTypeUV, sTypeUV2, "wind" },
+		{ pTypeUV, sTypeUV3, "wind" },
+
+		{ pTypeThermostat1, sTypeDigimax, "temp" },
+		{ pTypeThermostat1, sTypeDigimaxShort, "temp" },
+
+		{ pTypeRadiator1, sTypeSmartwares, "temp" },
+		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "temp" },
+
+		{ pTypeCURRENT, sTypeELEC1, "counter" },
+
+		{ pTypeENERGY, sTypeELEC2, "counter" },
+		{ pTypeENERGY, sTypeELEC3, "counter" },
+		{ pTypeENERGY, sTypeZWaveUsage, "counter" },
+
+		{ pTypeCURRENTENERGY, sTypeELEC4, "counter" },
+
+		{ pTypeWEIGHT, sTypeWEIGHT1, "counter" },
+		{ pTypeWEIGHT, sTypeWEIGHT2, "counter" },
+
+		{ pTypeRFXSensor, sTypeRFXSensorTemp, "temp" },
+		{ pTypeRFXSensor, sTypeRFXSensorAD, "counter" },
+		{ pTypeRFXSensor, sTypeRFXSensorVolt, "counter" },
+
+		{ pTypeRFXMeter, sTypeRFXMeterCount, "counter" },
+
+		{ pTypeP1Power, sTypeP1Power, "counter" },
+		{ pTypeP1Gas, sTypeP1Gas, "counter" },
+
+		{ pTypeYouLess, sTypeYouLess, "counter" },
+
+		{ pTypeRego6XXTemp, sTypeRego6XXTemp, "counter" },
+		{ pTypeRego6XXValue, sTypeRego6XXCounter, "counter" },
+
+		{ pTypeAirQuality, sTypeVoltcraft, "counter" },
+
+		{ pTypeUsage, sTypeElectric, "counter" },
+
+		{ pTypeTEMP_BARO, sTypeBMP085, "temp" },
+
+		{ pTypeLux, sTypeLux, "counter" },
+
+		{ pTypeGeneral, sTypeVisibility, "counter" },
+		{ pTypeGeneral, sTypeSolarRadiation, "counter" },
+		{ pTypeGeneral, sTypeSoilMoisture, "counter" },
+		{ pTypeGeneral, sTypeLeafWetness, "counter" },
+		{ pTypeGeneral, sTypeSystemTemp, "temp" },
+		{ pTypeGeneral, sTypePercentage, "percentage" },
+		{ pTypeGeneral, sTypeFan, "fan" },
+		{ pTypeGeneral, sTypeVoltage, "counter" },
+		{ pTypeGeneral, sTypeCurrent, "counter" },
+		{ pTypeGeneral, sTypePressure, "counter" },
+		{ pTypeGeneral, sTypeBaro, "temp" },
+		{ pTypeGeneral, sTypeTemperature, "temp" },
+		{ pTypeGeneral, sTypeDistance, "counter" },
+		{ pTypeGeneral, sTypeCounterIncremental, "counter" },
+		{ pTypeGeneral, sTypeKwh, "counter" },
+
+		{ pTypeThermostat, sTypeThermSetpoint, "temp" },
+		{ pTypeThermostat, sTypeThermTemperature, "temp" },
+
+		{ pTypePOWER, sTypeELEC5, "counter" },
+
+		{ pTypeEvohomeZone, sTypeEvohomeZone, "temp" },
+		{ pTypeEvohomeWater, sTypeEvohomeWater, "temp" },
+
+		{ 0,0,NULL }
+	};
+	return findTableID1ID2OrNull(Table, dType, sType);
+}
+
 const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned char sType)
 {
-	STR_TABLE_ID1_ID2	Table[] =
+	static const STR_TABLE_ID1_ID2	Table[] =
 	{
 		{ pTypeTEMP, sTypeTEMP1, "Temperature" },
 		{ pTypeTEMP, sTypeTEMP2, "Temperature" },
@@ -1150,7 +1289,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 const char *Media_Player_States(const _eMediaStatus Status)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ MSTAT_OFF, "Off" },
 		{ MSTAT_ON, "On" },
@@ -1169,7 +1308,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 
 const char *ZWave_Clock_Days(const unsigned char Day)
 {
-	STR_TABLE_SINGLE	Table[] =
+	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ 0, "Monday" },
 		{ 1, "Tuesday" },

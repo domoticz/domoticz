@@ -6827,11 +6827,6 @@ namespace http {
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Name"] = sSceneName;
 
-							unsigned long long idx;
-							std::stringstream s_str(sd[0]);
-							s_str >> idx;
-							root["result"][ii]["Sensor"] = m_sql.detectSensor(idx);
-
 							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
@@ -7302,10 +7297,11 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Protected"] = (iProtected != 0);
 
-					unsigned long long idx;
-					std::stringstream s_str(sd[0]);
-					s_str >> idx;
-					root["result"][ii]["Sensor"] = m_sql.detectSensor(idx);
+					const char* sensor = RFX_Type_SubType_Sensor(dType, dSubType);
+					if (sensor != NULL)
+					{
+						root["result"][ii]["Sensor"] = sensor;
+					}
 
 					const char* valueNames = RFX_Type_SubType_ValueNames(dType, dSubType);
 					std::vector<std::string> strarray;
