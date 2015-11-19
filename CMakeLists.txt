@@ -177,6 +177,7 @@ hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/BMP085.cpp
+hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp

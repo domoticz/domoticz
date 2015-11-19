@@ -131,6 +131,7 @@
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
     <ClInclude Include="..\hardware\BMP085.h" />
+    <ClInclude Include="..\hardware\Comm5TCP.h" />
     <ClInclude Include="..\hardware\csocket.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
@@ -317,6 +318,7 @@
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\BMP085.cpp" />
+    <ClCompile Include="..\hardware\Comm5TCP.cpp" />
     <ClCompile Include="..\hardware\csocket.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />

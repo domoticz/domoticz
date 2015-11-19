@@ -103,6 +103,7 @@ private:
 	friend class SatelIntegra;
 	friend class CLogitechMediaServer;
 	friend class CHardwareMonitor;
+	friend class Comm5TCP;
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
