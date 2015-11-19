@@ -126,9 +126,20 @@ bool SMTPClient::SendEmail()
 		slist1 = curl_slist_append(slist1, (*itt).c_str());
 	}
 
-	std::stringstream sstr;
+	// Get the hostname from the server
+	std::string hostname;
+	char hn[256];
+	if (gethostname(hn, sizeof(hn)) != SOCKET_ERROR) {
+		hostname = hn;
+		std::transform(hostname.begin(), hostname.end(), hostname.begin(), ::tolower);
+	}
+	else {
+		// No hostname found, default to a fixed one
+		hostname = "domoticz";
+	}
 
-	sstr << "smtp://" << m_Server << ":" << m_Port << "/domoticz";
+	std::stringstream sstr;
+	sstr << "smtp://" << m_Server << ":" << m_Port << "/" << hostname;
 	std::string szURL=sstr.str();//"smtp://"+MailServer+"/domoticz";
 
 	try
