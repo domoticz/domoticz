@@ -514,11 +514,8 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 			}
 			else if((szSeperator != "") && (m_SBFInverter != ""))
 			{
-				int l;
-				
 				StringSplit(sLine, szSeperator, results);
-				
-				for(l = 0; l < results.size(); l++)
+				for(size_t l = 0; l < results.size(); l++)
 				{
 					if(results[l] == m_SBFInverter)
 						iInvOff = l;
