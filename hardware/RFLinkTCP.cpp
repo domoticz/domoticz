@@ -102,10 +102,10 @@ void CRFLinkTCP::Do_Work()
 				_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 30 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
+				m_bDoRestart = true;
 				try {
 					disconnect();
 					close();
-					m_bDoRestart = true;
 				}
 				catch (...)
 				{

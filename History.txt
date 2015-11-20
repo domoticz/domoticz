@@ -26,6 +26,7 @@ Version 2.3xxx
 - Implemented: Wind Beaufort scale
 - Implemented: Nest Thermostat, support for multiple thermostats
 - Implemented: MySensors Ethernet gateway will now request the gateway version on startup
+- Changed: Fritzbox, Now updating text sensor on connect/disconnect
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
