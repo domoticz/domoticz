@@ -399,18 +399,19 @@ $(document).ready(function() {
 					<a id="popup_therm_off"><img src="images/pushoff48.png" class="lcursor" height="48" width="48"></a>
 				</td>
 			</tr>
+			<tr>
 				<td align="left" style="vertical-align: center;">
 					<a id="popup_therm_up"><img src="images/Up48.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="ThermUp()"></a>
 					<a id="popup_therm_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" onclick="ThermDown()"></a>
 					<a id="popup_therm_stop"><img src="images/Stop48.png" class="lcursor" height="48" width="48" onclick="ThermStop()"></a>
 				</td>
-			<tr>		
-			</tr>
+			</tr>		
+			<tr>
 				<td align="left" style="vertical-align: center;">
 					<a id="popup_therm_2up"><img src="images/Up48_2.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="ThermUp2()"></a>
 					<a id="popup_therm_2down"><img src="images/Down48_2.png" class="lcursor" height="48" width="48" onclick="ThermDown2()"></a>
 				</td>
-			<tr>		
+			</tr>		
 		</table>
 	</div> 
 	<div id="rgbw_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
@@ -600,7 +601,7 @@ $(document).ready(function() {
 						<circle cx="500" cy="300" r="200" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Select');">
 							<title>Select</title>
 						</circle>
-						<text x="500" y="320" class="remotetext"style="font-weight: bold;">OK</text>
+						<text x="500" y="320" class="remotetext" style="font-weight: bold;">OK</text>
 					</g>
 					<g>
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(1,10)" />
@@ -677,7 +678,7 @@ $(document).ready(function() {
 							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
 						</g>
 					</g>
-					<text x="160" y="1110" class="remotetext"style="font-size: 90px; font-weight: bold;">CH</text>
+					<text x="160" y="1110" class="remotetext" style="font-size: 90px; font-weight: bold;">CH</text>
 					<g transform="rotate(90,500,1000) translate(50,-440) scale(1.1)">
 						<g>
 							<circle cx="510" cy="999" r="100" class="remoteshadow" /> 
@@ -813,7 +814,7 @@ $(document).ready(function() {
 					<g transform="translate(-335,0)">
 						<g>
 							<circle cx="501" cy="870" r="110" class="remoteshadow" /> 
-							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#gradient1)"onclick="javascript:click_lmsplayer_remote('Favorites');">
+							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Favorites');">
 								<title>Favorites</title>
 							</circle>
 							<use xlink:href="#symFavorites" class="remoteshadow" transform="translate(460,820)"/>
@@ -1327,7 +1328,7 @@ $(document).ready(function() {
 									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
                                     <li id="dUpdate" class="divider"></li>
 									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li> 
-                                    <li ng-hide"config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+                                    <li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
                                     <li class="dropdown-submenu">
 										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
 										<ul class="dropdown-menu pull-left">

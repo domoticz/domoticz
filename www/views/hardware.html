@@ -119,7 +119,7 @@
 	</center>
 </div>
 <div id="openzwave" style="display:none;">
-	<div id="zwavenodesqueried" class="alert alert-error" style="display:none;"><b><span data-i18n="Not all Nodes have been Queried yet, OpenZWave not fully initialized yet!"</span></b></div>
+	<div id="zwavenodesqueried" class="alert alert-error" style="display:none;"><b><span data-i18n="Not all Nodes have been Queried yet, OpenZWave not fully initialized yet!"></span></b></div>
 	<div class="page-header-small">
 		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
@@ -306,7 +306,7 @@
 				<td><input type="checkbox" id="Ack" /></td>
 			</tr>
 		</table>
-	</table>
+	</div>
 	<input type="hidden" id="idx" name="idx" value="-1">
 </div>
 
@@ -548,7 +548,7 @@
             <tr>
                 <th width="70" align="center" data-i18n="ID">ID</th>
                 <th align="left" data-i18n="Name">Name</th>
-                <th width="120 "align="left" data-i18n="Mac Address">Mac Address</th>
+                <th width="120" align="left" data-i18n="Mac Address">Mac Address</th>
             </tr>
         </thead>
     </table>
@@ -1001,11 +1001,11 @@
 						<option value="0">None</option>
 						</select>
 					<br />
-					<span>Select the Topic('s) Domoticz will use to publish outgoing messages. </br>
-						<b>Flat</b> - publish outgoing messagen on topic domoticz/out.</br>
+					<span>Select the Topic('s) Domoticz will use to publish outgoing messages. <br />
+						<b>Flat</b> - publish outgoing messagen on topic domoticz/out.<br />
 						<b>Hierarchical</b> - publish outgoing messagen on topic domoticz/out/${floorplan name}/${plan name}.<br />
 						<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br />
-						<b>None</b> - disable outgoing messages.</br>
+						<b>None</b> - disable outgoing messages.<br />
 						<br />
 						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan. 
 					</td>
