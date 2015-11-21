@@ -243,6 +243,9 @@
     <Filter Include="Devices\Logitech Media Server">
       <UniqueIdentifier>{61411910-e1dc-4691-8d42-e72cf0a6721f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Comm5 MA-5XXX">
+      <UniqueIdentifier>{92aba4fe-bf95-4946-a1c4-0b761e9144a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -774,6 +777,9 @@
     <ClInclude Include="..\hardware\Netatmo.h">
       <Filter>Devices\Netatmo</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Comm5TCP.h">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1240,6 +1246,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Netatmo.cpp">
       <Filter>Devices\Netatmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Comm5TCP.cpp">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

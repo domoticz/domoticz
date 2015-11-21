@@ -78,6 +78,7 @@
 #include "../hardware/Winddelen.h"
 #include "../hardware/SatelIntegra.h"
 #include "../hardware/LogitechMediaServer.h"
+#include "../hardware/Comm5TCP.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -835,6 +836,10 @@ bool MainWorker::AddHardwareFromParams(
 #ifdef WITH_GPIO
 		pHardware = new CGpio(ID);
 #endif
+		break;
+	case HTYPE_Comm5TCP:
+		//LAN
+		pHardware = new Comm5TCP(ID, Address, Port);
 		break;
 	}
 
