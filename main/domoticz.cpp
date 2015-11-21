@@ -44,7 +44,7 @@
 	#include <string.h> 
 #endif
 
-#ifdef __linux__
+#ifdef __gnu_linux__
 #include <execinfo.h>
 static void dumpstack(void) {
 	// Notes :
