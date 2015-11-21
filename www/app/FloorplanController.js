@@ -10,7 +10,7 @@ define(['app'], function (app) {
 		$scope.isScrolling=false;	// used on tablets & phones
 		$scope.pendingScroll=false;	// used on tablets & phones
 		$scope.lastTouch=0;			// used on tablets & phones
-		
+
 		$scope.makeHTMLnode = function(tag, attrs) {
 			var el = document.createElement(tag);
 			for (var k in attrs) el.setAttribute(k, attrs[k]);
@@ -79,14 +79,17 @@ define(['app'], function (app) {
 							jQuery(from).animate(to, { duration: 500, easing: 'easeOutQuint', step: function(val) { window.scrollTo(val,0); }});
 						}
 						$(".bulletSelected").attr('class','bullet');
-						$(".bullet")[i].setAttribute('class','bulletSelected');
+						var bullet = $(".bullet")[i];
+						if(bullet !== undefined) {
+							bullet.setAttribute('class','bulletSelected');
+						}
 						$scope.actFloorplan = i;
 						break;
 					}
 				}
 			}
 		}
-		
+
 		ImgLoaded = function(tagName) {
 			var target=document.getElementById(tagName+'_img');
 			if (target != null) {
@@ -100,9 +103,9 @@ define(['app'], function (app) {
 						svgCont.setAttribute("viewBox","0 0 "+target.naturalWidth+" "+target.naturalHeight);
 						svgCont.appendChild(makeSVGnode('g', {id:tagName+'_grp', transform:'translate(0,0) scale(1)', style:"", zoomed:"false"},''));
 						svgCont.childNodes[0].appendChild(makeSVGnode('image', { width:"100%", height:"100%", "xlink:href": $scope.floorPlans[i].Image }, ''));
-						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Content', 'class':'FloorContent' }, '')); 
-						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Rooms', 'class':'FloorRooms' }, '')); 
-						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Devices', transform: 'scale(1)' }, '')); 
+						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Content', 'class':'FloorContent' }, ''));
+						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Rooms', 'class':'FloorRooms' }, ''));
+						svgCont.childNodes[0].appendChild(makeSVGnode('g', { id:tagName+'_Devices', transform: 'scale(1)' }, ''));
 						svgCont.setAttribute("style","display:inline; position: relative;");
 						target.parentNode.removeChild(target);
 						$scope.ShowRooms(i);
@@ -138,7 +141,7 @@ define(['app'], function (app) {
 				else {
 					$("#floorplancontent").offset({top:0});
 				}
-				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);				
+				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);
 				if ($scope.debug > 0) $.cachenoty=generate_noty('info', '<b>Window: '+$window.innerWidth+'x'+$window.innerHeight+'</b><br/><b>View: '+$("#floorplancontent").width()+'x'+wrpHeight+'</b>', 10000);
 				$(".imageparent").each(function( i ) { $("#"+$(this).attr('id')+'_svg').width($("#floorplancontent").width()).height(wrpHeight); });
 				if ($scope.FloorplanCount > 1) {
@@ -164,7 +167,7 @@ define(['app'], function (app) {
 			}
 			$("#"+svgFloor)[0].setAttribute('transform', oTransform.toString());
 		}
-		
+
 		$scope.doubleClick = function() {
 			if ($.myglobals.FullscreenMode==true) {
 				if ($( "#fpwrapper" ).attr('fullscreen') != 'true') {
@@ -184,9 +187,9 @@ define(['app'], function (app) {
 				$.cachenoty=generate_noty('warning', '<b>'+$.t('Fullscreen mode is disabled')+'</b>', 3000);
 			}
 		}
-		
+
 		$scope.RoomClick = function(click) {
-			$('.DeviceDetails').css('display','none');   // hide all popups 
+			$('.DeviceDetails').css('display','none');   // hide all popups
 			var borderRect = click.target.getBBox(); // polygon bounding box
 			var margin = 0.1;  // 10% margin around polygon
 			var marginX = borderRect.width * margin;
@@ -194,7 +197,7 @@ define(['app'], function (app) {
 			var scaleX= $scope.floorPlans[$scope.actFloorplan].xImageSize / (borderRect.width + (marginX * 2));
 			var scaleY= $scope.floorPlans[$scope.actFloorplan].yImageSize / (borderRect.height + (marginY * 2));
 			var scale = ((scaleX > scaleY) ? scaleY : scaleX);
-			
+
 			var svgFloor = click.target.parentNode.parentNode.getAttribute("id");
 			if ($("#"+svgFloor).attr('zoomed') == "true")
 			{
@@ -245,12 +248,12 @@ define(['app'], function (app) {
 			if (arguments.length > 1) {
 				bOneOff = pOneOff;
 			}
-		
+
 			if ((bOneOff != true) && (typeof $scope.mytimer != 'undefined')) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			
+
 			$http({url: "json.htm?type=devices&filter=all&used=true&order=Name&lastupdate=" + $scope.lastUpdateTime
 				}).success(function(data) {
 					if (typeof data.ActTime != 'undefined') {
@@ -291,7 +294,7 @@ define(['app'], function (app) {
 		}
 
 		$scope.ShowFPDevices = function(floorIdx) {
-		
+
 			$http({ url: "json.htm?type=devices&filter=all&used=true&order=Name&floor="+$scope.floorPlans[floorIdx].idx}).success(function(data) {
 					if ((typeof data.ActTime != 'undefined') && ($scope.lastUpdateTime == 0)) {
 						$scope.lastUpdateTime = data.ActTime;
@@ -341,18 +344,18 @@ define(['app'], function (app) {
 							}
 						});
 						elIcons.setAttribute("id", $scope.floorPlans[floorIdx].tagName+'_Icons');
-						elDetails.setAttribute("id", $scope.floorPlans[floorIdx].tagName+'_Details');							
+						elDetails.setAttribute("id", $scope.floorPlans[floorIdx].tagName+'_Details');
 					}
 				});
 		}
-		
+
 		$scope.ShowRooms = function(floorIdx) {
 			$http({ url: "json.htm?type=command&param=getfloorplanplans&idx="+$scope.floorPlans[floorIdx].idx}).success(function(data) {
 				if (typeof data.result != 'undefined') {
 					$.each(data.result, function(i,item) {
 						$("#"+$scope.floorPlans[floorIdx].tagName+'_Rooms').append(makeSVGnode('polygon', { id: item.Name, 'class': 'hoverable', points: item.Area }, item.Name));
 					});
-					if ((typeof $.myglobals.RoomColour != 'undefined') && 
+					if ((typeof $.myglobals.RoomColour != 'undefined') &&
 						(typeof $.myglobals.InactiveRoomOpacity != 'undefined')) {
 						$(".hoverable").css({'fill': $.myglobals.RoomColour, 'fill-opacity': $.myglobals.InactiveRoomOpacity/100});
 					}
@@ -365,7 +368,7 @@ define(['app'], function (app) {
 
 			$scope.ShowFPDevices(floorIdx);
 		}
-		
+
 		ShowFloorplans = function(floorIdx) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -396,7 +399,7 @@ define(['app'], function (app) {
 					} else {
 						if ($scope.debug > 0) $.cachenoty=generate_noty('info', '<b>Floorplan already set to: '+$scope.actFloorplan+'</b>', 5000);
 					}
-			
+
 					// handle settings
 					if (typeof data.AnimateZoom != 'undefined') {
 						$.myglobals.AnimateTransitions = (data.AnimateZoom != 0);
@@ -463,8 +466,8 @@ define(['app'], function (app) {
 											 });
 
 			});
-			
-			if ((typeof $.myglobals.RoomColour != 'undefined') && 
+
+			if ((typeof $.myglobals.RoomColour != 'undefined') &&
 				(typeof $.myglobals.InactiveRoomOpacity != 'undefined')) {
 				$(".hoverable").css({'fill': $.myglobals.RoomColour, 'fill-opacity': $.myglobals.InactiveRoomOpacity/100});
 			}
@@ -488,7 +491,7 @@ define(['app'], function (app) {
 					$( window ).off('resize');
 					$("body").off('pageexit').css('overflow','');
 					if ($scope.debug > 0) $.cachenoty=generate_noty('info', '<b>PageExit code executed</b>', 2000);
-				}); 
+				});
 		}
 
 		init();
@@ -509,7 +512,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			$("body").trigger("pageexit");
-		}); 
-		
+		});
+
 	} ]);
 });
