@@ -3770,7 +3770,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			for (std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue != ittCmds->second.Values.end(); ++ittValue)
 			{
 				unsigned char commandclass = ittValue->GetCommandClassId();
-				if (commandclass == COMMAND_CLASS_CONFIGURATION)
+				if ((commandclass == COMMAND_CLASS_CONFIGURATION)|| (commandclass == COMMAND_CLASS_PROTECTION))
 				{
 					if (m_pManager->IsValueReadOnly(*ittValue) == true)
 						continue;
