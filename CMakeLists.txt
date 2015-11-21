@@ -1,10 +1,20 @@
 cmake_minimum_required(VERSION 2.6)
 
-add_subdirectory (lua)
-get_directory_property (CMAKE_LUA_INCLUDES DIRECTORY lua
-    DEFINITION LUA_INCLUDE_DIRS)
-get_directory_property (CMAKE_LUA_LIBRARIES DIRECTORY lua
+option(USE_BUILTIN_LUA "Use builtin lua library" YES)
+IF(USE_BUILTIN_LUA)
+  add_subdirectory (lua)
+  get_directory_property (LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
+ELSE(USE_BUILTIN_SQLITE)
+  find_package(PkgConfig)
+  pkg_check_modules(LUA lua>=5.2)
+  IF(LUA_FOUND)
+    INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIRS})
+    add_definitions(-DWITH_EXTERNAL_LUA)
+  ELSE(LUA_FOUND)
+    MESSAGE(FATAL_ERROR "LUA not found but USE_BUILTIN_LUA=NO")
+  ENDIF(LUA_FOUND)
+ENDIF(USE_BUILTIN_LUA)
 
 add_subdirectory (MQTT)
 get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
@@ -12,11 +22,21 @@ get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
 get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
     DEFINITION MQTT_LIBRARIES)
 
-add_subdirectory (sqlite)
-get_directory_property (CMAKE_SQLite_INCLUDES DIRECTORY sqlite
-    DEFINITION SQLite_INCLUDE_DIRS)
-get_directory_property (CMAKE_SQLite_LIBRARIES DIRECTORY sqlite
-    DEFINITION SQLite_LIBRARIES)
+option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
+IF(USE_BUILTIN_SQLITE)
+  add_subdirectory (sqlite)
+  get_directory_property (SQLite_LIBRARIES DIRECTORY sqlite
+      DEFINITION SQLite_LIBRARIES)
+ELSE(USE_BUILTIN_SQLITE)
+  find_package(PkgConfig)
+  pkg_check_modules(SQLite QUIET sqlite3)
+  IF(SQLite_FOUND)
+    INCLUDE_DIRECTORIES(${SQLite_INCLUDE_DIRS})
+    add_definitions(-DWITH_EXTERNAL_SQLITE)
+  ELSE(SQLite_FOUND)
+    MESSAGE(FATAL_ERROR "SQLite3 not found but USE_BUILTIN_SQLITE=NO")
+  ENDIF(SQLite_FOUND)
+ENDIF(USE_BUILTIN_SQLITE)
 
 project(domoticz)
 
@@ -81,10 +101,6 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
   #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
-
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} -static-libgcc -static-libstdc++")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -static-libgcc -static-libstdc++")
-  SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -static-libgcc -static-libstdc++")
 
     GET_FILENAME_COMPONENT(_name ${_input} NAME)
     SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
@@ -449,12 +465,24 @@ else()
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
+
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  option(USE_STATIC_LIBSTDCXX "Build with static libgcc/libstdc++ libraries" YES)
+  IF(USE_STATIC_LIBSTDCXX)
+    message(STATUS "Using static libgcc/libstdc++")
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} -static-libgcc -static-libstdc++")
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -static-libgcc -static-libstdc++")
+    SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -static-libgcc -static-libstdc++")
+  ELSE(USE_STATIC_LIBSTDCXX)
+    message(STATUS "Using dynamic libgcc_s/libstdc++")
+  ENDIF(USE_STATIC_LIBSTDCXX)
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 # If it wasn't overridden from command line / cache.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
