@@ -10654,7 +10654,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_Netatmo)
 		{
 			CNetatmo *pGateway = (CNetatmo*)pHardware;
-			pGateway->SetSetpoint(ID4, TempValue);
+			pGateway->SetSetpoint(ID2, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		{
@@ -10903,7 +10903,8 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 	else if (pHardware->HwdType == HTYPE_Netatmo)
 	{
 		CNetatmo *pGateway = (CNetatmo *)pHardware;
-		pGateway->SetProgramState(newState);
+		int tIndex = atoi(idx.c_str());
+		pGateway->SetProgramState(tIndex, newState);
 		return true;
 	}
 	return false;

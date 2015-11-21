@@ -15,7 +15,7 @@ public:
 
 	bool WriteToHardware(const char *, const unsigned char);
 	void SetSetpoint(const int idx, const float temp);
-	bool SetProgramState(const int newState);
+	bool SetProgramState(const int idx, const int newState);
 private:
 	std::string m_clientId;
 	std::string m_clientSecret;
@@ -23,9 +23,10 @@ private:
 	std::string m_password;
 	std::string m_accessToken;
 	std::string m_refreshToken;
-	std::string m_thermostatDeviceID;
-	std::string m_thermostatModuleID;
+	std::map<int, std::string > m_thermostatDeviceID;
+	std::map<int, std::string > m_thermostatModuleID;
 	bool m_bPollThermostat;
+	bool m_bPollWeatherData;
 	bool m_bForceSetpointUpdate;
 	time_t m_tSetpointUpdateTime;
 
@@ -44,13 +45,13 @@ private:
 	void GetMeterDetails();
 	void GetThermostatDetails();
 	bool ParseNetatmoGetResponse(const std::string &sResult, const bool bIsThermostat);
-	bool SetAway(const bool bIsAway);
+	bool SetAway(const int idx, const bool bIsAway);
 
 	bool Login();
 	bool RefreshToken();
 	bool m_isLogged;
 
 	int GetBatteryLevel(const std::string &ModuleType, const int battery_vp);
-	bool ParseDashboard(const Json::Value &root, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp);
+	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp);
 };
 
