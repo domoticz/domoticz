@@ -6,7 +6,7 @@
 class SolarMaxTCP : public CDomoticzHardwareBase
 {
 public:
-	SolarMaxTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
+	SolarMaxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~SolarMaxTCP(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 public:

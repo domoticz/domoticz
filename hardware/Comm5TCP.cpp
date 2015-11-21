@@ -33,7 +33,7 @@ static inline bool startsWith(const std::string &haystack, const std::string &ne
 		&& std::equal(needle.begin(), needle.end(), haystack.begin());
 }
 
-Comm5TCP::Comm5TCP(const int ID, const std::string IPAddress, const unsigned short usIPPort) :
+Comm5TCP::Comm5TCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;

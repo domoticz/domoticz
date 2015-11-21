@@ -17,7 +17,7 @@ extern CSQLHelper m_sql;
 
 #define SM_DEST_ADDRESS 0x01
 
-SolarMaxTCP::SolarMaxTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+SolarMaxTCP::SolarMaxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;

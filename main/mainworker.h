@@ -12,7 +12,6 @@
 #include "DataPush.h"
 #include "HttpPush.h"
 #include "concurrent_queue.h"
-#include <boost/atomic.hpp>
 
 enum eVerboseLevel
 {
@@ -40,8 +39,8 @@ public:
 	CDomoticzHardwareBase* GetHardware(int HwdId);
 	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
 
-	void HeartbeatUpdate(const std::string component);
-	void HeartbeatRemove(const std::string component);
+	void HeartbeatUpdate(const std::string &component);
+	void HeartbeatRemove(const std::string &component);
 	void HeartbeatCheck();
 
 	void SetVerboseLevel(eVerboseLevel Level);
@@ -197,21 +196,18 @@ private:
 	unsigned char get_BateryLevel(const CDomoticzHardwareBase *pHardware, bool bIsInPercentage, unsigned char level);
 
 	// RxMessage queue resources
-#define RX_COMMAND_SIZE 128
-	boost::atomic<bool> m_stopRxMessageThread;
-	boost::atomic<unsigned long> m_rxMessageIdx;
-	boost::atomic<bool> m_rxMessageDebug;
+	volatile bool m_stopRxMessageThread;
+	volatile unsigned long m_rxMessageIdx;
 	boost::shared_ptr<boost::thread> m_rxMessageThread;
 	void Do_Work_On_Rx_Messages();
-	struct _tRxMessage {
+	struct _tRxQueueItem {
 		unsigned long rxMessageIdx;
 		int hardwareId;
-		int rxCommandLength;
-		unsigned char rxCommand[RX_COMMAND_SIZE];
+		std::vector<unsigned char> vrxCommand;
 		boost::uint16_t crc;
 		queue_element_trigger* trigger;
 	};
-	concurrent_queue<_tRxMessage> m_rxMessageQueue;
+	concurrent_queue<_tRxQueueItem> m_rxMessageQueue;
 	void UnlockRxMessageQueue();
 	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
 	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);

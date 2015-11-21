@@ -13,7 +13,7 @@ extern CSQLHelper m_sql;
 
 #define ETH8020_POLL_INTERVAL 10
 
-CETH8020::CETH8020(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
+CETH8020::CETH8020(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
 m_szIPAddress(IPAddress),
 m_Username(CURLEncode::URLEncode(username)),
 m_Password(CURLEncode::URLEncode(password))

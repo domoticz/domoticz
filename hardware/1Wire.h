@@ -6,7 +6,7 @@ class I_1WireSystem;
 class C1Wire : public CDomoticzHardwareBase
 {
 public:
-	C1Wire(const int ID);
+	explicit C1Wire(const int ID);
 	virtual ~C1Wire();
 
 	static bool Have1WireSystem();

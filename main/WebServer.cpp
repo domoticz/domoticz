@@ -4238,23 +4238,6 @@ namespace http {
 						sunitcode = szTmp;
 						devid = id;
 					}
-					else if (lighttype == 104)
-					{
-						//HE105
-						dtype = pTypeThermostat2;
-						subtype = sTypeHE105;
-						sunitcode = request::findValue(&req, "unitcode");
-						if (sunitcode == "")
-							return;
-						//convert to hex, and we have our Unit Code
-						std::stringstream s_strid;
-						s_strid << std::hex << std::uppercase << sunitcode;
-						int iUnitCode;
-						s_strid >> iUnitCode;
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = "1";
-					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
 						dtype = pTypeBlinds;
@@ -10118,7 +10101,6 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "RenameDevice";
 
-			std::vector<std::vector<std::string> > result;
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
@@ -10138,7 +10120,6 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "RenameScene";
 
-			std::vector<std::vector<std::string> > result;
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 

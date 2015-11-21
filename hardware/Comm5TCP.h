@@ -8,7 +8,7 @@
 class Comm5TCP : public CDomoticzHardwareBase, ASyncTCP
 {
 public:
-	Comm5TCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
+	Comm5TCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
