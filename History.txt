@@ -29,6 +29,7 @@ Version 2.3xxx
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect
 - Fixed: CM180i graph display
 - Implemented: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
+- Implemented: Netatmo, support for multiple Thermostats
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

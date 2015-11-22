@@ -10,7 +10,7 @@
 
 #define WINDDELEN_POLL_INTERVAL 10
 
-CWinddelen::CWinddelen(const int ID, const std::string IPAddress, const unsigned short usIPPort, const unsigned short usMillID) :
+CWinddelen::CWinddelen(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const unsigned short usMillID) :
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;

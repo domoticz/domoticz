@@ -25,7 +25,7 @@
 #define SEC_DATA_URL "https://secportal.icy.nl/api/data" //https://secportal.icy.nl/#/user/data" // /api/data
 
 
-CICYThermostat::CICYThermostat(const int ID, const std::string Username, const std::string Password) :
+CICYThermostat::CICYThermostat(const int ID, const std::string &Username, const std::string &Password) :
 m_UserName(Username),
 m_Password(Password)
 {

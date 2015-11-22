@@ -479,7 +479,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 
 //  Logs into the Logitech Harmony web service
 //  Returns a base64-encoded string containing a 48-byte Login Token in the third parameter
-bool CHarmonyHub::HarmonyWebServiceLogin(const std::string strUserEmail, const std::string strPassword, std::string& m_szAuthorizationToken )
+bool CHarmonyHub::HarmonyWebServiceLogin(const std::string &strUserEmail, const std::string &strPassword, std::string& m_szAuthorizationToken )
 {
 	if(strUserEmail.size() == 0 || strPassword.size() == 0)
 	{
@@ -747,7 +747,7 @@ bool CHarmonyHub::SendPing()
 	return (strData.find("errorcode='200'") != std::string::npos);
 }
 
-bool CHarmonyHub::SubmitCommand(const std::string strCommand, const std::string strCommandParameterPrimary, const std::string strCommandParameterSecondary)
+bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	int pos;

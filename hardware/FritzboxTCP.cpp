@@ -36,7 +36,7 @@ datum;DISCONNECT;ConnectionID;dauerInSekunden;
 
 */
 
-FritzboxTCP::FritzboxTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;

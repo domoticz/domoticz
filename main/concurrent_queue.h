@@ -19,7 +19,7 @@ private:
 	struct queue_not_empty {
 		std::queue<Data>& queue;
 
-		queue_not_empty(std::queue<Data>& queue_): queue(queue_) {}
+		explicit queue_not_empty(std::queue<Data>& queue_): queue(queue_) {}
 
 		bool operator()() const {
 			return !queue.empty();
@@ -85,7 +85,7 @@ private:
 	struct element_popped {
 		bool& popped;
 
-		element_popped(bool& popped_): popped(popped_) {}
+		explicit element_popped(bool& popped_): popped(popped_) {}
 
 		bool operator()() const {
 			return popped;

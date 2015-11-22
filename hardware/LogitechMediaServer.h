@@ -28,8 +28,8 @@ public:
 		std::string		Name;
 	};
 
-	CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const std::string User, const std::string Pwd, const int PollIntervalsec, const int PingTimeoutms);
-	CLogitechMediaServer(const int ID);
+	CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms);
+	explicit CLogitechMediaServer(const int ID);
 	~CLogitechMediaServer(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
@@ -52,7 +52,7 @@ private:
 	bool StopHardware();
 	Json::Value Query(std::string sIP, int iPort, std::string sPostdata);
 	void Do_Node_Work(const LogitechMediaServerNode &Node);
-	void UpdateNodeStatus(const LogitechMediaServerNode &Node, const _eMediaStatus nStatus, const std::string sStatus, const bool bPingOK);
+	void UpdateNodeStatus(const LogitechMediaServerNode &Node, const _eMediaStatus nStatus, const std::string &sStatus, const bool bPingOK);
 	void ReloadNodes();
 	void ReloadPlaylists();
 	std::string GetPlaylistByRefID(const int ID);
