@@ -105,7 +105,7 @@ const unsigned char WhiteWarmer[3] = { 0x3E, 0x0, 0x55 };
 const unsigned char WhiteCooler[3] = { 0x3F, 0x0, 0x55 };
 
 
-CLimitLess::CLimitLess(const int ID, const int LedType, const std::string IPAddress, const unsigned short usIPPort)
+CLimitLess::CLimitLess(const int ID, const int LedType, const std::string &IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
 	m_szIPAddress=IPAddress;

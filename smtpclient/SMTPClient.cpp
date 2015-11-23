@@ -127,9 +127,8 @@ bool SMTPClient::SendEmail()
 	}
 
 	std::stringstream sstr;
-
-	sstr << "smtp://" << m_Server << ":" << m_Port << "/domoticz";
-	std::string szURL=sstr.str();//"smtp://"+MailServer+"/domoticz";
+	sstr << "smtp://" << m_Server << ":" << m_Port;
+	std::string szURL=sstr.str();//"smtp://"+MailServer;
 
 	try
 	{

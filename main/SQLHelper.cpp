@@ -7,7 +7,11 @@
 #include "localtime_r.h"
 #include "Logger.h"
 #include "mainworker.h"
+#ifdef WITH_EXTERNAL_SQLITE
+#include <sqlite3.h>
+#else
 #include "../sqlite/sqlite3.h"
+#endif
 #include "../hardware/hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"

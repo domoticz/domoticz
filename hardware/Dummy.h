@@ -6,7 +6,7 @@
 class CDummy : public CDomoticzHardwareBase
 {
 public:
-	CDummy(const int ID);
+	explicit CDummy(const int ID);
 	~CDummy(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:

@@ -24,9 +24,15 @@
 #endif
 
 extern "C" {
-#include "../lua/src/lua.h"    
+#ifdef WITH_EXTERNAL_LUA
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+#else
+#include "../lua/src/lua.h"
 #include "../lua/src/lualib.h"
 #include "../lua/src/lauxlib.h"
+#endif
 #ifdef ENABLE_PYTHON
 #include <Python.h>
 #endif
@@ -190,7 +196,6 @@ void CEventSystem::GetCurrentStates()
 	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
-		int ii = 0;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
 			std::vector<std::string> sd = *itt;
@@ -1213,7 +1218,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 
 	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++) {
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator) {
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
 		lua_pushstring(lua_state, sitem.nValueWording.c_str());
@@ -1226,7 +1231,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
-	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
+	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 		_tUserVariable uvitem = iterator->second;
 		if (uvitem.variableType == 0) {
 			//Integer
@@ -2024,7 +2029,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
 		typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
-		for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++)
+		for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 		{
 			_tDeviceStatus sitem = iterator->second;
 			object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
@@ -2086,7 +2091,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		{
 			boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 			typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
-			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
+			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 				_tUserVariable uvitem = iterator->second;
 				//user_variables[uvitem.variableName] = uvitem;
 				if (uvitem.variableType == 0) {
@@ -2502,7 +2507,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++)
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2513,7 +2518,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++)
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2524,7 +2529,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++)
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2538,7 +2543,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
-	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
+	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 		_tUserVariable uvitem = iterator->second;
 		if (uvitem.variableType == 0)  {
 			//Integer
@@ -2564,7 +2569,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
-	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
+	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 		_tUserVariable uvitem = iterator->second;
 		lua_pushstring(lua_state, uvitem.variableName.c_str());
 		lua_pushstring(lua_state, uvitem.lastUpdate.c_str());
@@ -2575,7 +2580,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	if (reason == "uservariable") {
 		if (varId > 0) {
 			typedef std::map<unsigned long long, _tUserVariable>::iterator it_cvar;
-			for (it_cvar iterator = m_uservariables.begin(); iterator != m_uservariables.end(); iterator++) {
+			for (it_cvar iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 				_tUserVariable uvitem = iterator->second;
 				if (uvitem.ID == varId) {
 					lua_createtable(lua_state, 1, 0);
@@ -3354,7 +3359,7 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 
 	iStates.clear();
 	typedef std::map<unsigned long long, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); iterator++)
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		iStates.push_back(iterator->second);
 	}

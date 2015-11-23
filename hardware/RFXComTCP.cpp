@@ -9,7 +9,7 @@
 
 #define RETRY_DELAY 30
 
-RFXComTCP::RFXComTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+RFXComTCP::RFXComTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
 	m_stoprequested=false;

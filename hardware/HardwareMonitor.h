@@ -10,7 +10,7 @@
 class CHardwareMonitor : public CDomoticzHardwareBase
 {
 public:
-	CHardwareMonitor(const int ID);
+	explicit CHardwareMonitor(const int ID);
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
 private:

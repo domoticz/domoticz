@@ -6,7 +6,7 @@
 class CSBFSpot : public CDomoticzHardwareBase
 {
 public:
-	CSBFSpot(const int ID, const std::string SBFConfigFile);
+	CSBFSpot(const int ID, const std::string &SBFConfigFile);
 	~CSBFSpot(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void ImportOldMonthData();
@@ -18,6 +18,7 @@ private:
 	void SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname);
 
 	std::string m_SBFConfigFile;
+	std::string m_SBFInverter;
 	std::string m_SBFDataPath;
 	std::string m_SBFPlantName;
 	std::string m_SBFDateFormat;
