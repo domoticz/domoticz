@@ -27,6 +27,8 @@ private:
 	std::map<int, std::string > m_thermostatModuleID;
 	bool m_bPollThermostat;
 	bool m_bPollWeatherData;
+	bool m_bFirstTimeThermostat;
+	bool m_bFirstTimeWeatherData;
 	bool m_bForceSetpointUpdate;
 	time_t m_tSetpointUpdateTime;
 
