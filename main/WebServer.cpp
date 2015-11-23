@@ -42,9 +42,15 @@
 #include "../notifications/NotificationHelper.h"
 
 extern "C" {
-#include "../lua/src/lua.h"    
+#ifdef WITH_EXTERNAL_LUA
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+#else
+#include "../lua/src/lua.h"
 #include "../lua/src/lualib.h"
 #include "../lua/src/lauxlib.h"
+#endif
 }
 
 
@@ -955,7 +961,7 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP)
+				(htype == HTYPE_ETH8020) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP)
 				) {
 				//Lan
 				if (address == "")
@@ -1175,7 +1181,8 @@ namespace http {
 				(htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) || 
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || 
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || 
-				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP)
+				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
+				(htype == HTYPE_Comm5TCP)
 				){
 				//Lan
 				if (address == "")
@@ -2101,6 +2108,7 @@ namespace http {
 			root["Latitude"] = Latitude;
 			root["Longitude"] = Longitude;
 
+			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
 			int bEnableTabDashboard = 1;
 			int bEnableTabFloorplans = 1;
 			int bEnableTabLight = 1;
@@ -2143,6 +2151,7 @@ namespace http {
 				//Floorplan , no need to show a tab floorplan
 				bEnableTabFloorplans = 0;
 			}
+			root["result"]["EnableTabProxy"] = bEnableTabProxy;
 			root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
 			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
 			root["result"]["EnableTabLights"] = bEnableTabLight != 0;
@@ -2688,9 +2697,9 @@ namespace http {
 			}
 			root["statuscode"] = urights;
 
-				root["status"] = "OK";
-				root["title"] = "CheckForUpdate";
-				root["HaveUpdate"] = false;
+			root["status"] = "OK";
+			root["title"] = "CheckForUpdate";
+			root["HaveUpdate"] = false;
 			root["revision"] = m_mainworker.m_iRevision;
 
 			if (session.rights != 2)
@@ -4233,23 +4242,6 @@ namespace http {
 						sprintf(szTmp, "%d", iUnitCode);
 						sunitcode = szTmp;
 						devid = id;
-					}
-					else if (lighttype == 104)
-					{
-						//HE105
-						dtype = pTypeThermostat2;
-						subtype = sTypeHE105;
-						sunitcode = request::findValue(&req, "unitcode");
-						if (sunitcode == "")
-							return;
-						//convert to hex, and we have our Unit Code
-						std::stringstream s_strid;
-						s_strid << std::hex << std::uppercase << sunitcode;
-						int iUnitCode;
-						s_strid >> iUnitCode;
-						sprintf(szTmp, "%d", iUnitCode);
-						sunitcode = szTmp;
-						devid = "1";
 					}
 					else if ((lighttype >= 200) && (lighttype < 300))
 					{
@@ -10126,7 +10118,6 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "RenameDevice";
 
-			std::vector<std::vector<std::string> > result;
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 
@@ -10146,7 +10137,6 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "RenameScene";
 
-			std::vector<std::vector<std::string> > result;
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
 		}
 

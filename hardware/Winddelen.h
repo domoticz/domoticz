@@ -15,7 +15,7 @@ typedef struct _tWinddelen {
 class CWinddelen : public CDomoticzHardwareBase
 {
 public:
-	CWinddelen(const int ID, const std::string IPAddress, const unsigned short usIPPort, const unsigned short usMillID);
+	CWinddelen(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const unsigned short usMillID);
 	~CWinddelen(void);
 
 	Winddelen	m_meter;

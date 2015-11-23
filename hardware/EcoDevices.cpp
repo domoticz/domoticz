@@ -21,7 +21,7 @@
 	//#define DEBUG_EcoDevices
 #endif
 
-CEcoDevices::CEcoDevices(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
 	m_szIPAddress = IPAddress;

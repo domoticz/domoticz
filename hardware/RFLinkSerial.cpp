@@ -82,8 +82,8 @@ void CRFLinkSerial::Do_Work()
 					if (atime - m_LastReceivedTime > 30)
 					{
 						//Timeout
-						_log.Log(LOG_ERROR, "RFLink: Not received anything for more then 30 seconds, restarting...");
-						m_retrycntr = (RFLINK_RETRY_DELAY-3) * 5;
+						_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 30 seconds, restarting...");
+						m_retrycntr = 0;
 						m_LastReceivedTime = atime;
 						try {
 							clearReadCallback();

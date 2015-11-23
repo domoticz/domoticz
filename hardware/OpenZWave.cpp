@@ -1134,6 +1134,14 @@ bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo *pNode, const int inde
 					nValue = *ittValue;
 					return true;
 				}
+				else if (
+					(commandclass == COMMAND_CLASS_PROTECTION) &&
+					(vinstance == index - 3000) //spacial case
+					)
+				{
+					nValue = *ittValue;
+					return true;
+				}
 			}
 		}
 	}
@@ -3770,7 +3778,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			for (std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue != ittCmds->second.Values.end(); ++ittValue)
 			{
 				unsigned char commandclass = ittValue->GetCommandClassId();
-				if (commandclass == COMMAND_CLASS_CONFIGURATION)
+				if ((commandclass == COMMAND_CLASS_CONFIGURATION)|| (commandclass == COMMAND_CLASS_PROTECTION))
 				{
 					if (m_pManager->IsValueReadOnly(*ittValue) == true)
 						continue;
@@ -3828,6 +3836,11 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 						}
 					}
 					int i_index = ittValue->GetIndex();
+					if (commandclass == COMMAND_CLASS_PROTECTION)
+					{
+						i_index = 3000 + ittValue->GetInstance();
+					}
+
 					std::string i_label = m_pManager->GetValueLabel(*ittValue);
 					std::string i_units = m_pManager->GetValueUnits(*ittValue);
 					std::string i_help = m_pManager->GetValueHelp(*ittValue);
@@ -3960,7 +3973,6 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 		else
 		{
 			OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-
 			if (GetNodeConfigValueByIndex(pNode, rvIndex, vID))
 			{
 				std::string vstring;

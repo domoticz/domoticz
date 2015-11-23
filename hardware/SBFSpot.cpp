@@ -13,10 +13,18 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-CSBFSpot::CSBFSpot(const int ID, const std::string SMAConfigFile)
+CSBFSpot::CSBFSpot(const int ID, const std::string &SMAConfigFile)
 {
+	std::vector<std::string> results;
+	
+	m_SBFInverter="";
 	m_HwdID=ID;
-	m_SBFConfigFile=SMAConfigFile;
+	StringSplit(SMAConfigFile, ":", results);
+	m_SBFConfigFile=results[0];
+	
+	if(results.size() > 1)
+	  m_SBFInverter=results[1];
+	
 	m_SBFDataPath="";
 	m_stoprequested=false;
 	Init();
@@ -369,6 +377,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 	if (m_SBFPlantName.size() == 0)
 		return;
 
+	int iInvOff = 1;
 	char szLogFile[256];
 	std::string tmpPath = m_SBFDataPath;
 	std::stringstream sstr;
@@ -462,7 +471,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 				{
 					if (!bHaveDefinition)
 					{
-						if (results[1] == "kWh")
+						if (results[iInvOff] == "kWh")
 						{
 							dayPos = results[0].find("dd");
 							if (dayPos == std::string::npos)
@@ -481,7 +490,7 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 						int month = atoi(results[0].substr(monthPos, 2).c_str());
 						int year = atoi(results[0].substr(yearPos, 4).c_str());
 
-						std::string szKwhCounter = results[2];
+						std::string szKwhCounter = results[iInvOff + 1];
 						stdreplace(szKwhCounter, ",", ".");
 						double kWhCounter = atof(szKwhCounter.c_str()) * 100000;
 						unsigned long long ulCounter = (unsigned long long)kWhCounter;
@@ -501,6 +510,15 @@ void CSBFSpot::ImportOldMonthData(const unsigned long long DevID, const int Year
 								DevID, ulCounter, szDate);
 						}
 					}
+				}
+			}
+			else if((szSeperator != "") && (m_SBFInverter != ""))
+			{
+				StringSplit(sLine, szSeperator, results);
+				for(size_t l = 0; l < results.size(); l++)
+				{
+					if(results[l] == m_SBFInverter)
+						iInvOff = l;
 				}
 			}
 		}
@@ -563,18 +581,24 @@ void CSBFSpot::GetMeterDetails()
 				StringSplit(sLine,szSeperator,results);
 				if (results.size()>=30)
 				{
-					szLastLine=sLine;
+					if((m_SBFInverter == "") || (m_SBFInverter == results[3]))
+					{
+					      szLastLine=sLine;
+					}
 				}
 			}
 		}
 	}
 	infile.close();
-
+	
 	if (szLastLine.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "SBFSpot: No data record found in spot file!");
 		return;
 	}
+	
+	StringSplit(szLastLine, szSeperator, results);
+	
 	if (results[1].size() < 1)
 	{
 		_log.Log(LOG_ERROR, "SBFSpot: No data record found in spot file!");

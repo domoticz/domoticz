@@ -46,7 +46,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CWunderground::CWunderground(const int ID, const std::string APIKey, const std::string Location)
+CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location)
 {
 	m_HwdID=ID;
 	m_APIKey=APIKey;

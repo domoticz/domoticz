@@ -8,7 +8,7 @@
 class RFXComTCP : public CDomoticzHardwareBase, ASyncTCP
 {
 public:
-	RFXComTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
+	RFXComTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~RFXComTCP(void);
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);

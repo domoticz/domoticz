@@ -114,9 +114,10 @@ public:
 		V_HVAC_SETPOINT_COOL = 44,		//HVAC cold setpoint(Integer between 0 - 100)	S_HVAC
 		V_HVAC_SETPOINT_HEAT = 45,		//HVAC / Heater setpoint(Integer between 0 - 100)	S_HVAC, S_HEATER
 		V_HVAC_FLOW_MODE = 46,			//Flow mode for HVAC("Auto", "ContinuousOn", "PeriodicOn")	S_HVAC
-
 		V_TEXT = 47,					//Text/Info message S_INFO
 		V_CUSTOM = 48, 					// Custom messages used for controller/inter node specific commands, preferably using S_CUSTOM device type. 
+		V_POSITION = 49,				// GPS position and altitude. Payload: latitude;longitude;altitude(m). E.g. "55.722526;13.017972;18"
+		V_IR_RECORD = 50,				// Record IR codes S_IR for playback
 		V_UNKNOWN = 200					//No value received
 	};
 

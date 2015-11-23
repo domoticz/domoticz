@@ -6,7 +6,7 @@
 class CLimitLess : public CDomoticzHardwareBase
 {
 public:
-	CLimitLess(const int ID, const int LedType, const std::string IPAddress, const unsigned short usIPPort);
+	CLimitLess(const int ID, const int LedType, const std::string &IPAddress, const unsigned short usIPPort);
 	~CLimitLess(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:

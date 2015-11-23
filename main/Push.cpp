@@ -161,7 +161,7 @@ std::string CPush::ProcessSendValue(const std::string &rawsendValue, const int d
 		else
 		{
 			float gustms = float(intGust)*0.1f;
-			sprintf(szData, "%.1f", MStoBeaufort(gustms));
+			sprintf(szData, "%d", MStoBeaufort(gustms));
 		}
 	}
 	else if (vType == "Chill")

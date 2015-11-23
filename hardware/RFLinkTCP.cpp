@@ -99,13 +99,13 @@ void CRFLinkTCP::Do_Work()
 			if (atime - m_LastReceivedTime > 30)
 			{
 				//Timeout
-				_log.Log(LOG_ERROR, "RFLink: Not received anything for more then 30 seconds, restarting...");
-				m_retrycntr = (RFLINK_RETRY_DELAY - 3) * 5;
+				_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 30 seconds, restarting...");
+				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
+				m_bDoRestart = true;
 				try {
 					disconnect();
 					close();
-					m_bDoRestart = true;
 				}
 				catch (...)
 				{
@@ -130,12 +130,14 @@ void CRFLinkTCP::Do_Work()
 					//Don't throw from a Stop command
 				}
 			}
+			_log.Log(LOG_ERROR, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
 		}
 		else
 		{
 			if ((m_bDoRestart) && (sec_counter % 30 == 0))
 			{
+				_log.Log(LOG_ERROR, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 				connect(m_szIPAddress,m_usIPPort);
 			}
 			update();

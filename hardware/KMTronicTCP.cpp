@@ -10,7 +10,7 @@
 
 #define KMTRONIC_POLL_INTERVAL 10
 
-KMTronicTCP::KMTronicTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
+KMTronicTCP::KMTronicTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
 m_szIPAddress(IPAddress),
 m_Username(CURLEncode::URLEncode(username)),
 m_Password(CURLEncode::URLEncode(password))

@@ -55,6 +55,7 @@ namespace http {
 			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			ProxyPdu *writePdu;
+			std::set<std::string> connectedips_;
 		};
 
 		class CProxyManager {

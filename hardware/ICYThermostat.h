@@ -12,7 +12,7 @@ class CICYThermostat : public CDomoticzHardwareBase
 		CMODE_SEC,
 	};
 public:
-	CICYThermostat(const int ID, const std::string Username, const std::string Password);
+	CICYThermostat(const int ID, const std::string &Username, const std::string &Password);
 	~CICYThermostat(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);

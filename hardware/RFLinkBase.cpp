@@ -71,6 +71,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "BofuMotor", sSwitchTypeBofu },        // p..
 	{ "BrelMotor", sSwitchTypeBrel },        // p..
 	{ "SomeFy", sSwitchTypeSomeFy },        // p..
+	{ "ElroDB", sSwitchTypeElroDB },         // p..
+	{ "AOK", sSwitchTypeAOK },               // p..
 	{ "", -1 }
 };
 
@@ -84,7 +86,7 @@ const _tRFLinkStringIntHelper rfswitchcommands[] =
 	{ "BRIGHT", gswitch_sBright },
 	{ "UP", blinds_sOpen },
 	{ "DOWN", blinds_sClose },
-	{ "STOP", blinds_sStop },
+	{ "STOP", gswitch_sStop },
 	{ "", -1 }
 };
 
@@ -457,7 +459,8 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		else if (results[ii].find("RAIN") != std::string::npos)
 		{
 			bHaveRain = true;
-			raincounter = RFLinkGetHexStringValue(results[ii]);
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			raincounter = iTemp / 10;
 		}
 		else if (results[ii].find("LUX") != std::string::npos)
 		{
@@ -543,7 +546,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveKWatt = true;
-			kwatt = float(iTemp) / 10.0f;
+			kwatt = float(iTemp) / 1000.0f;
 		}
 		else if (results[ii].find("WATT") != std::string::npos)
 		{
@@ -686,15 +689,18 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, tmp_Name);
 	}
 
-	if (bHaveKWatt)
+	if (bHaveKWatt&bHaveWatt)
+	{
+		std::string tmp_Name = results[2];
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
+	} else if (bHaveKWatt)
 	{
         std::string tmp_Name = results[2];        
-		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, kwatt / 1000.0f, kwatt, tmp_Name);
-	}
-	if (bHaveWatt)
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
+	} else if (bHaveWatt)
 	{
         std::string tmp_Name = results[2];        
-		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, 0, watt, tmp_Name);
+		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
 	}
 	if (bHaveDistance)
 	{

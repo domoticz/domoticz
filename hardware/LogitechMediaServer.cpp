@@ -12,7 +12,7 @@
 #include "../webserver/cWebem.h"
 #include "../httpclient/HTTPClient.h"
 
-CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string IPAddress, const int Port, const std::string User, const std::string Pwd, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
+CLogitechMediaServer::CLogitechMediaServer(const int ID, const std::string &IPAddress, const int Port, const std::string &User, const std::string &Pwd, const int PollIntervalsec, const int PingTimeoutms) : m_stoprequested(false), m_iThreadsRunning(0)
 {
 	m_HwdID = ID;
 	m_IP = IPAddress;
@@ -146,7 +146,7 @@ bool CLogitechMediaServer::StopHardware()
 	return true;
 }
 
-void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node, const _eMediaStatus nStatus, const std::string sStatus, bool bPingOK)
+void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node, const _eMediaStatus nStatus, const std::string &sStatus, bool bPingOK)
 {
 	//Find out node, and update it's status
 	std::vector<LogitechMediaServerNode>::iterator itt;

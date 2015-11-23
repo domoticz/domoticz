@@ -36,7 +36,7 @@ datum;DISCONNECT;ConnectionID;dauerInSekunden;
 
 */
 
-FritzboxTCP::FritzboxTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+FritzboxTCP::FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
 	m_bDoRestart=false;
@@ -321,13 +321,14 @@ void FritzboxTCP::ParseLine()
 
 		UpdateSwitch(1, 1, true, 100, "Call");
 
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
-		if (!result.empty())
-		{
-			std::string idx = result[0][0];
-			sstr << "Connected ID: " << results[2] << " Number: " << results[4];
-			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')", idx.c_str(), sstr.str().c_str());
-		}
+		sstr << "Connected ID: " << results[2] << " Number: " << results[4];
+		devIdx = m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		//result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
+		//if (!result.empty())
+		//{
+		//	std::string idx = result[0][0];
+		//	m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')", idx.c_str(), sstr.str().c_str());
+		//}
 	}
 	else if (Cmd == "DISCONNECT")
 	{
@@ -338,12 +339,13 @@ void FritzboxTCP::ParseLine()
 
 		UpdateSwitch(1, 1, false, 100, "Call");
 
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
-		if (!result.empty())
-		{
-			std::string idx = result[0][0];
-			sstr << "Disconnect ID: " << results[2] << " Duration: " << results[3] << " seconds";
-			m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')", idx.c_str(), sstr.str().c_str());
-		}
+		sstr << "Disconnect ID: " << results[2] << " Duration: " << results[3] << " seconds";
+		devIdx = m_sql.UpdateValue(m_HwdID, "1", 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, sstr.str().c_str(), devname);
+		//result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, int(pTypeGeneral), int(sTypeTextStatus));
+		//if (!result.empty())
+		//{
+		//	std::string idx = result[0][0];
+		//	m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, sValue) VALUES ('%q', '%q')", idx.c_str(), sstr.str().c_str());
+		//}
 	}
 }
