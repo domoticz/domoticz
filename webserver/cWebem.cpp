@@ -1155,7 +1155,7 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 	rep.headers[ahsize].name = "Set-Cookie";
 	std::stringstream sstr;
 	sstr << "SID=none";
-	sstr << "; path=/; Expires= " << make_web_time(0);
+	sstr << "; path=/; Expires=" << make_web_time(0);
 	rep.headers[ahsize].value = sstr.str();
 }
 
@@ -1217,7 +1217,7 @@ void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 	rep.headers[ahsize].name = "Set-Cookie";
 	std::stringstream sstr;
 	sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
-	sstr << "; path=/; Expires= " << make_web_time(session.expires);
+	sstr << "; path=/; Expires=" << make_web_time(session.expires);
 	rep.headers[ahsize].value = sstr.str();
 }
 
@@ -1263,6 +1263,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 			CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
 			if ((gzip.Length>0)&&(gzip.Length<(int)rep.content.size()))
 			{
+				rep.bIsGZIP = true; // flag for later
 				rep.content.clear();
 				rep.content.append((char*)gzip.pgzip, gzip.Length);
 				//Set new content length
@@ -1274,6 +1275,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 				rep.headers.resize(ohsize+1);
 				rep.headers[ohsize].name = "Content-Encoding";
 				rep.headers[ohsize].value = "gzip";
+				return true;
 			}
 		}
 	}
@@ -1317,8 +1319,8 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		// Parse session id and its expiration date
 		std::string scookie = cookie_header;
 		int fpos = scookie.find("SID=");
-		int upos = scookie.find("_");
-		int ppos = scookie.find(".");
+		int upos = scookie.find("_", fpos);
+		int ppos = scookie.find(".", upos);
 		time_t now = mytime(NULL);
 		if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 		{
@@ -1377,7 +1379,8 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 
 		} else {
 			//invalid cookie
-			session.removecookie = true;
+			// RK, todo: This goes wrong with domoproxy.
+			//session.removecookie = true;
 		}
 	}
 
@@ -1452,7 +1455,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 	}
 
 #ifdef _DEBUG
-	//_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+	_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
 
 	if (session.username.empty()) {
@@ -1521,7 +1524,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.forcelogin = false;
 	session.rememberme = false;
 
-	rep.bIsGZIP = false;
+		rep.bIsGZIP = false;
 
 	bool isPage = myWebem->IsPageOverride(req, rep);
 	bool isAction = myWebem->IsAction(req);
@@ -1541,7 +1544,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
 			std::string scookie = cookie;
 			int fpos = scookie.find("SID=");
-			int upos = scookie.find("_");
+			int upos = scookie.find("_", fpos);
 			if ((fpos != std::string::npos) && (upos != std::string::npos))
 			{
 				std::string sSID = scookie.substr(fpos + 4, upos-fpos-4);
@@ -1557,6 +1560,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.username = "";
 		session.rights = -1;
 		session.forcelogin = true;
+		_log.Log(LOG_ERROR, "Setting removecookie = true");
 		session.removecookie = true;
 		bCheckAuthentication = false; // do not authenticate the user, just logout
 	}
@@ -1584,27 +1588,29 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		// do normal handling
 		request_handler::handle_request(requestCopy, rep);
 
-		if (rep.headers[1].value == "text/html" 
-			|| rep.headers[1].value == "text/plain" 
+		if (rep.headers[1].value == "text/html"
+			|| rep.headers[1].value == "text/plain"
 			|| rep.headers[1].value == "text/css"
 			|| rep.headers[1].value == "text/javascript"
 			)
 		{
-			// Find and include any special cWebem strings
-			myWebem->Include( rep.content );
+			// check if content is not gzipped, include won´t work with non-text content
+			if (!rep.bIsGZIP) {
+				// Find and include any special cWebem strings
+				myWebem->Include(rep.content);
 
-			// adjust content length header
-			// ( Firefox ignores this, but apparently some browsers truncate display without it.
-			// fix provided by http://www.codeproject.com/Members/jaeheung72 )
+				// adjust content length header
+				// ( Firefox ignores this, but apparently some browsers truncate display without it.
+				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
-			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+				rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+
+				//check gzip support if yes, send it back in gzip format
+				CompressWebOutput(req, rep);
+			}
 
 			// tell browser that we are using UTF-8 encoding
 			rep.headers[1].value += ";charset=UTF-8";
-
-			//check gzip support if yes, send it back in gzip format
-			if (!rep.bIsGZIP)
-				CompressWebOutput(req,rep);
 		}
 		else if (rep.headers[1].value.find("image/")!=std::string::npos)
 		{

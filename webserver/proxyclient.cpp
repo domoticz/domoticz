@@ -8,7 +8,10 @@
 
 extern std::string szAppVersion;
 static std::string _instanceid;
+#undef WITH_MUTEX
+#ifdef WITH_MUTEX
 static boost::mutex prefs_mutex;
+#endif
 
 namespace http {
 	namespace server {
@@ -92,12 +95,13 @@ namespace http {
 		void CProxyClient::LoginToService()
 		{
 			// send authenticate pdu
+			int subsystems = 1;
 			CValueLengthPart parameters;
 			parameters.AddPart((void *)_apikey.c_str(), _apikey.length() + 1);
 			parameters.AddPart((void *)_instanceid.c_str(), _instanceid.length() + 1);
 			parameters.AddPart((void *)_password.c_str(), _password.length() + 1);
 			parameters.AddPart((void *)szAppVersion.c_str(), szAppVersion.length() + 1);
-			// todo: valid subsystems
+			parameters.AddValue((void *)&subsystems, SIZE_INT);
 			MyWrite(PDU_AUTHENTICATE, &parameters);
 		}
 
@@ -105,13 +109,16 @@ namespace http {
 		{
 			if (!error)
 			{
+#ifdef WITH_MUTEX
 				// lock until we have a valid api id
 				prefs_mutex.lock();
+#endif
 				LoginToService();
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "PROXY: Handshake failed, reconnecting: %s", error.message().c_str());
+				_socket.lowest_layer().close();
 				Reconnect();
 			}
 		}
@@ -194,26 +201,51 @@ namespace http {
 
 			// get common parts for the different subsystems
 			CValueLengthPart part(pdu);
+
+			// request parts
 			char *originatingip;
 			int subsystem;
 			size_t thelen;
-			part.GetNextPart((void **)&originatingip, &thelen);
-			part.GetNextValue((void **)&subsystem, &thelen);
-
+			std::string responseheaders;
+			std::string request;
+			char *requesturl;
+			char *requestheaders;
+			char *requestbody;
+			size_t bodylen;
 			CValueLengthPart parameters; // response parameters
+
+			if (!part.GetNextPart((void **)&originatingip, &thelen)) {
+				_log.Log(LOG_ERROR, "PROXY: Invalid request");
+				return;
+			}
+			if (!part.GetNextValue((void **)&subsystem, &thelen)) {
+				free(originatingip);
+				_log.Log(LOG_ERROR, "PROXY: Invalid request");
+				return;
+			}
 
 			switch (subsystem) {
 			case 1:
 				// "normal web request", get parameters
-				char *requesturl;
-				char *requestheaders;
-				char *requestbody;
-				size_t bodylen;
-				part.GetNextPart((void **)&requesturl, &thelen);
-				part.GetNextPart((void **)&requestheaders, &thelen);
-				part.GetNextPart((void **)&requestbody, &bodylen);
+				if (!part.GetNextPart((void **)&requesturl, &thelen)) {
+					_log.Log(LOG_ERROR, "PROXY: Invalid request");
+					free(originatingip);
+					return;
+				}
+				if (!part.GetNextPart((void **)&requestheaders, &thelen)) {
+					_log.Log(LOG_ERROR, "PROXY: Invalid request");
+					free(originatingip);
+					free(requesturl);
+					return;
+				}
+				if (!part.GetNextPart((void **)&requestbody, &bodylen)) {
+					_log.Log(LOG_ERROR, "PROXY: Invalid request");
+					free(originatingip);
+					free(requesturl);
+					free(requestheaders);
+					return;
+				}
 
-				std::string request;
 				if (bodylen > 0) {
 					request = "POST ";
 				}
@@ -228,6 +260,13 @@ namespace http {
 
 				_buf = boost::asio::buffer((void *)request.c_str(), request.length());
 
+				if (connectedips_.find(originatingip) == connectedips_.end())
+				{
+					//ok, this could get a very long list when running for years
+					connectedips_.insert(originatingip);
+					_log.Log(LOG_STATUS, "PROXY: Incoming connection from: %s", originatingip);
+				}
+
 				GetRequest(originatingip, _buf, reply_);
 				free(originatingip);
 				free(requesturl);
@@ -235,12 +274,16 @@ namespace http {
 				free(requestbody);
 
 				// assemble response
-				std::string responseheaders = GetResponseHeaders(reply_);
+				responseheaders = GetResponseHeaders(reply_);
 
 
 				parameters.AddValue((void *)&reply_.status, SIZE_INT);
 				parameters.AddPart((void *)responseheaders.c_str(), responseheaders.length() + 1);
-				parameters.AddPart((void *)reply_.content.c_str(), reply_.content.length());
+				parameters.AddPart((void *)reply_.content.c_str(), reply_.content.size());
+				break;
+			default:
+				// unknown subsystem
+				_log.Log(LOG_ERROR, "PROXY: Got pdu for unknown subsystem %d.", subsystem);
 				break;
 			}
 
@@ -254,7 +297,11 @@ namespace http {
 			CValueLengthPart parameters(pdu);
 			char *newapi;
 			size_t newapilen;
-			parameters.GetNextPart((void **)&newapi, &newapilen);
+
+			if (!parameters.GetNextPart((void **)&newapi, &newapilen)) {
+				_log.Log(LOG_ERROR, "PROXY: Invalid request while obtaining API key");
+				return;
+			}
 			_log.Log(LOG_NORM, "PROXY: We were assigned an instance id: %s.\n", newapi);
 			_instanceid = newapi;
 			m_sql.UpdatePreferencesVar("MyDomoticzInstanceId", _instanceid);
@@ -279,12 +326,21 @@ namespace http {
 			int auth;
 			char *reason;
 			CValueLengthPart part(pdu);
-			part.GetNextValue((void **)&auth, &authlen);
-			part.GetNextPart((void **)&reason, &reasonlen);
-			_log.Log(LOG_NORM, "PROXY: Authenticate result: %s.", auth ? "success" : reason);
-			free(reason);
+
+#ifdef WITH_MUTEX
 			// unlock prefs mutex
 			prefs_mutex.unlock();
+#endif
+			if (!part.GetNextValue((void **)&auth, &authlen)) {
+				_log.Log(LOG_ERROR, "PROXY: Invalid pdu while receiving authentication response");
+				return;
+			}
+			if (!part.GetNextPart((void **)&reason, &reasonlen)) {
+				_log.Log(LOG_ERROR, "PROXY: Invalid pdu while receiving authentication response");
+				return;
+			}
+			_log.Log(LOG_STATUS, "PROXY: Authenticate result: %s.", auth ? "success" : reason);
+			free(reason);
 			if (!auth) {
 				Stop();
 				return;
@@ -340,10 +396,12 @@ namespace http {
 
 		void CProxyClient::Stop()
 		{
+#ifdef WITH_MUTEX
 			// todo: check if this gives the proper results
 			while (!prefs_mutex.try_lock()) {
 			}
 			prefs_mutex.unlock();
+#endif
 			doStop = true;
 			_socket.lowest_layer().close();
 		}

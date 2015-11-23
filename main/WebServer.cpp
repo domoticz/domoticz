@@ -2101,6 +2101,7 @@ namespace http {
 			root["Latitude"] = Latitude;
 			root["Longitude"] = Longitude;
 
+			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
 			int bEnableTabDashboard = 1;
 			int bEnableTabFloorplans = 1;
 			int bEnableTabLight = 1;
@@ -2143,6 +2144,7 @@ namespace http {
 				//Floorplan , no need to show a tab floorplan
 				bEnableTabFloorplans = 0;
 			}
+			root["result"]["EnableTabProxy"] = bEnableTabProxy;
 			root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
 			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
 			root["result"]["EnableTabLights"] = bEnableTabLight != 0;
@@ -2688,9 +2690,9 @@ namespace http {
 			}
 			root["statuscode"] = urights;
 
-				root["status"] = "OK";
-				root["title"] = "CheckForUpdate";
-				root["HaveUpdate"] = false;
+			root["status"] = "OK";
+			root["title"] = "CheckForUpdate";
+			root["HaveUpdate"] = false;
 			root["revision"] = m_mainworker.m_iRevision;
 
 			if (session.rights != 2)
