@@ -1651,8 +1651,18 @@ unsigned long long MainWorker::PerformRealActionFromDomoticzClient(const unsigne
 }
 
 void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand) {
-	// Submit command without waiting for the command to be processed
-	PushRxMessage(pHardware, pRXCommand);
+	if ((pHardware == NULL) || (pRXCommand == NULL))
+		return;
+	if ((pHardware->HwdType == HTYPE_Domoticz) && (pHardware->m_HwdID == 8765))
+	{
+		//Directly process the command
+		ProcessRXMessage(pHardware, pRXCommand);
+	}
+	else
+	{
+		// Submit command without waiting for the command to be processed
+		PushRxMessage(pHardware, pRXCommand);
+	}
 }
 
 void MainWorker::PushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand) {
