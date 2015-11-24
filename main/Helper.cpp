@@ -432,7 +432,9 @@ double RoundDouble(const long double invalue, const short numberOfPrecisions)
 }
 
 double ConvertTemperature(const double tValue, const unsigned char tSign)
-{
+{	//Make NaN into NULL for JSON 
+	if (isnan(tValue))
+		return NULL;
 	if (tSign=='C')
 		return tValue;
 	return RoundDouble(ConvertToFahrenheit(tValue),1);
