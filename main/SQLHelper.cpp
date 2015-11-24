@@ -2090,7 +2090,7 @@ void CSQLHelper::Do_Work()
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
 			{
 				//start script
-				_log.Log(LOG_STATUS, "Executing script: %s", itt->_ID.c_str());
+				_log.Log(LOG_STATUS, "Executing script: %s %s", itt->_ID.c_str(),itt->_sValue.c_str());
 #ifdef WIN32
 				ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
 #else
@@ -2098,7 +2098,7 @@ void CSQLHelper::Do_Work()
 				int ret=system(lscript.c_str());
 				if (ret != 0)
 				{
-					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d",itt->_ID.c_str(), ret);
+					_log.Log(LOG_ERROR, "Error executing script command (%s %s). returned: %d",itt->_ID.c_str(),itt->_sValue.c_str(), ret);
 				}
 #endif
 			}
