@@ -1189,6 +1189,8 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		bool bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
 		if (!bFound)
 			bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_DOOR_LOCK, vID) == true);
+		if (!bFound)
+			bFound = (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, "Level", vID) == true);
 		if (bFound)
 		{
 			OpenZWave::ValueID::ValueType vType = vID.GetType();
