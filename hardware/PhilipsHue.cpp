@@ -512,7 +512,8 @@ bool CPhilipsHue::GetLightStates()
 		std::string ltype = root["lights"][szNode]["type"].asString();
 		if (
 			(ltype == "Dimmable plug-in unit") ||
-			(ltype == "Dimmable light")
+			(ltype == "Dimmable light") ||
+			(ltype == "Color temperature light")
 			)
 		{
 			//Normal light (with dim option)
