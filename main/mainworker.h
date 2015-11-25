@@ -195,25 +195,6 @@ private:
 	void decode_BateryLevel(bool bIsInPercentage, unsigned char level);
 	unsigned char get_BateryLevel(const CDomoticzHardwareBase *pHardware, bool bIsInPercentage, unsigned char level);
 
-	// RxMessage queue resources
-	volatile bool m_stopRxMessageThread;
-	volatile unsigned long m_rxMessageIdx;
-	boost::shared_ptr<boost::thread> m_rxMessageThread;
-	void Do_Work_On_Rx_Messages();
-	struct _tRxQueueItem {
-		unsigned long rxMessageIdx;
-		int hardwareId;
-		std::vector<unsigned char> vrxCommand;
-		boost::uint16_t crc;
-		queue_element_trigger* trigger;
-	};
-	concurrent_queue<_tRxQueueItem> m_rxMessageQueue;
-	void UnlockRxMessageQueue();
-	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
-	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
-	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const bool wait);
-	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
-
 	//(RFX) Message decoders
 	unsigned long long decode_InterfaceMessage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_InterfaceControl(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
