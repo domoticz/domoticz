@@ -648,7 +648,7 @@ bool CNetatmo::SetProgramState(const int idx, const int newState)
 
 void CNetatmo::SetSetpoint(const int idx, const float temp)
 {
-	if (idx >= m_thermostatDeviceID.size())
+	if (idx >= (int)m_thermostatDeviceID.size())
 		return;
 	if ((m_thermostatDeviceID[idx].empty()) || (m_thermostatModuleID[idx].empty()))
 	{
