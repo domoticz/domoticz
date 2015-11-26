@@ -1296,35 +1296,35 @@ void CEnOceanESP3::ParseRadioDatagram()
 						//(EPP A5-02 01/30)
 						float ScaleMax=0;
 						float ScaleMin=0;
-						if (iType==0x01) { ScaleMax=-40; ScaleMin=0; }
-						else if (iType==0x02) { ScaleMax=-30; ScaleMin=10; }
-						else if (iType==0x03) { ScaleMax=-20; ScaleMin=20; }
-						else if (iType==0x04) { ScaleMax=-10; ScaleMin=30; }
-						else if (iType==0x05) { ScaleMax=0; ScaleMin=40; }
-						else if (iType==0x06) { ScaleMax=10; ScaleMin=50; }
-						else if (iType==0x07) { ScaleMax=20; ScaleMin=60; }
-						else if (iType==0x08) { ScaleMax=30; ScaleMin=70; }
-						else if (iType==0x09) { ScaleMax=40; ScaleMin=80; }
-						else if (iType==0x0A) { ScaleMax=50; ScaleMin=90; }
-						else if (iType==0x0B) { ScaleMax=60; ScaleMin=100; }
-						else if (iType==0x10) { ScaleMax=-60; ScaleMin=20; }
-						else if (iType==0x11) { ScaleMax=-50; ScaleMin=30; }
-						else if (iType==0x12) { ScaleMax=-40; ScaleMin=40; }
-						else if (iType==0x13) { ScaleMax=-30; ScaleMin=50; }
-						else if (iType==0x14) { ScaleMax=-20; ScaleMin=60; }
-						else if (iType==0x15) { ScaleMax=-10; ScaleMin=70; }
-						else if (iType==0x16) { ScaleMax=0; ScaleMin=80; }
-						else if (iType==0x17) { ScaleMax=10; ScaleMin=90; }
-						else if (iType==0x18) { ScaleMax=20; ScaleMin=100; }
-						else if (iType==0x19) { ScaleMax=30; ScaleMin=110; }
-						else if (iType==0x1A) { ScaleMax=40; ScaleMin=120; }
-						else if (iType==0x1B) { ScaleMax=50; ScaleMin=130; }
-						else if (iType==0x20) { ScaleMax=-10; ScaleMin=41.2f; }
-						else if (iType==0x30) { ScaleMax=-40; ScaleMin=62.3f; }
+						if (iType==0x01) { ScaleMin=-40; ScaleMax=0; }
+						else if (iType==0x02) { ScaleMin=-30; ScaleMax=10; }
+						else if (iType==0x03) { ScaleMin=-20; ScaleMax=20; }
+						else if (iType==0x04) { ScaleMin=-10; ScaleMax=30; }
+						else if (iType==0x05) { ScaleMin=0; ScaleMax=40; }
+						else if (iType==0x06) { ScaleMin=10; ScaleMax=50; }
+						else if (iType==0x07) { ScaleMin=20; ScaleMax=60; }
+						else if (iType==0x08) { ScaleMin=30; ScaleMax=70; }
+						else if (iType==0x09) { ScaleMin=40; ScaleMax=80; }
+						else if (iType==0x0A) { ScaleMin=50; ScaleMax=90; }
+						else if (iType==0x0B) { ScaleMin=60; ScaleMax=100; }
+						else if (iType==0x10) { ScaleMin=-60; ScaleMax=20; }
+						else if (iType==0x11) { ScaleMin=-50; ScaleMax=30; }
+						else if (iType==0x12) { ScaleMin=-40; ScaleMax=40; }
+						else if (iType==0x13) { ScaleMin=-30; ScaleMax=50; }
+						else if (iType==0x14) { ScaleMin=-20; ScaleMax=60; }
+						else if (iType==0x15) { ScaleMin=-10; ScaleMax=70; }
+						else if (iType==0x16) { ScaleMin=0; ScaleMax=80; }
+						else if (iType==0x17) { ScaleMin=10; ScaleMax=90; }
+						else if (iType==0x18) { ScaleMin=20; ScaleMax=100; }
+						else if (iType==0x19) { ScaleMin=30; ScaleMax=110; }
+						else if (iType==0x1A) { ScaleMin=40; ScaleMax=120; }
+						else if (iType==0x1B) { ScaleMin=50; ScaleMax=130; }
+						else if (iType==0x20) { ScaleMin=-10; ScaleMax=41.2f; }
+						else if (iType==0x30) { ScaleMin=-40; ScaleMax=62.3f; }
 
 						float temp;
 						if (iType<0x20)
-							temp=GetValueRange(DATA_BYTE1,ScaleMax,ScaleMin);
+							temp=GetValueRange(DATA_BYTE1,ScaleMax,ScaleMin,0,255);
 						else
 							temp=GetValueRange(float(((DATA_BYTE2&3)<<8)|DATA_BYTE1),ScaleMax,ScaleMin); //10bit
 						RBUF tsen;
@@ -1349,11 +1349,11 @@ void CEnOceanESP3::ParseRadioDatagram()
 						//(EPP A5-04 01/02)
 						float ScaleMax = 0;
 						float ScaleMin = 0;
-						if (iType == 0x01) { ScaleMax = 0; ScaleMin = 40; }
-						else if (iType == 0x02) { ScaleMax = -20; ScaleMin = 60; }
-						else if (iType == 0x03) { ScaleMax = -20; ScaleMin = 60; } //10bit?
+						if (iType == 0x01) { ScaleMin = 0; ScaleMax = 40; }
+						else if (iType == 0x02) { ScaleMin = -20; ScaleMax = 60; }
+						else if (iType == 0x03) { ScaleMin = -20; ScaleMax = 60; } //10bit?
 
-						float temp = GetValueRange(DATA_BYTE1, ScaleMax, ScaleMin);
+						float temp = GetValueRange(DATA_BYTE1, ScaleMax, ScaleMin,250,0);
 						float hum = GetValueRange(DATA_BYTE2, 100);
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
