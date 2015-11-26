@@ -1380,7 +1380,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		} else {
 			//invalid cookie
 			// RK, todo: This goes wrong with domoproxy.
-			//session.removecookie = true;
+			// session.removecookie = true;
 		}
 	}
 

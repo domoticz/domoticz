@@ -8,10 +8,7 @@
 
 extern std::string szAppVersion;
 static std::string _instanceid;
-#undef WITH_MUTEX
-#ifdef WITH_MUTEX
 static boost::mutex prefs_mutex;
-#endif
 
 namespace http {
 	namespace server {
@@ -19,7 +16,8 @@ namespace http {
 		CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm)
 			: _socket(io_service, context),
 			_io_service(io_service),
-			doStop(false)
+			doStop(false),
+			we_locked_prefs_mutex(false)
 		{
 			_apikey = "";
 			_instanceid = "";
@@ -44,6 +42,13 @@ namespace http {
 			std::string address = "my.domoticz.com";
 			std::string port = "9999";
 
+			_log.Log(LOG_NORM, "PROXY: DBG: Start connecting");
+			if (we_locked_prefs_mutex) {
+				_log.Log(LOG_NORM, "PROXY: DBG: Unlocking previous lock");
+				// avoid deadlock if we got a read or write error in between handle_handshake() and HandleAuthresp()
+				we_locked_prefs_mutex = false;
+				prefs_mutex.unlock();
+			}
 			boost::asio::ip::tcp::resolver resolver(_io_service);
 			boost::asio::ip::tcp::resolver::query query(address, port);
 			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
@@ -57,12 +62,14 @@ namespace http {
 		{
 			if (!error)
 			{
+				_log.Log(LOG_NORM, "PROXY: DBG: Start handshake");
 				_socket.async_handshake(boost::asio::ssl::stream_base::client,
 					boost::bind(&CProxyClient::handle_handshake, this,
 						boost::asio::placeholders::error));
 			}
 			else if (endpoint_iterator != boost::asio::ip::tcp::resolver::iterator())
 			{
+				_log.Log(LOG_NORM, "PROXY: DBG: trying next iterator");
 				_socket.lowest_layer().close();
 				boost::asio::ip::tcp::endpoint endpoint = *endpoint_iterator;
 				_socket.lowest_layer().async_connect(endpoint,
@@ -75,6 +82,9 @@ namespace http {
 				if (!doStop) {
 					boost::this_thread::sleep_for(boost::chrono::seconds(10));
 					Reconnect();
+				}
+				else {
+					_log.Log(LOG_NORM, "PROXY: DBG: dostop = true in handle_connect");
 				}
 			}
 		}
@@ -94,6 +104,7 @@ namespace http {
 
 		void CProxyClient::LoginToService()
 		{
+			_log.Log(LOG_NORM, "PROXY: DBG: LoginToService()");
 			// send authenticate pdu
 			int subsystems = 1;
 			CValueLengthPart parameters;
@@ -109,10 +120,10 @@ namespace http {
 		{
 			if (!error)
 			{
-#ifdef WITH_MUTEX
+				_log.Log(LOG_NORM, "PROXY: DBG: locking prefs_mutex in handle_handshake");
 				// lock until we have a valid api id
 				prefs_mutex.lock();
-#endif
+				we_locked_prefs_mutex = true;
 				LoginToService();
 			}
 			else
@@ -152,6 +163,7 @@ namespace http {
 			http::server::request_parser request_parser_;
 			http::server::request request_;
 
+			_log.Log(LOG_NORM, "PROXY: DBG: GetRequest()");
 			boost::tribool result;
 			try
 			{
@@ -280,15 +292,16 @@ namespace http {
 				parameters.AddValue((void *)&reply_.status, SIZE_INT);
 				parameters.AddPart((void *)responseheaders.c_str(), responseheaders.length() + 1);
 				parameters.AddPart((void *)reply_.content.c_str(), reply_.content.size());
+
+				// send response to proxy
+				MyWrite(PDU_RESPONSE, &parameters);
 				break;
 			default:
 				// unknown subsystem
 				_log.Log(LOG_ERROR, "PROXY: Got pdu for unknown subsystem %d.", subsystem);
-				break;
+				ReadMore();
+				return;
 			}
-
-			// send response to proxy
-			MyWrite(PDU_RESPONSE, &parameters);
 		}
 
 		void CProxyClient::HandleAssignkey(ProxyPdu *pdu)
@@ -302,7 +315,7 @@ namespace http {
 				_log.Log(LOG_ERROR, "PROXY: Invalid request while obtaining API key");
 				return;
 			}
-			_log.Log(LOG_NORM, "PROXY: We were assigned an instance id: %s.\n", newapi);
+			_log.Log(LOG_STATUS, "PROXY: We were assigned an instance id: %s.\n", newapi);
 			_instanceid = newapi;
 			m_sql.UpdatePreferencesVar("MyDomoticzInstanceId", _instanceid);
 			free(newapi);
@@ -327,10 +340,11 @@ namespace http {
 			char *reason;
 			CValueLengthPart part(pdu);
 
-#ifdef WITH_MUTEX
+			_log.Log(LOG_NORM, "PROXY: DBG: HandleAuthresp, unlock mutex");
 			// unlock prefs mutex
+			we_locked_prefs_mutex = false;
 			prefs_mutex.unlock();
-#endif
+
 			if (!part.GetNextValue((void **)&auth, &authlen)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid pdu while receiving authentication response");
 				return;
@@ -342,6 +356,7 @@ namespace http {
 			_log.Log(LOG_STATUS, "PROXY: Authenticate result: %s.", auth ? "success" : reason);
 			free(reason);
 			if (!auth) {
+				_log.Log(LOG_NORM, "PROXY: DBG: HandleAuthresp, Stop Connection");
 				Stop();
 				return;
 			}
@@ -356,6 +371,7 @@ namespace http {
 				const char *data = boost::asio::buffer_cast<const char*>(_readbuf.data());
 				ProxyPdu pdu(data, _readbuf.size());
 				if (pdu.Disconnected()) {
+					_log.Log(LOG_NORM, "PROXY: DBG: Incomplete PDU, ReadMore(). Does it stop here?");
 					ReadMore();
 					return;
 				}
@@ -386,6 +402,7 @@ namespace http {
 				// Initiate graceful connection closure.
 				_socket.lowest_layer().close();
 				if (doStop) {
+					_log.Log(LOG_NORM, "PROXY: DBG: handle_read, doStop == true");
 					return;
 				}
 				// we are disconnected, reconnect
@@ -396,18 +413,20 @@ namespace http {
 
 		void CProxyClient::Stop()
 		{
-#ifdef WITH_MUTEX
-			// todo: check if this gives the proper results
-			while (!prefs_mutex.try_lock()) {
+			if (we_locked_prefs_mutex) {
+				_log.Log(LOG_NORM, "PROXY: DBG: Stop(), unlock mutex");
+				we_locked_prefs_mutex = false;
+				prefs_mutex.unlock();
 			}
-			prefs_mutex.unlock();
-#endif
+
+			_log.Log(LOG_NORM, "PROXY: DBG: Stop(), set doStop = true");
 			doStop = true;
 			_socket.lowest_layer().close();
 		}
 
 		CProxyClient::~CProxyClient()
 		{
+			_log.Log(LOG_NORM, "PROXY: DBG: destructor");
 		}
 
 		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm)

@@ -56,6 +56,7 @@ namespace http {
 			http::server::cWebem *m_pWebEm;
 			ProxyPdu *writePdu;
 			std::set<std::string> connectedips_;
+			bool we_locked_prefs_mutex;
 		};
 
 		class CProxyManager {
