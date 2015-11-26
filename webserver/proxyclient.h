@@ -57,6 +57,11 @@ namespace http {
 			ProxyPdu *writePdu;
 			std::set<std::string> connectedips_;
 			bool we_locked_prefs_mutex;
+			/// read timeout timer
+			boost::asio::deadline_timer timer_;
+			void handle_timeout(const boost::system::error_code& error);
+			/// timeouts (persistent and other) connections in seconds
+			int timeout_;
 		};
 
 		class CProxyManager {

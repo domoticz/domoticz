@@ -10,6 +10,8 @@ extern std::string szAppVersion;
 static std::string _instanceid;
 static boost::mutex prefs_mutex;
 
+#define TIMEOUT 60
+
 namespace http {
 	namespace server {
 
@@ -17,7 +19,9 @@ namespace http {
 			: _socket(io_service, context),
 			_io_service(io_service),
 			doStop(false),
-			we_locked_prefs_mutex(false)
+			we_locked_prefs_mutex(false),
+			timeout_(TIMEOUT),
+			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
 		{
 			_apikey = "";
 			_instanceid = "";
@@ -89,6 +93,15 @@ namespace http {
 			}
 		}
 
+		void CProxyClient::handle_timeout(const boost::system::error_code& error)
+		{
+			if (error != boost::asio::error::operation_aborted) {
+				_log.Log(LOG_ERROR, "PROXY: timeout occurred, reconnecting");
+				_socket.lowest_layer().close(); // should induce a reconnect in handle_read with error != 0
+			}
+		}
+
+
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart *parameters)
 		{
 			_writebuf.clear();
@@ -138,6 +151,11 @@ namespace http {
 		{
 			// read chunks of max 4 KB
 			boost::asio::streambuf::mutable_buffers_type buf = _readbuf.prepare(4096);
+
+			// set timeout timer
+			timer_.expires_from_now(boost::posix_time::seconds(timeout_));
+			timer_.async_wait(boost::bind(&CProxyClient::handle_timeout, this, boost::asio::placeholders::error));
+
 			_socket.async_read_some(buf,
 				boost::bind(&CProxyClient::handle_read, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
 				);
@@ -365,6 +383,8 @@ namespace http {
 
 		void CProxyClient::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
 		{
+			// data read, no need for timeouts anymore
+			timer_.cancel();
 			if (!error)
 			{
 				_readbuf.commit(bytes_transferred);
