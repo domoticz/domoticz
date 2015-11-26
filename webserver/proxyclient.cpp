@@ -142,6 +142,10 @@ namespace http {
 			else
 			{
 				_log.Log(LOG_ERROR, "PROXY: Handshake failed, reconnecting: %s", error.message().c_str());
+				if (doStop) {
+					_log.Log(LOG_NORM, "PROXY: DBG: handle_handshake: doStop = true");
+					return;
+				}
 				_socket.lowest_layer().close();
 				Reconnect();
 			}
@@ -418,13 +422,13 @@ namespace http {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "PROXY: Read failed, reconnecting: %s", error.message().c_str());
-				// Initiate graceful connection closure.
-				_socket.lowest_layer().close();
 				if (doStop) {
 					_log.Log(LOG_NORM, "PROXY: DBG: handle_read, doStop == true");
 					return;
 				}
+				_log.Log(LOG_ERROR, "PROXY: Read failed, reconnecting: %s", error.message().c_str());
+				// Initiate graceful connection closure.
+				_socket.lowest_layer().close();
 				// we are disconnected, reconnect
 				boost::this_thread::sleep_for(boost::chrono::seconds(10));
 				Reconnect();
