@@ -1296,7 +1296,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						//(EPP A5-02 01/30)
 						float ScaleMax=0;
 						float ScaleMin=0;
-						if (iType==0x01) { ScaleMax=-40; ScaleMin=0; }
+						if (iType==0x01) { ScaleMin=-40; ScaleMax=0; }
 						else if (iType==0x02) { ScaleMin=-30; ScaleMax=10; }
 						else if (iType==0x03) { ScaleMin=-20; ScaleMax=20; }
 						else if (iType==0x04) { ScaleMin=-10; ScaleMax=30; }
