@@ -157,7 +157,7 @@
 					return '"'+encodeURIComponent($(titleB).text())+'"'; 
 				}
 				else if ($(titleB).attr("name") == "NUM") {
-					return $(titleB).text(); 
+					return '"'+$(titleB).text()+'"'; 
 				}
 				return "unknown comparevariable "+variableType;
 			}
@@ -345,7 +345,7 @@
 						var valueB = $(this).find("value[name='B']")[0];
 						var titleB = $(valueB).find("title")[0];
 						var blockB = $(valueB).children("block:first");
-						setString += '='+$(titleB).text()+''; 
+						setString += '="'+$(titleB).text()+''; 
 						setString += ' AFTER '+ $(titleC).text()+'"'; 
 						setArray.push(setString);
 					}

@@ -5,7 +5,7 @@ IF(USE_BUILTIN_LUA)
   add_subdirectory (lua)
   get_directory_property (LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
-ELSE(USE_BUILTIN_SQLITE)
+ELSE(USE_BUILTIN_LUA)
   find_package(PkgConfig)
   pkg_check_modules(LUA lua>=5.2)
   IF(LUA_FOUND)
