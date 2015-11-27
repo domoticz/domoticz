@@ -141,6 +141,8 @@ private:
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
 
+	boost::mutex m_decodeRXMessageMutex;
+
 	std::vector<int> m_devicestorestart;
 
 	int m_SecCountdown;
