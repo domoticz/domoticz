@@ -157,7 +157,7 @@
 					return '"'+encodeURIComponent($(titleB).text())+'"'; 
 				}
 				else if ($(titleB).attr("name") == "NUM") {
-					return '"'+$(titleB).text()+'"'; 
+					return $(titleB).text();
 				}
 				return "unknown comparevariable "+variableType;
 			}
