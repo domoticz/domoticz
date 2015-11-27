@@ -1317,8 +1317,10 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		// Parse session id and its expiration date
 		std::string scookie = cookie_header;
 		int fpos = scookie.find("SID=");
-		int upos = scookie.find("_");
-		int ppos = scookie.find(".");
+
+		int upos = scookie.find("_", fpos);
+		int ppos = scookie.find(".", upos);
+
 		time_t now = mytime(NULL);
 		if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 		{
@@ -1541,7 +1543,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
 			std::string scookie = cookie;
 			int fpos = scookie.find("SID=");
-			int upos = scookie.find("_");
+			int upos = scookie.find("_", fpos);
 			if ((fpos != std::string::npos) && (upos != std::string::npos))
 			{
 				std::string sSID = scookie.substr(fpos + 4, upos-fpos-4);
