@@ -76,9 +76,10 @@ namespace http {
 
 			// restart threads
 			const int connections = GetNrMyDomoticzThreads();
+			const int subsystems = SUBSYSTEM_HTTP | SUBSYSTEM_SHAREDDOMOTICZ | SUBSYSTEM_APPS;
 			proxymanagerCollection.resize(connections);
 			for (int i = 0; i < connections; i++) {
-				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm);
+				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm, subsystems);
 				proxymanagerCollection[i]->Start();
 			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");

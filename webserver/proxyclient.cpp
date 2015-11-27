@@ -15,13 +15,14 @@ static boost::mutex prefs_mutex;
 namespace http {
 	namespace server {
 
-		CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm)
+		CProxyClient::CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm, int allowed_subsystems)
 			: _socket(io_service, context),
 			_io_service(io_service),
 			doStop(false),
 			we_locked_prefs_mutex(false),
 			timeout_(TIMEOUT),
-			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
+			timer_(io_service, boost::posix_time::seconds(TIMEOUT)),
+			_allowed_subsystems(allowed_subsystems)
 		{
 			_apikey = "";
 			_instanceid = "";
@@ -102,10 +103,13 @@ namespace http {
 		}
 
 
-		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart *parameters)
+		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart *parameters, bool single_write)
 		{
+			// protect against multiple writes at a time
+			write_mutex.lock();
 			_writebuf.clear();
 			writePdu = new ProxyPdu(type, parameters);
+			mSingleWrite = single_write;
 
 			_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
 
@@ -119,14 +123,13 @@ namespace http {
 		{
 			_log.Log(LOG_NORM, "PROXY: DBG: LoginToService()");
 			// send authenticate pdu
-			int subsystems = 1;
 			CValueLengthPart parameters;
 			parameters.AddPart((void *)_apikey.c_str(), _apikey.length() + 1);
 			parameters.AddPart((void *)_instanceid.c_str(), _instanceid.length() + 1);
 			parameters.AddPart((void *)_password.c_str(), _password.length() + 1);
 			parameters.AddPart((void *)szAppVersion.c_str(), szAppVersion.length() + 1);
-			parameters.AddValue((void *)&subsystems, SIZE_INT);
-			MyWrite(PDU_AUTHENTICATE, &parameters);
+			parameters.AddValue((void *)&_allowed_subsystems, SIZE_INT);
+			MyWrite(PDU_AUTHENTICATE, &parameters, false);
 		}
 
 		void CProxyClient::handle_handshake(const boost::system::error_code& error)
@@ -141,12 +144,13 @@ namespace http {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "PROXY: Handshake failed, reconnecting: %s", error.message().c_str());
 				if (doStop) {
 					_log.Log(LOG_NORM, "PROXY: DBG: handle_handshake: doStop = true");
 					return;
 				}
+				_log.Log(LOG_ERROR, "PROXY: Handshake failed, reconnecting: %s", error.message().c_str());
 				_socket.lowest_layer().close();
+				boost::this_thread::sleep_for(boost::chrono::seconds(10));
 				Reconnect();
 			}
 		}
@@ -168,15 +172,19 @@ namespace http {
 		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 		{
 			delete writePdu;
+			// signal free to go for next write
 			if (!error)
 			{
 				// Write complete. Reading pdu.
-				ReadMore();
+				if (!mSingleWrite) {
+					ReadMore();
+				}
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "PROXY: Write failed: %s", error.message().c_str());
 			}
+			write_mutex.unlock();
 		}
 
 		void CProxyClient::GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_)
@@ -280,6 +288,7 @@ namespace http {
 					return;
 				}
 
+				_log.Log(LOG_NORM, "PROXY: DBG: %s", requesturl);
 				if (bodylen > 0) {
 					request = "POST ";
 				}
@@ -316,7 +325,7 @@ namespace http {
 				parameters.AddPart((void *)reply_.content.c_str(), reply_.content.size());
 
 				// send response to proxy
-				MyWrite(PDU_RESPONSE, &parameters);
+				MyWrite(PDU_RESPONSE, &parameters, false);
 				break;
 			default:
 				// unknown subsystem
@@ -351,7 +360,7 @@ namespace http {
 			CValueLengthPart parameters;
 
 			// send response to proxy
-			MyWrite(PDU_ENQUIRE, &parameters);
+			MyWrite(PDU_ENQUIRE, &parameters, false);
 		}
 
 		void CProxyClient::HandleAuthresp(ProxyPdu *pdu)
@@ -403,7 +412,13 @@ namespace http {
 
 				switch (pdu._type) {
 				case PDU_REQUEST:
-					HandleRequest(&pdu);
+					if (_allowed_subsystems & SUBSYSTEM_HTTP) {
+						HandleRequest(&pdu);
+					}
+					else {
+						_log.Log(LOG_ERROR, "PROXY: HTTP access disallowed, denying request.");
+						ReadMore();
+					}
 					break;
 				case PDU_ASSIGNKEY:
 					HandleAssignkey(&pdu);
@@ -453,10 +468,11 @@ namespace http {
 			_log.Log(LOG_NORM, "PROXY: DBG: destructor");
 		}
 
-		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm)
+		CProxyManager::CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, int allowed_subsystems)
 		{
 			proxyclient = NULL;
 			m_pWebEm = webEm;
+			_allowed_subsystems = allowed_subsystems;
 		}
 
 		CProxyManager::~CProxyManager()
@@ -479,7 +495,7 @@ namespace http {
 				boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::sslv23);
 				ctx.set_verify_mode(boost::asio::ssl::verify_none);
 
-				proxyclient = new CProxyClient(io_service, ctx, m_pWebEm);
+				proxyclient = new CProxyClient(io_service, ctx, m_pWebEm, _allowed_subsystems);
 
 				io_service.run();
 			}

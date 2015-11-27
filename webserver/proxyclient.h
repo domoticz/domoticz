@@ -15,7 +15,7 @@ namespace http {
 
 		class CProxyClient {
 		public:
-			CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm);
+			CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm, int allowed_subsystems);
 			~CProxyClient();
 
 			void Reconnect();
@@ -33,7 +33,7 @@ namespace http {
 
 			void ReadMore();
 
-			void MyWrite(pdu_type type, CValueLengthPart *parameters);
+			void MyWrite(pdu_type type, CValueLengthPart *parameters, bool single_write);
 			void LoginToService();
 
 			void HandleRequest(ProxyPdu *pdu);
@@ -45,6 +45,7 @@ namespace http {
 			void Stop();
 
 		private:
+			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);
 			boost::asio::ssl::stream<boost::asio::ip::tcp::socket> _socket;
 			std::string _apikey;
@@ -55,6 +56,7 @@ namespace http {
 			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			ProxyPdu *writePdu;
+			bool mSingleWrite;
 			std::set<std::string> connectedips_;
 			bool we_locked_prefs_mutex;
 			/// read timeout timer
@@ -62,11 +64,13 @@ namespace http {
 			void handle_timeout(const boost::system::error_code& error);
 			/// timeouts (persistent and other) connections in seconds
 			int timeout_;
+			/// make sure we only write one packet at a time
+			boost::mutex write_mutex;
 		};
 
 		class CProxyManager {
 		public:
-			CProxyManager(const std::string& doc_root, http::server::cWebem *webEm);
+			CProxyManager(const std::string& doc_root, http::server::cWebem *webEm, int allowed_subsystems);
 			~CProxyManager();
 			int Start();
 			void Stop();
@@ -77,6 +81,7 @@ namespace http {
 			boost::thread* m_thread;
 			http::server::cWebem *m_pWebEm;
 			boost::mutex end_mutex;
+			int _allowed_subsystems;
 		};
 
 	}

@@ -16,6 +16,10 @@ typedef enum {
 	PDU_SIGNOFF
 } pdu_type;
 
+#define SUBSYSTEM_HTTP 0x01
+#define SUBSYSTEM_SHAREDDOMOTICZ 0x02
+#define SUBSYSTEM_APPS 0x04
+
 class CValueLengthPart;
 
 class ProxyPdu {
