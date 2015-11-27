@@ -768,12 +768,11 @@ namespace http {
 						goto exitjson;
 					}
 				}
-				if (cparam == "logout")
+				if (cparam == "dologout")
 				{
 					root["status"] = "OK";
 					root["title"] = "Logout";
-					m_retstr = "authorize";
-					return m_retstr;
+					goto exitjson;
 
 				}
 				HandleCommand(cparam, session, req, root);
