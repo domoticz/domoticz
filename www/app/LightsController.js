@@ -1032,7 +1032,7 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LedColor").hide();
 			}
-			if ($.bIsRGB==true) {
+			if ($.bIsRGB==true || $.bIsRGBW==true) {
 				$("#lightcontent #optionsRGB").show();
 			}
 			else {
