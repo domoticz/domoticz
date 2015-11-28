@@ -41,7 +41,7 @@
     </Value>
 
     <Value type="byte" genre="config" instance="1" index="9" label="Wake up delay" value="0">
-      <Help>A delay from the wake up time to give the external contact a chance to change his status. (Default 0, value * 100 ms, 0 – 25,5 seconds)</Help>
+      <Help>A delay from the wake up time to give the external contact a chance to change his status. (Default 0, value * 100 ms, 0 - 25,5 seconds)</Help>
     </Value>
 
   </CommandClass>
@@ -52,7 +52,7 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="2">
-      <Group index="1" max_associations="5" label="Group 1: if the internal door contact (magnet) is triggered it sends a Z-Wave frame to every node in this group." auto="false"/>
+      <Group index="1" max_associations="5" label="Group 1: if the internal door contact (magnet) is triggered it sends a Z-Wave frame to every node in this group." auto="true"/>
       <Group index="2" max_associations="5" label="Group 2: if the external door contact is triggered it sends a Z-Wave frame to every node in this group if it is configured (see configuration documentation param 2: external contact)." auto="false"/>
     </Associations>
   </CommandClass>

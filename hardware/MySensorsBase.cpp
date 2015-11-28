@@ -781,7 +781,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			lmeter.battery_level = pChild->batValue;
 			if (pChild->hasBattery)
 				lmeter.battery_level = pChild->batValue;
-			sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+			sDecodeRXMessage(this, (const unsigned char *)&lmeter, (!pChild->childName.empty()) ? pChild->childName.c_str() : "Light Level");
 		}
 		break;
 	case V_LEVEL:
@@ -945,7 +945,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			gswitch.battery_level = pChild->batValue;
 			gswitch.rssi = 12;
 			gswitch.seqnbr = 0;
-			sDecodeRXMessage(this, (const unsigned char *)&gswitch);
+			sDecodeRXMessage(this, (const unsigned char *)&gswitch, (!pChild->childName.empty()) ? pChild->childName.c_str() : "IR Command");
 		}
 		break;
 	}
@@ -1030,13 +1030,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str());
 }
 
 bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &blind_value)

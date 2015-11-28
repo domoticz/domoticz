@@ -32,7 +32,7 @@ public:
 	unsigned char m_SeqNr;
 	unsigned char m_rxbufferpos;
 	bool m_bEnableReceive;
-	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
+	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName)> sDecodeRXMessage;
 	boost::signals2::signal<void(CDomoticzHardwareBase *pDevice)> sOnConnected;
 	void *m_pUserData;
 	bool m_bOutputLog;
