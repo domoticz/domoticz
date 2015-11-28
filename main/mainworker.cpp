@@ -1657,6 +1657,7 @@ void MainWorker::DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const u
 	if ((pHardware->HwdType == HTYPE_Domoticz) && (pHardware->m_HwdID == 8765))
 	{
 		//Directly process the command
+		boost::lock_guard<boost::mutex> l(m_decodeRXMessageMutex);
 		ProcessRXMessage(pHardware, pRXCommand, defaultName);
 	}
 	else
