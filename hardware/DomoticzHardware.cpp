@@ -669,6 +669,16 @@ void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int Chi
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str());
 }
 
+void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float LPM, const std::string &defaultname)
+{
+	_tGeneralDevice gDevice;
+	gDevice.subtype = sTypeWaterflow;
+	gDevice.id = ChildID;
+	gDevice.floatval1 = LPM;
+	gDevice.intval1 = static_cast<int>(NodeID);
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str());
+}
+
 bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const int ChildID)
 {
 	std::vector<std::vector<std::string> > result;

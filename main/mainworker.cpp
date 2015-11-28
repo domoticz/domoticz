@@ -8944,6 +8944,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		(subType == sTypeVoltage) ||
 		(subType == sTypeCurrent) ||
 		(subType == sTypePercentage) ||
+		(subType == sTypeWaterflow) ||
 		(subType == sTypePressure) ||
 		(subType == sTypeZWaveClock) ||
 		(subType == sTypeZWaveThermostatMode) ||
@@ -9064,6 +9065,14 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		if (DevRowIdx == -1)
 			return -1;
 		m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName,devType, subType, NTYPE_PERCENTAGE, pMeter->floatval1);
+	}
+	else if (subType == sTypeWaterflow)
+	{
+		sprintf(szTmp, "%.2f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, m_LastDeviceName);
+		if (DevRowIdx == -1)
+			return -1;
+		m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypeFan)
 	{
@@ -9194,6 +9203,11 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 		case sTypePercentage:
 			WriteMessage("subtype       = Percentage");
 			sprintf(szTmp, "Percentage = %.2f",pMeter->floatval1);
+			WriteMessage(szTmp);
+			break;
+		case sTypeWaterflow:
+			WriteMessage("subtype       = Waterflow");
+			sprintf(szTmp, "l/min = %.2f", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeKwh:
@@ -11711,6 +11725,20 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			s_strid >> ID;
 			_tGeneralDevice gDevice;
 			gDevice.subtype = sTypePercentage;
+			gDevice.id = unit;
+			gDevice.floatval1 = (float)atof(sValue.c_str());
+			gDevice.intval1 = static_cast<int>(ID);
+			DecodeRXMessage(pHardware, (const unsigned char *)&gDevice);
+			return true;
+		}
+		else if ((devType == pTypeGeneral) && (subType == sTypeWaterflow))
+		{
+			unsigned long ID;
+			std::stringstream s_strid;
+			s_strid << std::hex << DeviceID;
+			s_strid >> ID;
+			_tGeneralDevice gDevice;
+			gDevice.subtype = sTypeWaterflow;
 			gDevice.id = unit;
 			gDevice.floatval1 = (float)atof(sValue.c_str());
 			gDevice.intval1 = static_cast<int>(ID);

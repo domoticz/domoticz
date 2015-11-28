@@ -607,6 +607,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
+				else if (sitem.subType == sTypeWaterflow)
+				{
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					isUtility = true;
+				}
 				else if (sitem.subType == sTypeVoltage)
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
