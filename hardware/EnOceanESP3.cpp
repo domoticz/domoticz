@@ -980,7 +980,7 @@ bool CEnOceanESP3::ParseData()
 					tsen.LIGHTING2.unitcode=SecondRockerID+10;
 					tsen.LIGHTING2.cmnd=(SecondUpDown==1)?light2_sOn:light2_sOff;
 				}
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL);
 			}
 		}
 		break;
