@@ -1704,6 +1704,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 	rxMessage.rxMessageIdx = m_rxMessageIdx++;
 	rxMessage.hardwareId = pHardware->m_HwdID;
 	// defensive copy of the command
+	rxMessage.vrxCommand.resize(pRXCommand[0] + 1);
 	rxMessage.vrxCommand.insert(rxMessage.vrxCommand.begin(), pRXCommand, pRXCommand + pRXCommand[0] + 1);
 	rxMessage.crc = 0x0;
 #ifdef DEBUG_RXQUEUE
