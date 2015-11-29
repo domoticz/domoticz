@@ -10434,7 +10434,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.RFY.id3=ID4;
 			lcmd.RFY.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.RFY.unitcode=Unit;
-
 			if (IsTesting)
 			{
 				lcmd.RFY.cmnd = rfy_sProgram;
@@ -10443,9 +10442,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			{
 				if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RFY.cmnd))
 					return false;
-
 			}
-
 			level=15;
 			lcmd.RFY.filler=0;
 			lcmd.RFY.rssi=7;
