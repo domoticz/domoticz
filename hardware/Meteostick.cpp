@@ -225,7 +225,7 @@ void Meteostick::SendTempSensor(const unsigned char Idx, const float Temp, const
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
 void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, const int Hum, const std::string &defaultname)
@@ -248,7 +248,7 @@ void Meteostick::SendTempHumSensor(const unsigned char Idx, const float Temp, co
 	tsen.TEMP_HUM.humidity = (BYTE)Hum;
 	tsen.TEMP_HUM.humidity_status = Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, defaultname.c_str(), 255);
 }
 
 void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname)
@@ -280,7 +280,7 @@ void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, c
 		tsensor.forecast = baroForecastPartlyCloudy;
 	else
 		tsensor.forecast = baroForecastSunny;
-	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str(), 255);
 }
 
 void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const float Speed, const int Direction, const std::string &defaultname)
@@ -335,7 +335,7 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	//tsen.WIND.temperaturel = (BYTE)(dWindChill);
 	tsen.WIND.chilll = (BYTE)(dWindChill);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255);
 }
 
 void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std::string &defaultname)
@@ -351,7 +351,7 @@ void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std
 	tsen.UV.id2 = Idx;
 
 	tsen.UV.uv = (BYTE)round(UV * 10);
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str(), 255);
 }
 
 void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
@@ -361,7 +361,7 @@ void Meteostick::SendPercentage(const unsigned long Idx, const float Percentage,
 	gDevice.id = 1;
 	gDevice.floatval1 = Percentage;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 float Meteostick::GetRainSensorCounter(const unsigned char Idx)
@@ -405,7 +405,7 @@ void Meteostick::SendRainSensor(const unsigned char Idx, const float Rainmm, con
 	tr10 -= (tsen.RAIN.raintotal2 * 256);
 	tsen.RAIN.raintotal3 = (BYTE)(tr10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, defaultname.c_str(), 255);
 }
 
 void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname)
@@ -415,7 +415,7 @@ void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsign
 	gdevice.subtype = sTypeLeafWetness;
 	gdevice.intval1 = Wetness;
 	gdevice.id = finalID;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255);
 }
 
 void Meteostick::SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname)
@@ -431,7 +431,7 @@ void Meteostick::SendSolarRadiationSensor(const unsigned char Idx, const float R
 	gdevice.subtype = sTypeSolarRadiation;
 	gdevice.id = static_cast<int>(Idx);
 	gdevice.floatval1 = Radiation;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), 255);
 }
 
 void Meteostick::ParseLine()

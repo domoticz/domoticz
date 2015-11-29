@@ -134,7 +134,7 @@ void CNest::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
 
@@ -279,7 +279,7 @@ void CNest::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 
 	if (!bDeviceExits)
 	{

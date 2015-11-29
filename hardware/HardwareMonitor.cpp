@@ -140,7 +140,7 @@ void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, co
 	gDevice.id = 1;
 	gDevice.floatval1 = Volt;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname)
@@ -150,7 +150,7 @@ void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, co
 	gDevice.id = 1;
 	gDevice.floatval1 = Curr;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std::string &defaultname)
@@ -172,7 +172,7 @@ void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
@@ -182,7 +182,7 @@ void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Perce
 	gDevice.id = 1;
 	gDevice.floatval1 = Percentage;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname)
@@ -192,7 +192,7 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 	gDevice.id = 1;
 	gDevice.intval1 = static_cast<int>(Idx);
 	gDevice.intval2 = FanSpeed;
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::GetInternalTemperature()

@@ -859,7 +859,7 @@ bool RFXComSerial::onInternalMessage(const unsigned char *pBuffer, const size_t 
 				}
 			}
 			else
-				sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL);
+				sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL, 255);
 			m_rxbufferpos = 0;    //set to zero to receive next message
 		}
 		ii++;

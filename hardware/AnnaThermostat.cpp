@@ -129,7 +129,7 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	thermos.id4=Idx;
 	thermos.dunit=0;
 	thermos.temp=Temp;
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
 bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char length)

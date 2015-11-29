@@ -317,7 +317,7 @@ void CTCPServer::DoDecodeMessage(const CTCPClient *pClient, const unsigned char 
 	Name="DomoticzFromMaster";
 	m_SeqNr=1;
 	m_pUserData=(void*)pClient;
-	sDecodeRXMessage(this, pRXCommand, NULL);
+	sDecodeRXMessage(this, pRXCommand, NULL, -1);
 }
 
 

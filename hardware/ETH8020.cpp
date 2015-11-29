@@ -178,7 +178,7 @@ void CETH8020::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bo
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
 void CETH8020::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
@@ -188,7 +188,7 @@ void CETH8020::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	gDevice.id = 1;
 	gDevice.floatval1 = Volt;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CETH8020::GetMeterDetails()
