@@ -337,13 +337,13 @@ bool DomoticzTCP::CompareToken(const std::string &aToken)
 bool DomoticzTCP::StartHardwareProxy()
 {
 	http::server::CProxyClient *proxy;
-
+	const int version = 1;
 	// we temporarily use the instance id as an identifier for this connection, meanwhile we get a token from the proxy
 	// this means that we connect connect twice to the same server
 	token = m_szIPAddress;
 	proxy = m_webservers.GetProxyForClient(this);
 	if (proxy) {
-		proxy->ConnectToDomoticz(m_szIPAddress, m_username, m_password, this);
+		proxy->ConnectToDomoticz(m_szIPAddress, m_username, m_password, this, version);
 		return true;
 	}
 	return false;

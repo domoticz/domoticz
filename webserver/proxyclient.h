@@ -35,7 +35,7 @@ namespace http {
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
 			bool SharedServerAllowed();
-			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *client);
+			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *client, int version);
 			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *client);
 			void SetSharedServer(tcp::server::CTCPServerProxied *domserv);
 		private:
@@ -62,7 +62,7 @@ namespace http {
 			void HandleEnquire(ProxyPdu *pdu);
 			void HandleAuthresp(ProxyPdu *pdu);
 
-			void HandleServConnect(ProxyPdu *pdu);
+			void HandleServConnect(std::string ip, ProxyPdu *pdu);
 			void HandleServConnectResp(ProxyPdu *pdu);
 			void HandleServDisconnect(ProxyPdu *pdu);
 			void HandleServReceive(ProxyPdu *pdu);

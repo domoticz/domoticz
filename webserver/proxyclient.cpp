@@ -387,16 +387,17 @@ namespace http {
 			ReadMore();
 		}
 
-		void CProxyClient::HandleServConnect(ProxyPdu *pdu)
+		void CProxyClient::HandleServConnect(std::string ip, ProxyPdu *pdu)
 		{
 			CValueLengthPart part(pdu);
 			CValueLengthPart parameters;
 			char *token, *username, *password;
 			size_t length;
-			int authenticated;
+			int authenticated, version;
 			std::string tokenparam, usernameparam, passwordparam;
 			std::string reason = "";
 
+			sharedData.AddConnectedServer(ip);
 			_log.Log(LOG_NORM, "SERV_CONNECT pdu received.");
 			if (!part.GetNextPart((void **)&token, &length)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECT pdu");
@@ -407,13 +408,23 @@ namespace http {
 			if (!part.GetNextPart((void **)&password, &length)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECT pdu");
 			}
+			if (!part.GetNextValue((void **)&version, &length)) {
+				version = 1;
+			}
 			tokenparam = token;
 			free(token);
 			usernameparam = username;
 			free(username);
 			passwordparam = password;
 			free(password);
-			authenticated = m_pDomServ->OnNewConnection(tokenparam, usernameparam, passwordparam) ? 1 : 0;
+			if (version != 1) {
+				authenticated = false;
+				reason = "Version not supported";
+			}
+			else {
+				authenticated = m_pDomServ->OnNewConnection(tokenparam, usernameparam, passwordparam) ? 1 : 0;
+				reason = authenticated ? "Success" : "Invalid user/password";
+			}
 			parameters.AddPart((void *)tokenparam.c_str(), tokenparam.length() + 1);
 			parameters.AddPart((void *)sharedData.GetInstanceId().c_str(), tokenparam.length() + 1);
 			parameters.AddValue((void *)&authenticated, SIZE_INT);
@@ -580,7 +591,7 @@ namespace http {
 				case PDU_SERV_CONNECT:
 					/* incoming connect from master */
 					if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-						HandleServConnect(&pdu);
+						HandleServConnect("", &pdu); // todo: ip
 					}
 					else {
 						_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying connect request.");
@@ -715,13 +726,14 @@ namespace http {
 			return proxyclient;
 		}
 
-		void CProxyClient::ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *client)
+		void CProxyClient::ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *client, int version)
 		{
 			CValueLengthPart parameters;
 
 			parameters.AddPart((void *)instancekey.c_str(), instancekey.length() + 1);
 			parameters.AddPart((void *)username.c_str(), username.length() + 1);
 			parameters.AddPart((void *)password.c_str(), password.length() + 1);
+			parameters.AddValue((void *)&version, SIZE_INT);
 			MyWrite(PDU_SERV_CONNECT, &parameters, true);
 		}
 
