@@ -2108,7 +2108,11 @@ namespace http {
 			root["Latitude"] = Latitude;
 			root["Longitude"] = Longitude;
 
+#ifndef NOCLOUD
 			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
+#else
+			bool bEnableTabProxy = false;
+#endif
 			int bEnableTabDashboard = 1;
 			int bEnableTabFloorplans = 1;
 			int bEnableTabLight = 1;
@@ -6624,17 +6628,25 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str()));
 
+#ifndef NOCLOUD
 			std::string md_userid, md_password, pf_userid, pf_password;
+			int md_subsystems, pf_subsystems;
 			m_sql.GetPreferencesVar("MyDomoticzUserId", pf_userid);
 			m_sql.GetPreferencesVar("MyDomoticzPassword", pf_password);
+			m_sql.GetPreferencesVar("MyDomoticzSubsystems", pf_subsystems);
 			md_userid = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzUserId"));
 			md_password = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzPassword"));
-			if (md_userid != pf_userid || md_password != pf_password) {
+			md_subsystems = (request::findValue(&req, "SubsystemHttp").empty() ? 0 : 1) + (request::findValue(&req, "SubsystemShared").empty() ? 0 : 2) + (request::findValue(&req, "SubsystemApps").empty() ? 0 : 4);
+			if (md_userid != pf_userid || md_password != pf_password || md_subsystems != pf_subsystems) {
 				m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
-				md_password = base64_encode((unsigned char const*)md_password.c_str(), md_password.size());
-				m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
+				if (md_password != pf_password) {
+					md_password = base64_encode((unsigned char const*)md_password.c_str(), md_password.size());
+					m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
+				}
+				m_sql.UpdatePreferencesVar("MyDomoticzSubsystems", md_subsystems);
 				m_webservers.RestartProxy();
 			}
+#endif
 
 			m_notifications.LoadConfig();
 
@@ -10697,6 +10709,11 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "settings";
+#ifndef NOCLOUD
+			root["cloudenabled"] = true;
+#else
+			root["cloudenabled"] = false;
+#endif
 
 			std::vector<std::vector<std::string> >::const_iterator itt;
 			for (itt = result.begin(); itt != result.end(); ++itt)
@@ -10982,6 +10999,7 @@ namespace http {
 				{
 					root["WebTheme"] = sValue;
 				}
+#ifndef NOCLOUD
 				else if (Key == "MyDomoticzInstanceId") {
 					root["MyDomoticzInstanceId"] = sValue;
 				}
@@ -10991,6 +11009,10 @@ namespace http {
 				else if (Key == "MyDomoticzPassword") {
 					root["MyDomoticzPassword"] = sValue;
 				}
+				else if (Key == "MyDomoticzSubsystems") {
+					root["MyDomoticzSubsystems"] = nValue;
+				}
+#endif
 			}
 		}
 

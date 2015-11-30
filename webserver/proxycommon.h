@@ -1,4 +1,5 @@
 #pragma once
+#ifndef NOCLOUD
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 
@@ -13,7 +14,12 @@ typedef enum {
 	PDU_ENQUIRE,
 	PDU_REQUEST,
 	PDU_RESPONSE,
-	PDU_SIGNOFF
+	PDU_SIGNOFF,
+	PDU_SERV_CONNECT,
+	PDU_SERV_CONNECTRESP,
+	PDU_SERV_RECEIVE,
+	PDU_SERV_SEND,
+	PDU_SERV_DISCONNECT
 } pdu_type;
 
 #define SUBSYSTEM_HTTP 0x01
@@ -59,3 +65,4 @@ public:
 	void *_ptr;
 	size_t _len;
 };
+#endif
