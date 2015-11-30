@@ -11,6 +11,7 @@
 #include "../tcpserver/TCPServer.h"
 #include "DataPush.h"
 #include "HttpPush.h"
+#include "concurrent_queue.h"
 
 enum eVerboseLevel
 {
@@ -38,12 +39,12 @@ public:
 	CDomoticzHardwareBase* GetHardware(int HwdId);
 	CDomoticzHardwareBase* GetHardwareByType(const _eHardwareTypes HWType);
 
-	void HeartbeatUpdate(const std::string component);
-	void HeartbeatRemove(const std::string component);
+	void HeartbeatUpdate(const std::string &component);
+	void HeartbeatRemove(const std::string &component);
 	void HeartbeatCheck();
 
 	void SetVerboseLevel(eVerboseLevel Level);
-  eVerboseLevel GetVerboseLevel();
+	eVerboseLevel GetVerboseLevel();
 	void SetWebserverAddress(const std::string &Address);
 	void SetWebserverPort(const std::string &Port);
 	std::string GetWebserverAddress();
@@ -53,7 +54,7 @@ public:
 	void SetSecureWebserverCert(const std::string &CertFile);
 	void SetSecureWebserverPass(const std::string &passphrase);
 
-	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand);
+	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 
 	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue, const std::string &ooc, const int ExtraDelay);
 	bool SwitchLight(const unsigned long long idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay);
@@ -104,6 +105,7 @@ public:
 
 	void UpdateDomoticzSecurityStatus(const int iSecStatus);
 	void SetInternalSecStatus();
+	bool GetSensorData(const unsigned long long idx, int &nValue, std::string &sValue);
 
 	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel);
 
@@ -139,6 +141,8 @@ private:
 	std::map<std::string, time_t > m_componentheartbeats;
 	boost::mutex m_heartbeatmutex;
 
+	boost::mutex m_decodeRXMessageMutex;
+
 	std::vector<int> m_devicestorestart;
 
 	int m_SecCountdown;
@@ -153,7 +157,6 @@ private:
 
 
 	boost::mutex m_devicemutex;
-	boost::mutex decodeRXMessageMutex;
 
 	std::string m_szDomoticzUpdateURL;
 	std::string m_szDomoticzUpdateChecksumURL;
@@ -193,6 +196,27 @@ private:
 	//message decoders
 	void decode_BateryLevel(bool bIsInPercentage, unsigned char level);
 	unsigned char get_BateryLevel(const CDomoticzHardwareBase *pHardware, bool bIsInPercentage, unsigned char level);
+
+	// RxMessage queue resources
+	volatile bool m_stopRxMessageThread;
+	volatile unsigned long m_rxMessageIdx;
+	boost::shared_ptr<boost::thread> m_rxMessageThread;
+	void Do_Work_On_Rx_Messages();
+	struct _tRxQueueItem {
+		std::string Name;
+		int BatteryLevel;
+		unsigned long rxMessageIdx;
+		int hardwareId;
+		std::vector<unsigned char> vrxCommand;
+		boost::uint16_t crc;
+		queue_element_trigger* trigger;
+	};
+	concurrent_queue<_tRxQueueItem> m_rxMessageQueue;
+	void UnlockRxMessageQueue();
+	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
+	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
+	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel, const bool wait);
+	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel); //battery level: 0-100, 255=no battery, -1 = don't set
 
 	//(RFX) Message decoders
 	unsigned long long decode_InterfaceMessage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
@@ -246,6 +270,7 @@ private:
 	unsigned long long decode_Lux(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_General(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_GeneralSwitch(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
+	unsigned long long decode_HomeConfort(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Thermostat(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_Chime(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);
 	unsigned long long decode_BBQ(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse);

@@ -8,7 +8,7 @@
 class FritzboxTCP : public CDomoticzHardwareBase, ASyncTCP
 {
 public:
-	FritzboxTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort);
+	FritzboxTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort);
 	~FritzboxTCP(void);
 	bool isConnected(){ return mIsConnected; };
 	bool WriteToHardware(const char *pdata, const unsigned char length);

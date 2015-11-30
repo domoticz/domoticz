@@ -12,9 +12,41 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-//#define DEBUG_WUNDERGROUND
+#ifdef _DEBUG
+	//#define DEBUG_WUNDERGROUND
+#endif
 
-CWunderground::CWunderground(const int ID, const std::string APIKey, const std::string Location)
+#ifdef DEBUG_WUNDERGROUND2
+void SaveString2Disk(std::string str, std::string filename)
+{
+	FILE *fOut = fopen(filename.c_str(), "wb+");
+	if (fOut)
+	{
+		fwrite(str.c_str(), 1, str.size(), fOut);
+		fclose(fOut);
+	}
+}
+#endif
+#ifdef DEBUG_WUNDERGROUND
+std::string ReadFile(std::string filename)
+{
+	std::ifstream file;
+	std::string sResult = "";
+	file.open(filename.c_str());
+	if (!file.is_open())
+		return "";
+	std::string sLine;
+	while (!file.eof())
+	{
+		getline(file, sLine);
+		sResult += sLine;
+	}
+	file.close();
+	return sResult;
+}
+#endif
+
+CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location)
 {
 	m_HwdID=ID;
 	m_APIKey=APIKey;
@@ -67,7 +99,11 @@ void CWunderground::Do_Work()
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
+#ifdef DEBUG_WUNDERGROUND
+		if (sec_counter % 10 == 0)
+#else
 		if (sec_counter % 600 == 0)
+#endif
 		{
 			GetMeterDetails();
 		}
@@ -80,23 +116,6 @@ bool CWunderground::WriteToHardware(const char *pdata, const unsigned char lengt
 	return false;
 }
 
-static std::string readWUndergroundTestFile( const char *path )
-{
-	FILE *file = fopen( path, "rb" );
-	if ( !file )
-		return std::string("");
-	fseek( file, 0, SEEK_END );
-	long size = ftell( file );
-	fseek( file, 0, SEEK_SET );
-	std::string text;
-	char *buffer = new char[size+1];
-	buffer[size] = 0;
-	if ( fread( buffer, 1, size, file ) == (unsigned long)size )
-		text = buffer;
-	fclose( file );
-	delete[] buffer;
-	return text;
-}
 std::string CWunderground::GetForecastURL()
 {
 	std::stringstream sURL;
@@ -109,7 +128,7 @@ void CWunderground::GetMeterDetails()
 {
 	std::string sResult;
 #ifdef DEBUG_WUNDERGROUND
-	sResult=readWUndergroundTestFile("E:\\underground.json");
+	sResult= ReadFile("E:\\wu.json");
 #else
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
@@ -122,6 +141,9 @@ void CWunderground::GetMeterDetails()
 		_log.Log(LOG_ERROR,"Wunderground: Error getting http data!");
 		return;
 	}
+#ifdef DEBUG_WUNDERGROUND2
+	SaveString2Disk(sResult, "E:\\wu.json");
+#endif
 #endif
 	Json::Value root;
 
@@ -253,7 +275,7 @@ void CWunderground::GetMeterDetails()
 		tsen.TEMP_HUM_BARO.forecast=barometric_forcast;
 
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, NULL, 255);
 	}
 	else if (humidity!=0)
 	{
@@ -276,7 +298,7 @@ void CWunderground::GetMeterDetails()
 		tsen.TEMP_HUM.humidity=(BYTE)humidity;
 		tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, 255);
 	}
 	else
 	{
@@ -297,7 +319,7 @@ void CWunderground::GetMeterDetails()
 		at10-=(tsen.TEMP.temperatureh*256);
 		tsen.TEMP.temperaturel=(BYTE)(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 	}
 
 	//Wind
@@ -398,7 +420,7 @@ void CWunderground::GetMeterDetails()
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, 255);
 	}
 
 	//UV
@@ -422,7 +444,7 @@ void CWunderground::GetMeterDetails()
 					tsen.UV.id2 = 1;
 
 					tsen.UV.uv = (BYTE)round(UV * 10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);
+					sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, 255);
 				}
 			}
 		}
@@ -470,7 +492,7 @@ void CWunderground::GetMeterDetails()
 				tr10 -= (tsen.RAIN.raintotal2 * 256);
 				tsen.RAIN.raintotal3 = (BYTE)(tr10);
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, 255);
 			}
 		}
 	}
@@ -486,7 +508,7 @@ void CWunderground::GetMeterDetails()
 				_tGeneralDevice gdevice;
 				gdevice.subtype = sTypeVisibility;
 				gdevice.floatval1 = visibility;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
 			}
 		}
 	}
@@ -502,7 +524,7 @@ void CWunderground::GetMeterDetails()
 				_tGeneralDevice gdevice;
 				gdevice.subtype = sTypeSolarRadiation;
 				gdevice.floatval1 = radiation;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
 			}
 		}
 	}

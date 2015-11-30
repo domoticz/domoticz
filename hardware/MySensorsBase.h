@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "../main/concurrent_queue.h"
 
 class MySensorsBase : public CDomoticzHardwareBase
 {
@@ -113,9 +114,10 @@ public:
 		V_HVAC_SETPOINT_COOL = 44,		//HVAC cold setpoint(Integer between 0 - 100)	S_HVAC
 		V_HVAC_SETPOINT_HEAT = 45,		//HVAC / Heater setpoint(Integer between 0 - 100)	S_HVAC, S_HEATER
 		V_HVAC_FLOW_MODE = 46,			//Flow mode for HVAC("Auto", "ContinuousOn", "PeriodicOn")	S_HVAC
-
 		V_TEXT = 47,					//Text/Info message S_INFO
-
+		V_CUSTOM = 48, 					// Custom messages used for controller/inter node specific commands, preferably using S_CUSTOM device type. 
+		V_POSITION = 49,				// GPS position and altitude. Payload: latitude;longitude;altitude(m). E.g. "55.722526;13.017972;18"
+		V_IR_RECORD = 50,				// Record IR codes S_IR for playback
 		V_UNKNOWN = 200					//No value received
 	};
 
@@ -139,6 +141,8 @@ public:
 		I_REQUEST_SIGNING = 15,			//Used between sensors when initiating signing.
 		I_GET_NONCE = 16,				//Used between sensors when requesting nonce.
 		I_GET_NONCE_RESPONSE = 17,		//Used between sensors for nonce response.
+		I_HEARTBEAT = 18,
+		I_PRESENTATION = 19
 	};
 
 	struct _tMySensorValue
@@ -251,6 +255,7 @@ public:
 	struct _tMySensorNode
 	{
 		int nodeID;
+		std::string Name;
 		std::string SketchName;
 		std::string SketchVersion;
 		time_t lastreceived;
@@ -344,8 +349,10 @@ public:
 	std::string m_szSerialPort;
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	_tMySensorNode* FindNode(const int nodeID);
+	void UpdateNode(const int nodeID, const std::string &name);
 	void RemoveNode(const int nodeID);
 	void RemoveChild(const int nodeID, const int childID);
+	void UpdateChild(const int nodeID, const int childID, const bool UseAck);
 	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
 	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
 	std::string GetGatewayVersion();
@@ -354,15 +361,15 @@ private:
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 
-	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name, const bool UseAck);
+	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name);
 	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
 
 	void SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload);
-	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload);
+	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck);
 	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 
 
-	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
 
 	bool GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
 
@@ -388,6 +395,12 @@ private:
 	bool GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue);
 
 	std::map<int, _tMySensorNode> m_nodes;
+
+	concurrent_queue<std::string > m_sendQueue;
+	boost::shared_ptr<boost::thread> m_send_thread;
+	bool StartSendQueue();
+	void StopSendQueue();
+	void Do_Send_Work();
 
 	std::string m_GatewayVersion;
 

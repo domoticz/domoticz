@@ -121,7 +121,7 @@
 				return "device["+$(titleA).text()+"]";
 			}
 			else if (variableType.indexOf("uservariables") >= 0) {
-				var titleA = $(valueA).find("title")[0];
+				var titleA = $(value).find("title")[0];
 				return "variable["+$(titleA).text()+"]";
 			}
 			else if (variableType == "temperaturevariables") {
@@ -157,7 +157,7 @@
 					return '"'+encodeURIComponent($(titleB).text())+'"'; 
 				}
 				else if ($(titleB).attr("name") == "NUM") {
-					return $(titleB).text(); 
+					return $(titleB).text();
 				}
 				return "unknown comparevariable "+variableType;
 			}
@@ -290,7 +290,7 @@
 					var blockB = $(valueB).children("block:first");
 					var variableTypeB = $(valueB).children("block:first").attr("type");
 					var dtext=GetValueText(valueB,variableTypeB);
-					setString += '="'+dtext+'"'; 
+					setString += '='+dtext+''; 
 					setArray.push(setString);
 								
 				}
@@ -345,7 +345,7 @@
 						var valueB = $(this).find("value[name='B']")[0];
 						var titleB = $(valueB).find("title")[0];
 						var blockB = $(valueB).children("block:first");
-						setString += '="'+$(titleB).text()+'"'; 
+						setString += '="'+$(titleB).text()+''; 
 						setString += ' AFTER '+ $(titleC).text()+'"'; 
 						setArray.push(setString);
 					}
@@ -812,6 +812,7 @@
 			   	<block type="weathervariables"></block>
 		   	</category>
 		   	<category name="Utility">
+			   	<block type="utilityvariables"></block>
 			   	<block type="utilityvariablesAF"></block>
 			   	<block type="utilityvariablesGL"></block>
 			   	<block type="utilityvariablesMR"></block>

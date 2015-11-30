@@ -153,7 +153,13 @@ void CDataPush::DoFibaroPush()
 					if (bIsV4)
 						Url << "/" << targetVariable;
 
-					sPostData << "{\"name\": \"" << targetVariable << "\", \"value\": \"" << sendValue << "\"}";
+					sPostData << "{\"name\": \"" << targetVariable << "\", \"value\": \"" << sendValue << "\"";
+					
+					if (bIsV4)
+						sPostData << ", \"invokeScenes\": true";
+					
+					sPostData << " }";
+
 					if (fibaroDebugActive) {
 						_log.Log(LOG_NORM,"FibaroLink: sending global variable %s with value: %s",targetVariable.c_str(),sendValue.c_str());
 					}

@@ -1,10 +1,20 @@
 cmake_minimum_required(VERSION 2.6)
 
-add_subdirectory (lua)
-get_directory_property (CMAKE_LUA_INCLUDES DIRECTORY lua
-    DEFINITION LUA_INCLUDE_DIRS)
-get_directory_property (CMAKE_LUA_LIBRARIES DIRECTORY lua
+option(USE_BUILTIN_LUA "Use builtin lua library" YES)
+IF(USE_BUILTIN_LUA)
+  add_subdirectory (lua)
+  get_directory_property (LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
+ELSE(USE_BUILTIN_LUA)
+  find_package(PkgConfig)
+  pkg_check_modules(LUA lua>=5.2)
+  IF(LUA_FOUND)
+    INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIRS})
+    add_definitions(-DWITH_EXTERNAL_LUA)
+  ELSE(LUA_FOUND)
+    MESSAGE(FATAL_ERROR "LUA not found but USE_BUILTIN_LUA=NO")
+  ENDIF(LUA_FOUND)
+ENDIF(USE_BUILTIN_LUA)
 
 add_subdirectory (MQTT)
 get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
@@ -12,11 +22,21 @@ get_directory_property (CMAKE_MQTT_INCLUDES DIRECTORY MQTT
 get_directory_property (CMAKE_MQTT_LIBRARIES DIRECTORY MQTT
     DEFINITION MQTT_LIBRARIES)
 
-add_subdirectory (sqlite)
-get_directory_property (CMAKE_SQLite_INCLUDES DIRECTORY sqlite
-    DEFINITION SQLite_INCLUDE_DIRS)
-get_directory_property (CMAKE_SQLite_LIBRARIES DIRECTORY sqlite
-    DEFINITION SQLite_LIBRARIES)
+option(USE_BUILTIN_SQLITE "Use builtin sqlite library" YES)
+IF(USE_BUILTIN_SQLITE)
+  add_subdirectory (sqlite)
+  get_directory_property (SQLite_LIBRARIES DIRECTORY sqlite
+      DEFINITION SQLite_LIBRARIES)
+ELSE(USE_BUILTIN_SQLITE)
+  find_package(PkgConfig)
+  pkg_check_modules(SQLite QUIET sqlite3)
+  IF(SQLite_FOUND)
+    INCLUDE_DIRECTORIES(${SQLite_INCLUDE_DIRS})
+    add_definitions(-DWITH_EXTERNAL_SQLITE)
+  ELSE(SQLite_FOUND)
+    MESSAGE(FATAL_ERROR "SQLite3 not found but USE_BUILTIN_SQLITE=NO")
+  ENDIF(SQLite_FOUND)
+ENDIF(USE_BUILTIN_SQLITE)
 
 project(domoticz)
 
@@ -82,11 +102,6 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
   #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
 
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc -static-libstdc++")
-  SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} -static-libgcc -static-libstdc++")
-  SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -static-libgcc -static-libstdc++")
-
     GET_FILENAME_COMPONENT(_name ${_input} NAME)
     SET(_source "${CMAKE_CURRENT_SOURCE_DIR}/${_input}")
     SET(_outdir "${CMAKE_CURRENT_BINARY_DIR}/${_name}.gch")
@@ -94,7 +109,7 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     SET(_output "${_outdir}/.c++")
 
     STRING(TOUPPER "CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}" _flags_var_name)
-    SET(_compiler_FLAGS ${${_flags_var_name}})
+    SET(_compiler_FLAGS "${CMAKE_CXX_FLAGS} ${${_flags_var_name}}")
 
     GET_DIRECTORY_PROPERTY(_directory_flags INCLUDE_DIRECTORIES)
     FOREACH(item ${_directory_flags})
@@ -105,10 +120,10 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     LIST(APPEND _compiler_FLAGS ${_directory_flags})
 
     SEPARATE_ARGUMENTS(_compiler_FLAGS)
-    MESSAGE("${CMAKE_CXX_COMPILER} -DPCHCOMPILE ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}")
+    MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}")
     ADD_CUSTOM_COMMAND(
       OUTPUT ${_output}
-      COMMAND ${CMAKE_CXX_COMPILER} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}
+      COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}
       DEPENDS ${_source} )
     ADD_CUSTOM_TARGET(${_targetName}_gch DEPENDS ${_output})
     ADD_DEPENDENCIES(${_targetName} ${_targetName}_gch)
@@ -177,6 +192,7 @@ hardware/AnnaThermostat.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/BMP085.cpp
+hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp
@@ -207,8 +223,8 @@ hardware/MQTT.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
 hardware/MySensorsTCP.cpp
-hardware/NestThermostat.cpp
-hardware/NetatmoWeatherStation.cpp
+hardware/Nest.cpp
+hardware/Netatmo.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
 hardware/openzwave/control_panel/zwavelib.cpp
@@ -228,7 +244,9 @@ hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
-hardware/RFLink.cpp
+hardware/RFLinkBase.cpp
+hardware/RFLinkSerial.cpp
+hardware/RFLinkTCP.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
 hardware/S0MeterBase.cpp
@@ -301,15 +319,22 @@ if(USE_STATIC_BOOST)
 else(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 endif(USE_STATIC_BOOST)
+include_directories(${Boost_INCLUDE_DIRS})
 
-FIND_PACKAGE(ZLIB)
-IF(ZLIB_FOUND)
-  MESSAGE(STATUS "ZLIB libraries found at: ${ZLIB_LIBRARIES}")
-  MESSAGE(STATUS "ZLIB includes found at: ${ZLIB_INCLUDE_DIRS}")
-  INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
-else()
-  MESSAGE(FATAL_ERROR "ZLIB not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install zlib1g-dev')")
-ENDIF(ZLIB_FOUND)
+option(USE_BUILTIN_ZLIB "Use builtin zlib library" NO)
+if(USE_BUILTIN_ZLIB)
+  add_subdirectory (zlib)
+  include_directories(${ZLIB_INCLUDE_DIRS})
+else(USE_BUILTIN_ZLIB)
+  find_package(ZLIB REQUIRED)
+  if(ZLIB_FOUND)
+    MESSAGE(STATUS "ZLIB libraries found at: ${ZLIB_LIBRARIES}")
+    MESSAGE(STATUS "ZLIB includes found at: ${ZLIB_INCLUDE_DIRS}")
+    include_directories(${ZLIB_INCLUDE_DIRS})
+  else()
+    MESSAGE(FATAL_ERROR "ZLIB not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install zlib1g-dev')")
+  endif(ZLIB_FOUND)
+endif(USE_BUILTIN_ZLIB)
 
 FIND_PACKAGE(CURL)
 IF(CURL_FOUND)
@@ -339,30 +364,21 @@ ENDIF(LIBUSB_FOUND)
 #
 # Find MD5/RMD160/SHA library
 #
-find_path(OPENSSL_INCLUDE_DIR openssl/ssl.h)
-find_library(OPENSSL_LIBRARY ssl)
+find_package(OpenSSL)
 if(NOT OPENSSL_INCLUDE_DIR)
   message(SEND_ERROR "Failed to find openssl include files (ssl.h), no HTTPS support")
 endif()
-if(NOT OPENSSL_LIBRARY)
+if(NOT OPENSSL_FOUND)
   message(SEND_ERROR "Failed to find the openssl library, no HTTPS support")
+  find_library(MD_LIBRARY NAMES md)
+  if(MD_LIBRARY)
+    target_link_libraries(domoticz ${MD_LIBRARY})
+  endif(MD_LIBRARY)
 else()
   add_definitions(-DNS_ENABLE_SSL)
-  target_link_libraries(domoticz ${OPENSSL_LIBRARY})
+  include_directories(${OPENSSL_INCLUDE_DIR})
+  target_link_libraries(domoticz ${OPENSSL_LIBRARIES})
 endif()
-
-FIND_LIBRARY(CRYPTO_LIBRARY NAMES crypto)
-IF(CRYPTO_LIBRARY)
-  MESSAGE(STATUS "Crypto library found at: ${CRYPTO_LIBRARY}")
-  target_link_libraries(domoticz ${CRYPTO_LIBRARY})
-ELSE(CRYPTO_LIBRARY)
-  IF(NOT OPENSSL_FOUND)
-    FIND_LIBRARY(MD_LIBRARY NAMES md)
-    IF(MD_LIBRARY)
-      LIST(APPEND ADDITIONAL_LIBS ${MD_LIBRARY})
-    ENDIF(MD_LIBRARY)
-  ENDIF(NOT OPENSSL_FOUND)
-ENDIF(CRYPTO_LIBRARY)
 
 ## support lua popen on Linux platforms
 #IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -448,12 +464,24 @@ else()
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread lua mqtt sqlite ${CMAKE_DL_LIBS})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} mqtt ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
+
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  option(USE_STATIC_LIBSTDCXX "Build with static libgcc/libstdc++ libraries" YES)
+  IF(USE_STATIC_LIBSTDCXX)
+    message(STATUS "Using static libgcc/libstdc++")
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_C_FLAGS} -static-libgcc -static-libstdc++")
+    SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -static-libgcc -static-libstdc++")
+    SET(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -static-libgcc -static-libstdc++")
+  ELSE(USE_STATIC_LIBSTDCXX)
+    message(STATUS "Using dynamic libgcc_s/libstdc++")
+  ENDIF(USE_STATIC_LIBSTDCXX)
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 # If it wasn't overridden from command line / cache.
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

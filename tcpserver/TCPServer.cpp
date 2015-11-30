@@ -73,7 +73,11 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 	{
 		boost::lock_guard<boost::mutex> l(connectionMutex);
 		std::string s = new_connection_->socket().remote_endpoint().address().to_string();
-		new_connection_->m_endpoint=s;
+		if (s.substr(0, 7) == "::ffff:") {
+			s = s.substr(7);
+		}
+		new_connection_->m_endpoint = s;
+
 		_log.Log(LOG_STATUS,"Incoming Domoticz connection from: %s", s.c_str());
 
 		connections_.insert(new_connection_);
@@ -104,10 +108,21 @@ CTCPServerInt::_tRemoteShareUser* CTCPServerInt::FindUser(const std::string &use
 bool CTCPServerInt::HandleAuthentication(CTCPClient_ptr c, const std::string &username, const std::string &password)
 {
 	_tRemoteShareUser *pUser=FindUser(username);
-	if (pUser==NULL)
+	if (pUser == NULL)
+	{
+		_log.Log(LOG_ERROR, "Failed login attempt from %s for user '%s' !", c->m_endpoint.c_str(), username.c_str());
 		return false;
-
-	return ((pUser->Username==username)&&(pUser->Password==password));
+	}
+	bool bOK = ((pUser->Username == username) && (pUser->Password == password));
+	if (!bOK)
+	{
+		_log.Log(LOG_ERROR, "Failed login attempt from %s for user '%s' !", c->m_endpoint.c_str(), username.c_str());
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "Login successful from %s for user '%s'", c->m_endpoint.c_str(), username.c_str());
+	}
+	return bOK;
 }
 
 void CTCPServerInt::DoDecodeMessage(const CTCPClient *pClient, const unsigned char *pRXCommand)
@@ -302,7 +317,7 @@ void CTCPServer::DoDecodeMessage(const CTCPClient *pClient, const unsigned char 
 	Name="DomoticzFromMaster";
 	m_SeqNr=1;
 	m_pUserData=(void*)pClient;
-	sDecodeRXMessage(this, pRXCommand);//decode message
+	sDecodeRXMessage(this, pRXCommand, NULL, -1);
 }
 
 

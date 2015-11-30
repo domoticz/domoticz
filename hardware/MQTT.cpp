@@ -16,7 +16,7 @@
 #define TOPIC_IN	"domoticz/in"
 #define QOS         1
 
-MQTT::MQTT(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string Username, const std::string Password, const std::string CAfilename, const int Topics) :
+MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics) :
 m_szIPAddress(IPAddress),
 m_UserName(Username),
 m_Password(Password),
@@ -181,6 +181,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 	}
 	else if (szCommand == "setuservariable")
 	{
+		if (root["idx"].empty())
+			goto mqttinvaliddata;
+		if (!root["idx"].isInt64())
+			goto mqttinvaliddata;
+
+		idx = (unsigned long long)root["idx"].asInt64();
 		result = m_sql.safe_query("SELECT Name FROM UserVariables WHERE (ID==%llu)", idx);
 		if (result.empty())
 		{

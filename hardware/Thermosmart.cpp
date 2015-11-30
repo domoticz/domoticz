@@ -155,7 +155,7 @@ void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp,
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, NULL, 255);
 
 	if (!bDeviceExits)
 	{

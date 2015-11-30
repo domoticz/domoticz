@@ -116,21 +116,24 @@ enum _eHardwareTypes {
 	HTYPE_MQTT,					//43
 	HTYPE_FRITZBOX,				//44
 	HTYPE_ETH8020,				//45
-	HTYPE_RFLINK,				//46
+	HTYPE_RFLINKUSB,			//46
 	HTYPE_KMTronicUSB,			//47
 	HTYPE_KMTronicTCP,			//48
 	HTYPE_SOLARMAXTCP,			//49
 	HTYPE_KMTronic433,			//50
 	HTYPE_Pinger,				//51
-	HTYPE_NESTTHERMOSTAT,		//52
+	HTYPE_NEST,		//52
 	HTYPE_THERMOSMART,			//53
-	HTYPE_NetatmoWeatherStation,//54
+	HTYPE_Netatmo,//54
 	HTYPE_Kodi,					//55
 	HTYPE_ANNATHERMOSTAT,		//56
 	HTYPE_WINDDELEN,			//57
 	HTYPE_SatelIntegra,			//58
 	HTYPE_Tellstick,			//59
 	HTYPE_LogitechMediaServer,	//60
+	HTYPE_RFXtrx868,			//61
+	HTYPE_RFLINKTCP,			//62
+	HTYPE_Comm5TCP,				//63
 	HTYPE_END
 };
 

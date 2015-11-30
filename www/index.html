@@ -232,6 +232,7 @@ $(document).ready(function() {
 		windsign: "m/s",
 		tempscale: 1.0,
 		tempsign: "C",
+		DegreeDaysBaseTemperature: 18.0,
 		historytype : 1,
 		LastPlanSelected: 0,
 		DashboardType: 0
@@ -398,18 +399,19 @@ $(document).ready(function() {
 					<a id="popup_therm_off"><img src="images/pushoff48.png" class="lcursor" height="48" width="48"></a>
 				</td>
 			</tr>
+			<tr>
 				<td align="left" style="vertical-align: center;">
 					<a id="popup_therm_up"><img src="images/Up48.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="ThermUp()"></a>
 					<a id="popup_therm_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" onclick="ThermDown()"></a>
 					<a id="popup_therm_stop"><img src="images/Stop48.png" class="lcursor" height="48" width="48" onclick="ThermStop()"></a>
 				</td>
-			<tr>		
-			</tr>
+			</tr>		
+			<tr>
 				<td align="left" style="vertical-align: center;">
 					<a id="popup_therm_2up"><img src="images/Up48_2.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="ThermUp2()"></a>
 					<a id="popup_therm_2down"><img src="images/Down48_2.png" class="lcursor" height="48" width="48" onclick="ThermDown2()"></a>
 				</td>
-			<tr>		
+			</tr>		
 		</table>
 	</div> 
 	<div id="rgbw_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
@@ -450,6 +452,19 @@ $(document).ready(function() {
 				</td>
 				<td align="center" style="vertical-align: center;">
 					<button data-i18n="Set" class="btn btn-info" onclick="SetSetpoint()">Set</button>
+				</td>
+			</tr>
+		</table>
+	</div> 
+	<div id="rfy_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
+		<div class="ui-close" onclick="CloseRFYPopup()"></div>
+		<table class="display" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td>
+					<br><br>
+					<button data-i18n="Enable Sun/Wind Detector" class="btn btn-info" onclick="RFYEnableSunWind(1)">Enable Sun/Wind Detector</button><br><br>
+					<button data-i18n="Disable Sun/Wind Detector" class="btn btn-info" onclick="RFYEnableSunWind(0)">Disable Sun/Wind Detector</button><br>
+					<br>
 				</td>
 			</tr>
 		</table>
@@ -586,7 +601,7 @@ $(document).ready(function() {
 						<circle cx="500" cy="300" r="200" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Select');">
 							<title>Select</title>
 						</circle>
-						<text x="500" y="320" class="remotetext"style="font-weight: bold;">OK</text>
+						<text x="500" y="320" class="remotetext" style="font-weight: bold;">OK</text>
 					</g>
 					<g>
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(1,10)" />
@@ -663,7 +678,7 @@ $(document).ready(function() {
 							<path transform="rotate(180,320,1000)" d="m 320 960 0,80 40,-40z" class="remoteshadow"/>
 						</g>
 					</g>
-					<text x="160" y="1110" class="remotetext"style="font-size: 90px; font-weight: bold;">CH</text>
+					<text x="160" y="1110" class="remotetext" style="font-size: 90px; font-weight: bold;">CH</text>
 					<g transform="rotate(90,500,1000) translate(50,-440) scale(1.1)">
 						<g>
 							<circle cx="510" cy="999" r="100" class="remoteshadow" /> 
@@ -799,7 +814,7 @@ $(document).ready(function() {
 					<g transform="translate(-335,0)">
 						<g>
 							<circle cx="501" cy="870" r="110" class="remoteshadow" /> 
-							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#gradient1)"onclick="javascript:click_lmsplayer_remote('Favorites');">
+							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Favorites');">
 								<title>Favorites</title>
 							</circle>
 							<use xlink:href="#symFavorites" class="remoteshadow" transform="translate(460,820)"/>
@@ -1038,6 +1053,7 @@ $(document).ready(function() {
 		<br>
 		<span data-i18n="Hottest Day">Hottest Day</span>: <span id="mhigh">-</span><br>
 		<span data-i18n="Coldest Day">Coldest Day</span>: <span id="mlow">-</span><br>
+		<div id="ddays"><span data-i18n="Degree Days">Degree Days</span>: <span id="mddays">-</span><br></div>
 		<br>
 	</div>
 	<div id="toptextyearreporttemp" style="display:none;">
@@ -1064,6 +1080,7 @@ $(document).ready(function() {
 		<br>
 		<span data-i18n="Hottest Day">Hottest Day</span>: <span id="mhigh">-</span><br>
 		<span data-i18n="Coldest Day">Coldest Day</span>: <span id="mlow">-</span><br>
+		<div id="ddays"><span data-i18n="Degree Days">Degree Days</span>: <span id="mddays">-</span><br></div>
 		<br>
 	</div>
 	<div id="reportviewtemp" style="display:none;">
@@ -1082,11 +1099,29 @@ $(document).ready(function() {
 		<br>
 		<div id="usagegraph" style="height: 240px;"></div>
 	</div>
+	<div id="reportviewtempmonth" style="display:none;">
+		<table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th width="30" align="right" id="ftext"></th>
+					<th width="70" align="left"></th>
+					<th width="60" align="right" data-i18n="Humidity">Humidity</th>
+					<th width="60" align="right" data-i18n="Avg. Temp">Avg. Temp</th>
+					<th width="60" align="right" data-i18n="Min. Temp">Min. Temp</th>
+					<th width="60" align="right" data-i18n="Max. Temp">Max. Temp</th>
+					<th width="40" align="right">&lt;&gt;</th>
+				</tr>
+			</thead>
+		</table>
+		<br>
+		<div id="usagegraph" style="height: 240px;"></div>
+	</div>
 	<div id="monthreportviewgas" style="display:none;">
 		<table class="display myrighttable" id="monthreport" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<thead>
 				<tr valign="middle">
 					<th width="30" align="right" data-i18n="Day">Day</th>
+					<th width="70" align="left"></th>
 					<th width="60" align="right" data-i18n="Counter">Counter</th>
 					<th width="60" align="right" data-i18n="Usage">Usage</th>
 					<th width="60" align="right" data-i18n="Costs">Costs</th>
@@ -1156,6 +1191,7 @@ $(document).ready(function() {
 			<thead>
 				<tr valign="middle">
 					<th width="30" align="right" data-i18n="Day">Day</th>
+					<th width="70" align="left"></th>
 					<th width="60" align="right" data-i18n="Counter T1">Counter T1</th>
 					<th width="60" align="right" data-i18n="Usage T1">Usage T1</th>
 					<th width="60" align="right" data-i18n="Costs">Costs</th>
@@ -1311,7 +1347,7 @@ $(document).ready(function() {
 									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
                                     <li id="dUpdate" class="divider"></li>
 									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li> 
-                                    <li ng-hide"config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+                                    <li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
                                     <li class="dropdown-submenu">
 										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
 										<ul class="dropdown-menu pull-left">
@@ -1363,7 +1399,7 @@ $(document).ready(function() {
 								<div id="main-view" ng-view></div>
 							</div>
 							<div id="copyright" style="display: none;" has-User>
-									<p>&copy; 2012-2015 Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
+									<p>&copy; 2012-{{currentyear}} Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
 							</div>
 					</div> <!-- /container -->
 		</div>

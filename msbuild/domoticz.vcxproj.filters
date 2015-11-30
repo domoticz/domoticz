@@ -243,6 +243,9 @@
     <Filter Include="Devices\Logitech Media Server">
       <UniqueIdentifier>{61411910-e1dc-4691-8d42-e72cf0a6721f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Comm5 MA-5XXX">
+      <UniqueIdentifier>{92aba4fe-bf95-4946-a1c4-0b761e9144a0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -585,9 +588,6 @@
     <ClInclude Include="..\hardware\ETH8020.h">
       <Filter>Devices\ETH8020</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\RFLink.h">
-      <Filter>Devices\RFLink</Filter>
-    </ClInclude>
     <ClInclude Include="..\notifications\NotificationBase.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -641,9 +641,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Pinger.h">
       <Filter>Devices\Ping</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\NestThermostat.h">
-      <Filter>Devices\Nest</Filter>
     </ClInclude>
     <ClInclude Include="..\main\HttpPush.h">
       <Filter>Devices\HttpLink</Filter>
@@ -729,9 +726,6 @@
     <ClInclude Include="..\hardware\P1MeterTCP.h">
       <Filter>Devices\P1Smart Meter</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\NetatmoWeatherStation.h">
-      <Filter>Devices\Netatmo</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\Push.h">
       <Filter>Devices\PushBase</Filter>
     </ClInclude>
@@ -764,6 +758,27 @@
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationLogitechMediaServer.h">
       <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFLinkSerial.h">
+      <Filter>Devices\RFLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFLinkBase.h">
+      <Filter>Devices\RFLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\RFLinkTCP.h">
+      <Filter>Devices\RFLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Nest.h">
+      <Filter>Devices\Nest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\concurrent_queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Netatmo.h">
+      <Filter>Devices\Netatmo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Comm5TCP.h">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1055,9 +1070,6 @@
     <ClCompile Include="..\hardware\ETH8020.cpp">
       <Filter>Devices\ETH8020</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\RFLink.cpp">
-      <Filter>Devices\RFLink</Filter>
-    </ClCompile>
     <ClCompile Include="..\notifications\NotificationBase.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
@@ -1111,9 +1123,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Pinger.cpp">
       <Filter>Devices\Ping</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\NestThermostat.cpp">
-      <Filter>Devices\Nest</Filter>
     </ClCompile>
     <ClCompile Include="..\main\HttpPush.cpp">
       <Filter>Devices\HttpLink</Filter>
@@ -1187,9 +1196,6 @@
     <ClCompile Include="..\hardware\P1MeterTCP.cpp">
       <Filter>Devices\P1Smart Meter</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\NetatmoWeatherStation.cpp">
-      <Filter>Devices\Netatmo</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\Push.cpp">
       <Filter>Devices\PushBase</Filter>
     </ClCompile>
@@ -1225,6 +1231,24 @@
     </ClCompile>
     <ClCompile Include="..\hardware\openzwave\control_panel\zwavelib.cpp">
       <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFLinkSerial.cpp">
+      <Filter>Devices\RFLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFLinkBase.cpp">
+      <Filter>Devices\RFLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\RFLinkTCP.cpp">
+      <Filter>Devices\RFLink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Nest.cpp">
+      <Filter>Devices\Nest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Netatmo.cpp">
+      <Filter>Devices\Netatmo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Comm5TCP.cpp">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

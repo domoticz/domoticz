@@ -21,7 +21,7 @@
 	//#define DEBUG_EcoDevices
 #endif
 
-CEcoDevices::CEcoDevices(const int ID, const std::string IPAddress, const unsigned short usIPPort)
+CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
 {
 	m_HwdID=ID;
 	m_szIPAddress = IPAddress;
@@ -152,7 +152,7 @@ void CEcoDevices::GetMeterDetails()
 		{
 			m_lastSharedSendElectra = atime;
 			m_lastelectrausage = m_p1power.usagecurrent;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 		}
 	}
 }
