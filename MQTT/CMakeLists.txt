@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.6)
+#set to minimum version that supports clean build on cygwin
+cmake_minimum_required(VERSION 2.8.4)
 
 project (MQTT C)
 
@@ -9,11 +10,11 @@ SET(LIBRARY_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the libraries for MQTT"
 )
 
-find_library(OPENSSL_LIBRARY ssl)
+find_package(OpenSSL)
 if(NOT OPENSSL_INCLUDE_DIR)
   message(STATUS "Failed to find openssl include files (ssl.h), no TLS support")
 endif()
-if(NOT OPENSSL_LIBRARY)
+if(NOT OPENSSL_FOUND)
   message(STATUS "Failed to find the openssl library, no TLS support")
 else()
   add_definitions(-DNS_ENABLE_SSL)
