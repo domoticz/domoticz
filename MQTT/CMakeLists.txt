@@ -9,12 +9,11 @@ SET(LIBRARY_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the libraries for MQTT"
 )
 
-find_path(OPENSSL_INCLUDE_DIR openssl/ssl.h)
-find_library(OPENSSL_LIBRARY ssl)
+find_package(OpenSSL)
 if(NOT OPENSSL_INCLUDE_DIR)
   message(STATUS "Failed to find openssl include files (ssl.h), no TLS support")
 endif()
-if(NOT OPENSSL_LIBRARY)
+if(NOT OPENSSL_FOUND)
   message(STATUS "Failed to find the openssl library, no TLS support")
 else()
   add_definitions(-DNS_ENABLE_SSL)
