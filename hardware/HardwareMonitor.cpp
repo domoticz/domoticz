@@ -13,7 +13,7 @@
 
 #ifdef WIN32
 	#include <comdef.h>
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	#include <sys/sysinfo.h>
 	#include <iostream>
 	#include <fstream>
@@ -31,6 +31,23 @@
 		long long UsedBlocks;
 		long long AvailBlocks;
 	};
+ 
+//USER_HZ detection, from openssl code
+#ifndef HZ
+# if defined(_SC_CLK_TCK) && (!defined(OPENSSL_SYS_VMS) || __CTRL_VER >= 70000000)
+#  define HZ ((double)sysconf(_SC_CLK_TCK))
+# else
+#  ifndef CLK_TCK
+#   ifndef _BSD_CLK_TCK_ /* FreeBSD hack */
+#    define HZ  100.0
+#   else /* _BSD_CLK_TCK_ */
+#    define HZ ((double)_BSD_CLK_TCK_)
+#   endif
+#  else /* CLK_TCK */
+#   define HZ ((double)CLK_TCK)
+#  endif
+# endif
+#endif
 
 #endif
 
@@ -361,7 +378,7 @@ void CHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Voltage");
 		return;
 	}
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
 	if (bHasInternalTemperature)
@@ -560,7 +577,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		pEnumerator->Release();
 	}
 }
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	double time_so_far()
 	{
 		struct timeval tp;
@@ -662,7 +679,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				if (ret==4)
 				{
 					long long t = (actload1+actload2+actload3)-m_lastloadcpu;
-					double cpuper=((t / ((acttime-m_lastquerytime) * 100)) * 100)/double(m_totcpu);
+					double cpuper=((t / ((acttime-m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 					if (cpuper>0)
 					{
 						sprintf(szTmp,"%.2f", cpuper);
@@ -696,7 +713,11 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 						continue;
 					}
 				}
+#if defined(__linux__)
 				if (strstr(dname,"/dev")!=NULL)
+#elif defined(__CYGWIN32__)
+				if (strstr(smountpoint,"/cygdrive/")!=NULL)
+#endif
 				{
 					_tDUsageStruct dusage;
 					dusage.TotalBlocks=numblock;
@@ -724,5 +745,5 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			}
 		}
 	}
-#endif //WIN32/#elif defined __linux__
+#endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__)
 
