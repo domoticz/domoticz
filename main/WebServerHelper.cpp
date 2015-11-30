@@ -6,7 +6,9 @@ namespace http {
 	namespace server {
 
 		typedef std::vector<CWebServer*>::iterator server_iterator;
+#ifndef NOCLOUD
 		typedef std::vector<CProxyManager*>::iterator proxy_iterator;
+#endif
 
 		CWebServerHelper::CWebServerHelper()
 		{
@@ -14,6 +16,8 @@ namespace http {
 			secureServer_ = NULL;
 #endif
 			plainServer_ = NULL;
+
+			m_pDomServ = NULL;
 		}
 
 		CWebServerHelper::~CWebServerHelper()
@@ -23,14 +27,18 @@ namespace http {
 #endif
 			if (plainServer_) delete plainServer_;
 
+#ifndef NOCLOUD
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				delete (*it);
 			}
+#endif
 		}
 
-		bool CWebServerHelper::StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword)
+		bool CWebServerHelper::StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer)
 		{
 			bool bRet = false;
+
+			m_pDomServ = sharedServer;
 
 #ifdef NS_ENABLE_SSL
 			SSL_library_init();
@@ -50,8 +58,10 @@ namespace http {
 			}
 #endif
 
+#ifndef NOCLOUD
 			// start up the mydomoticz proxy client
 			RestartProxy();
+#endif
 
 			return bRet;
 		}
@@ -61,11 +71,14 @@ namespace http {
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
 				(*it)->StopServer();
 			}
+#ifndef NOCLOUD
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
 			}
+#endif
 		}
 
+#ifndef NOCLOUD
 		void CWebServerHelper::RestartProxy() {
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
@@ -78,11 +91,21 @@ namespace http {
 			const int connections = GetNrMyDomoticzThreads();
 			proxymanagerCollection.resize(connections);
 			for (int i = 0; i < connections; i++) {
-				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm);
-				proxymanagerCollection[i]->Start();
+				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ);
+				proxymanagerCollection[i]->Start(i == 0);
 			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
+
+		CProxyClient *CWebServerHelper::GetProxyForClient(DomoticzTCP *client) {
+			if (proxymanagerCollection.size() > 0) {
+				// todo: make this a random connection?
+				return proxymanagerCollection[0]->GetProxyForClient(client);
+			}
+			return NULL;
+		}
+
+#endif
 
 		void CWebServerHelper::SetAuthenticationMethod(int amethod)
 		{
@@ -125,12 +148,14 @@ namespace http {
 			 }
 		}
 
+#ifndef NOCLOUD
 		int CWebServerHelper::GetNrMyDomoticzThreads()
 		{
 			int nrThreads = 1; // default value
 			m_sql.GetPreferencesVar("MyDomoticzNrThreads", nrThreads);
 			return nrThreads;
 		}
+#endif
 	}
 
 }

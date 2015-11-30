@@ -1,6 +1,10 @@
 #pragma once
 #include "WebServer.h"
+#ifndef NOCLOUD
 #include "../webserver/proxyclient.h"
+#include "../hardware/DomoticzTCP.h"
+#endif
+#include "../tcpserver/TCPServer.h"
 #include <vector>
 
 namespace http {
@@ -12,9 +16,12 @@ namespace http {
 			~CWebServerHelper();
 
 			// called from mainworker():
-			bool StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword);
+			bool StartServers(const std::string &listenaddress, const std::string &listenport, const std::string &secure_listenport, const std::string &serverpath, const std::string &secure_cert_file, const std::string &secure_cert_passphrase, const bool bIgnoreUsernamePassword, tcp::server::CTCPServer *sharedServer);
 			void StopServers();
+#ifndef NOCLOUD
 			void RestartProxy();
+			CProxyClient *GetProxyForClient(DomoticzTCP *client);
+#endif
 			void SetAuthenticationMethod(int amethod);
 			void SetWebTheme(const std::string &themename);
 			void ClearUserPasswords();
@@ -27,11 +34,15 @@ namespace http {
 #ifdef NS_ENABLE_SSL
 			CWebServer *secureServer_;
 #endif
+			tcp::server::CTCPServer *m_pDomServ;
 			std::vector<CWebServer*> serverCollection;
 
 			std::string our_serverpath;
+#ifndef NOCLOUD
 			std::vector<CProxyManager*> proxymanagerCollection;
 			int GetNrMyDomoticzThreads();
+			CProxyClient *GetFirstProxy();
+#endif
 };
 
 	} // end namespace server

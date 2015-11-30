@@ -6,6 +6,7 @@
 #if defined WIN32
 #include "ws2tcpip.h"
 #endif
+#include "../webserver/proxyclient.h"
 
 class DomoticzTCP: public CDomoticzHardwareBase
 {
@@ -14,8 +15,12 @@ public:
 	~DomoticzTCP(void);
 
 	void write(const char *data, size_t size);
-	bool isConnected(){ return m_socket!= INVALID_SOCKET; };
+	bool isConnected();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+	bool CompareToken(const std::string &aToken);
+	void FromProxy(const unsigned char *data, size_t datalen);
+	std::string GetToken();
+	void Authenticated(const std::string &aToken, bool authenticated);
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
@@ -23,7 +28,20 @@ private:
 	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();
+	void writeTCP(const char *data, size_t size);
+	void writeProxy(const char *data, size_t size);
+	bool isConnectedTCP();
+	void disconnectTCP();
+	bool isConnectedProxy();
+	void disconnectProxy();
+	bool IsValidAPIKey(const std::string &IPAddress);
+	std::string token;
+	bool b_ProxyConnected;
 protected:
+	bool StartHardwareTCP();
+	bool StopHardwareTCP();
+	bool StartHardwareProxy();
+	bool StopHardwareProxy();
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_username;
@@ -38,5 +56,6 @@ protected:
 	struct addrinfo *info;
 	int m_socket;
 	unsigned char mBuffer[512];
+	bool b_useProxy;
 };
 

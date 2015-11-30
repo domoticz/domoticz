@@ -30,6 +30,8 @@ Version 2.3xxx
 - Fixed: CM180i graph display
 - Implemented: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
 - Implemented: Netatmo, support for multiple Thermostats
+- Implemented: Day display in energy/gas/water/temp report
+- Fixed: Blockly, Set user variables (you need to resave your blockly's)
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

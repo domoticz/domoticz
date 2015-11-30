@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#ifndef NOCLOUD
 #include "proxycommon.h"
 #include "../main/Logger.h"
 
@@ -308,4 +309,4 @@ int ProxyPdu::Disconnected()
 {
 	return disconnected;
 }
-
+#endif

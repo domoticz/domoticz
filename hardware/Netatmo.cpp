@@ -12,7 +12,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_NetatmoWeatherStationR
+//	#define DEBUG_NetatmoWeatherStationR
 #endif
 
 #ifdef DEBUG_NetatmoWeatherStationW
@@ -648,7 +648,7 @@ bool CNetatmo::SetProgramState(const int idx, const int newState)
 
 void CNetatmo::SetSetpoint(const int idx, const float temp)
 {
-	if (idx >= m_thermostatDeviceID.size())
+	if (idx >= (int)m_thermostatDeviceID.size())
 		return;
 	if ((m_thermostatDeviceID[idx].empty()) || (m_thermostatModuleID[idx].empty()))
 	{
@@ -802,6 +802,11 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const bool bI
 											bool bIsAway = (setpoint_mode == "away");
 											std::string aName = "Away " + mname;
 											SendSwitch(3, 1 + iDevIndex, 255, bIsAway, 0, aName);
+										}
+										//Check if setpoint was just set, and if yes, overrule the previous setpoint
+										if (!module["setpoint"]["setpoint_temp"].empty())
+										{
+											ParseDashboard(module["setpoint"], iDevIndex, crcId, mname, mtype, mbattery_vp);
 										}
 									}
 								}
@@ -963,7 +968,7 @@ void CNetatmo::GetThermostatDetails()
 	std::string sResult;
 
 #ifdef DEBUG_NetatmoWeatherStationR
-	sResult = ReadFile("E:\\netatmo_mdetails_thermostat.json");
+	sResult = ReadFile("E:\\netatmo_mdetails_thermostat_0002.json");
 	bool ret = true;
 #else
 	bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
@@ -974,7 +979,10 @@ void CNetatmo::GetThermostatDetails()
 	}
 #endif
 #ifdef DEBUG_NetatmoWeatherStationW
-	SaveString2Disk(sResult, "E:\\netatmo_mdetails_thermostat.json");
+	static int cntr = 1;
+	char szFileName[255];
+	sprintf(szFileName, "E:\\netatmo_mdetails_thermostat_%04d.json", cntr++);
+	SaveString2Disk(sResult, szFileName);
 #endif
 	if (!ParseNetatmoGetResponse(sResult,true))
 	{

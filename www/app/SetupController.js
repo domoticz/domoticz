@@ -547,6 +547,11 @@ define(['app'], function (app) {
 			  if (typeof data.SecOnDelay != 'undefined') {
 				$("#sectable #SecOnDelay").val(data.SecOnDelay);
 			  }
+			  if (typeof data.cloudenabled != 'undefined') {
+				  if (!data.cloudenabled) {
+					  $("#MyDomoticzTab").css("display", "none");
+				  }
+			  }
 			  if (typeof data.MyDomoticzInstanceId != 'undefined') {
 				$("#mydomoticztable #mydomoticzinstanceidid").text(data.MyDomoticzInstanceId);
 			  }
@@ -555,6 +560,11 @@ define(['app'], function (app) {
 			  }
 			  if (typeof data.MyDomoticzPassword != 'undefined') {
 				$("#mydomoticztable #MyDomoticzPassword").val(data.MyDomoticzPassword);
+			  }
+			  if (typeof data.MyDomoticzSubsystems != 'undefined') {
+					$("#mydomoticztable #SubsystemHttp").prop("checked", (data.MyDomoticzSubsystems & 1) > 0);
+					$("#mydomoticztable #SubsystemShared").prop("checked", (data.MyDomoticzSubsystems & 2) > 0);
+					$("#mydomoticztable #SubsystemApps").prop("checked", (data.MyDomoticzSubsystems & 4) > 0);
 			  }
 			 }
 		  });
