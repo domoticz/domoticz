@@ -477,6 +477,7 @@ namespace http {
 			}
 			else {
 				SendServDisconnect(tokenparam, 1);
+				ReadMore();
 			}
 		}
 
@@ -510,7 +511,7 @@ namespace http {
 
 			parameters.AddPart((void *)token.c_str(), token.length() + 1);
 			parameters.AddValue((void *)&reason, SIZE_INT);
-			MyWrite(PDU_SERV_DISCONNECT, &parameters, false);
+			MyWrite(PDU_SERV_DISCONNECT, &parameters, true);
 		}
 
 		void CProxyClient::HandleAuthresp(ProxyPdu *pdu)

@@ -140,6 +140,7 @@ void CSharedClient::write(const char *pData, size_t Length)
 {
 	if (!m_bIsLoggedIn)
 		return;
+	// RK, todo: m_pProxyClient is not valid after a reconnect
 	m_pProxyClient->WriteSlaveData(_token, pData, Length);
 }
 
