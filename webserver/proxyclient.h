@@ -34,7 +34,7 @@ namespace http {
 			void Stop();
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
-			bool CProxyClient::SharedServerAllowed();
+			bool SharedServerAllowed();
 			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *client);
 			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *client);
 			void SetSharedServer(tcp::server::CTCPServerProxied *domserv);
@@ -98,7 +98,7 @@ namespace http {
 			~CProxyManager();
 			int Start(bool first);
 			void Stop();
-			CProxyClient *CProxyManager::GetProxyForClient(DomoticzTCP *client);
+			CProxyClient *GetProxyForClient(DomoticzTCP *client);
 		private:
 			void StartThread();
 			boost::asio::io_service io_service;
