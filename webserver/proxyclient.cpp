@@ -45,7 +45,7 @@ namespace http {
 
 		void CProxyClient::WriteSlaveData(const std::string &token, const char *pData, size_t Length)
 		{
-			/* data from master to slave */
+			/* data from slave to master */
 			CValueLengthPart parameters;
 
 			parameters.AddPart((void *)token.c_str(), token.length() + 1);
@@ -600,7 +600,7 @@ namespace http {
 					HandleServConnectResp(&pdu);
 					break;
 				case PDU_SERV_RECEIVE:
-					/* data from master to slave */
+					/* data from slave to master */
 					if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
 						HandleServReceive(&pdu);
 					}
@@ -610,7 +610,7 @@ namespace http {
 					}
 					break;
 				case PDU_SERV_SEND:
-					/* data from slave to master */
+					/* data from master to slave */
 					HandleServSend(&pdu);
 					break;
 				default:
