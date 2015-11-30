@@ -158,17 +158,17 @@ define(['app'], function (app) {
 			$('#fibaromain').i18n();
 			var oTable = $('#uservariablestable').dataTable( {
 			  "sDom": '<"H"lfrC>t<"F"ip>',
-			  "oTableTools": {
-				"sRowSelect": "single",
-			  },
-			  "aaSorting": [[ 0, "desc" ]],
-			  "bSortClasses": false,
-			  "bProcessing": true,
-			  "bStateSave": true,
-			  "bJQueryUI": true,
-			  "iDisplayLength" : 10,
-			  'bLengthChange': false,
-			  "sPaginationType": "full_numbers",
+				"oTableTools": {
+					"sRowSelect": "single",
+				},
+				"aaSorting": [[0, "desc"]],
+				"bSortClasses": false,
+				"bProcessing": true,
+				"bStateSave": true,
+				"bJQueryUI": true,
+				"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+				"iDisplayLength": 25,
+				"sPaginationType": "full_numbers",
 			  language: $.DataTableLanguage
 			} );
 			

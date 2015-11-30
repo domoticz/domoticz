@@ -286,7 +286,7 @@ void CGpio::ProcessInterrupt(int gpioId) {
 	IOPinStatusPacket.LIGHTING1.seqnbr = seqnr;
 	IOPinStatusPacket.LIGHTING1.unitcode = gpioId;
 
-	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket);
+	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
 
 	_log.Log(LOG_NORM, "GPIO: Done processing interrupt for GPIO %d.", gpioId);
 #endif

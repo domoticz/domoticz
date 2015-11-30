@@ -32,6 +32,8 @@ Version 2.3xxx
 - Implemented: Netatmo, support for multiple Thermostats
 - Implemented: Day display in energy/gas/water/temp report
 - Fixed: Blockly, Set user variables (you need to resave your blockly's)
+- Fixed: Month temperature report avarage is now calculated by the daily avarage value
+- Implemented: Waterflow sensor
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report

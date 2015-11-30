@@ -203,7 +203,7 @@ void CSBFSpot::SendMeter(const unsigned char ID1,const unsigned char ID2, const 
 	total-=tsen.ENERGY.total5*0x100;
 	tsen.ENERGY.total6=(unsigned char)(total);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.ENERGY, NULL, 255);
 
 	if (!bDeviceExits)
 	{
@@ -241,7 +241,7 @@ void CSBFSpot::SendTempSensor(const unsigned char Idx, const float Temp, const s
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 
 	if (!bDeviceExits)
 	{
@@ -271,7 +271,7 @@ void CSBFSpot::SendVoltage(const unsigned long Idx, const float Volt, const std:
 	gDevice.id=1;
 	gDevice.floatval1=Volt;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, 255);
 
 	if (!bDeviceExits)
 	{
@@ -301,7 +301,7 @@ void CSBFSpot::SendPercentage(const unsigned long Idx, const float Percentage, c
 	gDevice.id=1;
 	gDevice.floatval1=Percentage;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, 255);
 
 	if (!bDeviceExits)
 	{

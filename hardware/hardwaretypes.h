@@ -61,6 +61,7 @@
 #define sTypeDistance				0x1B
 #define sTypeCounterIncremental		0x1C
 #define sTypeKwh					0x1D
+#define sTypeWaterflow				0x1E
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4

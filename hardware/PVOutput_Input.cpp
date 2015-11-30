@@ -111,7 +111,7 @@ void CPVOutputInput::SendTempSensor(const unsigned char Idx, const float Temp, c
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 
 	if (!bDeviceExits)
 	{
@@ -141,7 +141,7 @@ void CPVOutputInput::SendVoltage(const unsigned long Idx, const float Volt, cons
 	gDevice.id=1;
 	gDevice.floatval1=Volt;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, 255);
 
 	if (!bDeviceExits)
 	{
@@ -171,7 +171,7 @@ void CPVOutputInput::SendPercentage(const unsigned long Idx, const float Percent
 	gDevice.id=1;
 	gDevice.floatval1=Percentage;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, 255);
 
 	if (!bDeviceExits)
 	{

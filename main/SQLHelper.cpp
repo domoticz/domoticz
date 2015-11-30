@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 86
+#define DB_VERSION 87
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1566,6 +1566,31 @@ bool CSQLHelper::OpenDatabase()
 			//MySensors add Name field
 			query("ALTER TABLE MySensors ADD COLUMN [Name] VARCHAR(100) DEFAULT ''");
 			safe_query("UPDATE MySensors SET [Name] = [SketchName]");
+		}
+		if (dbversion < 87)
+		{
+			//MySensors change waterflow percentage sensor to a real waterflow sensor
+			std::stringstream szQuery;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			szQuery << "SELECT HardwareID,NodeID,ChildID FROM MySensorsChilds WHERE ([Type]==" << 21 << ")";
+			result = query(szQuery.str());
+			for (itt = result.begin(); itt != result.end(); ++itt)
+			{
+				std::vector<std::string> sd = *itt;
+				int hwid = atoi(sd[0].c_str());
+				int nodeid = atoi(sd[1].c_str());
+				int childid = atoi(sd[2].c_str());
+
+				szQuery.clear();
+				szQuery.str("");
+
+				char szID[20];
+				sprintf(szID, "%08X", nodeid);
+
+				szQuery << "UPDATE DeviceStatus SET SubType=" << sTypeWaterflow << " WHERE ([Type]=" << pTypeGeneral << ") AND (SubType=" << sTypePercentage << ") AND (HardwareID=" << hwid << ") AND (DeviceID='" << szID << "')";
+				query(szQuery.str());
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -4060,8 +4085,9 @@ void CSQLHelper::UpdatePercentageLog()
 	GetPreferencesVar("SensorTimeout", SensorTimeOut);
 
 	std::vector<std::vector<std::string> > result;
-	result=safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d)",
-		pTypeGeneral,sTypePercentage
+	result = safe_query("SELECT ID,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE (Type=%d AND SubType=%d) OR (Type=%d AND SubType=%d)",
+		pTypeGeneral, sTypePercentage,
+		pTypeGeneral, sTypeWaterflow
 		);
 	if (result.size()>0)
 	{

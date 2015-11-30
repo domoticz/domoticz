@@ -347,7 +347,7 @@ void MochadTCP::MatchLine()
 				return;
 			if (!('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '1')) goto onError;
 			m_mochad.LIGHTING1.cmnd = m_mochadbuffer[j++] - '0';
-			sDecodeRXMessage(this, (const unsigned char *)&m_mochad);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
 			if (!(','==  m_mochadbuffer[j++])) return;
 		}
 		break;
@@ -385,7 +385,7 @@ checkFunc:
 			if (selected[currentHouse][k] >0) {
 				m_mochad.LIGHTING1.housecode = currentHouse+'A'; 
 				m_mochad.LIGHTING1.unitcode = k; 
-				sDecodeRXMessage(this, (const unsigned char *)&m_mochad);//decode message			
+				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
 				selected[currentHouse][k] = 0;
 			}
 		}
@@ -472,7 +472,7 @@ checkFunc:
 		else
 			goto onError;
 
-		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec, NULL, 255);
 		break;
 	}
 	return;

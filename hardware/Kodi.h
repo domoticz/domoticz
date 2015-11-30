@@ -99,7 +99,7 @@ private:
 	int				m_HwdID;
 	char			m_szDevID[40];
 	std::string		m_IP;
-	int				m_Port;
+	std::string		m_Port;
 
 	CKodiStatus		m_PreviousStatus;
 	CKodiStatus		m_CurrentStatus;
