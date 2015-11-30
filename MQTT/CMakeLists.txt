@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.6)
+#set to minimum version that supports clean build on cygwin
+cmake_minimum_required(VERSION 2.8.4)
 
 project (MQTT C)
 
