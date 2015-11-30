@@ -343,7 +343,7 @@ void C1Wire::ReportTemperature(const std::string& deviceId,float temperature)
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 }
 
 void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
@@ -367,7 +367,7 @@ void C1Wire::ReportHumidity(const std::string& deviceId,float humidity)
 	tsen.HUM.humidity=(BYTE)round(humidity);
 	tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM, NULL, 255);
 }
 
 void C1Wire::ReportPressure(const std::string& deviceId,float pressure)
@@ -378,7 +378,7 @@ void C1Wire::ReportPressure(const std::string& deviceId,float pressure)
 	_tGeneralDevice gdevice;
 	gdevice.subtype=sTypePressure;
 	gdevice.floatval1=pressure;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
 }
 
 void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float temperature,float humidity)
@@ -406,7 +406,7 @@ void C1Wire::ReportTemperatureHumidity(const std::string& deviceId,float tempera
 	tsen.TEMP_HUM.humidity=(BYTE)round(humidity);
 	tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, 255);
 }
 
 void C1Wire::ReportLightState(const std::string& deviceId,int unit,bool state)
@@ -444,7 +444,7 @@ void C1Wire::ReportLightState(const std::string& deviceId,int unit,bool state)
 	tsen.LIGHTING2.cmnd=state?light2_sOn:light2_sOff;
 	tsen.LIGHTING2.level=0;
 	tsen.LIGHTING2.rssi=12;
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 }
 
 void C1Wire::ReportCounter(const std::string& deviceId,int unit,unsigned long counter)
@@ -465,7 +465,7 @@ void C1Wire::ReportCounter(const std::string& deviceId,int unit,unsigned long co
 	tsen.RFXMETER.count2 = (BYTE)((counter & 0x00FF0000) >> 16);
 	tsen.RFXMETER.count3 = (BYTE)((counter & 0x0000FF00) >> 8);
 	tsen.RFXMETER.count4 = (BYTE)(counter & 0x000000FF);
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
 }
 
 void C1Wire::ReportVoltage(int unit,int voltage)
@@ -483,7 +483,7 @@ void C1Wire::ReportVoltage(int unit,int voltage)
 
 	tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
 	tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
 }
 
 void C1Wire::ReportIlluminescence(float illuminescence)
@@ -494,5 +494,5 @@ void C1Wire::ReportIlluminescence(float illuminescence)
 	_tGeneralDevice gdevice;
 	gdevice.subtype=sTypeSolarRadiation;
 	gdevice.floatval1=illuminescence;
-	sDecodeRXMessage(this, (const unsigned char *)&gdevice);
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
 }

@@ -468,13 +468,7 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, hexId.str().c_str());
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
 //  Logs into the Logitech Harmony web service

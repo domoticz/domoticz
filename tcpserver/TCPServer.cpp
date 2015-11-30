@@ -445,7 +445,7 @@ void CTCPServer::DoDecodeMessage(const CTCPClientBase *pClient, const unsigned c
 	Name="DomoticzFromMaster";
 	m_SeqNr=1;
 	m_pUserData=(void*)pClient;
-	sDecodeRXMessage(this, pRXCommand);//decode message
+	sDecodeRXMessage(this, pRXCommand, NULL, -1);
 }
 
 #ifndef NOCLOUD

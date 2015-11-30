@@ -152,7 +152,7 @@ void CEcoDevices::GetMeterDetails()
 		{
 			m_lastSharedSendElectra = atime;
 			m_lastelectrausage = m_p1power.usagecurrent;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 		}
 	}
 }

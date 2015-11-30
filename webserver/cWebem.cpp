@@ -939,7 +939,7 @@ void cWebem::CleanTimedOutSessions() {
 	// TODO : Check if a mutex and an atomic<unsigned long> are needed in case multiple requests are received at the same time.
 
 	time_t now = mytime(NULL);
-	if (myNextSessionCleanup >= now) {
+	if (myNextSessionCleanup < now) {
 		myNextSessionCleanup = now + 15 * 60; // in 15 minutes
 		std::vector<std::string> ssids;
 		std::map<std::string, WebEmSession>::iterator itt;

@@ -111,25 +111,11 @@ void OTGWBase::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::
 	lcmd.LIGHTING2.level=level;
 	lcmd.LIGHTING2.filler=0;
 	lcmd.LIGHTING2.rssi=12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szIdx);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
 void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d)", m_HwdID, int(Idx));
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
 
@@ -147,29 +133,11 @@ void OTGWBase::UpdateTempSensor(const unsigned char Idx, const float Temp, const
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d)", defaultname.c_str(), m_HwdID, int(Idx));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
 void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-
-	char szID[10];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
-
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	_tThermostat thermos;
 	thermos.subtype=sTypeThermSetpoint;
 	thermos.id1=0;
@@ -180,41 +148,17 @@ void OTGWBase::UpdateSetPointSensor(const unsigned char Idx, const float Temp, c
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
 void OTGWBase::UpdatePressureSensor(const unsigned long Idx, const float Pressure, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp,"%08X", (unsigned int)Idx);
-
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	_tGeneralDevice gDevice;
 	gDevice.subtype=sTypePressure;
 	gDevice.id=1;
 	gDevice.floatval1=Pressure;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePressure));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 bool OTGWBase::GetOutsideTemperatureFromDomoticz(float &tvalue)
