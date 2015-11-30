@@ -1118,11 +1118,29 @@ $(document).ready(function() {
 		<br>
 		<div id="usagegraph" style="height: 240px;"></div>
 	</div>
+	<div id="reportviewtempmonth" style="display:none;">
+		<table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<thead>
+				<tr valign="middle">
+					<th width="30" align="right" id="ftext"></th>
+					<th width="70" align="left"></th>
+					<th width="60" align="right" data-i18n="Humidity">Humidity</th>
+					<th width="60" align="right" data-i18n="Avg. Temp">Avg. Temp</th>
+					<th width="60" align="right" data-i18n="Min. Temp">Min. Temp</th>
+					<th width="60" align="right" data-i18n="Max. Temp">Max. Temp</th>
+					<th width="40" align="right">&lt;&gt;</th>
+				</tr>
+			</thead>
+		</table>
+		<br>
+		<div id="usagegraph" style="height: 240px;"></div>
+	</div>
 	<div id="monthreportviewgas" style="display:none;">
 		<table class="display myrighttable" id="monthreport" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<thead>
 				<tr valign="middle">
 					<th width="30" align="right" data-i18n="Day">Day</th>
+					<th width="70" align="left"></th>
 					<th width="60" align="right" data-i18n="Counter">Counter</th>
 					<th width="60" align="right" data-i18n="Usage">Usage</th>
 					<th width="60" align="right" data-i18n="Costs">Costs</th>
@@ -1192,6 +1210,7 @@ $(document).ready(function() {
 			<thead>
 				<tr valign="middle">
 					<th width="30" align="right" data-i18n="Day">Day</th>
+					<th width="70" align="left"></th>
 					<th width="60" align="right" data-i18n="Counter T1">Counter T1</th>
 					<th width="60" align="right" data-i18n="Usage T1">Usage T1</th>
 					<th width="60" align="right" data-i18n="Costs">Costs</th>

@@ -37,81 +37,16 @@ public:
 	void *m_pUserData;
 	bool m_bOutputLog;
 	int m_iLastSendNodeBatteryValue;
-private:
-	friend class C1Wire;
-	friend class CDummy;
-	friend class CTellstick;
-	friend class CEvohome;
-	friend class DomoticzTCP;
-	friend class P1MeterBase;
-	friend class P1MeterSerial;
-	friend class P1MeterTCP;
-	friend class RFXComSerial;
-	friend class RFXComTCP;
-	friend class CYouLess;
-	friend class CWinddelen;
-	friend class CRego6XXSerial;
-	friend class CDavisLoggerSerial;
-	friend class CBMP085;
-	friend class CPiFace;
-	friend class S0MeterSerial;
-	friend class OTGWBase;
-	friend class OTGWSerial;
-	friend class OTGWTCP;
-	friend class Teleinfo;
-	friend class CLimitLess;
-	friend class ZWaveBase;
-	friend class COpenZWave;
-	friend class CWunderground;
-	friend class CForecastIO;
-	friend class CTE923;
-	friend class CVolcraftCO20;
-	friend class CEnOceanESP2;
-	friend class CEnOceanESP3;
-	friend class SolarEdgeTCP;
-	friend class CSBFSpot;
-	friend class CWOL;
-	friend class CICYThermostat;
-	friend class CPVOutputInput;
-	friend class CGpio;
-	friend class Meteostick;
-	friend class CToonThermostat;
-	friend class CEcoDevices;
-	friend class CHarmonyHub;
-	friend class MochadTCP;
-	friend class CPhilipsHue;
-	friend class MySensorsBase;
-	friend class MySensorsSerial;
-	friend class MySensorsTCP;
-	friend class MQTT;
-	friend class FritzboxTCP;
-	friend class CETH8020;
-	friend class CRFLinkSerial;
-	friend class CRFLinkTCP;
-	friend class CRFLinkBase;
-	friend class KMTronicBase;
-	friend class KMTronicSerial;
-	friend class KMTronicTCP;
-	friend class KMTronic433;
-	friend class SolarMaxTCP;
-	friend class CPinger;
-	friend class CNest;
-	friend class CThermosmart;
-	friend class CKodi;
-	friend class CNetatmo;
-	friend class CAnnaThermostat;
-	friend class SatelIntegra;
-	friend class CLogitechMediaServer;
-	friend class CHardwareMonitor;
-	friend class Comm5TCP;
+
+protected:
 
 	virtual bool StartHardware()=0;
 	virtual bool StopHardware()=0;
 	bool onRFXMessage(const unsigned char *pBuffer, const size_t Len);
-	//Heartbeat thread for classes that can not provide this themselves
+
+    //Heartbeat thread for classes that can not provide this themselves
 	void StartHeartbeatThread();
 	void StopHeartbeatThread();
-	void Do_Heartbeat_Work();
 	void HandleHBCounter(const int iInterval);
 
 	//Sensor Helpers
@@ -151,19 +86,26 @@ private:
 	bool CheckPercentageSensorExists(const int NodeID, const int ChildID);
 
 	int m_iHBCounter;
-	boost::shared_ptr<boost::thread> m_Heartbeatthread;
-	volatile bool m_stopHeartbeatrequested;
 	boost::mutex readQueueMutex;
 	unsigned char m_rxbuffer[RX_BUFFER_SIZE];
-	bool m_bIsStarted;
 
 	//Barometric calculation (only for 1 sensor per hardware device!)
-	int m_baro_minuteCount;
-	double m_pressureSamples[9][6];
-	double m_pressureAvg[9];
-	double m_dP_dt;
-	int m_last_forecast;
-	time_t m_BaroCalcLastTime;
 	int CalculateBaroForecast(const double pressure);
+    
+    bool m_bIsStarted;
+    
+private:
+    void Do_Heartbeat_Work();
+
+    volatile bool m_stopHeartbeatrequested;
+    boost::shared_ptr<boost::thread> m_Heartbeatthread;
+
+    int m_baro_minuteCount;
+    double m_pressureSamples[9][6];
+    double m_pressureAvg[9];
+    double m_dP_dt;
+    int m_last_forecast;
+    time_t m_BaroCalcLastTime;
+
 };
 

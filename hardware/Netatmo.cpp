@@ -68,6 +68,8 @@ m_password(password)
 	m_stoprequested=false;
 	m_bPollThermostat = true;
 	m_bPollWeatherData = true;
+	m_bFirstTimeThermostat = true;
+	m_bFirstTimeWeatherData = true;
 
 	Init();
 }
@@ -82,6 +84,8 @@ void CNetatmo::Init()
 	m_OldRainCounter.clear();
 	m_bPollThermostat = true;
 	m_bPollWeatherData = true;
+	m_bFirstTimeThermostat = true;
+	m_bFirstTimeWeatherData = true;
 	m_bForceSetpointUpdate=false;
 }
 
@@ -644,7 +648,7 @@ bool CNetatmo::SetProgramState(const int idx, const int newState)
 
 void CNetatmo::SetSetpoint(const int idx, const float temp)
 {
-	if (idx >= m_thermostatDeviceID.size())
+	if (idx >= (int)m_thermostatDeviceID.size())
 		return;
 	if ((m_thermostatDeviceID[idx].empty()) || (m_thermostatModuleID[idx].empty()))
 	{
@@ -939,7 +943,11 @@ void CNetatmo::GetMeterDetails()
 #endif
 	if (!ParseNetatmoGetResponse(sResult, false))
 	{
-		m_bPollWeatherData = false;
+		if (m_bFirstTimeWeatherData)
+		{
+			m_bFirstTimeWeatherData = false;
+			m_bPollWeatherData = false;
+		}
 	}
 }
 
@@ -970,7 +978,11 @@ void CNetatmo::GetThermostatDetails()
 #endif
 	if (!ParseNetatmoGetResponse(sResult,true))
 	{
-		m_bPollThermostat = false;
+		if (m_bFirstTimeThermostat)
+		{
+			m_bFirstTimeThermostat = false;
+			m_bPollThermostat = false;
+		}
 	}
 }
 
