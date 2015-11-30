@@ -374,7 +374,7 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 	if (isConnectedProxy()) {
 		proxy = m_webservers.GetProxyForClient(this);
 		if (proxy) {
-			proxy->WriteSlaveData(token, data, size);
+			proxy->WriteMasterData(token, data, size);
 		}
 	}
 }

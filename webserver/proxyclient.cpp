@@ -455,30 +455,6 @@ namespace http {
 		}
 
 		void CProxyClient::HandleServSend(ProxyPdu *pdu) {
-			/* data from slave to master */
-			CValueLengthPart part(pdu);
-			std::string tokenparam;
-			char *token;
-			unsigned char *data;
-			size_t length, datalen;
-
-			if (!part.GetNextPart((void **)&token, &length)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_SEND pdu");
-			}
-			if (!part.GetNextPart((void **)&data, &datalen)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_SEND pdu");
-			}
-			tokenparam = token;
-			DomoticzTCP *client = sharedData.FindClient(token);
-			free(token);
-			if (client) {
-				client->FromProxy(data, datalen);
-			}
-			ReadMore();
-		}
-
-		void CProxyClient::HandleServReceive(ProxyPdu *pdu)
-		{
 			/* data from master to slave */
 			CValueLengthPart part(pdu);
 			size_t length, datalen;
@@ -488,10 +464,10 @@ namespace http {
 			bool success;
 
 			if (!part.GetNextPart((void **)&token, &length)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_RECEIVE pdu");
+				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_SEND pdu");
 			}
 			if (!part.GetNextPart((void **)&data, &datalen)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_RECEIVEpdu");
+				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_SEND pdu");
 			}
 			success = m_pDomServ->OnIncomingData(token, data, datalen);
 			free(token);
@@ -502,6 +478,30 @@ namespace http {
 			else {
 				SendServDisconnect(tokenparam, 1);
 			}
+		}
+
+		void CProxyClient::HandleServReceive(ProxyPdu *pdu)
+		{
+			/* data from slave to master */
+			CValueLengthPart part(pdu);
+			std::string tokenparam;
+			char *token;
+			unsigned char *data;
+			size_t length, datalen;
+
+			if (!part.GetNextPart((void **)&token, &length)) {
+				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_RECEIVE pdu");
+			}
+			if (!part.GetNextPart((void **)&data, &datalen)) {
+				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_RECEIVE pdu");
+			}
+			tokenparam = token;
+			DomoticzTCP *client = sharedData.FindClient(token);
+			free(token);
+			if (client) {
+				client->FromProxy(data, datalen);
+			}
+			ReadMore();
 		}
 
 		void CProxyClient::SendServDisconnect(const std::string &token, int reason)
