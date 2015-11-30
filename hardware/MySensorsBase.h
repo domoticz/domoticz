@@ -369,7 +369,7 @@ private:
 	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 
 
-	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
 
 	bool GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
 

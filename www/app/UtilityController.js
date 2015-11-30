@@ -758,6 +758,10 @@ define(['app'], function (app) {
 						else if (item.SubType=="Thermostat Fan Mode") {
 						  status=item.Data;
 						}
+						else if (item.SubType == "Waterflow") {
+							status=item.Data;
+							bigtext=item.Data;
+						}
 						
 						if (typeof item.Usage != 'undefined') {
 							bigtext=item.Usage;
@@ -972,6 +976,9 @@ define(['app'], function (app) {
 						else if (item.Type == "Thermostat") {
 						  xhtm+=item.Data + '\u00B0 ' + $scope.config.TempSign;
 						}
+						else if (item.SubType == "Waterflow") {
+						  xhtm+=item.Data;
+						}
 						xhtm+='</td>\n';
 				  xhtm+='\t      <td id="img"><img src="images/';
 					var status="";
@@ -1096,6 +1103,10 @@ define(['app'], function (app) {
 					  xhtm+='Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="48" width="48"></td>\n';
 					  status=item.Data;
 					}
+					else if (item.SubType == "Waterflow") {
+					  xhtm+='moisture48.png" height="48" width="48"></td>\n';
+					  status=item.Data;
+					}
 					if (typeof item.CounterDeliv != 'undefined') {
 						if (item.CounterDeliv!=0) {
 							status+='<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
@@ -1149,7 +1160,7 @@ define(['app'], function (app) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 					}
 				  }
-				  else if ((item.SubType == "Soil Moisture")||(item.SubType == "Leaf Wetness")) {
+				  else if ((item.SubType == "Soil Moisture")||(item.SubType == "Leaf Wetness")||(item.SubType == "Waterflow")) {
 					xhtm+='<a class="btnsmall" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" data-i18n="Log">Log</a> ';
 					if (permissions.hasPermission("Admin")) {
 						xhtm+='<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';

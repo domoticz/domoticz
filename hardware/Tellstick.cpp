@@ -60,14 +60,14 @@ void CTellstick::deviceEvent(int deviceId, int method, const char *data) {
   
 	if (method == TELLSTICK_TURNON) {
 		gswitch.cmnd = gswitch_sOn;
-		sDecodeRXMessage(this, (const unsigned char *)&gswitch);
+		sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, 255);
 	} else if (method == TELLSTICK_TURNOFF) {
 		gswitch.cmnd = gswitch_sOff;
-		sDecodeRXMessage(this, (const unsigned char *)&gswitch);
+		sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, 255);
 	} else if (method == TELLSTICK_DIM) {
 		gswitch.cmnd = gswitch_sSetLevel;
 		gswitch.level = atoi(data)*99/255;
-		sDecodeRXMessage(this, (const unsigned char *)&gswitch);
+		sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, 255);
 	} else {
 		_log.Log(LOG_NORM, "Unknown event from device %i\n", deviceId);
 	}

@@ -300,7 +300,7 @@ void Teleinfo::MatchLine()
 				//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
 				//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
 				m_p1power.usagecurrent /= m_counter;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
 				m_counter = 0;
 				m_p1power.usagecurrent = 0;
 			}
@@ -316,7 +316,7 @@ void Teleinfo::MatchLine()
 					//_log.Log(LOG_NORM,"powerusage2 = %lu", m_p1power.powerusage2);
 					//_log.Log(LOG_NORM,"usagecurrent = %lu", m_p1power.usagecurrent);
 					m_p1power.usagecurrent /= m_counter;
-					sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+					sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
 					m_counter = 0;
 					m_p1power.usagecurrent = 0;
 				}

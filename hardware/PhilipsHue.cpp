@@ -359,7 +359,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		lcmd.id = NodeID;
 		lcmd.command = Limitless_LedOff;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, 255);
 
 		//Set Name/Parameters
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND(DeviceID == '%q')",
@@ -446,7 +446,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		lcmd.LIGHTING2.filler = 0;
 		lcmd.LIGHTING2.rssi = 12;
 
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, 255);
 
 		//Set Name/Parameters
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d, nValue=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",

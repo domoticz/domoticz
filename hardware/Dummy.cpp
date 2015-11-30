@@ -302,6 +302,15 @@ namespace http {
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Power, sTypeP1Power, 12, 255, 0, "0;0;0;0;0;0", devname);
 				bCreated = true;
 				break;
+			case 1000:
+				//Waterflow
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeWaterflow, 12, 255, 0, "0.0", devname);
+					bCreated = true;
+				}
+				break;
 			}
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;

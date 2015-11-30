@@ -893,7 +893,7 @@ bool CEvohome::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
 		//The exception appears to be for local overrides which may be possible to track by seeing if a change
 		//occurs that does not correspond to the controller setpoint for a given zone
 		if (msg.GetID(0) == GetControllerID())
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Setpoint", 255);
 	}
 	
 	return true;
@@ -956,7 +956,7 @@ bool CEvohome::DecodeSetpointOverride(CEvohomeMsg &msg)//0x2349
 		Log(true,LOG_STATUS,"evohome: %s: Setting: %d: %d (%d=%s)", tag, tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature, tsen.EVOHOME2.mode, GetZoneModeName(tsen.EVOHOME2.mode));
 	}
 	
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Setpoint", 255);
 	return true;
 }
 
@@ -997,7 +997,7 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 		Log(true,LOG_STATUS,"evohome: %s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
 		if(tsen.EVOHOME2.temperature!=0x7FFF)//afaik this is the error value just ignore it right now as we have no way to report errors...also perhaps could be returned if DHW is not installed?
 		{
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Zone Temp", 255);
 			if (msg.GetID(0) == GetControllerID())
 				bRefresh=SetMaxZoneCount(tsen.EVOHOME2.zone);//this should increase on startup as we poll all zones so we don't respond to changes here
 		}
@@ -1070,7 +1070,7 @@ bool CEvohome::DecodeDHWState(CEvohomeMsg &msg)//1F41
 		Log(true,LOG_STATUS,"evohome: %s: Setting: %d: %d (%d=%s)", tag, tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature, tsen.EVOHOME2.mode, GetZoneModeName(tsen.EVOHOME2.mode));
 	}
 	
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "DHW", 255);
 	return true;
 }
 
@@ -1110,7 +1110,7 @@ bool CEvohome::DecodeDHWTemp(CEvohomeMsg &msg)//1260
 		tsen.EVOHOME2.temperature = msg.payload[i + 1] << 8 | msg.payload[i + 2];
 		Log(true,LOG_STATUS,"evohome: %s: DHW sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
 		if(tsen.EVOHOME2.temperature!=0x7FFF)//afaik this is the error value just ignore it right now as we have no way to report errors...also perhaps could be returned if DHW is not installed?
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "DHW Temp", 255);
 	}
 
 	return true;
@@ -1146,7 +1146,7 @@ bool CEvohome::DecodeControllerMode(CEvohomeMsg &msg)//2E04
 	CEvohomeDateTime::DecodeDateTime(tsen.EVOHOME1,msg.payload,1);
 	tsen.EVOHOME1.mode=msg.payload[7];//1 is tmp 0 is perm
 	Log(true,LOG_STATUS,"evohome: %s: Setting: (%d=%s) (%d=%s) %s", tag, tsen.EVOHOME1.status, GetControllerModeName(tsen.EVOHOME1.status),tsen.EVOHOME1.mode,tsen.EVOHOME1.mode?"Temporary":"Permanent",CEvohomeDateTime::GetStrDate(tsen.EVOHOME1).c_str());
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME1);//Decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME1, "Controller Mode", 255);
 	
 	if(SetControllerMode(nControllerMode))//if only the until time changed we should be ok as the unit will broadcast a new controller mode when the current mode ends
 		RequestZoneState();//This can conflict with our startup polling but will still succeed ok
@@ -1272,7 +1272,7 @@ bool CEvohome::DecodeZoneWindow(CEvohomeMsg &msg)
 	Log(true,LOG_STATUS,"evohome: %s: %d: Window %d",tag,tsen.EVOHOME2.zone,nWindow);
 	
 	if (msg.GetID(0) == GetControllerID())
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Zone Window", 255);
 	
 	return true;
 }
@@ -1318,7 +1318,7 @@ void CEvohome::RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID)
 	RFX_SETID3(nID,tsen.EVOHOME3.id1,tsen.EVOHOME3.id2,tsen.EVOHOME3.id3);
 	tsen.EVOHOME3.devno=nDevNo;
 	tsen.EVOHOME3.demand=nDemand;
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3);//Decode messages
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3, "RX Relay", 255);
 }
 
 bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
@@ -1480,7 +1480,7 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 			tsen.EVOHOME2.type=pTypeEvohomeZone;
 			tsen.EVOHOME2.subtype=sTypeEvohomeZone;
 			tsen.EVOHOME2.zone=nDevNo;
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, 255);
 		}
 		else
 			szType="Dev";
@@ -1492,7 +1492,7 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 		tsen.EVOHOME2.type=pTypeEvohomeWater;
 		tsen.EVOHOME2.subtype=sTypeEvohomeWater;
 		tsen.EVOHOME2.zone=nDevNo;
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2);//Decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, NULL, 255);
 	}
 	Log(true,LOG_STATUS,"evohome: %s: %s=%d charge=%d (%.1f %%) level=%d (%s)",tag,szType.c_str(),nDevNo,nBattery,dbCharge,nLowBat,(nLowBat==0)?"Low":"OK");
 	

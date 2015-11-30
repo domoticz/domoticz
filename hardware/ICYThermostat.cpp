@@ -97,14 +97,6 @@ bool CICYThermostat::WriteToHardware(const char *pdata, const unsigned char leng
 
 void CICYThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
 
@@ -122,29 +114,11 @@ void CICYThermostat::SendTempSensor(const unsigned char Idx, const float Temp, c
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
 void CICYThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-
-	char szID[10];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
-
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	_tThermostat thermos;
 	thermos.subtype=sTypeThermSetpoint;
 	thermos.id1=0;
@@ -155,13 +129,7 @@ void CICYThermostat::SendSetPointSensor(const unsigned char Idx, const float Tem
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
 bool CICYThermostat::GetSerialAndToken()

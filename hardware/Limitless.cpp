@@ -303,7 +303,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==4) {
-					sendto(m_RemoteSocket,(const char*)&RGBWGroup4AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup4AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 					sleep_milliseconds(100);
 				}
 				//The Hue is inverted/swifted 90 degrees
@@ -344,7 +344,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD=(unsigned char*)&RGBWSetColorToWhiteGroup3;
 			}
 			else if (pLed->dunit==4) {
-				sendto(m_RemoteSocket,(const char*)&RGBWGroup4AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sendto(m_RemoteSocket,(const char*)&RGBWGroup4AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 				sleep_milliseconds(100);
 				pCMD=(unsigned char*)&RGBWSetColorToWhiteGroup4;
 			}
@@ -369,7 +369,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 					sleep_milliseconds(100);
 				}
 				else if (pLed->dunit==4) {
-					sendto(m_RemoteSocket,(const char*)&RGBWGroup4AllOn,4,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+					sendto(m_RemoteSocket,(const char*)&RGBWGroup4AllOn,3,0,(struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 					sleep_milliseconds(100);
 				}
 				//convert brightness (0-100) to (0-50) to 0-59

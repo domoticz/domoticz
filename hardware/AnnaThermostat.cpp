@@ -121,18 +121,6 @@ void CAnnaThermostat::Do_Work()
 
 void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-
-	char szID[10];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
-
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szID);
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	_tThermostat thermos;
 	thermos.subtype=sTypeThermSetpoint;
 	thermos.id1=0;
@@ -140,19 +128,9 @@ void CAnnaThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 	thermos.id3=0;
 	thermos.id4=Idx;
 	thermos.dunit=0;
-
 	thermos.temp=Temp;
-
-	sDecodeRXMessage(this, (const unsigned char *)&thermos);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
-
-
 
 bool CAnnaThermostat::WriteToHardware(const char *pdata, const unsigned char length)
 {

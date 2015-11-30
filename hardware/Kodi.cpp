@@ -14,7 +14,7 @@
 
 #define round(a) ( int ) ( a + .5 )
 #define MAX_TITLE_LEN 40
-#define DEBUG_LOGGING (m_Port<0)
+#define DEBUG_LOGGING (m_Port[0] == '-')
 
 void CKodiNode::CKodiStatus::Clear()
 {
@@ -153,7 +153,7 @@ CKodiNode::CKodiNode(boost::asio::io_service *pIos, const int pHwdID, const int 
 	sprintf(m_szDevID, "%X%02X%02X%02X", 0, 0, (m_DevID & 0xFF00) >> 8, m_DevID & 0xFF);
 	m_Name = pName;
 	m_IP = pIP;
-	m_Port = atoi(pPort.c_str());
+	m_Port = pPort;
 	m_iTimeoutCnt = (pTimeoutMs > 999) ? pTimeoutMs / 1000 : pTimeoutMs;
 	m_iPollIntSec = PollIntervalsec;
 	m_iMissedPongs = 0;
@@ -513,37 +513,48 @@ void CKodiNode::UpdateStatus()
 
 void CKodiNode::handleConnect()
 {
-	if (!m_stoprequested && !m_Socket)
+	try
 	{
-		m_iMissedPongs = 0;
-		boost::system::error_code ec;
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(m_IP), (m_Port>0 ? m_Port : m_Port*-1));
-		m_Socket = new boost::asio::ip::tcp::socket(*m_Ios);
-		m_Socket->connect(endpoint, ec);
-		if (!ec)
+		if (!m_stoprequested && !m_Socket)
 		{
-			_log.Log(LOG_NORM, "Kodi: (%s) Connected to '%s:%d'.", m_Name.c_str(), m_IP.c_str(), m_Port);
-			if (m_CurrentStatus.Status() == MSTAT_OFF)
+			m_iMissedPongs = 0;
+			boost::system::error_code ec;
+			boost::asio::ip::tcp::resolver resolver(*m_Ios);
+			boost::asio::ip::tcp::resolver::query query(m_IP, (m_Port[0] != '-' ? m_Port : m_Port.substr(1)));
+			boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
+			boost::asio::ip::tcp::endpoint endpoint = *iter;
+			m_Socket = new boost::asio::ip::tcp::socket(*m_Ios);
+			m_Socket->connect(endpoint, ec);
+			if (!ec)
 			{
+				_log.Log(LOG_NORM, "Kodi: (%s) Connected to '%s:%s'.", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()));
+				if (m_CurrentStatus.Status() == MSTAT_OFF)
+				{
+					m_CurrentStatus.Clear();
+					m_CurrentStatus.Status(MSTAT_ON);
+					UpdateStatus();
+				}
+				m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
+					boost::bind(&CKodiNode::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+				handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":1007}"));
+			}
+			else
+			{
+				if ((DEBUG_LOGGING) ||
+					((ec.value() != 113) && (ec.value() != 111) &&
+					(ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064) && (ec.value() != 10061))) // Connection failed due to no response, no route or active refusal
+					_log.Log(LOG_NORM, "Kodi: (%s) Connect to '%s:%s' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), (m_Port[0] != '-' ? m_Port.c_str() : m_Port.substr(1).c_str()), ec.value(), ec.message().c_str());
+				delete m_Socket;
+				m_Socket = NULL;
 				m_CurrentStatus.Clear();
-				m_CurrentStatus.Status(MSTAT_ON);
+				m_CurrentStatus.Status(MSTAT_OFF);
 				UpdateStatus();
 			}
-			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-				boost::bind(&CKodiNode::handleRead, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-			handleWrite(std::string("{\"jsonrpc\":\"2.0\",\"method\":\"System.GetProperties\",\"params\":{\"properties\":[\"canhibernate\",\"cansuspend\",\"canshutdown\"]},\"id\":1007}"));
 		}
-		else
-		{
-			if ((ec.value() != 113) && (ec.value() != 111) &&
-				(ec.value() != 10060) && (ec.value() != 10061) && (ec.value() != 10064) && (ec.value() != 10061)) // Connection failed due to no response, no route or active refusal
-				_log.Log(LOG_NORM, "Kodi: (%s) Connect to '%s:%d' failed: (%d) %s", m_Name.c_str(), m_IP.c_str(), m_Port, ec.value(), ec.message().c_str());
-			delete m_Socket;
-			m_Socket = NULL;
-			m_CurrentStatus.Clear();
-			m_CurrentStatus.Status(MSTAT_OFF);
-			UpdateStatus();
-		}
+	}
+	catch (std::exception& e)
+	{
+		_log.Log(LOG_ERROR, "Kodi: (%s) Exception: '%s' connecting to '%s'", m_Name.c_str(), e.what(), m_IP.c_str());
 	}
 }
 

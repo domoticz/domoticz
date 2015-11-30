@@ -183,7 +183,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM_BARO.barol=(BYTE)(ab10);
 				tsen.TEMP_HUM_BARO.forecast=data.forecast;
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO);//decode message
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, NULL, (dev.battery[ii - 1]) ? 100 : 0);
 			}
 			else
 			{
@@ -206,7 +206,7 @@ void CTE923::GetSensorDetails()
 				tsen.TEMP_HUM.humidity=(BYTE)data.h[ii];
 				tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
 
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);//decode message
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, -1);
 			}
 		}
 		else if (data._t[ii]==0)
@@ -238,7 +238,7 @@ void CTE923::GetSensorDetails()
 			at10-=(tsen.TEMP.temperatureh*256);
 			tsen.TEMP.temperaturel=(BYTE)(at10);
 
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
 		}
 		else if (data._h[ii]==0)
 		{
@@ -266,7 +266,7 @@ void CTE923::GetSensorDetails()
 			tsen.HUM.humidity=(BYTE)data.h[ii];
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
 
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.HUM, NULL, -1);
 		}
 	}
 
@@ -328,7 +328,7 @@ void CTE923::GetSensorDetails()
 			tsen.WIND.chilll=(BYTE)(at10);
 		}
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, -1);
 	}
 
 	//Rain
@@ -357,7 +357,7 @@ void CTE923::GetSensorDetails()
 		tr10-=(tsen.RAIN.raintotal2*256);
 		tsen.RAIN.raintotal3=(BYTE)(tr10);
 
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, NULL, -1);
 	}
 	//UV
 	if (data._uv==0)
@@ -376,7 +376,7 @@ void CTE923::GetSensorDetails()
 		tsen.UV.id2=1;
 
 		tsen.UV.uv=(BYTE)round(data.uv*10);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, -1);
 	}
 }
 #endif //WITH_LIBUSB
