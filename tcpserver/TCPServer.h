@@ -72,7 +72,7 @@ public:
 	void SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> &users);
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();
-	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand)> sDecodeRXMessage;
+	boost::signals2::signal<void(CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel)> sDecodeRXMessage;
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return true; };
 	void DoDecodeMessage(const CTCPClient *pClient, const unsigned char *pRXCommand);
 private:

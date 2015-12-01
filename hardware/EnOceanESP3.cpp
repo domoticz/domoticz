@@ -980,7 +980,7 @@ bool CEnOceanESP3::ParseData()
 					tsen.LIGHTING2.unitcode=SecondRockerID+10;
 					tsen.LIGHTING2.cmnd=(SecondUpDown==1)?light2_sOn:light2_sOff;
 				}
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 			}
 		}
 		break;
@@ -1050,7 +1050,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 				tsen.LIGHTING2.rssi=12;
 				tsen.LIGHTING2.unitcode=1;
 				tsen.LIGHTING2.cmnd=(UpDown==1)?light2_sOn:light2_sOff;
-				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+				sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 			}
 			break;
 		case RORG_4BS: // 4 byte communication
@@ -1135,7 +1135,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
 					}
 					else if (szST=="AMR.Electricity")
 					{
@@ -1148,7 +1148,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						umeter.id4=(BYTE)ID_BYTE0;
 						umeter.dunit=1;
 						umeter.fusage=(float)cvalue;
-						sDecodeRXMessage(this, (const unsigned char *)&umeter);
+						sDecodeRXMessage(this, (const unsigned char *)&umeter, NULL, 255);
 					}
 					else if (szST=="AMR.Gas")
 					{
@@ -1166,7 +1166,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
 					}
 					else if (szST=="AMR.Water")
 					{
@@ -1184,7 +1184,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.RFXMETER.count2 = (BYTE)((cvalue & 0x00FF0000) >> 16);
 						tsen.RFXMETER.count3 = (BYTE)((cvalue & 0x0000FF00) >> 8);
 						tsen.RFXMETER.count4 = (BYTE)(cvalue & 0x000000FF);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXMETER, NULL, 255);
 					}
 					else if (szST.find("RoomOperatingPanel") == 0)
 					{
@@ -1242,7 +1242,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.TEMP.temperatureh=(BYTE)(at10/256);
 							at10-=(tsen.TEMP.temperatureh*256);
 							tsen.TEMP.temperaturel=(BYTE)(at10);
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
 						}
 					}
 					else if (szST == "LightSensor.01")
@@ -1280,7 +1280,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.rssi=(ID_BYTE0&0xF0)>>4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage/256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage-(tsen.RFXSENSOR.msg1*256));
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
 						}
 						_tLightMeter lmeter;
 						lmeter.id1=(BYTE)ID_BYTE3;
@@ -1289,42 +1289,42 @@ void CEnOceanESP3::ParseRadioDatagram()
 						lmeter.id4=(BYTE)ID_BYTE0;
 						lmeter.dunit=1;
 						lmeter.fLux=lux;
-						sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+						sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, 255);
 					}
 					else if (szST.find("Temperature")==0)
 					{
 						//(EPP A5-02 01/30)
 						float ScaleMax=0;
 						float ScaleMin=0;
-						if (iType==0x01) { ScaleMax=-40; ScaleMin=0; }
-						else if (iType==0x02) { ScaleMax=-30; ScaleMin=10; }
-						else if (iType==0x03) { ScaleMax=-20; ScaleMin=20; }
-						else if (iType==0x04) { ScaleMax=-10; ScaleMin=30; }
-						else if (iType==0x05) { ScaleMax=0; ScaleMin=40; }
-						else if (iType==0x06) { ScaleMax=10; ScaleMin=50; }
-						else if (iType==0x07) { ScaleMax=20; ScaleMin=60; }
-						else if (iType==0x08) { ScaleMax=30; ScaleMin=70; }
-						else if (iType==0x09) { ScaleMax=40; ScaleMin=80; }
-						else if (iType==0x0A) { ScaleMax=50; ScaleMin=90; }
-						else if (iType==0x0B) { ScaleMax=60; ScaleMin=100; }
-						else if (iType==0x10) { ScaleMax=-60; ScaleMin=20; }
-						else if (iType==0x11) { ScaleMax=-50; ScaleMin=30; }
-						else if (iType==0x12) { ScaleMax=-40; ScaleMin=40; }
-						else if (iType==0x13) { ScaleMax=-30; ScaleMin=50; }
-						else if (iType==0x14) { ScaleMax=-20; ScaleMin=60; }
-						else if (iType==0x15) { ScaleMax=-10; ScaleMin=70; }
-						else if (iType==0x16) { ScaleMax=0; ScaleMin=80; }
-						else if (iType==0x17) { ScaleMax=10; ScaleMin=90; }
-						else if (iType==0x18) { ScaleMax=20; ScaleMin=100; }
-						else if (iType==0x19) { ScaleMax=30; ScaleMin=110; }
-						else if (iType==0x1A) { ScaleMax=40; ScaleMin=120; }
-						else if (iType==0x1B) { ScaleMax=50; ScaleMin=130; }
-						else if (iType==0x20) { ScaleMax=-10; ScaleMin=41.2f; }
-						else if (iType==0x30) { ScaleMax=-40; ScaleMin=62.3f; }
+						if (iType==0x01) { ScaleMin=-40; ScaleMax=0; }
+						else if (iType==0x02) { ScaleMin=-30; ScaleMax=10; }
+						else if (iType==0x03) { ScaleMin=-20; ScaleMax=20; }
+						else if (iType==0x04) { ScaleMin=-10; ScaleMax=30; }
+						else if (iType==0x05) { ScaleMin=0; ScaleMax=40; }
+						else if (iType==0x06) { ScaleMin=10; ScaleMax=50; }
+						else if (iType==0x07) { ScaleMin=20; ScaleMax=60; }
+						else if (iType==0x08) { ScaleMin=30; ScaleMax=70; }
+						else if (iType==0x09) { ScaleMin=40; ScaleMax=80; }
+						else if (iType==0x0A) { ScaleMin=50; ScaleMax=90; }
+						else if (iType==0x0B) { ScaleMin=60; ScaleMax=100; }
+						else if (iType==0x10) { ScaleMin=-60; ScaleMax=20; }
+						else if (iType==0x11) { ScaleMin=-50; ScaleMax=30; }
+						else if (iType==0x12) { ScaleMin=-40; ScaleMax=40; }
+						else if (iType==0x13) { ScaleMin=-30; ScaleMax=50; }
+						else if (iType==0x14) { ScaleMin=-20; ScaleMax=60; }
+						else if (iType==0x15) { ScaleMin=-10; ScaleMax=70; }
+						else if (iType==0x16) { ScaleMin=0; ScaleMax=80; }
+						else if (iType==0x17) { ScaleMin=10; ScaleMax=90; }
+						else if (iType==0x18) { ScaleMin=20; ScaleMax=100; }
+						else if (iType==0x19) { ScaleMin=30; ScaleMax=110; }
+						else if (iType==0x1A) { ScaleMin=40; ScaleMax=120; }
+						else if (iType==0x1B) { ScaleMin=50; ScaleMax=130; }
+						else if (iType==0x20) { ScaleMin=-10; ScaleMax=41.2f; }
+						else if (iType==0x30) { ScaleMin=-40; ScaleMax=62.3f; }
 
 						float temp;
 						if (iType<0x20)
-							temp=GetValueRange(DATA_BYTE1,ScaleMax,ScaleMin);
+							temp=GetValueRange(DATA_BYTE1,ScaleMax,ScaleMin,0,255);
 						else
 							temp=GetValueRange(float(((DATA_BYTE2&3)<<8)|DATA_BYTE1),ScaleMax,ScaleMin); //10bit
 						RBUF tsen;
@@ -1342,18 +1342,18 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP.temperatureh=(BYTE)(at10/256);
 						at10-=(tsen.TEMP.temperatureh*256);
 						tsen.TEMP.temperaturel=(BYTE)(at10);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, -1);
 					}
 					else if (szST.find("TempHum")==0)
 					{
 						//(EPP A5-04 01/02)
 						float ScaleMax = 0;
 						float ScaleMin = 0;
-						if (iType == 0x01) { ScaleMax = 0; ScaleMin = 40; }
-						else if (iType == 0x02) { ScaleMax = -20; ScaleMin = 60; }
-						else if (iType == 0x03) { ScaleMax = -20; ScaleMin = 60; } //10bit?
+						if (iType == 0x01) { ScaleMin = 0; ScaleMax = 40; }
+						else if (iType == 0x02) { ScaleMin = -20; ScaleMax = 60; }
+						else if (iType == 0x03) { ScaleMin = -20; ScaleMax = 60; } //10bit?
 
-						float temp = GetValueRange(DATA_BYTE1, ScaleMax, ScaleMin);
+						float temp = GetValueRange(DATA_BYTE1, ScaleMax, ScaleMin,250,0);
 						float hum = GetValueRange(DATA_BYTE2, 100);
 						RBUF tsen;
 						memset(&tsen,0,sizeof(RBUF));
@@ -1371,7 +1371,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 						tsen.TEMP_HUM.humidity=(BYTE)hum;
 						tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, -1);
 					}
 					else if (szST == "OccupancySensor.01")
 					{
@@ -1393,7 +1393,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 								tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 								tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 								tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-								sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);
+								sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
 							}
 
 							bool bPIROn = (DATA_BYTE1 > 127);
@@ -1411,7 +1411,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.rssi = 12;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 						}
 						else {
 							//Error code
@@ -1434,7 +1434,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
 
 							bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
 							memset(&tsen, 0, sizeof(RBUF));
@@ -1451,7 +1451,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.rssi = 12;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 						}
 						else {
 							//Error code
@@ -1474,7 +1474,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.RFXSENSOR.rssi = (ID_BYTE0 & 0xF0) >> 4;
 							tsen.RFXSENSOR.msg1 = (BYTE)(voltage / 256);
 							tsen.RFXSENSOR.msg2 = (BYTE)(voltage - (tsen.RFXSENSOR.msg1 * 256));
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.RFXSENSOR, NULL, 255);
 
 							int lux = (DATA_BYTE2 << 2) | (DATA_BYTE1>>6);
 							if (lux > 1000)
@@ -1486,7 +1486,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							lmeter.id4 = (BYTE)ID_BYTE0;
 							lmeter.dunit = 1;
 							lmeter.fLux = (float)lux;
-							sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+							sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, 255);
 
 							bool bPIROn = (DATA_BYTE0 & 0x80)!=0;
 							memset(&tsen, 0, sizeof(RBUF));
@@ -1503,7 +1503,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							tsen.LIGHTING2.rssi = 12;
 							tsen.LIGHTING2.unitcode = 1;
 							tsen.LIGHTING2.cmnd = (bPIROn) ? light2_sOn : light2_sOff;
-							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+							sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 						}
 						else {
 							//Error code
@@ -1632,7 +1632,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 							);
 #endif //ENOCEAN_BUTTON_DEBUG
 
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 					}
 				}
 				else
@@ -1690,7 +1690,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 
 #endif // ENOCEAN_BUTTON_DEBUG
 
-						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2);
+						sDecodeRXMessage(this, (const unsigned char *)&tsen.LIGHTING2, NULL, 255);
 					}
 				}
 			}

@@ -188,10 +188,10 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		)
 		return; //only for switches
 
-	m_iLastSendNodeBatteryValue = 255;
+	int BatLevel = 255;
 	if (pDevice->hasBattery)
 	{
-		m_iLastSendNodeBatteryValue = pDevice->batValue;
+		BatLevel = pDevice->batValue;
 	}
 
 	if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
@@ -232,7 +232,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.id = lID;
 		lcmd.command = Limitless_LedOff;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, BatLevel);
 
 		//Set Name
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
@@ -307,7 +307,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.filler = 0;
 		lcmd.LIGHTING2.rssi = 12;
 
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, BatLevel);
 
 		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
 
@@ -343,10 +343,10 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 
 	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
 
-	m_iLastSendNodeBatteryValue = 255;
+	int BatLevel = 255;
 	if (pDevice->hasBattery)
 	{
-		m_iLastSendNodeBatteryValue = pDevice->batValue;
+		BatLevel = pDevice->batValue;
 	}
 
 	if ((pDevice->devType==ZDTYPE_SWITCH_NORMAL)||(pDevice->devType==ZDTYPE_SWITCH_DIMMER))
@@ -386,7 +386,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.level=level;
 		lcmd.LIGHTING2.filler=0;
 		lcmd.LIGHTING2.rssi=12;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, BatLevel);
 		return;
 	}
 	else if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
@@ -426,7 +426,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		else
 			lcmd.command = Limitless_LedOn;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_POWER)
 	{
@@ -437,7 +437,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		umeter.id4 = ID4;
 		umeter.dunit = pDevice->scaleID;
 		umeter.fusage = pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char *)&umeter);
+		sDecodeRXMessage(this, (const unsigned char *)&umeter, NULL, BatLevel);
 
 		//Search Energy Device
 		const _tZWaveDevice *pEnergyDevice;
@@ -525,7 +525,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id=ID4;
 		gDevice.floatval1=pDevice->floatValue;
 		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_PERCENTAGE)
 	{
@@ -534,7 +534,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id=ID4;
 		gDevice.floatval1=pDevice->floatValue;
 		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_AMPERE)
 	{
@@ -555,7 +555,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		{
 			tsen.CURRENT.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_UV)
 	{
@@ -593,7 +593,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 			tsen.TEMP_HUM.humidity=(BYTE)pHumDevice->intvalue;
 			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, BatLevel);
 		}
 		else
 		{
@@ -615,7 +615,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP.temperatureh=(BYTE)(at10/256);
 			at10-=(tsen.TEMP.temperatureh*256);
 			tsen.TEMP.temperaturel=(BYTE)(at10);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, BatLevel);
 		}
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_HUMIDITY)
@@ -658,7 +658,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 			tsen.TEMP_HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, BatLevel);
 		}
 		else
 		{
@@ -676,7 +676,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			}
 			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, BatLevel);
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VELOCITY)
@@ -731,7 +731,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.WIND.temperaturel = (BYTE)(at10);
 			tsen.WIND.chilll = (BYTE)(at10);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_BAROMETER)
 	{
@@ -769,7 +769,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lmeter.battery_level=255;
 		if (pDevice->hasBattery)
 			lmeter.battery_level=pDevice->batValue;
-		sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+		sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_GAS)
 	{
@@ -778,7 +778,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		m_p1gas.subtype = sTypeP1Gas;
 		m_p1gas.gasusage = (unsigned long)(pDevice->floatValue * 1000);
 		m_p1gas.ID = lID;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
 	{
@@ -804,7 +804,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		if (pDevice->hasBattery)
 			tmeter.battery_level=pDevice->batValue;
 		tmeter.temp=pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char *)&tmeter);
+		sDecodeRXMessage(this, (const unsigned char *)&tmeter, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_CLOCK)
 	{
@@ -813,7 +813,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_MODE)
 	{
@@ -822,7 +822,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE)
 	{
@@ -831,7 +831,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 }
 
@@ -907,9 +907,6 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 	unsigned char packettype=pSen->ICMND.packettype;
 	unsigned char subtype=pSen->ICMND.subtype;
-
-	// Forget any battery value from the last received data - it's probably not going to be related to this node. (its powered)
-	m_iLastSendNodeBatteryValue = 255;
 
 	if (packettype==pTypeLighting2)
 	{

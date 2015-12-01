@@ -222,7 +222,7 @@ void CToonThermostat::SendTempSensor(const unsigned char Idx, const float Temp, 
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 
 	if (!bDeviceExits)
 	{
@@ -257,7 +257,7 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos);
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, NULL, 255);
 
 	if (!bDeviceExits)
 	{
@@ -314,7 +314,7 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, 255);
 
 	if (!bDeviceExits)
 	{
@@ -827,7 +827,7 @@ void CToonThermostat::GetMeterDetails()
 			m_lastSharedSendElectra = atime;
 			m_lastelectrausage = m_p1power.usagecurrent;
 			m_lastelectradeliv = m_p1power.delivcurrent;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, NULL, 255);
 		}
 	}
 	
@@ -841,7 +841,7 @@ void CToonThermostat::GetMeterDetails()
 		{
 			m_lastSharedSendGas = atime;
 			m_lastgasusage = m_p1gas.gasusage;
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, 255);
 		}
 	}
 }

@@ -355,7 +355,7 @@ define(['app'], function (app) {
 				  else if ((item.SubType == "Text") || (item.SubType == "Alert")) {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowTextLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 				  }
-				  else if (item.SubType == "Soil Moisture") {
+				  else if ((item.SubType == "Soil Moisture")||(item.SubType == "Leaf Wetness")||(item.SubType == "Waterflow")) {
 					itemSubIcons+='&nbsp;<img src="images/log.png" title="' + $.t('Log') +'" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');">';
 				  }
 				  else {

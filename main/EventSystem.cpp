@@ -607,6 +607,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
+				else if (sitem.subType == sTypeWaterflow)
+				{
+					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
+					isUtility = true;
+				}
 				else if (sitem.subType == sTypeVoltage)
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
@@ -1789,9 +1794,12 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		size_t eQPos = csubstr.find_first_of("=") + 1;
 		std::string doWhat = csubstr.substr(eQPos);
-		if (doWhat.find('"') == 0) {
+		if (doWhat.find('"') == 0)
+		{
+			//Strip quotes
 			doWhat = doWhat.substr(1, doWhat.size() - 2);
 		}
+
 		size_t sPos = csubstr.find_first_of("[") + 1;
 		size_t ePos = csubstr.find_first_of("]");
 
@@ -1822,6 +1830,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			if (deviceNo && !isScene && !isVariable) {
 				boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 				if (m_devicestates.count(deviceNo)) {
+					devicestatesMutexLock.unlock(); // Unlock to avoid recursive lock (because the ScheduleEvent function locks again)
 					if (ScheduleEvent(deviceNo, doWhat, isScene, eventName, sceneType)) {
 						actionsDone = true;
 					}
@@ -1841,7 +1850,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 				size_t aFind = doWhat.find(" AFTER ");
 				if ((aFind > 0) && (aFind != std::string::npos)) {
 					std::string delayString = doWhat.substr(aFind + 7);
-					std::string newAction = doWhat.substr(0, aFind - 1);
+					std::string newAction = doWhat.substr(0, aFind);
 					afterTimerSeconds = atoi(delayString.c_str());
 					doWhat = newAction;
 				}

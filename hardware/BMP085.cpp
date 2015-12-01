@@ -599,5 +599,5 @@ void CBMP085::ReadSensorDetails()
 		}
 	}
 	tsensor.forecast = m_LastSendForecast;
-	sDecodeRXMessage(this, (const unsigned char *)&tsensor);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&tsensor, NULL, 255);
 }

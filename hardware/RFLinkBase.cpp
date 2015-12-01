@@ -284,7 +284,7 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 	gswitch.battery_level = BatteryLevel;
 	gswitch.rssi = 12;
 	gswitch.seqnbr = 0;
-	sDecodeRXMessage(this, (const unsigned char *)&gswitch);
+	sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, BatteryLevel);
 	return true;
 }
 
