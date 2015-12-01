@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1129
+# ref 1130
 
 CACHE:
 # CSS
@@ -361,6 +361,13 @@ images/evohome/RemoteOverride.png
 images/evohome/RemoteOverrideInv.png
 images/evohome/TemporaryOverride.png
 images/evohome/TemporaryOverrideInv.png
+images/logo/152.png
+images/logo/144.png
+images/logo/76.png
+images/logo/72.png
+images/logo/180.png
+images/logo/114.png
+images/logo/57.png
 images/startup/apple-touch-startup-image-1024x748.png
 images/startup/apple-touch-startup-image-1536x2008.png
 images/startup/apple-touch-startup-image-2048x1496.png
@@ -368,6 +375,9 @@ images/startup/apple-touch-startup-image-320x460.png
 images/startup/apple-touch-startup-image-640x1096.png
 images/startup/apple-touch-startup-image-640x920.png
 images/startup/apple-touch-startup-image-768x1004.png
+images/startup/apple-touch-startup-image-750x1294.png
+images/startup/apple-touch-startup-image-1242x2148.png
+images/startup/apple-touch-startup-image-2208x1182.png
 media/1x1.gif
 media/handclosed.cur
 media/handopen.cur
