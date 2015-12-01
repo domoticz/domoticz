@@ -226,6 +226,7 @@ CTCPServer::CTCPServer(const int ID)
 CTCPServer::~CTCPServer()
 {
 	StopServer();
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer!=NULL)
 		delete m_pTCPServer;
 	m_pTCPServer=NULL;
@@ -242,6 +243,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 		{
 			exception = false;
 			StopServer();
+			boost::lock_guard<boost::mutex> l(m_server_mutex);
 			if (m_pTCPServer != NULL)
 				delete m_pTCPServer;
 			m_pTCPServer = new CTCPServerInt(listen_address, port, this);
@@ -287,18 +289,21 @@ void CTCPServer::Do_Work()
 
 void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClient* pClient2Ignore)
 {
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		m_pTCPServer->SendToAll(DeviceRowID,pData,Length,pClient2Ignore);
 }
 
 void CTCPServer::SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> &users)
 {
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		m_pTCPServer->SetRemoteUsers(users);
 }
 
 unsigned int CTCPServer::GetUserDevicesCount(const std::string &username)
 {
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		return m_pTCPServer->GetUserDevicesCount(username);
 	return 0;
@@ -306,6 +311,7 @@ unsigned int CTCPServer::GetUserDevicesCount(const std::string &username)
 
 void CTCPServer::stopAllClients()
 {
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		m_pTCPServer->stopAllClients();
 }
