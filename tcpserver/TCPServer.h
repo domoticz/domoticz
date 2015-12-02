@@ -77,6 +77,7 @@ public:
 	void DoDecodeMessage(const CTCPClient *pClient, const unsigned char *pRXCommand);
 private:
 	CTCPServerInt *m_pTCPServer;
+	boost::shared_mutex m_server_mutex;
 	boost::shared_ptr<boost::thread> m_thread;
 	bool StartHardware() { return false; };
 	bool StopHardware() { return false; };
