@@ -38,7 +38,7 @@ private:
 	IWbemLocator *m_pLocator; 
 	IWbemServices *m_pServicesOHM;
 	IWbemServices *m_pServicesSystem;
-#elif defined __linux__
+#elif defined (__linux__) || defined(__CYGWIN32__)
 	void FetchUnixData();
 	long long m_lastloadcpu;
 	int m_totcpu;

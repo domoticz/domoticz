@@ -4311,7 +4311,7 @@ unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHa
 	sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING4.cmd1, pResponse->LIGHTING4.cmd2, pResponse->LIGHTING4.cmd3);
 	std::string ID = szTmp;
 	int Unit=0;
-	unsigned char cmnd=1; //only an on supported
+	unsigned char cmnd=1; //only 'On' supported
 	unsigned char SignalLevel=pResponse->LIGHTING4.rssi;
 	sprintf(szTmp,"%d",(pResponse->LIGHTING4.pulseHigh*256)+pResponse->LIGHTING4.pulseLow);
 	unsigned long long DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp,m_LastDeviceName);

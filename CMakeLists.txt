@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 2.6)
+#set to minimum version that supports clean build on cygwin
+cmake_minimum_required(VERSION 2.8.4)
 
+project(domoticz)
+ 
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   add_subdirectory (lua)
@@ -37,8 +40,6 @@ ELSE(USE_BUILTIN_SQLITE)
     MESSAGE(FATAL_ERROR "SQLite3 not found but USE_BUILTIN_SQLITE=NO")
   ENDIF(SQLite_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
-
-project(domoticz)
 
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL 
   "Where to put the executables for Domoticz"
