@@ -6586,11 +6586,11 @@ namespace http {
 
 			if (rnvalue != rnOldvalue)
 			{
+				m_mainworker.m_sharedserver.StopServer(); // stop it anyway
 				if (rnvalue != 0)
 				{
 					char szPort[100];
 					sprintf(szPort, "%d", rnvalue);
-					m_mainworker.m_sharedserver.StopServer();
 					m_mainworker.m_sharedserver.StartServer("::", szPort);
 					m_mainworker.LoadSharedUsers();
 				}
