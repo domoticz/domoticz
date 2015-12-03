@@ -1216,12 +1216,15 @@ void MainWorker::ParseRFXLogFile()
 		}
 		myfile.close();
 	}
-	int HWID=1;
+	int HWID=999;
 	//m_sql.DeleteHardware("999");
 
 	CDomoticzHardwareBase *pHardware=GetHardware(HWID);
-	if (pHardware==NULL)
-		pHardware=new CDummy(HWID);
+	if (pHardware == NULL)
+	{
+		pHardware = new CDummy(HWID);
+		AddDomoticzHardware(pHardware);
+	}
 
 	std::vector<std::string>::iterator itt;
 	unsigned char rxbuffer[100];
@@ -1251,7 +1254,7 @@ void MainWorker::ParseRFXLogFile()
 		if (ii==0)
 			continue;
 		pHardware->WriteToHardware((const char *)&rxbuffer,totbytes);
-		DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL);
+		DecodeRXMessage(pHardware, (const unsigned char *)&rxbuffer, NULL, 255);
 		sleep_milliseconds(300);
 	}
 #endif

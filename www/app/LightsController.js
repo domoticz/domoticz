@@ -2519,7 +2519,7 @@ define(['app'], function (app) {
 				$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
 				for (ii=0; ii<tothousecodes; ii++)
 				{
-					$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
+					$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode').append($('<option></option>').val(41+ii).html(String.fromCharCode(65+ii)));
 				}
 				for (ii=1; ii<totunits+1; ii++)
 				{
