@@ -2304,8 +2304,12 @@ define(['app'], function (app) {
 								drop: function() {
 									var myid=$(this).attr("id");
 									$.devIdx.split(' ');
+									var roomid = $("#lightcontent #comboroom option:selected").val();
+									if (typeof roomid == 'undefined') {
+										roomid=0;
+									}
 									$.ajax({
-										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
 										 async: false, 
 										 dataType: 'json',
 										 success: function(data) {

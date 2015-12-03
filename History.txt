@@ -25,6 +25,7 @@ Version 2.3xxx
 - Fixed: Alert Sensor, displaying sValue again
 - Fixed: Blockly, Set user variables (you need to resave your blockly's)
 - Fixed: Blockly, string uservariables where saved with quotes when not using with set-after
+- Fixed: Changing device order when selected a Room in the lights/utility tab
 - Fixed: CM180i graph display
 - Fixed: Dummy RGB sensor creation (was created with wrong ID)
 - Fixed: Edit Light/Switch Security sensors protected checkbox
