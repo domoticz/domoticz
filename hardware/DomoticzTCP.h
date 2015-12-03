@@ -16,6 +16,7 @@ public:
 
 	void write(const char *data, size_t size);
 	bool isConnected();
+	void SetConnected(bool connected);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	bool CompareToken(const std::string &aToken);
 	bool CompareId(const std::string &instanceid);

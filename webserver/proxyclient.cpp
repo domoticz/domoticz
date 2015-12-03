@@ -366,16 +366,17 @@ namespace http {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_ROSTERIND pdu");
 			}
 			_log.Log(LOG_STATUS, "Looking for slave %s", c_slave.c_str());
-			DomoticzTCP *slave = sharedData.findSlaveConnection(c_slave);
+			DomoticzTCP *slave = sharedData.findSlaveById(c_slave);
 			if (slave) {
-				slave->Start();
+				_log.Log(LOG_STATUS, "SetConnected(true)");
+				slave->SetConnected(true);
 			}
+			ReadMore();
 		}
 
 		void CProxyClient::HandleServDisconnect(ProxyPdu *pdu)
 		{
 			CValueLengthPart part(pdu);
-			CValueLengthPart parameters;
 			std::string tokenparam;
 			long reason;
 			bool success;
@@ -389,10 +390,12 @@ namespace http {
 			}
 			// see if we are slave
 			success = m_pDomServ->OnDisconnect(tokenparam);
+			_log.Log(LOG_STATUS, "Master disconnected: %s", success ? "success" : "not found");
 			// see if we are master
 			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
 			if (slave && slave->isConnected()) {
-				slave->Stop();
+				_log.Log(LOG_STATUS, "Stopping slave connection.");
+				slave->SetConnected(false);
 			}
 			ReadMore();
 		}
@@ -744,7 +747,11 @@ namespace http {
 			parameters.AddPart(token);
 			parameters.AddLong(reason);
 			MyWrite(PDU_SERV_DISCONNECT, &parameters, true);
-			sharedData.RemoveTCPClient(master);
+			DomoticzTCP *slave = sharedData.findSlaveConnection(token);
+			if (slave) {
+				_log.Log(LOG_STATUS, "Stopping slave.");
+				slave->SetConnected(false);
+			}
 		}
 
 		void CProxySharedData::SetInstanceId(std::string instanceid)

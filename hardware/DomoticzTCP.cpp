@@ -405,3 +405,13 @@ void DomoticzTCP::Authenticated(const std::string &aToken, bool authenticated)
 		sOnConnected(this);
 	}
 }
+
+void DomoticzTCP::SetConnected(bool connected)
+{
+	if (connected) {
+		StartHardwareProxy();
+	}
+	else {
+		b_ProxyConnected = false;
+	}
+}
