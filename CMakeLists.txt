@@ -195,6 +195,9 @@ hardware/ASyncTCP.cpp
 hardware/BMP085.cpp
 hardware/Comm5TCP.cpp
 hardware/csocket.cpp
+hardware/CurrentCostMeterBase.cpp
+hardware/CurrentCostMeterSerial.cpp
+hardware/CurrentCostMeterTCP.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzTCP.cpp

@@ -134,6 +134,8 @@ enum _eHardwareTypes {
 	HTYPE_RFXtrx868,			//61
 	HTYPE_RFLINKTCP,			//62
 	HTYPE_Comm5TCP,				//63
+	HTYPE_CurrentCostMeter,		//64
+	HTYPE_CurrentCostMeterLAN,	//65
 	HTYPE_END
 };
 
