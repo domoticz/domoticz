@@ -1776,29 +1776,44 @@ html,body{
 .brand
 {
 	height: 20px;
-	width: 100px;
-}            
+	width: 140px;
+}
+
 .brand h1 {
 	float: left;
-	margin-left: -7px;
-	margin-top: -14px;
+	margin-left: 35px;
+	margin-top: -45px;
 	text-decoration: none;
 	text-transform: none;
 	font-family: 'Oswald', sans-serif;
-	font-size: 1.7em;
+	font-size: 1.3em;
 	font-weight: 200;
 	color: #1C1C1C;
 }
+.brand h1:after{
+	content: "control at your fingertips.";
+	font-size: 0.4em;
+	float: left;
+	margin-top: -10px;
+	margin-left:2px;
+}
+
+.brand:before{
+	content:url(images/logo.png);
+}
+
 .brand h2 {
 	float: left;
-	margin-left: 120px;
-	margin-top: -24px;
+	margin-left: 150px;
+	margin-top: -18px;
 	text-decoration: none;
 	text-transform: none;
 	font-family: Georgia, "Times New Roman", Times, serif;
-	font-size: 0.7em;
-	font-style: italic;
+	font-size: 0.6em;
+	font-style: normal;
 	color: #545454;
+	background: none;
+	border: none;
 }
 .dropdown-menu .divider {
 	*width: 100%;
@@ -2565,7 +2580,7 @@ tspan{
 }
 
 .version-tooltip + .tooltip > .tooltip-inner {
-	background-color: #202040;
+	background-color: #555555;
 }
 
 .sk-fading-circle {
