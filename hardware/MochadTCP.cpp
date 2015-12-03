@@ -421,7 +421,7 @@ checkFunc:
 					m_mochadsec.SECURITY1.battery_level = 1;
 				pchar = strtok(NULL, " _");
 			}
-			m_mochadsec.SECURITY1.rssi = 12; // signal strength ??
+			m_mochadsec.SECURITY1.rssi = 12; // signal strength ?? 12 = no signal strength
 		}
 		else if (strstr((const char *)&m_mochadbuffer[j], "KR10A"))
 		{
@@ -446,7 +446,7 @@ checkFunc:
 					m_mochadsec.SECURITY1.status = sStatusLightOff;
 				pchar = strtok(NULL, " _");
 			}
-			m_mochadsec.SECURITY1.rssi = 12; // signal strngth ??
+			m_mochadsec.SECURITY1.rssi = 12;
 		}
 		else if (strstr((const char *)&m_mochadbuffer[j], "MS10A"))
 		{
@@ -467,7 +467,7 @@ checkFunc:
 					m_mochadsec.SECURITY1.battery_level = 1;
 				pchar = strtok(NULL, " _");
 			}
-			m_mochadsec.SECURITY1.rssi = 12; // signal strength ??
+			m_mochadsec.SECURITY1.rssi = 12;
 		}
 		else
 			goto onError;
