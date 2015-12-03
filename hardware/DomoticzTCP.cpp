@@ -334,6 +334,11 @@ bool DomoticzTCP::CompareToken(const std::string &aToken)
 	return (aToken == token);
 }
 
+bool DomoticzTCP::CompareId(const std::string &instanceid)
+{
+	return (m_szIPAddress == instanceid);
+}
+
 bool DomoticzTCP::StartHardwareProxy()
 {
 	http::server::CProxyClient *proxy;

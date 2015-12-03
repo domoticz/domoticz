@@ -18,6 +18,7 @@ public:
 	bool isConnected();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	bool CompareToken(const std::string &aToken);
+	bool CompareId(const std::string &instanceid);
 	void FromProxy(const unsigned char *data, size_t datalen);
 	std::string GetToken();
 	void Authenticated(const std::string &aToken, bool authenticated);

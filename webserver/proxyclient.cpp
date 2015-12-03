@@ -356,6 +356,22 @@ namespace http {
 			MyWrite(PDU_ENQUIRE, &parameters, false);
 		}
 
+		void CProxyClient::HandleServRosterInd(ProxyPdu *pdu)
+		{
+			CValueLengthPart part(pdu);
+			std::string c_slave;
+
+			_log.Log(LOG_STATUS, "SERV_ROSTERIND pdu received.");
+			if (!part.GetNextPart(c_slave)) {
+				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_ROSTERIND pdu");
+			}
+			_log.Log(LOG_STATUS, "Looking for slave %s", c_slave.c_str());
+			DomoticzTCP *slave = sharedData.findSlaveConnection(c_slave);
+			if (slave) {
+				slave->Start();
+			}
+		}
+
 		void CProxyClient::HandleServDisconnect(ProxyPdu *pdu)
 		{
 			CValueLengthPart part(pdu);
@@ -371,12 +387,12 @@ namespace http {
 			if (!part.GetNextLong(reason)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_DISCONNECT pdu");
 			}
-			// see if we are master
-			success = m_pDomServ->OnDisconnect(tokenparam);
 			// see if we are slave
-			DomoticzTCP *client = sharedData.findMaster(tokenparam);
-			if (client) {
-				client->sDisconnected();
+			success = m_pDomServ->OnDisconnect(tokenparam);
+			// see if we are master
+			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
+			if (slave) {
+				slave->Stop();
 			}
 			ReadMore();
 		}
@@ -440,9 +456,12 @@ namespace http {
 			if (!part.GetNextPart(reason)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECTRESP pdu");
 			}
-			DomoticzTCP *master = sharedData.findMaster(instanceparam);
-			if (master) {
-				master->Authenticated(tokenparam, authenticated == 1);
+			if (!authenticated) {
+				_log.Log(LOG_ERROR, "PROXY: Could not log in to slave: %s", reason.c_str());
+			}
+			DomoticzTCP *slave = sharedData.findSlaveConnection(instanceparam);
+			if (slave) {
+				slave->Authenticated(tokenparam, authenticated == 1);
 			}
 			ReadMore();
 		}
@@ -486,9 +505,9 @@ namespace http {
 			if (!part.GetNextPart((void **)&data, &datalen)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_RECEIVE pdu");
 			}
-			DomoticzTCP *client = sharedData.findMaster(tokenparam);
-			if (client) {
-				client->FromProxy(data, datalen);
+			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
+			if (slave) {
+				slave->FromProxy(data, datalen);
 			}
 			free(data);
 			ReadMore();
@@ -600,6 +619,10 @@ namespace http {
 				case PDU_SERV_SEND:
 					/* data from master to slave */
 					HandleServSend(&pdu);
+					break;
+				case PDU_SERV_ROSTERIND:
+					/* the slave that we want to connect to is back online */
+					HandleServRosterInd(&pdu);
 					break;
 				default:
 					_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
@@ -796,10 +819,20 @@ namespace http {
 			}
 		}
 
-		DomoticzTCP *CProxySharedData::findMaster(const std::string &token)
+		DomoticzTCP *CProxySharedData::findSlaveConnection(const std::string &token)
 		{
 			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				if (TCPClients[i]->CompareToken(token)) {
+				if (TCPClients[i]->isConnected() && TCPClients[i]->CompareToken(token)) {
+					return TCPClients[i];
+				}
+			}
+			return NULL;
+		}
+
+		DomoticzTCP *CProxySharedData::findSlaveById(const std::string &instanceid)
+		{
+			for (unsigned int i = 0; i < TCPClients.size(); i++) {
+				if (TCPClients[i]->CompareId(instanceid)) {
 					return TCPClients[i];
 				}
 			}

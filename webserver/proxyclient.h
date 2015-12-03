@@ -67,6 +67,7 @@ namespace http {
 			void HandleServDisconnect(ProxyPdu *pdu);
 			void HandleServReceive(ProxyPdu *pdu);
 			void HandleServSend(ProxyPdu *pdu);
+			void HandleServRosterInd(ProxyPdu *pdu);
 			void SendServDisconnect(const std::string &token, int reason);
 
 			int _allowed_subsystems;
@@ -121,7 +122,8 @@ namespace http {
 			bool AddConnectedServer(std::string ip);
 			void AddTCPClient(DomoticzTCP *master);
 			void RemoveTCPClient(DomoticzTCP *master);
-			DomoticzTCP *findMaster(const std::string &token);
+			DomoticzTCP *findSlaveConnection(const std::string &token);
+			DomoticzTCP *findSlaveById(const std::string &instanceid);
 		private:
 			std::string _instanceid;
 			boost::mutex prefs_mutex;
