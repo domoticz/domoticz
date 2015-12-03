@@ -391,7 +391,7 @@ namespace http {
 			success = m_pDomServ->OnDisconnect(tokenparam);
 			// see if we are master
 			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
-			if (slave) {
+			if (slave && slave->isConnected()) {
 				slave->Stop();
 			}
 			ReadMore();
@@ -506,7 +506,7 @@ namespace http {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_RECEIVE pdu");
 			}
 			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
-			if (slave) {
+			if (slave && slave->isConnected()) {
 				slave->FromProxy(data, datalen);
 			}
 			free(data);
@@ -822,7 +822,7 @@ namespace http {
 		DomoticzTCP *CProxySharedData::findSlaveConnection(const std::string &token)
 		{
 			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				if (TCPClients[i]->isConnected() && TCPClients[i]->CompareToken(token)) {
+				if (TCPClients[i]->CompareToken(token)) {
 					return TCPClients[i];
 				}
 			}
