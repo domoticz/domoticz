@@ -9862,8 +9862,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	//when level = 0, set switch command to Off
 	if (switchcmd=="Set Level")
 	{
-		if (level > 0)
-			level-=1;
+		//if (level > 0)
+			//level-=1;
 		if (level==0)
 			switchcmd="Off";
 	}
