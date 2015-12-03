@@ -9891,7 +9891,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					lcmd.LIGHTING1.cmnd=light1_sOn;
 			}
 			lcmd.LIGHTING1.filler=0;
-			lcmd.LIGHTING1.rssi=7;
+			lcmd.LIGHTING1.rssi=12;
 
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING1)))
 				return false;
@@ -9980,7 +9980,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 			lcmd.LIGHTING2.level=(unsigned char)level;
 			lcmd.LIGHTING2.filler=0;
-			lcmd.LIGHTING2.rssi=7;
+			lcmd.LIGHTING2.rssi=12;
 			//Special Teach-In for EnOcean Dimmers
 			if ((pHardware->HwdType == HTYPE_EnOceanESP2)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
 			{
@@ -10033,7 +10033,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				lcmd.LIGHTING4.pulseHigh=pulsetimeing/256;
 				lcmd.LIGHTING4.pulseLow=pulsetimeing&0xFF;
 				lcmd.LIGHTING4.filler=0;
-				lcmd.LIGHTING4.rssi=7;
+				lcmd.LIGHTING4.rssi=12;
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING4)))
 					return false;
 				if (!IsTesting) {
@@ -10077,7 +10077,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				level=31;
 			lcmd.LIGHTING5.level=(unsigned char)level;
 			lcmd.LIGHTING5.filler=0;
-			lcmd.LIGHTING5.rssi=7;
+			lcmd.LIGHTING5.rssi=12;
 			if (dSubType==sTypeLivolo)
 			{
 				if ((switchcmd=="Set Level")&&(level==0))
@@ -10181,7 +10181,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING6.cmnd))
 				return false;
 			lcmd.LIGHTING6.filler=0;
-			lcmd.LIGHTING6.rssi=7;
+			lcmd.LIGHTING6.rssi=12;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING6)))
 				return false;
 			if (!IsTesting) {
@@ -10207,7 +10207,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.HOMECONFORT.cmnd))
 				return false;
 			lcmd.HOMECONFORT.filler = 0;
-			lcmd.HOMECONFORT.rssi = 7;
+			lcmd.HOMECONFORT.rssi = 12;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.HOMECONFORT)))
 				return false;
 			if (!IsTesting) {
@@ -10277,6 +10277,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.SECURITY1.id1=ID2;
 			lcmd.SECURITY1.id2=ID3;
 			lcmd.SECURITY1.id3=ID4;
+			lcmd.SECURITY1.rssi = 12;
 			switch (dSubType)
 			{
 			case sTypeKD101:
@@ -10348,6 +10349,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 		lcmd.SECURITY2.id9 = 0;//bat full
 		lcmd.SECURITY2.battery_level = 9;
+		lcmd.SECURITY2.rssi = 12;
 
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY2)))
 			return false;
@@ -10417,7 +10419,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				return false;
 			level=15;
 			lcmd.BLINDS1.filler=0;
-			lcmd.BLINDS1.rssi=7;
+			lcmd.BLINDS1.rssi=12;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.BLINDS1)))
 				return false;
 			if (!IsTesting) {
@@ -10449,7 +10451,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			level=15;
 			lcmd.RFY.filler=0;
-			lcmd.RFY.rssi=7;
+			lcmd.RFY.rssi=12;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RFY)))
 				return false;
 			if (!IsTesting) {
@@ -10471,7 +10473,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			level=15;
 			lcmd.CHIME.sound=Unit;
 			lcmd.CHIME.filler=0;
-			lcmd.CHIME.rssi=7;
+			lcmd.CHIME.rssi=12;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))
 				return false;
 			if (!IsTesting) {
@@ -10495,7 +10497,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				return false;
 
 			lcmd.THERMOSTAT2.filler = 0;
-			lcmd.THERMOSTAT2.rssi = 7;
+			lcmd.THERMOSTAT2.rssi = 12;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT2)))
 				return false;
 			if (!IsTesting) {
@@ -10519,7 +10521,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				return false;
 			level=15;
 			lcmd.THERMOSTAT3.filler=0;
-			lcmd.THERMOSTAT3.rssi=7;
+			lcmd.THERMOSTAT3.rssi=12;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT3)))
 				return false;
 			if (!IsTesting) {
@@ -10540,7 +10542,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.REMOTE.cmndtype=0;
 			lcmd.REMOTE.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.REMOTE.toggle=0;
-			lcmd.REMOTE.rssi=7;
+			lcmd.REMOTE.rssi=12;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.REMOTE)))
 				return false;
 			if (!IsTesting) {
@@ -10591,7 +10593,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		lcmd.RADIATOR1.temperature=0;
 		lcmd.RADIATOR1.tempPoint5 = 0;
 		lcmd.RADIATOR1.filler = 0;
-		lcmd.RADIATOR1.rssi = 7;
+		lcmd.RADIATOR1.rssi = 12;
 		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RADIATOR1)))
 			return false;
 
@@ -10613,7 +10615,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				return false;
 			level = (level > 99) ? 99 : level;
 			gswitch.level = (unsigned char)level;
-			gswitch.rssi = 7;
+			gswitch.rssi = 12;
 			if (switchtype != STYPE_Motion) //dont send actual motion off command
 			{
 				if (!WriteToHardware(HardwareID, (const char*)&gswitch, sizeof(_tGeneralSwitch)))
@@ -10920,7 +10922,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			lcmd.RADIATOR1.id4 = ID4;
 			lcmd.RADIATOR1.unitcode = Unit;
 			lcmd.RADIATOR1.filler = 0;
-			lcmd.RADIATOR1.rssi = 7;
+			lcmd.RADIATOR1.rssi = 12;
 			lcmd.RADIATOR1.cmnd = Radiator1_sSetTemp;
 
 			char szTemp[20];
@@ -11496,7 +11498,7 @@ void MainWorker::SetInternalSecStatus()
 	tsen.SECURITY1.packettype=pTypeSecurity1;
 	tsen.SECURITY1.subtype=sTypeDomoticzSecurity;
 	tsen.SECURITY1.battery_level=9;
-	tsen.SECURITY1.rssi=6;
+	tsen.SECURITY1.rssi=12;
 	tsen.SECURITY1.id1=0x14;
 	tsen.SECURITY1.id2=0x87;
 	tsen.SECURITY1.id3=0x02;
