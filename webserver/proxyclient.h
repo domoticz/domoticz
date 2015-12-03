@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
+#include <boost/lockfree/queue.hpp>
 #include "proxycommon.h"
 #include "cWebem.h"
 #include "request_handler.hpp"
@@ -69,6 +70,7 @@ namespace http {
 			void HandleServSend(ProxyPdu *pdu);
 			void HandleServRosterInd(ProxyPdu *pdu);
 			void SendServDisconnect(const std::string &token, int reason);
+			void PduHandler(ProxyPdu &pdu);
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);
@@ -76,21 +78,19 @@ namespace http {
 			std::string _apikey;
 			std::string _password;
 			boost::asio::streambuf _readbuf;
-			std::vector<boost::asio::const_buffer> _writebuf;
 			boost::asio::io_service& _io_service;
 			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServerProxied *m_pDomServ;
-			ProxyPdu *writePdu;
-			bool mSingleWrite;
+			void ReadMore2();
+			/// make sure we only write one packet at a time
+			boost::mutex write_mutex;
 			bool we_locked_prefs_mutex;
 			/// read timeout timer
 			boost::asio::deadline_timer timer_;
 			void handle_timeout(const boost::system::error_code& error);
 			/// timeouts (persistent and other) connections in seconds
 			int timeout_;
-			/// make sure we only write one packet at a time
-			boost::mutex write_mutex;
 			bool b_Connected;
 		};
 

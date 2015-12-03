@@ -126,23 +126,21 @@ namespace http {
 			if (!b_Connected) {
 				return;
 			}
-			// protect against multiple writes at a time
-			write_mutex.lock();
+			boost::mutex::scoped_lock lock(write_mutex);
+			std::vector<boost::asio::const_buffer> _writebuf;
 			_writebuf.clear();
-			writePdu = new ProxyPdu(type, parameters);
-			mSingleWrite = single_write;
+			ProxyPdu writePdu(type, parameters);
 
-			_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
-
-			boost::asio::async_write(_socket, _writebuf,
-				boost::bind(&CProxyClient::handle_write, this,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred));
+			_writebuf.push_back(boost::asio::buffer(writePdu.content(), writePdu.length()));
+			boost::asio::write(_socket, _writebuf);
 		}
 
 		void CProxyClient::LoginToService()
 		{
 			std::string instanceid = sharedData.GetInstanceId();
+
+			// start read thread
+			ReadMore();
 			// send authenticate pdu
 			CValueLengthPart parameters;
 			parameters.AddPart(_apikey);
@@ -187,24 +185,6 @@ namespace http {
 			_socket.async_read_some(buf,
 				boost::bind(&CProxyClient::handle_read, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
 				);
-		}
-
-		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
-		{
-			delete writePdu;
-			// signal free to go for next write
-			if (!error)
-			{
-				// Write complete. Reading pdu.
-				if (!mSingleWrite) {
-					ReadMore();
-				}
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "PROXY: Write failed: %s", error.message().c_str());
-			}
-			write_mutex.unlock();
 		}
 
 		void CProxyClient::GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_)
@@ -326,7 +306,6 @@ namespace http {
 			default:
 				// unknown subsystem
 				_log.Log(LOG_ERROR, "PROXY: Got pdu for unknown subsystem %d.", subsystem);
-				ReadMore();
 				return;
 			}
 		}
@@ -371,7 +350,6 @@ namespace http {
 				_log.Log(LOG_STATUS, "SetConnected(true)");
 				slave->SetConnected(true);
 			}
-			ReadMore();
 		}
 
 		void CProxyClient::HandleServDisconnect(ProxyPdu *pdu)
@@ -397,7 +375,6 @@ namespace http {
 				_log.Log(LOG_STATUS, "Stopping slave connection.");
 				slave->SetConnected(false);
 			}
-			ReadMore();
 		}
 
 		void CProxyClient::HandleServConnect(ProxyPdu *pdu)
@@ -466,7 +443,6 @@ namespace http {
 			if (slave) {
 				slave->Authenticated(tokenparam, authenticated == 1);
 			}
-			ReadMore();
 		}
 
 		void CProxyClient::HandleServSend(ProxyPdu *pdu) {
@@ -485,12 +461,8 @@ namespace http {
 			}
 			success = m_pDomServ->OnIncomingData(tokenparam, data, datalen);
 			free(data);
-			if (success) {
-				ReadMore();
-			}
-			else {
+			if (!success) {
 				SendServDisconnect(tokenparam, 1);
-				ReadMore();
 			}
 		}
 
@@ -513,7 +485,6 @@ namespace http {
 				slave->FromProxy(data, datalen);
 			}
 			free(data);
-			ReadMore();
 		}
 
 		void CProxyClient::SendServDisconnect(const std::string &token, int reason)
@@ -549,7 +520,70 @@ namespace http {
 				Stop();
 				return;
 			}
-			ReadMore();
+		}
+
+		void CProxyClient::PduHandler(ProxyPdu &pdu)
+		{
+			switch (pdu._type) {
+			case PDU_REQUEST:
+				if (_allowed_subsystems & SUBSYSTEM_HTTP) {
+					HandleRequest(&pdu);
+				}
+				else {
+					_log.Log(LOG_ERROR, "PROXY: HTTP access disallowed, denying request.");
+				}
+				break;
+			case PDU_ASSIGNKEY:
+				HandleAssignkey(&pdu);
+				break;
+			case PDU_ENQUIRE:
+				HandleEnquire(&pdu);
+				break;
+			case PDU_AUTHRESP:
+				HandleAuthresp(&pdu);
+				break;
+			case PDU_SERV_CONNECT:
+				/* incoming connect from master */
+				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
+					HandleServConnect(&pdu);
+				}
+				else {
+					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying connect request.");
+				}
+				break;
+			case PDU_SERV_DISCONNECT:
+				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
+					HandleServDisconnect(&pdu);
+				}
+				else {
+					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying disconnect request.");
+				}
+				break;
+			case PDU_SERV_CONNECTRESP:
+				/* authentication result from slave */
+				HandleServConnectResp(&pdu);
+				break;
+			case PDU_SERV_RECEIVE:
+				/* data from slave to master */
+				if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
+					HandleServReceive(&pdu);
+				}
+				else {
+					_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying receive data request.");
+				}
+				break;
+			case PDU_SERV_SEND:
+				/* data from master to slave */
+				HandleServSend(&pdu);
+				break;
+			case PDU_SERV_ROSTERIND:
+				/* the slave that we want to connect to is back online */
+				HandleServRosterInd(&pdu);
+				break;
+			default:
+				_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
+				break;
+			}
 		}
 
 		void CProxyClient::handle_read(const boost::system::error_code& error, size_t bytes_transferred)
@@ -562,76 +596,13 @@ namespace http {
 				const char *data = boost::asio::buffer_cast<const char*>(_readbuf.data());
 				ProxyPdu pdu(data, _readbuf.size());
 				if (pdu.Disconnected()) {
+					// todo
 					ReadMore();
 					return;
 				}
+				PduHandler(pdu);
 				_readbuf.consume(pdu.length() + 9); // 9 is header size
-
-				switch (pdu._type) {
-				case PDU_REQUEST:
-					if (_allowed_subsystems & SUBSYSTEM_HTTP) {
-						HandleRequest(&pdu);
-					}
-					else {
-						_log.Log(LOG_ERROR, "PROXY: HTTP access disallowed, denying request.");
-						ReadMore();
-					}
-					break;
-				case PDU_ASSIGNKEY:
-					HandleAssignkey(&pdu);
-					break;
-				case PDU_ENQUIRE:
-					HandleEnquire(&pdu);
-					break;
-				case PDU_AUTHRESP:
-					HandleAuthresp(&pdu);
-					break;
-				case PDU_SERV_CONNECT:
-					/* incoming connect from master */
-					if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-						HandleServConnect(&pdu);
-					}
-					else {
-						_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying connect request.");
-						ReadMore();
-					}
-					break;
-				case PDU_SERV_DISCONNECT:
-					if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-						HandleServDisconnect(&pdu);
-					}
-					else {
-						_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying disconnect request.");
-						ReadMore();
-					}
-					break;
-				case PDU_SERV_CONNECTRESP:
-					/* authentication result from slave */
-					HandleServConnectResp(&pdu);
-					break;
-				case PDU_SERV_RECEIVE:
-					/* data from slave to master */
-					if (_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ) {
-						HandleServReceive(&pdu);
-					}
-					else {
-						_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying receive data request.");
-						ReadMore();
-					}
-					break;
-				case PDU_SERV_SEND:
-					/* data from master to slave */
-					HandleServSend(&pdu);
-					break;
-				case PDU_SERV_ROSTERIND:
-					/* the slave that we want to connect to is back online */
-					HandleServRosterInd(&pdu);
-					break;
-				default:
-					_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
-					ReadMore();
-					break;
-				}
+				ReadMore();
 			}
 			else
 			{
