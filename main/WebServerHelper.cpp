@@ -97,10 +97,10 @@ namespace http {
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
-		CProxyClient *CWebServerHelper::GetProxyForClient(DomoticzTCP *client) {
+		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
 			if (proxymanagerCollection.size() > 0) {
 				// todo: make this a random connection?
-				return proxymanagerCollection[0]->GetProxyForClient(client);
+				return proxymanagerCollection[0]->GetProxyForMaster(master);
 			}
 			return NULL;
 		}

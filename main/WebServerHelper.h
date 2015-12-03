@@ -20,7 +20,7 @@ namespace http {
 			void StopServers();
 #ifndef NOCLOUD
 			void RestartProxy();
-			CProxyClient *GetProxyForClient(DomoticzTCP *client);
+			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
 #endif
 			void SetAuthenticationMethod(int amethod);
 			void SetWebTheme(const std::string &themename);

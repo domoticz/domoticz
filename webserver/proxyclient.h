@@ -35,8 +35,8 @@ namespace http {
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
 			bool SharedServerAllowed();
-			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *client, int version);
-			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *client);
+			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int version);
+			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *master);
 			void SetSharedServer(tcp::server::CTCPServerProxied *domserv);
 		private:
 
@@ -62,7 +62,7 @@ namespace http {
 			void HandleEnquire(ProxyPdu *pdu);
 			void HandleAuthresp(ProxyPdu *pdu);
 
-			void HandleServConnect(std::string ip, ProxyPdu *pdu);
+			void HandleServConnect(ProxyPdu *pdu);
 			void HandleServConnectResp(ProxyPdu *pdu);
 			void HandleServDisconnect(ProxyPdu *pdu);
 			void HandleServReceive(ProxyPdu *pdu);
@@ -90,6 +90,7 @@ namespace http {
 			int timeout_;
 			/// make sure we only write one packet at a time
 			boost::mutex write_mutex;
+			bool b_Connected;
 		};
 
 		class CProxyManager {
@@ -98,7 +99,7 @@ namespace http {
 			~CProxyManager();
 			int Start(bool first);
 			void Stop();
-			CProxyClient *GetProxyForClient(DomoticzTCP *client);
+			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
 		private:
 			void StartThread();
 			boost::asio::io_service io_service;
@@ -118,9 +119,9 @@ namespace http {
 			void UnlockPrefsMutex();
 			bool AddConnectedIp(std::string ip);
 			bool AddConnectedServer(std::string ip);
-			void AddTCPClient(DomoticzTCP *client);
-			void RemoveTCPClient(DomoticzTCP *client);
-			DomoticzTCP *FindClient(const std::string &token);
+			void AddTCPClient(DomoticzTCP *master);
+			void RemoveTCPClient(DomoticzTCP *master);
+			DomoticzTCP *findMaster(const std::string &token);
 		private:
 			std::string _instanceid;
 			boost::mutex prefs_mutex;

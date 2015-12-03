@@ -897,6 +897,7 @@ bool MainWorker::Stop()
 	if (m_thread)
 	{
 		m_webservers.StopServers();
+		m_sharedserver.StopServer();
 		_log.Log(LOG_STATUS, "Stopping all hardware...");
 		StopDomoticzHardware();
 		m_scheduler.StopScheduler();

@@ -341,7 +341,7 @@ bool DomoticzTCP::StartHardwareProxy()
 	// we temporarily use the instance id as an identifier for this connection, meanwhile we get a token from the proxy
 	// this means that we connect connect twice to the same server
 	token = m_szIPAddress;
-	proxy = m_webservers.GetProxyForClient(this);
+	proxy = m_webservers.GetProxyForMaster(this);
 	if (proxy) {
 		proxy->ConnectToDomoticz(m_szIPAddress, m_username, m_password, this, version);
 		return true;
@@ -353,7 +353,7 @@ bool DomoticzTCP::StopHardwareProxy()
 {
 	http::server::CProxyClient *proxy;
 
-	proxy = m_webservers.GetProxyForClient(this);
+	proxy = m_webservers.GetProxyForMaster(this);
 	if (proxy) {
 		proxy->DisconnectFromDomoticz(token, this);
 	}
@@ -372,7 +372,7 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 	http::server::CProxyClient *proxy;
 
 	if (isConnectedProxy()) {
-		proxy = m_webservers.GetProxyForClient(this);
+		proxy = m_webservers.GetProxyForMaster(this);
 		if (proxy) {
 			proxy->WriteMasterData(token, data, size);
 		}
