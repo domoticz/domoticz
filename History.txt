@@ -34,6 +34,7 @@ Version 2.3xxx
 - Fixed: Blockly, Set user variables (you need to resave your blockly's)
 - Fixed: Month temperature report avarage is now calculated by the daily avarage value
 - Implemented: Waterflow sensor
+- Implemented: Dummy Hardware, Wind+Temp+Chill
 
 Version 2.3530 (November 1th 2015)
 - Implemented: Degree Days in Temperature report
