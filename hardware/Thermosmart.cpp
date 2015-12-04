@@ -155,13 +155,7 @@ void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp,
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, NULL, 255);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		result=m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255);
 }
 
 
@@ -417,10 +411,9 @@ void CThermosmart::SetPauseStatus(const bool bIsPause)
 			return;
 	}
 
-	Json::Value json;
-	Json::StyledWriter jsonWriter;
-	json["pause"] = (bIsPause == true) ? "true" : "false";
-	std::string szPostdata = jsonWriter.write(json);
+	std::string szPostdata = "{\"pause\":";
+	szPostdata += (bIsPause) ? "true" : "false";
+	szPostdata += "}";
 
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Content-Type: application/json");
@@ -437,3 +430,31 @@ void CThermosmart::SetPauseStatus(const bool bIsPause)
 		return;
 	}
 }
+
+void CThermosmart::SetOutsideTemp(const int idx, const float temp)
+{
+	if (m_bDoLogin)
+	{
+		if (!Login())
+			return;
+	}
+
+	char szTemp[20];
+	sprintf(szTemp, "%.1f", temp);
+	std::string sTemp = szTemp;
+
+	std::string szPostdata = "outside_temperature=" + sTemp;
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+	std::string sURL = THERMOSMART_SETPOINT_PATH;
+	stdreplace(sURL, "[TID]", m_ThermostatID);
+	stdreplace(sURL, "[access_token]", m_AccessToken);
+	if (!HTTPClient::PUT(sURL, szPostdata, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error setting thermostat data!");
+		m_bDoLogin = true;
+		return;
+	}
+}
+

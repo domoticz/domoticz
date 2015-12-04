@@ -14,6 +14,7 @@ public:
 private:
 	void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 	void SetPauseStatus(const bool bIsPause);
+	void SetOutsideTemp(const int idx, const float temp);
 	bool Login();
 	void Logout();
 
