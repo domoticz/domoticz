@@ -70,7 +70,7 @@ namespace http {
 		void CProxyClient::Reconnect()
 		{
 
-			std::string address = "192.168.33.17"; //  "my.domoticz.com";
+			std::string address = "my.domoticz.com";
 			std::string port = "9999";
 
 			if (we_locked_prefs_mutex) {
