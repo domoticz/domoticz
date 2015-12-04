@@ -63,7 +63,7 @@ int CValueLengthPart::GetNextPart(std::string &nextpart, bool isstring)
 
 	int res = GetNextPart((void **)&part, &length);
 	if (res) {
-		if (isstring && part[length - 1] == 0) {
+		if (isstring && length > 0 && part[length - 1] == 0) {
 			length--;
 		}
 		nextpart = std::string(part, length);

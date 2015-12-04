@@ -307,7 +307,7 @@ namespace http {
 					_log.Log(LOG_ERROR, "PROXY: Invalid request");
 					return;
 				}
-				if (!part.GetNextPart(requestbody)) {
+				if (!part.GetNextPart(requestbody, false)) {
 					_log.Log(LOG_ERROR, "PROXY: Invalid request");
 					return;
 				}
