@@ -8,6 +8,7 @@ namespace http {
 		typedef std::vector<CWebServer*>::iterator server_iterator;
 #ifndef NOCLOUD
 		typedef std::vector<CProxyManager*>::iterator proxy_iterator;
+		extern CProxySharedData sharedData;
 #endif
 
 		CWebServerHelper::CWebServerHelper()
@@ -95,12 +96,8 @@ namespace http {
 				proxymanagerCollection[i]->Start(i == 0);
 			}
 			if (connections > 0) {
-				// start domoticz masters via proxy
-				for (unsigned int i = 0; i < masterCollection.size(); i++) {
-					masterCollection[i]->StartHardwareProxy();
-				}
-				masterCollection.resize(0);
 				// start previously connected masters
+				sharedData.RestartTCPClients();
 			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
@@ -111,17 +108,7 @@ namespace http {
 				return proxymanagerCollection[0]->GetProxyForMaster(master);
 			}
 			// we are not connected yet. save this master and connect later.
-			bool found = false;
-			unsigned int size = masterCollection.size();
-			for (unsigned int i = 0; i < size; i++) {
-				if (master == masterCollection[i]) {
-					found = true;
-				}
-			}
-			if (!found) {
-				masterCollection.resize(size + 1);
-				masterCollection[size] = master;
-			}
+			sharedData.AddTCPClient(master);
 			return NULL;
 		}
 

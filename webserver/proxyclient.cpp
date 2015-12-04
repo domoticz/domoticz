@@ -876,8 +876,17 @@ namespace http {
 		void CProxySharedData::RestartTCPClients()
 		{
 			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				TCPClients[i]->StartHardwareProxy();
+				TCPClients[i]->ConnectInternalProxy();
 			}
+		}
+
+		void CProxySharedData::StopTCPClients()
+		{
+#if 0
+			for (unsigned int i = 0; i < TCPClients.size(); i++) {
+				TCPClients[i]->StopHardwareProxy();
+			}
+#endif
 		}
 	}
 }

@@ -346,6 +346,11 @@ bool DomoticzTCP::StartHardwareProxy()
 		return false; // dont start twice
 	}
 	m_bIsStarted = true;
+	return ConnectInternalProxy();
+}
+
+bool DomoticzTCP::ConnectInternalProxy()
+{
 	http::server::CProxyClient *proxy;
 	const int version = 1;
 	// we temporarily use the instance id as an identifier for this connection, meanwhile we get a token from the proxy
@@ -373,6 +378,8 @@ bool DomoticzTCP::StopHardwareProxy()
 	}
 	b_ProxyConnected = false;
 	m_bIsStarted = false;
+	// todo: m_webservers.RemoveMaster, which calls sharedData.RemoveTCPClient()
+	// Otherwise we have a dangling pointer if this hardware is removed.
 	return true;
 }
 
