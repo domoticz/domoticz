@@ -416,15 +416,17 @@ void CThermosmart::SetPauseStatus(const bool bIsPause)
 		if (!Login())
 			return;
 	}
-	std::string sURL;
-	std::stringstream sstr;
-	std::string pState = (bIsPause == true) ? "true" : "false";
-	sstr << "pause=" << pState;
-	std::string szPostdata = sstr.str();
+
+	Json::Value json;
+	Json::StyledWriter jsonWriter;
+	json["pause"] = (bIsPause == true) ? "true" : "false";
+	std::string szPostdata = jsonWriter.write(json);
+
 	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Content-Type: application/json");
 	std::string sResult;
 
-	sURL = THERMOSMART_SET_PAUZE;
+	std::string sURL = THERMOSMART_SET_PAUZE;
 	stdreplace(sURL, "[TID]", m_ThermostatID);
 	stdreplace(sURL, "[access_token]", m_AccessToken);
 
