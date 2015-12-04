@@ -41,7 +41,8 @@ namespace http {
 #ifndef NOCLOUD
 			std::vector<CProxyManager*> proxymanagerCollection;
 			int GetNrMyDomoticzThreads();
-			CProxyClient *GetFirstProxy();
+			// we keep a list of domoticz hardware that wants to be connected
+			std::vector<DomoticzTCP *> masterCollection;
 #endif
 };
 

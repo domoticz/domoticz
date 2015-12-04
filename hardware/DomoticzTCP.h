@@ -23,6 +23,7 @@ public:
 	void FromProxy(const unsigned char *data, size_t datalen);
 	std::string GetToken();
 	void Authenticated(const std::string &aToken, bool authenticated);
+	bool StartHardwareProxy();
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
@@ -42,7 +43,6 @@ private:
 protected:
 	bool StartHardwareTCP();
 	bool StopHardwareTCP();
-	bool StartHardwareProxy();
 	bool StopHardwareProxy();
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

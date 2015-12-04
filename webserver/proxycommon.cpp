@@ -217,7 +217,7 @@ ProxyPdu::ProxyPdu(pdu_type type, CValueLengthPart *part)
 ProxyPdu::ProxyPdu(const char *data, size_t theLength)
 {
 	verbose = 1;
-	_content = NULL;
+	_content = pdudata = NULL;
 	sprintf(signature, "RKDM");
 	disconnected = ReadPdu(data, theLength);
 }
@@ -292,7 +292,6 @@ int ProxyPdu::ReadPdu(const char *buffer, size_t buflen)
 	state = STATE_SIGNATURE1;
 	while (state != STATE_DONE) {
 		if (readlen >= buflen) {
-			_log.Log(LOG_ERROR, "Timedout or disconnected.");
 			return 1;
 		}
 		buf = buffer[readlen++];

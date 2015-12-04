@@ -5,7 +5,9 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
-#include <boost/lockfree/queue.hpp>
+#include <list>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
 #include "proxycommon.h"
 #include "cWebem.h"
 #include "request_handler.hpp"
@@ -25,6 +27,44 @@ class DomoticzTCP;
 
 namespace http {
 	namespace server {
+
+		template <typename T>
+		class BlockingQueue
+		{
+		public:
+			BlockingQueue() : queue(), mutex(), cond() {}
+			~BlockingQueue() {}
+
+		public:
+
+			void Put(T obj)
+			{
+				boost::mutex::scoped_lock lock(mutex);
+				queue.push_back(obj);
+				cond.notify_all();
+			}
+
+			T Take()
+			{
+				boost::mutex::scoped_lock lock(mutex);
+				while (queue.size() == 0)
+				{
+					cond.wait(lock);
+				}
+
+				T value = queue.front();
+				queue.pop_front();
+
+				return value;
+			}
+
+		private:
+			std::list<T> queue;
+			boost::mutex mutex;
+			boost::condition cond;
+
+		};
+
 
 		class CProxyClient {
 		public:
@@ -46,15 +86,12 @@ namespace http {
 
 			void handle_handshake(const boost::system::error_code& error);
 
-			void handle_write(const boost::system::error_code& error,
-				size_t bytes_transferred);
-
 			void handle_read(const boost::system::error_code& error,
 				size_t bytes_transferred);
 
 			void ReadMore();
 
-			void MyWrite(pdu_type type, CValueLengthPart *parameters, bool single_write);
+			void MyWrite(pdu_type type, CValueLengthPart &parameters);
 			void LoginToService();
 
 			void HandleRequest(ProxyPdu *pdu);
@@ -62,7 +99,6 @@ namespace http {
 			void HandleAssignkey(ProxyPdu *pdu);
 			void HandleEnquire(ProxyPdu *pdu);
 			void HandleAuthresp(ProxyPdu *pdu);
-
 			void HandleServConnect(ProxyPdu *pdu);
 			void HandleServConnectResp(ProxyPdu *pdu);
 			void HandleServDisconnect(ProxyPdu *pdu);
@@ -82,7 +118,6 @@ namespace http {
 			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServerProxied *m_pDomServ;
-			void ReadMore2();
 			/// make sure we only write one packet at a time
 			boost::mutex write_mutex;
 			bool we_locked_prefs_mutex;
@@ -92,6 +127,10 @@ namespace http {
 			/// timeouts (persistent and other) connections in seconds
 			int timeout_;
 			bool b_Connected;
+
+			void WriteThread();
+			boost::thread *m_writeThread;
+			BlockingQueue<ProxyPdu *> writeQ;
 		};
 
 		class CProxyManager {
@@ -122,6 +161,7 @@ namespace http {
 			bool AddConnectedServer(std::string ip);
 			void AddTCPClient(DomoticzTCP *master);
 			void RemoveTCPClient(DomoticzTCP *master);
+			void RestartTCPClients();
 			DomoticzTCP *findSlaveConnection(const std::string &token);
 			DomoticzTCP *findSlaveById(const std::string &instanceid);
 		private:

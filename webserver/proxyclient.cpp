@@ -39,6 +39,7 @@ namespace http {
 				doStop = true;
 				return;
 			}
+			m_writeThread = new boost::thread(boost::bind(&CProxyClient::WriteThread, this));
 			m_pWebEm = webEm;
 			m_pDomServ = NULL;
 			Reconnect();
@@ -52,7 +53,7 @@ namespace http {
 			parameters.AddPart(token);
 			parameters.AddPart((void *)pData, Length);
 
-			MyWrite(PDU_SERV_RECEIVE, &parameters, true);
+			MyWrite(PDU_SERV_RECEIVE, parameters);
 		}
 
 		void CProxyClient::WriteMasterData(const std::string &token, const char *pData, size_t Length)
@@ -63,13 +64,13 @@ namespace http {
 			parameters.AddPart(token);
 			parameters.AddPart((void *)pData, Length);
 
-			MyWrite(PDU_SERV_SEND, &parameters, true);
+			MyWrite(PDU_SERV_SEND, parameters);
 		}
 
 		void CProxyClient::Reconnect()
 		{
 
-			std::string address = "my.domoticz.com";
+			std::string address = "192.168.33.17"; //  "my.domoticz.com";
 			std::string port = "9999";
 
 			if (we_locked_prefs_mutex) {
@@ -121,11 +122,41 @@ namespace http {
 			}
 		}
 
-		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart *parameters, bool single_write)
+		void CProxyClient::WriteThread()
+		{
+			std::vector<boost::asio::const_buffer> _writebuf;
+			ProxyPdu *writePdu;
+
+			while ((writePdu = writeQ.Take()) != NULL) {
+				_writebuf.clear();
+				_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
+				try {
+					boost::asio::write(_socket, _writebuf);
+				}
+				catch (std::exception& e) {
+					if (doStop) {
+						// exit thread
+						return;
+					}
+					_log.Log(LOG_ERROR, "PROXY: Write error, reconnecting: %s", e.what());
+					// Initiate graceful connection closure.
+					_socket.lowest_layer().close();
+					// we are disconnected, reconnect
+					boost::this_thread::sleep_for(boost::chrono::seconds(10));
+					Reconnect();
+				}
+				delete writePdu;
+			}
+		}
+
+		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
 		{
 			if (!b_Connected) {
 				return;
 			}
+			ProxyPdu *writePdu = new ProxyPdu(type, &parameters);
+			writeQ.Put(writePdu);
+#if 0
 			boost::mutex::scoped_lock lock(write_mutex);
 			std::vector<boost::asio::const_buffer> _writebuf;
 			_writebuf.clear();
@@ -133,11 +164,13 @@ namespace http {
 
 			_writebuf.push_back(boost::asio::buffer(writePdu.content(), writePdu.length()));
 			boost::asio::write(_socket, _writebuf);
+#endif
 		}
 
 		void CProxyClient::LoginToService()
 		{
 			std::string instanceid = sharedData.GetInstanceId();
+			const long protocol_version = 2;
 
 			// start read thread
 			ReadMore();
@@ -148,7 +181,8 @@ namespace http {
 			parameters.AddPart(_password);
 			parameters.AddPart(szAppVersion);
 			parameters.AddLong(_allowed_subsystems);
-			MyWrite(PDU_AUTHENTICATE, &parameters, false);
+			parameters.AddLong(protocol_version);
+			MyWrite(PDU_AUTHENTICATE, parameters);
 		}
 
 		void CProxyClient::handle_handshake(const boost::system::error_code& error)
@@ -217,7 +251,7 @@ namespace http {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "Could not parse request.");
+				_log.Log(LOG_ERROR, "PROXY: Could not parse request.");
 			}
 		}
 
@@ -239,6 +273,8 @@ namespace http {
 			boost::asio::mutable_buffers_1 _buf(NULL, 0);
 			/// The reply to be sent back to the client.
 			http::server::reply reply_;
+			// we number the request, because we can send back asynchronously
+			long requestid;
 
 			// get common parts for the different subsystems
 			CValueLengthPart part(pdu);
@@ -274,6 +310,9 @@ namespace http {
 					_log.Log(LOG_ERROR, "PROXY: Invalid request");
 					return;
 				}
+				if (!part.GetNextLong(requestid)) {
+					requestid = 0;
+				}
 
 				if (requestbody.size() > 0) {
 					request = "POST ";
@@ -299,9 +338,10 @@ namespace http {
 				parameters.AddLong(reply_.status);
 				parameters.AddPart(responseheaders);
 				parameters.AddPart(reply_.content);
+				parameters.AddLong(requestid);
 
 				// send response to proxy
-				MyWrite(PDU_RESPONSE, &parameters, false);
+				MyWrite(PDU_RESPONSE, parameters);
 				break;
 			default:
 				// unknown subsystem
@@ -332,7 +372,7 @@ namespace http {
 			CValueLengthPart parameters;
 
 			// send response to proxy
-			MyWrite(PDU_ENQUIRE, &parameters, false);
+			MyWrite(PDU_ENQUIRE, parameters);
 		}
 
 		void CProxyClient::HandleServRosterInd(ProxyPdu *pdu)
@@ -340,14 +380,14 @@ namespace http {
 			CValueLengthPart part(pdu);
 			std::string c_slave;
 
-			_log.Log(LOG_STATUS, "SERV_ROSTERIND pdu received.");
+			_log.Log(LOG_STATUS, "PROXY: SERV_ROSTERIND pdu received.");
 			if (!part.GetNextPart(c_slave)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_ROSTERIND pdu");
 			}
-			_log.Log(LOG_STATUS, "Looking for slave %s", c_slave.c_str());
+			_log.Log(LOG_STATUS, "PROXY: Looking for slave %s", c_slave.c_str());
 			DomoticzTCP *slave = sharedData.findSlaveById(c_slave);
 			if (slave) {
-				_log.Log(LOG_STATUS, "SetConnected(true)");
+				_log.Log(LOG_STATUS, "PROXY: SetConnected(true)");
 				slave->SetConnected(true);
 			}
 		}
@@ -359,7 +399,7 @@ namespace http {
 			long reason;
 			bool success;
 
-			_log.Log(LOG_STATUS, "SERV_DISCONNECT pdu received.");
+			_log.Log(LOG_STATUS, "PROXY: SERV_DISCONNECT pdu received.");
 			if (!part.GetNextPart(tokenparam)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_DISCONNECT pdu");
 			}
@@ -368,11 +408,11 @@ namespace http {
 			}
 			// see if we are slave
 			success = m_pDomServ->OnDisconnect(tokenparam);
-			_log.Log(LOG_STATUS, "Master disconnected: %s", success ? "success" : "not found");
+			_log.Log(LOG_STATUS, "PROXY: Master disconnected: %s", success ? "success" : "not found");
 			// see if we are master
 			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
 			if (slave && slave->isConnected()) {
-				_log.Log(LOG_STATUS, "Stopping slave connection.");
+				_log.Log(LOG_STATUS, "PROXY: Stopping slave connection.");
 				slave->SetConnected(false);
 			}
 		}
@@ -385,7 +425,7 @@ namespace http {
 			std::string tokenparam, usernameparam, passwordparam, ipparam;
 			std::string reason = "";
 
-			_log.Log(LOG_NORM, "SERV_CONNECT pdu received.");
+			_log.Log(LOG_NORM, "PROXY: SERV_CONNECT pdu received.");
 			if (!part.GetNextPart(tokenparam)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECT pdu");
 			}
@@ -402,7 +442,7 @@ namespace http {
 				ipparam = "unknown";
 			}
 			sharedData.AddConnectedServer(ipparam);
-			if (version != 1) {
+			if (version > 3) {
 				authenticated = 0;
 				reason = "Version not supported";
 			}
@@ -414,7 +454,7 @@ namespace http {
 			parameters.AddPart(sharedData.GetInstanceId());
 			parameters.AddLong(authenticated);
 			parameters.AddPart(reason);
-			MyWrite(PDU_SERV_CONNECTRESP, &parameters, false);
+			MyWrite(PDU_SERV_CONNECTRESP, parameters);
 		}
 
 		void CProxyClient::HandleServConnectResp(ProxyPdu *pdu)
@@ -423,7 +463,7 @@ namespace http {
 			long authenticated;
 			std::string tokenparam, instanceparam, reason;
 
-			_log.Log(LOG_NORM, "SERV_CONNECTRESP pdu received.");
+			_log.Log(LOG_NORM, "PROXY: SERV_CONNECTRESP pdu received.");
 			if (!part.GetNextPart(tokenparam)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECTRESP pdu");
 			}
@@ -493,7 +533,7 @@ namespace http {
 
 			parameters.AddPart(token);
 			parameters.AddLong(reason);
-			MyWrite(PDU_SERV_DISCONNECT, &parameters, true);
+			MyWrite(PDU_SERV_DISCONNECT, parameters);
 		}
 
 		void CProxyClient::HandleAuthresp(ProxyPdu *pdu)
@@ -609,7 +649,12 @@ namespace http {
 				if (doStop) {
 					return;
 				}
-				_log.Log(LOG_ERROR, "PROXY: Read failed, reconnecting: %s", error.message().c_str());
+				if (error.value() == 0x140000DB) {
+					// short read
+					_log.Log(LOG_ERROR, "PROXY: Read failed, , short read");
+					return;
+				}
+				_log.Log(LOG_ERROR, "PROXY: Read failed, code = %d. Reconnecting: %s", error.value(), error.message().c_str());
 				// Initiate graceful connection closure.
 				_socket.lowest_layer().close();
 				// we are disconnected, reconnect
@@ -631,6 +676,9 @@ namespace http {
 			}
 
 			doStop = true;
+			// signal end of WriteThread
+			writeQ.Put(NULL);
+			m_writeThread->join();
 			_socket.lowest_layer().close();
 		}
 
@@ -707,7 +755,7 @@ namespace http {
 			parameters.AddPart(username);
 			parameters.AddPart(password);
 			parameters.AddLong(version);
-			MyWrite(PDU_SERV_CONNECT, &parameters, true);
+			MyWrite(PDU_SERV_CONNECT, parameters);
 		}
 
 		void CProxyClient::DisconnectFromDomoticz(const std::string &token, DomoticzTCP *master)
@@ -717,10 +765,10 @@ namespace http {
 
 			parameters.AddPart(token);
 			parameters.AddLong(reason);
-			MyWrite(PDU_SERV_DISCONNECT, &parameters, true);
+			MyWrite(PDU_SERV_DISCONNECT, parameters);
 			DomoticzTCP *slave = sharedData.findSlaveConnection(token);
 			if (slave) {
-				_log.Log(LOG_STATUS, "Stopping slave.");
+				_log.Log(LOG_STATUS, "PROXY: Stopping slave.");
 				slave->SetConnected(false);
 			}
 		}
@@ -739,6 +787,7 @@ namespace http {
 
 		void CProxySharedData::LockPrefsMutex()
 		{
+			// todo: make this a boost::condition?
 			prefs_mutex.lock();
 		}
 
@@ -815,6 +864,13 @@ namespace http {
 				}
 			}
 			return NULL;
+		}
+
+		void CProxySharedData::RestartTCPClients()
+		{
+			for (unsigned int i = 0; i < TCPClients.size(); i++) {
+				TCPClients[i]->StartHardwareProxy();
+			}
 		}
 	}
 }
