@@ -238,20 +238,23 @@ void CTCPServerProxied::stop()
 /// Stop the specified connection.
 void CTCPServerProxied::stopClient(CTCPClient_ptr c)
 {
+	boost::lock_guard<boost::mutex> l(connectionMutex);
 	c->stop();
 	connections_.erase(c);
 }
 
 bool CTCPServerProxied::OnDisconnect(const std::string &token)
 {
-	CTCPClient_ptr connection;
-	CSharedClient *client = FindClient(token);
-	if (client == NULL) {
-		return false;
+	std::set<CTCPClient_ptr>::const_iterator itt;
+	for (itt = connections_.begin(); itt != connections_.end(); ++itt) {
+		CSharedClient *pClient = dynamic_cast<CSharedClient *>(itt->get());
+		if (pClient && pClient->CompareToken(token)) {
+			pClient->stop();
+			connections_.erase(itt);
+			return true;
+		}
 	}
-	connection.reset(client);
-	stopClient(connection);
-	return true;
+	return false;
 }
 
 bool CTCPServerProxied::OnNewConnection(const std::string &token, const std::string &username, const std::string &password)
@@ -312,13 +315,12 @@ CTCPServer::CTCPServer(const int ID)
 CTCPServer::~CTCPServer()
 {
 	StopServer();
-	if (m_pTCPServer != NULL)
-		delete m_pTCPServer;
-	m_pTCPServer = NULL;
 #ifndef NOCLOUD
-	if (m_pProxyServer != NULL)
+	if (m_pProxyServer != NULL) {
+		m_pProxyServer->stop();
 		delete m_pProxyServer;
-	m_pProxyServer = NULL;
+		m_pProxyServer = NULL;
+	}
 #endif
 }
 
@@ -333,8 +335,9 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 		{
 			exception = false;
 			StopServer();
-			if (m_pTCPServer != NULL)
-				delete m_pTCPServer;
+			if (m_pTCPServer != NULL) {
+				_log.Log(LOG_ERROR, "Stopping TCPServer should delete resources !");
+			}
 			m_pTCPServer = new CTCPServerInt(listen_address, port, this);
 		}
 		catch (std::exception& e)
@@ -354,7 +357,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 			tries++;
 		}
 	} while (exception);
-	_log.Log(LOG_NORM, "Started shared server on: %s", listen_address.c_str());
+	_log.Log(LOG_NORM, "Starting shared server on: %s:%s", listen_address.c_str(), port.c_str());
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CTCPServer::Do_Work, this)));
 
@@ -364,7 +367,10 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 #ifndef NOCLOUD
 bool CTCPServer::StartServer(http::server::CProxyClient *proxy)
 {
+	_log.Log(LOG_NORM, "Accepting shared server connections via MyDomotiz (see settings menu).");
 	m_pProxyServer = new CTCPServerProxied(this, proxy);
+	// we load the remote users at this point, because this server was not started yet when
+	// LoadSharedUsers() was called at startup.
 	if (m_pTCPServer) {
 		m_pProxyServer->SetRemoteUsers(m_pTCPServer->GetRemoteUsers());
 	}
@@ -377,10 +383,18 @@ bool CTCPServer::StartServer(http::server::CProxyClient *proxy)
 
 void CTCPServer::StopServer()
 {
-	if (m_pTCPServer)
+	if (m_pTCPServer) {
 		m_pTCPServer->stop();
-	if (m_thread)
+	}
+	if (m_thread) {
 		m_thread->join();
+	}
+	// This is the only time to delete it
+	if (m_pTCPServer) {
+		delete m_pTCPServer;
+		m_pTCPServer = NULL;
+		_log.Log(LOG_STATUS, "TCPServer: shared server stopped");
+	}
 #ifndef NOCLOUD
 	if (m_pProxyServer) {
 		m_pProxyServer->stop();
@@ -390,9 +404,10 @@ void CTCPServer::StopServer()
 
 void CTCPServer::Do_Work()
 {
-	if (m_pTCPServer)
+	if (m_pTCPServer) {
+		_log.Log(LOG_STATUS, "TCPServer: shared server started...");
 		m_pTCPServer->start();
-	//_log.Log(LOG_STATUS,"TCPServer stopped...");
+	}
 }
 
 void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore)

@@ -20,7 +20,7 @@ namespace http {
 			void StopServers();
 #ifndef NOCLOUD
 			void RestartProxy();
-			CProxyClient *GetProxyForClient(DomoticzTCP *client);
+			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
 #endif
 			void SetAuthenticationMethod(int amethod);
 			void SetWebTheme(const std::string &themename);
@@ -41,7 +41,8 @@ namespace http {
 #ifndef NOCLOUD
 			std::vector<CProxyManager*> proxymanagerCollection;
 			int GetNrMyDomoticzThreads();
-			CProxyClient *GetFirstProxy();
+			// we keep a list of domoticz hardware that wants to be connected
+			std::vector<DomoticzTCP *> masterCollection;
 #endif
 };
 

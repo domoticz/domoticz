@@ -88,19 +88,39 @@ namespace http {
 			}
 
 			// restart threads
-			const int connections = GetNrMyDomoticzThreads();
+			const unsigned int connections = GetNrMyDomoticzThreads();
 			proxymanagerCollection.resize(connections);
-			for (int i = 0; i < connections; i++) {
+			for (unsigned int i = 0; i < connections; i++) {
 				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ);
 				proxymanagerCollection[i]->Start(i == 0);
+			}
+			if (connections > 0) {
+				// start domoticz masters via proxy
+				for (unsigned int i = 0; i < masterCollection.size(); i++) {
+					masterCollection[i]->StartHardwareProxy();
+				}
+				masterCollection.resize(0);
+				// start previously connected masters
 			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
-		CProxyClient *CWebServerHelper::GetProxyForClient(DomoticzTCP *client) {
+		CProxyClient *CWebServerHelper::GetProxyForMaster(DomoticzTCP *master) {
 			if (proxymanagerCollection.size() > 0) {
 				// todo: make this a random connection?
-				return proxymanagerCollection[0]->GetProxyForClient(client);
+				return proxymanagerCollection[0]->GetProxyForMaster(master);
+			}
+			// we are not connected yet. save this master and connect later.
+			bool found = false;
+			unsigned int size = masterCollection.size();
+			for (unsigned int i = 0; i < size; i++) {
+				if (master == masterCollection[i]) {
+					found = true;
+				}
+			}
+			if (!found) {
+				masterCollection.resize(size + 1);
+				masterCollection[size] = master;
 			}
 			return NULL;
 		}

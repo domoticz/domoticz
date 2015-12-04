@@ -20,6 +20,7 @@ m_username(username), m_password(password), m_szIPAddress(IPAddress)
 	info = NULL;
 	b_useProxy = IsValidAPIKey(IPAddress);
 	b_ProxyConnected = false;
+	m_bIsStarted = false;
 }
 
 DomoticzTCP::~DomoticzTCP(void)
@@ -334,30 +335,44 @@ bool DomoticzTCP::CompareToken(const std::string &aToken)
 	return (aToken == token);
 }
 
+bool DomoticzTCP::CompareId(const std::string &instanceid)
+{
+	return (m_szIPAddress == instanceid);
+}
+
 bool DomoticzTCP::StartHardwareProxy()
 {
+	if (m_bIsStarted) {
+		return false; // dont start twice
+	}
+	m_bIsStarted = true;
 	http::server::CProxyClient *proxy;
-
+	const int version = 1;
 	// we temporarily use the instance id as an identifier for this connection, meanwhile we get a token from the proxy
 	// this means that we connect connect twice to the same server
 	token = m_szIPAddress;
-	proxy = m_webservers.GetProxyForClient(this);
+	proxy = m_webservers.GetProxyForMaster(this);
 	if (proxy) {
-		proxy->ConnectToDomoticz(m_szIPAddress, m_username, m_password, this);
-		return true;
+		proxy->ConnectToDomoticz(m_szIPAddress, m_username, m_password, this, version);
+		sOnConnected(this); // we do need this?
 	}
-	return false;
+	else {
+		_log.Log(LOG_STATUS, "Delaying Domoticz master login");
+	}
+	m_bIsStarted = false; // todo: correct?
+	return true;
 }
 
 bool DomoticzTCP::StopHardwareProxy()
 {
 	http::server::CProxyClient *proxy;
 
-	proxy = m_webservers.GetProxyForClient(this);
+	proxy = m_webservers.GetProxyForMaster(this);
 	if (proxy) {
 		proxy->DisconnectFromDomoticz(token, this);
 	}
 	b_ProxyConnected = false;
+	m_bIsStarted = false;
 	return true;
 }
 
@@ -372,7 +387,7 @@ void DomoticzTCP::writeProxy(const char *data, size_t size)
 	http::server::CProxyClient *proxy;
 
 	if (isConnectedProxy()) {
-		proxy = m_webservers.GetProxyForClient(this);
+		proxy = m_webservers.GetProxyForMaster(this);
 		if (proxy) {
 			proxy->WriteMasterData(token, data, size);
 		}
@@ -397,6 +412,15 @@ void DomoticzTCP::Authenticated(const std::string &aToken, bool authenticated)
 	token = aToken;
 	if (authenticated) {
 		_log.Log(LOG_STATUS, "Domoticz TCP connected via Proxy.");
-		sOnConnected(this);
+	}
+}
+
+void DomoticzTCP::SetConnected(bool connected)
+{
+	if (connected) {
+		StartHardwareProxy();
+	}
+	else {
+		b_ProxyConnected = false;
 	}
 }

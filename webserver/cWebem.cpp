@@ -1455,7 +1455,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 	}
 
 #ifdef _DEBUG
-	_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+	// _log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
 
 	if (session.username.empty()) {
@@ -1586,7 +1586,15 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 	{
 		// do normal handling
-		request_handler::handle_request(requestCopy, rep);
+		try
+		{
+			request_handler::handle_request(requestCopy, rep);
+		}
+		catch (...)
+		{
+			rep = reply::stock_reply(reply::internal_server_error);
+			return;
+		}
 
 		if (rep.headers[1].value == "text/html"
 			|| rep.headers[1].value == "text/plain"

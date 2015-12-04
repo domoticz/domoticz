@@ -16,11 +16,14 @@ public:
 
 	void write(const char *data, size_t size);
 	bool isConnected();
+	void SetConnected(bool connected);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	bool CompareToken(const std::string &aToken);
+	bool CompareId(const std::string &instanceid);
 	void FromProxy(const unsigned char *data, size_t datalen);
 	std::string GetToken();
 	void Authenticated(const std::string &aToken, bool authenticated);
+	bool StartHardwareProxy();
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
@@ -40,7 +43,6 @@ private:
 protected:
 	bool StartHardwareTCP();
 	bool StopHardwareTCP();
-	bool StartHardwareProxy();
 	bool StopHardwareProxy();
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

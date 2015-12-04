@@ -19,7 +19,8 @@ typedef enum {
 	PDU_SERV_CONNECTRESP,
 	PDU_SERV_RECEIVE,
 	PDU_SERV_SEND,
-	PDU_SERV_DISCONNECT
+	PDU_SERV_DISCONNECT,
+	PDU_SERV_ROSTERIND
 } pdu_type;
 
 #define SUBSYSTEM_HTTP 0x01
@@ -35,6 +36,7 @@ public:
 	void InitPdu(pdu_type type, const char *data, size_t theLength);
 	ProxyPdu(pdu_type type, CValueLengthPart *part);
 	~ProxyPdu();
+	std::string Serialize();
 	int ReadPdu(const char *buffer, size_t buflen);
 	void ParsePdu();
 	size_t length();
@@ -58,9 +60,13 @@ public:
 	~CValueLengthPart();
 	void AddPart(void *data, size_t len);
 	void AddValue(void *data, size_t len);
+	void AddLong(long value);
 	void GetPdu(void **data, size_t *len);
 	int GetNextPart(void **data, size_t *len);
 	int GetNextValue(void *data, size_t *len);
+	int GetNextLong(long &value);
+	int GetNextPart(std::string &nextpart, bool isstring = true);
+	void AddPart(const std::string &nextpart, bool isstring = true);
 	void *_data;
 	void *_ptr;
 	size_t _len;

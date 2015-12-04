@@ -5,6 +5,9 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
+#include <list>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
 #include "proxycommon.h"
 #include "cWebem.h"
 #include "request_handler.hpp"
@@ -25,6 +28,44 @@ class DomoticzTCP;
 namespace http {
 	namespace server {
 
+		template <typename T>
+		class BlockingQueue
+		{
+		public:
+			BlockingQueue() : queue(), mutex(), cond() {}
+			~BlockingQueue() {}
+
+		public:
+
+			void Put(T obj)
+			{
+				boost::mutex::scoped_lock lock(mutex);
+				queue.push_back(obj);
+				cond.notify_all();
+			}
+
+			T Take()
+			{
+				boost::mutex::scoped_lock lock(mutex);
+				while (queue.size() == 0)
+				{
+					cond.wait(lock);
+				}
+
+				T value = queue.front();
+				queue.pop_front();
+
+				return value;
+			}
+
+		private:
+			std::list<T> queue;
+			boost::mutex mutex;
+			boost::condition cond;
+
+		};
+
+
 		class CProxyClient {
 		public:
 			CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm);
@@ -35,8 +76,8 @@ namespace http {
 			void WriteMasterData(const std::string &token, const char *pData, size_t Length);
 			void WriteSlaveData(const std::string &token, const char *pData, size_t Length);
 			bool SharedServerAllowed();
-			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *client);
-			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *client);
+			void ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int version);
+			void DisconnectFromDomoticz(const std::string &token, DomoticzTCP *master);
 			void SetSharedServer(tcp::server::CTCPServerProxied *domserv);
 		private:
 
@@ -45,15 +86,12 @@ namespace http {
 
 			void handle_handshake(const boost::system::error_code& error);
 
-			void handle_write(const boost::system::error_code& error,
-				size_t bytes_transferred);
-
 			void handle_read(const boost::system::error_code& error,
 				size_t bytes_transferred);
 
 			void ReadMore();
 
-			void MyWrite(pdu_type type, CValueLengthPart *parameters, bool single_write);
+			void MyWrite(pdu_type type, CValueLengthPart &parameters);
 			void LoginToService();
 
 			void HandleRequest(ProxyPdu *pdu);
@@ -61,13 +99,14 @@ namespace http {
 			void HandleAssignkey(ProxyPdu *pdu);
 			void HandleEnquire(ProxyPdu *pdu);
 			void HandleAuthresp(ProxyPdu *pdu);
-
 			void HandleServConnect(ProxyPdu *pdu);
 			void HandleServConnectResp(ProxyPdu *pdu);
 			void HandleServDisconnect(ProxyPdu *pdu);
 			void HandleServReceive(ProxyPdu *pdu);
 			void HandleServSend(ProxyPdu *pdu);
+			void HandleServRosterInd(ProxyPdu *pdu);
 			void SendServDisconnect(const std::string &token, int reason);
+			void PduHandler(ProxyPdu &pdu);
 
 			int _allowed_subsystems;
 			std::string GetResponseHeaders(const http::server::reply &reply_);
@@ -75,21 +114,23 @@ namespace http {
 			std::string _apikey;
 			std::string _password;
 			boost::asio::streambuf _readbuf;
-			std::vector<boost::asio::const_buffer> _writebuf;
 			boost::asio::io_service& _io_service;
 			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServerProxied *m_pDomServ;
-			ProxyPdu *writePdu;
-			bool mSingleWrite;
+			/// make sure we only write one packet at a time
+			boost::mutex write_mutex;
 			bool we_locked_prefs_mutex;
 			/// read timeout timer
 			boost::asio::deadline_timer timer_;
 			void handle_timeout(const boost::system::error_code& error);
 			/// timeouts (persistent and other) connections in seconds
 			int timeout_;
-			/// make sure we only write one packet at a time
-			boost::mutex write_mutex;
+			bool b_Connected;
+
+			void WriteThread();
+			boost::thread *m_writeThread;
+			BlockingQueue<ProxyPdu *> writeQ;
 		};
 
 		class CProxyManager {
@@ -98,7 +139,7 @@ namespace http {
 			~CProxyManager();
 			int Start(bool first);
 			void Stop();
-			CProxyClient *GetProxyForClient(DomoticzTCP *client);
+			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
 		private:
 			void StartThread();
 			boost::asio::io_service io_service;
@@ -118,9 +159,11 @@ namespace http {
 			void UnlockPrefsMutex();
 			bool AddConnectedIp(std::string ip);
 			bool AddConnectedServer(std::string ip);
-			void AddTCPClient(DomoticzTCP *client);
-			void RemoveTCPClient(DomoticzTCP *client);
-			DomoticzTCP *FindClient(const std::string &token);
+			void AddTCPClient(DomoticzTCP *master);
+			void RemoveTCPClient(DomoticzTCP *master);
+			void RestartTCPClients();
+			DomoticzTCP *findSlaveConnection(const std::string &token);
+			DomoticzTCP *findSlaveById(const std::string &instanceid);
 		private:
 			std::string _instanceid;
 			boost::mutex prefs_mutex;

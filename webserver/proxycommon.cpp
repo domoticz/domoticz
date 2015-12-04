@@ -56,6 +56,27 @@ void CValueLengthPart::AddPart(void *data, size_t len)
 	_len = newlen;
 }
 
+int CValueLengthPart::GetNextPart(std::string &nextpart, bool isstring)
+{
+	char *part;
+	size_t length;
+
+	int res = GetNextPart((void **)&part, &length);
+	if (res) {
+		if (isstring && length > 0 && part[length - 1] == 0) {
+			length--;
+		}
+		nextpart = std::string(part, length);
+		free(part);
+	}
+	return res;
+}
+
+void CValueLengthPart::AddPart(const std::string &nextpart, bool isstring)
+{
+	AddPart((void *)nextpart.c_str(), nextpart.length() + (isstring ? 1 : 0));
+}
+
 void CValueLengthPart::AddValue(void *data, size_t len)
 {
 	size_t newlen = _len + len + SIZE_SIZE_T;
@@ -71,6 +92,29 @@ void CValueLengthPart::AddValue(void *data, size_t len)
 	}
 	dataptr += SIZE_SIZE_T;
 	memcpy((void *)dataptr, data, len);
+	_ptr = _data;
+	_len = newlen;
+}
+
+void CValueLengthPart::AddLong(long value)
+{
+	const size_t len = SIZE_SIZE_T;
+	size_t newlen = _len + len + SIZE_SIZE_T;
+	_data = realloc(_data, newlen);
+	if (_data == NULL) {
+		_log.Log(LOG_ERROR, "AddValue: Could not alloc.");
+	}
+	unsigned char *dataptr = (unsigned char*)_data + _len;
+	size_t len2 = len;
+	for (unsigned int i = 0; i < SIZE_SIZE_T; i++) {
+		dataptr[i] = len2 % 256;
+		len2 /= 256;
+	}
+	dataptr += SIZE_SIZE_T;
+	for (unsigned int i = 0; i < SIZE_SIZE_T; i++) {
+		dataptr[i] = value % 256;
+		value /= 256;
+	}
 	_ptr = _data;
 	_len = newlen;
 }
@@ -134,6 +178,34 @@ int CValueLengthPart::GetNextValue(void *data, size_t *length)
 	return 1;
 }
 
+int CValueLengthPart::GetNextLong(long &value)
+{
+	if (_len < SIZE_SIZE_T) {
+		return 0;
+	}
+	size_t len = 0;
+	unsigned char *dataptr = (unsigned char*)_ptr;
+	long mult = 1;
+	for (unsigned int i = 0; i < SIZE_SIZE_T; i++) {
+		len += dataptr[i] * mult;
+		mult *= 256;
+	}
+	if (_len < SIZE_SIZE_T + len || len != SIZE_SIZE_T) {
+		// TODO: This isnt right
+		// something went wrong
+		return 0;
+	}
+	dataptr += SIZE_SIZE_T;
+	value = 0;
+	mult = 1;
+	for (unsigned int i = 0; i < len; i++) {
+		value += dataptr[i] * mult;
+		mult *= 256;
+	}
+	_ptr = dataptr + len;
+	return 1;
+}
+
 ProxyPdu::ProxyPdu(pdu_type type, CValueLengthPart *part)
 {
 	char *data;
@@ -145,7 +217,7 @@ ProxyPdu::ProxyPdu(pdu_type type, CValueLengthPart *part)
 ProxyPdu::ProxyPdu(const char *data, size_t theLength)
 {
 	verbose = 1;
-	_content = NULL;
+	_content = pdudata = NULL;
 	sprintf(signature, "RKDM");
 	disconnected = ReadPdu(data, theLength);
 }
@@ -220,7 +292,6 @@ int ProxyPdu::ReadPdu(const char *buffer, size_t buflen)
 	state = STATE_SIGNATURE1;
 	while (state != STATE_DONE) {
 		if (readlen >= buflen) {
-			_log.Log(LOG_ERROR, "Timedout or disconnected.");
 			return 1;
 		}
 		buf = buffer[readlen++];
@@ -308,5 +379,10 @@ void ProxyPdu::ParsePdu()
 int ProxyPdu::Disconnected()
 {
 	return disconnected;
+}
+
+std::string ProxyPdu::Serialize()
+{
+	return std::string((char *)content(), length());
 }
 #endif
