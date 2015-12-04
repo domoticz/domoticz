@@ -132,7 +132,9 @@ namespace http {
 				_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
 				try {
 					boost::asio::write(_socket, _writebuf);
-					boost::this_thread::sleep_for(boost::chrono::milliseconds(100)); // for peace of mind of openssl
+#ifdef WIN32
+					boost::this_thread::sleep_for(boost::chrono::milliseconds(100)); // for peace of mind of openssl (workaround for openssl bug)
+#endif
 				}
 				catch (std::exception& e) {
 					if (doStop) {
@@ -347,7 +349,7 @@ namespace http {
 			default:
 				// unknown subsystem
 				_log.Log(LOG_ERROR, "PROXY: Got pdu for unknown subsystem %d.", subsystem);
-				return;
+				break;
 			}
 		}
 
