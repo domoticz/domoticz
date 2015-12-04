@@ -13,6 +13,7 @@ Version 2.3xxx
 - Implemented: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: RFXCom support for Legrand CAD
+- Implemented: Thermosmart option to set specify outside temperature sensor
 - Implemented: Waterflow sensor
 - Implemented: Wind Beaufort scale
 - Implemented: Wind Graph, option to delete a short-log data point
@@ -36,6 +37,7 @@ Version 2.3xxx
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
 - Fixed: RGB sensor now also uses the RGB popup system
 - Fixed: S0 Meter, fix for reloading totals of (#179)
+- Fixed: Thermosmart unpauze
 - Updated: OpenZWave, configuration files
 
 Version 2.3530 (November 1th 2015)

@@ -3066,7 +3066,7 @@ define(['app'], function (app) {
                         HwTypeStr+='<br>Version: ' + item.version;
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditMySensors(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
-                    else if (HwTypeStr.indexOf("OpenTherm") >= 0) {
+                    else if ((HwTypeStr.indexOf("OpenTherm") >= 0)||(HwTypeStr.indexOf("Thermosmart") >= 0)) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("Wake-on-LAN") >= 0) {
