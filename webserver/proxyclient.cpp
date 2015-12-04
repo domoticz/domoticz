@@ -132,6 +132,7 @@ namespace http {
 				_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
 				try {
 					boost::asio::write(_socket, _writebuf);
+					boost::this_thread::sleep_for(boost::chrono::milliseconds(100)); // for peace of mind of openssl
 				}
 				catch (std::exception& e) {
 					if (doStop) {
@@ -652,6 +653,10 @@ namespace http {
 				if (error.value() == 0x140000DB) {
 					// short read
 					_log.Log(LOG_ERROR, "PROXY: Read failed, , short read");
+					// Initiate graceful connection closure.
+					_socket.lowest_layer().close();
+					// we are disconnected, reconnect
+					Reconnect();
 					return;
 				}
 				_log.Log(LOG_ERROR, "PROXY: Read failed, code = %d. Reconnecting: %s", error.value(), error.message().c_str());
