@@ -25,6 +25,7 @@ public:
 	void Authenticated(const std::string &aToken, bool authenticated);
 	bool StartHardwareProxy();
 	bool ConnectInternalProxy();
+	void DisconnectProxy();
 public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;

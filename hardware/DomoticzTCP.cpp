@@ -364,11 +364,19 @@ bool DomoticzTCP::ConnectInternalProxy()
 	else {
 		_log.Log(LOG_STATUS, "Delaying Domoticz master login");
 	}
-	m_bIsStarted = false; // todo: correct?
 	return true;
 }
 
 bool DomoticzTCP::StopHardwareProxy()
+{
+	DisconnectProxy();
+	m_bIsStarted = false;
+	// Avoid dangling pointer if this hardware is removed.
+	m_webservers.RemoveMaster(this);
+	return true;
+}
+
+void DomoticzTCP::DisconnectProxy()
 {
 	http::server::CProxyClient *proxy;
 
@@ -377,10 +385,6 @@ bool DomoticzTCP::StopHardwareProxy()
 		proxy->DisconnectFromDomoticz(token, this);
 	}
 	b_ProxyConnected = false;
-	m_bIsStarted = false;
-	// todo: m_webservers.RemoveMaster, which calls sharedData.RemoveTCPClient()
-	// Otherwise we have a dangling pointer if this hardware is removed.
-	return true;
 }
 
 bool DomoticzTCP::isConnectedProxy()
@@ -425,7 +429,7 @@ void DomoticzTCP::Authenticated(const std::string &aToken, bool authenticated)
 void DomoticzTCP::SetConnected(bool connected)
 {
 	if (connected) {
-		StartHardwareProxy();
+		ConnectInternalProxy();
 	}
 	else {
 		b_ProxyConnected = false;

@@ -81,6 +81,7 @@ namespace http {
 
 #ifndef NOCLOUD
 		void CWebServerHelper::RestartProxy() {
+			sharedData.StopTCPClients();
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
 				// todo: This seems to crash on a Pi (fatal signal 6). Windows goes fine.
@@ -95,10 +96,6 @@ namespace http {
 				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ);
 				proxymanagerCollection[i]->Start(i == 0);
 			}
-			if (connections > 0) {
-				// start previously connected masters
-				sharedData.RestartTCPClients();
-			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");
 		}
 
@@ -112,6 +109,9 @@ namespace http {
 			return NULL;
 		}
 
+		void CWebServerHelper::RemoveMaster(DomoticzTCP *master) {
+			sharedData.RemoveTCPClient(master);
+		}
 #endif
 
 		void CWebServerHelper::SetAuthenticationMethod(int amethod)
