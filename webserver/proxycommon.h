@@ -56,6 +56,7 @@ class CValueLengthPart {
 public:
 	CValueLengthPart();
 	CValueLengthPart(ProxyPdu *pdu);
+	CValueLengthPart(ProxyPdu &pdu);
 	CValueLengthPart(void *data, size_t len);
 	~CValueLengthPart();
 	void AddPart(void *data, size_t len);

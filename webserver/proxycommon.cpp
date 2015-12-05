@@ -16,6 +16,19 @@ CValueLengthPart::CValueLengthPart(ProxyPdu *pdu)
 	_len = len;
 }
 
+CValueLengthPart::CValueLengthPart(ProxyPdu &pdu)
+{
+	size_t len = pdu.length();
+	_ptr = _data = malloc(len);
+	if (_ptr == NULL) {
+		_log.Log(LOG_ERROR, "CValueLengthPart (1): Could not allocate.");
+		_len = 0;
+		return;
+	}
+	memcpy(_data, pdu.content(), len);
+	_len = len;
+}
+
 CValueLengthPart::CValueLengthPart()
 {
 	_data = _ptr = NULL;

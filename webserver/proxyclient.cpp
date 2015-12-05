@@ -270,8 +270,12 @@ namespace http {
 			return result;
 		}
 
-		void CProxyClient::HandleRequest(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_REQUEST)
 		{
+			if (!(_allowed_subsystems & SUBSYSTEM_HTTP)) {
+				_log.Log(LOG_ERROR, "PROXY: HTTP access disallowed, denying request.");
+				return;
+			}
 			// response variables
 			boost::asio::mutable_buffers_1 _buf(NULL, 0);
 			/// The reply to be sent back to the client.
@@ -353,7 +357,7 @@ namespace http {
 			}
 		}
 
-		void CProxyClient::HandleAssignkey(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_ASSIGNKEY)
 		{
 			// get our new api key
 			CValueLengthPart parameters(pdu);
@@ -369,7 +373,7 @@ namespace http {
 			LoginToService();
 		}
 
-		void CProxyClient::HandleEnquire(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_ENQUIRE)
 		{
 			// assemble response
 			CValueLengthPart parameters;
@@ -378,7 +382,7 @@ namespace http {
 			MyWrite(PDU_ENQUIRE, parameters);
 		}
 
-		void CProxyClient::HandleServRosterInd(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_SERV_ROSTERIND)
 		{
 			CValueLengthPart part(pdu);
 			std::string c_slave;
@@ -393,8 +397,12 @@ namespace http {
 			}
 		}
 
-		void CProxyClient::HandleServDisconnect(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_SERV_DISCONNECT)
 		{
+			if (!(_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ)) {
+				_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying disconnect request.");
+				return;
+			}
 			CValueLengthPart part(pdu);
 			std::string tokenparam;
 			long reason;
@@ -419,8 +427,13 @@ namespace http {
 			}
 		}
 
-		void CProxyClient::HandleServConnect(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_SERV_CONNECT)
 		{
+			/* incoming connect from master */
+			if (!(_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ)) {
+				_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying connect request.");
+				return;
+			}
 			CValueLengthPart part(pdu);
 			CValueLengthPart parameters;
 			long authenticated, protocol_version;
@@ -459,7 +472,7 @@ namespace http {
 			MyWrite(PDU_SERV_CONNECTRESP, parameters);
 		}
 
-		void CProxyClient::HandleServConnectResp(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_SERV_CONNECTRESP)
 		{
 			CValueLengthPart part(pdu);
 			long authenticated;
@@ -487,7 +500,8 @@ namespace http {
 			}
 		}
 
-		void CProxyClient::HandleServSend(ProxyPdu *pdu) {
+		PDUFUNCTION(PDU_SERV_SEND)
+		{
 			/* data from master to slave */
 			CValueLengthPart part(pdu);
 			size_t datalen;
@@ -508,8 +522,12 @@ namespace http {
 			}
 		}
 
-		void CProxyClient::HandleServReceive(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_SERV_RECEIVE)
 		{
+			if (!(_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ)) {
+				_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying receive data request.");
+				return;
+			}
 			/* data from slave to master */
 			CValueLengthPart part(pdu);
 			std::string tokenparam;
@@ -538,7 +556,7 @@ namespace http {
 			MyWrite(PDU_SERV_DISCONNECT, parameters);
 		}
 
-		void CProxyClient::HandleAuthresp(ProxyPdu *pdu)
+		PDUFUNCTION(PDU_AUTHRESP)
 		{
 			// get auth response (0 or 1)
 			long auth;
@@ -570,6 +588,17 @@ namespace http {
 		void CProxyClient::PduHandler(ProxyPdu &pdu)
 		{
 			switch (pdu._type) {
+			ONPDU(PDU_REQUEST)
+			ONPDU(PDU_ASSIGNKEY)
+			ONPDU(PDU_ENQUIRE)
+			ONPDU(PDU_AUTHRESP)
+			ONPDU(PDU_SERV_CONNECT)
+			ONPDU(PDU_SERV_DISCONNECT)
+			ONPDU(PDU_SERV_CONNECTRESP)
+			ONPDU(PDU_SERV_RECEIVE)
+			ONPDU(PDU_SERV_SEND)
+			ONPDU(PDU_SERV_ROSTERIND)
+#if 0
 			case PDU_REQUEST:
 				if (_allowed_subsystems & SUBSYSTEM_HTTP) {
 					HandleRequest(&pdu);
@@ -625,6 +654,7 @@ namespace http {
 				/* the slave that we want to connect to is back online */
 				HandleServRosterInd(&pdu);
 				break;
+#endif
 			default:
 				_log.Log(LOG_ERROR, "PROXY: pdu type: %d not expected.", pdu._type);
 				break;
