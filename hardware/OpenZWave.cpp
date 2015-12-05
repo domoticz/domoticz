@@ -2184,11 +2184,11 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 	else
 		nintvalue = 0;
 
-	if ((pDevice->intvalue == nintvalue) && (pDevice->sequence_number != 1))
-	{
-		//Do we need this ?
-		return; //dont send/update same value
-	}
+//	if ((pDevice->intvalue == nintvalue) && (pDevice->sequence_number != 1))
+//	{
+//		//Do we need this ?
+//		return; //dont send/update same value
+//	}
 	time_t atime = mytime(NULL);
 	pDevice->intvalue = nintvalue;
 	pDevice->lastreceived = atime;
