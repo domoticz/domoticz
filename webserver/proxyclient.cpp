@@ -383,14 +383,12 @@ namespace http {
 			CValueLengthPart part(pdu);
 			std::string c_slave;
 
-			_log.Log(LOG_STATUS, "PROXY: SERV_ROSTERIND pdu received.");
 			if (!part.GetNextPart(c_slave)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_ROSTERIND pdu");
 			}
-			_log.Log(LOG_STATUS, "PROXY: Looking for slave %s", c_slave.c_str());
+			_log.Log(LOG_STATUS, "PROXY: Notification received: slave %s online now.", c_slave.c_str());
 			DomoticzTCP *slave = sharedData.findSlaveById(c_slave);
 			if (slave) {
-				_log.Log(LOG_STATUS, "PROXY: SetConnected(true)");
 				slave->SetConnected(true);
 			}
 		}
@@ -402,7 +400,6 @@ namespace http {
 			long reason;
 			bool success;
 
-			_log.Log(LOG_STATUS, "PROXY: SERV_DISCONNECT pdu received.");
 			if (!part.GetNextPart(tokenparam)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_DISCONNECT pdu");
 			}
@@ -411,7 +408,9 @@ namespace http {
 			}
 			// see if we are slave
 			success = m_pDomServ->OnDisconnect(tokenparam);
-			_log.Log(LOG_STATUS, "PROXY: Master disconnected: %s", success ? "success" : "not found");
+			if (success) {
+				_log.Log(LOG_STATUS, "PROXY: Master disconnected");
+			}
 			// see if we are master
 			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
 			if (slave && slave->isConnected()) {
@@ -424,7 +423,7 @@ namespace http {
 		{
 			CValueLengthPart part(pdu);
 			CValueLengthPart parameters;
-			long authenticated, version;
+			long authenticated, protocol_version;
 			std::string tokenparam, usernameparam, passwordparam, ipparam;
 			std::string reason = "";
 
@@ -438,16 +437,16 @@ namespace http {
 			if (!part.GetNextPart(passwordparam)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECT pdu");
 			}
-			if (!part.GetNextLong(version)) {
-				version = 1;
+			if (!part.GetNextLong(protocol_version)) {
+				protocol_version = 1;
 			}
 			if (!part.GetNextPart(ipparam)) {
 				ipparam = "unknown";
 			}
 			sharedData.AddConnectedServer(ipparam);
-			if (version > 3) {
+			if (protocol_version > 3) {
 				authenticated = 0;
-				reason = "Version not supported";
+				reason = "Protocol version not supported";
 			}
 			else {
 				authenticated = m_pDomServ->OnNewConnection(tokenparam, usernameparam, passwordparam) ? 1 : 0;
@@ -757,14 +756,14 @@ namespace http {
 			return proxyclient;
 		}
 
-		void CProxyClient::ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int version)
+		void CProxyClient::ConnectToDomoticz(std::string instancekey, std::string username, std::string password, DomoticzTCP *master, int protocol_version)
 		{
 			CValueLengthPart parameters;
 
 			parameters.AddPart(instancekey);
 			parameters.AddPart(username);
 			parameters.AddPart(password);
-			parameters.AddLong(version);
+			parameters.AddLong(protocol_version);
 			MyWrite(PDU_SERV_CONNECT, parameters);
 		}
 
