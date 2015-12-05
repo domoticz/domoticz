@@ -4,6 +4,7 @@
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/WebServerHelper.h"
 #include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
@@ -20,6 +21,8 @@ const std::string THERMOSMART_TOKEN_PATH = "https://username:password@api.thermo
 const std::string THERMOSMART_ACCESS_PATH = "https://api.thermosmart.com/thermostat/[TID]?access_token=[access_token]";
 const std::string THERMOSMART_SETPOINT_PATH = "https://api.thermosmart.com/thermostat/[TID]?access_token=[access_token]";
 const std::string THERMOSMART_SET_PAUZE = "https://api.thermosmart.com/thermostat/[TID]/pause?access_token=[access_token]";
+
+extern http::server::CWebServerHelper m_webservers;
 
 #ifdef _DEBUG
 	//#define DEBUG_ThermosmartThermostat_read
@@ -55,7 +58,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password)
+CThermosmart::CThermosmart(const int ID, const std::string &Username, const std::string &Password, const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
 {
 	m_UserName = "";
 	if ((Password == "secret")|| (Password.empty()))
@@ -70,11 +73,18 @@ CThermosmart::CThermosmart(const int ID, const std::string &Username, const std:
 		stdstring_trim(m_Password);
 	}
 	m_HwdID=ID;
+	m_OutsideTemperatureIdx = 0; //use build in
+	SetModes(Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 	Init();
 }
 
 CThermosmart::~CThermosmart(void)
 {
+}
+
+void CThermosmart::SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6)
+{
+	m_OutsideTemperatureIdx = Mode1;
 }
 
 void CThermosmart::Init()
@@ -125,10 +135,36 @@ void CThermosmart::Do_Work()
 		}
 		if (sec_counter % THERMOSMART_POLL_INTERVAL == 0)
 		{
+			SendOutsideTemperature();
 			GetMeterDetails();
 		}
 	}
 	_log.Log(LOG_STATUS,"Thermosmart: Worker stopped...");
+}
+
+bool CThermosmart::GetOutsideTemperatureFromDomoticz(float &tvalue)
+{
+	if (m_OutsideTemperatureIdx == 0)
+		return false;
+	Json::Value tempjson;
+	std::stringstream sstr;
+	sstr << m_OutsideTemperatureIdx;
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, 0, "");
+
+	size_t tsize = tempjson.size();
+	if (tsize < 1)
+		return false;
+
+	Json::Value::const_iterator itt;
+	Json::ArrayIndex rsize = tempjson["result"].size();
+	if (rsize < 1)
+		return false;
+
+	bool bHaveTimeout = tempjson["result"][0]["HaveTimeout"].asBool();
+	if (bHaveTimeout)
+		return false;
+	tvalue = tempjson["result"][0]["Temp"].asFloat();
+	return true;
 }
 
 void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
@@ -155,13 +191,7 @@ void CThermosmart::SendSetPointSensor(const unsigned char Idx, const float Temp,
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, NULL, 255);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		result=m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", defaultname.c_str(), m_HwdID, szID);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, "Setpoint", 255);
 }
 
 
@@ -416,15 +446,16 @@ void CThermosmart::SetPauseStatus(const bool bIsPause)
 		if (!Login())
 			return;
 	}
-	std::string sURL;
-	std::stringstream sstr;
-	std::string pState = (bIsPause == true) ? "true" : "false";
-	sstr << "pause=" << pState;
-	std::string szPostdata = sstr.str();
+
+	std::string szPostdata = "{\"pause\":";
+	szPostdata += (bIsPause) ? "true" : "false";
+	szPostdata += "}";
+
 	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Content-Type: application/json");
 	std::string sResult;
 
-	sURL = THERMOSMART_SET_PAUZE;
+	std::string sURL = THERMOSMART_SET_PAUZE;
 	stdreplace(sURL, "[TID]", m_ThermostatID);
 	stdreplace(sURL, "[access_token]", m_AccessToken);
 
@@ -435,3 +466,39 @@ void CThermosmart::SetPauseStatus(const bool bIsPause)
 		return;
 	}
 }
+
+void CThermosmart::SendOutsideTemperature()
+{
+	float temp;
+	if (!GetOutsideTemperatureFromDomoticz(temp))
+		return;
+	SetOutsideTemp(temp);
+}
+
+void CThermosmart::SetOutsideTemp(const float temp)
+{
+	if (m_bDoLogin)
+	{
+		if (!Login())
+			return;
+	}
+
+	char szTemp[20];
+	sprintf(szTemp, "%.1f", temp);
+	std::string sTemp = szTemp;
+
+	std::string szPostdata = "outside_temperature=" + sTemp;
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+
+	std::string sURL = THERMOSMART_SETPOINT_PATH;
+	stdreplace(sURL, "[TID]", m_ThermostatID);
+	stdreplace(sURL, "[access_token]", m_AccessToken);
+	if (!HTTPClient::PUT(sURL, szPostdata, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "Thermosmart: Error setting thermostat data!");
+		m_bDoLogin = true;
+		return;
+	}
+}
+

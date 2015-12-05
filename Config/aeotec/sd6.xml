@@ -160,6 +160,7 @@
       </Help>
     </Value>
   </CommandClass>
+  <CommandClass id="96" mapping="endpoints" forceUniqueEndpoints="true" />
 
   <!-- Association Groups -->
   <CommandClass id="133">
