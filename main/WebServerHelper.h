@@ -21,6 +21,7 @@ namespace http {
 #ifndef NOCLOUD
 			void RestartProxy();
 			CProxyClient *GetProxyForMaster(DomoticzTCP *master);
+			void RemoveMaster(DomoticzTCP *master);
 #endif
 			void SetAuthenticationMethod(int amethod);
 			void SetWebTheme(const std::string &themename);

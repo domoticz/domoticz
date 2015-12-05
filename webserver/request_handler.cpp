@@ -14,6 +14,10 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_array.hpp>
+#ifdef HAVE_BOOST_FILESYSTEM
+#include <boost/filesystem/operations.hpp>
+#include <time.h>
+#endif
 #include "mime_types.hpp"
 #include "reply.hpp"
 #include "request.hpp"
@@ -21,6 +25,35 @@
 #include "GZipHelper.h"
 
 #define ZIPREADBUFFERSIZE (8192)
+
+#ifdef HAVE_BOOST_FILESYSTEM
+#define HTTP_DATE_RFC_1123 "%a, %d %b %Y %H:%M:%S %Z" // Sun, 06 Nov 1994 08:49:37 GMT
+#define HTTP_DATE_RFC_850  "%A, %d-%b-%y %H:%M:%S %Z" // Sunday, 06-Nov-94 08:49:37 GMT
+#define HTTP_DATE_ASCTIME  "%a %b %e %H:%M:%S %Y"     // Sun Nov  6 08:49:37 1994
+#endif
+
+#ifdef WIN32
+// some ported functions
+#define timegm _mkgmtime
+
+extern "C" char* strptime(const char* s,
+	const char* f,
+struct tm* tm) {
+	// Isn't the C++ standard lib nice? std::get_time is defined such that its
+	// format parameters are the exact same as strptime. Of course, we have to
+	// create a string stream first, and imbue it with the current C locale, and
+	// we also have to make sure we return the right things if it fails, or
+	// if it succeeds, but this is still far simpler an implementation than any
+	// of the versions in any of the C standard libraries.
+	std::istringstream input(s);
+	input.imbue(std::locale(setlocale(LC_ALL, nullptr)));
+	input >> std::get_time(tm, f);
+	if (input.fail()) {
+		return nullptr;
+	}
+	return (char*)(s + input.tellg());
+}
+#endif
 
 namespace http {
 namespace server {
@@ -78,6 +111,65 @@ int request_handler::do_extract_currentfile(unzFile uf, const char* password, st
 	while (err>0);
 	unzCloseCurrentFile (uf);
 	return err;
+}
+#endif
+
+#ifdef HAVE_BOOST_FILESYSTEM
+static time_t convert_from_http_date(const std::string &str)
+{
+	if (str.empty())
+		return 0;
+
+	struct tm time_data;
+	memset(&time_data, 0, sizeof(struct tm));
+
+	bool success = strptime(str.c_str(), HTTP_DATE_RFC_1123, &time_data)
+		|| strptime(str.c_str(), HTTP_DATE_RFC_850, &time_data)
+		|| strptime(str.c_str(), HTTP_DATE_ASCTIME, &time_data);
+
+	if (!success)
+		return 0;
+
+	return timegm(&time_data);
+}
+
+static std::string convert_to_http_date(time_t time)
+{
+	struct tm *tm_result = gmtime(&time);
+
+	if (!tm_result)
+		return std::string();
+
+	char buffer[1024];
+	strftime(buffer, sizeof(buffer), HTTP_DATE_RFC_1123, tm_result);
+	buffer[sizeof(buffer) - 1] = '\0';
+
+	return buffer;
+}
+
+bool request_handler::not_modified(std::string full_path, const request &req, reply &rep)
+{
+	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
+	boost::filesystem::path path(full_path);
+	time_t last_written_time = boost::filesystem::last_write_time(path);
+	// propagate timestamp to browser
+	reply::AddHeader(&rep, "Last-Modified", convert_to_http_date(last_written_time));
+	if (NULL == if_modified) {
+		// we have no if-modified header, continue to serve content
+		return false;
+	}
+	time_t if_modified_since_time = convert_from_http_date(if_modified);
+	if (if_modified_since_time >= last_written_time) {
+		// content has not been modified since last serve
+		// indicate to use a cached copy to browser
+		reply::AddHeader(&rep, "Connection", "Keep-Alive");
+		reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=60");
+		rep.content = "";
+		rep.status = reply::not_modified;
+		return true;
+	}
+	// force new content
+	return false;
 }
 #endif
 
@@ -176,6 +268,12 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (!is)
 		  {
+#ifdef HAVE_BOOST_FILESYSTEM
+			  // check if file date is still the same since last request
+			  if (not_modified(full_path, req, rep)) {
+				  return;
+			  }
+#endif
 			  //maybe its a gz file (and clients browser does not support compression)
 			  full_path += ".gz";
 			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
@@ -209,6 +307,15 @@ void request_handler::handle_request(const request& req, reply& rep)
 				  }
 				  extension = "html";
 			  }
+#if 0
+			  // unfortunately, we cannot cache these files, because there might be
+			  // include codes in it, but otherwise here is the place to add it
+#ifdef HAVE_BOOST_FILESYSTEM
+			  if (not_modified(full_path, req, rep)) {
+				return;
+			  }
+#endif
+#endif
 		  }
 		  if (!bHaveLoadedgzip)
 		  {

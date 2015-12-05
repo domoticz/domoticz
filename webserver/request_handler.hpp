@@ -46,6 +46,9 @@ public:
   /// The directory containing the files to be served.
   std::string doc_root_;
 private:
+#ifdef HAVE_BOOST_FILESYSTEM
+	bool not_modified(std::string full_path, const request &req, reply &rep);
+#endif
 	// Webem link to application code
 	cWebem* myWebem;
 	  //zip support

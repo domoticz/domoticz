@@ -559,7 +559,10 @@ namespace http {
 				return;
 			}
 			_log.Log(LOG_STATUS, "PROXY: Authenticate result: %s.", auth ? "success" : reason.c_str());
-			if (!auth) {
+			if (auth) {
+				sharedData.RestartTCPClients();
+			}
+			else {
 				Stop();
 				return;
 			}
@@ -876,17 +879,17 @@ namespace http {
 		void CProxySharedData::RestartTCPClients()
 		{
 			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				TCPClients[i]->ConnectInternalProxy();
+				if (!TCPClients[i]->isConnected()) {
+					TCPClients[i]->ConnectInternalProxy();
+				}
 			}
 		}
 
 		void CProxySharedData::StopTCPClients()
 		{
-#if 0
 			for (unsigned int i = 0; i < TCPClients.size(); i++) {
-				TCPClients[i]->StopHardwareProxy();
+				TCPClients[i]->DisconnectProxy();
 			}
-#endif
 		}
 	}
 }
