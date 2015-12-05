@@ -440,7 +440,6 @@ namespace http {
 			std::string tokenparam, usernameparam, passwordparam, ipparam;
 			std::string reason = "";
 
-			_log.Log(LOG_NORM, "PROXY: SERV_CONNECT pdu received.");
 			if (!part.GetNextPart(tokenparam)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECT pdu");
 			}
@@ -478,7 +477,6 @@ namespace http {
 			long authenticated;
 			std::string tokenparam, instanceparam, reason;
 
-			_log.Log(LOG_NORM, "PROXY: SERV_CONNECTRESP pdu received.");
 			if (!part.GetNextPart(tokenparam)) {
 				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECTRESP pdu");
 			}
