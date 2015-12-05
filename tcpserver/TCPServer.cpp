@@ -226,9 +226,6 @@ CTCPServer::CTCPServer(const int ID)
 CTCPServer::~CTCPServer()
 {
 	StopServer();
-	if (m_pTCPServer!=NULL)
-		delete m_pTCPServer;
-	m_pTCPServer=NULL;
 }
 
 bool CTCPServer::StartServer(const std::string &address, const std::string &port)
@@ -242,8 +239,9 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 		{
 			exception = false;
 			StopServer();
-			if (m_pTCPServer != NULL)
-				delete m_pTCPServer;
+			if (m_pTCPServer != NULL) {
+				_log.Log(LOG_ERROR, "Stopping TCPServer should delete resources !");
+			}
 			m_pTCPServer = new CTCPServerInt(listen_address, port, this);
 		}
 		catch (std::exception& e)
@@ -263,7 +261,7 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 			tries++;
 		}
 	} while (exception);
-	_log.Log(LOG_NORM, "Started shared server on: %s", listen_address.c_str());
+	_log.Log(LOG_NORM, "Starting shared server on: %s:%s", listen_address.c_str(), port.c_str());
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CTCPServer::Do_Work, this)));
 
@@ -272,33 +270,46 @@ bool CTCPServer::StartServer(const std::string &address, const std::string &port
 
 void CTCPServer::StopServer()
 {
-	if (m_pTCPServer)
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
+	if (m_pTCPServer) {
 		m_pTCPServer->stop();
-	if (m_thread)
+	}
+	if (m_thread) {
 		m_thread->join();
+	}
+	// This is the only time to delete it
+	if (m_pTCPServer) {
+		delete m_pTCPServer;
+		m_pTCPServer = NULL;
+		_log.Log(LOG_STATUS, "TCPServer: shared server stopped");
+	}
 }
 
 void CTCPServer::Do_Work()
 {
-	if (m_pTCPServer)
+	if (m_pTCPServer) {
+		_log.Log(LOG_STATUS, "TCPServer: shared server started...");
 		m_pTCPServer->start();
-	//_log.Log(LOG_STATUS,"TCPServer stopped...");
+	}
 }
 
 void CTCPServer::SendToAll(const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClient* pClient2Ignore)
 {
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		m_pTCPServer->SendToAll(DeviceRowID,pData,Length,pClient2Ignore);
 }
 
 void CTCPServer::SetRemoteUsers(const std::vector<CTCPServerInt::_tRemoteShareUser> &users)
 {
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		m_pTCPServer->SetRemoteUsers(users);
 }
 
 unsigned int CTCPServer::GetUserDevicesCount(const std::string &username)
 {
+	boost::lock_guard<boost::mutex> l(m_server_mutex);
 	if (m_pTCPServer)
 		return m_pTCPServer->GetUserDevicesCount(username);
 	return 0;

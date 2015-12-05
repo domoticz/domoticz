@@ -311,6 +311,11 @@ namespace http {
 					bCreated = true;
 				}
 				break;
+			case 1001:
+				//Wind + Temp + Chill
+				m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND4, 12, 255, 0, "0;N;0;0;0;0", devname);
+				bCreated = true;
+				break;
 			}
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;

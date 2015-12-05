@@ -1830,6 +1830,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			if (deviceNo && !isScene && !isVariable) {
 				boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 				if (m_devicestates.count(deviceNo)) {
+					devicestatesMutexLock.unlock(); // Unlock to avoid recursive lock (because the ScheduleEvent function locks again)
 					if (ScheduleEvent(deviceNo, doWhat, isScene, eventName, sceneType)) {
 						actionsDone = true;
 					}

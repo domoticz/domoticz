@@ -13,7 +13,7 @@
 
 #ifdef WIN32
 	#include <comdef.h>
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	#include <sys/sysinfo.h>
 	#include <iostream>
 	#include <fstream>
@@ -31,6 +31,23 @@
 		long long UsedBlocks;
 		long long AvailBlocks;
 	};
+ 
+//USER_HZ detection, from openssl code
+#ifndef HZ
+# if defined(_SC_CLK_TCK) && (!defined(OPENSSL_SYS_VMS) || __CTRL_VER >= 70000000)
+#  define HZ ((double)sysconf(_SC_CLK_TCK))
+# else
+#  ifndef CLK_TCK
+#   ifndef _BSD_CLK_TCK_ /* FreeBSD hack */
+#    define HZ  100.0
+#   else /* _BSD_CLK_TCK_ */
+#    define HZ ((double)_BSD_CLK_TCK_)
+#   endif
+#  else /* CLK_TCK */
+#   define HZ ((double)CLK_TCK)
+#  endif
+# endif
+#endif
 
 #endif
 
@@ -198,7 +215,7 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 void CHardwareMonitor::GetInternalTemperature()
 {
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand);
-	if (ret.size() < 1)
+	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
 	if (tmpline.find("temp=") == std::string::npos)
@@ -223,7 +240,7 @@ void CHardwareMonitor::GetInternalTemperature()
 void CHardwareMonitor::GetInternalVoltage()
 {
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand);
-	if (ret.size() < 1)
+	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
 	if (tmpline.find("volt=") == std::string::npos)
@@ -245,7 +262,7 @@ void CHardwareMonitor::GetInternalVoltage()
 void CHardwareMonitor::GetInternalCurrent()
 {
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand);
-	if (ret.size() < 1)
+	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
 	if (tmpline.find("curr=") == std::string::npos)
@@ -275,7 +292,7 @@ void CHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Voltage");
 		return;
 	}
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
 	if (bHasInternalTemperature)
@@ -474,7 +491,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		pEnumerator->Release();
 	}
 }
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	double time_so_far()
 	{
 		struct timeval tp;
@@ -576,7 +593,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				if (ret==4)
 				{
 					long long t = (actload1+actload2+actload3)-m_lastloadcpu;
-					double cpuper=((t / ((acttime-m_lastquerytime) * 100)) * 100)/double(m_totcpu);
+					double cpuper=((t / ((acttime-m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 					if (cpuper>0)
 					{
 						sprintf(szTmp,"%.2f", cpuper);
@@ -592,51 +609,58 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		std::map<std::string, _tDUsageStruct> _disks;
 		std::map<std::string, std::string> _dmounts_;
 		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df");
-		std::vector<std::string>::const_iterator ittDF;
-		for (ittDF=_rlines.begin(); ittDF!=_rlines.end(); ++ittDF)
+		if (!_rlines.empty())
 		{
-			char dname[200];
-			char suse[30];
-			char smountpoint[300];
-			long numblock, usedblocks, availblocks;
-			int ret=sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
-			if (ret==6)
+			std::vector<std::string>::const_iterator ittDF;
+			for (ittDF = _rlines.begin(); ittDF != _rlines.end(); ++ittDF)
 			{
-				std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
-				if (it != _dmounts_.end())
+				char dname[200];
+				char suse[30];
+				char smountpoint[300];
+				long numblock, usedblocks, availblocks;
+				int ret = sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+				if (ret == 6)
 				{
-					if (it->second.length() < strlen(smountpoint))
+					std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
+					if (it != _dmounts_.end())
 					{
-						continue;
+						if (it->second.length() < strlen(smountpoint))
+						{
+							continue;
+						}
+					}
+#if defined(__linux__)
+					if (strstr(dname, "/dev") != NULL)
+#elif defined(__CYGWIN32__)
+					if (strstr(smountpoint, "/cygdrive/") != NULL)
+#endif
+					{
+						_tDUsageStruct dusage;
+						dusage.TotalBlocks = numblock;
+						dusage.UsedBlocks = usedblocks;
+						dusage.AvailBlocks = availblocks;
+						dusage.MountPoint = smountpoint;
+						_disks[dname] = dusage;
+						_dmounts_[dname] = smountpoint;
 					}
 				}
-				if (strstr(dname,"/dev")!=NULL)
-				{
-					_tDUsageStruct dusage;
-					dusage.TotalBlocks=numblock;
-					dusage.UsedBlocks=usedblocks;
-					dusage.AvailBlocks=availblocks;
-					dusage.MountPoint=smountpoint;
-					_disks[dname]=dusage;
-					_dmounts_[dname]=smountpoint;
-				}
 			}
-		}
-		int dindex=0;
-		std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
-		for (ittDisks=_disks.begin(); ittDisks!=_disks.end(); ++ittDisks)
-		{
-			_tDUsageStruct dusage=(*ittDisks).second;
-			if (dusage.TotalBlocks>0)
+			int dindex = 0;
+			std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
+			for (ittDisks = _disks.begin(); ittDisks != _disks.end(); ++ittDisks)
 			{
-				double UsagedPercentage=(100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
-				//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
-				sprintf(szTmp,"%.2f", UsagedPercentage);
-				std::string hddname = "HDD " + dusage.MountPoint;
-				UpdateSystemSensor("Load", 2+dindex, hddname, szTmp);
-				dindex++;
+				_tDUsageStruct dusage = (*ittDisks).second;
+				if (dusage.TotalBlocks > 0)
+				{
+					double UsagedPercentage = (100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
+					//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
+					sprintf(szTmp, "%.2f", UsagedPercentage);
+					std::string hddname = "HDD " + dusage.MountPoint;
+					UpdateSystemSensor("Load", 2 + dindex, hddname, szTmp);
+					dindex++;
+				}
 			}
 		}
 	}
-#endif //WIN32/#elif defined __linux__
+#endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__)
 

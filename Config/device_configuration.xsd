@@ -116,6 +116,14 @@
      </xs:restriction>
     </xs:simpleType>
    </xs:attribute>
+   <xs:attribute name='forceUniqueEndpoints' use='optional'>
+    <xs:simpleType>
+     <xs:restriction base='xs:string'>
+      <xs:enumeration value='true'/>
+      <xs:enumeration value='false'/>
+     </xs:restriction>
+    </xs:simpleType>
+   </xs:attribute>
    <xs:attribute name='version' type='xs:string' use='optional'/>
    <xs:attribute name='request_flags' type='xs:string' use='optional'/>
    <xs:attribute name='endpoints' type='xs:string' use='optional'/>

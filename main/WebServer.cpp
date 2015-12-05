@@ -5761,6 +5761,22 @@ namespace http {
 
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, -1,false,0);
 			}
+			else if (cparam == "discomode")
+			{
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				unsigned long long ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Disco Mode", 0, -1, false, 0);
+			}
 			else if (cparam == "discoup")
 			{
 				std::string idx = request::findValue(&req, "idx");
@@ -6570,11 +6586,11 @@ namespace http {
 
 			if (rnvalue != rnOldvalue)
 			{
+				m_mainworker.m_sharedserver.StopServer();
 				if (rnvalue != 0)
 				{
 					char szPort[100];
 					sprintf(szPort, "%d", rnvalue);
-					m_mainworker.m_sharedserver.StopServer();
 					m_mainworker.m_sharedserver.StartServer("::", szPort);
 					m_mainworker.LoadSharedUsers();
 				}

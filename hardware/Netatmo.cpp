@@ -55,8 +55,8 @@ struct _tNetatmoDevice
 };
 
 CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string& password) :
-m_username(username),
-m_password(password)
+m_username(CURLEncode::URLEncode(username)),
+m_password(CURLEncode::URLEncode(password))
 {
 	m_nextRefreshTs = mytime(NULL);
 	m_isLogged = false;

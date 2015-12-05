@@ -980,7 +980,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		EditLightDevice = function(idx,name,description,stype,switchtype,addjvalue,addjvalue2,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected)
+		EditLightDevice = function(idx,name,description,stype,switchtype,addjvalue,addjvalue2,isslave,customimage,devsubtype,strParam1,strParam2,bIsProtected,strUnit)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -989,6 +989,7 @@ define(['app'], function (app) {
 			$.devIdx=idx;
 			$.isslave=isslave;
 			$.stype=stype;
+			$.strUnit=strUnit;
 
 			var oTable;
 			
@@ -1032,7 +1033,7 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LedColor").hide();
 			}
-			if ($.bIsRGB==true) {
+			if (($.bIsRGB==true || $.bIsRGBW==true) && $.strUnit =="0") {
 				$("#lightcontent #optionsRGB").show();
 			}
 			else {
@@ -2221,7 +2222,7 @@ define(['app'], function (app) {
 						'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name)  + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
 				  if (permissions.hasPermission("Admin")) {
 					  xhtm+=
-							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\', ' + item.Protected +');" data-i18n="Edit">Edit</a> ';
+							'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal +', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\',' + item.Protected + ',' + item.Unit + ');" data-i18n="Edit">Edit</a> ';
 								if (bAddTimer == true) {
 											if (item.Timers == "true") {
 												xhtm+='<a class="btnsmall-sel" onclick="ShowTimers(' + item.idx + ',\'' + escape(item.Name) + '\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Timers">Timers</a> ';
@@ -2303,8 +2304,12 @@ define(['app'], function (app) {
 								drop: function() {
 									var myid=$(this).attr("id");
 									$.devIdx.split(' ');
+									var roomid = $("#lightcontent #comboroom option:selected").val();
+									if (typeof roomid == 'undefined') {
+										roomid=0;
+									}
 									$.ajax({
-										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
 										 async: false, 
 										 dataType: 'json',
 										 success: function(data) {
@@ -2518,7 +2523,7 @@ define(['app'], function (app) {
 				$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
 				for (ii=0; ii<tothousecodes; ii++)
 				{
-					$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode').append($('<option></option>').val(65+ii).html(String.fromCharCode(65+ii)));
+					$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode').append($('<option></option>').val(41+ii).html(String.fromCharCode(65+ii)));
 				}
 				for (ii=1; ii<totunits+1; ii++)
 				{
