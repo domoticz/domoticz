@@ -18,7 +18,7 @@ m_username(username), m_password(password), m_szIPAddress(IPAddress)
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	info = NULL;
-	b_useProxy = IsValidAPIKey(IPAddress);
+	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	b_ProxyConnected = false;
 	m_bIsStarted = false;
 }
@@ -78,6 +78,7 @@ int inet_pton(int af, const char *src, void *dst)
 
 bool DomoticzTCP::StartHardware()
 {
+	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	if (b_useProxy) {
 		return StartHardwareProxy();
 	}
