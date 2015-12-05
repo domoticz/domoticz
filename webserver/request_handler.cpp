@@ -253,6 +253,12 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (is)
 		  {
+#ifdef HAVE_BOOST_FILESYSTEM
+			  // check if file date is still the same since last request
+			  if (not_modified(full_path, req, rep)) {
+				  return;
+			  }
+#endif
 			  bHaveLoadedgzip=true;
 			  rep.bIsGZIP=true;
 			  // Fill out the reply to be sent to the client.
@@ -268,17 +274,17 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (!is)
 		  {
-#ifdef HAVE_BOOST_FILESYSTEM
-			  // check if file date is still the same since last request
-			  if (not_modified(full_path, req, rep)) {
-				  return;
-			  }
-#endif
 			  //maybe its a gz file (and clients browser does not support compression)
 			  full_path += ".gz";
 			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
 			  if (is.is_open())
 			  {
+#ifdef HAVE_BOOST_FILESYSTEM
+				  // check if file date is still the same since last request
+				  if (not_modified(full_path, req, rep)) {
+					  return;
+				  }
+#endif
 				  bHaveLoadedgzip = true;
 				  std::string gzcontent((std::istreambuf_iterator<char>(is)),
 					  (std::istreambuf_iterator<char>()));

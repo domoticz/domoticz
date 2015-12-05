@@ -11,6 +11,12 @@
 #ifndef HTTP_REQUEST_HANDLER_HPP
 #define HTTP_REQUEST_HANDLER_HPP
 
+#if 0
+// RK, one can enable it if the boost::filesystem is available.
+// It allows for If-Not-Modified caching of the app cache.
+#define HAVE_BOOST_FILESYSTEM
+#endif
+
 #include <string>
 #include <vector>
 #include <boost/noncopyable.hpp>
