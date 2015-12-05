@@ -162,6 +162,7 @@ namespace http {
 			void AddTCPClient(DomoticzTCP *master);
 			void RemoveTCPClient(DomoticzTCP *master);
 			void RestartTCPClients();
+			void StopTCPClients();
 			DomoticzTCP *findSlaveConnection(const std::string &token);
 			DomoticzTCP *findSlaveById(const std::string &instanceid);
 		private:
