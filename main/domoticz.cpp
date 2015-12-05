@@ -71,10 +71,10 @@ static void dumpstack(void) {
 
 const char *szHelp=
 	"Usage: Domoticz -www port -verbose x\n"
-	"\t-www port (for example -www 8080)\n"
+	"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
 	"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
 #ifdef NS_ENABLE_SSL
-	"\t-sslwww port (for example -sslwww 443)\n"
+	"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
 	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
 	"\t-sslpass passphrase for private key in certificate\n"
 #endif
@@ -597,6 +597,8 @@ int main(int argc, char**argv)
 			return 1;
 		}
 		std::string wwwport = cmdLine.GetSafeArgument("-sslwww", 0, "443");
+		if (wwwport == "0")
+			wwwport.clear();//HTTPS server disabled
 		m_mainworker.SetSecureWebserverPort(wwwport);
 	}
 	if (cmdLine.HasSwitch("-sslcert"))

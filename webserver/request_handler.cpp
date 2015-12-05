@@ -253,6 +253,12 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (is)
 		  {
+#ifdef HAVE_BOOST_FILESYSTEM
+			  // check if file date is still the same since last request
+			  if (not_modified(full_path, req, rep)) {
+				  return;
+			  }
+#endif
 			  bHaveLoadedgzip=true;
 			  rep.bIsGZIP=true;
 			  // Fill out the reply to be sent to the client.
@@ -268,17 +274,17 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (!is)
 		  {
-#ifdef HAVE_BOOST_FILESYSTEM
-			  // check if file date is still the same since last request
-			  if (not_modified(full_path, req, rep)) {
-				  return;
-			  }
-#endif
 			  //maybe its a gz file (and clients browser does not support compression)
 			  full_path += ".gz";
 			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
 			  if (is.is_open())
 			  {
+#ifdef HAVE_BOOST_FILESYSTEM
+				  // check if file date is still the same since last request
+				  if (not_modified(full_path, req, rep)) {
+					  return;
+				  }
+#endif
 				  bHaveLoadedgzip = true;
 				  std::string gzcontent((std::istreambuf_iterator<char>(is)),
 					  (std::istreambuf_iterator<char>()));
@@ -367,35 +373,18 @@ void request_handler::handle_request(const request& req, reply& rep)
 
   }
 #endif
-  int ExtraHeaders = 0;
-  if (req.keep_alive)
-  {
-	  ExtraHeaders += 2;
-  }
-  if (!bHaveLoadedgzip)
-	  rep.headers.resize(3 + ExtraHeaders);
-  else
-	  rep.headers.resize(4 + ExtraHeaders);
-  
-  int iHeader = 0;
 
-  rep.headers[iHeader].name = "Content-Length";
-  rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-  rep.headers[iHeader].name = "Content-Type";
-  rep.headers[iHeader++].value = mime_types::extension_to_type(extension);
-  rep.headers[iHeader].name = "Access-Control-Allow-Origin";
-  rep.headers[iHeader++].value = "*";
+  reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+  reply::AddHeader(&rep, "Content-Type", mime_types::extension_to_type(extension));
+  reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
   if (req.keep_alive)
   {
-	  rep.headers[iHeader].name = "Connection";
-	  rep.headers[iHeader++].value = "Keep-Alive";
-	  rep.headers[iHeader].name = "Keep-Alive";
-	  rep.headers[iHeader++].value = "max=20, timeout=10";
+  	reply::AddHeader(&rep, "Connection", "Keep-Alive");
+  	reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
   }
   if (bHaveLoadedgzip)
   {
-	  rep.headers[iHeader].name = "Content-Encoding";
-	  rep.headers[iHeader++].value = "gzip";
+	reply::AddHeader(&rep, "Content-Encoding", "gzip");
   }
 }
 

@@ -6595,7 +6595,7 @@ namespace http {
 
 			if (rnvalue != rnOldvalue)
 			{
-				m_mainworker.m_sharedserver.StopServer(); // stop it anyway
+				m_mainworker.m_sharedserver.StopServer();
 				if (rnvalue != 0)
 				{
 					char szPort[100];

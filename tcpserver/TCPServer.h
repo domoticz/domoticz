@@ -116,6 +116,7 @@ public:
 	CTCPServerProxied *GetProxiedServer();
 #endif
 private:
+	boost::mutex m_server_mutex;
 	CTCPServerInt *m_pTCPServer;
 #ifndef NOCLOUD
 	CTCPServerProxied *m_pProxyServer;

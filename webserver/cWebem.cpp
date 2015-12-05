@@ -678,7 +678,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		rep.content.append(retstr.c_str(), retstr.size());
 
 		std::string strMimeType=mime_types::extension_to_type(extension);
-		int extraheaders=0;
 		if (session.outputfilename!="")
 		{
 			std::size_t last_dot_pos = session.outputfilename.find_last_of(".");
@@ -687,58 +686,36 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 				extension = session.outputfilename.substr(last_dot_pos + 1);
 				strMimeType=mime_types::extension_to_type(extension);
 			}
-			extraheaders=1;
-		}
-		if (req.keep_alive) {
-			extraheaders += 2;
 		}
 
-		int iHeader = 0;
 		if (!boost::algorithm::starts_with(strMimeType, "image"))
 		{
-			rep.headers.resize(5 + extraheaders);
-			rep.headers[iHeader].name = "Content-Length";
-			rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-			rep.headers[iHeader].name = "Content-Type";
-			rep.headers[iHeader].value = strMimeType;
-			rep.headers[iHeader++].value += ";charset=UTF-8"; //ISO-8859-1
-			rep.headers[iHeader].name = "Cache-Control";
-			rep.headers[iHeader++].value = "no-cache";
-			rep.headers[iHeader].name = "Pragma";
-			rep.headers[iHeader++].value = "no-cache";
-			rep.headers[iHeader].name = "Access-Control-Allow-Origin";
-			rep.headers[iHeader++].value = "*";
+			reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+			reply::AddHeader(&rep, "Content-Type", strMimeType + ";charset=UTF-8");
+			reply::AddHeader(&rep, "Cache-Control", "no-cache");
+			reply::AddHeader(&rep, "Pragma", "no-cache");
+			reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
 			if (req.keep_alive) {
-				rep.headers[iHeader].name = "Connection";
-				rep.headers[iHeader++].value = "Keep-Alive";
-				rep.headers[iHeader].name = "Keep-Alive";
-				rep.headers[iHeader++].value = "max=20, timeout=10";
+				reply::AddHeader(&rep, "Connection", "Keep-Alive");
+				reply::AddHeader(&rep, "Keep-Alive", "max=20,l timeout=10");
 			}
 			if (session.outputfilename != "")
 			{
-				rep.headers[iHeader].name = "Content-Disposition";
-				rep.headers[iHeader++].value = "attachment; filename=" + session.outputfilename;
+				reply::AddHeader(&rep, "Content-Disposition", "attachment; filename=" + session.outputfilename);
 			}
 		}
 		else
 		{
-			rep.headers.resize(3 + extraheaders);
-			rep.headers[iHeader].name = "Content-Length";
-			rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-			rep.headers[iHeader].name = "Content-Type";
-			rep.headers[iHeader++].value = strMimeType;
-			rep.headers[iHeader].name = "Cache-Control";
-			rep.headers[iHeader++].value = "max-age=3600, public";
+			reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+			reply::AddHeader(&rep, "Content-Type", strMimeType);
+			reply::AddHeader(&rep, "Cache-Control", "max-age=3600, public");
 			if (req.keep_alive) {
-				rep.headers[iHeader].name = "Connection";
-				rep.headers[iHeader++].value = "Keep-Alive";
-				rep.headers[iHeader].name = "Keep-Alive";
-				rep.headers[iHeader++].value = "max=20, timeout=10";
+				reply::AddHeader(&rep, "Connection", "Keep-Alive");
+				reply::AddHeader(&rep, "Keep-Alive", "max=20,l timeout=10");
 			}
 			if (session.outputfilename != "")
 			{
-				rep.headers[iHeader].name = "Content-Disposition";
-				rep.headers[iHeader++].value = "attachment; filename=" + session.outputfilename;
+				reply::AddHeader(&rep, "Content-Disposition", "attachment; filename=" + session.outputfilename);
 			}
 		}
 		return true;
@@ -760,32 +737,20 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	}
 	cUTF utf( wret.c_str() );
 
-	int extraheaders = 0;
-	if (req.keep_alive) {
-		extraheaders += 2;
-	}
-
 	rep.status = reply::ok;
 	rep.content.append(utf.get8(), strlen(utf.get8()));
-	rep.headers.resize(5 + extraheaders);
 
-	int iHeader = 0;
-	rep.headers[iHeader].name = "Content-Length";
-	rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-	rep.headers[iHeader].name = "Content-Type";
-	rep.headers[iHeader].value = mime_types::extension_to_type(extension);
-	rep.headers[iHeader++].value += ";charset=UTF-8";
-	rep.headers[iHeader].name = "Cache-Control";
-	rep.headers[iHeader++].value = "no-cache";
-	rep.headers[iHeader].name = "Pragma";
-	rep.headers[iHeader++].value = "no-cache";
-	rep.headers[iHeader].name = "Access-Control-Allow-Origin";
-	rep.headers[iHeader++].value = "*";
+	reply::AddHeader(&rep, "Connection", "Keep-Alive");
+
+	reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+	reply::AddHeader(&rep, "Content-Type", mime_types::extension_to_type(extension) + "; charset=UTF-8");
+	reply::AddHeader(&rep, "Cache-Control", "no-cache");
+	reply::AddHeader(&rep, "Pragma", "no-cache");
+	reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
+
 	if (req.keep_alive) {
-		rep.headers[iHeader].name = "Connection";
-		rep.headers[iHeader++].value = "Keep-Alive";
-		rep.headers[iHeader].name = "Keep-Alive";
-		rep.headers[iHeader++].value = "max=20, timeout=10";
+		reply::AddHeader(&rep, "Connection", "Keep-Alive");
+		reply::AddHeader(&rep, "Keep-Alive", "max=20,l timeout=10");
 	}
 	return true;
 }
@@ -1150,13 +1115,10 @@ char *make_web_time(const time_t rawtime)
 
 void cWebemRequestHandler::send_remove_cookie(reply& rep)
 {
-	size_t ahsize = rep.headers.size();
-	rep.headers.resize(ahsize + 1);
-	rep.headers[ahsize].name = "Set-Cookie";
 	std::stringstream sstr;
 	sstr << "SID=none";
 	sstr << "; path=/; Expires=" << make_web_time(0);
-	rep.headers[ahsize].value = sstr.str();
+	reply::AddHeader(&rep, "Set-Cookie", sstr.str(), false);
 }
 
 std::string cWebemRequestHandler::generateSessionID()
@@ -1212,30 +1174,22 @@ std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session
 
 void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 {
-	int ahsize = rep.headers.size();
-	rep.headers.resize(ahsize + 1);
-	rep.headers[ahsize].name = "Set-Cookie";
 	std::stringstream sstr;
 	sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
 	sstr << "; path=/; Expires=" << make_web_time(session.expires);
-	rep.headers[ahsize].value = sstr.str();
+	reply::AddHeader(&rep, "Set-Cookie", sstr.str(), false);
 }
 
 void cWebemRequestHandler::send_authorization_request(reply& rep)
 {
 	rep.status = reply::unauthorized;
-	size_t ahsize = rep.headers.size();
-	rep.headers.resize(ahsize+2);
-	rep.headers[ahsize].name = "Content-Length";
-	rep.headers[ahsize].value = boost::lexical_cast<std::string>(rep.content.size());
-	rep.headers[ahsize+1].name = "WWW-Authenticate";
-
+	reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 	char szAuthHeader[200];
 	sprintf(szAuthHeader,
 		"Basic "
 		"realm=\"%s\"",
 		myWebem->m_DigistRealm.c_str());
-	rep.headers[ahsize+1].value = szAuthHeader;
+	reply::AddHeader(&rep, "WWW-Authenticate", szAuthHeader);
 }
 
 bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
@@ -1271,10 +1225,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 
 				rep.headers[0].value = szSize;
 				//Add gzip header
-				int ohsize=rep.headers.size();
-				rep.headers.resize(ohsize+1);
-				rep.headers[ohsize].name = "Content-Encoding";
-				rep.headers[ohsize].value = "gzip";
+				reply::AddHeader(&rep, "Content-Encoding", "gzip");
 				return true;
 			}
 		}
@@ -1600,6 +1551,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			|| rep.headers[1].value == "text/plain"
 			|| rep.headers[1].value == "text/css"
 			|| rep.headers[1].value == "text/javascript"
+			|| rep.headers[1].value == "application/javascript"
 			)
 		{
 			// check if content is not gzipped, include won´t work with non-text content
@@ -1623,14 +1575,8 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		else if (rep.headers[1].value.find("image/")!=std::string::npos)
 		{
 			//Cache images
-			int theaders = rep.headers.size();
-			rep.headers.resize(theaders + 2);
-
-			rep.headers[theaders].name = "Date";
-			rep.headers[theaders].value = strftime_t("%a, %d %b %Y %H:%M:%S GMT",mytime(NULL));
-
-			rep.headers[theaders + 1].name = "Expires";
-			rep.headers[theaders + 1].value = "Sat, 26 Dec 2099 11:40:31 GMT";
+			reply::AddHeader(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
+			reply::AddHeader(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
 		}
 	}
 	else
