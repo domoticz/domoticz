@@ -66,6 +66,10 @@ namespace http {
 		};
 
 
+#define ONPDU(type) case type: Handle##type(pdu); break;
+#define PDUPROTO(type) virtual void Handle##type(ProxyPdu &pdu);
+#define PDUFUNCTION(type) void CProxyClient::Handle##type(ProxyPdu &pdu)
+
 		class CProxyClient {
 		public:
 			CProxyClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context, http::server::cWebem *webEm);
@@ -94,8 +98,19 @@ namespace http {
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
 			void LoginToService();
 
+			PDUPROTO(PDU_REQUEST)
+			PDUPROTO(PDU_ASSIGNKEY)
+			PDUPROTO(PDU_ENQUIRE)
+			PDUPROTO(PDU_AUTHRESP)
+			PDUPROTO(PDU_SERV_CONNECT)
+			PDUPROTO(PDU_SERV_DISCONNECT)
+			PDUPROTO(PDU_SERV_CONNECTRESP)
+			PDUPROTO(PDU_SERV_RECEIVE)
+			PDUPROTO(PDU_SERV_SEND)
+			PDUPROTO(PDU_SERV_ROSTERIND)
+				void GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
+#if 0
 			void HandleRequest(ProxyPdu *pdu);
-			void GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void HandleAssignkey(ProxyPdu *pdu);
 			void HandleEnquire(ProxyPdu *pdu);
 			void HandleAuthresp(ProxyPdu *pdu);
@@ -105,6 +120,7 @@ namespace http {
 			void HandleServReceive(ProxyPdu *pdu);
 			void HandleServSend(ProxyPdu *pdu);
 			void HandleServRosterInd(ProxyPdu *pdu);
+#endif
 			void SendServDisconnect(const std::string &token, int reason);
 			void PduHandler(ProxyPdu &pdu);
 
