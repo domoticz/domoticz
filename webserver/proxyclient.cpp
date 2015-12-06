@@ -11,6 +11,14 @@
 extern std::string szAppVersion;
 
 #define TIMEOUT 60
+#define ADDPDUSTRING(value) parameters.AddPart(value)
+#define ADDPDUSTRINGBINARY(value) parameters.AddPart(value, false)
+#define ADDPDULONG(value) parameters.AddLong(value)
+#define ADDPDUBINARY(value, length) parameters.AddPart((void *)value, length)
+#define GETPDUSTRING(value) std::string value; if (!part.GetNextPart(value)) { _log.Log(LOG_ERROR, "PROXY: Invalid request reading %s", pduname); return; }
+#define GETPDUSTRINGBINARY(value) std::string value; if (!part.GetNextPart(value, false)) { _log.Log(LOG_ERROR, "PROXY: Invalid request reading %s", pduname); return; }
+#define GETPDULONG(value) long value; if (!part.GetNextLong(value)) { _log.Log(LOG_ERROR, "PROXY: Invalid request reading %s", pduname); return; }
+#define GETPDUBINARY(value, length) unsigned char *value; size_t length; if (!part.GetNextPart((void **)&value, &length)) { _log.Log(LOG_ERROR, "PROXY: Invalid request reading %s", pduname); return; }
 
 namespace http {
 	namespace server {
@@ -50,8 +58,8 @@ namespace http {
 			/* data from slave to master */
 			CValueLengthPart parameters;
 
-			parameters.AddPart(token);
-			parameters.AddPart((void *)pData, Length);
+			ADDPDUSTRING(token);
+			ADDPDUBINARY(pData, Length);
 
 			MyWrite(PDU_SERV_RECEIVE, parameters);
 		}
@@ -61,8 +69,8 @@ namespace http {
 			/* data from master to slave */
 			CValueLengthPart parameters;
 
-			parameters.AddPart(token);
-			parameters.AddPart((void *)pData, Length);
+			ADDPDUSTRING(token);
+			ADDPDUBINARY(pData, Length);
 
 			MyWrite(PDU_SERV_SEND, parameters);
 		}
@@ -122,34 +130,27 @@ namespace http {
 			}
 		}
 
+		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
+		{
+			if (error) {
+				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
+			}
+			writeCon.notify_one();
+		}
+
 		void CProxyClient::WriteThread()
 		{
 			std::vector<boost::asio::const_buffer> _writebuf;
 			ProxyPdu *writePdu;
 
 			while ((writePdu = writeQ.Take()) != NULL) {
-				_writebuf.clear();
+				boost::mutex::scoped_lock l(writeMutex);
 				_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
-				try {
-					boost::asio::write(_socket, _writebuf);
-#ifdef WIN32
-					boost::this_thread::sleep_for(boost::chrono::milliseconds(100)); // for peace of mind of openssl (workaround for openssl bug)
-#endif
-				}
-				catch (std::exception& e) {
-					if (doStop) {
-						// exit thread
-						return;
-					}
-					_log.Log(LOG_ERROR, "PROXY: Write error, reconnecting: %s", e.what());
-					// Initiate graceful connection closure.
-					_socket.lowest_layer().close();
-					// we are disconnected, reconnect
-					boost::this_thread::sleep_for(boost::chrono::seconds(10));
-					Reconnect();
-				}
+				boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+				writeCon.wait(l);
 				delete writePdu;
 			}
+			// end of thread
 		}
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
@@ -159,15 +160,6 @@ namespace http {
 			}
 			ProxyPdu *writePdu = new ProxyPdu(type, &parameters);
 			writeQ.Put(writePdu);
-#if 0
-			boost::mutex::scoped_lock lock(write_mutex);
-			std::vector<boost::asio::const_buffer> _writebuf;
-			_writebuf.clear();
-			ProxyPdu writePdu(type, parameters);
-
-			_writebuf.push_back(boost::asio::buffer(writePdu.content(), writePdu.length()));
-			boost::asio::write(_socket, _writebuf);
-#endif
 		}
 
 		void CProxyClient::LoginToService()
@@ -179,12 +171,14 @@ namespace http {
 			ReadMore();
 			// send authenticate pdu
 			CValueLengthPart parameters;
-			parameters.AddPart(_apikey);
-			parameters.AddPart(instanceid);
-			parameters.AddPart(_password);
-			parameters.AddPart(szAppVersion);
-			parameters.AddLong(_allowed_subsystems);
-			parameters.AddLong(protocol_version);
+
+			ADDPDUSTRING(_apikey);
+			ADDPDUSTRING(instanceid);
+			ADDPDUSTRING(_password);
+			ADDPDUSTRING(szAppVersion);
+			ADDPDULONG(_allowed_subsystems);
+			ADDPDULONG(protocol_version);
+
 			MyWrite(PDU_AUTHENTICATE, parameters);
 		}
 
@@ -280,46 +274,23 @@ namespace http {
 			boost::asio::mutable_buffers_1 _buf(NULL, 0);
 			/// The reply to be sent back to the client.
 			http::server::reply reply_;
-			// we number the request, because we can send back asynchronously
-			long requestid;
 
 			// get common parts for the different subsystems
 			CValueLengthPart part(pdu);
 
-			// request parts
-			std::string originatingip, requesturl, requestheaders, requestbody;
-			long subsystem;
-			std::string responseheaders;
-			std::string request;
+			std::string request, responseheaders;
 			CValueLengthPart parameters; // response parameters
 
-			if (!part.GetNextPart(originatingip)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid request");
-				return;
-			}
-			if (!part.GetNextLong(subsystem)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid request");
-				return;
-			}
+			GETPDUSTRING(originatingip);
+			GETPDULONG(subsystem);
 
-			switch (subsystem) {
-			case SUBSYSTEM_HTTP:
+			if (subsystem == SUBSYSTEM_HTTP) {
 				// "normal web request", get parameters
-				if (!part.GetNextPart(requesturl)) {
-					_log.Log(LOG_ERROR, "PROXY: Invalid request");
-					return;
-				}
-				if (!part.GetNextPart(requestheaders)) {
-					_log.Log(LOG_ERROR, "PROXY: Invalid request");
-					return;
-				}
-				if (!part.GetNextPart(requestbody, false)) {
-					_log.Log(LOG_ERROR, "PROXY: Invalid request");
-					return;
-				}
-				if (!part.GetNextLong(requestid)) {
-					requestid = 0;
-				}
+				GETPDUSTRING(requesturl);
+				GETPDUSTRING(requestheaders);
+				GETPDUSTRINGBINARY(requestbody);
+				// we number the request, because we can send back asynchronously
+				GETPDULONG(requestid);
 
 				if (requestbody.size() > 0) {
 					request = "POST ";
@@ -341,32 +312,26 @@ namespace http {
 				// assemble response
 				responseheaders = GetResponseHeaders(reply_);
 
-
-				parameters.AddLong(reply_.status);
-				parameters.AddPart(responseheaders);
-				parameters.AddPart(reply_.content);
-				parameters.AddLong(requestid);
+				ADDPDULONG(reply_.status);
+				ADDPDUSTRING(responseheaders);
+				ADDPDUSTRINGBINARY(reply_.content);
+				ADDPDULONG(requestid);
 
 				// send response to proxy
 				MyWrite(PDU_RESPONSE, parameters);
-				break;
-			default:
+			}
+			else {
 				// unknown subsystem
-				_log.Log(LOG_ERROR, "PROXY: Got pdu for unknown subsystem %d.", subsystem);
-				break;
+				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %d.", subsystem);
 			}
 		}
 
 		PDUFUNCTION(PDU_ASSIGNKEY)
 		{
 			// get our new api key
-			CValueLengthPart parameters(pdu);
-			std::string newapi;
+			CValueLengthPart part(pdu);
 
-			if (!parameters.GetNextPart(newapi)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid request while obtaining API key");
-				return;
-			}
+			GETPDUSTRING(newapi);
 			_log.Log(LOG_STATUS, "PROXY: We were assigned an instance id: %s.\n", newapi.c_str());
 			sharedData.SetInstanceId(newapi);
 			// re-login with the new instance id
@@ -385,11 +350,9 @@ namespace http {
 		PDUFUNCTION(PDU_SERV_ROSTERIND)
 		{
 			CValueLengthPart part(pdu);
-			std::string c_slave;
 
-			if (!part.GetNextPart(c_slave)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_ROSTERIND pdu");
-			}
+			GETPDUSTRING(c_slave);
+
 			_log.Log(LOG_STATUS, "PROXY: Notification received: slave %s online now.", c_slave.c_str());
 			DomoticzTCP *slave = sharedData.findSlaveById(c_slave);
 			if (slave) {
@@ -400,20 +363,14 @@ namespace http {
 		PDUFUNCTION(PDU_SERV_DISCONNECT)
 		{
 			if (!(_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ)) {
-				_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed, denying disconnect request.");
+				_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed in settings, denying disconnect request.");
 				return;
 			}
 			CValueLengthPart part(pdu);
-			std::string tokenparam;
-			long reason;
 			bool success;
 
-			if (!part.GetNextPart(tokenparam)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_DISCONNECT pdu");
-			}
-			if (!part.GetNextLong(reason)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_DISCONNECT pdu");
-			}
+			GETPDUSTRING(tokenparam);
+			GETPDULONG(reason);
 			// see if we are slave
 			success = m_pDomServ->OnDisconnect(tokenparam);
 			if (success) {
@@ -436,25 +393,15 @@ namespace http {
 			}
 			CValueLengthPart part(pdu);
 			CValueLengthPart parameters;
-			long authenticated, protocol_version;
-			std::string tokenparam, usernameparam, passwordparam, ipparam;
+			long authenticated;
 			std::string reason = "";
 
-			if (!part.GetNextPart(tokenparam)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECT pdu");
-			}
-			if (!part.GetNextPart(usernameparam)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECT pdu");
-			}
-			if (!part.GetNextPart(passwordparam)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECT pdu");
-			}
-			if (!part.GetNextLong(protocol_version)) {
-				protocol_version = 1;
-			}
-			if (!part.GetNextPart(ipparam)) {
-				ipparam = "unknown";
-			}
+			GETPDUSTRING(tokenparam);
+			GETPDUSTRING(usernameparam);
+			GETPDUSTRING(passwordparam);
+			GETPDULONG(protocol_version);
+			GETPDUSTRING(ipparam);
+
 			sharedData.AddConnectedServer(ipparam);
 			if (protocol_version > 3) {
 				authenticated = 0;
@@ -464,31 +411,24 @@ namespace http {
 				authenticated = m_pDomServ->OnNewConnection(tokenparam, usernameparam, passwordparam) ? 1 : 0;
 				reason = authenticated ? "Success" : "Invalid user/password";
 			}
-			parameters.AddPart(tokenparam);
-			parameters.AddPart(sharedData.GetInstanceId());
-			parameters.AddLong(authenticated);
-			parameters.AddPart(reason);
+
+			ADDPDUSTRING(tokenparam);
+			ADDPDUSTRING(sharedData.GetInstanceId());
+			ADDPDULONG(authenticated);
+			ADDPDUSTRING(reason);
+
 			MyWrite(PDU_SERV_CONNECTRESP, parameters);
 		}
 
 		PDUFUNCTION(PDU_SERV_CONNECTRESP)
 		{
 			CValueLengthPart part(pdu);
-			long authenticated;
-			std::string tokenparam, instanceparam, reason;
 
-			if (!part.GetNextPart(tokenparam)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECTRESP pdu");
-			}
-			if (!part.GetNextPart(instanceparam)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECTRESP pdu");
-			}
-			if (!part.GetNextLong(authenticated)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECTRESP pdu");
-			}
-			if (!part.GetNextPart(reason)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_CONNECTRESP pdu");
-			}
+			GETPDUSTRING(tokenparam);
+			GETPDUSTRING(instanceparam);
+			GETPDULONG(authenticated);
+			GETPDUSTRING(reason);
+
 			if (!authenticated) {
 				_log.Log(LOG_ERROR, "PROXY: Could not log in to slave: %s", reason.c_str());
 			}
@@ -502,17 +442,11 @@ namespace http {
 		{
 			/* data from master to slave */
 			CValueLengthPart part(pdu);
-			size_t datalen;
-			unsigned char *data;
-			std::string tokenparam;
 			bool success;
 
-			if (!part.GetNextPart(tokenparam)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_SEND pdu");
-			}
-			if (!part.GetNextPart((void **)&data, &datalen)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_SEND pdu");
-			}
+			GETPDUSTRING(tokenparam);
+			GETPDUBINARY(data, datalen);
+
 			success = m_pDomServ->OnIncomingData(tokenparam, data, datalen);
 			free(data);
 			if (!success) {
@@ -528,16 +462,10 @@ namespace http {
 			}
 			/* data from slave to master */
 			CValueLengthPart part(pdu);
-			std::string tokenparam;
-			unsigned char *data;
-			size_t datalen;
 
-			if (!part.GetNextPart(tokenparam)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_RECEIVE pdu");
-			}
-			if (!part.GetNextPart((void **)&data, &datalen)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid SERV_RECEIVE pdu");
-			}
+			GETPDUSTRING(tokenparam);
+			GETPDUBINARY(data, datalen);
+
 			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
 			if (slave && slave->isConnected()) {
 				slave->FromProxy(data, datalen);
@@ -549,30 +477,23 @@ namespace http {
 		{
 			CValueLengthPart parameters;
 
-			parameters.AddPart(token);
-			parameters.AddLong(reason);
+			ADDPDUSTRING(token);
+			ADDPDULONG(reason);
+
 			MyWrite(PDU_SERV_DISCONNECT, parameters);
 		}
 
 		PDUFUNCTION(PDU_AUTHRESP)
 		{
 			// get auth response (0 or 1)
-			long auth;
-			std::string reason;
 			CValueLengthPart part(pdu);
 
 			// unlock prefs mutex
 			we_locked_prefs_mutex = false;
 			sharedData.UnlockPrefsMutex();
 
-			if (!part.GetNextLong(auth)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid pdu while receiving authentication response");
-				return;
-			}
-			if (!part.GetNextPart(reason)) {
-				_log.Log(LOG_ERROR, "PROXY: Invalid pdu while receiving authentication response");
-				return;
-			}
+			GETPDULONG(auth);
+			GETPDUSTRING(reason);
 			_log.Log(LOG_STATUS, "PROXY: Authenticate result: %s.", auth ? "success" : reason.c_str());
 			if (auth) {
 				sharedData.RestartTCPClients();
@@ -788,10 +709,10 @@ namespace http {
 		{
 			CValueLengthPart parameters;
 
-			parameters.AddPart(instancekey);
-			parameters.AddPart(username);
-			parameters.AddPart(password);
-			parameters.AddLong(protocol_version);
+			ADDPDUSTRING(instancekey);
+			ADDPDUSTRING(username);
+			ADDPDUSTRING(password);
+			ADDPDULONG(protocol_version);
 			MyWrite(PDU_SERV_CONNECT, parameters);
 		}
 
@@ -800,8 +721,9 @@ namespace http {
 			CValueLengthPart parameters;
 			int reason = 2;
 
-			parameters.AddPart(token);
-			parameters.AddLong(reason);
+			ADDPDUSTRING(token);
+			ADDPDULONG(reason);
+
 			MyWrite(PDU_SERV_DISCONNECT, parameters);
 			DomoticzTCP *slave = sharedData.findSlaveConnection(token);
 			if (slave) {
