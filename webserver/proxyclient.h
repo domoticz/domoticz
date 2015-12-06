@@ -7,6 +7,7 @@
 #include <boost/thread.hpp>
 #include <list>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include <boost/thread/condition.hpp>
 #include "proxycommon.h"
 #include "cWebem.h"
@@ -66,9 +67,9 @@ namespace http {
 		};
 
 
-#define ONPDU(type) case type: Handle##type(pdu); break;
-#define PDUPROTO(type) virtual void Handle##type(ProxyPdu &pdu);
-#define PDUFUNCTION(type) void CProxyClient::Handle##type(ProxyPdu &pdu)
+#define ONPDU(type) case type: Handle##type(#type, pdu); break;
+#define PDUPROTO(type) virtual void Handle##type(const char *pduname, ProxyPdu &pdu);
+#define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, ProxyPdu &pdu)
 
 		class CProxyClient {
 		public:
@@ -92,6 +93,10 @@ namespace http {
 
 			void handle_read(const boost::system::error_code& error,
 				size_t bytes_transferred);
+			void handle_write(const boost::system::error_code& error,
+				size_t bytes_transferred);
+			boost::mutex writeMutex;
+			boost::condition_variable writeCon;
 
 			void ReadMore();
 
