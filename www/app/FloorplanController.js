@@ -141,9 +141,7 @@ define(['app'], function (app) {
 				else {
 					$("#floorplancontent").offset({top:0});
 				}
-				//width of Report button is about 77px, this value is used to correct the width of floorplancontent
-                //without this an horizontal scroll bar appears after clicking an icon in floormap and viewing a graph
-                $("#floorplancontent").width($("#main-view").width() - 77).height(wrpHeight);
+				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);
 				if ($scope.debug > 0) $.cachenoty=generate_noty('info', '<b>Window: '+$window.innerWidth+'x'+$window.innerHeight+'</b><br/><b>View: '+$("#floorplancontent").width()+'x'+wrpHeight+'</b>', 10000);
 				$(".imageparent").each(function( i ) { $("#"+$(this).attr('id')+'_svg').width($("#floorplancontent").width()).height(wrpHeight); });
 				if ($scope.FloorplanCount > 1) {
