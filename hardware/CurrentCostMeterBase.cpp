@@ -59,10 +59,15 @@ void CurrentCostMeterBase::ExtractReadings()
 	double type;
 	double reading;
 	
-	if(!ExtractNumberBetweenStrings("<sensor>", "</sensor>", &sensor) || sensor != 0.0)
+	// if we have the sensor tag then only do the whle house one
+	// earlier versions don't have this
+	if(m_buffer.find("<sensor>") != std::string::npos)
 	{
-		// not the whole house sensor, ignore
-		return;
+		if(!ExtractNumberBetweenStrings("<sensor>", "</sensor>", &sensor) || sensor != 0.0)
+		{
+			// not the whole house sensor, ignore
+			return;
+		}
 	}
 
 	if(!ExtractNumberBetweenStrings("<type>", "</type>", &type) || type != 1.0)
