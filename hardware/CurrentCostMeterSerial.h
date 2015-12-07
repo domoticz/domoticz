@@ -12,7 +12,7 @@ public:
     * \throws boost::system::system_error if cannot open the
     * serial device
     */
-	CurrentCostMeterSerial(const int ID, const std::string& devname);
+	CurrentCostMeterSerial(const int ID, const std::string& devname, unsigned int baudRate);
     virtual ~CurrentCostMeterSerial();
 
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length);
@@ -31,5 +31,6 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	std::string m_szSerialPort;
+	unsigned int m_baudRate;
 
 };

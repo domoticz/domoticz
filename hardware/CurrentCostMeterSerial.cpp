@@ -18,9 +18,10 @@
 //
 //Class CurrentCostMeterSerial
 //
-CurrentCostMeterSerial::CurrentCostMeterSerial(const int ID, const std::string& devname):
+CurrentCostMeterSerial::CurrentCostMeterSerial(const int ID, const std::string& devname, unsigned int baudRate):
 	m_stoprequested(false),
-	m_szSerialPort(devname)
+	m_szSerialPort(devname),
+	m_baudRate(m_baudRate)
 {
 	m_HwdID=ID;
 }
@@ -41,7 +42,7 @@ bool CurrentCostMeterSerial::StartHardware()
 		_log.Log(LOG_STATUS,"CurrentCost Smart Meter: Using serial port: %s", m_szSerialPort.c_str());
 		open(
 			m_szSerialPort,
-			57600,
+			m_baudRate,
 			boost::asio::serial_port_base::parity(
 			boost::asio::serial_port_base::parity::none),
 			boost::asio::serial_port_base::character_size(8)
@@ -127,6 +128,44 @@ void CurrentCostMeterSerial::Do_Work()
 			if (sec_counter % 12 == 0) {
 				m_LastHeartbeat=mytime(NULL);
 			}
+		}
+	}
+}
+
+//Webserver helpers
+namespace http {
+	namespace server {
+		char * CWebServer::SetCurrentCostUSBType(WebEmSession & session, const request& req)
+		{
+			m_retstr = "/index.html";
+			if (session.rights != 2)
+			{
+				//No admin user, and not allowed to be here
+				return (char*)m_retstr.c_str();
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "") {
+				return (char*)m_retstr.c_str();
+			}
+
+			std::vector<std::vector<std::string> > result;
+
+			result = m_sql.safe_query("SELECT Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID='%q')", idx.c_str());
+			if (result.size() < 1)
+				return (char*)m_retstr.c_str();
+
+			int Mode1 = atoi(request::findValue(&req, "CCBaudrate").c_str());
+			int Mode2 = 0;
+			int Mode3 = 0;
+			int Mode4 = 0;
+			int Mode5 = 0;
+			int Mode6 = 0;
+			m_sql.UpdateRFXCOMHardwareDetails(atoi(idx.c_str()), Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+
+			m_mainworker.RestartHardware(idx);
+
+			return (char*)m_retstr.c_str();
 		}
 	}
 }

@@ -670,7 +670,12 @@ bool MainWorker::AddHardwareFromParams(
 			}
 			else if (Type == HTYPE_CurrentCostMeter)
 			{
-				pHardware = new CurrentCostMeterSerial(ID, SerialPort);
+				unsigned int baudRate(9600);
+				if (Mode1 == 1)
+				{
+					baudRate = 57600;
+				}
+				pHardware = new CurrentCostMeterSerial(ID, SerialPort, baudRate);
 			}
 		}
 		break;
