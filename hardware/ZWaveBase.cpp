@@ -946,6 +946,8 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					svalue=255;
 				return SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 			}
+			_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+			return false;
 		}
 	}
 	else if ((packettype==pTypeThermostat)&&(subtype==sTypeThermSetpoint))
@@ -961,7 +963,10 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		if (pDevice)
 		{
 			SetThermostatSetPoint(nodeID,instanceID,pDevice->commandClassID,pMeter->temp);
+			return true;
 		}
+		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveClock))
 	{
@@ -984,7 +989,10 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			int minute = tintval;
 
 			SetClock(nodeID, instanceID, pDevice->commandClassID, day, hour, minute);
+			return true;
 		}
+		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatMode))
 	{
@@ -1003,7 +1011,10 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			int tMode = pMeter->intval2;
 			SetThermostatMode(nodeID, instanceID, pDevice->commandClassID, tMode);
+			return true;
 		}
+		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatFanMode))
 	{
@@ -1022,7 +1033,10 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			int tMode = pMeter->intval2;
 			SetThermostatFanMode(nodeID, instanceID, pDevice->commandClassID, tMode);
+			return true;
 		}
+		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 	else if (packettype == pTypeLimitlessLights)
 	{
@@ -1164,6 +1178,11 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
 					return true;
 				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+				return false;
 			}
 		}
 	}

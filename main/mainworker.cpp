@@ -104,7 +104,6 @@
 #include "mainstructs.h"
 
 #ifdef _DEBUG
-	//#define DEBUG_RECEIVE
 	//#define PARSE_RFXCOM_DEVICE_LOG
 	//#define DEBUG_DOWNLOAD
 	//#define DEBUG_RXQUEUE
@@ -819,7 +818,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_THERMOSMART:
-		pHardware = new CThermosmart(ID, Username, Password);
+		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username);
@@ -1887,20 +1886,10 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	size_t Len = pRXCommand[0] + 1;
 
 	int HwdID = pHardware->m_HwdID;
+	_eHardwareTypes HwdType = pHardware->HwdType;
+
 	((CDomoticzHardwareBase *)pHardware)->SetHeartbeatReceived();
 
-#ifdef DEBUG_RECEIVE
-	std::stringstream sstream;
-	sstream << "HwdID: " << HwdID << " (" << pHardware->Name << ")" << " RX: Len: " << std::dec << Len << " ";
-
-	for (size_t ii = 0; ii < Len; ii++)
-	{
-		if (ii != 0)
-			sstream << ":";
-		sstream << HEX((unsigned char)pRXCommand[ii]);
-	}
-	_log.Log(LOG_NORM, "%s", sstream.str().c_str());
-#endif
 	char szDate[100];
 #if !defined WIN32
 	// Get a timestamp
@@ -1976,185 +1965,185 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		switch (pRXCommand[1])
 		{
 		case pTypeInterfaceMessage:
-			DeviceRowIdx = decode_InterfaceMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_InterfaceMessage(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeInterfaceControl:
-			DeviceRowIdx = decode_InterfaceControl(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_InterfaceControl(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRecXmitMessage:
-			DeviceRowIdx = decode_RecXmitMessage(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_RecXmitMessage(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUndecoded:
-			DeviceRowIdx = decode_UNDECODED(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_UNDECODED(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting1:
-			DeviceRowIdx = decode_Lighting1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting1(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting2:
-			DeviceRowIdx = decode_Lighting2(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting2(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting3:
-			DeviceRowIdx = decode_Lighting3(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting3(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting4:
-			DeviceRowIdx = decode_Lighting4(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting4(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting5:
-			DeviceRowIdx = decode_Lighting5(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting5(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLighting6:
-			DeviceRowIdx = decode_Lighting6(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lighting6(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCurtain:
-			DeviceRowIdx = decode_Curtain(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Curtain(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBlinds:
-			DeviceRowIdx = decode_BLINDS1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_BLINDS1(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFY:
-			DeviceRowIdx = decode_RFY(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_RFY(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeSecurity1:
-			DeviceRowIdx = decode_Security1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Security1(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeSecurity2:
-			DeviceRowIdx = decode_Security2(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Security2(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeEvohome:
-			DeviceRowIdx = decode_evohome1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_evohome1(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeEvohomeZone:
 		case pTypeEvohomeWater:
-			DeviceRowIdx = decode_evohome2(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_evohome2(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeEvohomeRelay:
-			DeviceRowIdx = decode_evohome3(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_evohome3(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCamera:
-			DeviceRowIdx = decode_Camera1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Camera1(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRemote:
-			DeviceRowIdx = decode_Remote(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Remote(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat: //own type
-			DeviceRowIdx = decode_Thermostat(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Thermostat(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat1:
-			DeviceRowIdx = decode_Thermostat1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Thermostat1(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat2:
-			DeviceRowIdx = decode_Thermostat2(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Thermostat2(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeThermostat3:
-			DeviceRowIdx = decode_Thermostat3(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Thermostat3(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRadiator1:
-			DeviceRowIdx = decode_Radiator1(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Radiator1(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP:
-			DeviceRowIdx = decode_Temp(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Temp(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeHUM:
-			DeviceRowIdx = decode_Hum(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Hum(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_HUM:
-			DeviceRowIdx = decode_TempHum(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_TempHum(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_RAIN:
-			DeviceRowIdx = decode_TempRain(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_TempRain(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBARO:
-			DeviceRowIdx = decode_Baro(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Baro(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_HUM_BARO:
-			DeviceRowIdx = decode_TempHumBaro(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_TempHumBaro(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeTEMP_BARO:
-			DeviceRowIdx = decode_TempBaro(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_TempBaro(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRAIN:
-			DeviceRowIdx = decode_Rain(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Rain(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWIND:
-			DeviceRowIdx = decode_Wind(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Wind(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUV:
-			DeviceRowIdx = decode_UV(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_UV(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeDT:
-			DeviceRowIdx = decode_DateTime(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_DateTime(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCURRENT:
-			DeviceRowIdx = decode_Current(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Current(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeENERGY:
-			DeviceRowIdx = decode_Energy(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Energy(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeCURRENTENERGY:
-			DeviceRowIdx = decode_Current_Energy(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Current_Energy(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGAS:
-			DeviceRowIdx = decode_Gas(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Gas(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWATER:
-			DeviceRowIdx = decode_Water(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Water(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeWEIGHT:
-			DeviceRowIdx = decode_Weight(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Weight(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFXSensor:
-			DeviceRowIdx = decode_RFXSensor(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_RFXSensor(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRFXMeter:
-			DeviceRowIdx = decode_RFXMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_RFXMeter(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeP1Power:
-			DeviceRowIdx = decode_P1MeterPower(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_P1MeterPower(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeP1Gas:
-			DeviceRowIdx = decode_P1MeterGas(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_P1MeterGas(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeUsage:
-			DeviceRowIdx = decode_Usage(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Usage(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeYouLess:
-			DeviceRowIdx = decode_YouLessMeter(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_YouLessMeter(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeAirQuality:
-			DeviceRowIdx = decode_AirQuality(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_AirQuality(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRego6XXTemp:
-			DeviceRowIdx = decode_Rego6XXTemp(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Rego6XXTemp(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeRego6XXValue:
-			DeviceRowIdx = decode_Rego6XXValue(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Rego6XXValue(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeFS20:
-			DeviceRowIdx = decode_FS20(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_FS20(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLux:
-			DeviceRowIdx = decode_Lux(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Lux(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGeneral:
-			DeviceRowIdx = decode_General(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_General(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeChime:
-			DeviceRowIdx = decode_Chime(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Chime(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeBBQ:
-			DeviceRowIdx = decode_BBQ(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_BBQ(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypePOWER:
-			DeviceRowIdx = decode_Power(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_Power(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeLimitlessLights:
-			DeviceRowIdx = decode_LimitlessLights(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_LimitlessLights(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeGeneralSwitch:
-			DeviceRowIdx = decode_GeneralSwitch(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_GeneralSwitch(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		case pTypeHomeConfort:
-			DeviceRowIdx = decode_HomeConfort(pHardware, HwdID, (tRBUF *)pRXCommand);
+			DeviceRowIdx = decode_HomeConfort(HwdID, HwdType, (tRBUF *)pRXCommand);
 			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
@@ -2196,7 +2185,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	sOnDeviceReceived(pHardware->m_HwdID, DeviceRowIdx, m_LastDeviceName, pRXCommand);
 }
 
-unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned char devType=pTypeInterfaceMessage;
 
@@ -2512,7 +2501,7 @@ unsigned long long MainWorker::decode_InterfaceMessage(const CDomoticzHardwareBa
 	return -1;
 }
 
-unsigned long long MainWorker::decode_InterfaceControl(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_InterfaceControl(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned char devType = pTypeInterfaceControl;
 	char szTmp[100];
@@ -2625,17 +2614,14 @@ void MainWorker::decode_BateryLevel(bool bIsInPercentage, unsigned char level)
 	}
 }
 
-unsigned char MainWorker::get_BateryLevel(const CDomoticzHardwareBase *pHardware, bool bIsInPercentage, unsigned char level)
+unsigned char MainWorker::get_BateryLevel(const _eHardwareTypes HwdType, bool bIsInPercentage, unsigned char level)
 {
-	if (pHardware!=NULL)
+	if (
+		(HwdType == HTYPE_RazberryZWave)||
+		(HwdType == HTYPE_OpenZWave)
+		)
 	{
-		if (
-			(pHardware->HwdType == HTYPE_RazberryZWave)||
-			(pHardware->HwdType == HTYPE_OpenZWave)
-			)
-		{
-			bIsInPercentage=true;
-		}
+		bIsInPercentage=true;
 	}
 	unsigned char ret=0;
 	if (bIsInPercentage)
@@ -2688,7 +2674,7 @@ unsigned char MainWorker::get_BateryLevel(const CDomoticzHardwareBase *pHardware
 	return ret;
 }
 
-unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeRAIN;
@@ -2699,7 +2685,7 @@ unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardwar
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->RAIN.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(pHardware,pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
+	unsigned char BatteryLevel = get_BateryLevel(HwdType,pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
 	int Rainrate=(pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
 	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
 	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
@@ -2769,7 +2755,7 @@ unsigned long long MainWorker::decode_Rain(const CDomoticzHardwareBase *pHardwar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[300];
 	unsigned char devType=pTypeWIND;
@@ -2781,7 +2767,7 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->WIND.rssi;
-	unsigned char BatteryLevel=get_BateryLevel(pHardware,pResponse->WIND.subtype==sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
+	unsigned char BatteryLevel=get_BateryLevel(HwdType,pResponse->WIND.subtype==sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
 
 	double dDirection;
 	dDirection = (double)(pResponse->WIND.directionh * 256) + pResponse->WIND.directionl;
@@ -2995,7 +2981,7 @@ unsigned long long MainWorker::decode_Wind(const CDomoticzHardwareBase *pHardwar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeTEMP;
@@ -3013,21 +2999,18 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 		BatteryLevel=100;
 
 	//Override battery level if hardware supports it
-	if (pHardware!=NULL)
+	if (
+		(HwdType == HTYPE_RazberryZWave)||
+		(HwdType == HTYPE_OpenZWave)
+		)
 	{
-		if (
-			(pHardware->HwdType == HTYPE_RazberryZWave)||
-			(pHardware->HwdType == HTYPE_OpenZWave)
-			)
-		{
-			BatteryLevel=pResponse->TEMP.battery_level*10;
-		}
-		else if ((pHardware->HwdType == HTYPE_EnOceanESP2)||(pHardware->HwdType == HTYPE_EnOceanESP3))
-		{
-			BatteryLevel=255;
-			SignalLevel=12;
-			Unit=(pResponse->TEMP.rssi<<4)|pResponse->TEMP.battery_level;
-		}
+		BatteryLevel=pResponse->TEMP.battery_level*10;
+	}
+	else if ((HwdType == HTYPE_EnOceanESP2)||(HwdType == HTYPE_EnOceanESP3))
+	{
+		BatteryLevel=255;
+		SignalLevel=12;
+		Unit=(pResponse->TEMP.rssi<<4)|pResponse->TEMP.battery_level;
 	}
 
 	float temp;
@@ -3160,7 +3143,7 @@ unsigned long long MainWorker::decode_Temp(const CDomoticzHardwareBase *pHardwar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeHUM;
@@ -3176,15 +3159,12 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 	else
 		BatteryLevel=100;
 	//Override battery level if hardware supports it
-	if (pHardware!=NULL)
+	if (
+		(HwdType == HTYPE_RazberryZWave)||
+		(HwdType == HTYPE_OpenZWave)
+		)
 	{
-		if (
-			(pHardware->HwdType == HTYPE_RazberryZWave)||
-			(pHardware->HwdType == HTYPE_OpenZWave)
-			)
-		{
-			BatteryLevel=pResponse->TEMP.battery_level;
-		}
+		BatteryLevel=pResponse->TEMP.battery_level;
 	}
 
 	unsigned char humidity=pResponse->HUM.humidity;
@@ -3281,7 +3261,7 @@ unsigned long long MainWorker::decode_Hum(const CDomoticzHardwareBase *pHardware
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeTEMP_HUM;
@@ -3293,7 +3273,7 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->TEMP_HUM.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(pHardware,pResponse->TEMP_HUM.subtype == sTypeTH8,pResponse->TEMP_HUM.battery_level);
+	unsigned char BatteryLevel = get_BateryLevel(HwdType,pResponse->TEMP_HUM.subtype == sTypeTH8,pResponse->TEMP_HUM.battery_level);
 
 	//Get Channel(Unit)
 	switch (pResponse->TEMP_HUM.subtype)
@@ -3501,7 +3481,7 @@ unsigned long long MainWorker::decode_TempHum(const CDomoticzHardwareBase *pHard
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeTEMP_HUM_BARO;
@@ -3517,15 +3497,12 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 	else
 		BatteryLevel=100;
 	//Override battery level if hardware supports it
-	if (pHardware!=NULL)
+	if (
+		(HwdType == HTYPE_RazberryZWave)||
+		(HwdType == HTYPE_OpenZWave)
+		)
 	{
-		if (
-			(pHardware->HwdType == HTYPE_RazberryZWave)||
-			(pHardware->HwdType == HTYPE_OpenZWave)
-			)
-		{
-			BatteryLevel=pResponse->TEMP.battery_level;
-		}
+		BatteryLevel=pResponse->TEMP.battery_level;
 	}
 
 	float temp;
@@ -3690,7 +3667,7 @@ unsigned long long MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_TempBaro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_TempBaro(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeTEMP_BARO;
@@ -3781,7 +3758,7 @@ unsigned long long MainWorker::decode_TempBaro(const CDomoticzHardwareBase *pHar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_TempRain(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 
@@ -3869,7 +3846,7 @@ unsigned long long MainWorker::decode_TempRain(const CDomoticzHardwareBase *pHar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeUV;
@@ -3980,7 +3957,7 @@ unsigned long long MainWorker::decode_UV(const CDomoticzHardwareBase *pHardware,
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeLighting1;
@@ -4167,7 +4144,7 @@ unsigned long long MainWorker::decode_Lighting1(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeLighting2;
@@ -4272,7 +4249,7 @@ unsigned long long MainWorker::decode_Lighting2(const CDomoticzHardwareBase *pHa
 }
 
 //not in dbase yet
-unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Lighting3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
 	WriteMessageStart();
@@ -4323,7 +4300,7 @@ unsigned long long MainWorker::decode_Lighting3(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Lighting4(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeLighting4;
@@ -4492,7 +4469,7 @@ unsigned long long MainWorker::decode_Lighting4(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeLighting5;
@@ -4893,7 +4870,7 @@ unsigned long long MainWorker::decode_Lighting5(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Lighting6(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeLighting6;
@@ -4962,7 +4939,7 @@ unsigned long long MainWorker::decode_Lighting6(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_HomeConfort(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_HomeConfort(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType = pTypeHomeConfort;
@@ -5040,7 +5017,7 @@ unsigned long long MainWorker::decode_HomeConfort(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[300];
 	_tLimitlessLights *pLed=(_tLimitlessLights*)pResponse;
@@ -5066,7 +5043,7 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
+			HwdID, ID.c_str(), Unit, devType, subType);
 		if (result.size() != 0)
 		{
 			unsigned long long ulID;
@@ -5085,7 +5062,7 @@ unsigned long long MainWorker::decode_LimitlessLights(const CDomoticzHardwareBas
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeChime;
@@ -5209,7 +5186,7 @@ unsigned long long MainWorker::decode_Chime(const CDomoticzHardwareBase *pHardwa
 }
 
 
-unsigned long long MainWorker::decode_UNDECODED(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_UNDECODED(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned char devType=pTypeUndecoded;
 
@@ -5295,7 +5272,7 @@ unsigned long long MainWorker::decode_UNDECODED(const CDomoticzHardwareBase *pHa
 }
 
 
-unsigned long long MainWorker::decode_RecXmitMessage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_RecXmitMessage(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned char devType=pTypeRecXmitMessage;
 	char szTmp[100];
@@ -5340,7 +5317,7 @@ unsigned long long MainWorker::decode_RecXmitMessage(const CDomoticzHardwareBase
 	return -1;
 }
 
-unsigned long long MainWorker::decode_Curtain(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Curtain(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeCurtain;
@@ -5401,7 +5378,7 @@ unsigned long long MainWorker::decode_Curtain(const CDomoticzHardwareBase *pHard
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeBlinds;
@@ -5539,7 +5516,7 @@ unsigned long long MainWorker::decode_BLINDS1(const CDomoticzHardwareBase *pHard
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeRFY;
@@ -5668,7 +5645,7 @@ unsigned long long MainWorker::decode_RFY(const CDomoticzHardwareBase *pHardware
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
@@ -5717,9 +5694,10 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 		Unit=pEvo->EVOHOME2.zone;//should always be non zero
 		dType=pEvo->EVOHOME2.type;
 		dSubType=pEvo->EVOHOME2.subtype;		
-		if(!pHardware)
+
+		CEvohome *pEvoHW = (CEvohome*)GetHardware(HwdID);
+		if(!pEvoHW)
 			return -1;
-		CEvohome *pEvoHW=(CEvohome*)pHardware;//do we have rtti
 		if(dType==pTypeEvohomeWater)
 			name="Hot Water";
 		else 
@@ -5789,7 +5767,7 @@ unsigned long long MainWorker::decode_evohome2(const CDomoticzHardwareBase *pHar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
@@ -5823,9 +5801,9 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 	else
 	{
 		bNewDev=true;
-		if(!pHardware)
+		CEvohome *pEvoHW = (CEvohome*)GetHardware(HwdID);
+		if(!pEvoHW)
 			return -1;
-		CEvohome *pEvoHW=(CEvohome*)pHardware;
 		name=pEvoHW->GetControllerName();
 		if(name.empty())
 			return -1;
@@ -5865,7 +5843,7 @@ unsigned long long MainWorker::decode_evohome1(const CDomoticzHardwareBase *pHar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_evohome3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
@@ -5954,7 +5932,7 @@ unsigned long long MainWorker::decode_evohome3(const CDomoticzHardwareBase *pHar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeSecurity1;
@@ -5965,7 +5943,7 @@ unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHa
 	unsigned char Unit=0;
 	unsigned char cmnd=pResponse->SECURITY1.status;
 	unsigned char SignalLevel=pResponse->SECURITY1.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(pHardware,false, pResponse->SECURITY1.battery_level & 0x0F);
+	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->SECURITY1.battery_level & 0x0F);
 	if (
 		(pResponse->SECURITY1.subtype == sTypeKD101)||
 		(pResponse->SECURITY1.subtype == sTypeSA30)
@@ -6139,7 +6117,7 @@ unsigned long long MainWorker::decode_Security1(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Security2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Security2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType = pTypeSecurity2;
@@ -6150,7 +6128,7 @@ unsigned long long MainWorker::decode_Security2(const CDomoticzHardwareBase *pHa
 	unsigned char Unit = 0;
 	unsigned char cmnd = 0;// pResponse->SECURITY2.cmnd;
 	unsigned char SignalLevel = pResponse->SECURITY2.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(pHardware, false, pResponse->SECURITY2.battery_level & 0x0F);
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->SECURITY2.battery_level & 0x0F);
 
 	unsigned long long DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, m_LastDeviceName);
 	if (DevRowIdx == -1)
@@ -6189,7 +6167,7 @@ unsigned long long MainWorker::decode_Security2(const CDomoticzHardwareBase *pHa
 }
 
 //not in dbase yet
-unsigned long long MainWorker::decode_Camera1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Camera1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
 	WriteMessage("");
@@ -6274,7 +6252,7 @@ unsigned long long MainWorker::decode_Camera1(const CDomoticzHardwareBase *pHard
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeRemote;
@@ -7358,7 +7336,7 @@ unsigned long long MainWorker::decode_Remote(const CDomoticzHardwareBase *pHardw
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Thermostat1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Thermostat1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeThermostat1;
@@ -7439,7 +7417,7 @@ unsigned long long MainWorker::decode_Thermostat1(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Thermostat2(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Thermostat2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType = pTypeThermostat2;
@@ -7499,7 +7477,7 @@ unsigned long long MainWorker::decode_Thermostat2(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Thermostat3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeThermostat3;
@@ -7589,7 +7567,7 @@ unsigned long long MainWorker::decode_Thermostat3(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Radiator1(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Radiator1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType = pTypeRadiator1;
@@ -7658,7 +7636,7 @@ unsigned long long MainWorker::decode_Radiator1(const CDomoticzHardwareBase *pHa
 }
 
 //not in dbase yet
-unsigned long long MainWorker::decode_Baro(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Baro(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
 	WriteMessage("");
@@ -7670,7 +7648,7 @@ unsigned long long MainWorker::decode_Baro(const CDomoticzHardwareBase *pHardwar
 }
 
 //not in dbase yet
-unsigned long long MainWorker::decode_DateTime(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_DateTime(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
 	WriteMessage("");
@@ -7733,7 +7711,7 @@ unsigned long long MainWorker::decode_DateTime(const CDomoticzHardwareBase *pHar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Current(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeCURRENT;
@@ -7744,7 +7722,7 @@ unsigned long long MainWorker::decode_Current(const CDomoticzHardwareBase *pHard
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->CURRENT.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(pHardware,false, pResponse->CURRENT.battery_level & 0x0F);
+	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->CURRENT.battery_level & 0x0F);
 
 	float CurrentChannel1= float((pResponse->CURRENT.ch1h * 256) + pResponse->CURRENT.ch1l) / 10.0f;
 	float CurrentChannel2= float((pResponse->CURRENT.ch2h * 256) + pResponse->CURRENT.ch2l) / 10.0f;
@@ -7795,7 +7773,7 @@ unsigned long long MainWorker::decode_Current(const CDomoticzHardwareBase *pHard
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeENERGY;
@@ -7806,7 +7784,7 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->ENERGY.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(pHardware,false, pResponse->ENERGY.battery_level & 0x0F);
+	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->ENERGY.battery_level & 0x0F);
 
 	long instant;
 
@@ -7845,10 +7823,10 @@ unsigned long long MainWorker::decode_Energy(const CDomoticzHardwareBase *pHardw
 	gdevice.subtype = sTypeKwh;
 	gdevice.floatval1 = (float)instant;
 	gdevice.floatval2 = (float)total;
-	return decode_General(pHardware, HwdID, (const tRBUF*)&gdevice);
+	return decode_General(HwdID, HwdType, (const tRBUF*)&gdevice);
 }
 
-unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypePOWER;
@@ -7938,7 +7916,7 @@ unsigned long long MainWorker::decode_Power(const CDomoticzHardwareBase *pHardwa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeCURRENTENERGY;
@@ -7949,7 +7927,7 @@ unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase
 	unsigned char Unit=0;
 	unsigned char cmnd=0;
 	unsigned char SignalLevel=pResponse->CURRENT_ENERGY.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(pHardware,false, pResponse->CURRENT_ENERGY.battery_level & 0x0F);
+	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->CURRENT_ENERGY.battery_level & 0x0F);
 
 	float CurrentChannel1= float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
 	float CurrentChannel2= float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
@@ -8067,7 +8045,7 @@ unsigned long long MainWorker::decode_Current_Energy(const CDomoticzHardwareBase
 }
 
 //not in dbase yet
-unsigned long long MainWorker::decode_Gas(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Gas(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
 	WriteMessage("");
@@ -8079,7 +8057,7 @@ unsigned long long MainWorker::decode_Gas(const CDomoticzHardwareBase *pHardware
 }
 
 //not in dbase yet
-unsigned long long MainWorker::decode_Water(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Water(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
 	WriteMessage("");
@@ -8090,7 +8068,7 @@ unsigned long long MainWorker::decode_Water(const CDomoticzHardwareBase *pHardwa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Weight(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Weight(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeWEIGHT;
@@ -8145,7 +8123,7 @@ unsigned long long MainWorker::decode_Weight(const CDomoticzHardwareBase *pHardw
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeRFXSensor;
@@ -8158,15 +8136,13 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 	unsigned char SignalLevel=pResponse->RFXSENSOR.rssi;
 	unsigned char BatteryLevel = 255;
 
-	if (pHardware!=NULL)
+	if ((HwdType == HTYPE_EnOceanESP2)||(HwdType == HTYPE_EnOceanESP3))
 	{
-		if ((pHardware->HwdType == HTYPE_EnOceanESP2)||(pHardware->HwdType == HTYPE_EnOceanESP3))
-		{
-			BatteryLevel=255;
-			SignalLevel=12;
-			Unit=(pResponse->RFXSENSOR.rssi<<4)|pResponse->RFXSENSOR.filler;
-		}
+		BatteryLevel=255;
+		SignalLevel=12;
+		Unit=(pResponse->RFXSENSOR.rssi<<4)|pResponse->RFXSENSOR.filler;
 	}
+
 	float temp;
 	int volt=0;
 	switch (pResponse->RFXSENSOR.subtype)
@@ -8189,10 +8165,10 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 		{
 			volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
 			if (
-				(pHardware->HwdType == HTYPE_RFXLAN) ||
-				(pHardware->HwdType == HTYPE_RFXtrx315) ||
-				(pHardware->HwdType == HTYPE_RFXtrx433) ||
-				(pHardware->HwdType == HTYPE_RFXtrx868)
+				(HwdType == HTYPE_RFXLAN) ||
+				(HwdType == HTYPE_RFXtrx315) ||
+				(HwdType == HTYPE_RFXtrx433) ||
+				(HwdType == HTYPE_RFXtrx868)
 				)
 			{
 				volt *= 10;
@@ -8309,7 +8285,7 @@ unsigned long long MainWorker::decode_RFXSensor(const CDomoticzHardwareBase *pHa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_RFXMeter(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned long long DevRowIdx=-1;
 	char szTmp[100];
@@ -8539,7 +8515,7 @@ unsigned long long MainWorker::decode_RFXMeter(const CDomoticzHardwareBase *pHar
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_P1MeterPower(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tP1Power *p1Power=(const _tP1Power*)pResponse;
@@ -8605,7 +8581,7 @@ unsigned long long MainWorker::decode_P1MeterPower(const CDomoticzHardwareBase *
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_P1MeterGas(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_P1MeterGas(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tP1Gas *p1Gas=(const _tP1Gas*)pResponse;
@@ -8648,7 +8624,7 @@ unsigned long long MainWorker::decode_P1MeterGas(const CDomoticzHardwareBase *pH
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_YouLessMeter(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tYouLessMeter *pMeter=(const _tYouLessMeter*)pResponse;
@@ -8694,7 +8670,7 @@ unsigned long long MainWorker::decode_YouLessMeter(const CDomoticzHardwareBase *
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Rego6XXTemp(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Rego6XXTemp(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tRego6XXTemp *pRego=(const _tRego6XXTemp*)pResponse;
@@ -8726,7 +8702,7 @@ unsigned long long MainWorker::decode_Rego6XXTemp(const CDomoticzHardwareBase *p
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Rego6XXValue(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Rego6XXValue(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tRego6XXStatus *pRego=(const _tRego6XXStatus*)pResponse;
@@ -8767,7 +8743,7 @@ unsigned long long MainWorker::decode_Rego6XXValue(const CDomoticzHardwareBase *
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_AirQuality(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_AirQuality(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tAirQualityMeter *pMeter=(const _tAirQualityMeter*)pResponse;
@@ -8818,7 +8794,7 @@ unsigned long long MainWorker::decode_AirQuality(const CDomoticzHardwareBase *pH
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Usage(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Usage(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tUsageMeter *pMeter=(const _tUsageMeter*)pResponse;
@@ -8860,7 +8836,7 @@ unsigned long long MainWorker::decode_Usage(const CDomoticzHardwareBase *pHardwa
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Lux(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Lux(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tLightMeter *pMeter=(const _tLightMeter*)pResponse;
@@ -8902,7 +8878,7 @@ unsigned long long MainWorker::decode_Lux(const CDomoticzHardwareBase *pHardware
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_Thermostat(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tThermostat *pMeter=(const _tThermostat*)pResponse;
@@ -8958,7 +8934,7 @@ unsigned long long MainWorker::decode_Thermostat(const CDomoticzHardwareBase *pH
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tGeneralDevice *pMeter=(const _tGeneralDevice*)pResponse;
@@ -9257,7 +9233,7 @@ unsigned long long MainWorker::decode_General(const CDomoticzHardwareBase *pHard
 	return DevRowIdx;
 }
 
-unsigned long long MainWorker::decode_GeneralSwitch(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_GeneralSwitch(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[200];
 	const _tGeneralSwitch *pSwitch = (const _tGeneralSwitch*)pResponse;
@@ -9290,7 +9266,7 @@ unsigned long long MainWorker::decode_GeneralSwitch(const CDomoticzHardwareBase 
 }
 
 //BBQ sensor has two temperature sensors, add them as two temperature devices
-unsigned long long MainWorker::decode_BBQ(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	char szTmp[100];
 	unsigned char devType=pTypeBBQ;
@@ -9371,7 +9347,7 @@ unsigned long long MainWorker::decode_BBQ(const CDomoticzHardwareBase *pHardware
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
-	decode_Temp(pHardware, HwdID, (const tRBUF*)&tsen.TEMP);
+	decode_Temp(HwdID, HwdType, (const tRBUF*)&tsen.TEMP);
 
 	tsen.TEMP.id1=0;
 	tsen.TEMP.id2=2;
@@ -9381,13 +9357,13 @@ unsigned long long MainWorker::decode_BBQ(const CDomoticzHardwareBase *pHardware
 	tsen.TEMP.temperatureh=(BYTE)(at10/256);
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
-	decode_Temp(pHardware, HwdID, (const tRBUF*)&tsen.TEMP);
+	decode_Temp(HwdID, HwdType, (const tRBUF*)&tsen.TEMP);
 
 	return DevRowIdx;
 }
 
 //not in dbase yet
-unsigned long long MainWorker::decode_FS20(const CDomoticzHardwareBase *pHardware, const int HwdID, const tRBUF *pResponse)
+unsigned long long MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse)
 {
 	unsigned char devType=pTypeFS20;
 
@@ -9878,8 +9854,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	//when level = 0, set switch command to Off
 	if (switchcmd=="Set Level")
 	{
-		if (level > 0)
-			level-=1;
+		//if (level > 0)
+			//level-=1;
 		if (level==0)
 			switchcmd="Off";
 	}
@@ -10726,7 +10702,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	WriteMessage(sTmp.str().c_str(),false);
 	
 	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
-	unsigned long long DeviceRowIdx=decode_evohome1(pHardware, HardwareID, (const tRBUF*)&tsen);
+	unsigned long long DeviceRowIdx=decode_evohome1(HardwareID, pHardware->HwdType, (const tRBUF*)&tsen);
 	WriteMessageEnd();
 	if(DeviceRowIdx==-1)
 		return false;
@@ -11554,7 +11530,7 @@ void MainWorker::SetInternalSecStatus()
 	sTmp << szDate << " (System) ";
 	WriteMessage(sTmp.str().c_str(),false);
 	WriteMessage("Domoticz Security Status",false);
-	unsigned long long DeviceRowIdx=decode_Security1(NULL, 1000, (const tRBUF*)&tsen.SECURITY1);
+	unsigned long long DeviceRowIdx=decode_Security1(1000, HTYPE_System, (const tRBUF*)&tsen.SECURITY1);
 	WriteMessageEnd();
 	m_sharedserver.SendToAll(DeviceRowIdx,(const char*)&tsen,tsen.TEMP.packetlength+1,NULL);
 }
