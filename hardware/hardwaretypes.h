@@ -117,9 +117,10 @@
 #define sSwitchTypeAvidsen			0x37
 #define sSwitchTypeBofu				0x38
 #define sSwitchTypeBrel				0x39
-#define sSwitchTypeSomeFy			0x3a
+#define sSwitchTypeRTS   			0x3a
 #define sSwitchTypeElroDB			0x3b
 #define sSwitchTypeAOK				0x3c
+#define sSwitchTypeUnitec			0x3d
 
 //Switch commands
 #define gswitch_sOff				0x00
