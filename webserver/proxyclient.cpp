@@ -134,7 +134,7 @@ namespace http {
 
 		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 		{
-			boost::mutex::scoped_lock l(writeMutex);
+			boost::unique_lock<boost::mutex>(writeMutex);
 			if (bytes_transferred < writePdu->length()) {
 				_log.Log(LOG_ERROR, "PROXY: Only write %ld of %ld bytes.", bytes_transferred, writePdu->length());
 			}
@@ -160,7 +160,7 @@ namespace http {
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
 		{
-			boost::mutex::scoped_lock l(writeMutex);
+			boost::unique_lock<boost::mutex>(writeMutex);
 			if (!b_Connected) {
 				return;
 			}
