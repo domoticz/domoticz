@@ -157,6 +157,7 @@ static time_t last_write_time(const std::string &path)
 
 bool request_handler::not_modified(std::string full_path, const request &req, reply &rep)
 {
+	return false; // we disable this for now, until the stat function works
 	time_t last_written_time = last_write_time(full_path);
 	if (last_written_time == 0) {
 		// file system doesn't support this, don't enable header
