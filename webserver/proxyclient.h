@@ -67,9 +67,9 @@ namespace http {
 		};
 
 
-#define ONPDU(type) case type: Handle##type(#type, pdu); break;
-#define PDUPROTO(type) virtual void Handle##type(const char *pduname, ProxyPdu &pdu);
-#define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, ProxyPdu &pdu)
+#define ONPDU(type) case type: Handle##type(#type, part); break;
+#define PDUPROTO(type) virtual void Handle##type(const char *pduname, CValueLengthPart &part);
+#define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, CValueLengthPart &part)
 
 		class CProxyClient {
 		public:

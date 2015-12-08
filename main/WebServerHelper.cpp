@@ -158,7 +158,7 @@ namespace http {
 #ifndef NOCLOUD
 		int CWebServerHelper::GetNrMyDomoticzThreads()
 		{
-			int nrThreads = 1; // default value
+			int nrThreads = 3; // default value
 			m_sql.GetPreferencesVar("MyDomoticzNrThreads", nrThreads);
 			return nrThreads;
 		}

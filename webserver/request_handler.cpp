@@ -14,27 +14,26 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_array.hpp>
-#ifdef HAVE_BOOST_FILESYSTEM
-#include <boost/filesystem/operations.hpp>
 #include <time.h>
-#endif
 #include "mime_types.hpp"
 #include "reply.hpp"
 #include "request.hpp"
 #include "cWebem.h"
 #include "GZipHelper.h"
 
+// remove
+#include "../main/Logger.h"
+
 #define ZIPREADBUFFERSIZE (8192)
 
-#ifdef HAVE_BOOST_FILESYSTEM
 #define HTTP_DATE_RFC_1123 "%a, %d %b %Y %H:%M:%S %Z" // Sun, 06 Nov 1994 08:49:37 GMT
 #define HTTP_DATE_RFC_850  "%A, %d-%b-%y %H:%M:%S %Z" // Sunday, 06-Nov-94 08:49:37 GMT
 #define HTTP_DATE_ASCTIME  "%a %b %e %H:%M:%S %Y"     // Sun Nov  6 08:49:37 1994
-#endif
 
 #ifdef WIN32
 // some ported functions
 #define timegm _mkgmtime
+#define stat _stat
 
 extern "C" char* strptime(const char* s,
 	const char* f,
@@ -114,7 +113,6 @@ int request_handler::do_extract_currentfile(unzFile uf, const char* password, st
 }
 #endif
 
-#ifdef HAVE_BOOST_FILESYSTEM
 static time_t convert_from_http_date(const std::string &str)
 {
 	if (str.empty())
@@ -147,13 +145,28 @@ static std::string convert_to_http_date(time_t time)
 	return buffer;
 }
 
+static time_t last_write_time(const std::string &path)
+{
+	struct stat st;
+	if (stat(path.c_str(), &st) == 0) {
+		st.st_mtime;
+	}
+	_log.Log(LOG_ERROR, "stat returned errno = %d", errno);
+	return 0;
+}
+
 bool request_handler::not_modified(std::string full_path, const request &req, reply &rep)
 {
-	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
-	boost::filesystem::path path(full_path);
-	time_t last_written_time = boost::filesystem::last_write_time(path);
+	time_t last_written_time = last_write_time(full_path);
+	if (last_written_time == 0) {
+		// file system doesn't support this, don't enable header
+		_log.Log(LOG_STATUS, "Last-Modified %s: unknown", full_path.c_str());
+		return false;
+	}
 	// propagate timestamp to browser
+	_log.Log(LOG_STATUS, "Last-Modified %s: %s", full_path.c_str(), convert_to_http_date(last_written_time).c_str());
 	reply::AddHeader(&rep, "Last-Modified", convert_to_http_date(last_written_time));
+	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
 	if (NULL == if_modified) {
 		// we have no if-modified header, continue to serve content
 		return false;
@@ -163,15 +176,14 @@ bool request_handler::not_modified(std::string full_path, const request &req, re
 		// content has not been modified since last serve
 		// indicate to use a cached copy to browser
 		reply::AddHeader(&rep, "Connection", "Keep-Alive");
-		reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=60");
-		rep.content = "";
+		reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
+		rep.content.clear();
 		rep.status = reply::not_modified;
 		return true;
 	}
-	// force new content
+	// file is newer, force new content
 	return false;
 }
-#endif
 
 void request_handler::handle_request(const request& req, reply& rep)
 {
@@ -253,12 +265,10 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (is)
 		  {
-#ifdef HAVE_BOOST_FILESYSTEM
-			  // check if file date is still the same since last request
 			  if (not_modified(full_path, req, rep)) {
 				  return;
 			  }
-#endif
+			  // check if file date is still the same since last request
 			  bHaveLoadedgzip=true;
 			  rep.bIsGZIP=true;
 			  // Fill out the reply to be sent to the client.
@@ -279,12 +289,10 @@ void request_handler::handle_request(const request& req, reply& rep)
 			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
 			  if (is.is_open())
 			  {
-#ifdef HAVE_BOOST_FILESYSTEM
 				  // check if file date is still the same since last request
 				  if (not_modified(full_path, req, rep)) {
 					  return;
 				  }
-#endif
 				  bHaveLoadedgzip = true;
 				  std::string gzcontent((std::istreambuf_iterator<char>(is)),
 					  (std::istreambuf_iterator<char>()));
@@ -316,11 +324,9 @@ void request_handler::handle_request(const request& req, reply& rep)
 #if 0
 			  // unfortunately, we cannot cache these files, because there might be
 			  // include codes in it, but otherwise here is the place to add it
-#ifdef HAVE_BOOST_FILESYSTEM
 			  if (not_modified(full_path, req, rep)) {
 				return;
 			  }
-#endif
 #endif
 		  }
 		  if (!bHaveLoadedgzip)
