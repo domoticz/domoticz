@@ -11,6 +11,7 @@
 extern std::string szAppVersion;
 
 #define TIMEOUT 60
+#define WRITE_QUEUE_SIZE 1024
 #define ADDPDUSTRING(value) parameters.AddPart(value)
 #define ADDPDUSTRINGBINARY(value) parameters.AddPart(value, false)
 #define ADDPDULONG(value) parameters.AddLong(value)
@@ -32,8 +33,10 @@ namespace http {
 			b_Connected(false),
 			we_locked_prefs_mutex(false),
 			timeout_(TIMEOUT),
-			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
+			timer_(io_service, boost::posix_time::seconds(TIMEOUT)),
+			writeQ(WRITE_QUEUE_SIZE)
 		{
+			writePdu = NULL;
 			_apikey = "";
 			_password = "";
 			_allowed_subsystems = 0;
@@ -47,7 +50,6 @@ namespace http {
 				doStop = true;
 				return;
 			}
-			m_writeThread = new boost::thread(boost::bind(&CProxyClient::WriteThread, this));
 			m_pWebEm = webEm;
 			m_pDomServ = NULL;
 			Reconnect();
@@ -132,34 +134,48 @@ namespace http {
 
 		void CProxyClient::handle_write(const boost::system::error_code& error, size_t bytes_transferred)
 		{
+			boost::mutex::scoped_lock l(writeMutex);
+			if (bytes_transferred < writePdu->length()) {
+				_log.Log(LOG_ERROR, "PROXY: Only write %ld of %ld bytes.", bytes_transferred, writePdu->length());
+			}
+			delete writePdu;
+			writePdu = NULL;
 			if (error) {
 				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
 			}
-			writeCon.notify_one();
+			ProxyPdu *pdu;
+			if (writeQ.pop(pdu)) {
+				SocketWrite(pdu);
+			}
 		}
 
-		void CProxyClient::WriteThread()
+		void CProxyClient::SocketWrite(ProxyPdu *pdu)
 		{
-			std::vector<boost::asio::const_buffer> _writebuf;
-			ProxyPdu *writePdu;
-
-			while ((writePdu = writeQ.Take()) != NULL) {
-				boost::mutex::scoped_lock l(writeMutex);
-				_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
-				boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-				writeCon.wait(l);
-				delete writePdu;
-			}
-			// end of thread
+			// do not call directly, use MyWrite()
+			writePdu = pdu;
+			_writebuf.clear(); // make sure
+			_writebuf.push_back(boost::asio::buffer(writePdu->content(), writePdu->length()));
+			boost::asio::async_write(_socket, _writebuf, boost::bind(&CProxyClient::handle_write, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 
 		void CProxyClient::MyWrite(pdu_type type, CValueLengthPart &parameters)
 		{
+			boost::mutex::scoped_lock l(writeMutex);
 			if (!b_Connected) {
 				return;
 			}
-			ProxyPdu *writePdu = new ProxyPdu(type, &parameters);
-			writeQ.Put(writePdu);
+			ProxyPdu *pdu= new ProxyPdu(type, &parameters);
+			if (writePdu) {
+				// write in progress, add to queue
+				if (!writeQ.push(pdu)) {
+					_log.Log(LOG_ERROR, "PROXY: Too many writes at a time, dropping packet.");
+					delete pdu;
+					return;
+				}
+			}
+			else {
+				SocketWrite(pdu);
+			}
 		}
 
 		void CProxyClient::LoginToService()
@@ -623,8 +639,6 @@ namespace http {
 
 			doStop = true;
 			// signal end of WriteThread
-			writeQ.Put(NULL);
-			m_writeThread->join();
 			_socket.lowest_layer().close();
 		}
 
