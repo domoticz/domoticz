@@ -5,10 +5,9 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
+#include <boost/lockfree/queue.hpp>
 #include <list>
 #include <boost/thread/mutex.hpp>
-#include <boost/thread/condition_variable.hpp>
-#include <boost/thread/condition.hpp>
 #include "proxycommon.h"
 #include "cWebem.h"
 #include "request_handler.hpp"
@@ -29,47 +28,9 @@ class DomoticzTCP;
 namespace http {
 	namespace server {
 
-		template <typename T>
-		class BlockingQueue
-		{
-		public:
-			BlockingQueue() : queue(), mutex(), cond() {}
-			~BlockingQueue() {}
-
-		public:
-
-			void Put(T obj)
-			{
-				boost::mutex::scoped_lock lock(mutex);
-				queue.push_back(obj);
-				cond.notify_all();
-			}
-
-			T Take()
-			{
-				boost::mutex::scoped_lock lock(mutex);
-				while (queue.size() == 0)
-				{
-					cond.wait(lock);
-				}
-
-				T value = queue.front();
-				queue.pop_front();
-
-				return value;
-			}
-
-		private:
-			std::list<T> queue;
-			boost::mutex mutex;
-			boost::condition cond;
-
-		};
-
-
-#define ONPDU(type) case type: Handle##type(#type, pdu); break;
-#define PDUPROTO(type) virtual void Handle##type(const char *pduname, ProxyPdu &pdu);
-#define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, ProxyPdu &pdu)
+#define ONPDU(type) case type: Handle##type(#type, part); break;
+#define PDUPROTO(type) virtual void Handle##type(const char *pduname, CValueLengthPart &part);
+#define PDUFUNCTION(type) void CProxyClient::Handle##type(const char *pduname, CValueLengthPart &part)
 
 		class CProxyClient {
 		public:
@@ -96,11 +57,13 @@ namespace http {
 			void handle_write(const boost::system::error_code& error,
 				size_t bytes_transferred);
 			boost::mutex writeMutex;
-			boost::condition_variable writeCon;
 
 			void ReadMore();
 
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
+			void SocketWrite(ProxyPdu *pdu);
+			std::vector<boost::asio::const_buffer> _writebuf;
+			ProxyPdu *writePdu;
 			void LoginToService();
 
 			PDUPROTO(PDU_REQUEST)
@@ -113,20 +76,9 @@ namespace http {
 			PDUPROTO(PDU_SERV_RECEIVE)
 			PDUPROTO(PDU_SERV_SEND)
 			PDUPROTO(PDU_SERV_ROSTERIND)
-				void GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
-#if 0
-			void HandleRequest(ProxyPdu *pdu);
-			void HandleAssignkey(ProxyPdu *pdu);
-			void HandleEnquire(ProxyPdu *pdu);
-			void HandleAuthresp(ProxyPdu *pdu);
-			void HandleServConnect(ProxyPdu *pdu);
-			void HandleServConnectResp(ProxyPdu *pdu);
-			void HandleServDisconnect(ProxyPdu *pdu);
-			void HandleServReceive(ProxyPdu *pdu);
-			void HandleServSend(ProxyPdu *pdu);
-			void HandleServRosterInd(ProxyPdu *pdu);
-#endif
+			void GetRequest(const std::string originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void SendServDisconnect(const std::string &token, int reason);
+
 			void PduHandler(ProxyPdu &pdu);
 
 			int _allowed_subsystems;
@@ -149,9 +101,7 @@ namespace http {
 			int timeout_;
 			bool b_Connected;
 
-			void WriteThread();
-			boost::thread *m_writeThread;
-			BlockingQueue<ProxyPdu *> writeQ;
+			boost::lockfree::queue<ProxyPdu *> writeQ;
 		};
 
 		class CProxyManager {
