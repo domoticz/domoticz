@@ -33,8 +33,7 @@ namespace http {
 			b_Connected(false),
 			we_locked_prefs_mutex(false),
 			timeout_(TIMEOUT),
-			timer_(io_service, boost::posix_time::seconds(TIMEOUT)),
-			writeQ(WRITE_QUEUE_SIZE)
+			timer_(io_service, boost::posix_time::seconds(TIMEOUT))
 		{
 			writePdu = NULL;
 			_apikey = "";
@@ -144,8 +143,9 @@ namespace http {
 				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
 			}
 			ProxyPdu *pdu;
-			if (writeQ.pop(pdu)) {
-				SocketWrite(pdu);
+			if (!writeQ.empty()) {
+				SocketWrite(writeQ.front());
+				writeQ.pop();
 			}
 		}
 
@@ -167,11 +167,7 @@ namespace http {
 			ProxyPdu *pdu= new ProxyPdu(type, &parameters);
 			if (writePdu) {
 				// write in progress, add to queue
-				if (!writeQ.push(pdu)) {
-					_log.Log(LOG_ERROR, "PROXY: Too many writes at a time, dropping packet.");
-					delete pdu;
-					return;
-				}
+				writeQ.push(pdu);
 			}
 			else {
 				SocketWrite(pdu);

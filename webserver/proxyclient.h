@@ -1,11 +1,11 @@
 #pragma once
 #ifndef NOCLOUD
 #include <iostream>
+#include <queue>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/thread.hpp>
-#include <boost/lockfree/queue.hpp>
 #include <list>
 #include <boost/thread/mutex.hpp>
 #include "proxycommon.h"
@@ -101,7 +101,8 @@ namespace http {
 			int timeout_;
 			bool b_Connected;
 
-			boost::lockfree::queue<ProxyPdu *> writeQ;
+			// is protected by writeMutex
+			std::queue<ProxyPdu *> writeQ;
 		};
 
 		class CProxyManager {
