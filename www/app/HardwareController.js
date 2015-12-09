@@ -3320,7 +3320,7 @@ define(['app'], function (app) {
                         }
                         else if (data["Type"].indexOf("SolarEdge via") >= 0) {
                             $("#hardwarecontent #hardwareparamssolaredgeapi #siteid").val(data["Mode1"]);
-                            $("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Username"]);
+                            $("#hardwarecontent #hardwareparamssolaredgeapi #serial").val(data["Username"]);
                             $("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Password"]);
                         }
                         else if (data["Type"].indexOf("Philips Hue") >= 0) {

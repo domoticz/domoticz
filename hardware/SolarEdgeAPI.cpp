@@ -94,6 +94,7 @@ bool SolarEdgeAPI::StopHardware()
 
 void SolarEdgeAPI::Do_Work()
 {
+	_log.Log(LOG_STATUS, "SolarEdgeAPI Worker started...");
 	int sec_counter = 295;
 	while (!m_stoprequested)
 	{
@@ -147,7 +148,7 @@ void SolarEdgeAPI::GetMeterDetails()
 	sResult = ReadFile("E:\\SolarEdge.json");
 #else
 	time_t atime = mytime(NULL);
-	atime = (atime / 300) * 300;
+	//atime = (atime / 300) * 300;
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
 
@@ -162,7 +163,7 @@ void SolarEdgeAPI::GetMeterDetails()
 	if (ActHourMin - 60 > sunSet)
 		return;
 
-	time_t atime_min5 = atime - 360;
+	time_t atime_min5 = atime - 600; //minus 10 minutes
 	struct tm ltime_min5;
 	localtime_r(&atime_min5, &ltime_min5);
 
