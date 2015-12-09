@@ -61,6 +61,7 @@
 #define sTypeDistance				0x1B
 #define sTypeCounterIncremental		0x1C
 #define sTypeKwh					0x1D
+#define sTypeWaterflow				0x1E
 
 //General Switch
 #define pTypeGeneralSwitch			0xF4
@@ -116,9 +117,10 @@
 #define sSwitchTypeAvidsen			0x37
 #define sSwitchTypeBofu				0x38
 #define sSwitchTypeBrel				0x39
-#define sSwitchTypeSomeFy			0x3a
+#define sSwitchTypeRTS   			0x3a
 #define sSwitchTypeElroDB			0x3b
 #define sSwitchTypeAOK				0x3c
+#define sSwitchTypeUnitec			0x3d
 
 //Switch commands
 #define gswitch_sOff				0x00

@@ -175,7 +175,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_TOONTHERMOSTAT, "Toon Thermostat" },
 		{ HTYPE_ECODEVICES, "Eco Devices via LAN interface" },
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
-		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface" },
+		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface/CM19A USB" },
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
@@ -199,7 +199,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_LogitechMediaServer, "Logitech Media Server" },
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
-		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface"},
+		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -652,6 +653,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "kWh" },
+		{ pTypeGeneral, sTypeWaterflow, "Waterflow" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "SetPoint" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -732,9 +734,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeAvidsen, "Avidsen" },
 		{ pTypeGeneralSwitch, sSwitchTypeBofu, "BofuMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "BrelMotor" },
-		{ pTypeGeneralSwitch, sSwitchTypeSomeFy, "SomeFy" },
+		{ pTypeGeneralSwitch, sSwitchTypeRTS, "RTS" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
 		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
+		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -950,6 +953,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeGeneral, sTypeDistance, "Distance" },
 		{ pTypeGeneral, sTypeCounterIncremental, "Counter Incremental" },
 		{ pTypeGeneral, sTypeKwh, "Instant,Usage" },
+		{ pTypeGeneral, sTypeWaterflow, "Percentage" },
 
 		{ pTypeThermostat, sTypeThermSetpoint, "Temperature" },
 		{ pTypeThermostat, sTypeThermTemperature, "Temperature" },
@@ -1787,47 +1791,62 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeRFY:
-		switch (nValue)
+		if (switchtype == STYPE_OnOff)
 		{
-		case rfy_sUp:
-			lstatus="Off";
-			break;
-		case rfy_sDown:
-			lstatus="On";
-			break;
-		case rfy_sStop:
-			lstatus="Stop";
-			break;
-		case rfy_s05SecUp:
-			if (switchtype == STYPE_VenetianBlindsUS)
+			switch (nValue)
 			{
-				lstatus = "Off";
-			}
-			break;
-		case rfy_s2SecUp:
-			if (switchtype == STYPE_VenetianBlindsEU)
-			{
-				lstatus = "Off";
-			}
-			break;
-		case rfy_s05SecDown:
-			if (switchtype == STYPE_VenetianBlindsUS)
-			{
+			case rfy_sUp:
 				lstatus = "On";
+				break;
+			case rfy_sDown:
+				lstatus = "Off";
+				break;
 			}
-			break;
-		case rfy_s2SecDown:
-			if (switchtype == STYPE_VenetianBlindsEU)
+		}
+		else
+		{
+			switch (nValue)
 			{
+			case rfy_sUp:
+				lstatus = "Off";
+				break;
+			case rfy_sDown:
 				lstatus = "On";
+				break;
+			case rfy_sStop:
+				lstatus = "Stop";
+				break;
+			case rfy_s05SecUp:
+				if (switchtype == STYPE_VenetianBlindsUS)
+				{
+					lstatus = "Off";
+				}
+				break;
+			case rfy_s2SecUp:
+				if (switchtype == STYPE_VenetianBlindsEU)
+				{
+					lstatus = "Off";
+				}
+				break;
+			case rfy_s05SecDown:
+				if (switchtype == STYPE_VenetianBlindsUS)
+				{
+					lstatus = "On";
+				}
+				break;
+			case rfy_s2SecDown:
+				if (switchtype == STYPE_VenetianBlindsEU)
+				{
+					lstatus = "On";
+				}
+				break;
+			case rfy_sEnableSunWind:
+				lstatus = "SunWindChange";
+				break;
+			case rfy_sDisableSun:
+				lstatus = "SunWindChange";
+				break;
 			}
-			break;
-		case rfy_sEnableSunWind:
-			lstatus = "SunWindChange";
-			break;
-		case rfy_sDisableSun:
-			lstatus = "SunWindChange";
-			break;
 		}
 		break;
 	case pTypeChime:
@@ -2561,132 +2580,155 @@ bool GetLightCommand(
 		break;
 	case pTypeRFY:
 		{
-		/*
-		Venetian Blind in US mode:
-		-up / down(transmit < 0.5 seconds) : open or close
-		-up / down(transmit > 2seconds) : change angle
-
-		Venetian Blind in Europe mode :
-		-up / down(transmit < 0.5 seconds) : change angle
-		-up / down(transmit > 2seconds) : open or close
-		*/
-			if (switchcmd == "On")
+			if (switchtype == STYPE_OnOff)
 			{
-				if (switchtype == STYPE_VenetianBlindsUS)
+				/*
+				Venetian Blind in US mode:
+				-up / down(transmit < 0.5 seconds) : open or close
+				-up / down(transmit > 2seconds) : change angle
+
+				Venetian Blind in Europe mode :
+				-up / down(transmit < 0.5 seconds) : change angle
+				-up / down(transmit > 2seconds) : open or close
+				*/
+				if (switchcmd == "On")
 				{
-					cmd = rfy_s05SecDown;
+					cmd = rfy_sUp;
 				}
-				else if (switchtype == STYPE_VenetianBlindsEU)
-				{
-					cmd = rfy_s2SecDown;
-				}
-				else
+				else if (switchcmd == "Off")
 				{
 					cmd = rfy_sDown;
 				}
 			}
-			else if (switchcmd=="Off")
+			else
 			{
-				if (switchtype == STYPE_VenetianBlindsUS)
+				/*
+				Venetian Blind in US mode:
+				-up / down(transmit < 0.5 seconds) : open or close
+				-up / down(transmit > 2seconds) : change angle
+
+				Venetian Blind in Europe mode :
+				-up / down(transmit < 0.5 seconds) : change angle
+				-up / down(transmit > 2seconds) : open or close
+				*/
+				if (switchcmd == "On")
 				{
-					cmd = rfy_s05SecUp;
+					if (switchtype == STYPE_VenetianBlindsUS)
+					{
+						cmd = rfy_s05SecDown;
+					}
+					else if (switchtype == STYPE_VenetianBlindsEU)
+					{
+						cmd = rfy_s2SecDown;
+					}
+					else
+					{
+						cmd = rfy_sDown;
+					}
 				}
-				else if (switchtype == STYPE_VenetianBlindsEU)
+				else if (switchcmd == "Off")
 				{
-					cmd = rfy_s2SecUp;
+					if (switchtype == STYPE_VenetianBlindsUS)
+					{
+						cmd = rfy_s05SecUp;
+					}
+					else if (switchtype == STYPE_VenetianBlindsEU)
+					{
+						cmd = rfy_s2SecUp;
+					}
+					else
+					{
+						cmd = rfy_sUp;
+					}
 				}
-				else
+				else if (switchcmd == "Stop")
+				{
+					cmd = rfy_sStop;
+				}
+				else if (switchcmd == "Up")
 				{
 					cmd = rfy_sUp;
 				}
-			}
-			else if (switchcmd == "Stop")
-			{
-				cmd = rfy_sStop;
-			}
-			else if (switchcmd == "Up")
-			{
-				cmd = rfy_sUp;
-			}
-			else if (switchcmd == "UpStop")
-			{
-				cmd = rfy_sUpStop;
-			}
-			else if (switchcmd == "Down")
-			{
-				cmd = rfy_sDown;
-			}
-			else if (switchcmd == "DownStop")
-			{
-				cmd = rfy_sDownStop;
-			}
-			else if (switchcmd == "UpDown")
-			{
-				cmd = rfy_sUpDown;
-			}
-			else if (switchcmd == "ListRemotes")
-			{
-				cmd = rfy_sListRemotes;
-			}
-			else if (switchcmd == "Program")
-			{
-				cmd = rfy_sProgram;
-			}
-			else if (switchcmd == "Program2Seconds")
-			{
-				cmd = rfy_s2SecProgram;
-			}
-			else if (switchcmd == "Program7Seconds")
-			{
-				cmd = rfy_s7SecProgram;
-			}
-			else if (switchcmd == "Stop2Seconds")
-			{
-				cmd = rfy_s2SecStop;
-			}
-			else if (switchcmd == "Stop5Seconds")
-			{
-				cmd = rfy_s5SecStop;
-			}
-			else if (switchcmd == "UpDown5Seconds")
-			{
-				cmd = rfy_s5SecUpDown;
-			}
-			else if (switchcmd == "EraseThis") //from the RFXtrx
-			{
-				cmd = rfy_sEraseThis;
-			}
-			else if (switchcmd == "EraseAll") //from the RFXtrx
-			{
-				cmd = rfy_sEraseAll;
-			}
-			else if (switchcmd == "Up05Seconds")
-			{
-				cmd = rfy_s05SecUp;
-			}
-			else if (switchcmd == "Down05Seconds")
-			{
-				cmd = rfy_s05SecDown;
-			}
-			else if (switchcmd == "Up2Seconds")
-			{
-				cmd = rfy_s2SecUp;
-			}
-			else if (switchcmd == "Down2Seconds")
-			{
-				cmd = rfy_s2SecDown;
-			}
-			else if (switchcmd == "EnableSunWind")
-			{
-				cmd = rfy_sEnableSunWind;
-			}
-			else if (switchcmd == "DisableSunWind")
-			{
-				cmd = rfy_sDisableSun;
-			}
-			else
-			{
-				cmd=rfy_sStop;
+				else if (switchcmd == "UpStop")
+				{
+					cmd = rfy_sUpStop;
+				}
+				else if (switchcmd == "Down")
+				{
+					cmd = rfy_sDown;
+				}
+				else if (switchcmd == "DownStop")
+				{
+					cmd = rfy_sDownStop;
+				}
+				else if (switchcmd == "UpDown")
+				{
+					cmd = rfy_sUpDown;
+				}
+				else if (switchcmd == "ListRemotes")
+				{
+					cmd = rfy_sListRemotes;
+				}
+				else if (switchcmd == "Program")
+				{
+					cmd = rfy_sProgram;
+				}
+				else if (switchcmd == "Program2Seconds")
+				{
+					cmd = rfy_s2SecProgram;
+				}
+				else if (switchcmd == "Program7Seconds")
+				{
+					cmd = rfy_s7SecProgram;
+				}
+				else if (switchcmd == "Stop2Seconds")
+				{
+					cmd = rfy_s2SecStop;
+				}
+				else if (switchcmd == "Stop5Seconds")
+				{
+					cmd = rfy_s5SecStop;
+				}
+				else if (switchcmd == "UpDown5Seconds")
+				{
+					cmd = rfy_s5SecUpDown;
+				}
+				else if (switchcmd == "EraseThis") //from the RFXtrx
+				{
+					cmd = rfy_sEraseThis;
+				}
+				else if (switchcmd == "EraseAll") //from the RFXtrx
+				{
+					cmd = rfy_sEraseAll;
+				}
+				else if (switchcmd == "Up05Seconds")
+				{
+					cmd = rfy_s05SecUp;
+				}
+				else if (switchcmd == "Down05Seconds")
+				{
+					cmd = rfy_s05SecDown;
+				}
+				else if (switchcmd == "Up2Seconds")
+				{
+					cmd = rfy_s2SecUp;
+				}
+				else if (switchcmd == "Down2Seconds")
+				{
+					cmd = rfy_s2SecDown;
+				}
+				else if (switchcmd == "EnableSunWind")
+				{
+					cmd = rfy_sEnableSunWind;
+				}
+				else if (switchcmd == "DisableSunWind")
+				{
+					cmd = rfy_sDisableSun;
+				}
+				else
+				{
+					cmd = rfy_sStop;
+				}
 			}
 			return true;
 		}

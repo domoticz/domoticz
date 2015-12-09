@@ -442,28 +442,35 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 {
 	std::vector<std::string> ret;
 
-	FILE *fp;
-
-	/* Open the command for reading. */
-#ifdef WIN32
-	fp = _popen(szCommand.c_str(), "r");
-#else
-	fp = popen(szCommand.c_str(), "r");
-#endif
-	if (fp != NULL) 
+	try
 	{
-		char path[1035];
-		/* Read the output a line at a time - output it. */
-		while (fgets(path, sizeof(path)-1, fp) != NULL)
-		{
-			ret.push_back(path);
-		}
-		/* close */
+		FILE *fp;
+
+		/* Open the command for reading. */
 #ifdef WIN32
-		_pclose(fp);
+		fp = _popen(szCommand.c_str(), "r");
 #else
-		pclose(fp);
+		fp = popen(szCommand.c_str(), "r");
 #endif
+		if (fp != NULL)
+		{
+			char path[1035];
+			/* Read the output a line at a time - output it. */
+			while (fgets(path, sizeof(path) - 1, fp) != NULL)
+			{
+				ret.push_back(path);
+			}
+			/* close */
+#ifdef WIN32
+			_pclose(fp);
+#else
+			pclose(fp);
+#endif
+		}
+	}
+	catch (...)
+	{
+		
 	}
 	return ret;
 }

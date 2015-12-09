@@ -220,7 +220,7 @@ void CVolcraftCO20::GetSensorDetails()
 			meter.subtype=sTypeVoltcraft;
 			meter.airquality=voc;
 			meter.id1=1;
-			sDecodeRXMessage(this, (const unsigned char *)&meter);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&meter, NULL, 255);
 		}
 	}
 	catch (...)

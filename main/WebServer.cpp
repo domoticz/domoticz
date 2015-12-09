@@ -768,12 +768,11 @@ namespace http {
 						goto exitjson;
 					}
 				}
-				if (cparam == "logout")
+				if (cparam == "dologout")
 				{
 					root["status"] = "OK";
 					root["title"] = "Logout";
-					m_retstr = "authorize";
-					return m_retstr;
+					goto exitjson;
 
 				}
 				HandleCommand(cparam, session, req, root);
@@ -1034,6 +1033,18 @@ namespace http {
 					)
 					return;
 			}
+			else if (htype == HTYPE_SolarEdgeAPI)
+			{
+				if (
+					(username == "") ||
+					(password == "")
+					)
+					return;
+				std::string siteID = request::findValue(&req, "Mode1");
+				if (siteID.empty())
+					return;
+				mode1 = atoi(siteID.c_str());
+			}
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
 					return;
@@ -1241,6 +1252,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
+				(htype == HTYPE_SolarEdgeAPI) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -4824,6 +4836,13 @@ namespace http {
 					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_PERCENTAGE, 1);
 					ii++;
 				}
+				if ((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))
+				{
+					root["result"][ii]["val"] = NTYPE_USAGE;
+					root["result"][ii]["text"] = Notification_Type_Desc(NTYPE_USAGE, 0);
+					root["result"][ii]["ptag"] = Notification_Type_Desc(NTYPE_USAGE, 1);
+					ii++;
+				}
 				if ((dType == pTypeGeneral) && (dSubType == sTypeFan))
 				{
 					root["result"][ii]["val"] = NTYPE_RPM;
@@ -5755,6 +5774,22 @@ namespace http {
 
 				m_mainworker.SwitchLight(ID, "Bright Down", 0, -1,false,0);
 			}
+			else if (cparam == "discomode")
+			{
+				std::string idx = request::findValue(&req, "idx");
+
+				if (idx == "")
+				{
+					return;
+				}
+
+				unsigned long long ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
+
+				m_mainworker.SwitchLight(ID, "Disco Mode", 0, -1, false, 0);
+			}
 			else if (cparam == "discoup")
 			{
 				std::string idx = request::findValue(&req, "idx");
@@ -6564,11 +6599,11 @@ namespace http {
 
 			if (rnvalue != rnOldvalue)
 			{
+				m_mainworker.m_sharedserver.StopServer();
 				if (rnvalue != 0)
 				{
 					char szPort[100];
 					sprintf(szPort, "%d", rnvalue);
-					m_mainworker.m_sharedserver.StopServer();
 					m_mainworker.m_sharedserver.StartServer("::", szPort);
 					m_mainworker.LoadSharedUsers();
 				}
@@ -7201,6 +7236,7 @@ namespace http {
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSoilMoisture))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeLeafWetness))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypePercentage))) &&
+								(!((dType == pTypeGeneral) && (dSubType == sTypeWaterflow))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeFan))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeSoundLevel))) &&
 								(!((dType == pTypeGeneral) && (dSubType == sTypeZWaveClock))) &&
@@ -8821,6 +8857,14 @@ namespace http {
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Computer";
 							root["result"][ii]["TypeImg"] = "hardware";
+						}
+						else if (dSubType == sTypeWaterflow)
+						{
+							sprintf(szData, "%.2f l/min", atof(sValue.c_str()));
+							root["result"][ii]["Data"] = szData;
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["Image"] = "Moisture";
+							root["result"][ii]["TypeImg"] = "moisture";
 						}
 						else if (dSubType == sTypeFan)
 						{
@@ -14404,6 +14448,45 @@ namespace http {
 							root["result"][ii]["gu"] = szTmp;
 						}
 						ii++;
+					}
+					//Previous Year
+					ii = 0;
+					result = m_sql.safe_query(
+						"SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
+						" Gust_Max, Date "
+						"FROM %s WHERE (DeviceRowID==%llu AND Date>='%q'"
+						" AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
+					if (result.size() > 0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt = result.begin(); itt != result.end(); ++itt)
+						{
+							std::vector<std::string> sd = *itt;
+
+							root["resultprev"][ii]["d"] = sd[5].substr(0, 16);
+							root["resultprev"][ii]["di"] = sd[0];
+
+							int intSpeed = atoi(sd[2].c_str());
+							int intGust = atoi(sd[4].c_str());
+							if (m_sql.m_windunit != WINDUNIT_Beaufort)
+							{
+								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+								root["resultprev"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+								root["resultprev"][ii]["gu"] = szTmp;
+							}
+							else
+							{
+								float windspeedms = float(intSpeed)*0.1f;
+								float windgustms = float(intGust)*0.1f;
+								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+								root["resultprev"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+								root["resultprev"][ii]["gu"] = szTmp;
+							}
+							ii++;
+						}
 					}
 				}
 			}//month or year

@@ -925,13 +925,13 @@ void COpenZWave::EnableDisableDebug()
 	{
 		OpenZWave::Options::Get()->AddOptionInt("SaveLogLevel", OpenZWave::LogLevel_Detail);
 		OpenZWave::Options::Get()->AddOptionInt("QueueLogLevel", OpenZWave::LogLevel_Debug);
-		OpenZWave::Options::Get()->AddOptionInt("DumpTrigger", OpenZWave::LogLevel_Error);
+		OpenZWave::Options::Get()->AddOptionInt("DumpTriggerLevel", OpenZWave::LogLevel_Error);
 	}
 	else
 	{
 		OpenZWave::Options::Get()->AddOptionInt("SaveLogLevel", OpenZWave::LogLevel_Error);
 		OpenZWave::Options::Get()->AddOptionInt("QueueLogLevel", OpenZWave::LogLevel_Error);
-		OpenZWave::Options::Get()->AddOptionInt("DumpTrigger", OpenZWave::LogLevel_Error);
+		OpenZWave::Options::Get()->AddOptionInt("DumpTriggerLevel", OpenZWave::LogLevel_Error);
 	}
 }
 
@@ -2184,10 +2184,11 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 	else
 		nintvalue = 0;
 
-	if (pDevice->intvalue == nintvalue)
-	{
-		return; //dont send/update same value
-	}
+//	if ((pDevice->intvalue == nintvalue) && (pDevice->sequence_number != 1))
+//	{
+//		//Do we need this ?
+//		return; //dont send/update same value
+//	}
 	time_t atime = mytime(NULL);
 	pDevice->intvalue = nintvalue;
 	pDevice->lastreceived = atime;

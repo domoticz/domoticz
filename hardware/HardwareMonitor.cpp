@@ -13,7 +13,7 @@
 
 #ifdef WIN32
 	#include <comdef.h>
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	#include <sys/sysinfo.h>
 	#include <iostream>
 	#include <fstream>
@@ -31,6 +31,23 @@
 		long long UsedBlocks;
 		long long AvailBlocks;
 	};
+ 
+//USER_HZ detection, from openssl code
+#ifndef HZ
+# if defined(_SC_CLK_TCK) && (!defined(OPENSSL_SYS_VMS) || __CTRL_VER >= 70000000)
+#  define HZ ((double)sysconf(_SC_CLK_TCK))
+# else
+#  ifndef CLK_TCK
+#   ifndef _BSD_CLK_TCK_ /* FreeBSD hack */
+#    define HZ  100.0
+#   else /* _BSD_CLK_TCK_ */
+#    define HZ ((double)_BSD_CLK_TCK_)
+#   endif
+#  else /* CLK_TCK */
+#   define HZ ((double)CLK_TCK)
+#  endif
+# endif
+#endif
 
 #endif
 
@@ -135,70 +152,26 @@ void CHardwareMonitor::Do_Work()
 
 void CHardwareMonitor::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp, "%08X", (unsigned int)Idx);
-
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeVoltage;
 	gDevice.id = 1;
 	gDevice.floatval1 = Volt;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp, "%08X", (unsigned int)Idx);
-
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCurrent));
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeCurrent;
 	gDevice.id = 1;
 	gDevice.floatval1 = Curr;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCurrent));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", m_HwdID, Idx, int(pTypeTEMP), int(sTypeTEMP10));
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
 	RBUF tsen;
 	memset(&tsen, 0, sizeof(RBUF));
 
@@ -216,75 +189,33 @@ void CHardwareMonitor::SendTempSensor(const int Idx, const float Temp, const std
 	at10 -= (tsen.TEMP.temperatureh * 256);
 	tsen.TEMP.temperaturel = (BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);//decode message
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp, "%08X", (unsigned int)Idx);
-
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypePercentage;
 	gDevice.id = 1;
 	gDevice.floatval1 = Percentage;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp, "%08X", (unsigned int)Idx);
-
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", m_HwdID, szTmp, int(pTypeGeneral), int(sTypeFan));
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeFan;
 	gDevice.id = 1;
 	gDevice.intval1 = static_cast<int>(Idx);
 	gDevice.intval2 = FanSpeed;
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeFan));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CHardwareMonitor::GetInternalTemperature()
 {
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand);
-	if (ret.size() < 1)
+	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
 	if (tmpline.find("temp=") == std::string::npos)
@@ -309,7 +240,7 @@ void CHardwareMonitor::GetInternalTemperature()
 void CHardwareMonitor::GetInternalVoltage()
 {
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand);
-	if (ret.size() < 1)
+	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
 	if (tmpline.find("volt=") == std::string::npos)
@@ -331,7 +262,7 @@ void CHardwareMonitor::GetInternalVoltage()
 void CHardwareMonitor::GetInternalCurrent()
 {
 	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand);
-	if (ret.size() < 1)
+	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
 	if (tmpline.find("curr=") == std::string::npos)
@@ -361,7 +292,7 @@ void CHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Voltage");
 		return;
 	}
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
 	if (bHasInternalTemperature)
@@ -439,6 +370,19 @@ bool CHardwareMonitor::InitWMI()
 	hr = m_pLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesSystem);
 	if (FAILED(hr))
 		return false;
+/*
+	// Set security levels on the proxy
+	hr = CoSetProxyBlanket(
+		m_pServicesSystem,                        // Indicates the proxy to set
+		RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
+		RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
+		NULL,                        // Server principal name 
+		RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx 
+		RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
+		NULL,                        // client identity
+		EOAC_NONE                    // proxy capabilities 
+		);
+*/
 	if (!IsOHMRunning())
 	{
 		_log.Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");
@@ -560,7 +504,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		pEnumerator->Release();
 	}
 }
-#elif defined __linux__
+#elif defined(__linux__) || defined(__CYGWIN32__)
 	double time_so_far()
 	{
 		struct timeval tp;
@@ -662,7 +606,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				if (ret==4)
 				{
 					long long t = (actload1+actload2+actload3)-m_lastloadcpu;
-					double cpuper=((t / ((acttime-m_lastquerytime) * 100)) * 100)/double(m_totcpu);
+					double cpuper=((t / ((acttime-m_lastquerytime) * HZ)) * 100)/double(m_totcpu);
 					if (cpuper>0)
 					{
 						sprintf(szTmp,"%.2f", cpuper);
@@ -678,51 +622,58 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		std::map<std::string, _tDUsageStruct> _disks;
 		std::map<std::string, std::string> _dmounts_;
 		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df");
-		std::vector<std::string>::const_iterator ittDF;
-		for (ittDF=_rlines.begin(); ittDF!=_rlines.end(); ++ittDF)
+		if (!_rlines.empty())
 		{
-			char dname[200];
-			char suse[30];
-			char smountpoint[300];
-			long numblock, usedblocks, availblocks;
-			int ret=sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
-			if (ret==6)
+			std::vector<std::string>::const_iterator ittDF;
+			for (ittDF = _rlines.begin(); ittDF != _rlines.end(); ++ittDF)
 			{
-				std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
-				if (it != _dmounts_.end())
+				char dname[200];
+				char suse[30];
+				char smountpoint[300];
+				long numblock, usedblocks, availblocks;
+				int ret = sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+				if (ret == 6)
 				{
-					if (it->second.length() < strlen(smountpoint))
+					std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
+					if (it != _dmounts_.end())
 					{
-						continue;
+						if (it->second.length() < strlen(smountpoint))
+						{
+							continue;
+						}
+					}
+#if defined(__linux__)
+					if (strstr(dname, "/dev") != NULL)
+#elif defined(__CYGWIN32__)
+					if (strstr(smountpoint, "/cygdrive/") != NULL)
+#endif
+					{
+						_tDUsageStruct dusage;
+						dusage.TotalBlocks = numblock;
+						dusage.UsedBlocks = usedblocks;
+						dusage.AvailBlocks = availblocks;
+						dusage.MountPoint = smountpoint;
+						_disks[dname] = dusage;
+						_dmounts_[dname] = smountpoint;
 					}
 				}
-				if (strstr(dname,"/dev")!=NULL)
-				{
-					_tDUsageStruct dusage;
-					dusage.TotalBlocks=numblock;
-					dusage.UsedBlocks=usedblocks;
-					dusage.AvailBlocks=availblocks;
-					dusage.MountPoint=smountpoint;
-					_disks[dname]=dusage;
-					_dmounts_[dname]=smountpoint;
-				}
 			}
-		}
-		int dindex=0;
-		std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
-		for (ittDisks=_disks.begin(); ittDisks!=_disks.end(); ++ittDisks)
-		{
-			_tDUsageStruct dusage=(*ittDisks).second;
-			if (dusage.TotalBlocks>0)
+			int dindex = 0;
+			std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
+			for (ittDisks = _disks.begin(); ittDisks != _disks.end(); ++ittDisks)
 			{
-				double UsagedPercentage=(100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
-				//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
-				sprintf(szTmp,"%.2f", UsagedPercentage);
-				std::string hddname = "HDD " + dusage.MountPoint;
-				UpdateSystemSensor("Load", 2+dindex, hddname, szTmp);
-				dindex++;
+				_tDUsageStruct dusage = (*ittDisks).second;
+				if (dusage.TotalBlocks > 0)
+				{
+					double UsagedPercentage = (100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
+					//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
+					sprintf(szTmp, "%.2f", UsagedPercentage);
+					std::string hddname = "HDD " + dusage.MountPoint;
+					UpdateSystemSensor("Load", 2 + dindex, hddname, szTmp);
+					dindex++;
+				}
 			}
 		}
 	}
-#endif //WIN32/#elif defined __linux__
+#endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__)
 

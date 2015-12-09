@@ -160,7 +160,7 @@ void P1MeterBase::MatchLine()
 
 		if (m_exclmarkfound) {
 			time_t atime=mytime(NULL);
-			sDecodeRXMessage(this, (const unsigned char *)&m_p1power);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
 			bool bSend2Shared=(atime-m_lastSharedSendElectra>59);
 			if (abs(double(m_lastelectrausage)-double(m_p1power.usagecurrent))>40)
 				bSend2Shared=true;
@@ -177,7 +177,7 @@ void P1MeterBase::MatchLine()
 				//only update gas when there is a new value, or 5 minutes are passed
 				m_lastSharedSendGas=atime;
 				m_lastgasusage=m_p1gas.gasusage;
-				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);//decode message
+				sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
 			}
 			m_exclmarkfound=0;
 		}

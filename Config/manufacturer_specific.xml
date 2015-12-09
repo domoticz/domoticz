@@ -99,6 +99,7 @@
 		<Product type="0003" id="0063" name="Smart Dimmer 6" config="aeotec/sd6.xml" />
 		<Product type="0103" id="0063" name="Smart Dimmer 6" config="aeotec/sd6.xml" />
 		<Product type="0203" id="0063" name="Smart Dimmer 6" config="aeotec/sd6.xml" />
+		<Product type="1D03" id="0063" name="Smart Dimmer 6" config="aeotec/sd6.xml" />
 	</Manufacturer>
         <Manufacturer id="0111" name="Airline Mechanical">
                 <Product type="8200" id="0200" name="ZDS-100"/>
@@ -223,6 +224,9 @@
 	<Manufacturer id="0128" name="Eneco">
 		<Product type="0000" id="0000" name="ED2.0 Meter Adapter"/>
 		<Product type="0128" id="0000" name="ED2.0 Display"/>
+	</Manufacturer>
+	<Manufacturer id="011a" name="Enerwave">
+		<Product type="0801" id="0b03" name="ZWN-SC7 7-Button Scene Controller" config="enerwave/zwn-sc7.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0060" name="Everspring">
 		<Product type="0001" id="0001" name="HSP02 Motion Detector" config="everspring/hsp02.xml"/>
@@ -368,6 +372,7 @@
 		<Product type="0001" id="0002" name="ZTroller" config="homeseer/ztroller.xml"/>
 		<Product type="0002" id="0001" name="HSM100 Wireless Multi-Sensor" config="homeseer/hsm100.xml"/>
 		<Product type="0002" id="0002" name="EZMotion+ 3-in-1 Sensor" config="homeseer/ezmotionplus.xml"/>
+		<Product type="0004" id="0001" name="HSM200 Wireless Multi-Sensor" config="homeseer/hsm200.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0039" name="Honeywell">
 		<Product type="0011" id="0001" name="TH8320ZW1000 Touchscreen Thermostat" config="honeywell/th8320zw1000.xml"/>
@@ -574,10 +579,12 @@
 	</Manufacturer>
 	<Manufacturer id="0159" name="Qubino">
 		<Product type="0001" id="0001" name="ZMNHDA2 Flush Dimmer" config="qubino/ZMNHDA2.xml"/>
+		<Product type="0001" id="0051" name="ZMNHDD1 Z-Wave Plus Flush Dimmer" config="qubino/ZMNHDD1.xml"/>
 		<Product type="0002" id="0001" name="ZMNHBA2 Flush 2 Relays" config="qubino/ZMNHBA2.xml"/>
 		<Product type="0002" id="0051" name="ZMNHBD2 Flush 2 Relays" config="qubino/ZMNHBD2.xml"/>
 		<Product type="0002" id="0002" name="ZMNHAA2 Flush 1 Relay" config="qubino/ZMNHAA2.xml"/>
 		<Product type="0002" id="0052" name="ZMNHAD1 Flush 1 Relay" config="qubino/ZMNHAD1.xml"/>
+		<Product type="0002" id="0053" name="ZMNHND1 Flush 1D relay" config="qubino/ZMNHND1.xml"/>
 		<Product type="0003" id="0002" name="ZMNHCA2 Flush Shutter" config="qubino/ZMNHCA2.xml"/>
 		<Product type="0004" id="0001" name="ZMNHJA2 Flush Dimmer Fil Pilote" config="qubino/ZMNHJA2.xml"/>
 		<Product type="0005" id="0001" name="ZMNHIA2 Flush on/off thermostat" config="qubino/ZMNHIA2.xml"/>
@@ -700,8 +707,10 @@
 		<Product type="0002" id="0002" name="TSP01 3 in 1 PIR Motion Sensor" config="wenzhou/tsp01.xml" />
 		<Product type="0808" id="0808" name="TZ65D Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
 		<Product type="0101" id="0103" name="TZ68E On/Off Switch Socket"/>
+		<Product type="0101" id="0103" name="TZ68 On/Off Switch Socket" config="wenzhou/tz68.xml"/>
 		<Product type="0102" id="1020" name="TZ66D Dual Wall Switch" config="wenzhou/tz66d.xml"/>
 		<Product type="0202" id="0611" name="TZ67 Wall Plug Dimmer" config="wenzhou/tz67.xml"/>
+		
 	</Manufacturer>
 	<Manufacturer id="0149" name="wiDom">
 		<Product type="0012" id="0104" name="UBS104 Universal Relay Switch" config="widom/UBS104.xml"/>

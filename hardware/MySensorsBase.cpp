@@ -479,11 +479,6 @@ void MySensorsBase::MakeAndSendWindSensor(const int nodeID, const std::string &s
 
 void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *pChild, const _eSetType vType)
 {
-	m_iLastSendNodeBatteryValue = 255;
-	if (pChild->hasBattery)
-	{
-		m_iLastSendNodeBatteryValue = pChild->batValue;
-	}
 	int cNode = (pChild->nodeID << 8) | pChild->childID;
 	int intValue;
 	float floatValue;
@@ -719,37 +714,37 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_TRIPPED:
 		//	Tripped status of a security sensor. 1 = Tripped, 0 = Untripped
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor");
+			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
 		break;
 	case V_ARMED:
 		//Armed status of a security sensor. 1 = Armed, 0 = Bypassed
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor");
+			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Security Sensor", pChild->batValue);
 		break;
 	case V_LOCK_STATUS:
 		//Lock status. 1 = Locked, 0 = Unlocked
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Lock Sensor");
+			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue == 1), 100, (!pChild->childName.empty()) ? pChild->childName : "Lock Sensor", pChild->batValue);
 		break;
 	case V_STATUS:
 		//	Light status. 0 = off 1 = on
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue != 0), 100, (!pChild->childName.empty()) ? pChild->childName : "Light");
+			UpdateSwitch(pChild->nodeID, pChild->childID, (intValue != 0), 100, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
 		break;
 	case V_SCENE_ON:
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, true, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene");
+			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, true, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
 		break;
 	case V_SCENE_OFF:
 		if (pChild->GetValue(vType, intValue))
-			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, false, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene");
+			UpdateSwitch(pChild->nodeID, pChild->childID + intValue, false, 100, (!pChild->childName.empty()) ? pChild->childName : "Scene", pChild->batValue);
 		break;
 	case V_PERCENTAGE:
 		//	Dimmer value. 0 - 100 %
 		if (pChild->GetValue(vType, intValue))
 		{
 			int level = intValue;
-			UpdateSwitch(pChild->nodeID, pChild->childID, (level != 0), level, (!pChild->childName.empty()) ? pChild->childName : "Light");
+			UpdateSwitch(pChild->nodeID, pChild->childID, (level != 0), level, (!pChild->childName.empty()) ? pChild->childName : "Light", pChild->batValue);
 		}
 		break;
 	case V_RGB:
@@ -771,17 +766,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_LIGHT_LEVEL:
 		if (pChild->GetValue(vType, floatValue))
 		{
-			_tLightMeter lmeter;
-			lmeter.id1 = 0;
-			lmeter.id2 = 0;
-			lmeter.id3 = 0;
-			lmeter.id4 = pChild->nodeID;
-			lmeter.dunit = pChild->childID;
-			lmeter.fLux = floatValue;
-			lmeter.battery_level = pChild->batValue;
-			if (pChild->hasBattery)
-				lmeter.battery_level = pChild->batValue;
-			sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+			SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName.c_str() : "Light Level");
 		}
 		break;
 	case V_LEVEL:
@@ -850,7 +835,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_FLOW:
 		//Flow of water/gas in meter (for now send as a percentage sensor)
 		if (pChild->GetValue(vType, floatValue))
-			SendPercentageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water Flow");
+			SendWaterflowSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Water Flow");
 		break;
 	case V_VOLUME:
 		//Water or Gas Volume
@@ -945,7 +930,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			gswitch.battery_level = pChild->batValue;
 			gswitch.rssi = 12;
 			gswitch.seqnbr = 0;
-			sDecodeRXMessage(this, (const unsigned char *)&gswitch);
+			sDecodeRXMessage(this, (const unsigned char *)&gswitch, (!pChild->childName.empty()) ? pChild->childName.c_str() : "IR Command", pChild->batValue);
 		}
 		break;
 	}
@@ -979,7 +964,7 @@ void MySensorsBase::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel)
 {
 	bool bDeviceExits = true;
 	double rlevel = (15.0 / 100)*Level;
@@ -1030,13 +1015,7 @@ void MySensorsBase::UpdateSwitch(const unsigned char Idx, const int SubUnit, con
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)", defaultname.c_str(), m_HwdID, szIdx, SubUnit, int(pTypeLighting2), int(sTypeAC));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), BatLevel);
 }
 
 bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &blind_value)
@@ -1916,13 +1895,13 @@ void MySensorsBase::ParseLine()
 			{
 				//Add it to the system
 				if ((vType == V_STATUS) || (vType == V_PERCENTAGE) || (vType == V_LOCK_STATUS))
-					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Light");
+					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Light", pSensor->batValue);
 				else if (vType == V_TRIPPED)
-					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor");
+					UpdateSwitch(node_id, child_sensor_id, false, 100, (!pSensor->childName.empty()) ? pSensor->childName : "Security Sensor", pSensor->batValue);
 				else if (vType == V_RGBW)
-					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light");
+					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, true, (!pSensor->childName.empty()) ? pSensor->childName : "RGBW Light");
 				else if (vType == V_RGB)
-					SendRGBWSwitch(node_id, child_sensor_id, 255, 0, false, (!pSensor->childName.empty()) ? pSensor->childName : "RGB Light");
+					SendRGBWSwitch(node_id, child_sensor_id, pSensor->batValue, 0, false, (!pSensor->childName.empty()) ? pSensor->childName : "RGB Light");
 			}
 		}
 		else if (vType == V_UP)
@@ -1930,7 +1909,7 @@ void MySensorsBase::ParseLine()
 			int blind_value;
 			if (!GetBlindsValue(node_id, child_sensor_id, blind_value))
 			{
-				SendBlindSensor(node_id, child_sensor_id, 255, blinds_sOpen, (!pSensor->childName.empty()) ? pSensor->childName : "Blinds/Window");
+				SendBlindSensor(node_id, child_sensor_id, pSensor->batValue, blinds_sOpen, (!pSensor->childName.empty()) ? pSensor->childName : "Blinds/Window");
 			}
 		}
 		else if (vType == V_TEXT)
@@ -1939,7 +1918,7 @@ void MySensorsBase::ParseLine()
 			std::string mtext=GetTextSensorText(node_id, child_sensor_id, bExits);
 			if (!bExits)
 			{
-				SendTextSensor(node_id, child_sensor_id, 255, "-", (!pSensor->childName.empty()) ? pSensor->childName : "Text Sensor");
+				SendTextSensor(node_id, child_sensor_id, pSensor->batValue, "-", (!pSensor->childName.empty()) ? pSensor->childName : "Text Sensor");
 			}
 		}
 	}
