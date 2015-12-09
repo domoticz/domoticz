@@ -2383,7 +2383,7 @@ define(['app'], function (app) {
                  success: function(data) {
                     if (data.status == 'OK') {
                         noty({
-                            text: '<center>' + $.t('ZWave Network Information') + '</center><p><p><iframe src="../zwavetopology.html?hwid='+$.devIdx+'" name="topoframe" frameBorder="0" height="'+window.innerHeight*0.7+'" width="100%"/>',
+                            text: '<center>' + $.t('ZWave Network Information') + '</center><p><p><iframe src="zwavetopology.html?hwid='+$.devIdx+'" name="topoframe" frameBorder="0" height="'+window.innerHeight*0.7+'" width="100%"/>',
                             type: 'alert',
                             modal: true,
                             buttons: [

@@ -566,5 +566,5 @@ ozwcp/cp.html
 
 # Fallback content
 FALLBACK:
-/images images/iphone-icon.png
+images images/iphone-icon.png
 / views/offline.html
