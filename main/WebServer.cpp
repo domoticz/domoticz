@@ -1033,6 +1033,18 @@ namespace http {
 					)
 					return;
 			}
+			else if (htype == HTYPE_SolarEdgeAPI)
+			{
+				if (
+					(username == "") ||
+					(password == "")
+					)
+					return;
+				std::string siteID = request::findValue(&req, "Mode1");
+				if (siteID.empty())
+					return;
+				mode1 = atoi(siteID.c_str());
+			}
 			else if (htype == HTYPE_SBFSpot) {
 				if (username == "")
 					return;
@@ -1240,6 +1252,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
+				(htype == HTYPE_SolarEdgeAPI) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -14435,6 +14448,45 @@ namespace http {
 							root["result"][ii]["gu"] = szTmp;
 						}
 						ii++;
+					}
+					//Previous Year
+					ii = 0;
+					result = m_sql.safe_query(
+						"SELECT Direction, Speed_Min, Speed_Max, Gust_Min,"
+						" Gust_Max, Date "
+						"FROM %s WHERE (DeviceRowID==%llu AND Date>='%q'"
+						" AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStartPrev, szDateEndPrev);
+					if (result.size() > 0)
+					{
+						std::vector<std::vector<std::string> >::const_iterator itt;
+						for (itt = result.begin(); itt != result.end(); ++itt)
+						{
+							std::vector<std::string> sd = *itt;
+
+							root["resultprev"][ii]["d"] = sd[5].substr(0, 16);
+							root["resultprev"][ii]["di"] = sd[0];
+
+							int intSpeed = atoi(sd[2].c_str());
+							int intGust = atoi(sd[4].c_str());
+							if (m_sql.m_windunit != WINDUNIT_Beaufort)
+							{
+								sprintf(szTmp, "%.1f", float(intSpeed) * m_sql.m_windscale);
+								root["resultprev"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%.1f", float(intGust) * m_sql.m_windscale);
+								root["resultprev"][ii]["gu"] = szTmp;
+							}
+							else
+							{
+								float windspeedms = float(intSpeed)*0.1f;
+								float windgustms = float(intGust)*0.1f;
+								sprintf(szTmp, "%d", MStoBeaufort(windspeedms));
+								root["resultprev"][ii]["sp"] = szTmp;
+								sprintf(szTmp, "%d", MStoBeaufort(windgustms));
+								root["resultprev"][ii]["gu"] = szTmp;
+							}
+							ii++;
+						}
 					}
 				}
 			}//month or year

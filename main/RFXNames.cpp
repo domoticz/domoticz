@@ -199,7 +199,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_LogitechMediaServer, "Logitech Media Server" },
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
-		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface"},
+		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

@@ -184,6 +184,7 @@
     <ClInclude Include="..\hardware\SatelIntegra.h" />
     <ClInclude Include="..\hardware\SBFSpot.h" />
     <ClInclude Include="..\hardware\serial\serial.h" />
+    <ClInclude Include="..\hardware\SolarEdgeAPI.h" />
     <ClInclude Include="..\hardware\SolarEdgeBase.h" />
     <ClInclude Include="..\hardware\SolarEdgeTCP.h" />
     <ClInclude Include="..\hardware\SolarMaxTCP.h" />
@@ -374,6 +375,7 @@
     <ClCompile Include="..\hardware\SBFSpot.cpp" />
     <ClCompile Include="..\hardware\serial\impl\win.cpp" />
     <ClCompile Include="..\hardware\serial\serial.cpp" />
+    <ClCompile Include="..\hardware\SolarEdgeAPI.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeBase.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeTCP.cpp" />
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp" />

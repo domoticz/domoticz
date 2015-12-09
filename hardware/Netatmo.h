@@ -50,7 +50,9 @@ private:
 	bool SetAway(const int idx, const bool bIsAway);
 
 	bool Login();
-	bool RefreshToken();
+	bool RefreshToken(const bool bForce = false);
+	bool LoadRefreshToken();
+	void StoreRefreshToken();
 	bool m_isLogged;
 
 	int GetBatteryLevel(const std::string &ModuleType, const int battery_vp);

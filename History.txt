@@ -13,6 +13,7 @@ Version 2.3xxx
 - Implemented: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: RFXCom support for Legrand CAD
+- Implemented: SolarEdge via Web API
 - Implemented: Thermosmart option to set specify outside temperature sensor
 - Implemented: Waterflow sensor
 - Implemented: Wind Beaufort scale
