@@ -1,6 +1,7 @@
 Version 2.3xxx
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Wind+Temp+Chill
+- Implemented: Log View, added options to display All/Status/Error
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
 - Implemented: MySensors Ethernet gateway will now request the gateway version on startup
 - Implemented: MySensors, Implemented V_CUSTOM

@@ -1534,7 +1534,14 @@ namespace http {
 				s_str >> lastlogtime;
 			}
 
-			std::list<CLogger::_tLogLineStruct> logmessages = _log.GetLog();
+			_eLogLevel lLevel = LOG_NORM;
+			std::string sloglevel = request::findValue(&req, "loglevel");
+			if (!sloglevel.empty())
+			{
+				lLevel = (_eLogLevel)atoi(sloglevel.c_str());
+			}
+
+			std::list<CLogger::_tLogLineStruct> logmessages = _log.GetLog(lLevel);
 			std::list<CLogger::_tLogLineStruct>::const_iterator itt;
 			int ii = 0;
 			for (itt = logmessages.begin(); itt != logmessages.end(); ++itt)
@@ -7324,7 +7331,12 @@ namespace http {
 					CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(hardwareID);
 					if (pHardware != NULL)
 					{
-						if (pHardware->HwdType == HTYPE_Wunderground)
+						if (pHardware->HwdType == HTYPE_SolarEdgeAPI)
+						{
+							int seSensorTimeOut = 60 * 24 * 60;
+							bHaveTimeout = (now - checktime >= seSensorTimeOut * 60);
+						}
+						else if (pHardware->HwdType == HTYPE_Wunderground)
 						{
 							CWunderground *pWHardware = (CWunderground *)pHardware;
 							std::string forecast_url = pWHardware->GetForecastURL();

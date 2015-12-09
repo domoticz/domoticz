@@ -68,6 +68,12 @@ SolarEdgeAPI::~SolarEdgeAPI(void)
 
 void SolarEdgeAPI::Init()
 {
+	m_LastUsage=0;
+	m_LastCounter=0;
+	m_LastTemp=0;
+	m_LastAC=0;
+	m_LastDC=0;
+	m_LastHz=0;
 }
 
 bool SolarEdgeAPI::StartHardware()

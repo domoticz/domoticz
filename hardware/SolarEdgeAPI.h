@@ -16,6 +16,13 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
+	double m_LastUsage;
+	double m_LastCounter;
+	float m_LastTemp;
+	float m_LastAC;
+	float m_LastDC;
+	float m_LastHz;
+
 	void Init();
 	bool StartHardware();
 	bool StopHardware();
