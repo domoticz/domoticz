@@ -256,6 +256,7 @@ hardware/SatelIntegra.cpp
 hardware/SBFSpot.cpp
 hardware/serial/serial.cpp
 hardware/serial/impl/unix.cpp
+hardware/SolarEdgeAPI.cpp
 hardware/SolarEdgeBase.cpp
 hardware/SolarEdgeTCP.cpp
 hardware/SolarMaxTCP.cpp
