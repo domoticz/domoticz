@@ -363,12 +363,14 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		if (Name_ID.find("PONG") != std::string::npos) {
 			//_log.Log(LOG_STATUS, "RFLink: PONG received!...");
             mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
+			m_LastHeartbeat = mytime(&m_LastHeartbeatReceive);
             m_bTXokay = true; // variable to indicate an OK was received
 			return true;
 		}
 		if (Name_ID.find("OK") != std::string::npos) {
 			//_log.Log(LOG_STATUS, "RFLink: OK received!...");
 			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
+			m_LastHeartbeat = mytime(&m_LastHeartbeatReceive);
 			m_bTXokay = true; // variable to indicate an OK was received
 			return true;
 		}
@@ -385,6 +387,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		return false; //??
 
 	mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
+	m_LastHeartbeat = mytime(&m_LastHeartbeatReceive);
 
 	std::stringstream ss;
 	unsigned int ID;
@@ -491,14 +494,14 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		else if (results[ii].find("WINSP") != std::string::npos)
 		{
 			bHaveWindSpeed = true;
-			iTemp = RFLinkGetHexStringValue(results[ii]);
-			windspeed = (float(iTemp) * 0.0277778f)/10; //convert to m/s
+			iTemp = RFLinkGetHexStringValue(results[ii]); // received value is km/u
+			windspeed = (float(iTemp) * 0.0277778f)/10;   //convert to m/s
 		}
 		else if (results[ii].find("WINGS") != std::string::npos)
 		{
 			bHaveWindGust = true;
-			iTemp = RFLinkGetHexStringValue(results[ii]);
-			windgust = (float(iTemp) * 0.0277778f)/10; //convert to m/s
+			iTemp = RFLinkGetHexStringValue(results[ii]); // received value is km/u
+			windgust = (float(iTemp) * 0.0277778f)/10;    //convert to m/s
 		}
 		else if (results[ii].find("WINTMP") != std::string::npos)
 		{

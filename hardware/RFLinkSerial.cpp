@@ -79,8 +79,7 @@ void CRFLinkSerial::Do_Work()
 				{
 					//Send ping (keep alive)
 					time_t atime = mytime(NULL);
-					if (atime - m_LastReceivedTime > 50)
-					{
+					if (atime - m_LastReceivedTime > 50) {
 						//Timeout
 						_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 50 seconds, restarting...");
 						m_retrycntr = 0;
@@ -97,8 +96,12 @@ void CRFLinkSerial::Do_Work()
 						}
 					}
 					else {
-						if (atime - m_LastReceivedTime > 40)
-							write("10;PING;\n");
+						//time_t xtime = atime - m_LastReceivedTime;
+						//_log.Log(LOG_STATUS, "RFLink: %d : %d - %d : %d", m_LastReceivedTime, m_LastHeartbeat, atime, xtime);
+						if (atime - m_LastReceivedTime > 39) {
+						   //_log.Log(LOG_STATUS, "RFLink: ping...");
+						   write("10;PING;\n");
+					    }
 					}
 				}
 			}
