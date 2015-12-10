@@ -76,6 +76,7 @@ public:
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return true; };
 	void DoDecodeMessage(const CTCPClient *pClient, const unsigned char *pRXCommand);
 private:
+	boost::mutex m_server_mutex;
 	CTCPServerInt *m_pTCPServer;
 	boost::shared_ptr<boost::thread> m_thread;
 	bool StartHardware() { return false; };

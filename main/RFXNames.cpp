@@ -175,7 +175,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_TOONTHERMOSTAT, "Toon Thermostat" },
 		{ HTYPE_ECODEVICES, "Eco Devices via LAN interface" },
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
-		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface" },
+		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface/CM19A USB" },
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
@@ -199,7 +199,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_LogitechMediaServer, "Logitech Media Server" },
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
-		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface"},
+		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -733,9 +734,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeAvidsen, "Avidsen" },
 		{ pTypeGeneralSwitch, sSwitchTypeBofu, "BofuMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "BrelMotor" },
-		{ pTypeGeneralSwitch, sSwitchTypeSomeFy, "SomeFy" },
+		{ pTypeGeneralSwitch, sSwitchTypeRTS, "RTS" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
 		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
+		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);

@@ -124,6 +124,19 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		m_lastlog.erase(m_lastlog.begin());
 	m_lastlog.push_back(_tLogLineStruct(level,sstr.str()));
 
+	if (level == LOG_STATUS)
+	{
+		if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_status_log.erase(m_last_status_log.begin());
+		m_last_status_log.push_back(_tLogLineStruct(level, sstr.str()));
+	}
+	else if (level == LOG_ERROR)
+	{
+		if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_error_log.erase(m_last_error_log.begin());
+		m_last_error_log.push_back(_tLogLineStruct(level, sstr.str()));
+	}
+
 	if (!g_bRunAsDaemon)
 	{
 		//output to console
@@ -187,6 +200,19 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 	if (m_lastlog.size()>=MAX_LOG_LINE_BUFFER)
 		m_lastlog.erase(m_lastlog.begin());
 	m_lastlog.push_back(_tLogLineStruct(level,message));
+
+	if (level == LOG_STATUS)
+	{
+		if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_status_log.erase(m_last_status_log.begin());
+		m_last_status_log.push_back(_tLogLineStruct(level, message));
+	}
+	else if (level == LOG_ERROR)
+	{
+		if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_error_log.erase(m_last_error_log.begin());
+		m_last_error_log.push_back(_tLogLineStruct(level, message));
+	}
 
 	if (!g_bRunAsDaemon)
 	{
@@ -256,14 +282,32 @@ void CLogger::EnableLogTimestamps(const bool bEnableTimestamps)
 	m_bEnableLogTimestamps = bEnableTimestamps;
 }
 
-std::list<CLogger::_tLogLineStruct> CLogger::GetLog()
+std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
 	std::deque<_tLogLineStruct>::const_iterator itt;
-	for (itt=m_lastlog.begin(); itt!=m_lastlog.end(); ++itt)
+
+	if (lType == LOG_NORM)
 	{
-		mlist.push_back(*itt);
-	};
+		for (itt = m_lastlog.begin(); itt != m_lastlog.end(); ++itt)
+		{
+			mlist.push_back(*itt);
+		};
+	}
+	else if (lType == LOG_STATUS)
+	{
+		for (itt = m_last_status_log.begin(); itt != m_last_status_log.end(); ++itt)
+		{
+			mlist.push_back(*itt);
+		};
+	}
+	else if (lType == LOG_ERROR)
+	{
+		for (itt = m_last_error_log.begin(); itt != m_last_error_log.end(); ++itt)
+		{
+			mlist.push_back(*itt);
+		};
+	}
 	return mlist;
 }

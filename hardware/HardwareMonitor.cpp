@@ -370,6 +370,19 @@ bool CHardwareMonitor::InitWMI()
 	hr = m_pLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, NULL, 0, NULL, NULL, &m_pServicesSystem);
 	if (FAILED(hr))
 		return false;
+/*
+	// Set security levels on the proxy
+	hr = CoSetProxyBlanket(
+		m_pServicesSystem,                        // Indicates the proxy to set
+		RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
+		RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
+		NULL,                        // Server principal name 
+		RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx 
+		RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
+		NULL,                        // client identity
+		EOAC_NONE                    // proxy capabilities 
+		);
+*/
 	if (!IsOHMRunning())
 	{
 		_log.Log(LOG_STATUS, "Hardware Monitor: Warning, OpenHardware Monitor is not installed on this system. (http://openhardwaremonitor.org)");

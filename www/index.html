@@ -3,7 +3,7 @@
 <head>
 		<meta charset="utf-8">
 		<title>Domoticz</title>
-		<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
@@ -17,42 +17,61 @@
 		<link rel="icon" sizes="196x196" href="images/logo.png">
 		<link rel="icon" sizes="192x192" href="images/logo192.png">
 
-		<!-- iPhone -->
-		<link href="images/startup/apple-touch-startup-image-320x460.png" 
-			media="(device-width: 320px)" 
-			rel="apple-touch-startup-image">
-		
-		<!-- iPhone (Retina) -->
-		<link href="images/startup/apple-touch-startup-image-640x920.png" 
-			media="(device-width: 320px) and (-webkit-device-pixel-ratio: 2)" 
-			rel="apple-touch-startup-image">
 
-		<!-- iPhone 5 (Retina) -->
-		<link href="images/startup/apple-touch-startup-image-640x1096.png"
-			media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
-			rel="apple-touch-startup-image">
+		<!-- ICONS -->
 
-		<!-- iPad (portrait) -->
-		<link href="images/startup/apple-touch-startup-image-768x1004.png" 
-					media="(device-width: 768px) and (orientation: portrait)" 
-					rel="apple-touch-startup-image">
+	    <!-- iPad retina icon -->
+	    <link href="images/logo/152.png" sizes="152x152" rel="apple-touch-icon-precomposed">
 
-		<!-- iPad (landscape) -->
-		<link href="images/startup/apple-touch-startup-image-1024x748.png" 
-					media="(device-width: 768px) and (orientation: landscape)" 
-					rel="apple-touch-startup-image">      
+	    <!-- iPad retina icon (iOS < 7) -->
+	    <link href="images/logo/144.png" sizes="144x144" rel="apple-touch-icon-precomposed">
 
-		<!--iPad (Retina, portrait) -->
-		<link href="images/startup/apple-touch-startup-image-1536x2008.png" 
-					media="(device-width: 768px) 
-					 and (orientation: portrait) and (-webkit-device-pixel-ratio: 2)" 
-					rel="apple-touch-startup-image">
+	    <!-- iPad non-retina icon -->
+	    <link href="images/logo/76.png" sizes="76x76" rel="apple-touch-icon-precomposed">
 
-		<!-- iPad (Retina, landscape) -->
-		<link href="images/startup/apple-touch-startup-image-2048x1496.png" 
-					media="(device-width: 768px) 
-					 and (orientation: landscape) and (-webkit-device-pixel-ratio: 2)" 
-					rel="apple-touch-startup-image"> 
+	    <!-- iPad non-retina icon (iOS < 7) -->
+	    <link href="images/logo/72.png" sizes="72x72" rel="apple-touch-icon-precomposed">
+
+	    <!-- iPhone 6 Plus icon -->
+	    <link href="images/logo/180.png" sizes="120x120" rel="apple-touch-icon-precomposed">
+
+	    <!-- iPhone retina icon (iOS < 7) -->
+	    <link href="images/logo/114.png" sizes="114x114" rel="apple-touch-icon-precomposed">
+
+	    <!-- iPhone non-retina icon (iOS < 7) -->
+	    <link href="images/logo/57.png" sizes="57x57" rel="apple-touch-icon-precomposed">
+
+		<!-- STARTUP IMAGES -->
+
+	    <!-- iPad retina portrait startup image -->
+	    <link href="images/startup/apple-touch-startup-image-1536x2008.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" rel="apple-touch-startup-image">
+
+		<!-- iPad retina landscape startup image -->
+		<link href="images/startup/apple-touch-startup-image-2048x1496.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" rel="apple-touch-startup-image">
+
+		<!-- iPad non-retina portrait startup image -->
+		<link href="images/startup/apple-touch-startup-image-768x1004.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 1) and (orientation: portrait)" rel="apple-touch-startup-image">
+
+		<!-- iPad non-retina landscape startup image -->
+		<link href="images/startup/apple-touch-startup-image-1024x748.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 1) and (orientation: landscape)" rel="apple-touch-startup-image">
+
+		<!-- iPhone 6 Plus portrait startup image -->
+		<link href="images/startup/apple-touch-startup-image-1242x2148.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" rel="apple-touch-startup-image">
+
+		<!-- iPhone 6 Plus landscape startup image -->
+		<link href="images/startup/apple-touch-startup-image-2208x1182.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" rel="apple-touch-startup-image">
+
+		<!-- iPhone 6 startup image -->
+		<link href="images/startup/apple-touch-startup-image-750x1294.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
+
+		<!-- iPhone 5 startup image -->
+		<link href="images/startup/apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
+
+		<!-- iPhone < 5 retina startup image -->
+		<link href="images/startup/apple-touch-startup-image-640x920.png" media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
+
+		<!-- iPhone < 5 non-retina startup image -->
+		<link href="images/startup/apple-touch-startup-image-320x460.png" media="(device-width: 320px) and (device-height: 480px) and (-webkit-device-pixel-ratio: 1)" rel="apple-touch-startup-image">
 
         <link rel="stylesheet" href="css/bootstrap.css">
         <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
@@ -64,7 +83,7 @@
         <link type="text/css" rel="stylesheet" href="css/jquery-ui-timepicker-addon.css" />
         <link type="text/css" rel="stylesheet" href="acttheme/custom.css" />
         <link type="text/css" rel="stylesheet" href="css/remote.css" />
-        
+
         <script src="js/jquery-1.11.3.min.js"></script>
 		<script src="js/i18next-1.8.0.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
@@ -97,7 +116,7 @@
 
 function NotifyCacheRefresh()
 {
-	$.cachenoty=generate_noty('information', '<b>' + $.t('Browser Cache is being refreshed') + '...</b><br>' + $.t('Please standby') + '...', false);
+	$.cachenoty=generate_noty('information', '<b>' + ($.t !== undefined ?  $.t('Browser Cache is being refreshed') : 'Browser Cache is being refreshed') + '...</b><br>' + ($.t !== undefined ? $.t('Please standby') : 'Please standby') + '...', false);
 	$.cachecount=0
 	$.cachetotal=0
 }
@@ -132,7 +151,7 @@ function ShowUpdateNotification(Revision) {
 function CheckForUpdate(showdialog) {
 	$.ajax({
 		 url: "json.htm?type=command&param=checkforupdate&forced=" + showdialog,
-		 async: false, 
+		 async: false,
 		 dataType: 'json',
 		 success: function(data) {
 			var urights=data.statuscode;
@@ -149,7 +168,7 @@ function CheckForUpdate(showdialog) {
 				userrights : urights,
 				hasupdatesupport : false
 			};
-			
+
 			if (data.HaveUpdate == true) {
 				if (showdialog) {
 					bootbox.confirm($.t("Update Available !... Update Now?")+"<br>"+$.t('Version')+" #"+data.revision, function(result) {
@@ -176,7 +195,7 @@ function CheckForUpdate(showdialog) {
 					bootbox.alert($.t("Error communicating to server!"));
 				}
 				return false;
-		 }     
+		 }
 	});
 	return false;
 }
@@ -185,16 +204,16 @@ function ReplaceDevice(idx,backfunction)
 {
 	$.ajax({
 		 url: "json.htm?type=gettransfers&idx=" + idx,
-		 async: false, 
+		 async: false,
 		 dataType: 'json',
 		 success: function(data) {
-				if (typeof data.result == 'undefined') 
+				if (typeof data.result == 'undefined')
 				{
 					bootbox.alert($.t('No devices to Transfer too!'));
 					return;
 				}
 				$("#dialog-replacedevice #newdevice").html("");
-				
+
 				$.each(data.result, function(i,item){
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.Name);
@@ -237,7 +256,7 @@ $(document).ready(function() {
 		LastPlanSelected: 0,
 		DashboardType: 0
 	};
-	
+
 	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
 		$.myglobals.ismobileint=true;
@@ -249,7 +268,7 @@ $(document).ready(function() {
 		browser[ matched.browser ] = true;
 		browser.version = matched.version;
 	}
-	
+
 	if ( browser.msie ) {
 		var bVersion=parseFloat(browser.version);
 		if (bVersion < 10.0) {
@@ -262,11 +281,11 @@ $(document).ready(function() {
 			{
 				NotifyCacheRefresh();
 			}, false);
-			
-			window.applicationCache.addEventListener('updateready', function(e) 
+
+			window.applicationCache.addEventListener('updateready', function(e)
 			{
 				ClearNotifyCacheRefresh();
-				if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+				if (window.applicationCache.status == window.applicationCache.UPDATEREADY)
 				{
 					// Browser downloaded a new app cache.
 					// Swap it in and reload the page to get the new hotness.
@@ -275,14 +294,14 @@ $(document).ready(function() {
 					}
 					catch(error) {
 						console.log(error.code);
-					}					
+					}
 					window.location.reload();
 				}
 			}, false);
-			window.applicationCache.addEventListener('cached', function(e) 
+			window.applicationCache.addEventListener('cached', function(e)
 			{
 				ClearNotifyCacheRefresh();
-				if (window.applicationCache.status == window.applicationCache.UPDATEREADY) 
+				if (window.applicationCache.status == window.applicationCache.UPDATEREADY)
 				{
 					// Browser downloaded a new app cache.
 					// Swap it in and reload the page to get the new hotness.
@@ -291,11 +310,11 @@ $(document).ready(function() {
 					}
 					catch(error) {
 						console.log(error.code);
-					}					
+					}
 					window.location.reload();
 				}
 			}, false);
-			
+
 			window.applicationCache.addEventListener('error', function(e)
 			{
 				var errText = "Browser Cache refresh failed.";
@@ -324,7 +343,7 @@ $(document).ready(function() {
 				$.cachetotal=e.total
 			}, false);
 	}
-	
+
 	$("#appversion").click( function( e ) {
 		e.preventDefault();
 		$.myglobals.historytype=1;
@@ -341,11 +360,11 @@ $(document).ready(function() {
 	window.myglobals=$.myglobals;
 
 	var dialog_replacedevice_buttons = {};
-	
+
 	dialog_replacedevice_buttons["OK"]=function() {
 		  var bValid = true;
 		  $( this ).dialog( "close" );
-		  
+
 							var NewDeviceIdx=$("#dialog-replacedevice #newdevice option:selected").val();
 							if (typeof NewDeviceIdx == 'undefined') {
 								bootbox.alert($.t('No New Device Selected!'));
@@ -353,7 +372,7 @@ $(document).ready(function() {
 							}
 							$.ajax({
 								 url: "json.htm?type=transferdevice&idx=" + $.devIdx + "&newidx=" + NewDeviceIdx,
-								 async: false, 
+								 async: false,
 								 dataType: 'json',
 								 success: function(data) {
 									if (data.status == 'OK') {
@@ -366,7 +385,7 @@ $(document).ready(function() {
 								 error: function(){
 										HideNotify();
 										ShowNotify($.t('Problem Transfering Device!'), 2500, true);
-								 }     
+								 }
 							});
 	};
 	dialog_replacedevice_buttons["Cancel"]=function() {
@@ -405,15 +424,15 @@ $(document).ready(function() {
 					<a id="popup_therm_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" onclick="ThermDown()"></a>
 					<a id="popup_therm_stop"><img src="images/Stop48.png" class="lcursor" height="48" width="48" onclick="ThermStop()"></a>
 				</td>
-			</tr>		
+			</tr>
 			<tr>
 				<td align="left" style="vertical-align: center;">
 					<a id="popup_therm_2up"><img src="images/Up48_2.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="ThermUp2()"></a>
 					<a id="popup_therm_2down"><img src="images/Down48_2.png" class="lcursor" height="48" width="48" onclick="ThermDown2()"></a>
 				</td>
-			</tr>		
+			</tr>
 		</table>
-	</div> 
+	</div>
 	<div id="rgbw_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
 		<div class="ui-close" onclick="CloseRGBWPopup()"></div>
 		<table class="display" border="0" cellpadding="0" cellspacing="0">
@@ -455,7 +474,7 @@ $(document).ready(function() {
 				</td>
 			</tr>
 		</table>
-	</div> 
+	</div>
 	<div id="rfy_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
 		<div class="ui-close" onclick="CloseRFYPopup()"></div>
 		<table class="display" border="0" cellpadding="0" cellspacing="0">
@@ -468,7 +487,7 @@ $(document).ready(function() {
 				</td>
 			</tr>
 		</table>
-	</div> 
+	</div>
 	<div id="globaldaylog" style="display:none;">
 	  <h2 data-i18n="Day">Day</h2>
 	  <div id="globaldaygraph" style="height: 300px;"></div>
@@ -614,42 +633,42 @@ $(document).ready(function() {
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-1,-10)"/>
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad2)" onclick="javascript:click_media_remote('Right');" >
 							<title>Right</title>
-						</use>	
+						</use>
 						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
 					</g>
 					<g transform="rotate(90,500,300)">
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(10,-1)"/>
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Up');" >
 							<title>Up</title>
-						</use>	
+						</use>
 						<use xlink:href="#symTriangle" class="remoteshadow"  transform="rotate(90,230,560)"/>
 					</g>
 					<g transform="rotate(270,500,300)">
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-10,1)"/>
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#grad4)" onclick="javascript:click_media_remote('Down');" >
 							<title>Down</title>
-						</use>	
+						</use>
 						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
 					</g>
 				</g>
 				<g transform="translate(0,20)">
 					<g>
 						<g>
-							<circle cx="501" cy="870" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="870" r="110" class="remoteshadow" />
 							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('FullScreen');">
 								<title>Fullscreen</title>
 							</circle>
 							<use xlink:href="#symFullscreen" class="remoteshadow" transform="translate(460,820)"/>
 						</g>
 						<g>
-							<circle cx="501" cy="1110" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="1110" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1100" r="110" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('ShowSubtitles');">
 								<title>Subtitles</title>
 							</circle>
 							<use xlink:href="#symSubtitle" class="remoteshadow" transform="translate(440,1060)"/>
 						</g>
 						<g>
-							<circle cx="501" cy="1350" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="1350" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1340" r="110" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('Stop');">
 								<title>Stop</title>
 							</circle>
@@ -658,7 +677,7 @@ $(document).ready(function() {
 					</g>
 					<g transform="rotate(90,500,1000) translate(50,240) scale(1.1)">
 						<g>
-							<circle cx="510" cy="999" r="100" class="remoteshadow" /> 
+							<circle cx="510" cy="999" r="100" class="remoteshadow" />
 							<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad3)"  onclick="javascript:click_media_remote('Channels');">
 								<title>Channel</title>
 							</circle>
@@ -681,7 +700,7 @@ $(document).ready(function() {
 					<text x="160" y="1110" class="remotetext" style="font-size: 90px; font-weight: bold;">CH</text>
 					<g transform="rotate(90,500,1000) translate(50,-440) scale(1.1)">
 						<g>
-							<circle cx="510" cy="999" r="100" class="remoteshadow" /> 
+							<circle cx="510" cy="999" r="100" class="remoteshadow" />
 							<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad3)" onclick="javascript:click_media_remote('Mute');">
 								<title>Mute</title>
 							</circle>
@@ -733,7 +752,7 @@ $(document).ready(function() {
 						<path transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z" class="remoteshadow"/>
 					</g>
 					<g>
-						<circle cx="500" cy="1010" r="100" class="remoteshadow" /> 
+						<circle cx="500" cy="1010" r="100" class="remoteshadow" />
 						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#grad1)" onclick="javascript:click_media_remote('PlayPause');">
 							<title>Play/Pause</title>
 						</circle>
@@ -792,66 +811,66 @@ $(document).ready(function() {
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-1,-10)"/>
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#gradient2)" onclick="javascript:click_lmsplayer_remote('Right');">
 							<title>Right</title>
-						</use>	
+						</use>
 						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
 					</g>
 					<g transform="rotate(90,500,300)">
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(10,-1)"/>
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#gradient3)" onclick="javascript:click_lmsplayer_remote('Up');">
 							<title>Up</title>
-						</use>	
+						</use>
 						<use xlink:href="#symTriangle" class="remoteshadow"  transform="rotate(90,230,560)"/>
 					</g>
 					<g transform="rotate(270,500,300)">
 						<use xlink:href="#btnArrow" class="remoteshadow" transform="translate(-10,1)"/>
 						<use xlink:href="#btnArrow" class="remotehoverable" fill="url(#gradient4)" onclick="javascript:click_lmsplayer_remote('Down');">
 							<title>Down</title>
-						</use>	
+						</use>
 						<use xlink:href="#symTriangle" class="remoteshadow" transform="rotate(90,230,560)"/>
 					</g>
 				</g>
 				<g transform="translate(0,20)">
 					<g transform="translate(-335,0)">
 						<g>
-							<circle cx="501" cy="870" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="870" r="110" class="remoteshadow" />
 							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Favorites');">
 								<title>Favorites</title>
 							</circle>
 							<use xlink:href="#symFavorites" class="remoteshadow" transform="translate(460,820)"/>
 						</g>
 						<g>
-							<circle cx="501" cy="1110" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="1110" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1100" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Browse');">
 								<title>Browse</title>
 							</circle>
 							<use xlink:href="#symBrowse" class="remoteshadow" transform="translate(450,1055)"/>
 						</g>
 						<g>
-							<circle cx="501" cy="1350" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="1350" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1340" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('NowPlaying');">
 								<title>Now playing</title>
 							</circle>
 							<use xlink:href="#symNowPlaying" class="remoteshadow" transform="translate(450,1300)"/>
 						</g>
 					</g>
-					
+
 					<g>
 						<g>
-							<circle cx="501" cy="870" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="870" r="110" class="remoteshadow" />
 							<circle cx="500" cy="860" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Shuffle');">
 								<title>Shuffle</title>
 							</circle>
 							<use xlink:href="#symShuffle" class="remoteshadow" transform="translate(445,810)"/>
 						</g>
 						<g>
-							<circle cx="501" cy="1110" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="1110" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1100" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Repeat');">
 								<title>Repeat</title>
 							</circle>
 							<use xlink:href="#symRepeat" class="remoteshadow" transform="translate(450,1050)"/>
 						</g>
 						<g>
-							<circle cx="501" cy="1350" r="110" class="remoteshadow" /> 
+							<circle cx="501" cy="1350" r="110" class="remoteshadow" />
 							<circle cx="500" cy="1340" r="110" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Stop');">
 								<title>Stop</title>
 							</circle>
@@ -860,7 +879,7 @@ $(document).ready(function() {
 					</g>
 					<g transform="rotate(90,500,1000) translate(50,-440) scale(1.1)">
 						<g>
-							<circle cx="510" cy="999" r="100" class="remoteshadow" /> 
+							<circle cx="510" cy="999" r="100" class="remoteshadow" />
 							<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient3)" onclick="javascript:click_lmsplayer_remote('Mute');">
 								<title>Mute</title>
 							</circle>
@@ -898,14 +917,14 @@ $(document).ready(function() {
 						<path class="remoteshadow" transform="rotate(180,320,1000)" d="m 280 960 0,80 40,-40 m 0 -40 0,80 40,-40z"/>
 					</g>
 					<g transform="translate(-120,0)">
-						<circle cx="500" cy="1010" r="100" class="remoteshadow" /> 
+						<circle cx="500" cy="1010" r="100" class="remoteshadow" />
 						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Play');">
 							<title>Play</title>
 						</circle>
 						<path class="remoteshadow" d="m 485 960 0,80 40,-40"/>
 					</g>
 					<g transform="translate(120,0)">
-						<circle cx="500" cy="1010" r="100" class="remoteshadow" /> 
+						<circle cx="500" cy="1010" r="100" class="remoteshadow" />
 						<circle cx="500" cy="1000" r="100" class="remotehoverable" fill="url(#gradient1)" onclick="javascript:click_lmsplayer_remote('Pause');">
 							<title>Pause</title>
 						</circle>
@@ -914,7 +933,7 @@ $(document).ready(function() {
 				</g>
 			</g>
 		</svg>
-	</div>	
+	</div>
 	<div id="daymonthyearlog" style="display:none;">
 		<h2 data-i18n="Day">Day</h2>
 		<div id="daygraph" style="height: 300px;"></div>
@@ -1346,7 +1365,7 @@ $(document).ready(function() {
 									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
 									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
                                     <li id="dUpdate" class="divider"></li>
-									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li> 
+									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
                                     <li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
                                     <li class="dropdown-submenu">
 										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>

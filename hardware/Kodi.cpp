@@ -947,8 +947,11 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 			case gswitch_sStop:
 				(*itt)->SendCommand("stop");
 				return true;
+			case gswitch_sPlay:
+				(*itt)->SendCommand("play");
+				return true;
 			case gswitch_sPause:
-				(*itt)->SendCommand("playpause");
+				(*itt)->SendCommand("pause");
 				return true;
 			case gswitch_sSetVolume:
 				(*itt)->SendCommand("setvolume", iParam);
