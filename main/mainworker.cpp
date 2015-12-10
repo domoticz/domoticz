@@ -84,6 +84,7 @@
 #include "../hardware/Comm5TCP.h"
 #include "../hardware/CurrentCostMeterSerial.h"
 #include "../hardware/CurrentCostMeterTCP.h"
+#include "../hardware/SolarEdgeAPI.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -798,6 +799,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
+		break;
+	case HTYPE_SolarEdgeAPI:
+		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);
 		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
@@ -9854,8 +9858,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	//when level = 0, set switch command to Off
 	if (switchcmd=="Set Level")
 	{
-		//if (level > 0)
-			//level-=1;
+		if (level > 0)
+			level-=1;
 		if (level==0)
 			switchcmd="Off";
 	}

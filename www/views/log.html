@@ -1,10 +1,39 @@
 <div id="logcontent" class="logcontent container">
-	<div style="text-align:right">
-		<span data-i18n="Filter">Filter</span>: <input ng-model='filterExpr'>
-	</div>
-	<div id="logdata" class="log" scroll-glue>
-		<div ng-repeat='item in filtered = (logitems | filter:filterExpr) track by $index'>
-			<span class="{{item.mclass}}" ng-bind-html='item.text' />
+	<table style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td align="left">
+				<ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
+					<li class="active"><a data-target="#taball" data-toggle="tab" data-i18n="All">All</a></li>
+					<li><a data-target="#tabstatus" data-toggle="tab" data-i18n="Status">Status</a></li>
+					<li><a data-target="#taberror" data-toggle="tab" data-i18n="Error">Error</a></li>
+				</ul>
+			</td>
+			<td align="right" valign="bottom">
+				<span data-i18n="Filter">Filter</span>: <input ng-model='filterExpr'>
+			</td>
+		</tr>
+	</table>
+	<div id="my-tab-content" class="tab-content">
+		<div class="tab-pane active" id="taball">
+			<div id="logdata" class="log" scroll-glue>
+				<div ng-repeat='item in filtered = (logitems | filter:filterExpr) track by $index'>
+					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+				</div>
+			</div>
+		</div>
+		<div class="tab-pane" id="tabstatus">
+			<div id="logdata_status" class="log" scroll-glue>
+				<div ng-repeat='item in filtered = (logitems_status | filter:filterExpr) track by $index'>
+					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+				</div>
+			</div>
+		</div>
+		<div class="tab-pane" id="taberror">
+			<div id="logdata_error" class="log" scroll-glue>
+				<div ng-repeat='item in filtered = (logitems_error | filter:filterExpr) track by $index'>
+					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

@@ -358,7 +358,6 @@ void CDomoticzHardwareBase::SendRainSensor(const int NodeID, const int BatteryLe
 	tsen.RAIN.raintotal2 = (BYTE)(tr10 / 256);
 	tr10 -= (tsen.RAIN.raintotal2 * 256);
 	tsen.RAIN.raintotal3 = (BYTE)(tr10);
-
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.RAIN, defaultname.c_str(), BatteryLevel);
 }
 
