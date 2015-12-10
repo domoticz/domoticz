@@ -94,7 +94,7 @@ void CurrentCostMeterBase::ExtractReadings()
 	{
 		totalPower += reading;
 	}
-	SendWattMeter(2, 1, 255, reading, "CC Power");
+	SendWattMeter(2, 1, 255, totalPower, "CC Power");
 }
 
 bool CurrentCostMeterBase::ExtractNumberBetweenStrings(const char *startString, const char *endString, float *pResult)
