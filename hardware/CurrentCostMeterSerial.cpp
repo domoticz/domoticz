@@ -21,7 +21,7 @@
 CurrentCostMeterSerial::CurrentCostMeterSerial(const int ID, const std::string& devname, unsigned int baudRate):
 	m_stoprequested(false),
 	m_szSerialPort(devname),
-	m_baudRate(m_baudRate)
+	m_baudRate(baudRate)
 {
 	m_HwdID=ID;
 }
