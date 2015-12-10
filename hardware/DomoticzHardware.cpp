@@ -394,7 +394,6 @@ void CDomoticzHardwareBase::SendWattMeter(const int NodeID, const int ChildID, c
 	umeter.id4 = NodeID;
 	umeter.dunit = ChildID;
 	umeter.fusage = musage;
-	_log.Log(LOG_STATUS, "%f", umeter.fusage);
 	sDecodeRXMessage(this, (const unsigned char *)&umeter, defaultname.c_str(), BatteryLevel);
 }
 
