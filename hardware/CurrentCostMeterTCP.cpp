@@ -149,7 +149,7 @@ void CurrentCostMeterTCP::Do_Work()
 		else
 		{
 			char data[1028];
-			int bread=recv(m_socket,&data,sizeof(data),0);
+			int bread=recv(m_socket,data,sizeof(data),0);
 			if (m_stoprequested)
 				break;
 			m_LastHeartbeat=mytime(NULL);

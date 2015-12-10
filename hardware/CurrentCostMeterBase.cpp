@@ -54,10 +54,10 @@ void CurrentCostMeterBase::ExtractReadings()
 		return;
 	}
 	
-	double temp;
-	double sensor;
-	double type;
-	double reading;
+	float temp;
+	float sensor;
+	float type;
+	float reading;
 	
 	// if we have the sensor tag then only do the whle house one
 	// earlier versions don't have this
@@ -81,7 +81,7 @@ void CurrentCostMeterBase::ExtractReadings()
 		SendTempSensor(1, 255, temp, "Temp");
 	}
 
-	double totalPower(0.0);
+	float totalPower(0.0);
 	if(ExtractNumberBetweenStrings("<ch1><watts>", "</watts></ch1>", &reading))
 	{
 		totalPower += reading;
@@ -97,7 +97,7 @@ void CurrentCostMeterBase::ExtractReadings()
 	SendWattMeter(2, 1, 255, reading, "CC Power");
 }
 
-bool CurrentCostMeterBase::ExtractNumberBetweenStrings(const char *startString, const char *endString, double *pResult)
+bool CurrentCostMeterBase::ExtractNumberBetweenStrings(const char *startString, const char *endString, float *pResult)
 {
 	size_t startOfStart = m_buffer.find(startString);
 	size_t startOfEnd = m_buffer.find(endString);
@@ -116,7 +116,7 @@ bool CurrentCostMeterBase::ExtractNumberBetweenStrings(const char *startString, 
 	// convert to double and make sure there is no other crud
 	// as the data is sometimes corrupted
 	char* endPtr;
-	*pResult = strtod(substring.c_str(), &endPtr);
+	*pResult = strtof(substring.c_str(), &endPtr);
 	if(*endPtr == 0)
 	{
 		return true;

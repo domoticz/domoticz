@@ -15,7 +15,7 @@ protected:
 
 private:
 	void ExtractReadings();
-	bool ExtractNumberBetweenStrings(const char *startString, const char *endString, double *pResult);
+	bool ExtractNumberBetweenStrings(const char *startString, const char *endString, float *pResult);
 	std::string m_buffer;
 };
 
