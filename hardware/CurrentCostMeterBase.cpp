@@ -81,18 +81,20 @@ void CurrentCostMeterBase::ExtractReadings()
 		SendTempSensor(1, 255, temp, "Temp");
 	}
 
+	double totalPower(0.0);
 	if(ExtractNumberBetweenStrings("<ch1><watts>", "</watts></ch1>", &reading))
 	{
-		SendWattMeter(2, 1, 255, reading, "CC Power 1");
+		totalPower += reading;
 	}
 	if(ExtractNumberBetweenStrings("<ch2><watts>", "</watts></ch2>", &reading))
 	{
-		SendWattMeter(3, 1, 255, reading, "CC Power 2");
+		totalPower += reading;
 	}
 	if(ExtractNumberBetweenStrings("<ch3><watts>", "</watts></ch3>", &reading))
 	{
-		SendWattMeter(4, 1, 255, reading, "CC Power 3");
+		totalPower += reading;
 	}
+	SendWattMeter(2, 1, 255, reading, "CC Power");
 }
 
 bool CurrentCostMeterBase::ExtractNumberBetweenStrings(const char *startString, const char *endString, double *pResult)
