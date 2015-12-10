@@ -9839,6 +9839,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	unsigned char dSubType=atoi(sd[4].c_str());
 	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
+        //when asking for Toggle, just switch to the opposite value
+        if (switchcmd=="Toggle") {
+                switchcmd=(atoi(sd[7].c_str())==1?"Off":"On");
+        }
+
 	//when level = 0, set switch command to Off
 	if (switchcmd=="Set Level")
 	{
