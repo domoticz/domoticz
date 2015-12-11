@@ -74,8 +74,8 @@
 
 	<CommandClass id="133" name="COMMAND_CLASS_ASSOCIATION">
 		<Associations num_groups="5">
-			<Group index="1" max_associations="1" label="‘Lifeline’. All run-time reporting is addressed to this group." auto="true"/>
-			<Group index="2" max_associations="8" label="‘On/Off control’. This controls external heaters replicating the state of the internal relay." auto="false"/>
+			<Group index="1" max_associations="1" label="‘Lifeline’. All run-time reporting is addressed to this group." />
+			<Group index="2" max_associations="8" label="‘On/Off control’. This controls external heaters replicating the state of the internal relay." />
 		</Associations>
 	</CommandClass>
 		
