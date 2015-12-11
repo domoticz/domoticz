@@ -82,6 +82,8 @@
 #include "../hardware/SatelIntegra.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/Comm5TCP.h"
+#include "../hardware/CurrentCostMeterSerial.h"
+#include "../hardware/CurrentCostMeterTCP.h"
 #include "../hardware/SolarEdgeAPI.h"
 
 // load notifications configuration
@@ -589,6 +591,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Meteostick:
 	case HTYPE_EVOHOME_SERIAL:
 	case HTYPE_RFLINKUSB:
+	case HTYPE_CurrentCostMeter:
 	{
 			//USB/Serial
 			if (
@@ -664,6 +667,15 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type == HTYPE_RFLINKUSB)
 			{
 				pHardware = new CRFLinkSerial(ID, SerialPort);
+			}
+			else if (Type == HTYPE_CurrentCostMeter)
+			{
+				unsigned int baudRate(9600);
+				if (Mode1 == 1)
+				{
+					baudRate = 57600;
+				}
+				pHardware = new CurrentCostMeterSerial(ID, SerialPort, baudRate);
 			}
 		}
 		break;
@@ -847,6 +859,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Comm5TCP:
 		//LAN
 		pHardware = new Comm5TCP(ID, Address, Port);
+		break;
+	case HTYPE_CurrentCostMeterLAN:
+		//LAN
+		pHardware = new CurrentCostMeterTCP(ID, Address, Port);
 		break;
 	}
 
