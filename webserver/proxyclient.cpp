@@ -87,6 +87,13 @@ namespace http {
 				we_locked_prefs_mutex = false;
 				sharedData.LockPrefsMutex();
 			}
+			if (doStop) {
+				return;
+			}
+			if (b_Connected) {
+				_socket.lowest_layer().close();
+				boost::this_thread::sleep_for(boost::chrono::seconds(10));
+			}
 			b_Connected = false;
 			boost::asio::ip::tcp::resolver resolver(_io_service);
 			boost::asio::ip::tcp::resolver::query query(address, port);
@@ -115,9 +122,9 @@ namespace http {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "PROXY: Connect failed, reconnecting: %s", error.message().c_str());
 				if (!doStop) {
-					boost::this_thread::sleep_for(boost::chrono::seconds(10));
+					_log.Log(LOG_ERROR, "PROXY: Connect failed, reconnecting: %s", error.message().c_str());
+					b_Connected = true; // signal re-connect
 					Reconnect();
 				}
 			}
@@ -135,14 +142,13 @@ namespace http {
 		{
 			boost::unique_lock<boost::mutex>(writeMutex);
 			if (bytes_transferred < writePdu->length()) {
-				_log.Log(LOG_ERROR, "PROXY: Only write %ld of %ld bytes.", bytes_transferred, writePdu->length());
+				_log.Log(LOG_ERROR, "PROXY: Only wrote %ld of %ld bytes.", bytes_transferred, writePdu->length());
 			}
 			delete writePdu;
 			writePdu = NULL;
 			if (error) {
 				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
 			}
-			ProxyPdu *pdu;
 			if (!writeQ.empty()) {
 				SocketWrite(writeQ.front());
 				writeQ.pop();
@@ -206,13 +212,10 @@ namespace http {
 			}
 			else
 			{
-				if (doStop) {
-					return;
+				if (!doStop) {
+					_log.Log(LOG_ERROR, "PROXY: Handshake failed, reconnecting: %s", error.message().c_str());
+					Reconnect();
 				}
-				_log.Log(LOG_ERROR, "PROXY: Handshake failed, reconnecting: %s", error.message().c_str());
-				_socket.lowest_layer().close();
-				boost::this_thread::sleep_for(boost::chrono::seconds(10));
-				Reconnect();
 			}
 		}
 
@@ -367,10 +370,6 @@ namespace http {
 
 		PDUFUNCTION(PDU_SERV_DISCONNECT)
 		{
-			if (!(_allowed_subsystems & SUBSYSTEM_SHAREDDOMOTICZ)) {
-				_log.Log(LOG_ERROR, "PROXY: Shared Server access disallowed in settings, denying disconnect request.");
-				return;
-			}
 			bool success;
 
 			GETPDUSTRING(tokenparam);
@@ -382,9 +381,15 @@ namespace http {
 			}
 			// see if we are master
 			DomoticzTCP *slave = sharedData.findSlaveConnection(tokenparam);
-			if (slave && slave->isConnected()) {
-				_log.Log(LOG_STATUS, "PROXY: Stopping slave connection.");
-				slave->SetConnected(false);
+			if (slave) {
+				if (slave->isConnected()) {
+					_log.Log(LOG_STATUS, "PROXY: Stopping slave connection.");
+					slave->SetConnected(false);
+				}
+				if (reason == 50) {
+					// proxy was restarted, try to reconnect to slave
+					slave->SetConnected(true);
+				}
 			}
 		}
 
@@ -600,24 +605,11 @@ namespace http {
 			}
 			else
 			{
-				if (doStop) {
-					return;
-				}
-				if (error.value() == 0x140000DB) {
-					// short read
-					_log.Log(LOG_ERROR, "PROXY: Read failed, , short read");
-					// Initiate graceful connection closure.
-					_socket.lowest_layer().close();
+				if (!doStop) {
+					_log.Log(LOG_ERROR, "PROXY: Read failed, code = %d. Reconnecting: %s", error.value(), error.message().c_str());
 					// we are disconnected, reconnect
 					Reconnect();
-					return;
 				}
-				_log.Log(LOG_ERROR, "PROXY: Read failed, code = %d. Reconnecting: %s", error.value(), error.message().c_str());
-				// Initiate graceful connection closure.
-				_socket.lowest_layer().close();
-				// we are disconnected, reconnect
-				boost::this_thread::sleep_for(boost::chrono::seconds(10));
-				Reconnect();
 			}
 		}
 
