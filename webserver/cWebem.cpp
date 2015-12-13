@@ -222,10 +222,13 @@ void cWebem::RegisterWhitelistURLString(const char* idname)
   If X has been registered with cWebem then the associated function
   is called to generate text to be inserted.
 
+  returns true if any text is replaced
+
 
 */
-void cWebem::Include( std::string& reply )
+bool cWebem::Include( std::string& reply )
 {
+	bool res = false;
 	int p = 0;
 	while( 1 ) {
 		// find next request for generated text
@@ -257,6 +260,7 @@ void cWebem::Include( std::string& reply )
 				
 			}
 			reply.insert( p, ret );
+			res = true;
 		} else {
 			// no function found, look for a wide character fuction
 			std::map < std::string, webem_include_function_w >::iterator pf = myIncludes_w.find( code );
@@ -275,12 +279,14 @@ void cWebem::Include( std::string& reply )
 				cUTF utf( wret.c_str() );
 				// insert generated text
 				reply.insert( p, utf.get8() );
+				res = true;
 			}
 		}
 
 		// adjust pointer into text for insertion
 		p = q + reply.length() - reply_len;
 	}
+	return res;
 }
 
 std::istream & safeGetline( std::istream & is, std::string & line ) {
@@ -697,7 +703,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
 			if (req.keep_alive) {
 				reply::AddHeader(&rep, "Connection", "Keep-Alive");
-				reply::AddHeader(&rep, "Keep-Alive", "max=20,l timeout=10");
+				reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
 			}
 			if (session.outputfilename != "")
 			{
@@ -711,7 +717,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			reply::AddHeader(&rep, "Cache-Control", "max-age=3600, public");
 			if (req.keep_alive) {
 				reply::AddHeader(&rep, "Connection", "Keep-Alive");
-				reply::AddHeader(&rep, "Keep-Alive", "max=20,l timeout=10");
+				reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
 			}
 			if (session.outputfilename != "")
 			{
@@ -740,8 +746,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	rep.status = reply::ok;
 	rep.content.append(utf.get8(), strlen(utf.get8()));
 
-	reply::AddHeader(&rep, "Connection", "Keep-Alive");
-
 	reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 	reply::AddHeader(&rep, "Content-Type", mime_types::extension_to_type(extension) + "; charset=UTF-8");
 	reply::AddHeader(&rep, "Cache-Control", "no-cache");
@@ -750,7 +754,7 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 
 	if (req.keep_alive) {
 		reply::AddHeader(&rep, "Connection", "Keep-Alive");
-		reply::AddHeader(&rep, "Keep-Alive", "max=20,l timeout=10");
+		reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
 	}
 	return true;
 }
@@ -1221,9 +1225,7 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 				rep.content.clear();
 				rep.content.append((char*)gzip.pgzip, gzip.Length);
 				//Set new content length
-				std::string szSize=boost::lexical_cast<std::string>(rep.content.size());
-
-				rep.headers[0].value = szSize;
+				reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 				//Add gzip header
 				reply::AddHeader(&rep, "Content-Encoding", "gzip");
 				return true;
@@ -1465,8 +1467,6 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 
 void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
-	//_log.Log(LOG_NORM, "www-request: %s", req.uri.c_str());
-
 	// Initialize session
 	WebEmSession session;
 	session.remote_host = req.host;
@@ -1534,12 +1534,13 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		myWebem->CheckForAction(session, requestCopy);
 	}
 
+	modify_info mInfo;
 	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 	{
 		// do normal handling
 		try
 		{
-			request_handler::handle_request(requestCopy, rep);
+			request_handler::handle_request(requestCopy, rep, mInfo);
 		}
 		catch (...)
 		{
@@ -1547,42 +1548,70 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			return;
 		}
 
-		if (rep.headers[1].value == "text/html"
-			|| rep.headers[1].value == "text/plain"
-			|| rep.headers[1].value == "text/css"
-			|| rep.headers[1].value == "text/javascript"
-			|| rep.headers[1].value == "application/javascript"
+		// find content type header
+		std::string content_type;
+		for (unsigned int h = 0; h < rep.headers.size(); h++) {
+			if (boost::iequals(rep.headers[h].name, "Content-Type")) {
+				content_type = rep.headers[h].value;
+				break;
+			}
+		}
+
+		if (content_type == "text/html"
+			|| content_type == "text/plain"
+			|| content_type == "text/css"
+			|| content_type == "text/javascript"
+			|| content_type == "application/javascript"
 			)
 		{
 			// check if content is not gzipped, include won´t work with non-text content
 			if (!rep.bIsGZIP) {
 				// Find and include any special cWebem strings
-				myWebem->Include(rep.content);
+				if (!myWebem->Include(rep.content)) {
+					if (mInfo.mtime_support && !mInfo.is_modified) {
+						_log.Log(LOG_STATUS, "%s not modified (1).", req.uri.c_str());
+						rep = reply::stock_reply(reply::not_modified);
+						return;
+					}
+				}
 
 				// adjust content length header
 				// ( Firefox ignores this, but apparently some browsers truncate display without it.
 				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
-				rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+				reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 
 				//check gzip support if yes, send it back in gzip format
 				CompressWebOutput(req, rep);
 			}
 
 			// tell browser that we are using UTF-8 encoding
-			rep.headers[1].value += ";charset=UTF-8";
+			reply::AddHeader(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
-		else if (rep.headers[1].value.find("image/")!=std::string::npos)
+		else if (content_type.find("image/")!=std::string::npos)
 		{
+			if (mInfo.mtime_support && !mInfo.is_modified) {
+				rep = reply::stock_reply(reply::not_modified);
+				_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
+				return;
+			}
 			//Cache images
 			reply::AddHeader(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
 			reply::AddHeader(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
 		}
+		else {
+			if (mInfo.mtime_support && !mInfo.is_modified) {
+				rep = reply::stock_reply(reply::not_modified);
+				_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
+				return;
+			}
+		}
 	}
 	else
 	{
-		if (!rep.bIsGZIP)
-			CompressWebOutput(req,rep);
+		if (!rep.bIsGZIP) {
+			CompressWebOutput(req, rep);
+		}
 	}
 
 	// Set timeout to make session in use
@@ -1625,7 +1654,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			}
 		}
 	}
-
 }
 
 } //namespace server {

@@ -175,7 +175,7 @@ namespace http {
 				const char* pageurl,
 				webem_page_function_w fun );
 
-			void Include( std::string& reply );
+			bool Include( std::string& reply );
 
 			void RegisterActionCode(
 				const char* idname,

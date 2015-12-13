@@ -14,6 +14,10 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_array.hpp>
+#ifdef WIN32
+#include <boost/date_time/local_time/local_time.hpp>
+#include <boost/date_time/date.hpp>
+#endif
 #include <time.h>
 #include "mime_types.hpp"
 #include "reply.hpp"
@@ -35,22 +39,22 @@
 #define timegm _mkgmtime
 #define stat _stat
 
-extern "C" char* strptime(const char* s,
-	const char* f,
-struct tm* tm) {
-	// Isn't the C++ standard lib nice? std::get_time is defined such that its
-	// format parameters are the exact same as strptime. Of course, we have to
-	// create a string stream first, and imbue it with the current C locale, and
-	// we also have to make sure we return the right things if it fails, or
-	// if it succeeds, but this is still far simpler an implementation than any
-	// of the versions in any of the C standard libraries.
-	std::istringstream input(s);
-	input.imbue(std::locale(setlocale(LC_ALL, nullptr)));
-	input >> std::get_time(tm, f);
-	if (input.fail()) {
-		return nullptr;
+extern "C" const char* strptime(const char* s, const char* f, struct tm* tm)
+{
+	try {
+		boost::posix_time::ptime d;
+		std::stringstream ss;
+		ss.exceptions(std::ios_base::failbit);
+		boost::local_time::local_time_input_facet *input_facet = new boost::local_time::local_time_input_facet(f);
+		ss.imbue(std::locale(ss.getloc(), input_facet));
+		ss.str(s);
+		ss >> d; // throws bad date exception AND sets failbit on stream
+		*tm = boost::posix_time::to_tm(d);
+		return s + strlen(s);
 	}
-	return (char*)(s + input.tellg());
+	catch (...) {
+	}
+	return NULL;
 }
 #endif
 
@@ -149,45 +153,60 @@ static time_t last_write_time(const std::string &path)
 {
 	struct stat st;
 	if (stat(path.c_str(), &st) == 0) {
-		st.st_mtime;
+		return st.st_mtime;
 	}
 	_log.Log(LOG_ERROR, "stat returned errno = %d", errno);
 	return 0;
 }
 
-bool request_handler::not_modified(std::string full_path, const request &req, reply &rep)
+bool request_handler::not_modified(std::string full_path, const request &req, reply &rep, modify_info &mInfo)
 {
-	return false; // we disable this for now, until the stat function works
-	time_t last_written_time = last_write_time(full_path);
-	if (last_written_time == 0) {
+	mInfo.last_written = last_write_time(full_path);
+	if (mInfo.last_written == 0) {
 		// file system doesn't support this, don't enable header
-		_log.Log(LOG_STATUS, "Last-Modified %s: unknown", full_path.c_str());
+		mInfo.mtime_support = false;
+		mInfo.is_modified = true;
 		return false;
 	}
+	mInfo.mtime_support = true;
 	// propagate timestamp to browser
-	_log.Log(LOG_STATUS, "Last-Modified %s: %s", full_path.c_str(), convert_to_http_date(last_written_time).c_str());
-	reply::AddHeader(&rep, "Last-Modified", convert_to_http_date(last_written_time));
+	reply::AddHeader(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
 	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
 	if (NULL == if_modified) {
 		// we have no if-modified header, continue to serve content
+		mInfo.is_modified = true;
+		_log.Log(LOG_STATUS, "%s: No If-Modified-Since header", full_path.c_str());
 		return false;
 	}
 	time_t if_modified_since_time = convert_from_http_date(if_modified);
-	if (if_modified_since_time >= last_written_time) {
-		// content has not been modified since last serve
-		// indicate to use a cached copy to browser
-		reply::AddHeader(&rep, "Connection", "Keep-Alive");
-		reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
-		rep.content.clear();
-		rep.status = reply::not_modified;
-		return true;
+	if (if_modified_since_time >= mInfo.last_written) {
+		mInfo.is_modified = false;
+		if (mInfo.delay_status) {
+			_log.Log(LOG_STATUS, "%s: Delaying status code", full_path.c_str());
+			return false;
+		}
+		else {
+			rep = reply::stock_reply(reply::not_modified);
+			_log.Log(LOG_STATUS, "%s: Setting status code", full_path.c_str());
+			return true;
+		}
 	}
+	mInfo.is_modified = true;
 	// file is newer, force new content
+	_log.Log(LOG_STATUS, "%s: Force content", full_path.c_str());
 	return false;
 }
 
 void request_handler::handle_request(const request& req, reply& rep)
 {
+	modify_info mInfo;
+	handle_request(req, rep, mInfo);
+}
+
+
+void request_handler::handle_request(const request &req, reply &rep, modify_info &mInfo)
+{
+  mInfo.mtime_support = false;
   // Decode url to path.
   std::string request_path;
   if (!url_decode(req.uri, request_path))
@@ -266,7 +285,8 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (is)
 		  {
-			  if (not_modified(full_path, req, rep)) {
+			  mInfo.delay_status = false;
+			  if (not_modified(full_path, req, rep, mInfo)) {
 				  return;
 			  }
 			  // check if file date is still the same since last request
@@ -291,9 +311,6 @@ void request_handler::handle_request(const request& req, reply& rep)
 			  if (is.is_open())
 			  {
 				  // check if file date is still the same since last request
-				  if (not_modified(full_path, req, rep)) {
-					  return;
-				  }
 				  bHaveLoadedgzip = true;
 				  std::string gzcontent((std::istreambuf_iterator<char>(is)),
 					  (std::istreambuf_iterator<char>()));
@@ -322,13 +339,6 @@ void request_handler::handle_request(const request& req, reply& rep)
 				  }
 				  extension = "html";
 			  }
-#if 0
-			  // unfortunately, we cannot cache these files, because there might be
-			  // include codes in it, but otherwise here is the place to add it
-			  if (not_modified(full_path, req, rep)) {
-				return;
-			  }
-#endif
 		  }
 		  if (!bHaveLoadedgzip)
 		  {
@@ -336,6 +346,12 @@ void request_handler::handle_request(const request& req, reply& rep)
 			  rep.status = reply::ok;
 			  rep.content.append((std::istreambuf_iterator<char>(is)),
 				  (std::istreambuf_iterator<char>()));
+			  // set delay_status to true, because it can possibly have
+			  // include codes in it.
+			  mInfo.delay_status = true;
+			  if (not_modified(full_path, req, rep, mInfo)) {
+				  return;
+			  }
 		  }
 	  }
   }
