@@ -789,6 +789,15 @@
     <ClInclude Include="..\hardware\SolarEdgeAPI.h">
       <Filter>Devices\SolarEdge</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1267,6 +1276,15 @@
     </ClCompile>
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp">
       <Filter>Devices\SolarEdge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

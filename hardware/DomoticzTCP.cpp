@@ -18,8 +18,10 @@ m_username(username), m_password(password), m_szIPAddress(IPAddress)
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	info = NULL;
+#ifndef NOCLOUD
 	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	b_ProxyConnected = false;
+#endif
 	m_bIsStarted = false;
 }
 
@@ -36,6 +38,7 @@ DomoticzTCP::~DomoticzTCP(void)
 
 }
 
+#ifndef NOCLOUD
 bool DomoticzTCP::IsValidAPIKey(const std::string &IPAddress)
 {
 	if (IPAddress.find(".") != std::string::npos) {
@@ -49,6 +52,7 @@ bool DomoticzTCP::IsValidAPIKey(const std::string &IPAddress)
 	// just a simple check
 	return IPAddress.length() == 15;
 }
+#endif
 
 #if defined WIN32
 int inet_pton(int af, const char *src, void *dst)
@@ -78,6 +82,7 @@ int inet_pton(int af, const char *src, void *dst)
 
 bool DomoticzTCP::StartHardware()
 {
+#ifndef NOCLOUD
 	b_useProxy = IsValidAPIKey(m_szIPAddress);
 	if (b_useProxy) {
 		return StartHardwareProxy();
@@ -85,6 +90,9 @@ bool DomoticzTCP::StartHardware()
 	else {
 		return StartHardwareTCP();
 	}
+#else
+	return StartHardwareTCP();
+#endif
 }
 
 bool DomoticzTCP::StartHardwareTCP()
@@ -139,12 +147,16 @@ bool DomoticzTCP::StartHardwareTCP()
 
 bool DomoticzTCP::StopHardware()
 {
+#ifndef NOCLOUD
 	if (b_useProxy) {
 		return StopHardwareProxy();
 	}
 	else {
 		return StopHardwareTCP();
 	}
+#else
+	return StopHardwareTCP();
+#endif
 }
 
 bool DomoticzTCP::StopHardwareTCP()
@@ -300,6 +312,7 @@ void DomoticzTCP::writeTCP(const char *data, size_t size)
 
 bool DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
+#ifndef NOCLOUD
 	if (b_useProxy) {
 		if (isConnectedProxy()) {
 			writeProxy(pdata, length);
@@ -313,6 +326,13 @@ bool DomoticzTCP::WriteToHardware(const char *pdata, const unsigned char length)
 			return true;
 		}
 	}
+#else
+	if (isConnectedTCP())
+	{
+		writeTCP(pdata, length);
+		return true;
+	}
+#endif
 	return false;
 }
 
@@ -323,14 +343,19 @@ bool DomoticzTCP::isConnectedTCP()
 
 bool DomoticzTCP::isConnected()
 {
+#ifndef NOCLOUD
 	if (b_useProxy) {
 		return isConnectedProxy();
 	}
 	else {
 		return isConnectedTCP();
 	}
+#else
+	return isConnectedTCP();
+#endif
 }
 
+#ifndef NOCLOUD
 bool DomoticzTCP::CompareToken(const std::string &aToken)
 {
 	return (aToken == token);
@@ -436,3 +461,4 @@ void DomoticzTCP::SetConnected(bool connected)
 		b_ProxyConnected = false;
 	}
 }
+#endif
