@@ -33,7 +33,6 @@ define(['app'], function (app) {
                 ShowNotify($.t('Please enter a Name!'), 2500, true);
                 return;
             }
-
             var hardwaretype=$("#hardwarecontent #hardwareparamstable #combotype option:selected").val();
             if (typeof hardwaretype == 'undefined') {
                 ShowNotify($.t('Unknown device selected!'), 2500, true);
@@ -294,6 +293,47 @@ define(['app'], function (app) {
                         "&idx=" + idx +
                         "&datatimeout=" + datatimeout +
                         "&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                     }
+                });
+            }
+            else if (text.indexOf("SolarEdge via Web") >= 0)
+            {
+                var siteid=$("#hardwarecontent #divsolaredgeapi #siteid").val();
+                if (siteid=="")
+                {
+                    ShowNotify($.t('Please enter an Site ID!'), 2500, true);
+                    return;
+                }
+                var serial=$("#hardwarecontent #divsolaredgeapi #serial").val();
+                if (serial=="")
+                {
+                    ShowNotify($.t('Please enter an Serial!'), 2500, true);
+                    return;
+                }
+                var apikey=$("#hardwarecontent #divsolaredgeapi #apikey").val();
+                if (apikey=="")
+                {
+                    ShowNotify($.t('Please enter an API Key!'), 2500, true);
+                    return;
+                }
+                
+                $.ajax({
+                     url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+						"&port=1" +
+                        "&username=" + encodeURIComponent(serial) +
+                        "&password=" + encodeURIComponent(apikey) +
+                        "&name=" + encodeURIComponent(name) +
+                        "&enabled=" + bEnabled +
+                        "&idx=" + idx +
+                        "&datatimeout=" + datatimeout +
+                        "&Mode1=" + siteid,
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -708,6 +748,46 @@ define(['app'], function (app) {
                      }
                 });
             }
+            else if (text.indexOf("SolarEdge via Web") >= 0)
+            {
+                var siteid=$("#hardwarecontent #divsolaredgeapi #siteid").val();
+                if (siteid=="")
+                {
+                    ShowNotify($.t('Please enter an Site ID!'), 2500, true);
+                    return;
+                }
+                var serial=$("#hardwarecontent #divsolaredgeapi #serial").val();
+                if (serial=="")
+                {
+                    ShowNotify($.t('Please enter an Serial!'), 2500, true);
+                    return;
+                }
+                var apikey=$("#hardwarecontent #divsolaredgeapi #apikey").val();
+                if (apikey=="")
+                {
+                    ShowNotify($.t('Please enter an API Key!'), 2500, true);
+                    return;
+                }
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+						"&port=1" +
+                        "&name=" + encodeURIComponent(name) +
+                        "&username=" + encodeURIComponent(serial) +
+                        "&password=" + encodeURIComponent(apikey) +
+                        "&enabled=" + bEnabled +
+                        "&idx=" + idx +
+                        "&datatimeout=" + datatimeout +
+                        "&Mode1=" + siteid,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+            }
             else if ((text.indexOf("ICY") >= 0)||(text.indexOf("Toon") >= 0)||(text.indexOf("Nest Th") >= 0)||(text.indexOf("PVOutput") >= 0)||(text.indexOf("Netatmo") >= 0) || (text.indexOf("Thermosmart") >= 0))
             {
                 var username=$("#hardwarecontent #divlogin #username").val();
@@ -863,6 +943,13 @@ define(['app'], function (app) {
         SetP1USBType = function()
         {
           $.post("setp1usbtype.webem", $("#hardwarecontent #p1usbtype").serialize(), function(data) {
+           ShowHardware();
+          });
+        }
+
+        SetCCUSBType = function()
+        {
+          $.post("setcurrentcostmetertype.webem", $("#hardwarecontent #ccusbtype").serialize(), function(data) {
            ShowHardware();
           });
         }
@@ -2006,6 +2093,25 @@ define(['app'], function (app) {
             $('#hardwarecontent #combom1type').val(Mode1);
         }
 
+        EditCCUSB = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
+        {
+            $.devIdx=idx;
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent+=$('#ccusbeedit').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            $('#hardwarecontent #submitbuttonccusb').click(function (e) {
+                e.preventDefault();
+                SetCCUSBType();
+            });
+
+            $('#hardwarecontent #idx').val(idx);
+            $('#hardwarecontent #CCBaudrate').val(Mode1);
+        }
+
 		$scope.ZWaveCheckIncludeReady = function() {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -3113,6 +3219,9 @@ define(['app'], function (app) {
                         }
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">Change Type</span>';
                     }
+                    else if (HwTypeStr.indexOf("CurrentCost Meter USB") >= 0) {
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditCCUSB(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
+                    }
 
                     var sDataTimeout="";
                     if (item.DataTimeout==0) {
@@ -3238,6 +3347,11 @@ define(['app'], function (app) {
                         else if (data["Type"].indexOf("SBFSpot") >= 0) {
                             $("#hardwarecontent #hardwareparamslocation #location").val(data["Username"]);
                         }
+                        else if (data["Type"].indexOf("SolarEdge via") >= 0) {
+                            $("#hardwarecontent #hardwareparamssolaredgeapi #siteid").val(data["Mode1"]);
+                            $("#hardwarecontent #hardwareparamssolaredgeapi #serial").val(data["Username"]);
+                            $("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Password"]);
+                        }
                         else if (data["Type"].indexOf("Philips Hue") >= 0) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
@@ -3325,7 +3439,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #divphilipshue").hide();
             $("#hardwarecontent #divwinddelen").hide();
             $("#hardwarecontent #divmqtt").hide();
-            
+            $("#hardwarecontent #divsolaredgeapi").hide();
 
             if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
             {
@@ -3370,6 +3484,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").show();
                 $("#hardwarecontent #divlogin").show();
+                $("#hardwarecontent #divunderground").hide();
+            }
+            else if (text.indexOf("SolarEdge via") >= 0)
+            {
+				$("#hardwarecontent #divsolaredgeapi").show();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divunderground").hide();
             }
             else if (text.indexOf("SBFSpot") >= 0)

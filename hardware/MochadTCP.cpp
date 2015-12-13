@@ -252,9 +252,9 @@ bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pdata[1] == pTypeInterfaceControl && pdata[2] == sTypeInterfaceCommand && pdata[4] == cmdSTATUS) {
 		sprintf (s_buffer,"ST\n");
 	} else if (pdata[1] == pTypeLighting1 && pdata[2] == sTypeX10 && pdata[6] == light1_sOn) {
-		sprintf (s_buffer,"PL %c%d on\n",(char)(pdata[4]), pdata[5]);
+		sprintf (s_buffer,"RF %c%d on\n",(char)(pdata[4]), pdata[5]);
 	} else if (pdata[1] == pTypeLighting1 && pdata[2] == sTypeX10 && pdata[6] == light1_sOff) {
-		sprintf (s_buffer,"PL %c%d off\n",(char)(pdata[4]), pdata[5]);
+		sprintf (s_buffer,"RF %c%d off\n",(char)(pdata[4]), pdata[5]);
 	} else {
 //			case light1_sDim:
 //			case light1_sBright:

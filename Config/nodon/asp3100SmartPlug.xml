@@ -89,7 +89,7 @@
     <!-- Association Groups -->
     <CommandClass id="133">
         <Associations num_groups="8">
-            <Group index="1" max_associations="5" label="Lifeline" auto="true"/>
+            <Group index="1" max_associations="5" label="Lifeline" />
             <Group index="2" max_associations="5" label="Follow State" />
             <Group index="3" max_associations="5" label="Follow Complementary State" />
             <Group index="4" max_associations="5" label="Power Failure Notification" auto="true"/>

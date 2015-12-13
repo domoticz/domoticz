@@ -82,6 +82,9 @@
 #include "../hardware/SatelIntegra.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/Comm5TCP.h"
+#include "../hardware/CurrentCostMeterSerial.h"
+#include "../hardware/CurrentCostMeterTCP.h"
+#include "../hardware/SolarEdgeAPI.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -588,6 +591,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Meteostick:
 	case HTYPE_EVOHOME_SERIAL:
 	case HTYPE_RFLINKUSB:
+	case HTYPE_CurrentCostMeter:
 	{
 			//USB/Serial
 			if (
@@ -663,6 +667,15 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type == HTYPE_RFLINKUSB)
 			{
 				pHardware = new CRFLinkSerial(ID, SerialPort);
+			}
+			else if (Type == HTYPE_CurrentCostMeter)
+			{
+				unsigned int baudRate(9600);
+				if (Mode1 == 1)
+				{
+					baudRate = 57600;
+				}
+				pHardware = new CurrentCostMeterSerial(ID, SerialPort, baudRate);
 			}
 		}
 		break;
@@ -787,6 +800,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_ForecastIO:
 		pHardware = new CForecastIO(ID,Username,Password);
 		break;
+	case HTYPE_SolarEdgeAPI:
+		pHardware = new SolarEdgeAPI(ID, Mode1, Username, Password);
+		break;
 	case HTYPE_Netatmo:
 		pHardware = new CNetatmo(ID,Username,Password);
 		break;
@@ -843,6 +859,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Comm5TCP:
 		//LAN
 		pHardware = new Comm5TCP(ID, Address, Port);
+		break;
+	case HTYPE_CurrentCostMeterLAN:
+		//LAN
+		pHardware = new CurrentCostMeterTCP(ID, Address, Port);
 		break;
 	}
 
@@ -9835,11 +9855,16 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	unsigned char dSubType=atoi(sd[4].c_str());
 	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
+        //when asking for Toggle, just switch to the opposite value
+        if (switchcmd=="Toggle") {
+                switchcmd=(atoi(sd[7].c_str())==1?"Off":"On");
+        }
+
 	//when level = 0, set switch command to Off
 	if (switchcmd=="Set Level")
 	{
-		//if (level > 0)
-			//level-=1;
+		if (level > 0)
+			level-=1;
 		if (level==0)
 			switchcmd="Off";
 	}

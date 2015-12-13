@@ -179,7 +179,7 @@ namespace OpenZWave
 		 * Helper Function to return the Notification as a String
 		 * \return A string representation of this Notification
 		 */
-		string GetAsString();
+		string GetAsString()const;
 
 
 	private:

@@ -175,7 +175,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_TOONTHERMOSTAT, "Toon Thermostat" },
 		{ HTYPE_ECODEVICES, "Eco Devices via LAN interface" },
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
-		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface" },
+		{ HTYPE_Mochad, "Mochad CM15Pro bridge with LAN interface/CM19A USB" },
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
@@ -199,7 +199,10 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_LogitechMediaServer, "Logitech Media Server" },
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
-		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface"},
+		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
+		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
+		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -733,9 +736,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeAvidsen, "Avidsen" },
 		{ pTypeGeneralSwitch, sSwitchTypeBofu, "BofuMotor" },
 		{ pTypeGeneralSwitch, sSwitchTypeBrel, "BrelMotor" },
-		{ pTypeGeneralSwitch, sSwitchTypeSomeFy, "SomeFy" },
+		{ pTypeGeneralSwitch, sSwitchTypeRTS, "RTS" },
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
 		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
+		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -2864,6 +2868,6 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) ||
 		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
 		(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
+		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433) || (htype == HTYPE_CurrentCostMeter)
 		);
 }

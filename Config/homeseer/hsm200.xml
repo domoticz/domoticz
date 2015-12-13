@@ -53,7 +53,7 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="2">
-			<Group index="1" max_associations="1" label="Motion Notification" auto="true"/>
+			<Group index="1" max_associations="1" label="Motion Notification" />
 			<Group index="2" max_associations="4" label="Motion Control" auto="true"/>
 		</Associations>
 	</CommandClass>
