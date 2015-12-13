@@ -175,25 +175,25 @@ bool request_handler::not_modified(std::string full_path, const request &req, re
 	if (NULL == if_modified) {
 		// we have no if-modified header, continue to serve content
 		mInfo.is_modified = true;
-		_log.Log(LOG_STATUS, "%s: No If-Modified-Since header", full_path.c_str());
+		//_log.Log(LOG_STATUS, "%s: No If-Modified-Since header", full_path.c_str());
 		return false;
 	}
 	time_t if_modified_since_time = convert_from_http_date(if_modified);
 	if (if_modified_since_time >= mInfo.last_written) {
 		mInfo.is_modified = false;
 		if (mInfo.delay_status) {
-			_log.Log(LOG_STATUS, "%s: Delaying status code", full_path.c_str());
+			//_log.Log(LOG_STATUS, "%s: Delaying status code", full_path.c_str());
 			return false;
 		}
 		else {
 			rep = reply::stock_reply(reply::not_modified);
-			_log.Log(LOG_STATUS, "%s: Setting status code", full_path.c_str());
+			//_log.Log(LOG_STATUS, "%s: Setting status code reply::not_modified", full_path.c_str());
 			return true;
 		}
 	}
 	mInfo.is_modified = true;
 	// file is newer, force new content
-	_log.Log(LOG_STATUS, "%s: Force content", full_path.c_str());
+	//_log.Log(LOG_STATUS, "%s: Force content", full_path.c_str());
 	return false;
 }
 

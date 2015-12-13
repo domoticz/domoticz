@@ -1569,7 +1569,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				// Find and include any special cWebem strings
 				if (!myWebem->Include(rep.content)) {
 					if (mInfo.mtime_support && !mInfo.is_modified) {
-						_log.Log(LOG_STATUS, "%s not modified (1).", req.uri.c_str());
+						//_log.Log(LOG_STATUS, "%s not modified (1).", req.uri.c_str());
 						rep = reply::stock_reply(reply::not_modified);
 						return;
 					}
@@ -1592,7 +1592,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		{
 			if (mInfo.mtime_support && !mInfo.is_modified) {
 				rep = reply::stock_reply(reply::not_modified);
-				_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
+				//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
 				return;
 			}
 			//Cache images
@@ -1602,7 +1602,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		else {
 			if (mInfo.mtime_support && !mInfo.is_modified) {
 				rep = reply::stock_reply(reply::not_modified);
-				_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
+				//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
 				return;
 			}
 		}
