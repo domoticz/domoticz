@@ -86,7 +86,12 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	va_end(argList);
 
 	std::stringstream sstr;
-	if (m_bEnableLogTimestamps)
+	bool bEnableLogTimestamps = m_bEnableLogTimestamps;
+#ifndef WIN32
+	if (g_bUseSyslog)
+		bEnableLogTimestamps = false;
+#endif
+	if (bEnableLogTimestamps)
 	{
 		char szDate[100];
 #if !defined WIN32
