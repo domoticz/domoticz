@@ -4119,7 +4119,7 @@ namespace http {
 						(sunitcode == "")
 						)
 						return;
-					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
+					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF))
 						devid = "00" + id;
 					else
 						devid = id;

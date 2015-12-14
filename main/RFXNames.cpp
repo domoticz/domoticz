@@ -2534,6 +2534,56 @@ bool GetLightCommand(
 				cmd=sStatusAlarmDelayed;
 				return true;
 			}
+			else if (switchcmd == "Arm Home")
+			{
+				cmd = sStatusArmHome;
+				return true;
+			}
+			else if (switchcmd == "Arm Home Delayed")
+			{
+				cmd = sStatusArmHomeDelayed;
+				return true;
+			}
+			else if (switchcmd == "Arm Away")
+			{
+				cmd = sStatusArmAway;
+				return true;
+			}
+			else if (switchcmd == "Arm Away Delayed")
+			{
+				cmd = sStatusArmAwayDelayed;
+				return true;
+			}
+			else if (switchcmd == "Panic")
+			{
+				cmd = sStatusPanic;
+				return true;
+			}
+			else if (switchcmd == "Disarm")
+			{
+				cmd = sStatusDisarm;
+				return true;
+			}
+			else if (switchcmd == "Light On")
+			{
+				cmd = sStatusLightOn;
+				return true;
+			}
+			else if (switchcmd == "Light Off")
+			{
+				cmd = sStatusLightOff;
+				return true;
+			}
+			else if (switchcmd == "Light 2 On")
+			{
+				cmd = sStatusLight2On;
+				return true;
+			}
+			else if (switchcmd == "Light 2 Off")
+			{
+				cmd = sStatusLight2Off;
+				return true;
+			}
 		}
 		break;
 	case pTypeSecurity2:
