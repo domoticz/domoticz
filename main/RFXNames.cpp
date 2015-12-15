@@ -3,6 +3,8 @@
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/evohome.h"
+#include "Helper.h"
+//#include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;
@@ -230,6 +232,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
 		{ STYPE_BlindsPercentageInverted, "Blinds Percentage Inverted" },
 		{ STYPE_Media, "Media Player" },
+		{ STYPE_Selector, "Selector" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -523,6 +526,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
 		{ pTypeLighting2, sTypeZWaveSwitch, "ZWave" },
+		{ pTypeLighting2, sTypeSelectorSwitch, "Selector Switch" },
 
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
@@ -824,6 +828,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting2, sTypeHEU, "Status" },
 		{ pTypeLighting2, sTypeANSLUT, "Status" },
 		{ pTypeLighting2, sTypeZWaveSwitch, "Status" },
+		{ pTypeLighting2, sTypeSelectorSwitch, "Status" },
 
 		{ pTypeLighting3, sTypeKoppla, "Status" },
 
@@ -1267,6 +1272,35 @@ void GetLightStatus(
 				break;
 			case light2_sSetLevel:
 				sprintf(szTmp, "Set Level: %d %%", llevel);
+				if (sValue != "0")
+					lstatus = szTmp;
+				else
+					lstatus = "Off";
+				break;
+			}
+			break;
+		case sTypeSelectorSwitch:
+			maxDimLevel = 100;
+			llevel = atoi(sValue.c_str());
+			switch (nValue)
+			{
+			case light2_sOff:
+				lstatus = "Off";
+				break;
+			case light2_sOn:
+			case light2_sSetLevel:
+				sprintf(szTmp, "Set Level: %d %%", llevel);
+				if (sValue != "0")
+					lstatus = szTmp;
+				else
+					lstatus = "Off";
+				break;
+			case light2_sGroupOff:
+				lstatus = "Group Off";
+				break;
+			case light2_sGroupOn:
+			case light2_sSetGroupLevel:
+				sprintf(szTmp, "Set Group Level: %d %%", llevel);
 				if (sValue != "0")
 					lstatus = szTmp;
 				else
@@ -1935,12 +1969,55 @@ void GetLightStatus(
 	}
 }
 
+void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses) {
+	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
+	if (itt != options.end()) {
+		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch statuses...");
+		std::string sOptions = itt->second;
+		std::vector<std::string> strarray;
+		StringSplit(sOptions, "|", strarray);
+		std::vector<std::string>::iterator itt;
+		int i = 0;
+		std::stringstream ss;
+		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+			ss.clear(); ss.str(""); ss << i;
+			std::string level(ss.str());
+			std::string levelName = *itt;
+			//_log.Log(LOG_STATUS, "DEBUG : Get selector status '%s' for level %s", levelName.c_str(), level.c_str());
+			statuses.insert(std::pair<std::string, std::string>(level.c_str(), levelName.c_str()));
+			i += 10;
+		}
+	}
+}
+
+int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName) {
+	int level = 0; // default is Off
+	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
+	if (itt != options.end()) {
+		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level...");
+		std::string sOptions = itt->second;
+		std::vector<std::string> strarray;
+		StringSplit(sOptions, "|", strarray);
+		std::vector<std::string>::iterator itt;
+		int i = 0;
+		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+			if (*itt == levelName) {
+				level = i;
+				break;
+			}
+			i += 10;
+		}
+	}
+	return level;
+}
+
 bool GetLightCommand(
 	const unsigned char dType,
 	const unsigned char dSubType,
 	_eSwitchType switchtype,
 	std::string switchcmd,
-	unsigned char &cmd
+	unsigned char &cmd,
+	const std::map<std::string, std::string> & options
 	)
 {
 	if (switchtype==STYPE_Contact)
@@ -2034,6 +2111,19 @@ bool GetLightCommand(
 				return true;
 			}
 			return false;
+		}
+		else if (switchtype == STYPE_Selector) {
+			// TODO: remove options argument
+			if ((switchcmd == "Paused") ||
+					(switchcmd == "Pause") ||
+					(switchcmd == "Playing") ||
+					(switchcmd == "Play") ||
+					(switchcmd == "Play Playlist") ||
+					(switchcmd == "Play Favorites") ||
+					(switchcmd == "Set Volume")) {
+				// Not a managed command
+				return false;
+			}
 		}
 		if (switchcmd=="Off")
 		{
