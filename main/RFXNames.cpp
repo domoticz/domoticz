@@ -201,6 +201,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
 		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
+		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
+		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -2532,6 +2534,56 @@ bool GetLightCommand(
 				cmd=sStatusAlarmDelayed;
 				return true;
 			}
+			else if (switchcmd == "Arm Home")
+			{
+				cmd = sStatusArmHome;
+				return true;
+			}
+			else if (switchcmd == "Arm Home Delayed")
+			{
+				cmd = sStatusArmHomeDelayed;
+				return true;
+			}
+			else if (switchcmd == "Arm Away")
+			{
+				cmd = sStatusArmAway;
+				return true;
+			}
+			else if (switchcmd == "Arm Away Delayed")
+			{
+				cmd = sStatusArmAwayDelayed;
+				return true;
+			}
+			else if (switchcmd == "Panic")
+			{
+				cmd = sStatusPanic;
+				return true;
+			}
+			else if (switchcmd == "Disarm")
+			{
+				cmd = sStatusDisarm;
+				return true;
+			}
+			else if (switchcmd == "Light On")
+			{
+				cmd = sStatusLightOn;
+				return true;
+			}
+			else if (switchcmd == "Light Off")
+			{
+				cmd = sStatusLightOff;
+				return true;
+			}
+			else if (switchcmd == "Light 2 On")
+			{
+				cmd = sStatusLight2On;
+				return true;
+			}
+			else if (switchcmd == "Light 2 Off")
+			{
+				cmd = sStatusLight2Off;
+				return true;
+			}
 		}
 		break;
 	case pTypeSecurity2:
@@ -2866,6 +2918,6 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 		(htype == HTYPE_RFXtrx315) || (htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868) ||
 		(htype == HTYPE_P1SmartMeter) || (htype == HTYPE_Rego6XX) || (htype == HTYPE_DavisVantage) || (htype == HTYPE_S0SmartMeter) || (htype == HTYPE_OpenThermGateway) ||
 		(htype == HTYPE_TeleinfoMeter) || (htype == HTYPE_OpenZWave) || (htype == HTYPE_EnOceanESP2) || (htype == HTYPE_EnOceanESP3) || (htype == HTYPE_Meteostick) ||
-		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433)
+		(htype == HTYPE_MySensorsUSB) || (htype == HTYPE_RFLINKUSB) || (htype == HTYPE_KMTronicUSB) || (htype == HTYPE_KMTronic433) || (htype == HTYPE_CurrentCostMeter)
 		);
 }

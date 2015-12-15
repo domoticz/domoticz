@@ -801,6 +801,27 @@
 </form>
 </center>
 </div>
+<div id="ccusbeedit" style="display:none;">
+<center>
+<form id="ccusbtype">
+	<br>
+	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+			<td><select id="CCBaudrate" name="CCBaudrate" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">9600</option>
+				<option value="1">57600</option>
+			</select></td>
+		</tr>
+	</table>
+	<br>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttonccusb">Set Mode</button>
+</form>
+</center>
+</div>
 <div id="limitlessmetertype" style="display:none;">
 	<center>
 	<form id="limitform">

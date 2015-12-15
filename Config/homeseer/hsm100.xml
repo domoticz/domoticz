@@ -98,7 +98,7 @@
 	<CommandClass id="96" mapping="endpoints" />
 	<CommandClass id="133">
 		<Associations num_groups="1">
-			<Group index="1" max_associations="4" label="Motion" auto="true"/>
+			<Group index="1" max_associations="4" label="Motion"/>
 		</Associations>
 	</CommandClass>
 </Product>

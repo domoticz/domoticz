@@ -34,9 +34,9 @@
         <CommandClass id="133">
                 <Associations num_groups="4">
                         <Group index="1" max_associations="5" label="Group 1 Tap left paddle once" auto="false"/>
-                        <Group index="2" max_associations="5" label="Group 2 Tap right paddle once" auto="false" />
-                        <Group index="3" max_associations="5" label="Group 3 Tap right paddle twice" auto="false" />
-                        <Group index="4" max_associations="5" label="Send updates every command" auto="false"/>
+                        <Group index="2" max_associations="5" label="Group 2 Tap right paddle once"  />
+                        <Group index="3" max_associations="5" label="Group 3 Tap right paddle twice"  />
+                        <Group index="4" max_associations="5" label="Send updates every command" auto="true"/>
                 </Associations>
         </CommandClass>
 </Product>

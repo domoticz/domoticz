@@ -82,6 +82,8 @@
 #include "../hardware/SatelIntegra.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/Comm5TCP.h"
+#include "../hardware/CurrentCostMeterSerial.h"
+#include "../hardware/CurrentCostMeterTCP.h"
 #include "../hardware/SolarEdgeAPI.h"
 
 // load notifications configuration
@@ -589,6 +591,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Meteostick:
 	case HTYPE_EVOHOME_SERIAL:
 	case HTYPE_RFLINKUSB:
+	case HTYPE_CurrentCostMeter:
 	{
 			//USB/Serial
 			if (
@@ -664,6 +667,15 @@ bool MainWorker::AddHardwareFromParams(
 			else if (Type == HTYPE_RFLINKUSB)
 			{
 				pHardware = new CRFLinkSerial(ID, SerialPort);
+			}
+			else if (Type == HTYPE_CurrentCostMeter)
+			{
+				unsigned int baudRate(9600);
+				if (Mode1 == 1)
+				{
+					baudRate = 57600;
+				}
+				pHardware = new CurrentCostMeterSerial(ID, SerialPort, baudRate);
 			}
 		}
 		break;
@@ -847,6 +859,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Comm5TCP:
 		//LAN
 		pHardware = new Comm5TCP(ID, Address, Port);
+		break;
+	case HTYPE_CurrentCostMeterLAN:
+		//LAN
+		pHardware = new CurrentCostMeterTCP(ID, Address, Port);
 		break;
 	}
 
@@ -10922,6 +10938,15 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		}
 		else
 		{
+			float tempDest = TempValue;
+			unsigned char tSign = m_sql.m_tempsign[0];
+			if (tSign == 'F')
+			{
+				//Maybe this should be done in the main app, so all other devices will also do this
+				//Convert to Celsius
+				tempDest = (tempDest - 32.0f) / 1.8f;
+			}
+
 			_tThermostat tmeter;
 			tmeter.subtype = sTypeThermSetpoint;
 			tmeter.id1 = ID1;
@@ -10929,7 +10954,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			tmeter.id3 = ID3;
 			tmeter.id4 = ID4;
 			tmeter.dunit = 1;
-			tmeter.temp = TempValue;
+			tmeter.temp = tempDest;
 			if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tThermostat)))
 				return false;
 			if (pHardware->HwdType == HTYPE_Dummy)

@@ -51,7 +51,7 @@
 	<CommandClass id="133">
 		<Associations num_groups="2">
 			<Group index="1" max_associations="8" label="Single press" auto="false" />
-			<Group index="2" max_associations="8" label="Double press" auto="false" />
+			<Group index="2" max_associations="8" label="Double press"  />
 		</Associations>
 	</CommandClass>
 

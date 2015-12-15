@@ -947,6 +947,13 @@ define(['app'], function (app) {
           });
         }
 
+        SetCCUSBType = function()
+        {
+          $.post("setcurrentcostmetertype.webem", $("#hardwarecontent #ccusbtype").serialize(), function(data) {
+           ShowHardware();
+          });
+        }
+
         AddWOLNode = function()
         {
             var name=$("#hardwarecontent #nodeparamstable #nodename").val();
@@ -2086,6 +2093,25 @@ define(['app'], function (app) {
             $('#hardwarecontent #combom1type').val(Mode1);
         }
 
+        EditCCUSB = function(idx,name,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6)
+        {
+            $.devIdx=idx;
+            cursordefault();
+            var htmlcontent = '';
+            htmlcontent='<p><center><h2><span data-i18n="Device"></span>: ' + name + '</h2></center></p>\n';
+            htmlcontent+=$('#ccusbeedit').html();
+            $('#hardwarecontent').html(GetBackbuttonHTMLTable('ShowHardware')+htmlcontent);
+            $('#hardwarecontent').i18n();
+
+            $('#hardwarecontent #submitbuttonccusb').click(function (e) {
+                e.preventDefault();
+                SetCCUSBType();
+            });
+
+            $('#hardwarecontent #idx').val(idx);
+            $('#hardwarecontent #CCBaudrate').val(Mode1);
+        }
+
 		$scope.ZWaveCheckIncludeReady = function() {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -3192,6 +3218,9 @@ define(['app'], function (app) {
                             HwTypeStr+='637 multi language';
                         }
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRego6XXType(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">Change Type</span>';
+                    }
+                    else if (HwTypeStr.indexOf("CurrentCost Meter USB") >= 0) {
+                        HwTypeStr+=' <span class="label label-info lcursor" onclick="EditCCUSB(' + item.idx + ',\'' + item.Name + '\',\'' + item.Address + '\');">' + $.t("Set Mode") + '</span>';
                     }
 
                     var sDataTimeout="";

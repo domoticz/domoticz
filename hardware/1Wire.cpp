@@ -161,7 +161,7 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 	if (temperature<=-300 || temperature>=381)
 		return false;
 
-	// Some devices has a power-on value at 85°, we have to filter it
+	// Some devices has a power-on value at 85° and -127°, we have to filter it
 	switch (deviceFamily)
 	{
 		case high_precision_digital_thermometer:
@@ -169,7 +169,7 @@ bool IsTemperatureValid(_e1WireFamilyType deviceFamily, float temperature)
 		case programmable_resolution_digital_thermometer:
 		case Temperature_memory:
 		case Temperature_IO:
-			if (temperature == 85)
+			if ((temperature == 85)|| (temperature == -127))
 				return false;
 	}
 
