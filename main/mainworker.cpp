@@ -10941,6 +10941,15 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		}
 		else
 		{
+			float tempDest = TempValue;
+			unsigned char tSign = m_sql.m_tempsign[0];
+			if (tSign == 'F')
+			{
+				//Maybe this should be done in the main app, so all other devices will also do this
+				//Convert to Celsius
+				tempDest = (tempDest - 32.0f) / 1.8f;
+			}
+
 			_tThermostat tmeter;
 			tmeter.subtype = sTypeThermSetpoint;
 			tmeter.id1 = ID1;
@@ -10948,7 +10957,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			tmeter.id3 = ID3;
 			tmeter.id4 = ID4;
 			tmeter.dunit = 1;
-			tmeter.temp = TempValue;
+			tmeter.temp = tempDest;
 			if (!WriteToHardware(HardwareID, (const char*)&tmeter, sizeof(_tThermostat)))
 				return false;
 			if (pHardware->HwdType == HTYPE_Dummy)

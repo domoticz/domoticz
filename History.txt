@@ -35,6 +35,7 @@ Version 2.3xxx
 - Fixed: EventSystem, now also handling sensors that only uses numbers instead of strings for data
 - Fixed: Log display in webgui for log items containing multiple lines
 - Fixed: Manual add Blyss type (Group code was wrong)
+- Fixed: Manual add LightwaveRF type (DeviceID was wrong)
 - Fixed: Month temperature report avarage is now calculated by the daily avarage value
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
 - Fixed: RGB sensor now also uses the RGB popup system
