@@ -397,13 +397,17 @@ define(['app'], function (app) {
                                 column.data().unique().sort().each(function (d, j) {
                                     select.append('<option value="' + d + '">' + d + '</option>')
                                 });
+                                /* Restore the state */
+                                var search = column.search();
+                                search = search.substr(1, search.length - 2);
+                                select.val(search);
                             }else if(/^(text|number|date|time|datetime|search|color)$/.test(filter_type)){
                                 /* Create text inputs for manual searching */
                                 var input = $('<input type="' + filter_type + '" placeholder="Search ' + title + '" />')
                                     .appendTo($(column.footer()).empty())
                                     .on('keyup change', function (){
                                         column.search($(this).val()).draw();
-                                    });
+                                    }).val(column.search());
                             }else{
                                 /* No filter type defined, probably not a filterable column. */
                             }
