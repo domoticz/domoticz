@@ -1997,7 +1997,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
  * Returns the level value associated to a name.
  */
 int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName) {
-	int level = 0; // default is Off
+	int level = -1; // not found
 	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
 	if (itt != options.end()) {
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level...");
@@ -2119,7 +2119,6 @@ bool GetLightCommand(
 			return false;
 		}
 		else if (switchtype == STYPE_Selector) {
-			// TODO: remove options argument
 			if ((switchcmd == "Paused") ||
 					(switchcmd == "Pause") ||
 					(switchcmd == "Playing") ||
@@ -2128,6 +2127,11 @@ bool GetLightCommand(
 					(switchcmd == "Play Favorites") ||
 					(switchcmd == "Set Volume")) {
 				// Not a managed command
+				return false;
+			}
+			int level = GetSelectorSwitchLevel(options, switchcmd);
+			if (level > 0) { // not Off but a level name
+				// switchcmd cannot be a level name
 				return false;
 			}
 		}
