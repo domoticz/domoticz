@@ -253,15 +253,15 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char length)
 			svalue = 255;
 		}
 		SwitchLight(nodeID, LCmd, svalue);
-  } 
-  else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint)) 
+  }
+  else if ((packettype == pTypeThermostat) && (subtype == sTypeThermSetpoint))
   {
       const _tThermostat *pMeter=(const _tThermostat*)pdata;
       float temp = pMeter->temp;
       unsigned char idx = pMeter->id4;
       SetSetpoint(idx, temp);
-   } 
-  else 
+   }
+  else
   {
      _log.Log(LOG_STATUS, "OTGW: Skipping writing to Hardware for type: %02X, subType: %02X", packettype, subtype);
 	}
@@ -272,6 +272,8 @@ void OTGWBase::GetGatewayDetails()
 {
 	char szCmd[30];
 	strcpy(szCmd, "PR=G\r\n");
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+	strcpy(szCmd, "PR=I\r\n");
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
 	strcpy(szCmd, "PR=O\r\n");
 	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
@@ -333,7 +335,7 @@ void OTGWBase::SetSetpoint(const int idx, const float temp)
 	}
 	else if (idx == 16)
 	{
-		//Max CH water setpoint (MsgID=57) 
+		//Max CH water setpoint (MsgID=57)
 		_log.Log(LOG_STATUS, "OTGW: Setting Max CH water SetPoint to: %.1f", temp);
 		sprintf(szCmd, "SH=%.1f\r\n", temp);
 		WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
@@ -376,7 +378,7 @@ void OTGWBase::ParseLine()
 		//21    Burner operation hours (MsgID=120) - Printed as a decimal value
 		//22    CH pump operation hours (MsgID=121) - Printed as a decimal value
 		//23    DHW pump/valve operation hours (MsgID=122) - Printed as a decimal value
-		//24    DHW burner operation hours (MsgID=123) - Printed as a decimal value 
+		//24    DHW burner operation hours (MsgID=123) - Printed as a decimal value
 		_tOTGWStatus _status;
 		int idx=0;
 
@@ -397,7 +399,7 @@ void OTGWBase::ParseLine()
 			bool bCH2_Active=(_status.MsgID[9+2]=='1');														UpdateSwitch(115,bCH2_Active,"CH2_Active");
 			bool bDiagnosticEvent=(_status.MsgID[9+1]=='1');												UpdateSwitch(116,bDiagnosticEvent,"DiagnosticEvent");
 		}
-		
+
 		_status.Control_setpoint=static_cast<float>(atof(results[idx++].c_str()));							UpdateTempSensor(idx-1,_status.Control_setpoint,"Control Setpoint");
 		_status.Remote_parameter_flags=results[idx++];
 		_status.Maximum_relative_modulation_level = static_cast<float>(atof(results[idx++].c_str()));
@@ -449,24 +451,32 @@ void OTGWBase::ParseLine()
 		else if (sLine.find("PR: G")!=std::string::npos)
 		{
 			_tOTGWGPIO _GPIO;
-			_GPIO.A=static_cast<int>(sLine[6]- '0'); 
-			if (_GPIO.A==0 || _GPIO.A==1)
-			{
+			_GPIO.A=static_cast<int>(sLine[6]- '0');
+//			if (_GPIO.A==0 || _GPIO.A==1)
+//			{
 				UpdateSwitch(96,(_GPIO.A==1),"GPIOAPulledToGround");
-			}
-			else
-			{
+//			}
+//			else
+//			{
 				// Remove device (how?)
-			}
-			_GPIO.B=static_cast<int>(sLine[7]- '0'); 
-			if (_GPIO.B==0 || _GPIO.B==1)
-			{
+//			}
+			_GPIO.B=static_cast<int>(sLine[7]- '0');
+//			if (_GPIO.B==0 || _GPIO.B==1)
+//			{
 				UpdateSwitch(97,(_GPIO.B==1),"GPIOBPulledToGround");
-			}
-			else
-			{
+//			}
+//			else
+//			{
 				// Remove device (how?)
-			}
+//			}
+		}
+		else if (sLine.find("PR: I")!=std::string::npos)
+		{
+			_tOTGWGPIO _GPIO;
+			_GPIO.A=static_cast<int>(sLine[6]- '0');
+			UpdateSwitch(98,(_GPIO.A==1),"GPIOAStatusIsHigh");
+			_GPIO.B=static_cast<int>(sLine[7]- '0');
+			UpdateSwitch(99,(_GPIO.B==1),"GPIOBStatusIsHigh");
 		}
                 else if (sLine.find("PR: O")!=std::string::npos)
                 {
@@ -482,7 +492,7 @@ void OTGWBase::ParseLine()
 		else
 		{
 			if (
-				(sLine.find("OT")==std::string::npos)&&
+				(sLine.find("OT") == std::string::npos)&&
 				(sLine.find("PS") == std::string::npos)&&
 				(sLine.find("SC") == std::string::npos)
 				)
