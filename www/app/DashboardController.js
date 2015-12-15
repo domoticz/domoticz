@@ -3594,7 +3594,6 @@ define(['app'], function (app) {
 						$(this).buttonset("disable");
 					}
 					$(this).find('input[value="' + level + '"]').prop("checked", true);
-					$(this).buttonset("refresh");
 
 					$(this).click(function(event){
 						if (event.target.tagName === "INPUT") {
