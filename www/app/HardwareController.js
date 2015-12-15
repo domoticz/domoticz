@@ -3378,7 +3378,7 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("MQTT") >= 0)||
                             (data["Type"].indexOf("Netatmo") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
-							(data["Type"].indexOf("Logitech Media Server") >= 0)
+							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
 							(data["Type"].indexOf("Comm5") >= 0)
                             )
                         {
