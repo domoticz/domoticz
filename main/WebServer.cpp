@@ -1946,6 +1946,10 @@ namespace http {
 		{
 			root["status"] = "OK";
 			root["title"] = "GetAuth";
+			if (session.rights != -1)
+			{
+			  root["version"] = szAppVersion;
+      }
 			root["user"] = session.username;
 			root["rights"] = session.rights;
 		}
@@ -2054,8 +2058,8 @@ namespace http {
 
 		void CWebServer::Cmd_GetConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			//if (session.rights != 2)
-				//return;//Only admin user allowed
+			if (session.rights != -1)
+				return;//Only auth user allowed
 
 			root["status"] = "OK";
 			root["title"] = "GetConfig";
