@@ -34,7 +34,7 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Report" auto="false"/>
+			<Group index="1" max_associations="5" label="Report" />
 		</Associations>
 	</CommandClass>
 

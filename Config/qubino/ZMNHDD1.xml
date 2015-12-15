@@ -184,7 +184,7 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="11">
-			<Group index="1" max_associations="1" label="Lifeline group" auto="true"/>
+			<Group index="1" max_associations="1" label="Lifeline group" />
 			<Group index="2" max_associations="16" label="Basic on/off input I1"/>
 			<Group index="3" max_associations="16" label="Multilevel set Flush dimmer"/>
 			<Group index="4" max_associations="16" label="Start level change/stop level change input I1"/>

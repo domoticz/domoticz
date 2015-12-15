@@ -57,6 +57,7 @@ public:
 	char * SetP1USBType(WebEmSession & session, const request& req);
 	char * RestoreDatabase(WebEmSession & session, const request& req);
 	char * SBFSpotImportOldData(WebEmSession & session, const request& req);
+	char * SetCurrentCostUSBType(WebEmSession & session, const request& req);
 
 	cWebem *m_pWebEm;
 

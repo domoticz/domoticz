@@ -28,7 +28,7 @@
    <xs:attribute name='type' type='xs:string' use='required'/>
    <xs:attribute name='id' type='xs:string' use='required'/>
    <xs:attribute name='name' type='xs:string' use='required'/>
-   <xs:attribute name='config' type='xs:string' use='optional'/>
+   <xs:attribute name='config' type='xs:anyURI' use='optional'/>
   </xs:complexType>
  </xs:element>
 </xs:schema>

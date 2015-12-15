@@ -135,6 +135,8 @@ enum _eHardwareTypes {
 	HTYPE_RFLINKTCP,			//62
 	HTYPE_Comm5TCP,				//63
 	HTYPE_SolarEdgeAPI,			//64
+	HTYPE_CurrentCostMeter,		//65
+	HTYPE_CurrentCostMeterLAN,	//66
 	HTYPE_END
 };
 

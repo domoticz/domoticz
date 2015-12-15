@@ -134,6 +134,9 @@
     <ClInclude Include="..\hardware\BMP085.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
     <ClInclude Include="..\hardware\csocket.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
@@ -322,6 +325,9 @@
     <ClCompile Include="..\hardware\BMP085.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
     <ClCompile Include="..\hardware\csocket.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\EcoDevices.cpp" />

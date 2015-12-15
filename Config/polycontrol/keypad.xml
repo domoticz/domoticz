@@ -18,7 +18,7 @@
 	<!-- COMMAND_CLASS_ASSOCIATION. This class is in the list reported, but it does not respond to requests -->
 	<CommandClass id="133">
 		<Associations num_groups="1">
-			<Group index="1" max_associations="1" label="Group 1" auto="true" write_only="true"/>
+			<Group index="1" max_associations="1" label="Group 1" write_only="true"/>
 		</Associations>
 	</CommandClass>
 

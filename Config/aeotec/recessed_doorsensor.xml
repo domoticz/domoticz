@@ -47,8 +47,8 @@
     <!-- Association Groups -->
     <CommandClass id="133">
       <Associations num_groups="2">
-        <Group index="1" max_associations="5" label="Group 1: Will receive Basic Set/ Sensor Binary Report (configurable) when the status of Recessed Door Sensor’s magnet switch open or close." auto="false"/>
-        <Group index="2" max_associations="5" label="Group 2: If the battery power is below the warning value, the Node IDs in Group 2 will receive the Low Battery Warning Report, and when the Recessed Door Sensor wake up at the first time it will receive the Battery Report." auto="false"/>
+        <Group index="1" max_associations="5" label="Group 1: Will receive Basic Set/ Sensor Binary Report (configurable) when the status of Recessed Door Sensor’s magnet switch open or close." />
+        <Group index="2" max_associations="5" label="Group 2: If the battery power is below the warning value, the Node IDs in Group 2 will receive the Low Battery Warning Report, and when the Recessed Door Sensor wake up at the first time it will receive the Battery Report." />
       </Associations>
     </CommandClass>    
 </Product>
