@@ -2700,3 +2700,7 @@ tspan{
   0%, 39%, 100% { opacity: 0; }
   40% { opacity: 1; } 
 }
+
+tfoot.filters{
+    display: table-header-group;
+}
