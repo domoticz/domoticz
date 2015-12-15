@@ -9979,9 +9979,19 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			else if (switchtype == STYPE_Selector)
 			{
-				if (switchcmd == "Set Level") {
+				if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
+					std:map<std::string, std::string> statuses;
+					GetSelectorSwitchStatuses(options, statuses);
+					int maxLevel = statuses.size() * 10;
+
 					level = (level < 0) ? 0 : level;
-					level = (level > 100) ? 100 : level;
+					level = (level > maxLevel) ? maxLevel : level;
+
+					std::stringstream sslevel;
+					sslevel << level;
+					if (statuses[sslevel.str()].empty()) {
+						_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %llu", level, ID);
+					}
 				}
 			}
 			else 
