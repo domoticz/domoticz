@@ -2429,7 +2429,7 @@ define(['app'], function (app) {
 							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
-								xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index +'" name="selectorLevel" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
+								xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 							});
 							xhtm += '</div>';
 						} else if (item.SelectorStyle === 1) {
@@ -2640,13 +2640,12 @@ define(['app'], function (app) {
 					}
 					$(this).find('input[value="' + level + '"]').prop("checked", true);
 
-					$(this).click(function(event){
-						if (event.target.tagName === "INPUT") {
-							var idx = $(this).buttonset("option", "idx"),
-								level = parseInt(event.target.value, 10);
-							SetDimValue(idx, level);
-						}
+					$(this).find('input').click(function (event){
+						var idx = $(this).parent().data("idx"),
+							level = parseInt(event.target.value, 10);
+						SetDimValue(idx, level);
 					});
+
 					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
 				}
 			});
