@@ -119,13 +119,14 @@ bool OTGWSerial::OpenSerialDevice()
 	m_bufferpos=0;
 	setReadCallback(boost::bind(&OTGWSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
+	m_bRequestVersion = true;
 	return true;
 }
 
 void OTGWSerial::Do_PollWork()
 {
 	bool bFirstTime=true;
-	int sec_counter = 0;
+	int sec_counter = 25;
 	while (!m_stoprequestedpoller)
 	{
 		sleep_seconds(1);
@@ -154,7 +155,12 @@ void OTGWSerial::Do_PollWork()
 		}
 		else
 		{
-			if ((sec_counter % 30 == 0) || (bFirstTime))	//updates every 30 seconds
+			if ((sec_counter % 28 == 0) && (m_bRequestVersion))
+			{
+				m_bRequestVersion = false;
+				GetVersion();
+			}
+			else if ((sec_counter % 30 == 0) || (bFirstTime))	//updates every 30 seconds
 			{
 				bFirstTime = false;
 				SendOutsideTemperature();

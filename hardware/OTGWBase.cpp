@@ -21,11 +21,13 @@
 
 extern http::server::CWebServerHelper m_webservers;
 
-OTGWBase::OTGWBase(void)
+OTGWBase::OTGWBase(void) :
+	m_Version("--")
 {
 	m_OutsideTemperatureIdx=0;//use build in
 	m_bufferpos = 0;
 	m_OverrideTemperature = 0.0f;
+	m_bRequestVersion = true;
 }
 
 OTGWBase::~OTGWBase(void)
@@ -268,6 +270,13 @@ bool OTGWBase::WriteToHardware(const char *pdata, const unsigned char length)
 	return true;
 }
 
+void OTGWBase::GetVersion()
+{
+	char szCmd[30];
+	strcpy(szCmd, "PR=A\r\n");
+	WriteInt((const unsigned char*)&szCmd, (const unsigned char)strlen(szCmd));
+}
+
 void OTGWBase::GetGatewayDetails()
 {
 	char szCmd[30];
@@ -487,6 +496,27 @@ void OTGWBase::ParseLine()
 			{
 				// Get override setpoint value
 				m_OverrideTemperature=static_cast<float>(atof(sLine.substr(7).c_str()));
+			}
+		}
+		else if (sLine.find("PR: A") != std::string::npos)
+		{
+			//Gateway Version
+			std::string tmpstr = sLine.substr(6);
+			size_t tpos = tmpstr.find(' ');
+			if (tpos != std::string::npos)
+			{
+				m_Version = tmpstr.substr(tpos + 1);
+			}
+		}
+		else if (sLine.find("PR: O") != std::string::npos)
+		{
+			// Check if setpoint is overriden
+			m_OverrideTemperature = 0.0f;
+			char status = sLine[6];
+			if (status == 'c' || status == 't')
+			{
+				// Get override setpoint value
+				m_OverrideTemperature = static_cast<float>(atof(sLine.substr(7).c_str()));
 			}
 		}
 		else
