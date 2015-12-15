@@ -143,43 +143,7 @@ define(['app'], function (app) {
             htmlcontent += $('#devicestable').html();
             $('#devicescontent').html(htmlcontent);
             $('#devicescontent').i18n();
-
-            //$('#devicescontent #devices').dataTable( {
-            //	"sDom": '<"H"lfrC>t<"F"ip>',
-            //	"oTableTools": {
-            //		"sRowSelect": "single"
-            //	},
-            //	"aoColumnDefs": [
-            //		{ "bSortable": false, "aTargets": [ 0,11 ] }
-            //	],
-            //	"aoColumns": [
-            //		null,
-            //		null,
-            //		null,
-            //		null,
-            //		null,
-            //		null,
-            //		null,
-            //		null,
-            //		null,
-            //		null,
-            //		{ "sType": "numeric-battery" },
-            //		null,
-            //		null
-            //	],
-            //	"aaSorting": [[ 12, "desc" ]],
-            //	"bSortClasses": false,
-            //	"bProcessing": true,
-            //	"bStateSave": true,
-            //	"bJQueryUI": true,
-            //	"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-            //	"iDisplayLength" : 25,
-            //	"sPaginationType": "full_numbers",
-            //	language: $.DataTableLanguage
-            //} );
-            //var mTable = $('#devicescontent #devices');
-            //var oTable = mTable.dataTable();
-
+            
             var mTable = $('#devicescontent #devices');
             var oTable = mTable.DataTable({
                 dom: '<"H"lfrC>t<"F"ip>',
@@ -211,24 +175,6 @@ define(['app'], function (app) {
                 language: $.DataTableLanguage,
                 scrollCollapse: true,
             });
-
-            //$('tfoot th', mTable).each(function () {
-            //    var title = $(this).text();
-            //    $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-            //});
-
-            // Apply the search
-            //oTable.columns().every(function () {
-            //    var that = this;
-            //
-            //    $('input', this.footer()).on('keyup change', function () {
-            //        if (that.search() !== this.value) {
-            //            that
-            //                .search(this.value)
-            //                .draw();
-            //        }
-            //    });
-            //});
 
             oTable.rows().remove();
 
@@ -427,23 +373,7 @@ define(['app'], function (app) {
                                 itemSubIcons,
                                 item.LastUpdate
                             ]);
-                            //var addId = oTable.fnAddData([
-                            //		  itemChecker + "&nbsp;&nbsp;" + itemImage,
-                            //		  item.idx,
-                            //		  item.HardwareName,
-                            //		  ID,
-                            //		  item.Unit,
-                            //		  item.Name,
-                            //		  item.Type,
-                            //		  item.SubType,
-                            //		  item.Data,
-                            //		  item.SignalLevel,
-                            //		  BatteryLevel,
-                            //		  itemSubIcons,
-                            //		  item.LastUpdate
-                            //		], false);
                         });
-                        //mTable.fnDraw();
                         oTable.draw(false);
 
                         oTable.columns().every(function (i, column) {
