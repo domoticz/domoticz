@@ -10771,7 +10771,7 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 	if (ooc)//Only on change
 	{
 		int nNewVal=bIsOn?1:0;//Is that everything we need here
-		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str())))
+		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str()))) {
 			return true;
 		} else if (nValue == nNewVal) {
 			return true;//FIXME no return code for already set
