@@ -1969,6 +1969,9 @@ void GetLightStatus(
 	}
 }
 
+/**
+ * Returns a map associating a level value to its name.
+ */
 void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses) {
 	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
 	if (itt != options.end()) {
@@ -1990,6 +1993,9 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
 	}
 }
 
+/**
+ * Returns the level value associated to a name.
+ */
 int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName) {
 	int level = 0; // default is Off
 	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
