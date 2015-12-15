@@ -1755,13 +1755,6 @@ define(['app'], function (app) {
 								img+='<img src="images/Alarm48_On.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshLights,' + item.Protected +');" class="lcursor" height="48" width="48">';
 							}
 						}
-						else if (item.SubType === "Selector Switch") {
-							if ((item.Status === "Off")) {
-								img += '<img src="images/' + item.Image + '48_Off.png" height="48" width="48">';
-							} else {
-								img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
-							}
-						}
 						else if ((item.Status.indexOf('Alarm') >= 0)||(item.Status.indexOf('Tamper') >= 0)) {
 							img='<img src="images/Alarm48_On.png" height="48" width="48">';
 						}
@@ -1866,6 +1859,13 @@ define(['app'], function (app) {
 						}
 						else {
 										img='<img src="images/motion48-off.png" height="48" width="48">';
+						}
+					}
+					else if (item.SwitchType === "Selector") {
+						if ((item.Status === "Off")) {
+							img += '<img src="images/' + item.Image + '48_Off.png" height="48" width="48">';
+						} else {
+							img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 						}
 					}
 					else {
