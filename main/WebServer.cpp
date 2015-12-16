@@ -10,6 +10,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
+#include "../hardware/OTGWBase.h"
 #ifdef WITH_OPENZWAVE
 #include "../hardware/OpenZWave.h"
 #endif
@@ -140,7 +141,10 @@ namespace http {
 				{
 					if (!m_bDoStop)
 					{
-						_log.Log(LOG_ERROR, "WebServer stopped by exception, starting again..., %s",e.what());
+						if (!m_bIsSecure)
+							_log.Log(LOG_ERROR, "WebServer(HTTP) stopped by exception, starting again..., %s",e.what());
+						else
+							_log.Log(LOG_ERROR, "WebServer(SSL) stopped by exception, starting again..., %s", e.what());
 						if (m_pWebEm)
 							m_pWebEm->Stop();
 						continue;
@@ -150,7 +154,10 @@ namespace http {
 				{
 					if (!m_bDoStop)
 					{
-						_log.Log(LOG_ERROR, "WebServer stopped by exception, starting again...");
+						if (!m_bIsSecure)
+							_log.Log(LOG_ERROR, "WebServer(HTTP) stopped by exception, starting again...");
+						else
+							_log.Log(LOG_ERROR, "WebServer(SSL) stopped by exception, starting again...");
 						if (m_pWebEm)
 							m_pWebEm->Stop();
 						continue;
@@ -158,8 +165,10 @@ namespace http {
 				}
 				break;
 			}
-
-			_log.Log(LOG_STATUS, "WebServer stopped...");
+			if (!m_bIsSecure)
+				_log.Log(LOG_STATUS, "WebServer(HTTP) stopped...");
+			else
+				_log.Log(LOG_STATUS, "WebServer(SSL) stopped...");
 		}
 
 		void CWebServer::ReloadCustomSwitchIcons()
@@ -269,6 +278,8 @@ namespace http {
 			if (m_pWebEm != NULL)
 				delete m_pWebEm;
 
+			m_bIsSecure = !secure_cert_file.empty();
+
 			int tries = 0;
 			bool exception = false;
 			std::string listen_address = listenaddress;
@@ -301,10 +312,20 @@ namespace http {
 					tries++;
 				}
 			} while (exception);
-			if (listen_address != "0.0.0.0" && listen_address != "::")
-				_log.Log(LOG_STATUS, "Webserver started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
+			if (!m_bIsSecure)
+			{
+				if (listen_address != "0.0.0.0" && listen_address != "::")
+					_log.Log(LOG_STATUS, "Webserver(HTTP) started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
+				else
+					_log.Log(LOG_STATUS, "Webserver(HTTP) started on port: %s", listenport.c_str());
+			}
 			else
-				_log.Log(LOG_STATUS, "Webserver started on port: %s", listenport.c_str());
+			{
+				if (listen_address != "0.0.0.0" && listen_address != "::")
+					_log.Log(LOG_STATUS, "Webserver(SSL) started on address: %s, port: %s", listen_address.c_str(), listenport.c_str());
+				else
+					_log.Log(LOG_STATUS, "Webserver(SSL) started on port: %s", listenport.c_str());
+			}
 
 			m_pWebEm->SetDigistRealm("Domoticz.com");
 			m_pWebEm->SetSessionStore(this);
@@ -9659,6 +9680,11 @@ namespace http {
 						{
 							MySensorsBase *pMyHardware = (MySensorsBase*)pHardware;
 							root["result"][ii]["version"] = pMyHardware->GetGatewayVersion();
+						}
+						else if ((pHardware->HwdType == HTYPE_OpenThermGateway) || (pHardware->HwdType == HTYPE_OpenThermGatewayTCP))
+						{
+							OTGWBase *pMyHardware = (OTGWBase*)pHardware;
+							root["result"][ii]["version"] = pMyHardware->m_Version;
 						}
 						else
 						{
