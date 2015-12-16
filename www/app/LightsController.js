@@ -88,11 +88,8 @@ define(['app'], function (app) {
 					if (bIsWhite==true) {
 						tsettings.hue=1000;
 					}
-				}
-				else {
-					if ($.isDimmer) {
-						tsettings.level=$("#lightcontent #timerparamstable #combolevel").val();
-					}
+				} else if ($.isDimmer || $.isSelector) {
+					tsettings.level=$("#lightcontent #timerparamstable #combolevel").val();
 				}
 			}
 			return tsettings;
@@ -235,20 +232,25 @@ define(['app'], function (app) {
 						Command="Off";
 					}
 					var tCommand=Command;
-					if ((Command=="On") && ($.isDimmer)) {
-						tCommand+=" (" + item.Level + "%)";
-						if ($.bIsLED) {
-							var hue=item.Hue;
-							var sat=100;
-							if (hue==1000) {
-								hue=0;
-								sat=0;
+					if ((Command=="On") && ($.isDimmer || $.isSelector)) {
+						if ($.isSelector) {
+							tCommand+=" (" + $.selectorSwitchLevels[item.Level / 10] + ")";
+
+						} else {
+							tCommand+=" (" + item.Level + "%)";
+							if ($.bIsLED) {
+								var hue=item.Hue;
+								var sat=100;
+								if (hue==1000) {
+									hue=0;
+									sat=0;
+								}
+								var cHSB=[];
+								cHSB.h=hue;
+								cHSB.s=sat;
+								cHSB.b=item.Level;
+								tCommand+='<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpickHsbToHex(cHSB) + ';"></div>';
 							}
-							var cHSB=[];
-							cHSB.h=hue;
-							cHSB.s=sat;
-							cHSB.b=item.Level;
-							tCommand+='<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpickHsbToHex(cHSB) + ';"></div>';
 						}
 					}
 					
@@ -357,7 +359,8 @@ define(['app'], function (app) {
 						$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["3"].substring(0,2)));
 						$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["3"].substring(3,5)));
 						$('#lightcontent #timerparamstable #randomness').prop('checked', (data["Random"]=="Yes") ? true : false);
-						$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
+						var command = jQuery.inArray(data["Command"], $.myglobals.CommandStr);
+						$("#lightcontent #timerparamstable #combocommand").val(command);
 						var level=data["Level"];
 						if ($.bIsLED) {
 							$('#lightcontent #Brightness').val(level&255);
@@ -378,8 +381,12 @@ define(['app'], function (app) {
 
 							$('#lightcontent #picker').colpickSetColor(cHSB);
 						}
-						else if ($.isDimmer) {
+						else if ($.isDimmer || $.isSelector) {
+							$("#lightcontent #LevelDiv").hide();
 							$("#lightcontent #timerparamstable #combolevel").val(level);
+							if (command === 0) { // On
+								$("#lightcontent #LevelDiv").show();
+							}
 						}
 						
 						var timerType=data["TType"];
@@ -419,7 +426,7 @@ define(['app'], function (app) {
 			$('#modal').hide();
 		}
 
-		ShowTimers = function (id,name, isdimmer, stype,devsubtype)
+		ShowTimers = function (id,name, isdimmer, stype, devsubtype)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -427,10 +434,21 @@ define(['app'], function (app) {
 			}
 			$.devIdx=id;
 			$.isDimmer=isdimmer;
+			$.isSelector = (devsubtype === "Selector Switch");
 			
 			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 		  
+			if ($.isSelector) {
+				// backup selector switch level names before displaying edit edit form
+				$.selectorSwitchLevels = [];
+				$("#selector" + $.devIdx + " label").each(function (index, item) {
+					$.selectorSwitchLevels.push($(item).text());
+				});
+				$("#selector" + $.devIdx + " option").each(function (index, item) {
+					$.selectorSwitchLevels.push($(item).text());
+				});
+			}
 			var oTable;
 			
 			$('#modal').show();
@@ -568,16 +586,24 @@ define(['app'], function (app) {
 			});
 
 			$("#lightcontent #timerparamstable #combocommand").change(function() {
-				var cval=$("#lightcontent #timerparamstable #combocommand").val();
-				var bShowLevel=false;
+				var cval=$("#lightcontent #timerparamstable #combocommand").val(),
+					lval=$("#lightcontent #timerparamstable #combolevel").val(),
+					bShowLevel=false;
 				if (!$.bIsLED) {
-					if ($.isDimmer) {
+					if ($.isDimmer || $.isSelector) {
 						if (cval==0) {
 							bShowLevel=true;
 						}
 					}
 				}
 				if (bShowLevel==true) {
+					if (lval == null) {
+						if ($.isSelector) {
+							$("#lightcontent #timerparamstable #combolevel").val(10); // first selector level value
+						} else {
+							$("#lightcontent #timerparamstable #combolevel").val(5); // first dimmer level value
+						}
+					}
 					$("#lightcontent #LevelDiv").show();
 				}
 				else {
@@ -585,13 +611,38 @@ define(['app'], function (app) {
 				}
 			});
 
-			if (($.isDimmer)&&(!$.bIsLED)) {
+			if (($.isDimmer) && (!$.bIsLED)) {
 				$("#lightcontent #LevelDiv").show();
-			}
-			else {
+
+			} else if ($.isSelector) {
+				// Replace dimmer levels by selector level names
+				var levelDiv$ = $("#lightcontent #LevelDiv"),
+					html = [];
+				$.each($.selectorSwitchLevels, function (index, item) {
+					var level = index * 10,
+						levelName = item;
+					if (level === 0) {
+						return;
+					}
+					html.push('<option value="');
+					html.push(level);
+					html.push('">');
+					html.push(levelName);
+					html.push('</option>');
+				});
+				levelDiv$.find('select')
+					.attr('style', '')
+					.css({'width': 'auto'})
+					.html(html.join(''));
+				levelDiv$.find('span[data-i18n="Level"]')
+					.attr('data-i18n', "Level name")
+					.html($.t("Level name"));
+				levelDiv$.show();
+
+			} else {
 				$("#lightcontent #LevelDiv").hide();
 			}
-		  
+
 			$('#modal').hide();
 			RefreshTimerTable(id);
 		}
