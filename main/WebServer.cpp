@@ -2058,7 +2058,7 @@ namespace http {
 
 		void CWebServer::Cmd_GetConfig(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (session.rights != -1)
+			if (session.rights == -1)
 				return;//Only auth user allowed
 
 			root["status"] = "OK";
