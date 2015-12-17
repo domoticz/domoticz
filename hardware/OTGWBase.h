@@ -37,8 +37,6 @@ class OTGWBase : public CDomoticzHardwareBase
 		int A;
 		int B;
 	};
-	friend class OTGWSerial;
-	friend class OTGWTCP;
 public:
 	OTGWBase(void);
 	~OTGWBase(void);
@@ -46,7 +44,8 @@ public:
 	unsigned int m_iBaudRate;
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
-private:
+	std::string m_Version;
+protected:
 	void SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
@@ -58,9 +57,11 @@ private:
 	bool SwitchLight(const int idx, const std::string &LCmd, const int svalue);
 	virtual bool WriteInt(const unsigned char *pData, const unsigned char Len) =0;
 	void GetGatewayDetails();
+	void GetVersion();
 	void SendTime();
 	void SendOutsideTemperature();
 	unsigned char m_buffer[1028];
+	bool m_bRequestVersion;
 	int m_bufferpos;
 	int m_OutsideTemperatureIdx;
 	float m_OverrideTemperature;

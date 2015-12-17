@@ -11,7 +11,9 @@ Version 2.3xxx
 - Implemented: Nest Thermostat, support for multiple thermostats
 - Implemented: Netatmo, support for multiple Thermostats
 - Implemented: Netatmo, support for multiple weather stations (from the weathermap) and multiple rain sensors
+- Implemented: New switch type 'Selector' (big thanks to cgaudry)
 - Implemented: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
+- Implemented: OTGW, added firmware version number in hardware setup page
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: RFXCom support for Legrand CAD
 - Implemented: SolarEdge via Web API

@@ -340,10 +340,10 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		return false; //only accept RFLink->Master messages
 	}
 
-//#ifdef ENABLE_LOGGING
-//	if (!bHideDebugLog)
+#ifdef ENABLE_LOGGING
+	if (!bHideDebugLog)
 		_log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
-//#endif
+#endif
 
 	//std::string Sensor_ID = results[1];
 	if (results.size() >2)
@@ -362,15 +362,19 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		}
 		if (Name_ID.find("PONG") != std::string::npos) {
 			//_log.Log(LOG_STATUS, "RFLink: PONG received!...");
-            mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
-			m_LastHeartbeat = mytime(&m_LastHeartbeatReceive);
-            m_bTXokay = true; // variable to indicate an OK was received
+			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
+			mytime(&m_LastHeartbeat);  // keep heartbeat happy
+			m_LastReceivedTime = m_LastHeartbeat;
+
+			m_bTXokay = true; // variable to indicate an OK was received
 			return true;
 		}
 		if (Name_ID.find("OK") != std::string::npos) {
 			//_log.Log(LOG_STATUS, "RFLink: OK received!...");
 			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
-			m_LastHeartbeat = mytime(&m_LastHeartbeatReceive);
+			mytime(&m_LastHeartbeat);  // keep heartbeat happy
+			m_LastReceivedTime = m_LastHeartbeat;
+
 			m_bTXokay = true; // variable to indicate an OK was received
 			return true;
 		}
@@ -387,7 +391,9 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		return false; //??
 
 	mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
-	m_LastHeartbeat = mytime(&m_LastHeartbeatReceive);
+	mytime(&m_LastHeartbeat);  // keep heartbeat happy
+	//_log.Log(LOG_STATUS, "RFLink: t1=%d t2=%d", m_LastHeartbeat, m_LastHeartbeatReceive);
+	m_LastReceivedTime = m_LastHeartbeat;
 
 	std::stringstream ss;
 	unsigned int ID;
