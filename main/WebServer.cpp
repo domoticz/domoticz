@@ -4405,7 +4405,7 @@ namespace http {
 							(sunitcode == "")
 							)
 							return;
-						devid = id;
+						devid = "0" + id;
 						switchtype = STYPE_Selector;
 						if (!deviceoptions.empty()) {
 							deviceoptions.append(";");

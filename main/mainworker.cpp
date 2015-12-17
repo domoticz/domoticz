@@ -10615,8 +10615,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			gswitch.unitcode = Unit;
 			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd, options))
 				return false;
-			level = (level > 99) ? 99 : level;
-
+			if (switchtype != STYPE_Selector) {
+				level = (level > 99) ? 99 : level;
+			}
 			if (switchtype == STYPE_Selector)
 			{
 				if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
