@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 88
+#define DB_VERSION 89
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1596,6 +1596,12 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 88)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Options] VARCHAR(1024) DEFAULT null");
+		}
+		if (dbversion < 89)
+		{
+			std::stringstream szQuery;
+			szQuery << "UPDATE DeviceStatus SET [DeviceID]='0' || DeviceID WHERE ([Type]=" << pTypeGeneralSwitch << ") AND (SubType=" << sSwitchTypeSelector << ") AND length(DeviceID) = 7";
+			query(szQuery.str());
 		}
 
 	}
