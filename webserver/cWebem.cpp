@@ -1378,6 +1378,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				session.id = sSID;
 			}
 			session.auth_token = sAuthToken;
+			session.removecookie = false;
 			// Check authen_token and restore session
 			if (checkAuthToken(session)) {
 				// user is authenticated
