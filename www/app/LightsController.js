@@ -2860,7 +2860,7 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #he105params").show();
 			}
-			else if (lighttype==24) {
+			else if (lighttype==303) {
 				$("#dialog-addmanuallightdevice #lighting1params").hide();
 				$("#dialog-addmanuallightdevice #lighting2params").show();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
@@ -3261,7 +3261,7 @@ define(['app'], function (app) {
 							if (switchtype == 1) {
 								subtype = 10;	// Doorbell -> COCO GDR2
 							} else if (switchtype == 18) {
-								subtype = 24;	// Selector -> Selector Switch
+								subtype = 303;	// Selector -> Selector Switch
 							}
 							if (subtype !== -1) {
 								$("#dialog-addmanuallightdevice #lighttable #combolighttype").val(subtype);
@@ -3271,7 +3271,7 @@ define(['app'], function (app) {
 						$("#dialog-addmanuallightdevice #lighttable #combolighttype").change(function() { 
 							var subtype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val(),
 								switchtype = -1;
-							if (subtype == 24) {
+							if (subtype == 303) {
 								switchtype = 18;	// Selector -> Selector Switch
 							}
 							if (switchtype !== -1) {

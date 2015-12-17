@@ -3951,6 +3951,20 @@ namespace http {
 						shousecode = szTmp;
 						devid = id + shousecode;
 					}
+					else if (lighttype == 303)
+					{
+						//Selector Switch
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchTypeSelector;
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(id == "") ||
+							(sunitcode == "")
+							)
+							return;
+						devid = id;
+					}
 				}
                 
                 // ----------- RFlink "Test Switch" Fix -----------
@@ -4138,13 +4152,6 @@ namespace http {
 						)
 						return;
 					devid = id;
-
-					if (switchtype == STYPE_Selector) {
-						if (!deviceoptions.empty()) {
-							deviceoptions.append(";");
-						}
-						deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
-					}
 				}
 				else if (lighttype < 60)
 				{
@@ -4385,6 +4392,25 @@ namespace http {
 						sprintf(szTmp, "%02X", atoi(shousecode.c_str()));
 						shousecode = szTmp;
 						devid = id + shousecode;
+					}
+					else if (lighttype == 303)
+					{
+						//Selector Switch
+						dtype = pTypeGeneralSwitch;
+						subtype = sSwitchTypeSelector;
+						std::string id = request::findValue(&req, "id");
+						sunitcode = request::findValue(&req, "unitcode");
+						if (
+							(id == "") ||
+							(sunitcode == "")
+							)
+							return;
+						devid = id;
+						switchtype = STYPE_Selector;
+						if (!deviceoptions.empty()) {
+							deviceoptions.append(";");
+						}
+						deviceoptions.append("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3");
 					}
 				}
 
