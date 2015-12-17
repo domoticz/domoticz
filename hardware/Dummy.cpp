@@ -316,6 +316,25 @@ namespace http {
 				m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND4, 12, 255, 0, "0;N;0;0;0;0", devname);
 				bCreated = true;
 				break;
+			case 1002:
+				//Selector Switch
+				{
+					unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+					unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+					unsigned long long devidx = m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeSelectorSwitch, 12, 255, 0, "0", devname);
+					if (devidx != -1)
+					{
+						//Set switch type to selector
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Selector, devidx);
+						//Set default device options
+						m_sql.SetDeviceOptions(devidx, m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3", false));
+					}
+					bCreated = true;
+				}
+				break;
 			}
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;

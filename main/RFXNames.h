@@ -25,6 +25,7 @@ enum _eSwitchType
 	STYPE_VenetianBlindsEU,	//15
 	STYPE_BlindsPercentageInverted, //16
 	STYPE_Media,			//17
+	STYPE_Selector,			//18
 	STYPE_END
 };
 
@@ -208,12 +209,16 @@ void GetLightStatus(
 	int &maxDimLevel,
 	bool &bHaveGroupCmd);
 
+int  GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName);
+void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses);
+
 bool GetLightCommand(
 	const unsigned char dType, 
 	const unsigned char dSubType, 
 	const _eSwitchType switchtype,
 	std::string switchcmd,
-	unsigned char &cmd
+	unsigned char &cmd,
+	const std::map<std::string, std::string> & options
 	);
 
 bool IsLightSwitchOn(const std::string &lstatus);

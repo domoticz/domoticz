@@ -9854,6 +9854,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	unsigned char dType=atoi(sd[3].c_str());
 	unsigned char dSubType=atoi(sd[4].c_str());
 	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
 
         //when asking for Toggle, just switch to the opposite value
         if (switchcmd=="Toggle") {
@@ -9863,7 +9864,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	//when level = 0, set switch command to Off
 	if (switchcmd=="Set Level")
 	{
-		if (level > 0)
+		if ((level > 0) && (switchtype != STYPE_Selector))
 			level-=1;
 		if (level==0)
 			switchcmd="Off";
@@ -9880,7 +9881,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.LIGHTING1.housecode=atoi(sd[1].c_str());
 			lcmd.LIGHTING1.unitcode=Unit;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd, options))
 				return false;
 			if (switchtype==STYPE_Doorbell)
 			{
@@ -9915,7 +9916,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING2.id3=ID3;
 			lcmd.LIGHTING2.id4=ID4;
 			lcmd.LIGHTING2.unitcode=Unit;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING2.cmnd))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING2.cmnd, options))
 				return false;
 			if (switchtype==STYPE_Doorbell) {
 				int rnvalue=0;
@@ -9974,6 +9975,23 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if (switchcmd == "Set Volume") {
 					level = (level < 0) ? 0 : level;
 					level = (level > 100) ? 100 : level;
+				}
+			}
+			else if (switchtype == STYPE_Selector)
+			{
+				if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
+					std:map<std::string, std::string> statuses;
+					GetSelectorSwitchStatuses(options, statuses);
+					int maxLevel = statuses.size() * 10;
+
+					level = (level < 0) ? 0 : level;
+					level = (level > maxLevel) ? maxLevel : level;
+
+					std::stringstream sslevel;
+					sslevel << level;
+					if (statuses[sslevel.str()].empty()) {
+						_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %llu", level, ID);
+					}
 				}
 			}
 			else 
@@ -10058,7 +10076,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING5.id2=ID3;
 			lcmd.LIGHTING5.id3=ID4;
 			lcmd.LIGHTING5.unitcode=Unit;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd, options))
 				return false;
 			if (switchtype==STYPE_Doorbell)
 			{
@@ -10084,7 +10102,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if ((switchcmd=="Set Level")&&(level==0))
 				{
 					switchcmd="Off";
-					GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd);
+					GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd, options);
 				}
 				if (switchcmd!="Off")
 				{
@@ -10179,7 +10197,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.LIGHTING6.unitcode=Unit;
 			lcmd.LIGHTING6.cmndseqnbr=m_hardwaredevices[hindex]->m_SeqNr%4;
 
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING6.cmnd))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING6.cmnd, options))
 				return false;
 			lcmd.LIGHTING6.filler=0;
 			lcmd.LIGHTING6.rssi=12;
@@ -10205,7 +10223,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.HOMECONFORT.housecode = ID4;
 			lcmd.HOMECONFORT.unitcode = Unit;
 
-			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.HOMECONFORT.cmnd))
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.HOMECONFORT.cmnd, options))
 				return false;
 			lcmd.HOMECONFORT.filler = 0;
 			lcmd.HOMECONFORT.rssi = 12;
@@ -10257,7 +10275,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 
 			lcmd.value=level;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.command))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.command, options))
 				return false;
 			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tLimitlessLights)))
 				return false;
@@ -10284,7 +10302,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			case sTypeKD101:
 			case sTypeSA30:
 				{
-					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
+					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status, options))
 						return false;
 					//send it twice
 					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
@@ -10303,7 +10321,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			case sTypeSecX10:
 			case sTypeMeiantech:
 				{
-					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status))
+					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status, options))
 						return false;
 					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
 						return false;
@@ -10370,7 +10388,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.CURTAIN1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
 			lcmd.CURTAIN1.housecode=atoi(sd[1].c_str());
 			lcmd.CURTAIN1.unitcode=Unit;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.CURTAIN1.cmnd))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.CURTAIN1.cmnd, options))
 				return false;
 			lcmd.CURTAIN1.filler=0;
 
@@ -10416,7 +10434,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				lcmd.BLINDS1.unitcode = Unit;
 				break;
 			}
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd, options))
 				return false;
 			level=15;
 			lcmd.BLINDS1.filler=0;
@@ -10447,7 +10465,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			else
 			{
-				if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RFY.cmnd))
+				if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RFY.cmnd, options))
 					return false;
 			}
 			level=15;
@@ -10494,7 +10512,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.THERMOSTAT2.cmnd = Unit;
 			lcmd.THERMOSTAT2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 
-			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT2.cmnd))
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT2.cmnd, options))
 				return false;
 
 			lcmd.THERMOSTAT2.filler = 0;
@@ -10518,7 +10536,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			lcmd.THERMOSTAT3.unitcode2=ID3;
 			lcmd.THERMOSTAT3.unitcode3=ID4;
 			lcmd.THERMOSTAT3.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.THERMOSTAT3.cmnd))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.THERMOSTAT3.cmnd, options))
 				return false;
 			level=15;
 			lcmd.THERMOSTAT3.filler=0;
@@ -10587,7 +10605,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		lcmd.RADIATOR1.id3 = ID3;
 		lcmd.RADIATOR1.id4 = ID4;
 		lcmd.RADIATOR1.unitcode = Unit;
-		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RADIATOR1.cmnd))
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RADIATOR1.cmnd, options))
 			return false;
 		if (level > 15)
 			level = 15;
@@ -10612,7 +10630,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			gswitch.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 			gswitch.id = ID;
 			gswitch.unitcode = Unit;
-			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd))
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd, options))
 				return false;
 			level = (level > 99) ? 99 : level;
 			gswitch.level = (unsigned char)level;
@@ -10733,29 +10751,38 @@ bool MainWorker::SwitchLight(const unsigned long long idx, const std::string &sw
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result=m_sql.safe_query(
-		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,Name FROM DeviceStatus WHERE (ID == %llu)",
+		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %llu)",
 		idx);
 	if (result.size()<1)
 		return false;
 
 	std::vector<std::string> sd=result[0];
 
+	unsigned char dType = atoi(sd[3].c_str());
+	unsigned char dSubType = atoi(sd[4].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 	int iOnDelay = atoi(sd[6].c_str());
+	int nValue = atoi(sd[7].c_str());
+	std::string sValue = sd[8].c_str();
+	std::string devName = sd[9].c_str();
+	std::string sOptions = sd[10].c_str();
 
 	bool bIsOn = IsLightSwitchOn(switchcmd);
-	int nValue=atoi(sd[7].c_str());
 	if (ooc)//Only on change
 	{
 		int nNewVal=bIsOn?1:0;//Is that everything we need here
-		if(nValue==nNewVal)
+		if ((switchtype == STYPE_Selector) && (nValue == nNewVal) && (level == atoi(sValue.c_str()))) {
+			return true;
+		} else if (nValue == nNewVal) {
 			return true;//FIXME no return code for already set
+		}
 	}
 	//Check if we have an On-Delay, if yes, add it to the tasker
 	if (((bIsOn) && (iOnDelay != 0)) || ExtraDelay)
 	{
 		if (ExtraDelay != 0)
 		{
-			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", result[0][8].c_str(), switchcmd.c_str(), ExtraDelay);
+			_log.Log(LOG_NORM, "Delaying switch [%s] action (%s) for %d seconds", devName.c_str(), switchcmd.c_str(), ExtraDelay);
 		}
 		m_sql.AddTaskItem(_tTaskItem::SwitchLightEvent(iOnDelay + ExtraDelay, idx, switchcmd, level, hue, "Switch with Delay"));
 		return true;
@@ -11354,7 +11381,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 			if (
 				((switchtype == STYPE_Dimmer) || 
 				(switchtype == STYPE_BlindsPercentage) || 
-				(switchtype == STYPE_BlindsPercentageInverted) 
+				(switchtype == STYPE_BlindsPercentageInverted) ||
+				(switchtype == STYPE_Selector)
 				) && (maxDimLevel != 0))
 			{
 				if (lstatus == "On")
