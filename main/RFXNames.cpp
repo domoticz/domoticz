@@ -2091,23 +2091,6 @@ bool GetLightCommand(
 			}
 			return false;
 		}
-		else if (switchtype == STYPE_Selector) {
-			if ((switchcmd == "Paused") ||
-					(switchcmd == "Pause") ||
-					(switchcmd == "Playing") ||
-					(switchcmd == "Play") ||
-					(switchcmd == "Play Playlist") ||
-					(switchcmd == "Play Favorites") ||
-					(switchcmd == "Set Volume")) {
-				// Not a managed command
-				return false;
-			}
-			int level = GetSelectorSwitchLevel(options, switchcmd);
-			if (level > 0) { // not Off but a level name
-				// switchcmd cannot be a level name
-				return false;
-			}
-		}
 		if (switchcmd=="Off")
 		{
 			cmd=light2_sOff;
@@ -2332,6 +2315,23 @@ bool GetLightCommand(
 				return true;
 			}
 			return false;
+		}
+		else if (switchtype == STYPE_Selector) {
+			if ((switchcmd == "Paused") ||
+				(switchcmd == "Pause") ||
+				(switchcmd == "Playing") ||
+				(switchcmd == "Play") ||
+				(switchcmd == "Play Playlist") ||
+				(switchcmd == "Play Favorites") ||
+				(switchcmd == "Set Volume")) {
+				// Not a managed command
+				return false;
+			}
+			int level = GetSelectorSwitchLevel(options, switchcmd);
+			if (level > 0) { // not Off but a level name
+							 // switchcmd cannot be a level name
+				return false;
+			}
 		}
 
 		if (switchcmd == "Off")

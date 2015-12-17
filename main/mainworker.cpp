@@ -9977,23 +9977,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					level = (level > 100) ? 100 : level;
 				}
 			}
-			else if (switchtype == STYPE_Selector)
-			{
-				if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
-					std::map<std::string, std::string> statuses;
-					GetSelectorSwitchStatuses(options, statuses);
-					int maxLevel = statuses.size() * 10;
-
-					level = (level < 0) ? 0 : level;
-					level = (level > maxLevel) ? maxLevel : level;
-
-					std::stringstream sslevel;
-					sslevel << level;
-					if (statuses[sslevel.str()].empty()) {
-						_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %llu", level, ID);
-					}
-				}
-			}
 			else 
 				level = (level > 15) ? 15 : level;
 
@@ -10633,6 +10616,25 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd, options))
 				return false;
 			level = (level > 99) ? 99 : level;
+
+			if (switchtype == STYPE_Selector)
+			{
+				if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
+					std::map<std::string, std::string> statuses;
+					GetSelectorSwitchStatuses(options, statuses);
+					int maxLevel = statuses.size() * 10;
+
+					level = (level < 0) ? 0 : level;
+					level = (level > maxLevel) ? maxLevel : level;
+
+					std::stringstream sslevel;
+					sslevel << level;
+					if (statuses[sslevel.str()].empty()) {
+						_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %llu", level, ID);
+					}
+				}
+			}
+
 			gswitch.level = (unsigned char)level;
 			gswitch.rssi = 12;
 			if (switchtype != STYPE_Motion) //dont send actual motion off command
