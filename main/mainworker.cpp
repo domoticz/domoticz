@@ -9980,7 +9980,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			else if (switchtype == STYPE_Selector)
 			{
 				if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
-					std:map<std::string, std::string> statuses;
+					std::map<std::string, std::string> statuses;
 					GetSelectorSwitchStatuses(options, statuses);
 					int maxLevel = statuses.size() * 10;
 

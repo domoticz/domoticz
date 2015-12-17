@@ -421,7 +421,6 @@ changed; #define recType43392 0x53  to   #define trxType43392 0x53
 #define sTypeHEU 0x1
 #define sTypeANSLUT 0x2
 #define sTypeKambrook 0x03
-#define sTypeSelectorSwitch 0x04
 
 #define light2_sOff 0x0
 #define light2_sOn 0x1

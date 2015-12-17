@@ -526,7 +526,6 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
 		{ pTypeLighting2, sTypeZWaveSwitch, "ZWave" },
-		{ pTypeLighting2, sTypeSelectorSwitch, "Selector Switch" },
 
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
@@ -744,6 +743,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
 		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
+		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Selector Switch" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -827,8 +827,8 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting2, sTypeAC, "Status" },
 		{ pTypeLighting2, sTypeHEU, "Status" },
 		{ pTypeLighting2, sTypeANSLUT, "Status" },
+		{ pTypeLighting2, sTypeKambrook, "Status" },
 		{ pTypeLighting2, sTypeZWaveSwitch, "Status" },
-		{ pTypeLighting2, sTypeSelectorSwitch, "Status" },
 
 		{ pTypeLighting3, sTypeKoppla, "Status" },
 
@@ -1228,6 +1228,7 @@ void GetLightStatus(
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
+		case sTypeKambrook:
 			bHaveDimmer=true;
 			bHaveGroupCmd=true;
 			switch (nValue)
@@ -1272,35 +1273,6 @@ void GetLightStatus(
 				break;
 			case light2_sSetLevel:
 				sprintf(szTmp, "Set Level: %d %%", llevel);
-				if (sValue != "0")
-					lstatus = szTmp;
-				else
-					lstatus = "Off";
-				break;
-			}
-			break;
-		case sTypeSelectorSwitch:
-			maxDimLevel = 100;
-			llevel = atoi(sValue.c_str());
-			switch (nValue)
-			{
-			case light2_sOff:
-				lstatus = "Off";
-				break;
-			case light2_sOn:
-			case light2_sSetLevel:
-				sprintf(szTmp, "Set Level: %d %%", llevel);
-				if (sValue != "0")
-					lstatus = szTmp;
-				else
-					lstatus = "Off";
-				break;
-			case light2_sGroupOff:
-				lstatus = "Group Off";
-				break;
-			case light2_sGroupOn:
-			case light2_sSetGroupLevel:
-				sprintf(szTmp, "Set Group Level: %d %%", llevel);
 				if (sValue != "0")
 					lstatus = szTmp;
 				else
@@ -1575,6 +1547,7 @@ void GetLightStatus(
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
+		case sSwitchTypeSelector:
 			bHaveDimmer = true;
 			bHaveGroupCmd = true;
 			break;

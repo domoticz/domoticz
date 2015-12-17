@@ -324,7 +324,7 @@ namespace http {
 					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
 					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
 					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-					unsigned long long devidx = m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeSelectorSwitch, 12, 255, 0, "0", devname);
+					unsigned long long devidx = m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, 0, "0", devname);
 					if (devidx != -1)
 					{
 						//Set switch type to selector
