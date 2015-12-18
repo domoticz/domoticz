@@ -2707,6 +2707,9 @@ tspan{
   40% { opacity: 1; } 
 }
 
+tfoot.filters{
+    display: table-header-group;
+}
 .selectorlevels {
 	font-size: 1em;
 	/*margin-top:4px;*/
