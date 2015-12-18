@@ -505,7 +505,7 @@ void OTGWBase::ParseLine()
 			size_t tpos = tmpstr.find(' ');
 			if (tpos != std::string::npos)
 			{
-				m_Version = tmpstr.substr(tpos + 1);
+				m_Version = tmpstr.substr(tpos + 9);
 			}
 		}
 		else if (sLine.find("PR: O") != std::string::npos)
