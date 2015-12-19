@@ -25,6 +25,7 @@ enum _eSwitchType
 	STYPE_VenetianBlindsEU,	//15
 	STYPE_BlindsPercentageInverted, //16
 	STYPE_Media,			//17
+	STYPE_Selector,			//18
 	STYPE_END
 };
 
@@ -122,9 +123,9 @@ enum _eHardwareTypes {
 	HTYPE_SOLARMAXTCP,			//49
 	HTYPE_KMTronic433,			//50
 	HTYPE_Pinger,				//51
-	HTYPE_NEST,		//52
+	HTYPE_NEST,					//52
 	HTYPE_THERMOSMART,			//53
-	HTYPE_Netatmo,//54
+	HTYPE_Netatmo,				//54
 	HTYPE_Kodi,					//55
 	HTYPE_ANNATHERMOSTAT,		//56
 	HTYPE_WINDDELEN,			//57
@@ -134,6 +135,9 @@ enum _eHardwareTypes {
 	HTYPE_RFXtrx868,			//61
 	HTYPE_RFLINKTCP,			//62
 	HTYPE_Comm5TCP,				//63
+	HTYPE_SolarEdgeAPI,			//64
+	HTYPE_CurrentCostMeter,		//65
+	HTYPE_CurrentCostMeterLAN,	//66
 	HTYPE_END
 };
 
@@ -205,12 +209,16 @@ void GetLightStatus(
 	int &maxDimLevel,
 	bool &bHaveGroupCmd);
 
+int  GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName);
+void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses);
+
 bool GetLightCommand(
 	const unsigned char dType, 
 	const unsigned char dSubType, 
 	const _eSwitchType switchtype,
 	std::string switchcmd,
-	unsigned char &cmd
+	unsigned char &cmd,
+	const std::map<std::string, std::string> & options
 	);
 
 bool IsLightSwitchOn(const std::string &lstatus);

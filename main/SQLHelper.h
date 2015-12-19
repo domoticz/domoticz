@@ -270,6 +270,10 @@ public:
 	void AllowNewHardwareTimer(const int iTotMinutes);
 
 	bool InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage);
+
+	std::map<std::string, std::string> BuildDeviceOptions(const std::string & options, const bool decode = true);
+	std::map<std::string, std::string> GetDeviceOptions(const std::string & idx);
+	bool SetDeviceOptions(const unsigned long long idx, const std::map<std::string, std::string> & options);
 public:
 	std::string m_LastSwitchID;	//for learning command
 	unsigned long long m_LastSwitchRowID;

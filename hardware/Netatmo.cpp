@@ -231,6 +231,15 @@ bool CNetatmo::Login()
 	if (m_isLogged)
 		return true;
 
+	if (LoadRefreshToken())
+	{
+		if (RefreshToken(true))
+		{
+			m_isLogged = true;
+			m_bPollThermostat = true;
+			return true;
+		}
+	}
 	std::stringstream sstr;
 	sstr << "grant_type=password&";
 	sstr << "client_id=" << m_clientId << "&";
@@ -269,22 +278,30 @@ bool CNetatmo::Login()
 		return false;
 	}
 
+	//Initial Access Token
 	m_accessToken = root["access_token"].asString();
 	m_refreshToken = root["refresh_token"].asString();
+	//_log.Log(LOG_STATUS, "Access token: %s", m_accessToken.c_str());
+	//_log.Log(LOG_STATUS, "RefreshToken: %s", m_refreshToken.c_str());
 	int expires = root["expires_in"].asInt();
 	m_nextRefreshTs = mytime(NULL) + expires;
-	m_isLogged = true;
-	m_bPollThermostat = true;
+	StoreRefreshToken();
 	return true;
 }
 
-bool CNetatmo::RefreshToken()
+bool CNetatmo::RefreshToken(const bool bForce)
 {
-	if (!m_isLogged)
+	if (m_refreshToken.empty())
+	{
 		return false;
-
-	if ((mytime(NULL) - 15) < m_nextRefreshTs)
-		return true; //no need to refresh the token yet
+	}
+	if (!bForce)
+	{
+		if (!m_isLogged)
+			return false;
+		if ((mytime(NULL) - 15) < m_nextRefreshTs)
+			return true; //no need to refresh the token yet
+	}
 
 	// Time to refresh the token
 	std::stringstream sstr;
@@ -331,7 +348,28 @@ bool CNetatmo::RefreshToken()
 	m_refreshToken = root["refresh_token"].asString();
 	int expires = root["expires_in"].asInt();
 	m_nextRefreshTs = mytime(NULL) + expires;
+	//StoreRefreshToken();
 	return true;
+}
+
+bool CNetatmo::LoadRefreshToken()
+{
+	std::vector<std::vector<std::string> > result;
+	result=m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID==%d)",m_HwdID);
+	if (result.empty())
+		return false;
+	std::string refreshToken = result[0][0];
+	if (refreshToken.empty())
+		return false;
+	m_refreshToken = refreshToken;
+	return true;
+}
+
+void CNetatmo::StoreRefreshToken()
+{
+	if (m_refreshToken.empty())
+		return;
+	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID == %d)", m_refreshToken.c_str(), m_HwdID);
 }
 
 int CNetatmo::GetBatteryLevel(const std::string &ModuleType, const int battery_vp)

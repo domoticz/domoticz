@@ -214,7 +214,7 @@ void CEventSystem::GetCurrentStates()
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
 
-	result = m_sql.safe_query("SELECT HardwareID,ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Used = '1')");
+	result = m_sql.safe_query("SELECT HardwareID,ID,Name,nValue,sValue, Type, SubType, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Used = '1')");
 	if (result.size()>0)
 	{
 		// Allocate all memory before filling
@@ -256,7 +256,8 @@ void CEventSystem::GetCurrentStates()
 			sitem.subType = atoi(sd[6].c_str());
 			sitem.switchtype = atoi(sd[7].c_str());
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
-			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, (unsigned char)sitem.nValue, sitem.sValue));
+			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
+			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, (unsigned char)sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
 			m_devicestates[sitem.ID] = sitem;
@@ -984,10 +985,10 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	EvaluateEvent("security");
 }
 
-std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel)
+std::string CEventSystem::UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
 {
 
-	std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue);
+	std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue, options);
 
 	// Fix string capacity to avoid map entry resizing
 	std::string l_deviceName;		l_deviceName.reserve(100);		l_deviceName.assign(devname);
@@ -1034,13 +1035,14 @@ void CEventSystem::ProcessDevice(const int HardwareID, const unsigned long long 
 
 	// query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel FROM DeviceStatus WHERE (Name == '%q')",
+	result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')",
 		devname.c_str());
 	if (result.size()>0) {
 		std::vector<std::string> sd = result[0];
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 
-		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()));
+		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
 		GetCurrentUserVariables();
 		EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
 	}
@@ -1077,6 +1079,8 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 {
 	if (!m_bEnabled)
 		return;
+	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+
 	std::stringstream lua_DirT;
 
 #ifdef WIN32
@@ -1232,7 +1236,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "device");
 	devicestatesMutexLock.unlock();
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
@@ -1258,7 +1261,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 	}
 	lua_setglobal(lua_state, "variable");
-	uservariablesMutexLock.unlock();
 
 	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
@@ -1772,6 +1774,15 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
+	else if (Argument.find("variable") == 0)
+	{
+		std::map<unsigned long long, _tUserVariable>::const_iterator itt = m_uservariables.find(dindex);
+		if (itt != m_uservariables.end())
+		{
+			return itt->second.variableValue;
+		}
+	}
+
 	return ret;
 }
 
@@ -1887,6 +1898,10 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					{
 						body = aParam[1];
 					}
+
+					subject = ProcessVariableArgument(subject);
+					body = ProcessVariableArgument(body);
+
 					if (aParam.size() == 3)
 					{
 						priority = aParam[2];
@@ -2100,7 +2115,6 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		// put variables in user_variables dict, but also in the namespace
 		object user_variables = dict();
 		{
-			boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 			typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
 			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 				_tUserVariable uvitem = iterator->second;
@@ -2550,7 +2564,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "otherdevices_svalues");
 	devicestatesMutexLock2.unlock();
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
@@ -2603,7 +2616,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			}
 		}
 	}
-	uservariablesMutexLock.unlock();
 
 	int secstatus = 0;
 	std::string secstatusw = "";
@@ -2894,7 +2906,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	std::string svalue = strarray[2];
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, Name, SwitchType, LastLevel FROM DeviceStatus WHERE (ID=='%q')",
+	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, Name, SwitchType, LastLevel, Options FROM DeviceStatus WHERE (ID=='%q')",
 		idx.c_str());
 	if (result.size()>0)
 	{
@@ -2906,6 +2918,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		std::string dname = result[0][5];
 		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][6].c_str());
 		int dlastlevel = atoi(result[0][7].c_str());
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
 
 		time_t now = time(0);
 		struct tm ltime;
@@ -2925,7 +2938,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		int devType = atoi(dtype.c_str());
 		int subType = atoi(dsubtype.c_str());
 
-		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel);
+		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
 
 		//Check if we need to log this event
 		switch (devType)
@@ -3013,7 +3026,6 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	}
 	else if (devNameNoQuotes == "WriteToLogUserVariable")
 	{
-		boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 		_log.Log(LOG_STATUS, "%s", m_uservariables[atoi(doWhat.c_str())].variableValue.c_str());
 	}
 	else if (devNameNoQuotes == "WriteToLogDeviceVariable")
@@ -3228,7 +3240,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 
 
-std::string CEventSystem::nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue)
+std::string CEventSystem::nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
 {
 
 	std::string lstatus = "";
@@ -3238,15 +3250,22 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 	int maxDimLevel = 0;
 
 	GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-
+/*
 	if (lstatus.find("Set Level") == 0)
 	{
 		lstatus = "Set Level";
 	}
-
+*/
 	if (switchtype == STYPE_Dimmer)
 	{
-		//?
+		// use default lstatus
+	}
+	else if(switchtype == STYPE_Selector) {
+		std::map<std::string, std::string> statuses;
+		GetSelectorSwitchStatuses(options, statuses);
+		std::stringstream sslevel;
+		sslevel << llevel;
+		lstatus = statuses[sslevel.str()];
 	}
 	else if ((switchtype == STYPE_Contact) || (switchtype == STYPE_DoorLock))
 	{
@@ -3455,6 +3474,14 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 					fLevel = 100;
 				ilevel = int(fLevel);
 				if (ilevel > 0) { ilevel++; }
+			} else if (switchtype == STYPE_Selector) {
+				// llevel cannot be get without sValue so level is getting from percentageLevel
+				ilevel = percentageLevel;
+				if (ilevel > 100) {
+					ilevel = 100;
+				} else if (ilevel < 0) {
+					ilevel = 0;
+				}
 			}
 		}
 	}

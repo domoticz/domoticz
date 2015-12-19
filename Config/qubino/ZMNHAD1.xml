@@ -109,13 +109,13 @@
 	<CommandClass id="133">
 		<Associations num_groups="8">
 			<Group index="1" max_associations="1" label="Lifeline" auto="true"/>
-			<Group index="2" max_associations="16" label="Basic on/off for Q" auto="true" />
-			<Group index="3" max_associations="16" label="Basic on/off for I2" auto="true"/>		  
-			<Group index="4" max_associations="16" label="Notification report for I2 state" auto="true"/>
-			<Group index="5" max_associations="16" label="Binary sensor state of I2" auto="true"/>
-			<Group index="6" max_associations="16" label="Basic on/off for I3" auto="true"/>
-			<Group index="7" max_associations="16" label="Notification report for I3 state" auto="true"/>
-			<Group index="8" max_associations="16" label="Binary sensor state of I3" auto="true"/>
+			<Group index="2" max_associations="16" label="Basic on/off for Q1" />
+			<Group index="3" max_associations="16" label="Basic on/off for I2" />		  
+			<Group index="4" max_associations="16" label="Notification report for I2 state" />
+			<Group index="5" max_associations="16" label="Binary sensor state of I2" />
+			<Group index="6" max_associations="16" label="Basic on/off for I3" />
+			<Group index="7" max_associations="16" label="Notification report for I3 state" />
+			<Group index="8" max_associations="16" label="Binary sensor state of I3" />
 		</Associations>
 	</CommandClass>
 

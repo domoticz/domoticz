@@ -134,6 +134,9 @@
     <ClInclude Include="..\hardware\BMP085.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
     <ClInclude Include="..\hardware\csocket.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
@@ -184,6 +187,7 @@
     <ClInclude Include="..\hardware\SatelIntegra.h" />
     <ClInclude Include="..\hardware\SBFSpot.h" />
     <ClInclude Include="..\hardware\serial\serial.h" />
+    <ClInclude Include="..\hardware\SolarEdgeAPI.h" />
     <ClInclude Include="..\hardware\SolarEdgeBase.h" />
     <ClInclude Include="..\hardware\SolarEdgeTCP.h" />
     <ClInclude Include="..\hardware\SolarMaxTCP.h" />
@@ -321,6 +325,9 @@
     <ClCompile Include="..\hardware\BMP085.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
     <ClCompile Include="..\hardware\csocket.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
@@ -374,6 +381,7 @@
     <ClCompile Include="..\hardware\SBFSpot.cpp" />
     <ClCompile Include="..\hardware\serial\impl\win.cpp" />
     <ClCompile Include="..\hardware\serial\serial.cpp" />
+    <ClCompile Include="..\hardware\SolarEdgeAPI.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeBase.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeTCP.cpp" />
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp" />

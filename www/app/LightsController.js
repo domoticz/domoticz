@@ -88,11 +88,8 @@ define(['app'], function (app) {
 					if (bIsWhite==true) {
 						tsettings.hue=1000;
 					}
-				}
-				else {
-					if ($.isDimmer) {
-						tsettings.level=$("#lightcontent #timerparamstable #combolevel").val();
-					}
+				} else if ($.isDimmer || $.isSelector) {
+					tsettings.level=$("#lightcontent #timerparamstable #combolevel").val();
 				}
 			}
 			return tsettings;
@@ -235,20 +232,25 @@ define(['app'], function (app) {
 						Command="Off";
 					}
 					var tCommand=Command;
-					if ((Command=="On") && ($.isDimmer)) {
-						tCommand+=" (" + item.Level + "%)";
-						if ($.bIsLED) {
-							var hue=item.Hue;
-							var sat=100;
-							if (hue==1000) {
-								hue=0;
-								sat=0;
+					if ((Command=="On") && ($.isDimmer || $.isSelector)) {
+						if ($.isSelector) {
+							tCommand+=" (" + $.selectorSwitchLevels[item.Level / 10] + ")";
+
+						} else {
+							tCommand+=" (" + item.Level + "%)";
+							if ($.bIsLED) {
+								var hue=item.Hue;
+								var sat=100;
+								if (hue==1000) {
+									hue=0;
+									sat=0;
+								}
+								var cHSB=[];
+								cHSB.h=hue;
+								cHSB.s=sat;
+								cHSB.b=item.Level;
+								tCommand+='<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpickHsbToHex(cHSB) + ';"></div>';
 							}
-							var cHSB=[];
-							cHSB.h=hue;
-							cHSB.s=sat;
-							cHSB.b=item.Level;
-							tCommand+='<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpickHsbToHex(cHSB) + ';"></div>';
 						}
 					}
 					
@@ -357,7 +359,8 @@ define(['app'], function (app) {
 						$("#lightcontent #timerparamstable #combotimehour").val(parseInt(data["3"].substring(0,2)));
 						$("#lightcontent #timerparamstable #combotimemin").val(parseInt(data["3"].substring(3,5)));
 						$('#lightcontent #timerparamstable #randomness').prop('checked', (data["Random"]=="Yes") ? true : false);
-						$("#lightcontent #timerparamstable #combocommand").val(jQuery.inArray(data["Command"], $.myglobals.CommandStr));
+						var command = jQuery.inArray(data["Command"], $.myglobals.CommandStr);
+						$("#lightcontent #timerparamstable #combocommand").val(command);
 						var level=data["Level"];
 						if ($.bIsLED) {
 							$('#lightcontent #Brightness').val(level&255);
@@ -378,8 +381,12 @@ define(['app'], function (app) {
 
 							$('#lightcontent #picker').colpickSetColor(cHSB);
 						}
-						else if ($.isDimmer) {
+						else if ($.isDimmer || $.isSelector) {
+							$("#lightcontent #LevelDiv").hide();
 							$("#lightcontent #timerparamstable #combolevel").val(level);
+							if (command === 0) { // On
+								$("#lightcontent #LevelDiv").show();
+							}
 						}
 						
 						var timerType=data["TType"];
@@ -419,7 +426,7 @@ define(['app'], function (app) {
 			$('#modal').hide();
 		}
 
-		ShowTimers = function (id,name, isdimmer, stype,devsubtype)
+		ShowTimers = function (id,name, isdimmer, stype, devsubtype)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -427,10 +434,21 @@ define(['app'], function (app) {
 			}
 			$.devIdx=id;
 			$.isDimmer=isdimmer;
+			$.isSelector = (devsubtype === "Selector Switch");
 			
 			$.bIsRGBW=(devsubtype.indexOf("RGBW") >= 0);
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 		  
+			if ($.isSelector) {
+				// backup selector switch level names before displaying edit edit form
+				$.selectorSwitchLevels = [];
+				$("#selector" + $.devIdx + " label").each(function (index, item) {
+					$.selectorSwitchLevels.push($(item).text());
+				});
+				$("#selector" + $.devIdx + " option").each(function (index, item) {
+					$.selectorSwitchLevels.push($(item).text());
+				});
+			}
 			var oTable;
 			
 			$('#modal').show();
@@ -568,16 +586,24 @@ define(['app'], function (app) {
 			});
 
 			$("#lightcontent #timerparamstable #combocommand").change(function() {
-				var cval=$("#lightcontent #timerparamstable #combocommand").val();
-				var bShowLevel=false;
+				var cval=$("#lightcontent #timerparamstable #combocommand").val(),
+					lval=$("#lightcontent #timerparamstable #combolevel").val(),
+					bShowLevel=false;
 				if (!$.bIsLED) {
-					if ($.isDimmer) {
+					if ($.isDimmer || $.isSelector) {
 						if (cval==0) {
 							bShowLevel=true;
 						}
 					}
 				}
 				if (bShowLevel==true) {
+					if (lval == null) {
+						if ($.isSelector) {
+							$("#lightcontent #timerparamstable #combolevel").val(10); // first selector level value
+						} else {
+							$("#lightcontent #timerparamstable #combolevel").val(5); // first dimmer level value
+						}
+					}
 					$("#lightcontent #LevelDiv").show();
 				}
 				else {
@@ -585,13 +611,38 @@ define(['app'], function (app) {
 				}
 			});
 
-			if (($.isDimmer)&&(!$.bIsLED)) {
+			if (($.isDimmer) && (!$.bIsLED)) {
 				$("#lightcontent #LevelDiv").show();
-			}
-			else {
+
+			} else if ($.isSelector) {
+				// Replace dimmer levels by selector level names
+				var levelDiv$ = $("#lightcontent #LevelDiv"),
+					html = [];
+				$.each($.selectorSwitchLevels, function (index, item) {
+					var level = index * 10,
+						levelName = item;
+					if (level === 0) {
+						return;
+					}
+					html.push('<option value="');
+					html.push(level);
+					html.push('">');
+					html.push(levelName);
+					html.push('</option>');
+				});
+				levelDiv$.find('select')
+					.attr('style', '')
+					.css({'width': 'auto'})
+					.html(html.join(''));
+				levelDiv$.find('span[data-i18n="Level"]')
+					.attr('data-i18n', "Level name")
+					.html($.t("Level name"));
+				levelDiv$.show();
+
+			} else {
 				$("#lightcontent #LevelDiv").hide();
 			}
-		  
+
 			$('#modal').hide();
 			RefreshTimerTable(id);
 		}
@@ -697,7 +748,18 @@ define(['app'], function (app) {
 					}
 				}
 			}
-
+			var devOptionsParam = [], devOptions = [];
+			if ($.bIsSelectorSwitch) {
+				var levelNames = $("#lightcontent #selectorlevelstable").data('levelNames'),
+					selectorStyle = $("#lightcontent .selector-switch-options input[type=radio]:checked").val();
+				devOptions.push("LevelNames:");
+				devOptions.push(levelNames);
+				devOptions.push(";");
+				devOptions.push("SelectorStyle:");
+				devOptions.push(selectorStyle);
+				devOptionsParam.push(devOptions.join(''));
+			}
+			
 			if ( bValid ) {
 				if ($.stype=="Security") {
 					$.ajax({
@@ -707,7 +769,8 @@ define(['app'], function (app) {
 						  '&strparam1=' + btoa(strParam1) +
 						  '&strparam2=' + btoa(strParam2) +
 						  '&protected=' + bIsProtected +
-						  '&used=true',
+						  '&used=true' +
+						  '&options=' + btoa(devOptionsParam.join('')),
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -727,7 +790,7 @@ define(['app'], function (app) {
 					}
 					var CustomImage=0;
 					
-					if ((switchtype == 0) || (switchtype == 17)) {
+					if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
 						var cval=$('#lightcontent #comboswitchicon').data('ddslick').selectedIndex;
 						CustomImage=$.ddData[cval].value;
 					}
@@ -740,7 +803,8 @@ define(['app'], function (app) {
 							'&protected=' + bIsProtected +
 							'&switchtype=' + $("#lightcontent #comboswitchtype").val() + 
 							'&customimage=' + CustomImage + 
-							'&used=true' + addjvalstr ,
+							'&used=true' + addjvalstr +
+							'&options=' + btoa(devOptionsParam.join('')),
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -971,6 +1035,131 @@ define(['app'], function (app) {
 			});
 		}
 
+		ChangeSelectorLevelsOrder = function (from, to) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var table$ = $("#lightcontent #selectorlevelstable"),
+				levelNames = table$.data('levelNames').split('|'),
+				fromLevel = levelNames[from],
+				toLevel = levelNames[to];
+			levelNames[to] = fromLevel;
+			levelNames[from] = toLevel;
+			table$.data('levelNames', levelNames.join('|'));
+			BuildSelectorLevelsTable();
+		};
+		DeleteSelectorLevel = function (index) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var table$ = $("#lightcontent #selectorlevelstable"),
+			levelNames = table$.data('levelNames').split('|');
+			levelNames.splice(index, 1);
+			table$.data('levelNames', levelNames.join('|'));
+			BuildSelectorLevelsTable();
+		};
+		UpdateSelectorLevel = function (index, levelName) {
+			var table$ = $("#lightcontent #selectorlevelstable"),
+			levelNames = table$.data('levelNames').split('|');
+			if ((levelName === '') ||							// avoid empty name
+					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
+				return;
+			}
+			levelNames[index] = levelName;
+			table$.data('levelNames', levelNames.join('|'));
+			BuildSelectorLevelsTable();
+		};
+		RenameSelectorLevel = function (index, levelName) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			if ((index >= 0) && (levelName != '')) {
+				$("#dialog-renameselectorlevel #selectorlevelindex").val(index);
+				$("#dialog-renameselectorlevel #selectorlevelname").val(unescape(levelName));
+				$("#dialog-renameselectorlevel").i18n();
+				$("#dialog-renameselectorlevel").dialog("open");
+			}
+		}
+		AddSelectorLevel = function () {
+			var button$ = $("#newselectorlevelbutton"),
+				table$ = $("#lightcontent #selectorlevelstable"),
+				levelName = $("#lightcontent #newselectorlevel").val().trim(),
+				levelNames = table$.data('levelNames').split('|');
+			if ((button$.prop("disabled") === true) ||			// limit length
+					(levelName === '') ||						// avoid empty name
+					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
+				return;
+			}
+			levelNames.push(levelName);
+			table$.data('levelNames', levelNames.join('|'));
+			BuildSelectorLevelsTable();
+		}
+		BuildSelectorLevelsTable = function () {
+			var table$ = $("#lightcontent #selectorlevelstable"),
+				levelNames = table$.data('levelNames').split('|'),
+				levelNamesMaxLength = 11,
+				initializeTable = $('#selectorlevelstable_wrapper').length === 0,
+				oTable = (initializeTable) ? table$.dataTable({
+					"iDisplayLength" : 25,
+					"bLengthChange": false,
+					"bFilter": false,
+					"bInfo": false,
+					"bPaginate": false
+				}) : table$.dataTable();
+			oTable.fnClearTable();
+			$.each(levelNames, function (index, item) {
+				var level = index * 10,
+					updownImg = "",
+					rendelImg = "";
+				if ((0 < index) && (index < (levelNames.length - 1))) {
+					// Add Down image
+					if (updownImg !== "") {
+						updownImg += "&nbsp;";
+					}
+					updownImg += '<img src="images/down.png" onclick="ChangeSelectorLevelsOrder(' + index + ',' + (index + 1) + ');" class="lcursor" width="16" height="16"></img>';
+				} else {
+					updownImg += '<img src="images/empty16.png" width="16" height="16"></img>';
+				}
+				if (index > 1) {
+					// Add Up image
+					if (updownImg !== "") {
+						updownImg += "&nbsp;";
+					}
+					updownImg += '<img src="images/up.png" onclick="ChangeSelectorLevelsOrder(' + index + ',' + (index - 1) + ');" class="lcursor" width="16" height="16"></img>';
+				}
+				if (index > 0) {
+					// Add Rename image
+					rendelImg = '<img src="images/rename.png" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
+					// Add Delete image
+					rendelImg += '&nbsp;';
+					rendelImg += '<img src="images/delete.png" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
+				} else {
+					rendelImg = '<img src="images/empty16.png" width="16" height="16"></img>';
+				}
+				oTable.fnAddData({
+					"DT_RowId": index,
+					"Name": levelNames[index],
+					"Order": index,
+					"Delete": index,
+					"0": level,
+					"1": levelNames[index],
+					"2": updownImg,
+					"3": rendelImg
+				});
+			});
+			// Limit level length to levelNamesMaxLength
+			$("#newselectorlevelbutton").prop("disabled", false).removeClass("ui-state-disabled");
+			if (levelNames.length === levelNamesMaxLength) {
+				$("#newselectorlevelbutton").prop("disabled", true).addClass("ui-state-disabled");
+			}
+		};
+
 		appLampCooler = function()
 		{
 			$.ajax({
@@ -990,9 +1179,22 @@ define(['app'], function (app) {
 			$.isslave=isslave;
 			$.stype=stype;
 			$.strUnit=strUnit;
+			$.bIsSelectorSwitch = (devsubtype === "Selector Switch");
 
 			var oTable;
 			
+			if ($.bIsSelectorSwitch) {
+				// backup selector switch level names before displaying edit edit form
+				$.selectorSwitchStyle = $("#selector" + $.devIdx).data("selectorstyle");
+				$.selectorSwitchLevels = [];
+				$("#selector" + $.devIdx + " label").each(function (index, item) {
+					$.selectorSwitchLevels.push($(item).text());
+				});
+				$("#selector" + $.devIdx + " option").each(function (index, item) {
+					$.selectorSwitchLevels.push($(item).text());
+				});
+			}
+
 			$('#modal').show();
 			var htmlcontent = GetBackbuttonHTMLTable('ShowLights');
 			htmlcontent+=$('#editlightswitch').html();
@@ -1093,19 +1295,23 @@ define(['app'], function (app) {
 					$("#lightcontent #OffDelayDiv").hide();
 					$("#lightcontent #MotionDiv").hide();
 					$("#lightcontent #SwitchIconDiv").hide();
+					$("#lightcontent .selector-switch-options").hide();
 					if (switchtype==8) {
 						$("#lightcontent #MotionDiv").show();
 						$("#lightcontent #motionoffdelay").val(addjvalue);
 					}
-					else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)) {
+					else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)||(switchtype==18)) {
 						$("#lightcontent #OnDelayDiv").show();
 						$("#lightcontent #OffDelayDiv").show();
 						$("#lightcontent #offdelay").val(addjvalue);
 						$("#lightcontent #ondelay").val(addjvalue2);
 					}
 					
-					if ((switchtype == 0) || (switchtype == 17)) {
+					if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
 						$("#lightcontent #SwitchIconDiv").show();
+					}
+					if (switchtype == 18) {
+						$("#lightcontent .selector-switch-options").show();
 					}
 				});
 				
@@ -1115,18 +1321,49 @@ define(['app'], function (app) {
 				$("#lightcontent #OffDelayDiv").hide();
 				$("#lightcontent #MotionDiv").hide();
 				$("#lightcontent #SwitchIconDiv").hide();
+				$("#lightcontent .selector-switch-options").hide();
 				if (switchtype==8) {
 					$("#lightcontent #MotionDiv").show();
 					$("#lightcontent #motionoffdelay").val(addjvalue);
 				}
-				else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)) {
+				else if ((switchtype==0)||(switchtype==7)||(switchtype==9)||(switchtype==11)||(switchtype==18)) {
 					$("#lightcontent #OnDelayDiv").show();
 					$("#lightcontent #OffDelayDiv").show();
 					$("#lightcontent #offdelay").val(addjvalue);
 					$("#lightcontent #ondelay").val(addjvalue2);
 				}
-				if ((switchtype == 0) || (switchtype == 17)) {
+				if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
 				    $("#lightcontent #SwitchIconDiv").show();
+				}
+				if (switchtype == 18) {
+					var dialog_renameselectorlevel_buttons = {};
+					dialog_renameselectorlevel_buttons[$.t("Rename")] = function () {
+						var bValid = true;
+						bValid = bValid && checkLength($("#dialog-renameselectorlevel #selectorlevelname"), 2, 20);
+						if (bValid) {
+							$(this).dialog("close");
+							UpdateSelectorLevel($("#dialog-renameselectorlevel #selectorlevelindex").val(),
+									$("#dialog-renameselectorlevel #selectorlevelname").val());
+						}
+					};
+					dialog_renameselectorlevel_buttons[$.t("Cancel")] = function () {
+						$(this).dialog("close");
+					};
+					$("#dialog-renameselectorlevel").dialog({
+						autoOpen: false,
+						width: 'auto',
+						height: 'auto',
+						modal: true,
+						resizable: false,
+						title: $.t("Rename level name"),
+						buttons: dialog_renameselectorlevel_buttons
+					});
+					$("#lightcontent #selectorlevelstable").data('levelNames', $.selectorSwitchLevels.join('|'));
+					BuildSelectorLevelsTable();
+
+					$("#lightcontent .selector-switch-options.style input[value=" + $.selectorSwitchStyle + "]").attr('checked', true);
+
+					$("#lightcontent .selector-switch-options").show();
 				}
 				$("#lightcontent #combosubdevice").html("");
 				
@@ -1155,7 +1392,7 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			
+
 			RefreshSubDeviceTable(idx);
 		}
 
@@ -1348,6 +1585,8 @@ define(['app'], function (app) {
 		GetLightStatusText = function(item){
 			if(item.SubType=="Evohome")
 				return EvoDisplayTextMode(item.Status);
+			else if (item.SwitchType === "Selector")
+				return item.LevelNames.split('|')[(item.LevelInt / 10)];
 			else
 				return item.Status;
 		}
@@ -1673,6 +1912,13 @@ define(['app'], function (app) {
 										img='<img src="images/motion48-off.png" height="48" width="48">';
 						}
 					}
+					else if (item.SwitchType === "Selector") {
+						if ((item.Status === "Off")) {
+							img += '<img src="images/' + item.Image + '48_Off.png" height="48" width="48">';
+						} else {
+							img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+						}
+					}
 					else {
 						if (
 							(item.Status == 'On')||
@@ -1732,6 +1978,19 @@ define(['app'], function (app) {
 							if (typeof dslider != 'undefined') {
 								dslider.slider( "value", item.LevelInt+1 );
 							}
+						}
+						if (item.SwitchType === "Selector") {
+							var selector$ = $(id + " #selector" + item.idx);
+							if (typeof selector$ !== 'undefined') {
+								if (item.SelectorStyle === 0) {
+									selector$.find('input[value="' + item.LevelInt + '"]').prop("checked", true);
+									selector$.buttonset('refresh');
+								} else if (item.SelectorStyle === 1) {
+									selector$.val(item.LevelInt);
+									selector$.selectmenu('refresh');
+								}
+							}
+							bigtext = GetLightStatusText(item);
 						}
 						if ($(id + " #bigtext").html()!=TranslateStatus(GetLightStatusText(item))) {
 							$(id + " #bigtext").html(bigtext);
@@ -2163,6 +2422,13 @@ define(['app'], function (app) {
 									}
 									bAddTimer=false;
 							}
+							else if (item.SwitchType === "Selector") {
+								if (item.Status === 'Off') {
+									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" height="48" width="48"></td>\n';
+								} else {
+									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+								}
+							}
 						  else {
 							if (
 								(item.Status == 'On')||
@@ -2207,6 +2473,25 @@ define(['app'], function (app) {
 					}
 					else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
 						xhtm+='<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+					}
+					else if (item.SwitchType == "Selector") {
+						xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
+						if (item.SelectorStyle === 0) {
+							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							var levelNames = item.LevelNames.split('|');
+							$.each(levelNames, function(index, levelName) {
+								xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
+							});
+							xhtm += '</div>';
+						} else if (item.SelectorStyle === 1) {
+							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							var levelNames = item.LevelNames.split('|');
+							$.each(levelNames, function(index, levelName) {
+								xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
+							});
+							xhtm += '</select>';
+						}
+						xhtm += '</div>';
 					}
 					xhtm+='</td>\n' +
 							'\t      <td>';
@@ -2387,6 +2672,64 @@ define(['app'], function (app) {
 				}
 			});
 			$scope.ResizeDimSliders();
+
+			//Create Selector buttonset
+			$('#lightcontent .selectorlevels div').buttonset({
+				//Selector selectmenu events
+				create: function (event, ui) {
+					var idx = $(this).data('idx'),
+						type = $(this).data('type'),
+						isprotected = $(this).data('isprotected'),
+						disabled = $(this).data('disabled'),
+						level = $(this).data('level'),
+						levelname = $(this).data('levelname');
+					$(this).buttonset("option", "idx", idx);
+					$(this).buttonset("option", "type", type);
+					$(this).buttonset("option", "isprotected", isprotected);
+					if (disabled === true) {
+						$(this).buttonset("disable");
+					}
+					$(this).find('input[value="' + level + '"]').prop("checked", true);
+
+					$(this).find('input').click(function (event){
+						var idx = $(this).parent().data("idx"),
+							level = parseInt(event.target.value, 10);
+						SetDimValue(idx, level);
+					});
+
+					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
+				}
+			});
+
+			//Create Selector selectmenu
+			$('#lightcontent .selectorlevels select').selectmenu({
+				//Config
+				width: '272px',
+				value: 0,
+				//Selector selectmenu events
+				create: function (event, ui) {
+					var idx = $(this).data('idx'),
+						type = $(this).data('type'),
+						isprotected = $(this).data('isprotected'),
+						disabled = $(this).data('disabled'),
+						level = $(this).data('level'),
+						levelname = $(this).data('levelname');
+					$(this).selectmenu("option", "idx", idx);
+					$(this).selectmenu("option", "type", type);
+					$(this).selectmenu("option", "isprotected", isprotected);
+					$(this).selectmenu("option", "disabled", disabled === true);
+					$(this).selectmenu("menuWidget").addClass('selectorlevels-menu');
+					$(this).val(level);
+
+					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
+				},
+				change: function (event, ui) { //When the user selects an item
+					var idx = $(this).selectmenu("option", "idx"),
+						level = $(this).selectmenu().val();
+					SetDimValue(idx, level);
+				}
+			}).selectmenu('refresh');
+
 			$scope.mytimer=$interval(function() {
 				RefreshLights();
 			}, 10000);
@@ -2516,6 +2859,11 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #he105params").show();
+			}
+			else if (lighttype==303) {
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").show();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
 			}
 			else if (lighttype==60) {
 				//Blyss
@@ -2908,15 +3256,27 @@ define(['app'], function (app) {
 						});
 
 						$("#dialog-addmanuallightdevice #lighttable #comboswitchtype").change(function() { 
-							var switchtype=$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
-							if (switchtype==1)
-							{
-								//AC device
-								$("#dialog-addmanuallightdevice #lighttable #combolighttype").val(10);
-								UpdateAddManualDialog();
+							var switchtype=$("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val(),
+								subtype = -1;
+							if (switchtype == 1) {
+								subtype = 10;	// Doorbell -> COCO GDR2
+							} else if (switchtype == 18) {
+								subtype = 303;	// Selector -> Selector Switch
 							}
+							if (subtype !== -1) {
+								$("#dialog-addmanuallightdevice #lighttable #combolighttype").val(subtype);
+							}
+							UpdateAddManualDialog();
 						});
 						$("#dialog-addmanuallightdevice #lighttable #combolighttype").change(function() { 
+							var subtype=$("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val(),
+								switchtype = -1;
+							if (subtype == 303) {
+								switchtype = 18;	// Selector -> Selector Switch
+							}
+							if (switchtype !== -1) {
+								$("#dialog-addmanuallightdevice #lighttable #comboswitchtype").val(switchtype);
+							}
 							UpdateAddManualDialog();
 						});
 						UpdateAddManualDialog();

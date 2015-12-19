@@ -57,6 +57,7 @@ public:
 	char * SetP1USBType(WebEmSession & session, const request& req);
 	char * RestoreDatabase(WebEmSession & session, const request& req);
 	char * SBFSpotImportOldData(WebEmSession & session, const request& req);
+	char * SetCurrentCostUSBType(WebEmSession & session, const request& req);
 
 	cWebem *m_pWebEm;
 
@@ -289,6 +290,7 @@ private:
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
+	bool m_bIsSecure;
 
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);

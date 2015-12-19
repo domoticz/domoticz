@@ -313,6 +313,7 @@ namespace OpenZWave
 		 * - Routing Slave
 		 * - Bridge Controller
 		 * - Device Under Test
+		 *
 		 * The controller should never return a slave library type.
 		 * For a more efficient test of whether a controller is a Bridge Controller, use
 		 * the IsBridgeController method.
@@ -826,7 +827,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \param _nodeId The ID of the node to query.
 		 * \return the node's DeviceType
 		 */
-		uint8 GetNodeDeviceType( uint32 const _homeId, uint8 const _nodeId );
+		uint16 GetNodeDeviceType( uint32 const _homeId, uint8 const _nodeId );
 
 		/**
 		 * \brief Get the node device type as reported in the Z-Wave+ Info report.
@@ -1985,7 +1986,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		bool CreateButton(uint32 const _homeId, uint8 const _nodeId, uint8 const _buttonid);
 
 		/**
-		 * \brief Dekete a handheld button id.
+		 * \brief Delete a handheld button id.
 		 *
 		 * Only intended for Bridge Firmware Controllers.
 		 *
