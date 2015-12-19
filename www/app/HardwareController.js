@@ -833,6 +833,7 @@ define(['app'], function (app) {
 
             $('#hardwarecontent #idx').val(idx);
             $('#hardwarecontent #Keeloq').prop('checked',((Mode6 & 0x01)!=0));
+            $('#hardwarecontent #HC').prop('checked',((Mode6 & 0x02)!=0));
             $('#hardwarecontent #undecon').prop('checked',((Mode3 & 0x80)!=0));
             $('#hardwarecontent #X10').prop('checked',((Mode5 & 0x01)!=0));
             $('#hardwarecontent #ARC').prop('checked',((Mode5 & 0x02)!=0));
@@ -861,6 +862,7 @@ define(['app'], function (app) {
             $('#hardwarecontent #defaultbutton').click(function (e) {
                 e.preventDefault();
                 $('#hardwarecontent #Keeloq').prop('checked',false);
+                $('#hardwarecontent #HC').prop('checked',false);
                 $('#hardwarecontent #undecon').prop('checked',false);
                 $('#hardwarecontent #X10').prop('checked',true);
                 $('#hardwarecontent #ARC').prop('checked',true);

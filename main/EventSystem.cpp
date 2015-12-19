@@ -1079,6 +1079,8 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 {
 	if (!m_bEnabled)
 		return;
+	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+
 	std::stringstream lua_DirT;
 
 #ifdef WIN32
@@ -1234,7 +1236,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "device");
 	devicestatesMutexLock.unlock();
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
@@ -1260,7 +1261,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 	}
 	lua_setglobal(lua_state, "variable");
-	uservariablesMutexLock.unlock();
 
 	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
@@ -1774,6 +1774,15 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
+	else if (Argument.find("variable") == 0)
+	{
+		std::map<unsigned long long, _tUserVariable>::const_iterator itt = m_uservariables.find(dindex);
+		if (itt != m_uservariables.end())
+		{
+			return itt->second.variableValue;
+		}
+	}
+
 	return ret;
 }
 
@@ -1889,6 +1898,10 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					{
 						body = aParam[1];
 					}
+
+					subject = ProcessVariableArgument(subject);
+					body = ProcessVariableArgument(body);
+
 					if (aParam.size() == 3)
 					{
 						priority = aParam[2];
@@ -2102,7 +2115,6 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		// put variables in user_variables dict, but also in the namespace
 		object user_variables = dict();
 		{
-			boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 			typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
 			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 				_tUserVariable uvitem = iterator->second;
@@ -2552,7 +2564,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "otherdevices_svalues");
 	devicestatesMutexLock2.unlock();
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
@@ -2605,7 +2616,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			}
 		}
 	}
-	uservariablesMutexLock.unlock();
 
 	int secstatus = 0;
 	std::string secstatusw = "";
@@ -3016,7 +3026,6 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	}
 	else if (devNameNoQuotes == "WriteToLogUserVariable")
 	{
-		boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 		_log.Log(LOG_STATUS, "%s", m_uservariables[atoi(doWhat.c_str())].variableValue.c_str());
 	}
 	else if (devNameNoQuotes == "WriteToLogDeviceVariable")
