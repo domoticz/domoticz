@@ -1079,6 +1079,8 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 {
 	if (!m_bEnabled)
 		return;
+	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+
 	std::stringstream lua_DirT;
 
 #ifdef WIN32
@@ -1234,7 +1236,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "device");
 	devicestatesMutexLock.unlock();
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
@@ -1260,7 +1261,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		}
 	}
 	lua_setglobal(lua_state, "variable");
-	uservariablesMutexLock.unlock();
 
 	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
@@ -1289,7 +1289,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	}
 	if (m_humValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_humValuesByID.size(), 0);
-		std::map<unsigned long long, unsigned char>::iterator p;
+		std::map<unsigned long long, int>::iterator p;
 		for (p = m_humValuesByID.begin(); p != m_humValuesByID.end(); ++p)
 		{
 			lua_pushnumber(lua_state, (lua_Number)p->first);
@@ -1676,7 +1676,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("humiditydevice") == 0)
 	{
-		std::map<unsigned long long, unsigned char>::const_iterator itt = m_humValuesByID.find(dindex);
+		std::map<unsigned long long, int>::const_iterator itt = m_humValuesByID.find(dindex);
 		if (itt != m_humValuesByID.end())
 		{
 			std::stringstream sstr;
@@ -1774,7 +1774,39 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			return sstr.str();
 		}
 	}
+	else if (Argument.find("variable") == 0)
+	{
+		std::map<unsigned long long, _tUserVariable>::const_iterator itt = m_uservariables.find(dindex);
+		if (itt != m_uservariables.end())
+		{
+			return itt->second.variableValue;
+		}
+	}
+
 	return ret;
+}
+
+std::string CEventSystem::ParseBlocklyString(const std::string &oString)
+{
+	std::string retString = oString;
+	
+	while (1)
+	{
+		size_t pos1, pos2;
+		pos1 = retString.find("{{");
+		if (pos1 == std::string::npos)
+			return retString;
+		pos2 = retString.find("}}");
+		if (pos2 == std::string::npos)
+			return retString;
+		std::string part_left = retString.substr(0, pos1);
+		std::string part_middle = retString.substr(pos1 + 2, pos2 - pos1 - 2);
+		std::string part_right = retString.substr(pos2+2);
+		part_middle = ProcessVariableArgument(part_middle);
+		retString = part_left + part_middle + part_right;
+	}
+
+	return retString;
 }
 
 bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::string &eventName, const unsigned long long eventID)
@@ -1889,6 +1921,10 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 					{
 						body = aParam[1];
 					}
+
+					subject = ParseBlocklyString(ProcessVariableArgument(subject));
+					body = ParseBlocklyString(ProcessVariableArgument(body));
+
 					if (aParam.size() == 3)
 					{
 						priority = aParam[2];
@@ -1911,8 +1947,8 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 						_log.Log(LOG_ERROR, "EventSystem: SendEmail, not enough parameters!");
 						return false;
 					}
-					subject = aParam[0];
-					body = aParam[1];
+					subject = ParseBlocklyString(aParam[0]);
+					body = ParseBlocklyString(aParam[1]);
 					stdreplace(body, "\\n", "<br>");
 					to = aParam[2];
 					m_sql.AddTaskItem(_tTaskItem::SendEmailTo(1, subject, body, to));
@@ -1925,6 +1961,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 						_log.Log(LOG_ERROR, "EventSystem: SendSMS, not enough parameters!");
 						return false;
 					}
+					doWhat = ParseBlocklyString(doWhat);
 					m_sql.AddTaskItem(_tTaskItem::SendSMS(1, doWhat));
 					actionsDone = true;
 				}
@@ -2102,7 +2139,6 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		// put variables in user_variables dict, but also in the namespace
 		object user_variables = dict();
 		{
-			boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 			typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
 			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
 				_tUserVariable uvitem = iterator->second;
@@ -2291,7 +2327,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		if (m_humValuesByName.size()>0)
 		{
 			lua_createtable(lua_state, (int)m_humValuesByName.size(), 0);
-			std::map<std::string, unsigned char>::iterator p;
+			std::map<std::string, int>::iterator p;
 			for (p = m_humValuesByName.begin(); p != m_humValuesByName.end(); ++p)
 			{
 				lua_pushstring(lua_state, p->first.c_str());
@@ -2552,7 +2588,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "otherdevices_svalues");
 	devicestatesMutexLock2.unlock();
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<unsigned long long, _tUserVariable>::iterator it_var;
@@ -2605,7 +2640,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			}
 		}
 	}
-	uservariablesMutexLock.unlock();
 
 	int secstatus = 0;
 	std::string secstatusw = "";
@@ -3016,7 +3050,6 @@ void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::str
 	}
 	else if (devNameNoQuotes == "WriteToLogUserVariable")
 	{
-		boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 		_log.Log(LOG_STATUS, "%s", m_uservariables[atoi(doWhat.c_str())].variableValue.c_str());
 	}
 	else if (devNameNoQuotes == "WriteToLogDeviceVariable")
@@ -3153,6 +3186,18 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		}
 
 		Action = Action.substr(0, 13);
+	}
+	if (Action.find("Execute") == 0)
+	{
+		std::string	sParams = Action.substr(8);
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
+		if (pBaseHardware != NULL)
+		{
+			CKodi	*pHardware = (CKodi*)pBaseHardware;
+			pHardware->SetExecuteCommand(deviceID, sParams);
+		}
+
+		Action = Action.substr(0, 7);
 	}
 	int DelayTime = 1;
 

@@ -1,5 +1,8 @@
 Version 2.3xxx
+- Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
+- Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Day display in energy/gas/water/temp report
+- Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
 - Implemented: Log View, added options to display All/Status/Error
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
@@ -40,6 +43,7 @@ Version 2.3xxx
 - Fixed: Manual add LightwaveRF type (DeviceID was wrong)
 - Fixed: Month temperature report avarage is now calculated by the daily avarage value
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
+- Fixed: RFXCom (433) protocol setup, Home Comfort checkbox did not show correct state
 - Fixed: RGB sensor now also uses the RGB popup system
 - Fixed: S0 Meter, fix for reloading totals of (#179)
 - Fixed: Thermosmart unpauze

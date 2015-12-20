@@ -1786,26 +1786,34 @@ html,body{
 }            
 .brand h1 {
 	float: left;
-	margin-left: -7px;
-	margin-top: -14px;
+	margin-left: 32px;
+	margin-top: -48px;
 	text-decoration: none;
 	text-transform: none;
 	font-family: 'Oswald', sans-serif;
-	font-size: 1.7em;
+	font-size: 1.5em;
 	font-weight: 200;
 	color: #1C1C1C;
 }
 .brand h2 {
 	float: left;
-	margin-left: 120px;
+	margin-left: 142px;
 	margin-top: -24px;
 	text-decoration: none;
 	text-transform: none;
 	font-family: Georgia, "Times New Roman", Times, serif;
-	font-size: 0.7em;
+	font-size: 0.6em;
 	font-style: italic;
-	color: #545454;
+	color: #444;
 }
+
+.brand img {
+	width: 40px;
+	height: 40px;
+	margin-left: -10px;
+	margin-top: -8px;
+}}
+
 .dropdown-menu .divider {
 	*width: 100%;
 	height: 1px;
