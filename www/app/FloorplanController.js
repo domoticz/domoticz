@@ -490,6 +490,8 @@ define(['app'], function (app) {
 					document.removeEventListener('touchend', FPtouchend);
 					$( window ).off('resize');
 					$("body").off('pageexit').css('overflow','');
+					$("#fpwrapper").attr("style","display:none;");
+                    $("#floorplancontent").addClass("container ng-scope").attr("style","");
 					if ($scope.debug > 0) $.cachenoty=generate_noty('info', '<b>PageExit code executed</b>', 2000);
 				});
 		}

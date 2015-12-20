@@ -149,6 +149,7 @@
 #define gswitch_sSetVolume			0x15
 #define gswitch_sPlayPlaylist		0x16
 #define gswitch_sPlayFavorites		0x17
+#define gswitch_sExecute			0x18
 //--------------
 
 #define pTypeLux		0xF6

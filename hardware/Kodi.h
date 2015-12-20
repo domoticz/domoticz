@@ -74,6 +74,7 @@ public:
 	void			SendCommand(const std::string&);
 	void			SendCommand(const std::string&, const int iValue);
 	void			SetPlaylist(const std::string& playlist);
+	void			SetExecuteCommand(const std::string& command);
 	bool			SendShutdown();
 	void			StopRequest() { m_stoprequested = true; };
 	bool			IsBusy() { return m_Busy; };
@@ -109,6 +110,8 @@ private:
 	std::string		m_Playlist;
 	int				m_PlaylistPosition;
 
+	std::string		m_ExecuteCommand;
+
 	std::string		m_RetainedData;
 
 	int				m_iTimeoutCnt;
@@ -135,6 +138,7 @@ public:
 	void Restart();
 	void SendCommand(const int ID, const std::string &command);
 	bool SetPlaylist(const int ID, const std::string &playlist);
+	bool SetExecuteCommand(const int ID, const std::string &command);
 private:
 	void Do_Work();
 
