@@ -3163,6 +3163,18 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 13);
 	}
+	if (Action.find("Execute") == 0)
+	{
+		std::string	sParams = Action.substr(8);
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
+		if (pBaseHardware != NULL)
+		{
+			CKodi	*pHardware = (CKodi*)pBaseHardware;
+			pHardware->SetExecuteCommand(deviceID, sParams);
+		}
+
+		Action = Action.substr(0, 7);
+	}
 	int DelayTime = 1;
 
 	if (randomTimer > 0) {

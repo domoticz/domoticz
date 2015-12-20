@@ -2151,6 +2151,11 @@ bool GetLightCommand(
 			cmd = gswitch_sSetVolume;
 			return true;
 		}
+		else if (switchcmd == "Execute")
+		{
+			cmd = gswitch_sExecute;
+			return true;
+		}
 		else
 			return false;
 		break;
