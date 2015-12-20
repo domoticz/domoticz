@@ -231,7 +231,7 @@ void CHardwareMonitor::GetInternalTemperature()
 	if (temperature == 0)
 		return; //hardly possible for a on board temp sensor, if it is, it is probably not working
 
-	if ((temperature != 85) && (temperature > -273))
+	if ((temperature != 85) && (temperature != -127) && (temperature > -273))
 	{
 		SendTempSensor(1, temperature, "Internal Temperature");
 	}

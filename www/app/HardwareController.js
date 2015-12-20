@@ -200,7 +200,7 @@ define(['app'], function (app) {
                 }
                 var username=$("#hardwarecontent #divlogin #username").val();
                 var password=$("#hardwarecontent #divlogin #password").val();
-                var extra=$("#hardwarecontent #divmqtt #filename").val(); 
+                var extra=$("#hardwarecontent #divmqtt #filename").val();
                 Mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -323,7 +323,7 @@ define(['app'], function (app) {
                     ShowNotify($.t('Please enter an API Key!'), 2500, true);
                     return;
                 }
-                
+
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 						"&port=1" +
@@ -833,6 +833,7 @@ define(['app'], function (app) {
 
             $('#hardwarecontent #idx').val(idx);
             $('#hardwarecontent #Keeloq').prop('checked',((Mode6 & 0x01)!=0));
+            $('#hardwarecontent #HC').prop('checked',((Mode6 & 0x02)!=0));
             $('#hardwarecontent #undecon').prop('checked',((Mode3 & 0x80)!=0));
             $('#hardwarecontent #X10').prop('checked',((Mode5 & 0x01)!=0));
             $('#hardwarecontent #ARC').prop('checked',((Mode5 & 0x02)!=0));
@@ -861,6 +862,7 @@ define(['app'], function (app) {
             $('#hardwarecontent #defaultbutton').click(function (e) {
                 e.preventDefault();
                 $('#hardwarecontent #Keeloq').prop('checked',false);
+                $('#hardwarecontent #HC').prop('checked',false);
                 $('#hardwarecontent #undecon').prop('checked',false);
                 $('#hardwarecontent #X10').prop('checked',true);
                 $('#hardwarecontent #ARC').prop('checked',true);
@@ -1416,7 +1418,7 @@ define(['app'], function (app) {
 				 }
 			});
         }
-        
+
         MySensorsDeleteNode = function(nodeid)
         {
             if ($('#updelclr #nodedelete').attr("class")=="btnstyle3-dis") {
@@ -1499,9 +1501,9 @@ define(['app'], function (app) {
 			}
 			$.ajax({
 				url: "json.htm?type=command&param=mysensorsgetchilds" +
-					"&idx=" + $.devIdx + 
-					"&nodeid=" + $.nodeid, 
-				async: false, 
+					"&idx=" + $.devIdx +
+					"&nodeid=" + $.nodeid,
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (typeof data.result != 'undefined') {
@@ -1546,7 +1548,7 @@ define(['app'], function (app) {
 						$("#activedeviceupdate").attr("href", "javascript:MySensorsUpdateChild(" + $.nodeid + "," + idx + ")");
 					}
 				}
-			}); 
+			});
 
 		  $('#modal').hide();
 		}
@@ -1982,7 +1984,7 @@ define(['app'], function (app) {
 
             RefreshLMSNodeTable();
         }
-	
+
         EditSBFSpot = function (idx, name, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6)
         {
             $.devIdx=idx;
@@ -2119,7 +2121,7 @@ define(['app'], function (app) {
 			}
 			$.ajax({
 			 url: "json.htm?type=command&param=zwaveisnodeincluded&idx="+$.devIdx,
-			 async: false, 
+			 async: false,
 			 dataType: 'json',
 				 success: function(data) {
 					if (data.status == "OK") {
@@ -2147,7 +2149,7 @@ define(['app'], function (app) {
 					$scope.mytimer=$interval(function() {
 						$scope.ZWaveCheckIncludeReady();
 					}, 1000);
-				 }     
+				 }
 			});
 		}
 
@@ -2155,7 +2157,7 @@ define(['app'], function (app) {
 		{
 			$http({
 			 url: "json.htm?type=command&param=zwavecancel&idx="+$.devIdx,
-			 async: true, 
+			 async: true,
 			 dataType: 'json'
 			}).success(function(data) {
 				$('#IncludeZWaveDialog').modal('hide');
@@ -2192,7 +2194,7 @@ define(['app'], function (app) {
                  }
             });
         }
-        
+
 		$scope.ZWaveCheckExcludeReady = function() {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -2200,7 +2202,7 @@ define(['app'], function (app) {
 			}
 			$.ajax({
 			 url: "json.htm?type=command&param=zwaveisnodeexcluded&idx="+$.devIdx,
-			 async: false, 
+			 async: false,
 			 dataType: 'json',
 				 success: function(data) {
 					if (data.status == "OK") {
@@ -2228,15 +2230,15 @@ define(['app'], function (app) {
 					$scope.mytimer=$interval(function() {
 						$scope.ZWaveCheckExcludeReady();
 					}, 1000);
-				 }     
+				 }
 			});
 		}
-        
+
 		OnZWaveAbortExclude = function()
 		{
 			$http({
 			 url: "json.htm?type=command&param=zwavecancel&idx="+$.devIdx,
-			 async: true, 
+			 async: true,
 			 dataType: 'json'
 			}).success(function(data) {
 				$('#ExcludeZWaveDialog').modal('hide');
@@ -2250,7 +2252,7 @@ define(['app'], function (app) {
 			$('#ExcludeZWaveDialog').modal('hide');
 			RefreshOpenZWaveNodeTable();
 		}
-        
+
         ZWaveExcludeNode = function()
         {
 			if (typeof $scope.mytimer != 'undefined') {
@@ -3140,7 +3142,7 @@ define(['app'], function (app) {
                     }
                     if (HwTypeStr.indexOf("RFXCOM") >= 0)
                     {
-                        HwTypeStr+='<br>Firmware version: ' + item.Mode2;
+                        HwTypeStr+='<br>Version: ' + item.Mode2;
                         if (HwTypeStr.indexOf("868") >= 0) {
 							HwTypeStr+=' <span class="label label-info lcursor" onclick="EditRFXCOMMode868(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Set Mode") + '</span>';
                         }
@@ -3173,6 +3175,7 @@ define(['app'], function (app) {
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditMySensors(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
                     else if ((HwTypeStr.indexOf("OpenTherm") >= 0)||(HwTypeStr.indexOf("Thermosmart") >= 0)) {
+						HwTypeStr+='<br>Version: ' + item.version;
                         HwTypeStr+=' <span class="label label-info lcursor" onclick="EditOpenTherm(' + item.idx + ',\'' + item.Name + '\',' + item.Mode1 + ',' + item.Mode2+ ',' + item.Mode3+ ',' + item.Mode4+ ',' + item.Mode5 + ',' + item.Mode6 + ');">' + $.t("Setup") + '</span>';
                     }
                     else if (HwTypeStr.indexOf("Wake-on-LAN") >= 0) {
@@ -3364,7 +3367,7 @@ define(['app'], function (app) {
                         else if (data["Type"].indexOf("MQTT") >= 0) {
                             $("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
                             $("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
-                        }                        
+                        }
                         if (
                             (data["Type"].indexOf("Domoticz") >= 0)||
                             (data["Type"].indexOf("ICY") >= 0) ||
@@ -3378,7 +3381,7 @@ define(['app'], function (app) {
                             (data["Type"].indexOf("MQTT") >= 0)||
                             (data["Type"].indexOf("Netatmo") >= 0)||
                             (data["Type"].indexOf("Thermosmart") >= 0) ||
-							(data["Type"].indexOf("Logitech Media Server") >= 0)
+							(data["Type"].indexOf("Logitech Media Server") >= 0) ||
 							(data["Type"].indexOf("Comm5") >= 0)
                             )
                         {
@@ -3553,10 +3556,10 @@ define(['app'], function (app) {
             if ((text.indexOf("ETH8020") >= 0)||(text.indexOf("Anna") >= 0)||(text.indexOf("MQTT") >= 0)||(text.indexOf("KMTronic Gateway with LAN") >= 0)) {
                 $("#hardwarecontent #divlogin").show();
             }
-            if (text.indexOf("MQTT") >= 0)     
+            if (text.indexOf("MQTT") >= 0)
             {
-                $("#hardwarecontent #divmqtt").show();            
-            }            
+                $("#hardwarecontent #divmqtt").show();
+            }
         }
 
         ShowHardware = function()
@@ -3657,6 +3660,6 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer2);
 				$scope.mytimer2 = undefined;
 			}
-		}); 
+		});
     } ]);
 });

@@ -3,6 +3,8 @@
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/evohome.h"
+#include "Helper.h"
+//#include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;
@@ -230,6 +232,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
 		{ STYPE_BlindsPercentageInverted, "Blinds Percentage Inverted" },
 		{ STYPE_Media, "Media Player" },
+		{ STYPE_Selector, "Selector" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -740,6 +743,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeElroDB, "ElroDB" },
 		{ pTypeGeneralSwitch, sSwitchTypeAOK, "AOK" },
 		{ pTypeGeneralSwitch, sSwitchTypeUnitec, "Unitec" },
+		{ pTypeGeneralSwitch, sSwitchTypeSelector, "Selector Switch" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -823,6 +827,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting2, sTypeAC, "Status" },
 		{ pTypeLighting2, sTypeHEU, "Status" },
 		{ pTypeLighting2, sTypeANSLUT, "Status" },
+		{ pTypeLighting2, sTypeKambrook, "Status" },
 		{ pTypeLighting2, sTypeZWaveSwitch, "Status" },
 
 		{ pTypeLighting3, sTypeKoppla, "Status" },
@@ -1223,6 +1228,7 @@ void GetLightStatus(
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
+		case sTypeKambrook:
 			bHaveDimmer=true;
 			bHaveGroupCmd=true;
 			switch (nValue)
@@ -1541,6 +1547,7 @@ void GetLightStatus(
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
+		case sSwitchTypeSelector:
 			bHaveDimmer = true;
 			bHaveGroupCmd = true;
 			break;
@@ -1935,12 +1942,61 @@ void GetLightStatus(
 	}
 }
 
+/**
+ * Returns a map associating a level value to its name.
+ */
+void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses) {
+	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
+	if (itt != options.end()) {
+		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch statuses...");
+		std::string sOptions = itt->second;
+		std::vector<std::string> strarray;
+		StringSplit(sOptions, "|", strarray);
+		std::vector<std::string>::iterator itt;
+		int i = 0;
+		std::stringstream ss;
+		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+			ss.clear(); ss.str(""); ss << i;
+			std::string level(ss.str());
+			std::string levelName = *itt;
+			//_log.Log(LOG_STATUS, "DEBUG : Get selector status '%s' for level %s", levelName.c_str(), level.c_str());
+			statuses.insert(std::pair<std::string, std::string>(level.c_str(), levelName.c_str()));
+			i += 10;
+		}
+	}
+}
+
+/**
+ * Returns the level value associated to a name.
+ */
+int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName) {
+	int level = -1; // not found
+	std::map< std::string, std::string >::const_iterator itt = options.find("LevelNames");
+	if (itt != options.end()) {
+		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level...");
+		std::string sOptions = itt->second;
+		std::vector<std::string> strarray;
+		StringSplit(sOptions, "|", strarray);
+		std::vector<std::string>::iterator itt;
+		int i = 0;
+		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+			if (*itt == levelName) {
+				level = i;
+				break;
+			}
+			i += 10;
+		}
+	}
+	return level;
+}
+
 bool GetLightCommand(
 	const unsigned char dType,
 	const unsigned char dSubType,
 	_eSwitchType switchtype,
 	std::string switchcmd,
-	unsigned char &cmd
+	unsigned char &cmd,
+	const std::map<std::string, std::string> & options
 	)
 {
 	if (switchtype==STYPE_Contact)
@@ -2093,6 +2149,11 @@ bool GetLightCommand(
 		else if (switchcmd == "Set Volume")
 		{
 			cmd = gswitch_sSetVolume;
+			return true;
+		}
+		else if (switchcmd == "Execute")
+		{
+			cmd = gswitch_sExecute;
 			return true;
 		}
 		else
@@ -2259,6 +2320,23 @@ bool GetLightCommand(
 				return true;
 			}
 			return false;
+		}
+		else if (switchtype == STYPE_Selector) {
+			if ((switchcmd == "Paused") ||
+				(switchcmd == "Pause") ||
+				(switchcmd == "Playing") ||
+				(switchcmd == "Play") ||
+				(switchcmd == "Play Playlist") ||
+				(switchcmd == "Play Favorites") ||
+				(switchcmd == "Set Volume")) {
+				// Not a managed command
+				return false;
+			}
+			int level = GetSelectorSwitchLevel(options, switchcmd);
+			if (level > 0) { // not Off but a level name
+							 // switchcmd cannot be a level name
+				return false;
+			}
 		}
 
 		if (switchcmd == "Off")
@@ -2532,6 +2610,56 @@ bool GetLightCommand(
 			else if (switchcmd=="Alarm Delayed")
 			{
 				cmd=sStatusAlarmDelayed;
+				return true;
+			}
+			else if (switchcmd == "Arm Home")
+			{
+				cmd = sStatusArmHome;
+				return true;
+			}
+			else if (switchcmd == "Arm Home Delayed")
+			{
+				cmd = sStatusArmHomeDelayed;
+				return true;
+			}
+			else if (switchcmd == "Arm Away")
+			{
+				cmd = sStatusArmAway;
+				return true;
+			}
+			else if (switchcmd == "Arm Away Delayed")
+			{
+				cmd = sStatusArmAwayDelayed;
+				return true;
+			}
+			else if (switchcmd == "Panic")
+			{
+				cmd = sStatusPanic;
+				return true;
+			}
+			else if (switchcmd == "Disarm")
+			{
+				cmd = sStatusDisarm;
+				return true;
+			}
+			else if (switchcmd == "Light On")
+			{
+				cmd = sStatusLightOn;
+				return true;
+			}
+			else if (switchcmd == "Light Off")
+			{
+				cmd = sStatusLightOff;
+				return true;
+			}
+			else if (switchcmd == "Light 2 On")
+			{
+				cmd = sStatusLight2On;
+				return true;
+			}
+			else if (switchcmd == "Light 2 Off")
+			{
+				cmd = sStatusLight2Off;
 				return true;
 			}
 		}
