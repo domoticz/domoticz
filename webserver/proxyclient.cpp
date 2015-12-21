@@ -11,7 +11,6 @@
 extern std::string szAppVersion;
 
 #define TIMEOUT 60
-#define WRITE_QUEUE_SIZE 1024
 #define ADDPDUSTRING(value) parameters.AddPart(value)
 #define ADDPDUSTRINGBINARY(value) parameters.AddPart(value, false)
 #define ADDPDULONG(value) parameters.AddLong(value)

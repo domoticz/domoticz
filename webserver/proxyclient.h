@@ -56,7 +56,6 @@ namespace http {
 				size_t bytes_transferred);
 			void handle_write(const boost::system::error_code& error,
 				size_t bytes_transferred);
-			boost::mutex writeMutex;
 
 			void ReadMore();
 
@@ -64,6 +63,8 @@ namespace http {
 			void SocketWrite(ProxyPdu *pdu);
 			std::vector<boost::asio::const_buffer> _writebuf;
 			ProxyPdu *writePdu;
+			/// make sure we only write one packet at a time
+			boost::mutex writeMutex;
 			void LoginToService();
 
 			PDUPROTO(PDU_REQUEST)
@@ -91,8 +92,6 @@ namespace http {
 			bool doStop;
 			http::server::cWebem *m_pWebEm;
 			tcp::server::CTCPServerProxied *m_pDomServ;
-			/// make sure we only write one packet at a time
-			boost::mutex write_mutex;
 			bool we_locked_prefs_mutex;
 			/// read timeout timer
 			boost::asio::deadline_timer timer_;
