@@ -573,9 +573,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				//}
 				
 				if ( (!permissions.isAuthenticated()) && (next.templateUrl!="views/login.html") ) {
-					//$location.path('/Login');
-					$window.location = '/#Login';
-					$window.location.reload();
+					$location.path('/Login');
+					//$window.location = '/#Login';
+					//$window.location.reload();
 					return;
 				}
 				else if ( (permissions.isAuthenticated()) && (next.templateUrl=="views/login.html") ) {

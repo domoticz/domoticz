@@ -129,7 +129,8 @@ function ClearNotifyCacheRefresh()
 }
 
 function logEvent(event) {
-	if (event.type == "error" && event.url == "https://my.domoticz.com/html5.appcache") {
+	var re = /https:\/\/my.domoticz.com\/.*\/html5.appcache/i;
+	if (event.type == "error" && event.url.match(re) != null) {
 		document.location = "https://my.domoticz.com/mydomoticz/dashboard";
 	}
 }
