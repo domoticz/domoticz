@@ -78,10 +78,10 @@
   <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="1">
-			<Group index="1" max_associations="1" label="Alarm Reports" auto="true">
+			<Group index="1" max_associations="1" label="Alarm Reports" >
 <!-- Once the power has been applied, Alarm Report Command will be sent to Nodes in Grouping 1 to confirm the power applied status for HSM02. -->
 			</Group>
-			<Group index="2" max_associations="5" label="Basic level" auto="false">
+			<Group index="2" max_associations="5" label="Basic level" >
 <!-- However, the BASIC_SET command will be also sent to the nodes of Grouping 2. For instance, a lamp module will be turned off after receiving the BASIC_SET command. -->
 			</Group>
 		</Associations>

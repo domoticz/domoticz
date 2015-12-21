@@ -195,6 +195,9 @@ hardware/ASyncTCP.cpp
 hardware/BMP085.cpp
 hardware/Comm5TCP.cpp
 hardware/csocket.cpp
+hardware/CurrentCostMeterBase.cpp
+hardware/CurrentCostMeterSerial.cpp
+hardware/CurrentCostMeterTCP.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzTCP.cpp
@@ -256,6 +259,7 @@ hardware/SatelIntegra.cpp
 hardware/SBFSpot.cpp
 hardware/serial/serial.cpp
 hardware/serial/impl/unix.cpp
+hardware/SolarEdgeAPI.cpp
 hardware/SolarEdgeBase.cpp
 hardware/SolarEdgeTCP.cpp
 hardware/SolarMaxTCP.cpp
@@ -390,7 +394,18 @@ endif()
 #ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # try to find open-zwave, if found, include support
-find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
+option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
+if(USE_STATIC_OPENZWAVE)
+  find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
+  set(OPENZWAVE_LIB ${OpenZWave})
+else()
+  pkg_check_modules(OPENZWAVE libopenzwave)
+  if(OPENZWAVE_FOUND)
+    MESSAGE(STATUS "==== OpenZWave package found!")
+    find_library(OpenZWave NAMES libopenzwave.so HINTS ${OPENZWAVE_LIBRARY_DIRS})
+    message(STATUS ${OpenZWave})
+  endif()    
+endif()
 IF(OpenZWave)
   message(STATUS ${OpenZWave})
   target_link_libraries(domoticz ${OpenZWave})

@@ -240,7 +240,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!root["switchcmd"].isString())
 			goto mqttinvaliddata;
 		std::string switchcmd = root["switchcmd"].asString();
-		if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Set Level"))
+		if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle") && (switchcmd != "Set Level"))
 			goto mqttinvaliddata;
 		int level = 0;
 		if (!root["level"].empty())

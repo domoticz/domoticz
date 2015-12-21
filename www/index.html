@@ -129,7 +129,8 @@ function ClearNotifyCacheRefresh()
 }
 
 function logEvent(event) {
-	if (event.type == "error" && event.url == "https://my.domoticz.com/html5.appcache") {
+	var re = /https:\/\/my.domoticz.com\/.*\/html5.appcache/i;
+	if (event.type == "error" && event.url.match(re) != null) {
 		document.location = "https://my.domoticz.com/mydomoticz/dashboard";
 	}
 }
@@ -1341,7 +1342,7 @@ $(document).ready(function() {
          <div class="navbar navbar-inverse navbar-fixed-top" ng-controller="NavbarController" style="display: none;" has-User>
              <div class="navbar-inner">
                 <div class="container">
-					<a class="brand hidden-phone" id="version" href="#Dashboard"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
+					<a class="brand hidden-phone" id="version" href="#Dashboard"><img src="images/logo/57.png"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
                         <ul class="nav" id="appnavbar">
                             <li ng-show="config.EnableTabProxy" class="clDashboard"><a id="cProxy" href="/mydomoticz/dashboard"><img src="images/proxy.png"> <span class="hidden-phone hidden-tablet" data-i18n="Proxy">Proxy</span></a></li>
                             <li ng-show="config.EnableTabDashboard" class="divider-vertical clDashboard"></li>

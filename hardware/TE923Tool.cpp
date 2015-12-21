@@ -8,6 +8,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "../main/Logger.h"
 #include "../main/localtime_r.h"
 
@@ -98,7 +99,7 @@ bool CTE923Tool::OpenDevice()
 		_log.Log(LOG_ERROR, "TE923: Error while setting alternative device interface (%d)." , ret );
 		return false;
 	}
-	sleep(0.5);
+	usleep(500000);
 #endif
 	return true;
 }
@@ -296,12 +297,12 @@ int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf )
 	if ( ret < 0 )
 		return -1;
 #ifndef WIN32
-	sleep( 0.3 );
+	usleep(300000);
 #endif
 	while ( usb_interrupt_read( m_device_handle, 0x01, (char*)&buf, 0x8, timeout ) > 0 ) 
 	{
 #ifndef WIN32
-		sleep( 0.15 );
+		usleep(150000);
 #endif
 		int bytes = ( int )buf[0];
 		if (( count + bytes ) < BUFLEN )

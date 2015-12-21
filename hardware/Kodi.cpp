@@ -440,6 +440,9 @@ void CKodiNode::handleMessage(std::string& pMessage)
 					case 1009:		//SetVolume response
 						_log.Log(LOG_NORM, "Kodi: (%s) Volume set to %d.", m_Name.c_str(), root["result"].asInt());
 						break;
+					case 1010:		//Execute Addon response
+						_log.Log(LOG_NORM, "Kodi: (%s) Executed Addon %s.", m_Name.c_str(), root["result"].asString().c_str());
+						break;
 					// 2000+ messages relate to playlist triggering functionality
 					case 2000: // clear video playlist response
 						handleWrite("{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":1},\"id\":2001}");
@@ -765,6 +768,15 @@ void CKodiNode::SendCommand(const std::string &command, const int iValue)
 		sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":0},\"id\":2000}";
 	}
 
+	if (command == "execute")
+	{
+		sKodiCall = "Execute Addon " + m_ExecuteCommand;
+		//		ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Addons.GetAddons\",\"id\":1010}";
+		ssMessage << "{\"jsonrpc\":\"2.0\",\"method\":\"Addons.ExecuteAddon\",\"params\":{\"addonid\":\"" << m_ExecuteCommand << "\"},\"id\":1010}";
+		sMessage = ssMessage.str();
+		m_ExecuteCommand = "";
+	}
+
 	if (sMessage.length())
 	{
 		if (m_Socket != NULL)
@@ -804,6 +816,11 @@ void CKodiNode::SetPlaylist(const std::string& playlist)
 			SendCommand("stop");
 		}
 	}
+}
+
+void CKodiNode::SetExecuteCommand(const std::string& command)
+{
+	m_ExecuteCommand = command;
 }
 
 std::vector<boost::shared_ptr<CKodiNode> > CKodi::m_pNodes;
@@ -958,6 +975,9 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 				return true;
 			case gswitch_sPlayPlaylist:
 				(*itt)->SendCommand("playlist", iParam);
+				return true;
+			case gswitch_sExecute:
+				(*itt)->SendCommand("execute", iParam);
 				return true;
 			default:
 				return true;
@@ -1122,6 +1142,20 @@ bool CKodi::SetPlaylist(const int ID, const std::string &playlist)
 		if ((*itt)->m_ID == ID)
 		{
 			(*itt)->SetPlaylist(playlist);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CKodi::SetExecuteCommand(const int ID, const std::string &command)
+{
+	std::vector<boost::shared_ptr<CKodiNode> >::iterator itt;
+	for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
+	{
+		if ((*itt)->m_ID == ID)
+		{
+			(*itt)->SetExecuteCommand(command);
 			return true;
 		}
 	}

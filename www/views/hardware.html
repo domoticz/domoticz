@@ -801,6 +801,27 @@
 </form>
 </center>
 </div>
+<div id="ccusbeedit" style="display:none;">
+<center>
+<form id="ccusbtype">
+	<br>
+	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
+	<table>
+		<tr>
+			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+			<td><select id="CCBaudrate" name="CCBaudrate" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">9600</option>
+				<option value="1">57600</option>
+			</select></td>
+		</tr>
+	</table>
+	<br>
+	<br>
+	<input type="hidden" id="idx" name="idx" value="-1">
+	<button class="btn btn-danger" id="submitbuttonccusb">Set Mode</button>
+</form>
+</center>
+</div>
 <div id="limitlessmetertype" style="display:none;">
 	<center>
 	<form id="limitform">
@@ -927,6 +948,23 @@
 				<tr>
 					<td align="right" style="width:110px"><label><span data-i18n="Location"></span>:</label></td>
 					<td><input type="text" id="location" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divsolaredgeapi">
+			<br>
+			<table class="display" id="hardwareparamssolaredgeapi" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="SiteID">SiteID</span>:</label></td>
+					<td><input type="text" id="siteid" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Serial">Serial</span>:</label></td>
+					<td><input type="text" id="serial" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
+					<td><input type="text" id="apikey" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 			</table>
 		</div>
@@ -1063,6 +1101,7 @@
 					<option value="1000" data-i18n="Waterflow">Waterflow</option>
 					<option value="86" data-i18n="Wind">Wind</option>
 					<option value="1001" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
+					<option value="1002" data-i18n="Selector Switch">Selector Switch</option>
 				</select>
 		</form>
 </div>

@@ -88,10 +88,10 @@
 	<CommandClass id="133">
 		<Associations num_groups="8">
 			<Group index="1" max_associations="1" label="Lifeline (reserved for communication with the controller)" auto="true"/>
-			<Group index="2" max_associations="16" label="Basic on/off triggered at the change of output Q1 and reflecting its state" auto="false" />
+			<Group index="2" max_associations="16" label="Basic on/off triggered at the change of output Q1 and reflecting its state"  />
 			<Group index="3" max_associations="16" label="Switch binary report triggered at the changes of output Q1 and reflecting its state" auto="true" />
 			<Group index="4" max_associations="16" label="Power meter report triggered at the changes of output Q1 and reflecting its state" auto="true" />
-			<Group index="5" max_associations="16" label="Basic on/off triggered at the change of output Q2 and reflecting its state" auto="false" />
+			<Group index="5" max_associations="16" label="Basic on/off triggered at the change of output Q2 and reflecting its state"  />
 			<Group index="6" max_associations="16" label="Switch binary report triggered at the changes of output Q2 and reflecting its state" auto="true" />
 			<Group index="7" max_associations="16" label="Power meter report triggered at the changes of output Q2 and reflecting its state" auto="true" />
 			<Group index="8" max_associations="16" label="Multilevel sensor report" auto="true"/>
