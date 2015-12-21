@@ -663,7 +663,7 @@
 	      	success: function(data) {
 		    	if (typeof data != 'undefined') {
 					if (data.status=="OK") {
-						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>ID</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
+						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>Idx</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
 						if (typeof data.result != 'undefined') {
 							
 							$.each(data.result, function(i,item){

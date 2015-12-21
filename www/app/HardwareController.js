@@ -2983,14 +2983,14 @@ define(['app'], function (app) {
                       "OK": function() {
                           var bValid = true;
                           $( this ).dialog( "close" );
-
                             var SensorType=$("#dialog-createevohomesensor #sensortype option:selected").val();
                             if (typeof SensorType == 'undefined') {
                                 bootbox.alert($.t('No Sensor Type Selected!'));
                                 return ;
                             }
                             $.ajax({
-                                 url: "json.htm?type=createevohomesensor&idx=" + $.devIdx + "&sensortype=" + SensorType,
+                                 url: "json.htm?type=createevohomesensor&idx=" + $.devIdx +
+									"&sensortype=" + SensorType,
                                  async: false,
                                  dataType: 'json',
                                  success: function(data) {
@@ -3025,22 +3025,29 @@ define(['app'], function (app) {
             $.devIdx=idx;
             $( "#dialog-createsensor" ).dialog({
                   autoOpen: false,
-                  width: 380,
-                  height: 160,
+                  width: 420,
+                  height: 220,
                   modal: true,
                   resizable: false,
                   buttons: {
                       "OK": function() {
                           var bValid = true;
                           $( this ).dialog( "close" );
-
+                            var SensorName=$("#dialog-createsensor #sensorname").val();
+							if (SensorName=="")
+							{
+								ShowNotify($.t('Please enter a Name!'), 2500, true);
+								return;
+							}
                             var SensorType=$("#dialog-createsensor #sensortype option:selected").val();
                             if (typeof SensorType == 'undefined') {
                                 bootbox.alert($.t('No Sensor Type Selected!'));
                                 return ;
                             }
                             $.ajax({
-                                 url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx + "&sensortype=" + SensorType,
+                                 url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx +
+									"&sensorname=" + encodeURIComponent(SensorName) +
+									"&sensortype=" + SensorType,
                                  async: false,
                                  dataType: 'json',
                                  success: function(data) {

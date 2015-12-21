@@ -54,8 +54,9 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
+			std::string ssensorname = request::findValue(&req, "sensorname");
 			std::string ssensortype = request::findValue(&req, "sensortype");
-			if ((idx == "") || (ssensortype == ""))
+			if ((idx == "") || (ssensortype.empty()) || (ssensorname.empty()))
 				return;
 
 			bool bCreated = false;
@@ -81,7 +82,7 @@ namespace http {
 
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
-
+			unsigned long long DeviceRowIdx = -1;
 			switch (iSensorType)
 			{
 			case 1:
@@ -89,7 +90,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
+					DeviceRowIdx=DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePressure, 12, 255, 0, "0.0", devname);
 					bCreated = true;
 				}
 				break;
@@ -98,13 +99,13 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypePercentage, 12, 255, 0, "0.0", devname);
 					bCreated = true;
 				}
 				break;
 			case 3:
 				//Gas
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Gas, sTypeP1Gas, 12, 255, 0, "0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Gas, sTypeP1Gas, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case 4:
@@ -112,7 +113,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, "0.000", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeVoltage, 12, 255, 0, "0.000", devname);
 					bCreated = true;
 				}
 				break;
@@ -121,7 +122,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, "Hello World", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeTextStatus, 12, 255, 0, "Hello World", devname);
 					bCreated = true;
 				}
 				break;
@@ -133,13 +134,13 @@ namespace http {
 					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
 					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
 					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-					m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeLighting2, sTypeAC, 12, 255, 0, "15", devname);
 					bCreated = true;
 				}
 				break;
 			case 7:
 				//Alert
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeAlert, 12, 255, 0, "No Alert!", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeAlert, 12, 255, 0, "No Alert!", devname);
 				bCreated = true;
 				break;
 			case 8:
@@ -151,12 +152,12 @@ namespace http {
 					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
 					sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 				}
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeThermostat, sTypeThermSetpoint, 12, 255, 0, "20.5", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeThermostat, sTypeThermSetpoint, 12, 255, 0, "20.5", devname);
 				bCreated = true;
 				break;
 			case 9:
 				//Current/Ampere
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeCURRENT, sTypeELEC1, 12, 255, 0, "0.0;0.0;0.0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeCURRENT, sTypeELEC1, 12, 255, 0, "0.0;0.0;0.0", devname);
 				bCreated = true;
 				break;
 			case 10:
@@ -164,7 +165,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoundLevel, 12, 255, 0, "65", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoundLevel, 12, 255, 0, "65", devname);
 					bCreated = true;
 				}
 				break;
@@ -173,13 +174,13 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeBaro, 12, 255, 0, "1021.34;0", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeBaro, 12, 255, 0, "1021.34;0", devname);
 					bCreated = true;
 				}
 				break;
 			case 12:
 				//Visibility (km)
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeVisibility, 12, 255, 0, "10.3", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeVisibility, 12, 255, 0, "10.3", devname);
 				bCreated = true;
 				break;
 			case 13:
@@ -187,12 +188,12 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeDistance, 12, 255, 0, "123.4", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeDistance, 12, 255, 0, "123.4", devname);
 					bCreated = true;
 				}
 				break;
 			case 14: //Counter Incremental
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeCounterIncremental, 12, 255, 0, "0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneral, sTypeCounterIncremental, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case 15:
@@ -200,7 +201,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoilMoisture, 12, 255, 3, devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeSoilMoisture, 12, 255, 3, devname);
 					bCreated = true;
 				}
 				break;
@@ -209,7 +210,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeLeafWetness, 12, 255, 2, devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeLeafWetness, 12, 255, 2, devname);
 					bCreated = true;
 				}
 				break;
@@ -218,7 +219,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeZWaveClock, 12, 255, 0, "24:12:00", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeZWaveClock, 12, 255, 0, "24:12:00", devname);
 					bCreated = true;
 				}
 				break;
@@ -227,7 +228,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeKwh, 12, 255, 0, "0;0.0", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeKwh, 12, 255, 0, "0;0.0", devname);
 					bCreated = true;
 				}
 				break;
@@ -236,7 +237,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeCurrent, 12, 255, 0, "6.4", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeCurrent, 12, 255, 0, "6.4", devname);
 					bCreated = true;
 				}
 				break;
@@ -245,7 +246,7 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					unsigned long long devidx = m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
+					unsigned long long devidx = DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeLimitlessLights, sTypeLimitlessRGB, 12, 255, 1, devname);
 					if (devidx != -1)
 					{
 						//Set switch type to dimmer
@@ -255,51 +256,51 @@ namespace http {
 				}
 				break;
 			case pTypeTEMP:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 12, 255, 0, "0.0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP, sTypeTEMP1, 12, 255, 0, "0.0", devname);
 				bCreated = true;
 				break;
 			case pTypeHUM:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeTEMP1, 12, 255, 50, "1", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeHUM, sTypeTEMP1, 12, 255, 50, "1", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP_HUM:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM, sTypeTH1, 12, 255, 0, "0.0;50;1", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM, sTypeTH1, 12, 255, 0, "0.0;50;1", devname);
 				bCreated = true;
 				break;
 			case pTypeTEMP_HUM_BARO:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM_BARO, sTypeTHB1, 12, 255, 0, "0.0;50;1;1010;1", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeTEMP_HUM_BARO, sTypeTHB1, 12, 255, 0, "0.0;50;1;1010;1", devname);
 				bCreated = true;
 				break;
 			case pTypeWIND:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND1, 12, 255, 0, "0;N;0;0;0;0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND1, 12, 255, 0, "0;N;0;0;0;0", devname);
 				bCreated = true;
 				break;
 			case pTypeRAIN:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeRAIN, sTypeRAIN3, 12, 255, 0, "0;0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeRAIN, sTypeRAIN3, 12, 255, 0, "0;0", devname);
 				bCreated = true;
 				break;
 			case pTypeUV:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeUV, sTypeUV1, 12, 255, 0, "0;0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeUV, sTypeUV1, 12, 255, 0, "0;0", devname);
 				bCreated = true;
 				break;
 			case pTypeRFXMeter:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeRFXMeter, sTypeRFXMeterCount, 10, 255, 0, "0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeRFXMeter, sTypeRFXMeterCount, 10, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case pTypeAirQuality:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 12, 255, 0, devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeAirQuality, sTypeVoltcraft, 12, 255, 0, devname);
 				bCreated = true;
 				break;
 			case pTypeUsage:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeUsage, sTypeElectric, 12, 255, 0, "0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeUsage, sTypeElectric, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case pTypeLux:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeLux, sTypeLux, 12, 255, 0, "0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeLux, sTypeLux, 12, 255, 0, "0", devname);
 				bCreated = true;
 				break;
 			case pTypeP1Power:
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Power, sTypeP1Power, 12, 255, 0, "0;0;0;0;0;0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeP1Power, sTypeP1Power, 12, 255, 0, "0;0;0;0;0;0", devname);
 				bCreated = true;
 				break;
 			case 1000:
@@ -307,13 +308,13 @@ namespace http {
 				{
 					std::string rID = std::string(ID);
 					padLeft(rID, 8, '0');
-					m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeWaterflow, 12, 255, 0, "0.0", devname);
+					DeviceRowIdx=m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeGeneral, sTypeWaterflow, 12, 255, 0, "0.0", devname);
 					bCreated = true;
 				}
 				break;
 			case 1001:
 				//Wind + Temp + Chill
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND4, 12, 255, 0, "0;N;0;0;0;0", devname);
+				DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeWIND, sTypeWIND4, 12, 255, 0, "0;N;0;0;0;0", devname);
 				bCreated = true;
 				break;
 			case 1002:
@@ -324,7 +325,7 @@ namespace http {
 					unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
 					unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
 					sprintf(ID, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
-					unsigned long long devidx = m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, 0, "0", devname);
+					unsigned long long devidx = DeviceRowIdx=m_sql.UpdateValue(HwdID, ID, 1, pTypeGeneralSwitch, sSwitchTypeSelector, 12, 255, 0, "0", devname);
 					if (devidx != -1)
 					{
 						//Set switch type to selector
@@ -343,6 +344,10 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "CreateVirtualSensor";
+			}
+			if (DeviceRowIdx != -1)
+			{
+				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%llu)", ssensorname.c_str(), DeviceRowIdx);
 			}
 		}
 	}
