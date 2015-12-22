@@ -12005,7 +12005,7 @@ namespace http {
 							}
 						}
 					}
-					else if ((dType == pTypeENERGY) || (dType == pTypePOWER) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
+					else if ((dType == pTypeENERGY) || (dType == pTypePOWER) || (dType == pTypeYouLess) || ((dType == pTypeGeneral) && (dSubType == sTypeKwh)))
 					{
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
@@ -12057,6 +12057,9 @@ namespace http {
 							method = atoi(sMethod.c_str());
 						if (bHaveUsage == false)
 							method = 0;
+
+						if (dType == pTypeYouLess)
+							method = 1;
 
 						int iDisplayInPower = 1;
 						m_sql.GetPreferencesVar("DisplayPowerUsageInkWhGraph", iDisplayInPower);
