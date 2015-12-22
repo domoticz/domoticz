@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="0" genre="config" label="Unidentified Parameter" units="" min="0" max="255" value="5">
+			<Help>
+				Parameter #0 is undocumented: let us know if you know what it does!
+				Attributes (type, units, min and max) are wild guesses, except default value.
+			</Help>
+		</Value>
+		<Value type="byte" index="1" genre="config" label="On Time" units="minutes" min="0" max="255" value="20">
+			<Help>
+				On Time sets the number of minutes that the lights stay on when
+				motion has not been detected.
+				A value of 0 On Time is a special mode where the lights are
+				constantly sent a command to turn them on whenever motion is
+				detected. The device will NOT turn the lights off in this mode.
+				Note that this mode will significantly shorten battery life.
+				Recommended values:
+				5 min for hallways.
+				20 min for an office environment.
+				60 min for a library or other room where someone may be sitting
+				still for a long time.
+				This may be inaccurate, but default for Homeseer HSM100 may actually be 3 minutes, instead of 20?				
+			</Help>
+		</Value>
+		<Value type="byte" index="2" genre="config" label="On Level" min="-1" max="99" value="99">
+			<Help>
+				OnLevel is the value sent by the Z-Wave BASIC_SET command to all Association Group 2 nodes when motion is detected. 
+				A value of 0 will turn the lights off (not recommended).
+				A value between 1 and 99 will set the dim level to between 1% and 99% (99% is full on).
+				A value of -1 will turn the light “on” which depends on the device but most will set the dim level to the last dim setting.
+			</Help>
+		</Value>
+		<Value type="byte" index="3" genre="config" label="Lite Minutes" min="0" max="255" value="5">
+			<Help>
+				LiteMinutes. A Luminance report is sent to the system controller every LiteMin minutes.
+				A value of zero turns this mode off. Luminance values can still be obtained at any time by the home control application in this mode.
+			</Help>
+		</Value>
+		<Value type="byte" index="4" genre="config" label="Temp Minutes" min="0" max="255" value="5">
+			<Help>
+				TempMinutes. A Temperature report is sent to the controller every TempMin minutes.
+				A value of zero turns this mode off. Temperature values can still be obtained at any time by polling the status of the temperature sensor.
+			</Help>
+		</Value>
+		<Value type="byte" index="5" genre="config" label="Temp Adj" min="-128" max="127" value="0">
+			<Help>
+				TempAdj. TempAdj is a twos-complement number that is used to adjust the temperature reading to make it more accurate. The value is in tenths of degree Fahrenheit. The temperature reading can be adjusted by +12.7F to -12.8F. A value of 1 will adjust the temperature reading by +0.1F. A value of -1 will adjust the temperature by -0.1F. A value of 123 will adjust the temperature by +12.3F.
+			</Help>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="2">
+			<Group index="1" max_associations="1" label="Motion Notification" />
+			<Group index="2" max_associations="4" label="Motion Control" auto="true"/>
+		</Associations>
+	</CommandClass>
+</Product>

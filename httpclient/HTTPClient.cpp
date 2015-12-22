@@ -9,6 +9,8 @@
 	#define O_LARGEFILE 0
 #endif
 
+extern std::string szUserDataFolder;
+
 bool		HTTPClient::m_bCurlGlobalInitialized = false;
 long		HTTPClient::m_iConnectionTimeout=10;
 long		HTTPClient::m_iTimeout=90; //max, time that a download has to be finished?
@@ -57,8 +59,9 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT,m_iTimeout); 
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
-	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "domocookie.txt"); 
-	curl_easy_setopt(curl, CURLOPT_COOKIEJAR,  "domocookie.txt"); 
+	std::string domocookie = szUserDataFolder + "domocookie.txt";
+	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, domocookie.c_str());
+	curl_easy_setopt(curl, CURLOPT_COOKIEJAR, domocookie.c_str());
 }
 
 //Configuration functions

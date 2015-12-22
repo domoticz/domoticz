@@ -10,7 +10,7 @@
 class CHardwareMonitor : public CDomoticzHardwareBase
 {
 public:
-	CHardwareMonitor(const int ID);
+	explicit CHardwareMonitor(const int ID);
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
 private:
@@ -38,7 +38,7 @@ private:
 	IWbemLocator *m_pLocator; 
 	IWbemServices *m_pServicesOHM;
 	IWbemServices *m_pServicesSystem;
-#elif defined __linux__
+#elif defined (__linux__) || defined(__CYGWIN32__)
 	void FetchUnixData();
 	long long m_lastloadcpu;
 	int m_totcpu;

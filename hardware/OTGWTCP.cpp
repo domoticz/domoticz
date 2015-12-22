@@ -42,6 +42,7 @@ bool OTGWTCP::StopHardware()
 	{
 		try {
 			disconnect();
+			close();
 		} catch(...)
 		{
 			//Don't throw from a Stop command
@@ -69,9 +70,8 @@ void OTGWTCP::OnConnect()
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
-
 	sOnConnected(this);
-	GetGatewayDetails();
+	m_bRequestVersion = true;
 }
 
 void OTGWTCP::OnDisconnect()
@@ -82,7 +82,7 @@ void OTGWTCP::OnDisconnect()
 void OTGWTCP::Do_Work()
 {
 	bool bFirstTime=true;
-	int sec_counter = 0;
+	int sec_counter = 25;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -110,7 +110,12 @@ void OTGWTCP::Do_Work()
 			update();
 			if (mIsConnected)
 			{
-				if (sec_counter % 30 == 0)//updates every 30 seconds
+				if ((sec_counter % 28 == 0) && (m_bRequestVersion))
+				{
+					m_bRequestVersion = false;
+					GetVersion();
+				}
+				else if (sec_counter % 30 == 0)//updates every 30 seconds
 				{
 					bFirstTime=false;
 					SendOutsideTemperature();
@@ -136,7 +141,25 @@ void OTGWTCP::OnError(const std::exception e)
 
 void OTGWTCP::OnError(const boost::system::error_code& error)
 {
-	_log.Log(LOG_ERROR,"OTGW: Error: %s",error.message().c_str());
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_STATUS, "OTGW: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else if (
+		(error == boost::asio::error::eof) ||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "OTGW: Connection reset!");
+	}
+	else
+		_log.Log(LOG_ERROR, "OTGW: %s", error.message().c_str());
 }
 
 bool OTGWTCP::WriteInt(const unsigned char *pData, const unsigned char Len)

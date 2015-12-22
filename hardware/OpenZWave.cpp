@@ -149,7 +149,7 @@ const char *cclassStr(uint8 cc)
 	case 0x32:
 		return "METER";
 	case 0x33:
-		return "COLOR CONTROL";
+		return "COLOR";
 	case 0x34:
 		return "ZIP ADV CLIENT";
 	case 0x35:
@@ -471,6 +471,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo.m_nodeId = _nodeID;
 			nodeInfo.m_polled = false;
 			nodeInfo.HaveUserCodes = false;
+			nodeInfo.Application_version = 0;
 			nodeInfo.szType = pManager->GetNodeType(_homeID, _nodeID);
 			nodeInfo.iVersion = pManager->GetNodeVersion(_homeID, _nodeID);
 			nodeInfo.Manufacturer_id = pManager->GetNodeManufacturerId(_homeID, _nodeID);
@@ -924,13 +925,13 @@ void COpenZWave::EnableDisableDebug()
 	{
 		OpenZWave::Options::Get()->AddOptionInt("SaveLogLevel", OpenZWave::LogLevel_Detail);
 		OpenZWave::Options::Get()->AddOptionInt("QueueLogLevel", OpenZWave::LogLevel_Debug);
-		OpenZWave::Options::Get()->AddOptionInt("DumpTrigger", OpenZWave::LogLevel_Error);
+		OpenZWave::Options::Get()->AddOptionInt("DumpTriggerLevel", OpenZWave::LogLevel_Error);
 	}
 	else
 	{
 		OpenZWave::Options::Get()->AddOptionInt("SaveLogLevel", OpenZWave::LogLevel_Error);
 		OpenZWave::Options::Get()->AddOptionInt("QueueLogLevel", OpenZWave::LogLevel_Error);
-		OpenZWave::Options::Get()->AddOptionInt("DumpTrigger", OpenZWave::LogLevel_Error);
+		OpenZWave::Options::Get()->AddOptionInt("DumpTriggerLevel", OpenZWave::LogLevel_Error);
 	}
 }
 
@@ -1133,6 +1134,14 @@ bool COpenZWave::GetNodeConfigValueByIndex(const NodeInfo *pNode, const int inde
 					nValue = *ittValue;
 					return true;
 				}
+				else if (
+					(commandclass == COMMAND_CLASS_PROTECTION) &&
+					(vinstance == index - 3000) //spacial case
+					)
+				{
+					nValue = *ittValue;
+					return true;
+				}
 			}
 		}
 	}
@@ -1180,6 +1189,8 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		bool bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_SWITCH_BINARY, vID) == true);
 		if (!bFound)
 			bFound = (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_DOOR_LOCK, vID) == true);
+		if (!bFound)
+			bFound = (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_SWITCH_MULTILEVEL, "Level", vID) == true);
 		if (bFound)
 		{
 			OpenZWave::ValueID::ValueType vType = vID.GetType();
@@ -1306,7 +1317,23 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, "Color", vID) == true)
 	{
-		if (!m_pManager->SetValue(vID, ColorStr))
+		std::string OutColorStr = ColorStr;
+		if (pNode->Manufacturer_id == "0131")
+		{
+			if ((pNode->Product_type == "0002") && (pNode->Product_id == "0002"))
+			{
+				if (pNode->Application_version < 106)
+				{
+					if (OutColorStr.size() > 9)
+					{
+						//Old Zipato RGB bulp firmware does not support cold white
+						OutColorStr = OutColorStr.substr(0, 9);
+					}
+				}
+			}
+		}
+
+		if (!m_pManager->SetValue(vID, OutColorStr))
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Error setting Switch Value! NodeID: %d (0x%02x)", nodeID, nodeID);
 			return false;
@@ -1349,7 +1376,6 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 		(commandclass == COMMAND_CLASS_BASIC) ||
 		(commandclass == COMMAND_CLASS_SWITCH_ALL) ||
 		(commandclass == COMMAND_CLASS_CONFIGURATION) ||
-		(commandclass == COMMAND_CLASS_VERSION) ||
 		(commandclass == COMMAND_CLASS_POWERLEVEL)
 		)
 		return;
@@ -1365,12 +1391,27 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 
 	OpenZWave::ValueID::ValueType vType = vID.GetType();
 	OpenZWave::ValueID::ValueGenre vGenre = vID.GetGenre();
+	std::string vLabel = m_pManager->GetValueLabel(vID);
+
+	if (commandclass == COMMAND_CLASS_VERSION)
+	{
+		if (vLabel == "Application Version")
+		{
+			COpenZWave::NodeInfo *pNode = GetNodeInfo(HomeID, NodeID);
+			if (pNode)
+			{
+				std::string strValue;
+				if (m_pManager->GetValueAsString(vID, &strValue) == true)
+				{
+					pNode->Application_version = (int)(atof(strValue.c_str())*100);
+				}
+			}
+		}
+	}
 
 	//Ignore non-user types
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 		return;
-
-	std::string vLabel = m_pManager->GetValueLabel(vID);
 
 	unsigned char instance = GetInstanceFromValueID(vID);
 
@@ -2143,10 +2184,11 @@ void COpenZWave::UpdateNodeEvent(const OpenZWave::ValueID &vID, int EventID)
 	else
 		nintvalue = 0;
 
-	if (pDevice->intvalue == nintvalue)
-	{
-		return; //dont send/update same value
-	}
+//	if ((pDevice->intvalue == nintvalue) && (pDevice->sequence_number != 1))
+//	{
+//		//Do we need this ?
+//		return; //dont send/update same value
+//	}
 	time_t atime = mytime(NULL);
 	pDevice->intvalue = nintvalue;
 	pDevice->lastreceived = atime;
@@ -2276,7 +2318,6 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		//unhandled value type
 		return;
 	}
-
 
 	if (vGenre != OpenZWave::ValueID::ValueGenre_User)
 	{
@@ -2511,6 +2552,8 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 		return;
 
 	pDevice->bValidValue = true;
+	pDevice->orgInstanceID = vOrgInstance;
+	pDevice->orgIndexID = vOrgIndex;
 
 	switch (pDevice->devType)
 	{
@@ -3738,7 +3781,7 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 			for (std::list<OpenZWave::ValueID>::const_iterator ittValue = ittCmds->second.Values.begin(); ittValue != ittCmds->second.Values.end(); ++ittValue)
 			{
 				unsigned char commandclass = ittValue->GetCommandClassId();
-				if (commandclass == COMMAND_CLASS_CONFIGURATION)
+				if ((commandclass == COMMAND_CLASS_CONFIGURATION)|| (commandclass == COMMAND_CLASS_PROTECTION))
 				{
 					if (m_pManager->IsValueReadOnly(*ittValue) == true)
 						continue;
@@ -3796,6 +3839,11 @@ void COpenZWave::GetNodeValuesJson(const unsigned int homeID, const int nodeID, 
 						}
 					}
 					int i_index = ittValue->GetIndex();
+					if (commandclass == COMMAND_CLASS_PROTECTION)
+					{
+						i_index = 3000 + ittValue->GetInstance();
+					}
+
 					std::string i_label = m_pManager->GetValueLabel(*ittValue);
 					std::string i_units = m_pManager->GetValueUnits(*ittValue);
 					std::string i_help = m_pManager->GetValueHelp(*ittValue);
@@ -3928,7 +3976,6 @@ bool COpenZWave::ApplyNodeConfig(const unsigned int homeID, const int nodeID, co
 		else
 		{
 			OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
-
 			if (GetNodeConfigValueByIndex(pNode, rvIndex, vID))
 			{
 				std::string vstring;

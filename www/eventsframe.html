@@ -121,7 +121,7 @@
 				return "device["+$(titleA).text()+"]";
 			}
 			else if (variableType.indexOf("uservariables") >= 0) {
-				var titleA = $(valueA).find("title")[0];
+				var titleA = $(value).find("title")[0];
 				return "variable["+$(titleA).text()+"]";
 			}
 			else if (variableType == "temperaturevariables") {
@@ -154,10 +154,10 @@
 					return '"'+$(titleB).text()+'"'; 
 				}
 				else if ($(titleB).attr("name") == "TEXT") {
-					return '"'+encodeURIComponent($(titleB).text())+'"'; 
+					return '"'+$(titleB).text()+'"'; 
 				}
 				else if ($(titleB).attr("name") == "NUM") {
-					return $(titleB).text(); 
+					return $(titleB).text();
 				}
 				return "unknown comparevariable "+variableType;
 			}
@@ -290,7 +290,7 @@
 					var blockB = $(valueB).children("block:first");
 					var variableTypeB = $(valueB).children("block:first").attr("type");
 					var dtext=GetValueText(valueB,variableTypeB);
-					setString += '="'+dtext+'"'; 
+					setString += '='+dtext+''; 
 					setArray.push(setString);
 								
 				}
@@ -345,7 +345,7 @@
 						var valueB = $(this).find("value[name='B']")[0];
 						var titleB = $(valueB).find("title")[0];
 						var blockB = $(valueB).children("block:first");
-						setString += '="'+$(titleB).text()+'"'; 
+						setString += '="'+$(titleB).text()+''; 
 						setString += ' AFTER '+ $(titleC).text()+'"'; 
 						setArray.push(setString);
 					}
@@ -356,7 +356,7 @@
 						var valueB = $(this).find("value[name='B']")[0];
 						var titleB = $(valueB).find("title")[0];
 						var blockB = $(valueB).children("block:first");
-						setString += '="'+encodeURIComponent($(titleB).text())+'"'; 
+						setString += '="'+$(titleB).text()+'"'; 
 						setString += ' AFTER '+ $(titleC).text()+'"'; 
 						setArray.push(setString);
 					}
@@ -417,9 +417,10 @@
 		    	var notificationBlock = $(this).children("title[name='notificationPriority']")[0];
 				var soundBlock = $(this).children("title[name='notificationSound']")[0];
 		    	var sTitleText = $(subjectBlock).find("title[name='TEXT']")[0];
-		    	var bTitleText = $(bodyBlock).find("title[name='TEXT']")[0];
-		    	var sTT = $(sTitleText).text().replace(/\,/g, ' ');
-		    	var bTT = $(bTitleText).text().replace(/\,/g, ' ');
+
+				var sTT=GetValueText(subjectBlock,$(subjectBlock).children("block:first").attr("type")).replace(/\,/g, ' ');
+				var bTT=GetValueText(bodyBlock,$(bodyBlock).children("block:first").attr("type")).replace(/\,/g, ' ');
+				
 		    	var pTT=$(notificationBlock).text();
 				var aTT=$(soundBlock).text();
 		    	// message separator here cannot be # like in scripts, changed to $..
@@ -662,7 +663,7 @@
 	      	success: function(data) {
 		    	if (typeof data != 'undefined') {
 					if (data.status=="OK") {
-						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>ID</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
+						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>Idx</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
 						if (typeof data.result != 'undefined') {
 							
 							$.each(data.result, function(i,item){
@@ -812,6 +813,7 @@
 			   	<block type="weathervariables"></block>
 		   	</category>
 		   	<category name="Utility">
+			   	<block type="utilityvariables"></block>
 			   	<block type="utilityvariablesAF"></block>
 			   	<block type="utilityvariablesGL"></block>
 			   	<block type="utilityvariablesMR"></block>

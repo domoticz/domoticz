@@ -27,6 +27,7 @@ CLogger::_tLogLineStruct::_tLogLineStruct(const _eLogLevel nlevel, const std::st
 CLogger::CLogger(void)
 {
 	m_bInSequenceMode=false;
+	m_bEnableLogTimestamps=true;
 	m_verbose_level=VBL_ALL;
 }
 
@@ -84,40 +85,62 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
 	va_end(argList);
 
-	char szDate[100];
-#if !defined WIN32
-	// Get a timestamp
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-
-	struct tm timeinfo;
-	localtime_r(&tv.tv_sec, &timeinfo);
-
-	// create a time stamp string for the log message
-	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
-#else
-	// Get a timestamp
-	SYSTEMTIME time;
-	::GetLocalTime(&time);
-	// create a time stamp string for the log message
-	sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
-#endif
-
 	std::stringstream sstr;
-	
+	bool bEnableLogTimestamps = m_bEnableLogTimestamps;
+#ifndef WIN32
+	if (g_bUseSyslog)
+		bEnableLogTimestamps = false;
+#endif
+	if (bEnableLogTimestamps)
+	{
+		char szDate[100];
+#if !defined WIN32
+		// Get a timestamp
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+
+		struct tm timeinfo;
+		localtime_r(&tv.tv_sec, &timeinfo);
+
+		// create a time stamp string for the log message
+		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+#else
+		// Get a timestamp
+		SYSTEMTIME time;
+		::GetLocalTime(&time);
+		// create a time stamp string for the log message
+		sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+#endif
+		sstr << szDate << " ";
+	}
+
 	if ((level==LOG_NORM)||(level==LOG_STATUS))
 	{
-		sstr << szDate << " " << cbuffer;
+		sstr << cbuffer;
 	}
-	else {
-		sstr << szDate << " Error: " << cbuffer;
+	else
+	{
+		sstr << "Error: " << cbuffer;
 	}
 
 	if (m_lastlog.size()>=MAX_LOG_LINE_BUFFER)
 		m_lastlog.erase(m_lastlog.begin());
 	m_lastlog.push_back(_tLogLineStruct(level,sstr.str()));
+
+	if (level == LOG_STATUS)
+	{
+		if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_status_log.erase(m_last_status_log.begin());
+		m_last_status_log.push_back(_tLogLineStruct(level, sstr.str()));
+	}
+	else if (level == LOG_ERROR)
+	{
+		if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_error_log.erase(m_last_error_log.begin());
+		m_last_error_log.push_back(_tLogLineStruct(level, sstr.str()));
+	}
 
 	if (!g_bRunAsDaemon)
 	{
@@ -183,6 +206,19 @@ void CLogger::LogNoLF(const _eLogLevel level, const char* logline, ...)
 		m_lastlog.erase(m_lastlog.begin());
 	m_lastlog.push_back(_tLogLineStruct(level,message));
 
+	if (level == LOG_STATUS)
+	{
+		if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_status_log.erase(m_last_status_log.begin());
+		m_last_status_log.push_back(_tLogLineStruct(level, message));
+	}
+	else if (level == LOG_ERROR)
+	{
+		if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_error_log.erase(m_last_error_log.begin());
+		m_last_error_log.push_back(_tLogLineStruct(level, message));
+	}
+
 	if (!g_bRunAsDaemon)
 	{
 		if ((level == LOG_NORM) || (level == LOG_STATUS))
@@ -246,14 +282,37 @@ void CLogger::LogSequenceAddNoLF(const char* logline)
 	m_sequencestring << logline;
 }
 
-std::list<CLogger::_tLogLineStruct> CLogger::GetLog()
+void CLogger::EnableLogTimestamps(const bool bEnableTimestamps)
+{
+	m_bEnableLogTimestamps = bEnableTimestamps;
+}
+
+std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
 	std::list<_tLogLineStruct> mlist;
 	std::deque<_tLogLineStruct>::const_iterator itt;
-	for (itt=m_lastlog.begin(); itt!=m_lastlog.end(); ++itt)
+
+	if (lType == LOG_NORM)
 	{
-		mlist.push_back(*itt);
-	};
+		for (itt = m_lastlog.begin(); itt != m_lastlog.end(); ++itt)
+		{
+			mlist.push_back(*itt);
+		};
+	}
+	else if (lType == LOG_STATUS)
+	{
+		for (itt = m_last_status_log.begin(); itt != m_last_status_log.end(); ++itt)
+		{
+			mlist.push_back(*itt);
+		};
+	}
+	else if (lType == LOG_ERROR)
+	{
+		for (itt = m_last_error_log.begin(); itt != m_last_error_log.end(); ++itt)
+		{
+			mlist.push_back(*itt);
+		};
+	}
 	return mlist;
 }

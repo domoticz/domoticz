@@ -33,7 +33,7 @@
 	<CommandClass id="133">
 		<!-- Groups and attributes based on http://www.pepper1.net/zwavedb/device/59 -->
 		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="Motion" auto="true"/>
+			<Group index="1" max_associations="5" label="Motion" />
 		</Associations>
 	</CommandClass>
 </Product>

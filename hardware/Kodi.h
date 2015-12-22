@@ -73,6 +73,8 @@ public:
 	void			Do_Work();
 	void			SendCommand(const std::string&);
 	void			SendCommand(const std::string&, const int iValue);
+	void			SetPlaylist(const std::string& playlist);
+	void			SetExecuteCommand(const std::string& command);
 	bool			SendShutdown();
 	void			StopRequest() { m_stoprequested = true; };
 	bool			IsBusy() { return m_Busy; };
@@ -98,11 +100,19 @@ private:
 	int				m_HwdID;
 	char			m_szDevID[40];
 	std::string		m_IP;
-	int				m_Port;
+	std::string		m_Port;
 
 	CKodiStatus		m_PreviousStatus;
 	CKodiStatus		m_CurrentStatus;
 	void			UpdateStatus();
+
+	std::string		m_PlaylistType;
+	std::string		m_Playlist;
+	int				m_PlaylistPosition;
+
+	std::string		m_ExecuteCommand;
+
+	std::string		m_RetainedData;
 
 	int				m_iTimeoutCnt;
 	int				m_iPollIntSec;
@@ -110,14 +120,14 @@ private:
 	std::string		m_sLastMessage;
 	boost::asio::io_service *m_Ios;
 	boost::asio::ip::tcp::socket *m_Socket;
-	boost::array<char, 4096> m_Buffer;
+	boost::array<char, 256> m_Buffer;
 };
 
 class CKodi : public CDomoticzHardwareBase
 {
 public:
 	CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms);
-	CKodi(const int ID);
+	explicit CKodi(const int ID);
 	~CKodi(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void AddNode(const std::string &Name, const std::string &IPAddress, const int Port);
@@ -127,6 +137,8 @@ public:
 	void SetSettings(const int PollIntervalsec, const int PingTimeoutms);
 	void Restart();
 	void SendCommand(const int ID, const std::string &command);
+	bool SetPlaylist(const int ID, const std::string &playlist);
+	bool SetExecuteCommand(const int ID, const std::string &command);
 private:
 	void Do_Work();
 

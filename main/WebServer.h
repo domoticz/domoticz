@@ -57,6 +57,7 @@ public:
 	char * SetP1USBType(WebEmSession & session, const request& req);
 	char * RestoreDatabase(WebEmSession & session, const request& req);
 	char * SBFSpotImportOldData(WebEmSession & session, const request& req);
+	char * SetCurrentCostUSBType(WebEmSession & session, const request& req);
 
 	cWebem *m_pWebEm;
 
@@ -99,8 +100,10 @@ private:
 	void Cmd_WOLClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_MySensorsGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_MySensorsGetChilds(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_MySensorsUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_MySensorsRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_MySensorsRemoveChild(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_MySensorsUpdateChild(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PingerSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PingerGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PingerAddNode(WebEmSession & session, const request& req, Json::Value &root);
@@ -146,6 +149,7 @@ private:
 	void Cmd_ChangePlanDeviceOrder(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetActualHistory(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetNewHistory(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetConfig(WebEmSession & session, const request& req, Json::Value &root);
@@ -286,6 +290,7 @@ private:
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
+	bool m_bIsSecure;
 
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="bool" index="29" genre="config" label="Load Sensing" size="1" value="False">
+			<Help>Turn on the module when the attached load is connected.</Help>
+		</Value>
+		<Value type="bool" index="5" genre="config" label="Ignore Start-Level (Receiving)" size="1" value="True">
+			<Help>This dimmer will always start dimming from its current level, ignoring any commanded start level.</Help>
+		</Value>
+  </CommandClass>
+  <!-- Set correct max level for COMMAND_CLASS_SWITCH_MULTILEVEL, the dimmer will ignore any commands to set value >99 -->
+  <CommandClass id="38">
+    <Value type="byte" genre="user" instance="1" index="0" label="Level" units="" min="0" max="99" value="0" />
+  </CommandClass>
+</Product>
+

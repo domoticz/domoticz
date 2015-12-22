@@ -40,8 +40,8 @@
 	<!-- COMMAND_CLASS_ASSOCIATION. Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="2">
-			<Group index="1" max_associations="1" label="Reports" auto="true" />
-			<Group index="2" max_associations="3" label="Basic" auto="true" />
+			<Group index="1" max_associations="1" label="Reports" />
+			<Group index="2" max_associations="3" label="Basic" />
 		</Associations>
 	</CommandClass>
 </Product>

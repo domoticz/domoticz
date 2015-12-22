@@ -10,7 +10,7 @@
 
 #define YOULESS_POLL_INTERVAL 10
 
-CYouLess::CYouLess(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string password) :
+CYouLess::CYouLess(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password) :
 m_szIPAddress(IPAddress),
 m_Password(CURLEncode::URLEncode(password))
 {
@@ -130,5 +130,5 @@ void CYouLess::GetMeterDetails()
 
 	m_meter.powerusage=atol(pusage.c_str());
 	m_meter.usagecurrent=atol(pcurrent.c_str());
-	sDecodeRXMessage(this, (const unsigned char *)&m_meter);//decode message
+	sDecodeRXMessage(this, (const unsigned char *)&m_meter, NULL, 255);
 }

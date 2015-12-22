@@ -76,6 +76,7 @@ namespace OpenZWave
 	private:
 		bool IsAuto()const{ return m_auto; }
 		void SetAuto( bool const _state ){ m_auto = _state; }
+		void CheckAuto();
 
 		bool IsMultiInstance()const{ return m_multiInstance; }
 		void SetMultiInstance( bool const _state ){ m_multiInstance = _state; }

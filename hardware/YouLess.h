@@ -15,7 +15,7 @@ typedef struct _tYouLessMeter {
 class CYouLess : public CDomoticzHardwareBase
 {
 public:
-	CYouLess(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string password);
+	CYouLess(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password);
 	~CYouLess(void);
 
 	YouLessMeter	m_meter;

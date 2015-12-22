@@ -673,7 +673,7 @@ class SerialException : public std::exception
   SerialException& operator=(const SerialException&);
   std::string e_what_;
 public:
-  SerialException (const char *description) {
+  explicit SerialException (const char *description) {
       std::stringstream ss;
       ss << "SerialException " << description << " failed.";
       e_what_ = ss.str();
@@ -730,7 +730,7 @@ class PortNotOpenedException : public std::exception
   const PortNotOpenedException& operator=(PortNotOpenedException);
   std::string e_what_;
 public:
-  PortNotOpenedException (const char * description)  {
+  explicit PortNotOpenedException (const char * description)  {
       std::stringstream ss;
       ss << "PortNotOpenedException " << description << " failed.";
       e_what_ = ss.str();

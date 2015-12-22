@@ -442,28 +442,35 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 {
 	std::vector<std::string> ret;
 
-	FILE *fp;
-
-	/* Open the command for reading. */
-#ifdef WIN32
-	fp = _popen(szCommand.c_str(), "r");
-#else
-	fp = popen(szCommand.c_str(), "r");
-#endif
-	if (fp != NULL) 
+	try
 	{
-		char path[1035];
-		/* Read the output a line at a time - output it. */
-		while (fgets(path, sizeof(path)-1, fp) != NULL)
-		{
-			ret.push_back(path);
-		}
-		/* close */
+		FILE *fp;
+
+		/* Open the command for reading. */
 #ifdef WIN32
-		_pclose(fp);
+		fp = _popen(szCommand.c_str(), "r");
 #else
-		pclose(fp);
+		fp = popen(szCommand.c_str(), "r");
 #endif
+		if (fp != NULL)
+		{
+			char path[1035];
+			/* Read the output a line at a time - output it. */
+			while (fgets(path, sizeof(path) - 1, fp) != NULL)
+			{
+				ret.push_back(path);
+			}
+			/* close */
+#ifdef WIN32
+			_pclose(fp);
+#else
+			pclose(fp);
+#endif
+		}
+	}
+	catch (...)
+	{
+		
 	}
 	return ret;
 }
@@ -566,6 +573,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeThermostat3:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
+	case pTypeHomeConfort:
 		bIsLightSwitch = true;
 		break;
 	case pTypeRadiator1:
@@ -573,4 +581,33 @@ bool IsLightOrSwitch(const int devType, const int subType)
 		break;
 	}
 	return bIsLightSwitch;
+}
+
+int MStoBeaufort(const float ms)
+{
+	if (ms < 0.3f)
+		return 0;
+	if (ms < 1.5f)
+		return 1;
+	if (ms < 3.3f)
+		return 2;
+	if (ms < 5.5f)
+		return 3;
+	if (ms < 8.0f)
+		return 4;
+	if (ms < 10.8f)
+		return 5;
+	if (ms < 13.9f)
+		return 6;
+	if (ms < 17.2f)
+		return 7;
+	if (ms < 20.7f)
+		return 8;
+	if (ms < 24.5f)
+		return 9;
+	if (ms < 28.4f)
+		return 10;
+	if (ms < 32.6f)
+		return 11;
+	return 12;
 }

@@ -88,7 +88,7 @@ public:
 	};
 	
 	CEvohomeID():m_nID(0){}
-	CEvohomeID(unsigned int nID){SetID(nID);}
+	CEvohomeID(unsigned int nID) {SetID(nID); }
 	CEvohomeID(unsigned char idType, unsigned int idAddr){SetID(idType,idAddr);}
 	CEvohomeID(const std::string &szID){SetID(szID);}
 	CEvohomeID(const unsigned char* msg, unsigned char nOfs){Decode(msg,nOfs);}

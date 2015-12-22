@@ -4,9 +4,15 @@
 #include <vector>
 
 extern "C" {
-#include "../lua/src/lua.h"    
+#ifdef WITH_EXTERNAL_LUA
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+#else
+#include "../lua/src/lua.h"
 #include "../lua/src/lualib.h"
 #include "../lua/src/lauxlib.h"
+#endif
 }
 
 class CEventSystem
@@ -81,7 +87,7 @@ private:
 	void GetCurrentStates();
 	void GetCurrentMeasurementStates();
 	void GetCurrentUserVariables();
-	std::string UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel);
+	std::string UpdateSingleState(const unsigned long long ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
 	void EvaluateEvent(const std::string &reason);
 	void EvaluateEvent(const std::string &reason, const unsigned long long varId);
 	void EvaluateEvent(const std::string &reason, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
@@ -98,7 +104,7 @@ private:
 	void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
-	std::string nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue);
+	std::string nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
 	static int l_domoticz_print(lua_State* lua_state);
 	void SendEventNotification(const std::string &Subject, const std::string &Body, const std::string &ExtraData, const int Priority, const std::string &Sound);
 	void OpenURL(const std::string &URL);
@@ -106,6 +112,10 @@ private:
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	void UpdateDevice(const std::string &DevParams);
+	lua_State *CreateBlocklyLuaState();
+
+	std::string ParseBlocklyString(const std::string &oString);
+
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
 	
@@ -117,7 +127,8 @@ private:
 	std::map<std::string, float> m_rainValuesByName;
 	std::map<std::string, float> m_rainLastHourValuesByName;
 	std::map<std::string, float> m_uvValuesByName;
-	std::map<std::string, unsigned char> m_humValuesByName;
+	std::map<std::string, float> m_weatherValuesByName;
+	std::map<std::string, int>	 m_humValuesByName;
 	std::map<std::string, float> m_baroValuesByName;
 	std::map<std::string, float> m_utilityValuesByName;
 	std::map<std::string, float> m_winddirValuesByName;
@@ -129,7 +140,8 @@ private:
 	std::map<unsigned long long, float> m_rainValuesByID;
 	std::map<unsigned long long, float> m_rainLastHourValuesByID;
 	std::map<unsigned long long, float> m_uvValuesByID;
-	std::map<unsigned long long, unsigned char> m_humValuesByID;
+	std::map<unsigned long long, float> m_weatherValuesByID;
+	std::map<unsigned long long, int>	m_humValuesByID;
 	std::map<unsigned long long, float> m_baroValuesByID;
 	std::map<unsigned long long, float> m_utilityValuesByID;
 	std::map<unsigned long long, float> m_winddirValuesByID;

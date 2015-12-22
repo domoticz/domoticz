@@ -36,3 +36,6 @@ bool is_number(const std::string& s);
 void padLeft(std::string &str, const size_t num, const char paddingChar = '0');
 
 bool IsLightOrSwitch(const int devType, const int subType);
+
+int MStoBeaufort(const float ms);
+

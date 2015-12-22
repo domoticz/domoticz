@@ -43,7 +43,7 @@ static Model models[TOT_MODELS] =
 	{ 72, "Integra 256 Plus", 256, 256 },
 };
 
-#define MAX_LENGTH_OF_ANSWER 63 * 2 + 4
+#define MAX_LENGTH_OF_ANSWER 63 * 2 + 4 + 1
 
 const unsigned char partitions[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
 
@@ -173,7 +173,7 @@ void SatelIntegra::Do_Work()
 			if (sec_counter % SATEL_POLL_INTERVAL == 0)
 			{
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: fetching data");
+	_log.Log(LOG_STATUS, "Satel Integra: fetching changed data");
 #endif
 
 				if (IsNewData())
@@ -703,7 +703,8 @@ void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool viol
     _log.Log(LOG_STATUS, "Satel Integra: Report Zone %d = %d", zone.id, zone.intval1);
   }
   
-	sDecodeRXMessage(this, (const unsigned char *)&zone);}
+  sDecodeRXMessage(this, (const unsigned char *)&zone, NULL, 255);
+}
 
 void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
 {
@@ -722,7 +723,7 @@ void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
 		output.battery_level = 0;
 		output.rssi = 12;
 		output.seqnbr = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&output);
+		sDecodeRXMessage(this, (const unsigned char *)&output, NULL, 255);
 	}
 	else
 	{
@@ -749,7 +750,7 @@ void SatelIntegra::ReportArmState(const bool isArm)
 	arm.battery_level = 0x0f;
 	arm.rssi = 12;
 	arm.seqnbr = 0;
-	sDecodeRXMessage(this, (const unsigned char *)&arm);
+	sDecodeRXMessage(this, (const unsigned char *)&arm, NULL, 255);
 }
 
 void SatelIntegra::ReportAlarm(const bool isAlarm)
@@ -783,7 +784,7 @@ void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 }
 
 bool SatelIntegra::ArmPartitions(const unsigned char* partitions, const unsigned int mode)
@@ -1085,20 +1086,33 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 
 	int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER, 0);
 
+	// remove special chars
+	int offset = 0;
+	for (int i = 0; i < ret; i++) 
+	{
+		buffer[i] = buffer[i + offset];
+		if (buffer[i] == 0xFE && buffer[i + 1] == 0xF0)
+		{
+			++offset;
+			ret--;
+		}
+	}
+	buffer[ret] = 0x00; // not needed but look nice :)
+
 	if (ret > 6)
 	{
-		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ret - 2] == 0xFE)
+		if (buffer[0] == 0xFE && buffer[1] == 0xFE && buffer[ret - 1] == 0x0D && buffer[ret - 2] == 0xFE) // check prefix and sufix
 		{
 			unsigned int answerLength = 0;
-			for (int i = 0; i < ret - 6; i++)
-				if (buffer[i + 2] != 0xF0 || buffer[i + 1] != 0xFE) // skip special value
-				{
-					answer[answerLength] = buffer[i + 2];
-					answerLength++;
-				}
+			for (int i = 0; i < ret - 6; i++) // skip prefix, suffix and crc
+			{
+				answer[i] = buffer[i + 2];
+			}
+			answerLength = ret - 6; // answer = frame - prefix - suffix - crc
+
 			unsigned short crc;
 			calculateCRC(answer, answerLength, crc);
-			if ((crc & 0xFF) == buffer[ret - 3] && (crc >> 8) == buffer[ret - 4])
+			if ((crc & 0xFF) == buffer[ret - 3] && (crc >> 8) == buffer[ret - 4]) // check crc
 			{
 				if (buffer[2] == 0xEF)
 				{

@@ -37,7 +37,7 @@
   <CommandClass id="133">
     <!-- Groups and attributes based on http://www.pepper1.net/zwavedb/device/59 -->
     <Associations num_groups="1">
-      <Group index="1" max_associations="4" label="Thermostat Mode Set" auto="true"/>
+      <Group index="1" max_associations="4" label="Thermostat Mode Set" />
       <Group index="2" max_associations="4" label="Binary Switch Set" auto="true"/>
       <Group index="3" max_associations="4" label="Unsolicited Battery Level Reports" auto="true"/>
       <Group index="4" max_associations="4" label="Thermostat Set Point Reports" auto="true"/>

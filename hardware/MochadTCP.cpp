@@ -131,6 +131,7 @@ bool MochadTCP::StartHardware()
 
 bool MochadTCP::StopHardware()
 {
+	m_stoprequested = true;
 	if (isConnected())
 	{
 		try {
@@ -222,7 +223,25 @@ void MochadTCP::OnError(const std::exception e)
 
 void MochadTCP::OnError(const boost::system::error_code& error)
 {
-	_log.Log(LOG_ERROR, "Mochad: Error: %s", error.message().c_str());
+	if (
+		(error == boost::asio::error::address_in_use) ||
+		(error == boost::asio::error::connection_refused) ||
+		(error == boost::asio::error::access_denied) ||
+		(error == boost::asio::error::host_unreachable) ||
+		(error == boost::asio::error::timed_out)
+		)
+	{
+		_log.Log(LOG_STATUS, "Mochad: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	}
+	else if (
+		(error == boost::asio::error::eof) ||
+		(error == boost::asio::error::connection_reset)
+		)
+	{
+		_log.Log(LOG_STATUS, "Mochad: Connection reset!");
+	}
+	else
+		_log.Log(LOG_ERROR, "Mochad: %s", error.message().c_str());
 }
 
 bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
@@ -233,9 +252,9 @@ bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pdata[1] == pTypeInterfaceControl && pdata[2] == sTypeInterfaceCommand && pdata[4] == cmdSTATUS) {
 		sprintf (s_buffer,"ST\n");
 	} else if (pdata[1] == pTypeLighting1 && pdata[2] == sTypeX10 && pdata[6] == light1_sOn) {
-		sprintf (s_buffer,"PL %c%d on\n",(char)(pdata[4]), pdata[5]);
+		sprintf (s_buffer,"RF %c%d on\n",(char)(pdata[4]), pdata[5]);
 	} else if (pdata[1] == pTypeLighting1 && pdata[2] == sTypeX10 && pdata[6] == light1_sOff) {
-		sprintf (s_buffer,"PL %c%d off\n",(char)(pdata[4]), pdata[5]);
+		sprintf (s_buffer,"RF %c%d off\n",(char)(pdata[4]), pdata[5]);
 	} else {
 //			case light1_sDim:
 //			case light1_sBright:
@@ -328,7 +347,7 @@ void MochadTCP::MatchLine()
 				return;
 			if (!('0' <= m_mochadbuffer[j] && m_mochadbuffer[j] <= '1')) goto onError;
 			m_mochad.LIGHTING1.cmnd = m_mochadbuffer[j++] - '0';
-			sDecodeRXMessage(this, (const unsigned char *)&m_mochad);//decode message
+			sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
 			if (!(','==  m_mochadbuffer[j++])) return;
 		}
 		break;
@@ -366,7 +385,7 @@ checkFunc:
 			if (selected[currentHouse][k] >0) {
 				m_mochad.LIGHTING1.housecode = currentHouse+'A'; 
 				m_mochad.LIGHTING1.unitcode = k; 
-				sDecodeRXMessage(this, (const unsigned char *)&m_mochad);//decode message			
+				sDecodeRXMessage(this, (const unsigned char *)&m_mochad, NULL, 255);
 				selected[currentHouse][k] = 0;
 			}
 		}
@@ -402,7 +421,7 @@ checkFunc:
 					m_mochadsec.SECURITY1.battery_level = 1;
 				pchar = strtok(NULL, " _");
 			}
-			m_mochadsec.SECURITY1.rssi = 12; // signal strength ??
+			m_mochadsec.SECURITY1.rssi = 12; // signal strength ?? 12 = no signal strength
 		}
 		else if (strstr((const char *)&m_mochadbuffer[j], "KR10A"))
 		{
@@ -427,7 +446,7 @@ checkFunc:
 					m_mochadsec.SECURITY1.status = sStatusLightOff;
 				pchar = strtok(NULL, " _");
 			}
-			m_mochadsec.SECURITY1.rssi = 12; // signal strngth ??
+			m_mochadsec.SECURITY1.rssi = 12;
 		}
 		else if (strstr((const char *)&m_mochadbuffer[j], "MS10A"))
 		{
@@ -448,12 +467,12 @@ checkFunc:
 					m_mochadsec.SECURITY1.battery_level = 1;
 				pchar = strtok(NULL, " _");
 			}
-			m_mochadsec.SECURITY1.rssi = 12; // signal strength ??
+			m_mochadsec.SECURITY1.rssi = 12;
 		}
 		else
 			goto onError;
 
-		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec);//decode message
+		sDecodeRXMessage(this, (const unsigned char *)&m_mochadsec, NULL, 255);
 		break;
 	}
 	return;

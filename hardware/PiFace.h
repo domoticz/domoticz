@@ -108,7 +108,7 @@ class CIOPort
 class CPiFace : public CDomoticzHardwareBase
 {
 public:
-	CPiFace(const int ID);
+	explicit CPiFace(const int ID);
 	~CPiFace();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void CallBackSendEvent(const unsigned char *pEventPacket, const unsigned int PacketLength);

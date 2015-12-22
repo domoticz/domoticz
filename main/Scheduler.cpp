@@ -507,6 +507,13 @@ void CScheduler::CheckSchedules()
 										fLevel = 100;
 									ilevel = int(fLevel);
 								}
+							} else if (switchtype == STYPE_Selector) {
+								if (itt->timerCmd == TCMD_ON) {
+									switchcmd = "Set Level";
+									ilevel = itt->Level;
+								} else if (itt->timerCmd == TCMD_OFF) {
+									ilevel = 0; // force level to a valid value for Selector
+								}
 							}
 							if (!m_mainworker.SwitchLight(itt->RowID, switchcmd, ilevel, itt->Hue,false,0))
 							{

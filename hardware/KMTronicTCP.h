@@ -7,7 +7,7 @@
 class KMTronicTCP : public KMTronicBase
 {
 public:
-	KMTronicTCP(const int ID, const std::string IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
+	KMTronicTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password);
 	~KMTronicTCP(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 public:

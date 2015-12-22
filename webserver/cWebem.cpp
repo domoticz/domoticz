@@ -58,6 +58,7 @@ m_actTheme("")
 {
 	m_authmethod=AUTH_LOGIN;
 	mySessionStore = NULL;
+	myNextSessionCleanup = mytime(NULL) + 15 * 60; // in 15 minutes
 }
 
 /**
@@ -933,6 +934,28 @@ static int check_password(struct ah *ah, const std::string &ha1, const std::stri
 	return 0;
 }
 
+void cWebem::CleanTimedOutSessions() {
+
+	// TODO : Check if a mutex and an atomic<unsigned long> are needed in case multiple requests are received at the same time.
+
+	time_t now = mytime(NULL);
+	if (myNextSessionCleanup < now) {
+		myNextSessionCleanup = now + 15 * 60; // in 15 minutes
+		std::vector<std::string> ssids;
+		std::map<std::string, WebEmSession>::iterator itt;
+		for (itt=m_sessions.begin(); itt!=m_sessions.end(); ++itt) {
+			if (itt->second.timeout < now) {
+				ssids.push_back(itt->second.id);
+			}
+		}
+		std::vector<std::string>::iterator ssitt;
+		for (ssitt=ssids.begin(); ssitt!=ssids.end(); ++ssitt) {
+			std::string ssid = *ssitt;
+			m_sessions.erase(ssid);
+		}
+	}
+}
+
 // Return 1 on success. Always initializes the ah structure.
 int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 {
@@ -1064,10 +1087,6 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 	std::string host=sHost;
 	std::vector<_tIPNetwork>::const_iterator itt;
 
-	/* RK, check IPv6 prefix */
-	if (host.substr(0, 7) == "::ffff:") {
-		host = host.substr(7);
-	}
 	if (host=="127.0.0.1")
 	{
 		//We could be using a proxy server
@@ -1298,8 +1317,21 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		// Parse session id and its expiration date
 		std::string scookie = cookie_header;
 		int fpos = scookie.find("SID=");
-		int upos = scookie.find("_");
-		int ppos = scookie.find(".");
+		if (fpos != std::string::npos)
+		{
+			scookie = scookie.substr(fpos);
+			fpos = 0;
+			size_t epos = scookie.find(';');
+			if (epos != std::string::npos)
+			{
+				scookie = scookie.substr(0, epos);
+			}
+		}
+
+		int upos = scookie.find("_", fpos);
+		int ppos = scookie.find(".", upos);
+
+		time_t now = mytime(NULL);
 		if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 		{
 			sSID = scookie.substr(fpos + 4, upos-fpos-4);
@@ -1311,21 +1343,25 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 			sstr << szTime;
 			sstr >> stime;
 
-			time_t now = mytime(NULL);
 			expired = stime < now;
 		}
 
 		if (!(sSID.empty() || sAuthToken.empty() || szTime.empty())) {
 			std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
+			if (itt != myWebem->m_sessions.end() && (itt->second.expires < now)) {
+				// Check if session stored in memory is not expired (prevent from spoofing expiration time)
+				expired = true;
+			}
 			if (expired)
 			{
-				//timeout, remove session
+				//expired session, remove session
 				m_failcounter = 0;
 				send_remove_cookie(rep);
 				if (itt != myWebem->m_sessions.end())
 				{
-					// session exists
+					// session exists (delete it from memory and database)
 					myWebem->m_sessions.erase(itt);
+					removeAuthToken(sSID);
 					rep = reply::stock_reply(reply::unauthorized);
 				}
 				if (myWebem->m_authmethod == AUTH_BASIC)
@@ -1342,6 +1378,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				session.id = sSID;
 			}
 			session.auth_token = sAuthToken;
+			session.removecookie = false;
 			// Check authen_token and restore session
 			if (checkAuthToken(session)) {
 				// user is authenticated
@@ -1434,6 +1471,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 	if (session.username.empty()) {
 		// Restore session if user exists and session does not already exist
 		bool userExists = false;
+		bool sessionExpires = false;
 		session.username = storedSession.username;
 		session.expires = storedSession.expires;
 		std::vector<_tWebUserPassword>::iterator ittu;
@@ -1445,9 +1483,12 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 			}
 		}
 
-		if (!userExists) {
+		time_t now = mytime(NULL);
+		sessionExpires = session.expires < now;
+
+		if (!userExists || sessionExpires) {
 #ifdef _DEBUG
-			_log.Log(LOG_ERROR, "CheckAuthToken(%s_%s) : cannot restore session user not found", session.id.c_str(), session.auth_token.c_str());
+			_log.Log(LOG_ERROR, "CheckAuthToken(%s_%s) : cannot restore session, user not found or session expired", session.id.c_str(), session.auth_token.c_str());
 #endif
 			removeAuthToken(session.id);
 			return false;
@@ -1481,13 +1522,13 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 	return buffer;
 }
 
-void cWebemRequestHandler::handle_request( const std::string &sHost, const request& req, reply& rep)
+void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
 	//_log.Log(LOG_NORM, "www-request: %s", req.uri.c_str());
 
 	// Initialize session
 	WebEmSession session;
-	session.remote_host = sHost;
+	session.remote_host = req.host;
 	session.isnew = false;
 	session.removecookie = false;
 	session.forcelogin = false;
@@ -1513,7 +1554,7 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		{
 			std::string scookie = cookie;
 			int fpos = scookie.find("SID=");
-			int upos = scookie.find("_");
+			int upos = scookie.find("_", fpos);
 			if ((fpos != std::string::npos) && (upos != std::string::npos))
 			{
 				std::string sSID = scookie.substr(fpos + 4, upos-fpos-4);
@@ -1554,7 +1595,15 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 	{
 		// do normal handling
-		request_handler::handle_request( sHost, requestCopy, rep);
+		try
+		{
+			request_handler::handle_request(requestCopy, rep);
+		}
+		catch (...)
+		{
+			rep = reply::stock_reply(reply::internal_server_error);
+			return;
+		}
 
 		if (rep.headers[1].value == "text/html" 
 			|| rep.headers[1].value == "text/plain" 
@@ -1597,13 +1646,18 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 			CompressWebOutput(req,rep);
 	}
 
+	// Set timeout to make session in use
+	session.timeout = mytime(NULL) + SESSION_TIMEOUT;
+	// Clean up timed out sessions
+	myWebem->CleanTimedOutSessions();
+
 	if (session.isnew == true)
 	{
 		// Create a new session ID
 		session.id = generateSessionID();
-		session.expires = mytime(NULL) + SESSION_TIMEOUT;
+		session.expires = session.timeout;
 		if (session.rememberme) {
-			//Extend session by a year
+			// Extend session by a year
 			session.expires += (86400 * 365);
 		}
 		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
@@ -1623,10 +1677,10 @@ void cWebemRequestHandler::handle_request( const std::string &sHost, const reque
 		std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(session.id);
 		if (itt != myWebem->m_sessions.end())
 		{
-			time_t atime = mytime(NULL);
-			if (myWebem->m_sessions[session.id].expires - 60 < atime)
+			time_t now = mytime(NULL);
+			if (myWebem->m_sessions[session.id].expires - 60 < now)
 			{
-				myWebem->m_sessions[session.id].expires = atime + SESSION_TIMEOUT;
+				myWebem->m_sessions[session.id].expires = now + SESSION_TIMEOUT;
 				myWebem->m_sessions[session.id].auth_token = generateAuthToken(myWebem->m_sessions[session.id], req); // do it after expires to save it also
 				send_cookie(rep, myWebem->m_sessions[session.id]);
 			}

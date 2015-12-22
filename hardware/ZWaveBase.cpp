@@ -29,6 +29,11 @@ ZWaveBase::ZWaveBase()
 	m_bControllerCommandInProgress=false;
 	m_bControllerCommandCanceled = false;
 	m_updateTime = 0;
+	m_bHaveLastIncludedNodeInfo = false;
+	m_LastRemovedNode = -1;
+	m_ControllerCommandStartTime = 0;
+	m_bInitState = true;
+	m_stoprequested = false;
 }
 
 
@@ -183,10 +188,10 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		)
 		return; //only for switches
 
-	m_iLastSendNodeBatteryValue = 255;
+	int BatLevel = 255;
 	if (pDevice->hasBattery)
 	{
-		m_iLastSendNodeBatteryValue = pDevice->batValue;
+		BatLevel = pDevice->batValue;
 	}
 
 	if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
@@ -227,7 +232,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.id = lID;
 		lcmd.command = Limitless_LedOff;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, BatLevel);
 
 		//Set Name
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
@@ -302,7 +307,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.filler = 0;
 		lcmd.LIGHTING2.rssi = 12;
 
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, BatLevel);
 
 		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
 
@@ -338,10 +343,10 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 
 	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
 
-	m_iLastSendNodeBatteryValue = 255;
+	int BatLevel = 255;
 	if (pDevice->hasBattery)
 	{
-		m_iLastSendNodeBatteryValue = pDevice->batValue;
+		BatLevel = pDevice->batValue;
 	}
 
 	if ((pDevice->devType==ZDTYPE_SWITCH_NORMAL)||(pDevice->devType==ZDTYPE_SWITCH_DIMMER))
@@ -381,7 +386,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.level=level;
 		lcmd.LIGHTING2.filler=0;
 		lcmd.LIGHTING2.rssi=12;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, BatLevel);
 		return;
 	}
 	else if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
@@ -421,7 +426,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		else
 			lcmd.command = Limitless_LedOn;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_POWER)
 	{
@@ -432,23 +437,28 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		umeter.id4 = ID4;
 		umeter.dunit = pDevice->scaleID;
 		umeter.fusage = pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char *)&umeter);
+		sDecodeRXMessage(this, (const unsigned char *)&umeter, NULL, BatLevel);
 
 		//Search Energy Device
-		const _tZWaveDevice *pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
+		const _tZWaveDevice *pEnergyDevice;
+		pEnergyDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWERENERGYMETER);
 		if (pEnergyDevice == NULL)
 		{
-			pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWERENERGYMETER);
+			pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWERENERGYMETER);
 			if (pEnergyDevice == NULL)
 			{
-				if (
-					(pDevice->Manufacturer_id == 0x010F) &&
-					(pDevice->Product_type == 0x0600) &&
-					(pDevice->Product_id == 0x1000)
-					)
+				pEnergyDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, ZDTYPE_SENSOR_POWERENERGYMETER);
+				if (pEnergyDevice == NULL)
 				{
-					//Fibaro Wallplug, find energy sensor
-					pEnergyDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
+					if (
+						(pDevice->Manufacturer_id == 0x010F) &&
+						(pDevice->Product_type == 0x0600) &&
+						(pDevice->Product_id == 0x1000)
+						)
+					{
+						//Fibaro Wallplug, find energy sensor
+						pEnergyDevice = FindDevice(pDevice->nodeID, -1, -1, ZDTYPE_SENSOR_POWERENERGYMETER);
+					}
 				}
 			}
 		}
@@ -458,6 +468,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			{
 				SendKwhMeter(pEnergyDevice->nodeID, pEnergyDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, pEnergyDevice->floatValue / pEnergyDevice->scaleMultiply, "kWh Meter");
 			}
+		}
+		else
+		{
+			//No kWh meter, send as normal Power device
+			SendWattMeter(pDevice->nodeID, pDevice->instanceID, (pDevice->hasBattery) ? pDevice->batValue : 255, pDevice->floatValue, "Power Meter");
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_POWERENERGYMETER)
@@ -479,7 +494,9 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		}
 		else
 		{
-			pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
+			pPowerDevice = FindDeviceEx(pDevice->nodeID, pDevice->orgInstanceID, ZDTYPE_SENSOR_POWER);
+			if (pPowerDevice == NULL)
+				pPowerDevice = FindDevice(pDevice->nodeID, pDevice->instanceID, pDevice->indexID, COMMAND_CLASS_METER, ZDTYPE_SENSOR_POWER);
 		}
 		if (pPowerDevice == NULL)
 		{
@@ -508,7 +525,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id=ID4;
 		gDevice.floatval1=pDevice->floatValue;
 		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_PERCENTAGE)
 	{
@@ -517,7 +534,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id=ID4;
 		gDevice.floatval1=pDevice->floatValue;
 		gDevice.intval1=(int)(ID1<<24)|(ID2<<16)|(ID3<<8)|ID4;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_AMPERE)
 	{
@@ -538,7 +555,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		{
 			tsen.CURRENT.battery_level=Convert_Battery_To_PercInt(pDevice->batValue);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.CURRENT, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_UV)
 	{
@@ -576,7 +593,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 			tsen.TEMP_HUM.humidity=(BYTE)pHumDevice->intvalue;
 			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, BatLevel);
 		}
 		else
 		{
@@ -598,7 +615,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP.temperatureh=(BYTE)(at10/256);
 			at10-=(tsen.TEMP.temperatureh*256);
 			tsen.TEMP.temperaturel=(BYTE)(at10);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, BatLevel);
 		}
 	}
 	else if (pDevice->devType==ZDTYPE_SENSOR_HUMIDITY)
@@ -641,7 +658,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.TEMP_HUM.temperaturel=(BYTE)(at10);
 			tsen.TEMP_HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.TEMP_HUM.humidity_status=Get_Humidity_Level(tsen.TEMP_HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM, NULL, BatLevel);
 		}
 		else
 		{
@@ -659,7 +676,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			}
 			tsen.HUM.humidity=(BYTE)pDevice->intvalue;
 			tsen.HUM.humidity_status=Get_Humidity_Level(tsen.HUM.humidity);
-			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP);
+			sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, BatLevel);
 		}
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_VELOCITY)
@@ -714,7 +731,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 			tsen.WIND.temperaturel = (BYTE)(at10);
 			tsen.WIND.chilll = (BYTE)(at10);
 		}
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND);
+		sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_BAROMETER)
 	{
@@ -752,7 +769,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		lmeter.battery_level=255;
 		if (pDevice->hasBattery)
 			lmeter.battery_level=pDevice->batValue;
-		sDecodeRXMessage(this, (const unsigned char *)&lmeter);
+		sDecodeRXMessage(this, (const unsigned char *)&lmeter, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_GAS)
 	{
@@ -761,7 +778,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		m_p1gas.subtype = sTypeP1Gas;
 		m_p1gas.gasusage = (unsigned long)(pDevice->floatValue * 1000);
 		m_p1gas.ID = lID;
-		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas);
+		sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
 	{
@@ -787,7 +804,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		if (pDevice->hasBattery)
 			tmeter.battery_level=pDevice->batValue;
 		tmeter.temp=pDevice->floatValue;
-		sDecodeRXMessage(this, (const unsigned char *)&tmeter);
+		sDecodeRXMessage(this, (const unsigned char *)&tmeter, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_CLOCK)
 	{
@@ -796,7 +813,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_MODE)
 	{
@@ -805,7 +822,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_THERMOSTAT_FAN_MODE)
 	{
@@ -814,7 +831,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		gDevice.id = ID4;
 		gDevice.intval1 = (int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4;
 		gDevice.intval2 = pDevice->intvalue;
-		sDecodeRXMessage(this, (const unsigned char *)&gDevice);
+		sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, BatLevel);
 	}
 }
 
@@ -827,6 +844,22 @@ ZWaveBase::_tZWaveDevice* ZWaveBase::FindDevice(const int nodeID, const int inst
 			(itt->second.nodeID == nodeID) &&
 			(itt->second.instanceID == instanceID) &&
 			(itt->second.indexID == indexID)
+			)
+			return &itt->second;
+	}
+	return NULL;
+}
+
+//Used for power/energy devices
+ZWaveBase::_tZWaveDevice* ZWaveBase::FindDeviceEx(const int nodeID, const int instanceID, const _eZWaveDeviceType devType)
+{
+	std::map<std::string, _tZWaveDevice>::iterator itt;
+	for (itt = m_devices.begin(); itt != m_devices.end(); ++itt)
+	{
+		if (
+			(itt->second.nodeID == nodeID) &&
+			(itt->second.instanceID == instanceID) &&
+			(itt->second.devType == devType)
 			)
 			return &itt->second;
 	}
@@ -870,7 +903,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 
 	const _tZWaveDevice* pDevice=NULL;
 
-	tRBUF *pSen=(tRBUF*)pdata;
+	const tRBUF *pSen= reinterpret_cast<const tRBUF*>(pdata);
 
 	unsigned char packettype=pSen->ICMND.packettype;
 	unsigned char subtype=pSen->ICMND.subtype;
@@ -913,13 +946,14 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					svalue=255;
 				return SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 			}
+			_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+			return false;
 		}
 	}
 	else if ((packettype==pTypeThermostat)&&(subtype==sTypeThermSetpoint))
 	{
 		//Set Point
-		_tThermostat *pMeter=(_tThermostat *)pSen;
-
+		const _tThermostat *pMeter= reinterpret_cast<const _tThermostat *>(pSen);
 		int nodeID=(pMeter->id2<<8)|pMeter->id3;
 		int instanceID=pMeter->id4;
 		int indexID=pMeter->id1;
@@ -929,11 +963,14 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		if (pDevice)
 		{
 			SetThermostatSetPoint(nodeID,instanceID,pDevice->commandClassID,pMeter->temp);
+			return true;
 		}
+		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveClock))
 	{
-		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice *>(pSen);
 		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
@@ -952,11 +989,14 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			int minute = tintval;
 
 			SetClock(nodeID, instanceID, pDevice->commandClassID, day, hour, minute);
+			return true;
 		}
+		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatMode))
 	{
-		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice *>(pSen);
 		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
@@ -971,11 +1011,14 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			int tMode = pMeter->intval2;
 			SetThermostatMode(nodeID, instanceID, pDevice->commandClassID, tMode);
+			return true;
 		}
+		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 	else if ((packettype == pTypeGeneral) && (subtype == sTypeZWaveThermostatFanMode))
 	{
-		_tGeneralDevice *pMeter = (_tGeneralDevice*)pSen;
+		const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice *>(pSen);
 		unsigned char ID1 = (unsigned char)((pMeter->intval1 & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pMeter->intval1 & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pMeter->intval1 & 0x0000FF00) >> 8);
@@ -990,11 +1033,14 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			int tMode = pMeter->intval2;
 			SetThermostatFanMode(nodeID, instanceID, pDevice->commandClassID, tMode);
+			return true;
 		}
+		_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+		return false;
 	}
 	else if (packettype == pTypeLimitlessLights)
 	{
-		_tLimitlessLights *pLed = (_tLimitlessLights*)pSen;
+		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pSen);
 		unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
@@ -1132,6 +1178,11 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 					_log.Log(LOG_NORM, "Red: %03d, Green:%03d, Blue:%03d", red, green, blue);
 					return true;
 				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "ZWave: Node not found! (NodeID: %d, 0x%02x)", nodeID, nodeID);
+				return false;
 			}
 		}
 	}
