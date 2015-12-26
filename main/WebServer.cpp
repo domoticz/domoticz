@@ -3043,7 +3043,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetTimerList";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Days FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d) ORDER BY d.[Name], t.Time",
+				result = m_sql.safe_query("SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d) ORDER BY d.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
 				if (result.size() > 0)
 				{
@@ -3052,6 +3052,10 @@ namespace http {
 					for (itt = result.begin(); itt != result.end(); ++itt)
 					{
 						std::vector<std::string> sd = *itt;
+
+						unsigned char iLevel = atoi(sd[8].c_str());
+						if (iLevel == 0)
+							iLevel = 100;
 
 						int iTimerType = atoi(sd[6].c_str());
 						std::string sdate = sd[4];
@@ -3066,16 +3070,18 @@ namespace http {
 						else
 							sdate = "";
 
-						root["result"][ii]["ID"] = sd[0];
-						root["result"][ii]["Active"] = sd[1];
+						root["result"][ii]["idx"] = sd[0];
+						root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
 						root["result"][ii]["Name"] = sd[2];
 						root["result"][ii]["DeviceRowID"] = sd[3];
 						root["result"][ii]["Date"] = sdate;
 						root["result"][ii]["Time"] = sd[5];
 						root["result"][ii]["Type"] = iTimerType;
-						root["result"][ii]["Cmd"] = sd[7];
-						root["result"][ii]["Level"] = sd[8];
-						root["result"][ii]["Days"] = sd[9];
+						root["result"][ii]["Cmd"] = atoi(sd[7].c_str());
+						root["result"][ii]["Level"] = iLevel;
+						root["result"][ii]["Hue"] = atoi(sd[9].c_str());
+						root["result"][ii]["Days"] = atoi(sd[10].c_str());
+						root["result"][ii]["Randomness"] = (atoi(sd[11].c_str()) == 0) ? "false" : "true";
 						ii++;
 					}
 				}
@@ -3085,7 +3091,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetSceneTimerList";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, s.[Name], t.SceneRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Days FROM SceneTimers as t, Scenes as s WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d) ORDER BY s.[Name], t.Time",
+				result = m_sql.safe_query("SELECT t.ID, t.Active, s.[Name], t.SceneRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness FROM SceneTimers as t, Scenes as s WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d) ORDER BY s.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
 				if (result.size() > 0)
 				{
@@ -3094,6 +3100,10 @@ namespace http {
 					for (itt = result.begin(); itt != result.end(); ++itt)
 					{
 						std::vector<std::string> sd = *itt;
+
+						unsigned char iLevel = atoi(sd[8].c_str());
+						if (iLevel == 0)
+							iLevel = 100;
 
 						int iTimerType = atoi(sd[6].c_str());
 						std::string sdate = sd[4];
@@ -3108,16 +3118,18 @@ namespace http {
 						else
 							sdate = "";
 
-						root["result"][ii]["ID"] = sd[0];
-						root["result"][ii]["Active"] = sd[1];
+						root["result"][ii]["idx"] = sd[0];
+						root["result"][ii]["Active"] = (atoi(sd[1].c_str()) == 0) ? "false" : "true";
 						root["result"][ii]["Name"] = sd[2];
 						root["result"][ii]["SceneRowID"] = sd[3];
 						root["result"][ii]["Date"] = sdate;
 						root["result"][ii]["Time"] = sd[5];
 						root["result"][ii]["Type"] = iTimerType;
-						root["result"][ii]["Cmd"] = sd[7];
-						root["result"][ii]["Level"] = sd[8];
-						root["result"][ii]["Days"] = sd[9];
+						root["result"][ii]["Cmd"] = atoi(sd[7].c_str());
+						root["result"][ii]["Level"] = iLevel;
+						root["result"][ii]["Hue"] = atoi(sd[9].c_str());
+						root["result"][ii]["Days"] = atoi(sd[10].c_str());
+						root["result"][ii]["Randomness"] = (atoi(sd[11].c_str()) == 0) ? "false" : "true";
 						ii++;
 					}
 				}
