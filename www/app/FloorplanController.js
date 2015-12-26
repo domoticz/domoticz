@@ -88,6 +88,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
+			$("#copyright").attr("style","position:fixed");
 		}
 
 		ImgLoaded = function(tagName) {
@@ -490,8 +491,19 @@ define(['app'], function (app) {
 					document.removeEventListener('touchend', FPtouchend);
 					$( window ).off('resize');
 					$("body").off('pageexit').css('overflow','');
-					$("#fpwrapper").attr("style","display:none;");
+		
+					//Make vertical scrollbar disappear
+                    $("#fpwrapper").attr("style","display:none;");
                     $("#floorplancontent").addClass("container ng-scope").attr("style","");
+
+                    //Move nav bar with Back and Report button down
+                    if ($(".navbar").css('display')!='none') {
+						$("#floorplancontent").offset({top:$(".navbar").height()});
+					}
+                    else {
+						$("#floorplancontent").offset({top:0});
+                    }
+					$("#copyright").attr("style","position:absolute");
 					if ($scope.debug > 0) $.cachenoty=generate_noty('info', '<b>PageExit code executed</b>', 2000);
 				});
 		}
