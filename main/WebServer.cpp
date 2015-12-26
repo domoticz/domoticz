@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WebServer.h"
+#include "WebServerHelper.h"
 #include <boost/bind.hpp>
 #include <iostream>
 #include <fstream>
@@ -104,6 +105,8 @@ static const _tGuiLanguage guiLanguage[] =
 
 	{ NULL, NULL }
 };
+
+extern http::server::CWebServerHelper m_webservers;
 
 namespace http {
 	namespace server {
@@ -2099,7 +2102,7 @@ namespace http {
 				}
 
 			}
-			
+
 			int nValue;
 			std::string sValue;
 
@@ -2150,6 +2153,11 @@ namespace http {
 			root["Latitude"] = Latitude;
 			root["Longitude"] = Longitude;
 
+#ifndef NOCLOUD
+			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
+#else
+			bool bEnableTabProxy = false;
+#endif
 			int bEnableTabDashboard = 1;
 			int bEnableTabFloorplans = 1;
 			int bEnableTabLight = 1;
@@ -2192,6 +2200,7 @@ namespace http {
 				//Floorplan , no need to show a tab floorplan
 				bEnableTabFloorplans = 0;
 			}
+			root["result"]["EnableTabProxy"] = bEnableTabProxy;
 			root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
 			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
 			root["result"]["EnableTabLights"] = bEnableTabLight != 0;
@@ -2745,12 +2754,12 @@ namespace http {
 			if (session.rights != 2)
 				return; //Only admin users may update
 
-			int nValue = 0;
-			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+				int nValue = 0;
+				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 			if (nValue != 1)
-			{
+				{
 				return;
-			}
+					}
 
 			bool bIsForced = (request::findValue(&req, "forced") == "true");
 
@@ -2764,7 +2773,7 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "DownloadUpdate";
-		}
+			}
 
 		void CWebServer::Cmd_DownloadReady(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -3774,7 +3783,7 @@ namespace http {
 					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
 						devid = "00" + id;
 					else
-						devid = id;
+					devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -4179,7 +4188,7 @@ namespace http {
 					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF))
 						devid = "00" + id;
 					else
-						devid = id;
+					devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -6740,6 +6749,26 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour").c_str()).c_str());
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str()));
+
+#ifndef NOCLOUD
+			std::string md_userid, md_password, pf_userid, pf_password;
+			int md_subsystems, pf_subsystems;
+			m_sql.GetPreferencesVar("MyDomoticzUserId", pf_userid);
+			m_sql.GetPreferencesVar("MyDomoticzPassword", pf_password);
+			m_sql.GetPreferencesVar("MyDomoticzSubsystems", pf_subsystems);
+			md_userid = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzUserId"));
+			md_password = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzPassword"));
+			md_subsystems = (request::findValue(&req, "SubsystemHttp").empty() ? 0 : 1) + (request::findValue(&req, "SubsystemShared").empty() ? 0 : 2) + (request::findValue(&req, "SubsystemApps").empty() ? 0 : 4);
+			if (md_userid != pf_userid || md_password != pf_password || md_subsystems != pf_subsystems) {
+				m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
+				if (md_password != pf_password) {
+					md_password = base64_encode((unsigned char const*)md_password.c_str(), md_password.size());
+					m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
+				}
+				m_sql.UpdatePreferencesVar("MyDomoticzSubsystems", md_subsystems);
+				m_webservers.RestartProxy();
+			}
+#endif
 
 			m_notifications.LoadConfig();
 
@@ -10246,7 +10275,7 @@ namespace http {
 
 			m_sql.safe_query("UPDATE CustomImages SET Name='%q', Description='%q' WHERE (ID == %d)", sname.c_str(), sdescription.c_str(), idx);
 			ReloadCustomSwitchIcons();
-		}
+			}
 
 		void CWebServer::Cmd_RenameDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -10850,6 +10879,11 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "settings";
+#ifndef NOCLOUD
+			root["cloudenabled"] = true;
+#else
+			root["cloudenabled"] = false;
+#endif
 
 			std::vector<std::vector<std::string> >::const_iterator itt;
 			for (itt = result.begin(); itt != result.end(); ++itt)
@@ -11135,6 +11169,20 @@ namespace http {
 				{
 					root["WebTheme"] = sValue;
 				}
+#ifndef NOCLOUD
+				else if (Key == "MyDomoticzInstanceId") {
+					root["MyDomoticzInstanceId"] = sValue;
+				}
+				else if (Key == "MyDomoticzUserId") {
+					root["MyDomoticzUserId"] = sValue;
+				}
+				else if (Key == "MyDomoticzPassword") {
+					root["MyDomoticzPassword"] = sValue;
+				}
+				else if (Key == "MyDomoticzSubsystems") {
+					root["MyDomoticzSubsystems"] = nValue;
+				}
+#endif
 			}
 		}
 

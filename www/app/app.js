@@ -422,6 +422,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config={
+				EnableTabProxy: false,
 				EnableTabDashboard: false,
 				EnableTabFloorplans: false,
 				EnableTabLights: false,
@@ -471,6 +472,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					$rootScope.config.WindScale=data.WindScale;
 					$rootScope.config.WindSign=data.WindSign;
 					$rootScope.config.language=data.language;
+					$rootScope.config.EnableTabProxy=data.result.EnableTabProxy,
 					$rootScope.config.EnableTabDashboard=data.result.EnableTabDashboard,
 					$rootScope.config.EnableTabFloorplans=data.result.EnableTabFloorplans;
 					$rootScope.config.EnableTabLights=data.result.EnableTabLights;
@@ -522,6 +524,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				$rootScope.config.versiontooltip="'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate+"'";
 				$( "#appversion" ).text("V" + data.version);
 				$rootScope.config.HaveUpdate=data.haveupdate;
+				$rootScope.config.isproxied=data.isproxied;
 				if (data.haveupdate == true)
 				{
 					ShowUpdateNotification(data.revision);
@@ -570,9 +573,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				//}
 				
 				if ( (!permissions.isAuthenticated()) && (next.templateUrl!="views/login.html") ) {
-					//$location.path('/Login');
-					$window.location = '/#Login';
-					$window.location.reload();
+					$location.path('/Login');
+					//$window.location = '/#Login';
+					//$window.location.reload();
 					return;
 				}
 				else if ( (permissions.isAuthenticated()) && (next.templateUrl=="views/login.html") ) {
