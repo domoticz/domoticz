@@ -139,7 +139,8 @@ namespace http {
 			// Webem link to application code
 			cWebem* myWebem;
 		};
-
+		// forward declaration for friend declaration
+		class CProxyClient;
 		/**
 
 		The webem embedded web server.
@@ -147,6 +148,7 @@ namespace http {
 		*/
 		class cWebem
 		{
+		friend class CProxyClient;
 		public:
 			cWebem(
 				const std::string& address,
@@ -173,7 +175,7 @@ namespace http {
 				const char* pageurl,
 				webem_page_function_w fun );
 
-			void Include( std::string& reply );
+			bool Include( std::string& reply );
 
 			void RegisterActionCode(
 				const char* idname,
@@ -223,8 +225,6 @@ namespace http {
 			std::map < std::string, webem_page_function > myPages;
 			/// store map between pages and application functions
 			std::map < std::string, webem_page_function_w > myPages_w;
-			/// request handler specialized to handle webem requests
-			cWebemRequestHandler myRequestHandler;
 			/// boost::asio web server (RK: plain or secure)
 			server myServer;
 			/// port server is listening on
@@ -233,7 +233,9 @@ namespace http {
 			session_store* mySessionStore;
 			/// next timed out session cleanup time
 			time_t myNextSessionCleanup;
-
+		protected:
+			/// request handler specialized to handle webem requests
+			cWebemRequestHandler myRequestHandler;
 		};
 
 	}
