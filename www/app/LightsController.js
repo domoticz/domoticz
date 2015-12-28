@@ -394,10 +394,44 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #sdate").val(data["2"]);
 							$("#lightcontent #timerparamstable #rdate").show();
 							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdayofmonth").hide();
+							$("#lightcontent #timerparamstable #rmonthdays").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==6) {
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdayofmonth").show();
+							$("#lightcontent #timerparamstable #rmonthdays").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==7) {
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdayofmonth").hide();
+							$("#lightcontent #timerparamstable #rmonthdays").show();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==8) {
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdayofmonth").show();
+							$("#lightcontent #timerparamstable #rmonthdays").hide();
+							$("#lightcontent #timerparamstable #rmonths").show();
+						}
+						else if (timerType==9) {
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdayofmonth").hide();
+							$("#lightcontent #timerparamstable #rmonthdays").show();
+							$("#lightcontent #timerparamstable #rmonths").show();
 						}
 						else {
 							$("#lightcontent #timerparamstable #rdate").hide();
 							$("#lightcontent #timerparamstable #rnorm").show();
+							$("#lightcontent #timerparamstable #rdayofmonth").hide();
+							$("#lightcontent #timerparamstable #rmonthdays").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
 						
 						var disableDays=false;
@@ -477,6 +511,9 @@ define(['app'], function (app) {
 			$('#lightcontent').i18n();
 			$("#lightcontent #timerparamstable #rdate").hide();
 			$("#lightcontent #timerparamstable #rnorm").show();
+			$("#lightcontent #timerparamstable #rdayofmonth").hide();
+			$("#lightcontent #timerparamstable #rmonthdays").hide();
+			$("#lightcontent #timerparamstable #rmonths").hide();
 
 			$rootScope.RefreshTimeAndSun();
 
@@ -495,10 +532,44 @@ define(['app'], function (app) {
 				if (timerType==5) {
 					$("#lightcontent #timerparamstable #rdate").show();
 					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdayofmonth").hide();
+					$("#lightcontent #timerparamstable #rmonthdays").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==6) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdayofmonth").show();
+					$("#lightcontent #timerparamstable #rmonthdays").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==7) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdayofmonth").hide();
+					$("#lightcontent #timerparamstable #rmonthdays").show();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==8) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdayofmonth").show();
+					$("#lightcontent #timerparamstable #rmonthdays").hide();
+					$("#lightcontent #timerparamstable #rmonths").show();
+				}
+				else if (timerType==9) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdayofmonth").hide();
+					$("#lightcontent #timerparamstable #rmonthdays").show();
+					$("#lightcontent #timerparamstable #rmonths").show();
 				}
 				else {
 					$("#lightcontent #timerparamstable #rdate").hide();
 					$("#lightcontent #timerparamstable #rnorm").show();
+					$("#lightcontent #timerparamstable #rdayofmonth").hide();
+					$("#lightcontent #timerparamstable #rmonthdays").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
 			});
 
