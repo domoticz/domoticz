@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 89
+#define DB_VERSION 90
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -404,6 +404,8 @@ const char *sqlCreateEventMaster =
 "CREATE TABLE IF NOT EXISTS [EventMaster] ("
 "[ID] INTEGER PRIMARY KEY,  "
 "[Name] VARCHAR(200) NOT NULL, "
+"[Interpreter] VARCHAR(10) DEFAULT 'Blockly', "
+"[Type] VARCHAR(10) DEFAULT 'All', "
 "[XMLStatement] TEXT NOT NULL, "
 "[Status] INTEGER DEFAULT 0);";
 
@@ -1603,7 +1605,17 @@ bool CSQLHelper::OpenDatabase()
 			szQuery << "UPDATE DeviceStatus SET [DeviceID]='0' || DeviceID WHERE ([Type]=" << pTypeGeneralSwitch << ") AND (SubType=" << sSwitchTypeSelector << ") AND length(DeviceID) = 7";
 			query(szQuery.str());
 		}
-
+		if (dbversion < 90)
+		{
+			if (!DoesColumnExistsInTable("Interpreter", "EventMaster"))
+			{
+				query("ALTER TABLE EventMaster ADD COLUMN [Interpreter] VARCHAR(10) DEFAULT 'Blockly'");
+			}
+			if (!DoesColumnExistsInTable("Type", "EventMaster"))
+			{
+				query("ALTER TABLE EventMaster ADD COLUMN [Type] VARCHAR(10) DEFAULT 'All'");
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
