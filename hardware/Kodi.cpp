@@ -223,7 +223,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 					{
 						if (root.isMember("method"))
 						{
-							if ((root["method"] == "Player.OnStop") || (root["method"] == "Player.OnWake"))
+							if ((root["method"] == "Player.OnStop") || (root["method"] == "System.OnWake"))
 							{
 								m_CurrentStatus.Clear();
 								m_CurrentStatus.Status(MSTAT_ON);
@@ -269,7 +269,7 @@ void CKodiNode::handleMessage(std::string& pMessage)
 									sMessage = "{\"jsonrpc\":\"2.0\",\"method\":\"Player.GetActivePlayers\",\"id\":1005}";
 								handleWrite(sMessage);
 							}
-							else if ((root["method"] == "Player.OnQuit") || (root["method"] == "Player.OnSleep"))
+							else if ((root["method"] == "System.OnQuit") || (root["method"] == "System.OnSleep") || (root["method"] == "System.OnRestart"))
 							{
 								m_CurrentStatus.Clear();
 								m_CurrentStatus.Status(MSTAT_OFF);

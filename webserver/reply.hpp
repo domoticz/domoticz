@@ -55,6 +55,7 @@ struct reply
   /// not be changed until the write operation has completed.
   std::vector<boost::asio::const_buffer> header_to_buffers();
   std::vector<boost::asio::const_buffer> to_buffers(const std::string &method);
+  static void AddHeader(reply *rep, const std::string &name, const std::string &value, bool replace = true);
 
   // reset the reply, so we can re-use it during long-lived connections
   void reset();

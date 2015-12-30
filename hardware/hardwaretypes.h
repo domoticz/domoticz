@@ -122,7 +122,9 @@
 #define sSwitchTypeAOK				0x3c
 #define sSwitchTypeUnitec			0x3d
 #define sSwitchTypeSelector			0x3e
-
+#define sSwitchTypeMaclean			0x3f
+#define sSwitchTypeR546				0x40
+#define sSwitchTypeDiya				0x41
 
 //Switch commands
 #define gswitch_sOff				0x00

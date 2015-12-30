@@ -116,7 +116,6 @@ void RemehaSerial::ParseData(const unsigned char *pData, int Len)
 		}
 
 #if 0
-//		_log.Log(LOG_NORM, "RemehaSerial: incoming data length %d", Len);
 		char d[4];
 		std::string debug;
 		for (int i = 0; i<data->size + 2; i++) {

@@ -302,6 +302,8 @@ webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp
 webserver/server.cpp
+webserver/proxycommon.cpp
+webserver/proxyclient.cpp
 json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp

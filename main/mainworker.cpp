@@ -942,7 +942,7 @@ bool MainWorker::StartThread()
 	if (!m_webserverport.empty())
 	{
 		//Start WebServer
-		if (!m_webservers.StartServers(m_webserveraddress, m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword))
+		if (!m_webservers.StartServers(m_webserveraddress, m_webserverport, m_secure_webserverport, szWWWFolder, m_secure_web_cert_file, m_secure_web_passphrase, m_bIgnoreUsernamePassword, &m_sharedserver))
 		{
 #ifdef WIN32
 			MessageBox(0,"Error starting webserver, check if ports are not in use!", MB_OK, MB_ICONERROR);
@@ -11494,7 +11494,7 @@ void MainWorker::CheckSceneCode(const unsigned long long DevRowIdx, const unsign
 
 void MainWorker::LoadSharedUsers()
 {
-	std::vector<tcp::server::CTCPServerInt::_tRemoteShareUser> users;
+	std::vector<tcp::server::_tRemoteShareUser> users;
 
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> > result2;
@@ -11507,7 +11507,7 @@ void MainWorker::LoadSharedUsers()
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
 			std::vector<std::string> sd=*itt;
-			tcp::server::CTCPServerInt::_tRemoteShareUser suser;
+			tcp::server::_tRemoteShareUser suser;
 			suser.Username=base64_decode(sd[1]);
 			suser.Password=sd[2];
 
