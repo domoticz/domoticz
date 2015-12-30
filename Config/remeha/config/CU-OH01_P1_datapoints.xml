@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<bdrcan>
+
+   <identification>
+      <sdo byte="0" index="2001" subindex="0" type="uint8"><!--Number of entries--></sdo>
+	  <sdo byte="1" index="2001" length="20" subindex="1" type="octetstring"><!--ManufacturerCode--></sdo>	  
+      <sdo byte="21" index="2001" subindex="2" type="uint16"><!--Type--></sdo>
+      <sdo byte="23" index="2001" subindex="3" type="uint16"><!--Hardware Version--></sdo>
+      <sdo byte="25" index="2001" subindex="4" type="uint16"><!--Software Version--></sdo>
+      <sdo byte="27" index="2001" subindex="5" type="uint16"><!--Parameter Type--></sdo>
+      <sdo byte="29" index="2001" subindex="6" type="uint16"><!--Parameter Set Nr--></sdo>
+      <sdo byte="31" index="2001" subindex="7" type="uint8"><!--Production year--></sdo>
+      <sdo byte="32" index="2001" subindex="8" type="uint8"><!--Production week--></sdo>
+      <sdo byte="33" index="2001" subindex="9" type="uint8"><!--Production day--></sdo>
+      <sdo byte="34" index="2001" subindex="10" type="uint32"><!--Serial number--></sdo>
+      <sdo byte="38" index="2C24" length="7" subindex="1" type="octetstring"><!--platformVersion--></sdo>
+      <sdo byte="45" index="2C24" length="7" subindex="2" type="octetstring"><!--productVersion--></sdo>
+   </identification>
+
+   <sample>
+      <sdo byte="0" index="501D" length="93" subindex="0" type="octetstring"><!--varApTrendingString--></sdo>
+   </sample>
+<parameters>
+  <sdo type="uint8" subindex="0" index="2203" byte="0" readlevel="4" writelevel="4">
+    <!--parHeDThMaxLevel3-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="2215" byte="1" readlevel="3" writelevel="3">
+    <!--parHeDtModulatingMinPower-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="2220" byte="3" readlevel="3" writelevel="3">
+    <!--parHeMaxAbsTfTr-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="222E" byte="5" readlevel="3" writelevel="3">
+    <!--parHeDeaerationCycle-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2801" byte="6" readlevel="4" writelevel="4">
+    <!--parHeFGPSTimer-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2802" byte="7" readlevel="4" writelevel="4">
+    <!--parHeFGTSTimer-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2803" byte="8" readlevel="4" writelevel="4">
+    <!--parHeFGPSLocking-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2804" byte="9" readlevel="4" writelevel="4">
+    <!--parHeFGTSLocking-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2805" byte="10" readlevel="4" writelevel="4">
+    <!--parHeFgpsConfLocking-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2806" byte="11" readlevel="4" writelevel="4">
+    <!--parHeTypeOilBurner-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C28" byte="12" readlevel="4" writelevel="4">
+    <!--parDevCombiOscMin-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C29" byte="13" readlevel="4" writelevel="4">
+    <!--parDevCombiOscTLow-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C2A" byte="14" readlevel="4" writelevel="4">
+    <!--parDevCombiOscTHigh-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3001" byte="15" readlevel="2" writelevel="2">
+    <!--parApBlockingFunction-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3002" byte="16" readlevel="3" writelevel="3">
+    <!--parApEnableManualHeatDemand-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3003" byte="17" readlevel="3" writelevel="3">
+    <!--parApFlueValveWaitTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3004" byte="18" readlevel="2" writelevel="2">
+    <!--parApHydraulicValveWaitTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3006" byte="19" readlevel="2" writelevel="2">
+    <!--parApMinWaterPress-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3007" byte="20" readlevel="4" writelevel="4">
+    <!--parApTfMaxBlocking-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3009" byte="22" readlevel="2" writelevel="2">
+    <!--parApServiceBurnHours-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="300A" byte="24" readlevel="2" writelevel="2">
+    <!--parApServiceNotification-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="300B" byte="25" readlevel="2" writelevel="2">
+    <!--parApServiceOperationTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3012" byte="27" readlevel="1" writelevel="1">
+    <!--parApChEnabled-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3013" byte="28" readlevel="1" writelevel="1">
+    <!--parApDhwEnabled-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="301B" byte="29" readlevel="4" writelevel="4">
+    <!--parApOperationalModeSW-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="301C" byte="30" readlevel="3" writelevel="3">
+    <!--parApHeatDemandFlowTemperatureSetpoint-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="302D" byte="32" readlevel="3" writelevel="3">
+    <!--parApCHMinSystem-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3030" byte="34" readlevel="2" writelevel="2">
+    <!--parApChMaxSystem-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3031" byte="36" readlevel="3" writelevel="3">
+    <!--parApBurnerPower-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3032" byte="38" readlevel="4" writelevel="4">
+    <!--parApMk1BrightnessHigh-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3033" byte="39" readlevel="4" writelevel="4">
+    <!--parApMk1BrightnessLow-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3034" byte="40" readlevel="4" writelevel="4">
+    <!--parApMk1DisplayMode-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3035" byte="41" readlevel="3" writelevel="3">
+    <!--parApPumpType-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="303A" byte="42" readlevel="1" writelevel="1">
+    <!--parApSummerWinter-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="303B" byte="44" readlevel="1" writelevel="1">
+    <!--parApForceSummerMode-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="303C" byte="45" readlevel="2" writelevel="2">
+    <!--parApNeutralBandSummerWinter-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="303F" byte="46" readlevel="2" writelevel="2">
+    <!--parApOutsideSensorEnabled-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3040" byte="47" readlevel="2" writelevel="2">
+    <!--parApBuilidingInertia-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="3041" byte="48" readlevel="2" writelevel="2">
+    <!--parApFrostMinToutside-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3202" byte="49" readlevel="4" writelevel="4">
+    <!--parChIDown-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3203" byte="50" readlevel="4" writelevel="4">
+    <!--parChIPump-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3205" byte="51" readlevel="3" writelevel="3">
+    <!--parChMaxOffTimeBurnerExt-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3207" byte="52" readlevel="3" writelevel="3">
+    <!--parChMinOffTimeBurner-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="320D" byte="53" readlevel="4" writelevel="4">
+    <!--parChPDown-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="320F" byte="54" readlevel="1" writelevel="1">
+    <!--parChPumpPostRun-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3210" byte="55" readlevel="2" writelevel="2">
+    <!--parChPumpSpeedMax-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3211" byte="56" readlevel="4" writelevel="4">
+    <!--parChPumpSpeedMaxFactor-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3212" byte="57" readlevel="2" writelevel="2">
+    <!--parChPumpSpeedMin-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3217" byte="58" readlevel="3" writelevel="3">
+    <!--parChHysteresis-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="321F" byte="60" readlevel="3" writelevel="3">
+    <!--parChMaxIncPumpSpeed-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3223" byte="62" readlevel="3" writelevel="3">
+    <!--parChMaxDecPumpSpeed-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3224" byte="64" readlevel="3" writelevel="3">
+    <!--parChOffset-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3401" byte="66" readlevel="2" writelevel="2">
+    <!--parZoneTFlowSetpointMax-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3402" byte="67" readlevel="1" writelevel="1">
+    <!--parZoneTFlowMax-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3404" byte="68" readlevel="2" writelevel="2">
+    <!--parZoneFunction-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3405" byte="69" readlevel="2" writelevel="2">
+    <!--parZoneMixingValveBandwith-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3408" byte="70" readlevel="2" writelevel="2">
+    <!--parZonePumpPostRun-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3409" byte="71" readlevel="2" writelevel="2">
+    <!--parZoneMixingValveShift-->
+  </sdo>
+  <sdo type="uint16" subindex="1" index="340A" byte="72" readlevel="2" writelevel="2">
+    <!--parZoneAmbiantHolidaySetpoint-->
+  </sdo>
+  <sdo type="uint16" subindex="1" index="340B" byte="74" readlevel="2" writelevel="2">
+    <!--parZoneAmbiantNightSetpoint-->
+  </sdo>
+  <sdo type="uint16" subindex="1" index="340C" byte="76" readlevel="1" writelevel="1">
+    <!--parZoneRoomUserActivitieSetpoint1-->
+  </sdo>
+  <sdo type="uint16" subindex="2" index="340C" byte="78" readlevel="1" writelevel="1">
+    <!--parZoneRoomUserActivitieSetpoint2-->
+  </sdo>
+  <sdo type="uint16" subindex="3" index="340C" byte="80" readlevel="1" writelevel="1">
+    <!--parZoneRoomUserActivitieSetpoint3-->
+  </sdo>
+  <sdo type="uint16" subindex="4" index="340C" byte="82" readlevel="1" writelevel="1">
+    <!--parZoneRoomUserActivitieSetpoint4-->
+  </sdo>
+  <sdo type="uint16" subindex="5" index="340C" byte="84" readlevel="1" writelevel="1">
+    <!--parZoneRoomUserActivitieSetpoint5-->
+  </sdo>
+  <sdo type="uint16" subindex="6" index="340C" byte="86" readlevel="1" writelevel="1">
+    <!--parZoneRoomUserActivitieSetpoint6-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="340E" byte="88" readlevel="2" writelevel="2">
+    <!--parZoneToutsideExternalSelector-->
+  </sdo>
+  <sdo type="uint16" subindex="1" index="3413" byte="89" readlevel="2" writelevel="2">
+    <!--parZoneRoomManualSetpoint-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3414" byte="91" readlevel="2" writelevel="2">
+    <!--parZoneHCZPD-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3415" byte="92" readlevel="2" writelevel="2">
+    <!--parZoneHCZPN-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3416" byte="93" readlevel="2" writelevel="2">
+    <!--parZoneSlope-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3417" byte="94" readlevel="2" writelevel="2">
+    <!--parZoneRoomUnitInfluence-->
+  </sdo>
+  <sdo type="int8" subindex="1" index="3418" byte="95" readlevel="2" writelevel="2">
+    <!--parZoneRoomSensorCalibration-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3419" byte="96" readlevel="2" writelevel="2">
+    <!--parZoneTFlowSetpointMin-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="341C" byte="97" readlevel="2" writelevel="2">
+    <!--parZonePumpOutputConfiguration-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="341D" byte="98" readlevel="2" writelevel="2">
+    <!--parZoneAnticipation-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="341E" byte="99" readlevel="2" writelevel="2">
+    <!--parZoneAutoAdapt-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="341F" byte="100" readlevel="1" writelevel="1">
+    <!--parZoneModeCh-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3424" byte="101" readlevel="2" writelevel="2">
+    <!--parZoneReducedNightMode-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="344D" byte="102" readlevel="2" writelevel="2">
+    <!--parZoneScreedDrying-->
+  </sdo>
+  <sdo type="uint16" subindex="1" index="344E" byte="103" readlevel="2" writelevel="2">
+    <!--parZoneStartDryingTemp-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3450" byte="105" readlevel="2" writelevel="2">
+    <!--parZoneFlowSensorEnabled-->
+  </sdo>
+  <sdo type="uint16" subindex="1" index="3451" byte="106" readlevel="2" writelevel="2">
+    <!--parZoneTemporaryRoomSetpoint-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3452" byte="108" readlevel="2" writelevel="2">
+    <!--parZonePowerSetpoint-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3453" byte="109" readlevel="2" writelevel="2">
+    <!--parZonePwmPumpSpeed-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3455" byte="110" readlevel="2" writelevel="2">
+    <!--parZoneFirePlaceEnabled-->
+  </sdo>
+  <sdo type="uint16" subindex="1" index="3457" byte="111" readlevel="4" writelevel="4">
+    <!--parZoneError-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3458" byte="113" readlevel="1" writelevel="1">
+    <!--parZoneTimeProgramSelected-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="345F" byte="114" readlevel="2" writelevel="2">
+    <!--parZoneOthLogicLevelContact-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3463" byte="115" readlevel="3" writelevel="3">
+    <!--parZoneIconType-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3604" byte="116" readlevel="2" writelevel="2">
+    <!--parDhwAntiLegionella-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3605" byte="117" readlevel="2" writelevel="2">
+    <!--parDhwCalorifierSetpointRaise-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3606" byte="119" readlevel="4" writelevel="4">
+    <!--parDhwCalorifierHysteresis-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3607" byte="121" readlevel="3" writelevel="3">
+    <!--parDhw3wvStandby-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3608" byte="122" readlevel="3" writelevel="3">
+    <!--parDhwPumpDtSet-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="360A" byte="124" readlevel="4" writelevel="4">
+    <!--parDhwDtHysteresis-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="360B" byte="126" readlevel="4" writelevel="4">
+    <!--parDhwDtOffset-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="360D" byte="128" readlevel="4" writelevel="4">
+    <!--parDhwLoadAfterChTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="360E" byte="129" readlevel="4" writelevel="4">
+    <!--parDhwLoadAfterDhwTime-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="360F" byte="130" readlevel="4" writelevel="4">
+    <!--parDhwLoadHysteresis-->
+  </sdo>
+  <sdo type="int16" subindex="0" index="3610" byte="132" readlevel="4" writelevel="4">
+    <!--parDhwLoadOffset-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3613" byte="134" readlevel="3" writelevel="3">
+    <!--parDhwPumpDelay-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3614" byte="135" readlevel="1" writelevel="1">
+    <!--parDhwPumpPostRun-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3616" byte="136" readlevel="4" writelevel="4">
+    <!--parDhwFlowDetection-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="361C" byte="137" readlevel="4" writelevel="4">
+    <!--parDhwFrequencyPulseTimeWindow-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3622" byte="138" readlevel="4" writelevel="4">
+    <!--parDhwCalorifierOffset-->
+  </sdo>
+  <sdo type="int16" subindex="0" index="3623" byte="140" readlevel="3" writelevel="3">
+    <!--parDhwCalorifierPumpStart-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3626" byte="142" readlevel="2" writelevel="2">
+    <!--parDhwPumpSpeedMin-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3627" byte="143" readlevel="2" writelevel="2">
+    <!--parDhwPumpSpeedMax-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3628" byte="144" readlevel="2" writelevel="2">
+    <!--parDhwPumpSpeedStart-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="362A" byte="145" readlevel="4" writelevel="4">
+    <!--parDhwCombiSoloUpP-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="362B" byte="146" readlevel="4" writelevel="4">
+    <!--parDhwCombiSoloUpI-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="362C" byte="147" readlevel="4" writelevel="4">
+    <!--parDhwIPump-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="362F" byte="148" readlevel="3" writelevel="3">
+    <!--parDhwMaxTemp-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3637" byte="150" readlevel="2" writelevel="2">
+    <!--parDHWOutput-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3638" byte="151" readlevel="2" writelevel="2">
+    <!--parDHWAciPresent-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="363B" byte="152" readlevel="3" writelevel="3">
+    <!--parDhwMaxIncPumpSpeed-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3653" byte="154" readlevel="1" writelevel="1">
+    <!--parZoneDHWPrimaryTimeProgramSelected-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3654" byte="155" readlevel="1" writelevel="1">
+    <!--parZoneDHWPrimaryComfortSetpoint-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3655" byte="156" readlevel="1" writelevel="1">
+    <!--parZoneDHWPrimaryReducedSetpoint-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3656" byte="157" readlevel="2" writelevel="2">
+    <!--parZoneDHWPrimaryDelayGeneratorStart-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3657" byte="158" readlevel="2" writelevel="2">
+    <!--parZoneDHWPrimaryDelayGeneratorStop-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3658" byte="159" readlevel="2" writelevel="2">
+    <!--parZoneDHWPrimaryTempoBetweenStages-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3659" byte="160" readlevel="2" writelevel="2">
+    <!--parZoneDHWPrimaryHysteresis-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="365A" byte="161" readlevel="2" writelevel="2">
+    <!--parZoneDHWPrimaryTOffset-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="365B" byte="162" readlevel="3" writelevel="3">
+    <!--parZoneDHWPrimaryLoadType-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="365C" byte="163" readlevel="2" writelevel="2">
+    <!--parZoneDHWPrimaryBoilerSwitch-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="365D" byte="164" readlevel="2" writelevel="2">
+    <!--parDHWAntiLegionellaSetpoint-->
+  </sdo>
+  <sdo type="uint8" subindex="1" index="3661" byte="165" readlevel="2" writelevel="2">
+    <!--parZoneDhwPrimaryMode-->
+  </sdo>
+</parameters>
+   <errors>
+      <sdo byte="0" index="1003" maxcount="16" object="array" subindex="0" type="uint32"/>
+      <sdo byte="64" index="2002" maxcount="16" object="array" subindex="0" type="uint32"/>
+      <sdo byte="128" index="2003" length="64" maxcount="16" object="array" subindex="0" type="octetstring"/>
+      <sdo byte="1152" index="2004" maxcount="16" object="array" subindex="0" type="uint32"/>
+   </errors>
+   <counters>
+      <sdo byte="0" index="4203" subindex="0" type="uint16"><!--varHeCtrBurnerStarts--></sdo>
+      <sdo byte="2" index="4204" subindex="0" type="uint16"><!--varHeCtrBurnerStartsDhw--></sdo>
+      <sdo byte="4" index="4205" subindex="0" type="uint16"><!--varHeCtrBurnHours--></sdo>
+      <sdo byte="6" index="4206" subindex="0" type="uint16"><!--varHeCtrBurnHoursDhw--></sdo>
+      <sdo byte="8" index="4207" subindex="0" type="uint16"><!--varHeCtrFailedBurnerStarts--></sdo>
+      <sdo byte="10" index="4208" subindex="0" type="uint16"><!--varHeCtrFlameLoss--></sdo>
+      <sdo byte="12" index="4209" subindex="0" type="uint16"><!--varHeCtrPumpRunHours--></sdo>
+      <sdo byte="14" index="420A" subindex="0" type="uint16"><!--varHeCtrPumpStarts--></sdo>
+      <sdo byte="16" index="4202" subindex="0" type="uint16"><!--varHeCtr3WayValveHoursDhw--></sdo>
+      <sdo byte="18" index="4201" subindex="0" type="uint16"><!--varHeCtr3WayValveCycles--></sdo>
+      <sdo byte="20" index="5041" subindex="0" type="uint16"><!--varApCtrServiceOperatingHours--></sdo>
+      <sdo byte="22" index="423F" subindex="0" type="uint32"><!--varHeCtrChConsumption--></sdo>
+      <sdo byte="26" index="4240" subindex="0" type="uint32"><!--varHeCtrDhwConsumption--></sdo>
+   </counters>
+   <configuration.nr>
+    <sdo byte="0" index="3018" subindex="0" type="uint16"><!--parApConfiguration--></sdo>
+   </configuration.nr>
+  <checksum value="61423" />
+</bdrcan>

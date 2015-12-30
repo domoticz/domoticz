@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Objects>
+  <identifications>
+    <identification adress="327780" byte="0" type="LBLOCK" length="10"></identification>
+  </identifications>
+   <parameters>
+<parameter adress="2950542" byte="0" nr="1422" type="VALI"><!--Room temperature Comfort setpoint HC1--></parameter>
+<parameter adress="2950544" byte="2" nr="1424" type="VALI"><!--Room temp reduced setpoint heat circuit 1--></parameter>
+<parameter adress="2950546" byte="4" nr="1426" type="VALI"><!--Room temp frost protection setpoint HC1--></parameter>
+<parameter adress="2950565" byte="6" nr="1445" type="VALI"><!--Comfort setpoint max heating circuit 1--></parameter>
+<parameter adress="2950646" byte="8" nr="1526" type="VALI"><!--Heating curve 1 slope--></parameter>
+<parameter adress="2950672" byte="10" nr="1552" type="VALI"><!--Heating curve parallel displacement HC1--></parameter>
+<parameter adress="2950667" byte="12" nr="1547" type="VALB"><!--Heating curve adaptation heat circuit 1--></parameter>
+<parameter adress="2950653" byte="13" nr="1533" type="VALI"><!--Summer/winter changeover temp heat circuit 1--></parameter>
+<parameter adress="2164323" byte="15" nr="1635" type="VALI"><!--Flow temp min limitation heat circuit 1--></parameter>
+<parameter adress="2164322" byte="17" nr="1634" type="VALI"><!--Flow temp max limitation heat circuit 1--></parameter>
+<parameter adress="2165384" byte="19" nr="2696" type="VALI"><!--Flow temp setpoint room thermostat HC1--></parameter>
+<parameter adress="2950659" byte="21" nr="1539" type="VALI8"><!--Room temp gain factor heat circuit 1--></parameter>
+<parameter adress="2952790" byte="22" nr="3670" type="VALME8"><!--Type room controller--></parameter>
+<parameter adress="2950676" byte="23" nr="1556" type="VALI"><!--Room temperature limitation heating circuit 1--></parameter>
+<parameter adress="3016078" byte="25" nr="1422" type="VALI"><!--Room temperature Comfort setpoint HC2--></parameter>
+<parameter adress="3016080" byte="27" nr="1424" type="VALI"><!--Room temp reduced setpoint heat circuit 2--></parameter>
+<parameter adress="3016082" byte="29" nr="1426" type="VALI"><!--Room temp frost protection setpoint HC2--></parameter>
+<parameter adress="3016101" byte="31" nr="1445" type="VALI"><!--Comfort setpoint max HC2--></parameter>
+<parameter adress="3016182" byte="33" nr="1526" type="VALI"><!--Heating curve 2 slope--></parameter>
+<parameter adress="3016208" byte="35" nr="1552" type="VALI"><!--Heating curve parallel displacement HC2--></parameter>
+<parameter adress="3016203" byte="37" nr="1547" type="VALB"><!--Heating curve adaptation heat circuit 2--></parameter>
+<parameter adress="3016189" byte="38" nr="1533" type="VALI"><!--Summer/winter changeover temp heat circuit 2--></parameter>
+<parameter adress="2229859" byte="40" nr="1635" type="VALI"><!--Flow temp min limitation heat circuit 2--></parameter>
+<parameter adress="2229858" byte="42" nr="1634" type="VALI"><!--Flow temp max limitation heat circuit 2--></parameter>
+<parameter adress="2230920" byte="44" nr="2696" type="VALI"><!--Flow temp setpoint room thermostat HC2--></parameter>
+<parameter adress="3016195" byte="46" nr="1539" type="VALI8"><!--Room temp gain factor heat circuit 2--></parameter>
+<parameter adress="3018326" byte="47" nr="3670" type="VALME8"><!--Type room controller--></parameter>
+<parameter adress="3016212" byte="48" nr="1556" type="VALI"><!--Room temperature limitation heating circuit 2--></parameter>
+<parameter adress="3081614" byte="50" nr="1422" type="VALI"><!--Room temperature Comfort setpoint HC3/P--></parameter>
+<parameter adress="3081616" byte="52" nr="1424" type="VALI"><!--Reduced room temperature setpoint HCP--></parameter>
+<parameter adress="3081618" byte="54" nr="1426" type="VALI"><!--Room temperature frost protection setpoint HC3/P--></parameter>
+<parameter adress="3081637" byte="56" nr="1445" type="VALI"><!--Comfort setpoint max HC3/P--></parameter>
+<parameter adress="3081718" byte="58" nr="1526" type="VALI"><!--Heating curve slope HC3/P--></parameter>
+<parameter adress="3081744" byte="60" nr="1552" type="VALI"><!--Heating curve parallel displacement HC3/P--></parameter>
+<parameter adress="3081739" byte="62" nr="1547" type="VALB"><!--Heating curve adaption HC3/P--></parameter>
+<parameter adress="3081725" byte="63" nr="1533" type="VALI"><!--Summer/winter changeover temperature HC3/P--></parameter>
+<parameter adress="2295395" byte="65" nr="1635" type="VALI"><!--Flow temperature min limitation HC3/P--></parameter>
+<parameter adress="2295394" byte="67" nr="1634" type="VALI"><!--Flow temperature max limitation HC3/P--></parameter>
+<parameter adress="2296456" byte="69" nr="2696" type="VALI"><!--Flow temp setpoint room thermostat HC3/P--></parameter>
+<parameter adress="3083862" byte="71" nr="3670" type="VALME8"><!--Type room controller--></parameter>
+<parameter adress="3081748" byte="72" nr="1556" type="VALI"><!--Room temperature limitation HC3/P--></parameter>
+<parameter adress="3212657" byte="74" nr="1393" type="VALME8"><!--DHW mode--></parameter>
+<parameter adress="3212985" byte="75" nr="1721" type="VALI"><!--DHW temperature nominal setpoint--></parameter>
+<parameter adress="3212986" byte="77" nr="1722" type="VALI"><!--DHW temperature reduced setpoint--></parameter>
+<parameter adress="2426658" byte="79" nr="1826" type="VALME8"><!--DHW release--></parameter>
+<parameter adress="3213089" byte="80" nr="1825" type="VALME8"><!--DHW charging priority--></parameter>
+<parameter adress="3213145" byte="81" nr="1881" type="VALME8"><!--Legionella function--></parameter>
+<parameter adress="3213112" byte="82" nr="1848" type="VALMN8"><!--Legionella function periodicity--></parameter>
+<parameter adress="3213150" byte="83" nr="1886" type="VALME8"><!--Legionella function day--></parameter>
+<parameter adress="3212988" byte="84" nr="1724" type="VALI"><!--Legionella function setpoint--></parameter>
+<parameter adress="1117192" byte="86" nr="3080" type="VALI"><!--Supp Burner Min rate--></parameter>
+<parameter adress="1117194" byte="88" nr="3082" type="VALI"><!--Supp bu max rate CH--></parameter>
+<parameter adress="1117401" byte="90" nr="3289" type="VALI"><!--Supp bu max rate DHW Com--></parameter>
+<parameter adress="2426679" byte="92" nr="1847" type="VALB"><!--DHW charging--></parameter>
+<parameter adress="2426656" byte="93" nr="1824" type="VALI"><!--DHW flow setpoint boost--></parameter>
+<parameter adress="2426817" byte="95" nr="1985" type="VALI"><!--Dhw transfer boost--></parameter>
+<parameter adress="2427003" byte="97" nr="2171" type="VALME8"><!--DHW recharging control--></parameter>
+<parameter adress="3213085" byte="98" nr="1821" type="VALI"><!--DHW switching differential--></parameter>
+<parameter adress="2427043" byte="100" nr="2211" type="VALI"><!--DHW charging temperature max--></parameter>
+<parameter adress="3213482" byte="102" nr="2218" type="VALB"><!--DHW automatic push--></parameter>
+<parameter adress="332644" byte="103" nr="4964" type="VALME8"><!--Instantaneous heater with DHW storage tank--></parameter>
+<parameter adress="332038" byte="104" nr="4358" type="VALB"><!--Instantaneous DHW heater with buffer--></parameter>
+<parameter adress="329490" byte="105" nr="1810" type="VALN8"><!--Plant diagram selection--></parameter>
+<parameter adress="328896" byte="106" nr="1216" type="VALB"><!--Heating circuit 1--></parameter>
+<parameter adress="394432" byte="107" nr="1216" type="VALB"><!--Heating circuit 2--></parameter>
+<parameter adress="459968" byte="108" nr="1216" type="VALB"><!--Heating circuit 3--></parameter>
+<parameter adress="2426652" byte="109" nr="1820" type="VALME8"><!--DHW actuating device Q3--></parameter>
+<parameter adress="333229" byte="110" nr="5549" type="VALME8"><!--Instant WH ctrl elem Q34--></parameter>
+<parameter adress="331643" byte="111" nr="3963" type="VALME8"><!--Basic pos DHW div valve--></parameter>
+<parameter adress="333230" byte="112" nr="5550" type="VALME8"><!--Basic position div valve Q34--></parameter>
+<parameter adress="330930" byte="113" nr="3250" type="VALME8"><!--Type Boiler pump--></parameter>
+<parameter adress="328855" byte="114" nr="1175" type="VALME8"><!--Relay output QX1--></parameter>
+<parameter adress="328856" byte="115" nr="1176" type="VALME8"><!--Relay output QX2--></parameter>
+<parameter adress="329095" byte="116" nr="1415" type="VALME8"><!--Relay output QX3--></parameter>
+<parameter adress="329096" byte="117" nr="1416" type="VALME8"><!--Relay output QX4--></parameter>
+<parameter adress="329097" byte="118" nr="1417" type="VALME8"><!--Relay output QX5--></parameter>
+<parameter adress="330237" byte="119" nr="2557" type="VALME8"><!--Function input EX1--></parameter>
+<parameter adress="330238" byte="120" nr="2558" type="VALME8"><!--Operating action input EX1--></parameter>
+<parameter adress="329678" byte="121" nr="1998" type="VALME8"><!--Function input EX2--></parameter>
+<parameter adress="329681" byte="122" nr="2001" type="VALME8"><!--Operating action input EX2--></parameter>
+<parameter adress="329608" byte="123" nr="1928" type="VALME8"><!--Function extension module 1--></parameter>
+<parameter adress="329609" byte="124" nr="1929" type="VALME8"><!--Function extension module 2--></parameter>
+<parameter adress="331081" byte="125" nr="3401" type="VALME8"><!--Function extension module 3--></parameter>
+<parameter adress="331893" byte="126" nr="4213" type="VALME8"><!--Function input EX21 Modul 1--></parameter>
+<parameter adress="331890" byte="127" nr="4210" type="VALME8"><!--Operating action input EX21 Modul 1--></parameter>
+<parameter adress="331894" byte="128" nr="4214" type="VALME8"><!--Function input EX21 Modul 2--></parameter>
+<parameter adress="331891" byte="129" nr="4211" type="VALME8"><!--Operating action input EX21 Modul 2--></parameter>
+<parameter adress="331895" byte="130" nr="4215" type="VALME8"><!--Function input EX21 Modul 2--></parameter>
+<parameter adress="331892" byte="131" nr="4212" type="VALME8"><!--Operating action input EX21 Modul 3--></parameter>
+<parameter adress="331090" byte="132" nr="3410" type="VALME8"><!--Relay output QX21 module 1--></parameter>
+<parameter adress="331091" byte="133" nr="3411" type="VALME8"><!--Relay output QX22 module 1--></parameter>
+<parameter adress="331092" byte="134" nr="3412" type="VALME8"><!--Relay output QX23 module 1--></parameter>
+<parameter adress="331093" byte="135" nr="3413" type="VALME8"><!--Relay output QX21 module 2--></parameter>
+<parameter adress="331094" byte="136" nr="3414" type="VALME8"><!--Relay output QX22 module 2--></parameter>
+<parameter adress="331095" byte="137" nr="3415" type="VALME8"><!--Relay output QX23 module 2--></parameter>
+<parameter adress="331096" byte="138" nr="3416" type="VALME8"><!--Relay output QX21 module 3--></parameter>
+<parameter adress="331097" byte="139" nr="3417" type="VALME8"><!--Relay output QX22 module 3--></parameter>
+<parameter adress="331098" byte="140" nr="3418" type="VALME8"><!--Relay output QX23 module 3--></parameter>
+<parameter adress="331145" byte="141" nr="3465" type="VALME8"><!--Sensor input BX21 module 1--></parameter>
+<parameter adress="331148" byte="142" nr="3468" type="VALME8"><!--Sensor input BX22 module 1--></parameter>
+<parameter adress="331146" byte="143" nr="3466" type="VALME8"><!--Sensor input BX21 module 2--></parameter>
+<parameter adress="331149" byte="144" nr="3469" type="VALME8"><!--Sensor input BX22 module 2--></parameter>
+<parameter adress="331147" byte="145" nr="3467" type="VALME8"><!--Sensor input BX21 module 3--></parameter>
+<parameter adress="331150" byte="146" nr="3470" type="VALME8"><!--Sensor input BX22 module 3--></parameter>
+<parameter adress="332514" byte="147" nr="4834" type="VALME8"><!--HC1 int | ext--></parameter>
+</parameters>
+   <errors>
+      <error><!--Time stamp error history entry 1-->
+         <code adress="329748" app="0" byte="4" inst="1" nr="2068" type="VALME"/>
+         <time adress="329427" app="0" byte="0" inst="1" nr="1747" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 2-->
+         <code adress="329748" app="0" byte="12" inst="1" nr="2069" type="VALME"/>
+         <time adress="329428" app="0" byte="8" inst="1" nr="1748" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 3-->
+         <code adress="329750" app="0" byte="20" inst="1" nr="2070" type="VALME"/>
+         <time adress="329429" app="0" byte="16" inst="1" nr="1749" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 4-->
+         <code adress="329751" app="0" byte="28" inst="1" nr="2071" type="VALME"/>
+         <time adress="329430" app="0" byte="24" inst="1" nr="1750" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 5-->
+         <code adress="329752" app="0" byte="36" inst="1" nr="2072" type="VALME"/>
+         <time adress="329431" app="0" byte="32" inst="1" nr="1751" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 6-->
+         <code adress="329753" app="0" byte="44" inst="1" nr="2073" type="VALME"/>
+         <time adress="329432" app="0" byte="40" inst="1" nr="1752" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 7-->
+         <code adress="329754" app="0" byte="52" inst="1" nr="2074" type="VALME"/>
+         <time adress="329433" app="0" byte="48" inst="1" nr="1753" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 8-->
+         <code adress="329755" app="0" byte="60" inst="1" nr="2075" type="VALME"/>
+         <time adress="329434" app="0" byte="56" inst="1" nr="1754" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 9-->
+         <code adress="329756" app="0" byte="68" inst="1" nr="2076" type="VALME"/>
+         <time adress="329435" app="0" byte="64" inst="1" nr="1755" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 10-->
+         <code adress="329757" app="0" byte="76" inst="1" nr="2077" type="VALME"/>
+         <time adress="329436" app="0" byte="72" inst="1" nr="1756" type="VALDATE"/>
+      </error>
+   </errors>
+   <errorList>
+      <errorCode nr="0" type="blocking"/>
+      <errorCode nr="10" type="blocking"/>
+      <errorCode nr="20" type="blocking"/>
+      <errorCode nr="28" type="blocking"/>
+      <errorCode nr="30" type="blocking"/>
+      <errorCode nr="32" type="blocking"/>
+      <errorCode nr="38" type="blocking"/>
+      <errorCode nr="39" type="blocking"/>
+      <errorCode nr="40" type="blocking"/>
+      <errorCode nr="42" type="blocking"/>
+      <errorCode nr="43" type="blocking"/>
+      <errorCode nr="44" type="blocking"/>
+      <errorCode nr="45" type="blocking"/>
+      <errorCode nr="46" type="blocking"/>
+      <errorCode nr="47" type="blocking"/>
+      <errorCode nr="48" type="blocking"/>
+      <errorCode nr="50" type="blocking"/>
+      <errorCode nr="52" type="blocking"/>
+      <errorCode nr="54" type="blocking"/>
+      <errorCode nr="55" type="blocking"/>
+      <errorCode nr="56" type="blocking"/>
+      <errorCode nr="57" type="blocking"/>
+      <errorCode nr="58" type="blocking"/>
+      <errorCode nr="60" type="blocking"/>
+      <errorCode nr="61" type="blocking"/>
+      <errorCode nr="62" type="blocking"/>
+      <errorCode nr="64" type="blocking"/>
+      <errorCode nr="65" type="blocking"/>
+      <errorCode nr="66" type="blocking"/>
+      <errorCode nr="67" type="blocking"/>
+      <errorCode nr="68" type="blocking"/>
+      <errorCode nr="69" type="blocking"/>
+      <errorCode nr="70" type="blocking"/>
+      <errorCode nr="71" type="blocking"/>
+      <errorCode nr="72" type="blocking"/>
+      <errorCode nr="73" type="blocking"/>
+      <errorCode nr="74" type="blocking"/>
+      <errorCode nr="75" type="blocking"/>
+      <errorCode nr="76" type="blocking"/>
+      <errorCode nr="77" type="blocking"/>
+      <errorCode nr="78" type="blocking"/>
+      <errorCode nr="79" type="blocking"/>
+      <errorCode nr="80" type="blocking"/>
+      <errorCode nr="81" type="blocking"/>
+      <errorCode nr="82" type="blocking"/>
+      <errorCode nr="83" type="blocking"/>
+      <errorCode nr="84" type="blocking"/>
+      <errorCode nr="85" type="blocking"/>
+      <errorCode nr="86" type="blocking"/>
+      <errorCode nr="87" type="blocking"/>
+      <errorCode nr="88" type="blocking"/>
+      <errorCode nr="90" type="blocking"/>
+      <errorCode nr="91" type="locking"/>
+      <errorCode nr="92" type="locking"/>
+      <errorCode nr="93" type="blocking"/>
+      <errorCode nr="94" type="blocking"/>
+      <errorCode nr="95" type="blocking"/>
+      <errorCode nr="96" type="blocking"/>
+      <errorCode nr="97" type="locking"/>
+      <errorCode nr="98" type="blocking"/>
+      <errorCode nr="99" type="blocking"/>
+      <errorCode nr="100" type="blocking"/>
+      <errorCode nr="101" type="blocking"/>
+      <errorCode nr="102" type="blocking"/>
+      <errorCode nr="103" type="blocking"/>
+      <errorCode nr="105" type="blocking"/>
+      <errorCode nr="106" type="blocking"/>
+      <errorCode nr="107" type="blocking"/>
+      <errorCode nr="108" type="blocking"/>
+      <errorCode nr="109" type="blocking"/>
+      <errorCode nr="110" type="blocking"/>
+      <errorCode nr="111" type="blocking"/>
+      <errorCode nr="112" type="blocking"/>
+      <errorCode nr="113" type="blocking"/>
+      <errorCode nr="114" type="locking"/>
+      <errorCode nr="115" type="locking"/>
+      <errorCode nr="116" type="locking"/>
+      <errorCode nr="117" type="blocking"/>
+      <errorCode nr="118" type="blocking"/>
+      <errorCode nr="119" type="blocking"/>
+      <errorCode nr="120" type="blocking"/>
+      <errorCode nr="121" type="blocking"/>
+      <errorCode nr="122" type="blocking"/>
+      <errorCode nr="123" type="blocking"/>
+      <errorCode nr="124" type="blocking"/>
+      <errorCode nr="125" type="blocking"/>
+      <errorCode nr="126" type="blocking"/>
+      <errorCode nr="127" type="blocking"/>
+      <errorCode nr="128" type="blocking"/>
+      <errorCode nr="129" type="blocking"/>
+      <errorCode nr="130" type="blocking"/>
+      <errorCode nr="131" type="blocking"/>
+      <errorCode nr="132" type="blocking"/>
+      <errorCode nr="133" type="blocking"/>
+      <errorCode nr="134" type="blocking"/>
+      <errorCode nr="135" type="blocking"/>
+      <errorCode nr="136" type="blocking"/>
+      <errorCode nr="137" type="blocking"/>
+      <errorCode nr="138" type="blocking"/>
+      <errorCode nr="140" type="blocking"/>
+      <errorCode nr="141" type="blocking"/>
+      <errorCode nr="142" type="blocking"/>
+      <errorCode nr="145" type="blocking"/>
+      <errorCode nr="146" type="blocking"/>
+      <errorCode nr="147" type="blocking"/>
+      <errorCode nr="148" type="blocking"/>
+      <errorCode nr="149" type="blocking"/>
+      <errorCode nr="150" type="blocking"/>
+      <errorCode nr="151" type="blocking"/>
+      <errorCode nr="152" type="blocking"/>
+      <errorCode nr="153" type="blocking"/>
+      <errorCode nr="154" type="blocking"/>
+      <errorCode nr="155" type="blocking"/>
+      <errorCode nr="157" type="locking"/>
+      <errorCode nr="158" type="locking"/>
+      <errorCode nr="160" type="blocking"/>
+      <errorCode nr="161" type="blocking"/>
+      <errorCode nr="162" type="blocking"/>
+      <errorCode nr="163" type="blocking"/>
+      <errorCode nr="164" type="blocking"/>
+      <errorCode nr="165" type="blocking"/>
+      <errorCode nr="166" type="blocking"/>
+      <errorCode nr="167" type="blocking"/>
+      <errorCode nr="169" type="blocking"/>
+      <errorCode nr="171" type="blocking"/>
+      <errorCode nr="172" type="blocking"/>
+      <errorCode nr="173" type="blocking"/>
+      <errorCode nr="174" type="blocking"/>
+      <errorCode nr="175" type="blocking"/>
+      <errorCode nr="176" type="blocking"/>
+      <errorCode nr="177" type="blocking"/>
+      <errorCode nr="178" type="blocking"/>
+      <errorCode nr="179" type="blocking"/>
+      <errorCode nr="180" type="blocking"/>
+      <errorCode nr="181" type="blocking"/>
+      <errorCode nr="182" type="blocking"/>
+      <errorCode nr="183" type="blocking"/>
+      <errorCode nr="184" type="blocking"/>
+      <errorCode nr="185" type="blocking"/>
+      <errorCode nr="186" type="blocking"/>
+      <errorCode nr="187" type="blocking"/>
+      <errorCode nr="191" type="blocking"/>
+      <errorCode nr="193" type="blocking"/>
+      <errorCode nr="195" type="blocking"/>
+      <errorCode nr="196" type="blocking"/>
+      <errorCode nr="200" type="blocking"/>
+      <errorCode nr="201" type="blocking"/>
+      <errorCode nr="202" type="blocking"/>
+      <errorCode nr="203" type="blocking"/>
+      <errorCode nr="204" type="blocking"/>
+      <errorCode nr="205" type="blocking"/>
+      <errorCode nr="206" type="blocking"/>
+      <errorCode nr="207" type="blocking"/>
+      <errorCode nr="208" type="blocking"/>
+      <errorCode nr="209" type="blocking"/>
+      <errorCode nr="210" type="blocking"/>
+      <errorCode nr="211" type="blocking"/>
+      <errorCode nr="212" type="blocking"/>
+      <errorCode nr="213" type="blocking"/>
+      <errorCode nr="214" type="blocking"/>
+      <errorCode nr="215" type="blocking"/>
+      <errorCode nr="216" type="blocking"/>
+      <errorCode nr="217" type="blocking"/>
+      <errorCode nr="218" type="blocking"/>
+      <errorCode nr="220" type="blocking"/>
+      <errorCode nr="221" type="blocking"/>
+      <errorCode nr="222" type="blocking"/>
+      <errorCode nr="223" type="blocking"/>
+      <errorCode nr="224" type="blocking"/>
+      <errorCode nr="225" type="blocking"/>
+      <errorCode nr="226" type="blocking"/>
+      <errorCode nr="227" type="blocking"/>
+      <errorCode nr="228" type="blocking"/>
+      <errorCode nr="229" type="blocking"/>
+      <errorCode nr="230" type="blocking"/>
+      <errorCode nr="231" type="blocking"/>
+      <errorCode nr="232" type="blocking"/>
+      <errorCode nr="233" type="blocking"/>
+      <errorCode nr="234" type="blocking"/>
+      <errorCode nr="235" type="blocking"/>
+      <errorCode nr="236" type="blocking"/>
+      <errorCode nr="237" type="blocking"/>
+      <errorCode nr="238" type="blocking"/>
+      <errorCode nr="239" type="blocking"/>
+      <errorCode nr="241" type="blocking"/>
+      <errorCode nr="242" type="blocking"/>
+      <errorCode nr="243" type="blocking"/>
+      <errorCode nr="247" type="blocking"/>
+      <errorCode nr="253" type="locking"/>
+      <errorCode nr="254" type="blocking"/>
+      <errorCode nr="255" type="blocking"/>
+      <errorCode nr="256" type="blocking"/>
+      <errorCode nr="257" type="blocking"/>
+      <errorCode nr="258" type="blocking"/>
+      <errorCode nr="259" type="locking"/>
+      <errorCode nr="260" type="blocking"/>
+      <errorCode nr="261" type="locking"/>
+      <errorCode nr="262" type="locking"/>
+      <errorCode nr="263" type="locking"/>
+      <errorCode nr="264" type="locking"/>
+      <errorCode nr="265" type="locking"/>
+      <errorCode nr="266" type="locking"/>
+      <errorCode nr="267" type="blocking"/>
+      <errorCode nr="268" type="locking"/>
+      <errorCode nr="269" type="locking"/>
+      <errorCode nr="270" type="blocking"/>
+      <errorCode nr="271" type="locking"/>
+      <errorCode nr="272" type="locking"/>
+      <errorCode nr="273" type="blocking"/>
+      <errorCode nr="274" type="locking"/>
+      <errorCode nr="275" type="locking"/>
+      <errorCode nr="276" type="blocking"/>
+      <errorCode nr="277" type="locking"/>
+      <errorCode nr="278" type="blocking"/>
+      <errorCode nr="279" type="blocking"/>
+      <errorCode nr="280" type="blocking"/>
+      <errorCode nr="281" type="locking"/>
+      <errorCode nr="282" type="blocking"/>
+      <errorCode nr="283" type="locking"/>
+      <errorCode nr="284" type="locking"/>
+      <errorCode nr="285" type="blocking"/>
+      <errorCode nr="286" type="locking"/>
+      <errorCode nr="287" type="blocking"/>
+      <errorCode nr="288" type="locking"/>
+      <errorCode nr="289" type="locking"/>
+      <errorCode nr="290" type="locking"/>
+      <errorCode nr="291" type="locking"/>
+      <errorCode nr="292" type="locking"/>
+      <errorCode nr="293" type="locking"/>
+      <errorCode nr="294" type="locking"/>
+      <errorCode nr="295" type="locking"/>
+      <errorCode nr="296" type="locking"/>
+      <errorCode nr="298" type="blocking"/>
+      <errorCode nr="299" type="blocking"/>
+      <errorCode nr="300" type="locking"/>
+      <errorCode nr="301" type="blocking"/>
+      <errorCode nr="302" type="locking"/>
+      <errorCode nr="303" type="locking"/>
+      <errorCode nr="304" type="locking"/>
+      <errorCode nr="305" type="locking"/>
+      <errorCode nr="306" type="blocking"/>
+      <errorCode nr="307" type="blocking"/>
+      <errorCode nr="308" type="locking"/>
+      <errorCode nr="309" type="blocking"/>
+      <errorCode nr="310" type="blocking"/>
+      <errorCode nr="311" type="blocking"/>
+      <errorCode nr="312" type="blocking"/>
+      <errorCode nr="313" type="blocking"/>
+      <errorCode nr="314" type="blocking"/>
+      <errorCode nr="315" type="blocking"/>
+      <errorCode nr="316" type="blocking"/>
+      <errorCode nr="317" type="blocking"/>
+      <errorCode nr="319" type="locking"/>
+      <errorCode nr="320" type="blocking"/>
+      <errorCode nr="321" type="blocking"/>
+      <errorCode nr="322" type="blocking"/>
+      <errorCode nr="323" type="blocking"/>
+      <errorCode nr="324" type="blocking"/>
+      <errorCode nr="325" type="blocking"/>
+      <errorCode nr="326" type="blocking"/>
+      <errorCode nr="327" type="blocking"/>
+      <errorCode nr="328" type="blocking"/>
+      <errorCode nr="329" type="blocking"/>
+      <errorCode nr="330" type="blocking"/>
+      <errorCode nr="331" type="blocking"/>
+      <errorCode nr="332" type="blocking"/>
+      <errorCode nr="333" type="blocking"/>
+      <errorCode nr="334" type="blocking"/>
+      <errorCode nr="335" type="blocking"/>
+      <errorCode nr="336" type="blocking"/>
+      <errorCode nr="337" type="blocking"/>
+      <errorCode nr="338" type="blocking"/>
+      <errorCode nr="339" type="blocking"/>
+      <errorCode nr="340" type="blocking"/>
+      <errorCode nr="341" type="blocking"/>
+      <errorCode nr="342" type="blocking"/>
+      <errorCode nr="343" type="blocking"/>
+      <errorCode nr="344" type="blocking"/>
+      <errorCode nr="345" type="blocking"/>
+      <errorCode nr="346" type="blocking"/>
+      <errorCode nr="347" type="blocking"/>
+      <errorCode nr="348" type="blocking"/>
+      <errorCode nr="349" type="blocking"/>
+      <errorCode nr="350" type="blocking"/>
+      <errorCode nr="351" type="blocking"/>
+      <errorCode nr="352" type="blocking"/>
+      <errorCode nr="353" type="blocking"/>
+      <errorCode nr="354" type="blocking"/>
+      <errorCode nr="355" type="blocking"/>
+      <errorCode nr="356" type="blocking"/>
+      <errorCode nr="357" type="blocking"/>
+      <errorCode nr="358" type="blocking"/>
+      <errorCode nr="359" type="blocking"/>
+      <errorCode nr="360" type="blocking"/>
+      <errorCode nr="361" type="blocking"/>
+      <errorCode nr="362" type="blocking"/>
+      <errorCode nr="363" type="blocking"/>
+      <errorCode nr="364" type="blocking"/>
+      <errorCode nr="365" type="blocking"/>
+      <errorCode nr="366" type="blocking"/>
+      <errorCode nr="367" type="blocking"/>
+      <errorCode nr="368" type="blocking"/>
+      <errorCode nr="369" type="blocking"/>
+      <errorCode nr="370" type="blocking"/>
+      <errorCode nr="371" type="blocking"/>
+      <errorCode nr="372" type="blocking"/>
+      <errorCode nr="373" type="blocking"/>
+      <errorCode nr="374" type="blocking"/>
+      <errorCode nr="375" type="blocking"/>
+      <errorCode nr="376" type="blocking"/>
+      <errorCode nr="377" type="blocking"/>
+      <errorCode nr="378" type="blocking"/>
+      <errorCode nr="379" type="blocking"/>
+      <errorCode nr="380" type="blocking"/>
+      <errorCode nr="381" type="blocking"/>
+      <errorCode nr="382" type="blocking"/>
+      <errorCode nr="383" type="blocking"/>
+      <errorCode nr="384" type="blocking"/>
+      <errorCode nr="385" type="blocking"/>
+      <errorCode nr="386" type="blocking"/>
+      <errorCode nr="387" type="blocking"/>
+      <errorCode nr="388" type="blocking"/>
+      <errorCode nr="391" type="blocking"/>
+      <errorCode nr="392" type="blocking"/>
+      <errorCode nr="393" type="blocking"/>
+      <errorCode nr="394" type="blocking"/>
+      <errorCode nr="395" type="blocking"/>
+      <errorCode nr="396" type="blocking"/>
+      <errorCode nr="397" type="blocking"/>
+      <errorCode nr="398" type="blocking"/>
+      <errorCode nr="399" type="blocking"/>
+      <errorCode nr="400" type="locking"/>
+      <errorCode nr="401" type="blocking"/>
+      <errorCode nr="402" type="blocking"/>
+      <errorCode nr="403" type="blocking"/>
+      <errorCode nr="404" type="blocking"/>
+      <errorCode nr="405" type="blocking"/>
+      <errorCode nr="406" type="blocking"/>
+      <errorCode nr="407" type="blocking"/>
+      <errorCode nr="408" type="blocking"/>
+      <errorCode nr="409" type="blocking"/>
+      <errorCode nr="410" type="blocking"/>
+      <errorCode nr="411" type="blocking"/>
+      <errorCode nr="412" type="blocking"/>
+      <errorCode nr="413" type="blocking"/>
+      <errorCode nr="414" type="blocking"/>
+      <errorCode nr="415" type="blocking"/>
+      <errorCode nr="416" type="blocking"/>
+      <errorCode nr="417" type="blocking"/>
+      <errorCode nr="418" type="blocking"/>
+      <errorCode nr="419" type="blocking"/>
+      <errorCode nr="420" type="blocking"/>
+      <errorCode nr="421" type="blocking"/>
+      <errorCode nr="422" type="blocking"/>
+      <errorCode nr="423" type="blocking"/>
+      <errorCode nr="424" type="locking"/>
+      <errorCode nr="425" type="locking"/>
+      <errorCode nr="426" type="blocking"/>
+      <errorCode nr="427" type="blocking"/>
+      <errorCode nr="428" type="blocking"/>
+      <errorCode nr="429" type="blocking"/>
+      <errorCode nr="430" type="blocking"/>
+      <errorCode nr="431" type="blocking"/>
+      <errorCode nr="432" type="blocking"/>
+      <errorCode nr="433" type="blocking"/>
+      <errorCode nr="434" type="blocking"/>
+      <errorCode nr="435" type="blocking"/>
+      <errorCode nr="436" type="blocking"/>
+      <errorCode nr="438" type="blocking"/>
+      <errorCode nr="439" type="blocking"/>
+      <errorCode nr="441" type="blocking"/>
+      <errorCode nr="442" type="blocking"/>
+      <errorCode nr="443" type="blocking"/>
+      <errorCode nr="444" type="blocking"/>
+      <errorCode nr="445" type="blocking"/>
+      <errorCode nr="446" type="blocking"/>
+      <errorCode nr="447" type="blocking"/>
+      <errorCode nr="448" type="blocking"/>
+      <errorCode nr="449" type="blocking"/>
+      <errorCode nr="450" type="blocking"/>
+      <errorCode nr="451" type="blocking"/>
+      <errorCode nr="452" type="blocking"/>
+      <errorCode nr="453" type="blocking"/>
+      <errorCode nr="454" type="blocking"/>
+      <errorCode nr="455" type="blocking"/>
+      <errorCode nr="456" type="blocking"/>
+      <errorCode nr="457" type="blocking"/>
+      <errorCode nr="458" type="blocking"/>
+      <errorCode nr="461" type="blocking"/>
+      <errorCode nr="462" type="blocking"/>
+      <errorCode nr="463" type="blocking"/>
+      <errorCode nr="464" type="blocking"/>
+      <errorCode nr="465" type="blocking"/>
+      <errorCode nr="466" type="blocking"/>
+      <errorCode nr="467" type="blocking"/>
+      <errorCode nr="468" type="blocking"/>
+      <errorCode nr="469" type="blocking"/>
+      <errorCode nr="470" type="blocking"/>
+      <errorCode nr="471" type="blocking"/>
+      <errorCode nr="472" type="blocking"/>
+      <errorCode nr="473" type="blocking"/>
+      <errorCode nr="474" type="blocking"/>
+      <errorCode nr="475" type="blocking"/>
+      <errorCode nr="476" type="blocking"/>
+      <errorCode nr="477" type="blocking"/>
+      <errorCode nr="478" type="blocking"/>
+      <errorCode nr="479" type="blocking"/>
+      <errorCode nr="480" type="blocking"/>
+      <errorCode nr="481" type="blocking"/>
+      <errorCode nr="482" type="blocking"/>
+      <errorCode nr="483" type="blocking"/>
+      <errorCode nr="484" type="blocking"/>
+      <errorCode nr="485" type="blocking"/>
+      <errorCode nr="486" type="blocking"/>
+      <errorCode nr="487" type="blocking"/>
+
+   </errorList>
+   <counters>
+      <counter adress="330720" app="0" byte="0" inst="1" nr="3040" type="VALI32"><!--Energy to date--></counter>
+      <counter adress="331107" app="0" byte="4" inst="1" nr="3427" type="VALI32"><!--Energy since reset--></counter>
+      <counter adress="1117205" app="4" byte="8" inst="1" nr="3093" type="VALI"><!--Eng burner hours run--></counter>
+      <counter adress="1117207" app="4" byte="10" inst="1" nr="3095" type="VALI32"><!--Eng burner start counter--></counter>
+      <counter adress="1117206" app="4" byte="14" inst="1" nr="3094" type="VALI"><!--Supp burner hours run--></counter>
+      <counter adress="1117208" app="4" byte="16" inst="1" nr="3096" type="VALI32"><!--Supp burner start counter--></counter>
+   </counters>
+  <checksum value="41462" />
+</Objects>

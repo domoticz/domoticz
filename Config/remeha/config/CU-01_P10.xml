@@ -1,0 +1,1616 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<configuration xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" boiler.type="HG1921 (P10)">
+   <properties>
+      <property name="version" value="0.1"/>
+      <property name="boilername" value="HG1921 (P10)"/>
+   </properties>
+   <selections id="no.yes.code" >
+      <selection result.nr="1004" value="0"/>
+      <selection result.nr="1003" value="1"/>
+   </selections>
+   <selections id="off.on.code">
+      <selection result.nr="224" value="0"/>
+      <selection result.nr="223" value="1"/>
+   </selections>
+   <selections id="open.closed.code">
+      <selection result.nr="107" value="0"/>
+      <selection result.nr="106" value="1"/>
+   </selections>
+   <selections id="closed.open.code">
+      <selection result.nr="106" value="0"/>
+      <selection result.nr="107" value="1"/>
+   </selections>
+   <selections id="status.code">
+      <selection result.nr="2100" value="0"/>
+      <selection result.nr="2101" value="1"/>
+      <selection result.nr="2102" value="2"/>
+      <selection result.nr="2103" value="3"/>
+      <selection result.nr="2104" value="4"/>
+      <selection result.nr="2105" value="5"/>
+      <selection result.nr="2106" value="6"/>
+      <selection result.nr="2107" value="7"/>
+      <selection result.nr="2108" value="8"/>
+      <selection result.nr="2109" value="9"/>
+      <selection result.nr="2110" value="10"/>
+      <selection result.nr="2111" value="11"/>
+      <selection result.nr="2112" value="12"/>
+      <selection result.nr="2113" value="13"/>
+      <selection result.nr="2114" value="14"/>
+      <selection result.nr="2115" value="15"/>
+      <selection result.nr="2116" value="16"/>
+      <selection result.nr="2117" value="17"/>
+	  <selection result.txt="Device Mode" value="200"/>	  
+      <selection result.nr="2198" value="999"/>
+   </selections>
+   <selections id="substatus.code">
+      <selection result.nr="2200" value="0"/>
+      <selection result.nr="2201" value="1"/>
+      <selection result.nr="2202" value="2"/>
+      <selection result.nr="2203" value="3"/>
+      <selection result.nr="2204" value="4"/>
+      <selection result.nr="2210" value="10"/>
+      <selection result.nr="2211" value="11"/>
+      <selection result.nr="2212" value="12"/>
+      <selection result.nr="2213" value="13"/>
+      <selection result.nr="2214" value="14"/>
+      <selection result.nr="2215" value="15"/>
+      <selection result.nr="2216" value="16"/>
+      <selection result.nr="2217" value="17"/>
+      <selection result.nr="2218" value="18"/>
+      <selection result.nr="2219" value="19"/>
+      <selection result.nr="2220" value="20"/>
+      <selection result.nr="2230" value="30"/>
+      <selection result.nr="2231" value="31"/>
+      <selection result.nr="2232" value="32"/>
+      <selection result.nr="2233" value="33"/>
+      <selection result.nr="2234" value="34"/>
+      <selection result.nr="2235" value="35"/>
+      <selection result.nr="2236" value="36"/>
+      <selection result.nr="2237" value="37"/>
+      <selection result.nr="2238" value="38"/>
+      <selection result.nr="2239" value="39"/>
+      <selection result.nr="2240" value="40"/>
+      <selection result.nr="2241" value="41"/>
+      <selection result.nr="2242" value="42"/>
+      <selection result.nr="2243" value="43"/>
+      <selection result.nr="2244" value="44"/>
+      <selection result.txt="Limited Power on Tfg" value="45"/>
+      <selection result.nr="2260" value="60"/>
+      <selection result.nr="2261" value="61"/>
+      <selection result.nr="2262" value="62"/>
+      <selection result.nr="2263" value="63"/>
+      <selection result.txt="100 INIT_DONE" value="100"/>
+      <selection result.txt="101 INIT_SU" value="101"/>
+      <selection result.txt="102 INIT_PSU" value="102"/>
+      <selection result.txt="103 INIT_IDENTIFIERS" value="103"/>
+      <selection result.txt="104 INIT_BLOCKING_PARAMETERS" value="104"/>
+      <selection result.txt="105 INIT_GVC" value="105"/>
+      <selection result.txt="106 INIT_LINE" value="106"/>
+      <selection result.txt="107 INIT_BLOCKING" value="107"/>
+      <selection result.txt="2298" value="999"/>
+      <selection result.txt="2299" value="255"/>
+   </selections>
+   <selections id="error.code">
+    <selection result.txt="TFlow Open" value="0"/> <!-- sensorErrors -->
+      <selection result.txt="TFlow Closed" value="1"/>
+      <selection result.txt="Tflow sensor missing" value="2"/>
+      <selection result.txt="Tflow delta too high" value="3"/>
+      <selection result.txt="TReturn Open" value="4"/><!-- -->
+      <selection result.txt="TReturn Closed" value="5"/><!-- -->
+      <selection result.txt="ERROR_SENSOR_TRETURN_MISSING" value="6"/>
+      <selection result.txt="ERROR_SENSOR_TRETURN_DELTA_TOO_HIGH" value="7"/>
+      <selection result.txt="ERROR_SENSOR_THEAT_EX_OPEN" value="8"/>
+      <selection result.txt="ERROR_SENSOR_THEAT_EX_CLOSED" value="9"/>
+      <selection result.txt="ERROR_SENSOR_THEAT_EX_MISSING" value="10"/>
+      <selection result.txt="ERROR_SENSOR_THEAT_EX_DELTA_TOO_HIGH" value="11"/>
+      <selection result.txt="TDcw Open" value="12"/>
+      <selection result.txt="TDcw Closed" value="13"/>
+      <selection result.txt="TDcw Missing" value="14"/>
+      <selection result.txt="ERROR_SENSOR_TDCW_DELTA_TOO_HIGH" value="15"/>
+      <selection result.txt="ERROR_SENSOR_TBOILER_OPEN" value="16"/>
+      <selection result.txt="ERROR_SENSOR_TBOILER_CLOSED" value="17"/>
+      <selection result.txt="ERROR_SENSOR_TBOILER_MISSING" value="18"/>
+      <selection result.txt="ERROR_SENSOR_TBOILER_DELTA_TOO_HIGH" value="19"/>
+      <selection result.txt="ERROR_SENSOR_TFLUE_GAS_OPEN" value="20"/>
+      <selection result.txt="ERROR_SENSOR_TFLUE_GAS_CLOSED" value="21"/>
+      <selection result.txt="ERROR_SENSOR_TFLUE_GAS_MISSING" value="22"/>
+      <selection result.txt="ERROR_SENSOR_TFLUE_GAS_DELTA_TOO_HIGH" value="23"/>
+      <selection result.txt="ERROR_SENSOR_TPCB_OPEN" value="24"/>
+      <selection result.txt="ERROR_SENSOR_TPCB_CLOSED" value="25"/>
+      <selection result.txt="ERROR_SENSOR_TPCB_MISSING" value="26"/>
+      <selection result.txt="ERROR_SENSOR_TPCB_DELTA_TOO_HIGH" value="27"/>
+      <selection result.txt="ERROR_SENSOR_TSOLAR_OPEN" value="28"/>
+      <selection result.txt="ERROR_SENSOR_TSOLAR_CLOSED" value="29"/>
+      <selection result.txt="ERROR_SENSOR_TSOLAR_MISSING" value="30"/>
+      <selection result.txt="ERROR_SENSOR_TSOLAR_DELTA_TOO_HIGH" value="31"/>
+      <selection result.txt="ERROR_SENSOR_TOUTSIDE_OPEN" value="32"/>
+      <selection result.txt="ERROR_SENSOR_TOUTSIDE_CLOSED" value="33"/>
+      <selection result.txt="ERROR_SENSOR_TOUTSIDE_MISSING" value="34"/>
+      <selection result.txt="ERROR_SENSOR_TOUTSIDE_DELTA_TOO_HIGH" value="35"/>
+      <selection result.txt="ERROR_SENSOR_TSECOND_RETURN_OPEN" value="36"/>
+      <selection result.txt="ERROR_SENSOR_TSECOND_RETURN_CLOSED" value="37"/>
+      <selection result.txt="ERROR_SENSOR_TSECOND_RETURN_MISSING" value="38"/>
+      <selection result.txt="ERROR_SENSOR_TSECOND_RETURN_DELTA_TOO_HIGH" value="39"/>
+      <selection result.txt="ERROR_SENSOR_WATER_PRESSURE_OPEN" value="40"/>
+      <selection result.txt="ERROR_SENSOR_WATER_PRESSURE_CLOSED" value="41"/>
+      <selection result.txt="ERROR_SENSOR_WATER_PRESSURE_MISSING" value="42"/>
+      <selection result.txt="ERROR_SENSOR_WATER_PRESSURE_DELTA_TOO_HIGH" value="43"/>
+
+      <selection result.txt="Communication Error" value="256"/> <!-- heErrors -->
+      <selection result.txt="SmS Communication Timeout" value="257"/>
+      <selection result.txt="SU ID Failed" value="258"/>
+      <selection result.txt="Flame Loss Warning" value="259"/>
+      <selection result.txt="Flame Loss Error" value="260"/>
+      <selection result.txt="Max Delta TF-TR" value="261"/>
+      <selection result.txt="Max Delta TH-TF" value="262"/>
+      <selection result.txt="Max Delta TH-TR" value="263"/>
+      <selection result.txt="Delta T Max 3" value="264"/>
+      <selection result.txt="GPS" value="265"/>
+      <selection result.txt="VPS" value="266"/>
+      <selection result.txt="Fan Out Of Range" value="267"/>
+      <selection result.txt="Return Higher Than Flow" value="268"/>
+      <selection result.txt="Max THeat Ex" value="269"/>
+      <selection result.txt="Max TFlow" value="270"/>
+      <selection result.txt="Max Tflue Gas" value="271"/>
+      <selection result.txt="Delta T TF-TR Deair Test Failed" value="272"/>
+      <selection result.txt="No Gradient TFlow-TReturn" value="273"/>
+      <selection result.txt="No Gradient After Burner Start" value="274"/>
+	  <selection result.txt="Gas Family detection required" value="275"/>
+
+      <selection result.txt="Reset In Progress" value="512"/> <!-- appErrors -->
+      <selection result.txt="Identification Running" value="513"/>
+      <selection result.txt="Waiting For Configuration Number" value="514"/>
+      <selection result.txt="Configuration Error" value="515"/>
+      <selection result.txt="Parameter Error" value="516"/>
+      <selection result.txt="PSU" value="517"/>
+      <selection result.txt="Water Pressure Warning" value="518"/>
+	  <selection result.txt="Water Pressure Error" value="519"/>
+      <selection result.txt="HMI missing" value="520"/>
+      <selection result.txt="Partial block" value="521"/>
+      <selection result.txt="Full Block" value="522"/>
+      <selection result.txt="Live Neutral Swapped" value="523"/>
+      <selection result.txt="Release Signal" value="524"/>
+      <selection result.txt="Blocking Input" value="525"/>
+      <selection result.txt="PCB Temperature" value="526"/>
+      <selection result.txt="External PSU Timeout" value="527"/>
+      <selection result.txt="Internal PSU Timeout" value="528"/>
+      <selection result.txt="GVC Communication Timeout" value="529"/>
+      <selection result.txt="OBD error" value="530"/>
+      <selection result.txt="Jumper 1 changed" value="531"/>
+      <selection result.txt="Jumper 2 changed" value="532"/>
+      <selection result.txt="Jumper 3 changed" value="533"/>
+ 
+      <selection result.txt="ERROR_GVC_PARAMETER_ERROR                " value="768"/> <!-- gvceErrors -->
+      <selection result.txt="ERROR_GVC_T_FLOW_SHORT                   " value="769"/>
+      <selection result.txt="ERROR_GVC_T_FLOW_OPEN                    " value="770"/>
+      <selection result.txt="ERROR_GVC_T_FLOW_GREATER_THEN_MAX        " value="771"/>
+      <selection result.txt="ERROR_GVC_T_FLUE_SHORT                   " value="772"/>
+      <selection result.txt="ERROR_GVC_T_FLUE_OPEN                    " value="773"/>
+      <selection result.txt="ERROR_GVC_T_FLUE_GREATER_THEN_MAX        " value="774"/>
+      <selection result.txt="ERROR_GVC_TFLOW_1_2_MAX_DIFFERENCE       " value="775"/>
+      <selection result.txt="ERROR_GVC_STB1_ACTIVATED                 " value="776"/>
+      <selection result.txt="ERROR_GVC_TFLUE_1_2_MAX_DIFFERENCE       " value="777"/>
+      <selection result.txt="ERROR_GVC_UNSUCCESSFULL_STARTS           " value="778"/>
+      <selection result.txt="ERROR_GVC_VPS_TEST_FAILURE               " value="779"/>
+      <selection result.txt="ERROR_GVC_FALSE_FLAME                    " value="780"/>
+      <selection result.txt="ERROR_GVC_FAN_OUT_OF_RANGE               " value="781"/>
+      <selection result.txt="ERROR_GVC_COMBUSTION_ERROR               " value="782"/>
+      <selection result.txt="ERROR_GVC_FLUE_BLOCK                     " value="783"/>
+      <selection result.txt="ERROR_GVC_THERMOCOUPLE_ERROR             " value="784"/>
+      <selection result.txt="ERROR_GVC_FAN_ERROR_TARGET_MF_TOO_HIGH   " value="785"/>
+      <selection result.txt="ERROR_GVC_FAN_ERROR_TARGET_MF_TOO_LOW    " value="786"/>
+      <selection result.txt="ERROR_GVC_MF_COMMUNICATION_ERROR         " value="787"/>
+      <selection result.txt="ERROR_GVC_MF_DEVIATION_ERROR             " value="788"/>
+      <selection result.txt="ERROR_GVC_DELTA_BURNER_TEMP_ERROR        " value="789"/>
+      <selection result.txt="ERROR_GVC_MF_SENSOR_EMPTY                " value="790"/>
+      <selection result.txt="ERROR_GVC_INTERNAL_GVC_LOCKING           " value="791"/>
+      <selection result.txt="ERROR_GVC_NO_GAS_FAMILY_FOUND            " value="792"/>
+      <selection result.txt="ERROR_GVC_UNKNOWN_LOCKING                " value="895"/>
+      <selection result.txt="ERROR_GVC_PARAMETER_TABLE_ERROR          " value="896"/> <!-- gvceBlockings -->
+      <selection result.txt="ERROR_GVC_INVALID_DATA_TIMEOUT           " value="897"/>
+      <selection result.txt="ERROR_GVC_FLAME_LOSS                     " value="898"/>
+      <selection result.txt="ERROR_GVC_RESERVED_1                     " value="899"/>
+      <selection result.txt="ERROR_GVC_BURNER_PROFILE_ERROR           " value="900"/>
+      <selection result.txt="ERROR_GVC_INTERNAL_BLOCKING              " value="901"/>
+      <selection result.txt="ERROR_GVC_SYSTEM_TYPE_MISMATCH           " value="902"/>
+      <selection result.txt="ERROR_GVC_PARAMETER_TYPE_MISMATCH        " value="903"/>
+      <selection result.txt="ERROR_GVC_RESERVED_2                     " value="904"/>
+      <selection result.txt="ERROR_GVC_RESERVED_3                     " value="905"/>
+      <selection result.txt="ERROR_GVC_RESERVED_4                     " value="906"/>
+      <selection result.txt="ERROR_GVC_RESERVED_5                     " value="907"/>
+      <selection result.txt="ERROR_GVC_RESERVED_6                     " value="908"/>
+      <selection result.txt="ERROR_GVC_FAN_ERROR_NO_MASS_FLOW         " value="909"/>
+      <selection result.txt="ERROR_GVC_MASS_FLOW_COMMUNICATION_WARNING" value="910"/>
+      <selection result.txt="ERROR_GVC_MASS_FLOW_DEVIATION_WARNING    " value="911"/>
+      <selection result.txt="ERROR_GVC_RESERVED_7                     " value="912"/>
+      <selection result.txt="ERROR_GVC_RESERVED_8                     " value="913"/>
+      <selection result.txt="ERROR_GVC_24_HOUR_RESET_IN_PROGRESS      " value="914"/>
+      <selection result.txt="ERROR_GVC_UNKNOWN_BLOCKING               " value="1023"/>
+   </selections>
+   <selections id="error.group">
+      <selection result.txt="sensorErrors" value="0"/>
+      <selection result.txt="heErrors" value="1"/>
+      <selection result.txt="appErrors" value="2"/>
+      <selection result.txt="gvceErrors" value="3"/>
+	  <selection result.txt="" value="255"/>
+   </selections>
+   <selections id="error.type">
+      <selection result.txt="Locking" value="0"/>
+      <selection result.txt="Blocking" value="3"/>
+      <selection result.txt="Warning" value="6"/>
+	  <selection result.txt="No error" value="255"/>
+   </selections>   
+   <configurations name="identification">
+      <config group="1" type="field">
+         <present description.txt="Number of entries" name.txt="Number of entries" unit.txt="-"/>
+         <function byte="0" expression="A x 1" format="0"/>
+         <limits max="65535" min="0"/>
+      </config>
+	  <config group="1" type="field">
+         <present description.txt="Manufacturer Code" name.txt="Manufacturer Code" unit.txt="-"/>
+         <function byte="1" number="10" argument="20,VISIBLESTRING"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Type" name.txt="Type" unit.txt="-"/>
+         <function byte="21" expression="(A.0+B.1) x 1" format="0"/>
+         <limits max="65535" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Hardware Version" name.txt="Hardware Version" unit.txt="-"/>
+         <function byte="23" expression="(A.0+B.1) x 1" format="0"/>
+         <limits max="65535" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Software major version" name.txt="Software major version" unit.txt="-"/>
+         <function byte="26" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Software minor version" name.txt="Software minor version" unit.txt="-"/>
+         <function byte="25" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Device OBD Version" name.txt="Device OBD Version" unit.txt="-"/>
+         <function byte="27" expression="(A.0+B.1) x 1" format="0"/>
+         <limits max="65535" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Global OBD Version" name.txt="Global OBD Version" unit.txt="-"/>
+         <function byte="29" expression="(A.0+B.1) x 1" format="0"/>
+         <limits max="65535" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Production year" name.txt="Production year" unit.txt="-"/>
+         <function byte="31" expression="A x 1" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Production week" name.txt="Production week" unit.txt="-"/>
+         <function byte="32" expression="A x 1" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Production day" name.txt="Production day" unit.txt="-"/>
+         <function byte="33" expression="A x 1" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Serial number" name.txt="Serial number" unit.txt="-"/>
+         <function byte="34" expression="(A.3+B.2+C.1+D.0) x 1" format="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="bspVersionId" name.txt="bspVersionId"/>
+         <function byte="38" expression="(A.0+B.1) x 1" format="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="bspVersion" name.txt="bspVersion"/>
+         <function byte="40" expression="(A.0+B.1+C.2+D.3) x 1" format="0"/>
+      </config>
+      <config group="1" type="select">
+         <present description.txt="bspVersion" name.txt="bspVersion under const" unit.txt="-"/>
+         <function byte="44" expression="A" format="0"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="platformVersionId" name.txt="platformVersionId"/>
+         <function byte="45" expression="(A.0+B.1) x 1" format="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="platformVersion" name.txt="platformVersion"/>
+         <function byte="47" expression="(A.0+B.1+C.2+D.3) x 1" format="0"/>
+      </config>
+      <config group="1" type="select">
+         <present description.txt="platformVersion" name.txt="platformVersion under const" unit.txt="-"/>
+         <function byte="51" expression="A" format="0"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="overallVersionId" name.txt="overallVersionId"/>
+         <function byte="52" expression="(A.0+B.1) x 1" format="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="overallVersion" name.txt="overallVersion"/>
+         <function byte="54" expression="(A.0+B.1+C.2+D.3) x 1" format="0"/>
+      </config>
+      <config group="1" type="select">
+         <present description.txt="overallVersion" name.txt="overallVersion under const" unit.txt="-"/>
+         <function byte="58" expression="A" format="0"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="productVersionId" name.txt="productVersionId"/>
+         <function byte="59" expression="(A.0+B.1) x 1" format="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="productVersion" name.txt="productVersion"/>
+         <function byte="61" expression="(A.0+B.1+C.2+D.3) x 1" format="0"/>
+      </config>
+      <config group="1" type="select">
+         <present description.txt="productVersion" name.txt="productVersion under const" unit.txt="-"/>
+         <function byte="65" expression="A" format="0"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="configurationVersionId" name.txt="configurationVersionId"/>
+         <function byte="66" expression="(A.0+B.1) x 1" format="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="configurationVersion" name.txt="configurationVersion"/>
+         <function byte="68" expression="(A.0+B.1+C.2+D.3) x 1" format="0"/>
+      </config>
+      <config group="1" type="select">
+         <present description.txt="configurationVersion" name.txt="configurationVersion under const" unit.txt="-"/>
+         <function byte="72" expression="A" format="0"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc number of entries" name.txt="Gvc number of entries" unit.txt="-"/>
+         <function byte="73" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc location" name.txt="Gvc location" unit.txt="-"/>
+         <function byte="74" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc type" name.txt="Gvc type" unit.txt="-"/>
+         <function byte="75" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc hardware Version" name.txt="Gvc hardware Version" unit.txt="-"/>
+         <function byte="76" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc software Version" name.txt="Gvc software Version" unit.txt="-"/>
+         <function byte="77" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc parameter Type" name.txt="Gvc parameter Type" unit.txt="-"/>
+         <function byte="78" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc parameter Version" name.txt="Gvc parameter Version" unit.txt="-"/>
+         <function byte="79" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc production week" name.txt="Gvc production week" unit.txt="-"/>
+         <function byte="80" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc production year" name.txt="Gvc production year" unit.txt="-"/>
+         <function byte="81" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Gvc serial number" name.txt="Gvc serial number" unit.txt="-"/>
+         <function byte="82" expression="A.0 + B.1" format="0"/>
+      </config>
+   </configurations>
+   <configurations name="sample">
+      <config group="1" type="field"> <!-- Flow temperature -->
+         <present description.nr="1363" name.nr="1362" unit.nr="312"/>
+         <function byte="0" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="150" max.nr="106" min="-25" min.nr="107"/>
+      </config>
+	  <config group="1" type="field"><!-- Return temperature -->
+         <present description.nr="1365" name.nr="1364" unit.nr="312"/>
+         <function byte="2" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="150" max.nr="106" min="-25" min.nr="107"/>
+      </config>
+	  <config group="1" type="field"><!-- Outside temperature -->
+         <present description.nr="1679" name.nr="1678" unit.nr="312"/>
+         <function byte="6" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="60" max.nr="106" min="-60" min.nr="107"/>
+      </config>
+	  <config group="1" type="field"><!-- Boiler temperature -->
+         <present description.nr="1675" name.nr="1674" unit.nr="312"/>
+         <function byte="8" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="150" max.nr="106" min="-25" min.nr="107"/>
+      </config>
+	  <config group="1" type="field"> <!-- flue temperature-->
+         <present description.nr="1128" name.nr="1128" unit.nr="312"/>
+         <function byte="10" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="150" max.nr="106" min="-9" min.nr="107"/> <!-- minimum is -10 coming from gvc.. based on measurement -->
+      </config>
+	  <config group="1" type="field"><!-- Room temperature -->
+         <present description.nr="1377" name.nr="1376" unit.nr="312"/>
+         <function byte="14" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="150" max.nr="106" min="-25" min.nr="107"/>
+      </config>
+      <config group="1" type="field"><!-- Ch temperature setpoint -->
+         <present description.nr="1379" name.nr="1378" unit.nr="312"/>
+         <function byte="16" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="100" max.nr="106" min="0" min.nr="107"/>
+      </config>
+      <config group="1" type="field"><!-- Dhw temperature setpoint -->
+         <present description.nr="1381" name.nr="1380" unit.nr="312"/>
+         <function byte="18" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="100" max.nr="106" min="0" min.nr="107"/>
+      </config>
+      <config group="1" type="field"><!-- Room temperature setpoint -->
+         <present description.nr="1383" name.nr="1382" unit.nr="312"/>
+         <function byte="20" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="100" max.nr="106" min="0" min.nr="107"/>
+      </config>
+      <config group="2" type="field"><!-- Fanspeed setpoint -->
+         <present description.nr="1385" name.nr="1384" unit.nr="313"/>
+         <function byte="22" expression="A.0 + B.1" format="0"/>
+         <limits max="7000" min="0"/>
+      </config>
+      <config group="2" type="field"><!-- Fanspeed -->
+         <present description.nr="1387" name.nr="1386" unit.nr="313"/>
+         <function byte="24" expression="A.0 + B.1" format="0"/>
+         <limits max="7000" min="0"/>
+      </config>
+      <config group="2" type="field"><!-- Ionisation current -->
+         <present description.nr="1389" name.nr="1388" unit.nr="1465"/>
+         <function byte="26" expression="A x 0.1" format="0.0"/>
+         <limits max="13" min="0"/>
+      </config>
+      <config group="1" type="field"><!-- Ch internal setpoint -->
+         <present description.nr="1824" name.nr="1824" unit.nr="312"/>
+         <function byte="27" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="100" max.nr="106" min="0" min.nr="107"/>
+      </config>
+	  <config group="2" type="field"><!-- 0..10V --> <!--ARA - 0-10V input -->
+         <present description.txt="0-10V input" name.txt="0-10V input" unit.txt="V"/>
+         <function byte="12" expression="A x 0.1" format="0.0"/>
+         <limits max="10" min="0"/>
+      </config>
+      <config group="2" type="field"><!-- Requested relative modulation -->
+         <!--present description.nr="407" name.nr="1400" unit.nr="346"/--> 
+		 <present description.nr="6009" name.nr="6009" unit.nr="346"/>
+         <function byte="29" expression="(A.0 + B.1) x 0.01" format="0"/>
+         <limits max="100" min="0"/>
+      </config>
+     <config group="2" type="field"><!-- Pumpspeed 1 -->
+         <present description.nr="1397" name.nr="1396" unit.nr="346"/>
+         <function byte="31" expression="(A.0 + B.1) x 0.1" format="0"/>
+         <limits max="100" min="0"/>
+      </config>
+     <!--
+	 <config group="2" type="field"> PumpSpeed 2
+         <present description.nr="1397" name.nr="1396" unit.nr="346"/>
+         <function byte="33" expression="(A.0 + B.1) x 0.1" format="0"/>
+         <limits max="100" min="0"/>
+      </config>
+	  -->
+      <config group="2" type="field"><!-- Requested modulation -->
+         <present description.nr="1401" name.nr="408" unit.nr="346"/>
+         <function byte="35" expression="A" format="0"/>
+         <limits max="100" min="0"/>
+      </config>
+      <config group="2" type="field"><!-- Current relative modulation -->
+         <!--present description.nr="1403" name.nr="1402" unit.nr="346"/-->
+		 <present description.nr="6008" name.nr="6008" unit.nr="346"/>
+         <function byte="36" expression="(A.0 + B.1) x 0.01" format="0"/>
+         <limits max="100" min="0"/>
+      </config>
+      <config group="3" type="bit"><!-- Ot present -->
+         <present description.nr="1405" name.nr="1404"/>
+         <function bit="0" byte="40" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Modulated heatdemand -->
+         <present description.nr="1407" name.nr="1406"/>
+         <function bit="1" byte="40" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Ot short circuit -->
+         <present description.nr="1409" name.nr="1408"/>
+         <function bit="2" byte="40" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>	  
+      <config group="3" type="bit"><!-- Frost protection -->
+         <present description.nr="2511" name.nr="2511"/>
+         <function bit="3" byte="40" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Comfort -->
+         <present description.nr="1413" name.nr="1412"/>
+         <function bit="4" byte="40" expression="A" format="0" invert="true"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Dhw block -->
+         <present description.nr="2519" name.nr="2519"/>
+         <function bit="5" byte="40" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Anti legionella -->
+         <present description.nr="1743" name.nr="1743"/>
+         <function bit="6" byte="40" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Dhw heatdemand -->
+         <present description.nr="1415" name.nr="1414"/>
+         <function bit="7" byte="40" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Blocking input -->
+         <present description.nr="1416" name.nr="1416"/>
+         <function bit="0" byte="41" expression="A" format="0" invert="true"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Release input -->
+         <present description.nr="2514" name.nr="2514"/>
+         <function bit="1" byte="41" expression="A" format="0" invert="true"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Ionisation signal -->
+         <present description.nr="1420" name.nr="1420"/>
+         <function bit="2" byte="41" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Tapswitch -->
+         <present description.nr="1423" name.nr="1422"/>
+         <function bit="3" byte="41" expression="A" format="0" invert="false"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Vps -->
+         <present description.nr="2515" name.nr="2515"/>
+         <function bit="4" byte="41" expression="A" format="0" invert="false"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Gps -->
+         <present description.nr="225" name.nr="225"/>
+         <function bit="5" byte="41" expression="A" format="0" invert="false"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Ch enable input -->
+         <present description.nr="1711" name.nr="1711"/>
+         <function bit="6" byte="41" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Dhw enable input -->
+         <present description.nr="1712" name.nr="1712"/>
+         <function bit="7" byte="41" expression="A" format="0" invert="false"/>
+         <node-ref id="no.yes.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Twv -->
+         <present description.nr="1438" name.nr="1438"/>
+         <function bit="0" byte="42" expression="A" format="0" invert="false"/>
+         <selections>
+            <selection result.nr="2667" value="0"/>
+            <selection result.nr="2668" value="1"/>
+         </selections>
+      </config>
+      <config group="3" type="bit"><!-- External twv -->
+         <present description.nr="2529" name.nr="2529"/>
+         <function bit="1" byte="42" expression="A" format="0" invert="false"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Gasvalve 1 closed -->
+         <present description.nr="2504" name.nr="2504"/>
+         <function bit="2" byte="42" expression="A" format="0" invert="true"/>
+         <node-ref id="closed.open.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Gasvalve 2 closed -->
+         <present description.nr="1671" name.nr="1671"/>
+         <function bit="3" byte="42" expression="A" format="0" invert="true"/>
+         <node-ref id="closed.open.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Spark -->
+         <present description.nr="1436" name.nr="1436"/>
+         <function bit="4" byte="42" expression="A" format="0" invert="false"/>
+         <node-ref id="off.on.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Hydraulic valve -->
+         <present description.nr="2501" name.nr="2501"/>
+         <function bit="5" byte="42" expression="A" format="0" invert="false"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- External gas valve -->
+         <present description.nr="1742" name.nr="1742"/>
+         <function bit="6" byte="42" expression="A" format="0" invert="false"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Flue gas valve -->
+         <present description.nr="1673" name.nr="1673"/>
+         <function bit="7" byte="42" expression="A" format="0" invert="false"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Pump 1 -->
+         <present description.nr="1446" name.nr="1446"/>
+         <function bit="0" byte="43" expression="A" format="0" invert="false"/>
+         <node-ref id="off.on.code" type="selections"/>
+      </config>
+	  <config group="3" type="bit"><!-- External ch pump -->
+         <present description.nr="2530" name.nr="2530"/>
+         <function bit="2" byte="43" expression="A" format="0" invert="false"/>
+         <node-ref id="off.on.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"> <!-- status relais-->
+         <present description.nr="1700" name.nr="1699"/>
+         <function bit="4" byte="43" expression="A" format="0" invert="false"/>
+         <node-ref id="open.closed.code" type="selections"/>
+      </config>
+	  <config group="3" type="bit"> <!-- High Power status -->
+         <present description.txt="High Power status" name.txt="High Power status"/>
+         <function bit="5" byte="43" expression="A" format="0" invert="false"/>
+         <node-ref id="off.on.code" type="selections"/>
+      </config>
+	  <config group="3" type="bit"><!-- Low Power status -->
+         <present description.txt="Low Power status" name.txt="Low Power status"/>
+         <function bit="6" byte="43" expression="A" format="0" invert="false"/>
+         <node-ref id="off.on.code" type="selections"/>
+      </config>
+      <config group="3" type="bit"><!-- Smart power -->
+         <present description.nr="2528" name.nr="2527"/>
+         <function bit="7" byte="43" expression="A" format="0" invert="false"/>
+         <node-ref id="off.on.code" type="selections"/>
+      </config>
+  	  <config group="0" label="STATUS" type="select"><!-- cu state -->
+         <present description.nr="2023" name.nr="2023"/>
+         <function byte="44" expression="A" format="0"/>
+         <node-ref id="status.code" type="selections"/>
+      </config>
+      <config group="2" type="field"><!--Lockout code -->
+         <present description.nr="2026" name.nr="2026"/>
+         <function byte="45" expression="A" format="0"/>
+		 <limits max="255" min="0"/>
+      </config> 
+      <config group="2" type="field"><!--Blocking code-->
+         <present description.nr="2025" name.nr="2025"/>
+         <function byte="46" expression="A" format="0"/>
+		 <limits max="255" min="0"/>
+      </config>	 
+      <config group="0" label="SUBSTATUS" type="select"><!-- cu sub state -->
+         <present description.nr="2024" name.nr="2024"/>
+         <function byte="47" expression="A" format="0"/>
+         <node-ref id="substatus.code" type="selections"/>
+      </config>
+      <config group="1" type="field"><!-- Heatexchanger temperature -->
+         <present description.nr="2513" name.nr="2512" unit.nr="312"/>
+         <function byte="48" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="150" max.nr="106" min="-25" min.nr="107"/>
+      </config>
+      <config group="2" type="field" ul="3"> <!-- Gcd state -->
+         <present description.txt="Gvc state" name.txt="Gvc state" unit.txt=""/>
+         <function byte="50" expression="A" format="0"/>
+         <limits max="11" min="0"/>
+      </config>
+      <config group="2" type="field" ul="3"><!-- Gcd locking code -->
+         <present description.txt="Gvc locking" name.txt="Gvc locking" unit.txt=""/>
+         <function byte="51" expression="A" format="0"/>
+         <limits max="17" min="0"/>
+      </config>
+      <config group="2" type="field" ul="3"><!-- Gcd blocking code -->
+         <present description.txt="Gvc blocking" name.txt="Gvc blocking" unit.txt=""/>
+         <function byte="52" expression="A" format="0"/>
+         <limits max="5" min="0"/>
+      </config>
+      <config group="2" type="field"><!-- Water pressure -->
+         <present description.nr="410" name.nr="410" unit.nr="2516"/>
+         <function byte="53" expression="A x 0.1" format="0.0"/>
+         <limits max="10" max.nr="106" min="0" min.nr="107"/>
+      </config>
+      <config group="1" type="field"><!-- Control temperature -->
+         <present description.nr="2521" name.nr="2520" unit.nr="312"/>
+         <function byte="55" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="100" max.nr="106" min="0" min.nr="107"/>
+      </config>
+     <config group="2" type="field"><!-- Dhw flow -->
+         <present description.nr="2522" name.nr="2522" unit.nr="2524"/>
+         <function byte="57" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="25" min="0"/>
+      </config>
+ 	  <config group="3" type="bit"> <!-- Shunt pump running -->
+         <present description.txt="SmS Shunt Pump" name.txt="SmS Shunt Pump"/>
+         <function bit="1" byte="59" expression="A" format="0" invert="false"/>
+         <node-ref id="off.on.code" type="selections"/>
+      </config>	  
+      <config group="1" type="field"><!-- Solar temperature -->
+         <present description.nr="2526" name.nr="2525" unit.nr="312"/>
+         <function byte="60" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="150" max.nr="106" min="-25" min.nr="107"/>
+      </config>
+      <!--
+	  <config group="0" label="LOCKING" type="select"> Error code 
+         <present description.nr="1466" name.nr="1466"/>
+         <function byte="66" expression="(A.0 + B.1)" format="0"/>
+         <node-ref id="error.code" type="selections"/>
+      </config>-->	
+	  <config group="0" label="GENERIC_ERROR" type="select"> 
+         <present description.txt="error" name.txt="error"/>
+         <function byte="66" expression="(A.0 + B.1)" format="0"/>
+         <node-ref id="error.code" type="selections"/>
+      </config>
+      <config group="0" label="GENERIC_ERROR_GROUP" type="select"> 
+         <present description.txt="error" name.txt="error"/>
+         <function byte="67" expression="A" format="0"/>
+         <node-ref id="error.group" type="selections"/>
+      </config>
+       <config group="1" type="field"><!-- Thermocouple setpoint -->
+         <present description.nr="6002" name.nr="6002" unit.nr="312"/>
+         <function byte="68" expression="(A.0 + B.1) x 0.1" format="0"/>
+         <limits max="512" min="0"/>
+      </config>	  
+      <config group="2" type="field"><!-- Gas valve setpoint -->
+         <present description.nr="6003" name.nr="6003" unit.txt=""/>
+         <function byte="70" expression="A.0 + B.1" format="0"/>
+         <limits max="1000" min="0"/>
+      </config>		  
+      <config group="2" type="field"><!-- Mass flow -->
+         <present description.nr="6004" name.nr="6004" unit.txt="g/s"/>
+         <function byte="72" expression="(A.0 + B.1) x 0.01" format="0.00"/> <!-- GVC spec says it reports in g/s, language file says mg/s-->
+         <limits max="65536" min="0"/>
+      </config>	
+      <config group="2" type="field"><!-- Mass flow setpoint -->
+         <present description.nr="6005" name.nr="6005" unit.txt="g/s"/>
+         <function byte="74" expression="(A.0 + B.1) x 0.01" format="0.00"/> <!-- GVC spec says it reports in g/s, language file says mg/s-->
+         <limits max="65536" min="0"/>
+      </config>		  
+	  <config group="1" type="field"> <!-- second return temp-->
+         <present description.txt="Second return temperature" name.txt="Second return temperature" unit.nr="312"/>
+         <function byte="76" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+         <limits max="150" max.nr="106" min="-25" min.nr="107"/>
+      </config>
+      <config group="2" type="field"><!-- Gas valve correction in GVC V25 this is the ambient temperature --> 
+         <present description.txt="Ambient temperature" name.txt="Ambient temperature" unit.nr="312"/>
+         <function byte="78" expression="sgn(A.0 + B.1)" format="0"/>
+         <limits max="65536" min="0"/>
+      </config>		
+      <config group="2" type="field"><!-- Gvc pwm value -->
+         <present description.nr="6007" name.nr="6007" unit.nr="346"/>
+         <function byte="80" expression="A" format="0"/>
+         <limits max="100" min="0"/>
+      </config>			  
+       <config group="1" type="field"><!-- Burner temperature 1 -->
+         <present description.nr="6010" name.nr="6010" unit.nr="312"/>
+         <function byte="85" expression="sgn(A.0 + B.1) x 0.1" format="0"/>
+         <limits max="320" min="0"/>
+      </config>		  
+      <config group="1" type="field"><!-- Burner temperature 2 -->
+         <present description.nr="6011" name.nr="6011" unit.nr="312"/>
+         <function byte="87" expression="sgn(A.0 + B.1) x 0.1" format="0"/>
+         <limits max="320" min="0"/>
+      </config>
+      <config group="2" type="field"><!-- Gvc gas valve position -->
+         <present description.nr="6012" name.nr="6012" unit.txt=""/>
+         <function byte="89" expression="A.0 + B.1" format="0"/>
+         <limits max="1000" min="0"/>
+      </config>
+      <config group="2" type="field"><!-- Gvc sub state -->
+         <present description.nr="6000" name.nr="6000" unit.txt=""/>
+         <function byte="91" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>	  	  
+      <config group="2" type="field"><!-- Gvc mode -->
+         <present description.nr="6001" name.nr="6001" unit.txt=""/>
+         <function byte="92" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>	
+ 	  <!--
+	  <config group="2" type="field"> parApErrorCustomCode
+         <present description.txt="Custom code" name.txt="Custom code" unit.txt=""/>
+         <function byte="93" expression="(A.0 + B.1 + C.2 + D.3)" format="0"/>
+         <limits max="4294967295" min="0"/>
+      </config>-->     
+     <config group="0" label="CUSTOM_ERROR_TYPE" type="select"> 
+         <present description.txt="error" name.txt="error"/>
+         <function byte="93" expression="A" format="0"/>
+         <node-ref id="error.type" type="selections"/>
+      </config>
+      <config group="0" label="CUSTOM_ERROR" type="field"> 
+         <present description.txt="error" name.txt="error"/>
+         <function byte="95" expression="(A.0 + B.1)" format="0"/>
+      </config>	
+      <config group="2" type="field"><!-- devVarGvcAmbientTempCompensation -->
+         <present description.txt="devVarGvcAmbientTempCompensation" name.txt="devVarGvcAmbientTempCompensation" unit.txt=""/>
+         <function byte="97" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>		
+	  <config group="2" type="field"><!-- devVarGvcWaterTempCompensation -->
+         <present description.txt="devVarGvcWaterTempCompensation" name.txt="devVarGvcWaterTempCompensation" unit.txt=""/>
+         <function byte="98" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>		
+	        <config group="2" type="field"><!-- devVarGvcKnownStepperPosBurn -->
+         <present description.txt="devVarGvcKnownStepperPosBurn" name.txt="devVarGvcKnownStepperPosBurn" unit.txt=""/>
+         <function byte="99" expression="A" format="0"/>
+         <limits max="255" min="0"/>
+      </config>		
+   </configurations>
+ 
+<configurations name="parameter">
+  <config type="field" group="6">
+    <present unit.txt="-" name.txt="varDeviceInfoConfigurationTableVersion" description.txt="varDeviceInfoConfigurationTableVersion" />
+    <function format="0" expression="(A.0 + B.1) x 1" byte="0" />
+    <limits min="0" max="65535" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C/s" name.txt="parHeDThMaxLevel1" description.txt="parHeDThMaxLevel1" />
+    <function format="0.0" expression="A x 0.1" byte="6" />
+    <limits min="0.1" max="20" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C/s" name.txt="parHeDThMaxLevel2" description.txt="parHeDThMaxLevel2" />
+    <function format="0.0" expression="A x 0.1" byte="7" />
+    <limits min="0.1" max="20" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="°C/s" name.txt="parHeDThMaxLevel3" description.txt="parHeDThMaxLevel3" />
+    <function format="0.0" expression="A x 0.1" byte="8" />
+    <limits min="0.1" max="20" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parHeFanI" description.txt="parHeFanI" />
+    <function format="0" expression="A x 1" byte="9" />
+    <limits min="0" max="200" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parHeFanP" description.txt="parHeFanP" />
+    <function format="0" expression="A x 1" byte="10" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parHeGpsCheck" description.txt="parHeGpsCheck" />
+    <function format="0" expression="A x 1" byte="11" />
+    <limits min="0" max="1" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parHeKW10kRPM" description.txt="parHeKW10kRPM" />
+    <function format="0" expression="(A.0 + B.1) x 1" byte="12" />
+    <limits min="0" max="3000" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="parHeMaxAbsTf_Th" description.txt="parHeMaxAbsTf_Th" />
+    <function format="0" expression="A x 1" byte="14" />
+    <limits min="0" max="50" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="parHeMaxAbsTh_Tf" description.txt="parHeMaxAbsTh_Tf" />
+    <function format="0" expression="A x 1" byte="15" />
+    <limits min="0" max="50" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="parHeMaxAbsTh_Tr" description.txt="parHeMaxAbsTh_Tr" />
+    <function format="0" expression="A x 1" byte="16" />
+    <limits min="0" max="50" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="Sec" name.txt="parHePostPurgeTime" description.txt="parHePostPurgeTime" />
+    <function format="0" expression="A x 1" byte="17" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parHeFanPrePurgeSpeed" description.txt="parHeFanPrePurgeSpeed" />
+    <function format="0" expression="A x 1" byte="18" />
+    <limits min="1" max="100" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="Sec" name.txt="parHePrePurgeTime" description.txt="parHePrePurgeTime" />
+    <function format="0" expression="A x 1" byte="19" />
+    <limits min="10" max="255" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parHeRpm0KW" description.txt="parHeRpm0KW" />
+    <function format="0" expression="(A.0 + B.1) x 1" byte="20" />
+    <limits min="1000" max="4000" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="°C" name.txt="parHeDtModulatingMinPower" description.txt="parHeDtModulatingMinPower" />
+    <function format="0" expression="A x 1" byte="22" />
+    <limits min="10" max="40" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parHeTfaFilterTauTime" description.txt="parHeTfaFilterTauTime" />
+    <function format="0" expression="A x 1" byte="23" />
+    <limits min="1" max="20" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="parHeThMaxBlocking" description.txt="parHeThMaxBlocking" />
+    <function format="0" expression="A x 1" byte="24" />
+    <limits min="80" max="120" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parHeVpsCheck" description.txt="parHeVpsCheck" />
+    <function format="0" expression="A x 1" byte="25" />
+    <limits min="0" max="1" />
+  </config>
+  <config type="field" group="5">
+    <present unit.txt="Sec" name.txt="parHePreIgnitionTime" description.txt="parHePreIgnitionTime" />
+    <function format="0" expression="A x 0.25" byte="26" />
+    <limits min="0" max="5" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="g/s" name.txt="parHeMassFlowMin" description.txt="parHeMassFlowMin" />
+    <function format="0.00" expression="(A.0 + B.1) x 0.01" byte="27" />
+    <limits min="0" max="20" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="g/s" name.txt="parHeMassFlowMax" description.txt="parHeMassFlowMax" />
+    <function format="0.00" expression="(A.0 + B.1) x 0.01" byte="29" />
+    <limits min="0" max="80" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="ParHeMinMassFlowTempDevlimit" description.txt="ParHeMinMassFlowTempDevlimit" />
+    <function format="0" expression="sgn(A) x 1" byte="31" />
+    <limits min="-127" max="127" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="ParHeMaxMassFlowTempDevlimit" description.txt="ParHeMaxMassFlowTempDevlimit" />
+    <function format="0" expression="sgn(A) x 1" byte="32" />
+    <limits min="-127" max="127" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="°C" name.txt="parHeFlueGasTempMax" description.txt="parHeFlueGasTempMax" />
+    <function format="0" expression="A x 1" byte="33" />
+    <limits min="0" max="200" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="parHeMaxAbs(Tf-Tr)" description.txt="parHeMaxAbs(Tf-Tr)" />
+    <function format="0" expression="A x 1" byte="34" />
+    <limits min="0" max="50" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="Rpm" name.txt="parHeMassFlowMaxDhw" description.txt="parHeMassFlowMaxDhw" />
+    <function format="0.00" expression="(A.0 + B.1) x 0.01" byte="35" />
+    <limits min="0" max="150" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="parHeMassFlowMaxCH" description.txt="parHeMassFlowMaxCH" />
+    <function format="0.00" expression="(A.0 + B.1) x 0.01" byte="37" />
+    <limits min="0" max="150" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parHeFanD" description.txt="parHeFanD" />
+    <function format="0" expression="A x 1" byte="39" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parHeFanRpmMax" description.txt="parHeFanRpmMax" />
+    <function format="0" expression="A x 1" byte="40" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="°C" name.txt="parHeFlueGasPowerLimitTemp" description.txt="parHeFlueGasPowerLimitTemp" />
+    <function format="0" expression="A x 1" byte="41" />
+    <limits min="0" max="200" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Rpm" name.txt="devParHeGvcFlueBlockRpmMin" description.txt="devParHeGvcFlueBlockRpmMin" />
+    <function format="0" expression="A x 100" byte="42" />
+    <limits min="2000" max="6000" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Rpm" name.txt="devParHeGvcFlueBlockRpmMax  " description.txt="devParHeGvcFlueBlockRpmMax  " />
+    <function format="0" expression="A x 100" byte="43" />
+    <limits min="6000" max="10000" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Step" name.txt="devParHeGvcLoadAdaptionGvPosMin" description.txt="devParHeGvcLoadAdaptionGvPosMin" />
+    <function format="0" expression="A x 10" byte="44" />
+    <limits min="30" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Step" name.txt="devParHeGvcLoadAdaptionGvPosMax" description.txt="devParHeGvcLoadAdaptionGvPosMax" />
+    <function format="0" expression="A x 10" byte="45" />
+    <limits min="50" max="850" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcStartOffsetFactor" description.txt="devParHeGvcStartOffsetFactor" />
+    <function format="0" expression="A x 1" byte="46" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Step" name.txt="devParHeGvcRampIncreaseIncrement " description.txt="devParHeGvcRampIncreaseIncrement " />
+    <function format="0" expression="A x 1" byte="47" />
+    <limits min="0" max="10" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Rpm" name.txt="devParHeGvcLoadAdaptionRpmMin  " description.txt="devParHeGvcLoadAdaptionRpmMin  " />
+    <function format="0" expression="A x 100" byte="48" />
+    <limits min="100" max="1500" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcEnrichFactorHotBurnerNAT" description.txt="devParHeGvcEnrichFactorHotBurnerNAT" />
+    <function format="0" expression="sgn(A) x 1" byte="49" />
+    <limits min="-127" max="127" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcEnrichFactorHotBurnerLPG" description.txt="devParHeGvcEnrichFactorHotBurnerLPG" />
+    <function format="0" expression="sgn(A) x 1" byte="50" />
+    <limits min="-127" max="127" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Step" name.txt="parGvcLPGhStepMax" description.txt="parGvcLPGhStepMax" />
+    <function format="0" expression="A x 4" byte="51" />
+    <limits min="0" max="848" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="devParHeGvcModStopOnMfDeviation" description.txt="devParHeGvcModStopOnMfDeviation" />
+    <function format="0" expression="A x 1" byte="52" />
+    <limits min="10" max="50" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcWindDetectionOffset" description.txt="devParHeGvcWindDetectionOffset" />
+    <function format="0" expression="A x 1" byte="53" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcModulationSpeed  " description.txt="devParHeGvcModulationSpeed  " />
+    <function format="0" expression="A x 1" byte="54" />
+    <limits min="10" max="50" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcE2PidProportionalGain" description.txt="devParHeGvcE2PidProportionalGain" />
+    <function format="0" expression="A x 1" byte="55" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcE2PidIntegralGain" description.txt="devParHeGvcE2PidIntegralGain" />
+    <function format="0" expression="A x 1" byte="56" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcE2PidDifferentialGain" description.txt="devParHeGvcE2PidDifferentialGain" />
+    <function format="0" expression="A x 1" byte="57" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Sec" name.txt="devParHeGvcStayOnIgnitionLevelTime" description.txt="devParHeGvcStayOnIgnitionLevelTime" />
+    <function format="0" expression="A x 1" byte="58" />
+    <limits min="0" max="30" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parHeGasTypeSelector" description.txt="parHeGasTypeSelector" />
+    <function format="0" expression="A x 1" byte="59" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="devParHeGvcMassFlowTempDeviationMin" description.txt="devParHeGvcMassFlowTempDeviationMin" />
+    <function format="0" expression="sgn(A) x 1" byte="60" />
+    <limits min="-127" max="127" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="devParHeGvcMassFlowTempDeviationMax" description.txt="devParHeGvcMassFlowTempDeviationMax" />
+    <function format="0" expression="sgn(A) x 1" byte="61" />
+    <limits min="-127" max="127" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Step" name.txt="devParHeGvcGasValveDeltaLimit" description.txt="devParHeGvcGasValveDeltaLimit" />
+    <function format="0" expression="A x 4" byte="62" />
+    <limits min="0" max="800" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="devParHeGvcColdBurnerDetectionTemp" description.txt="devParHeGvcColdBurnerDetectionTemp" />
+    <function format="0" expression="A x 1" byte="63" />
+    <limits min="100" max="255" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="devParHeGvcCoolingDownBurnerTemp" description.txt="devParHeGvcCoolingDownBurnerTemp" />
+    <function format="0" expression="A x 1" byte="64" />
+    <limits min="100" max="255" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="-" name.txt="devParHeGvcHallPulses" description.txt="devParHeGvcHallPulses" />
+    <function format="0" expression="A x 1" byte="65" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="g/s" name.txt="devParIgnitionMassFlow" description.txt="devParIgnitionMassFlow" />
+    <function format="0" expression="A x 1" byte="66" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parApBlockingFunction" description.txt="parApBlockingFunction" />
+    <function format="0" expression="A x 1" byte="67" />
+    <limits min="1" max="3" />
+  </config>
+  <config type="field" group="1">
+    <present unit.txt="-" name.txt="parApEnableManualHeatDemand" description.txt="parApEnableManualHeatDemand" />
+    <function format="0" expression="A x 1" byte="68" />
+    <limits min="0" max="2" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Sec" name.txt="parApFlueValveWaitTime" description.txt="parApFlueValveWaitTime" />
+    <function format="0" expression="A x 1" byte="69" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Sec" name.txt="parApHydraulicValveWaitTime" description.txt="parApHydraulicValveWaitTime" />
+    <function format="0" expression="A x 1" byte="70" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="Bar" name.txt="parApMinWaterPress" description.txt="parApMinWaterPress" />
+    <function format="0" expression="A x 1" byte="71" />
+    <limits min="0" max="60" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="°C" name.txt="parApTfMaxBlocking" description.txt="parApTfMaxBlocking" />
+    <function format="0" expression="A x 1" byte="72" />
+    <limits min="0" max="110" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="Sec" name.txt="parApReleaseWaitTime" description.txt="parApReleaseWaitTime" />
+    <function format="0" expression="A x 1" byte="73" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="Hour" name.txt="parApServiceBurnHours" description.txt="parApServiceBurnHours" />
+    <function format="0" expression="A x 100" byte="74" />
+    <limits min="0" max="2550000" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parApServiceNotification" description.txt="parApServiceNotification" />
+    <function format="0" expression="A x 1" byte="75" />
+    <limits min="0" max="1" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="Hour" name.txt="parApServiceOperationTime" description.txt="parApServiceOperationTime" />
+    <function format="0" expression="A x 100" byte="76" />
+    <limits min="0" max="2550000" />
+  </config>
+  <config type="field" group="1">
+    <present unit.txt="-" name.txt="parApChEnabled" description.txt="parApChEnabled" />
+    <function format="0" expression="A x 1" byte="77" />
+    <limits min="0" max="1" />
+  </config>
+  <config type="field" group="1">
+    <present unit.txt="-" name.txt="parApDhwEnabled" description.txt="parApDhwEnabled" />
+    <function format="0" expression="A x 1" byte="78" />
+    <limits min="0" max="1" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parApOperationalModeSoftware" description.txt="parApOperationalModeSoftware" />
+    <function format="0" expression="A x 1" byte="79" />
+    <limits min="0" max="4" />
+  </config>
+  <config type="field" group="1">
+    <present unit.txt="°C" name.txt="parApHeatDemandFlowTemperatureSetpoint" description.txt="parApHeatDemandFlowTemperatureSetpoint" />
+    <function format="0" expression="A x 1" byte="80" />
+    <limits min="7" max="90" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="Bar" name.txt="parApWaterPressureSensorRange" description.txt="parApWaterPressureSensorRange" />
+    <function format="0.0" expression="A x 0.1" byte="81" />
+    <limits min="0" max="20" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="°C" name.txt="parChFrostMinTout" description.txt="parChFrostMinTout" />
+    <function format="0" expression="sgn(A) x 1" byte="82" />
+    <limits min="-30" max="20" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parChIDown" description.txt="parChIDown" />
+    <function format="0" expression="A x 1" byte="83" />
+    <limits min="0" max="200" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parChIPump" description.txt="parChIPump" />
+    <function format="0" expression="A x 1" byte="84" />
+    <limits min="1" max="200" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parChIUp" description.txt="parChIUp" />
+    <function format="0" expression="A x 1" byte="85" />
+    <limits min="1" max="200" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Min" name.txt="parChMaxOffTimeBurnerExt" description.txt="parChMaxOffTimeBurnerExt" />
+    <function format="0" expression="A x 1" byte="86" />
+    <limits min="0" max="10" />
+  </config>
+  <config type="field" group="1">
+    <present unit.txt="°C" name.txt="parChMaxSetTf" description.txt="parChMaxSetTf" />
+    <function format="0" expression="A x 1" byte="87" />
+    <limits min="60" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Min" name.txt="parChMinOffTimeBurner" description.txt="parChMinOffTimeBurner" />
+    <function format="0" expression="A x 1" byte="88" />
+    <limits min="1" max="10" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="°C" name.txt="parChOtcTfStart" description.txt="parChOtcTfStart" />
+    <function format="0" expression="sgn(A) x 1" byte="89" />
+    <limits min="0" max="90" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="°C" name.txt="parChOtcTOutsideEnd" description.txt="parChOtcTOutsideEnd" />
+    <function format="0" expression="sgn(A) x 1" byte="90" />
+    <limits min="-30" max="0" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="°C" name.txt="parChOtcTOutsideStart" description.txt="parChOtcTOutsideStart" />
+    <function format="0" expression="sgn(A) x 1" byte="91" />
+    <limits min="0" max="30" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="Sec" name.txt="parChPartLoadTime" description.txt="parChPartLoadTime" />
+    <function format="0" expression="A x 1" byte="92" />
+    <limits min="10" max="180" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parChPDown" description.txt="parChPDown" />
+    <function format="0" expression="A x 1" byte="93" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="°C" name.txt="parChPumpDTReduction" description.txt="parChPumpDTReduction" />
+    <function format="0" expression="A x 1" byte="94" />
+    <limits min="0" max="40" />
+  </config>
+  <config type="field" group="1">
+    <present unit.txt="Min" name.txt="parChPumpPostRun" description.txt="parChPumpPostRun" />
+    <function format="0" expression="A x 1" byte="95" />
+    <limits min="0" max="99" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="%" name.txt="parChPumpSpeedMax" description.txt="parChPumpSpeedMax" />
+    <function format="0" expression="A x 1" byte="96" />
+    <limits min="20" max="100" />
+  </config>
+  <config type="field" group="3">
+    <present unit.txt="%" name.txt="parChPumpSpeedMaxFactor" description.txt="parChPumpSpeedMaxFactor" />
+    <function format="0" expression="A x 1" byte="97" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="%" name.txt="parChPumpSpeedMin" description.txt="parChPumpSpeedMin" />
+    <function format="0" expression="A x 1" byte="98" />
+    <limits min="20" max="100" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parChPUp" description.txt="parChPUp" />
+    <function format="0" expression="A x 1" byte="99" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parChProcessHeatControlBand" description.txt="parChProcessHeatControlBand" />
+    <function format="0" expression="A x 1" byte="100" />
+    <limits min="0" max="30" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parChProcessHeatProportionalGain" description.txt="parChProcessHeatProportionalGain" />
+    <function format="0" expression="A x 1" byte="101" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="4">
+    <present unit.txt="-" name.txt="parChProcessHeatIntegralGain" description.txt="parChProcessHeatIntegralGain" />
+    <function format="0" expression="A x 1" byte="102" />
+    <limits min="1" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="°C" name.txt="parChHysteresis" description.txt="parChHysteresis" />
+    <function format="0" expression="A x 1" byte="103" />
+    <limits min="1" max="25" />
+  </config>
+  <config type="field" group="1">
+    <present unit.txt="°C" name.txt="parDhwSetPoint" description.txt="parDhwSetPoint" />
+    <function format="0" expression="(A.0 + B.1) x 1" byte="104" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwMode" description.txt="parDhwMode" />
+    <function format="0" expression="A x 1" byte="106" />
+    <limits min="0" max="10" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwAntiLegionella" description.txt="parDhwAntiLegionella" />
+    <function format="0" expression="A x 1" byte="107" />
+    <limits min="0" max="2" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwCalorifierSetpointRaise" description.txt="parDhwCalorifierSetpointRaise" />
+    <function format="0" expression="A x 1" byte="108" />
+    <limits min="0" max="25" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwCalorifierHystoresis" description.txt="parDhwCalorifierHystoresis" />
+    <function format="0" expression="A x 1" byte="109" />
+    <limits min="2" max="15" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwPumpDtSet" description.txt="parDhwPumpDtSet" />
+    <function format="0" expression="A x 1" byte="110" />
+    <limits min="5" max="40" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwDtHysteresis" description.txt="parDhwDtHysteresis" />
+    <function format="0" expression="A x 1" byte="111" />
+    <limits min="1" max="10" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwDtOffset" description.txt="parDhwDtOffset" />
+    <function format="0" expression="A x 1" byte="112" />
+    <limits min="0" max="20" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwLoadAfterChTime" description.txt="parDhwLoadAfterChTime" />
+    <function format="0" expression="A x 1" byte="113" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwLoadAfterDhwTime" description.txt="parDhwLoadAfterDhwTime" />
+    <function format="0" expression="A x 1" byte="114" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwLoadHysteresis" description.txt="parDhwLoadHysteresis" />
+    <function format="0" expression="A x 1" byte="115" />
+    <limits min="0" max="20" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwLoadOffset" description.txt="parDhwLoadOffset" />
+    <function format="0" expression="sgn(A) x 1" byte="116" />
+    <limits min="-30" max="20" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwPumpPostRun" description.txt="parDhwPumpPostRun" />
+    <function format="0" expression="A x 1" byte="117" />
+    <limits min="0" max="99" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwStratifiedCylinderOffsetControlTemperature" description.txt="parDhwStratifiedCylinderOffsetControlTemperature" />
+    <function format="0.0" expression="sgn(A) x 0.1" byte="118" />
+    <limits min="-10" max="10" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwStratifiedCylinderInGradient" description.txt="parDhwStratifiedCylinderInGradient" />
+    <function format="0" expression="A x 1" byte="119" />
+    <limits min="1" max="200" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwFrequencyPulseTimeWindow" description.txt="parDhwFrequencyPulseTimeWindow" />
+    <function format="0" expression="A x 1" byte="120" />
+    <limits min="0" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwCalorifierOffset" description.txt="parDhwCalorifierOffset" />
+    <function format="0" expression="A x 1" byte="121" />
+    <limits min="0" max="10" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwCalorifierPumpStart" description.txt="parDhwCalorifierPumpStart" />
+    <function format="0" expression="sgn(A) x 1" byte="122" />
+    <limits min="-20" max="20" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwCalorifierPumpPostRun" description.txt="parDhwCalorifierPumpPostRun" />
+    <function format="0" expression="A x 1" byte="123" />
+    <limits min="1" max="255" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwLoadType" description.txt="parDhwLoadType" />
+    <function format="0" expression="A x 1" byte="124" />
+    <limits min="0" max="3" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwCombiSoloUpP" description.txt="parDhwCombiSoloUpP" />
+    <function format="0" expression="A x 1" byte="125" />
+    <limits min="0" max="100" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwCombiSoloUpI" description.txt="parDhwCombiSoloUpI" />
+    <function format="0" expression="A x 1" byte="126" />
+    <limits min="1" max="200" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parDhwIPump" description.txt="parDhwIPump" />
+    <function format="0" expression="A x 1" byte="127" />
+    <limits min="1" max="200" />
+  </config>
+  <config type="field" group="2">
+    <present unit.txt="-" name.txt="parSmsFunction10VPWMinput" description.txt="parSmsFunction10VPWMinput" />
+    <function format="0" expression="A x 1" byte="128" />
+    <limits min="0" max="2" />
+  </config>
+</configurations>
+
+	<configurations name="counter">
+      <config group="1" type="field">
+         <present description.txt="BurnerStarts" name.txt="BurnerStarts"/>
+         <function byte="0" expression="(A.0 + B.1) x 8" format="0" unit.txt="Hours"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="BurnerStartsDhw" name.txt="BurnerStartsDhw"/>
+         <function byte="2" expression="(A.0 + B.1) x 8" format="0"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="BurnHours" name.txt="BurnHours"/>
+         <function byte="4" expression="(A.0 + B.1) x 2" format="0" unit.txt="Hours"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="BurnHoursDhw" name.txt="BurnHoursDhw"/>
+         <function byte="6" expression="(A.0 + B.1)" format="0" unit.txt="Hours"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="FailedBurnerStarts" name.txt="FailedBurnerStarts"/>
+         <function byte="8" expression="(A.0 + B.1)" format="0" unit.txt="Hours"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="FlameLoss" name.txt="FlameLoss"/>
+         <function byte="10" expression="(A.0 + B.1)" format="0" unit.txt="Hours"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="Pump Run Hours" name.txt="Pump Run Hours"/>
+         <function byte="12" expression="(A.0 + B.1) x 2" format="0" unit.txt="Hours"/>
+      </config>
+      <config group="1" type="field">
+         <present description.txt="PumpStarts" name.txt="PumpStarts"/>
+         <function byte="14" expression="(A.0 + B.1) x 8" format="0" unit.txt="Hours"/>
+      </config>
+   </configurations>
+   <configurations name="failure">
+      <config type="field">
+         <present code.txt="1" description.txt="Error" name.txt="Error"/>
+         <function byte="0" expression="(A.0 + B.1)" format="0"/>
+      </config>
+      <config type="field">
+         <present code.txt="2" description.txt="Timestamp" name.txt="Timestamp"/>
+         <function byte="2" number="9"/>
+      </config>
+      <config type="field">
+         <present code.txt="3" description.txt="Operating hours" name.txt="Operating hours"/>
+         <function byte="6" expression="(A.0 + B.1)" format="0"/>
+      </config>
+	  <config type="field">
+         <present code.txt="4" description.txt="State" name.txt="State"/>
+         <function byte="8" expression="A" format="0"/>
+      </config>
+	  <config type="field">
+         <present code.txt="5" description.txt="Sub state" name.txt="Sub state"/>
+         <function byte="9" expression="A" format="0"/>
+      </config>
+     <config type="field"> <!-- Flow temperature -->
+         <present code.txt="6" description.nr="1363" name.nr="1362" unit.nr="312"/>
+         <function byte="10" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+	  <config type="field"><!-- Return temperature -->
+         <present code.txt="7" description.nr="1365" name.nr="1364" unit.nr="312"/>
+         <function byte="12" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+	  <config type="field"><!-- Boiler temperature -->
+         <present code.txt="8" description.nr="1675" name.nr="1674" unit.nr="312"/>
+         <function byte="14" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+	  <config type="field"><!-- Outside temperature -->
+         <present code.txt="9" description.nr="1679" name.nr="1678" unit.nr="312"/>
+         <function byte="16" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+      <config type="field"><!-- Ch internal setpoint -->
+         <present code.txt="10" description.nr="1824" name.nr="1824" unit.nr="312"/>
+         <function byte="18" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+      <config type="field"><!-- Ionisation current -->
+         <present code.txt="11" description.nr="1389" name.nr="1388" unit.nr="1465"/>
+         <function byte="20" expression="A x 0.1" format="0.0"/>
+      </config>
+      <config type="field"><!-- Fanspeed -->
+         <present code.txt="12" description.nr="1387" name.nr="1386" unit.nr="313"/>
+         <function byte="21" expression="A.0 + B.1" format="0"/>
+      </config>
+      <config type="field"><!-- Current relative modulation -->
+		 <present code.txt="13" description.nr="6008" name.nr="6008" unit.nr="346"/>
+         <function byte="23" expression="(A.0 + B.1) x 0.01" format="0"/>
+      </config>
+ 	  <config type="field">
+         <present code.txt="14" description.txt="Error priority" name.txt="Error priority"/>
+         <function byte="25" expression="A" format="0"/>
+      </config>
+	  <config type="field">
+         <present code.txt="15" description.txt="Current error counter" name.txt="Current error counter"/>
+         <function byte="26" expression="A" format="0"/>
+      </config>
+	  	  <config type="field">
+         <present code.txt="16" description.txt="Custom error byte 0" name.txt="Custom error byte 0"/>
+         <function byte="27" expression="A" format="0"/>
+      </config>
+	  <config type="field">
+         <present code.txt="17" description.txt="Custom error byte 1" name.txt="Custom error byte 1"/>
+         <function byte="28" expression="A" format="0"/>
+      </config>
+   </configurations>
+   <configurations name="error">
+      <config type="field">
+         <present code.txt="1" description.txt="Error" name.txt="Error"/>
+         <function byte="0" expression="(A.0 + B.1)" format="0"/>
+      </config>
+      <config type="field">
+         <present code.txt="2" description.txt="Timestamp" name.txt="Timestamp"/>
+         <function byte="2" number="9"/>
+      </config>
+      <config type="field">
+         <present code.txt="3" description.txt="Operating hours" name.txt="Operating hours"/>
+         <function byte="6" expression="(A.0 + B.1)" format="0"/>
+      </config>
+	  <config type="field">
+         <present code.txt="4" description.txt="State" name.txt="State"/>
+         <function byte="8" expression="A" format="0"/>
+      </config>
+	  <config type="field">
+         <present code.txt="5" description.txt="Sub state" name.txt="Sub state"/>
+         <function byte="9" expression="A" format="0"/>
+      </config>
+     <config type="field"> <!-- Flow temperature -->
+         <present code.txt="6" description.nr="1363" name.nr="1362" unit.nr="312"/>
+         <function byte="10" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+	  <config type="field"><!-- Return temperature -->
+         <present code.txt="7" description.nr="1365" name.nr="1364" unit.nr="312"/>
+         <function byte="12" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+	  <config type="field"><!-- Boiler temperature -->
+         <present code.txt="8" description.nr="1675" name.nr="1674" unit.nr="312"/>
+         <function byte="14" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+	  <config type="field"><!-- Outside temperature -->
+         <present code.txt="9" description.nr="1679" name.nr="1678" unit.nr="312"/>
+         <function byte="16" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+      <config type="field"><!-- Ch internal setpoint -->
+         <present code.txt="10" description.nr="1824" name.nr="1824" unit.nr="312"/>
+         <function byte="18" expression="sgn(A.0 + B.1) x 0.01" format="0.00"/>
+      </config>
+      <config type="field"><!-- Ionisation current -->
+         <present code.txt="11" description.nr="1389" name.nr="1388" unit.nr="1465"/>
+         <function byte="20" expression="A x 0.1" format="0.0"/>
+      </config>
+      <config type="field"><!-- Fanspeed -->
+         <present code.txt="12" description.nr="1387" name.nr="1386" unit.nr="313"/>
+         <function byte="21" expression="A.0 + B.1" format="0"/>
+      </config>
+      <config type="field"><!-- Current relative modulation -->
+		 <present code.txt="13" description.nr="6008" name.nr="6008" unit.nr="346"/>
+         <function byte="23" expression="(A.0 + B.1) x 0.01" format="0"/>
+      </config>
+  	  <config type="field">
+         <present code.txt="14" description.txt="Error priority" name.txt="Error priority"/>
+         <function byte="25" expression="A" format="0"/>
+      </config>
+	  <config type="field">
+         <present code.txt="15" description.txt="Current error counter" name.txt="Current error counter"/>
+         <function byte="26" expression="A" format="0"/>
+      </config>
+	  	  <config type="field">
+         <present code.txt="16" description.txt="Custom error byte 0" name.txt="Custom error byte 0"/>
+         <function byte="27" expression="A" format="0"/>
+      </config>
+	  <config type="field">
+         <present code.txt="17" description.txt="Custom error byte 1" name.txt="Custom error byte 1"/>
+         <function byte="28" expression="A" format="0"/>
+      </config>
+   </configurations>
+   <configurations name="configuration.nr">
+      <config group="1" label="CONFIG1" type="field">
+         <present description.txt="Config 1" name.txt="Config 1"/>
+         <function byte="1" expression="A" format="0"/>
+      </config>
+      <config group="1" label="CONFIG2" type="field">
+         <present description.txt="Config 2" name.txt="Config 2"/>
+         <function byte="0" expression="A" format="0"/>
+      </config>
+   </configurations>
+  <checksum value="65280" />
+</configuration>

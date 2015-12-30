@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<recomconfiguration>
+  <boilerconfigurations>
+    <!-- 
+    The names of the configuration files consist of a boiler name and a parameter version.
+    Example: PCU-01_P1.xml is a configuration file for boiler PCU-01, parameter version 1.
+    
+    The application uses this table to find the right configuration file using the 'configname' attribute.
+    
+    Description:
+        A boilertype element has these attributes:
+        manufacturer.nr:    Identifies the manufacturer who created the boiler in question.
+                            11 = "Remeha"
+        boilercode:         Identifies the boiler in question
+        configname:         The 'configname' attribute is not a complete file name, because the 
+                            parameter version is missing. Recom will determine the parameter
+                            version and complete the filename.
+                      
+        A protocol element has these attributes:
+        protocol.nr:        Indicates the type of protocol the boiler uses.
+                            1 = "Remeha"
+                            2 = "Avanta"
+                            3 = "MCBA"
+        name:               A name for the protocol. Recom does not use this attribute, instead
+                            it serves rather as a description of the 'protocol.nr' attribute.
+
+    Usage in data files:
+        Data files (.rxs, .rxp, .rxe, .rxf, .rxc) use the numbers mentioned above to
+        identify a boiler. In such a file, there is a 'property' element named 'boiler.type'
+        where the value attribute is the identification of a boiler. It consists of 4 numbers:
+        <protocol number>.<manufacturer number>.<boiler code>.<parameter type>
+		
+	Changes:
+		Added DDT devices
+    -->
+    <protocol name="Remeha" protocol.nr="1">
+      <boilertype manufacturer.nr="11" boilercode="8" configname="PCU-01"/>
+      <boilertype manufacturer.nr="11" boilercode="9" configname="PCU-02"/>
+	  <boilertype manufacturer.nr="11" boilercode="10" configname="PCU-03"/>
+	  <boilertype manufacturer.nr="11" boilercode="11" configname="Cmix"/>
+	  <boilertype manufacturer.nr="11" boilercode="12" configname="PCU-04"/>
+	  <boilertype manufacturer.nr="11" boilercode="13" configname="PCU-05"/>
+	  <boilertype manufacturer.nr="11" boilercode="15" configname="PCU-06"/>
+	  <boilertype manufacturer.nr="11" boilercode="16" configname="PCU-04STS"/>
+	  <boilertype manufacturer.nr="11" boilercode="17" configname="PCU-04NA"/>
+	  <boilertype manufacturer.nr="11" boilercode="100" configname="PCU-100"/> <!-- LMS14 test-->
+	  <boilertype manufacturer.nr="11" boilercode="191" configname="PCU-191"/>
+	  <boilertype manufacturer.nr="11" boilercode="192" configname="PCU-192"/>
+	  <boilertype manufacturer.nr="11" boilercode="193" configname="PCU-193"/>
+	  <boilertype manufacturer.nr="11" boilercode="194" configname="PCU-194"/>
+	  <boilertype manufacturer.nr="11" boilercode="195" configname="PCU-195"/>
+	  <boilertype manufacturer.nr="11" boilercode="197" configname="PCU-197"/>
+	  <boilertype manufacturer.nr="11" boilercode="198" configname="PCU-198"/>
+	  <boilertype manufacturer.nr="11" boilercode="199" configname="PCU-199"/>	 
+	  <boilertype manufacturer.nr="11" boilercode="200" configname="EHC-01"/>	
+	  <boilertype manufacturer.nr="11" boilercode="250" configname="D4CAN"/>
+      <boilertype manufacturer.nr="11" boilercode="254" configname="PCUtest1"/>
+      <boilertype manufacturer.nr="11" boilercode="255" configname="PCUtest2"/>
+    </protocol>
+    <protocol name="Avanta" protocol.nr="2">
+      <boilertype manufacturer.nr="11" boilercode="1" configname="Avanta"/>
+      <boilertype manufacturer.nr="11" boilercode="2" configname="AvantaComfort"/>
+      <boilertype manufacturer.nr="11" boilercode="3" configname="AvantaPlus"/>
+      <boilertype manufacturer.nr="11" boilercode="5" configname="AvantaV1"/>
+      <boilertype manufacturer.nr="11" boilercode="6" configname="AvantaComfortV1"/>
+      <boilertype manufacturer.nr="11" boilercode="7" configname="AvantaPlusV1"/>
+      <boilertype manufacturer.nr="11" boilercode="254" configname="Avantatest1"/>
+      <boilertype manufacturer.nr="11" boilercode="255" configname="Avantatest2"/>
+    </protocol>
+    <protocol name="MCBA" protocol.nr="3">
+      <boilertype manufacturer.nr="11" boilercode="36" configname="Quinta"/>
+      <boilertype manufacturer.nr="11" boilercode="49" configname="QuintaV2"/>
+      <boilertype manufacturer.nr="11" boilercode="27" configname="Gas210"/>
+      <boilertype manufacturer.nr="11" boilercode="44" configname="Gas310"/>
+      <boilertype manufacturer.nr="11" boilercode="50" configname="Gas310US"/>
+      <boilertype manufacturer.nr="11" boilercode="38" configname="Selecta"/>
+      <boilertype manufacturer.nr="11" boilercode="43" configname="SelectaV1"/>
+      <boilertype manufacturer.nr="11" boilercode="22" configname="W40W21CExp"/>
+      <boilertype manufacturer.nr="11" boilercode="1" configname="W40W21Exp"/>
+      <boilertype manufacturer.nr="11" boilercode="7" configname="W21NL"/>
+    </protocol>
+	<protocol name="SiemensBSB" protocol.nr="4">
+	  <boilertype manufacturer.nr="11" boilercode="1" configname="Evita"/>
+	  <boilertype manufacturer.nr="11" boilercode="7274736" configname="RVC32-420-397"/>
+	  <boilertype manufacturer.nr="11" boilercode="7274655" configname="RVC32-420-159"/>
+	  <boilertype manufacturer.nr="11" boilercode="10616849" configname="LMS14-001A100"/>
+	  <boilertype manufacturer.nr="11" boilercode="7995623" configname="LMS14-000B349"/>
+	  <boilertype manufacturer.nr="11" boilercode="10682373" configname="WGB-EVO-15-28-G"/>
+	  <boilertype manufacturer.nr="11" boilercode="112" configname="WGB-EVO-15-38-G"/> <!-- obsolete but can not be deleted-->
+	  <boilertype manufacturer.nr="11" boilercode="10616837" configname="WGB-15-38-E"/>
+	  <boilertype manufacturer.nr="11" boilercode="10682384" configname="BBS-EVO-15-28-G"/>
+      <boilertype manufacturer.nr="11" boilercode="10616848" configname="BBS-15-28-E"/>
+	  <boilertype manufacturer.nr="11" boilercode="8061159" configname="LMS15-000A349"/>
+    </protocol>
+    <protocol name="Bertelli" protocol.nr="5">
+      <boilertype manufacturer.nr="11" boilercode="6665" configname="Luna04"/>
+    </protocol>
+    <protocol name="CANopen" protocol.nr="6">
+      <boilertype manufacturer.nr="11" boilercode="1" configname="CU-01"/>
+      <boilertype manufacturer.nr="11" boilercode="2" configname="CU-02"/>
+      <boilertype manufacturer.nr="11" boilercode="3" configname="CU-03"/>
+      <boilertype manufacturer.nr="11" boilercode="4" configname="CU-04"/>
+      <boilertype manufacturer.nr="11" boilercode="5" configname="CU-05"/>
+      <boilertype manufacturer.nr="11" boilercode="6" configname="CU-06"/>
+      <boilertype manufacturer.nr="11" boilercode="7" configname="CU-07"/>
+      <boilertype manufacturer.nr="11" boilercode="8" configname="CU-08"/>
+      <boilertype manufacturer.nr="11" boilercode="9" configname="CU-09"/>
+      <boilertype manufacturer.nr="11" boilercode="257" configname="CU-OH01"/>
+      <boilertype manufacturer.nr="11" boilercode="513" configname="CU-HPH01"/>	 
+	  <boilertype manufacturer.nr="11" boilercode="514" configname="EHC-02"/>
+      <boilertype manufacturer.nr="10" boilercode="6" configname="CU-SMS-02"/>	<!-- obsolete but can not be deleted-->
+    </protocol>
+  </boilerconfigurations>
+  <checksum value="14030" />
+</recomconfiguration>
+

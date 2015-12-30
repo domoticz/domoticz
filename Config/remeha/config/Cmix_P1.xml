@@ -1,0 +1,895 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" boiler.type="CMIX_P1">
+  <properties>
+    <!-- 
+	Changes 1.4:
+		- Correction text pump settings
+    -->
+    <property name="version" value="1.3" />
+    <property name="boilername" value="c-Mix (P1)" />
+    <property name="EEPROMSize" value="160" />
+  </properties>
+  <selections id="no.yes.code">
+    <selection value="0" result.nr="1004" />
+    <selection value="1" result.nr="1003" />
+  </selections>
+    <selections id="status.code">
+    <selection value="0" result.nr="3610" /> 
+    <selection value="1" result.nr="3611" /> 
+    <selection value="3" result.nr="3612" /> 
+    <selection value="9" result.nr="3613" /> 
+    <selection value="15" result.nr="3614" /> 
+    <selection value="999" result.nr="2198" /> 
+  </selections>
+  <selections id="error.code">
+    <selection value="220" result.nr="3620" />
+    <selection value="221" result.nr="3621" />
+    <selection value="222" result.nr="3622" />
+    <selection value="223" result.nr="3623" />
+    <selection value="224" result.nr="3624" />
+    <selection value="225" result.nr="3625" />
+    <selection value="226" result.nr="3626" />
+  </selections>
+  <selections id="off.on.code">
+    <selection value="0" result.nr="224" />
+    <selection value="1" result.nr="223" />
+  </selections>
+  <selections id="open.closed.code">
+    <selection value="0" result.nr="107" />
+    <selection value="1" result.nr="106" />
+  </selections>
+  <selections id="ot.member.id.code">
+	<selection value="0" result.nr="3630" />
+	<selection value="1" result.nr="3631" />
+	<selection value="2" result.nr="3632" />
+	<selection value="4" result.nr="3634" />
+	<selection value="5" result.nr="3635" />
+	<selection value="6" result.nr="3636" />
+	<selection value="8" result.nr="3638" />
+	<selection value="9" result.nr="3639" />
+	<selection value="11" result.nr="3641" />
+	<selection value="13" result.nr="3643" />
+	<selection value="15" result.nr="3645" />
+	<selection value="16" result.nr="3646" />
+	<selection value="18" result.nr="3648" />
+	<selection value="19" result.nr="3649" />
+	<selection value="20" result.nr="3650" />
+	<selection value="21" result.nr="3651" />
+	<selection value="22" result.nr="3652" />
+	<selection value="23" result.nr="3653" />
+	<selection value="24" result.nr="3654" />
+	<selection value="25" result.nr="3655" />
+	<selection value="26" result.nr="3656" />
+	<selection value="27" result.nr="3657" />
+	<selection value="29" result.nr="3659" />
+	<selection value="31" result.nr="3661" />
+	<selection value="32" result.nr="3662" />
+	<selection value="33" result.nr="3663" />
+	<selection value="34" result.nr="3664" />
+	<selection value="35" result.nr="3665" />
+	<selection value="39" result.nr="3669" />
+  </selections>
+  <configurations name="parameter">
+    <config type="select" group="1">
+      <present code.txt="1" name.nr="3500" description.nr="3501" />
+      <function byte="0" expression="A" format="0" />
+      <selections>
+        <selection value="0" result.nr="3502" />
+        <selection value="1" result.nr="3503" />
+        <selection value="2" result.nr="3504" />
+        <selection value="3" result.nr="3505" />
+        <selection value="4" result.nr="3506" />
+        <selection value="5" result.nr="3507" />
+        <selection value="6" result.nr="3508" />
+        <selection value="7" result.nr="3509" />
+        <selection value="8" result.nr="3510" />
+        <selection value="9" result.nr="3511" />
+        <selection value="10" result.nr="3512" />
+        <selection value="11" result.nr="3513" />
+        <selection value="12" result.nr="3514" />
+        <selection value="13" result.nr="3515" />
+        <selection value="14" result.nr="3516" />
+        <selection value="15" result.nr="3517" />
+      </selections>
+    </config>
+    <config type="select" group="1">
+      <present code.txt="2" name.nr="3519" description.nr="3520" />
+      <function byte="1" expression="A" format="0" />
+      <selections>
+        <selection value="0" result.nr="3502" />
+        <selection value="1" result.nr="3503" />
+        <selection value="2" result.nr="3504" />
+        <selection value="3" result.nr="3505" />
+        <selection value="4" result.nr="3506" />
+        <selection value="5" result.nr="3507" />
+        <selection value="6" result.nr="3508" />
+        <selection value="7" result.nr="3509" />
+        <selection value="8" result.nr="3510" />
+        <selection value="9" result.nr="3511" />
+        <selection value="10" result.nr="3512" />
+        <selection value="11" result.nr="3513" />
+        <selection value="12" result.nr="3514" />
+        <selection value="13" result.nr="3515" />
+        <selection value="14" result.nr="3516" />
+        <selection value="15" result.nr="3518" />
+      </selections>
+    </config>
+    <config type="select" group="1">
+      <present code.txt="3" name.nr="3521" description.nr="3522" />
+      <function byte="2" expression="A" format="0" />
+      <selections>
+        <selection value="0" result.nr="3585" />
+        <selection value="1" result.nr="3586" />
+        <selection value="2" result.nr="3587" />
+        <selection value="3" result.nr="3588" />
+        <selection value="4" result.nr="3589" />
+      </selections>
+    </config>
+    <config type="select" group="1">
+      <present code.txt="4" name.nr="3528" description.nr="3529" />
+      <function byte="3" expression="A" format="0" />
+      <selections>
+        <selection value="0" result.nr="3585" />
+        <selection value="1" result.nr="3586" />
+        <selection value="2" result.nr="3587" />
+        <selection value="3" result.nr="3588" />
+        <selection value="4" result.nr="3589" />
+      </selections>
+    </config>
+    <config type="select" group="1">
+      <present code.txt="5" name.nr="3530" description.nr="3531" />
+      <function byte="4" expression="A" format="0" />
+      <selections>
+        <selection value="0" result.nr="3532" />
+        <selection value="1" result.nr="3533" />
+        <selection value="2" result.nr="3534" />
+      </selections>
+    </config>
+    <config type="select" group="1">
+      <present code.txt="6" name.nr="3535" description.nr="3536" />
+      <function byte="5" expression="A" format="0" />
+      <selections>
+        <selection value="0" result.nr="3537" />
+        <selection value="1" result.nr="3538" />
+        <selection value="2" result.nr="3584" />
+        <selection value="3" result.nr="3539" />
+        <selection value="5" result.nr="3540" />
+        <selection value="7" result.nr="3541" />
+      </selections>
+    </config>
+    <config type="select" group="1">
+      <present code.txt="7" name.nr="3542" description.nr="3543" />
+      <function byte="6" expression="A" format="0" />
+      <selections>
+        <selection value="0" result.nr="3544" />
+        <selection value="1" result.nr="3545" />
+        <selection value="2" result.nr="3546" />
+        <selection value="3" result.nr="3547" />
+        <selection value="4" result.nr="3548" />
+        <selection value="5" result.nr="3549" />
+        <selection value="6" result.nr="3550" />
+        <selection value="7" result.nr="3551" />
+      </selections>
+    </config>
+    <config type="field" group="3">
+      <present code.txt="16" name.nr="3562" description.nr="3563" unit.nr="3600" />
+      <function byte="15" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="17" name.nr="3564" description.nr="3565" unit.nr="3601" />
+      <function byte="16" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="18" name.nr="3566" description.nr="3567" unit.nr="3602" />
+      <function byte="17" expression="A" format="0" />
+      <limits min="1" max="255" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="19" name.nr="3568" description.nr="3569" unit.nr="346" />
+      <function byte="18" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="20" name.nr="3570" description.nr="3571" unit.nr="3603" />
+      <function byte="19" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+    <config type="field" group="2">
+      <present code.txt="21" name.nr="3552" description.nr="3553" unit.nr="312" />
+      <function byte="20" expression="A" format="0" />
+      <limits min="0" max="40" />
+    </config>
+    <config type="field" group="2">
+      <present code.txt="22" name.nr="3554" description.nr="3555" unit.nr="312" />
+      <function byte="21" expression="A" format="0" />
+      <limits min="0" max="20" />
+    </config>
+    <config type="field" group="2">
+      <present code.txt="23" name.nr="3556" description.nr="3557" unit.nr="312" />
+      <function byte="22" expression="A" format="0" />
+      <limits min="0" max="30" />
+    </config>
+    <config type="field" group="2">
+      <present code.txt="24" name.nr="3558" description.nr="3559" unit.nr="312" />
+      <function byte="23" expression="A" format="0" />
+      <limits min="0" max="20" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="25" name.nr="3572" description.nr="3573" unit.nr="3604" />
+      <function byte="24" expression="A" format="0" />
+      <limits min="1" max="255" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="26" name.nr="3574" description.nr="3575" unit.nr="3604" />
+      <function byte="25" expression="A" format="0" />
+      <limits min="1" max="255" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="27" name.nr="3576" description.nr="3577" unit.nr="314" />
+      <function byte="26" expression="A" format="0" />
+      <limits min="0" max="10" />
+    </config>
+    <config type="field" group="2">
+      <present code.txt="28" name.nr="3560" description.nr="3561" unit.nr="312" />
+      <function byte="27" expression="A" format="0" />
+      <limits min="0" max="70" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="30" name.nr="3578" description.nr="3579" unit.nr="343" />
+      <function byte="29" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="31" name.nr="3580" description.nr="3581" unit.nr="382" />
+      <function byte="30" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+    <config type="field" group="3">
+      <present code.txt="32" name.nr="3582" description.nr="3583" unit.nr="382" />
+      <function byte="31" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+</configurations>
+  <configurations name="sample">
+    <config type="select" label="STATUS" group="0">
+      <present name.nr="2023" description.nr="2023" />
+      <function byte="61" expression="A" format="0" />
+      <node-ref type="selections" id="status.code" />
+    </config>
+    <config type="select" label="BLOCKING" group="0">
+      <present name.nr="1728" description.nr="1728" />
+      <function byte="17" expression="A" format="0" />
+      <node-ref type="selections" id="error.code" />
+    </config>
+    <!-- 
+    Byte 8/9: CH1 setpoint master 1
+    -->
+    <config type="field" group="1">
+      <present name.nr="3720" unit.nr="312" />
+      <function byte="8" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="0" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 55/56: TflowSet1: TflowSet1 including SetpointOverTemp1
+    -->
+    <config type="field" group="1">
+      <present name.nr="3721" unit.nr="312" />
+      <function byte="55" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="0" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 59: SetpointOverTemp1
+    -->
+    <config type="field" group="1">
+      <present name.nr="3722" unit.nr="312" />
+      <function byte="59" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 37/38: Group 1 flow temp
+    -->
+    <config type="field" group="1">
+      <present name.nr="3723" unit.nr="312" />
+      <function byte="37" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 18/19: CH2 setpoint M1
+    -->
+    <config type="field" group="1">
+      <present name.nr="3738" unit.nr="312" />
+      <function byte="18" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="0" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 10/11: CH2 setpoint master 2
+    -->
+    <config type="field" group="1">
+      <present name.nr="3724" unit.nr="312" />
+      <function byte="10" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="0" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 41/42: CH3 setpoint master 2
+    -->
+    <config type="field" group="1">
+      <present name.nr="3734" unit.nr="312" />
+      <function byte="41" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="126" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 57/58: TflowSet2 cmix
+    -->
+    <config type="field" group="1">
+      <present name.nr="3725" unit.nr="312" />
+      <function byte="57" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="0" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 60: SetpointOverTemp2
+    -->
+    <config type="field" group="1">
+      <present name.nr="3726" unit.nr="312" />
+      <function byte="60" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 39/40: Group 2 flow temp
+    -->
+    <config type="field" group="1">
+      <present name.nr="3727" unit.nr="312" />
+      <function byte="39" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 6/7: Cmix to slave: Cmix CH temperature to slave
+    -->
+    <config type="field" group="1">
+      <present name.nr="3732" unit.nr="312" />
+      <function byte="6" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="0" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 35/36: Slave flow temp
+    -->
+    <config type="field" group="1">
+      <present name.nr="3739" unit.nr="312" />
+      <function byte="35" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 22/23: M1 Room setpoint
+    -->
+    <config type="field" group="1">
+      <present name.nr="3728" unit.nr="312" />
+      <function byte="22" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="125" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 31/32: Room temp 1
+    -->
+    <config type="field" group="1">
+      <present name.nr="3729" unit.nr="312" />
+      <function byte="31" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="125" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 29/30: M1 Room setpoint 2
+    -->
+    <config type="field" group="1">
+      <present name.nr="3736" unit.nr="312" />
+      <function byte="29" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="125" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 24/25: M2 Room setpoint
+    -->
+    <config type="field" group="1">
+      <present name.nr="3730" unit.nr="312" />
+      <function byte="24" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="125" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 33/34: Room temp 2
+    -->
+    <config type="field" group="1">
+      <present name.nr="3731" unit.nr="312" />
+      <function byte="33" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="125" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 43/44: Cmix Outside temp
+    -->
+    <config type="field" group="1">
+      <present name.nr="3733" unit.nr="312" />
+      <function byte="43" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-60" min.nr="107" max="60" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 45/46: Master 1 DHW setpoint
+    -->
+    <config type="field" group="1">
+      <present name.nr="3735" unit.nr="312" />
+      <function byte="45" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="126" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 47/48: Slave max setpoint
+    -->
+    <config type="field" group="1">
+      <present name.nr="3740" unit.nr="312" />
+      <function byte="47" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="126" max.nr="106" />
+    </config>
+    <!-- 
+    Byte 51: requiredValvePosition1
+    -->
+    <config type="field" group="2">
+      <present name.nr="3741" unit.nr="346" />
+      <function byte="51" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 52: actualValvePosition1
+    -->
+    <config type="field" group="2">
+      <present name.nr="3742" unit.nr="346" />
+      <function byte="52" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 20: M1 Max rel modulation
+    -->
+    <config type="field" group="2">
+      <present name.nr="3747" unit.nr="346" />
+      <function byte="20" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 27: Group 1 rel mod level
+    -->
+    <config type="field" group="2">
+      <present name.nr="3743" unit.nr="346" />
+      <function byte="27" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 53: requiredValvePosition2
+    -->
+    <config type="field" group="2">
+      <present name.nr="3744" unit.nr="346" />
+      <function byte="53" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 54: actualValvePosition2
+    -->
+    <config type="field" group="2">
+      <present name.nr="3745" unit.nr="346" />
+      <function byte="54" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 21: M2 Max rel modulation
+    -->
+    <config type="field" group="2">
+      <present name.nr="3748" unit.nr="346" />
+      <function byte="21" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 28: Group 2 rel mod level
+    -->
+    <config type="field" group="2">
+      <present name.nr="3746" unit.nr="346" />
+      <function byte="28" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 26: Slave rel mod level
+    -->
+    <config type="field" group="2">
+      <present name.nr="3749" unit.nr="346" />
+      <function byte="26" expression="A" format="0" />
+      <limits min="0" max="100" />
+    </config>
+    <!-- 
+    Byte 16: Slave fault code
+    -->
+    <config type="field" group="2">
+      <present name.nr="3750" unit.nr="3605" />
+      <function byte="16" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+    <!-- 
+    Byte 49: Slave ID115 HB
+    -->
+    <config type="field" group="2">
+      <present name.nr="3751" unit.nr="3605" />
+      <function byte="49" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+    <!-- 
+    Byte 50: Slave ID115 LB
+    -->
+    <config type="field" group="2">
+      <present name.nr="3752"  unit.nr="3605" />
+      <function byte="50" expression="A" format="0" />
+      <limits min="0" max="255" />
+    </config>
+    <!-- 
+    Byte 2: Master1 to Cmix: Group 1 heatdemand to Cmix from master 1
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3753" />
+      <function byte="2" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 2: Master1 to Cmix: Group 2 heat demand to Cmix from master 1
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3771" />
+      <function byte="2" bit="4" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 3: Master2 to Cmix: Group 2 heatdemand to Cmix from master 2
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3757" />
+      <function byte="3" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 0: Cmix to slave: Cmix heatdemand to slave/boiler
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3768" />
+      <function byte="0" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 62: Cmix to states: Group 1 pump
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3755" />
+      <function byte="62" bit="2" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <!-- 
+    Byte 62: Cmix to states: Group 2 pump
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3759" />
+      <function byte="62" bit="3" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <!-- 
+    Byte 4: Cmix to master1: Group 1 flame present
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3756" description.txt="" />
+      <function byte="4" bit="3" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 5: Cmix to master2: Group 2 flame present
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3760" />
+      <function byte="5" bit="3" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 1: Slave to Cmix: Slave/boiler flame present
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3761" />
+      <function byte="1" bit="3" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 4: Cmix to master1: Group 1 CH mode active
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3754" />
+      <function byte="4" bit="1" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 4: Cmix to master1: Group 2 CH mode active
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3789" />
+      <function byte="4" bit="5" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 5: Cmix to master2: Group 2 CH mode active
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3758" />
+      <function byte="5" bit="1" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 1: Slave to Cmix: Slave/boiler CH mode active
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3762" />
+      <function byte="1" bit="1" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 1: Slave to Cmix: Slave/boiler DHW mode active
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3763" />
+      <function byte="1" bit="2" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 1: Slave to Cmix, electri prod
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3790" />
+      <function byte="1" bit="7" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 15: Slave fault flags - Low water: Slave/boiler Low Water pressure
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3765" />
+      <function byte="15" bit="2" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 1: Slave to Cmix: Slave/boiler service indication
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3766" />
+      <function byte="1" bit="6" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 15: Slave fault flags - service request: Slave/boiler Service request
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3767" />
+      <function byte="15" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 0: Cmix to slave: Cmix DHW eco to slave/boiler
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3769" />
+      <function byte="0" bit="1" invert="true" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 0: Cmix to slave: Cmix DHW blocking to slave/boiler
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3770" />
+      <function byte="0" bit="6" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 13: Cmix config to Master 1: Cmix DHW present to master 1
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3772" />
+      <function byte="13" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 12: Slave config: Slave/boiler DHW present
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3773" />
+      <function byte="12" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 2: Master1 to Cmix: Master 1 DHW eco to Cmix
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3774" />
+      <function byte="2" bit="1" invert="true" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 3: Master2 to Cmix: Master 2 DHW eco to Cmix
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3775" />
+      <function byte="3" bit="1" invert="true" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 2: Master1 to Cmix: Master 1 DHW blocking to Cmix
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3776" />
+      <function byte="2" bit="6" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 3: Master2 to Cmix: Master 2 DHW blocking to Cmix
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3777" />
+      <function byte="3" bit="6" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 4: Cmix to master1: Cmix in fault report to master 1
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3778" />
+      <function byte="4" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 5: Cmix to master2: Cmix in fault report to master 2
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3779" />
+      <function byte="5" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 1: Slave to Cmix: Slave/boiler in fault
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3764" />
+      <function byte="1" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 4: Cmix to master1: DHW mode active m1
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3780" />
+      <function byte="4" bit="2" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 4: Cmix to master1: Slave/boiler service indication to master 1
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3781" />
+      <function byte="4" bit="6" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 5: Cmix to master2: Slave/boiler service indication to master 2
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3782" />
+      <function byte="5" bit="6" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 62: Cmix states: Group 1 is set to manual
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3783" />
+      <function byte="62" bit="0" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 62: Cmix states: Group 2 is set to manual
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3784" />
+      <function byte="62" bit="1" invert="false" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+    <!-- 
+    Byte 62: Cmix states: Group 1 frost protection
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3785" />
+      <function byte="62" bit="4" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <!-- 
+    Byte 62: Cmix states: Group 2 frost protection
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3786" />
+      <function byte="62" bit="5" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <!-- 
+    Byte 62: Cmix states: Group 1 keep alive
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3787" />
+      <function byte="62" bit="6" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <!-- 
+    Byte 62: Cmix states: Group 2 keep alive
+    -->
+	<config type="bit" group="3">
+      <present name.nr="3788" />
+      <function byte="62" bit="7" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+  </configurations>
+  <configurations name="identification">
+    <!-- PSU-->
+    <config type="field" group="1">
+      <present name.nr="3700" description.nr="3700" />
+      <function byte="48" number="4" argument="16" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="2015" description.nr="2015" />
+      <function byte="32" number="5" />
+    </config>
+    <config type="field" label="SW_VERSION" group="1">
+      <present name.nr="2010" description.nr="2010" />
+      <function byte="5" number="6" />
+    </config>
+    <config type="field" label="PARAM_VERSION" group="1">
+      <present name.nr="2012" description.nr="2012" />
+      <function byte="6" number="6" />
+    </config>
+    <config type="field" label="PARAM_TYPE" group="1">
+      <present name.nr="2013" description.nr="2013" />
+      <function byte="7" expression="A" format="0" />
+    </config>
+    <!-- PCU/Cmix-->
+    <config type="field" group="2">
+      <present name.nr="2009" description.nr="2009" />
+      <function byte="0" expression="A" format="0" />
+    </config>
+    <config type="select" group="2">
+      <present name.nr="3701" description.nr="3701" />
+      <function byte="2" expression="A" format="0" />
+      <node-ref type="selections" id="ot.member.id.code" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3702" description.nr="3702" />
+      <function byte="3" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3703" description.nr="3703" />
+      <function byte="4" expression="A" format="0" />
+    </config>
+    <config type="select" group="2">
+      <present name.nr="3704" description.nr="3704" />
+      <function byte="5" expression="A" format="0" />
+      <node-ref type="selections" id="ot.member.id.code" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3705" description.nr="3705" />
+      <function byte="6" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3706" description.nr="3706" />
+      <function byte="7" expression="A" format="0" />
+    </config>
+    <config type="select" group="2">
+      <present name.nr="3707" description.nr="3707" />
+      <function byte="8" expression="A" format="0" />
+      <node-ref type="selections" id="ot.member.id.code" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3708" description.nr="3708" />
+      <function byte="9" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3709" description.nr="3709" />
+      <function byte="10" expression="A" format="0" />
+    </config>
+  </configurations>
+  <checksum value="14038" />
+</configuration>

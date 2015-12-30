@@ -1,0 +1,1525 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" boiler.type="LMS14_P23">
+<properties>
+	<property name="version" value="0.2" />
+	<property name="boilername" value="LMS14 (P23)" />
+</properties>
+
+<!-- #################################### selections ##############################################-->
+
+<selections id="Status.Kessel">
+	<selection value="0" result.txt="In Betrieb für Heizkreis" />
+</selections>
+
+<selections id="Status.Brenner">
+	<selection value="0" result.txt="In Betrieb" />
+</selections>
+
+<selections id="Status.Heizkreis">
+	<selection value="0" result.txt="Heizbetrieb Komfort" />
+</selections>
+
+<selections id="Status.Trinkwasser">
+	<selection value="0" result.txt="Geladen, Nenntemperatur" />
+</selections>
+
+<selections id="---.DEMO">
+	<selection value="0" result.txt="---" />
+</selections>
+
+<selections id="Ein.DEMO">
+	<selection value="0" result.txt="Ein" />
+</selections>
+
+<selections id="Aus.DEMO">
+	<selection value="0" result.txt="Aus" />
+</selections>
+
+<selections id="Offen.DEMO">
+	<selection value="0" result.txt="Offen" />
+</selections>
+
+<selections id="Nein.Ja">
+	<selection value="0" result.nr="1004" />
+	<selection value="1" result.nr="1003" />
+</selections>
+
+<selections id="Betriebsniveau.Kennlinie">
+	<selection value="0" result.txt="Betriebsniveau" />
+	<selection value="1" result.txt="Kennlinie" />
+</selections>
+
+<selections id="Frostschutz.Reduziert.Komfort">
+	<selection value="0" result.nr="2511" />
+	<selection value="1" result.txt="Reduziert" />
+	<selection value="2" result.txt="Komfort" />
+</selections>
+
+<selections id="Keine.Schutzbetrieb.Reduziert.Komfort.Automatik">
+	<selection value="0" result.nr="3104" />
+	<selection value="1" result.txt="Schutzbetrieb" />
+	<selection value="2" result.txt="Reduziert" />
+	<selection value="3" result.txt="Komfort" />
+	<selection value="4" result.nr="1739" />
+</selections>
+
+<selections id="Schutzbetrieb.Automatik.Reduziert.Komfort">
+	<selection value="0" result.txt="Schutzbetrieb" />
+	<selection value="1" result.nr="1739" />
+	<selection value="2" result.txt="Reduziert" />
+	<selection value="3" result.txt="Komfort" />
+</selections>
+
+<selections id="Aus.Ein">
+	<selection value="0" result.nr="224" />
+	<selection value="1" result.nr="223" />
+</selections>
+
+<selections id="Aus.Ein..255">
+	<selection value="0" result.nr="224" />
+	<selection value="255" result.nr="223" />
+</selections>
+
+<selections id="24h_Tag.Heizprogramme_mit_Vorverlegung.Zeitprogramm_4">
+	<selection value="0" result.nr="3043" />
+	<selection value="1" result.nr="3044" />
+	<selection value="2" result.txt="Zeitprogramm 4/TWW" />
+</selections>
+
+<selections id="Absolut.Gleitend.Kein.MK_gleitend_PK_absolut">
+	<selection value="0" result.nr="3040" />
+	<selection value="1" result.nr="3041" />
+	<selection value="2" result.nr="3042" />
+	<selection value="3" result.txt="MK gleitend, PK absolut" />
+</selections>
+
+<selections id="Aus.Periodisch.Fixer_Wochentag">
+	<selection value="0" result.nr="224" />
+	<selection value="1" result.txt="Periodisch" />
+	<selection value="2" result.txt="Fixer Wochentag" />
+</selections>
+
+<selections id="Wochentag">
+	<selection value="1" result.txt="Montag" />
+	<selection value="2" result.txt="Dienstag" />
+	<selection value="3" result.txt="Mittwoch" />
+	<selection value="4" result.txt="Donnerstag" />
+	<selection value="5" result.txt="Freitag" />
+	<selection value="6" result.txt="Samstag" />
+	<selection value="7" result.txt="Sonntag" />
+</selections>
+
+<selections id="Legio_Zeitpunkt_DEMO">
+	<selection value="1" result.txt="00:00" />
+	<selection value="2" result.txt="00:10" />
+	<selection value="3" result.txt="00:20" />
+	<selection value="4" result.txt="00:30" />
+	<selection value="5" result.txt="00:40" />
+	<selection value="6" result.txt="00:50" />
+	<selection value="7" result.txt="01:00" />
+	<selection value="8" result.txt="....." />
+	<selection value="9" result.txt="....." />
+</selections>
+
+<selections id="Einmal_Tag.Mehrmals_Tag..255">
+	<selection value="0" result.nr="3038" />
+	<selection value="255" result.nr="3039" />
+</selections>
+
+<selections id="TWW_Nachladeregelung">
+	<selection value="1" result.txt="Nachladen" />
+	<selection value="2" result.txt="Durchladen" />
+	<selection value="3" result.txt="Durchladen Legio" />
+	<selection value="4" result.txt="Durchladen 1. Ladung" />
+	<selection value="5" result.txt="Durchlad' Legio und 1.Ladung" />
+</selections>
+
+<selections id="Temp_hub_Max_DEMO">
+	<selection value="1" result.txt="---" />
+	<selection value="2" result.txt="1 °C" />
+	<selection value="3" result.txt="2 °C" />
+	<selection value="4" result.txt="3 °C" />
+	<selection value="5" result.txt="4 °C" />
+	<selection value="6" result.txt="5 °C" />
+	<selection value="7" result.txt="6 °C" />
+	<selection value="8" result.txt="..." />
+	<selection value="9" result.txt="..." />
+</selections>
+
+<selections id="Keine.Bedarf.Kesselsollwert.Temperaturhub_Nenn.Brennerleistung">
+	<selection value="0" result.nr="3104" />
+	<selection value="1" result.txt="Kesselsollwert" />
+	<selection value="2" result.txt="Temperaturhub Nenn" />
+	<selection value="3" result.txt="Brennerleistung" />
+</selections>
+
+<selections id="Aus.Nur_Heizbetrieb.Nur_Trinkwasserbetrieb.Heiz-_und_Trinkwass'betrieb">
+	<selection value="0" result.nr="224" />
+	<selection value="1" result.txt="Nur Heizbetrieb" />
+	<selection value="2" result.txt="Nur Trinkwasserbetrieb" />
+	<selection value="3" result.txt="Heiz- und Trinkwass'betrieb" />
+</selections>
+
+<selections id="Keine_Ladeanforderung.Ladepumpe.Umlenkventil">
+	<selection value="0" result.txt="Keine Ladeanforderung" />
+	<selection value="1" result.txt="Ladepumpe" />
+	<selection value="2" result.txt="Umlenkventil" />
+</selections>
+
+<selections id="Alle_Anforderungen.Nur_Anforderung_HK1/TWW..255">
+	<selection value="0" result.txt="Alle_Anforderungen" />
+	<selection value="255" result.txt="Nur_Anforderung_HK1/TWW" />
+</selections>
+
+<selections id="QX1..WGB">
+	<selection value="0" result.nr="3042" />
+	<selection value="1" result.nr="3090" />
+	<selection value="2" result.txt="Elektroeinsatz TWW K6" />
+	<selection value="3" result.nr="3227" />
+	<selection value="4" result.nr="3228" />
+	<selection value="5" result.nr="3229" />
+	<selection value="7" result.nr="3230" />
+	<selection value="11" result.nr="3234" />
+	<selection value="12" result.nr="3235" />
+	<selection value="13" result.nr="3236" />
+	<selection value="14" result.nr="3237" />
+	<selection value="15" result.txt="Feststoffkesselpumpe Q10" />
+	<selection value="16" result.nr="3238" />
+	<selection value="17" result.nr="3239" />
+	<selection value="18" result.nr="3240" />
+	<selection value="19" result.nr="3241" />
+	<selection value="20" result.nr="3241" />
+	<selection value="22" result.nr="3243" />
+	<selection value="25" result.nr="3245" />
+	<selection value="26" result.nr="3246" />
+	<selection value="27" result.nr="3247" />
+	<selection value="28" result.nr="3248" />
+	<selection value="29" result.nr="3249" />
+	<selection value="33" result.nr="3250" />
+	<selection value="34" result.nr="3251" />
+	<selection value="35" result.nr="3252" />
+	<selection value="40" result.nr="3256" />
+	<selection value="41" result.nr="3257" />
+	<selection value="42" result.txt="Abgasklappe K37" />
+	<selection value="43" result.nr="3258" />
+</selections>
+
+<selections id="BX1..WGB">
+	<selection value="0" result.nr="3042" />
+	<selection value="1" result.nr="3303" />
+	<selection value="2" result.nr="3304" />
+	<selection value="4" result.nr="3305" />
+	<selection value="5" result.nr="3306" />
+	<selection value="6" result.nr="3307" />
+	<selection value="8" result.nr="3309" />
+	<selection value="9" result.txt="Feststoffkesselfühler B22" />
+	<selection value="10" result.nr="3310" />
+	<selection value="11" result.nr="3311" />
+	<selection value="12" result.nr="3312" />
+	<selection value="13" result.nr="3313" />
+	<selection value="14" result.nr="3314" />
+	<selection value="16" result.nr="3315" />
+	<selection value="17" result.nr="3316" />
+</selections>
+
+<selections id="H1..WGB">
+	<selection value="0" result.nr="3104" />
+	<selection value="1" result.txt="BA-Umschaltung HK's+TWW" />
+	<selection value="2" result.txt="BA-Umschaltung TWW" />
+	<selection value="3" result.txt="BA-Umschaltung HK's" />
+	<selection value="4" result.txt="BA-Umschaltung HK1" />
+	<selection value="5" result.txt="BA-Umschaltung HK2" />
+	<selection value="6" result.txt="BA-Umschaltung HK3" />
+	<selection value="7" result.txt="Erzeugersperre" />
+	<selection value="8" result.txt="Fehler-/Alarmmeldung" />
+	<selection value="9" result.txt="Verbr'anforderung VK1" />
+	<selection value="10" result.txt="Verbr'anforderung VK2" />
+	<selection value="11" result.txt="Freigabe Schw'bad Erzeuger" />
+	<selection value="12" result.txt="Ãœbertemperaturableitung" />
+	<selection value="13" result.txt="Freigabe Schwimmbad Solar" />
+	<selection value="14" result.txt="Betriebsniveau TWW" />
+	<selection value="15" result.txt="Betriebsniveau HK1" />
+	<selection value="16" result.txt="Betriebsniveau HK2" />
+	<selection value="17" result.txt="Betriebsniveau HK3" />
+	<selection value="18" result.nr="3105" />
+	<selection value="19" result.nr="3106" />
+	<selection value="20" result.nr="3107" />
+	<selection value="22" result.nr="3108" />
+	<selection value="24" result.txt="ImpulszÃ¤hlung" />
+	<selection value="28" result.txt="Rückmeldung Abgasklappe" />
+	<selection value="51" result.txt="Verbr'anforderung VK1 10V" />
+	<selection value="52" result.txt="Verbr'anforderung VK2 10V" />
+	<selection value="58" result.txt="Leistungsanforderung 10V" />
+</selections>
+
+<selections id="Ruhekontakt.Arbeitskontakt">
+	<selection value="0" result.txt="Ruhekontakt" />
+	<selection value="1" result.txt="Arbeitskontakt" />
+</selections>
+
+<selections id="H4..WGB">
+	<selection value="0" result.nr="3104" />
+	<selection value="1" result.txt="BA-Umschaltung HK's+TWW" />
+	<selection value="2" result.txt="BA-Umschaltung TWW" />
+	<selection value="3" result.txt="BA-Umschaltung HK's" />
+	<selection value="4" result.txt="BA-Umschaltung HK1" />
+	<selection value="5" result.txt="BA-Umschaltung HK2" />
+	<selection value="6" result.txt="BA-Umschaltung HK3" />
+	<selection value="7" result.txt="Erzeugersperre" />
+	<selection value="8" result.txt="Fehler-/Alarmmeldung" />
+	<selection value="9" result.txt="Verbr'anforderung VK1" />
+	<selection value="10" result.txt="Verbr'anforderung VK2" />
+	<selection value="11" result.txt="Freigabe Schw'bad Erzeuger" />
+	<selection value="12" result.txt="Übertemperaturableitung" />
+	<selection value="13" result.txt="Freigabe Schwimmbad Solar" />
+	<selection value="14" result.txt="Betriebsniveau TWW" />
+	<selection value="15" result.txt="Betriebsniveau HK1" />
+	<selection value="16" result.txt="Betriebsniveau HK2" />
+	<selection value="17" result.txt="Betriebsniveau HK3" />
+	<selection value="18" result.nr="3105" />
+	<selection value="19" result.nr="3106" />
+	<selection value="20" result.nr="3107" />
+	<selection value="22" result.nr="3108" />
+	<selection value="24" result.txt="Impulszählung" />
+	<selection value="28" result.txt="Rückmeldung Abgasklappe" />
+	<selection value="50" result.txt="Durchflussmessung Hz" />
+</selections>
+
+<selections id="H5..WGB">
+	<selection value="0" result.nr="3104" />
+	<selection value="1" result.txt="BA-Umschaltung HK's+TWW" />
+	<selection value="2" result.txt="BA-Umschaltung TWW" />
+	<selection value="3" result.txt="BA-Umschaltung HK's" />
+	<selection value="4" result.txt="BA-Umschaltung HK1" />
+	<selection value="5" result.txt="BA-Umschaltung HK2" />
+	<selection value="6" result.txt="BA-Umschaltung HK3" />
+	<selection value="7" result.txt="Erzeugersperre" />
+	<selection value="8" result.txt="Fehler-/Alarmmeldung" />
+	<selection value="9" result.txt="Verbr'anforderung VK1" />
+	<selection value="10" result.txt="Verbr'anforderung VK2" />
+	<selection value="11" result.txt="Freigabe Schw'bad Erzeuger" />
+	<selection value="12" result.txt="Übertemperaturableitung" />
+	<selection value="13" result.txt="Freigabe Schwimmbad Solar" />
+	<selection value="14" result.txt="Betriebsniveau TWW" />
+	<selection value="15" result.txt="Betriebsniveau HK1" />
+	<selection value="16" result.txt="Betriebsniveau HK2" />
+	<selection value="17" result.txt="Betriebsniveau HK3" />
+	<selection value="18" result.nr="3105" />
+	<selection value="19" result.nr="3106" />
+	<selection value="20" result.nr="3107" />
+	<selection value="22" result.nr="3108" />
+	<selection value="24" result.txt="Impulszählung" />
+	<selection value="28" result.txt="Rückmeldung Abgasklappe" />
+</selections>
+
+<selections id="Funktion_EWM..WGB">
+	<selection value="0" result.nr="3283" />
+	<selection value="1" result.nr="3284" />
+	<selection value="2" result.nr="3285" />
+	<selection value="4" result.nr="3286" />
+	<selection value="6" result.nr="3288" />
+	<selection value="7" result.nr="3289" />
+</selections>
+
+
+<selections id="status.code">
+    <selection value="0"  result.txt="OK" />
+	<selection value="10" result.txt="error 10" />
+	<selection value="20" result.txt="error 20" />
+	<selection value="28" result.txt="error 28" />
+	<selection value="30" result.txt="error 30" />
+	<selection value="32" result.txt="error 32" />
+	<selection value="38" result.txt="error 38" />
+	<selection value="39" result.txt="error 39" />
+	<selection value="40" result.txt="error 40" />
+	<selection value="42" result.txt="error 42" />
+	<selection value="43" result.txt="error 43" />
+	<selection value="44" result.txt="error 44" />
+	<selection value="45" result.txt="error 45" />
+	<selection value="46" result.txt="error 46" />
+	<selection value="47" result.txt="error 47" />
+	<selection value="48" result.txt="error 48" />
+	<selection value="50" result.txt="error 50" />
+	<selection value="52" result.txt="error 52" />
+	<selection value="54" result.txt="error 54" />
+	<selection value="55" result.txt="error 55" />
+	<selection value="56" result.txt="error 56" />
+	<selection value="57" result.txt="error 57" />
+	<selection value="58" result.txt="error 58" />
+	<selection value="60" result.txt="error 60" />
+	<selection value="61" result.txt="error 61" />
+	<selection value="62" result.txt="error 62" />
+	<selection value="64" result.txt="error 64" />
+	<selection value="65" result.txt="error 65" />
+	<selection value="66" result.txt="error 66" />
+	<selection value="67" result.txt="error 67" />
+	<selection value="68" result.txt="error 68" />
+	<selection value="69" result.txt="error 69" />
+	<selection value="70" result.txt="error 70" />
+	<selection value="71" result.txt="error 71" />
+	<selection value="72" result.txt="error 72" />
+	<selection value="73" result.txt="error 73" />
+	<selection value="74" result.txt="error 74" />
+	<selection value="75" result.txt="error 75" />
+	<selection value="76" result.txt="error 76" />
+	<selection value="77" result.txt="error 77" />
+	<selection value="78" result.txt="error 78" />
+	<selection value="79" result.txt="error 79" />
+	<selection value="80" result.txt="error 80" />
+	<selection value="81" result.txt="error 81" />
+	<selection value="82" result.txt="error 82" />
+	<selection value="83" result.txt="error 83" />
+	<selection value="84" result.txt="error 84" />
+	<selection value="85" result.txt="error 85" />
+	<selection value="86" result.txt="error 86" />
+	<selection value="87" result.txt="error 87" />
+	<selection value="88" result.txt="error 88" />
+	<selection value="90" result.txt="error 90" />
+	<selection value="91" result.txt="error 91" />
+	<selection value="92" result.txt="error 92" />
+	<selection value="93" result.txt="error 93" />
+	<selection value="94" result.txt="error 94" />
+	<selection value="95" result.txt="error 95" />
+	<selection value="96" result.txt="error 96" />
+	<selection value="97" result.txt="error 97" />
+	<selection value="98" result.txt="error 98" />
+	<selection value="99" result.txt="error 99" />
+	<selection value="100" result.txt="error 100" />
+	<selection value="101" result.txt="error 101" />
+	<selection value="102" result.txt="error 102" />
+	<selection value="103" result.txt="error 103" />
+	<selection value="105" result.txt="error 105" />
+	<selection value="106" result.txt="error 106" />
+	<selection value="107" result.txt="error 107" />
+	<selection value="108" result.txt="error 108" />
+	<selection value="109" result.txt="error 109" />
+	<selection value="110" result.txt="error 110" />
+	<selection value="111" result.txt="error 111" />
+	<selection value="112" result.txt="error 112" />
+	<selection value="113" result.txt="error 113" />
+	<selection value="114" result.txt="error 114" />
+	<selection value="115" result.txt="error 115" />
+	<selection value="116" result.txt="error 116" />
+	<selection value="117" result.txt="error 117" />
+	<selection value="118" result.txt="error 118" />
+	<selection value="119" result.txt="error 119" />
+	<selection value="120" result.txt="error 120" />
+	<selection value="121" result.txt="error 121" />
+	<selection value="122" result.txt="error 122" />
+	<selection value="123" result.txt="error 123" />
+	<selection value="124" result.txt="error 124" />
+	<selection value="125" result.txt="error 125" />
+	<selection value="126" result.txt="error 126" />
+	<selection value="127" result.txt="error 127" />
+	<selection value="128" result.txt="error 128" />
+	<selection value="129" result.txt="error 129" />
+	<selection value="130" result.txt="error 130" />
+	<selection value="131" result.txt="error 131" />
+	<selection value="132" result.txt="error 132" />
+	<selection value="133" result.txt="error 133" />
+	<selection value="134" result.txt="error 134" />
+	<selection value="135" result.txt="error 135" />
+	<selection value="136" result.txt="error 136" />
+	<selection value="137" result.txt="error 137" />
+	<selection value="138" result.txt="error 138" />
+	<selection value="140" result.txt="error 140" />
+	<selection value="141" result.txt="error 141" />
+	<selection value="142" result.txt="error 142" />
+	<selection value="145" result.txt="error 145" />
+	<selection value="146" result.txt="error 146" />
+	<selection value="147" result.txt="error 147" />
+	<selection value="148" result.txt="error 148" />
+	<selection value="149" result.txt="error 149" />
+	<selection value="150" result.txt="error 150" />
+	<selection value="151" result.txt="error 151" />
+	<selection value="152" result.txt="error 152" />
+	<selection value="153" result.txt="error 153" />
+	<selection value="154" result.txt="error 154" />
+	<selection value="155" result.txt="error 155" />
+	<selection value="157" result.txt="error 157" />
+	<selection value="158" result.txt="error 158" />
+	<selection value="160" result.txt="error 160" />
+	<selection value="161" result.txt="error 161" />
+	<selection value="162" result.txt="error 162" />
+	<selection value="163" result.txt="error 163" />
+	<selection value="164" result.txt="error 164" />
+	<selection value="165" result.txt="error 165" />
+	<selection value="166" result.txt="error 166" />
+	<selection value="167" result.txt="error 167" />
+	<selection value="169" result.txt="error 169" />
+	<selection value="171" result.txt="error 171" />
+	<selection value="172" result.txt="error 172" />
+	<selection value="173" result.txt="error 173" />
+	<selection value="174" result.txt="error 174" />
+	<selection value="175" result.txt="error 175" />
+	<selection value="176" result.txt="error 176" />
+	<selection value="177" result.txt="error 177" />
+	<selection value="178" result.txt="error 178" />
+	<selection value="179" result.txt="error 179" />
+	<selection value="180" result.txt="error 180" />
+	<selection value="181" result.txt="error 181" />
+	<selection value="182" result.txt="error 182" />
+	<selection value="183" result.txt="error 183" />
+	<selection value="184" result.txt="error 184" />
+	<selection value="185" result.txt="error 185" />
+	<selection value="186" result.txt="error 186" />
+	<selection value="187" result.txt="error 187" />
+	<selection value="191" result.txt="error 191" />
+	<selection value="193" result.txt="error 193" />
+	<selection value="195" result.txt="error 195" />
+	<selection value="196" result.txt="error 196" />
+	<selection value="200" result.txt="error 200" />
+	<selection value="201" result.txt="error 201" />
+	<selection value="202" result.txt="error 202" />
+	<selection value="203" result.txt="error 203" />
+	<selection value="204" result.txt="error 204" />
+	<selection value="205" result.txt="error 205" />
+	<selection value="206" result.txt="error 206" />
+	<selection value="207" result.txt="error 207" />
+	<selection value="208" result.txt="error 208" />
+	<selection value="209" result.txt="error 209" />
+	<selection value="210" result.txt="error 210" />
+	<selection value="211" result.txt="error 211" />
+	<selection value="212" result.txt="error 212" />
+	<selection value="213" result.txt="error 213" />
+	<selection value="214" result.txt="error 214" />
+	<selection value="215" result.txt="error 215" />
+	<selection value="216" result.txt="error 216" />
+	<selection value="217" result.txt="error 217" />
+	<selection value="218" result.txt="error 218" />
+	<selection value="220" result.txt="error 220" />
+	<selection value="221" result.txt="error 221" />
+	<selection value="222" result.txt="error 222" />
+	<selection value="223" result.txt="error 223" />
+	<selection value="224" result.txt="error 224" />
+	<selection value="225" result.txt="error 225" />
+	<selection value="226" result.txt="error 226" />
+	<selection value="227" result.txt="error 227" />
+	<selection value="228" result.txt="error 228" />
+	<selection value="229" result.txt="error 229" />
+	<selection value="230" result.txt="error 230" />
+	<selection value="231" result.txt="error 231" />
+	<selection value="232" result.txt="error 232" />
+	<selection value="233" result.txt="error 233" />
+	<selection value="234" result.txt="error 234" />
+	<selection value="235" result.txt="error 235" />
+	<selection value="236" result.txt="error 236" />
+	<selection value="237" result.txt="error 237" />
+	<selection value="238" result.txt="error 238" />
+	<selection value="239" result.txt="error 239" />
+	<selection value="241" result.txt="error 241" />
+	<selection value="242" result.txt="error 242" />
+	<selection value="243" result.txt="error 243" />
+	<selection value="247" result.txt="error 247" />
+	<selection value="253" result.txt="error 253" />
+	<selection value="254" result.txt="error 254" />
+	<selection value="255" result.txt="error 255" />
+	<selection value="256" result.txt="error 256" />
+	<selection value="257" result.txt="error 257" />
+	<selection value="258" result.txt="error 258" />
+	<selection value="259" result.txt="error 259" />
+	<selection value="260" result.txt="error 260" />
+	<selection value="261" result.txt="error 261" />
+	<selection value="262" result.txt="error 262" />
+	<selection value="263" result.txt="error 263" />
+	<selection value="264" result.txt="error 264" />
+	<selection value="265" result.txt="error 265" />
+	<selection value="266" result.txt="error 266" />
+	<selection value="267" result.txt="error 267" />
+	<selection value="268" result.txt="error 268" />
+	<selection value="269" result.txt="error 269" />
+	<selection value="270" result.txt="error 270" />
+	<selection value="271" result.txt="error 271" />
+	<selection value="272" result.txt="error 272" />
+	<selection value="273" result.txt="error 273" />
+	<selection value="274" result.txt="error 274" />
+	<selection value="275" result.txt="error 275" />
+	<selection value="276" result.txt="error 276" />
+	<selection value="277" result.txt="error 277" />
+	<selection value="278" result.txt="error 278" />
+	<selection value="279" result.txt="error 279" />
+	<selection value="280" result.txt="error 280" />
+	<selection value="281" result.txt="error 281" />
+	<selection value="282" result.txt="error 282" />
+	<selection value="283" result.txt="error 283" />
+	<selection value="284" result.txt="error 284" />
+	<selection value="285" result.txt="error 285" />
+	<selection value="286" result.txt="error 286" />
+	<selection value="287" result.txt="error 287" />
+	<selection value="288" result.txt="error 288" />
+	<selection value="289" result.txt="error 289" />
+	<selection value="290" result.txt="error 290" />
+	<selection value="291" result.txt="error 291" />
+	<selection value="292" result.txt="error 292" />
+	<selection value="293" result.txt="error 293" />
+	<selection value="294" result.txt="error 294" />
+	<selection value="295" result.txt="error 295" />
+	<selection value="296" result.txt="error 296" />
+	<selection value="298" result.txt="error 298" />
+	<selection value="299" result.txt="error 299" />
+	<selection value="300" result.txt="error 300" />
+	<selection value="301" result.txt="error 301" />
+	<selection value="302" result.txt="error 302" />
+	<selection value="303" result.txt="error 303" />
+	<selection value="304" result.txt="error 304" />
+	<selection value="305" result.txt="error 305" />
+	<selection value="306" result.txt="error 306" />
+	<selection value="307" result.txt="error 307" />
+	<selection value="308" result.txt="error 308" />
+	<selection value="309" result.txt="error 309" />
+	<selection value="310" result.txt="error 310" />
+	<selection value="311" result.txt="error 311" />
+	<selection value="312" result.txt="error 312" />
+	<selection value="313" result.txt="error 313" />
+	<selection value="314" result.txt="error 314" />
+	<selection value="315" result.txt="error 315" />
+	<selection value="316" result.txt="error 316" />
+	<selection value="317" result.txt="error 317" />
+	<selection value="319" result.txt="error 319" />
+	<selection value="320" result.txt="error 320" />
+	<selection value="321" result.txt="error 321" />
+	<selection value="322" result.txt="error 322" />
+	<selection value="323" result.txt="error 323" />
+	<selection value="324" result.txt="error 324" />
+	<selection value="325" result.txt="error 325" />
+	<selection value="326" result.txt="error 326" />
+	<selection value="327" result.txt="error 327" />
+	<selection value="328" result.txt="error 328" />
+	<selection value="329" result.txt="error 329" />
+	<selection value="330" result.txt="error 330" />
+	<selection value="331" result.txt="error 331" />
+	<selection value="332" result.txt="error 332" />
+	<selection value="333" result.txt="error 333" />
+	<selection value="334" result.txt="error 334" />
+	<selection value="335" result.txt="error 335" />
+	<selection value="336" result.txt="error 336" />
+	<selection value="337" result.txt="error 337" />
+	<selection value="338" result.txt="error 338" />
+	<selection value="339" result.txt="error 339" />
+	<selection value="340" result.txt="error 340" />
+	<selection value="341" result.txt="error 341" />
+	<selection value="342" result.txt="error 342" />
+	<selection value="343" result.txt="error 343" />
+	<selection value="344" result.txt="error 344" />
+	<selection value="345" result.txt="error 345" />
+	<selection value="346" result.txt="error 346" />
+	<selection value="347" result.txt="error 347" />
+	<selection value="348" result.txt="error 348" />
+	<selection value="349" result.txt="error 349" />
+	<selection value="350" result.txt="error 350" />
+	<selection value="351" result.txt="error 351" />
+	<selection value="352" result.txt="error 352" />
+	<selection value="353" result.txt="error 353" />
+	<selection value="354" result.txt="error 354" />
+	<selection value="355" result.txt="error 355" />
+	<selection value="356" result.txt="error 356" />
+	<selection value="357" result.txt="error 357" />
+	<selection value="358" result.txt="error 358" />
+	<selection value="359" result.txt="error 359" />
+	<selection value="360" result.txt="error 360" />
+	<selection value="361" result.txt="error 361" />
+	<selection value="362" result.txt="error 362" />
+	<selection value="363" result.txt="error 363" />
+	<selection value="364" result.txt="error 364" />
+	<selection value="365" result.txt="error 365" />
+	<selection value="366" result.txt="error 366" />
+	<selection value="367" result.txt="error 367" />
+	<selection value="368" result.txt="error 368" />
+	<selection value="369" result.txt="error 369" />
+	<selection value="370" result.txt="error 370" />
+	<selection value="371" result.txt="error 371" />
+	<selection value="372" result.txt="error 372" />
+	<selection value="373" result.txt="error 373" />
+	<selection value="374" result.txt="error 374" />
+	<selection value="375" result.txt="error 375" />
+	<selection value="376" result.txt="error 376" />
+	<selection value="377" result.txt="error 377" />
+	<selection value="378" result.txt="error 378" />
+	<selection value="379" result.txt="error 379" />
+	<selection value="380" result.txt="error 380" />
+	<selection value="381" result.txt="error 381" />
+	<selection value="382" result.txt="error 382" />
+	<selection value="383" result.txt="error 383" />
+	<selection value="384" result.txt="error 384" />
+	<selection value="385" result.txt="error 385" />
+	<selection value="386" result.txt="error 386" />
+	<selection value="387" result.txt="error 387" />
+	<selection value="388" result.txt="error 388" />
+	<selection value="391" result.txt="error 391" />
+	<selection value="392" result.txt="error 392" />
+	<selection value="393" result.txt="error 393" />
+	<selection value="394" result.txt="error 394" />
+	<selection value="395" result.txt="error 395" />
+	<selection value="396" result.txt="error 396" />
+	<selection value="397" result.txt="error 397" />
+	<selection value="398" result.txt="error 398" />
+	<selection value="399" result.txt="error 399" />
+	<selection value="400" result.txt="error 400" />
+	<selection value="401" result.txt="error 401" />
+	<selection value="402" result.txt="error 402" />
+	<selection value="403" result.txt="error 403" />
+	<selection value="404" result.txt="error 404" />
+	<selection value="405" result.txt="error 405" />
+	<selection value="406" result.txt="error 406" />
+	<selection value="407" result.txt="error 407" />
+	<selection value="408" result.txt="error 408" />
+	<selection value="409" result.txt="error 409" />
+	<selection value="410" result.txt="error 410" />
+	<selection value="411" result.txt="error 411" />
+	<selection value="412" result.txt="error 412" />
+	<selection value="413" result.txt="error 413" />
+	<selection value="414" result.txt="error 414" />
+	<selection value="415" result.txt="error 415" />
+	<selection value="416" result.txt="error 416" />
+	<selection value="417" result.txt="error 417" />
+	<selection value="418" result.txt="error 418" />
+	<selection value="419" result.txt="error 419" />
+	<selection value="420" result.txt="error 420" />
+	<selection value="421" result.txt="error 421" />
+	<selection value="422" result.txt="error 422" />
+	<selection value="423" result.txt="error 423" />
+	<selection value="424" result.txt="error 424" />
+	<selection value="425" result.txt="error 425" />
+	<selection value="426" result.txt="error 426" />
+	<selection value="427" result.txt="error 427" />
+	<selection value="428" result.txt="error 428" />
+	<selection value="429" result.txt="error 429" />
+	<selection value="430" result.txt="error 430" />
+	<selection value="431" result.txt="error 431" />
+	<selection value="432" result.txt="error 432" />
+	<selection value="433" result.txt="error 433" />
+	<selection value="434" result.txt="error 434" />
+	<selection value="435" result.txt="error 435" />
+	<selection value="436" result.txt="error 436" />
+	<selection value="438" result.txt="error 438" />
+	<selection value="439" result.txt="error 439" />
+	<selection value="441" result.txt="error 441" />
+	<selection value="442" result.txt="error 442" />
+	<selection value="443" result.txt="error 443" />
+	<selection value="444" result.txt="error 444" />
+	<selection value="445" result.txt="error 445" />
+	<selection value="446" result.txt="error 446" />
+	<selection value="447" result.txt="error 447" />
+	<selection value="448" result.txt="error 448" />
+	<selection value="449" result.txt="error 449" />
+	<selection value="450" result.txt="error 450" />
+	<selection value="451" result.txt="error 451" />
+	<selection value="452" result.txt="error 452" />
+	<selection value="453" result.txt="error 453" />
+	<selection value="454" result.txt="error 454" />
+	<selection value="455" result.txt="error 455" />
+	<selection value="456" result.txt="error 456" />
+	<selection value="457" result.txt="error 457" />
+	<selection value="458" result.txt="error 458" />
+	<selection value="461" result.txt="error 461" />
+	<selection value="462" result.txt="error 462" />
+	<selection value="463" result.txt="error 463" />
+	<selection value="464" result.txt="error 464" />
+	<selection value="465" result.txt="error 465" />
+	<selection value="466" result.txt="error 466" />
+	<selection value="467" result.txt="error 467" />
+	<selection value="468" result.txt="error 468" />
+	<selection value="469" result.txt="error 469" />
+	<selection value="470" result.txt="error 470" />
+	<selection value="471" result.txt="error 471" />
+	<selection value="472" result.txt="error 472" />
+	<selection value="473" result.txt="error 473" />
+	<selection value="474" result.txt="error 474" />
+	<selection value="475" result.txt="error 475" />
+	<selection value="476" result.txt="error 476" />
+	<selection value="477" result.txt="error 477" />
+	<selection value="478" result.txt="error 478" />
+	<selection value="479" result.txt="error 479" />
+	<selection value="480" result.txt="error 480" />
+	<selection value="481" result.txt="error 481" />
+	<selection value="482" result.txt="error 482" />
+	<selection value="483" result.txt="error 483" />
+	<selection value="484" result.txt="error 484" />
+	<selection value="485" result.txt="error 485" />
+	<selection value="486" result.txt="error 486" />
+	<selection value="487" result.txt="error 487" />
+    <selection value="999" result.nr="2198" />
+</selections>
+
+
+<!-- #################################### Parameter ##############################################-->
+<configurations name="parameter">
+	
+	<!-- 700 Betriebsart Heizkreis 1 -->
+	<config group="1" type="select">
+		<present code.txt="700" name.txt="Betriebsart" description.txt="Betriebsart Heizkreis 1" />
+		<function byte="0" expression="A" format="0"/>
+		<node-ref type="selections" id="Schutzbetrieb.Automatik.Reduziert.Komfort" />
+	</config>
+	
+	<!-- 710 Komfortsollwert HK1 -->
+	<config group="1" type="field">
+		<present code.txt="710" name.nr="3123" description.nr="3123" unit.nr="312"/>
+		<function byte="1" expression="(A.1+B.0) x 0.015625" format="0.0"/>
+		<limits min="4" max="35"/>
+	</config>
+	
+	<!-- 712 Reduziertsollwert HK1 -->
+	<config group="1" type="field">
+		<present code.txt="712" name.nr="3126" description.nr="3127" unit.nr="312"/>
+		<function byte="3" expression="(A.1+B.0) x 0.015625" format="0.0"/>
+		<limits min="4" max="35"/>
+	</config>
+	
+	<!-- 714 Frostschutzsollert HK1 -->
+	<config group="1" type="field">
+		<present code.txt="714" name.nr="3132" description.nr="3133" unit.nr="312"/>
+		<function byte="5" expression="(A.1+B.0) x 0.015625" format="0.0"/>
+		<limits min="4" max="35"/>
+	</config>
+	
+	<!-- 720 Kennlinie Steilheit HK1 -->
+	<config group="1" type="field">
+		<present code.txt="720" name.nr="3145" description.nr="3146" unit.txt=""/>
+		<function byte="7" expression="(A.1+B.0) x 0.02" format="0.00"/>
+		<limits min="0.1" max="4"/>
+	</config>
+	
+	<!-- 721 Heizkennlinie Parallelverschiebung Heizkreis 1 -->
+	<config group="1" type="field">
+		<present code.txt="721" name.nr="3151" description.nr="3152" unit.nr="312"/>
+		<function byte="9" expression="(A.1+B.0) x 0.015625" format="0.0"/>
+		<limits min="-4.5" max="4.5"/>
+	</config>
+	
+	<!-- 730 Sommer/Winter Umschalttemperatur Heizkreis 1 -->
+	<config group="1" type="field">
+		<present code.txt="730" name.nr="3178" description.nr="3178" unit.nr="312"/>
+		<function byte="11" expression="(A.1+B.0) x 0.015625" format="0.0"/>
+		<limits min="8" max="30"/>
+	</config>
+	
+	<!-- 732 Tagesheizgrenze Heizkreis 1 -->
+	<config group="1" type="field">
+		<present code.txt="732" name.txt="Tagesheizgrenze" description.txt="Tagesheizgrenze Heizkreis 1" unit.nr="312"/>
+		<function byte="13" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="-10" max="10"/>
+	</config>
+	
+	<!-- 733 Verlängerung Tag'heizgrenz Heizkreis 1 -->
+	<!--<config group="1" type="select">
+		<present code.txt="733" name.txt="Verlängerung Tag'heizgrenz" description.txt="Verlängerung Tagesheizgrenze Heizkreis 1" />
+		<function byte="???" expression="A" format="0"/>
+		<node-ref type="selections" id="Nein.Ja" />
+	</config> -->
+	
+	<!-- 740 Vorlaufsollwert Minimum Heizkreis 1 -->
+	<config group="1" type="field">
+		<present code.txt="740" name.nr="3163" description.nr="3163" unit.nr="312"/>
+		<function byte="15" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="8" max="95"/>
+	</config>
+	
+	<!-- 741 Vorlaufsollwert Maximum Heizkreis 1 -->
+	<config group="1" type="field">
+		<present code.txt="740" name.nr="3166" description.nr="3166" unit.nr="312"/>
+		<function byte="17" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="8" max="95"/>
+	</config>
+	
+	<!-- 880 Pumpe Drehzahlreduktion Heizkreis 1 -->
+	<config group="1" type="select">
+		<present code.txt="880" name.txt="Pumpe Drehzahlreduktion" description.txt="Pumpe Drehzahlreduktion Heizkreis 1" />
+		<function byte="19" expression="A" format="0"/>
+		<node-ref type="selections" id="Betriebsniveau.Kennlinie"/>
+	</config>
+	
+	<!-- 882 Pumpendrehzahl Minimum Heizkreis 1 -->
+	<config group="1" type="field">
+		<present code.txt="882" name.txt="Pumpendrehzahl Minimum" description.txt="Pumpendrehzahl Minimum Heizkreis 1" unit.nr="346"/>
+		<function byte="20" expression="A" format="0"/>
+		<limits min="0" max="100"/>
+	</config>
+	
+	<!-- 883 Pumpendrehzahl Maximum Heizkreis 1 -->
+	<config group="1" type="field">
+		<present code.txt="883" name.txt="Pumpendrehzahl Maximum" description.txt="Pumpendrehzahl Maximum Heizkreis 1" unit.nr="346"/>
+		<function byte="21" expression="A" format="0"/>
+		<limits min="0" max="100"/>
+	</config>
+	
+	<!-- 888 Kennliniekorrektur bei 50% Drehzahl Heizkreis1 -->
+	<config group="1" type="field">
+		<present code.txt="888" name.txt="Kennliniekorr bei 50% Drehz" description.txt="Kennliniekorrektur bei 50% Drehzahl Heizkreis1" unit.nr="346"/>
+		<function byte="22" expression="A" format="0"/>
+		<limits min="0" max="100"/>
+	</config>
+	
+	<!-- 898 Betriebsniveauumschaltung Heizkreis 1 -->
+	<config group="1" type="select">
+		<present code.txt="898" name.txt="Betriebsniveauumschaltung" description.txt="Betriebsniveauumschaltung Heizkreis 1" />
+		<function byte="23" expression="A" format="0"/>
+		<node-ref type="selections" id="Frostschutz.Reduziert.Komfort"/>
+	</config>
+	
+	<!-- 900 Betriebsartumschaltung Heizkreis 1 -->
+	<config group="1" type="select">
+		<present code.txt="898" name.txt="Betriebsartumschaltung" description.txt="Betriebsartumschaltung Heizkreis 1" />
+		<function byte="24" expression="A" format="0"/>
+		<node-ref type="selections" id="Keine.Schutzbetrieb.Reduziert.Komfort.Automatik"/>
+	</config>	
+
+
+	<!-- 1600 Trinkwasser-Betriebsart -->
+	<config group="2" type="select">
+		<present code.txt="1600" name.txt="Betriebsart" description.txt="Betriebsartumschaltung Trinkwasser" />
+		<function byte="25" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.Ein"/>
+	</config>
+	
+	<!-- 1610 Trinkwassertemperatur-Nennsollwert -->
+	<config group="2" type="field">
+		<present code.txt="1610" name.txt="Nennsollwert" description.txt="Trinkwassertemperatur-Nennsollwert" unit.nr="312"/>
+		<function byte="26" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="8" max="65"/>
+	</config>
+	
+	<!-- 1612 Trinkwassertemperatur-Reduziertsollwert -->
+	<config group="2" type="field">
+		<present code.txt="1612" name.txt="Reduziertsollwert" description.txt="Trinkwassertemperatur-Reduziertsollwert" unit.nr="312"/>
+		<function byte="28" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="8" max="65"/>
+	</config>
+	
+	<!-- 1620 Trinkwasserfreigabe -->
+	<config group="2" type="select">
+		<present code.txt="1620" name.txt="Freigabe" description.txt="Trinkwasserfreigabe" />
+		<function byte="30" expression="A" format="0"/>
+		<node-ref type="selections" id="24h_Tag.Heizprogramme_mit_Vorverlegung.Zeitprogramm_4"/>
+	</config>
+	
+	<!-- 1630 Trinkwasser Ladevorrang -->
+	<config group="2" type="select">
+		<present code.txt="1630" name.txt="Ladevorrang" description.txt="Trinkwasser Ladevorrang" />
+		<function byte="31" expression="A" format="0"/>
+		<node-ref type="selections" id="Absolut.Gleitend.Kein.MK_gleitend_PK_absolut"/>
+	</config>
+	
+		<!-- 1640 Legionellenfunktion -->
+	<config group="2" type="select">
+		<present code.txt="1640" name.txt="Legionellenfunktion" description.txt="Legionellenfunktion" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.Periodisch.Fixer_Wochentag"/>
+	</config>
+	
+		<!-- 1642 Legionellenfunktion Tag -->
+	<config group="2" type="select">
+		<present code.txt="1642" name.txt="Legionellenfkt Wochentag" description.txt="Legionellenfunktion Tag" />
+		<function byte="33" expression="A" format="0"/>
+		<node-ref type="selections" id="Wochentag"/>
+	</config>
+	
+	<!-- 1644 Zeitpunkt für Legionellenfunktion --> <!-- ### DEMO!! ### -->
+	<config group="2" type="select">
+		<present code.txt="1642" name.txt="Zeitpunkt für Legionellenfunktion" description.txt="Legionellenfunktion Zeitpunkt" />
+		<function byte="84" expression="A.1+B.0" format="0"/>
+		<node-ref type="selections" id="Legio_Zeitpunkt_DEMO"/>
+	</config>
+	
+	<!-- 1645 Legionellenfunktion Sollwert -->
+	<config group="2" type="field">
+		<present code.txt="1645" name.txt="Legionellenfunktion Sollwert" description.txt="TLegionellenfunktion Sollwert" unit.nr="312"/>
+		<function byte="34" expression="A.1+B.0" format="0"/>
+		<limits min="55" max="69"/>
+	</config>
+	
+	<!-- 1646 Verweildauer auf Legionellenfunktions-Sollwert -->
+	<config group="2" type="field">
+		<present code.txt="1646" name.txt="Legionellenfkt Verweildauer" description.txt="Verweildauer auf Legionellenfunktions-Sollwert" unit.nr="11256"/>
+		<function byte="36" expression="(A.1+B.0)" format="0"/>
+		<limits min="10" max="360"/>
+	</config>
+	
+	<!-- 5010 Trinkwasserladung -->
+	<config group="2" type="select">
+		<present code.txt="5010" name.txt="Ladung" description.txt="Trinkwasserladung" />
+		<function byte="38" expression="A" format="0"/>
+		<node-ref type="selections" id="Einmal_Tag.Mehrmals_Tag..255"/>
+	</config>
+	
+	<!-- 5020 Trinkwassertemperatur-Nennsollwert -->
+	<config group="2" type="field">
+		<present code.txt="5020" name.txt="Vorlaufsollwertüberhöhung" description.txt="Trinkwasser Vorlaufsollwertüberhöhung" unit.nr="312"/>
+		<function byte="39" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="0" max="30"/>
+	</config>
+	
+	<!-- 5022 Trinkwasser Nachladeregelung -->
+	<config group="2" type="select">
+		<present code.txt="5010" name.txt="Ladeart" description.txt="Trinkwasser Nachladeregelung" />
+		<function byte="41" expression="A" format="0"/>
+		<node-ref type="selections" id="TWW_Nachladeregelung"/>
+	</config>
+	
+	<!-- 5050 Trinkwasser Ladetemperatur Maximum -->
+	<config group="2" type="field">
+		<present code.txt="5050" name.txt="Ladetemperatur Maximum" description.txt="Trinkwasser Ladetemperatur Maximum" unit.nr="312"/>
+		<function byte="42" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="8" max="69"/>
+	</config>
+
+
+
+	<!-- 2210 Kesseltemperatur-Minimalbegrenzung -->
+	<config group="3" type="field">
+		<present code.txt="2210" name.txt="Sollwert Minimum" description.txt="Kesseltemperatur-Minimalbegrenzung" unit.nr="312"/>
+		<function byte="44" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="8" max="85"/>
+	</config>
+	
+	<!-- 2212 Kesseltemperatur-Maximalbegrenzung -->
+	<config group="3" type="field">
+		<present code.txt="2212" name.txt="Sollwert Maximum" description.txt="Kesseltemperatur-Maximalbegrenzung" unit.nr="312"/>
+		<function byte="46" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="8" max="85"/>
+	</config>
+	
+	<!-- 2214 Kesselsollwert im Handbetrieb -->
+	<config group="3" type="field">
+		<present code.txt="2214" name.txt="Sollwert Handbetrieb" description.txt="Kesselsollwert im Handbetrieb" unit.nr="312"/>
+		<function byte="48" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="8" max="85"/>
+	</config>
+	
+	<!-- 2241 Brennerlaufzeit-Minimalbegrenzung -->
+	<config group="3" type="field">
+		<present code.txt="2241" name.txt="Brennerlaufzeit Minimum" description.txt="Brennerlaufzeit-Minimalbegrenzung" unit.nr="11256"/>
+		<function byte="50" expression="A" format="0"/>
+		<limits min="0" max="20"/>
+	</config>
+	
+	<!-- 2243 Brennermindestpausenzeit -->
+	<config group="3" type="field">
+		<present code.txt="2241" name.txt="Brennerpausenzeit Minimum" description.txt="Brennermindestpausenzeit" unit.nr="11256"/>
+		<function byte="51" expression="A.1+B.0" format="0"/>
+		<limits min="0" max="20"/>
+	</config>
+	
+	<!-- 2245 Max. Regeldiff. ohne Abbruch der Mindestpause -->
+	<config group="3" type="field">
+		<present code.txt="2245" name.txt="SD Brennerpause" description.txt="Max. Regeldiff. ohne Abbruch der Mindestpause" unit.nr="312"/>
+		<function byte="53" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="0" max="80"/>
+	</config>
+	
+	<!-- 2316 Temperaturhub Maximum --> <!-- ### DEMO!! ### -->
+	<config group="3" type="select">
+		<present code.txt="2316" name.txt="Temperaturhub Maximum" description.txt="Temperaturhub Maximum" />
+		<function byte="55" expression="(A.1+B.0)" format="0"/>
+		<node-ref type="selections" id="Temp_hub_Max_DEMO"/>
+	</config>
+	
+	<!-- 2317 Temperaturhub Nenn -->
+	<config group="3" type="field">
+		<present code.txt="2217" name.txt="Temperaturhub Nenn" description.txt="Temperaturhub Nenn" unit.nr="312"/>
+		<function byte="57" expression="(A.1+B.0) x 0.015625" format="0"/>
+		<limits min="0" max="45"/>
+	</config>
+	
+	<!-- 2320 Kesselpumpenmodulation -->
+	<config group="3" type="select">
+		<present code.txt="2320" name.txt="Pumpenmodulation" description.txt="Kesselpumpenmodulation" />
+		<function byte="59" expression="A" format="0"/>
+		<node-ref type="selections" id="Keine.Bedarf.Kesselsollwert.Temperaturhub_Nenn.Brennerleistung"/>
+	</config>
+	
+	<!-- 2322 Pumpendrehzahl Minimum Kessel -->
+	<config group="3" type="field">
+		<present code.txt="2322" name.txt="Pumpendrehzahl Minimum" description.txt="Pumpendrehzahl Minimum Kessel" unit.nr="346"/>
+		<function byte="60" expression="A" format="0"/>
+		<limits min="0" max="100"/>
+	</config>
+	
+	<!-- 2323 Pumpendrehzahl Maximum Kessel -->
+	<config group="3" type="field">
+		<present code.txt="2323" name.txt="Pumpendrehzahl Maximum" description.txt="Pumpendrehzahl Maximum Kessel" unit.nr="346"/>
+		<function byte="61" expression="A" format="0"/>
+		<limits min="0" max="100"/>
+	</config>
+	
+	<!-- 2441 Maximale Gebläseleistung im Heizbetrieb -->
+	<config group="3" type="field">
+		<present code.txt="2441" name.txt="Gebläseleistung Heizen Max" description.txt="Maximale Gebläseleistung im Heizbetrieb" unit.txt="kW"/>
+		<function byte="62" expression="(A.1+B.0) x 0.1" format="0.0"/>
+		<limits min="3.5" max="20"/>
+	</config>
+	
+	<!-- 2444 Maximale Gebläseleistung bei Trinkwasserbetrieb -->
+	<config group="3" type="field">
+		<present code.txt="2444" name.txt="Gebläseleistung TWW Max" description.txt="Maximale Gebläseleistung bei Trinkwasserbetrieb" unittxt="kW"/>
+		<function byte="64" expression="(A.1+B.0) x 0.1" format="0.0"/>
+		<limits min="3.5" max="20"/>
+	</config>
+	
+	<!-- 2450 Reglerverzögerung -->
+	<config group="3" type="select">
+		<present code.txt="2450" name.txt="Reglerverzögerung" description.txt="Reglerverzögerung" />
+		<function byte="66" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.Nur_Heizbetrieb.Nur_Trinkwasserbetrieb.Heiz-_und_Trinkwass'betrieb"/>
+	</config>
+	
+	<!-- 2452 Reglerverzögerung Gebläseleistung -->
+	<config group="3" type="field">
+		<present code.txt="2452" name.txt="Reglerverzög' Gebl'leistung" description.txt="Reglerverzögerung Gebläseleistung" unit.txt="kW"/>
+		<function byte="67" expression="(A.1+B.0) x 0.1" format="0.0"/>
+		<limits min="3.5" max="20"/>
+	</config>
+	
+	<!-- 2453 Reglerverzögerung nach Inbetriebsetzung -->
+	<config group="3" type="field">
+		<present code.txt="2453" name.txt="Reglerverzögerung Dauer" description.txt="Reglerverzögerung nach Inbetriebsetzung" unit.nr="382"/>
+		<function byte="69" expression="A.1+B.0" format="0"/>
+		<limits min="0" max="255"/>
+	</config>
+
+
+
+		<!-- 5710 Heizkreis 1 -->
+	<config group="4" type="select">
+		<present code.txt="5710" name.txt="Heizkreis 1" description.txt="Heizkreis 1" />
+		<function byte="71" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.Ein..255"/>
+	</config>
+	
+	<!-- 5715 Heizkreis 2 --> <!-- ### DEMO!! ### -->
+	<config group="4" type="select">
+		<present code.txt="5715" name.txt="Heizkreis 2" description.txt="Heizkreis 2" />
+		<function byte="71" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.Ein..255"/>
+	</config>
+	
+	<!-- 5721 Heizkreis 3 --> <!-- ### DEMO!! ### -->
+	<config group="4" type="select">
+		<present code.txt="5721" name.txt="Heizkreis 3" description.txt="Heizkreis 3" />
+		<function byte="71" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.Ein..255"/>
+	</config>
+	
+	<!-- 5731 Trinkwasser-Stellglied -->
+	<config group="4" type="select">
+		<present code.txt="5731" name.txt="Trinkwasserstellglied" description.txt="Trinkwasser-Stellglied" />
+		<function byte="72" expression="A" format="0"/>
+		<node-ref type="selections" id="Keine_Ladeanforderung.Ladepumpe.Umlenkventil"/>
+	</config>
+	
+	<!-- 5774 Steuerung Kesselpumpe/TWW Umlenkventil -->
+	<config group="4" type="select">
+		<present code.txt="5774" name.txt="Steuer' Kesselpump/TWW UV" description.txt="Steuerung Kesselpumpe/TWW Umlenkventil" />
+		<function byte="73" expression="A" format="0"/>
+		<node-ref type="selections" id="Alle_Anforderungen.Nur_Anforderung_HK1/TWW..255"/>
+	</config>
+	
+	<!-- 5890 Relaisausgang QX1 -->
+	<config group="4" type="select">
+		<present code.txt="5890" name.txt="Relaisausgang QX1" description.txt="Relaisausgang QX1" />
+		<function byte="74" expression="A" format="0"/>
+		<node-ref type="selections" id="QX1..WGB"/>
+	</config>
+	
+	<!-- 5891 Relaisausgang QX2 -->
+	<config group="4" type="select">
+		<present code.txt="5891" name.txt="Relaisausgang QX2" description.txt="Relaisausgang QX2" />
+		<function byte="86" expression="A" format="0"/>
+		<node-ref type="selections" id="QX1..WGB"/>
+	</config>
+	
+	<!-- 5892 Relaisausgang QX3 -->
+	<config group="4" type="select">
+		<present code.txt="5892" name.txt="Relaisausgang QX3" description.txt="Relaisausgang QX3" />
+		<function byte="87" expression="A" format="0"/>
+		<node-ref type="selections" id="QX1..WGB"/>
+	</config>
+	
+	<!-- 5930 Fühlereingang BX1 -->
+	<config group="4" type="select">
+		<present code.txt="5930" name.txt="Fühlereingang BX1" description.txt="Fühlereingang BX1" />
+		<function byte="75" expression="A" format="0"/>
+		<node-ref type="selections" id="BX1..WGB"/>
+	</config>
+	
+	<!-- 5931 Fühlereingang BX2 -->
+	<config group="4" type="select">
+		<present code.txt="5931" name.txt="Fühlereingang BX2" description.txt="Fühlereingang BX2" />
+		<function byte="76" expression="A" format="0"/>
+		<node-ref type="selections" id="BX1..WGB"/>
+	</config>
+	
+	<!-- 5932 Fühlereingang BX3 -->
+	<config group="4" type="select">
+		<present code.txt="5932" name.txt="Fühlereingang BX3" description.txt="Fühlereingang BX3" />
+		<function byte="77" expression="A" format="0"/>
+		<node-ref type="selections" id="BX1..WGB"/>
+	</config>
+	
+	<!-- 5950 Eingang H1 Funktionswahl -->
+	<config group="4" type="select">
+		<present code.txt="5950" name.txt="Funktion Eingang H1" description.txt="Eingang H1 Funktionswahl" />
+		<function byte="78" expression="A" format="0"/>
+		<node-ref type="selections" id="H1..WGB"/>
+	</config>
+	
+	<!-- 5951 Wirksinn Kontakt H1 -->
+	<config group="4" type="select">
+		<present code.txt="5951" name.txt="Wirksinn Kontakt H1" description.txt="Kontaktart H1" />
+		<function byte="79" expression="A" format="0"/>
+		<node-ref type="selections" id="Ruhekontakt.Arbeitskontakt"/>
+	</config>
+	
+	<!-- 5970 Eingang H4 Funktionswahl --> <!-- ### DEMO!! ### -->
+	<config group="4" type="select">
+		<present code.txt="5970" name.txt="Funktion Eingang H4" description.txt="Eingang H4 Funktionswahl" />
+		<function byte="78" expression="A" format="0"/>
+		<node-ref type="selections" id="H4..WGB"/>
+	</config>
+	
+	<!-- 5971 Wirksinn Kontakt H4 --> <!-- ### DEMO!! ### -->
+	<config group="4" type="select">
+		<present code.txt="5971" name.txt="Wirksinn Kontakt H4" description.txt="Kontaktart H4" />
+		<function byte="79" expression="A" format="0"/>
+		<node-ref type="selections" id="Ruhekontakt.Arbeitskontakt"/>
+	</config>
+	
+	<!-- 5977 Eingang H5 Funktionswahl --> <!-- ### DEMO!! ### -->
+	<config group="4" type="select">
+		<present code.txt="5977" name.txt="Funktion Eingang H5" description.txt="Eingang H5 Funktionswahl" />
+		<function byte="78" expression="A" format="0"/>
+		<node-ref type="selections" id="H5..WGB"/>
+	</config>
+	
+	<!-- 5978 Wirksinn Kontakt H5 --> <!-- ### DEMO!! ### -->
+	<config group="4" type="select">
+		<present code.txt="5978" name.txt="Wirksinn Kontakt H5" description.txt="Kontaktart H5" />
+		<function byte="79" expression="A" format="0"/>
+		<node-ref type="selections" id="Ruhekontakt.Arbeitskontakt"/>
+	</config>
+	
+	<!-- 6020 Funktion Erweiterungsmodul 1 -->
+	<config group="4" type="select">
+		<present code.txt="6020" name.txt="Funktion Erweiter'modul 1" description.txt="Funktion Erweiterungsmodul 1" />
+		<function byte="80" expression="A" format="0"/>
+		<node-ref type="selections" id="Funktion_EWM..WGB"/>
+	</config>
+	
+	<!-- 6021 Funktion Erweiterungsmodul 2 --> <!-- ### DEMO!! ### -->
+	<config group="4" type="select">
+		<present code.txt="6021" name.txt="Funktion Erweiter'modul 2" description.txt="Funktion Erweiterungsmodul 2" />
+		<function byte="80" expression="A" format="0"/>
+		<node-ref type="selections" id="Funktion_EWM..WGB"/>
+	</config>
+	
+	<!-- 6100 Korrektur Aussenfühler -->
+	<config group="4" type="field">
+		<present code.txt="6100" name.txt="Korrektur Aussenfühler" description.txt="Aussentemperaturfühler Messwertkorrektur" unit.nr="312"/>
+		<function byte="81" expression="(A.1+B.0) x 0.015625" format="0,0"/>
+		<limits min="-3" max="+3"/>
+	</config>
+	
+	<!-- 6110 Gebäudezeitkonstante -->
+	<config group="4" type="field">
+		<present code.txt="6110" name.txt="Zeitkonstante Gebäude" description.txt="Gebäudezeitkonstante" unit.txt="h"/>
+		<function byte="83" expression="A" format="0"/>
+		<limits min="0" max="50"/>
+	</config>
+</configurations>
+
+
+<!-- #################################### failure uebernommen aus Demo (nicht angepasst!) ####################################-->
+<configurations name="failure">
+    <config type="field">
+      <present code.txt="x" name.txt="Code" description.txt="Code Beschreibung" />
+      <function byte="0" expression="A.1 + B.0" format="0" />
+    </config>
+    <config type="field">
+      <present code.txt="t" name.txt="Zeitpunkt" description.txt="Fehlerzeitpunkt" />
+      <function byte="2" number="7" />
+    </config>
+</configurations>
+
+<!-- #################################### error uebernommen aus Demo (nicht angepasst!) ####################################-->
+<configurations name="error">
+    <config type="field">
+      <present code.txt="x" name.txt="Code" description.txt="Code Beschreibung" />
+      <function byte="0" expression="A.1 + B.0" format="0" />
+    </config>
+    <config type="field">
+      <present code.txt="t" name.txt="Zeitpunkt" description.txt="Fehlerzeitpunkt" />
+      <function byte="2" number="7" />
+    </config>
+</configurations>
+
+
+<!-- #################################### Sample ##############################################-->
+<configurations name="sample">
+	<config type="select" label="STATUS" group="0">
+		<present name.nr="2023" description.nr="2023" />
+		<function byte="30" expression="A.1 + B.0" format="0" />
+		<node-ref type="selections" id="status.code" />
+	</config>
+	<config type="field" group="1">
+		<present name.txt="Aussentemperatur" description.txt="Aktuelle Aussentemperatur" unit.nr="312" />
+		<function byte="45" expression="A x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="select" label="STATUS" group="1">
+		<present name.txt="Status Kessel" description.txt="Aktueller Kesselstatus" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Status.Kessel" />
+	</config>
+	
+	<config type="select" label="STATUS" group="1">
+		<present name.txt="Status Brenner" description.txt="Aktueller Brennerstatus" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Status.Brenner" />
+	</config>
+	
+	<config type="field" group="1">
+		<present name.txt="Kesseltemp.-Ist" description.txt="Kesseltemperatur-Istwert" unit.nr="312" />
+		<function byte="51" expression="(A.1+B.0) x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="1">
+		<present name.txt="Kesseltemp.-Soll" description.txt="Kesseltemperatur-Sollwert" unit.nr="312" />
+		<function byte="28" expression="(A.1+B.0) x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="1">
+		<present name.txt="Rücklauftemp.-Istwert" description.txt="Rücklauftemperatur-Istwert" unit.nr="312" />
+		<function byte="53" expression="(A.1+B.0) x0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="1">
+		<present name.txt="Gebläsedrehzahl" description.txt="Aktuelle Gebläsedrehzahl" unit.txt="U/min" />
+		<function byte="5" expression="(A.1+B.0)" format="0"/>
+	</config>
+	
+	<config type="field" group="1">
+		<present name.txt="Gebläsesollwert" description.txt="Brennergebläsesollwert" unit.txt="U/min" />
+		<function byte="7" expression="(A.1+B.0)" format="0"/>
+	</config>
+	
+	<config type="field" group="1">
+		<present name.txt="Brennermodulation" description.txt="Brennermodulation" unit.txt="%" />
+		<function byte="4" expression="A" format="0"/>
+	</config>
+	
+		<config type="field" group="1">
+		<present name.txt="Ion.-strom Ist" description.txt="Ionisationsstrom Istwert" unit.txt=" µA" />
+		<function byte="40" expression="(A x 0.1)" format="0"/>
+	</config>
+	
+	<config type="select" label="xxx" group="1">
+		<present name.txt="Zustand Kesselpumpe" description.txt="Zustand Kesselpumpe (Q1)" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="---.DEMO" />
+	</config>
+	
+	<config type="select" label="xxx" group="1">
+		<present name.txt="Drehzahl Kesselpumpe" description.txt="Drehzahl Kesselpumpe" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="---.DEMO" />
+	</config>
+	
+	
+	<config type="field" group="2">
+		<present name.txt="Aussentemperatur" description.txt="Aktuelle Aussentemperatur" unit.nr="312" />
+		<function byte="45" expression="A x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="2">
+		<present name.txt="Aussentemp. gedämpft" description.txt="Aussentemperatur gedämpft" unit.nr="312" />
+		<function byte="38" expression="A x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="2">
+		<present name.txt="Aussentemp. gemischt" description.txt="Aussentemperatur gemischt" unit.nr="312" />
+		<function byte="39" expression="A x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="select" label="STATUS" group="2">
+		<present name.txt="Status Kessel" description.txt="Aktueller Kesselstatus" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Status.Kessel" />
+	</config>
+	
+	<config type="select" label="STATUS" group="2">
+		<present name.txt="Status Heizkreis 1" description.txt="Status Heizkreis 1" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Status.Heizkreis" />
+	</config>
+	
+	<config type="select" label="STATUS" group="2">
+		<present name.txt="Status Trinkwasser" description.txt="Status Trinkwasser" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Status.Trinkwasser" />
+	</config>
+	
+	<config type="field" group="2">
+		<present name.txt="Sollwert HK1" description.txt="Vorlauftemperatur-Sollwert resultierend HK1" unit.nr="312" />
+		<function byte="56" expression="(A.1+B.0) x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="2">
+		<present name.txt="Trinkwassertemperatur" description.txt="Trinkwassertemperatur-Istwert Oben (B3)" unit.nr="312" />
+		<function byte="41" expression="(A.1+B.0) x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="2">
+		<present name.txt="Trinkwasser Sollwert" description.txt="Trinkwassertemperatur-Sollwert aktuell" unit.nr="312" />
+		<function byte="43" expression="(A.1+B.0) x 0.1" format="0.0"/>
+	</config>
+	
+	
+	<config type="select" group="3">
+		<present name.txt="Kesselpumpe (Q1)" description.txt="Zustand Kesselpumpe (Q1)" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="---.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Drehzahl Kesselpumpe" description.txt="Drehzahl Kesselpumpe" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="---.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Heizkreispumpe 1" description.txt="Zustand Heizkreispumpe 1" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Ein.DEMO" />
+	</config>
+	
+	<config type="field" group="3">
+		<present name.txt="Drehzahl HK1-Pumpe" description.txt="Heizkreispumpe Drehzahl HK1" unit.txt="%" />
+		<function byte="13" expression="A" format="0"/>
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Trinkwasserpumpe" description.txt="Zustand Trinkwasserpumpe" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Zustand QX1" description.txt="Zustand Multifunktionales Relais (QX1)" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Zustand QX2" description.txt="Zustand Multifunktionales Relais (QX2)" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Zustand QX3" description.txt="Zustand Multifunktionales Relais (QX3)" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Aus.DEMO" />
+	</config>
+	
+	<config type="field" group="3">
+		<present name.txt="PWM Ausg. P1" description.txt="PWM Ausgang P1" unit.txt="%" />
+		<function byte="13" expression="A" format="0"/>
+	</config>
+	
+	<config type="field" group="3">
+		<present name.txt="Aussentemperatur B9" description.txt="Aussentemperatur B9" unit.nr="312" />
+		<function byte="45" expression="A x 0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="3">
+		<present name.txt="Trinkwassertemp." description.txt="Trinkwassertemperatur B3/B38" unit.nr="312" />
+		<function byte="41" expression="(A.1+B.0)x0.1" format="0.0"/>
+	</config>
+	
+	<config type="field" group="3">
+		<present name.txt="Kesseltemperatur B2" description.txt="Kesseltemperatur B2" unit.nr="312" />
+		<function byte="51" expression="(A.1+B.0)x0.1" format="0.0"/>
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Fühlertemperatur BX1" description.txt="Fühlertemperatur BX1" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="---.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Fühlertemperatur BX2" description.txt="Fühlertemperatur BX2" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="---.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Fühlertemperatur BX3" description.txt="Fühlertemperatur BX3" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="---.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Kontaktzustand H1" description.txt="Kontaktzustand H1" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Offen.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Kontaktzustand H4" description.txt="Kontaktzustand H4" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Offen.DEMO" />
+	</config>
+	
+	<config type="select" group="3">
+		<present name.txt="Kontaktzustand H5" description.txt="Kontaktzustand H5" unit.txt="" />
+		<function byte="32" expression="A" format="0"/>
+		<node-ref type="selections" id="Offen.DEMO" />
+	</config>
+</configurations>
+
+<!-- #################################### counter ####################################################-->
+
+<configurations name="counter">
+	<config type="field" group="0">
+		<present name.txt="Betr.-Stunden" description.txt="Betriebsstunden Bernner" unit.nr="317"/>
+		<function byte="0" expression="A.1 + B.0" format="0" /> 
+	</config>
+	<config type="field" group="0">
+		<present name.txt="Starts" description.txt="Brennerstarts" /> 
+		<function byte="2" expression="A.1 + B.0" format="0" />
+	</config>
+	<config type="field" group="0">
+		<present name.txt="Betr.-Stunden TWW" description.txt="Betriebsstunden Trinkwarmwasser" unit.nr="317"/> 
+		<function byte="4" expression="A.1 + B.0" format="0" />
+	</config>
+	<config type="field" group="0">
+		<present name.txt="Wartungsintervall" description.txt="Brennerbetriebsstunden Wartungsintervall" unit.nr="317"/> 
+		<function byte="6" expression="A.1 + B.0" format="0" />
+	</config>
+	<config type="field" group="0">
+		<present name.txt="Stunden seit Wartung" description.txt="Brennerbetriebsstunden seit letzter Wartung" unit.nr="317"/> 
+		<function byte="8" expression="A.1 + B.0" format="0" />
+	</config>
+</configurations>
+  
+  
+<!-- #################################### identification uebernommen aus Demo (nicht geaendert!) ##############################-->
+
+<configurations name="identification">
+    <config type="field" group="1">
+      <present name.txt="SW Ver." description.txt="SW Ver." />
+      <function byte="0" expression="(A.1 + B.0) x 0.1" format="0.0" />
+    </config>
+    <config type="field" group="1">
+      <present name.txt="Build Index" description.txt="Build Index" />
+      <function byte="4" expression="A.1 + B.0" format="0" />
+    </config>
+    <config type="field" group="1">
+      <present name.txt="EGC Ver." description.txt="EGC Ver." />
+      <function byte="2" expression="(A.1 + B.0) x 0.1" format="0.0" />
+    </config>
+</configurations>
+
+  <checksum value="48528" />
+</configuration>

@@ -1,0 +1,3272 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<language name="tsjechie">
+<text id="0" value="Česky"/>
+<text id="1" value="6.82"/>
+<text id="2" value="CS"/>
+<text id="15" value="10 s následná cirkulace"/>
+<text id="18" value="trvalý"/>
+<text id="23" value="3cestný ventil"/>
+<text id="24" value="Čerpadlo ohřívače"/>
+<text id="25" value="Inverzní 3cestný ventil"/>
+<text id="26" value="Přehřátí TUV"/>
+<text id="27" value="Max. průtok TUV"/>
+<text id="30" value="Regulace otáček"/>
+<text id="31" value="Nekontrolujte"/>
+<text id="32" value="Externí rozhraní"/>
+<text id="33" value="Rozhraní OpenTherm"/>
+<text id="38" value="Chyba komunikace"/>
+<text id="43" value="Nesprávné heslo!"/>
+<text id="100" value="W40/W60"/>
+<text id="101" value="W21s"/>
+<text id="106" value="Uzavřeno"/>
+<text id="107" value="Otevřeno"/>
+<text id="110" value="0:Simulace plamene"/>
+<text id="111" value="1:Zkratka obv. 24 V"/>
+<text id="112" value="2:Bez plamene"/>
+<text id="113" value="3:Vada triaku plyn. ventilu"/>
+<text id="114" value="4:Trvalá výluka"/>
+<text id="115" value="5:Bez koresp. rež. proces"/>
+<text id="116" value="6:Chyba vstupu"/>
+<text id="117" value="7:Vada relé plyn. ventilu"/>
+<text id="118" value="8:Tlak. spínač nespíná"/>
+<text id="119" value="10:Softwarová chyba"/>
+<text id="120" value="11:Chyba zápisu/čtení EEPROM"/>
+<text id="121" value="12:Max. vstup term. otev"/>
+<text id="122" value="13:Vada výst. okruhu"/>
+<text id="123" value="14:Chyba test. okruhu NTC"/>
+<text id="124" value="15:ADC konv trvá dlh"/>
+<text id="125" value="16:Vada multiplexeru ADC"/>
+<text id="126" value="17:Monit. plyn. vent"/>
+<text id="127" value="18:Nadměrná teplota průtoku"/>
+<text id="128" value="19:Nadm. tepl. vrat. toku"/>
+<text id="129" value="24:Inverze sním vrat. toku"/>
+<text id="130" value="25:Příliš rych. růst tepl. průt"/>
+<text id="131" value="26:Minimální tlak plynu"/>
+<text id="132" value="28:Ventilátor neběží"/>
+<text id="133" value="29:Ventilátor stále běží"/>
+<text id="134" value="30:deltaT(průt-vrat) příliš vel"/>
+<text id="135" value="41:Chyba výstupu P0"/>
+<text id="136" value="42:Chyba výstupu P1"/>
+<text id="137" value="44:Vada relé plyn. ventilu"/>
+<text id="138" value="52:Nadměrná tepl. spalin"/>
+<text id="139" value="61:APS neotevírá"/>
+<text id="140" value="77:Bez ionizace při hoření"/>
+<text id="141" value="Neznámá chyba č."/>
+<text id="145" value="0:Poloha Vyp, bez pož top"/>
+<text id="146" value="1:Pře. vent / Násl. vent."/>
+<text id="147" value="2:Zapálení"/>
+<text id="148" value="3:V chodu pro ÚV"/>
+<text id="149" value="4:V chodu pro TUV"/>
+<text id="150" value="5:Čekání na tlak. spínač"/>
+<text id="151" value="6:Kotel v poloze ÚV vyp."/>
+<text id="152" value="7:Čerp. násl. cirk. v pol. ÚV"/>
+<text id="153" value="8:Čerp. násl. cirk. v pol. TUV"/>
+<text id="154" value="9:Hořák vyp. při Tflow&gt;T1set"/>
+<text id="155" value="17:Nuc. vys. plam. hoř."/>
+<text id="156" value="20:Nuc. níz. plam. hoř."/>
+<text id="157" value="Neznámý krok č."/>
+<text id="162" value="8:Nedost. pohyb vzduchu"/>
+<text id="163" value="61:Pohyb vzd. u kotle v pol. vyp."/>
+<text id="164" value="Nejsou dostupná žádná data"/>
+<text id="202" value="Průtok"/>
+<text id="203" value="Vratný tok"/>
+<text id="204" value="Ohřívač"/>
+<text id="205" value="Vnější"/>
+<text id="206" value="Spaliny"/>
+<text id="207" value="Otáčky"/>
+<text id="208" value="Nast. hodnota"/>
+<text id="210" value="Řádek měření"/>
+<text id="213" value="Výpoč. ot. vent."/>
+<text id="214" value="Požad. topení"/>
+<text id="215" value="Čerpadlo"/>
+<text id="216" value="Plynový ventil"/>
+<text id="217" value="Vzduch. spínač"/>
+<text id="218" value="Ionizace"/>
+<text id="220" value="Požadavek TUV"/>
+<text id="223" value="Zapnuto"/>
+<text id="224" value="Vypnuto"/>
+<text id="225" value="Min. tlak plynu"/>
+<text id="227" value="&amp;Soubor"/>
+<text id="229" value="&amp;Tisk"/>
+<text id="230" value="E&amp;xit"/>
+<text id="231" value="&amp;Komunikace"/>
+<text id="232" value="Parametry"/>
+<text id="233" value="&amp;Monitorování v reál. č."/>
+<text id="236" value="&amp;Grafika"/>
+<text id="237" value="&amp;Heslo"/>
+<text id="238" value="Oprava měř. řádku"/>
+<text id="242" value="&amp;Nápověda"/>
+<text id="243" value="&amp;Informace"/>
+<text id="252" value="&amp;Otevř. data měření"/>
+<text id="253" value="&amp;Uložit nastavení"/>
+<text id="262" value="Min. ot. vent., st. start"/>
+<text id="263" value="Min. ot. vent. běh. st."/>
+<text id="264" value="Rychl. zvyš. nast. tepl"/>
+<text id="278" value="Simulovaný kotel"/>
+<text id="279" value="Displej + LED"/>
+<text id="281" value="Max. doba výluky"/>
+<text id="282" value="T Detekuje TUV"/>
+<text id="283" value="Teplota TUV spouští kotel pro ohřev TUV"/>
+<text id="284" value="Min. doba chodu ventilítoru, studený start"/>
+<text id="285" value="otáčky ventilátoru při studeném startu"/>
+<text id="288" value="U: Max. doba čekání před novým spuštěním ústř. vytápění"/>
+<text id="289" value="Umožňuje řídicí jednotce kotle regulovat namísto výluky"/>
+<text id="290" value="TUV detc &gt;32°C"/>
+<text id="291" value="Tato rychlost poklesu teploty umožní kotli ohřívat TUV"/>
+<text id="292" value="Nadměrná teplota při produkci TUV"/>
+<text id="293" value="Kotel s LED displejem"/>
+<text id="294" value="TUV prostř. snímače"/>
+<text id="295" value="Solární systémy ohřevu"/>
+<text id="296" value="Výpočetní okno"/>
+<text id="297" value="Výpočetní řádek"/>
+<text id="298" value="Delta"/>
+<text id="299" value="Delta/s"/>
+<text id="307" value="T pokles&lt;=32°C"/>
+<text id="308" value="T pokles &lt;30°C"/>
+<text id="309" value="Tprůtok při 0V"/>
+<text id="310" value="Tprůtok při 10V"/>
+<text id="311" value="Nucený vysoký/nízký režim kotle"/>
+<text id="312" value="&#176;C"/>
+<text id="313" value="Ot/min"/>
+<text id="314" value="Min"/>
+<text id="316" value="&#176;/10s"/>
+<text id="317" value="Hod"/>
+<text id="318" value="mg/s"/>
+<text id="319" value="kW"/>
+<text id="329" value="Tbuf po TUV"/>
+<text id="331" value="Konečný požadavek TUV T3 &gt; (parametr r/4) + (tento parametr)"/>
+<text id="334" value="Udržuje stálou činnost čerpadla"/>
+<text id="339" value="80 KW"/>
+<text id="340" value="120 KW"/>
+<text id="341" value="160 KW"/>
+<text id="342" value="200 KW"/>
+<text id="343" value="*10s"/>
+<text id="344" value="Nuc. níz. plam"/>
+<text id="345" value="Procentuální zatížení hořáku při nízkém plameni"/>
+<text id="346" value="%"/>
+<text id="347" value="Max. výkon"/>
+<text id="348" value="Umožňuje redukci max. výkonu"/>
+<text id="349" value="Níz. plam. H/Lreg"/>
+<text id="350" value="Výkon níz. plamen. s regulací vysoký/nízký, parametr A"/>
+<text id="351" value="Procent. pro zpr"/>
+<text id="352" value="procent. hořáku pro aktivaci zoprávy &apos;Vysoký plamen'."/>
+<text id="353" value="Doba prev. cyklu"/>
+<text id="354" value="Min doba mimo provoz mezi vyp a zap vytápění"/>
+<text id="355" value="Min. hydr. tlak"/>
+<text id="356" value="Pod tuto hodnotu kotel přejde do polohy výluky"/>
+<text id="357" value="/10mBar"/>
+<text id="358" value="Serv-úrověň opt"/>
+<text id="359" value="1=sním. hyd. tlk; 2=sním. zanes;4=0-10V; 8=kont. ún. plyn"/>
+<text id="360" value="Binární sčítání"/>
+<text id="361" value="dP pro udrž. LED"/>
+<text id="362" value="LED údržby se rozsvítí nad tuto naměřenou hodnotu dP"/>
+<text id="363" value="/10mBar"/>
+<text id="364" value="HE &apos;vyp&apos; hyst"/>
+<text id="365" value="Vyp kotle pokud tep. výměník &gt; tepl. průtoku + tento param"/>
+<text id="366" value="max dT kot zap"/>
+<text id="367" value="Max rozdíl mezi průtokem a vrat. tokem umož. zap. kotle"/>
+<text id="368" value="doba zapnutí"/>
+<text id="369" value="Doba chodu kotle při startovním výkonu"/>
+<text id="370" value="*6 s"/>
+<text id="371" value="Mrtvý&apos; roz. IMS"/>
+<text id="372" value="Kolísání nast. hodnoty s reakcí IMS"/>
+<text id="373" value="/10 %"/>
+<text id="374" value="start. poloha IMS"/>
+<text id="375" value="Poloha IMS umož. spuštění kotle"/>
+<text id="376" value="IMS-pol uzav LDS"/>
+<text id="377" value="Nejvyš. pol. IMS, ve kt. musí být kont. LDS sep"/>
+<text id="378" value="IMS pol sníž mod"/>
+<text id="379" value="IMS pohot. poloha při snížení modulace na minimum"/>
+<text id="380" value="Doba čekání IMS"/>
+<text id="381" value="Doba, během kt. musí IMS zůst. v pohot. poloze"/>
+<text id="382" value="s"/>
+<text id="383" value="Prodleva IMS"/>
+<text id="384" value="Doba nut. pro průchod praporku níz. plam. světelným stavidlem"/>
+<text id="385" value="/10 s"/>
+<text id="386" value="Max. doba IMS"/>
+<text id="387" value="Max. doba chodu IMS pro rozběh z 0 na max praporek"/>
+<text id="388" value="Doba kroku IMS"/>
+<text id="389" value="Doba IMS musí zůstat na pol kroku při modulaci nahoru"/>
+<text id="390" value="Kroky IMS nahoru"/>
+<text id="391" value="Počet kroků pro modulaci IMS nahoru"/>
+<text id="392" value="Č."/>
+<text id="393" value="Opt fakt úroveň"/>
+<text id="394" value="1=Zapálení;2=Res;4=Nucené vytáp dem;8=2. úrověň io;16=APS"/>
+<text id="395" value="25:Zkušební fáze IMS"/>
+<text id="396" value="25:Nadm. zvýš. tepl. výměn"/>
+<text id="397" value="1=sním. hyd. tlk; 2=sním. zanesení;4=0-10V 8=únikplyn 16=psi/F"/>
+<text id="399" value="94:(Ttep vým -Tprůt) příliš vys"/>
+<text id="400" value="60:Chyba při načt. param"/>
+<text id="401" value="83:Nadm. tepl- vým NTC-6"/>
+<text id="402" value="86:IMS S1 a S3 sign simultán"/>
+<text id="403" value="87:IMS uzav pol S1 bez sign"/>
+<text id="404" value="89:Únik plyn v bloku spal"/>
+<text id="405" value="93:Simult IMS S1 a S2"/>
+<text id="407" value="Výkon"/>
+<text id="408" value="Požadovaný výkon"/>
+<text id="409" value="Tepelný výměník"/>
+<text id="410" value="Hydr. tlak"/>
+<text id="411" value="Výkon vys plamen"/>
+<text id="413" value="Vypnutí"/>
+<text id="415" value="Mx tepl. zvyš. HE"/>
+<text id="416" value="Kotel vyp. je-li zvýš. tepl. HE (T6) rychl než tato hodn"/>
+<text id="420" value="Vytápění vyp"/>
+<text id="421" value="Vytápění zap"/>
+<text id="422" value="Kombi + nádrž na vodu"/>
+<text id="423" value="Kombi, bez nádrže na vodu"/>
+<text id="424" value="Solo"/>
+<text id="425" value="Křivka min. venk. tepl. pro vnitř. vytáp"/>
+<text id="426" value="Zadejte min. venkovní tepl. pro interní ekvitermní regulaci"/>
+<text id="427" value="Nadm. tepl. pro udrž. tepla"/>
+<text id="428" value="Konečné vytápění bez buf: Prům(T1,T2)&gt;par39+32+tento par"/>
+<text id="434" value="95:Zkrat sním. tep. výměn."/>
+<text id="435" value="96:Sním. tep. vým. otev"/>
+<text id="436" value="100:Min pol. IMS &gt;start poz IMS"/>
+<text id="437" value="101:IMS min pol. S2 bez sig"/>
+<text id="438" value="102:IMS konc. pol. S3 bez sig"/>
+<text id="439" value="Plyn310-5 částí"/>
+<text id="440" value="Gas310-6 částí"/>
+<text id="441" value="Gas310-7 částí"/>
+<text id="442" value="Gas310-8 částí"/>
+<text id="443" value="Gas310-9 částí"/>
+<text id="444" value="Gas610-6 částí"/>
+<text id="445" value="Gas610-7 částí"/>
+<text id="446" value="Gas610-8 částí"/>
+<text id="447" value="Gas610-9 částí"/>
+<text id="450" value="Konc. detekce TUV při T3&gt;32+(tento par), poté režim vytápění"/>
+<text id="451" value="Úroveň pro zprávu &apos;v provozu na nízký/vysoký plamen'"/>
+<text id="452" value="Ot. ventilátoru,které vyvolají zprávu &apos;v provozu'"/>
+<text id="455" value="Nízké ot. ventilátoru při regulaci vys./níz. plamene"/>
+<text id="456" value="Ot. ventilátoru při regul. kotle=21"/>
+<text id="458" value="Abs Max ot. vent"/>
+<text id="459" value="Toto jsou max ot. ventilátoru"/>
+<text id="461" value="Def min ot. vent"/>
+<text id="462" value="Toto jsou def min ot. vent"/>
+<text id="464" value="Doba&gt;max otvent"/>
+<text id="465" value="Max. doba ot. ventilátoru &gt; max otáčky."/>
+<text id="466" value="*6 s"/>
+<text id="470" value="ot. ventilátoru APS"/>
+<text id="471" value="při této hodnotě musí APS sepnout"/>
+<text id="476" value="čas násl. čerp. cirkul. čerpadla"/>
+<text id="477" value="Zadejte čas násl. čerp. cirkul. čerpadla"/>
+<text id="479" value="31: Zkrat. sním. průt."/>
+<text id="480" value="32: Zkrat. sním. vrat."/>
+<text id="481" value="35: Zkrat. sním. spalin"/>
+<text id="482" value="36: Snímač průtoku otveřen"/>
+<text id="483" value="37: Snímač vrat. toku otevřen"/>
+<text id="484" value="40: Snímač spalin otevřen"/>
+<text id="485" value="Doba nuceného část zatíž po spuštění (VYT)"/>
+<text id="486" value="Ot. čerpadla v režimu vytápění"/>
+<text id="487" value="Ot. čerpadla v režimu následné cirkulace"/>
+<text id="488" value="Hystereze průtoku v režimu vytápění"/>
+<text id="489" value="Zde zadejte max teplotu spalin, je-li požadováno"/>
+<text id="490" value="Max teplota průtoku na servisní úrovni"/>
+<text id="491" value="Výchozí bod modulace dT (průtok-vratný tok)"/>
+<text id="804" value="Monit. v reál. čase"/>
+<text id="818" value="OK"/>
+<text id="819" value="Zrušit"/>
+<text id="820" value="Výchozí"/>
+<text id="823" value="Hodnota mimo limity"/>
+<text id="900" value="Zadejte max teplotu průtoku pro vytápění"/>
+<text id="901" value="Zadejte čas následné cirkulace"/>
+<text id="902" value="Zadejte teplotu TUV"/>
+<text id="912" value="poč. bod křivky vytáp. (průt.) při využ. venk. sním."/>
+<text id="913" value="Max ot. ventilátoru v režimu ÚV"/>
+<text id="914" value="Min ot. ventilátoru"/>
+<text id="915" value="Max ot. ventilátoru v režimu TUV"/>
+<text id="916" value="Ot. ventilátoru při kontrole vzduch. tlak. spínače"/>
+<text id="917" value="Ot. ventilátoru start zatížení kotle"/>
+<text id="918" value="Max. průtok TUV"/>
+<text id="919" value="Ot. čerpadla v režimu vytápění"/>
+<text id="920" value="Ot. čerpadla v režimu následné cirkulace"/>
+<text id="921" value="Hystereze průtoku v režimu vytápění"/>
+<text id="922" value="Časový interval pro nádrž TUV"/>
+<text id="923" value="Výchozí bod modulace dT (průtok-vratný tok)"/>
+<text id="924" value="Hystereze pro režim TUV"/>
+<text id="925" value="Zde zadejte max teplotu spalin, je-li požadováno"/>
+<text id="926" value="Doba nuceného část zatíž po spuštění (ÚV)"/>
+<text id="927" value="3cestný ventil normální nebo inverzní"/>
+<text id="928" value="Typ kotle"/>
+<text id="929" value="Vyberte"/>
+<text id="930" value="zapnutí nebo vypnutí tep. ochrany spalin"/>
+<text id="931" value="ZAPÍNÁ nebo VYPÍNÁ interní rozhraní"/>
+<text id="932" value="Max tepl. průtoku v době nuceného níz. plamene"/>
+<text id="933" value="Max teplota průtoku na servisní úrovni"/>
+<text id="934" value="Absolutní max ot. ventilátoru"/>
+<text id="935" value="Absolutní min ot. ventilátoru"/>
+<text id="936" value="Faktor proporcionality, režim vytápění ZAP"/>
+<text id="937" value="Integrační faktor, režim vytápění ZAP"/>
+<text id="938" value="Faktor proporcionality, režim TUV ZAP"/>
+<text id="939" value="Integrační faktor, režim TUV ZAP"/>
+<text id="940" value="Diferenční faktor, režim TUV ZAP"/>
+<text id="941" value="Frekvence regulace ventilátoru a čerpadla"/>
+<text id="943" value="Nast. stav. vys. limitu (průtok)"/>
+<text id="944" value="Max přípustné zvýšení průtoku po 0,1&#176;C"/>
+<text id="945" value="Max rozdíl mezi průtokem a vrat. tokem"/>
+<text id="946" value="Podle typu ventilátoru"/>
+<text id="947" value="Zadejte zvýšení otáček ventilátoru"/>
+<text id="955" value="43:Parametry mimo limity"/>
+<text id="958" value="88:Vstup výluky otevřený"/>
+<text id="966" value="Čerpadlo pokrač."/>
+<text id="967" value="Pokrač. pož. VYT"/>
+<text id="971" value="Čas"/>
+<text id="1003" value="ano"/>
+<text id="1004" value="ne"/>
+<text id="1018" value="Zvole nastavení pro malý displej"/>
+<text id="1022" value="Nastavte snížení otáček ventilátoru"/>
+<text id="1026" value="Nast. hodn. průt. T"/>
+<text id="1027" value="Doba násl. čerp."/>
+<text id="1028" value="Nast. hodn. TUV"/>
+<text id="1029" value="Nast reg kotle"/>
+<text id="1030" value="Modulace s urychlením"/>
+<text id="1031" value="Vys/níz externí vstup"/>
+<text id="1032" value="Modulace bez urychlení"/>
+<text id="1033" value="Analogový záznam teploty"/>
+<text id="1034" value="Analogový záznam zatížení"/>
+<text id="1035" value="Vytápění vyp, TUV vyp"/>
+<text id="1036" value="Vytápění zap, TUV zap"/>
+<text id="1037" value="Vytápění zap, TUV vyp"/>
+<text id="1038" value="Vytápění vyp, TUV zap"/>
+<text id="1039" value="Počáteční bod"/>
+<text id="1040" value="Plné zatíž VYT"/>
+<text id="1041" value="Část. zatíž VYT/TUV"/>
+<text id="1042" value="Plné zatíž TUV"/>
+<text id="1043" value="Regulace otáček"/>
+<text id="1044" value="Zatíž při start."/>
+<text id="1046" value="Čerp sp ve VYT"/>
+<text id="1047" value="Čerp sp po VYT"/>
+<text id="1048" value="Hyst VYT"/>
+<text id="1049" value="Průt spín doby zahř. TUV"/>
+<text id="1050" value="bod rež dT"/>
+<text id="1051" value="Hystereze TUV"/>
+<text id="1052" value="Max Tspalin"/>
+<text id="1053" value="Doba část. zatíž"/>
+<text id="1054" value="Reřim regul TUV"/>
+<text id="1055" value="Typ kotle"/>
+<text id="1056" value="Vzd tlak spínač"/>
+<text id="1057" value="Kontola spalin"/>
+<text id="1058" value="Typ rozhraní"/>
+<text id="1059" value="T průt část zatíž"/>
+<text id="1060" value="T průtok max"/>
+<text id="1061" value="Abs max ot./min."/>
+<text id="1062" value="Abs min ot./min."/>
+<text id="1063" value="P-fakt vytápění"/>
+<text id="1064" value="I-fakt vytápění"/>
+<text id="1065" value="P-faktor pro TUV"/>
+<text id="1066" value="I-faktor pro TUV"/>
+<text id="1067" value="D-faktor pro TUV"/>
+<text id="1068" value="Frekv vent/čerp"/>
+<text id="1070" value="Max tepl průtoku"/>
+<text id="1071" value="Max tepl zvýš"/>
+<text id="1072" value="Max dT průt/vrat"/>
+<text id="1073" value="Pulzů na ot"/>
+<text id="1074" value="Fakt I-zvýš vent"/>
+<text id="1075" value="Fakt I-sníž vent"/>
+<text id="1076" value="Hyst. konec TUV"/>
+<text id="1077" value="Displ. 2/1 míst"/>
+<text id="1078" value="Displ. 3/4 míst"/>
+<text id="1084" value="Servisní úroveň"/>
+<text id="1085" value="Uživateslká úroveň"/>
+<text id="1088" value="Parametry"/>
+<text id="1101" value="Zde zadejte heslo"/>
+<text id="1106" value="Chyba: nesprávný soubor"/>
+<text id="1121" value="Časová osa (s)"/>
+<text id="1122" value="Čas vzorku (s)"/>
+<text id="1123" value="Kód poruchy"/>
+<text id="1124" value="Krok programu"/>
+<text id="1125" value="Teplota průtoku"/>
+<text id="1126" value="Teplota vrat. toku"/>
+<text id="1127" value="Teplota kotle"/>
+<text id="1128" value="Teplota spalin"/>
+<text id="1129" value="Doba od poslední výluky"/>
+<text id="1130" value="Max záznam vzorků"/>
+<text id="1138" value="Zvolený port COM je: Com "/>
+<text id="1150" value="----------"/>
+<text id="1151" value="Nízký režim 15 minut"/>
+<text id="1152" value="Vysoký režim 15 minut"/>
+<text id="1153" value="Do normálního režimu"/>
+<text id="1154" value="Režim Komín"/>
+<text id="1155" value="3c vent pro vyt"/>
+<text id="1156" value="3cest vent pro vytáp při (Tprůt+Tvrat)/2&lt;Tkotle+tento par"/>
+<text id="1157" value="TUVnast 32&#176;C / TUV zap"/>
+<text id="1158" value="TUVnast 32&#176;C / TUV vyp"/>
+<text id="1159" value="TUVnast 40&#176;C / TUV zap"/>
+<text id="1160" value="TUVnast 40&#176;C / TUV vyp"/>
+<text id="1161" value="TUVnast 50&#176;C / TUV zap"/>
+<text id="1162" value="TUVnast 50&#176;C / TUV vyp"/>
+<text id="1163" value="Par.r / TUV zap"/>
+<text id="1164" value="Par.r / TUV vyp"/>
+<text id="1165" value="TUV 45&#176;C / Průtok 60°C"/>
+<text id="1166" value="TUV 45&#176;C / Průtok 75°C"/>
+<text id="1167" value="TUV 45&#176;C / Průtok Par.1"/>
+<text id="1168" value="TUV 55&#176;C / Průtok 60°C"/>
+<text id="1169" value="TUV 55&#176;C / Průtok 75°C"/>
+<text id="1170" value="TUV 55&#176;C / Průtok Par.1"/>
+<text id="1171" value="Par.3 / Průtok 60&#176;C"/>
+<text id="1172" value="Par.3 / Průtok 75&#176;C"/>
+<text id="1173" value="Par.3 / Průtok Par.1"/>
+<text id="1174" value="Nízký"/>
+<text id="1175" value="Vysoký"/>
+<text id="1176" value="TUV 45&#176;C/ ÚV zap/ TUV zap"/>
+<text id="1177" value="TUV 45&#176;C/ ÚV zap/ TUV vyp"/>
+<text id="1178" value="TUV 45&#176;C/ ÚV vyp/ TUV vyp"/>
+<text id="1179" value="TUV 55&#176;C/ ÚV zap/ TUV zap"/>
+<text id="1180" value="TUV 55&#176;C/ ÚV zap/ TUV vyp"/>
+<text id="1181" value="TUV 55&#176;C/ ÚV vyp/ TUV vyp"/>
+<text id="1182" value="Par3/ ÚV zap/ TUV zap"/>
+<text id="1183" value="Par3/ ÚV zap/ TUV vyp"/>
+<text id="1184" value="Par3/ ÚV vyp/TUV vyp"/>
+<text id="1185" value="Průtok 60&#176;C / Par2"/>
+<text id="1186" value="Průtok 60&#176;C / Čerpadlo pokr"/>
+<text id="1187" value="Průtok 75&#176;C / Par2"/>
+<text id="1188" value="Průtok 75&#176;C / Čerpadlo pokr"/>
+<text id="1189" value="Par1 / Par2"/>
+<text id="1190" value="Par1 / Čerpadlo pokr"/>
+<text id="1191" value="Simulovaný"/>
+<text id="1192" value="10: Quinta 10 NL Solo"/>
+<text id="1193" value="11: Quinta 10 NL Combi"/>
+<text id="1194" value="12: Quinta 10 Exp Solo"/>
+<text id="1195" value="13: Quinta 10 Exp Combi"/>
+<text id="1196" value="14: Quinta 10 GB Solo"/>
+<text id="1197" value="15: Quinta 10 GB Combi"/>
+<text id="1198" value="16: Quinta10 -"/>
+<text id="1199" value="17: Quinta10 -"/>
+<text id="1200" value="20: W21 NL Solo"/>
+<text id="1201" value="21: W21 NL Combi"/>
+<text id="1202" value="22: W21 Exp Solo"/>
+<text id="1203" value="23: W21 Exp Combi"/>
+<text id="1204" value="24: W21 GB Solo"/>
+<text id="1205" value="25: W21 GB Combi"/>
+<text id="1206" value="26: W21 -"/>
+<text id="1207" value="27: W21 -"/>
+<text id="1208" value="30: W28 NL Solo"/>
+<text id="1209" value="31: W28 NL Combi"/>
+<text id="1210" value="32: W28 Exp Solo"/>
+<text id="1211" value="33: W28 Exp Combi"/>
+<text id="1212" value="34: W28 GB Solo"/>
+<text id="1213" value="35: W28 GB Combi"/>
+<text id="1214" value="36: W28 -"/>
+<text id="1215" value="37: W28 -"/>
+<text id="1216" value="40: Quinta 45 NL Solo"/>
+<text id="1217" value="41: Quinta 45 NL Combi"/>
+<text id="1218" value="42: Quinta 45 Exp Solo"/>
+<text id="1219" value="43: Quinta 45 Exp Combi"/>
+<text id="1220" value="44: Quinta 45 GB Solo"/>
+<text id="1221" value="45: Quinta 45 GB Combi"/>
+<text id="1222" value="46: Quinta 45 -"/>
+<text id="1223" value="47: Quinta 45 -"/>
+<text id="1224" value="50: Q25/28/35 NL Solo"/>
+<text id="1225" value="51: Q25/28/35 NL Combi"/>
+<text id="1226" value="52: Q25/28/35 Exp Solo"/>
+<text id="1227" value="53: Q25/28/35 Exp Combi"/>
+<text id="1228" value="54: Q25/28/35 GB Solo"/>
+<text id="1229" value="55: Q25/28/35 GB Combi"/>
+<text id="1230" value="56: Q25/28/35 -"/>
+<text id="1231" value="57: Q25/28/35 -"/>
+<text id="1232" value="60: Quinta 65 NL Solo"/>
+<text id="1233" value="61: Quinta 65 NL Combi"/>
+<text id="1234" value="62: Quinta 65 Exp Solo"/>
+<text id="1235" value="63: Quinta 65 Exp Combi"/>
+<text id="1236" value="64: Quinta 65 GB Solo"/>
+<text id="1237" value="65: Quinta 65 GB Combi"/>
+<text id="1238" value="66: Quinta 65 -"/>
+<text id="1239" value="67: Quinta 65 -"/>
+<text id="1240" value="70: Quinta 30 NL Solo"/>
+<text id="1241" value="71: Quinta 30 NL Combi"/>
+<text id="1242" value="72: Quinta 30 Exp Solo"/>
+<text id="1243" value="73: Quinta 30 Exp Combi"/>
+<text id="1244" value="74: Quinta 30 GB Solo"/>
+<text id="1245" value="75: Quinta 30 GB Combi"/>
+<text id="1246" value="76: Quinta 30 -"/>
+<text id="1247" value="77: Quinta 30 -"/>
+<text id="1248" value="80: Quinta 85 NL Solo"/>
+<text id="1249" value="81: Quinta 85 NL Combi"/>
+<text id="1250" value="82: Quinta 85 Exp Solo"/>
+<text id="1251" value="83: Quinta 85 Exp Combi"/>
+<text id="1252" value="84: Quinta 85 GB Solo"/>
+<text id="1253" value="85: Quinta 85 GB Combi"/>
+<text id="1254" value="86: Quinta 85 -"/>
+<text id="1255" value="87: Quinta 85 -"/>
+<text id="1256" value="Analog 0V"/>
+<text id="1257" value="Analog 10V"/>
+<text id="1264" value="TUVnast 0&#176;C / TUV zap"/>
+<text id="1265" value="TUVnast 0&#176;C / TUV vyp"/>
+<text id="1266" value="80KW Vysok Výšk"/>
+<text id="1267" value="200KW VysokVýšk"/>
+<text id="1268" value="200 zvlVysok"/>
+<text id="1300" value="6:Doba násl. čerp. ÚV"/>
+<text id="1301" value="7:Doba násl. čerp. TUV"/>
+<text id="1302" value="8:Zast regulace"/>
+<text id="1303" value="9:Vypnutí"/>
+<text id="1304" value="E00: Vada snímače"/>
+<text id="1305" value="E01: Průtok &gt; Tmax."/>
+<text id="1306" value="E02: Vrat.tok &gt; Průtok"/>
+<text id="1307" value="E03: Chyba uzemnění"/>
+<text id="1308" value="E04:Bez plamene"/>
+<text id="1309" value="E05: &gt;5 selhání spuštění"/>
+<text id="1310" value="E06:Simulace plamene"/>
+<text id="1311" value="E07: Příliš nízký tlak vody"/>
+<text id="1312" value="E08: Vada ventilátoru"/>
+<text id="1313" value="E12: Chyba kontroly HRU"/>
+<text id="1314" value="E13: pojistka"/>
+<text id="1315" value="E43: Limity parametru"/>
+<text id="1316" value="E44: Kontr. souč. param"/>
+<text id="1317" value="E45: Výchozí parametry"/>
+<text id="1318" value="B90: zvýšení teploty"/>
+<text id="1319" value="B91: deltaT příliš velká"/>
+<text id="1320" value="B80: vstup signálu vypínání"/>
+<text id="1335" value="Max teplota průtoku během režimu ÚV"/>
+<text id="1336" value="Požadovaná teplota TUV "/>
+<text id="1337" value="Ovládání kotle"/>
+<text id="1338" value="Spínač zap/vyp funkce ÚV/TUV"/>
+<text id="1339" value="Komfortní TUV"/>
+<text id="1340" value="Udržování ohřevu pro komfortní TUV"/>
+<text id="1341" value="Trvale zapnuto"/>
+<text id="1342" value="Trvale vypnuto"/>
+<text id="1343" value="Regulátor"/>
+<text id="1344" value="Předvídání"/>
+<text id="1345" value="Termostat předvídání se zap/vyp proudu"/>
+<text id="1346" value="Auto vyp displeje"/>
+<text id="1347" value="Auto vyp displeje po 3 min."/>
+<text id="1348" value="Max ot. vent. během režimu ÚV"/>
+<text id="1349" value="Max ot. vent. během režimu TUV"/>
+<text id="1350" value="Min ot. vent. během režimu ÚV + TUV"/>
+<text id="1351" value="Ot. ventilátoru při spuštění kotle"/>
+<text id="1352" value="Ot. čerpadla pro režim ÚV"/>
+<text id="1353" value="HRU aktivní"/>
+<text id="1354" value="HRU připojena na vstup signálu vypínání"/>
+<text id="1362" value="Teplota průt."/>
+<text id="1363" value="Teplota průtoku"/>
+<text id="1364" value="Teplota vrat.toku"/>
+<text id="1365" value="Teplota vrat. toku"/>
+<text id="1366" value="Tep. TUV"/>
+<text id="1367" value="Teplota TUV"/>
+<text id="1376" value="Teplota prostoru"/>
+<text id="1377" value="Regulátor teploty prostoru OpenTherm"/>
+<text id="1378" value="Nast. hodn. ÚV"/>
+<text id="1379" value="Nast. hodn. pro rež ÚV"/>
+<text id="1380" value="Nast. hodn. TUV"/>
+<text id="1381" value="Nast. hodn. tepl. průt rež TUV"/>
+<text id="1382" value="Nast. hodn. tepl. prost"/>
+<text id="1383" value="Nast. hodn. regul. tepl. prost. OpenTherm"/>
+<text id="1384" value="Nast. hodn. ot. ventil"/>
+<text id="1385" value="Nast. hodn. ot. ventil"/>
+<text id="1386" value="Otáčky ventilátoru"/>
+<text id="1387" value="Otáčky ventilátoru"/>
+<text id="1388" value="Proud ionizace"/>
+<text id="1389" value="Proud ionizace"/>
+<text id="1396" value="Čerpadlo"/>
+<text id="1397" value="Otáčky čerpadla"/>
+<text id="1400" value="Dostupný výkon"/>
+<text id="1401" value="Z max výkonu požadovaného regulátorem"/>
+<text id="1402" value="Aktuální výkon"/>
+<text id="1403" value="Aktuální výkon kotle"/>
+<text id="1404" value="Rež. regulátor"/>
+<text id="1405" value="Připojen modulační regulátor"/>
+<text id="1406" value="Rež. požad vytáp."/>
+<text id="1407" value="Požadavek vytápění z modulačního regulátoru"/>
+<text id="1408" value="Požad. vytáp. Zap/Vyp"/>
+<text id="1409" value="Požadavek vytápění z regulátoru Zap/Vyp"/>
+<text id="1412" value="TUV eco"/>
+<text id="1413" value="TUV eco, bez udržování tepl. kotle"/>
+<text id="1414" value="Požad. vytáp. TUV"/>
+<text id="1415" value="Požad. vytáp. TUV"/>
+<text id="1416" value="Vstup sig. vyp."/>
+<text id="1417" value="vstup signálu vypínání nebo test HRU"/>
+<text id="1420" value="Ionizace"/>
+<text id="1422" value="Průtokový spínač"/>
+<text id="1423" value="Průtokový spínač pro detekci TUV"/>
+<text id="1432" value="Plynový ventil"/>
+<text id="1436" value="Zapálení"/>
+<text id="1438" value="Třícestný ventil"/>
+<text id="1446" value="Čerpadlo"/>
+<text id="1465" value="uA"/>
+<text id="1466" value="Kód poruchy"/>
+<text id="1467" value="Stav"/>
+<text id="1468" value="Číslo"/>
+<text id="1469" value="T1 tepl. průtoku"/>
+<text id="1470" value="T2 tepl. vrat.toku"/>
+<text id="1471" value="2: před- a hlavní zapálení"/>
+<text id="1472" value="3:V chodu pro ÚV"/>
+<text id="1473" value="5:Čekání na otevř./zavř. APS"/>
+<text id="1474" value="6:Hořák vyp z důvodu poruchy"/>
+<text id="1475" value="7:Doba násl. čerp. režim ÚV"/>
+<text id="1476" value="9:Hořák vyp (porucha)"/>
+<text id="1477" value="12:Ochlazování hořáku"/>
+<text id="1478" value="H:Nucený max výkon"/>
+<text id="1479" value="L:Nucený min výkon"/>
+<text id="1480" value="t:Syst. test přezk. vent."/>
+<text id="1481" value="B81: chyba kontroly HRU"/>
+<text id="1482" value="Výluky"/>
+<text id="1483" value="Blokování"/>
+<text id="1484" value="20:Ot. ventilátoru nad max"/>
+<text id="1485" value="38:Zkrat APS"/>
+<text id="1486" value="39:APS otevř."/>
+<text id="1487" value="45:Zkrat WPS"/>
+<text id="1488" value="46:WPS otevř."/>
+<text id="1489" value="47:Zkrat snímače zanesení"/>
+<text id="1490" value="48: Snímač zanesení otevřen"/>
+<text id="1491" value="62:Příliš nízký tlak vody"/>
+<text id="1492" value="90:Únik plynu na VA2"/>
+<text id="1493" value="91:Chyba LDS během předvent"/>
+<text id="1494" value="97:Max dT(Tep. vým-Průtok)"/>
+<text id="1495" value="99:Neuzav. ext. blok."/>
+<text id="1496" value="Aktuální ot. ventilátoru"/>
+<text id="1497" value="hodin provozu"/>
+<text id="1498" value="uA"/>
+<text id="1499" value="Počet výluk"/>
+<text id="1500" value="Počet blokování"/>
+<text id="1501" value="Žádné výluky"/>
+<text id="1502" value="Žádné blokování"/>
+<text id="1503" value="B82:Sol. ohřev kotle, TUV vyp"/>
+<text id="1504" value="Redukční ventil"/>
+<text id="1512" value="Připojeno:"/>
+<text id="1535" value="Stisknutím reset aktivujte nastavení"/>
+<text id="1540" value="Není připojen kotel"/>
+<text id="1544" value="Regulační pásmo TUV"/>
+<text id="1545" value="Prodleva čerp. TUV"/>
+<text id="1546" value="Čas násl. čerp. ÚV"/>
+<text id="1547" value="Čas násl. čerp. TUV"/>
+<text id="1548" value="Výchozí bod modul."/>
+<text id="1549" value="Nucené část. zatížení"/>
+<text id="1550" value="Hystereze ÚV"/>
+<text id="1551" value="Interval zahřátí"/>
+<text id="1552" value="Zahřátí TUV když T&lt;"/>
+<text id="1553" value="Zahřátí TUV dokud"/>
+<text id="1554" value="Kompenzace TUV"/>
+<text id="1555" value="Komp desk tepl. vým"/>
+<text id="1556" value="Tmax"/>
+<text id="1557" value="P faktor ÚV"/>
+<text id="1558" value="I faktor ÚV"/>
+<text id="1559" value="P faktor TUV"/>
+<text id="1560" value="I faktor TUV"/>
+<text id="1561" value="Max. tepl. zvýšení"/>
+<text id="1562" value="Max +dN/dt vent."/>
+<text id="1563" value="Max -dN/dt vent."/>
+<text id="1564" value="Ot./s."/>
+<text id="1565" value="/10&#176;C"/>
+<text id="1566" value="90+par"/>
+<text id="1567" value="*10min"/>
+<text id="1568" value="Regul tepl kotle"/>
+<text id="1569" value="Ot. vent. předvent"/>
+<text id="1570" value="Otáčky ventilátoru předventilace"/>
+<text id="1571" value="Překročení max ot."/>
+<text id="1572" value="Po druhé výluce 20"/>
+<text id="1573" value="Nast. hod. průt. Izvyš"/>
+<text id="1574" value="Platná hodn. Izvyš ventilát. (Tnast-Tpr)&lt;5K"/>
+<text id="1575" value="Max T blokace kotle"/>
+<text id="1576" value="překročení tohoto limitu vypnutí 31"/>
+<text id="1577" value="*3 s"/>
+<text id="1578" value="Bod sepnutí APS"/>
+<text id="1579" value="Min dP pro spuštění"/>
+<text id="1580" value="Krok mod.: %"/>
+<text id="1581" value="Po překročení 2. limitu"/>
+<text id="1582" value="Krok mod: interval"/>
+<text id="1583" value="Krok modul. do 2. limitu"/>
+<text id="1584" value="Krok mod. zýš Tf"/>
+<text id="1585" value="Krok modul. snížení T blokace kotle &gt;1. limit, p29"/>
+<text id="1586" value="Zvýšení Tf limit 1"/>
+<text id="1587" value="Po překročení tohoto limitu nast. zpět. modul. kotle"/>
+<text id="1588" value="&#176;C/s"/>
+<text id="1589" value="Zvýšení Tf limit 2"/>
+<text id="1590" value="Po překročení tohoto limitu nast. část. zat. kotle"/>
+<text id="1591" value="Zvýšení Tf limit 3"/>
+<text id="1592" value="Po překročení tohoto limitu nast. výluka kotle"/>
+<text id="1593" value="&amp;Kontrola aktualizací"/>
+<text id="1595" value="&amp;Kontrola připojení"/>
+<text id="1596" value="&amp;Komunikace"/>
+<text id="1597" value="&amp;Eeprom"/>
+<text id="1598" value="&amp;Otevřít soubor"/>
+<text id="1599" value="&amp;Otevřít"/>
+<text id="1600" value="Načíst z &amp;kotle"/>
+<text id="1601" value="&amp;Uložit soubor"/>
+<text id="1602" value="Načíst z &amp;kotle"/>
+<text id="1603" value="&amp;Reset"/>
+<text id="1605" value="Z&amp;aslat do kotle"/>
+<text id="1606" value="Informace. . ."/>
+<text id="1608" value="Auto detekce"/>
+<text id="1610" value="Nastavení komunikace"/>
+<text id="1611" value="Seznam kom. portů"/>
+<text id="1616" value="Dec-načt"/>
+<text id="1617" value="Dec-záp"/>
+<text id="1618" value="Chyba zápisu Eeprom"/>
+<text id="1620" value="Možnosti grafiky"/>
+<text id="1621" value="Grafika"/>
+<text id="1622" value="Hex-načt"/>
+<text id="1623" value="Používáno"/>
+<text id="1624" value="Heslo"/>
+<text id="1625" value="Výrobce"/>
+<text id="1626" value="ms"/>
+<text id="1627" value="Nenalezen kotel"/>
+<text id="1629" value="Uložit"/>
+<text id="1636" value="Nastavení"/>
+<text id="1638" value="Neznámé"/>
+<text id="1641" value="Nalezeno"/>
+<text id="1642" value="Změnit na jiný kotel? Všechna okna budou zavřena"/>
+<text id="1643" value="&amp;Nastavení"/>
+<text id="1644" value="Zaznamenat data do souboru?"/>
+<text id="1646" value="Max. &#176;C osa Y"/>
+<text id="1647" value="Min. &#176;C osa Y"/>
+<text id="1648" value="Typ kotle:"/>
+<text id="1649" value="Zvýšení modulace"/>
+<text id="1650" value="Tepl. rozsah pro modulaci TUV"/>
+<text id="1651" value="Doba čekání čerpadla na předehřev desky tepl. výměníku"/>
+<text id="1652" value="Doba násl. čerp. ÚV"/>
+<text id="1653" value="Doba násl. čerp. TUV"/>
+<text id="1654" value="Zpět. modulace pokud dT &gt; tento par"/>
+<text id="1655" value="Nucené část. zatíž. pro ÚV a TUV-&gt;ÚV"/>
+<text id="1656" value="Spuštění pokud T&lt;Tnast+5-tento param při ÚV"/>
+<text id="1657" value="Doba mezi zahřátím a spuštěním kotle"/>
+<text id="1658" value="ECO=vyp: zahřátí pokud T&lt;tento param"/>
+<text id="1659" value="ECO=vyp: zahřátí dokud T=tento param"/>
+<text id="1660" value="T opr. Tepl. vrat.toku TUV regulace"/>
+<text id="1661" value="T opr. TUV pro Tnast, ww - Tvrat, deska tepl. vým."/>
+<text id="1662" value="Max. teplota průtoku během provozu ÚV"/>
+<text id="1663" value="P faktor regulace ÚV"/>
+<text id="1664" value="I faktor regulace ÚV"/>
+<text id="1665" value="P faktor regulace TUV"/>
+<text id="1666" value="I faktor regulace TUV"/>
+<text id="1667" value="Vypnutí pokud zvýšení tepl. &gt; tento param"/>
+<text id="1668" value="Max. zvýšení ot. ventilátoru"/>
+<text id="1669" value="Max. snížení ot. ventilátoru"/>
+<text id="1670" value="Zpět. modulace pokud zvýšení tepl. průt. &gt; tento par"/>
+<text id="1671" value="Plynový ventil 2"/>
+<text id="1672" value="Cirk čerpadlo"/>
+<text id="1673" value="Ventil spalin"/>
+<text id="1674" value="Tepl. ohřívače"/>
+<text id="1675" value="Teplota ohřívače"/>
+<text id="1676" value="Tepl. spalin"/>
+<text id="1677" value="Teplota spalin"/>
+<text id="1678" value="Venkovní tepl."/>
+<text id="1679" value="Venkovní teplota"/>
+<text id="1680" value="M1 tepl. "/>
+<text id="1681" value="Zkuš. teplota M1"/>
+<text id="1682" value="Hystereze TUV"/>
+<text id="1683" value="Zvýš nast. hodn TUV"/>
+<text id="1684" value="Zvýš nast. hodn při zahř. ohřív"/>
+<text id="1687" value="Start čerp TUV"/>
+<text id="1688" value="Zapnutí prodlevy čerp. TUV vzheledem k čerp. kotle"/>
+<text id="1689" value="Čas násl. čerp. TUV"/>
+<text id="1690" value="Čas násl. čerp. TUV"/>
+<text id="1691" value="Poč. bod Tprůtoku"/>
+<text id="1692" value="Poč. bod topné křivky tepl. průtoku"/>
+<text id="1693" value="Poč. bod ventkovní T"/>
+<text id="1694" value="Poč. bod topné křivky venkovní tepl"/>
+<text id="1695" value="Bod klim. zóny venk tepl."/>
+<text id="1696" value="Topná křivka klim. zóny venk. tepl."/>
+<text id="1697" value="Blok. vypnutí 1"/>
+<text id="1698" value="Blok. vypnutí 2"/>
+<text id="1699" value="Stavová zpráva"/>
+<text id="1700" value="Poloha od relé signálu alarm./oper."/>
+<text id="1701" value="M2 tepl. "/>
+<text id="1702" value="Zkušební teplota M2"/>
+<text id="1703" value="Tepl. regulace kotle"/>
+<text id="1704" value="Nast. hodn. zrychl. start TUV"/>
+<text id="1705" value="Zrychlení nast. hodn. při spuštění pro TUV"/>
+<text id="1706" value="Typ kotle:"/>
+<text id="1707" value="Typ kotle a typ regulace"/>
+<text id="1708" value="Combi"/>
+<text id="1709" value="Solo (+kotel)"/>
+<text id="1710" value="Sloupec komfort"/>
+<text id="1711" value="Zapnutí ÚV"/>
+<text id="1712" value="Zapnutí TUV"/>
+<text id="1714" value="Aktualizace nejsou dostupné"/>
+<text id="1715" value="Žádné dostupné aktualizace"/>
+<text id="1717" value="Načtení Eeprom"/>
+<text id="1718" value="Paměť"/>
+<text id="1721" value="Výluka"/>
+<text id="1722" value="KW při 10 000 OT./MIN"/>
+<text id="1723" value="Výstupní výkon (KW) při teroret. 10 000 OT./MIN"/>
+<text id="1724" value="OT./MIN. při 0KW"/>
+<text id="1725" value="OT./MIN. při ter. 0KW"/>
+<text id="1726" value="Testování. . ."/>
+<text id="1727" value="Výluka"/>
+<text id="1728" value="Vypnutí"/>
+<text id="1729" value="Přerušení"/>
+<text id="1730" value="10:Ventlační cyklus"/>
+<text id="1731" value="11:Nuc. níz. plam. hoř"/>
+<text id="1732" value="12:Nucené vysoké ÚV"/>
+<text id="1733" value="13:Nucené vysoké TUV"/>
+<text id="1734" value="15:Manuální požad. vytápení"/>
+<text id="1735" value="Režim displeje"/>
+<text id="1736" value="Množství informací na displeji"/>
+<text id="1737" value="Jednoduché"/>
+<text id="1738" value="Rozšířené"/>
+<text id="1739" value="Automaticky"/>
+<text id="1740" value="signál poruchy"/>
+<text id="1741" value="Provozní signál"/>
+<text id="1742" value="Externí plynový ventil"/>
+<text id="1743" value="Anti Legionella"/>
+<text id="1744" value="Ohřívač prevence výskytu bakterií Legionella"/>
+<text id="1745" value="Hystereze ohřív."/>
+<text id="1746" value="Zap sním. hystereze ohřívače"/>
+<text id="1747" value="Kompenzace ohřívače"/>
+<text id="1748" value="Vyp sním. kompenzace ohřívače"/>
+<text id="1749" value="Zap hystereze provozu TUV"/>
+<text id="1750" value="B83: Chyba snímače ohřívače"/>
+<text id="1751" value="B92: nedostatečný průtok"/>
+<text id="1752" value="E09: nízký hydraulický tlak"/>
+<text id="1753" value="E10: nedostat. odvzduš."/>
+<text id="1754" value="E11: Tepl. airboxu &gt; max."/>
+<text id="1755" value="5:Doba potlač. oscilací ÚV"/>
+<text id="1756" value="Hodiny běhu čerpadla ÚV"/>
+<text id="1757" value="Hod. běh. cirk.čerp."/>
+<text id="1758" value="Hod. běh. 3cest. ventilu TUV"/>
+<text id="1759" value="Hod. běh. 3cest. ventilu ÚV"/>
+<text id="1760" value="Hodiny běhu čerpadla TUV"/>
+<text id="1761" value="Hodiny běhu ÚV+TUV"/>
+<text id="1762" value="Hodiny běhu ÚV"/>
+<text id="1763" value="Hodiny běhu TUV"/>
+<text id="1764" value="Hod. dostupnosti napájení"/>
+<text id="1765" value="Spuštění čerpadla ÚV"/>
+<text id="1766" value="Spuštění čerpadla cirkulaci"/>
+<text id="1767" value="Poč. cykl 3cest vent "/>
+<text id="1768" value="Spuštění čerpadla TUV"/>
+<text id="1769" value="Celk start. hoř. ÚV+TUV"/>
+<text id="1770" value="Spuštění hořáku ÚV"/>
+<text id="1771" value="Spuštění hořáku TUV"/>
+<text id="1772" value="Nezdařená spuštění hořáku"/>
+<text id="1773" value="Úspěšná spuštění hořáku"/>
+<text id="1774" value="Počet zhasnutí plamene"/>
+<text id="1777" value="P fakt vent"/>
+<text id="1778" value="P faktor regul. ot. ventilátoru"/>
+<text id="1779" value="I fakt vent"/>
+<text id="1780" value="I faktor regul. ot. ventilátoru"/>
+<text id="1781" value="Parametry provozní zkoušky:"/>
+<text id="1782" value="Počitadla "/>
+<text id="1784" value="Otevřeno odvětráno"/>
+<text id="1785" value="Max. ot. vent ÚV"/>
+<text id="1786" value="Absolutní max ot. ventilátoru ÚV"/>
+<text id="1787" value="Max. ot. vent TUV"/>
+<text id="1788" value="Absolutní max ot. ventilátoru TUV"/>
+<text id="1789" value="kód dF"/>
+<text id="1790" value="kód dU"/>
+<text id="1792" value="Externí čerpadlo ÚV"/>
+<text id="1793" value="&amp;Počitadla "/>
+<text id="1795" value="B40: neznámé kódy kotle"/>
+<text id="1796" value="10: Quinta 115 NL Solo"/>
+<text id="1797" value="12: Quinta 115 Exp Solo"/>
+<text id="1798" value="14: Quinta 115 GB Solo"/>
+<text id="1799" value="121:Nedostatečný průtok ÚV"/>
+<text id="1800" value="maxT1-T2 0průtok"/>
+<text id="1801" value="maxT1-T2 po 30s minVýkon ÚV + dT1&gt;P38 pro 0průtok -&gt;B121"/>
+<text id="1802" value="P snížení ÚV"/>
+<text id="1803" value="P faktor snížení regul ÚV Zvýšení regulace P=0"/>
+<text id="1804" value="I snížení ÚV"/>
+<text id="1805" value="I faktor snížení regul ÚV Zvýšení regulace I/10"/>
+<text id="1806" value="  "/>
+<text id="1807" value="E46: dF/dU chyba tabulky"/>
+<text id="1808" value="Komp zahřív"/>
+<text id="1809" value="Kompenzace při zahřívání pro komfortní TUV"/>
+<text id="1810" value="Hystereze zahřívání"/>
+<text id="1811" value="Hystereze při zahřívání pro komfortní TUV"/>
+<text id="1812" value="Interv zahř pro ÚV"/>
+<text id="1813" value="Interval zahřívání pro TUV po ÚV"/>
+<text id="1814" value="Pásm regul TUVnast"/>
+<text id="1815" value="Rozsah teplot pro modulaci na TUVnast"/>
+<text id="1816" value="P faktor TUVnast"/>
+<text id="1817" value="P faktor pro TUV v pásmu regulace TUVnast"/>
+<text id="1818" value="I faktor TUVnast"/>
+<text id="1819" value="P faktor pro TUV v pásmu regulace TUVnast"/>
+<text id="1820" value="P faktor snížení ÚV"/>
+<text id="1821" value="P faktor pro regulaci ÚV pokud T1&gt;nast. hodnota"/>
+<text id="1822" value="I faktor snížení ÚV"/>
+<text id="1823" value="I faktor pro regulaci ÚV pokud T1&gt;nast. hodnota"/>
+<text id="1824" value="Inter nast. hodn"/>
+<text id="1825" value="Rež likv. bakt. Legionella"/>
+<text id="1826" value="Tlak spín plynu"/>
+<text id="1827" value="Průt. spín prodl."/>
+<text id="1828" value="Zapíná prodlevu pro detekci TUV"/>
+<text id="1829" value="115:Cyba rozsahu ADC"/>
+<text id="1830" value="116:Hz - chby rezonátoru"/>
+<text id="1831" value="Hod. běhu čerp ÚV+TUV"/>
+<text id="1832" value="Spuštění čerpadla ÚV+TUV"/>
+<text id="1834" value="Relé ext čerp"/>
+<text id="1835" value="Termostat ohřívače"/>
+<text id="1836" value="22: MC115"/>
+<text id="1837" value="Vývoj"/>
+<text id="1838" value="Tisk"/>
+<text id="1839" value="1=hydr tlk 2=sním zanesení 4=0-10V  8=kontr plyn 16=&#176;C/F"/>
+<text id="1840" value="123: Vada tepl. snímače"/>
+<text id="1841" value="W21 Combi"/>
+<text id="1842" value="123: NTC1/NTC7 prasklina"/>
+<text id="1843" value="124: NTC1/NTC7 uvíznutí"/>
+<text id="1844" value="125: NTC2/NTC7 vyměněn"/>
+<text id="1845" value="Jazyk"/>
+<text id="1846" value="Nederlands"/>
+<text id="1847" value="English"/>
+<text id="1848" value="Français"/>
+<text id="1849" value="Deutsch"/>
+<text id="1850" value="Italiano"/>
+<text id="1851" value="Jazyk programu změněn"/>
+<text id="1852" value="Chcete-li aktivovat změnu, restartujte aplikaci."/>
+<text id="1853" value="Soubor nenalezen"/>
+<text id="1854" value="Konfigurační soubor kolte nenalezen: "/>
+<text id="1855" value="www.remeha.com"/>
+<text id="1856" value="0..255"/>
+<text id="1857" value="Zadejte prosím celé číslo mezi 0 a 255."/>
+<text id="1858" value="Vyplňte prosím všechna pole, povolena jsou pouze čísla."/>
+<text id="1859" value="Nelze načíst z kotle"/>
+<text id="1860" value="Nelze zaslat do kotle"/>
+<text id="1861" value="Neznámá konfogurace pro "/>
+<text id="1862" value="Chyba konfigurace"/>
+<text id="1863" value="Ukládání souboru:"/>
+<text id="1864" value="Některá data nelze uložit na požadované místo, zvole prosím jiné umístění."/>
+<text id="1865" value="Kotel nenalezen. Opakování..."/>
+<text id="1866" value="Ukončování, prosím čekejte..."/>
+<text id="1869" value="Chyba načítání na záznamu s časovou značkou:"/>
+<text id="1870" value="Español"/>
+<text id="1871" value="Magyar"/>
+<text id="1872" value="Česky"/>
+<text id="1873" value="Polski"/>
+<text id="1874" value="Türkçe"/>
+<text id="1875" value="Srpski"/>
+<text id="1876" value="русский"/>
+<text id="1877" value="Čerpadlo DHW (vysoké)"/>
+<text id="1878" value="Nastavení čerpadla DHW (vysoké)"/>
+<text id="1879" value="Čerpadlo ÚV (nízké)"/>
+<text id="1880" value="Nastavení čerpadla ÚV (nízké)"/>
+<text id="1900" value="Data byla načtena."/>
+<text id="1901" value="Nejsou dostupná žádná data"/>
+<text id="1902" value="Konverze"/>
+<text id="1903" value="Konverze souborů"/>
+<text id="1904" value="Zavřít"/>
+<text id="1905" value="Průběh"/>
+<text id="1906" value="Nalezen neznámý kotel"/>
+<text id="1907" value="Soubor nelze vytvořit:"/>
+<text id="1908" value="Soubor nelze konvertovat:"/>
+<text id="1909" value="Příčina:"/>
+<text id="1910" value="Vytvořeno:"/>
+<text id="1911" value="Zrušeno"/>
+<text id="1912" value="Neznámý kotel"/>
+<text id="1913" value="Data budou uložena, ale nelze je zobrazit."/>
+<text id="1914" value="Aktualizace byla úspěšná."/>
+<text id="1915" value="Přejete si novou verzi stáhnout a nainstalovat?"/>
+<text id="1916" value="Instalace zrušena"/>
+<text id="1917" value="Stahování nové verze...."/>
+<text id="1918" value="Nová verze bude nainstalována."/>
+<text id="1919" value="Pro úspěšnou instalaci nové verze vypněte aplikaci."/>
+<text id="1920" value="Instalace se nezdařila."/>
+<text id="1921" value="Pokračovat"/>
+<text id="1922" value="Kontrola aktualizací"/>
+<text id="1923" value="Žádné soubory pro konverzi."/>
+<text id="1924" value="Zpráva o konverzi:"/>
+<text id="1925" value="Konvere dokončena."/>
+<text id="1926" value="Načítání souboru:"/>
+<text id="1927" value="Čas počátku:"/>
+<text id="1928" value="Čas konce:"/>
+<text id="1929" value="Skupina 1"/>
+<text id="1930" value="Skupina 2"/>
+<text id="1931" value="Skupina 3"/>
+<text id="1932" value="Export položek:"/>
+<text id="1933" value="Data byla uložena. Akce může trvat několik minut..."/>
+<text id="1934" value="Chyba při zaslání požadavku na aktualizační informace"/>
+<text id="1935" value="Zasílání požadavku na aktualizační informace..."/>
+<text id="1936" value="Načítání dalších dat zařízení..."/>
+<text id="1937" value="Probíhá..."/>
+<text id="1938" value="Načítání..."/>
+<text id="1939" value="Zápis souboru se nezdařil"/>
+<text id="1940" value="Přeskočit"/>
+<text id="1941" value="Hotovo"/>
+<text id="1942" value="Aktualizace byla úspěšně nainstalována. Chcete-li, aby změny začaly platit, restartujte aplikaci."/>
+<text id="1943" value="Nastavena verze konfigurace"/>
+<text id="1944" value="Načíst zvláštní data při přihlášení"/>
+<text id="1945" value="Je k dispozici aktualizace aplikace."/>
+<text id="1946" value="Je k dispozici aktualizace konfigurace."/>
+<text id="1947" value="Pro instalaci jsou vyžadována práva administrátora."/>
+<text id="1948" value="Připojeno"/>
+<text id="1949" value="Neznámé zařízení"/>
+<text id="1950" value="Vyhledávání sítě Wi-Fi..."/>
+<text id="1951" value="Nelze nalézt klíč služby sítě Wi-Fi.\n\nJe síť Wi-Fi zapnuta?\nPokud se chcete připojit, zapněte síť Wi-Fi a připojte se ke klíči služby sítě Wi-Fi\nJe klíč služby zapnutý?\nJe zařízení zapnuté?"/>
+<text id="1952" value="Vyhledávání výchozí sítě Wi-Fi..."/>
+<text id="1953" value="Servisní nástroj"/>
+<text id="1954" value="Použít profil"/>
+<text id="1955" value="Údržba"/>
+<text id="1956" value="Uvedení do provozu"/>
+<text id="1957" value="Zpracovávání chyb"/>
+<text id="1958" value="Aktualizace"/>
+<text id="1959" value="Aktualizace"/>
+<text id="1960" value="Domů"/>
+<text id="1961" value="Vzorek"/>
+<text id="1962" value="dF/dU"/>
+<text id="1963" value="Odeslat"/>
+<text id="1964" value="Uživatelské"/>
+<text id="1965" value="Servisní"/>
+<text id="1966" value="Tovární"/>
+<text id="1967" value="Jiné"/>
+<text id="1968" value="Tepl."/>
+<text id="1969" value="0/1"/>
+<text id="1970" value="SU"/>
+<text id="1971" value="Strom chyb"/>
+<text id="1972" value="Odeslání dat se nezdařilo"/>
+<text id="1973" value="Manuálně"/>
+<text id="1974" value="Nelze nalézt výchozí síť Wi-Fi.\n\nZměňte nastavení sítě Wi-Fi a připojte se k výchozímu klíči služby sítě."/>
+<text id="1975" value="Vyhledávání klíče služby..."/>
+<text id="1976" value="Žádné spojení s klíčem služby.\n\nPočkejte 20 sekund, než se klíč služby spustí.\nJe klíč služby používán jiným zařízením?"/>
+<text id="1977" value="Vyhledávání zařízení..."/>
+<text id="1978" value="Nebylo nalezeno žádné zařízení.\n\nPřipojte klíč služby k zařízení a zapněte ho."/>
+<text id="1980" value="Resetovat blokování"/>
+<text id="1981" value="Resetovat výluky"/>
+<text id="1982" value="Resetování se nezdařilo"/>
+<text id="1983" value="Resetovat"/>
+<text id="1984" value="Resetovat počítadla"/>
+<text id="1985" value="Ukázka"/>
+<text id="1986" value="Offline"/>
+<text id="1987" value="Vybrat zařízení"/>
+<text id="1988" value="Použít klíč služby"/>
+<text id="1989" value="Přihlásit se"/>
+<text id="1990" value="Wi-Fi"/>
+<text id="1991" value="Přihlášení bylo úspěšné"/>
+<text id="1992" value="Uživatelská nastavení"/>
+<text id="1993" value="Přihlášení se nezdařilo"/>
+<text id="1994" value="Zadáním odpovídajícího hesla přepnete uživatelskou úroveň."/>
+<text id="1995" value="Aktuální uživatelská úroveň"/>
+<text id="1996" value="Dokumentace"/>
+<text id="1997" value="Informace nejsou k dispozici"/>
+<text id="1998" value="Změnit identitu"/>
+<text id="1999" value="Nabíjení"/>
+<text id="2000" value="Identifikace"/>
+<text id="2001" value="Počet zařízení"/>
+<text id="2002" value="Kotel"/>
+<text id="2003" value="PSU"/>
+<text id="2004" value="PCU"/>
+<text id="2005" value="SU č."/>
+<text id="2006" value="SCU-C"/>
+<text id="2007" value="SCU-S č."/>
+<text id="2008" value="IF"/>
+<text id="2009" value="Typ zařízení"/>
+<text id="2010" value="Verze softwaru"/>
+<text id="2011" value="Verze hardwaru"/>
+<text id="2012" value="Verze parametru"/>
+<text id="2013" value="Typ parametru"/>
+<text id="2014" value="Provozní hodiny"/>
+<text id="2015" value="Sériové číslo"/>
+<text id="2016" value="Název kotle"/>
+<text id="2017" value="Připojen typ SU"/>
+<text id="2018" value="Připojen typ PSU"/>
+<text id="2019" value="Připojen typ PCU"/>
+<text id="2020" value="Kód posl blok"/>
+<text id="2021" value="Kód poslední výluky"/>
+<text id="2022" value="Posl inter chyba"/>
+<text id="2023" value="Stav"/>
+<text id="2024" value="Substav"/>
+<text id="2025" value="Blokování b"/>
+<text id="2026" value="Výluka E"/>
+<text id="2027" value="Není dostupná identifikace"/>
+<text id="2028" value="Import souboru záznamu"/>
+<text id="2029" value="Adresa"/>
+<text id="2030" value="První blokování"/>
+<text id="2031" value="Počet blokování"/>
+<text id="2032" value="První blokování mimo rozsah:"/>
+<text id="2033" value="Počet blokování mimo rozsah:"/>
+<text id="2034" value="Načteno blokování:"/>
+<text id="2035" value="Žádná data!"/>
+<text id="2036" value="Žádná platná data"/>
+<text id="2037" value="Eeprom"/>
+<text id="2038" value="Upravit"/>
+<text id="2039" value="Decimálníhodnota:"/>
+<text id="2040" value="Další servisní kód"/>
+<text id="2041" value="Export dat"/>
+<text id="2042" value="Zrušit servisní událost"/>
+<text id="2043" value="Indikovanou servisní událost můžete zrušit po jejím dokončení."/>
+<text id="2044" value="Přejete si zrušit dokončenou servisní událost?"/>
+<text id="2045" value="Vyčkejte prosím, dokud kotel nedokončí proces detekce..."/>
+<text id="2046" value="Detekce příslušenství"/>
+<text id="2047" value="Poznámka! Všechny rozšiřující moduly budou odstraněny a proces detekce se spustí znovu. Dokončení tohto procesu může kotli trvat několik sekund."/>
+<text id="2048" value="Opravdu si přejete, aby kotel znovu detekoval všechny rozšiřující moduly?"/>
+<text id="2049" value="Detekovat"/>
+<text id="2050" value="Servis"/>
+<text id="2051" value="Příkaz nebyl kotlem rozpoznán."/>
+<text id="2052" value="Uložení se nezdařilo."/>
+<text id="2053" value="Zadejte kódy dF a dU z identifikačního štítku:"/>
+<text id="2054" value="Poznámka! Je zakázáno zadávat jakékoli kódy dF/dU nevyznačené na identifikačním štítku!"/>
+<text id="2055" value="Poznámka! Všechny parametry budou nastaevny na výchozí tovární hodnotu. Veškerá další nastavení budou odstraněna."/>
+<text id="2056" value="Přejete si použít tento kód dF/dU pro obnovení továrního nastavení?"/>
+<text id="2057" value="jste si jisti, že zadané kódy dF/dU odpovídají kódům vyznačeným na identifikačním štítku?"/>
+<text id="2058" value="Jste si jisti?"/>
+<text id="2059" value="Zadejte dF/dU"/>
+<text id="2060" value="Zrušit možný"/>
+<text id="2099" value="vyhrazeno"/>
+<text id="2100" value="0:Pohotovostní režim"/>
+<text id="2101" value="1:Spuštění kotle"/>
+<text id="2102" value="2:Spuštění hořáku"/>
+<text id="2103" value="3:Ohřev ÚV"/>
+<text id="2104" value="4:Ohřev TUV"/>
+<text id="2105" value="5:Vypnutí hořáku"/>
+<text id="2106" value="6:Vypnutí kotle"/>
+<text id="2107" value="7:-"/>
+<text id="2108" value="8:Regulované zastavení"/>
+<text id="2109" value="9:Režim blokování"/>
+<text id="2110" value="10:Režim výluky"/>
+<text id="2111" value="11:Režim komínu L"/>
+<text id="2112" value="12:Režim komínu h"/>
+<text id="2113" value="13:Režim komínu H"/>
+<text id="2114" value="14:-"/>
+<text id="2115" value="15:Manuální pož. vytápení"/>
+<text id="2116" value="16:Protimrazová ochr. kotle"/>
+<text id="2117" value="17:Odvzdušnění"/>
+<text id="2118" value="18:Tepel ochr regul"/>
+<text id="2119" value="19:-"/>
+<text id="2120" value="20:-"/>
+<text id="2198" value="Neznámý stav"/>
+<text id="2199" value="Regulované zastavení"/>
+<text id="2200" value="0:Pohotovostní režim"/>
+<text id="2201" value="1:Zábrana oscilací"/>
+<text id="2202" value="2:Otevř. hydraul. ventilu"/>
+<text id="2203" value="3:Spuštění čerpadla"/>
+<text id="2204" value="4:Vyčkej start hoř"/>
+<text id="2205" value="5:-"/>
+<text id="2206" value="6:-"/>
+<text id="2207" value="7:-"/>
+<text id="2208" value="8:-"/>
+<text id="2209" value="9:-"/>
+<text id="2210" value="10. Otev. ext. plyn. vent"/>
+<text id="2211" value="11:Rychl od vent do vent spalin"/>
+<text id="2212" value="12:Otevř. ventil spalin"/>
+<text id="2213" value="13:Předčištění"/>
+<text id="2214" value="14:Vyčkejte na odpojení"/>
+<text id="2215" value="15:Spuštění hořáku"/>
+<text id="2216" value="16:Test VPS"/>
+<text id="2217" value="17:Předzapálení"/>
+<text id="2218" value="18:Zapálení"/>
+<text id="2219" value="19:Kontrola plamene"/>
+<text id="2220" value="20:Interní čištění"/>
+<text id="2230" value="30:Norm inter nast. hodn"/>
+<text id="2231" value="31:Limit inter nast. hodn"/>
+<text id="2232" value="32:Normální regulace výkonu"/>
+<text id="2233" value="33:Grad hl. regul 1"/>
+<text id="2234" value="34:Grad hl. regul 2"/>
+<text id="2235" value="35:Grad hl. regul 3"/>
+<text id="2236" value="36:Ochrana plamene"/>
+<text id="2237" value="37:Doba stabilizace"/>
+<text id="2238" value="38:Studený start"/>
+<text id="2239" value="39:-"/>
+<text id="2240" value="40:Vypnutí hořáku"/>
+<text id="2241" value="41:Násl. čištění"/>
+<text id="2242" value="42:Rychl od vent do ventilu spalin"/>
+<text id="2243" value="43:Zavř. ventil spalin"/>
+<text id="2244" value="44:Zast. ventilátoru"/>
+<text id="2245" value="45. Uzavř. ext plyn ventil"/>
+<text id="2246" value="46:-"/>
+<text id="2247" value="47:-"/>
+<text id="2248" value="48:-"/>
+<text id="2249" value="49:-"/>
+<text id="2250" value="39:-"/>
+<text id="2260" value="60:Doběh čerpadla"/>
+<text id="2261" value="61:Zastavení čerpadla"/>
+<text id="2262" value="62:Zavř. hydraulický ventil"/>
+<text id="2263" value="63:Start antioscil časov"/>
+<text id="2298" value="Neznámý substav"/>
+<text id="2299" value="255:Reset doby čekání"/>
+<text id="2300" value="0:Chyba parametru PCU"/>
+<text id="2301" value="1:T průtok &gt; max."/>
+<text id="2302" value="2:dT/s průtok &gt; max."/>
+<text id="2303" value="3:T TepVým &gt; max."/>
+<text id="2304" value="4:dT/s TepVým &gt; max."/>
+<text id="2305" value="5:dT(tepVým,Vrat.tok) &gt; max."/>
+<text id="2306" value="6:dT(Průtok,TepVým) &gt; max."/>
+<text id="2307" value="7:dT(Průtok,Vrat.tok) &gt; max."/>
+<text id="2308" value="8:Není signál odpojení"/>
+<text id="2309" value="9:Záměna vodičů F-N"/>
+<text id="2310" value="10:Sig blok bez protimraz"/>
+<text id="2311" value="11:Sig blok vč protimraz"/>
+<text id="2312" value="12:HMI nepřipojeno"/>
+<text id="2313" value="13:Komunikace SCU"/>
+<text id="2314" value="14:Min. tlak vody"/>
+<text id="2315" value="15:Min. tlak plynu"/>
+<text id="2316" value="16:Ident. záměna SU"/>
+<text id="2317" value="17:Ident. dF/dU chyb tab"/>
+<text id="2318" value="18:Ident. záměna PSU"/>
+<text id="2319" value="19:Ident. vyžadováno dF/dU"/>
+<text id="2320" value="20:Probíhá identifikace"/>
+<text id="2321" value="21:Ztráta komunikace SU"/>
+<text id="2322" value="22:Ztráta plamene"/>
+<text id="2323" value="23:-"/>
+<text id="2324" value="24:VPS test se nezdařil"/>
+<text id="2325" value="25:Interní chyba SU"/>
+<text id="2326" value="26:Chyba snímače ohřívače"/>
+<text id="2327" value="27:Int chyba snímače TUV"/>
+<text id="2328" value="28:Probíhá restart..."/>
+<text id="2329" value="29:GVC parameter changed"/>
+<text id="2330" value="30:-"/>
+<text id="2331" value="31:-"/>
+<text id="2332" value="32:-"/>
+<text id="2333" value="33:-"/>
+<text id="2334" value="34:-"/>
+<text id="2335" value="35:-"/>
+<text id="2336" value="36-"/>
+<text id="2337" value="41:-"/>
+<text id="2338" value="43:-"/>
+<text id="2339" value="44:-"/>
+<text id="2340" value="45:-"/>
+<text id="2398" value="Neznámý kód blokování"/>
+<text id="2399" value="Žádné blokování"/>
+<text id="2400" value="00:PSU nepřipojeno"/>
+<text id="2401" value="01:Chyba parametru SU"/>
+<text id="2402" value="02:T TepVým. sepnutý"/>
+<text id="2403" value="03:T TepVým. rozpojený"/>
+<text id="2404" value="04:T TepVým. &lt; min."/>
+<text id="2405" value="05:T TepVým. &gt; max."/>
+<text id="2406" value="06:T Vrat.tok uzavřený"/>
+<text id="2407" value="07:T Vrat.tok otevřený"/>
+<text id="2408" value="08:T Vrat.tok &lt; min."/>
+<text id="2409" value="09:T Vrat.tok &gt; max."/>
+<text id="2410" value="10:dT(TepVým,Vrat) &gt; max."/>
+<text id="2411" value="11:dT(Vrat.,TepVým) &gt; max."/>
+<text id="2412" value="12:STB aktivní"/>
+<text id="2413" value="13:-"/>
+<text id="2414" value="14:5x Neúspěšné spuštění"/>
+<text id="2415" value="15:5x VPS test se nezdařil"/>
+<text id="2416" value="16:Falešný plamen"/>
+<text id="2417" value="17:Chyba ovl plyn. vent SU"/>
+<text id="2432" value="32:T Průtok uzavřen"/>
+<text id="2433" value="33:T Průtok otevřen"/>
+<text id="2434" value="34:Vent mimo rozsah reg"/>
+<text id="2435" value="35:Tepl vrat vyš než tepl průt"/>
+<text id="2436" value="36:5x Ztráta plamene"/>
+<text id="2437" value="37:Komunikace SU"/>
+<text id="2438" value="38:Komunikace SCU-S"/>
+<text id="2439" value="39:BL vstup jako výluka"/>
+<text id="2440" value="40:-"/>
+<text id="2441" value="41:PCB temperature"/>
+<text id="2442" value="42:Low water pressure"/>
+<text id="2443" value="43:No gradient"/>
+<text id="2445" value="45:De-air test failed"/>
+<text id="2450" value="50:External PSU timeout"/>
+<text id="2451" value="51:Onboard PSU timeout"/>
+<text id="2452" value="52:GVC lockout"/>
+<text id="2490" value="10:dT(Průt,Vrat) &gt; max."/>
+<text id="2491" value="11:dT(Vrat,Průt) &gt; max."/>
+<text id="2492" value="02:T Průtok uzavřen"/>
+<text id="2493" value="03:T Průtok otevřen"/>
+<text id="2494" value="04:T Průtok &lt; min."/>
+<text id="2495" value="05:T Průtok &gt; max."/>
+<text id="2498" value="Neznámý kód výluky"/>
+<text id="2499" value="Žádné výluky"/>
+<text id="2500" value="Ventil spalin"/>
+<text id="2501" value="Hydraulický ventil"/>
+<text id="2502" value="Ext. Plynový ventil"/>
+<text id="2503" value="Tlak spalin"/>
+<text id="2504" value="Plynový ventil 1"/>
+<text id="2505" value="Stav SU"/>
+<text id="2506" value="Blokování SU"/>
+<text id="2507" value="Výluka SU"/>
+<text id="2508" value="Hořák nízk."/>
+<text id="2509" value="Hořák vys."/>
+<text id="2510" value="Hořák nast. hodnota"/>
+<text id="2511" value="Protimraz ochr"/>
+<text id="2512" value="Teplvým. Tepl."/>
+<text id="2513" value="Teplota tepelného výměníku"/>
+<text id="2514" value="Vstup odpojení"/>
+<text id="2515" value="VPS tlak. spínač"/>
+<text id="2516" value="bar"/>
+<text id="2517" value=".1 bar"/>
+<text id="2518" value=".01C/s"/>
+<text id="2519" value="Blokování TUV"/>
+<text id="2520" value="Regul tepl."/>
+<text id="2521" value="Regulace teploty"/>
+<text id="2522" value="Průtok TUV"/>
+<text id="2523" value=".1C/l/m"/>
+<text id="2524" value="l/min"/>
+<text id="2525" value="Solární Tepl."/>
+<text id="2526" value="Solární teplota"/>
+<text id="2527" value="OT Smart power"/>
+<text id="2528" value="OpenTherm Smart power"/>
+<text id="2529" value="Ext. 3cestný ventil"/>
+<text id="2530" value="Ext. Čerpadlo ÚV"/>
+<text id="2531" value="*10%"/>
+<text id="2532" value="/s"/>
+<text id="2533" value="Podsvícení HMI"/>
+<text id="2534" value="0,1l/m"/>
+<text id="2535" value="Zapnutí ÚV"/>
+<text id="2536" value="Zapnutí TUV"/>
+<text id="2537" value="Zapnutí časovače ÚV"/>
+<text id="2538" value="Zapnutí časovače TUV"/>
+<text id="2539" value="DHW-in tepl."/>
+<text id="2540" value="TUV-in teplota"/>
+<text id="2541" value="HMI Nastavená hodnota ÚV"/>
+<text id="2542" value="HMI Nastavená hodnota TUV"/>
+<text id="2543" value="HMI aktivní"/>
+<text id="2544" value="Nast průt vzd"/>
+<text id="2545" value="Nastavená hodnota průtoku vzduchu"/>
+<text id="2546" value="Průtok vzduchu"/>
+<text id="2547" value="Aktuální průtok vzduchu"/>
+<text id="2548" value="Flue gas temp"/>
+<text id="2549" value="Flue gas temperature"/>
+<text id="2550" value="CH Offset"/>
+<text id="2551" value="CH Offset"/>
+<text id="2552" value="DHW anti leg. time"/>
+<text id="2553" value="DHW anti legionella time"/>
+<text id="2554" value="Antileg.time-out"/>
+<text id="2555" value="DHW Antilegionella time-out"/>
+<text id="2556" value="Min. flame current"/>
+<text id="2557" value="Minimum flame current"/>
+<text id="2558" value="PVC 65 &#176;C"/>
+<text id="2559" value="CPVC 95 &#176;C"/>
+<text id="2560" value="PP 100 &#176;C"/>
+<text id="2599" value="Vyhrazeno pro budoucí využití"/>
+<text id="2600" value="Max průtok systém"/>
+<text id="2601" value="Maximální teplota průtoku pro systém vytápění"/>
+<text id="2602" value="Tepl. protimraz."/>
+<text id="2603" value="Min venkovní teplota pro protimrazovou ochranu"/>
+<text id="2604" value="Min. tlak plynu"/>
+<text id="2605" value="Detekce min tlaku plynu"/>
+<text id="2606" value="Hydr. ventil, čas"/>
+<text id="2607" value="Doba čekání na hydraulický ventil"/>
+<text id="2608" value="Ventil spalin, čas"/>
+<text id="2609" value="Doba čekání na ventil spalin"/>
+<text id="2610" value="Doba ček na odp"/>
+<text id="2611" value="Doba čekání na platný signál odpoejní, 0 = Bez kontroly"/>
+<text id="2612" value="VPS Přítomný"/>
+<text id="2613" value="Sekvence přezkoušení ventilu při spuštění hořáku"/>
+<text id="2614" value="Detekce vedení L-N"/>
+<text id="2615" value="Detekce fáze vedení L-N aktivována"/>
+<text id="2616" value="Vstup blokování"/>
+<text id="2617" value="Funkce vstupu blokování"/>
+<text id="2618" value="Blok bez protimraz. ochr."/>
+<text id="2619" value="Blokování s protimraz. ochr."/>
+<text id="2620" value="Výluka s protimraz. ochr."/>
+<text id="2621" value="Man pož. vytáp"/>
+<text id="2622" value="Funkce manuálního pož. vytápění v nabídce povolena"/>
+<text id="2623" value="dT(TepVým,Vrat.tok)"/>
+<text id="2624" value="Max rozdíl tepl. mezi tepelným výměníkem a vrat. tokem"/>
+<text id="2625" value="dT(Průtok,TepVým)"/>
+<text id="2626" value="Max rozdíl tepl. mezi průtokem a tepelným výměníkem"/>
+<text id="2627" value="Max TepVým. tepl."/>
+<text id="2628" value="Maximální teplota tepelného výměníku"/>
+<text id="2629" value="Min. hořák vyp"/>
+<text id="2630" value="Minimální doba antioscilačního cyklu hořáku"/>
+<text id="2631" value="Max. hořák vyp"/>
+<text id="2632" value="Maximální doba antioscilačního cyklu hořáku"/>
+<text id="2633" value="Ot. vent ventil spalin"/>
+<text id="2634" value="Ot. vent při otevř ventilu spalin, ochr recirk"/>
+<text id="2635" value="Doba stabilizace"/>
+<text id="2636" value="Doba stabilizace po spuštění hořáku ÚV"/>
+<text id="2637" value="Doba předčištění"/>
+<text id="2638" value="Doba předčištění pro spuštění hořáku"/>
+<text id="2639" value="Doba násl. čištění"/>
+<text id="2640" value="Doba násl. čištění pro vypnutí hořáku"/>
+<text id="2641" value="Ot. vent ÚV max"/>
+<text id="2642" value="Ot. vent ÚV start"/>
+<text id="2643" value="Ot. vent ÚV min"/>
+<text id="2644" value="Min ot. ventilátoru pro ÚV"/>
+<text id="2645" value="Hystereze ÚV"/>
+<text id="2646" value="Spuštění hystereze pro ÚV"/>
+<text id="2647" value="Impulzy ventilátoru"/>
+<text id="2648" value="Impulzy ot. na otáčku ventilátoru"/>
+<text id="2649" value="Doběh čerpadla ÚV"/>
+<text id="2650" value="Doběh čerpadla ÚV, 99 = pokračování čerpání"/>
+<text id="2651" value="Regulace kotle"/>
+<text id="2652" value="Zapne nebo vypne funkci kotle"/>
+<text id="2653" value="Min tlak vody"/>
+<text id="2654" value="Minimální tlak vody pro blokování, 0 = Bez kontroly"/>
+<text id="2655" value="Gradient dTMax 1"/>
+<text id="2656" value="Maximální gradient pro snižování modulace"/>
+<text id="2657" value="Gradient dTMax 2"/>
+<text id="2658" value="Maximální gradient pro nucené minimální zatížení"/>
+<text id="2659" value="Gradient dTMax 3"/>
+<text id="2660" value="Maximální gradient pro blokování"/>
+<text id="2661" value="Pásmo regulace ÚV"/>
+<text id="2662" value="Rozsah teplot pro modulaci na ÚV"/>
+<text id="2663" value="Max. Teplota průt."/>
+<text id="2664" value="Maximální teplota průtoku pro blokování"/>
+<text id="2665" value="3cest vent pohot."/>
+<text id="2666" value="3cest vent pohot.: ÚV nebo TUV"/>
+<text id="2667" value="ÚV"/>
+<text id="2668" value="TUV"/>
+<text id="2669" value="Min průtok TUV"/>
+<text id="2670" value="Min průtok TUV pro detekci TUV"/>
+<text id="2671" value="Start čerp TUV"/>
+<text id="2672" value="Regulace čerpadla, TUV při požadavku spuštění TUV"/>
+<text id="2673" value="Start čerp ÚV"/>
+<text id="2674" value="Regulace čerpadla, ÚV při požadavku vytápění"/>
+<text id="2675" value="Čerpadlo ÚV min"/>
+<text id="2676" value="Regulace čerpadla, min. otáčky ÚV"/>
+<text id="2677" value="Čerpadlo ÚV max"/>
+<text id="2678" value="Regulace čerpadla, max. otáčky ÚV"/>
+<text id="2679" value="Čerpadlo TUV min"/>
+<text id="2680" value="Regulace čerpadla, min. otáčky TUV"/>
+<text id="2681" value="Čerpadlo TUV max"/>
+<text id="2682" value="Regulace čerpadla, max. otáčky TUV"/>
+<text id="2683" value="I fakt čerp ÚV"/>
+<text id="2684" value="I faktor pro regulaci čerpadla ÚV"/>
+<text id="2685" value="I-fakt čerp TUV"/>
+<text id="2686" value="I faktor pro regulaci čerpadla TUV"/>
+<text id="2687" value="dT(Průtok,Vrat.tok)"/>
+<text id="2688" value="Max rozdíl tepl. mezi průtokem a vrat. tokem"/>
+<text id="2689" value="dTnast čerpadla ÚV"/>
+<text id="2690" value="Regulace čerpadla, rozsah regulace dT pro ÚV"/>
+<text id="2691" value="dTnast čerpadla TUV"/>
+<text id="2692" value="Regulace čerpadla, rozsah regulace dT pro TUV"/>
+<text id="2693" value="%Tf/Tr čerp TUV 20%"/>
+<text id="2694" value="%Tf/Tr pro regul. tepl. TUV při ot. čerpadla 20%"/>
+<text id="2695" value="%Tf/Tr čerp TUV 100%"/>
+<text id="2696" value="%Tf/Tr pro regul. tepl. TUV při ot. čerpadla 100%"/>
+<text id="2697" value="Snímač TUV"/>
+<text id="2698" value="Typ snímače pro detekci TUV"/>
+<text id="2699" value="Snímač průtoku TUV"/>
+<text id="2700" value="Průt spín TUV"/>
+<text id="2701" value="TUV tep. snímač"/>
+<text id="2702" value="Komp část. zat."/>
+<text id="2703" value="Kompenzace při část. zat. ot. vent."/>
+<text id="2704" value="Cykly odvzdušnění"/>
+<text id="2705" value="Počet odvzdušňovacích cyklů při spuštění"/>
+<text id="2706" value="HRU aktivní"/>
+<text id="2707" value="HRU připojeno"/>
+<text id="2708" value="ÚV antiosc. hyst."/>
+<text id="2709" value="Hystereze antiosc. ÚV"/>
+<text id="2710" value="Servisní zpráva"/>
+<text id="2711" value="Servisní zpráva pro údržbu závislou na stavu kotle"/>
+<text id="2712" value="ABC"/>
+<text id="2713" value="Vlastní"/>
+<text id="2714" value="Servisní hodiny"/>
+<text id="2715" value="Servisní hodiny pro kotel připopjený k hl. rozvodu"/>
+<text id="2716" value="Servisní spalování"/>
+<text id="2717" value="Servisní hodiny pro hořák kotle"/>
+<text id="2718" value="Komp čerp ÚV"/>
+<text id="2719" value="Komopenzace regulace čerpadla ÚV podle regulace teploty dT"/>
+<text id="2720" value="Vyvol start TUV"/>
+<text id="2721" value="Vyvolání spuštění TUV v závislosti na průtoku TUV"/>
+<text id="2722" value="K-Faktor TUV"/>
+<text id="2723" value="Opravný faktor impulzů TUV na l/min"/>
+<text id="2724" value="Doba det průt"/>
+<text id="2725" value="Faktor pro dynamickou detekci průtoku"/>
+<text id="2726" value="Stabilizace TUV"/>
+<text id="2727" value="Doba stabilizace TUV pro modulaci čerpadla"/>
+<text id="2728" value="Gradient TUV"/>
+<text id="2729" value="Gradient TUV pro dobu stabilizace čerpadla"/>
+<text id="2730" value="Urychlení TUV vyp"/>
+<text id="2731" value="Rozsah bez aktivace urychlení TUV"/>
+<text id="2732" value="P spuštění TUV"/>
+<text id="2733" value="P faktor pro urychlení při spuštění TUV"/>
+<text id="2734" value="P TUV FFWD"/>
+<text id="2735" value="P faktor pro kladnou zpětnou vazbu na průtoku TUV"/>
+<text id="2736" value="P změny průtoku TUV"/>
+<text id="2737" value="P faktor pro urychlení při změnách průtoku TUV"/>
+<text id="2738" value="Červ LED displ"/>
+<text id="2739" value="Červená hodnota PWM pro normální podsvícení displeje"/>
+<text id="2740" value="Modrá LED displeje"/>
+<text id="2741" value="Modrá hodnota PWM pro normální podsvícení displeje"/>
+<text id="2742" value="Zelená LED displeje"/>
+<text id="2743" value="Zelená hodnota PWM pro normální podsvícení displeje"/>
+<text id="2744" value="Jas displeje"/>
+<text id="2745" value="Jas displeje při aktivním podsvícení"/>
+<text id="2746" value="Nízký"/>
+<text id="2747" value="Vysoký"/>
+<text id="2748" value="Jednotky displeje"/>
+<text id="2749" value="Jednotky displeje"/>
+<text id="2750" value="&#176;C / bar"/>
+<text id="2751" value="&#176;F / Psi"/>
+<text id="2752" value="x100h"/>
+<text id="2753" value="Auto + Zámek kláves"/>
+<text id="2754" value="Vstup odpojení"/>
+<text id="2755" value="Funkce vstupu odpojení"/>
+<text id="2756" value="Odpojení hořáku"/>
+<text id="2757" value="Minimální tlak vody pro upozornění"/>
+<text id="2758" value="TUV-in gradient"/>
+<text id="2759" value="TUV-in gradient for restart doby stabilizace"/>
+<text id="2760" value="dT komp čerpadla"/>
+<text id="2761" value="dT komp čerpadla"/>
+<text id="2762" value="Komp regul tepl"/>
+<text id="2763" value="Komp regul tepl"/>
+<text id="2764" value="Průt TUV při min ot."/>
+<text id="2765" value="Průtok TUV při minimálním výkonu"/>
+<text id="2766" value="w. snímač tlaku"/>
+<text id="2767" value="Typ snímače tlaku vody"/>
+<text id="2768" value="3 bary"/>
+<text id="2769" value="4 bary"/>
+<text id="2770" value="Fakt prům. průtoku"/>
+<text id="2771" value="Tau faktor pro výpočet průměrné teploty průtoku"/>
+<text id="2772" value="Regul zast. chlaz"/>
+<text id="2773" value="Zastavení nuceného regulovaného chlazení při této teplotě"/>
+<text id="2774" value="Statrt regul. chlaz"/>
+<text id="2775" value="Spuštění nuceného regulovaného chlazení při této teplotě"/>
+<text id="2776" value="Max tepl. regul"/>
+<text id="2777" value="Absolutní maximální teplota regulátoru pro výluku"/>
+<text id="2778" value="Čas konst průt ÚV"/>
+<text id="2779" value="Čas konst Ta ÚV"/>
+<text id="2780" value="Progresivní algoritmus ohřívače"/>
+<text id="2781" value="Pásmo regulace PH"/>
+<text id="2782" value="Pásmo regulace PH"/>
+<text id="2783" value="P progresivní"/>
+<text id="2784" value="P faktor progresivního algoritmu ohřívače"/>
+<text id="2785" value="I progresivní"/>
+<text id="2786" value="I faktor progresivního algoritmu ohřívače"/>
+<text id="2787" value="dTFMax1 progresivní"/>
+<text id="2788" value="Gradient úrovně 1 reg. Progresivní"/>
+<text id="2789" value="Cyklus odvzdušnění"/>
+<text id="2790" value="Typ čerpadla pro cyklus odvzdušnění při spuštění"/>
+<text id="2791" value="Bez čerp, bez odvzd"/>
+<text id="2792" value="Jednorychlostní čerpadlo"/>
+<text id="2793" value="Modulační čerpadlo"/>
+<text id="2794" value="Typ plyn-vzduch"/>
+<text id="2795" value="Typ jednotky Plyn-Vzduch"/>
+<text id="2796" value="GA 28"/>
+<text id="2797" value="GA 40"/>
+<text id="2798" value="Analogový výstup"/>
+<text id="2799" value="Funkce analogového výstupu"/>
+<text id="2800" value="0-10V čerpadlo Wilo"/>
+<text id="2801" value="0-10V čerpadlo Grundfos"/>
+<text id="2802" value="Čerpadlo PWM"/>
+<text id="2803" value="Výstupní výkon (%)"/>
+<text id="2804" value="Modulační vstup"/>
+<text id="2805" value="Volba modulačního vstupu"/>
+<text id="2806" value="OpenTherm"/>
+<text id="2807" value="0-10 V – teplota"/>
+<text id="2808" value="0-10 V – výkon"/>
+<text id="2809" value="Stavové relé 1"/>
+<text id="2810" value="Poloha od relé signálu alarm./oper 1"/>
+<text id="2811" value="Stavové relé 2"/>
+<text id="2812" value="Poloha od relé signálu alarm./oper 2"/>
+<text id="2813" value="dT(Tprůtok-Ttep vým)"/>
+<text id="2814" value="dT(Ttep vým-Tprůtok)"/>
+<text id="2815" value="Maximální teplotní rozdíl mezi výměníkem tepla a průtokem"/>
+<text id="2816" value="Ot/min při předčištění"/>
+<text id="2817" value="Otáčky ventilátoru při předčištění (x100)"/>
+<text id="2818" value="Operating voltage"/>
+<text id="2819" value="CH Offset"/>
+<text id="2820" value="Power rating"/>
+<text id="2999" value="Vyhrazeno"/>
+<text id="3001" value="Elektrická energie"/>
+<text id="3002" value="Pol. vřet. vent."/>
+<text id="3003" value="Tepl. hlavy motoru"/>
+<text id="3004" value="Síťové napětí"/>
+<text id="3005" value="Generovaný proud"/>
+<text id="3006" value="Rychl průt kotle"/>
+<text id="3007" value="Motor plyn vent."/>
+<text id="3008" value="Napáj. plyn. vent."/>
+<text id="3009" value="Ionizační motor"/>
+<text id="3010" value="Napáj ioniz."/>
+<text id="3011" value="Čisticí motor"/>
+<text id="3012" value="Napáj čištění"/>
+<text id="3013" value="Přip k rozv. síti"/>
+<text id="3014" value="Stav G83"/>
+<text id="3015" value="Termostat průtoku"/>
+<text id="3016" value="Spínač přeběhu"/>
+<text id="3017" value="Termostat WCS"/>
+<text id="3018" value="Spínač nadproudu"/>
+<text id="3019" value="Otáčky čerpadla"/>
+<text id="3020" value="Bez ovladače"/>
+<text id="3021" value="Ventil zap/vyp"/>
+<text id="3022" value="Směšovací ventil"/>
+<text id="3023" value="Libovolná konfigurace"/>
+<text id="3024" value="W-Plan"/>
+<text id="3025" value="S-Plan"/>
+<text id="3026" value="Y-Plan"/>
+<text id="3027" value="1 topný okruh"/>
+<text id="3028" value="2 topný okruh"/>
+<text id="3029" value="3 topný okruh"/>
+<text id="3030" value="Měření teploty"/>
+<text id="3031" value="Fáze 1"/>
+<text id="3032" value="Fáze 2"/>
+<text id="3033" value="Fáze 3"/>
+<text id="3034" value="Bez omezení"/>
+<text id="3035" value="Pouze Stirling"/>
+<text id="3036" value="První plnění jen se Stirlingem"/>
+<text id="3037" value="První plnění se Stirlingem, druhé s dopl. hořákem"/>
+<text id="3038" value="Jednou / den"/>
+<text id="3039" value="Několikrát / den"/>
+<text id="3040" value="Absolutní"/>
+<text id="3041" value="Posun"/>
+<text id="3042" value="Žádný"/>
+<text id="3043" value="24h/den"/>
+<text id="3044" value="Časové programy HCs"/>
+<text id="3045" value="Časový program 3/HCP"/>
+<text id="3046" value="Odpojení TUV"/>
+<text id="3047" value="Časový program 4/TUV"/>
+<text id="3048" value="Dobíjení"/>
+<text id="3049" value="Plné dobíjení"/>
+<text id="3050" value="Plné dobíjení legio"/>
+<text id="3051" value="Plné dobíjení 1. den"/>
+<text id="3052" value="Plné dobíjení 1. den legio"/>
+<text id="3053" value="Provozní režim TUV"/>
+<text id="3054" value="Snížená nast. hodnota TUV"/>
+<text id="3055" value="TUV nast. hodn červ"/>
+<text id="3056" value="Odpojení TUV"/>
+<text id="3057" value="Priorita dobíjení TUV"/>
+<text id="3058" value="Priorita dob. TUV"/>
+<text id="3059" value="Max nast. hodnota prostoru"/>
+<text id="3060" value="Max nast. hodn prost"/>
+<text id="3061" value="Dobíjení TUV"/>
+<text id="3062" value="Nast. hodnota urychlení průtoku TUV"/>
+<text id="3063" value="Nast. hodn. urychl průt TUV"/>
+<text id="3066" value="Typ dobíjení"/>
+<text id="3067" value="Spínání diferenc. TUV"/>
+<text id="3068" value="Spínání dif. TUV"/>
+<text id="3069" value="Omezení doby dobíjení"/>
+<text id="3070" value="Čas. limit dobíj."/>
+<text id="3071" value="Ochrana před vybitím TUV"/>
+<text id="3072" value="Ochr. vybit. TUV"/>
+<text id="3073" value="Automatické stisknutí"/>
+<text id="3074" value="Auto stisk"/>
+<text id="3075" value="SD Solar Eco zap"/>
+<text id="3076" value="SD Solar Eco zap"/>
+<text id="3077" value="SD Solar Eco vyp"/>
+<text id="3078" value="SD Solar Eco vyp"/>
+<text id="3079" value="Typ provozu"/>
+<text id="3080" value="Typ vytáp okr 1"/>
+<text id="3081" value="Typ vytáp okr 2"/>
+<text id="3082" value="Typ vytáp okr 3"/>
+<text id="3083" value="Žádný"/>
+<text id="3084" value="Čerpadlo kotle Q1"/>
+<text id="3085" value="TUV reg elem Q3"/>
+<text id="3086" value="HC1 ovladač Q2"/>
+<text id="3087" value="HC2 ovladač Q6"/>
+<text id="3088" value="HC3 ovladač Q20"/>
+<text id="3089" value="Výstup alarmu K10"/>
+<text id="3090" value="Cirkulační čerpadlo Q4"/>
+<text id="3091" value="Systémové čerpadlo Q14"/>
+<text id="3092" value="Čerpadlo kotle fáze 2"/>
+<text id="3093" value="Čerpadlo kotle fáze 3"/>
+<text id="3094" value="Pol. vřet. vent."/>
+<text id="3095" value="Nast. hodn tepl. průt"/>
+<text id="3096" value="Energie k datu"/>
+<text id="3097" value="Hodiny provozu Stirlingu"/>
+<text id="3098" value="Počitadlo spuštění Stirlingu"/>
+<text id="3099" value="Hodiny provozu napájení hořáku"/>
+<text id="3103" value="Počitadlo spuštění napájení hořáku"/>
+<text id="3100" value="Blokování i výluky budou resetovány"/>
+<text id="3101" value="Kód výluky není v konfiguraci datových bodů"/>
+<text id="3102" value="Kód blokování není v konfiguraci datových bodů"/>
+<text id="3104" value="Žádný"/>
+<text id="3105" value="Pokojový termostat HC1"/>
+<text id="3106" value="Pokojový termostat HC2"/>
+<text id="3107" value="Pokojový termostat HC3"/>
+<text id="3108" value="Termostat TUV"/>
+<text id="3109" value="Časový program HC1"/>
+<text id="3110" value="Časový program HC2"/>
+<text id="3111" value="Časový program HC3"/>
+<text id="3112" value="Časový program TUV"/>
+<text id="3113" value="Pož. TepVým, Stirling"/>
+<text id="3114" value="Pož. TepVým, dop. hoř."/>
+<text id="3115" value="Pož. TepVým, Stirl+dop. hoř."/>
+<text id="3116" value="Funkce EX1"/>
+<text id="3117" value="Typ regul EX1"/>
+<text id="3118" value="Funkce EX2"/>
+<text id="3119" value="Typ regul EX2"/>
+<text id="3120" value="1 rychlost"/>
+<text id="3121" value="2 rychlost"/>
+<text id="3122" value="3 rychlost"/>
+<text id="3123" value="Komfortní teplota HC1"/>
+<text id="3124" value="Komfortní teplota HC2"/>
+<text id="3125" value="Komfortní teplota HC3"/>
+<text id="3126" value="Sníž. nast. hodnota HC1"/>
+<text id="3127" value="Snížená nast. hodnota HC1"/>
+<text id="3128" value="Sníž. nast. hodnota HC2"/>
+<text id="3129" value="Snížená nast. hodnota HC2"/>
+<text id="3130" value="Sníž. nast. hodnota HC3"/>
+<text id="3131" value="Snížená nast. hodnota HC3"/>
+<text id="3132" value="Nast. hodn. protimraz. ochr. HC1"/>
+<text id="3133" value="Nastavená hodnota protimrazové ochrany HC1"/>
+<text id="3134" value="Nast. hodn. protimraz. ochr. HC2"/>
+<text id="3135" value="Nastavená hodnota protimrazové ochrany HC2"/>
+<text id="3136" value="Nast. hodn. protimraz. ochr. HC3"/>
+<text id="3137" value="Nastavená hodnota protimrazové ochrany HC3"/>
+<text id="3138" value="Max. komfortní tepHC1"/>
+<text id="3139" value="Max. komfortní tepHC2"/>
+<text id="3140" value="Max. komfortní tepHC3"/>
+<text id="3141" value="Max. komfortní tep HC1"/>
+<text id="3142" value="Max. komfortní tep HC2"/>
+<text id="3143" value="Max. komfortní tep HC3"/>
+<text id="3144" value="Typ čerpadla"/>
+<text id="3145" value="Sklon topné křiv. HC1"/>
+<text id="3146" value="Sklon topné křivky HC1"/>
+<text id="3147" value="Sklon topné křiv. HC2"/>
+<text id="3148" value="Sklon topné křivky HC2"/>
+<text id="3149" value="Sklon topné křiv. HC3"/>
+<text id="3150" value="Sklon topné křivky HC3"/>
+<text id="3151" value="Sklon topné křiv. HC1"/>
+<text id="3152" value="Posun topné křivky HC1"/>
+<text id="3153" value="Sklon topné křiv. HC2"/>
+<text id="3154" value="Posun topné křivky HC2"/>
+<text id="3155" value="Sklon topné křiv. HC3"/>
+<text id="3156" value="Posun topné křivky HC3"/>
+<text id="3157" value="Adapt. topné křiv. HC1"/>
+<text id="3158" value="Adaptace topné křivky HC1"/>
+<text id="3159" value="Adapt. topné křiv. HC2"/>
+<text id="3160" value="Adaptace topné křivky HC2"/>
+<text id="3161" value="Adapt. topné křiv. HC3"/>
+<text id="3162" value="Adaptace topné křivky HC3"/>
+<text id="3163" value="Min. tepl. průtoku HC1"/>
+<text id="3164" value="Min. tepl. průtoku HC2"/>
+<text id="3165" value="Min. tepl. průtoku HC3"/>
+<text id="3166" value="Max. tepl. průtoku HC1"/>
+<text id="3167" value="Max. tepl. průtoku HC2"/>
+<text id="3168" value="Max. tepl. průtoku HC3"/>
+<text id="3169" value="Nast. hod. průt. – termostat HC1"/>
+<text id="3170" value="Nastavení hodnoty průt. – termostat HC1"/>
+<text id="3171" value="Nast. hod. průt. – termostat HC2"/>
+<text id="3172" value="Nastavení hodnoty průt. – termostat HC2"/>
+<text id="3173" value="Nast. hod. průt. – termostat HC3"/>
+<text id="3174" value="Nastavení hodnoty průt. – termostat HC3"/>
+<text id="3175" value="Vliv prostoru HC1"/>
+<text id="3176" value="Vliv prostoru HC2"/>
+<text id="3177" value="Vliv prostoru HC3"/>
+<text id="3178" value="Letní/zimní lim. HC1"/>
+<text id="3179" value="Letní/zimní lim. HC2"/>
+<text id="3180" value="Letní/zimní lim. HC3"/>
+<text id="3181" value="Vytápění typu prostoru HC1"/>
+<text id="3182" value="Vytápění typu prostoru HC2"/>
+<text id="3183" value="Vytápění typu prostoru HC3"/>
+<text id="3184" value="Radiátory rychlé"/>
+<text id="3185" value="Radiátory střední"/>
+<text id="3186" value="Radiátory pomalé"/>
+<text id="3187" value="Zahřátí podlahy rychlé"/>
+<text id="3188" value="Zahřátí podlahy střední"/>
+<text id="3189" value="Zahřátí podlahy pomalé"/>
+<text id="3190" value="Limit teploty prostoru HC1"/>
+<text id="3191" value="Limit teploty prostoru HC2"/>
+<text id="3192" value="Limit teploty prostoru HC3"/>
+<text id="3193" value="Doba opak. funkce legionella"/>
+<text id="3194" value="Doba opakování funkce legionella"/>
+<text id="3195" value="den"/>
+<text id="3196" value="Nastavení hodnoty funkce legionella"/>
+<text id="3197" value="Minimální rychlost napájení hořáku"/>
+<text id="3198" value="Min. rychlost nap. hoř. ÚV"/>
+<text id="3199" value="Max. rychlost nap. hoř. TUV"/>
+<text id="3200" value=""/>
+<text id="3201" value="Dobíjení TUV"/>
+<text id="3202" value="Nast. hod. průt. TUV urychlení"/>
+<text id="3203" value="urychlení přenosu TUV"/>
+<text id="3204" value="Ovládání dobíjení TUV"/>
+<text id="3205" value="1=Dobíjení"/>
+<text id="3206" value="2=Plné dobíjení"/>
+<text id="3207" value="3=Plné dobíjení legio"/>
+<text id="3208" value="Plné dob. první den"/>
+<text id="3209" value="Plné dob. první Legio"/>
+<text id="3210" value="Ovládání dobíjení TUV"/>
+<text id="3211" value="Spínání dif. TUV"/>
+<text id="3212" value="Max. teplota nabíjení TUV"/>
+<text id="3213" value="Automatický stisk TUV"/>
+<text id="3214" value="Mžikové topné těleso se zásobníkem TUV"/>
+<text id="3215" value="Mžikové topné těleso TUV s nádrží"/>
+<text id="3216" value="Topný okr. 1"/>
+<text id="3217" value="Topný okr. 2"/>
+<text id="3218" value="Topný okr. 3"/>
+<text id="3219" value="Volba provozního diagramu"/>
+<text id="3220" value="Výstup relé QX1"/>
+<text id="3221" value="Výstup relé QX2"/>
+<text id="3222" value="Výstup relé QX3"/>
+<text id="3223" value="Výstup relé QX4"/>
+<text id="3224" value="Výstup relé QX5"/>
+<text id="3225" value="0=Žádný"/>
+<text id="3226" value="Cirkulační čerpadlo Q4"/>
+<text id="3227" value="Sběrné čerpadlo Q5"/>
+<text id="3228" value="Konst. cirkulační čerpadlo VK1 Q15"/>
+<text id="3229" value="Čerpadlo kotle Q1"/>
+<text id="3230" value="Výstup alarmu K10"/>
+<text id="3231" value="Rychlost 2. čerpadla HC1 Q21"/>
+<text id="3232" value="Rychlost 2. čerpadla HC2 Q22"/>
+<text id="3233" value="Rychlost 2. čerpadla HC3 Q23"/>
+<text id="3234" value="Tepelné cirkulační čerpadlo HC3 Q20"/>
+<text id="3235" value="Konst. cirkulační čerpadlo VK2 Q18"/>
+<text id="3236" value="Systémové čerpadlo Q14"/>
+<text id="3237" value="Uzavírací ventil tepelného gen. Y4"/>
+<text id="3238" value="Časový program 5/K13"/>
+<text id="3239" value="Zpětný ventil nádrže Y15"/>
+<text id="3240" value="Ext. vým. solárního čerpadla K9"/>
+<text id="3241" value="Solární reg elem – nádrž K8"/>
+<text id="3242" value="Solární reg elem – bazén K18"/>
+<text id="3243" value="Bazénové čerpadlo Q19"/>
+<text id="3244" value="Relé spalin K17"/>
+<text id="3245" value="Kaskádové čerpadlo Q25"/>
+<text id="3246" value="Transferové čerpadlo s nádrží Q11"/>
+<text id="3247" value="Směšovací čerpadlo TUV Q35"/>
+<text id="3248" value="Mez. cirk. čerpadlo TUV Q33"/>
+<text id="3249" value="Požadavek tepla K27"/>
+<text id="3250" value="Tepelné cirkulační čerpadlo HC1 Q2"/>
+<text id="3251" value="Tepelné cirkulační čerpadlo HC2 Q6"/>
+<text id="3252" value="TUV reg elem Q3"/>
+<text id="3253" value="Reg elem instantního topného tělesa Q34"/>
+<text id="3254" value="Regulace zdroje napájení K32"/>
+<text id="3255" value="Otáčky čerpadla 2. kotle Q27"/>
+<text id="3256" value="Stavový výstup K35"/>
+<text id="3257" value="Stavové informace K36"/>
+<text id="3258" value="Vypnutí ventilátoru K38"/>
+<text id="3259" value="Odvádění přebytečného tepla K11"/>
+<text id="3260" value="Výstup relé QX21 em 1"/>
+<text id="3261" value="Výstup relé QX22 em 1"/>
+<text id="3262" value="Výstup relé QX23 em 1"/>
+<text id="3263" value="Výstup relé QX21 em 2"/>
+<text id="3264" value="Výstup relé QX22 em 2"/>
+<text id="3265" value="Výstup relé QX23 em 2"/>
+<text id="3266" value="Výstup relé QX21 em 3"/>
+<text id="3267" value="Výstup relé QX22 em 3"/>
+<text id="3268" value="Výstup relé QX23 em 3"/>
+<text id="3269" value="Funk. vstup EX21 modul 1"/>
+<text id="3270" value="Vstup typu regul. EX21 modul 1"/>
+<text id="3271" value="Funk. vstup EX21 modul 2"/>
+<text id="3272" value="Vstup typu regul. EX21 modul 2"/>
+<text id="3273" value="Funk. vstup EX21 modul 3"/>
+<text id="3274" value="Typ regul. EX21 modul 3"/>
+<text id="3275" value="Připojení iSense"/>
+<text id="3276" value="Reg elem instantního TUV Q34"/>
+<text id="3277" value="Žádný"/>
+<text id="3278" value="Čerpadlo"/>
+<text id="3279" value="Diverzní ventil"/>
+<text id="3280" value="předchozí požad. vytápění"/>
+<text id="3281" value="Klidová poloha div. ventilu"/>
+<text id="3282" value="Klidová poloha div. ventilu Q34"/>
+<text id="3283" value="Žádný"/>
+<text id="3284" value="Multifunkční"/>
+<text id="3285" value="Topný okruh 1"/>
+<text id="3286" value="Topný okruh 2"/>
+<text id="3287" value="Topný okruh 3"/>
+<text id="3288" value="Solární TUV"/>
+<text id="3289" value="Primární reg./systémové čerpadlo"/>
+<text id="3290" value="Primární regulátor TUV"/>
+<text id="3291" value="Mžikové topné těleso TUV"/>
+<text id="3292" value="Primární regulátor kotle"/>
+<text id="3293" value="Funkce EM 1"/>
+<text id="3294" value="Funkce EM 2"/>
+<text id="3295" value="Funkce EM 3"/>
+<text id="3296" value="Vstup snímače BX21 EM 1"/>
+<text id="3297" value="Vstup snímače BX22 EM 1"/>
+<text id="3298" value="Vstup snímače BX21 EM 2"/>
+<text id="3299" value="Vstup snímače BX22 EM 2"/>
+<text id="3300" value="Vstup snímače BX21 EM 3"/>
+<text id="3301" value="Vstup snímače BX22 EM 3"/>
+<text id="3302" value="Žádný"/>
+<text id="3303" value="Snímač TUV B31"/>
+<text id="3304" value="Snímač kolektoru B6"/>
+<text id="3305" value="Snímač cirkulace TUV B39"/>
+<text id="3306" value="Snímač nádrže B4"/>
+<text id="3307" value="Snímač nádrže B41"/>
+<text id="3308" value="Snímač teploty spalin B8"/>
+<text id="3309" value="Snímač běžného toku B10"/>
+<text id="3310" value="Snímač dobíjení TUV B36"/>
+<text id="3311" value="Snímač nádrže B42"/>
+<text id="3312" value="Snímač běžného vrat. toku B73"/>
+<text id="3313" value="Snímač kaskádového vrat. toku B70"/>
+<text id="3314" value="Snímač bazénu B13"/>
+<text id="3315" value="Solární snímač toku B63"/>
+<text id="3316" value="Solární snímač vrat. toku B64"/>
+<text id="3317" value="Snímač výstupu TUV B38"/>
+<text id="3318" value="Snímač okamžité hodnoty TUV B37"/>
+<text id="3319" value="Snímač TUV B3"/>
+<text id="3320" value="Snímač teploty skříně B23"/>
+<text id="3321" value="Snímač vrat. toku B74"/>
+<text id="3322" value="Paralelní"/>
+<text id="3323" value="Sériový"/>
+<text id="3500" value="Skupina ventilu 1"/>
+<text id="3501" value="Skupina nast. ventilu 1. Lze rovněž nastavit pomocí otočného spínače"/>
+<text id="3502" value="Ruční uzavření"/>
+<text id="3503" value="Ruční otevření"/>
+<text id="3504" value="Tepelný, 2 kontakty, 3cestný"/>
+<text id="3505" value="Tepelný, 2 kontakty, 2cestný"/>
+<text id="3506" value="2 kont., 2cest (0–30 s)"/>
+<text id="3507" value="2 kont., 2cest (30–120 s)"/>
+<text id="3508" value="2 kont., 2cest (120–240 s)"/>
+<text id="3509" value="2 kont., 2cest (0–30 s)"/>
+<text id="3510" value="2 kont., 2cest (30–120 s)"/>
+<text id="3511" value="2 kont., 2cest (120–240 s)"/>
+<text id="3512" value="3 kont., 3cest (0–30 s)"/>
+<text id="3513" value="3 kont., 3cest (30–60 s)"/>
+<text id="3514" value="3 kont., 3cest (60–120 s)"/>
+<text id="3515" value="3 kont., 3cest (120–240 s)"/>
+<text id="3516" value="Žádná funkce"/>
+<text id="3517" value="TUV eco"/>
+<text id="3518" value="Skupina TUV"/>
+<text id="3519" value="Skupina ventilu 2"/>
+<text id="3520" value="Skupina nast. ventilu 2. Lze rovněž nastavit pomocí otočného spínače"/>
+<text id="3521" value="Skupina nast. 1"/>
+<text id="3522" value="Skupina nast. 1 pararelní činnosti čerpadla a TUV. Lze rovněž nastavit pomocí otočného spínače."/>
+<text id="3523" value="Čerp auto / TUV neparal"/>
+<text id="3524" value="Čerp 0s / TUV neparal"/>
+<text id="3525" value="Čerp 1min / TUV neparal"/>
+<text id="3526" value="Čerp 10min / TUV neparal"/>
+<text id="3527" value="Čerp zap / TUV neparal"/>
+<text id="3528" value="Skupina nast. 2"/>
+<text id="3529" value="Skupina nast. 2 pararelní činnosti čerpadla a TUV. Lze rovněž nastavit pomocí otočného spínače."/>
+<text id="3530" value="Priorita skupiny"/>
+<text id="3531" value="Prior skup nast Lze též nast otoč spínačem."/>
+<text id="3532" value="Priorita pro skupinu 1"/>
+<text id="3533" value="Priorita pro skupinu 2"/>
+<text id="3534" value="Žádná priorita"/>
+<text id="3535" value="Řídicí jednotky"/>
+<text id="3536" value="Připojeny regulátory OpenTherm"/>
+<text id="3537" value="Žádné regulátory OpenTherm"/>
+<text id="3538" value="Na připojení 1"/>
+<text id="3539" value="Na připojení 1 a 2"/>
+<text id="3540" value="Na připojení 1 (2 skupiny)"/>
+<text id="3541" value="Na 1 (2 skupiny) a 2"/>
+<text id="3542" value="Snímače"/>
+<text id="3543" value="Použité snímače teploty"/>
+<text id="3544" value="Tvenk=Ne, T1=Ne, T2=Ne"/>
+<text id="3545" value="Tvenk=Ano, T1=Ne, T2=Ne"/>
+<text id="3546" value="Tvenk=Ne, T1=Ano, T2=Ne"/>
+<text id="3547" value="Tvenk=Ano, T1=Ano, T2=Ne"/>
+<text id="3548" value="Tvenk=Ne, T1=Ne, T2=Ano"/>
+<text id="3549" value="Tvenk=Ano, T1=Ne, T2=Ano"/>
+<text id="3550" value="Tvenk=Ne, T1=Ano, T2=Ano"/>
+<text id="3551" value="Tvenk=Ano, T1=Ano, T2=Ano"/>
+<text id="3552" value="Spuštění TUV"/>
+<text id="3553" value="Skup TUV ohř. nádobu TUV pokud měř tepl TUV klesne pod nast hodn TUV mínus tato hodn"/>
+<text id="3554" value="Zastavení TUV"/>
+<text id="3555" value="Skup TUV zast ohřev nádoby TUV pokud měř tepl TUV stoupne nad nast hodn TUV + tato hodn"/>
+<text id="3556" value="Přehřátí TUV"/>
+<text id="3557" value="Skupina TUV ohřívá nádobu TUV při teplotě rovné nast. hodnotě plus tento parametr"/>
+<text id="3558" value="Přehřátí ÚV"/>
+<text id="3559" value="Nast tepl ÚV se zvýší k této hodn když je ventil otevř a ještě nebylo dosaž tepl ÚV"/>
+<text id="3560" value="Nast. hodn. TUV"/>
+<text id="3561" value="Výchozí hodnota pro nastavení TUV"/>
+<text id="3562" value="ZAP/Vyp vzest. křiv"/>
+<text id="3563" value="Hodnota vzestupu a poklesu nast. hodnoty průtoku při použití hl. vypínače zap/vyp"/>
+<text id="3564" value="P-faktor ventilu"/>
+<text id="3565" value="P-faktor pro regulaci PI směšovacího ventilu"/>
+<text id="3566" value="I-faktor ventilu"/>
+<text id="3567" value="I-faktor pro regulaci PI směšovacího ventilu"/>
+<text id="3568" value="Min start vent"/>
+<text id="3569" value="Spustí kotel pokud je celkový počet otevření ventilu větší než tato hodnota"/>
+<text id="3570" value="DeltaTprůtZaMin"/>
+<text id="3571" value="V režimu autom. čerpání se doběh ukončí pokud je pokles Tprůtok ve skupině pod touto hodnotou"/>
+<text id="3572" value="Přehř ÚV I-zvýš"/>
+<text id="3573" value="I pro Iregul přehř ÚV během regul směr. nahoru, pokud je ventil otevř. a uběhla doba ček."/>
+<text id="3574" value="Přehř ÚV I-sníž"/>
+<text id="3575" value="I pro Iregul přehř ÚV během regul směr. dolů, pokud je ventil otevř. a uběhla doba ček."/>
+<text id="3576" value="D. čekání přehř. ÚV"/>
+<text id="3577" value="Doba čekání před použitím regulace přehřátí ÚV"/>
+<text id="3578" value="Čas zahřívání"/>
+<text id="3579" value="Čas zahřívání tepelného motoru před spuštěním kotle"/>
+<text id="3580" value="Čas vyp zahřív"/>
+<text id="3581" value="Čas vypnutí zahřívání použitého pro udržování zahřátí tepelného motoru"/>
+<text id="3582" value="Čas zap zahřív"/>
+<text id="3583" value="Čas zapnutí zahřívání použitého pro udržování zahřátí tepelného motoru"/>
+<text id="3584" value="Na připojení 2"/>
+<text id="3585" value="Čerp auto / TUV paralel"/>
+<text id="3586" value="Čerp 0s / TUV paralel"/>
+<text id="3587" value="Čerp 1min / TUV paralel"/>
+<text id="3588" value="Čerp 10min / TUV paralel"/>
+<text id="3589" value="Čerp zap / TUV paralel"/>
+<text id="3590" value="Min tepl. ÚV skup 1"/>
+<text id="3591" value="Mini tepl. ÚV skup 1"/>
+<text id="3592" value="Max tepl. ÚV skup 1"/>
+<text id="3593" value="Maximální teplota ÚV skupina 1"/>
+<text id="3594" value="Min tepl. ÚV skup 2"/>
+<text id="3595" value="Minimální teplota ÚV skupina 2"/>
+<text id="3596" value="Max tepl. ÚV skup 2"/>
+<text id="3597" value="Maximální teplota ÚV skupina 2"/>
+<text id="3600" value="*0,01&#176;C / s"/>
+<text id="3601" value="% / K"/>
+<text id="3602" value="*0,01 % / s"/>
+<text id="3603" value="*0,1&#176;C/min"/>
+<text id="3604" value="*0,001&#176;C / s"/>
+<text id="3605" value="#"/>
+<text id="3610" value="Pohotovostní"/>
+<text id="3611" value="Spouštění"/>
+<text id="3612" value="Provoz"/>
+<text id="3613" value="Blokování"/>
+<text id="3614" value="Manuálně"/>
+<text id="3620" value="Ztráta snímače"/>
+<text id="3621" value="Chyba komunikace OT řízený"/>
+<text id="3622" value="Chyba komunikace OT řídicí"/>
+<text id="3623" value="Nastavení neadekvátní konfig"/>
+<text id="3624" value="Chyba parametru CRC"/>
+<text id="3625" value="Inter ch. nebo chyba akt. firmwaru"/>
+<text id="3626" value="Detekce a ukložení konfig..."/>
+<text id="3630" value="0: Není k dispozici"/>
+<text id="3631" value="1: Honeywell BV"/>
+<text id="3632" value="2: Honeywell Control Systems"/>
+<text id="3634" value="4: Siemens Building Technol"/>
+<text id="3635" value="5: Itho"/>
+<text id="3636" value="6: Elster"/>
+<text id="3638" value="8: SIT controls BV"/>
+<text id="3639" value="9: AGPO ferroli"/>
+<text id="3641" value="11: Remeha BV"/>
+<text id="3643" value="13: Honeywell CCP"/>
+<text id="3645" value="15: Grässlin"/>
+<text id="3646" value="16: Unical"/>
+<text id="3648" value="18: Theben"/>
+<text id="3649" value="19: Technosystem"/>
+<text id="3650" value="20: TEM AG"/>
+<text id="3651" value="21: Zhen Sen"/>
+<text id="3652" value="22: EBV"/>
+<text id="3653" value="23: Danfoss"/>
+<text id="3654" value="24: AWB"/>
+<text id="3655" value="25: Hager"/>
+<text id="3656" value="26: Atlantic"/>
+<text id="3657" value="27: Bertelli"/>
+<text id="3659" value="29: Daalderop"/>
+<text id="3661" value="31: Riello"/>
+<text id="3662" value="32: Storkair"/>
+<text id="3663" value="33: Viessman"/>
+<text id="3664" value="34: Pactrol Controls"/>
+<text id="3665" value="35: Invensys Controls"/>
+<text id="3669" value="39: Techum"/>
+<text id="3685" value="55: DeDietrich"/>
+<text id="3686" value="56: Baxi"/>
+<text id="3700" value="Název zařízení"/>
+<text id="3701" value="OT-id řízený"/>
+<text id="3702" value="Řízená verze"/>
+<text id="3703" value="Řízený typ"/>
+<text id="3704" value="OT-id Řídicí 1"/>
+<text id="3705" value="Verze Řídicí 1"/>
+<text id="3706" value="Typ Řídicí 1"/>
+<text id="3707" value="OT-id Řídicí 2"/>
+<text id="3708" value="Verze Řídicí 2"/>
+<text id="3709" value="Typ Řídicí 2"/>
+<text id="3720" value="T1 nast. hodn řídicí"/>
+<text id="3721" value="T1 nast. hodn c-Mix"/>
+<text id="3722" value="T1 přehř."/>
+<text id="3723" value="T1"/>
+<text id="3724" value="T2 nast. hodnota M2"/>
+<text id="3725" value="T2 nast. hodn c-Mix"/>
+<text id="3726" value="T2 přehř."/>
+<text id="3727" value="T2"/>
+<text id="3728" value="Tprost nast. hodn M1"/>
+<text id="3729" value="Tprost 1"/>
+<text id="3730" value="Tprost nast. hodn M2"/>
+<text id="3731" value="Tprost 2"/>
+<text id="3732" value="T nast. hodn řízená"/>
+<text id="3733" value="T venkovní c-Mix"/>
+<text id="3734" value="T3 nast. hodn c-Mix"/>
+<text id="3735" value="T ww nast. hodnota"/>
+<text id="3736" value="Tprost2 nast. hodn M1"/>
+<text id="3737" value="Tprost 2 M1"/>
+<text id="3738" value="T2 nast. hodnota M1"/>
+<text id="3739" value="T průtok řízená"/>
+<text id="3740" value="T průtok max řízená"/>
+<text id="3741" value="Ventil1 nast. hodn"/>
+<text id="3742" value="Ventil 1 poloha"/>
+<text id="3743" value="Modulace G1"/>
+<text id="3744" value="Ventil2 nast. hodn"/>
+<text id="3745" value="Ventil2 poloha"/>
+<text id="3746" value="Modulace G2"/>
+<text id="3747" value="Modulace max M1"/>
+<text id="3748" value="Modulace max M2"/>
+<text id="3749" value="Modulace řízená"/>
+<text id="3750" value="Kód poruchy řízený"/>
+<text id="3751" value="Řízený servis HB"/>
+<text id="3752" value="Řízený servis LB"/>
+<text id="3753" value="ÚV požadavek G1 M1"/>
+<text id="3754" value="ÚV poloha G1 M1"/>
+<text id="3755" value="Čerpadlo G1"/>
+<text id="3756" value="Plamen G1"/>
+<text id="3757" value="ÚV požadavek M2"/>
+<text id="3758" value="ÚV poloha M2"/>
+<text id="3759" value="Čerpadlo G2"/>
+<text id="3760" value="Plamen G2"/>
+<text id="3761" value="Plamen řízený"/>
+<text id="3762" value="ÚV poloha řízená"/>
+<text id="3763" value="TUV poloha řízená"/>
+<text id="3764" value="Chyba řízená"/>
+<text id="3765" value="Níz tlak vody řízený"/>
+<text id="3766" value="Indik říz. servis"/>
+<text id="3767" value="Pož. říz. servis"/>
+<text id="3768" value="ÚV požadaevk c-Mix"/>
+<text id="3769" value="TUV eco c-Mix"/>
+<text id="3770" value="TUV vyp c-Mix"/>
+<text id="3771" value="ÚV požadavek G2 M1"/>
+<text id="3772" value="TUV přítomn. c-Mix"/>
+<text id="3773" value="TUV přítomn. řízený"/>
+<text id="3774" value="TUV eco M1"/>
+<text id="3775" value="TUV eco M2"/>
+<text id="3776" value="TUV vyp M1"/>
+<text id="3777" value="TUV vyp M2"/>
+<text id="3778" value="Chyba c-Mix M1"/>
+<text id="3779" value="Chyba c-Mix M2"/>
+<text id="3780" value="TUV pol c-Mix M1"/>
+<text id="3781" value="Indik servisu M1"/>
+<text id="3782" value="Indik servisu M2"/>
+<text id="3783" value="Ruční G1"/>
+<text id="3784" value="Ruční G2"/>
+<text id="3785" value="Protimraz ochr G1"/>
+<text id="3786" value="Protimraz ochr G2"/>
+<text id="3787" value="Letní spuštění G1"/>
+<text id="3788" value="Letní spuštění G2"/>
+<text id="3789" value="CV poloha G2 M1"/>
+<text id="3790" value="Proukce elekt"/>
+<text id="3999" value="konec c-Mix"/>
+<text id="4000" value=""/>
+<text id="5000" value="Klíč služby nenalezl zařízení."/>
+<text id="5001" value="Klíč služby nenalezl zařízení.\n\nJe klíč služby připojen k zařízení?\nJe zařízení zapnuté?"/>
+<text id="5002" value="Code 1"/>
+<text id="5003" value="Code 2"/>
+<text id="5004" value="Zadejte kódy z identifikačního štítku:"/>
+<text id="5005" value="Poznámka! Je zakázáno zadávat jakékoli kódy nevyznačené na identifikačním štítku!"/>
+<text id="5006" value="Poznámka! Všechny parametry budou nastaevny na výchozí tovární hodnotu. Veškerá další nastavení budou odstraněna."/>
+<text id="5007" value="Přejete si použít tento kód pro obnovení továrního nastavení?"/>
+<text id="5008" value="jste si jisti, že zadané kódy odpovídají kódům vyznačeným na identifikačním štítku?"/>
+<text id="5009" value="Jste si jisti?"/>
+<text id="5010" value="Nastavena verze konfigurace"/>
+<text id="5011" value="VAROVÁNÍ: Nebyly obdrženy žádné informace."/>
+<text id="5012" value="Data zařízení"/>
+<text id="5013" value="Stáhnout data"/>
+<text id="5014" value="Vybrat vše"/>
+<text id="5015" value="Zrušit výběr všeho"/>
+<text id="5016" value="Probíhá instalace dat..."/>
+<text id="5017" value="Nainstalováno"/>
+<text id="5018" value="Vybrat zařízení, jejichž data se mají stáhnout"/>
+<text id="5019" value="Synchronizovat"/>
+<text id="5020" value="Probíhá odstraňování dat..."/>
+<text id="5021" value="Je k dispozici aktualizace"/>
+<text id="5022" value="Nenainstalováno"/>
+<text id="5023" value="Nelze stáhnout data. Ujistěte se, že jste připojeni k internetu."/>
+<text id="5024" value="ZOBRAZENÍ DAT"/>
+<text id="5025" value="DOKUMENTACE"/>
+<text id="5026" value="Instalace se nezdařila"/>
+<text id="5027" value="Nelze nainstalovat. Opakovat?"/>
+<text id="5028" value="Data nejsou k dispozici. Stáhnout data prostřednictvím nastavení."/>
+<text id="5029" value="Probíhá stahování..."/>
+<text id="5030" value="Zkontrolovat vybraná data."/>
+<text id="5031" value="Připojte se k internetu a v nabídce nastavení vyberte data, která chcete stáhnout."/>
+<text id="5032" value="Nelze spustit ukázku.  Ukázková data nejsou k dispozici. Stáhnout data prostřednictvím nastavení."/>
+<text id="5033" value="Restart the app to activate the updates."/>
+<text id="5034" value="Updated"/>
+<text id="5035" value="Language"/>
+<text id="5036" value="Country"/>
+<text id="5037" value="Are you sure you wanr to install a new language? All downloaded content will be deleted, and must be downloaded in the new language."/>
+<text id="5038" value="Are you sure you want to change the country? All downloaded content will be deleted, and must be downloaded for the new country."/>
+<text id="5039" value="SERVICE SETTINGS"/>
+<text id="6000" value="GVC sub state"/>
+<text id="6001" value="GVC mode"/>
+<text id="6002" value="Thermocouple setpoint"/>
+<text id="6003" value="Gas valve setpoint "/>
+<text id="6004" value="Mass flow"/>
+<text id="6005" value="Mass flow setpoint "/>
+<text id="6006" value="Gas valve correction "/>
+<text id="6007" value="GVC PWM value "/>
+<text id="6008" value="Power"/>
+<text id="6009" value="Power setpoint "/>
+<text id="6010" value="Burner temperature 1 "/>
+<text id="6011" value="Burner temperature 2 "/>
+<text id="6012" value="Gvc gas valve position "/>
+<text id="6100" value="High power status"/>
+<text id="6101" value="Low power status"/>
+<text id="6329" value="29:GVC parameter changed"/>
+<text id="6330" value="dT(heatexch,return)&lt;min"/>
+<text id="6331" value="24h GVC reset in progress"/>
+<text id="6548" value="Stav GVC"/>
+<text id="6549" value="Blokování GVC"/>
+<text id="6550" value="Výluka GVC"/>
+<text id="10000" value="Typ snímače"/>
+<text id="10001" value="NTC12K nebo NTC10K"/>
+<text id="10002" value="NTC12K"/>
+<text id="10003" value="NTC10K"/>
+<text id="10004" value="Zastavení čerpadla kotle"/>
+<text id="10005" value="Požadovaná teplota TUV "/>
+<text id="10006" value="Kotlová teplota pro přípravu TV"/>
+<text id="10007" value="VYSTUP"/>
+<text id="10008" value="0:Čerpadlo, 1:PV"/>
+<text id="10009" value="Čerpadlo"/>
+<text id="10010" value="PV"/>
+<text id="10011" value="PREDNOST TUV"/>
+<text id="10012" value="0: jen TV 1: TV+vytápění"/>
+<text id="10013" value="prirazeni"/>
+<text id="10014" value="zadny"/>
+<text id="10015" value="Diference TV ZAP"/>
+<text id="10016" value="Diference TV"/>
+<text id="10017" value="Diference TV VYP"/>
+<text id="10018" value="tlak oleje"/>
+<text id="10019" value="nastaveni tlak oleje"/>
+<text id="10020" value="Nastavení relativního výkonu"/>
+<text id="10021" value="Řídicí napětí pro TČ"/>
+<text id="10022" value="V"/>
+<text id="10023" value="otáčky motoru"/>
+<text id="10024" value="Aktuální výkon "/>
+<text id="10025" value="11: Plyn. ventil otevřen"/>
+<text id="10026" value="12:Start hořáku "/>
+<text id="10027" value="13: Přerehřev"/>
+<text id="10028" value="14:Fáze před zapálením "/>
+<text id="10029" value="15: Start řízeného čerpadla"/>
+<text id="10030" value="16: Dodatečné zapalování"/>
+<text id="10031" value="17: Stabilizace plamene"/>
+<text id="10032" value="42:Uzavírání spalinové klapky "/>
+<text id="10033" value="43: Zavírání extrerního plyn. ventilu"/>
+<text id="10034" value="2:stb rozpojen"/>
+<text id="10035" value="3:chyba tlak oleje"/>
+<text id="10036" value="4:Nepřítomnost plamene "/>
+<text id="10037" value="5:interni chyba"/>
+<text id="10038" value="6: Chyba motoru"/>
+<text id="10039" value="7: Doba předehřevu uplynula"/>
+<text id="10040" value="8:Chybná detekce plamene "/>
+<text id="10041" value="9: Překročen max. tlak oleje"/>
+<text id="10042" value="32:Kotlové čidlo má zkrat "/>
+<text id="10043" value="33: Elektrický okruh výstupního čidla je přerušen "/>
+<text id="10044" value="34:Čidlo vratky má zkrat "/>
+<text id="10045" value="35: Čidlo vratky přerušeno"/>
+<text id="10046" value="23:Síťové napětí &lt;_180_V "/>
+<text id="10047" value="28: Chybná konfigurace čidla TV"/>
+<text id="10048" value="29: Chyba čidla solárních kolektorů"/>
+<text id="10049" value="30: Chyba čidla TV solárního zásobníku"/>
+<text id="10050" value="31:ta-s vyp"/>
+<text id="10051" value="32:ta-s zkrat"/>
+<text id="10052" value="Žádná komunikace mezi SCUS a solárním regulátorem"/>
+<text id="10053" value="Přepínací ventil"/>
+<text id="10054" value="Ventil olej"/>
+<text id="10055" value="Oprava solárního TUV"/>
+<text id="10056" value="Nast. hodnota TUV se snižuje pokud je solární čerpadlo na 100%"/>
+<text id="10057" value="TAS"/>
+<text id="10058" value="NE: bez generování blokování"/>
+<text id="10059" value="NE"/>
+<text id="10060" value="Ano"/>
+<text id="10061" value="Minimální doba zavádění TUV"/>
+<text id="10062" value="Doba chodu při Pmin při spuštění TUV"/>
+<text id="10063" value="28:2 Detekovány snímače TUV"/>
+<text id="10064" value="33: Porucha snímače solárního kolektoru"/>
+<text id="10065" value="34: Porucha snímače nádrže solární TUV"/>
+<text id="10066" value="31: TAS odpojen"/>
+<text id="10067" value="32:Zkrat TAS"/>
+<text id="10068" value="30:Ztráta komunikace Diemasol"/>
+<text id="10069" value="29:Ztráta komunikace SCUS-191"/>
+<text id="10070" value="Solární teplota horké vody"/>
+<text id="10071" value="Teplota solárního kolektoru"/>
+<text id="10072" value="Otáčky solárního čerpadla"/>
+<text id="10073" value="Vstup SU STB"/>
+<text id="10074" value="Solární čerpadlo"/>
+<text id="10075" value="bl.venk.modul"/>
+<text id="10076" value="Kompresor "/>
+<text id="10077" value="Odmrazení "/>
+<text id="10078" value="Čidlo vlhkosti"/>
+<text id="10079" value="teplota mit"/>
+<text id="10080" value="prum.tepl.mit"/>
+<text id="10081" value="vyst.teplota tc"/>
+<text id="10082" value="venk.tepl.tc"/>
+<text id="10083" value="teplota tuv"/>
+<text id="10084" value="tepl.vratky tc"/>
+<text id="10085" value="tepl.vymen.tc"/>
+<text id="10086" value="tepl.vypar.tc"/>
+<text id="10087" value="Tepl. chlad. na výpar."/>
+<text id="10088" value="Výstup Kompresor "/>
+<text id="10089" value="Teplota výparníku"/>
+<text id="10090" value="Teplota průtoku MIT"/>
+<text id="10091" value="Průměrná výstupní teplota MIT"/>
+<text id="10092" value="Teplota průtoku TP"/>
+<text id="10093" value="Venkovní teplota TČ"/>
+<text id="10094" value="Teplota TV v_zásobníku "/>
+<text id="10095" value="Teplota vratky TČ"/>
+<text id="10096" value="Požadovaná teplota_TV "/>
+<text id="10097" value="Požadovaná teplota TV"/>
+<text id="10098" value="Teplota chladiva na výparníku"/>
+<text id="10099" value="Teplota chladiva na výstupu kompresoru"/>
+<text id="10100" value="Teplota chladiva na výstupu výparníku"/>
+<text id="10101" value="2: Výstupní teplota &gt; max."/>
+<text id="10102" value="3:Nepřítomnost plamene "/>
+<text id="10103" value="22:Chyba parametru SU"/>
+<text id="10104" value="provozní hodiny kompresoru 1"/>
+<text id="10105" value="provozní hodiny kompresoru 2"/>
+<text id="10106" value="počet startů kompresoru 1"/>
+<text id="10107" value="počet startů kompresoru 2"/>
+<text id="10108" value="Počet hodin provozu prid.ohrev 1"/>
+<text id="10109" value="Počet hodin provozu prid.ohrev 2"/>
+<text id="10110" value="Start dohřevu 1"/>
+<text id="10111" value="Start dohřevu 2"/>
+<text id="10112" value="STB Spaliny FGTS"/>
+<text id="10113" value="Požadovaná teplota TUV AUTO"/>
+<text id="10114" value="Požadovaná teplota TUV EKO"/>
+<text id="10115" value="Režim_CETD"/>
+<text id="10116" value="informace o cenách"/>
+<text id="10117" value="Backlight time"/>
+<text id="10118" value="Objem lázně"/>
+<text id="10119" value="Maximální doba provozu"/>
+<text id="10120" value="Typ přídavného vytápění "/>
+<text id="10121" value="Doba spuštění dohřevu"/>
+<text id="10122" value="Doba max. otáček ventilátoru"/>
+<text id="10123" value="Režim ventilátoru"/>
+<text id="10124" value="Anti-Legionella DHW"/>
+<text id="10125" value="TAS před vypnutím"/>
+<text id="10126" value="Test rozpojení TAS"/>
+<text id="10127" value="TAS rozpojeno"/>
+<text id="10128" value="Řídicí napětí TAS"/>
+<text id="10129" value="Hystereze DHW"/>
+<text id="10130" value="Maximální doba odtávání"/>
+<text id="10131" value="Teplota vzduchu pro odtávání"/>
+<text id="10132" value="Teplota výparníku pro odtávání"/>
+<text id="10133" value="Min. doba provozu kompesoru"/>
+<text id="10134" value="Max. doba provozu kompesoru"/>
+<text id="10135" value="Min. tepl. pro min. ot. vent."/>
+<text id="10136" value="TV počátek 1 - hodiny"/>
+<text id="10137" value="TV počátek 1 - minuty"/>
+<text id="10138" value="TV konec 1 - hodiny"/>
+<text id="10139" value="TV konec 1 - minuty"/>
+<text id="10140" value="TV počátek 2 - hodiny"/>
+<text id="10141" value="TV počátek 2 - minuty"/>
+<text id="10142" value="TV konec 2 - hodiny"/>
+<text id="10143" value="TV konec 2 - minuty"/>
+<text id="10144" value="TV počátek 3 - hodiny"/>
+<text id="10145" value="TV počátek 3 - minuty"/>
+<text id="10146" value="TV konec 3 - hodiny"/>
+<text id="10147" value="TV konec 3 - minuty"/>
+<text id="10148" value="WE počátek 1 - hodiny"/>
+<text id="10149" value="WE počátek 1 - minuty"/>
+<text id="10150" value="WE konec 1 - hodiny"/>
+<text id="10151" value="WE konec 1 - minuty"/>
+<text id="10152" value="WE počátek 2 - hodiny"/>
+<text id="10153" value="WE počátek 2 - minuty"/>
+<text id="10154" value="WE konec 2 - hodiny"/>
+<text id="10155" value="WE konec 2 - minuty"/>
+<text id="10156" value="WE počátek 3 - hodiny"/>
+<text id="10157" value="WE počátek 3 - minuty"/>
+<text id="10158" value="WE konec 3 - hodiny"/>
+<text id="10159" value="WE konec 3 - minuty"/>
+<text id="10160" value="AUTO"/>
+<text id="10161" value="ECO"/>
+<text id="10162" value="BOOST"/>
+<text id="10163" value="dovolená "/>
+<text id="10164" value="Použití časového prohramu"/>
+<text id="10165" value="Used Tariff Information (HC=0)"/>
+<text id="10166" value="0: TAS deaktivován"/>
+<text id="10167" value="1: TAS aktivován"/>
+<text id="10168" value="10L"/>
+<text id="10169" value="hod."/>
+<text id="10170" value="Elektro"/>
+<text id="10171" value="Hydraulickým"/>
+<text id="10172" value="OFF"/>
+<text id="10173" value="ON"/>
+<text id="10174" value="0.01V"/>
+<text id="10175" value="Horní teplota TV"/>
+<text id="10176" value="Střední teplota TV"/>
+<text id="10177" value="Spodní teplota TV"/>
+<text id="10178" value="Teplota výparníku"/>
+<text id="10179" value="Teplota okolí"/>
+<text id="10180" value="Vypínací napětí TAS"/>
+<text id="10181" value="TAS Provozní napetí"/>
+<text id="10182" value="TAS PWM"/>
+<text id="10183" value="Inter nast. hodn"/>
+<text id="10184" value="Elektrické přídavné vytápění "/>
+<text id="10185" value="Přídavné vytápění kotlem "/>
+<text id="10186" value="Minimální otáčky ventilátoru"/>
+<text id="10187" value="Maximální otáčky ventilátoru"/>
+<text id="10188" value="Rež likv. bakt. Legionella"/>
+<text id="10189" value="Požadavek TUV"/>
+<text id="10190" value="HC / HP"/>
+<text id="10191" value="Manostat tlaku "/>
+<text id="10192" value="provozní hodiny tč "/>
+<text id="10193" value="Provozní hodiny čerpadla TV"/>
+<text id="10194" value="Provozní hodiny čerpadla MIT"/>
+<text id="10195" value="Počet startů  PAC"/>
+<text id="10196" value="Počet startů čerpadla TV"/>
+<text id="10197" value="provozní hodiny dohřevu TV"/>
+<text id="10198" value="Počet startů pro odtávání"/>
+<text id="10199" value="Chybný start odtávání"/>
+<text id="10200" value="Provozní hodiny vytápění"/>
+<text id="10201" value="Provozní hodiny chlazení"/>
+<text id="10202" value="povel pro TČ "/>
+<text id="10203" value="Kompresor 1"/>
+<text id="10204" value="Kompresor 2"/>
+<text id="10205" value="4WV "/>
+<text id="10206" value="Nízký tlak"/>
+<text id="10207" value="Tepelné čerpadlo PAC"/>
+<text id="10208" value="Vysoký tlak"/>
+<text id="10209" value="Tepelné čerpadlo MIT"/>
+<text id="10210" value="Dohřev E1 / Čerpadlo"/>
+<text id="10211" value="Dohřev E2 / Čerpadlo"/>
+<text id="10212" value="Dohřev TV"/>
+<text id="10213" value="Stav_BL"/>
+<text id="10214" value="Primární čerpadlo/ventilátor"/>
+<text id="10215" value="Požadovaná teplota TV"/>
+<text id="10216" value="Teplota chlazení TV"/>
+<text id="10217" value="Vrstvení"/>
+<text id="10218" value="Chyba čerpadla dT"/>
+<text id="10219" value="Chyba čerpadla faktor dT"/>
+<text id="10220" value="TV FFwrd"/>
+<text id="10221" value="Zisk Dt TV"/>
+<text id="10222" value="TV korektura TF TR"/>
+<text id="10223" value="Vážený průměr TF / TR"/>
+<text id="10224" value="TV FFwrd start"/>
+<text id="10225" value="Korektura Dt FFwrd"/>
+<text id="10226" value="Typ hořáku"/>
+<text id="10227" value="SPM"/>
+<text id="10228" value="1-stupňový hořák"/>
+<text id="10229" value="Zpoždění na vstupu FGPS"/>
+<text id="10230" value="Doba před blokováním výstupního tlaku"/>
+<text id="10231" value="Zpoždění na vstupu FGTS"/>
+<text id="10232" value="Doba před blokováním výstupní teploty"/>
+<text id="10233" value="Max. otáčky čerpadla ÚT"/>
+<text id="10234" value="Max. otáčky čerpadla v režimu ÚT"/>
+<text id="10235" value="I fakt čerp ÚV"/>
+<text id="10236" value="I faktor pro regulaci čerpadla ÚV"/>
+<text id="10237" value="Blokování FGPS"/>
+<text id="10238" value="Počet blokování FGPS za 24 hod"/>
+<text id="10239" value="Blokování FGTS"/>
+<text id="10240" value="Počet blokování FGTS za 24 hod"/>
+<text id="10241" value="max mit"/>
+<text id="10242" value="Maximální teplota MIT"/>
+<text id="10243" value="Požadovaná teplota TV"/>
+<text id="10244" value="Požadovaná teplota TUV "/>
+<text id="10245" value="Control"/>
+<text id="10246" value="Režim UT, TV. Chlazení"/>
+<text id="10247" value="UT VYP, TV VYP, CHL.VYP"/>
+<text id="10248" value="UT ZAP, TV ZAP, CHL.VYP"/>
+<text id="10249" value="UT ZAP, TV VYP, CHL.VYP"/>
+<text id="10250" value="UT VYP, TV ZAP, CHL.VYP"/>
+<text id="10251" value="UT VYP, TV VYP, CHL.ZAP"/>
+<text id="10252" value="UT ZAP, TV ZAP, CHL.ZAP"/>
+<text id="10253" value="UT ZAP, TV VYP, CHL.ZAP"/>
+<text id="10254" value="UT VYP, TV ZAP, CHL.ZAP"/>
+<text id="10255" value="Doběh čerpadla MIT"/>
+<text id="10256" value="Doba před startem kotlového čerpadla"/>
+<text id="10257" value="Dobeh Cerp.TUV"/>
+<text id="10258" value="Doba před startem nabíjecího čerpadla TV"/>
+<text id="10259" value="Požadovaná hodnota chlazení"/>
+<text id="10260" value="Požadovaná hodnota chladicího vzduchu"/>
+<text id="10261" value="max tc"/>
+<text id="10262" value="Maximální teplota tepelného čerpadla"/>
+<text id="10263" value="vých. bod  reg.  venk. tepl."/>
+<text id="10264" value="Výchozí bod řízení dle venkovní teploty"/>
+<text id="10265" value="vých. bod  reg. výst. tepl."/>
+<text id="10266" value="Výchozí  bod regulace výstupní teploty MIT"/>
+<text id="10267" value="Kon. bod reg. výst. tepl."/>
+<text id="10268" value="Koncový  bod regulace venkovní teploty"/>
+<text id="10269" value="BS Relé "/>
+<text id="10270" value="Relé poruchy"/>
+<text id="10271" value="Relé hořáku"/>
+<text id="10272" value="Min. tepl. vody při chlazení"/>
+<text id="10273" value="Minimální teplota vody v režimu chlazení"/>
+<text id="10274" value="Nulový bod pro chlazení"/>
+<text id="10275" value="Pasmo hystereze mezi vytápěním a chlazením"/>
+<text id="10276" value="BL Początek"/>
+<text id="10277" value="Totální blokování"/>
+<text id="10278" value="Blokování s protimraz. ochr."/>
+<text id="10279" value="Blokování uživ. resetu"/>
+<text id="10280" value="Dohřev MIT"/>
+<text id="10281" value="Dohřev MIT, dohřev TV a kompresor"/>
+<text id="10282" value="Kompresor"/>
+<text id="10283" value="Minimální doba pro revers"/>
+<text id="10284" value="Mimimální doba mezi režimem vytápění a chlazení"/>
+<text id="10285" value="Minimální doba cyklu "/>
+<text id="10286" value="Minimální doba vypnutí kompresoru"/>
+<text id="10287" value="HP Type"/>
+<text id="10288" value="CIAT"/>
+<text id="10289" value="DIMPLEX"/>
+<text id="10290" value="TEM"/>
+<text id="10291" value="MITSU"/>
+<text id="10292" value="Výběr typu TČ"/>
+<text id="10293" value="Prodleva do startu dohřevu"/>
+<text id="10294" value="Prodleva mezi startem kompresoru a dohřevu"/>
+<text id="10295" value="Prodleva dohřevu"/>
+<text id="10296" value="Prodleva mezi dvěma dohřevy"/>
+<text id="10297" value="Doběh čerpadla pro dohřev"/>
+<text id="10298" value="Prodleva před startem kotlového čerpadla pro elektrický dohřev"/>
+<text id="10299" value="typ dohrevu"/>
+<text id="10300" value="K dispozici jsou různé druhy dohřevu"/>
+<text id="10301" value="elektrický dohřev 1"/>
+<text id="10302" value="elektrický dohřev 1&amp;2"/>
+<text id="10303" value="Dohřev Kotel"/>
+<text id="10304" value="Režim chlazení "/>
+<text id="10305" value="Žádné chlazení"/>
+<text id="10306" value="Chlazení bez TV"/>
+<text id="10307" value="Chlazení s TV"/>
+<text id="10308" value="Individ. odlehčení"/>
+<text id="10309" value="Nepoužito"/>
+<text id="10310" value="Použito"/>
+<text id="10311" value="Čerpadlo PWM"/>
+<text id="10312" value="Quadro"/>
+<text id="10313" value="Minimální teplota odtávání"/>
+<text id="10314" value="Minimální teplota odtávání"/>
+<text id="10315" value="Min. venkovní teplota TČ"/>
+<text id="10316" value="Minimální venkovní teplota pouze pro tepelné čerpadlo CIAT"/>
+<text id="10317" value="Přípustná dT pro TČ při TV"/>
+<text id="10318" value="Minimální teplotní diference pro TČ při přípravě TV"/>
+<text id="10319" value="Max. doba přípravy TV s TČ"/>
+<text id="10320" value="Maximální doba přípravy TV pomocí tepelného čerpadla"/>
+<text id="10321" value="Min. doba mezi příp. TV s TČ"/>
+<text id="10322" value="Minimální doba mezi 2 přípravami TV s tepelným čerpadlem"/>
+<text id="10323" value="Doba mezi 2 zap. kompresoru"/>
+<text id="10324" value="Doba mezi 2 zapnutími kompresoru"/>
+<text id="10325" value="Nízká hlučnost"/>
+<text id="10326" value="Potlačemí hluku ventilátoru"/>
+<text id="10327" value="Kompresor v provozu"/>
+<text id="10328" value="Zapnutí nebo vypnutí kompresoru"/>
+<text id="10329" value="Přepnutí kompresoru"/>
+<text id="10330" value="Řízení přepnutí kompresoru"/>
+<text id="10331" value="Auto"/>
+<text id="10332" value="Kompresor 1 jako první"/>
+<text id="10333" value="Kompresor 2 jako první"/>
+<text id="10334" value="Max. ot. ventilátoru pro ÚT"/>
+<text id="10335" value="Max. % otáček ventilátoru pro vytápění"/>
+<text id="10336" value="Autoadiptivní režim odtávání"/>
+<text id="10337" value="Max. ot. vent. pro chlazení"/>
+<text id="10338" value="Max. % otáček ventilátoru pro chlazení"/>
+<text id="10339" value="Venkovní tepelný výměník"/>
+<text id="10340" value="dobeh cerp. Tc"/>
+<text id="10341" value="Doběh čerpadla TČ"/>
+<text id="10342" value="Ruční režim vytápění"/>
+<text id="10343" value="Aktivace ručního režimu pro vytápění"/>
+<text id="10344" value="Stř. hodnota výst. teploty"/>
+<text id="10345" value="Stř. hodnota výst. teploty"/>
+<text id="10346" value="3 min"/>
+<text id="10347" value="4 min"/>
+<text id="10348" value="5 min"/>
+<text id="10349" value="7 min"/>
+<text id="10350" value="10 min"/>
+<text id="10351" value="15 min"/>
+<text id="10352" value="Hystereze "/>
+<text id="10353" value="Hystereze regulace TV"/>
+<text id="10354" value="Čerpadlo TV"/>
+<text id="10355" value="Doba trvání bez ohledu na FGPS"/>
+<text id="10356" value="Řídicí napětí"/>
+<text id="10357" value="bivalentni bod"/>
+<text id="10358" value="Řízení TČ"/>
+<text id="10359" value="2:Závada na čidle topného okruhu MIT"/>
+<text id="10360" value="3:Závada na čidle topného okruhu TČ "/>
+<text id="10361" value="4: Chyba venkvního čidla/zdroj TČ (S5/6)"/>
+<text id="10362" value="5: Chyba čidla vratky TČ (S1)"/>
+<text id="10363" value="6: Chyba čidla vody výměníku TČ (S3)"/>
+<text id="10364" value="7: Chyba čidla vzduchu výměníku TČ (S4)"/>
+<text id="10365" value="8: Chyba čidla na kompresoru (S8)"/>
+<text id="10366" value="9: Chyba čidla na výparníku (S9)"/>
+<text id="10367" value="10: Chyba venkovní jednotky "/>
+<text id="10368" value="13: Chyba čidla TV"/>
+<text id="10369" value="14: Chyba venkovního čidla MIT"/>
+<text id="10370" value="21: Chyba komunikace TČ"/>
+<text id="10371" value="15: Chyba vysokého tlaku TČ"/>
+<text id="10372" value="16: Chyba nízkého tlaku TČ"/>
+<text id="10373" value="Zdroj tepla TČ"/>
+<text id="10374" value="Venkovní teplota TČ"/>
+<text id="10375" value="23: Chyba 4-cestného ventilu"/>
+<text id="10376" value="24: Chyba průtoku TČ"/>
+<text id="10377" value="26: Chyba mimo limit 51"/>
+<text id="10378" value="27: Chyba mimo limit 53"/>
+<text id="10379" value="28: Chyba namrznutí tepelného výměníku TČ"/>
+<text id="10380" value="31: Chyba EEPROM TČ"/>
+<text id="10381" value="1: Žádná konfigurace Tem"/>
+<text id="10382" value="01: Závada kompresoru"/>
+<text id="10383" value="09: Vysoký tlak"/>
+<text id="10384" value="02: 4-cestný ventil"/>
+<text id="10385" value="03: Průtok čerpadla"/>
+<text id="10386" value="08: Vybíjecí teplota"/>
+<text id="10387" value="04: Mimo meze"/>
+<text id="10388" value="05: Námraza tepelného výměníku 6"/>
+<text id="10389" value="06: Námraza tepelného výměníku 8"/>
+<text id="10390" value="11: Tlak zdroje"/>
+<text id="10391" value="12: Protimrazová ochrana zdroje"/>
+<text id="10392" value="13: Ochrana motoru"/>
+<text id="10393" value="10: Nízký tlak"/>
+<text id="10395" value="14: Protimrazová ochrana kondenzátoru"/>
+<text id="10396" value="15:Odmrazení "/>
+<text id="10397" value="16: Ochrana kompresoru"/>
+<text id="10398" value="17: Horký plyn"/>
+<text id="10399" value="19:Čidlo teploty náběhové vody "/>
+<text id="10400" value="20:Čidlo teploty vratné vody "/>
+<text id="10401" value="21: Čidlo vstupního vzduchu"/>
+<text id="10402" value="22: Čidlo výstupního vzduchu"/>
+<text id="10403" value="23:Čerpadlo s připojovacím kabelem "/>
+<text id="10404" value="24: Čidlo výparníku"/>
+<text id="10405" value="25: Čidlo kondenzátoru"/>
+<text id="10406" value=": Čidlo horkého plynu"/>
+<text id="10407" value="26: Reset uživatele nebo blokování vstupu"/>
+<text id="10408" value="8: Signál blokování"/>
+<text id="10409" value="9: Signál blokování od aktivace protimrazové ochrany"/>
+<text id="10410" value="11: Chyba komunikace SCU"/>
+<text id="10411" value="12:Min. hydr. tlak"/>
+<text id="10412" value="16:Ident. záměna SU"/>
+<text id="10413" value="17:Ident. dF/dU chyb tab"/>
+<text id="10414" value="18:Ident. záměna PSU"/>
+<text id="10415" value="19:Ident. vyžadováno dF/dU"/>
+<text id="10416" value="20:Probíhá identifikace"/>
+<text id="10417" value="33: Horký plyn"/>
+<text id="10418" value="34: Ochrana motoru"/>
+<text id="10419" value="35:Ochrana proti krátké době provozu "/>
+<text id="10420" value="36:Průtok vody "/>
+<text id="10421" value="37:Interní chyba"/>
+<text id="10422" value="Kód poruchy"/>
+<text id="10423" value="07:ROEII Žádná komunikace "/>
+<text id="10424" value="18:TEM Žádná komunikace "/>
+<text id="10425" value="Anticipace"/>
+<text id="10426" value="Druh přípravy TV"/>
+<text id="10427" value="Dohřev TV"/>
+<text id="10428" value="Blok. doba před dohřevem TV"/>
+<text id="10429" value="Blok. doba mezi dohřevy TV"/>
+<text id="10430" value="Dohřev TV"/>
+<text id="10431" value="Dohřev MIT"/>
+<text id="10432" value="Dohřev zásobníku"/>
+<text id="10433" value="Dohřev MIT/zásobník chladu"/>
+<text id="10434" value="Primár"/>
+<text id="10435" value="Sekundár"/>
+<text id="10436" value="Start"/>
+<text id="10437" value="TV"/>
+<text id="10438" value="Vytápění"/>
+<text id="10439" value="Požadovaná teplota vytápění"/>
+<text id="10440" value="22: Chyba otáček kompresoru"/>
+<text id="10441" value="25: Chyba výstupního čidla kompresoru"/>
+<text id="10442" value="29: Námraza tepelného výměníku 8"/>
+<text id="10443" value="30: Chyba komunikace TČ"/>
+<text id="10444" value="1: Požadavek ÚT/TV/CHLAD"/>
+<text id="10445" value="1: Ochrana proti cyklování"/>
+<text id="10446" value="30:Normální provoz "/>
+<text id="10447" value="31: Normální funkce, dohřev VYP v bodě bivalence"/>
+<text id="10448" value="32: Kompresor VYP pro odlehčení elektrické sítě"/>
+<text id="10449" value="33: Dohřev VYP pro odlehčení elektrické sítě"/>
+<text id="10450" value="34: Kompresor VYP pro minimální venkovní teplotu"/>
+<text id="10451" value="3:Provozní Vytápění {TUV} "/>
+<text id="10452" value="4:Provozní režim {TUV} "/>
+<text id="10453" value="35:Odmrazení"/>
+<text id="10454" value="36: Dohřev TV"/>
+<text id="10455" value="50:Doba doběhu čerpadla  HP"/>
+<text id="10456" value="60:Doba doběhu čerpadla  MIT"/>
+<text id="10457" value="Řídicí napětí pro TČ"/>
+<text id="10458" value="2: Čekání na přípravu TV nebo vytápění"/>
+<text id="10459" value="3: Kompresor a dohřev VYP z důvodu ochrany proti námraze"/>
+<text id="10460" value="10: Aktivní doba reversibility"/>
+<text id="10461" value="2: Kompresor a dohřev VYP pro odlehčení elektrické sítě"/>
+<text id="10462" value="5: TČ VYP"/>
+<text id="10463" value="6: MIT VYP"/>
+<text id="10464" value="Průtokoměr "/>
+<text id="10465" value="Zpráva o min. průtoku"/>
+<text id="10466" value="Stop min. průtoku"/>
+<text id="10467" value="Blokování chlazení"/>
+<text id="10468" value="Žádné chlazení"/>
+<text id="10469" value="Chlazení povoleno, pokud je P35"/>
+<text id="10470" value="Min. teplota výstupní vody"/>
+<text id="10471" value="39: Nedostatečný průtok"/>
+<text id="10472" value="40: Nedostatečný průtok, kompresor + dohřev VYP"/>
+<text id="10473" value="Max. teplota MIT pro TV"/>
+<text id="10474" value="Dohřev MIT a dohřev TV"/>
+<text id="10475" value="Dohřev TV"/>
+<text id="10476" value="Dohřev TV a kompresor"/>
+<text id="10477" value="DF pro nádrž HL"/>
+<text id="10478" value="PWM oběhového čerpadla TČ"/>
+<text id="10479" value="PWM oběhového čerpadla MIT"/>
+<text id="10480" value="Otáčky 1 - 85%"/>
+<text id="10481" value="Otáčky 2 - 67%"/>
+<text id="10482" value="Otáčky 3 - 50%"/>
+<text id="10483" value="Otáčky 4 - 30%"/>
+<text id="10484" value="Otáčky 5 - &lt;10%"/>
+<text id="10485" value="Temp.probe"/>
+<text id="10486" value="31: TČ VYP na vysokou teplotu (&gt;Max TČ)"/>
+<text id="10487" value="33: Normální provoz, s minimální požadovanou hodnotou"/>
+<text id="10488" value="37: TČ VYP, vynechaný jeden cyklus odtávání a výstupní teplota TČ  &gt; 18°"/>
+<text id="10489" value="39: Odtávání s aktivovanou požadovanou minimální teplotou"/>
+<text id="10490" value="7: Aktualizace funkcí"/>
+<text id="10491" value="Odvzdušnění čerpadla MIT"/>
+<text id="10492" value="Odvzdušnění čerpadla TČ"/>
+<text id="10493" value="Cyklus"/>
+<text id="10494" value="Venk.Teplota SCU"/>
+<text id="10495" value="Teplota Tuv SCU"/>
+<text id="10496" value="Prost.Tepl.A SCU"/>
+<text id="10497" value="Tepl.Okruhu B SCU"/>
+<text id="10498" value="Tepl.Okruhu C SCU"/>
+<text id="10499" value="Prost.Tepl.B SCU"/>
+<text id="10500" value="System.Teplota SCU"/>
+<text id="10501" value="Prost.Tepl.C SCU"/>
+<text id="10502" value="Vypoctena T.A SCU"/>
+<text id="10503" value="Vypoctena T.B SCU"/>
+<text id="10504" value="Vypoctena T.C SCU"/>
+<text id="10505" value="Vypoct.T.Syst. SCU"/>
+<text id="10506" value="Vypoct.TUV.T. SCU"/>
+<text id="10507" value="Otv.MIXU B SCU"/>
+<text id="10508" value="Zav.MIXU B SCU"/>
+<text id="10509" value="Otv.MIXU C SCU"/>
+<text id="10510" value="Zav.MIXU C SCU"/>
+<text id="10511" value="TEL.VYST SCU"/>
+<text id="10512" value="Cerp.A SCU"/>
+<text id="10513" value="Cerp.B SCU"/>
+<text id="10514" value="Cerp.C SCU"/>
+<text id="10515" value="Cerp.TUV SCU"/>
+<text id="10516" value="Cerp. AUX SCU"/>
+<text id="10517" value="Vst.0-10V SCU"/>
+<text id="10518" value="Stupňový"/>
+<text id="10519" value="Inter proti Allure"/>
+<text id="10520" value="Nb"/>
+<text id="10521" value="TEL.Vst."/>
+<text id="10522" value="MC-Radio"/>
+<text id="10523" value="Současná RF sonda"/>
+<text id="10524" value="CDI A existuje"/>
+<text id="10525" value="CDI B existuje"/>
+<text id="10526" value="CDI C existuje"/>
+<text id="10527" value="Možnost V3V současnost"/>
+<text id="10528" value="D3:CHYBA CIDLA B"/>
+<text id="10529" value="D4:CHYBA CIDLA C"/>
+<text id="10530" value="D5:CH.VENK.CIDLA"/>
+<text id="10531" value="D7:CH.SYST.CIDLA"/>
+<text id="10532" value="D9:CH.CIDLA TUV"/>
+<text id="10533" value="61: Přepínací ventil v poloze pro vytápění"/>
+<text id="10534" value="64: Čerpadlo MIT a TČ ZAP v odvzdušňovací fázi"/>
+<text id="10535" value="65: Čerpadlo MIT a TČ VYP v odvzdušňovací fázi"/>
+<text id="10536" value="63: Přepínací ventil v poloze pro přípravu TV"/>
+<text id="10537" value="11: Provozní režim VYTÁPĚNÍ"/>
+<text id="10538" value="12: Provozní režim CHLAZENÍ"/>
+<text id="10539" value="let/zim"/>
+<text id="10540" value="26: Zamknutí komunikace SCUS-192"/>
+<text id="10541" value="41: Chyba komunikace SCU_S192"/>
+<text id="10542" value="EE ÚT"/>
+<text id="10543" value="EE TV"/>
+<text id="10544" value="EE CHLAZENÍ"/>
+<text id="10545" value="TEE"/>
+<text id="10546" value="TE ÚT"/>
+<text id="10547" value="TE TV"/>
+<text id="10548" value="TE CHLAZENÍ"/>
+<text id="10549" value="TTE"/>
+<text id="10550" value="SPF"/>
+<text id="10551" value="TEE rok-1"/>
+<text id="10552" value="TTE rok-1"/>
+<text id="10553" value="SPF rok-1"/>
+<text id="10554" value="TEE rok-2"/>
+<text id="10555" value="TTE rok-2"/>
+<text id="10556" value="D11:CHYBA OVLAD A"/>
+<text id="10557" value="D12:CHYBA OVLAD B"/>
+<text id="10558" value="D13:CHYBA OVLAD C"/>
+<text id="10559" value="D14:CH.KOM.MC"/>
+<text id="10560" value="D15:CHYBA C.AKU.Z."/>
+<text id="10561" value="D16:CH.CID.BAZEN B"/>
+<text id="10562" value="D16:CH.CID.BAZEN C"/>
+<text id="10563" value="D17:CH.CIDLA TUV 2"/>
+<text id="10564" value="D27:CH.KOMUN.PCU"/>
+<text id="10565" value="D32:5 RESET:ON/OFF"/>
+<text id="10566" value="D37:TA-S ZKRAT"/>
+<text id="10567" value="D38:TA-S VYP"/>
+<text id="10568" value="D39:TA-S PORUCHA"/>
+<text id="10569" value="D50:CH.KOMUN.OTH"/>
+<text id="10570" value="D51:DEF :VIZ KOTEL"/>
+<text id="10571" value="D18:CH.SOL.CID.TUV"/>
+<text id="10572" value="D19:CH.C.SOL.KOLEK"/>
+<text id="10573" value="D20:CH.KOMUN.SOL"/>
+<text id="10574" value="D99:CH.CHYBA PCU"/>
+<text id="10575" value="D40:NEZNAMA CHYBA"/>
+<text id="10576" value="D254:NEZNAMA CHYBA"/>
+<text id="10577" value="M4:UDRZBA"/>
+<text id="10578" value="M5:UDRZBA A"/>
+<text id="10579" value="M6:UDRZBA B"/>
+<text id="10580" value="M7:UDRZBA C"/>
+<text id="10581" value="M8:UDRZBA AUTO"/>
+<text id="10582" value="M10:VYS.PODL DNY"/>
+<text id="10583" value="M20:ODVZDUSNENI"/>
+<text id="10584" value="M21:VST. BL OFF"/>
+<text id="10585" value="M23:VYMENIT VENK.CIDLO"/>
+<text id="10586" value="M25:CEKACI DOBA"/>
+<text id="10587" value="M26:STOP CISLO"/>
+<text id="10588" value="M30:BL.KOM MODBUS"/>
+<text id="10589" value="M31:BL.SYSTEMOVA SIT2"/>
+<text id="10590" value="M254:BL.NEZNAME"/>
+<text id="10591" value="E250:CH.MALO VODY"/>
+<text id="10592" value="E251:CH.TLAKOMERU"/>
+<text id="10593" value="Okruh A: Komfortní režim (den)"/>
+<text id="10594" value="Okruh A: Útlumový režim (noc)"/>
+<text id="10595" value="Okruh A: Protimrazová ochrana"/>
+<text id="10596" value="Okruh B: Komfortní režim (den)"/>
+<text id="10597" value="Okruh B: Útlumový režim (noc)"/>
+<text id="10598" value="Okruh B: Protimrazová ochrana"/>
+<text id="10599" value="50:Závada na čidle topného okruhu SCUS 192"/>
+<text id="10600" value="51: Chyba čidla vratky SCUS 192"/>
+<text id="10601" value="52:Elec1 Luštěniny chyba SCUS 192"/>
+<text id="10602" value="53:Elec2 Luštěniny chyba SCUS 192"/>
+<text id="10603" value="54:termálníLuštěniny chyba SCUS 192"/>
+<text id="10604" value="55:Průtokoměr  chyba SCUS 192"/>
+<text id="10605" value="MIT Type"/>
+<text id="10606" value="Inverter "/>
+<text id="10607" value="ON - OFF"/>
+<text id="10608" value="VSE"/>
+<text id="10609" value="SOLO NAPO"/>
+<text id="10610" value="Min. teplota kompr. zastavení"/>
+<text id="10611" value="Teplota restart kompresoru"/>
+<text id="10612" value="4:Žádné chlazení (Čidlo vlhkosti )"/>
+<text id="10613" value="Typ čerpadla pro"/>
+<text id="10614" value="normální čerpadlo"/>
+<text id="10615" value="Stat nizky tarif"/>
+<text id="10616" value="Stat vysok.tarifu"/>
+<text id="10617" value="stat rada.ole"/>
+<text id="10618" value="Aktiv.hybrid"/>
+<text id="10619" value="Koef.CO2 e.topen"/>
+<text id="10620" value="Koef.CO2 e.tuv"/>
+<text id="10621" value="Koe.CO2 rada.ole"/>
+<text id="10622" value="Ucinnost kotle"/>
+<text id="10623" value="Stat"/>
+<text id="10624" value="primární energie"/>
+<text id="10625" value="CO2"/>
+<text id="10626" value="HP/HC"/>
+<text id="10627" value="Dohřev MIT, a kompresor"/>
+<text id="10628" value="Stredni COP"/>
+<text id="10629" value="Práh COP"/>
+<text id="10630" value="Náklady na elektrických Energy vysoký tarif"/>
+<text id="10631" value="Náklady na elektrických Energy nízký tarif"/>
+<text id="10632" value="Cena fosilních Energie (plyn / olej)"/>
+<text id="10633" value="Koeficient Elektrické CO2 emisí ve vytápění způsob"/>
+<text id="10634" value="Koeficient Elektrické CO2 emisí ve TUV způsob"/>
+<text id="10635" value="Koeficient Gaz nebo oleje CO2 emise"/>
+<text id="10636" value="Učinnost kotle"/>
+<text id="10637" value="cts"/>
+<text id="10638" value="E1: Elektrický dohrev1 E2: Elektrický dohrev2 H: dohrev hydraulickým topným okruhem"/>
+<text id="10639" value="Nastavení funkce blokovacího vstupu"/>
+<text id="10640" value="NE: zádné chlazení ANO: rezim chlazení ANO+TUV: Chlazení + príprava TUV"/>
+<text id="10641" value="Volba typu instalace dle zásobníku TUV"/>
+<text id="10642" value="Volba dohrevu  pro prípravu TUV"/>
+<text id="10643" value="Minimální hodnota prutokomer pred blokování"/>
+<text id="10644" value="Minimální hodnota prutokomer pred TC zastávka"/>
+<text id="10645" value="Nastavení pozadované primární teploty pri príprave teplé vody"/>
+<text id="10646" value="Otácky cerpadla tepelného cerpadla"/>
+<text id="10647" value="Otácky cerpadla tepelného cerpadla MIT"/>
+<text id="11192" value="Příprava TV kompresorem"/>
+<text id="11193" value="Příprava TV dohřevem"/>
+<text id="11194" value="Příprava TV kompresor+dohřev"/>
+<text id="11195" value="Start podmínek pro čekání"/>
+<text id="11196" value="Spouštěcí fáze kompresoru"/>
+<text id="11197" value="Zapnutí dohřevu"/>
+<text id="11198" value="Řízení otáček ventilátoru"/>
+<text id="11199" value="Odmrazení "/>
+<text id="11200" value="Min. doba mezi 2 odtávání"/>
+<text id="11201" value="Max. otáčky ventilátoru"/>
+<text id="11202" value="Střední otáčky ventilátoru"/>
+<text id="11203" value="Provozní hodiny HC"/>
+<text id="11204" value="Provozní hodiny HP"/>
+<text id="11205" value="Počet odtávacích cyklů"/>
+<text id="11206" value="Řízení DT - segment 1"/>
+<text id="11207" value="Řízení DT - segment 2"/>
+<text id="11208" value="Řízení DT - segment 3"/>
+<text id="11209" value="Řízení DT - segment 4"/>
+<text id="11210" value="Objem zásobníku"/>
+<text id="11211" value="01: Vysoký tlak kapaliny"/>
+<text id="11212" value="02: Vysoká teplota TV &gt; 85°C"/>
+<text id="11213" value="03: Prostorová teplota &gt; max"/>
+<text id="11214" value="04: Prostorová teplota &lt; min"/>
+<text id="11215" value="25: Zkrat dolního čidla TV"/>
+<text id="11216" value="26: Dolní čidlo TV přerušeno"/>
+<text id="11217" value="25: Zkrat horního čidla TV"/>
+<text id="11218" value="26: Horní čidlo TV přerušeno"/>
+<text id="11219" value="32: TAS přerušena"/>
+<text id="11220" value="33: TAS zkrat"/>
+<text id="11221" value="Start Kompresor "/>
+<text id="11222" value="Start Zajištěno "/>
+<text id="11223" value="01: Zkrat prostředního čidla TV"/>
+<text id="11224" value="02: Prostřední čidlo TV přerušeno"/>
+<text id="11225" value="03: Vysoká teplota TV &gt; 85°C"/>
+<text id="11226" value="04: Zkrat prostorového čidla"/>
+<text id="11227" value="05: Prostorové čidlo přerušeno"/>
+<text id="11228" value="06: Zkrat čidla výparníku"/>
+<text id="11229" value="07: Čidlo výparníku přerušeno"/>
+<text id="11230" value="08: Odtávání mimo provoz"/>
+<text id="11231" value="09: Vysoký tlak kapaliny"/>
+<text id="11232" value="10: Problém s tlakem kapaliny"/>
+<text id="11233" value="Provozní tlak na straně vody "/>
+<text id="11234" value="Aktivace čidla TV"/>
+<text id="11235" value="Manostat tlaku aktivován"/>
+<text id="11236" value="25: Venkovní čidlo odpojeno od napětí"/>
+<text id="11237" value="26: Čidlo zásobníku odpojeno od napětí"/>
+<text id="11238" value="27: Čidlo zásobníku odpojeno od napětí"/>
+<text id="11239" value="03:zhasnutí plamene "/>
+<text id="11240" value="04: Teplota prostoru nad limitem"/>
+<text id="11241" value="Klid. poloha 3-cest. ventilu"/>
+<text id="11242" value="ÚT"/>
+<text id="11243" value="Spínací hystereze kompresoru"/>
+<text id="11244" value="Vypínací teplota kompresoru"/>
+<text id="11245" value="Čas mezi 2 starty ventilátor"/>
+<text id="11246" value="Výk. TV po min. době načtení"/>
+<text id="11247" value="Výk. ÚT po min. době načtení"/>
+<text id="11248" value="offset TV CTRL temp HL"/>
+<text id="11249" value="12: FGPS překročeno"/>
+<text id="11250" value="12: FGPS aktivováno více než dvakrát během 24 hodin"/>
+<text id="11251" value="Vstup poruchy hořáku"/>
+<text id="11252" value="žádaná hodnota Kompresor "/>
+<text id="11253" value="Kompresor nastaven na 0&#176;C"/>
+<text id="11254" value="Minimum Comp loadtime"/>
+<text id="11255" value="Hodina "/>
+<text id="11256" value="min "/>
+<text id="11257" value="Datum "/>
+<text id="11258" value="Měsíc"/>
+<text id="11259" value="Rok "/>
+<text id="11260" value="Hydraulic add. heating "/>
+<text id="11261" value="Output state when a request of the hydraulic add.heating"/>
+<text id="11262" value="SUM/WIN"/>
+<text id="11263" value="5:normal operation"/>
+<text id="11264" value="Once / week"/>
+<text id="11265" value="9:Anti blocking"/>
+<text id="11266" value="Service operating hours"/>
+<text id="11267" value="Operating hours for custom service notification"/>
+<text id="11268" value="Service burning hours"/>
+<text id="11269" value="Burner  hours for custom service notification"/>
+<text id="11270" value="Auto service burning hours"/>
+<text id="11271" value="Burner hours for automatic service notification"/>
+<text id="11272" value="Pump cmd type"/>
+<text id="11273" value="Type of command use for switch pump ON"/>
+<text id="11274" value="CH pump"/>
+<text id="11275" value="Alim CH pump"/>
+<text id="11276" value="instantaneous power"/>
+<text id="11277" value="power input in Mwatts"/>
+<text id="11278" value="power input in Kwatts"/>
+<text id="11279" value="power input in Watts"/>
+<text id="11280" value="KW"/>
+<text id="11281" value="36:Loss of flame 3 times"/>
+<text id="11282" value="30:FGTS locking"/>
+<text id="11283" value="31:FGPS locking"/>
+<text id="11284" value="5:AProtimrazová ochrana"/>
+<text id="11285" value="Use Tariff Information (HC=1)"/>
+<text id="11286" value="Time Measure Ambient"/>
+<text id="11287" value="Time Between 2 FrostProtection"/>
+<text id="11288" value="Time Load FrostProtetcion"/>
+<text id="11289" value="Time waiting after compressor stopto acquire the ambient temperature"/>
+<text id="11290" value="Time waiting  Between 2 Frost Protection procedure start"/>
+<text id="11291" value="Time running frost protetction"/>
+<text id="11292" value="Požad.teplota TUV AUTO Pond."/>
+<text id="11293" value="Požad.teplota TUV AUTO Úterý "/>
+<text id="11294" value="Požad.teplota TUV AUTO Střed"/>
+<text id="11295" value="Požad.teplota TUV AUTO Čtvrt"/>
+<text id="11296" value="Požad.teplota TUV AUTO Pátek "/>
+<text id="11297" value="Požad.teplota TUV AUTO Sobot"/>
+<text id="11298" value="Požad.teplota TUV AUTO Neděl"/>
+<text id="11299" value="Požad.teplota TUV ECO Pond."/>
+<text id="11300" value="Požad.teplota TUV ECO Úterý "/>
+<text id="11301" value="Požad.teplota TUV ECO Střed"/>
+<text id="11302" value="Požad.teplota TUV ECO Čtvrt"/>
+<text id="11303" value="Požad.teplota TUV ECO Pátek "/>
+<text id="11304" value="Požad.teplota TUV ECO Sobot"/>
+<text id="11305" value="Požad.teplota TUV ECO Neděl"/>
+<text id="11306" value="Maximální špičku"/>
+<text id="11307" value="Tlak_Vzduch "/>
+<text id="11308" value="Pa"/>
+<text id="11309" value="Hystereze TUV Útlumový režim "/>
+<text id="11310" value="Hystereze TUV Komfortní"/>
+<text id="11311" value="Fan Interview"/>
+<text id="11312" value="MESIC"/>
+<text id="11313" value="Max. provozní doba kompr"/>
+<text id="11314" value="Maximální kompresor set"/>
+<text id="11315" value="Faktor D Fan"/>
+<text id="11316" value="Vypnutí ventilátoru "/>
+<text id="11317" value="Max Faktor Fan"/>
+<text id="11318" value="Obrácený PWM ventilátor"/>
+<text id="11319" value="Obrácený PWM Vententilateur"/>
+<text id="11320" value="Diff Blokování Deprese"/>
+<text id="11321" value="Deprese diff zámek"/>
+<text id="11322" value="řád FrostProtetcion"/>
+<text id="11323" value="řád FrostProtetcion"/>
+<text id="11324" value="řád  Anti-Legionella  TUV"/>
+<text id="11325" value="Hystereze TUV Boost"/>
+<text id="11326" value="ta-s Bez ohledu na dobu"/>
+<text id="11327" value="Čas gen.uzamčen.tlak vzduchu"/>
+<text id="11328" value="Čekací doba pro vytváření blokování tlaku vzduchu"/>
+<text id="11329" value="Čas gen.uzamčen.tlak vzduchu"/>
+<text id="11330" value="Čekací doba pro generování tlaku vzduchu zámek"/>
+<text id="11331" value="Čas gen.Výluky.tlak vzduchu"/>
+<text id="11332" value="Čekací doba pro generování zamykací přepínač"/>
+<text id="11333" value="DT navíc příspěvek"/>
+<text id="11334" value="Teplotní rozdíl poskytuje navíc"/>
+<text id="11335" value="Čas na dosaž rozdíl zálohov"/>
+<text id="11336" value="Čas k dosažení Delta Tepl. poskytuje navíc"/>
+<text id="11337" value="POCET PRIPAD BL.Manost tlaku "/>
+<text id="11338" value="Počet výskytu blokování spínače"/>
+<text id="11339" value="řád Tlak_Vzduch "/>
+<text id="11340" value="Kompr nast. hodnota"/>
+<text id="11341" value="dohrevu nast Hodnota"/>
+<text id="11342" value="kompresor vstupní"/>
+<text id="11343" value="alarm vstup"/>
+<text id="11344" value="Ventilátor "/>
+<text id="11345" value="Vytápění / Režim chlazení "/>
+<text id="11346" value="4,16666666666667E-02"/>
+<text id="11347" value="06::Tlak_Vzduch velmi nízká"/>
+<text id="11348" value="02: Problém s tlakem kapaliny"/>
+<text id="11349" value="04: Chyba nízkého tlaku TČ"/>
+<text id="11350" value="01:Tepl. Ohřívače &gt;85°C"/>
+<text id="11351" value="02:ta-s vyp"/>
+<text id="11352" value="03:ta-s zkrat"/>
+<text id="11353" value="04 Nízký tlak"/>
+<text id="11354" value="06: Prostorová teplota &gt; max"/>
+<text id="11355" value="05: Prostorová teplota &lt; min"/>
+<text id="11356" value="07:provozní hodiny kompresoru &gt; max"/>
+<text id="11357" value="10:Tlak_Vzduch Malé "/>
+<text id="11358" value="12: Zkrat prostředního čidla TV"/>
+<text id="11359" value="11: Prostřední čidlo TV přerušeno"/>
+<text id="11360" value="16: Zkrat dolního čidla TV"/>
+<text id="11361" value="15: Dolní čidlo TV přerušeno"/>
+<text id="11362" value="14: Zkrat horního čidla TV"/>
+<text id="11363" value="13: Horní čidlo TV přerušeno"/>
+<text id="11364" value="08: Tlak_Vzduch  otevřená soustava "/>
+<text id="11365" value="09:Tlak_Vzduch Zkrat "/>
+<text id="11366" value="ano kromě svátků"/>
+<text id="11367" value="vždy"/>
+<text id="11368" value="DF hořáku"/>
+<text id="11369" value="18Kw"/>
+<text id="11370" value="24Kw"/>
+<text id="11371" value="30Kw"/>
+<text id="11372" value="Cerp.TUV"/>
+<text id="11373" value="Čerpadlo TV(EAP)"/>
+<text id="11374" value="Vznikne plamen "/>
+<text id="11375" value="Energ.Elek.Komp(Wh)"/>
+<text id="11376" value="Energ.Elek.přídav.vyt.(Wh)"/>
+<text id="11377" value="Energ.Elek.Komp(kWh)"/>
+<text id="11378" value="Energ.Elek.přídav.vyt.(kWh)"/>
+<text id="11379" value="Energ.Elek.Komp(MWh)"/>
+<text id="11380" value="Energ.Elek.přídav.vyt.(MWh)"/>
+<text id="11381" value="Casovy program/FV-S(HC0)"/>
+<text id="11382" value="Casovy program/FV-S(HP1)"/>
+<text id="11383" value="Cas.prog/FV-S přídav.vyt HC0"/>
+<text id="11384" value="Cas.prog/FV-S přídav.vyt HP0"/>
+<text id="11385" value="Cas.prog/FV-S přídav.vyt HP1"/>
+<text id="11386" value="Energie Elek.Kompresor "/>
+<text id="11387" value="Energie Elek.přídav.vytápění "/>
+<text id="11388" value="Požadovaná teplota TUV BOOST"/>
+<text id="11389" value="05:Pwm ventilátoru"/>
+<text id="11390" value="02:Pwm ventilátoru"/>
+<text id="11391" value="20:Tlak_Vzduch Malé "/>
+<text id="11392" value="31: Zkrat prostředního čidla TV"/>
+<text id="11393" value="30: Prostřední čidlo TV přerušeno"/>
+<text id="11394" value="35: Zkrat dolního čidla TV"/>
+<text id="11395" value="34: Dolní čidlo TV přerušeno"/>
+<text id="11396" value="33: Zkrat horního čidla TV"/>
+<text id="11397" value="32: Horní čidlo TV přerušeno"/>
+<text id="11398" value="10: Problém s tlakem kapaliny"/>
+<text id="11399" value="11: Chyba nízkého tlaku TČ"/>
+<text id="11400" value="12: Zkrat prostorového čidla"/>
+<text id="11401" value="13: Prostorové čidlo přerušeno"/>
+<text id="11402" value="03:ta-s vyp"/>
+<text id="11403" value="04:ta-s zkrat"/>
+<text id="11404" value="05 Nízký tlak"/>
+<text id="11405" value="06: Prostorová teplota &lt; min"/>
+<text id="11406" value="07: Prostorová teplota &gt; max"/>
+<text id="11407" value="08:provozní hodiny kompresoru &gt; max"/>
+<text id="11408" value="10:Tlak_Vzduch Malé "/>
+<text id="11409" value="09: Tlak_Vzduch  otevřená soustava "/>
+<text id="11410" value="10:Tlak_Vzduch Zkrat "/>
+<text id="11411" value="11::Tlak_Vzduch velmi nízká"/>
+<text id="11412" value="Ček.BL.vent.Pwm"/>
+<text id="11413" value="Čekací doba pro generování PWM ventilátor blokování"/>
+<text id="11414" value="Diff Blok.Deprese ventilátor"/>
+<text id="11415" value="Počet BL.výskyt Pwm fan "/>
+<text id="11416" value="Doba mezi Bl.Pwm.Fan"/>
+<text id="11417" value="2:start"/>
+<text id="11418" value="16:frost-protection"/>
+<text id="11419" value="4: Čekání na přípravu TV nebo vytápění"/>
+<text id="11420" value="max EHCS"/>
+<text id="11421" value="1: Chyba venkovní jednotky "/>
+<text id="11422" value="2: Chyba komunikace jednotky"/>
+<text id="11423" value="3:Závada na čidle topného okruhu Hybrid"/>
+<text id="11424" value="4:No Communication with Gas Boiler"/>
+<text id="11425" value="7:Default T.Flow HP"/>
+<text id="11426" value="1:Default Gas Boiler"/>
+<text id="11427" value="2: Chyba venkovní jednotky "/>
+<text id="11428" value="3: 4 BL 7 occurred"/>
+<text id="11429" value="4: Reset uživatele nebo blokování vstupu"/>
+<text id="11430" value="provozní hodiny kompresoru "/>
+<text id="11431" value="počet startů kompresoru"/>
+<text id="11432" value="NB Starts Boiler"/>
+<text id="11433" value="NB Starts Pump Boiler"/>
+<text id="11434" value="Operating Hours Boiler"/>
+<text id="11435" value="Inter nast. Hodn jednotky"/>
+<text id="11436" value="Internal setpoint Gas"/>
+<text id="11437" value="Teplota průt. EHCS"/>
+<text id="11438" value="Temp Flow Boiler"/>
+<text id="11439" value="Temp Return Boiler"/>
+<text id="11440" value="Compressor Frequency"/>
+<text id="11441" value="Time Min Sart Backup"/>
+<text id="11442" value="Time Max Sart Backup"/>
+<text id="11443" value="Temp Outside min Backup"/>
+<text id="11444" value="Temp Outside max Backup"/>
+<text id="11445" value="Tempearture Hybrid "/>
+<text id="11446" value="Temperature Average Hybrid"/>
+<text id="11447" value="RefrigerantGasTemperature"/>
+<text id="11448" value="RefrigerantLiquidTemperature"/>
+<text id="11449" value="Setpoint Hybrid Heating"/>
+<text id="11450" value="Setpoint Hybrid DHW"/>
+<text id="11451" value="Boiler DHW Temperature"/>
+<text id="11452" value="Input BL Temperature"/>
+<text id="11453" value="Output 0-10V"/>
+<text id="11454" value=""/>
+<text id="11455" value="Doběh čerpadla ÚT"/>
+<text id="11456" value="Disable HP Error"/>
+<text id="11457" value="Temp Outside Max Hubrid"/>
+<text id="11458" value="Period Flow average"/>
+<text id="11459" value="Enable Manual Heat Demand"/>
+<text id="11460" value="De air Cycle"/>
+<text id="11461" value="Boiler"/>
+<text id="11462" value="HP"/>
+<text id="11463" value="Boiler + HP"/>
+<text id="11464" value="HP Power"/>
+<text id="11465" value="50:System Sensor Open "/>
+<text id="11466" value="51:System Sensor Closed"/>
+<text id="11467" value="52: Kompresor a dohřev VYP pro odlehčení elektrické sítě"/>
+<text id="11468" value="53: Kompresor VYP pro odlehčení elektrické sítě"/>
+<text id="11469" value="54: Dohřev VYP pro odlehčení elektrické sítě"/>
+<text id="11470" value="55:communication HP"/>
+<text id="11471" value="56:communication Boiler"/>
+<text id="11472" value="Heat Pump error"/>
+<text id="11473" value="10:HP pump startup"/>
+<text id="11474" value="11:Compressor AntiCycling"/>
+<text id="11475" value="12:HP defrosting"/>
+<text id="11476" value="13:Temp HP over max"/>
+<text id="11477" value="14:Function Hybrid Disable HP"/>
+<text id="11478" value="20:HP used for Heating"/>
+<text id="11479" value="21:Boiler used for Heating"/>
+<text id="11480" value="22: HP &amp; Boiler used for Heating"/>
+<text id="11481" value="30:Boiler in DHW and HP in CH"/>
+<text id="11482" value="31:Boiler used for DHW"/>
+<text id="11483" value="40:HP pump for CH"/>
+<text id="11484" value="41:Boiler pump for CH"/>
+<text id="11485" value="42:HP and Boiler Pumps for CH"/>
+<text id="11486" value="50: HP pump for CH and Boiler in DHW mode"/>
+<text id="11487" value="51:Boiler Pump DHW"/>
+<text id="11488" value="Tepelné čerpadlo PAC EHC"/>
+<text id="11489" value="50:DEF BOILER OTH"/>
+<text id="11490" value="57:Boiler BSB Erreur"/>
+<text id="11491" value="33: Závada na průtoku "/>
+<text id="11492" value=""/>
+<text id="11493" value=""/>
+<text id="11494" value="Reset Device"/>
+<text id="11495" value="Do you want to reset this device?"/>
+<text id="11496" value="Are you sure you want to reset this device?"/>
+<text id="11497" value="The WiFi network has been changed"/>
+<text id="11498" value="Network interface"/>
+<text id="11499" value="Previous network"/>
+<text id="11500" value="Current network"/>
+<text id="30001" value="Zádná Funkce"/>
+<text id="30002" value="Volba typu plynu"/>
+<text id="30003" value="Konfigurace hydraulického systému"/>
+<text id="30004" value="Konfigurace výstupu Relé 1"/>
+<text id="30005" value="Konfigurace výstupu Relé 1 (0..13)"/>
+<text id="30006" value="Konfigurace výstupu Relé 2"/>
+<text id="30007" value="Konfigurace výstupu Relé 2 (0..13)"/>
+<text id="30008" value="Konfigurace vstupu vnejsího cidla"/>
+<text id="30009" value="Konfigurace vstupu vnejsího cidla (0..4)"/>
+<text id="30010" value="Konfigurace pomocného vstupu"/>
+<text id="30011" value="Konfigurace pomocného vstupu (0..4)"/>
+<text id="30012" value="Konfigurace Vstupu cidla TUV"/>
+<text id="30013" value="Konfigurace Vstupu cidla TUV (0..2)"/>
+<text id="30014" value="Konfigurace prednosti TUV"/>
+<text id="30015" value="Konfigurace prednosti TUV (0..3)"/>
+<text id="30016" value="Konfigurace nastavení topení OT/PT"/>
+<text id="30017" value="Konfigurace nastavení topení OT/PT (0..3)"/>
+<text id="30018" value="Dvourychlostního cerpadla"/>
+<text id="30019" value="Aktivace / deaktivace dvourychlostního cerpadla"/>
+<text id="30020" value="Aktivace/deaktivace WPM testu"/>
+<text id="30021" value="Aktivace/deaktivace WPM testu (0=disabilitato)"/>
+<text id="30022" value="Nastavení max. výkonu topení"/>
+<text id="30023" value="Nastavení max. výkonu topení (0-100%)"/>
+<text id="30024" value="Nastavení max. výkonu TUV"/>
+<text id="30025" value="Nastavení max. výkonu TUV (0-100%)"/>
+<text id="30026" value="Nastavení min. výkonu topení"/>
+<text id="30027" value="Nastavení min. výkonu topení (0-100%)"/>
+<text id="30028" value="Volba maximální hodnoty topení"/>
+<text id="30029" value="Volba maximální hodnoty topení (00=nominální 80&#176;C 01=redukovaná 45°C)"/>
+<text id="30030" value="Doba postcirkulace v rezimu topení"/>
+<text id="30031" value="Doba postcirkulace v rezimu topení (1..240min)"/>
+<text id="30032" value="Doba cekání pred novým zapnutím horáku po vypnutí kvuli teplote"/>
+<text id="30033" value="Doba cekání pred novým zapnutím horáku po vypnutí kvuli teplote (0..10min - 0=10s)"/>
+<text id="30034" value="Doba aktivace cerpadla"/>
+<text id="30035" value="Doba aktivace cerpadla (0..15min)"/>
+<text id="30036" value="Doba postcirkulace v rezimu TUV"/>
+<text id="30037" value="Doba postcirkulace v rezimu TUV (0..255s)"/>
+<text id="30038" value="Antibakteriální Funkce"/>
+<text id="30039" value="Antibakteriální Funkce (00=funkce deaktivovaná - 55...67 =funkce aktivovaná (hodnota &#176;C))"/>
+<text id="30040" value="Aktivace nactení/úpravy parametru z P42 na P76"/>
+<text id="30041" value="Aktivace nactení/úpravy parametru z P42 na P76 (0..40 - 22 funkce aktivovaná)"/>
+<text id="30042" value="Nastavení maximální teplotní hodnoty (&#176;C) hodnoty TUV"/>
+<text id="30043" value="Nastavení maximální teplotní hodnoty (&#176;C) hodnoty TUV (55&#176;C .65°C)"/>
+<text id="30044" value="Zpozdení pozadované aktivace TUV s turbínovým prutokomerem"/>
+<text id="30045" value="Zpozdení pozadované aktivace TUV s turbínovým prutokomerem (0..255*0.02s)"/>
+<text id="30046" value="Volba kontrolního zarízení vody"/>
+<text id="30047" value="Volba kontrolního zarízení vody (00=hydraulický snímac tlaku WPS /01=hydraulický diferenciální snímac tlaku WFS)"/>
+<text id="30048" value="identifikace kotle"/>
+<text id="30049" value="identifikace kotle (H byte) (pouze pro ctení)"/>
+<text id="30051" value="identifikace kotle (L byte) (pouze pro ctení)"/>
+<text id="30052" value="programování identifikace kotle"/>
+<text id="30053" value="programování identifikace kotle (H byte) (pouze pro ctení)"/>
+<text id="30055" value="programování identifikace kotle (L byte) (pouze pro ctení)"/>
+<text id="30056" value="Nastavení Offset TUV"/>
+<text id="30057" value="Nastavení Offset TUV (0..15&#176;C)"/>
+<text id="30058" value="Minimální hodnota teploty (&#176;C) z dálkového ovládání"/>
+<text id="30059" value="Minimální hodnota teploty (&#176;C) z dálkového ovládání (30..85°C)"/>
+<text id="30060" value="Kontroly gradientu na vstupním cidlu"/>
+<text id="30061" value="Aktivace/deaktivace kontroly gradientu na vstupním cidlu"/>
+<text id="30062" value="Nastavení Frekvence provozu"/>
+<text id="30063" value="Nastavení Frekvence provozu (0=50Hz 1=60Hz)"/>
+<text id="30064" value="Nastavení merné jednotky teploty"/>
+<text id="30065" value="Pozadované vynucení TOPENÍ"/>
+<text id="30066" value="Pozadované vynucení TOPENÍ kvuli  absenci komunikace OpenTherm(E83 - rozsah=0, 1, 2)"/>
+<text id="30067" value="Aktivace funkce spalování"/>
+<text id="30068" value="Aktivace funkce spalování (bit0=auto test - bit1=snízení max rychlosti - bit2=kontrola ripple - bit3=autoregulace spalování - bit4=protivetrný test - bit5=stop ventilátoru kvuli chybným úrovním spalování - bit6=test 6000ot./min po ztráte plamene - bit7=parametry zapnutí nastavené z EEPROM)"/>
+<text id="30069" value="Doba impulsu na modulátoru"/>
+<text id="30070" value="Aktivace funkce"/>
+<text id="30071" value="Aktivace funkce (bit0=1 kontrola proudu modulátoru - bit2=1 deaktivace kontroly ucpání"/>
+<text id="30072" value="Offset v zapnutí"/>
+<text id="30073" value="Offset v zapnutí (0..100 - výrobní hodnota=50)"/>
+<text id="30074" value="Service due"/>
+<text id="30075" value="Service due (6..25 - 25 Deaktivace service due)"/>
+<text id="30076" value="Offset pro hodnotu nábehu topení v provozu TUV"/>
+<text id="30077" value="Offset pro hodnotu nábehu topení v provozu TUV HS=5,8,15,18 (15..35&#176;C)"/>
+<text id="30078" value="Teplota vypnutí nábehu v provozu TUV"/>
+<text id="30079" value="Teplota vypnutí nábehu v provozu TUV (pouze pro F03=06) (80..90&#176;C)"/>
+<text id="30080" value="Offset topení"/>
+<text id="30081" value="Offset topení (pouze pro P03=06)(-20..20&#176;C)"/>
+<text id="30082" value="Boost koeficient vztlaku TUV pro nízké teploty (pouze s P03=06)"/>
+<text id="30083" value="Boost koeficient vztlaku TUV pro nízké teploty (pouze s P03=06)(0..255)"/>
+<text id="30084" value="Rychlosti pri hodnote"/>
+<text id="30085" value="Aktivace/Deaktivace rychlosti pri hodnote (pouze pro P03=06) (0..1)"/>
+<text id="30086" value="Protimrazové ochrany TUV"/>
+<text id="30087" value="Aktivace / Deaktivace protimrazové ochrany TUV (pouze pro P03=06) (0=Aktivované 1=Deaktivované)"/>
+<text id="30088" value="Protisrázení: aktivace cerpadla"/>
+<text id="30089" value="Protisrázení: teplotní limit pro aktivaci cerpadla (20..40&#176;C)"/>
+<text id="30090" value="Protisrázení: deaktivace cerpadla"/>
+<text id="30091" value="Protisrázení: hystereze pro deaktivaci cerpadla (3..20&#176;C)"/>
+<text id="30092" value="Protisrázení: trvání"/>
+<text id="30093" value="Protisrázení: trvání (0=deaktivované 1..15min)"/>
+<text id="30094" value="Termostatovaný dobeh"/>
+<text id="30095" value="Termostatovaný dobeh v TUV(0 deaktivovaný, 53..88&#176;C)"/>
+<text id="30096" value="Maximální pocet pocítadel pro automatické napustení vody behem jednoho dne"/>
+<text id="30097" value="Maximální pocet pocítadel pro automatické napustení vody behem jednoho dne (6..60)"/>
+<text id="30098" value="Nastavení poctu pocítadel pro automatické napustení vody (3..15)"/>
+<text id="30099" value="Zpozdení aktivace cerpadla po3WV"/>
+<text id="30100" value="Zpozdení aktivace cerpadla po 3WV pro HS=5,6,8 (0..20s)"/>
+<text id="30101" value="Aktivace pomocného relé se zádostí o TUV"/>
+<text id="30102" value="Aktivace pomocného relé se zádostí o TUV (F04/F05=10)"/>
+<text id="30103" value="Doba Inteligentního predehrevu"/>
+<text id="30104" value="Doba Inteligentního predehrevu (0..60min)"/>
+<text id="30105" value="Volba Protokolu komunikace"/>
+<text id="30106" value="Volba protokolu komunikace (0=PP 1=BP 2=STD)"/>
+<text id="30107" value="Doba cekání na aktivaci TUV"/>
+<text id="30108" value="Doba cekání na aktivaci TUV (0..60sek)"/>
+<text id="30109" value="Zvlástní konfigurace"/>
+<text id="30110" value="Zvlástní konfigurace (5 aktivace relé pro P19 minuty (P19/2 v léte))"/>
+<text id="30111" value="Rychlost ventilátoru pri zapnutí"/>
+<text id="30112" value="Rychlost ventilátoru pri zapnutí (Rychlost=P70*100ot./min)"/>
+<text id="30113" value="Maximální rychlost ventilátoru"/>
+<text id="30114" value="Maximální rychlost ventilátoru (Rychlost=5000+P71*10ot./min)"/>
+<text id="30115" value="Minimální rychlost ventilátoru"/>
+<text id="30116" value="Minimální rychlost ventilátoru (Rychlost=750+P72*10ot./min)"/>
+<text id="30117" value="Volba maximálního výkonu kotle"/>
+<text id="30118" value="Volba maximálního výkonu kotle (1=24/28kw 2=28/33kw 3=32/40kw 4=12kw 5=15kw 6=18kw 7=24/20kw 8=24/28kw Al 9=28kw HO 10=32kw HO)"/>
+<text id="30119" value="Zpozdení zapnutí"/>
+<text id="30120" value="Zpozdení zapnutí (0..255sec)"/>
+<text id="30121" value="Funkce commissioning"/>
+<text id="30122" value="Funkce commissioning (50=commissionig Aktivované 100=commissioning Deaktivované)"/>
+<text id="30123" value="Estetika"/>
+<text id="30124" value="Zobrazování pri napájení kotle"/>
+<text id="30125" value="Zobrazování pri napájení kotle(0..1: 0=verze softwaru 1=verze softwaru - verze hardwaru - verze aplikace)"/>
+<text id="30126" value="Volba vstupu 0..10V"/>
+<text id="30127" value="Volba vstupu 0..10V (0..2 0=zádný vstup 1=zádost o TOPENÍ 2=hodnota TOPENÍ"/>
+<text id="30128" value="Offset switch off TUV"/>
+<text id="30129" value="Offset vypnutí TUV (0..15&#176;C 0=VYP jako stálá hodnota 1..15 Vyp=hodnota TUV+F79)"/>
+<text id="30130" value="Konfigurace vstupu MFF1"/>
+<text id="30131" value="Konfigurace vstupu MFF1(0=termopojistka 1=cidlo spalin 2=alarm protisrázení 3=vstup 0..10V 4=Nepouzité Výrobní hodnota=0)"/>
+<text id="30132" value="Konfigurace vstupu MFF2"/>
+<text id="30133" value="Konfigurace vstupu MFF2(0=termopojistka 1=cidlo spalin 2=alarm protisrázení 3=vstup 0..10V 4=Nepouzité Výrobní hodnota=1)"/>
+<text id="30134" value="Konfigurace vstupu MFF3"/>
+<text id="30135" value="Konfigurace vstupu MFF3(0=termopojistka 1=cidlo spalin 2=alarm protisrázení 3=vstup 0..10V 4=Nepouzité Výrobní hodnota=4)"/>
+<text id="30300" value="Typ rady kotle"/>
+<text id="30301" value="Soubor parametru"/>
+<text id="30302" value="Identifikace elektronické desky"/>
+<text id="30303" value="Identifikace Softwaru"/>
+<text id="30304" value="Identifikace zákazníka"/>
+<text id="30305" value="Zvlástní Aplikace"/>
+<text id="30306" value="Kód dodavatele"/>
+<text id="30307" value="Verze Softwaru"/>
+<text id="30308" value="Informace o výrobe TSP"/>
+<text id="30309" value="Identifikace Hardwaru"/>
+<text id="30400" value="Císlo chyby"/>
+<text id="30401" value="Císlo chyby (00 je poslední chyba 06 je první chyba)"/>
+<text id="30402" value="Kód chyby"/>
+<text id="30403" value="Pocet-krát stejné chyby"/>
+<text id="30404" value="Pocet dnu"/>
+<text id="30405" value="Pocet dnu od výskytu chyby"/>
+<text id="30406" value="Stav systému"/>
+<text id="30407" value="Stav systému (0=standby 1=TUV ZAP 2=CSF 3=TOPENÍ ZAP 4=predehrev aktivovaný 5=protimrazová ochrana topení aktivovaná 6=protimrazová ochrana TUV aktivovaná 7=dobeh 8=termostatovaný dobeh)"/>
+<text id="30408" value="Fáze systému"/>
+<text id="30409" value="Fáze systému (0=stand-by 1=fáze predcistení 3=fáze cistení  4=bezpecnostní doba 5=provoz 6=zablokování 11=mezicistení1(2&#176; 3&#176;snaha) 15=dodatecná ventilace 16=termostatovaná dodatecná ventilace)"/>
+<text id="30410" value="Prívodní teplota"/>
+<text id="30411" value="Prívodní teplota pri výskytu chyby"/>
+<text id="30412" value="Císlo zablokování"/>
+<text id="30413" value="Císlo zablokování (00 je poslední zablokování 06 je první zablokování)"/>
+<text id="30414" value="Kód zablokování"/>
+<text id="30415" value="Pocet-krát stejného zablokování"/>
+<text id="30500" value="Hodnota zásobníku TUV"/>
+<text id="30501" value="Hodnota zásobníku TUV v rezimu TOPENÍ"/>
+<text id="30502" value="Hodnota VYP v rezimu TOPENÍ"/>
+<text id="30503" value="Pocítadlo LTU"/>
+<text id="30504" value="Trojcestní ventil v rezimu TOPENÍ"/>
+<text id="30505" value="Trojcestní ventil v rezimu TUV"/>
+<text id="30506" value="Cerpadlo aktivované"/>
+<text id="30507" value="Vysoká rychlost cerpadla ZAP"/>
+<text id="30508" value="Plamen ZAP"/>
+<text id="30509" value="ProstorovýTermostat 230VAC aktivovaný"/>
+<text id="30510" value="Bezpecnostní termostat zavrený"/>
+<text id="30511" value="Pomocné relé 1 aktivované"/>
+<text id="30512" value="Pomocné relé 2 aktivované"/>
+<text id="99999" value="end of file"/>
+  <checksum value="4403" />
+</language>
