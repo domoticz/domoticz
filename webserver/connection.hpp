@@ -67,18 +67,11 @@ public:
 
 private:
   /// Handle completion of a read operation.
-  void handle_read_plain(const boost::system::error_code& e, std::size_t bytes_transferred);
-  void read_more_plain();
+  void handle_read(const boost::system::error_code& e, std::size_t bytes_transferred);
+  void read_more();
 
   /// Handle completion of a write operation.
-  void handle_write_plain(const boost::system::error_code& e);
-
-#ifdef NS_ENABLE_SSL
-  /// ssl handle functions
-  void handle_read_secure(const boost::system::error_code& e, std::size_t bytes_transferred);
-  void read_more_secure();
-  void handle_write_secure(const boost::system::error_code& e);
-#endif
+  void handle_write(const boost::system::error_code& e);
 
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
