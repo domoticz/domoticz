@@ -276,6 +276,8 @@ hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
 hardware/ZWaveBase.cpp
+hardware/S7.cpp
+snap7/snap7.cpp
 MQTT/mosquittopp.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
@@ -447,6 +449,22 @@ IF(OpenZWave)
 else()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
+
+find_path(SNAP7_INCLUDE_DIR snap7_libmain.h HINTS snap7)
+find_library(SNAP7_LIBRARY NAMES snap7 PATHS .)
+if(NOT SNAP7_INCLUDE_DIR )
+  message(STATUS "Failed to find snap7 include files (snap7_libmain.h)")
+endif()
+if(NOT SNAP7_LIBRARY)
+  message(STATUS "Failed to find the snap7 library")
+else()
+  target_link_libraries(domoticz ${SNAP7_LIBRARY})
+  target_link_libraries(domoticz yaml-cpp)
+  message(STATUS "Found snap7 library  ${SNAP7_LIBRARY}")
+  add_definitions(-DWITH_S7)
+endif()
+
+
 
 # try to detect Raspberry Pi hardware and WiringPi library. If found, include GPIO support
 find_path(RaspberryPi NAMES bcm_host.h PATHS "/opt/vc/include")

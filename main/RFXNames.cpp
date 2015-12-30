@@ -205,6 +205,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
+		{ HTYPE_S7,"Siemens S7 PLC"},
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

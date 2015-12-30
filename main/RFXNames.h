@@ -138,6 +138,7 @@ enum _eHardwareTypes {
 	HTYPE_SolarEdgeAPI,			//64
 	HTYPE_CurrentCostMeter,		//65
 	HTYPE_CurrentCostMeterLAN,	//66
+	HTYPE_S7,					//67
 	HTYPE_END
 };
 

@@ -85,6 +85,8 @@
 #include "../hardware/CurrentCostMeterSerial.h"
 #include "../hardware/CurrentCostMeterTCP.h"
 #include "../hardware/SolarEdgeAPI.h"
+#include "../hardware/S7.h"
+
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -864,6 +866,12 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CurrentCostMeterTCP(ID, Address, Port);
 		break;
+	case HTYPE_S7:
+#ifdef WITH_S7
+		pHardware = new S7(ID,Address);
+#endif
+		break;
+
 	}
 
 	if (pHardware)
