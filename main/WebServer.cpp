@@ -929,6 +929,7 @@ namespace http {
 					bDoAdd = false;
 				}
 #endif
+
 				if ((ii == HTYPE_1WIRE) && (!C1Wire::Have1WireSystem()))
 					bDoAdd = false;
 				if (bDoAdd)
@@ -1102,6 +1103,8 @@ namespace http {
 					mode1 = atoi(mill_id.c_str());
 			}
 			else if (htype == HTYPE_RaspberryGPIO) {
+				//all fine here!
+			}else if (htype == HTYPE_S7) {
 				//all fine here!
 			}
 			else

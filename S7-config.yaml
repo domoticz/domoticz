@@ -1,0 +1,17 @@
+db: 1
+devices:
+ - type: lamp
+   offset: 1
+   name: boven
+ - type: lamp
+   offset: 2
+   name: other
+ - type: lamp
+   offset: 8
+   name: hal
+ - type: dimmer
+   offset: 16
+   name: xdim
+ - type: dimmer
+   offset: 32
+   name: xdimx

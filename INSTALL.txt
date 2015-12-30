@@ -45,6 +45,14 @@ On systems with apt package manger (like ubuntu and Raspbian) telldus-core can b
    * sudo apt-get update
    * sudo apt-get install libtelldus-core-dev
 
+[Siemens S7 PLC support]
+if you need support for Siemens S7 PLC, you need to install the snap 7 library in the build root
+Download snap7-full-1.3.0 from http://snap7.sourceforge.net/ and extract the the relevant library in the build root.
+
+To use a plc, modify the file S7-config.yaml in the working directory of domoticz. 
+In this file you can list all devices. A device has an offset, this is the first bit it uses in the plc memory. 
+It can be of type lamp or dimmer. A lamp is one bit long, 0 for off, 1 for on. A dimmer is 16 bit long, 0 for off.  
+
 
 |* Darwin (Mac)
 |There is a problem in the MakeFile, change the DEBUG/RELEASE defines with:
