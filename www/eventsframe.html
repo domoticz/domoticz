@@ -593,13 +593,13 @@
 		  	async: false, 
 		  	dataType: 'json',
 		  	success: function(data) {
+				var aInterpreters = data.interpreters.split(':');
+				$.each(aInterpreters, function(i,item){
+					var option = document.createElement("option");
+					option.text = item;
+					interpreters.appendChild(option); 
+				});
 			  	if (typeof data.result != 'undefined') {
-					var aInterpreters = data.interpreters.split(':');
-					$.each(aInterpreters, function(i,item){
-						var option = document.createElement("option");
-						option.text = item;
-						interpreters.appendChild(option); 
-					});
 				  	$.each(data.result, function(i,item){
 						var option = document.createElement("option");
 						option.text = item.name;
