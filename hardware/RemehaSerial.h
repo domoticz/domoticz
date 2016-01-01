@@ -35,7 +35,7 @@ protected:
 	bool WriteInt(const unsigned char *pData, const unsigned char Len);
 	void RequestActualValues();
 	unsigned char m_buffer[1028];
-	int m_bufferpos;
+	size_t m_bufferpos;
 
 private:
 	bool StartHardware();

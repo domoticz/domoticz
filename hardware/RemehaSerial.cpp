@@ -91,7 +91,7 @@ void RemehaSerial::ParseData(const unsigned char *pData, int Len)
 	for (unsigned int ii = 0; ii<Len; ii++)
 	{
 		m_buffer[m_bufferpos++] = pData[ii];
-		if(memcmp(m_buffer, RemehaHeader, std::min(sizeof(RemehaHeader), (unsigned int)m_bufferpos)) != 0)
+		if(memcmp(m_buffer, RemehaHeader, std::min(sizeof(RemehaHeader), m_bufferpos)) != 0)
 		{
 			_log.Log(LOG_ERROR, "RemehaSerial: Incorrect header");
 			// discard anything
