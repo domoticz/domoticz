@@ -672,8 +672,8 @@ RemehaSerial::Sample::Sample()
   byte(-1),
   bit(-1),
   invert(false),
-  min(0.0f),
-  max(0.0f),
+  min(0),
+  max(0),
   txt_min(-1),
   txt_max(-1)
 {
