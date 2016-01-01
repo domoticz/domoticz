@@ -20,6 +20,9 @@
 #ifdef min
 #undef min
 #endif
+#ifdef max
+#undef max
+#endif
 
 extern std::string szStartupFolder;
 
@@ -173,7 +176,7 @@ void RemehaSerial::ParseSample(RemehaDataSample* data)
 				if (iValue >= sample.min && iValue <= sample.max)
 				{
 					if (sample.unit == 346) // %
-						SendPercentageSensor(i, 0, 255, iValue, m_languagestrings[sample.description].c_str());
+						SendPercentageSensor(i, 0, 255, (float)iValue, m_languagestrings[sample.description].c_str());
 					else
 						_log.Log(LOG_NORM, "RemehaSerial: %s - %s - %d %s", m_languagestrings[sample.name].c_str(), m_languagestrings[sample.description].c_str(), iValue, m_languagestrings[sample.unit].c_str());
 				}
