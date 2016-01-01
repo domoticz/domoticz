@@ -17,6 +17,10 @@
 
 #define RETRY_DELAY 30
 
+#ifdef min
+#undef min
+#endif
+
 extern std::string szStartupFolder;
 
 const static unsigned char RemehaHeader[3] = { 0x02, 0x01, 0xFE };
