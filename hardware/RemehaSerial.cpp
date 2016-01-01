@@ -19,7 +19,7 @@
 
 extern std::string szStartupFolder;
 
-const static char RemehaHeader[3] = { 0x02, 0x01, 0xFE };
+const static unsigned char RemehaHeader[3] = { 0x02, 0x01, 0xFE };
 
 typedef struct
 {
@@ -84,7 +84,7 @@ void RemehaSerial::SetModes(const int Mode1, const int Mode2, const int Mode3, c
 {
 }
 
-void RemehaSerial::ParseData(const unsigned char *pData, int Len)
+void RemehaSerial::ParseData(const unsigned char *pData, size_t Len)
 {
 	RemehaDataSample* data = (RemehaDataSample*)m_buffer;
 
@@ -266,7 +266,7 @@ void RemehaSerial::readCallback(const char *data, size_t len)
 	if (!m_bEnableReceive)
 		return; //receiving not enabled
 
-	ParseData((const unsigned char*)data, static_cast<int>(len));
+	ParseData((const unsigned char*)data, len);
 }
 
 void RemehaSerial::StartPollerThread()

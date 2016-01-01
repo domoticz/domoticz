@@ -30,7 +30,7 @@ protected:
 		BYTE end;
 	} RemehaDataSample;
 	void SetModes(const int Mode1, const int Mode2, const int Mode3, const int Mode4, const int Mode5, const int Mode6);
-	void ParseData(const unsigned char *pData, int Len);
+	void ParseData(const unsigned char *pData, size_t Len);
 	void ParseSample(RemehaDataSample* data);
 	bool WriteInt(const unsigned char *pData, const unsigned char Len);
 	void RequestActualValues();
