@@ -16,10 +16,12 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <queue>
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_handler.hpp"
 #include "request_parser.hpp"
+#include "Websockets.hpp"
 #ifdef NS_ENABLE_SSL
 #include <boost/asio/ssl.hpp>
 typedef boost::asio::ssl::stream<boost::asio::ip::tcp::socket> ssl_socket;
@@ -70,8 +72,17 @@ private:
   void handle_read(const boost::system::error_code& e, std::size_t bytes_transferred);
   void read_more();
 
+  /// Add content to write buffer
+  void MyWrite(const std::string &buf);
   /// Handle completion of a write operation.
-  void handle_write(const boost::system::error_code& e);
+  void handle_write(const boost::system::error_code& e, size_t bytes_transferred);
+  /// Protect the write queue
+  boost::mutex writeMutex;
+  /// Is protected by writeMutex
+  std::queue<std::string> writeQ;
+  /// indicates if we are currently writing
+  bool write_in_progress;
+  void SocketWrite(const std::string &buf);
 
   /// Socket for the (PLAIN) connection.
   boost::asio::ip::tcp::socket *socket_;
@@ -93,8 +104,8 @@ private:
   /// The parser for the incoming request.
   request_parser request_parser_;
 
-  /// The reply to be sent back to the client.
-  reply reply_;
+  /// our write buffer
+  std::string write_buffer;
 
   /// the buffer that we receive data in
   boost::asio::streambuf _buf;
@@ -107,6 +118,14 @@ private:
   ssl_socket *sslsocket_;
   void handle_handshake(const boost::system::error_code& error);
 #endif
+
+  /// websocket stuff
+  CWebsocket websocket_handler;
+  enum {
+	  connection_http,
+	  connection_websocket,
+	  connection_closing
+  } connection_type;
 };
 
 typedef boost::shared_ptr<connection> connection_ptr;

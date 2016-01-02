@@ -798,6 +798,9 @@
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\Websockets.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1285,6 +1288,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\Websockets.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

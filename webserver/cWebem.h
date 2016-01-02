@@ -123,6 +123,9 @@ namespace http {
 		private:
 			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);
+			/// Websocket methods
+			bool is_upgrade_request(WebEmSession & session, const request& req, reply& rep);
+			std::string compute_accept_header(const std::string &websocket_key);
 			bool CheckAuthentication(WebEmSession & session, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);

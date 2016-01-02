@@ -1235,6 +1235,93 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 	return false;
 }
 
+std::string cWebemRequestHandler::compute_accept_header(const std::string &websocket_key)
+{
+	std::string accept = "";
+	return accept;
+}
+
+bool cWebemRequestHandler::is_upgrade_request(WebEmSession & session, const request& req, reply& rep)
+{
+	// request method should be GET
+	if (req.method != "GET") {
+		return false;
+	}
+	// http version should be 1.1 at least
+	if (((req.http_version_major * 10) + req.http_version_minor) < 11) {
+		return false;
+	}
+	const char *h;
+	// client MUST include Connection: Upgrade header
+	h = request::get_req_header(&req, "Connection");
+	if (!(h && boost::iequals(h, "Upgrade"))) {
+		return false;
+	};
+	// client MUST include Upgrade: websocket
+	h = request::get_req_header(&req, "Upgrade");
+	if (!(h && boost::iequals(h, "websocket"))) {
+		return false;
+	};
+	// we only have one service until now
+	if (req.uri != "/json") {
+		// todo: request uri could be an absolute URI as well!!!
+		rep = reply::stock_reply(reply::not_found);
+		return true;
+	}
+	h = request::get_req_header(&req, "Host");
+	// request MUST include a host header, even if we don't check it
+	if (!h) {
+		rep = reply::stock_reply(reply::forbidden);
+		return true;
+	}
+	h = request::get_req_header(&req, "Origin");
+	// request MUST include an origin header, even if we don't check it
+	// we only "allow" connections from browser clients
+	if (!h) {
+		rep = reply::stock_reply(reply::forbidden);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Version");
+	// request MUST include a version number
+	if (!h) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	int version = boost::lexical_cast<int>(h);
+	// we support versions 13 (and higher)
+	if (version < 13) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Protocol");
+	// check if a protocol is given, and it includes "domoticz".
+	std::string protocol_header = h;
+	if (!h || protocol_header.find("domoticz") == std::string::npos) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Key");
+	// request MUST include a sec-websocket-key header and we need to respond to it
+	if (!h) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	std::string websocket_key = h;
+	rep = reply::stock_reply(reply::switching_protocols);
+	reply::AddHeader(&rep, "Connection", "Upgrade");
+	reply::AddHeader(&rep, "Upgrade", "websocket");
+
+	std::string accept = compute_accept_header(websocket_key);
+	if (accept.empty()) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	reply::AddHeader(&rep, "Sec-Websocket-Accept", accept);
+	// we only speak the domoticz subprotocol
+	reply::AddHeader(&rep, "Sec-Websocket-Protocol", "domoticz");
+	return true;
+}
+
 bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 {
 	session.rights = -1; // no rights
@@ -1521,7 +1608,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.username = "";
 		session.rights = -1;
 		session.forcelogin = true;
-		_log.Log(LOG_ERROR, "Setting removecookie = true");
 		session.removecookie = true;
 		bCheckAuthentication = false; // do not authenticate the user, just logout
 	}
@@ -1531,6 +1617,10 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		return;
 	}
 
+	// Check if this is an upgrade request to a websocket connection
+	if (is_upgrade_request(session, req, rep)) {
+		return;
+	}
 	// Copy the request to be able to fill its parameters attribute
 	request requestCopy = req;
 
