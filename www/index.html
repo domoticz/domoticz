@@ -237,8 +237,9 @@ function ShowLatestHistory()
 	SwitchLayout('History');
 }
 
-$(document).ready(function() {
-	/* todo: move this to a seperate .js file */
+function InitWebsockets()
+{
+	/* todo: move this to a seperate .js file or something */
 	if ("WebSocket" in window){
 		// if websockets are supported
 		// construct absolute url
@@ -251,24 +252,40 @@ $(document).ready(function() {
 		ws_uri += "//" + loc.host;
 		ws_uri += loc.pathname + "json";
 		var websocket = new WebSocket(ws_uri, "domoticz");
+		var callbackqueue = [];
 		websocket.onopen = function () {
-			alert("websocket opened!");
-			websocket.send("Hello World!");
 		};
 		websocket.onclose = function () {
-			alert("websocket closed");
 		};
 		websocket.onmessage = function (evt) {
 			var msg = evt.data;
-			alert("Received: " + msg);
+			var pos = msg.indexOf("/");
+			var requestid = parseInt(msg.substr(0, pos));
+			msg = msg.substr(pos + 1);
+			var success = callbackqueue[requestid].success;
+			console.log(msg);
+			success(JSON.parse(msg));
 		};
 		
 		var oAjax = $.ajax;
 		$.ajax = function (settings) {
-			return oAjax(settings);
+			if (settings.url.substr(0, 9) == "json.htm?") {
+				callbackqueue.push(settings);
+				var requestid = callbackqueue.length - 1;
+				websocket.send(requestid + "/" + settings.url.substr(9));
+			}
+			else {
+				return oAjax(settings);
+			}
 		};
 	}
 	/* end ajax override */
+}
+
+$(document).ready(function() {
+
+	InitWebsockets();
+	
 	if ("-ms-user-select" in document.documentElement.style &&
 		(navigator.userAgent.match(/IEMobile/) ||
 		navigator.userAgent.match(/ZuneWP7/) ||

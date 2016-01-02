@@ -28,7 +28,7 @@ connection::connection(boost::asio::io_service& io_service,
     request_handler_(handler),
 	timeout_(timeout),
 	timer_(io_service, boost::posix_time::seconds( timeout )),
-	websocket_handler(this)
+	websocket_handler(this, request_handler_.Get_myWebem())
 {
 	secure_ = false;
 	keepalive_ = false;
@@ -49,7 +49,7 @@ connection::connection(boost::asio::io_service& io_service,
     request_handler_(handler),
 	timeout_(timeout),
 	timer_(io_service, boost::posix_time::seconds( timeout )),
-	websocket_handler(this)
+	websocket_handler(this, request_handler_.Get_myWebem())
 {
 	secure_ = true;
 	keepalive_ = false;
@@ -119,7 +119,9 @@ void connection::handle_timeout(const boost::system::error_code& error)
 			case connection_http:
 				connection_manager_.stop(shared_from_this());
 				break;
-			// todo: We do nothing in case of a websocket connection. But possibly we can send a ping control frame
+			case connection_websocket:
+				websocket_handler.SendPing();
+				break;
 			}
 		}
 }
@@ -256,6 +258,8 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					connection_type = connection_websocket;
 					// from now on we are a persistant connection
 					keepalive_ = true;
+					// keep sessionid to access our session during websockets requests
+					websocket_handler.store_session_id(request_);
 					// todo: check if multiple connection from the same client in CONNECTING state?
 				}
 				if (keepalive_) {

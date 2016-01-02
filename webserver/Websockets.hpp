@@ -1,5 +1,6 @@
 #pragma once
 #include <boost/logic/tribool.hpp>
+#include <string>
 
 namespace http {
 	namespace server {
@@ -14,21 +15,29 @@ namespace http {
 		};
 
 		class connection;
+		class cWebem;
+		class request;
 
 		class CWebsocket {
 		public:
-			CWebsocket(connection *pConn);
+			CWebsocket(connection *pConn, cWebem *pWebEm);
 			~CWebsocket();
 			boost::tribool parse(const unsigned char *begin, size_t size, size_t &bytes_consumed, bool &keep_alive);
 			void SendClose(const std::string &packet_data);
+			void SendPing();
+			void store_session_id(const request &req);
 		private:
 			void OnReceiveText(const std::string &packet_data);
 			void OnReceiveBinary(const std::string &packet_data);
+			void OnPong(const std::string &packet_data);
 			void SendPong(const std::string &packet_data);
 			std::string packet_data;
 			bool start_new_packet;
 			opcodes last_opcode;
 			connection *conn;
+			const char *OUR_PING_ID = "fd";
+			std::string sessionid;
+			cWebem* myWebem;
 		};
 
 	}

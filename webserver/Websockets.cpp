@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Websockets.hpp"
 #include "connection.hpp"
-#include <string>
+#include "cWebem.h"
 
 namespace http {
 	namespace server {
@@ -151,10 +151,11 @@ private:
 };
 
 
-CWebsocket::CWebsocket(connection *pConn)
+CWebsocket::CWebsocket(connection *pConn, cWebem *pWebEm)
 {
 	start_new_packet = true;
 	conn = pConn;
+	myWebem = pWebEm;
 }
 
 CWebsocket::~CWebsocket()
@@ -200,7 +201,7 @@ boost::tribool CWebsocket::parse(const unsigned char *begin, size_t size, size_t
 			return false;
 			break;
 		case opcode_pong:
-			// ignore
+			OnPong(packet_data);
 			return false;
 			break;
 		}
@@ -212,10 +213,31 @@ boost::tribool CWebsocket::parse(const unsigned char *begin, size_t size, size_t
 
 void CWebsocket::OnReceiveText(const std::string &packet_data)
 {
-	// todo: packet_data is get-request-data???
-	// for test, we echo the data back
-	std::string frame = CreateFrame(opcode_text, packet_data);
+	request req;
+	reply rep;
+	// todo: we now assume the session (still) exists
+	WebEmSession session = myWebem->m_sessions.find(sessionid)->second;
+	req.method = "GET";
+	size_t pos = packet_data.find("/");
+	std::string requestid = packet_data.substr(0, pos);
+	std::string querystring = packet_data.substr(pos + 1);
+	req.uri = "/json.htm?" + querystring;
+	req.http_version_major = 1;
+	req.http_version_minor = 1;
+	req.headers.resize(0); // todo: do we need any headers?
+	req.content.clear();
+	if (myWebem->CheckForPageOverride(session, req, rep)) {
+		if (rep.status == reply::ok) {
+			std::string response = requestid + "/" + rep.content;
+			std::string frame = CreateFrame(opcode_text, response);
+			conn->MyWrite(frame);
+			return;
+		}
+	}
+	std::string response = requestid + "/{ \"error\": \"Internal Server Error!!!\" }";
+	std::string frame = CreateFrame(opcode_text, response);
 	conn->MyWrite(frame);
+	// todo: send back an error if we come here
 }
 
 void CWebsocket::OnReceiveBinary(const std::string &packet_data)
@@ -233,6 +255,20 @@ void CWebsocket::OnReceiveBinary(const std::string &packet_data)
 	}
 }
 
+void CWebsocket::SendPing()
+{
+	// todo: set the ping timer
+	std::string frame = CreateFrame(opcode_ping, OUR_PING_ID);
+	conn->MyWrite(frame);
+}
+
+void CWebsocket::OnPong(const std::string &packet_data)
+{
+	if (packet_data == OUR_PING_ID) {
+		// todo: this was a response to one of our pings. reset the ping timer.
+	}
+}
+
 void CWebsocket::SendPong(const std::string &packet_data)
 {
 	std::string frame = CreateFrame(opcode_pong, packet_data);
@@ -243,6 +279,43 @@ void CWebsocket::SendClose(const std::string &packet_data)
 {
 	std::string frame = CreateFrame(opcode_close, packet_data);
 	conn->MyWrite(frame);
+}
+
+void CWebsocket::store_session_id(const request &req)
+{
+	//Check cookie if still valid
+	const char* cookie_header = request::get_req_header(&req, "Cookie");
+	if (cookie_header != NULL)
+	{
+		std::string sSID;
+		std::string sAuthToken;
+		std::string szTime;
+
+		// Parse session id and its expiration date
+		std::string scookie = cookie_header;
+		int fpos = scookie.find("SID=");
+		if (fpos != std::string::npos)
+		{
+			scookie = scookie.substr(fpos);
+			fpos = 0;
+			size_t epos = scookie.find(';');
+			if (epos != std::string::npos)
+			{
+				scookie = scookie.substr(0, epos);
+			}
+		}
+		int upos = scookie.find("_", fpos);
+		int ppos = scookie.find(".", upos);
+
+		if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
+		{
+			sSID = scookie.substr(fpos + 4, upos - fpos - 4);
+			sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
+			szTime = scookie.substr(ppos + 1);
+
+			sessionid = sSID;
+		}
+	}
 }
 
 }
