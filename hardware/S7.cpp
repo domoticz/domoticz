@@ -29,9 +29,9 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
-#include "../../yaml-cpp/yaml.h"
-
 #include "../main/SQLHelper.h"
+#include "../json/json.h"
+
 extern CSQLHelper m_sql;
 
 
@@ -70,28 +70,23 @@ PLCDevice* S7::GetDeviceById(int id) {
 bool S7::getConfig() {
 	try {
 
+		Json::Value config;
+
 		//read config file
-		YAML::Node config = YAML::LoadFile("S7-config.yaml");
-		//get host, db
+		std::fstream infile ("S7-config.json", std::fstream::in);
+		infile >> config;
 
-//		if (config["host"].IsNull()) {
-//			_log.Log(LOG_ERROR, "S7: config does not contain host attribute");
-//			return false;
-//		}
-//
-//		this->host = config["host"].as<std::string>();
-
-		if (config["db"].IsNull()) {
+		if (config["db"].isNull()) {
 			_log.Log(LOG_ERROR, "S7: config does not contain db attribute");
 			return false;
 		}
 
-		this->db = config["db"].as<int>();
+		this->db = config["db"].asInt();
 
 		//read devices, place in list, assign sequential ids
-		YAML::Node entries = config["devices"];
+		Json::Value entries = config["devices"];
 
-		if (entries.IsNull() || entries.size() == 0) {
+		if (entries.isNull() || entries.size() == 0) {
 			_log.Log(LOG_ERROR,
 					"S7: config does not contain entries attribute");
 			return false;
@@ -99,19 +94,19 @@ bool S7::getConfig() {
 
 		devices.reserve(entries.size());
 
-		for (std::size_t i = 0; i < entries.size(); i++) {
+		for (int i = 0; i < entries.size(); i++) {
 			try {
-				if ("lamp" == entries[i]["type"].as<std::string>()) {
+				if ("lamp" == entries[i]["type"].asString()) {
 					devices.push_back(
-							new Lamp(entries[i]["name"].as<std::string>(), i,
-									entries[i]["offset"].as<int>()));
+							new Lamp(entries[i]["name"].asString(), i,
+									entries[i]["offset"].asInt()));
 				}
-				if ("dimmer" == entries[i]["type"].as<std::string>()) {
+				if ("dimmer" == entries[i]["type"].asString()) {
 					devices.push_back(
-							new Dimmer(entries[i]["name"].as<std::string>(), i,
-									entries[i]["offset"].as<int>()));
+							new Dimmer(entries[i]["name"].asString(), i,
+									entries[i]["offset"].asInt()));
 				}
-			} catch (YAML::BadConversion& e) {
+			} catch (std::runtime_error& e) {
 				_log.Log(LOG_ERROR, "S7: can not parse entry: %s", e.what());
 
 			}
@@ -132,7 +127,7 @@ bool S7::getConfig() {
 		buffer = new uint8_t[size];
 
 		return true;
-	} catch (YAML::Exception& e) {
+	} catch (std::runtime_error& e) {
 		_log.Log(LOG_ERROR, "S7: config invalid: %s", e.what());
 		return false;
 	}
