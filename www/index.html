@@ -238,6 +238,37 @@ function ShowLatestHistory()
 }
 
 $(document).ready(function() {
+	/* todo: move this to a seperate .js file */
+	if ("WebSocket" in window){
+		// if websockets are supported
+		// construct absolute url
+		var loc = window.location, ws_uri;
+		if (loc.protocol === "https:") {
+			ws_uri = "wss:";
+		} else {
+			ws_uri = "ws:";
+		}
+		ws_uri += "//" + loc.host;
+		ws_uri += loc.pathname + "json";
+		var websocket = new WebSocket(ws_uri, "domoticz");
+		websocket.onopen = function () {
+			alert("websocket opened!");
+			websocket.send("Hello World!");
+		};
+		websocket.onclose = function () {
+			alert("websocket closed");
+		};
+		websocket.onmessage = function (evt) {
+			var msg = evt.data;
+			alert("Received: " + msg);
+		};
+		
+		var oAjax = $.ajax;
+		$.ajax = function (settings) {
+			return oAjax(settings);
+		};
+	}
+	/* end ajax override */
 	if ("-ms-user-select" in document.documentElement.style &&
 		(navigator.userAgent.match(/IEMobile/) ||
 		navigator.userAgent.match(/ZuneWP7/) ||

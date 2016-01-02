@@ -103,6 +103,7 @@ void connection::stop()
 	switch (connection_type) {
 	case connection_websocket:
 		// todo: send close frame and wait for writeQ to flush
+		websocket_handler.SendClose("");
 		break;
 	case connection_closing:
 		// todo: wait for writeQ to flush, so client can receive the close frame
@@ -222,7 +223,6 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		reply reply_;
 		const char *begin;
 		// websocket variables
-		std::string websocket_data;
 		size_t bytes_consumed;
 
 		switch (connection_type) {
@@ -279,7 +279,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		case connection_websocket:
 		case connection_closing:
 			begin = boost::asio::buffer_cast<const char*>(_buf.data());
-			result = websocket_handler.parse(begin, _buf.size(), websocket_data, bytes_consumed, keepalive_);
+			result = websocket_handler.parse((const unsigned char *)begin, _buf.size(), bytes_consumed, keepalive_);
 			_buf.consume(bytes_consumed);
 			if (result) {
 				// we received a complete packet (that was handled already)

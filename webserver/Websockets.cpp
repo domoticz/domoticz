@@ -8,6 +8,7 @@ namespace http {
 
 std::string CreateFrame(opcodes opcode, const std::string &payload)
 {
+	// note: we dont do masking nor fragmentation
 	const unsigned char FIN_MASK = 0x80;
 	const unsigned char OPCODE_MASK = 0x0f;
 	size_t payloadlen = payload.size();
@@ -51,9 +52,8 @@ public:
 		return result;
 	}
 
-	bool Parse (const std::string &data) {
-		size_t remaining = data.size();
-		const unsigned char *bytes = (unsigned char *)data.c_str();
+	bool Parse (const unsigned char *bytes, size_t size) {
+		size_t remaining = size;
 		bytes_consumed = 0;
 		if (remaining < 2) {
 			return false;
@@ -96,7 +96,7 @@ public:
 				return false;
 			}
 			for (unsigned int i = 0; i < 4; i++) {
-				masking_key[0] = bytes[ptr++];
+				masking_key[i] = bytes[ptr++];
 				remaining--;
 			}
 		}
@@ -161,10 +161,10 @@ CWebsocket::~CWebsocket()
 {
 }
 
-boost::tribool CWebsocket::parse(const char *begin, size_t size, std::string &websocket_data, size_t &bytes_consumed, bool &keep_alive)
+boost::tribool CWebsocket::parse(const unsigned char *begin, size_t size, size_t &bytes_consumed, bool &keep_alive)
 {
 	CWebsocketFrame frame;
-	if (!frame.Parse(websocket_data)) {
+	if (!frame.Parse(begin, size)) {
 		bytes_consumed = 0;
 		return boost::indeterminate;
 	}

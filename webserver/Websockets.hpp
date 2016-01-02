@@ -19,12 +19,12 @@ namespace http {
 		public:
 			CWebsocket(connection *pConn);
 			~CWebsocket();
-			boost::tribool parse(const char *begin, size_t size, std::string &websocket_data, size_t &bytes_consumed, bool &keep_alive);
+			boost::tribool parse(const unsigned char *begin, size_t size, size_t &bytes_consumed, bool &keep_alive);
+			void SendClose(const std::string &packet_data);
 		private:
 			void OnReceiveText(const std::string &packet_data);
 			void OnReceiveBinary(const std::string &packet_data);
 			void SendPong(const std::string &packet_data);
-			void SendClose(const std::string &packet_data);
 			std::string packet_data;
 			bool start_new_packet;
 			opcodes last_opcode;
