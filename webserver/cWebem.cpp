@@ -15,6 +15,7 @@
 #include "request.hpp"
 #include "mime_types.hpp"
 #include "Base64.h"
+#include "sha1.hpp"
 #include "GZipHelper.h"
 #include <stdarg.h>
 #include <fstream>
@@ -1237,7 +1238,14 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 
 std::string cWebemRequestHandler::compute_accept_header(const std::string &websocket_key)
 {
-	std::string accept = "";
+	// the length of an sha1 hash
+	const int sha1len = 20;
+	// the GUID as specified in RFC 6455
+	const char *GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+	std::string combined = websocket_key + GUID;
+	unsigned char sha1result[sha1len];
+	sha1::calc((void *)combined.c_str(), combined.length(), sha1result);
+	std::string accept = base64_encode(sha1result, sha1len);
 	return accept;
 }
 

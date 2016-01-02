@@ -801,6 +801,9 @@
     <ClInclude Include="..\webserver\Websockets.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\sha1.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">

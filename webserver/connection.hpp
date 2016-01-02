@@ -31,6 +31,7 @@ namespace http {
 namespace server {
 
 class connection_manager;
+class CWebsocket;
 
 /// Represents a single connection from a client.
 class connection
@@ -65,15 +66,16 @@ public:
 
   /// read timeout timer
   boost::asio::deadline_timer timer_;
+
   void handle_timeout(const boost::system::error_code& error);
+  /// Add content to write buffer
+  void MyWrite(const std::string &buf);
 
 private:
   /// Handle completion of a read operation.
   void handle_read(const boost::system::error_code& e, std::size_t bytes_transferred);
   void read_more();
 
-  /// Add content to write buffer
-  void MyWrite(const std::string &buf);
   /// Handle completion of a write operation.
   void handle_write(const boost::system::error_code& e, size_t bytes_transferred);
   /// Protect the write queue

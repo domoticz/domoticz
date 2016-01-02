@@ -27,7 +27,8 @@ connection::connection(boost::asio::io_service& io_service,
   : connection_manager_(manager),
     request_handler_(handler),
 	timeout_(timeout),
-	timer_(io_service, boost::posix_time::seconds( timeout ))
+	timer_(io_service, boost::posix_time::seconds( timeout )),
+	websocket_handler(this)
 {
 	secure_ = false;
 	keepalive_ = false;
@@ -47,7 +48,8 @@ connection::connection(boost::asio::io_service& io_service,
   : connection_manager_(manager),
     request_handler_(handler),
 	timeout_(timeout),
-	timer_(io_service, boost::posix_time::seconds( timeout ))
+	timer_(io_service, boost::posix_time::seconds( timeout )),
+	websocket_handler(this)
 {
 	secure_ = true;
 	keepalive_ = false;
@@ -221,6 +223,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		const char *begin;
 		// websocket variables
 		std::string websocket_data;
+		size_t bytes_consumed;
 
 		switch (connection_type) {
 		case connection_http:
@@ -276,12 +279,10 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		case connection_websocket:
 		case connection_closing:
 			begin = boost::asio::buffer_cast<const char*>(_buf.data());
-			result = websocket_handler.parse(begin, _buf.size(), websocket_data);
+			result = websocket_handler.parse(begin, _buf.size(), websocket_data, bytes_consumed, keepalive_);
+			_buf.consume(bytes_consumed);
 			if (result) {
-				size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
-				_buf.consume(sizeread);
-				websocket_handler.handle_packet(websocket_data, keepalive_);
-				// we received a complete packet
+				// we received a complete packet (that was handled already)
 				if (keepalive_) {
 					read_more();
 				}
@@ -292,9 +293,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 				}
 			}
 			else if (!result) {
-				// we received a complete frame but not a complete packet yet
-				size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
-				_buf.consume(sizeread);
+				// we received a complete frame but not a complete packet yet or a control frame)
 				read_more();
 			}
 			else {

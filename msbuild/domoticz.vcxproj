@@ -266,6 +266,7 @@
     <ClInclude Include="..\webserver\GZipHelper.h" />
     <ClInclude Include="..\webserver\proxyclient.h" />
     <ClInclude Include="..\webserver\proxycommon.h" />
+    <ClInclude Include="..\webserver\sha1.hpp" />
     <ClInclude Include="..\webserver\Websockets.hpp" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
