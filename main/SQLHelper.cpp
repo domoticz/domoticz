@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 90
+#define DB_VERSION 89
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1602,45 +1602,6 @@ bool CSQLHelper::OpenDatabase()
 			std::stringstream szQuery;
 			szQuery << "UPDATE DeviceStatus SET [DeviceID]='0' || DeviceID WHERE ([Type]=" << pTypeGeneralSwitch << ") AND (SubType=" << sSwitchTypeSelector << ") AND length(DeviceID) = 7";
 			query(szQuery.str());
-		}
-		if (dbversion < 90)
-		{
-			if (!DoesColumnExistsInTable("Month", "Timers"))
-			{
-				query("ALTER TABLE Timers ADD COLUMN [Month] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Day", "Timers"))
-			{
-				query("ALTER TABLE Timers ADD COLUMN [Day] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Occurence", "Timers"))
-			{
-				query("ALTER TABLE Timers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Month", "SceneTimers"))
-			{
-				query("ALTER TABLE SceneTimers ADD COLUMN [Month] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Day", "SceneTimers"))
-			{
-				query("ALTER TABLE SceneTimers ADD COLUMN [Day] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Occurence", "SceneTimers"))
-			{
-				query("ALTER TABLE SceneTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Month", "SetpointTimers"))
-			{
-				query("ALTER TABLE SetpointTimers ADD COLUMN [Month] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Day", "SetpointTimers"))
-			{
-				query("ALTER TABLE SetpointTimers ADD COLUMN [Day] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Occurence", "SetpointTimers"))
-			{
-				query("ALTER TABLE SetpointTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
-			}
 		}
 
 	}
