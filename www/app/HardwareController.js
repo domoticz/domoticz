@@ -223,6 +223,31 @@ define(['app'], function (app) {
                             ShowNotify($.t('Problem updating hardware!'), 2500, true);
                      }
                 });
+            }else if ((text.indexOf("S7") >= 0))
+			{
+				var address=$("#hardwarecontent #divremote #tcpaddress").val();
+				if (address=="")
+				{
+					ShowNotify($.i18n('Please enter an Address!'), 2500, true);
+					return;
+				}
+				
+				$.ajax({
+					 url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+						"&address=" + address + 
+						"&name=" + name + 
+						"&enabled=" + bEnabled + 
+						"&idx=" + idx + 
+						"&datatimeout=" + datatimeout,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+                     }
+                });
             }
             else if (text.indexOf("Philips Hue") >= 0)
             {
@@ -513,6 +538,25 @@ define(['app'], function (app) {
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + encodeURIComponent(serialport) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+                     async: false,
+                     dataType: 'json',
+                     success: function(data) {
+                        RefreshHardwareTable();
+                     },
+                     error: function(){
+                            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+                     }
+                });
+            } else if (text.indexOf("S7") >= 0)
+            {
+                var address=$("#hardwarecontent #divremote #tcpaddress").val();
+                if (address=="")
+                {
+                    ShowNotify($.t('Please enter an Address!'), 2500, true);
+                    return;
+                }
+                $.ajax({
+                     url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&port=0",
                      async: false,
                      dataType: 'json',
                      success: function(data) {
@@ -3341,7 +3385,7 @@ define(['app'], function (app) {
                                 $("#hardwarecontent #divremote #tcpaddress").val(data["Address"]);
                             }
                         }
-                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)) {
+                        else if (((data["Type"].indexOf("LAN") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Satel") == -1)) ||(data["Type"].indexOf("Domoticz") >= 0) ||(data["Type"].indexOf("Harmony") >= 0)||(data["Type"].indexOf("S7") >= 0)) {
                             $("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
                             $("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
                         }
@@ -3536,6 +3580,13 @@ define(['app'], function (app) {
                 $("#hardwarecontent #divunderground").hide();
                 $("#hardwarecontent #hardwareparamsremote #tcpport").val(80);
             }
+            else if (text.indexOf("S7") >= 0)
+			{
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #divunderground").hide();
+	        } 
             else if (text.indexOf("Winddelen") >= 0)
             {
                 $("#hardwarecontent #divserial").hide();
