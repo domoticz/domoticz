@@ -77,6 +77,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Maclean", sSwitchTypeMaclean },		 // p..
 	{ "R546", sSwitchTypeR546 },	         // p..
 	{ "Diya", sSwitchTypeDiya },	         // p..
+	{ "X10Secure", sSwitchTypeX10secu },	 // p..
 	{ "", -1 }
 };
 
