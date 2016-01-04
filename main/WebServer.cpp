@@ -1715,7 +1715,6 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			std::string sactivetype = request::findValue(&req, "activetype");
 			std::string activeidx = request::findValue(&req, "activeidx");
-
 			if (
 				(idx == "") ||
 				(sactivetype == "") ||
@@ -2478,7 +2477,6 @@ namespace http {
 
 			int signallevel = 12;
 			int batterylevel = 255;
-
 
 			if (idx.empty())
 			{
@@ -7704,10 +7702,10 @@ namespace http {
 							)
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
-							if (lstatus == "On") {
+							if ((lstatus == "On")||(lstatus=="Close inline relay")) {
 								lstatus = "Closed";
 							}
-							else if (lstatus == "Stop") {
+							else if ((lstatus == "Stop")||(lstatus=="Stop inline relay")) {
 								lstatus = "Stopped";
 							}
 							else {

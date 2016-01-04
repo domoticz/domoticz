@@ -1344,15 +1344,12 @@ void GetLightStatus(
 				break;
 			case light5_sClose:
 				lstatus="Close inline relay";
-//				lstatus="Closed";
 				break;
 			case light5_sStop:
 				lstatus="Stop inline relay";
-//				lstatus="Stopped";
 				break;
 			case light5_sOpen:
 				lstatus="Open inline relay";
-//				lstatus="Open";
 				break;
 			case light5_sSetLevel:
 				sprintf(szTmp,"Set Level: %d %%" ,llevel);
@@ -2191,9 +2188,18 @@ bool GetLightCommand(
  			if (switchcmd=="Set Level")
  				switchcmd="On";
  		}
-
-		if (switchtype==STYPE_Doorbell)
-		{
+			// The LightwaveRF inline relay has to be controlled by Venetian blinds logic as it has a stop setting
+		else if ((dSubType==sTypeLightwaveRF)&&(switchtype==STYPE_VenetianBlindsEU)){
+				if (switchcmd=="On")
+					switchcmd="Close inline relay";
+				else if (switchcmd=="Off")
+					switchcmd="Open inline relay";
+				else if (switchcmd=="Stop")
+					switchcmd="Stop inline relay";
+		}
+ 
+ 		if (switchtype==STYPE_Doorbell)
+ 		{
 			if ((switchcmd=="On")||(switchcmd=="Group On"))
 			{
 				cmd=light5_sGroupOn;
@@ -2237,27 +2243,24 @@ bool GetLightCommand(
 			return true;
 		}
 		else if (switchcmd=="Group On")
-		{
-			cmd=light5_sGroupOn;
+ 		{
+ 			cmd=light5_sGroupOn;
 			return true;
 		}
-		// The LightwaveRF inline relay has to be controlled by Venetian blinds logic as it has a stop setting
-		else if ((dSubType==sTypeLightwaveRF)&&(switchtype==STYPE_VenetianBlindsEU)){
-				if (switchcmd=="On")
-				{
-					cmd=light5_sClose;
-					return true;
-				}
-				else if (switchcmd=="Off")
-				{	
-					cmd=light5_sOpen;
-					return true;
-				}
-				else if (switchcmd=="Stop")
-				{
-					cmd=light5_sStop;
-					return true;
-				}
+		else if (switchcmd=="Close inline relay")
+		{
+			cmd=light5_sClose;
+			return true;
+		}
+		else if (switchcmd=="Stop inline relay")
+		{
+			cmd=light5_sStop;
+			return true;
+		}
+		else if (switchcmd=="Open inline relay")
+		{
+			cmd=light5_sOpen;
+ 			return true;
 		}
 		else
 			return false;
