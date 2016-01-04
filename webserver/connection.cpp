@@ -86,7 +86,7 @@ void connection::start()
     }
     else {
 		// start reading data
-		read_more_plain();
+		read_more();
     }
     m_lastresponse=mytime(NULL);
 }
@@ -110,7 +110,7 @@ void connection::handle_handshake(const boost::system::error_code& error)
 		if (!error)
 		{
 			// handshake completed, start reading
-			read_more_secure();
+			read_more();
 		}
 		else
 		{
@@ -118,101 +118,9 @@ void connection::handle_handshake(const boost::system::error_code& error)
 		}
   }
 }
-
-void connection::read_more_secure()
-{
-	// read chunks of max 4 KB
-	boost::asio::streambuf::mutable_buffers_type buf = _buf.prepare(4096);
-
-	// set timeout timer
-	timer_.expires_from_now(boost::posix_time::seconds(timeout_));
-	timer_.async_wait(boost::bind(&connection::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
-
-	// Perform read
-	sslsocket_->async_read_some(buf,
-		boost::bind(&connection::handle_read_secure, shared_from_this(),
-		boost::asio::placeholders::error,
-		boost::asio::placeholders::bytes_transferred));
-}
-
-void connection::handle_read_secure(const boost::system::error_code& error, std::size_t bytes_transferred)
-{
-	// data read, no need for timeouts (RK, note: race condition)
-	timer_.cancel();
-    if (!error && bytes_transferred > 0)
-    {
-		// ensure written bytes in the buffer
-		_buf.commit(bytes_transferred);
-		m_lastresponse=mytime(NULL);
-		boost::tribool result;
-		/// The incoming request.
-		request request_;
-		const char *begin = boost::asio::buffer_cast<const char*>(_buf.data());
-		try
-		{
-			request_parser_.reset();
-			boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
-				request_, begin, begin + _buf.size());
-		}
-		catch (...)
-		{
-			_log.Log(LOG_ERROR, "Exception parsing http request.");
-		}
-
-		if (result) {
-			size_t sizeread = begin - boost::asio::buffer_cast<const char*>(_buf.data());
-			_buf.consume(sizeread);
-			reply_.reset();
-			const char *pConnection = request_.get_req_header(&request_, "Connection");
-			keepalive_ = pConnection != NULL && boost::iequals(pConnection, "Keep-Alive");
-			request_.keep_alive = keepalive_;
-			request_.host = host_endpoint_;
-			if (request_.host.substr(0, 7) == "::ffff:") {
-				request_.host = request_.host.substr(7);
-			}
-			request_handler_.handle_request(request_, reply_);
-			boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
-				boost::bind(&connection::handle_write_secure, shared_from_this(),
-				boost::asio::placeholders::error));
-		}
-		else if (!result)
-		{
-			keepalive_ = false;
-			reply_ = reply::stock_reply(reply::bad_request);
-			boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
-				boost::bind(&connection::handle_write_secure, shared_from_this(),
-				boost::asio::placeholders::error));
-		}
-		else
-		{
-			read_more_secure();
-		}
-	}
-    else if (error != boost::asio::error::operation_aborted)
-    {
-		connection_manager_.stop(shared_from_this());
-    }
-}
-
-void connection::handle_write_secure(const boost::system::error_code& error)
-{
-	if (!error) {
-		if (keepalive_) {
-			// if a keep-alive connection is requested, we read the next request
-			read_more_secure();
-		}
-		else {
-			// Initiate graceful connection closure.
-			boost::system::error_code ignored_ec;
-			socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
-			connection_manager_.stop(shared_from_this());
-		}
-	}
-	m_lastresponse=mytime(NULL);
-}
 #endif
 
-void connection::read_more_plain()
+void connection::read_more()
 {
 	// read chunks of max 4 KB
 	boost::asio::streambuf::mutable_buffers_type buf = _buf.prepare(4096);
@@ -221,14 +129,25 @@ void connection::read_more_plain()
 	timer_.expires_from_now(boost::posix_time::seconds(timeout_));
 	timer_.async_wait(boost::bind(&connection::handle_timeout, shared_from_this(), boost::asio::placeholders::error));
 
-	// Perform read
-	socket_->async_read_some(buf,
-		boost::bind(&connection::handle_read_plain, shared_from_this(),
-		boost::asio::placeholders::error,
-		boost::asio::placeholders::bytes_transferred));
+	if (secure_) {
+#ifdef NS_ENABLE_SSL
+		// Perform secure read
+		sslsocket_->async_read_some(buf,
+			boost::bind(&connection::handle_read, shared_from_this(),
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+#endif
+	}
+	else {
+		// Perform plain read
+		socket_->async_read_some(buf,
+			boost::bind(&connection::handle_read, shared_from_this(),
+				boost::asio::placeholders::error,
+				boost::asio::placeholders::bytes_transferred));
+	}
 }
 
-void connection::handle_read_plain(const boost::system::error_code& error, std::size_t bytes_transferred)
+void connection::handle_read(const boost::system::error_code& error, std::size_t bytes_transferred)
 {
 	// data read, no need for timeouts (RK, note: race condition)
 	timer_.cancel();
@@ -264,21 +183,39 @@ void connection::handle_read_plain(const boost::system::error_code& error, std::
 				request_.host = request_.host.substr(7);
 			}
 			request_handler_.handle_request(request_, reply_);
-			boost::asio::async_write(*socket_, reply_.to_buffers(request_.method),
-				boost::bind(&connection::handle_write_plain, shared_from_this(),
-				boost::asio::placeholders::error));
+			if (secure_) {
+#ifdef NS_ENABLE_SSL
+				boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
+					boost::bind(&connection::handle_write, shared_from_this(),
+						boost::asio::placeholders::error));
+#endif
+			}
+			else {
+				boost::asio::async_write(*socket_, reply_.to_buffers(request_.method),
+					boost::bind(&connection::handle_write, shared_from_this(),
+						boost::asio::placeholders::error));
+			}
 		}
 		else if (!result)
 		{
 			keepalive_ = false;
 			reply_ = reply::stock_reply(reply::bad_request);
-			boost::asio::async_write(*socket_, reply_.to_buffers(request_.method),
-				boost::bind(&connection::handle_write_plain, shared_from_this(),
-				boost::asio::placeholders::error));
+			if (secure_) {
+#ifdef NS_ENABLE_SSL
+				boost::asio::async_write(*sslsocket_, reply_.to_buffers(request_.method),
+					boost::bind(&connection::handle_write, shared_from_this(),
+						boost::asio::placeholders::error));
+#endif
+			}
+			else {
+				boost::asio::async_write(*socket_, reply_.to_buffers(request_.method),
+					boost::bind(&connection::handle_write, shared_from_this(),
+						boost::asio::placeholders::error));
+			}
 		}
 		else
 		{
-			read_more_plain();
+			read_more();
 		}
 	}
     else if (error != boost::asio::error::operation_aborted)
@@ -287,12 +224,12 @@ void connection::handle_read_plain(const boost::system::error_code& error, std::
     }
 }
 
-void connection::handle_write_plain(const boost::system::error_code& error)
+void connection::handle_write(const boost::system::error_code& error)
 {
 	if (!error) {
 		if (keepalive_) {
 			// if a keep-alive connection is requested, we read the next request
-			read_more_plain();
+			read_more();
 		}
 		else {
 			// Initiate graceful connection closure.
