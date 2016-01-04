@@ -653,7 +653,7 @@ namespace http {
 			char szTmp[50];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness, Day, Month, Occurence FROM Timers WHERE (DeviceRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
@@ -689,7 +689,10 @@ namespace http {
 					root["result"][ii]["Level"] = iLevel;
 					root["result"][ii]["Hue"] = atoi(sd[7].c_str());
 					root["result"][ii]["Days"] = atoi(sd[8].c_str());
-					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) != 0);
+					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["Day"] = atoi(sd[10].c_str());
+					root["result"][ii]["Month"] = atoi(sd[11].c_str());
+					root["result"][ii]["Occurence"] = atoi(sd[12].c_str());
 					ii++;
 				}
 			}
@@ -714,6 +717,9 @@ namespace http {
 			std::string sdays = request::findValue(&req, "days");
 			std::string slevel = request::findValue(&req, "level");	//in percentage
 			std::string shue = request::findValue(&req, "hue");
+			std::string sday = "0";
+			std::string smonth = "0";
+			std::string soccurence = "0";
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -743,6 +749,28 @@ namespace http {
 					Year = atoi(sdate.substr(6, 4).c_str());
 				}
 			}
+			else if (iTimerType == TTYPE_MONTHLY)
+			{
+				sday = request::findValue(&req, "day");
+				if (sday == "") return;
+			}
+			else if (iTimerType == TTYPE_MONTHLYDOW)
+			{
+				soccurence = request::findValue(&req, "occurence");
+				if (soccurence == "") return;
+			}
+			else if (iTimerType == TTYPE_YEARLY)
+			{
+				sday = request::findValue(&req, "day");
+				smonth = request::findValue(&req, "month");
+				if ((sday == "") || (smonth == "")) return;
+			}
+			else if (iTimerType == TTYPE_YEARLYDOW)
+			{
+				smonth = request::findValue(&req, "month");
+				soccurence = request::findValue(&req, "occurence");
+				if ((smonth == "") || (soccurence == "")) return;
+			}
 
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
@@ -750,10 +778,13 @@ namespace http {
 			int days = atoi(sdays.c_str());
 			unsigned char level = atoi(slevel.c_str());
 			int hue = atoi(shue.c_str());
+			int day = atoi(sday.c_str());
+			int month = atoi(smonth.c_str());
+			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "AddTimer";
 			m_sql.safe_query(
-				"INSERT INTO Timers (Active, DeviceRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Hue, Days, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d)",
+				"INSERT INTO Timers (Active, DeviceRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Hue, Days, Day, Month, Occurence, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d,%d,%d,%d)",
 				(active == "true") ? 1 : 0,
 				idx.c_str(),
 				Year, Month, Day,
@@ -764,6 +795,9 @@ namespace http {
 				level,
 				hue,
 				days,
+				day,
+				month,
+				occurence,
 				m_sql.m_ActiveTimerPlan
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -788,6 +822,9 @@ namespace http {
 			std::string sdays = request::findValue(&req, "days");
 			std::string slevel = request::findValue(&req, "level");	//in percentage
 			std::string shue = request::findValue(&req, "hue");
+			std::string sday = "0";
+			std::string smonth = "0";
+			std::string soccurence = "0";
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -817,6 +854,28 @@ namespace http {
 					Year = atoi(sdate.substr(6, 4).c_str());
 				}
 			}
+			else if (iTimerType == TTYPE_MONTHLY)
+			{
+				sday = request::findValue(&req, "day");
+				if (sday == "") return;
+			}
+			else if (iTimerType == TTYPE_MONTHLYDOW)
+			{
+				soccurence = request::findValue(&req, "occurence");
+				if (soccurence == "") return;
+			}
+			else if (iTimerType == TTYPE_YEARLY)
+			{
+				sday = request::findValue(&req, "day");
+				smonth = request::findValue(&req, "month");
+				if ((sday == "") || (smonth == "")) return;
+			}
+			else if (iTimerType == TTYPE_YEARLYDOW)
+			{
+				smonth = request::findValue(&req, "month");
+				soccurence = request::findValue(&req, "occurence");
+				if ((smonth == "") || (soccurence == "")) return;
+			}
 
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
@@ -824,10 +883,13 @@ namespace http {
 			int days = atoi(sdays.c_str());
 			unsigned char level = atoi(slevel.c_str());
 			int hue = atoi(shue.c_str());
+			int day = atoi(sday.c_str());
+			int month = atoi(smonth.c_str());
+			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateTimer";
 			m_sql.safe_query(
-				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == '%q')",
+				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d, Day=%d, Month=%d, Occurence=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -837,6 +899,9 @@ namespace http {
 				level,
 				hue,
 				days,
+				day,
+				month,
+				occurence,
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -1192,7 +1257,7 @@ namespace http {
 					root["result"][ii]["Level"] = iLevel;
 					root["result"][ii]["Hue"] = atoi(sd[7].c_str());
 					root["result"][ii]["Days"] = atoi(sd[8].c_str());
-					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) != 0);
+					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) == 0) ? "false" : "true";
 					ii++;
 				}
 			}
