@@ -7703,10 +7703,11 @@ namespace http {
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
 							if ((lstatus == "On")||(lstatus=="Close inline relay")) {
- 								lstatus = "Closed";
- 							}
- 							else if ((lstatus == "Stop")||(lstatus=="Stop inline relay")) {
- 								lstatus = "Stopped";
+								lstatus = "Closed";
+							}
+							else if ((lstatus == "Stop")||(lstatus=="Stop inline relay")) {
+								lstatus = "Stopped";
+							}
 							else {
 								lstatus = "Open";
 							}
