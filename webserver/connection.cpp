@@ -259,7 +259,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					// from now on we are a persistant connection
 					keepalive_ = true;
 					// keep sessionid to access our session during websockets requests
-					websocket_handler.store_session_id(request_);
+					websocket_handler.store_session_id(request_, reply_);
 					// todo: check if multiple connection from the same client in CONNECTING state?
 				}
 				if (keepalive_) {

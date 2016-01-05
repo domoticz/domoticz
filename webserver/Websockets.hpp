@@ -1,6 +1,8 @@
 #pragma once
 #include <boost/logic/tribool.hpp>
 #include <string>
+#include "request.hpp"
+#include "reply.hpp"
 
 namespace http {
 	namespace server {
@@ -16,7 +18,6 @@ namespace http {
 
 		class connection;
 		class cWebem;
-		class request;
 
 		class CWebsocket {
 		public:
@@ -25,7 +26,7 @@ namespace http {
 			boost::tribool parse(const unsigned char *begin, size_t size, size_t &bytes_consumed, bool &keep_alive);
 			void SendClose(const std::string &packet_data);
 			void SendPing();
-			void store_session_id(const request &req);
+			void store_session_id(const request &req, const reply &rep);
 		private:
 			void OnReceiveText(const std::string &packet_data);
 			void OnReceiveBinary(const std::string &packet_data);

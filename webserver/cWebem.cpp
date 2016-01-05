@@ -1122,7 +1122,8 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 {
 	std::stringstream sstr;
 	sstr << "SID=none";
-	sstr << "; path=/; Expires=" << make_web_time(0);
+	// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
+	sstr << "; Expires=" << make_web_time(0);
 	reply::AddHeader(&rep, "Set-Cookie", sstr.str(), false);
 }
 
@@ -1181,7 +1182,8 @@ void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 {
 	std::stringstream sstr;
 	sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
-	sstr << "; path=/; Expires=" << make_web_time(session.expires);
+	// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
+	sstr << "; Expires=" << make_web_time(session.expires);
 	reply::AddHeader(&rep, "Set-Cookie", sstr.str(), false);
 }
 
@@ -1620,107 +1622,109 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		bCheckAuthentication = false; // do not authenticate the user, just logout
 	}
 
-	// Check user authentication on each page or action, if it exists.
-	if (bCheckAuthentication && !CheckAuthentication(session, req, rep)) {
-		return;
-	}
-
 	// Check if this is an upgrade request to a websocket connection
 	if (is_upgrade_request(session, req, rep)) {
 		return;
 	}
-	// Copy the request to be able to fill its parameters attribute
-	request requestCopy = req;
-
-	// Run action if exists
-	if (isAction) {
-		// Post actions only allowed when authenticated and user has admin rights
-		if (session.rights != 2) {
-			rep = reply::stock_reply(reply::forbidden);
-			return;
-		}
-		myWebem->CheckForAction(session, requestCopy);
-	}
-
-	modify_info mInfo;
-	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
-	{
-		// do normal handling
-		try
-		{
-			request_handler::handle_request(requestCopy, rep, mInfo);
-		}
-		catch (...)
-		{
-			rep = reply::stock_reply(reply::internal_server_error);
+	else {
+		// Check user authentication on each page or action, if it exists.
+		if (bCheckAuthentication && !CheckAuthentication(session, req, rep)) {
 			return;
 		}
 
-		// find content type header
-		std::string content_type;
-		for (unsigned int h = 0; h < rep.headers.size(); h++) {
-			if (boost::iequals(rep.headers[h].name, "Content-Type")) {
-				content_type = rep.headers[h].value;
-				break;
+		// Copy the request to be able to fill its parameters attribute
+		request requestCopy = req;
+
+		// Run action if exists
+		if (isAction) {
+			// Post actions only allowed when authenticated and user has admin rights
+			if (session.rights != 2) {
+				rep = reply::stock_reply(reply::forbidden);
+				return;
 			}
+			myWebem->CheckForAction(session, requestCopy);
 		}
 
-		if (content_type == "text/html"
-			|| content_type == "text/plain"
-			|| content_type == "text/css"
-			|| content_type == "text/javascript"
-			|| content_type == "application/javascript"
-			)
+		modify_info mInfo;
+		if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 		{
-			// check if content is not gzipped, include won´t work with non-text content
-			if (!rep.bIsGZIP) {
-				// Find and include any special cWebem strings
-				if (!myWebem->Include(rep.content)) {
-					if (mInfo.mtime_support && !mInfo.is_modified) {
-						//_log.Log(LOG_STATUS, "%s not modified (1).", req.uri.c_str());
-						rep = reply::stock_reply(reply::not_modified);
-						return;
+			// do normal handling
+			try
+			{
+				request_handler::handle_request(requestCopy, rep, mInfo);
+			}
+			catch (...)
+			{
+				rep = reply::stock_reply(reply::internal_server_error);
+				return;
+			}
+
+			// find content type header
+			std::string content_type;
+			for (unsigned int h = 0; h < rep.headers.size(); h++) {
+				if (boost::iequals(rep.headers[h].name, "Content-Type")) {
+					content_type = rep.headers[h].value;
+					break;
+				}
+			}
+
+			if (content_type == "text/html"
+				|| content_type == "text/plain"
+				|| content_type == "text/css"
+				|| content_type == "text/javascript"
+				|| content_type == "application/javascript"
+				)
+			{
+				// check if content is not gzipped, include won´t work with non-text content
+				if (!rep.bIsGZIP) {
+					// Find and include any special cWebem strings
+					if (!myWebem->Include(rep.content)) {
+						if (mInfo.mtime_support && !mInfo.is_modified) {
+							//_log.Log(LOG_STATUS, "%s not modified (1).", req.uri.c_str());
+							rep = reply::stock_reply(reply::not_modified);
+							return;
+						}
 					}
+
+					// adjust content length header
+					// ( Firefox ignores this, but apparently some browsers truncate display without it.
+					// fix provided by http://www.codeproject.com/Members/jaeheung72 )
+
+					reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+
+					//check gzip support if yes, send it back in gzip format
+					CompressWebOutput(req, rep);
 				}
 
-				// adjust content length header
-				// ( Firefox ignores this, but apparently some browsers truncate display without it.
-				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
-
-				reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
-
-				//check gzip support if yes, send it back in gzip format
+				// tell browser that we are using UTF-8 encoding
+				reply::AddHeader(&rep, "Content-Type", content_type + ";charset=UTF-8");
+			}
+			else if (content_type.find("image/") != std::string::npos)
+			{
+				if (mInfo.mtime_support && !mInfo.is_modified) {
+					rep = reply::stock_reply(reply::not_modified);
+					//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
+					return;
+				}
+				//Cache images
+				reply::AddHeader(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
+				reply::AddHeader(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+			}
+			else {
+				if (mInfo.mtime_support && !mInfo.is_modified) {
+					rep = reply::stock_reply(reply::not_modified);
+					//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
+					return;
+				}
+			}
+		}
+		else
+		{
+			if (!rep.bIsGZIP) {
 				CompressWebOutput(req, rep);
 			}
-
-			// tell browser that we are using UTF-8 encoding
-			reply::AddHeader(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
-		else if (content_type.find("image/")!=std::string::npos)
-		{
-			if (mInfo.mtime_support && !mInfo.is_modified) {
-				rep = reply::stock_reply(reply::not_modified);
-				//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
-				return;
-			}
-			//Cache images
-			reply::AddHeader(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
-			reply::AddHeader(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
-		}
-		else {
-			if (mInfo.mtime_support && !mInfo.is_modified) {
-				rep = reply::stock_reply(reply::not_modified);
-				//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
-				return;
-			}
-		}
-	}
-	else
-	{
-		if (!rep.bIsGZIP) {
-			CompressWebOutput(req, rep);
-		}
-	}
+	} // if (is_upgrade_request())
 
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SESSION_TIMEOUT;

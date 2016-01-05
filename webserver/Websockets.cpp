@@ -2,6 +2,7 @@
 #include "Websockets.hpp"
 #include "connection.hpp"
 #include "cWebem.h"
+#include <boost/algorithm/string.hpp>
 
 namespace http {
 	namespace server {
@@ -216,7 +217,11 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 	request req;
 	reply rep;
 	// todo: we now assume the session (still) exists
-	WebEmSession session = myWebem->m_sessions.find(sessionid)->second;
+	WebEmSession session;
+	std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(session.id);
+	if (itt != myWebem->m_sessions.end()) {
+		session = itt->second;
+	}
 	req.method = "GET";
 	size_t pos = packet_data.find("/");
 	std::string requestid = packet_data.substr(0, pos);
@@ -226,15 +231,16 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 	req.http_version_minor = 1;
 	req.headers.resize(0); // todo: do we need any headers?
 	req.content.clear();
+	std::string isgzipped = "0";
 	if (myWebem->CheckForPageOverride(session, req, rep)) {
 		if (rep.status == reply::ok) {
-			std::string response = requestid + "/" + rep.content;
+			std::string response = isgzipped + requestid + "/" + rep.content;
 			std::string frame = CreateFrame(opcode_text, response);
 			conn->MyWrite(frame);
 			return;
 		}
 	}
-	std::string response = requestid + "/{ \"error\": \"Internal Server Error!!!\" }";
+	std::string response = "0" + requestid + "/{ \"error\": \"Internal Server Error!!!\" }";
 	std::string frame = CreateFrame(opcode_text, response);
 	conn->MyWrite(frame);
 	// todo: send back an error if we come here
@@ -246,7 +252,7 @@ void CWebsocket::OnReceiveBinary(const std::string &packet_data)
 	// 1st byte gzip indicator (0 or 1).
 	// if 0, next bytes are text
 	// if 1, next bytes are gzipped text
-	bool isGzipped = ((char)packet_data.at(0) != 0);
+	bool isGzipped = ((char)packet_data.at(0) != '0');
 	if (isGzipped) {
 		// todo: unzip the data
 	}
@@ -281,7 +287,7 @@ void CWebsocket::SendClose(const std::string &packet_data)
 	conn->MyWrite(frame);
 }
 
-void CWebsocket::store_session_id(const request &req)
+void CWebsocket::store_session_id(const request &req, const reply &rep)
 {
 	//Check cookie if still valid
 	const char* cookie_header = request::get_req_header(&req, "Cookie");
@@ -314,6 +320,37 @@ void CWebsocket::store_session_id(const request &req)
 			szTime = scookie.substr(ppos + 1);
 
 			sessionid = sSID;
+		}
+
+		if (sessionid.empty()) {
+			for (unsigned int i = 0; i < rep.headers.size(); i++) {
+				if (boost::iequals(rep.headers[i].name, "Set-Cookie")) {
+					// Parse session id and its expiration date
+					scookie = rep.headers[i].value;
+					int fpos = scookie.find("SID=");
+					if (fpos != std::string::npos)
+					{
+						scookie = scookie.substr(fpos);
+						fpos = 0;
+						size_t epos = scookie.find(';');
+						if (epos != std::string::npos)
+						{
+							scookie = scookie.substr(0, epos);
+						}
+					}
+					int upos = scookie.find("_", fpos);
+					int ppos = scookie.find(".", upos);
+
+					if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
+					{
+						sSID = scookie.substr(fpos + 4, upos - fpos - 4);
+						sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
+						szTime = scookie.substr(ppos + 1);
+
+						sessionid = sSID;
+					}
+				}
+			}
 		}
 	}
 }
