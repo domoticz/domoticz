@@ -1099,8 +1099,8 @@ bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, cons
 	m_AckNodeID = NodeID;
 	m_AckChildID = ChildID;
 	m_AckSetType = SubType;
-	int repeat = 1;
-	int repeats = 10;
+	int repeat = 0;
+	int repeats = 2;
 
 	while ((!m_bAckReceived) and (repeat < repeats)) {
 		SendCommandInt(NodeID, ChildID, messageType, bUseAck, SubType, Payload);
