@@ -1,7 +1,7 @@
 define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.scrollglue', 'angular-websocket'], function (angularAMD) {
 	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.directives-round-progress','angular.scrollglue']);
 
-		isOnline=true; // todo
+		isOnline=false;
 		dashboardType=1;
 
 	  app.factory('permissions', function ($rootScope) {
@@ -681,9 +681,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 							$rootScope.$digest();
 						}
 					});
-					this.Send("type=devices"); // test
+					this.Send("command=getconfig"); // test
 				},
 				Send: function (data) {
+					this.Init();
 					this.websocket.$emit(data);
 				},
 				SendLoginInfo: function (sessionid) {
@@ -707,7 +708,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					return defer_object.promise();
 				}
 		}}]);
-		$rootScope.$watch('', function () { app.run(function ($rootScope) { $rootScope.livesocket.Init(); })});
+
+
+		app.run(function () { app.run(function ($livesocket) { $livesocket.Init(); })});
 			/*
 			var oAjax = $.ajax;
 			$.ajax = function (settings) {
@@ -722,6 +725,27 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			*/
 		/* end ajax override */
 	});
+
+	app.directive('timesun', function () {
+		return {
+			template: '<table><tbody><tr><td align="left" valign="top" id="timesun"><div><span ng-bind="data.ServerTime"></span> <font color="yellow">☀</font>▲<span ng-bind="data.Sunrise"></span> ▼<span ng-bind="data.Sunset"></span></div></td></tr></tbody></table>',
+			controller: [ '$scope', function($scope) {
+					var self = $scope;
+					$scope.data = {};
+					$scope.$on('jsonupdate', function (event, data) {
+						if (typeof data.ServerTime !== 'undefined') {
+							self.data.ServerTime = data.ServerTime;
+						}
+						if (typeof data.Sunrise !== 'undefined') {
+							self.data.Sunrise = data.Sunrise;
+						}
+						if (typeof data.Sunset !== 'undefined') {
+							self.data.Sunset = data.Sunset;
+						}
+					});
+				}
+			]};
+		});
 
     // Bootstrap Angular when DOM is ready
     return angularAMD.bootstrap(app);
