@@ -5561,7 +5561,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 		while (itt != m_background_task_queue.end())
 		{
 			// _log.Log(LOG_NORM, "Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
-			if (itt->_idx == tItem._idx)
+			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				int iDelayDiff = tItem._DelayTime - itt->_DelayTime;
 				if (iDelayDiff < 3)
