@@ -87,7 +87,7 @@ void CScheduler::ReloadSchedules()
 				titem.timerType = timerType;
 				titem.timerCmd = (_eTimerCommand)atoi(sd[3].c_str());
 				titem.Level = (unsigned char)atoi(sd[4].c_str());
-				titem.bUseRandmoness = (atoi(sd[8].c_str()) != 0);
+				titem.bUseRandomness = (atoi(sd[8].c_str()) != 0);
 				titem.Hue = atoi(sd[9].c_str());
 
 				if (timerType == TTYPE_FIXEDDATETIME)
@@ -155,7 +155,7 @@ void CScheduler::ReloadSchedules()
 			titem.timerType = timerType;
 			titem.timerCmd = (_eTimerCommand)atoi(sd[3].c_str());
 			titem.Level = (unsigned char)atoi(sd[4].c_str());
-			titem.bUseRandmoness = (atoi(sd[7].c_str()) != 0);
+			titem.bUseRandomness = (atoi(sd[7].c_str()) != 0);
 			if ((titem.timerCmd == TCMD_ON) && (titem.Level == 0))
 			{
 				titem.Level = 100;
@@ -205,7 +205,7 @@ void CScheduler::ReloadSchedules()
 			titem.timerCmd = TCMD_ON;
 			titem.Temperature = static_cast<float>(atof(sd[3].c_str()));
 			titem.Level = 100;
-			titem.bUseRandmoness = false;
+			titem.bUseRandomness = false;
 			titem.Days = atoi(sd[4].c_str());
 			titem.DeviceName = sd[5];
 			if (AdjustScheduleItem(&titem, false) == true)
@@ -275,7 +275,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	if (nRandomTimerFrame == 0)
 		nRandomTimerFrame = 15;
 	int roffset = 0;
-	if (pItem->bUseRandmoness)
+	if (pItem->bUseRandomness)
 	{
 		if ((pItem->timerType == TTYPE_ONTIME) || (pItem->timerType == TTYPE_FIXEDDATETIME))
 			roffset = rand() % (nRandomTimerFrame * 2) - nRandomTimerFrame;
