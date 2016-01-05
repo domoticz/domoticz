@@ -2087,7 +2087,7 @@ define(['app'], function (app) {
 			}
 
 		  var i=0;
-			var j=0;
+		  var j=0;
 
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=light&used=true&order=Name&plan="+window.myglobals.LastPlanSelected, 
@@ -2548,7 +2548,7 @@ define(['app'], function (app) {
 			//close previous devider
 			htmlcontent+='</div>\n';
 		  }
-		  if (htmlcontent == '')
+		  if (j == 0)
 		  {
 			htmlcontent='<h2>' + $.t('No Lights/Switches found or added in the system...') + '</h2>';
 		  }
