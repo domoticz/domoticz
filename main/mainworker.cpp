@@ -5842,7 +5842,9 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		}
 
-		sprintf(szTmp, "id         = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
+		sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "action        = %d", (int)pEvo->EVOHOME1.action);
 		WriteMessage(szTmp);
 		WriteMessage("status        = ");
 		WriteMessage(CEvohome::GetControllerModeName(pEvo->EVOHOME1.status));
@@ -10724,32 +10726,9 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	if(tsen.EVOHOME1.mode==CEvohome::cmTmp)
 		CEvohomeDateTime::DecodeISODate(tsen.EVOHOME1,until.c_str());
 	WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME1));
-		
-	// convert now to string form
-	time_t now = mytime(NULL);
 
-	struct tm timeinfo;
-	localtime_r(&now, &timeinfo);
-
-	char szDate[30];
-	strftime(szDate, sizeof(szDate), "%Y-%m-%d %H:%M:%S", &timeinfo);
-
-	WriteMessageStart();
-
-	std::stringstream sTmp;
-	sTmp << szDate << " (System) evohome status = "<< status << " (" << nStatus << ") action = " << action << " (" << (int)tsen.EVOHOME1.action << ")";
-	WriteMessage(sTmp.str().c_str(),false);
-	
 	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
-	// TODO: PushRxMessage or PushAndWaitRxMessage instead ?
-	_tRxMessageProcessingResult procResultEvo1;
-	procResultEvo1.DeviceName = "";
-	procResultEvo1.DeviceRowIdx = -1;
-	decode_evohome1(HardwareID, pHardware->HwdType, (const tRBUF*)&tsen, procResultEvo1);
-	WriteMessageEnd();
-	if(procResultEvo1.DeviceRowIdx==-1)
-		return false;
-	m_sharedserver.SendToAll(procResultEvo1.DeviceRowIdx,(const char*)&tsen,tsen.EVOHOME1.len+1,NULL);
+	PushRxMessage(pHardware, (const unsigned char *)&tsen, NULL, 255);
 	return true;
 }
 
