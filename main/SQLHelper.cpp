@@ -1642,18 +1642,6 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE SceneTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
 			}
-			if (!DoesColumnExistsInTable("Month", "SetpointTimers"))
-			{
-				query("ALTER TABLE SetpointTimers ADD COLUMN [Month] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Day", "SetpointTimers"))
-			{
-				query("ALTER TABLE SetpointTimers ADD COLUMN [Day] INTEGER DEFAULT 0");
-			}
-			if (!DoesColumnExistsInTable("Occurence", "SetpointTimers"))
-			{
-				query("ALTER TABLE SetpointTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
-			}
 		}
 	}
 	else if (bNewInstall)
