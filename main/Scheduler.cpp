@@ -754,7 +754,7 @@ namespace http {
 				sday = request::findValue(&req, "day");
 				if (sday == "") return;
 			}
-			else if (iTimerType == TTYPE_MONTHLYDOW)
+			else if (iTimerType == TTYPE_MONTHLY_WD)
 			{
 				soccurence = request::findValue(&req, "occurence");
 				if (soccurence == "") return;
@@ -765,7 +765,7 @@ namespace http {
 				smonth = request::findValue(&req, "month");
 				if ((sday == "") || (smonth == "")) return;
 			}
-			else if (iTimerType == TTYPE_YEARLYDOW)
+			else if (iTimerType == TTYPE_YEARLY_WD)
 			{
 				smonth = request::findValue(&req, "month");
 				soccurence = request::findValue(&req, "occurence");
@@ -859,7 +859,7 @@ namespace http {
 				sday = request::findValue(&req, "day");
 				if (sday == "") return;
 			}
-			else if (iTimerType == TTYPE_MONTHLYDOW)
+			else if (iTimerType == TTYPE_MONTHLY_WD)
 			{
 				soccurence = request::findValue(&req, "occurence");
 				if (soccurence == "") return;
@@ -870,7 +870,7 @@ namespace http {
 				smonth = request::findValue(&req, "month");
 				if ((sday == "") || (smonth == "")) return;
 			}
-			else if (iTimerType == TTYPE_YEARLYDOW)
+			else if (iTimerType == TTYPE_YEARLY_WD)
 			{
 				smonth = request::findValue(&req, "month");
 				soccurence = request::findValue(&req, "occurence");

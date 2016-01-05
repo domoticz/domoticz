@@ -119,9 +119,9 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_AFTERSUNSET, "After Sunset" },
 		{ TTYPE_FIXEDDATETIME, "Fixed Date/Time" },
 		{ TTYPE_MONTHLY, "Monthly" },
-		{ TTYPE_MONTHLYDOW, "Monthly (dow)" },
+		{ TTYPE_MONTHLY_WD, "Monthly (weekday)" },
 		{ TTYPE_YEARLY, "Yearly" },
-		{ TTYPE_YEARLYDOW, "Yearly (dow)" },
+		{ TTYPE_YEARLY_WD, "Yearly (weekday)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);

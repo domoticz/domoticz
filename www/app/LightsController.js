@@ -116,8 +116,11 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if ((tsettings.timertype>=6) && (tsettings.timertype<=9)) {
-				tsettings.days = tsettings.weekday;
+			else if ((tsettings.timertype==6) || (tsettings.timertype==8)) {
+				tsettings.days = 0x80;
+			}
+			else if ((tsettings.timertype==7) || (tsettings.timertype==9)) {
+				tsettings.days = Math.pow(2, tsettings.weekday);
 			}
 			else if (tsettings.days==0)
 			{
@@ -168,8 +171,11 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if ((tsettings.timertype>=6) && (tsettings.timertype<=9)) {
-				tsettings.days = tsettings.weekday;
+			else if ((tsettings.timertype==6) || (tsettings.timertype==8)) {
+				tsettings.days = 0x80;
+			}
+			else if ((tsettings.timertype==7) || (tsettings.timertype==9)) {
+				tsettings.days = Math.pow(2, tsettings.weekday);
 			}
 			else if (tsettings.days==0)
 			{
@@ -315,13 +321,15 @@ define(['app'], function (app) {
 						DayStrOrig="Monthly on Day " + item.Day;
 					}
 					else if (item.Type==7) {
-						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence] + " " + $.myglobals.WeekdayStr[item.Days];
+						var Weekday = Math.log2(parseInt(item.Days));
+						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
 					}
 					else if (item.Type==8) {
 						DayStrOrig="Yearly on " + item.Day + " " + $.myglobals.MonthStr[item.Month-1];
 					}
 					else if (item.Type==9) {
-						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence] + " " + $.myglobals.WeekdayStr[item.Days] + " in " + $.myglobals.MonthStr[item.Month-1];
+						var Weekday = Math.log2(parseInt(item.Days));
+						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
 					}
 					
 					//translate daystring
@@ -338,7 +346,7 @@ define(['app'], function (app) {
 					});
 					
 					var rEnabled="No";
-					if (item.Randomness==true) {
+					if (item.Randomness=="true") {
 						rEnabled="Yes";
 					}
 								
@@ -362,7 +370,7 @@ define(['app'], function (app) {
 						"7": item.Month,
 						"8": item.Day,
 						"9": item.Occurence,
-						"10": parseInt(item.Days)
+						"10": Math.log2(parseInt(item.Days))
 					} );
 				});
 			  }
