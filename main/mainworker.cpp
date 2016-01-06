@@ -85,6 +85,7 @@
 #include "../hardware/CurrentCostMeterSerial.h"
 #include "../hardware/CurrentCostMeterTCP.h"
 #include "../hardware/SolarEdgeAPI.h"
+#include "../hardware/DomoticzInternal.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -863,6 +864,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_CurrentCostMeterLAN:
 		//LAN
 		pHardware = new CurrentCostMeterTCP(ID, Address, Port);
+		break;
+	case HTYPE_DomoticzInternal:
+		pHardware = new DomoticzInternal(ID);
 		break;
 	}
 
@@ -11543,41 +11547,35 @@ void MainWorker::SetInternalSecStatus()
 	else
 		tsen.SECURITY1.status=sStatusArmAway;
 
-	char szDate[100];
+	if (m_verboselevel == EVBL_ALL)
+	{
+		char szDate[100];
 #if !defined WIN32
-	// Get a timestamp
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
+		// Get a timestamp
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
 
-	struct tm timeinfo;
-	localtime_r(&tv.tv_sec, &timeinfo);
+		struct tm timeinfo;
+		localtime_r(&tv.tv_sec, &timeinfo);
 
-	// create a time stamp string for the log message
-	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+		// create a time stamp string for the log message
+		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
 #else
-	// Get a timestamp
-	SYSTEMTIME time;
-	::GetLocalTime(&time);
+		// Get a timestamp
+		SYSTEMTIME time;
+		::GetLocalTime(&time);
 
-	// create a time stamp string for the log message
-	sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+		// create a time stamp string for the log message
+		sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
 #endif
 
-	WriteMessageStart();
+		_log.Log(LOG_NORM, "%s (System) Domoticz Security Status", szDate);
+	}
 
-	std::stringstream sTmp;
-	sTmp << szDate << " (System) ";
-	WriteMessage(sTmp.str().c_str(),false);
-	WriteMessage("Domoticz Security Status",false);
-	// TODO: PushRxMessage instead ?
-	_tRxMessageProcessingResult procResultSec1;
-	procResultSec1.DeviceName = "";
-	procResultSec1.DeviceRowIdx = -1;
-	decode_Security1(1000, HTYPE_System, (const tRBUF*)&tsen.SECURITY1, procResultSec1);
-	WriteMessageEnd();
-	m_sharedserver.SendToAll(procResultSec1.DeviceRowIdx,(const char*)&tsen,tsen.TEMP.packetlength+1,NULL);
+	CDomoticzHardwareBase *pHardware = GetHardwareByType(HTYPE_DomoticzInternal);
+	PushAndWaitRxMessage(pHardware, (const unsigned char *)&tsen, "Domoticz Security Panel", tsen.SECURITY1.battery_level);
 }
 
 void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)

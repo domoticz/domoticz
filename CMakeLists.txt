@@ -200,6 +200,7 @@ hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp
+hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
 hardware/EcoDevices.cpp
