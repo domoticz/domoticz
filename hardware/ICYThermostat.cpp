@@ -71,7 +71,7 @@ bool CICYThermostat::StopHardware()
 
 void CICYThermostat::Do_Work()
 {
-	int sec_counter = 0;
+	int sec_counter = ICY_POLL_INTERVAL-5;
 	_log.Log(LOG_STATUS,"ICYThermostat: Worker started...");
 	while (!m_stoprequested)
 	{

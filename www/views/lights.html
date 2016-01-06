@@ -103,6 +103,29 @@
 					</table>
 				</td>
 			</tr>
+			<tr class="selector-switch-options style">
+				<td align="right"><label><span data-i18n="Selector Style">Selector Style</span>:</label></td>
+				<td>
+					<input type="radio" id="selectorstyle0" name="selectorstyle" value="0"><label for="selectorstyle0" data-i18n="Button set">Button set</label>
+					<input type="radio" id="selectorstyle1" name="selectorstyle" value="1"><label for="selectorstyle1" data-i18n="Select menu">Select menu</label>
+				</td>
+			</tr>
+			<tr class="selector-switch-options levels">
+				<td align="right"><label><span data-i18n="Selector Levels">Selector Levels</span>:</label></td>
+				<td>
+					<table class="display" id="selectorlevelstable" border="0" cellpadding="0" cellspacing="0" width="100%">
+						<thead>
+							<tr valign="middle">
+								<th width="40" align="center" data-i18n="Level">Level</th>
+								<th align="left" data-i18n="Level name">Level name</th>
+								<th width="60" align="center" data-i18n="Order">Order</th>
+								<th width="60" align="center"></th>
+							</tr>
+						</thead>
+					</table>
+					<span data-i18n="Level name">Level name</span>:<input type="text" id="newselectorlevel"><a id="newselectorlevelbutton" class="btnstyle3" onclick="AddSelectorLevel();" data-i18n="Add">Add</a>
+				</td>
+			</tr>
 			<tr>
 				<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 				<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
@@ -235,6 +258,7 @@
 						<option value="210">Blinds T10 Dolat DLM-1</option>
 						<option value="301">Smartwares Radiator</option>
 						<option value="302">Home Confort TEL-010</option>
+						<option value="303">Selector Switch</option>
 			</select>
 			</td>
 		  </tr>
@@ -394,6 +418,17 @@
 		</table>
     </form>
 </div>
+<div id="dialog-renameselectorlevel" title="Rename selector level" style="display: none;">
+	<form>
+		<input type="hidden" id="selectorlevelindex">
+		<table border="0" cellpadding="0" cellspacing="4">
+		<tr>
+			<td align="right" style="width:80px"><label for="selectorlevelname"><span data-i18n="Name"></span>:</label></td>
+			<td><input type="text" id="selectorlevelname" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		</table>
+	</form>
+</div>
 <div id="lightcontent" class="container">
 </div>
 <div id="edittimers" style="display:none;">
@@ -405,7 +440,7 @@
                 <th width="80" align="center" data-i18n="Date">Date</th>
                 <th width="60" align="center" data-i18n="Time">Time</th>
                 <th width="60" align="center" data-i18n="Randomness">Randomness</th>
-                <th width="80" align="center" data-i18n="Command">Command</th>
+                <th width="140" align="center" data-i18n="Command">Command</th>
                 <th align="left" data-i18n="Days">Days</th>
             </tr>
         </thead>

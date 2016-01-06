@@ -37,7 +37,8 @@ define(['app'], function (app) {
 					
 					$rootScope.GetGlobalConfig();
 		
-					$window.location = '/#Dashboard';
+					$location.path('/Dashboard');
+					//$window.location = '/#Dashboard';
 					//$window.location.reload();
 				}
 			}).error(function(data) {

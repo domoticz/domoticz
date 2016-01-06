@@ -117,9 +117,15 @@
 #define sSwitchTypeAvidsen			0x37
 #define sSwitchTypeBofu				0x38
 #define sSwitchTypeBrel				0x39
-#define sSwitchTypeSomeFy			0x3a
+#define sSwitchTypeRTS   			0x3a
 #define sSwitchTypeElroDB			0x3b
 #define sSwitchTypeAOK				0x3c
+#define sSwitchTypeUnitec			0x3d
+#define sSwitchTypeSelector			0x3e
+#define sSwitchTypeMaclean			0x3f
+#define sSwitchTypeR546				0x40
+#define sSwitchTypeDiya				0x41
+#define sSwitchTypeX10secu			0x42
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -146,6 +152,7 @@
 #define gswitch_sSetVolume			0x15
 #define gswitch_sPlayPlaylist		0x16
 #define gswitch_sPlayFavorites		0x17
+#define gswitch_sExecute			0x18
 //--------------
 
 #define pTypeLux		0xF6

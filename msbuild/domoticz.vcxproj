@@ -55,7 +55,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;NS_ENABLE_SSL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;NS_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -134,6 +134,9 @@
     <ClInclude Include="..\hardware\BMP085.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
     <ClInclude Include="..\hardware\csocket.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
+    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
@@ -184,6 +187,7 @@
     <ClInclude Include="..\hardware\SatelIntegra.h" />
     <ClInclude Include="..\hardware\SBFSpot.h" />
     <ClInclude Include="..\hardware\serial\serial.h" />
+    <ClInclude Include="..\hardware\SolarEdgeAPI.h" />
     <ClInclude Include="..\hardware\SolarEdgeBase.h" />
     <ClInclude Include="..\hardware\SolarEdgeTCP.h" />
     <ClInclude Include="..\hardware\SolarMaxTCP.h" />
@@ -260,6 +264,8 @@
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
+    <ClInclude Include="..\webserver\proxyclient.h" />
+    <ClInclude Include="..\webserver\proxycommon.h" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
@@ -321,6 +327,9 @@
     <ClCompile Include="..\hardware\BMP085.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
     <ClCompile Include="..\hardware\csocket.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
+    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
@@ -374,6 +383,7 @@
     <ClCompile Include="..\hardware\SBFSpot.cpp" />
     <ClCompile Include="..\hardware\serial\impl\win.cpp" />
     <ClCompile Include="..\hardware\serial\serial.cpp" />
+    <ClCompile Include="..\hardware\SolarEdgeAPI.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeBase.cpp" />
     <ClCompile Include="..\hardware\SolarEdgeTCP.cpp" />
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp" />
@@ -517,6 +527,8 @@
     <ClCompile Include="..\webserver\connection_manager.cpp" />
     <ClCompile Include="..\webserver\cWebem.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
+    <ClCompile Include="..\webserver\proxyclient.cpp" />
+    <ClCompile Include="..\webserver\proxycommon.cpp" />
     <ClCompile Include="..\webserver\reply.cpp" />
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />

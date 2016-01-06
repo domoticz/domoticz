@@ -70,9 +70,8 @@ void OTGWTCP::OnConnect()
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
-
 	sOnConnected(this);
-	GetGatewayDetails();
+	m_bRequestVersion = true;
 }
 
 void OTGWTCP::OnDisconnect()
@@ -83,7 +82,7 @@ void OTGWTCP::OnDisconnect()
 void OTGWTCP::Do_Work()
 {
 	bool bFirstTime=true;
-	int sec_counter = 0;
+	int sec_counter = 25;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -111,7 +110,12 @@ void OTGWTCP::Do_Work()
 			update();
 			if (mIsConnected)
 			{
-				if (sec_counter % 30 == 0)//updates every 30 seconds
+				if ((sec_counter % 28 == 0) && (m_bRequestVersion))
+				{
+					m_bRequestVersion = false;
+					GetVersion();
+				}
+				else if (sec_counter % 30 == 0)//updates every 30 seconds
 				{
 					bFirstTime=false;
 					SendOutsideTemperature();

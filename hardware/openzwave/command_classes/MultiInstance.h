@@ -103,6 +103,7 @@ namespace OpenZWave
 		MultiInstanceMapping m_endPointMap;		// Determine how to map end points to value id instances
 		bool		m_endPointFindSupported;	// for nodes that (someday may) support endpointfind
 		bool 		m_ignoreUnsolicitedMultiChannelCapabilityReport;
+		bool		m_uniqueendpoints;
 	};
 
 } // namespace OpenZWave

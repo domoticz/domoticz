@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 87
+#define DB_VERSION 90
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -63,7 +63,8 @@ const char *sqlCreateDeviceStatus =
 "[LastLevel] INTEGER DEFAULT 0, "
 "[Protected] INTEGER DEFAULT 0, "
 "[CustomImage] INTEGER DEFAULT 0, "
-"[Description] VARCHAR(200) DEFAULT '');";
+"[Description] VARCHAR(200) DEFAULT '', "
+"[Options] VARCHAR(1024) DEFAULT null);";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -403,6 +404,8 @@ const char *sqlCreateEventMaster =
 "CREATE TABLE IF NOT EXISTS [EventMaster] ("
 "[ID] INTEGER PRIMARY KEY,  "
 "[Name] VARCHAR(200) NOT NULL, "
+"[Interpreter] VARCHAR(10) DEFAULT 'Blockly', "
+"[Type] VARCHAR(10) DEFAULT 'All', "
 "[XMLStatement] TEXT NOT NULL, "
 "[Status] INTEGER DEFAULT 0);";
 
@@ -1592,6 +1595,27 @@ bool CSQLHelper::OpenDatabase()
 				query(szQuery.str());
 			}
 		}
+		if (dbversion < 88)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Options] VARCHAR(1024) DEFAULT null");
+		}
+		if (dbversion < 89)
+		{
+			std::stringstream szQuery;
+			szQuery << "UPDATE DeviceStatus SET [DeviceID]='0' || DeviceID WHERE ([Type]=" << pTypeGeneralSwitch << ") AND (SubType=" << sSwitchTypeSelector << ") AND length(DeviceID) = 7";
+			query(szQuery.str());
+		}
+		if (dbversion < 90)
+		{
+			if (!DoesColumnExistsInTable("Interpreter", "EventMaster"))
+			{
+				query("ALTER TABLE EventMaster ADD COLUMN [Interpreter] VARCHAR(10) DEFAULT 'Blockly'");
+			}
+			if (!DoesColumnExistsInTable("Type", "EventMaster"))
+			{
+				query("ALTER TABLE EventMaster ADD COLUMN [Type] VARCHAR(10) DEFAULT 'All'");
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2005,7 +2029,7 @@ bool CSQLHelper::SwitchLightFromTasker(unsigned long long idx, const std::string
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,AddjValue2 FROM DeviceStatus WHERE (ID == %llu)", idx);
+	result = safe_query("SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %llu)", idx);
 	if (result.size()<1)
 		return false;
 
@@ -5537,7 +5561,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 		while (itt != m_background_task_queue.end())
 		{
 			// _log.Log(LOG_NORM, "Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
-			if (itt->_idx == tItem._idx)
+			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				int iDelayDiff = tItem._DelayTime - itt->_DelayTime;
 				if (iDelayDiff < 3)
@@ -6710,3 +6734,88 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 	m_webservers.ReloadCustomSwitchIcons();
 	return true;
 }
+
+std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::string & options, const bool decode) {
+	std::map<std::string, std::string> optionsMap;
+	if (!options.empty()) {
+		//_log.Log(LOG_STATUS, "DEBUG : Build device options from '%s'...", options.c_str());
+		std::vector<std::string> optionsArray;
+		StringSplit(options, ";", optionsArray);
+		std::vector<std::string>::iterator itt;
+		for (itt=optionsArray.begin(); itt!=optionsArray.end(); ++itt) {
+			if (*itt == "") {
+				continue;
+			}
+			std::vector<std::string> optionArray;
+			StringSplit(*itt, ":", optionArray);
+			if (optionArray.size() == 2) {
+				std::string optionName = optionArray[0].c_str();
+				std::string optionValue = decode ? base64_decode(optionArray[1].c_str()) : optionArray[1].c_str();
+				//_log.Log(LOG_STATUS, "DEBUG : Build device option ['%s': '%s'] => ['%s': '%s']", optionArray[0].c_str(), optionArray[1].c_str(), optionName.c_str(), optionValue.c_str());
+				optionsMap.insert(std::pair<std::string, std::string>(optionName, optionValue));
+			}
+		}
+	}
+	//_log.Log(LOG_STATUS, "DEBUG : Build %d device(s) option(s)", optionsMap.size());
+	return optionsMap;
+}
+
+std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::string & idx) {
+	std::map<std::string, std::string> optionsMap;
+
+	if (idx.empty()) {
+		_log.Log(LOG_ERROR, "Cannot set options on device %s", idx.c_str());
+		return optionsMap;
+	}
+
+	unsigned long long ulID;
+	std::stringstream s_str(idx);
+	s_str >> ulID;
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT Options FROM DeviceStatus WHERE (ID==%llu)", ulID);
+	if (result.size() > 0) {
+		std::vector<std::string> sd = result[0];
+		optionsMap = BuildDeviceOptions(sd[0].c_str());
+	}
+	return optionsMap;
+}
+
+bool CSQLHelper::SetDeviceOptions(const unsigned long long idx, const std::map<std::string, std::string> & optionsMap) {
+	if (idx < 0) {
+		_log.Log(LOG_ERROR, "Cannot set options on device %llu", idx);
+		return false;
+	}
+
+	std::string options("");
+	int count = optionsMap.size();
+	if (count > 0) {
+		int i = 0;
+		std::stringstream ssoptions;
+		std::map<std::string, std::string>::const_iterator itt;
+		for (itt = optionsMap.begin(); itt != optionsMap.end(); ++itt)
+		{
+			i++;
+			//_log.Log(LOG_STATUS, "DEBUG : Reading device option ['%s', '%s']", itt->first.c_str(), itt->second.c_str());
+			std::string optionName = itt->first.c_str();
+			std::string optionValue = base64_encode((const unsigned char*)itt->second.c_str(), itt->second.size());
+			ssoptions << optionName << ":" << optionValue;
+			if (i < count) {
+				ssoptions << ";";
+			}
+		}
+		options.assign(ssoptions.str());
+	}
+	if (options.empty() && (count > 0)) {
+		_log.Log(LOG_ERROR, "Cannot parse options for device %llu", idx);
+		return false;
+	}
+	if (options.empty()) {
+		//_log.Log(LOG_STATUS, "DEBUG : removing options on device %llu", idx);
+		safe_query("UPDATE DeviceStatus SET Options = null WHERE (ID==%llu)", idx);
+	} else {
+		//_log.Log(LOG_STATUS, "DEBUG : setting options '%s' on device %llu", options.c_str(), idx);
+		safe_query("UPDATE DeviceStatus SET Options = '%q' WHERE (ID==%llu)", options.c_str(), idx);
+	}
+	return true;
+}
+

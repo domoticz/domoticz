@@ -97,13 +97,13 @@
 		<Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" min="1" max="2678400" value="3600">
 			<Help>The interval of sending report group 3. 1 to 2678400 seconds</Help>
 		</Value>
-		<Value type="short" index="201" genre="config" label="Temperature Calibration" value="0">
+		<Value type="byte" index="201" genre="config" label="Temperature Calibration" value="0">
 			<Help>The calibration value = standard value ‐ measure value. 
 			E.g.  If measure value =25.3°C  and the standard value = 23.2°C, so the calibration value= 23.2°C ‐ 25.3°C= ‐2.1°C (0xFFEB). 
 			If the measure value =30.1°C and the standard value = 33.2°C, so the calibration value= 33.2°C ‐ 30.1°C=3.1°C (0x001F). 
 			</Help>
 		</Value>
-		<Value type="short" index="202" genre="config" label="Humidity Calibration" value="0">
+		<Value type="byte" index="202" genre="config" label="Humidity Calibration" value="0">
 			<Help>The calibration value = standard value ‐ measure value. 
 			E.g.  If measure value =80RH and the standard value = 75RH, so the calibration value= 75RH – 80RH= ‐5RH (0xFFFB). 
 			If the measure value =85RH and the standard value = 90RH, so the calibration value= 90RH – 85RH=5RH (0x0005). 
@@ -139,7 +139,7 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="1">
-			<Group index="1" max_associations="5" label="LifeLine" auto="true"/>
+			<Group index="1" max_associations="5" label="LifeLine" />
 		</Associations>
 	</CommandClass>
 

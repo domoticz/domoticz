@@ -75,29 +75,61 @@ void CRFLinkSerial::Do_Work()
 			}
 			if (isOpen())
 			{
-				if (sec_counter % 20 == 0)
+				/*
+				if (sec_counter % 40 == 0)
 				{
-					//Send ping (keep alive)
+				time_t atime = mytime(NULL);
+				//Send ping (keep alive)
+				_log.Log(LOG_STATUS, "RFLink: t1=%d t2=%d t3=%d", m_LastHeartbeat, m_LastHeartbeatReceive, m_LastReceivedTime);
+
+				if (atime - m_LastReceivedTime > 25) {
+				//_log.Log(LOG_STATUS, "RFLink: ping...");
+				write("10;PING;\n");
+				} else
+				if (atime - m_LastReceivedTime > 50) {
+				//Timeout
+				_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 50 seconds, restarting...");
+				m_retrycntr = 0;
+				m_LastReceivedTime = atime;
+				try {
+				clearReadCallback();
+				close();
+				doClose();
+				setErrorStatus(true);
+				}
+				catch (...)
+				{
+				//Don't throw from a Stop command
+				}
+				} else {
+				if (atime - m_LastReceivedTime > 25) {
+				//_log.Log(LOG_STATUS, "RFLink: ping...");
+				write("10;PING;\n");
+				}
+				}
+				}
+				*/
+
+				if (sec_counter % 50 == 0)
+				{
 					time_t atime = mytime(NULL);
-					if (atime - m_LastReceivedTime > 30)
-					{
-						//Timeout
-						_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 30 seconds, restarting...");
+					//Send ping (keep alive)
+					//_log.Log(LOG_STATUS, "RFLink: t1=%d t3=%d", atime, m_LastReceivedTime);
+					if (atime - m_LastReceivedTime > 50) {
+						//Receive Timeout
+						//_log.Log(LOG_STATUS, "RFLink: ping50...");
+						write("10;PING;\n");
 						m_retrycntr = 0;
 						m_LastReceivedTime = atime;
-						try {
-							clearReadCallback();
-							close();
-							doClose();
-							setErrorStatus(true);
+					} else {
+						if (atime - m_LastReceivedTime > 25) {
+						   //_log.Log(LOG_STATUS, "RFLink: ping25...");
+						   write("10;PING;\n");
 						}
-						catch (...)
-						{
-							//Don't throw from a Stop command
-						}
+						//else {
+							//_log.Log(LOG_STATUS, "RFLink: ping0...");
+						//}
 					}
-					else
-						write("10;PING;\n");
 				}
 			}
 		}

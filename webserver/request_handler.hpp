@@ -27,6 +27,13 @@ struct reply;
 class request;
 class cWebem;
 
+struct modify_info {
+	bool delay_status;
+	bool mtime_support;
+	bool is_modified;
+	time_t last_written;
+};
+
 /// The common handler for all incoming requests.
 class request_handler
   : private boost::noncopyable
@@ -38,6 +45,7 @@ public:
 
   /// Handle a request and produce a reply.
   virtual void handle_request(const request& req, reply& rep);
+  virtual void handle_request(const request & req, reply & rep, modify_info & mInfo);
 
   /// Perform URL-decoding on a string. Returns false if the encoding was
   /// invalid.
@@ -46,6 +54,7 @@ public:
   /// The directory containing the files to be served.
   std::string doc_root_;
 private:
+	bool not_modified(std::string full_path, const request &req, reply &rep, modify_info &mInfo);
 	// Webem link to application code
 	cWebem* myWebem;
 	  //zip support

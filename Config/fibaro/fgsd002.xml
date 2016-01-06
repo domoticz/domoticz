@@ -94,9 +94,9 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="5">
-			<Group index="1" max_associations="1" label="Lifeline" auto="true"/>
-			<Group index="2" max_associations="5" label="Fire Alarm" auto="false" />
-			<Group index="3" max_associations="5" label="Tamper" auto="false"/>
+			<Group index="1" max_associations="1" label="Lifeline" />
+			<Group index="2" max_associations="5" label="Fire Alarm" />
+			<Group index="3" max_associations="5" label="Tamper" />
 			<Group index="4" max_associations="5" label="Fire Alarm Report" auto="true"/>
 			<Group index="5" max_associations="5" label="Tamper Report" auto="true"/>
 		</Associations>
