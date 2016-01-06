@@ -5,6 +5,7 @@
  *      Author: chrisgaudry
  */
 
+#include "stdafx.h"
 #include "DomoticzInternal.h"
 
 DomoticzInternal::DomoticzInternal(const int ID) {
