@@ -19,6 +19,7 @@ Version 2.3xxx
 - Implemented: OTGW, added firmware version number in hardware setup page
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: RFXCom support for Legrand CAD
+- Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: SolarEdge via Web API
 - Implemented: Thermosmart option to set specify outside temperature sensor
 - Implemented: Waterflow sensor

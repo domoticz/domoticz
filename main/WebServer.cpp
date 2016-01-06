@@ -5627,30 +5627,38 @@ namespace http {
 			} 
 			else if (cparam == "switchlight")
 			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a switch command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
+				if (session.rights < 1)
+					return;//Only user/admin allowed
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "switchcmd");
 				std::string level = request::findValue(&req, "level");
 				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
+				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = request::findValue(&req, "passcode");
-				if (passcode.size() > 0)
+				result = m_sql.safe_query(
+					"SELECT [Protected] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
+				if (result.empty())
 				{
+					//Switch not found!
+					return;
+				}
+				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				if (bIsProtected)
+				{
+					if (passcode.empty())
+					{
+						//Switch is protected, but no passcode has been
+						root["title"] = "SwitchLight";
+						root["status"] = "ERROR";
+						root["message"] = "WRONG CODE";
+						return;
+					}
 					//Check if passcode is correct
 					passcode = GenerateMD5Hash(passcode);
 					std::string rpassword;
@@ -5658,12 +5666,16 @@ namespace http {
 					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
 					if (passcode != rpassword)
 					{
+						_log.Log(LOG_ERROR, "User: %s initiated a switch command (Wrong code!)", Username.c_str());
 						root["title"] = "SwitchLight";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
 						return;
 					}
 				}
+
+				_log.Log(LOG_STATUS, "User: %s initiated a switch command", Username.c_str());
+
 				if (switchcmd == "Toggle") {
 					//Request current state of switch
 					result = m_sql.safe_query(
@@ -5698,25 +5710,35 @@ namespace http {
 			} //(rtype=="switchlight")
 			else if (cparam == "switchscene")
 			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 1)
-					return;
+				if (session.rights < 1)
+					return;//Only user/admin allowed
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "switchcmd");
+				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = request::findValue(&req, "passcode");
-				if (passcode.size() > 0)
+				result = m_sql.safe_query(
+					"SELECT [Protected] FROM Scenes WHERE (ID = '%q')", idx.c_str());
+				if (result.empty())
 				{
+					//Scene/Group not found!
+					return;
+				}
+				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				if (bIsProtected)
+				{
+					if (passcode.empty())
+					{
+						root["title"] = "SwitchScene";
+						root["status"] = "ERROR";
+						root["message"] = "WRONG CODE";
+						return;
+					}
 					//Check if passcode is correct
 					passcode = GenerateMD5Hash(passcode);
 					std::string rpassword;
@@ -5727,9 +5749,11 @@ namespace http {
 						root["title"] = "SwitchScene";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
+						_log.Log(LOG_ERROR, "User: %s initiated a scene/group command (Wrong code!)", Username.c_str());
 						return;
 					}
 				}
+				_log.Log(LOG_STATUS, "User: %s initiated a scene/group command", Username.c_str());
 
 				if (m_mainworker.SwitchScene(idx, switchcmd) == true)
 				{

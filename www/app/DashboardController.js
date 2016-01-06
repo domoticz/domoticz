@@ -3411,8 +3411,8 @@ define(['app'], function (app) {
 				htmlcontent='<h2>' + 
 					$.t('No favorite devices defined ... (Or communication Lost!)') + 
 					'</h2><br>\n' +
-					$.t('If this is your first time here, please setup your') + ' <a href="javascript:SwitchLayout(\'Hardware\')" data-idx="Hardware">Hardware</a>, ' +
-					$.t('and add some') + ' <a href="javascript:SwitchLayout(\'Devices\')" data-idx="Devices">Devices</a>.';
+					$.t('If this is your first time here, please setup your') + ' <a href="javascript:SwitchLayout(\'Hardware\')" data-i18n="Hardware">Hardware</a>, ' +
+					$.t('and add some') + ' <a href="javascript:SwitchLayout(\'Devices\')" data-i18n="Devices">Devices</a>.';
 			}
 			else {
 				htmlcontent+="<br>";
