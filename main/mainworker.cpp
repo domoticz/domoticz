@@ -9836,7 +9836,17 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 	int HardwareID = atoi(sd[0].c_str());
 
-	if (HardwareID==1000)
+	int hindex=FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
+	{
+		_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
+		return false;
+	}
+	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
+	if (pHardware==NULL)
+		return false;
+
+	if (pHardware->HwdType == HTYPE_DomoticzInternal)
 	{
 		//Special cases
 		if (ID==0x00148702)
@@ -9854,16 +9864,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			return true;
 		}
 	}
-
-	int hindex=FindDomoticzHardware(HardwareID);
-	if (hindex == -1)
-	{
-		_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
-		return false;
-	}
-	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
-	if (pHardware==NULL)
-		return false;
 
 	unsigned char Unit=atoi(sd[2].c_str());
 	unsigned char dType=atoi(sd[3].c_str());
