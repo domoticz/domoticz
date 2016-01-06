@@ -3,6 +3,7 @@
 #include "connection.hpp"
 #include "cWebem.h"
 #include <boost/algorithm/string.hpp>
+#include "WebsocketPush.h"
 
 namespace http {
 	namespace server {
