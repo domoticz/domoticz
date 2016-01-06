@@ -853,10 +853,10 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if ((tsettings.timertype==6) || (tsettings.timertype==8)) {
+			else if ((tsettings.timertype==8) || (tsettings.timertype==10)) {
 				tsettings.days = 0x80;
 			}
-			else if ((tsettings.timertype==7) || (tsettings.timertype==9)) {
+			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
 				tsettings.days = Math.pow(2, tsettings.weekday);
 			}
 			else if (tsettings.days==0)
@@ -907,10 +907,10 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if ((tsettings.timertype==6) || (tsettings.timertype==8)) {
+			else if ((tsettings.timertype==8) || (tsettings.timertype==10)) {
 				tsettings.days = 0x80;
 			}
-			else if ((tsettings.timertype==7) || (tsettings.timertype==9)) {
+			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
 				tsettings.days = Math.pow(2, tsettings.weekday);
 			}
 			else if (tsettings.days==0)
@@ -987,7 +987,7 @@ define(['app'], function (app) {
 					}
 					var DayStr = "";
 					var DayStrOrig = "";
-					if (item.Type<5) {
+					if ((item.Type<=7) && (item.Type!=5)) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
 							DayStrOrig="Everyday";
@@ -1026,17 +1026,17 @@ define(['app'], function (app) {
 							}
 						}
 					}
-					else if (item.Type==6) {
+					else if (item.Type==8) {
 						DayStrOrig="Monthly on Day " + item.Day;
 					}
-					else if (item.Type==7) {
+					else if (item.Type==9) {
 						var Weekday = Math.log2(parseInt(item.Days));
 						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
 					}
-					else if (item.Type==8) {
+					else if (item.Type==10) {
 						DayStrOrig="Yearly on " + item.Day + " " + $.myglobals.MonthStr[item.Month-1];
 					}
-					else if (item.Type==9) {
+					else if (item.Type==11) {
 						var Weekday = Math.log2(parseInt(item.Days));
 						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
 					}
@@ -1125,7 +1125,7 @@ define(['app'], function (app) {
 								$("#scenecontent #timerparamstable #roccurence").hide();
 								$("#scenecontent #timerparamstable #rmonths").hide();
 							}
-							else if (timerType==6) {
+							else if (timerType==8) {
 								$("#scenecontent #timerparamstable #days").val(data["8"]);
 								$("#scenecontent #timerparamstable #rdate").hide();
 								$("#scenecontent #timerparamstable #rnorm").hide();
@@ -1133,7 +1133,7 @@ define(['app'], function (app) {
 								$("#scenecontent #timerparamstable #roccurence").hide();
 								$("#scenecontent #timerparamstable #rmonths").hide();
 							}
-							else if (timerType==7) {
+							else if (timerType==9) {
 								$("#scenecontent #timerparamstable #occurence").val(data["9"]);
 								$("#scenecontent #timerparamstable #weekdays").val(data["10"]);
 								$("#scenecontent #timerparamstable #rdate").hide();
@@ -1142,7 +1142,7 @@ define(['app'], function (app) {
 								$("#scenecontent #timerparamstable #roccurence").show();
 								$("#scenecontent #timerparamstable #rmonths").hide();
 							}
-							else if (timerType==8) {
+							else if (timerType==10) {
 								$("#scenecontent #timerparamstable #months").val(data["7"]);
 								$("#scenecontent #timerparamstable #days").val(data["8"]);
 								$("#scenecontent #timerparamstable #rdate").hide();
@@ -1151,7 +1151,7 @@ define(['app'], function (app) {
 								$("#scenecontent #timerparamstable #roccurence").hide();
 								$("#scenecontent #timerparamstable #rmonths").show();
 							}
-							else if (timerType==9) {
+							else if (timerType==11) {
 								$("#scenecontent #timerparamstable #months").val(data["7"]);
 								$("#scenecontent #timerparamstable #occurence").val(data["9"]);
 								$("#scenecontent #timerparamstable #weekdays").val(data["10"]);
@@ -1255,28 +1255,28 @@ define(['app'], function (app) {
 					$("#scenecontent #timerparamstable #roccurence").hide();
 					$("#scenecontent #timerparamstable #rmonths").hide();
 				}
-				else if (timerType==6) {
+				else if (timerType==8) {
 					$("#scenecontent #timerparamstable #rdate").hide();
 					$("#scenecontent #timerparamstable #rnorm").hide();
 					$("#scenecontent #timerparamstable #rdays").show();
 					$("#scenecontent #timerparamstable #roccurence").hide();
 					$("#scenecontent #timerparamstable #rmonths").hide();
 				}
-				else if (timerType==7) {
+				else if (timerType==9) {
 					$("#scenecontent #timerparamstable #rdate").hide();
 					$("#scenecontent #timerparamstable #rnorm").hide();
 					$("#scenecontent #timerparamstable #rdays").hide();
 					$("#scenecontent #timerparamstable #roccurence").show();
 					$("#scenecontent #timerparamstable #rmonths").hide();
 				}
-				else if (timerType==8) {
+				else if (timerType==10) {
 					$("#scenecontent #timerparamstable #rdate").hide();
 					$("#scenecontent #timerparamstable #rnorm").hide();
 					$("#scenecontent #timerparamstable #rdays").show();
 					$("#scenecontent #timerparamstable #roccurence").hide();
 					$("#scenecontent #timerparamstable #rmonths").show();
 				}
-				else if (timerType==9) {
+				else if (timerType==11) {
 					$("#scenecontent #timerparamstable #rdate").hide();
 					$("#scenecontent #timerparamstable #rnorm").hide();
 					$("#scenecontent #timerparamstable #rdays").hide();

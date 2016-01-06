@@ -6401,7 +6401,7 @@ namespace http {
 		{
 			m_retstr = "";
 			char szTmp[200];
-			for (int ii = 0; ii < TTYPE_MONTHLY; ii++)
+			for (int ii = 0; ii <= TTYPE_FIXEDDATETIME; ii++)
 			{
 				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
 				m_retstr += szTmp;

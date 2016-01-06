@@ -118,10 +118,12 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_BEFORESUNSET, "Before Sunset" },
 		{ TTYPE_AFTERSUNSET, "After Sunset" },
 		{ TTYPE_FIXEDDATETIME, "Fixed Date/Time" },
+		{ TTYPE_WEEKSODD, "Odd Weeknumbers"},
+		{ TTYPE_WEEKSEVEN, "Even Weeknumbers" },
 		{ TTYPE_MONTHLY, "Monthly" },
-		{ TTYPE_MONTHLY_WD, "Monthly (weekday)" },
+		{ TTYPE_MONTHLY_WD, "Monthly (Weekday)" },
 		{ TTYPE_YEARLY, "Yearly" },
-		{ TTYPE_YEARLY_WD, "Yearly (weekday)" },
+		{ TTYPE_YEARLY_WD, "Yearly (Weekday)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);
