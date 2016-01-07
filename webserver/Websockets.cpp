@@ -226,6 +226,7 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 	if (itt != myWebem->m_sessions.end()) {
 		session = itt->second;
 	}
+	session.rights = 1;
 	req.method = "GET";
 	std::string data = packet_data.substr(1, packet_data.length() - 2); // json-decode
 	size_t pos = data.find("/");

@@ -170,8 +170,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						}
 						else {
 							var send = {
-								title: "Devices",
-								item: msg.data.result[0]
+								title: "Devices", // msg.title
+								item: msg.data.result[0],
+								ServerTime: msg.data.ServerTime,
+								Sunrise: msg.data.Sunrise,
+								Sunset: msg.data.Sunset
 							}
 							$rootScope.$broadcast('jsonupdate', send);
 						}

@@ -1612,7 +1612,7 @@ define(['app'], function (app) {
 		// adapt this function from /js/domoticz.js
 		$scope.SwitchLight = function (idx, current_status) {
 			var new_status = current_status == "On" ? "Off" : "On";
-			var passcode = "";
+			var passcode = "True"; // todo: ask for pass code
 			var url = "json.htm?type=command&param=switchlight" +
 				   "&idx=" + idx +
 				   "&switchcmd=" + new_status +
