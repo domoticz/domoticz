@@ -267,6 +267,7 @@
     <ClInclude Include="..\webserver\proxyclient.h" />
     <ClInclude Include="..\webserver\proxycommon.h" />
     <ClInclude Include="..\webserver\sha1.hpp" />
+    <ClInclude Include="..\webserver\WebsocketHandler.h" />
     <ClInclude Include="..\webserver\WebsocketPush.h" />
     <ClInclude Include="..\webserver\Websockets.hpp" />
     <ClInclude Include="..\zip\ioapi.h" />
@@ -536,6 +537,7 @@
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />
     <ClCompile Include="..\webserver\server.cpp" />
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp" />
     <ClCompile Include="..\webserver\WebsocketPush.cpp" />
     <ClCompile Include="..\webserver\Websockets.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />

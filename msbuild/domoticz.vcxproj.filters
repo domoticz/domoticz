@@ -807,6 +807,9 @@
     <ClInclude Include="..\webserver\WebsocketPush.h">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\WebsocketHandler.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -1299,6 +1302,9 @@
       <Filter>Webserver</Filter>
     </ClCompile>
     <ClCompile Include="..\webserver\WebsocketPush.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
