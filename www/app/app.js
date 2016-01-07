@@ -116,7 +116,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 							};
 						}
 						var use_http = !(url.substr(0, 9) == "json.htm?"); // && url.match(/type=devices/));
-						console.log(url);
 						if (use_http) {
 							// get via json get
 							url = "http://192.168.33.11:8080/" + url; // todo, test
@@ -159,13 +158,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					this.websocket.$on('$close', function () {
 					});
 					this.websocket.$on('$message', function (msg) {
-						console.log(msg);
 						msg = JSON.parse(msg);
 						var requestid = msg.requestid;
 						if (requestid >= 0) {
 							var callback_obj = this.callbackqueue[requestid];
 							var settings = callback_obj.settings;
-							//console.log(msg);
 							callback_obj.defer_object.resolveWith(settings.context, [ settings.success, msg.data ]);
 						}
 						else {
@@ -196,7 +193,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					this.Init();
 					var defer_object = new $.Deferred();
 					defer_object.done(function (fn, json) {
-						console.log(json);
 						fn.call(this, json);
 					});
 					this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });

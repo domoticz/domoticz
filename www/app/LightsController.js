@@ -2300,7 +2300,9 @@ define(['app'], function (app) {
 			livesocket.getJson(url);
 			// todo: check
 			livesocket.getJson("json.htm?type=devices&rid=" + $scope.item.idx, function (data) {
-				$scope.item = data.result[0];
+				if (data.status == "OK") {
+					$scope.item = data.result[0];
+				}
 			});
 		};
 

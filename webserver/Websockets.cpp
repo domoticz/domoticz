@@ -216,6 +216,11 @@ boost::tribool CWebsocket::parse(const unsigned char *begin, size_t size, size_t
 	return false;
 }
 
+// we receive a json request here. the final format is still to be decided
+// todo: move the body of this function to the websocket handler, so it can be
+// re-used from the proxy client
+// note: We mimic a web request here. This is just for testing purposes to see
+//       if everything works. We need a proper implementation here.
 void CWebsocket::OnReceiveText(const std::string &packet_data)
 {
 	request req;
@@ -226,9 +231,13 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 	if (itt != myWebem->m_sessions.end()) {
 		session = itt->second;
 	}
-	session.rights = 1;
+	if (session.rights <= 0) {
+		// of course we wont want this in the production code
+		session.rights = 1;
+	}
 	req.method = "GET";
-	std::string data = packet_data.substr(1, packet_data.length() - 2); // json-decode
+	// Expected format of packet_data: "requestid/query-string" (including the quotes)
+	std::string data = packet_data.substr(1, packet_data.length() - 2); // json-decode, todo: include json.h
 	size_t pos = data.find("/");
 	std::string requestid = data.substr(0, pos);
 	std::string querystring = data.substr(pos + 1);
@@ -237,9 +246,9 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 	req.http_version_minor = 1;
 	req.headers.resize(0); // todo: do we need any headers?
 	req.content.clear();
-	std::string isgzipped = "0";
 	if (myWebem->CheckForPageOverride(session, req, rep)) {
 		if (rep.status == reply::ok) {
+			// todo: json_encode
 			std::string response = "{ \"event\": \"response\", \"requestid\": " + requestid + ", \"data\": " + rep.content + " }";
 			std::string frame = CreateFrame(opcode_text, response);
 			conn->MyWrite(frame);
@@ -249,22 +258,14 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 	std::string response = "0" + requestid + "/{ \"error\": \"Internal Server Error!!!\" }";
 	std::string frame = CreateFrame(opcode_text, response);
 	conn->MyWrite(frame);
-	// todo: send back an error if we come here
 }
 
 void CWebsocket::OnReceiveBinary(const std::string &packet_data)
 {
-	// the binary protocol is as follows:
-	// 1st byte gzip indicator (0 or 1).
-	// if 0, next bytes are text
-	// if 1, next bytes are gzipped text
-	bool isGzipped = ((char)packet_data.at(0) != '0');
-	if (isGzipped) {
-		// todo: unzip the data
-	}
-	else {
-		OnReceiveText(packet_data.substr(1));
-	}
+	// we assume we received a gzipped json request
+	// todo: unzip the data
+	std::string the_data = packet_data;
+	OnReceiveText(the_data);
 }
 
 void CWebsocket::SendPing()
@@ -293,6 +294,7 @@ void CWebsocket::SendClose(const std::string &packet_data)
 	conn->MyWrite(frame);
 }
 
+// todo: move this function to websocket handler
 void CWebsocket::store_session_id(const request &req, const reply &rep)
 {
 	//Check cookie if still valid
