@@ -1609,20 +1609,6 @@ define(['app'], function (app) {
 			return htm;
 		}
 
-		// adapt this function from /js/domoticz.js
-		$scope.SwitchLight = function (idx, current_status) {
-			var new_status = current_status == "On" ? "Off" : "On";
-			var passcode = "True"; // todo: ask for pass code
-			var url = "json.htm?type=command&param=switchlight" +
-				   "&idx=" + idx +
-				   "&switchcmd=" + new_status +
-				   "&level=0" +
-				   "&passcode=" + passcode;
-			livesocket.getJson(url);
-			// todo: remove
-			//livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=Name&lastupdate="+$.LastUpdateTime+"&plan="+window.myglobals.LastPlanSelected, false);
-		};
-
 		function ShowLights() {
 			// dummy
 		}
@@ -2281,7 +2267,7 @@ define(['app'], function (app) {
 		livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=Name&lastupdate="+$.LastUpdateTime+"&plan="+window.myglobals.LastPlanSelected, false);
 	}
 	])
-	.controller('itemController', [ '$scope', function ($scope) {
+	.controller('itemController', [ '$scope', 'livesocket', function ($scope, livesocket) {
 		$scope.itembgcolor = function () {
 			var nbackcolor="#D4E1EE";
 			if ($scope.item.HaveTimeout==true) {
@@ -2302,5 +2288,21 @@ define(['app'], function (app) {
 					$scope.item = result;
 				}
 		});
+		// adapt this function from /js/domoticz.js
+		$scope.SwitchLight = function () {
+			var new_status = $scope.item.Status == "On" ? "Off" : "On";
+			var passcode = "True"; // todo: port from old function
+			var url = "json.htm?type=command&param=switchlight" +
+				   "&idx=" + $scope.item.idx +
+				   "&switchcmd=" + new_status +
+				   "&level=0" +
+				   "&passcode=" + passcode;
+			livesocket.getJson(url);
+			// todo: check
+			livesocket.getJson("json.htm?type=devices&rid=" + $scope.item.idx, function (data) {
+				$scope.item = data.result[0];
+			});
+		};
+
 	}]);
 });
