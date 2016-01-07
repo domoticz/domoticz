@@ -1,5 +1,5 @@
 define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.scrollglue', 'angular-websocket'], function (angularAMD) {
-	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.directives-round-progress','angular.scrollglue']);
+	var app = angular.module('domoticz', ['ngRoute','ngAnimate','ngGrid','highcharts-ng', 'treeControl','ngDraggable','ngSanitize','angular-md5','ui.bootstrap','angular.directives-round-progress','angular.directives-round-progress','angular.scrollglue', 'ngWebsocket']);
 
 		isOnline=false;
 		dashboardType=1;
@@ -105,6 +105,105 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 	  };
 	});
+
+		app.service('livesocket', [ '$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
+			return {
+				initialised: false,
+				getJson: function(url, callback_fn) {
+						if (!callback_fn) {
+							callback_fn = function (data) {
+								$rootScope.$broadcast('jsonupdate', data);
+							};
+						}
+						var use_http = !(url.substr(0, 9) == "json.htm?"); // && url.match(/type=devices/));
+						console.log(url);
+						if (use_http) {
+							// get via json get
+							url = "http://192.168.33.11:8080/" + url; // todo, test
+							$http.get(url).success(callback_fn);
+						}
+						else {
+							var settings = {
+								url: url,
+								success: callback_fn
+							};
+							settings.context = settings;
+							return this.SendAsync(settings);
+						}
+					},
+				Init: function () {
+					if (this.initialised) {
+						return;
+					}
+					this.initialised = true;
+					var loc = window.location, ws_uri;
+					if (loc.protocol === "https:") {
+						ws_uri = "wss:";
+					} else {
+						ws_uri = "ws:";
+					}
+					ws_uri += "//" + loc.host;
+					ws_uri += loc.pathname + "json";
+					this.websocket = $websocket.$new({
+						url: ws_uri,
+						protocols: ["domoticz"],
+						lazy: false,
+						reconnect: true,
+						reconnectInterval: 2000,
+						enqueue: true
+					});
+					this.websocket.callbackqueue = [];
+					this.websocket.$on('$open', function () {
+						// alert("websocket opened");
+					});
+					this.websocket.$on('$close', function () {
+					});
+					this.websocket.$on('$message', function (msg) {
+						console.log(msg);
+						msg = JSON.parse(msg);
+						var requestid = msg.requestid;
+						if (requestid >= 0) {
+							var callback_obj = this.callbackqueue[requestid];
+							var settings = callback_obj.settings;
+							//console.log(msg);
+							callback_obj.defer_object.resolveWith(settings.context, [ settings.success, msg.data ]);
+						}
+						else {
+							var send = {
+								title: "Devices",
+								item: msg.data.result[0]
+							}
+							$rootScope.$broadcast('jsonupdate', send);
+						}
+						if(!$rootScope.$$phase) { // prevents triggering a $digest if there's already one in progress
+							$rootScope.$digest();
+						}
+					});
+				},
+				Send: function (data) {
+					this.Init();
+					this.websocket.$$send(data);
+					//this.websocket.$emit('message', data);
+				},
+				SendLoginInfo: function (sessionid) {
+					this.Send(new Blob [ "2", sessionid]);
+				},
+				/* mimic ajax call */
+				SendAsync: function (settings) {
+					this.Init();
+					var defer_object = new $.Deferred();
+					defer_object.done(function (fn, json) {
+						console.log(json);
+						fn.call(this, json);
+					});
+					this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
+					var requestid = this.websocket.callbackqueue.length - 1;
+					var content = requestid + "/" + settings.url.substr(9);
+					this.Send(content);
+					return defer_object.promise();
+				}
+		}}]);
+
 	app.directive('sbLoad', ['$parse', function ($parse) {
 	return {
 	  restrict: 'A',
@@ -623,92 +722,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				});
 			}
 		};
-
-		app.service('livesocket', [ '$websocket', function ($websocket) {
-			return {
-				initialised: false,
-				Init: function () {
-					if (this.initialised) {
-						return;
-					}
-					this.initialised = true;
-					alert("here");
-					var loc = window.location, ws_uri;
-					if (loc.protocol === "https:") {
-						ws_uri = "wss:";
-					} else {
-						ws_uri = "ws:";
-					}
-					ws_uri += "//" + loc.host;
-					ws_uri += loc.pathname + "json";
-					this.websocket = $websocket.$new({
-						url: ws_uri,
-						protocols: ["domoticz"],
-						lazy: false,
-						reconnect: true,
-						reconnectInterval: 2000,
-						enqueue: true
-					});
-					this.callbackqueue = [];
-					this.websocket.$on('$open', function () {
-						alert("websocket opened");
-					});
-					this.websocket.$on('$close', function () {
-					});
-					this.websocket.$on('$message', function (evt) {
-						/*
-						var msg = evt.data;
-						if (msg == "") {
-							return;
-						}
-						var isgzipped = (msg.substr(0, 1) != "0");
-						msg = msg.substr(1);
-						if (isgzipped) {
-							// todo: unzip msg
-						}
-						var pos = msg.indexOf("/");
-						var requestid = parseInt(msg.substr(0, pos));
-						msg = msg.substr(pos + 1);
-						var callback_obj = callbackqueue[requestid];
-						var settings = callback_obj.settings;
-						console.log(settings);
-						//console.log(msg);
-						callback_obj.defer_object.resolveWith(settings.context, [ settings.success, JSON.parse(msg) ]);
-						*/
-						// emit event data here to listening elements
-						alert(evt);
-						if(!$rootScope.$$phase) { // prevents triggering a $digest if there's already one in progress
-							$rootScope.$digest();
-						}
-					});
-					this.Send("command=getconfig"); // test
-				},
-				Send: function (data) {
-					this.Init();
-					this.websocket.$emit(data);
-				},
-				SendLoginInfo: function (sessionid) {
-					this.Send(new Blob [ "2", sessionid]);
-				},
-				/* mimic ajax call */
-				SendAsync: function (settings) {
-					var defer_object = new $.Deferred();
-					defer_object.done(function (fn, json) {
-						console.log(json);
-						fn.call(this, json);
-					});
-					callbackqueue.push({ settings: settings, defer_object: defer_object });
-					var requestid = this.callbackqueue.length - 1;
-					var isgzipped = "0";
-					var content = requestid + "/" + settings.url.substr(9);
-					if (isgzipped != "0") {
-						// todo: gzip content
-					}
-					this.Send(new Blob( [ isgzipped, content ] ));
-					return defer_object.promise();
-				}
-		}}]);
-
 
 		app.run(function () { app.run(function ($livesocket) { $livesocket.Init(); })});
 			/*

@@ -3,6 +3,7 @@
 #include "connection.hpp"
 #include "cWebem.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include "WebsocketPush.h"
 
 namespace http {
@@ -153,7 +154,7 @@ private:
 };
 
 
-CWebsocket::CWebsocket(connection *pConn, cWebem *pWebEm)
+CWebsocket::CWebsocket(connection *pConn, cWebem *pWebEm) : m_Push(this)
 {
 	start_new_packet = true;
 	conn = pConn;
@@ -162,6 +163,7 @@ CWebsocket::CWebsocket(connection *pConn, cWebem *pWebEm)
 
 CWebsocket::~CWebsocket()
 {
+	m_Push.Stop();
 }
 
 boost::tribool CWebsocket::parse(const unsigned char *begin, size_t size, size_t &bytes_consumed, bool &keep_alive)
@@ -177,6 +179,7 @@ boost::tribool CWebsocket::parse(const unsigned char *begin, size_t size, size_t
 		last_opcode = frame.Opcode();
 	}
 	packet_data += frame.Payload();
+	m_Push.Start();
 	if (frame.isFinal()) {
 		// packet is ready for packet handler
 		start_new_packet = true;
@@ -224,9 +227,10 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 		session = itt->second;
 	}
 	req.method = "GET";
-	size_t pos = packet_data.find("/");
-	std::string requestid = packet_data.substr(0, pos);
-	std::string querystring = packet_data.substr(pos + 1);
+	std::string data = packet_data.substr(1, packet_data.length() - 2); // json-decode
+	size_t pos = data.find("/");
+	std::string requestid = data.substr(0, pos);
+	std::string querystring = data.substr(pos + 1);
 	req.uri = "/json.htm?" + querystring;
 	req.http_version_major = 1;
 	req.http_version_minor = 1;
@@ -235,7 +239,7 @@ void CWebsocket::OnReceiveText(const std::string &packet_data)
 	std::string isgzipped = "0";
 	if (myWebem->CheckForPageOverride(session, req, rep)) {
 		if (rep.status == reply::ok) {
-			std::string response = isgzipped + requestid + "/" + rep.content;
+			std::string response = "{ \"event\": \"response\", \"requestid\": " + requestid + ", \"data\": " + rep.content + " }";
 			std::string frame = CreateFrame(opcode_text, response);
 			conn->MyWrite(frame);
 			return;
@@ -354,6 +358,13 @@ void CWebsocket::store_session_id(const request &req, const reply &rep)
 			}
 		}
 	}
+}
+
+void CWebsocket::OnDeviceChanged(const unsigned long long DeviceRowIdx)
+{
+	std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
+	std::string packet = "\"-1/" + query + "\"";
+	OnReceiveText(packet);
 }
 
 }

@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('LightsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope,$rootScope,$location,$http,$interval,permissions) {
+	app.controller('LightsController', [ '$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', 'livesocket', function($scope,$rootScope,$location,$http,$interval,permissions,livesocket) {
 
 		DeleteTimer = function(idx)
 		{
@@ -1609,6 +1609,20 @@ define(['app'], function (app) {
 			return htm;
 		}
 
+		// adapt this function from /js/domoticz.js
+		$scope.SwitchLight = function (idx, current_status) {
+			var new_status = current_status == "On" ? "Off" : "On";
+			var passcode = "";
+			var url = "json.htm?type=command&param=switchlight" +
+				   "&idx=" + idx +
+				   "&switchcmd=" + new_status +
+				   "&level=0" +
+				   "&passcode=" + passcode;
+			livesocket.getJson(url);
+			// todo: remove
+			//livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=Name&lastupdate="+$.LastUpdateTime+"&plan="+window.myglobals.LastPlanSelected, false);
+		};
+
 		function ShowLights() {
 			// dummy
 		}
@@ -2256,19 +2270,15 @@ define(['app'], function (app) {
 			
 		});
 	} ])
-	.controller('itemListController', [ '$scope', '$rootScope', '$http', function ($scope, $rootScope, $http) {
-		// this updates the complete page
+	.controller('itemListController', [ '$scope', 'livesocket', function ($scope, livesocket) {
 		$scope.$on('jsonupdate', function (event, data) {
+			// this updates the complete page
 			if (data.title == "Devices" &&
 				typeof data.result  !== 'undefined') {
 					$scope.result = data.result;
 				}
 		});
-		$http.get("json.htm?type=devices&filter=light&used=true&order=Name&lastupdate="+$.LastUpdateTime+"&plan="+window.myglobals.LastPlanSelected).success(
-			function (data) {
-				$rootScope.$broadcast('jsonupdate', data);
-			}
-		);
+		livesocket.getJson("json.htm?type=devices&filter=light&used=true&order=Name&lastupdate="+$.LastUpdateTime+"&plan="+window.myglobals.LastPlanSelected, false);
 	}
 	])
 	.controller('itemController', [ '$scope', function ($scope) {

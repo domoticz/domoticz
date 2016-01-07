@@ -1,20 +1,31 @@
 #include "stdafx.h"
 #include "WebsocketPush.h"
+#include "Websockets.hpp"
 #include "../main/mainworker.h"
 
-CWebSocketPush::CWebSocketPush()
+CWebSocketPush::CWebSocketPush(http::server::CWebsocket *sock)
 {
 	listenRoomplan = false;
 	listenDeviceTable = false;
+	m_sock = sock;
+	isStarted = false;
 }
 
 void CWebSocketPush::Start()
 {
+	if (isStarted) {
+		return;
+	}
+	isStarted = true;
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CWebSocketPush::OnDeviceReceived, this, _1, _2, _3, _4));
 }
 
 void CWebSocketPush::Stop()
 {
+	if (!isStarted) {
+		return;
+	}
+	isStarted = false;
 	ClearListenTable();
 	if (m_sConnection.connected())
 		m_sConnection.disconnect();
@@ -83,6 +94,7 @@ bool CWebSocketPush::WeListenTo(const unsigned long long DeviceRowIdx)
 
 void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
+	m_sock->OnDeviceChanged(DeviceRowIdx);
 	if (WeListenTo(DeviceRowIdx)) {
 		// push notification to web socket
 	}

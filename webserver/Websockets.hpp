@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/logic/tribool.hpp>
 #include <string>
+#include "WebsocketPush.h"
 #include "request.hpp"
 #include "reply.hpp"
 
@@ -27,6 +28,7 @@ namespace http {
 			void SendClose(const std::string &packet_data);
 			void SendPing();
 			void store_session_id(const request &req, const reply &rep);
+			void OnDeviceChanged(const unsigned long long DeviceRowIdx);
 		private:
 			void OnReceiveText(const std::string &packet_data);
 			void OnReceiveBinary(const std::string &packet_data);
@@ -39,6 +41,7 @@ namespace http {
 			const char *OUR_PING_ID = "fd";
 			std::string sessionid;
 			cWebem* myWebem;
+			CWebSocketPush m_Push;
 		};
 
 	}

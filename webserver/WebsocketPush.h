@@ -2,10 +2,16 @@
 #include <boost/signals2.hpp>
 #include "../main/Push.h"
 
+namespace http {
+	namespace server {
+		class CWebsocket;
+	}
+}
+
 class CWebSocketPush : public CPush
 {
 public:
-	CWebSocketPush();
+	CWebSocketPush(http::server::CWebsocket *sock);
 	void Start();
 	void Stop();
 	void ListenTo(const unsigned long long DeviceRowIdx);
@@ -25,5 +31,7 @@ private:
 	bool listenDeviceTable;
 	std::vector<unsigned long long> listenIdxs;
 	boost::mutex listenMutex;
+	http::server::CWebsocket *m_sock;
+	bool isStarted;
 };
 
