@@ -3053,7 +3053,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetTimerList";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness, t.Day, t.Month, t.Occurence FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d) ORDER BY d.[Name], t.Time",
+				result = m_sql.safe_query("SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness, t.MDay, t.Month, t.Occurence FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d) ORDER BY d.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
 				if (result.size() > 0)
 				{
@@ -3092,7 +3092,7 @@ namespace http {
 						root["result"][ii]["Hue"] = atoi(sd[9].c_str());
 						root["result"][ii]["Days"] = atoi(sd[10].c_str());
 						root["result"][ii]["Randomness"] = (atoi(sd[11].c_str()) == 0) ? "false" : "true";
-						root["result"][ii]["Day"] = atoi(sd[12].c_str());
+						root["result"][ii]["MDay"] = atoi(sd[12].c_str());
 						root["result"][ii]["Month"] = atoi(sd[13].c_str());
 						root["result"][ii]["Occurence"] = atoi(sd[14].c_str());
 						ii++;
@@ -3104,7 +3104,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetSceneTimerList";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, s.[Name], t.SceneRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness, t.Day, T.Month, t.Occurence FROM SceneTimers as t, Scenes as s WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d) ORDER BY s.[Name], t.Time",
+				result = m_sql.safe_query("SELECT t.ID, t.Active, s.[Name], t.SceneRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness, t.MDay, T.Month, t.Occurence FROM SceneTimers as t, Scenes as s WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d) ORDER BY s.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
 				if (result.size() > 0)
 				{
@@ -3143,7 +3143,7 @@ namespace http {
 						root["result"][ii]["Hue"] = atoi(sd[9].c_str());
 						root["result"][ii]["Days"] = atoi(sd[10].c_str());
 						root["result"][ii]["Randomness"] = (atoi(sd[11].c_str()) == 0) ? "false" : "true";
-						root["result"][ii]["Day"] = atoi(sd[12].c_str());
+						root["result"][ii]["MDay"] = atoi(sd[12].c_str());
 						root["result"][ii]["Month"] = atoi(sd[13].c_str());
 						root["result"][ii]["Occurence"] = atoi(sd[14].c_str());
 						ii++;

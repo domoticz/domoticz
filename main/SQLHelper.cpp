@@ -1624,7 +1624,7 @@ bool CSQLHelper::OpenDatabase()
 			}
 			if (!DoesColumnExistsInTable("Day", "Timers"))
 			{
-				query("ALTER TABLE Timers ADD COLUMN [Day] INTEGER DEFAULT 0");
+				query("ALTER TABLE Timers ADD COLUMN [MDay] INTEGER DEFAULT 0");
 			}
 			if (!DoesColumnExistsInTable("Occurence", "Timers"))
 			{
@@ -1636,7 +1636,7 @@ bool CSQLHelper::OpenDatabase()
 			}
 			if (!DoesColumnExistsInTable("Day", "SceneTimers"))
 			{
-				query("ALTER TABLE SceneTimers ADD COLUMN [Day] INTEGER DEFAULT 0");
+				query("ALTER TABLE SceneTimers ADD COLUMN [MDay] INTEGER DEFAULT 0");
 			}
 			if (!DoesColumnExistsInTable("Occurence", "SceneTimers"))
 			{

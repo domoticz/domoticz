@@ -79,7 +79,7 @@ define(['app'], function (app) {
 				if ($('#lightcontent #timerparamstable #ChkSun').is(":checked"))
 					tsettings.days|=0x40;
 			}
-			tsettings.day=$("#lightcontent #timerparamstable #days").val();
+			tsettings.mday=$("#lightcontent #timerparamstable #days").val();
 			tsettings.month=$("#lightcontent #timerparamstable #months").val();
 			tsettings.occurence=$("#lightcontent #timerparamstable #occurence").val();
 			tsettings.weekday=$("#lightcontent #timerparamstable #weekdays").val();
@@ -139,7 +139,7 @@ define(['app'], function (app) {
 							"&level=" + tsettings.level +
 							"&hue=" + tsettings.hue +
 							"&days=" + tsettings.days +
-							"&day=" + tsettings.day +
+							"&mday=" + tsettings.mday +
 							"&month=" + tsettings.month +
 							"&occurence=" + tsettings.occurence,
 				 async: false, 
@@ -194,7 +194,7 @@ define(['app'], function (app) {
 							"&level=" + tsettings.level +
 							"&hue=" + tsettings.hue +
 							"&days=" + tsettings.days +
-							"&day=" + tsettings.day +
+							"&mday=" + tsettings.mday +
 							"&month=" + tsettings.month +
 							"&occurence=" + tsettings.occurence,
 				 async: false, 
@@ -318,14 +318,14 @@ define(['app'], function (app) {
 						}
 					}
 					else if (item.Type==8) {
-						DayStrOrig="Monthly on Day " + item.Day;
+						DayStrOrig="Monthly on Day " + item.MDay;
 					}
 					else if (item.Type==9) {
 						var Weekday = Math.log2(parseInt(item.Days));
 						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
 					}
 					else if (item.Type==10) {
-						DayStrOrig="Yearly on " + item.Day + " " + $.myglobals.MonthStr[item.Month-1];
+						DayStrOrig="Yearly on " + item.MDay + " " + $.myglobals.MonthStr[item.Month-1];
 					}
 					else if (item.Type==11) {
 						var Weekday = Math.log2(parseInt(item.Days));
@@ -368,7 +368,7 @@ define(['app'], function (app) {
 						"5": $.t(tCommand),
 						"6": DayStr,
 						"7": item.Month,
-						"8": item.Day,
+						"8": item.MDay,
 						"9": item.Occurence,
 						"10": Math.log2(parseInt(item.Days))
 					} );
