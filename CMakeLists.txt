@@ -136,12 +136,12 @@ FIND_PROGRAM(GIT_EXECUTABLE git
   DOC "git command line client")
 
 MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C "${dir}" rev-list HEAD --count
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_REVISION)
 
-Gitversion_GET_REVISION(. ProjectRevision)
+Gitversion_GET_REVISION("${CMAKE_CURRENT_SOURCE_DIR}" ProjectRevision)
 MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
 MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 
