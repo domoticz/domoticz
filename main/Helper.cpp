@@ -556,23 +556,23 @@ void rgb2hsl(const unsigned char r, const unsigned char g, const unsigned char b
 	double rd = (double)r / 255;
 	double gd = (double)g / 255;
 	double bd = (double)b / 255;
-	double max = max(rd, max(gd, bd));
-	double min = min(rd, min(gd, bd));
-	double h, s, l = (max + min) / 2;
+	double vmax = max(rd, max(gd, bd));
+	double vmin = min(rd, min(gd, bd));
+	double h, s, l = (vmax + vmin) / 2;
 
-	if (max == min) {
+	if (vmax == vmin) {
 		h = s = 0; // achromatic
 	}
 	else {
-		double d = max - min;
-		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-		if (max == rd) {
+		double d = vmax - vmin;
+		s = l > 0.5 ? d / (2 - vmax - vmin) : d / (vmax + vmin);
+		if (vmax == rd) {
 			h = (gd - bd) / d + (gd < bd ? 6 : 0);
 		}
-		else if (max == gd) {
+		else if (vmax == gd) {
 			h = (bd - rd) / d + 2;
 		}
-		else if (max == bd) {
+		else if (vmax == bd) {
 			h = (rd - gd) / d + 4;
 		}
 		h /= 6;
