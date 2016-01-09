@@ -23,6 +23,9 @@ struct tScheduleItem
 	float Temperature;
 	bool bUseRandomness;
 	int Days;
+	int MDay;
+	int Month;
+	int Occurence;
 	//internal
 	time_t startTime;
 };

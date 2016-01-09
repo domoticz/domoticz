@@ -1622,7 +1622,7 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE Timers ADD COLUMN [Month] INTEGER DEFAULT 0");
 			}
-			if (!DoesColumnExistsInTable("Day", "Timers"))
+			if (!DoesColumnExistsInTable("MDay", "Timers"))
 			{
 				query("ALTER TABLE Timers ADD COLUMN [MDay] INTEGER DEFAULT 0");
 			}
@@ -1634,7 +1634,7 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE SceneTimers ADD COLUMN [Month] INTEGER DEFAULT 0");
 			}
-			if (!DoesColumnExistsInTable("Day", "SceneTimers"))
+			if (!DoesColumnExistsInTable("MDay", "SceneTimers"))
 			{
 				query("ALTER TABLE SceneTimers ADD COLUMN [MDay] INTEGER DEFAULT 0");
 			}
