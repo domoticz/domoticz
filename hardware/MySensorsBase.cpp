@@ -1082,7 +1082,8 @@ bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, cons
 	int repeats = 2;
 
 	//Resend failed command
-	while ((!m_bAckReceived) and (repeat < repeats)) {
+	while ((!m_bAckReceived) && (repeat < repeats))
+	{
 		SendCommandInt(NodeID, ChildID, messageType, bUseAck, SubType, Payload);
 		if (!bUseAck)
 			return true;
