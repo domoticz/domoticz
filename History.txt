@@ -4,6 +4,7 @@ Version 2.3xxx
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
+- Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Log View, added options to display All/Status/Error
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
 - Implemented: MySensors Ethernet gateway will now request the gateway version on startup
@@ -21,6 +22,7 @@ Version 2.3xxx
 - Implemented: RFXCom support for Legrand CAD
 - Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: SolarEdge via Web API
+- Implemented: Temperature Tab room selector
 - Implemented: Thermosmart option to set specify outside temperature sensor
 - Implemented: Waterflow sensor
 - Implemented: Wind Beaufort scale
@@ -74,7 +76,6 @@ Version 2.3521 (October 31th 2015)
 - Implemented: Hebrew translation (big thanks to mickeyv!!)
 - Implemented: HTTP Data push, new types for Type/SubType/Hostname/Device Name
 - Implemented: HTTPS support for On/Off actions
-- Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Icon Uploader, now possible to edit name and description
 - Implemented: Icon Uploader, now possible to upload zip files with multiple folders
 - Implemented: Icons for RFXMeter Gas/Water
