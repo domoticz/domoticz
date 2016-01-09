@@ -299,6 +299,7 @@
 		<Product type="0300" id="0107" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0300" id="0109" name="FGR221 Roller Shutter Controller" config="fibaro/fgr221.xml"/>
 		<Product type="0301" id="1001" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
+		<Product type="0302" id="1000" name="FGRM222 Roller Shutter Controller 2" config="fibaro/fgrm222.xml"/>
 		<Product type="0400" id="0104" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0105" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
 		<Product type="0400" id="0106" name="FGS211 Switch 3kW" config="fibaro/fgs211.xml" />
@@ -354,6 +355,7 @@
 		<Product type="0311" id="010b" name="SSA1 / SSA2 - Siren/Strobe Light Alarm"/>
 		<Product type="0313" id="010b" name="SSA2USR - Siren/Strobe Light Alarm"/>
 		<Product type="0331" id="010b" name="SSA3 - Siren/Strobe Light Alarm"/>
+		<Product type="0453" id="0110" name="MIMOlite Wireless Interface/Bridge Module" config="fortrezz/mimolite.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0017" name="HiTech Automation">
 	</Manufacturer>
@@ -497,6 +499,7 @@
 	<Manufacturer id="007a" name="Merten">
 		<Product type="8001" id="0001" name="Plug-in Appliance Module"/>
 		<Product type="8002" id="0001" name="Plug-in Dimmer Module"/>
+		<Product type="8003" id="0001" name="Plug-in Roller Shutter Module" config="merten/507801.xml"/>
 		<Product type="4003" id="0001" name="Wall Dimmer Module"/>
 		<Product type="4002" id="0001" name="Wall Appliance Module"/>
 		<Product type="4004" id="0001" name="Wall Roller Shutter Module" config="merten/50x5xx.xml"/>
@@ -554,9 +557,7 @@
 		<Product type="1100" id="0002" name="123580 Plug-in Dimmer" config="popp/123580.xml" />
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml" />
 		<Product type="0003" id="0001" name="POPE009105 Wall Plug switch Schuko (IP44) - Gen 5" config="popp/POPE009105.xml" />
-	</Manufacturer>
-	<Manufacturer id="0169" name="Popp">
-		<Product type="0001" id="0001" name="ZWeather" config="popp/zweather.xml" />
+		<Product type="0100" id="0101" name="Battery Wall Switch Z-Wave+" config="popp/POP009303.xml" />
 	</Manufacturer>
 	<Manufacturer id="0064" name="Popp / Duwi">
 		<Product type="0001" id="0000" name="ZW EDAN 300 Flush Mounted Dimmer" />
@@ -588,6 +589,7 @@
 		<Product type="0002" id="0052" name="ZMNHAD1 Flush 1 Relay" config="qubino/ZMNHAD1.xml"/>
 		<Product type="0002" id="0053" name="ZMNHND1 Flush 1D relay" config="qubino/ZMNHND1.xml"/>
 		<Product type="0003" id="0002" name="ZMNHCA2 Flush Shutter" config="qubino/ZMNHCA2.xml"/>
+                <Product type="0003" id="0052" name="ZMNHCD Flush Shutter" config="qubino/ZMNHCD.xml"/>
 		<Product type="0004" id="0001" name="ZMNHJA2 Flush Dimmer Fil Pilote" config="qubino/ZMNHJA2.xml"/>
 		<Product type="0005" id="0001" name="ZMNHIA2 Flush on/off thermostat" config="qubino/ZMNHIA2.xml"/>
 	</Manufacturer>
@@ -632,6 +634,9 @@
 	<Manufacturer id="0069" name="Seluxit">
 	</Manufacturer>
 	<Manufacturer id="0043" name="Senmatic A/S">
+	</Manufacturer>
+	<Manufacturer id="019a" name="Sensative AB">
+		<Product type="0003" id="0003" name="Strips-MAZW" config="sensative/strips-mazw.xml" />
 	</Manufacturer>
 	<Manufacturer id="0044" name="Sequoia Tech">
 	</Manufacturer>
@@ -768,7 +773,8 @@
 		<Product type="0100" id="0001" name="ZME_KFOB 4 Button Key Fob" config="zwave.me/kfob.xml"/>
 		<Product type="0100" id="0004" name="ZME_WCD2 Double Paddle Wall Controller" config="zwave.me/ZME_WCD2.xml"/>
 		<Product type="0100" id="0101" name="ZME_WALLC-S Secure Wall Controller" config="zwave.me/ZME_WALLC-S.xml" />
-		<Product type="0100" id="0102" name="ZME_KFOB-S 4 Button Key Fob"/>
+		<Product type="0100" id="0102" name="ZME_KFOB-S 4 Button Key Fob" config="zwave.me/ZME_KFOB-S.xml" />
+		<Product type="0100" id="0103" name="ZME_KFOB-C 4 Button Key Fob" config="zwave.me/ZME_KFOB-S.xml" />
 		<Product type="0100" id="0200" name="Smoke Detector"/>
 		<Product type="0100" id="0201" name="Smoke Detector"/>
 		<Product type="0200" id="0001" name="iTemp Temperature Sensor" config="zwave.me/iTemp.xml"/>
@@ -780,6 +786,7 @@
 		<Product type="1000" id="0002" name="ZME_06433/05433 Wall Flush-Mountable Dimmer" config="zwave.me/ZME_06433.xml"/>
 		<Product type="1000" id="0003" name="ZME_06436 Motor Control" config="zwave.me/ZME_06436.xml" />
 		<Product type="1000" id="0004" name="ZME_064435 Wall Controller" config="zwave.me/ZME_064435.xml"/>
+		<Product type="1000" id="0200" name="ZME_064381 IP44 Plug-in Switch" config="zwave.me/ZME_064381.xml"/>
 		<Product type="1100" id="0002" name="PLDE Plug-in Dimmer"/>
 	</Manufacturer>
 	<Manufacturer id="0147" name="Z-Wave.Me">

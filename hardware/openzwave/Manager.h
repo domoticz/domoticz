@@ -1124,6 +1124,18 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		bool GetValueListItems( ValueID const& _id, vector<string>* o_value );
 
 		/**
+		 * \brief Gets the list of values from a list value.
+		 * \param _id The unique identifier of the value.
+		 * \param o_value Pointer to a vector of integers that will be filled with list items. The vector will be cleared before the items are added.
+		 * \return true if the list values were obtained.  Returns false if the value is not a ValueID::ValueType_List. The type can be tested with a call to ValueID::GetType.
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_VALUEID if the ValueID is invalid
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_CANNOT_CONVERT_VALUEID if the Actual Value is off a different type
+		 * \throws OZWException with Type OZWException::OZWEXCEPTION_INVALID_HOMEID if the Driver cannot be found
+		 * \see ValueID::GetType, GetValueAsBool, GetValueAsByte, GetValueAsFloat, GetValueAsInt, GetValueAsShort, GetValueAsString, GetValueListSelection, GetValueAsRaw
+		 */
+		bool GetValueListValues( ValueID const& _id, vector<int32>* o_value );
+
+		/**
 		 * \brief Gets a float value's precision.
 		 * \param _id The unique identifier of the value.
 		 * \param o_value Pointer to a uint8 that will be filled with the precision value.
