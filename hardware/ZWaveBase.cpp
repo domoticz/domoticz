@@ -232,7 +232,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.id = lID;
 		lcmd.command = Limitless_LedOff;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd, pDevice->label.c_str(), BatLevel);
 
 		//Set Name
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
@@ -307,7 +307,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.filler = 0;
 		lcmd.LIGHTING2.rssi = 12;
 
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, BatLevel);
+		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, pDevice->label.c_str(), BatLevel);
 
 		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
 
