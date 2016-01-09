@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<bdrcan>
+   <identification>
+      <sdo byte="0" index="2001" subindex="0" type="uint8"><!--Number of entries--></sdo>
+	  <sdo byte="1" index="2001" length="20" subindex="1" type="octetstring"><!--Manufacturer code--></sdo>
+      <sdo byte="21" index="2001" subindex="2" type="uint16"><!--Type--></sdo>
+      <sdo byte="23" index="2001" subindex="3" type="uint16"><!--Hardware Version--></sdo>
+      <sdo byte="25" index="2001" subindex="4" type="uint16"><!--Software Version--></sdo>
+      <sdo byte="27" index="2001" subindex="5" type="uint16"><!--Device OBD Version--></sdo>
+      <sdo byte="29" index="2001" subindex="6" type="uint16"><!--Global OBD Version--></sdo>
+      <sdo byte="31" index="2001" subindex="7" type="uint8"><!--Production year--></sdo>
+      <sdo byte="32" index="2001" subindex="8" type="uint8"><!--Production week--></sdo>
+      <sdo byte="33" index="2001" subindex="9" type="uint8"><!--Production day--></sdo>
+      <sdo byte="34" index="2001" subindex="10" type="uint32"><!--Serial number--></sdo>
+      <sdo byte="38" index="2C24" length="7" subindex="1" type="octetstring"><!--bspVersion--></sdo>
+      <sdo byte="45" index="2C24" length="7" subindex="2" type="octetstring"><!--platformVersion--></sdo>
+      <sdo byte="52" index="2C24" length="7" subindex="3" type="octetstring"><!--overallVersion--></sdo>
+      <sdo byte="59" index="2C24" length="7" subindex="4" type="octetstring"><!--productVersion--></sdo>
+      <sdo byte="66" index="2C24" length="7" subindex="5" type="octetstring"><!--configurationVersion--></sdo>
+      <sdo byte="73" index="2015" subindex="0" type="uint8"><!--Gvc number of entries--></sdo>
+      <sdo byte="74" index="2015" subindex="1" type="uint8"><!--Gvc location--></sdo>
+      <sdo byte="75" index="2015" subindex="2" type="uint8"><!--Gvc type--></sdo>
+      <sdo byte="76" index="2015" subindex="3" type="uint8"><!--Gvc hardware Version--></sdo>
+      <sdo byte="77" index="2015" subindex="4" type="uint8"><!--Gvc software Version--></sdo>
+      <sdo byte="78" index="2015" subindex="5" type="uint8"><!--Gvc parameter Type--></sdo>
+      <sdo byte="79" index="2015" subindex="6" type="uint8"><!--Gvc parameter Version--></sdo>
+      <sdo byte="80" index="2015" subindex="7" type="uint8"><!--Gvc production week--></sdo>
+      <sdo byte="81" index="2015" subindex="8" type="uint8"><!--Gvc production year--></sdo>
+      <sdo byte="82" index="2015" subindex="9" type="uint16"><!--Gvc serial number   ARA Spec is 2 byte--></sdo>
+   </identification>
+   <sample>
+      <sdo byte="0" index="501D" length="100" subindex="0" type="octetstring"><!--varApTrendingString--></sdo>
+   </sample>
+
+<parameters>
+  <sdo type="uint16" subindex="13" index="2001" byte="0">
+    <!--varDeviceInfoConfigurationTableVersion-->
+  </sdo>
+  <sdo type="octetstring" subindex="12" index="2001" byte="2" length="4">
+    <!--varDeviceInfoArticleNumber-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2201" byte="6">
+    <!--parHeDThMaxLevel1-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2202" byte="7">
+    <!--parHeDThMaxLevel2-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2203" byte="8">
+    <!--parHeDThMaxLevel3-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2204" byte="9">
+    <!--parHeFanI-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2205" byte="10">
+    <!--parHeFanP-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="220A" byte="11">
+    <!--parHeGpsCheck-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="220B" byte="12">
+    <!--parHeKW10kRPM-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="220C" byte="14">
+    <!--parHeMaxAbsTf_Th-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="220D" byte="15">
+    <!--parHeMaxAbsTh_Tf-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="220E" byte="16">
+    <!--parHeMaxAbsTh_Tr-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2210" byte="17">
+    <!--parHePostPurgeTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2212" byte="18">
+    <!--parHeFanPrePurgeSpeed-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2213" byte="19">
+    <!--parHePrePurgeTime-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="2214" byte="20">
+    <!--parHeRpm0KW-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2215" byte="22">
+    <!--parHeDtModulatingMinPower-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2216" byte="23">
+    <!--parHeTfaFilterTauTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2217" byte="24">
+    <!--parHeThMaxBlocking-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2218" byte="25">
+    <!--parHeVpsCheck-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2219" byte="26">
+    <!--parHePreIgnitionTime-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="221A" byte="27">
+    <!--parHeMassFlowMin-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="221B" byte="29">
+    <!--parHeMassFlowMax-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="221C" byte="31">
+    <!--ParHeMinMassFlowTempDevlimit-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="221D" byte="32">
+    <!--ParHeMaxMassFlowTempDevlimit-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="221F" byte="33">
+    <!--parHeFlueGasTempMax-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2220" byte="34">
+    <!--parHeMaxAbs(Tf-Tr)-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="2226" byte="35">
+    <!--parHeMassFlowMaxDhw-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="2227" byte="37">
+    <!--parHeMassFlowMaxCH-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="222A" byte="39">
+    <!--parHeFanD-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="222B" byte="40">
+    <!--parHeFanRpmMax-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="222D" byte="41">
+    <!--parHeFlueGasPowerLimitTemp-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C03" byte="42">
+    <!--devParHeGvcFlueBlockRpmMin-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C04" byte="43">
+    <!--devParHeGvcFlueBlockRpmMax  -->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C05" byte="44">
+    <!--devParHeGvcLoadAdaptionGvPosMin-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C06" byte="45">
+    <!--devParHeGvcLoadAdaptionGvPosMax-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C08" byte="46">
+    <!--devParHeGvcStartOffsetFactor-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C09" byte="47">
+    <!--devParHeGvcRampIncreaseIncrement -->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C0B" byte="48">
+    <!--devParHeGvcLoadAdaptionRpmMin  -->
+  </sdo>
+  <sdo type="int8" subindex="0" index="2C0C" byte="49">
+    <!--devParHeGvcEnrichFactorHotBurnerNAT-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="2C0D" byte="50">
+    <!--devParHeGvcEnrichFactorHotBurnerLPG-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C0E" byte="51">
+    <!--parGvcLPGhStepMax-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C0F" byte="52">
+    <!--devParHeGvcModStopOnMfDeviation-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C10" byte="53">
+    <!--devParHeGvcWindDetectionOffset-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C11" byte="54">
+    <!--devParHeGvcModulationSpeed  -->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C14" byte="55">
+    <!--devParHeGvcE2PidProportionalGain-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C15" byte="56">
+    <!--devParHeGvcE2PidIntegralGain-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C16" byte="57">
+    <!--devParHeGvcE2PidDifferentialGain-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C17" byte="58">
+    <!--devParHeGvcStayOnIgnitionLevelTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C1B" byte="59">
+    <!--parHeGasTypeSelector-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="2C1C" byte="60">
+    <!--devParHeGvcMassFlowTempDeviationMin-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="2C1D" byte="61">
+    <!--devParHeGvcMassFlowTempDeviationMax-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C1E" byte="62">
+    <!--devParHeGvcGasValveDeltaLimit-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C1F" byte="63">
+    <!--devParHeGvcColdBurnerDetectionTemp-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C20" byte="64">
+    <!--devParHeGvcCoolingDownBurnerTemp-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C21" byte="65">
+    <!--devParHeGvcHallPulses-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="2C26" byte="66">
+    <!--devParIgnitionMassFlow-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3001" byte="67">
+    <!--parApBlockingFunction-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3002" byte="68">
+    <!--parApEnableManualHeatDemand-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3003" byte="69">
+    <!--parApFlueValveWaitTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3004" byte="70">
+    <!--parApHydraulicValveWaitTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3006" byte="71">
+    <!--parApMinWaterPress-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3007" byte="72">
+    <!--parApTfMaxBlocking-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3008" byte="73">
+    <!--parApReleaseWaitTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3009" byte="74">
+    <!--parApServiceBurnHours-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="300A" byte="75">
+    <!--parApServiceNotification-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="300B" byte="76">
+    <!--parApServiceOperationTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3012" byte="77">
+    <!--parApChEnabled-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3013" byte="78">
+    <!--parApDhwEnabled-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="301B" byte="79">
+    <!--parApOperationalModeSoftware-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="301C" byte="80">
+    <!--parApHeatDemandFlowTemperatureSetpoint-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3025" byte="81">
+    <!--parApWaterPressureSensorRange-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="3201" byte="82">
+    <!--parChFrostMinTout-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3202" byte="83">
+    <!--parChIDown-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3203" byte="84">
+    <!--parChIPump-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3204" byte="85">
+    <!--parChIUp-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3205" byte="86">
+    <!--parChMaxOffTimeBurnerExt-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3206" byte="87">
+    <!--parChMaxSetTf-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3207" byte="88">
+    <!--parChMinOffTimeBurner-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="3209" byte="89">
+    <!--parChOtcTfStart-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="320A" byte="90">
+    <!--parChOtcTOutsideEnd-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="320B" byte="91">
+    <!--parChOtcTOutsideStart-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="320C" byte="92">
+    <!--parChPartLoadTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="320D" byte="93">
+    <!--parChPDown-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="320E" byte="94">
+    <!--parChPumpDTReduction-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="320F" byte="95">
+    <!--parChPumpPostRun-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3210" byte="96">
+    <!--parChPumpSpeedMax-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3211" byte="97">
+    <!--parChPumpSpeedMaxFactor-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3212" byte="98">
+    <!--parChPumpSpeedMin-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3213" byte="99">
+    <!--parChPUp-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3214" byte="100">
+    <!--parChProcessHeatControlBand-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3215" byte="101">
+    <!--parChProcessHeatProportionalGain-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3216" byte="102">
+    <!--parChProcessHeatIntegralGain-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3217" byte="103">
+    <!--parChHysteresis-->
+  </sdo>
+  <sdo type="uint16" subindex="0" index="3601" byte="104">
+    <!--parDhwSetPoint-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3602" byte="106">
+    <!--parDhwMode-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3604" byte="107">
+    <!--parDhwAntiLegionella-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3605" byte="108">
+    <!--parDhwCalorifierSetpointRaise-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3606" byte="109">
+    <!--parDhwCalorifierHystoresis-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3608" byte="110">
+    <!--parDhwPumpDtSet-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="360A" byte="111">
+    <!--parDhwDtHysteresis-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="360B" byte="112">
+    <!--parDhwDtOffset-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="360D" byte="113">
+    <!--parDhwLoadAfterChTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="360E" byte="114">
+    <!--parDhwLoadAfterDhwTime-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="360F" byte="115">
+    <!--parDhwLoadHysteresis-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="3610" byte="116">
+    <!--parDhwLoadOffset-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3614" byte="117">
+    <!--parDhwPumpPostRun-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="3619" byte="118">
+    <!--parDhwStratifiedCylinderOffsetControlTemperature-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="361A" byte="119">
+    <!--parDhwStratifiedCylinderInGradient-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="361C" byte="120">
+    <!--parDhwFrequencyPulseTimeWindow-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3622" byte="121">
+    <!--parDhwCalorifierOffset-->
+  </sdo>
+  <sdo type="int8" subindex="0" index="3623" byte="122">
+    <!--parDhwCalorifierPumpStart-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3624" byte="123">
+    <!--parDhwCalorifierPumpPostRun-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3629" byte="124">
+    <!--parDhwLoadType-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="362A" byte="125">
+    <!--parDhwCombiSoloUpP-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="362B" byte="126">
+    <!--parDhwCombiSoloUpI-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="362C" byte="127">
+    <!--parDhwIPump-->
+  </sdo>
+  <sdo type="uint8" subindex="0" index="3804" byte="128">
+    <!--parSmsFunction10VPWMinput-->
+  </sdo>
+</parameters>
+   
+   <errors>
+      <sdo byte="0" index="1003" maxcount="32" object="array" subindex="0" type="uint16"></sdo>
+      <sdo byte="64" index="2002" maxcount="32" object="array" subindex="0" type="uint32"></sdo>
+      <sdo byte="192" index="2003" length="19" maxcount="32" object="array" subindex="0" type="octetstring"></sdo>
+      <sdo byte="800" index="2004" maxcount="32" object="array" subindex="0" type="uint32"></sdo>
+ </errors>
+   <counters>
+      <sdo byte="0" index="4203" subindex="0" type="uint16"><!--varHeCtrBurnerStarts--></sdo>
+      <sdo byte="2" index="4204" subindex="0" type="uint16"><!--varHeCtrBurnerStartsDhw--></sdo>
+      <sdo byte="4" index="4205" subindex="0" type="uint16"><!--varHeCtrBurnHours--></sdo>
+      <sdo byte="6" index="4206" subindex="0" type="uint16"><!--varHeCtrBurnHoursDhw--></sdo>
+      <sdo byte="8" index="4207" subindex="0" type="uint16"><!--varHeCtrFailedBurnerStarts--></sdo>
+      <sdo byte="10" index="4208" subindex="0" type="uint16"><!--varHeCtrFlameLoss--></sdo>
+      <sdo byte="12" index="4209" subindex="0" type="uint16"><!--varHeCtrPumpRunHours--></sdo>
+      <sdo byte="14" index="420A" subindex="0" type="uint16"><!--varHeCtrPumpStarts--></sdo>
+   </counters>
+   <configuration.nr>
+      <sdo byte="0" index="3018" subindex="0" type="uint16"><!--parApConfiguration--></sdo>
+   </configuration.nr>
+  <checksum value="35772" />
+</bdrcan>

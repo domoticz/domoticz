@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="iso-8859-1"?> 
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" boiler.type="SCU-D4 (v1.5)">
+  <properties>
+    <property name="version" value="0.0"/>
+    <property name="boilername" value="SCU-D4 (v1.5)" />
+    <property name="EEPROMSize" value="2048" />
+  </properties>
+  <selections id="status.code">
+    <selection value="2" result.nr="10594"/>
+    <selection value="3" result.nr="10594"/>
+    <selection value="4" result.nr="10593"/>
+    <selection value="5" result.nr="10593"/>
+	<selection value="8" result.nr="10595"/>
+    <selection value="9" result.nr="10595"/>
+    <selection value="18" result.nr="10594"/>
+    <selection value="19" result.nr="10594"/>
+    <selection value="20" result.nr="10593"/>
+    <selection value="21" result.nr="10593"/>
+	<selection value="24" result.nr="10595"/>
+    <selection value="25" result.nr="10595"/>
+    <selection value="50" result.nr="10594"/>
+    <selection value="51" result.nr="10594"/>
+    <selection value="52" result.nr="10593"/>
+    <selection value="53" result.nr="10593"/>
+	<selection value="56" result.nr="10595"/>
+    <selection value="57" result.nr="10595"/>	
+    <selection value="66" result.nr="10594"/>
+    <selection value="67" result.nr="10594"/>
+    <selection value="68" result.nr="10593"/>
+    <selection value="69" result.nr="10593"/>
+	<selection value="72" result.nr="10595"/>
+    <selection value="73" result.nr="10595"/>	
+	<selection value="999" result.nr="2198"/>
+  </selections>
+  <selections id="substatus.code">
+    <selection value="2" result.nr="10597"/>
+    <selection value="3" result.nr="10597"/>
+    <selection value="4" result.nr="10596"/>
+    <selection value="5" result.nr="10596"/>
+	<selection value="8" result.nr="10598"/>
+    <selection value="9" result.nr="10598"/>
+    <selection value="18" result.nr="10597"/>
+    <selection value="19" result.nr="10597"/>
+    <selection value="20" result.nr="10596"/>
+    <selection value="21" result.nr="10596"/>
+	<selection value="24" result.nr="10598"/>
+    <selection value="25" result.nr="10598"/>
+    <selection value="50" result.nr="10597"/>
+    <selection value="51" result.nr="10597"/>
+    <selection value="52" result.nr="10596"/>
+    <selection value="53" result.nr="10596"/>
+	<selection value="56" result.nr="10598"/>
+    <selection value="57" result.nr="10598"/>	
+    <selection value="66" result.nr="10597"/>
+    <selection value="67" result.nr="10597"/>
+    <selection value="68" result.nr="10596"/>
+    <selection value="69" result.nr="10596"/>
+	<selection value="72" result.nr="10598"/>
+    <selection value="73" result.nr="10598"/>	
+    <selection value="999" result.nr="2298"/>
+    <selection value="255" result.nr="2299"/>
+  </selections>
+  <selections id="failure.code">
+    <selection value="0"  result.nr="10528"/>
+    <selection value="1"  result.nr="10529"/>
+    <selection value="2"  result.nr="10530"/>
+    <selection value="3"  result.nr="10531"/>
+    <selection value="4"  result.nr="10532"/>
+    <selection value="5"  result.nr="10556"/>
+    <selection value="6"  result.nr="10557"/>
+    <selection value="7"  result.nr="10558"/>
+    <selection value="8"  result.nr="10559"/>
+    <selection value="9"  result.nr="10560"/>
+    <selection value="10"  result.nr="10561"/>
+    <selection value="11"  result.nr="10562"/>
+    <selection value="12"  result.nr="10563"/>
+    <selection value="13"  result.nr="10564"/>
+    <selection value="14"  result.nr="10565"/>
+    <selection value="15"  result.nr="10566"/>
+    <selection value="16"  result.nr="10567"/>
+    <selection value="17"  result.nr="10568"/>
+    <selection value="18"  result.nr="10569"/>
+    <selection value="19"  result.nr="10570"/>
+    <selection value="20"  result.nr="10571"/>
+    <selection value="21"  result.nr="10572"/>
+    <selection value="22"  result.nr="10573"/>
+    <selection value="23"  result.nr="10574"/>
+    <selection value="24"  result.nr="10575"/>
+    <selection value="25"  result.nr="10576"/>	
+	<selection value="4096" result.nr="2400" />
+    <selection value="4097" result.nr="2401" />
+    <selection value="4098" result.nr="2492" />
+    <selection value="4099" result.nr="2493" />
+    <selection value="4100" result.nr="2494" />
+    <selection value="4101" result.nr="2495" />
+    <selection value="4102" result.nr="2406" />
+    <selection value="4103" result.nr="2407" />
+    <selection value="4104" result.nr="2408" />
+    <selection value="4105" result.nr="2409" />
+    <selection value="4106" result.nr="2490" />
+    <selection value="4107" result.nr="2491" />
+    <selection value="4108" result.nr="2412" />
+    <selection value="4109" result.nr="2414" />
+    <selection value="4110" result.nr="2416" />
+    <selection value="4111" result.nr="2417" />
+    <selection value="4112" result.nr="2434" />
+    <selection value="4113" result.nr="2435" />
+    <selection value="4114" result.nr="2436" />
+    <selection value="4115" result.nr="2437" />
+    <selection value="4116" result.nr="2438" />
+    <selection value="4117" result.nr="2439" />
+    <selection value="4118" result.nr="2440" />
+	<selection value="4119" result.nr="10591" />
+    <selection value="4120" result.nr="10592" />
+    <selection value="999" result.nr="2498" />
+    <selection value="65535" result.nr="2499"/>
+  </selections>
+  <selections id="error.code">
+    <selection value="0"  result.nr="10577"/>
+    <selection value="1"  result.nr="10578"/>
+    <selection value="2"  result.nr="10579"/>
+    <selection value="3"  result.nr="10580"/>
+    <selection value="4"  result.nr="10582"/>
+    <selection value="5"  result.nr="10583"/>
+    <selection value="6"  result.nr="10584"/>
+    <selection value="7"  result.nr="10585"/>
+    <selection value="8"  result.nr="10586"/>
+    <selection value="9"  result.nr="10587"/>
+    <selection value="10"  result.nr="10588"/>
+    <selection value="11"  result.nr="10589"/>
+    <selection value="12"  result.nr="10590"/>
+	<selection value="4096" result.nr="2300" />
+    <selection value="4097" result.nr="2301" />
+    <selection value="4098" result.nr="2302" />
+    <selection value="4099" result.nr="2307" />
+    <selection value="4100" result.nr="2308" />
+    <selection value="4101" result.nr="2309" />
+    <selection value="4102" result.nr="2310" />
+    <selection value="4103" result.nr="2311" />
+    <selection value="4104" result.nr="2313" />
+    <selection value="4105" result.nr="2314" />
+    <selection value="4106" result.nr="2315" />
+    <selection value="4107" result.nr="2316" />
+    <selection value="4108" result.nr="2317" />
+    <selection value="4109" result.nr="2318" />
+    <selection value="4110" result.nr="2319" />
+    <selection value="4111" result.nr="2320" />
+    <selection value="4112" result.nr="2321" />
+    <selection value="4113" result.nr="2322" />
+    <selection value="4114" result.nr="2325" />
+    <selection value="4115" result.nr="2326" />
+    <selection value="4116" result.nr="2327" />	
+	<selection value="4117" result.nr="10047" />	
+    <selection value="999" result.nr="2398"/>
+    <selection value="65535" result.nr="2399"/>
+  </selections>
+  <selections id="no.yes.code">
+    <selection value="0" result.nr="1004"/>
+    <selection value="1" result.nr="1003"/>
+  </selections>
+  <selections id="off.on.code">
+    <selection value="0" result.nr="224"/>
+    <selection value="1" result.nr="10436"/>
+  </selections>
+  <selections id="open.closed.code">
+    <selection value="0" result.nr="107"/>
+    <selection value="1" result.nr="106"/>
+  </selections>
+  <selections id="closed.open.code">
+    <selection value="0" result.nr="106"/>
+    <selection value="1" result.nr="107"/>
+  </selections>
+  <selections id="ECS.CH.code">
+    <selection value="0" result.nr="10438"/>
+    <selection value="1" result.nr="10437"/>
+  </selections>
+  <configurations name="sample">
+    <config type="select" label="STATUS" group="0">
+      <present name.nr="2023" description.nr="2023" />
+      <function byte="26" expression="A" format="0" />
+      <node-ref type="selections" id="status.code" />
+    </config>
+    <config type="select" label="SUBSTATUS" group="0">
+      <present name.nr="2024" description.nr="2024" />
+      <function byte="27" expression="A" format="0" />
+      <node-ref type="selections" id="substatus.code" />
+    </config>
+    <config type="select" label="LOCKING" group="0">
+      <present name.nr="2026" description.nr="2026" />
+      <function byte="38" expression="A.0 + B.1" format="0" />
+      <limits min="0" min.nr="0" max="65535" max.nr="65535" />
+      <node-ref type="selections" id="failure.code" />
+    </config>
+    <config type="select" label="BLOCKING" group="0">
+      <present name.nr="2025" description.nr="2025" />
+      <function byte="40" expression="A.0 + B.1" format="0" />
+      <limits min="0" min.nr="0" max="65535" max.nr="65535" />
+      <node-ref type="selections" id="error.code" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10494" description.nr="10494" unit.nr="312" />
+      <function byte="0" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10495" description.nr="10495" unit.nr="312" />
+      <function byte="2" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10496" description.nr="10496" unit.nr="312" />
+      <function byte="4" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10497" description.nr="10497" unit.nr="312" />
+      <function byte="6" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-30" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10498" description.nr="10498" unit.nr="312" />
+      <function byte="8" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-30" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10499" description.nr="10499" unit.nr="312" />
+      <function byte="10" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-30" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10500" description.nr="10500" unit.nr="312" />
+      <function byte="12" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-30" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10501" description.nr="10501" unit.nr="312" />
+      <function byte="14" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-30" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10502" description.nr="10502" unit.nr="312" />
+      <function byte="16" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10503" description.nr="10503" unit.nr="312" />
+      <function byte="18" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10504" description.nr="10504" unit.nr="312" />
+      <function byte="20" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10505" description.nr="10505" unit.nr="312" />
+      <function byte="22" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-25" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="10506" description.nr="10506" unit.nr="312" />
+      <function byte="24" expression="sgn(A.0 + B.1) x 0.01" format="0.00" />
+      <limits min="-1" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="10517" description.nr="10517" unit.nr="10022" />
+      <function byte="31" expression="A x 0.1" format="0.0" />
+      <limits min="0" max="10" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="10518" description.nr="10518" unit.nr="10520" />
+      <function byte="33" expression="A" format="0" />
+      <limits min="0" max="20" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="10519" description.nr="10519" unit.nr="382" />
+      <function byte="34" expression="A.0 + B.1" format="0" />
+      <limits min="0" max="1800" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10507" description.nr="10507" />
+      <function byte="45" bit="0" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10508" description.nr="10508" />
+      <function byte="45" bit="1" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10509" description.nr="10509" />
+      <function byte="45" bit="2" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10510" description.nr="10510" />
+      <function byte="45" bit="3" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10511" description.nr="10511" />
+      <function byte="44" bit="5" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10512" description.nr="10512" />
+      <function byte="44" bit="0" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10513" description.nr="10513" />
+      <function byte="44" bit="1" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10514" description.nr="10514" />
+      <function byte="44" bit="2" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10515" description.nr="10515" />
+      <function byte="44" bit="3" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10516" description.nr="10516" />
+      <function byte="44" bit="4" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="10521" description.nr="10521" />
+      <function byte="43" bit="0" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>
+ 	<config type="bit" group="3">
+      <present name.nr="1743" description.nr="1743" />
+      <function byte="46" bit="4" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>  
+	<config type="bit" group="3">
+      <present name.nr="1339" description.nr="1339" />
+      <function byte="29" bit="2" expression="A" invert="false" format="0" />
+      <node-ref type="selections" id="no.yes.code" />
+    </config>  
+ </configurations>
+  <configurations name="identification">
+    <config type="field" group="1">
+      <present name.nr="2016" description.nr="2016" />
+      <function byte="48" number="4" argument="16" />
+    </config>
+    <config type="field" label="DF" group="1">
+      <present name.nr="1789" description.nr="1789" />
+      <function byte="1" expression="A" format="0" />
+    </config>
+    <config type="field" label="DU" group="1">
+      <present name.nr="1790" description.nr="1790" />
+      <function byte="2" expression="A" format="0" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="2015" description.nr="2015" />
+      <function byte="32" number="4" argument="16" />
+    </config>
+    <config type="field" label="SW_VERSION" group="1">
+      <present name.nr="2010" description.nr="2010" />
+      <function byte="5" number="6" />
+    </config>
+    <config type="field" label="PARAM_VERSION" group="1">
+      <present name.nr="2012" description.nr="2012" />
+      <function byte="6" number="6" />
+    </config>
+    <config type="field" label="PARAM_TYPE" group="1">
+      <present name.nr="2013" description.nr="2013" />
+      <function byte="7" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2009" description.nr="2009" />
+      <function byte="0" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2015" description.nr="2015" />
+      <function byte="11" number="5" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2010" description.nr="2010" />
+      <function byte="1" number="6" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2012" description.nr="2012" />
+      <function byte="2" number="6" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2013" description.nr="2013" />
+      <function byte="3" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2014" description.nr="2014" unit.nr="317" />
+      <function byte="4" expression="(A.1 + B.0) x 8" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2017" description.nr="2017" />
+      <function byte="6" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2018" description.nr="2018" />
+      <function byte="7" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2020" description.nr="2020" />
+      <function byte="8" expression="A" format="0" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="2021" description.nr="2021" />
+      <function byte="9" expression="A" format="0" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="2009" description.nr="2009" />
+      <function byte="0" expression="A" format="0" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="2015" description.nr="2015" />
+      <function byte="11" number="5" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="2010" description.nr="2010" />
+      <function byte="1" number="6" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="2012" description.nr="2012" />
+      <function byte="2" number="6" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="2013" description.nr="2013" />
+      <function byte="3" expression="A" format="0" />
+    </config>
+    <config type="field" group="3">
+	  <present name.nr="2014" description.nr="2014" unit.nr="317" />
+      <function byte="4" expression="(A.1 + B.0) x 8" format="0" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="1789" description.nr="1789" />
+      <function byte="6" expression="A" format="0" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="1790" description.nr="1790" />
+      <function byte="7" expression="A" format="0" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="2020" description.nr="2020" />
+      <function byte="8" expression="A" format="0" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="2021" description.nr="2021" />
+      <function byte="9" expression="A" format="0" />
+    </config>
+    <config type="field" group="3">
+      <present name.nr="2022" description.nr="2022" />
+      <function byte="10" expression="A" format="0" />
+    </config>
+    <config type="field" group="4">
+      <present name.nr="2009" description.nr="2009" />
+      <function byte="0" expression="A" format="0" />
+    </config>
+    <config type="field" group="4">
+      <present name.nr="2015" description.nr="2015" />
+      <function byte="11" number="5" />
+    </config>
+    <config type="field" group="4">
+      <present name.nr="2010" description.nr="2010" />
+      <function byte="1" number="6" />
+    </config>
+    <config type="field" group="4">
+	  <present name.nr="2014" description.nr="2014" unit.nr="317" />
+      <function byte="4" expression="(A.1 + B.0) x 8" format="0" />
+    </config>
+  </configurations>
+  <checksum value="24568" />
+</configuration>

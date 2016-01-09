@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" boiler.type="RVC32-420-159_P17">
+  <properties>
+    <property name="version" value="1.1" />
+    <property name="boilername" value="RVC32-420-159 P17" />
+  </properties>
+  <selections id="off.on.code">
+    <selection value="0" result.nr="224" />
+    <selection value="1" result.nr="223" />
+  </selections>
+  <selections id="off.on255.code">
+    <selection value="0" result.nr="224" />
+    <selection value="255" result.nr="223" />
+  </selections>
+  <selections id="HC.type">
+	<selection value="0" result.nr="1004" />
+	<selection value="1" result.nr="3020" />
+	<selection value="2" result.nr="1396" />
+	<selection value="3" result.nr="3021" />
+	<selection value="4" result.nr="3022" />
+  </selections>
+  <selections id="plant.type">
+	<selection value="1" result.nr="3023" />
+	<selection value="2" result.nr="3024" />
+	<selection value="3" result.nr="3025" />
+	<selection value="4" result.nr="3026" />
+	<selection value="5" result.nr="3027" />
+	<selection value="6" result.nr="3028" />
+	<selection value="7" result.nr="3029" />
+	<selection value="8" result.nr="1708" />
+  </selections>
+  <selections id="relay.output">
+    <selection value="0" result.nr="3083" />
+	<selection value="1" result.nr="3084" />
+	<selection value="2" result.nr="3085" />
+	<selection value="3" result.nr="3086" />
+	<selection value="4" result.nr="3087" />
+	<selection value="5" result.nr="3088" />
+	<selection value="6" result.nr="3089" />
+	<selection value="7" result.nr="3090" />
+	<selection value="8" result.nr="3091" />
+	<selection value="9" result.nr="3092" />
+	<selection value="10" result.nr="3093" />
+  </selections>
+   <selections id="ext.func">
+    <selection value="0" result.nr="3104" />
+	<selection value="1" result.nr="3105" />
+	<selection value="2" result.nr="3106" />
+	<selection value="3" result.nr="3107" />
+	<selection value="4" result.nr="3108" />
+	<selection value="5" result.nr="3109" />
+	<selection value="6" result.nr="3110" />
+	<selection value="7" result.nr="3111" />
+	<selection value="8" result.nr="3112" />
+	<selection value="9" result.nr="3113" />
+	<selection value="10" result.nr="3114" />
+	<selection value="11" result.nr="3115" />
+  </selections> 
+
+  
+  
+  <selections id="status.code">
+    <selection value="0"  result.txt="OK" />
+    <selection value="10" result.txt="error 10" />
+    <selection value="20" result.txt="error 20" />
+    <selection value="40" result.txt="error 40" />
+    <selection value="50" result.txt="error 50" />
+	<selection value="60" result.txt="error 60" />
+    <selection value="65" result.txt="error 65" />
+    <selection value="83" result.txt="error 83" />
+    <selection value="84" result.txt="error 84" />
+	<selection value="85" result.txt="error 85" />
+    <selection value="95" result.txt="error 95" />
+    <selection value="96" result.txt="error 96" />
+    <selection value="98" result.txt="error 98" />
+	<selection value="99" result.txt="error 99" />
+    <selection value="102" result.txt="error 102" />
+    <selection value="121" result.txt="error 121" />
+    <selection value="122" result.txt="error 122" />
+	<selection value="127" result.txt="error 127" />
+    <selection value="254" result.txt="error 254" />
+    <selection value="267" result.txt="error 267" />
+    <selection value="270" result.txt="error 270" />
+	<selection value="276" result.txt="error 276" />
+    <selection value="280" result.txt="error 280" />
+    <selection value="286" result.txt="error 286" />
+    <selection value="287" result.txt="error 287" />
+	<selection value="298" result.txt="error 298" />
+    <selection value="299" result.txt="error 299" />
+    <selection value="301" result.txt="error 301" />
+	<selection value="309" result.txt="error 309" />
+    <selection value="310" result.txt="error 310" />
+    <selection value="311" result.txt="error 311" />
+    <selection value="394" result.txt="error 394" />
+	<selection value="395" result.txt="error 395" />
+    <selection value="396" result.txt="error 396" />
+    <selection value="397" result.txt="error 397" />
+    <selection value="398" result.txt="error 398" />
+    <selection value="399" result.txt="error 399" />
+	<selection value="422" result.txt="error 422" />
+    <selection value="423" result.txt="error 423" />
+    <selection value="428" result.txt="error 428" />
+	<selection value="91" result.txt="error 91" />
+    <selection value="92" result.txt="error 92" />
+    <selection value="97" result.txt="error 97" />
+    <selection value="157" result.txt="error 157" />
+	<selection value="253" result.txt="error 253" />
+    <selection value="261" result.txt="error 261" />
+    <selection value="262" result.txt="error 262" />
+    <selection value="263" result.txt="error 263" />	
+	<selection value="264" result.txt="error 264" />
+    <selection value="265" result.txt="error 265" />
+    <selection value="266" result.txt="error 266" />
+    <selection value="268" result.txt="error 268" />
+    <selection value="269" result.txt="error 269" />
+	<selection value="274" result.txt="error 274" />
+    <selection value="275" result.txt="error 275" />
+    <selection value="277" result.txt="error 277" />
+    <selection value="281" result.txt="error 281" />
+    <selection value="282" result.txt="error 282" />
+	<selection value="283" result.txt="error 283" />
+    <selection value="284" result.txt="error 284" />
+    <selection value="289" result.txt="error 289" />	
+	<selection value="290" result.txt="error 290" />
+    <selection value="291" result.txt="error 291" />
+	<selection value="292" result.txt="error 292" />
+    <selection value="293" result.txt="error 293" />
+    <selection value="294" result.txt="error 294" />
+    <selection value="295" result.txt="error 295" />
+	<selection value="296" result.txt="error 296" />
+	<selection value="300" result.txt="error 300" />
+	<selection value="302" result.txt="error 302" />
+	<selection value="303" result.txt="error 303" />
+	<selection value="304" result.txt="error 304" />
+	<selection value="305" result.txt="error 305" />
+	<selection value="308" result.txt="error 308" />
+	<selection value="319" result.txt="error 319" />
+	<selection value="424" result.txt="error 424" />
+	<selection value="425" result.txt="error 425" />
+	
+    <selection value="999" result.nr="2198" />
+  </selections>
+  <selections id="flow.detection.type">
+	  <selection value="1" result.nr="224" />
+	  <selection value="3" result.nr="3030" />
+	  <selection value="4" result.nr="1422" />
+  </selections>
+  <selections id="pump.speed.dryfire">
+	<selection value="1" result.nr="3031" />
+	<selection value="2" result.nr="3032" />
+	<selection value="3" result.nr="3033" />
+  </selections>
+  <selections id="release.dhw.charging">
+	<selection value="1" result.nr="3034" />
+	<selection value="2" result.nr="3035" />
+	<selection value="3" result.nr="3036" />
+	<selection value="4" result.nr="3037" />
+  </selections>
+  <selections id="once.several">
+	<selection value="0" result.nr="3038" />
+	<selection value="255" result.nr="3039" />
+  </selections>
+  <selections id="charge.prio">
+	<selection value="0" result.nr="3040" />
+	<selection value="1" result.nr="3041" />
+	<selection value="2" result.nr="3042" />
+  </selections>
+  <selections id="DHW.release">
+	<selection value="1" result.nr="3043" />
+	<selection value="2" result.nr="3044" />
+  </selections>
+  <selections id="DHW.pump.release">
+	<selection value="1" result.nr="3045" />
+	<selection value="2" result.nr="3046" />
+	<selection value="3" result.nr="3047" />
+  </selections>
+  <selections id="pump.type">
+	<selection value="1" result.nr="3120" />
+	<selection value="2" result.nr="3121" />
+	<selection value="3" result.nr="3122" />
+  </selections>
+  
+  
+  <selections id="no.nc">
+	<selection value="0" result.txt="NC" />
+	<selection value="1" result.txt="NO" />
+  </selections>
+  <selections id="DHW.recharge">
+	<selection value="1" result.nr="3048" />
+	<selection value="2" result.nr="3049" />
+	<selection value="3" result.nr="3050" />
+	<selection value="4" result.nr="3051" />
+	<selection value="5" result.nr="3052" />
+  </selections>
+  <configurations name="parameter">
+   
+   <config group="1" type="select">
+      <present code.txt="1393" description.nr="3053" name.nr="3053"/>
+      <function byte="0" expression="A x 1" format="0"/>
+	<node-ref type="selections" id="off.on.code" />
+      <limits max="1" min="0"/>
+   </config>
+   <config group="1" type="field">
+      <present code.txt="1721" description.nr="1380" name.nr="1380" unit.nr="312"/>
+      <function byte="1" expression="(A.1+B.0) x 0.015625" format="0"/>
+      <limits max="80" min="8"/>
+   </config>
+   <config group="1" type="field">
+      <present code.txt="1722" description.nr="3054" name.nr="3055" unit.nr="312"/>
+      <function byte="3" expression="(A.1+B.0) x 0.015625" format="0"/>
+      <limits max="80" min="8"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="1826" description.nr="3056" name.nr="3056"/>
+      <function byte="7" expression="A x 1" format="0"/>
+	<node-ref type="selections" id="DHW.release" />
+      <limits max="2" min="1"/>
+   </config>
+   <config group="3" type="select">
+      <present code.txt="1825" description.nr="3057" name.nr="3058"/>
+      <function byte="8" expression="A x 1" format="0"/>
+	<node-ref type="selections" id="charge.prio" />
+      <limits max="2" min="0"/>
+   </config>
+   <config group="3" type="field">
+      <present code.txt="2347" description.nr="1070" name.nr="1070" unit.nr="312"/>
+      <function byte="19" expression="(A.1+B.0) x 0.015625" format="0"/>
+      <limits max="120" min="8"/>
+   </config>
+   <config group="3" type="field">
+      <present code.txt="3676" description.nr="3059" name.nr="3059" unit.nr="312"/>
+      <function byte="23" expression="(A.1+B.0) x 0.015625" format="0"/>
+      <limits max="120" min="8"/>
+   </config>
+   <config group="1" type="select">
+      <present code.txt="1847" description.nr="3061" name.nr="3061"/>
+      <function byte="150" expression="A x 1" format="0"/>
+	<node-ref type="selections" id="once.several" />
+      <limits max="255" min="0"/>
+   </config>
+    <config group="3" type="field">
+      <present code.txt="1824" description.nr="3062" name.nr="3063" unit.nr="312"/>
+      <function byte="151" expression="(A.1+B.0) x 0.015625" format="0"/>
+      <limits max="30" min="0"/>
+   </config>
+   <config group="2" type="field">
+      <present code.txt="1821" description.nr="3067" name.nr="3068" unit.nr="312"/>
+      <function byte="154" expression="(A.1+B.0) x 0.015625" format="0"/>
+      <limits max="20" min="0"/>
+   </config>
+   <config group="3" type="field">
+      <present code.txt="1841" description.nr="3069" name.nr="3070" unit.txt="hrs"/>
+      <function byte="156" expression="(A.1+B.0) x 1" format="0"/>
+      <limits max="600" min="10"/>
+   </config>
+   <config group="3" type="field">
+      <present code.txt="1876" description.nr="3071" name.nr="3072"/>
+      <function byte="158" expression="A x 1" format="0"/>
+      <limits max="1" min="0"/>
+   </config>
+   <config group="3" type="select">
+      <present code.txt="2218" description.nr="3073" name.nr="3074"/>
+      <function byte="159" expression="(A.1+B.0) x 1" format="0"/>
+	  <node-ref type="selections" id="off.on.code" />
+      <limits max="1" min="0"/>
+   </config>
+   
+   <config group="3" type="field">
+      <present code.txt="3258" description.nr="3075" name.nr="3076" unit.nr="312"/>
+      <function byte="188" expression="(A.1+B.0) x 0.015625" format="0"/>
+      <limits max="20" min="0"/>
+   </config>
+   <config group="3" type="field">
+      <present code.txt="3259" description.nr="3077" name.nr="3078" unit.nr="312"/>
+      <function byte="190" expression="(A.1+B.0) x 0.015625" format="0"/>
+      <limits max="20" min="0"/>
+   </config>
+   
+   
+   <config group="2" type="select">
+      <present code.txt="3089" description.nr="3079" name.nr="3079"/>
+      <function byte="192" expression="A x 1" format="0"/>
+	<node-ref type="selections" id="plant.type" />
+      <limits max="8" min="1"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="3050" description.nr="3080" name.nr="3080"/>
+      <function byte="193" expression="A x 1" format="0"/>
+	<node-ref type="selections" id="HC.type" />
+      <limits max="4" min="0"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="3050" description.nr="3081" name.nr="3081"/>
+      <function byte="194" expression="A x 1" format="0"/>
+	<node-ref type="selections" id="HC.type" />
+      <limits max="4" min="0"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="3050" description.nr="3082" name.nr="3082"/>
+      <function byte="195" expression="A x 1" format="0"/>
+	<node-ref type="selections" id="HC.type" />
+      <limits max="4" min="0"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="3259" description.txt="pump type" name.txt="pump type"/>
+      <function byte="199" expression="A x 1" format="0"/>
+	  <node-ref type="selections" id="pump.type" />
+      <limits max="3" min="1"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="1416" description.txt="QX4" name.txt="QX4"/>
+      <function byte="202" expression="A x 1" format="0"/>
+	  <node-ref type="selections" id="relay.output" />
+      <limits max="10" min="0"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="1417" description.txt="QX5" name.txt="QX5"/>
+      <function byte="203" expression="A x 1" format="0"/>
+	  <node-ref type="selections" id="relay.output" />
+      <limits max="10" min="0"/>
+   </config>
+      <config group="2" type="select">
+      <present code.txt="2557" description.nr="3116" name.nr="3116"/>
+      <function byte="204" expression="A x 1" format="0"/>
+	  <node-ref type="selections" id="ext.func" />
+      <limits max="10" min="0"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="2558" description.nr="3117" name.nr="3117"/>
+      <function byte="205" expression="A x 1" format="0"/>
+	  <node-ref type="selections" id="no.nc" />
+      <limits max="10" min="0"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="2557" description.nr="3118" name.nr="3118"/>
+      <function byte="206" expression="A x 1" format="0"/>
+	  <node-ref type="selections" id="ext.func" />
+      <limits max="10" min="0"/>
+   </config>
+   <config group="2" type="select">
+      <present code.txt="2558" description.nr="3119" name.nr="3119"/>
+      <function byte="207" expression="A x 1" format="0"/>
+	  <node-ref type="selections" id="no.nc" />
+      <limits max="10" min="0"/>
+   </config> 
+   
+   
+   
+  </configurations>
+  <configurations name="failure">
+    <config type="field">
+      <present code.txt="x" name.txt="code" description.txt="code description" />
+      <function byte="0" expression="A.1 + B.0" format="0" />
+    </config>
+    <config type="field">
+      <present code.txt="t" name.txt="timestamp" description.txt="timestamp description" />
+      <function byte="2" number="7" />
+    </config>
+  </configurations>
+  <configurations name="error">
+    <config type="field">
+      <present code.txt="x" name.txt="code" description.txt="code description" />
+      <function byte="0" expression="A.1 + B.0" format="0" />
+    </config>
+    <config type="field">
+      <present code.txt="t" name.txt="timestamp" description.txt="timestamp description" />
+      <function byte="2" number="7" />
+    </config>
+   
+   
+  </configurations>
+
+  <configurations name="sample">
+    <config type="select" label="STATUS" group="0">
+      <present name.nr="2023" description.nr="2023" />
+      <function byte="30" expression="A.1 + B.0" format="0" />
+      <node-ref type="selections" id="status.code" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="1125" description.nr="1125" unit.nr="312" />
+      <function byte="51" expression="(A.1 + B.0) x 0.015625" format="0.00" />
+      <limits min="-10" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="1364" description.nr="1365" unit.nr="312" />
+      <function byte="53" expression="(A.1 + B.0) x 0.015625" format="0.00" />
+      <limits min="-10" min.nr="107" max="150" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3094" description.nr="3094" unit.nr="312" />
+      <function byte="4" expression="A" format="0.00" />
+      <limits min="-2555" min.nr="107" max="255" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="1386" description.nr="1386" unit.txt="rpm" />
+      <function byte="5" expression="(A.1 + B.0) x 1.00" format="0" />
+      <limits min="-10" min.nr="107" max="8000" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3006" description.nr="3006" unit.nr="2524" />
+      <function byte="40" expression="(A - 1.07) x 0.18" format="0.00" />
+      <limits min="-1" min.nr="107" max="250" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3001" description.nr="3001" unit.txt="Watt" />
+      <function byte="7" expression="sgn(A.1 + B.0)" format="0" />
+      <limits min="-1000" min.nr="107" max="1500" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="1376" description.nr="1377" unit.nr="312" />
+      <function byte="9" expression="(A.1 + B.0) x 0.015625" format="0.00" />
+      <limits min="-10" min.nr="107" max="50" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3003" description.nr="3003" unit.nr="312" />
+      <function byte="11" expression="(A.1 + B.0)" format="0" />
+      <limits min="0" min.nr="107" max="660" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3004" description.nr="3004" unit.txt="V" />
+      <function byte="13" expression="A.1 + B.0" format="0" />
+      <limits min="-10" min.nr="107" max="300" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="3095" description.nr="3095" unit.nr="312" />
+      <function byte="26" expression="(A.1 + B.0) x 0.015625" format="0.00" />
+      <limits min="-10" min.nr="107" max="100" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="1382" description.nr="1383" unit.nr="312" />
+      <function byte="28" expression="(A.1 + B.0) x 0.015625" format="0.00" />
+      <limits min="-10" min.nr="107" max="50" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+	  <present name.nr="1127" description.nr="1127" unit.nr="312" />
+      <function byte="41" expression="(A.1 + B.0) x 0.015625" format="0.00" />
+      <limits min="-1" min.nr="107" max="250" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="1123" description.nr="1123" unit.txt="" />
+      <function byte="30" expression="A.1 + B.0" format="0" />
+      <limits min="-10" min.nr="107" max="500" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3005" description.nr="3005" unit.txt="A" />
+      <function byte="38" expression="sgn(A.1 + B.0) x 0.01" format="0.00" />
+      <limits min="-5" min.nr="107" max="5" max.nr="106" />
+    </config>
+    <config type="field" group="2">
+      <present name.txt="B31" description.txt="B31" unit.nr="312" />
+      <function byte="43" expression="(A.1 + B.0) x 0.015625" format="0.00" />
+	    <limits min="-1" min.nr="107" max="250" max.nr="106" />
+    </config>
+    <config type="field" group="1">
+      <present name.nr="1678" description.nr="1679" unit.nr="312" />
+      <function byte="45" expression="sgn(A.1 + B.0) x 0.015625" format="0.00" />
+      <limits min="-25" min.nr="107" max="50" max.nr="106" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="2699" description.nr="2699" />
+      <function byte="56" bit="0" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3007" description.nr="3007" />
+      <function byte="56" bit="3" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3008" description.nr="3008" />
+      <function byte="56" bit="4" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="1438" description.nr="1438" />
+      <function byte="56" bit="5" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3009" description.nr="3009" />
+      <function byte="56" bit="6" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3010" description.nr="3010" />
+      <function byte="56" bit="7" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3011" description.nr="3011" />
+      <function byte="55" bit="0" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3012" description.nr="3012" />
+      <function byte="55" bit="1" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3013" description.nr="3013" />
+      <function byte="55" bit="2" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3014" description.nr="3014" />
+      <function byte="55" bit="3" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3015" description.nr="3015" />
+      <function byte="55" bit="4" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3016" description.nr="3016" />
+      <function byte="55" bit="5" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3017" description.nr="3017" />
+      <function byte="55" bit="6" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="bit" group="3">
+      <present name.nr="3018" description.nr="3018" />
+      <function byte="55" bit="7" invert="false" />
+      <node-ref type="selections" id="off.on.code" />
+    </config>
+    <config type="field" group="2">
+      <present name.nr="3019" description.nr="3019" unit.txt="" />
+      <function byte="57" expression="A" format="0" />
+      <limits min="0" min.nr="107" max="4" max.nr="106" />
+    </config>
+  </configurations>
+  <configurations name="counter">
+    <config type="field" group="0">
+      <present name.nr="3096" description.nr="3096" />
+      <function byte="0" expression="A.3 + B.2 + C.1 + D.0" format="0" unit.txt="kWh" />
+    </config>
+    <config type="field" group="0">
+      <present name.nr="3097" description.nr="3097" unit.nr="317" />
+      <function byte="8" expression="A.1 + B.0" format="0" />
+    </config>
+    <config type="field" group="0">
+      <present name.nr="3098" description.nr="3098" />
+      <function byte="10" expression="A.3 + B.2 + C.1 + D.0" format="0" />
+    </config>
+    <config type="field" group="0">
+      <present name.nr="3099" description.nr="3099" unit.nr="317"/>
+      <function byte="14" expression="A.1 + B.0" format="0" />
+    </config>
+    <config type="field" group="0">
+      <present name.nr="3103" description.nr="3103" />
+      <function byte="16" expression="A.3 + B.2 + C.1 + D.0" format="0" />
+    </config>
+  </configurations>
+  <configurations name="identification">
+    <config type="field" group="1">
+      <present name.txt="SW Ver." description.txt="SW Ver." />
+      <function byte="0" expression="(A.1 + B.0) x 0.1" format="0.0" />
+    </config>
+    <config type="field" group="1">
+      <present name.txt="Build Index" description.txt="Build Index" />
+      <function byte="4" expression="A.1 + B.0" format="0" />
+    </config>
+    <config type="field" group="1">
+      <present name.txt="EGC Ver." description.txt="EGC Ver." />
+      <function byte="2" expression="(A.1 + B.0) x 0.1" format="0.0" />
+    </config>
+  </configurations>
+  <checksum value="28780" />
+</configuration>

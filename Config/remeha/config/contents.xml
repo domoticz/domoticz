@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<contents>
+  <!--
+    This file contains a list of file names that are to be downloaded with an update.
+  />
+  -->
+  <file name="DeviceConfiguration.xml"/>
+</contents>

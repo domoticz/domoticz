@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Objects>
+  <identifications>
+    <identification adress="327780" byte="0" type="LBLOCK" length="10"></identification>
+  </identifications>
+   <samples>
+      <sample adress="3016189" byte="0" nr="1533" type="VALI"><!--TempSoWiUmsch_2--></sample>
+      <sample adress="2298050" byte="2" nr="4290" type="VALB"><!--ParDrehzRegMitAnfoErh_3--></sample>
+      <sample adress="3213089" byte="3" nr="1825" type="VALME8"><!--ParBwVorrang_1--></sample>
+   </samples>
+   <parameters>
+      <parameter adress="3212657" byte="0" nr="1393" type="VALME8"><!--DHW operating mode--></parameter>
+      <parameter adress="3212985" byte="1" nr="1721" type="VALI"><!--DHW temperature nominal setpoint--></parameter>
+      <parameter adress="3212986" byte="3" nr="1722" type="VALI"><!--DHW temperature reduced setpoint--></parameter>
+      <parameter adress="3212984" byte="5" nr="1720" type="VALI"><!--DHW temperature nominal setpoint max--></parameter>
+      <parameter adress="2426658" byte="7" nr="1826" type="VALME8"><!--DHW release--></parameter>
+      <parameter adress="3213089" byte="8" nr="1825" type="VALME8"><!--DHW charging priority--></parameter>
+      <parameter adress="3213145" byte="9" nr="1881" type="VALME8"><!--Legionella function--></parameter>
+      <parameter adress="3213112" byte="10" nr="1848" type="VALMN8"><!--Legionella function periodicity--></parameter>
+      <parameter adress="3213150" byte="11" nr="1886" type="VALME8"><!--Legionella function day--></parameter>
+      <parameter adress="3212988" byte="12" nr="1724" type="VALI"><!--Legionella function setpoint--></parameter>
+      <parameter adress="3212438" byte="14" nr="1174" type="VALI"><!--Dwelling time at legionella function setpoint--></parameter>
+      <parameter adress="3213483" byte="16" nr="2219" type="VALME8"><!--Circul. pump operation during legionella func--></parameter>
+      <parameter adress="2426670" byte="17" nr="1838" type="VALME8"><!--DHW circulating pump release--></parameter>
+      <parameter adress="2426505" byte="18" nr="1673" type="VALME8"><!--DHW circulating pump cycling --></parameter>
+      <parameter adress="854315" byte="19" nr="2347" type="VALI"><!--Boiler temp max limitatio--></parameter>
+      <parameter adress="329971" byte="21" nr="2291" type="VALI"><!--Boiler temp max limitation OEM--></parameter>
+      <parameter adress="1115708" byte="28" nr="1596" type="VALME8"><!--Frost protection for plant  boiler pump--></parameter>
+      <parameter adress="1117379" byte="48" nr="3267" type="VALB"><!--Auto deaeration procedure--></parameter>
+      <parameter adress="854312" byte="92" nr="2344" type="VALI"><!--Boiler switching diff--></parameter>
+      <parameter adress="854329" byte="94" nr="2361" type="VALI8"><!--Burner running time min limitation--></parameter>
+      <parameter adress="330754" byte="95" nr="3074" type="VALI"><!--Burner off time min--></parameter>
+      <parameter adress="2426679" byte="150" nr="1847" type="VALB"><!--DHW charging--></parameter>
+      <parameter adress="2426656" byte="151" nr="1824" type="VALI"><!--DHW flow setpoint boost--></parameter>
+      <parameter adress="2427003" byte="153" nr="2171" type="VALME8"><!--DHW recharging control--></parameter>
+      <parameter adress="3213085" byte="154" nr="1821" type="VALI"><!--DHW switching differential--></parameter>
+      <parameter adress="2426673" byte="156" nr="1841" type="VALI"><!--DHW charging time limitation--></parameter>
+      <parameter adress="2426708" byte="158" nr="1876" type="VALME8"><!--DHW discharging protection--></parameter>
+      <parameter adress="3213482" byte="159" nr="2218" type="VALB"><!--DHW automatic push--></parameter>
+      <parameter adress="3214103" byte="160" nr="2839" type="VALN8"><!--charging priority time push--></parameter>
+      <parameter adress="2427083" byte="161" nr="2251" type="VALME8"><!--DHW storage tank overtemperature drop--></parameter>
+      <parameter adress="330769" byte="192" nr="3089" type="VALME8"><!--Plant type--></parameter>
+      <parameter adress="328855" byte="200" nr="1175" type="VALME8"><!--Relay output QX1--></parameter>
+      <parameter adress="329447" byte="201" nr="1767" type="VALME8"><!--Reset error history--></parameter>
+	  <parameter adress="329096" byte="202" nr="1416" type="VALME8"><!--Q4 relay function--></parameter>
+	  <parameter adress="329678" byte="206" nr="1998" type="VALME8"><!--Function EX2--></parameter>
+	  <parameter adress="329681" byte="207" nr="2001" type="VALME8"><!--EX2 normally opened closed--></parameter>
+</parameters>
+   <errors>
+      <error><!--Time stamp error history entry 1-->
+         <code adress="329748" app="0" byte="4" inst="1" nr="2068" type="VALME"/>
+         <time adress="329427" app="0" byte="0" inst="1" nr="1747" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 2-->
+         <code adress="329748" app="0" byte="12" inst="1" nr="2069" type="VALME"/>
+         <time adress="329428" app="0" byte="8" inst="1" nr="1748" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 3-->
+         <code adress="329750" app="0" byte="20" inst="1" nr="2070" type="VALME"/>
+         <time adress="329429" app="0" byte="16" inst="1" nr="1749" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 4-->
+         <code adress="329751" app="0" byte="28" inst="1" nr="2071" type="VALME"/>
+         <time adress="329430" app="0" byte="24" inst="1" nr="1750" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 5-->
+         <code adress="329752" app="0" byte="36" inst="1" nr="2072" type="VALME"/>
+         <time adress="329431" app="0" byte="32" inst="1" nr="1751" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 6-->
+         <code adress="329753" app="0" byte="44" inst="1" nr="2073" type="VALME"/>
+         <time adress="329432" app="0" byte="40" inst="1" nr="1752" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 7-->
+         <code adress="329754" app="0" byte="52" inst="1" nr="2074" type="VALME"/>
+         <time adress="329433" app="0" byte="48" inst="1" nr="1753" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 8-->
+         <code adress="329755" app="0" byte="60" inst="1" nr="2075" type="VALME"/>
+         <time adress="329434" app="0" byte="56" inst="1" nr="1754" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 9-->
+         <code adress="329756" app="0" byte="68" inst="1" nr="2076" type="VALME"/>
+         <time adress="329435" app="0" byte="64" inst="1" nr="1755" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 10-->
+         <code adress="329757" app="0" byte="76" inst="1" nr="2077" type="VALME"/>
+         <time adress="329436" app="0" byte="72" inst="1" nr="1756" type="VALDATE"/>
+      </error>
+   </errors>
+   <errorList>
+      <errorCode nr="0" type="blocking"/>
+      <errorCode nr="10" type="blocking"/>
+      <errorCode nr="20" type="blocking"/>
+      <errorCode nr="30" type="blocking"/>
+      <errorCode nr="32" type="blocking"/>
+      <errorCode nr="40" type="blocking"/>
+      <errorCode nr="50" type="blocking"/>
+      <errorCode nr="52" type="blocking"/>
+      <errorCode nr="54" type="blocking"/>
+      <errorCode nr="57" type="blocking"/>
+      <errorCode nr="60" type="blocking"/>
+      <errorCode nr="65" type="blocking"/>
+      <errorCode nr="68" type="blocking"/>
+      <errorCode nr="83" type="blocking"/>
+      <errorCode nr="84" type="blocking"/>
+      <errorCode nr="85" type="blocking"/>
+      <errorCode nr="91" type="locking"/>
+      <errorCode nr="92" type="locking"/>
+      <errorCode nr="95" type="blocking"/>
+      <errorCode nr="96" type="blocking"/>
+      <errorCode nr="97" type="locking"/>
+      <errorCode nr="98" type="blocking"/>
+      <errorCode nr="99" type="blocking"/>
+      <errorCode nr="100" type="blocking"/>
+      <errorCode nr="102" type="blocking"/>
+      <errorCode nr="121" type="blocking"/>
+      <errorCode nr="122" type="blocking"/>
+      <errorCode nr="127" type="blocking"/>
+      <errorCode nr="157" type="locking"/>
+      <errorCode nr="158" type="locking"/>
+      <errorCode nr="164" type="blocking"/>
+      <errorCode nr="187" type="blocking"/>
+      <errorCode nr="253" type="locking"/>
+      <errorCode nr="254" type="blocking"/>
+      <errorCode nr="259" type="locking"/>
+      <errorCode nr="261" type="locking"/>
+      <errorCode nr="262" type="locking"/>
+      <errorCode nr="263" type="locking"/>
+      <errorCode nr="264" type="locking"/>
+      <errorCode nr="265" type="locking"/>
+      <errorCode nr="266" type="locking"/>
+      <errorCode nr="267" type="blocking"/>
+      <errorCode nr="268" type="locking"/>
+      <errorCode nr="269" type="locking"/>
+      <errorCode nr="270" type="blocking"/>
+      <errorCode nr="273" type="locking"/>
+	  <errorCode nr="274" type="locking"/>
+      <errorCode nr="275" type="locking"/>
+      <errorCode nr="276" type="blocking"/>
+      <errorCode nr="277" type="locking"/>
+      <errorCode nr="278" type="blocking"/>
+      <errorCode nr="280" type="blocking"/>
+      <errorCode nr="281" type="locking"/>
+      <errorCode nr="282" type="blocking"/>
+      <errorCode nr="283" type="locking"/>
+      <errorCode nr="284" type="locking"/>
+      <errorCode nr="285" type="blocking"/>
+      <errorCode nr="286" type="locking"/>
+      <errorCode nr="287" type="blocking"/>
+      <errorCode nr="288" type="locking"/>
+      <errorCode nr="289" type="locking"/>
+      <errorCode nr="290" type="locking"/>
+      <errorCode nr="291" type="locking"/>
+      <errorCode nr="292" type="locking"/>
+      <errorCode nr="293" type="locking"/>
+      <errorCode nr="294" type="locking"/>
+      <errorCode nr="295" type="locking"/>
+      <errorCode nr="296" type="locking"/>
+      <errorCode nr="298" type="blocking"/>
+      <errorCode nr="299" type="blocking"/>
+      <errorCode nr="300" type="locking"/>
+      <errorCode nr="301" type="blocking"/>
+      <errorCode nr="302" type="locking"/>
+      <errorCode nr="303" type="locking"/>
+      <errorCode nr="304" type="locking"/>
+      <errorCode nr="305" type="locking"/>
+      <errorCode nr="306" type="blocking"/>
+      <errorCode nr="307" type="blocking"/>
+      <errorCode nr="308" type="locking"/>
+      <errorCode nr="309" type="blocking"/>
+      <errorCode nr="310" type="blocking"/>
+      <errorCode nr="311" type="blocking"/>
+      <errorCode nr="319" type="locking"/>
+      <errorCode nr="394" type="blocking"/>
+      <errorCode nr="395" type="blocking"/>
+      <errorCode nr="396" type="blocking"/>
+      <errorCode nr="397" type="blocking"/>
+      <errorCode nr="398" type="blocking"/>
+      <errorCode nr="399" type="blocking"/>
+      <errorCode nr="422" type="blocking"/>
+      <errorCode nr="423" type="blocking"/>
+      <errorCode nr="424" type="locking"/>
+      <errorCode nr="425" type="locking"/>
+      <errorCode nr="428" type="blocking"/>
+   </errorList>
+   <counters>
+      <counter adress="330720" app="0" byte="0" inst="1" nr="3040" type="VALI32"><!--Energy to date--></counter>
+      <counter adress="331107" app="0" byte="4" inst="1" nr="3427" type="VALI32"><!--Energy since reset--></counter>
+      <counter adress="1117205" app="4" byte="8" inst="1" nr="3093" type="VALI"><!--Eng burner hours run--></counter>
+      <counter adress="1117207" app="4" byte="10" inst="1" nr="3095" type="VALI32"><!--Eng burner start counter--></counter>
+      <counter adress="1117206" app="4" byte="14" inst="1" nr="3094" type="VALI"><!--Supp burner hours run--></counter>
+      <counter adress="1117208" app="4" byte="16" inst="1" nr="3096" type="VALI32"><!--Supp burner start counter--></counter>
+   </counters>
+  <checksum value="29604" />
+</Objects>

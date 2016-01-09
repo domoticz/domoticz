@@ -1,0 +1,3272 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<language name="turks">
+<text id="0" value="Türkçe"/>
+<text id="1" value="6.82"/>
+<text id="2" value="TR"/>
+<text id="15" value="10 sn. sirkülasyon sonrası"/>
+<text id="18" value="sürekli"/>
+<text id="23" value="3 yollu valf"/>
+<text id="24" value="Isı değiştirici pompası"/>
+<text id="25" value="Ters 3 yollu valf"/>
+<text id="26" value="Aşırı sıcak DHW"/>
+<text id="27" value="Maks. akış DHW"/>
+<text id="30" value="Devir hızı kontrolü"/>
+<text id="31" value="Kontrol etmeyin"/>
+<text id="32" value="Harici arayüz"/>
+<text id="33" value="OpenTherm arayüzü"/>
+<text id="38" value="İletişim hatası"/>
+<text id="43" value="Parola doğru değil!"/>
+<text id="100" value="W40/W60"/>
+<text id="101" value="W21s"/>
+<text id="106" value="Kapalı"/>
+<text id="107" value="Açık"/>
+<text id="110" value="0:Alev simülasyonu"/>
+<text id="111" value="1:Kısa devre 24 Volt devre"/>
+<text id="112" value="2:Alev yok"/>
+<text id="113" value="3:Gaz valfi triyak arızası"/>
+<text id="114" value="4:Kalıcı kilitleme"/>
+<text id="115" value="5:İşlemci proto. uyuşmuyor"/>
+<text id="116" value="6:Girdi hatası"/>
+<text id="117" value="7:Gaz valfi rölesi arızası"/>
+<text id="118" value="8:Hava presi anh. kapanmıyor"/>
+<text id="119" value="10:Yazılım hatası"/>
+<text id="120" value="11:EEPROM yazma/okuma hatası"/>
+<text id="121" value="12:Maks. termos. girdisi açık"/>
+<text id="122" value="13:Arızalı çıktı devresi"/>
+<text id="123" value="14:NTC test devresi hatası"/>
+<text id="124" value="15:ADC dön. çok uz. sürüyor"/>
+<text id="125" value="16:ADC çoklayıcı arızası"/>
+<text id="126" value="17:Gaz valfi izleme"/>
+<text id="127" value="18:Akış sıcaklığı çok yüksek"/>
+<text id="128" value="19:Dönüş sıc. çok yüksek"/>
+<text id="129" value="24:Akış-dön. sens. ters dön."/>
+<text id="130" value="25:Akış sıc. çok hızlı yük."/>
+<text id="131" value="26:Minimum gaz basıncı"/>
+<text id="132" value="28:Fan çalışmıyor, tako. yok"/>
+<text id="133" value="29:Fan çalış. devam ediyor"/>
+<text id="134" value="30:deltaT(akış-dön.)çokbüyük"/>
+<text id="135" value="41:Çıktı P0 hatası"/>
+<text id="136" value="42:Çıktı P1 hatası"/>
+<text id="137" value="44:Gaz valfi rölesi arızası"/>
+<text id="138" value="52:Baca gazı sıc. çok yüksek"/>
+<text id="139" value="61:APS açılmıyor"/>
+<text id="140" value="77: Yanarken iyonlaşma yok"/>
+<text id="141" value="Bilinmeyen arıza no."/>
+<text id="145" value="0:Kapalı kon, ısı istemi yok"/>
+<text id="146" value="1:Hav. öncesi/Hav. sonrası"/>
+<text id="147" value="2:Ateşleme"/>
+<text id="148" value="3:CH için çalışıyor"/>
+<text id="149" value="4:DHW için çalışıyor"/>
+<text id="150" value="5:Basınç anah. için bekliyor"/>
+<text id="151" value="6:CH konumunda kazan kapalı"/>
+<text id="152" value="7:CH kon.sirk. sonrası pompa"/>
+<text id="153" value="8:DHW kon.sirk.sonrası pompa"/>
+<text id="154" value="9:Takış&gt;T1ayarıyla brü.kap."/>
+<text id="155" value="17:Basınçlıbrülöryüksekalev"/>
+<text id="156" value="20:Basınçlıbrülör düşük alev"/>
+<text id="157" value="Bilinmeyen adım no."/>
+<text id="162" value="8:Yetersiz hava aktarımı"/>
+<text id="163" value="61:Kap.kon.kazandahavaaktar."/>
+<text id="164" value="Mevcut veri yok"/>
+<text id="202" value="Akış"/>
+<text id="203" value="Dönüş"/>
+<text id="204" value="Isı değiştirici"/>
+<text id="205" value="Dış"/>
+<text id="206" value="Baca gazı"/>
+<text id="207" value="Devirler"/>
+<text id="208" value="Ayar noktası"/>
+<text id="210" value="Ölçme çizgisi"/>
+<text id="213" value="Fan hızını hesapla"/>
+<text id="214" value="Isı istemi"/>
+<text id="215" value="Pompa"/>
+<text id="216" value="Gaz valfi"/>
+<text id="217" value="Hava anahtarı"/>
+<text id="218" value="İyonlaşma"/>
+<text id="220" value="DHW istemi"/>
+<text id="223" value="Açık"/>
+<text id="224" value="Kapalı"/>
+<text id="225" value="Min gaz basıncı"/>
+<text id="227" value="&amp;Dosya"/>
+<text id="229" value="&amp;Yazdır"/>
+<text id="230" value="&amp;Çıkış"/>
+<text id="231" value="&amp;İletişim"/>
+<text id="232" value="&amp;Parametreler"/>
+<text id="233" value="&amp;Canlı izleme"/>
+<text id="236" value="&amp;Grafikler"/>
+<text id="237" value="&amp;Parola"/>
+<text id="238" value="Ölç.çizg. düzelt"/>
+<text id="242" value="&amp;Yardım"/>
+<text id="243" value="&amp;Bil."/>
+<text id="252" value="&amp;Ölçme verisini aç"/>
+<text id="253" value="&amp;Ayarları kaydet"/>
+<text id="262" value="Min.fan dev.soğ.baş."/>
+<text id="263" value="Min.fan dev.baş.sır."/>
+<text id="264" value="Sıc.art.hız.ayar."/>
+<text id="278" value="Yardımcı kazan"/>
+<text id="279" value="Ekran + LEDler"/>
+<text id="281" value="Maks.kilit sür."/>
+<text id="282" value="T Algıla DHW"/>
+<text id="283" value="Kazanın DHW&apos;yu ısıtmasına neden olan DHW sıcaklığı"/>
+<text id="284" value="Min fan devir süresi ilk başlangıç"/>
+<text id="285" value="İlk başlangıçta fan devirleri"/>
+<text id="288" value="U: Merkezi ısıtma için yeni baş. önce maks bekleme süresi"/>
+<text id="289" value="Kilit. yerine kazan id. ünitesinin düzenlenmesine izin verir"/>
+<text id="290" value="DHW algı. &gt;32°C"/>
+<text id="291" value="Bu sıcaklık düşüş hızı kazanın DHW&apos;yu ısıtmasına izin verir"/>
+<text id="292" value="DHW ürününde en yüksek sıcaklık"/>
+<text id="293" value="LED donanımlı ekranlı kazan"/>
+<text id="294" value="Bir sensör yoluyla DHW"/>
+<text id="295" value="Gün. enerjili kazan sistem."/>
+<text id="296" value="Hesaplama penceresi"/>
+<text id="297" value="Hesaplama Çizgisi"/>
+<text id="298" value="Delta"/>
+<text id="299" value="Delta/san"/>
+<text id="307" value="T düşüşü&lt;=32°C"/>
+<text id="308" value="T düşüşü &lt;30°C"/>
+<text id="309" value="0V&apos;ta Takışı"/>
+<text id="310" value="10V&apos;ta Takışı"/>
+<text id="311" value="Basınçlı kazan yüksek/düşük modu"/>
+<text id="312" value="&#176;C"/>
+<text id="313" value="Rpm"/>
+<text id="314" value="Min"/>
+<text id="316" value="&#176;/10s"/>
+<text id="317" value="Saat"/>
+<text id="318" value="mg/s"/>
+<text id="319" value="kW"/>
+<text id="329" value="DHW&apos;dansonraTtam"/>
+<text id="331" value="Son DHW istemi T3 &gt; (Parametre r/4) + (bu Parametre)"/>
+<text id="334" value="Pompayı çalıştırmaya sürekli devam et"/>
+<text id="339" value="80KW"/>
+<text id="340" value="120KW"/>
+<text id="341" value="160KW"/>
+<text id="342" value="200KW"/>
+<text id="343" value="*10s"/>
+<text id="344" value="Basınçlı düşük alev"/>
+<text id="345" value="Düşük alevde kazanın şarj yüzdesi"/>
+<text id="346" value="%"/>
+<text id="347" value="Maks çıktı"/>
+<text id="348" value="Maksimum çıkışın azaltılmasına izin verir"/>
+<text id="349" value="Düşük alev H/Lreg"/>
+<text id="350" value="Yüksek/düşük düzenlemesi ile düşük alev çıkışı,A parametresi"/>
+<text id="351" value="Mesaj yüzdesi"/>
+<text id="352" value="Yüksek Alev&apos; mesajını etkinleştirmek için kazan yüzdesi"/>
+<text id="353" value="Döngü önleme süresi"/>
+<text id="354" value="Isıtma kapalı ve açık arasındaki min. kapalı servis süresi"/>
+<text id="355" value="Min. hidro. basıncı"/>
+<text id="356" value="Bu değerin altında, kazan kilitleme konumuna geçecektir"/>
+<text id="357" value="/10mB"/>
+<text id="358" value="Servis-düzey seç"/>
+<text id="359" value="1=hidrobasıncı sen; 2=kirlen. sen;4=0-10V; 8=gaz kaçağı kont."/>
+<text id="360" value="İkili ek"/>
+<text id="361" value="Bakım LED&apos;i için dP"/>
+<text id="362" value="Bakım LED&apos;i, bu ölçüm dP değerinin üzerinde yanar"/>
+<text id="363" value="/10mB"/>
+<text id="364" value="ID &apos;kapalı&apos; hist"/>
+<text id="365" value="Kazan ısı değiştirici &gt; akışsıc + bu param.olduğunda kapanır"/>
+<text id="366" value="maks dT kazan açık"/>
+<text id="367" value="Kazanın açılmasını sağlayan akış ve dön arasındaki maks.fark"/>
+<text id="368" value="açılma zamanı"/>
+<text id="369" value="Başlangıç çıktısında kazanın çalışma süresi"/>
+<text id="370" value="*6sn"/>
+<text id="371" value="IMS &apos;ölü&apos; aralığı"/>
+<text id="372" value="IMS tepkisi ile ayarlanmış nokta varyasyonu"/>
+<text id="373" value="/ % 10"/>
+<text id="374" value="IMS baş. konumu"/>
+<text id="375" value="Kazan başlangıcına izin veren IMS konumu"/>
+<text id="376" value="IMS kon. kapalı LDS"/>
+<text id="377" value="LDS temasının kapalı olmak zorunda olduğu en yük. IMS konumu"/>
+<text id="378" value="IMS kon. düş."/>
+<text id="379" value="Minimuma modüle edilirken IMS bekleme konumu"/>
+<text id="380" value="IMS bekleme süresi"/>
+<text id="381" value="IMS&apos;nin bekleme konumunda kalmak zorunda olduğu süre"/>
+<text id="382" value="sn"/>
+<text id="383" value="Ölü süre IMS"/>
+<text id="384" value="Hafifsavaktangeçmesiiçindüşükalevfanyonunun iht. duyduğusüre"/>
+<text id="385" value="/10 sn."/>
+<text id="386" value="Maks. süre IMS"/>
+<text id="387" value="0&apos;dan maks fanyona kadar çalışması için maksIMS çalışma sür."/>
+<text id="388" value="IMS adım süresi"/>
+<text id="389" value="Üste doğru modülasyonda, süre IMS bir adım kon. kalmalıdır"/>
+<text id="390" value="IMS üst adımları"/>
+<text id="391" value="IMS&apos;nin üst-modülas. için adım sayısı"/>
+<text id="392" value="NO"/>
+<text id="393" value="Seç. fakt. düzeyi"/>
+<text id="394" value="1=Ateş.;2=Rez;4=Bas.ı ısın. istemi;8=2. iyon düzeyi;16=APS"/>
+<text id="395" value="25:Test fazı IMS"/>
+<text id="396" value="25:Sıcaklık ısı değiştiricisini yükseltiyor"/>
+<text id="397" value="1=hidro basıncı sen 2=kirlen sen 4=0-10V 8=gazkaçağı 16=psi/F"/>
+<text id="399" value="94:(Tısı değiş -Takışı) yük."/>
+<text id="400" value="60:Param. okuması sır. arıza"/>
+<text id="401" value="83:Aşırıısıdeğiş.NTC-6 sıc."/>
+<text id="402" value="86:IMS S1 ve S3 iş.eş zaman."/>
+<text id="403" value="87:IMS kap.kon. S1 iş. değil"/>
+<text id="404" value="89:Gaz peteği blo. gazkaçağı"/>
+<text id="405" value="93:Eş zaman. IMS S1 ve S2"/>
+<text id="407" value="Çıktı"/>
+<text id="408" value="Gerekli çıktı"/>
+<text id="409" value="Isı değiştirici"/>
+<text id="410" value="Hidro basıncı"/>
+<text id="411" value="Çıktı yüksek alevi"/>
+<text id="413" value="Kapanma"/>
+<text id="415" value="Maks. sıc. artışı ID"/>
+<text id="416" value="ID sıcak. (T6) bu değerden hızlı yükseldiğinde kazan kapalı"/>
+<text id="420" value="Isıtma kapalı"/>
+<text id="421" value="Isıtma açık"/>
+<text id="422" value="Birleş. + tampon"/>
+<text id="423" value="Birleş. tampon yok"/>
+<text id="424" value="Solo"/>
+<text id="425" value="Mindışsıcdahısıneğ"/>
+<text id="426" value="Dahili hava düzeltmesi için min. dış sıcaklığı girin"/>
+<text id="427" value="Sıctutiçnenyüksıc"/>
+<text id="428" value="Tamponsuz son ısınma: Ort(T1,T2)&gt;par39+32+bu par"/>
+<text id="434" value="95:Isı değiş sens kısa devre"/>
+<text id="435" value="96:Isı değiştirici sen. açık"/>
+<text id="436" value="100:Min kon IMS &gt;baş.kon IMS"/>
+<text id="437" value="101:IMS min.kon.S2 iş. değil"/>
+<text id="438" value="102:IMSsonkon.S3işaretlenme."/>
+<text id="439" value="Gaz310-5 bölümleri"/>
+<text id="440" value="Gaz310-6 bölümleri"/>
+<text id="441" value="Gaz310-7 bölümleri"/>
+<text id="442" value="Gaz310-8 bölümleri"/>
+<text id="443" value="Gaz310-9 bölümleri"/>
+<text id="444" value="Gaz610-6 bölümleri"/>
+<text id="445" value="Gaz610-7 bölümleri"/>
+<text id="446" value="Gaz610-8 bölümleri"/>
+<text id="447" value="Gaz610-9 bölümleri"/>
+<text id="450" value="T3&gt;32+(bu par)&apos;da son DTW algılaması, daha sonra ısınma modu"/>
+<text id="451" value="Düşük/yüksek alevde çalışıyor&apos; mesajı düzeyi"/>
+<text id="452" value="Çalışıyor&apos; mesajının oluşturulduğu fanhızı"/>
+<text id="455" value="Yüksek/Düşük alv kontrolünde düşük fanhızı"/>
+<text id="456" value="Kazan kontrolünde Fanhızı=21"/>
+<text id="458" value="Mut.maks.fanhı."/>
+<text id="459" value="Bu maks. fan hızı"/>
+<text id="461" value="Tan. minfanhı."/>
+<text id="462" value="Bu tanımlı min. fan hızıdır"/>
+<text id="464" value="Süre&gt;maksfanhı."/>
+<text id="465" value="Maks. süre fanhızı &gt; maks. hızı."/>
+<text id="466" value="*6sn"/>
+<text id="470" value="fanhızı APS"/>
+<text id="471" value="Bu değerde APS açılmalıdır"/>
+<text id="476" value="pompa sonrası süre şant pompası"/>
+<text id="477" value="pompa sonrası süre şant pompasına girin"/>
+<text id="479" value="31: Akış sensörü kısayolu"/>
+<text id="480" value="32: Dönüş sensörü kısayolu"/>
+<text id="481" value="35: Baca gazı sen. kısayolu"/>
+<text id="482" value="36: Akış sensörü açık"/>
+<text id="483" value="37: Dönüş sensorü açık"/>
+<text id="484" value="40: Baca gazı sensörü açık"/>
+<text id="485" value="Başlangıçtan sonra, basınçlı kısım yükleme süresi (HTG)"/>
+<text id="486" value="Isıtma modunda pompa hızı"/>
+<text id="487" value="Sirkülasyon sonrası modda pompa hızı"/>
+<text id="488" value="Isıtma modunda akışta histerezis"/>
+<text id="489" value="İsteniyorsa, maksimum baca gazı sıcaklığını buraya girin"/>
+<text id="490" value="Servis düzeyinde maksimum akış sıcaklığı"/>
+<text id="491" value="Modül. başlangıç noktası dT (Akış-dönüş)"/>
+<text id="804" value="Canlı izleme"/>
+<text id="818" value="Tamam"/>
+<text id="819" value="İptal"/>
+<text id="820" value="Varsayılan"/>
+<text id="823" value="Değer sınırlar dışında"/>
+<text id="900" value="Isıtma için maksimum akış sıcaklığını girin"/>
+<text id="901" value="Pompa sirkülasyon sonrası süresini girin"/>
+<text id="902" value="DHW sıcaklığını girin"/>
+<text id="912" value="Dış sensörünü kullanırken, ayak noktası (akış) ısınma eğrisi"/>
+<text id="913" value="CH modunda, maksimum fan hızı"/>
+<text id="914" value="Minimum fan hızı"/>
+<text id="915" value="DHW modunda, maksimum fan hızı"/>
+<text id="916" value="Hava basıncı anahtarı kontrolü için fan hızı"/>
+<text id="917" value="Fan hızı kazan başlangıç yükleme"/>
+<text id="918" value="Maksimum akış DHW"/>
+<text id="919" value="Isıtma modunda pompa hızı"/>
+<text id="920" value="Sirkülasyon sonrası modda pompa hızı"/>
+<text id="921" value="Isıtma modunda akışta histerezis"/>
+<text id="922" value="DHF tamponunu ısıtmak için süre aralığı"/>
+<text id="923" value="Modül. başlangıç noktası dT (akış-dönüş)"/>
+<text id="924" value="DHW modu için histerezis"/>
+<text id="925" value="İsteniyorsa, maksimum baca gazı sıcaklığını buraya girin"/>
+<text id="926" value="Başlangıçtan sonra, basınçlı kısım yükleme süresi (CH)"/>
+<text id="927" value="3 yollu valf normal veya ters"/>
+<text id="928" value="Kazan tipi"/>
+<text id="929" value="Bir seçim yapın"/>
+<text id="930" value="baca gazı sıcak. korumasını açık veya kapalıya çevirin."/>
+<text id="931" value="Bu dahili arayüzü AÇIK veya KAPALI&apos;ya çevirir."/>
+<text id="932" value="Basınçlı düşük alev süresinde maksimum akış sıcaklığı"/>
+<text id="933" value="Servis düzeyinde maksimum akış sıcaklığı"/>
+<text id="934" value="Mutlak maksimum fanhızı"/>
+<text id="935" value="Mutlak minimum fanhızı"/>
+<text id="936" value="AÇIK ısınma modu ile orantısal faktör"/>
+<text id="937" value="AÇIK ısınma modu ile entegrasyon faktörü"/>
+<text id="938" value="AÇIK DHW modu ile orantısal faktör"/>
+<text id="939" value="AÇIK DHW modu ile entegrasyon faktörü"/>
+<text id="940" value="AÇIK DHW modu ile ayırt edici faktör"/>
+<text id="941" value="Fan ve pompa kontrol sıklığı"/>
+<text id="943" value="Yüksek limit stat ayarı (akış)"/>
+<text id="944" value="0,1&#176;C&apos;de emniyetli maksimum akış artışı"/>
+<text id="945" value="Akış ve dönüş arasındaki maksimum fark"/>
+<text id="946" value="Fan tipine bağlı"/>
+<text id="947" value="Fan devir hızı artışını girin"/>
+<text id="955" value="43:Para. sınırlar dışında"/>
+<text id="958" value="88:Kilitleme girdisi açık"/>
+<text id="966" value="Pompa sürek."/>
+<text id="967" value="Sürek. HTG istemi"/>
+<text id="971" value="Süre"/>
+<text id="1003" value="evet"/>
+<text id="1004" value="hayır"/>
+<text id="1018" value="Küçük ekran için ayarları seçin"/>
+<text id="1022" value="Fan yavaşlama hızını ayarlayın"/>
+<text id="1026" value="T akışı ayar nok"/>
+<text id="1027" value="Pompa son. süre"/>
+<text id="1028" value="DHW ayar noktası"/>
+<text id="1029" value="Kazan kont.ayar."/>
+<text id="1030" value="Güçlendirici ile modülasyon"/>
+<text id="1031" value="Yüksek/düşük harici giriş"/>
+<text id="1032" value="Güçlendiricisiz modülasyon"/>
+<text id="1033" value="Analog sıcaklık girişi"/>
+<text id="1034" value="Analog yükleme girişi"/>
+<text id="1035" value="Isıtma kapalı, DHW kapalı"/>
+<text id="1036" value="Isıtma açık, DHW açık"/>
+<text id="1037" value="Isıtma açık, DHW kapalı"/>
+<text id="1038" value="Isıtma kapalı, DHW açık"/>
+<text id="1039" value="Ayak noktası"/>
+<text id="1040" value="Tam yükleme HTG"/>
+<text id="1041" value="Kısmiyük.HTG/DHW"/>
+<text id="1042" value="Tam yükleme DHW"/>
+<text id="1043" value="Devir kontrol"/>
+<text id="1044" value="Yüklemeye başla"/>
+<text id="1046" value="HTG&apos;de pompahızı"/>
+<text id="1047" value="HTGdensonpomhızı"/>
+<text id="1048" value="Gec. HTG"/>
+<text id="1049" value="DHWısınsürakanah"/>
+<text id="1050" value="dT mod noktası"/>
+<text id="1051" value="Histerezis DHW"/>
+<text id="1052" value="Maks Tbaca gazı"/>
+<text id="1053" value="Kısmi yük.süresi"/>
+<text id="1054" value="DHW kontr modu"/>
+<text id="1055" value="Kazan tipi"/>
+<text id="1056" value="Hava presi anah."/>
+<text id="1057" value="Baca gazı kont."/>
+<text id="1058" value="Arayüz tipi"/>
+<text id="1059" value="Takışıkısmi yük."/>
+<text id="1060" value="T akışı maks."/>
+<text id="1061" value="Mutlak maks. rpm"/>
+<text id="1062" value="Mutlak min. rpm"/>
+<text id="1063" value="P-fakt. ısınma"/>
+<text id="1064" value="I-fakt. ısınma"/>
+<text id="1065" value="DHW için P fak."/>
+<text id="1066" value="DHW için I fak."/>
+<text id="1067" value="DHW için D fak."/>
+<text id="1068" value="Fan/pompasıklığı"/>
+<text id="1070" value="Maks.akış.sıcak."/>
+<text id="1071" value="Maks.sıcakartışı"/>
+<text id="1072" value="MaksdT akış/dön."/>
+<text id="1073" value="Herdev.içindarbe"/>
+<text id="1074" value="I üst faktör fan"/>
+<text id="1075" value="I alt faktörfan"/>
+<text id="1076" value="Hister. son DHW"/>
+<text id="1077" value="Ekran 2/1 rakam"/>
+<text id="1078" value="Ekran 3/4 rakam"/>
+<text id="1084" value="Servis düzeyi"/>
+<text id="1085" value="Kull düzeyi"/>
+<text id="1088" value="Parametreler"/>
+<text id="1101" value="Parolayı buraya girin"/>
+<text id="1106" value="Hata: Yanlış dosya"/>
+<text id="1121" value="Süre ekseni (sn)"/>
+<text id="1122" value="Örnek süre (sn)"/>
+<text id="1123" value="Hata kodu"/>
+<text id="1124" value="Program adımı"/>
+<text id="1125" value="Akış sıcaklığı"/>
+<text id="1126" value="Dönüş sıcaklığı"/>
+<text id="1127" value="Kazan sıcaklığı"/>
+<text id="1128" value="Baca gazı sıcaklığı"/>
+<text id="1129" value="Son kilitlemeden beri süre"/>
+<text id="1130" value="Maks. kayıt örn."/>
+<text id="1138" value="Seçili COM portu: Com "/>
+<text id="1150" value="----------"/>
+<text id="1151" value="15 Dakika Düşük mod"/>
+<text id="1152" value="15 Dakika Yüksek mod"/>
+<text id="1153" value="Normal moda"/>
+<text id="1154" value="Baca modu"/>
+<text id="1155" value="Isıt.3yolluvalfi"/>
+<text id="1156" value="(Takışı+Tdön)/2&lt;Tkazan+bu par olduğu zam 3yollu valfe ısınma"/>
+<text id="1157" value="DHWAyarı 32&#176;C / DHW açık"/>
+<text id="1158" value="DHWAyarı 32&#176;C / DHW kapalı"/>
+<text id="1159" value="DHWAyarı 40&#176;C / DHW açık"/>
+<text id="1160" value="DHWAyarı 40&#176;C / DHW kapalı"/>
+<text id="1161" value="DHWAyarı 50&#176;C / DHW açık"/>
+<text id="1162" value="DHWAyarı 50&#176;C / DHW kapalı"/>
+<text id="1163" value="Par.r / DHW açık"/>
+<text id="1164" value="Par.r / DHW kapalı"/>
+<text id="1165" value="DHW 45&#176;C / Akış 60°C"/>
+<text id="1166" value="DHW 45&#176;C / Akış 75°C"/>
+<text id="1167" value="DHW 45&#176;C / Akış Par.1"/>
+<text id="1168" value="DHW 55&#176;C / Akış 60°C"/>
+<text id="1169" value="DHW 55&#176;C / Akış 75°C"/>
+<text id="1170" value="DHW 55&#176;C / Akış Par.1"/>
+<text id="1171" value="Par.3 / Akış 60&#176;C"/>
+<text id="1172" value="Par.3 / Akış 75&#176;C"/>
+<text id="1173" value="Par.3 / Akış Par.1"/>
+<text id="1174" value="Düşük"/>
+<text id="1175" value="Yüksek"/>
+<text id="1176" value="DHW 45&#176;C/ CH açık/ DHWaçık"/>
+<text id="1177" value="DHW 45&#176;C/CH açık/DHWkapalı"/>
+<text id="1178" value="DHW 45&#176;C/CH kapalı/DHWkapalı"/>
+<text id="1179" value="DHW 55&#176;C/ CH açık/ DHW açık"/>
+<text id="1180" value="DHW 55&#176;C/ CH açık/ DHWkapalı"/>
+<text id="1181" value="DHW 55&#176;C/ CH kapalı/ DHW kap"/>
+<text id="1182" value="Par3/ CH açık/ DHW açık"/>
+<text id="1183" value="Par3/ CH açık/ DHW kapalı"/>
+<text id="1184" value="Par3/ CH kapalı/DHW kapalı"/>
+<text id="1185" value="Akış 60&#176;C / Par2"/>
+<text id="1186" value="Akış 60&#176;C / Pompa Kont."/>
+<text id="1187" value="Akış 75&#176;C / Par2"/>
+<text id="1188" value="Akış 75&#176;C / Pompa Kont."/>
+<text id="1189" value="Par1 / Par2"/>
+<text id="1190" value="Par1 / Pompa Kont."/>
+<text id="1191" value="Yardımcı"/>
+<text id="1192" value="10: Quinta 10 NL Solo"/>
+<text id="1193" value="11: Quinta 10 NL Kombi."/>
+<text id="1194" value="12: Quinta 10 Exp Solo"/>
+<text id="1195" value="13: Quinta 10 Exp Kombi."/>
+<text id="1196" value="14: Quinta 10 GB Solo"/>
+<text id="1197" value="15: Quinta 10 GB Kombi."/>
+<text id="1198" value="16: Quinta10 -"/>
+<text id="1199" value="17: Quinta10 -"/>
+<text id="1200" value="20: W21 NL Solo"/>
+<text id="1201" value="21: W21 NL Kombi."/>
+<text id="1202" value="22: W21 Exp Solo"/>
+<text id="1203" value="23: W21 Exp Kombi."/>
+<text id="1204" value="24: W21 GB Solo"/>
+<text id="1205" value="25: W21 GB Kombi."/>
+<text id="1206" value="26: W21 -"/>
+<text id="1207" value="27: W21 -"/>
+<text id="1208" value="30: W28 NL Solo"/>
+<text id="1209" value="31: W28 NL Kombi."/>
+<text id="1210" value="32: W28 Exp Solo"/>
+<text id="1211" value="33: W28 Exp Kombi."/>
+<text id="1212" value="34: W28 GB Solo"/>
+<text id="1213" value="35: W28 GB Kombi."/>
+<text id="1214" value="36: W28 -"/>
+<text id="1215" value="37: W28 -"/>
+<text id="1216" value="40: Quinta 45 NL Solo"/>
+<text id="1217" value="41: Quinta 45 NL Kombi."/>
+<text id="1218" value="42: Quinta 45 Exp Solo"/>
+<text id="1219" value="43: Quinta 45 Exp Kombi."/>
+<text id="1220" value="44: Quinta 45 GB Solo"/>
+<text id="1221" value="45: Quinta 45 GB Kombi."/>
+<text id="1222" value="46: Quinta 45 -"/>
+<text id="1223" value="47: Quinta 45 -"/>
+<text id="1224" value="50: Q25/28/35 NL Solo"/>
+<text id="1225" value="51: Q25/28/35 NL Kombi."/>
+<text id="1226" value="52: Q25/28/35 Exp Solo"/>
+<text id="1227" value="53: Q25/28/35 Exp Kombi."/>
+<text id="1228" value="54: Q25/28/35 GB Solo"/>
+<text id="1229" value="55: Q25/28/35 GB Kombi."/>
+<text id="1230" value="56: Q25/28/35 -"/>
+<text id="1231" value="57: Q25/28/35 -"/>
+<text id="1232" value="60: Quinta 65 NL Solo"/>
+<text id="1233" value="61: Quinta 65 NL Kombi."/>
+<text id="1234" value="62: Quinta 65 Exp Solo"/>
+<text id="1235" value="63: Quinta 65 Exp Kombi."/>
+<text id="1236" value="64: Quinta 65 GB Solo"/>
+<text id="1237" value="65: Quinta 65 GB Kombi."/>
+<text id="1238" value="66: Quinta 65 -"/>
+<text id="1239" value="67: Quinta 65 -"/>
+<text id="1240" value="70: Quinta 30 NL Solo"/>
+<text id="1241" value="71: Quinta 30 NL Kombi."/>
+<text id="1242" value="72: Quinta 30 Exp Solo"/>
+<text id="1243" value="73: Quinta 30 Exp Kombi."/>
+<text id="1244" value="74: Quinta 30 GB Solo"/>
+<text id="1245" value="75: Quinta 30 GB Kombi."/>
+<text id="1246" value="76: Quinta 30 -"/>
+<text id="1247" value="77: Quinta 30 -"/>
+<text id="1248" value="80: Quinta 85 NL Solo"/>
+<text id="1249" value="81: Quinta 85 NL Kombi."/>
+<text id="1250" value="82: Quinta 85 Exp Solo"/>
+<text id="1251" value="83: Quinta 85 Exp Kombi."/>
+<text id="1252" value="84: Quinta 85 GB Solo"/>
+<text id="1253" value="85: Quinta 85 GB Kombi."/>
+<text id="1254" value="86: Quinta 85 -"/>
+<text id="1255" value="87: Quinta 85 -"/>
+<text id="1256" value="Analog 0V"/>
+<text id="1257" value="Analog 10V"/>
+<text id="1264" value="DHWAyarı 0&#176;C / DHW açık"/>
+<text id="1265" value="DHWAyarı 0&#176;C / DHW kapalı"/>
+<text id="1266" value="80kW Yüksek Alt"/>
+<text id="1267" value="200kW YüksekAlt"/>
+<text id="1268" value="200 ekstraYüksek"/>
+<text id="1300" value="6:Pompa sonrası süre CH"/>
+<text id="1301" value="7:Pompa sonrası süre DHW"/>
+<text id="1302" value="8:Kont. durdurma"/>
+<text id="1303" value="9:Kapanma"/>
+<text id="1304" value="E00: Sensör hatası"/>
+<text id="1305" value="E01: Akış &gt; Tmaks."/>
+<text id="1306" value="E02: Dönüş &gt; Akış"/>
+<text id="1307" value="E03: Toprak veya mak. hatası"/>
+<text id="1308" value="E04: Alev yok"/>
+<text id="1309" value="E05: &gt;5 başlangıç arızası"/>
+<text id="1310" value="E06: Alev simülasyonu"/>
+<text id="1311" value="E07: Su basıncı çok düşük"/>
+<text id="1312" value="E08: Fan hatası"/>
+<text id="1313" value="E12: HRU hata kontrolü"/>
+<text id="1314" value="E13: fitil"/>
+<text id="1315" value="E43: Parametre sınırları"/>
+<text id="1316" value="E44: Parameter kontrol özeti"/>
+<text id="1317" value="E45: Varsayılan parametreler"/>
+<text id="1318" value="B90: sıcaklık artışı"/>
+<text id="1319" value="B91: deltaT aşırı büyük"/>
+<text id="1320" value="B80: kapanma girdisi"/>
+<text id="1335" value="CH modu maks. akış sıcaklığı"/>
+<text id="1336" value="istenen DHW sıcaklığı "/>
+<text id="1337" value="Kazan kontrolleri"/>
+<text id="1338" value="Anah açık/kap CH/DHW fonk."/>
+<text id="1339" value="DHW Konforu"/>
+<text id="1340" value="DHW konforu için sıcak tutma"/>
+<text id="1341" value="Her zaman açık"/>
+<text id="1342" value="Her zaman kapalı"/>
+<text id="1343" value="Kontrol birimi"/>
+<text id="1344" value="Beklenti"/>
+<text id="1345" value="Beklenti akışı açık/kap term"/>
+<text id="1346" value="Ekran oto. kapalı"/>
+<text id="1347" value="3 dak. sonra ekran oto. kapalı"/>
+<text id="1348" value="CH modu sırasında maks. fanhızı"/>
+<text id="1349" value="DHW modu sırasında maks. fanhızı"/>
+<text id="1350" value="CH + DHW modunda min. fanhızı"/>
+<text id="1351" value="Fan hızı kazan başlangıç"/>
+<text id="1352" value="CH modu için pompa hızı"/>
+<text id="1353" value="HRU etkin"/>
+<text id="1354" value="HRU kapanma girdisine bağlı"/>
+<text id="1362" value="Akış sıcak."/>
+<text id="1363" value="Akış sıcaklığı"/>
+<text id="1364" value="Dönüş sıcak."/>
+<text id="1365" value="Dönüş sıcaklığı"/>
+<text id="1366" value="DHW sıcak."/>
+<text id="1367" value="DHW sıcaklığı"/>
+<text id="1376" value="Oda sıcak."/>
+<text id="1377" value="Oda sıcaklığı OpenTherm kontrol birimi"/>
+<text id="1378" value="CH Ayar noktası"/>
+<text id="1379" value="CH modu için ayar noktası"/>
+<text id="1380" value="DHW Ayar noktası"/>
+<text id="1381" value="Akış sıcak. ayar noktası DHW modu"/>
+<text id="1382" value="Oda sıc.ay.nok."/>
+<text id="1383" value="Oda sıcak. ayar noktasıOpenTherm kont. birimi"/>
+<text id="1384" value="Fanhızı ayar nok."/>
+<text id="1385" value="Ayar noktası fanhz"/>
+<text id="1386" value="Fan hızı"/>
+<text id="1387" value="Fan hızı"/>
+<text id="1388" value="İyonlaşma akımı"/>
+<text id="1389" value="İyonlaşma akımı"/>
+<text id="1396" value="Pompa"/>
+<text id="1397" value="Pompa hızı"/>
+<text id="1400" value="Mevcut güç"/>
+<text id="1401" value="Kontrol biriminden istenen maks. güç"/>
+<text id="1402" value="Aktüel güç"/>
+<text id="1403" value="kazandan aktüel güç"/>
+<text id="1404" value="Mod. kontrol birimi"/>
+<text id="1405" value="Bağlı kontrol birimi modülasyonu"/>
+<text id="1406" value="Mod. ısı istemi"/>
+<text id="1407" value="Modülasyon kontrol biriminden ısı istemi"/>
+<text id="1408" value="Isı istemi Aç./kap.ı"/>
+<text id="1409" value="Açık/kapalı kontrol biriminden ısıistemi"/>
+<text id="1412" value="DHW eko"/>
+<text id="1413" value="DHW eko, kazan sıcak tutulmadı"/>
+<text id="1414" value="DHW ısı istemi"/>
+<text id="1415" value="DHW ısı istemi"/>
+<text id="1416" value="Kapanma girdisi"/>
+<text id="1417" value="kapanma girdisi veya HRU testi"/>
+<text id="1420" value="İyonlaşma"/>
+<text id="1422" value="Akış anahtarı"/>
+<text id="1423" value="DHW algılaması için akış anahtarı"/>
+<text id="1432" value="Gaz valfi"/>
+<text id="1436" value="Ateşleme"/>
+<text id="1438" value="Üç yollu valf"/>
+<text id="1446" value="Pompa"/>
+<text id="1465" value="uA"/>
+<text id="1466" value="Hata kodu"/>
+<text id="1467" value="Durum"/>
+<text id="1468" value="Numara"/>
+<text id="1469" value="T1 akış sıcak."/>
+<text id="1470" value="T2 dönüş sıcak."/>
+<text id="1471" value="2: ön. ve ana ateş."/>
+<text id="1472" value="3:CH için çalışıyor"/>
+<text id="1473" value="5:Açık/kapalıAPSiçinbekliyor"/>
+<text id="1474" value="6:Arıza nedeniyle kazan kap"/>
+<text id="1475" value="7:Pompa sonrası süre CH modu"/>
+<text id="1476" value="9:Kazan kapalı (arıza)"/>
+<text id="1477" value="12:Kazan soğuyor"/>
+<text id="1478" value="H:Basınçlı maks. çıktı"/>
+<text id="1479" value="L:Basınçlı min. çıktı"/>
+<text id="1480" value="t:Valf Sistem testi deniyor"/>
+<text id="1481" value="B81: HRU hata kontrolü"/>
+<text id="1482" value="Kilitler"/>
+<text id="1483" value="Bloklamalar"/>
+<text id="1484" value="20:Fan hızı maks. üstünde"/>
+<text id="1485" value="38:APS kısa devre"/>
+<text id="1486" value="39:APS açık"/>
+<text id="1487" value="45:WPS kısa devre"/>
+<text id="1488" value="46:WPS açık"/>
+<text id="1489" value="47:Kirlenme sens kısa devre"/>
+<text id="1490" value="48:Kirlenme sensörü açık"/>
+<text id="1491" value="62:Su basıncı çok düşük"/>
+<text id="1492" value="90:VA2&apos;de gazkaçağı"/>
+<text id="1493" value="91:Ventil.ön. sır.LDS hatası"/>
+<text id="1494" value="97:Maks. dT(Isı değiş.-Akış)"/>
+<text id="1495" value="99:Har güv kilidi kap değil"/>
+<text id="1496" value="Aktüel fan hızı"/>
+<text id="1497" value="çalışma saati"/>
+<text id="1498" value="uA"/>
+<text id="1499" value="Kilitleme sayısı"/>
+<text id="1500" value="Bloklama sayısı"/>
+<text id="1501" value="Kilitleme yok"/>
+<text id="1502" value="Bloklama yok"/>
+<text id="1503" value="B82:Güneş ener.sıcak, DHWkap"/>
+<text id="1504" value="Azaltma valfi"/>
+<text id="1512" value="Bağlı:"/>
+<text id="1535" value="Etkin ayarlar için sıfırla&apos;ya basın"/>
+<text id="1540" value="Bağlı kazan yok"/>
+<text id="1544" value="Kontrol bandı DHW"/>
+<text id="1545" value="DHW zaman kaybı pom"/>
+<text id="1546" value="Pom sonrası süre CH"/>
+<text id="1547" value="Pom sonr. süre DHW"/>
+<text id="1548" value="Başlama nok modül."/>
+<text id="1549" value="Basınçlı kısmi yük"/>
+<text id="1550" value="Histerezis CH"/>
+<text id="1551" value="Isınma aralığı"/>
+<text id="1552" value="T&lt; old. DHW ısın"/>
+<text id="1553" value="Şuna kadar DHW ısın"/>
+<text id="1554" value="DHW dengeleme"/>
+<text id="1555" value="pl deng. ısı değiş."/>
+<text id="1556" value="Tmaks."/>
+<text id="1557" value="P faktör CH"/>
+<text id="1558" value="I faktör CH"/>
+<text id="1559" value="P faktör DHW"/>
+<text id="1560" value="I faktör DHW"/>
+<text id="1561" value="Maks. sıcak. artış"/>
+<text id="1562" value="Maks. +dN/dt fan"/>
+<text id="1563" value="Maks. -dN/dt fan"/>
+<text id="1564" value="Rpm/s"/>
+<text id="1565" value="/10&#176;C"/>
+<text id="1566" value="90+par"/>
+<text id="1567" value="*10dak"/>
+<text id="1568" value="Kazan Kontrol sıcak"/>
+<text id="1569" value="Vent. önc. fan hızı"/>
+<text id="1570" value="Ventilasyon öncesi fan hızı"/>
+<text id="1571" value="Aşırı sal maks. rpm"/>
+<text id="1572" value="İkinci kez kilitleme 20&apos;den sonra"/>
+<text id="1573" value="Kil.üst.akışayarnok"/>
+<text id="1574" value="Kil.üst fan geçerli (Tayarı-Tfl)&lt;5K"/>
+<text id="1575" value="Maks. T kazan bloğu"/>
+<text id="1576" value="Bu sınırı geçin kapanma 31"/>
+<text id="1577" value="*3 sn"/>
+<text id="1578" value="APS anahtar noktası"/>
+<text id="1579" value="Baş için min dP"/>
+<text id="1580" value="Adım modül.: %"/>
+<text id="1581" value="İkinci sınırlamayı aştıktan sonra"/>
+<text id="1582" value="Adım modül: aralık"/>
+<text id="1583" value="Adım modül. 2. sınırlama üstü"/>
+<text id="1584" value="Adım modül. Artış Tf"/>
+<text id="1585" value="Adım modül. alt T kazan bloğu &gt;1. sınır., p29"/>
+<text id="1586" value="Artış Tf limiti 1"/>
+<text id="1587" value="Bu sınırın aşılması kazan geri modüle eder"/>
+<text id="1588" value="&#176;C/sn"/>
+<text id="1589" value="Artış Tf limiti 2"/>
+<text id="1590" value="Bu sınırın aşılması kazan kısmi yüklemede"/>
+<text id="1591" value="Artış Tf limiti 3"/>
+<text id="1592" value="Bu sınırın aşılması kazan kilitlemede"/>
+<text id="1593" value="&amp;Güncellemeleri kontrol et"/>
+<text id="1595" value="&amp;Bağlantıyı kontrol et"/>
+<text id="1596" value="&amp;İletişim"/>
+<text id="1597" value="&amp;Eeprom"/>
+<text id="1598" value="&amp;Dosya aç"/>
+<text id="1599" value="&amp;Aç"/>
+<text id="1600" value="Kazandan&amp; kurtar"/>
+<text id="1601" value="&amp;Dosyayı kaydet"/>
+<text id="1602" value="Kazandan&amp; kurtar"/>
+<text id="1603" value="&amp;Sıfırla"/>
+<text id="1605" value="&amp;Kazana gönder"/>
+<text id="1606" value="Bil. . ."/>
+<text id="1608" value="Otomatik algılama"/>
+<text id="1610" value="İletişim ayarları"/>
+<text id="1611" value="Listeye uy"/>
+<text id="1616" value="Dec-okuma"/>
+<text id="1617" value="Dec-yazma"/>
+<text id="1618" value="Eeprom yazma hatası"/>
+<text id="1620" value="Grafik seçenekleri"/>
+<text id="1621" value="Grafikler"/>
+<text id="1622" value="Hex-okuma"/>
+<text id="1623" value="Kullanımda"/>
+<text id="1624" value="Parola"/>
+<text id="1625" value="Üretici"/>
+<text id="1626" value="ms"/>
+<text id="1627" value="Kazan bulunamadı"/>
+<text id="1629" value="Kaydet"/>
+<text id="1636" value="Ayarlar"/>
+<text id="1638" value="Bilinmeyen"/>
+<text id="1641" value="Bulundu"/>
+<text id="1642" value="Kazanı değiştir? Tüm pencereler kapanacak"/>
+<text id="1643" value="&amp;Ayarlar"/>
+<text id="1644" value="Veriyi dosyaya kaydetmek?"/>
+<text id="1646" value="Maks. &#176;C Y-ekseni"/>
+<text id="1647" value="Min. &#176;C Y-ekseni"/>
+<text id="1648" value="Kazan tipi:"/>
+<text id="1649" value="Modülasyon artışı"/>
+<text id="1650" value="Sıcak. DHW&apos;de modülasyon aralığı"/>
+<text id="1651" value="Ön ısıtma plakası ısı değiş. için pom. bekl. sür."/>
+<text id="1652" value="Pompasonrası süre CH"/>
+<text id="1653" value="Pompa sonrası süre DHW"/>
+<text id="1654" value=" dT &gt; bu par olduğunda geri modüle et"/>
+<text id="1655" value="CH ve DHW-&gt;CH için basınçlı kısmi yükleme"/>
+<text id="1656" value="CH&apos;de T&lt;Tayarı+5-bu param olduğunda başla"/>
+<text id="1657" value="Kazan ısınma başlangıcı arasındaki süre"/>
+<text id="1658" value="EKO=kapalı: T&lt;bu param olduğunda ısınıyor"/>
+<text id="1659" value="EKO=kapalı: T=bu param olana kadar ısınıyor"/>
+<text id="1660" value="T düz. DHW dönüş sıcak. kontrol"/>
+<text id="1661" value="T düz. DHW Tayarı için, ww - Tdön, plaka ısı değiş."/>
+<text id="1662" value="Maks. CH çalışması sırasında akış sıcak. "/>
+<text id="1663" value="P faktör CH kontrolü"/>
+<text id="1664" value="I faktör CH kontrolü"/>
+<text id="1665" value="P faktör DHW kontrolü"/>
+<text id="1666" value="I faktör DHW kontrolü"/>
+<text id="1667" value="Sıcak. artışı &gt; bu param olduğunda kapan"/>
+<text id="1668" value="Maks. fan hızı artışı"/>
+<text id="1669" value="Maks. fan hızı azalması"/>
+<text id="1670" value="Akış sıcak. artışı &gt; bu par olduğunda geri modüle et"/>
+<text id="1671" value="Gaz valfi 2"/>
+<text id="1672" value="Şantpompası"/>
+<text id="1673" value="Baca gazı valfi"/>
+<text id="1674" value="Isı değ. sıc."/>
+<text id="1675" value="Isı değiştirici sıcaklığı"/>
+<text id="1676" value="Baca gazı sıcak."/>
+<text id="1677" value="Baca gazı sıcaklığı"/>
+<text id="1678" value="Dış sıcak."/>
+<text id="1679" value="Dış sıcaklığı"/>
+<text id="1680" value="M1 sıcak. "/>
+<text id="1681" value="Test sıcaklığı M1"/>
+<text id="1682" value="Histerezis DHW"/>
+<text id="1683" value="Ayar nok artışı DHW"/>
+<text id="1684" value="Isı değişt. ısınmasında ayarnoktası artışı"/>
+<text id="1687" value="DHW pompası başlat"/>
+<text id="1688" value="Kazan pom. ile karşılaştırıl. DHW pompası histerezisi açın"/>
+<text id="1689" value="Pompa son. süre DHW"/>
+<text id="1690" value="Pompa sonrası süre DHW"/>
+<text id="1691" value="Ayaknoktası Takışı"/>
+<text id="1692" value="Ayak noktası ısınma eğrisi akış sıcak."/>
+<text id="1693" value="Ayaknoktası T dış"/>
+<text id="1694" value="Ayak noktası ısınma eğrisi dış sıcak."/>
+<text id="1695" value="İkl. nok.dış sıcak."/>
+<text id="1696" value="İklim noktası ısınma eğrisi dış sıcak."/>
+<text id="1697" value="Kapan emn. kilidi 1"/>
+<text id="1698" value="Kapan emn. kilidi 2"/>
+<text id="1699" value="Durum raporu"/>
+<text id="1700" value="Alarm/çalışma sinyali rölesinden konum"/>
+<text id="1701" value="M2 sıcak. "/>
+<text id="1702" value="Test sıcaklığı M2"/>
+<text id="1703" value="Sıcak. kazan kont."/>
+<text id="1704" value="Ayarn. güç.baş. DHW"/>
+<text id="1705" value="DHW için başlangıçta ayarnoktası güçlendirmesi"/>
+<text id="1706" value="Kazan tipi:"/>
+<text id="1707" value="Kazan tipi ve kontrol tipi"/>
+<text id="1708" value="Birleş."/>
+<text id="1709" value="Solo (+kazan)"/>
+<text id="1710" value="Konfor Sütunu"/>
+<text id="1711" value="CH etkin"/>
+<text id="1712" value="DHW etkin"/>
+<text id="1714" value="Güncellemeler mevcut"/>
+<text id="1715" value="Güncelleme yok"/>
+<text id="1717" value="Eeprom&apos;u oku"/>
+<text id="1718" value="Haf."/>
+<text id="1721" value="Kilitleme"/>
+<text id="1722" value="10000 RPM&apos;de KW"/>
+<text id="1723" value="Teorik 10000RPM&apos;de güç çıktısı (KW)"/>
+<text id="1724" value="0KW&apos;de RPM"/>
+<text id="1725" value="Teorik oKW&apos;da RPM"/>
+<text id="1726" value="Test etme. . ."/>
+<text id="1727" value="Kilitleme"/>
+<text id="1728" value="Kapanma"/>
+<text id="1729" value="İptal"/>
+<text id="1730" value="10:Tahliyedöngüsü"/>
+<text id="1731" value="11:Basınçlı brülör düşükalev"/>
+<text id="1732" value="12:Basınçlı brülör yüksek CH"/>
+<text id="1733" value="13:Basınçlı brülör yüksekDHW"/>
+<text id="1734" value="15:Manuel ısı istemi"/>
+<text id="1735" value="Ekran modu"/>
+<text id="1736" value="Ekrandaki bilgi miktarı"/>
+<text id="1737" value="Basit"/>
+<text id="1738" value="Genişletilmiş"/>
+<text id="1739" value="Otomatik"/>
+<text id="1740" value="arıza sinyali"/>
+<text id="1741" value="Çalışma sinyali"/>
+<text id="1742" value="Harici gaz valfi"/>
+<text id="1743" value="Anti Lejyonella"/>
+<text id="1744" value="Lejyonella koruma ısı değiştiricisi"/>
+<text id="1745" value="Histerezis ısı değişt."/>
+<text id="1746" value="Histerezis ısı değişt.sens. aç"/>
+<text id="1747" value="Isı değişt. deng."/>
+<text id="1748" value="Isı değişt. dengeleme sensörünü kapat"/>
+<text id="1749" value="Histerezis DHW çalışmasını aç"/>
+<text id="1750" value="B83: Isı değişt.sen. hatası"/>
+<text id="1751" value="B92: yetersiz akış"/>
+<text id="1752" value="E09: Düşük hidrolik basınç"/>
+<text id="1753" value="E10: yetersiz havalandırma"/>
+<text id="1754" value="E11: Havakutusu sıcak. &gt; maks."/>
+<text id="1755" value="5:Anti avcılık süresi CH"/>
+<text id="1756" value="Pompa çalışma saati CH"/>
+<text id="1757" value="Şantpompası çalışma saati"/>
+<text id="1758" value="3yolluvalf DHW çalışma saati"/>
+<text id="1759" value="3yolluvalf CH çalışma saati"/>
+<text id="1760" value="Pompa çalışma saati DHW"/>
+<text id="1761" value="CH+DHW çalışma saati"/>
+<text id="1762" value="Çalışma saati CH"/>
+<text id="1763" value="Çalışma saati DHW"/>
+<text id="1764" value="Güç kaynağı mevcut saat"/>
+<text id="1765" value="Pompa CH başlatır"/>
+<text id="1766" value="Pompa, şantpompasınıbaşlatır"/>
+<text id="1767" value="3 yollu valf döngüsü sayısı "/>
+<text id="1768" value="Pompa DHW başlatır"/>
+<text id="1769" value="ToplamBrülör CH+DHW başlatır"/>
+<text id="1770" value="Brülör CH başlatır"/>
+<text id="1771" value="Brülör DHW başlatır"/>
+<text id="1772" value="Arızalı brülör başlıyor"/>
+<text id="1773" value="Başarılı brülör başlıyor"/>
+<text id="1774" value="Alev kaybı sayısı"/>
+<text id="1777" value="P faktör fan"/>
+<text id="1778" value="P faktör fan hız kontrolü"/>
+<text id="1779" value="I faktör fan"/>
+<text id="1780" value="I faktör fan hız kontrolü"/>
+<text id="1781" value="Alan test parametreleri:"/>
+<text id="1782" value="Sayaçlar "/>
+<text id="1784" value="Açık bacalı"/>
+<text id="1785" value="Maks. fanhızı CH"/>
+<text id="1786" value="Mutlak maks. fan hızı CH"/>
+<text id="1787" value="Maks. fanhızı DHW"/>
+<text id="1788" value="Mutlak maks. fan hızı DHW"/>
+<text id="1789" value="dF-kodu"/>
+<text id="1790" value="dU-kodu"/>
+<text id="1792" value="Harici CH pompası"/>
+<text id="1793" value="&amp;Sayaçlar "/>
+<text id="1795" value="B40: Bilinm. kazan kod."/>
+<text id="1796" value="115: Quinta 10 NL Solo"/>
+<text id="1797" value="12: Quinta 115 Exp Solo"/>
+<text id="1798" value="14: Quinta 115 GB Solo"/>
+<text id="1799" value="121: CH akışı yetersiz"/>
+<text id="1800" value="maksT1-T2 0akışı"/>
+<text id="1801" value="0akış -&gt;B121 için 30s minGüç CH + dT1&gt;P38&apos;den son. makT1-T2"/>
+<text id="1802" value="P CH alt"/>
+<text id="1803" value="P faktör CH alt kontrolü Üst kontrol P=0"/>
+<text id="1804" value="I CH alt"/>
+<text id="1805" value="I faktör CH alt kontrolü Üst kontrol I/10"/>
+<text id="1806" value="  "/>
+<text id="1807" value="E46: dF/dU tablo hatası"/>
+<text id="1808" value="Dengeleme ısınıyor"/>
+<text id="1809" value="DHW konforu için ısındığında dengeleme"/>
+<text id="1810" value="Histerezis ısınıyor"/>
+<text id="1811" value="DHW konforu için ısındığında histerezis"/>
+<text id="1812" value="Isınma aralığı CH"/>
+<text id="1813" value="CH&apos;den sonra DHW için ısınma aralığı"/>
+<text id="1814" value="Kont bandı DHWayarı"/>
+<text id="1815" value="DHWayarı&apos;nda modülasyon aralığı"/>
+<text id="1816" value="P faktör DHWayarı"/>
+<text id="1817" value="Kontrol bandı DHWayarı&apos;nda DHW için P faktör"/>
+<text id="1818" value="I faktör DHWayarı"/>
+<text id="1819" value="Kontrol bandı DHWayarı&apos;nda DHW için I faktör"/>
+<text id="1820" value="P faktör CH alt"/>
+<text id="1821" value="T1&gt;ayarnoktası olduğunda CH kontrol için P faktör"/>
+<text id="1822" value="I faktör CH alt"/>
+<text id="1823" value="T1&gt;ayarnoktası olduğunda CH kontrol için I faktör"/>
+<text id="1824" value="Dahili ayarnoktası"/>
+<text id="1825" value="Antilejyonella modu"/>
+<text id="1826" value="Gaz basınç anahtarı"/>
+<text id="1827" value="Gecikme akış anah"/>
+<text id="1828" value="DHW algılaması için gecikmeyi açın"/>
+<text id="1829" value="115:ADC aralık hatası"/>
+<text id="1830" value="116:Hz - Rezonatör hatası"/>
+<text id="1831" value="Çalışma saat pompası CH+DHW"/>
+<text id="1832" value="Pompa CH+DHW başlatır"/>
+<text id="1834" value="Harici pompa rölesi"/>
+<text id="1835" value="Isı değiş. termostatı"/>
+<text id="1836" value="22: MC115"/>
+<text id="1837" value="Geliştirme"/>
+<text id="1838" value="Yazdır"/>
+<text id="1839" value="1=hidro basıncı 2=kirlen sens 4=0-10V  8=gaz kont 16=&#176;C/F"/>
+<text id="1840" value="123: Arıza sıcak. sensörü"/>
+<text id="1841" value="W21 Birleş"/>
+<text id="1842" value="123: NTC1/NTC7 Fisür"/>
+<text id="1843" value="124: NTC1/NTC7 sıkışmış"/>
+<text id="1844" value="125: NTC2/NTC7 değiştirilmiş"/>
+<text id="1845" value="Dil"/>
+<text id="1846" value="Nederlands"/>
+<text id="1847" value="English"/>
+<text id="1848" value="Français"/>
+<text id="1849" value="Deutsch"/>
+<text id="1850" value="Italiano"/>
+<text id="1851" value="Program dili değiştirildi"/>
+<text id="1852" value="Değiş. etkinleştirmek için uyg. yen. başlatın."/>
+<text id="1853" value="Dosya bulunamadı"/>
+<text id="1854" value="Kazan yapılandırma dosyası bulunamadı: "/>
+<text id="1855" value="www.remeha.com"/>
+<text id="1856" value="0..255"/>
+<text id="1857" value="Lütfen 0 ile 255 arasında bir tam sayı girin."/>
+<text id="1858" value="Lütfen tüm alanları doldurun,sadece sayılar kullanılabilir."/>
+<text id="1859" value="Kazandan okuyamadı"/>
+<text id="1860" value="Kazana gönderemedi"/>
+<text id="1861" value="için bilinmeyen yapılandırma "/>
+<text id="1862" value="Yapılandırma Arızası"/>
+<text id="1863" value="Dosyaya kaydedilmesi:"/>
+<text id="1864" value="Bazı veriler istenen konuma kaydedilemedi, lütfen başka bir konum seçin."/>
+<text id="1865" value="Kazan bulunamadı. Tekrar deneniyor..."/>
+<text id="1866" value="İptal ediliyor, lütfen bekleyin..."/>
+<text id="1869" value="Tarih damgalı kayıtta okuma hatası:"/>
+<text id="1870" value="Español"/>
+<text id="1871" value="Magyar"/>
+<text id="1872" value="Česky"/>
+<text id="1873" value="Polski"/>
+<text id="1874" value="Türkçe"/>
+<text id="1875" value="Srpski"/>
+<text id="1876" value="русский"/>
+<text id="1877" value="Pompa DHW (yüksek)"/>
+<text id="1878" value="Pompa ayarı DHW (yüksek)"/>
+<text id="1879" value="Pompa CH (düşük)"/>
+<text id="1880" value="Pompa ayarı CH (düşük)"/>
+<text id="1900" value="Veri okundu."/>
+<text id="1901" value="Mevcut veri yok"/>
+<text id="1902" value="Dönüştür"/>
+<text id="1903" value="Dosyaları dönüştür"/>
+<text id="1904" value="Kapat"/>
+<text id="1905" value="İlerleme"/>
+<text id="1906" value="Bilinmeyen kazan bulundu"/>
+<text id="1907" value="Dosya oluşturulamıyor:"/>
+<text id="1908" value="Dosya dönüştürülemedi:"/>
+<text id="1909" value="Neden:"/>
+<text id="1910" value="Oluşturuldu:"/>
+<text id="1911" value="İptal edildi"/>
+<text id="1912" value="Bilinmeyen kazan"/>
+<text id="1913" value="Veri depolanacak ancak görüntülenemeyecektir."/>
+<text id="1914" value="Güncelleme yapılabilir."/>
+<text id="1915" value="Yeni versiyonu indirmek ve kurmak istiyor musunuz?"/>
+<text id="1916" value="Kurulum iptal edildi"/>
+<text id="1917" value="Yeni versiyon indiriliyor...."/>
+<text id="1918" value="Yeni versiyon kurulacak."/>
+<text id="1919" value="Yeni sürümün başarılı olarak yüklenmesi için bu uygulamayı kapatın."/>
+<text id="1920" value="Kurulum başarısız."/>
+<text id="1921" value="Devam"/>
+<text id="1922" value="Güncel. denetle"/>
+<text id="1923" value="Dönüştürülecek dosya yok."/>
+<text id="1924" value="Dönüştürme raporu:"/>
+<text id="1925" value="Dönüştürme sona erdi."/>
+<text id="1926" value="Dosya okunuyor:"/>
+<text id="1927" value="Başlangıç saati:"/>
+<text id="1928" value="Bitiş saati:"/>
+<text id="1929" value="Grup 1"/>
+<text id="1930" value="Grup 2"/>
+<text id="1931" value="Grup 3"/>
+<text id="1932" value="Öğeleri dışa aktar:"/>
+<text id="1933" value="Veri kaydediliyor. Bir kaç dakika sürebilir..."/>
+<text id="1934" value="Güncelleme bilgisi istenirken hata"/>
+<text id="1935" value="Güncelleme bilgisi isteniyor..."/>
+<text id="1936" value="Ek cihaz verileri okunuyor..."/>
+<text id="1937" value="Beklen...."/>
+<text id="1938" value="Okun...."/>
+<text id="1939" value="Dosya yazılamadı"/>
+<text id="1940" value="Atla"/>
+<text id="1941" value="Bit."/>
+<text id="1942" value="Günc. başarılı bir şekilde yüklendi. Değişikliklerin etkin olması için uyg. yen. başlatın."/>
+<text id="1943" value="Konfigürasyon sürüm seti"/>
+<text id="1944" value="Gün. tutarken ek veriyi oku"/>
+<text id="1945" value="Uygulama için bir güncelleme mevcut."/>
+<text id="1946" value="Konfigürasyon için bir güncelleme mevcut."/>
+<text id="1947" value="Yüklemek için yönetici hakları gerekiyor"/>
+<text id="1948" value="Bağlandı"/>
+<text id="1949" value="Bilinmeyen cihaz"/>
+<text id="1950" value="Wi-Fi aranıyor..."/>
+<text id="1951" value="Servis anahtarı Wi-Fi ağı bulunamıyor.\n\nWi-Fi açık mı?\nBağlanmak için Wi-Fi&apos;ı açın ve servis anahtarı Wi-Fi ağına bağlanın.\nServis anahtarı açık mı?\nCihaz açık mı?"/>
+<text id="1952" value="Varsayılan Wi-Fi aranıyor..."/>
+<text id="1953" value="Servis Aracı"/>
+<text id="1954" value="Profil kullanın"/>
+<text id="1955" value="Bakım"/>
+<text id="1956" value="Hizmete Alma"/>
+<text id="1957" value="Hata İşleme"/>
+<text id="1958" value="Güncelleme"/>
+<text id="1959" value="Güncellemeler"/>
+<text id="1960" value="Ev"/>
+<text id="1961" value="Örnek"/>
+<text id="1962" value="dF/dU"/>
+<text id="1963" value="Gönder"/>
+<text id="1964" value="Kullanıcı"/>
+<text id="1965" value="Servis"/>
+<text id="1966" value="Fabrika"/>
+<text id="1967" value="Diğer"/>
+<text id="1968" value="Sıcaklık"/>
+<text id="1969" value="0/1"/>
+<text id="1970" value="SU"/>
+<text id="1971" value="Hata ağacı"/>
+<text id="1972" value="Veri gönderme başarısız"/>
+<text id="1973" value="Manuel"/>
+<text id="1974" value="Varsayılan Wi-Fi ağı bulunabiliyor.\n\nWi-Fi ayarlarını değiştirin ve varsayılan servis anahtarı ağına bağlanın."/>
+<text id="1975" value="Servis anahtarı aranıyor..."/>
+<text id="1976" value="Servis anahtarıyla bağlantı yok.\n\nServis anahtarının başlaması için 20 saniye bekleyin.\nServis anahtarı başka bir cihaz tarafından kullanılıyor mu?"/>
+<text id="1977" value="Cihaz aranıyor..."/>
+<text id="1978" value="Cihaz bulunamadı.\n\nServis anahtarını cihaza bağlayın ve açın."/>
+<text id="1980" value="Bloklamaları sıfırla"/>
+<text id="1981" value="Kilitlemeleri sıfırla"/>
+<text id="1982" value="Sıfırlama başarısız"/>
+<text id="1983" value="Reset"/>
+<text id="1984" value="Sayaçları sıfırla"/>
+<text id="1985" value="Demo"/>
+<text id="1986" value="Çevrimdışı"/>
+<text id="1987" value="Cihaz seç"/>
+<text id="1988" value="Servis anahtarı kullan"/>
+<text id="1989" value="Oturum aç"/>
+<text id="1990" value="Wi-Fi"/>
+<text id="1991" value="Oturum açma başarılı"/>
+<text id="1992" value="Kullanıcı ayarları"/>
+<text id="1993" value="Oturum açma başarısız"/>
+<text id="1994" value="Kullanıcı düzeyini değiştirmek için uygun parolayı girin"/>
+<text id="1995" value="Geçerli kullanıcı düzeyi"/>
+<text id="1996" value="Belgeler"/>
+<text id="1997" value="Bilgi mevcut değil"/>
+<text id="1998" value="Kimliği değiştir"/>
+<text id="1999" value="Şarj oluyor"/>
+<text id="2000" value="Tanılama"/>
+<text id="2001" value="Cihaz sayısı"/>
+<text id="2002" value="Kazan"/>
+<text id="2003" value="PSU"/>
+<text id="2004" value="PCU"/>
+<text id="2005" value="SU no."/>
+<text id="2006" value="SCU-C"/>
+<text id="2007" value="SCU-S no."/>
+<text id="2008" value="IF"/>
+<text id="2009" value="Cihaz tipi"/>
+<text id="2010" value="Yazılım versiyonu"/>
+<text id="2011" value="Donanım versiyonu"/>
+<text id="2012" value="Parametre versiyonu"/>
+<text id="2013" value="Parametre tipi"/>
+<text id="2014" value="Çalışma saatleri"/>
+<text id="2015" value="Seri numarası"/>
+<text id="2016" value="Kazan adı"/>
+<text id="2017" value="Bağlı SU tipi"/>
+<text id="2018" value="Bağlı PSU tipi"/>
+<text id="2019" value="Bağlı PCU tipi"/>
+<text id="2020" value="Son bloklama kodu"/>
+<text id="2021" value="Son kilitleme kodu"/>
+<text id="2022" value="Son dahili hata"/>
+<text id="2023" value="Durum"/>
+<text id="2024" value="Alt-Durum"/>
+<text id="2025" value="Bloklama b"/>
+<text id="2026" value="Kilitleme E"/>
+<text id="2027" value="Tanılama mevcut değil"/>
+<text id="2028" value="Kayıt dosyasını içe aktar"/>
+<text id="2029" value="Adres"/>
+<text id="2030" value="İlk Blok"/>
+<text id="2031" value="Blok Sayısı"/>
+<text id="2032" value="İlk Blok aralık dışında:"/>
+<text id="2033" value="Blok Sayısı aralık dışında:"/>
+<text id="2034" value="Okunan Bloklar:"/>
+<text id="2035" value="Veri yok!"/>
+<text id="2036" value="Geçerli veri yok"/>
+<text id="2037" value="Eeprom"/>
+<text id="2038" value="Düzenle"/>
+<text id="2039" value="Ondalık değer:"/>
+<text id="2040" value="Sonraki servis kodu"/>
+<text id="2041" value="Verileri dışa aktar"/>
+<text id="2042" value="Servis olayını iptal et"/>
+<text id="2043" value="Tamamlandığı zaman, gösterilen servis olayını iptal edebilirsiniz."/>
+<text id="2044" value="Tamamlanmış bir servis olayını iptal etmek istiyor musunuz?"/>
+<text id="2045" value="Kazan algılama işlemini tamamlayana kadar bekleyin..."/>
+<text id="2046" value="Aksesuarları algıla"/>
+<text id="2047" value="Dikkat! Tüm genişletme modülleri kaldırılacak ve algılama işlemi tekrar başlayacak. Kazanın bu işlemi tamamlaması bir kaç saniye sürebilir."/>
+<text id="2048" value="Kazanın tüm genişletme modüllerini tekrar algılamasını istediğinizden emin misiniz?"/>
+<text id="2049" value="Algıla"/>
+<text id="2050" value="Servis"/>
+<text id="2051" value="Komut, kazan tarafından tanımlanmadı."/>
+<text id="2052" value="Kaydetme başarısız."/>
+<text id="2053" value="Tanılama plakasından dF ve dU kodlarını girin:"/>
+<text id="2054" value="Dikkat! Tanılama plakasında gösterilmeyen hiç bir dF/dU kodunu girmemelisiniz!"/>
+<text id="2055" value="Dikkat! Tüm parametreler fabrika ayarlarına döndürülecek. Diğer tüm ayarlar silinecek."/>
+<text id="2056" value="Bu dF/dU kodunu fabrika ayarlarına dönmek için kullanmak istiyor musunuz?"/>
+<text id="2057" value="Girilen dF/dU kodunun tanılama plakasıyla eşleştiğinden emin misiniz?"/>
+<text id="2058" value="Emin misiniz?"/>
+<text id="2059" value="dF/dU girin"/>
+<text id="2060" value="İptal mümkün"/>
+<text id="2099" value="gereserveerd"/>
+<text id="2100" value="0:Bekleme"/>
+<text id="2101" value="1:Kazan başlangıç"/>
+<text id="2102" value="2:Brülör başlangıç"/>
+<text id="2103" value="3:Yanan CH"/>
+<text id="2104" value="4:Yanan DHW"/>
+<text id="2105" value="5:Brülör durma"/>
+<text id="2106" value="6:Kazan durma"/>
+<text id="2107" value="7:-"/>
+<text id="2108" value="8:Kontrollü durma"/>
+<text id="2109" value="9:Bloklama modu"/>
+<text id="2110" value="10:Kilitleme modu"/>
+<text id="2111" value="11:Baca modu L"/>
+<text id="2112" value="12:Baca modu h"/>
+<text id="2113" value="13:Baca modu H"/>
+<text id="2114" value="14:-"/>
+<text id="2115" value="15:Manuel-ısıistemi"/>
+<text id="2116" value="16:Kazan-donma-kor."/>
+<text id="2117" value="17:Havalandırma"/>
+<text id="2118" value="18:Kont. bir. sıcak. kor."/>
+<text id="2119" value="19:-"/>
+<text id="2120" value="20:-"/>
+<text id="2198" value="Bilinmeyen Durum"/>
+<text id="2199" value="Kontrollü durma"/>
+<text id="2200" value="0:Bekleme"/>
+<text id="2201" value="1:Anti-döngüleme"/>
+<text id="2202" value="2:Hidrolik valf açık"/>
+<text id="2203" value="3:Pompa başlangıç"/>
+<text id="2204" value="4:Brülör baş. için bekleyin"/>
+<text id="2205" value="5:-"/>
+<text id="2206" value="6:-"/>
+<text id="2207" value="7:-"/>
+<text id="2208" value="8:-"/>
+<text id="2209" value="9:-"/>
+<text id="2210" value="10:Harici gaz valfini açın"/>
+<text id="2211" value="11:Fan bacagazıvalfi hızına"/>
+<text id="2212" value="12:Bacagazıvalfini açın"/>
+<text id="2213" value="13:Temizleme öncesi"/>
+<text id="2214" value="14:İzin için bekleyin"/>
+<text id="2215" value="15:Brülör başlangıç"/>
+<text id="2216" value="16:VPS test"/>
+<text id="2217" value="17:Ateşleme öncesi"/>
+<text id="2218" value="18:Ateşleme"/>
+<text id="2219" value="19:Alev kontrolü"/>
+<text id="2220" value="20:Ara temizleme"/>
+<text id="2230" value="30:Normal dahili ayarnoktası"/>
+<text id="2231" value="31:Sınırlı dah. ayarnok."/>
+<text id="2232" value="32:Normal güç kontrolü"/>
+<text id="2233" value="33:Eğim kontrol düzeyi 1"/>
+<text id="2234" value="34:Eğim kontrol düzeyi 2"/>
+<text id="2235" value="35:Eğim kontrol düzeyi 3"/>
+<text id="2236" value="36:Alev koruma"/>
+<text id="2237" value="37:Stabilizasyon süresi"/>
+<text id="2238" value="38:Soğuk başlangıç"/>
+<text id="2239" value="39:-"/>
+<text id="2240" value="40:Brülör durma"/>
+<text id="2241" value="41:Temizleme sonrası"/>
+<text id="2242" value="42:Fan bacagazıvalfi hızına"/>
+<text id="2243" value="43:Bacagazıvalfini kapatın"/>
+<text id="2244" value="44:Fanı durdurun"/>
+<text id="2245" value="45:Har gaz valfini kapatın"/>
+<text id="2246" value="46:-"/>
+<text id="2247" value="47:-"/>
+<text id="2248" value="48:-"/>
+<text id="2249" value="49:-"/>
+<text id="2250" value="39:-"/>
+<text id="2260" value="60:Çalışma sonrası pompa"/>
+<text id="2261" value="61:Pompa durma"/>
+<text id="2262" value="62:Hidrolik valfi kapatın"/>
+<text id="2263" value="63:Antidöngü zaman. başlatın"/>
+<text id="2298" value="Bilinmeyen Alt Durum"/>
+<text id="2299" value="255:Sıfırlama bekleme süresi"/>
+<text id="2300" value="0:PCU parametre hatası"/>
+<text id="2301" value="1:T Akış&gt; maks."/>
+<text id="2302" value="2:dT/s Akış &gt; maks."/>
+<text id="2303" value="3:T IsıDeğiş. &gt; maks."/>
+<text id="2304" value="4:dT/s IsıDeğiş &gt; maks."/>
+<text id="2305" value="5:dT(ısıDeğiş,Dönüş) &gt; maks."/>
+<text id="2306" value="6:dT(akış,IsıDeğiş) &gt; maks."/>
+<text id="2307" value="7:dT(Akış,Dönüş) &gt; maks."/>
+<text id="2308" value="8:İzin sinyali yok"/>
+<text id="2309" value="9:L-N boşaltıldı"/>
+<text id="2310" value="10:Sinyal blok. donma har."/>
+<text id="2311" value="11:Sinyal blok. donma dah."/>
+<text id="2312" value="12:HMI bağlı değil"/>
+<text id="2313" value="13:SCU iletişimi"/>
+<text id="2314" value="14:Min. su basıncı"/>
+<text id="2315" value="15:Min. gaz basıncı"/>
+<text id="2316" value="16:Tanıla. SU eşleşmiyor"/>
+<text id="2317" value="17:Tanıla. dF/dU tablo hatası"/>
+<text id="2318" value="18:Tanıla. PSU eşleşmiyor"/>
+<text id="2319" value="19:Tanıla. dF/dU gerekli"/>
+<text id="2320" value="20:Tanılama çalışıyor"/>
+<text id="2321" value="21:SU iletişimi kayboldu"/>
+<text id="2322" value="22:Alev kayboldu"/>
+<text id="2323" value="23:-"/>
+<text id="2324" value="24:VPS testi başarısız"/>
+<text id="2325" value="25:Dahili SU hatası"/>
+<text id="2326" value="26:Isı değ. sens. hatası"/>
+<text id="2327" value="27:DHW sensör hatasında"/>
+<text id="2328" value="28:Sıfırlanıyor..."/>
+<text id="2329" value="29:GVC parameter changed"/>
+<text id="2330" value="30:-"/>
+<text id="2331" value="31:-"/>
+<text id="2332" value="32:-"/>
+<text id="2333" value="33:-"/>
+<text id="2334" value="34:-"/>
+<text id="2335" value="35:-"/>
+<text id="2336" value="36-"/>
+<text id="2337" value="41:-"/>
+<text id="2338" value="43:-"/>
+<text id="2339" value="44:-"/>
+<text id="2340" value="45:-"/>
+<text id="2398" value="Bilinmeyen bloklama kodu"/>
+<text id="2399" value="Bloklama yok"/>
+<text id="2400" value="00:PSU bağlı değil"/>
+<text id="2401" value="01:SU parametre hatası"/>
+<text id="2402" value="02:T IsıDeğiş. kapalı"/>
+<text id="2403" value="03:T IsıDeğiş. açık"/>
+<text id="2404" value="04:T IsıDeğiş. &lt; min."/>
+<text id="2405" value="05:T IsıDeğiş. &gt; maks."/>
+<text id="2406" value="06:T Dönüş kapalı"/>
+<text id="2407" value="07:T Dönüş açık"/>
+<text id="2408" value="08:T Dönüş &lt; min."/>
+<text id="2409" value="09:T Dönüş &gt; maks."/>
+<text id="2410" value="10:dT(ısıDeğiş,Dönüş) &gt; maks."/>
+<text id="2411" value="11:dT(Dönüş,Isıdeğiş) &gt; maks."/>
+<text id="2412" value="12:STB etkin"/>
+<text id="2413" value="13:-"/>
+<text id="2414" value="14:5x Başarısız başlangıç"/>
+<text id="2415" value="15:5x VPS test arızası"/>
+<text id="2416" value="16:Yanlış alev"/>
+<text id="2417" value="17:SU Gazvalfi sürücü hatası"/>
+<text id="2432" value="32:T Akışı kapalı"/>
+<text id="2433" value="33:T Akışı açık"/>
+<text id="2434" value="34:Fan kont. ara. dışında"/>
+<text id="2435" value="35:DönüşAkış sıcak. üzerinde"/>
+<text id="2436" value="36:5x Alev kaybı"/>
+<text id="2437" value="37:SU iletişimi"/>
+<text id="2438" value="38:SCU-S iletişimi"/>
+<text id="2439" value="39:Kilitlemede BL girdisi"/>
+<text id="2440" value="40:-"/>
+<text id="2441" value="41:PCB temperature"/>
+<text id="2442" value="42:Low water pressure"/>
+<text id="2443" value="43:No gradient"/>
+<text id="2445" value="45:De-air test failed"/>
+<text id="2450" value="50:External PSU timeout"/>
+<text id="2451" value="51:Onboard PSU timeout"/>
+<text id="2452" value="52:GVC lockout"/>
+<text id="2490" value="10:dT(Akış,Dönüş) &gt; maks."/>
+<text id="2491" value="11:dT(Dönüş,Akış) &gt; maks."/>
+<text id="2492" value="02:T Akışı kapalı"/>
+<text id="2493" value="03:T Akışı açık"/>
+<text id="2494" value="04:T Akışı &lt; min."/>
+<text id="2495" value="05:T Akışı&gt; maks."/>
+<text id="2498" value="Bilinmeyen kilitleme kodu"/>
+<text id="2499" value="Kilitleme yok"/>
+<text id="2500" value="Bacagazı valfi"/>
+<text id="2501" value="Hidrolik valf"/>
+<text id="2502" value="Har. Gaz valfi"/>
+<text id="2503" value="Bacagazı basıncı"/>
+<text id="2504" value="Gaz valfi 1"/>
+<text id="2505" value="SU durumu"/>
+<text id="2506" value="SU bloklama"/>
+<text id="2507" value="SU kilitleme"/>
+<text id="2508" value="Brüner Düşük"/>
+<text id="2509" value="Brüner Yüksek"/>
+<text id="2510" value="Brüner ayarnoktası"/>
+<text id="2511" value="Donma koruması"/>
+<text id="2512" value="Isıdeğiş. Sıcak."/>
+<text id="2513" value="IsıDeğiştirgeci sıcak."/>
+<text id="2514" value="İzin girdisi"/>
+<text id="2515" value="VPS basınç anahtar"/>
+<text id="2516" value="bar"/>
+<text id="2517" value=".1 bar"/>
+<text id="2518" value=".01C/s"/>
+<text id="2519" value="DHW bloklama"/>
+<text id="2520" value="Kontrol sıcak."/>
+<text id="2521" value="Kontrol sıcaklığı"/>
+<text id="2522" value="DHW Akış"/>
+<text id="2523" value=".1C/l/m"/>
+<text id="2524" value="l/dak"/>
+<text id="2525" value="Güneş enerjisi. Sıcak."/>
+<text id="2526" value="Güneş en. sıc."/>
+<text id="2527" value="OT Smart power"/>
+<text id="2528" value="OpenTherm Smart power"/>
+<text id="2529" value="Har. 3 yollu valf"/>
+<text id="2530" value="Har. CH pompası"/>
+<text id="2531" value="*%10"/>
+<text id="2532" value="/sn"/>
+<text id="2533" value="HMI Arka Işık"/>
+<text id="2534" value="0,1l/d"/>
+<text id="2535" value="CH etkin"/>
+<text id="2536" value="DHW etkin"/>
+<text id="2537" value="CH Zamanlayıcısı etkin"/>
+<text id="2538" value="DHW Zamanlayıcısı etkin"/>
+<text id="2539" value="DHW-dah. sıcak."/>
+<text id="2540" value="DHW-dah. sıcaklığı"/>
+<text id="2541" value="CH ayarnoktası HMI"/>
+<text id="2542" value="DHW ayarnoktası HMI"/>
+<text id="2543" value="HMI etkin"/>
+<text id="2544" value="Havaakışı ayarı"/>
+<text id="2545" value="Havaakışı ayarnoktası"/>
+<text id="2546" value="Havaakışı"/>
+<text id="2547" value="Havaakışı aktüel"/>
+<text id="2548" value="Flue gas temp"/>
+<text id="2549" value="Flue gas temperature"/>
+<text id="2550" value="CH Offset"/>
+<text id="2551" value="CH Offset"/>
+<text id="2552" value="DHW anti leg. time"/>
+<text id="2553" value="DHW anti legionella time"/>
+<text id="2554" value="Antileg.time-out"/>
+<text id="2555" value="DHW Antilegionella time-out"/>
+<text id="2556" value="Min. flame current"/>
+<text id="2557" value="Minimum flame current"/>
+<text id="2558" value="PVC 65 &#176;C"/>
+<text id="2559" value="CPVC 95 &#176;C"/>
+<text id="2560" value="PP 100 &#176;C"/>
+<text id="2599" value="Gelecek kullanım için ayrılmıştır"/>
+<text id="2600" value="Maks Akış sistemi"/>
+<text id="2601" value="Isıtma sistemi için maksimum akış sıcaklığı"/>
+<text id="2602" value="Sıcak. donmakoru."/>
+<text id="2603" value="Donma koruması için minimum dış sıcaklığı"/>
+<text id="2604" value="Min. gaz basıncı"/>
+<text id="2605" value="Minimum gaz basıncı algılaması"/>
+<text id="2606" value="Hidro. valf süresi"/>
+<text id="2607" value="Hidrolik valf için bekleme süresi"/>
+<text id="2608" value="Bacag. val. sür."/>
+<text id="2609" value="Bacagazı valfi için bekleme süresi"/>
+<text id="2610" value="İzin bekleme süresi"/>
+<text id="2611" value="Geçerli izin sinyali için bekleme süresi, 0 = Kontrol yok"/>
+<text id="2612" value="VPS Mevcut"/>
+<text id="2613" value="Brüner başlangıcında, valf test dizisi"/>
+<text id="2614" value="Ana L-N algılaması"/>
+<text id="2615" value="Ana L-N fazı algılaması etkinleştirildi"/>
+<text id="2616" value="Bloklama girdisi"/>
+<text id="2617" value="Bloklama girdisinin fonksiyonu"/>
+<text id="2618" value="Donma korumasız bloklama"/>
+<text id="2619" value="Donmakorumalı bloklama."/>
+<text id="2620" value="Donmakorumalı kilitleme"/>
+<text id="2621" value="Manuel ısıistemi"/>
+<text id="2622" value="Manuel ısıistemifonksiyonu menüde etkin"/>
+<text id="2623" value="dT(IsıDeğiş,Dönüş)"/>
+<text id="2624" value="Isı değiş. ve dönüş arasındaki maksimum sıcak. farkı"/>
+<text id="2625" value="dT(Akış,IsıDeğiş)"/>
+<text id="2626" value="Akış ve ısı değiştirgeci arasındaki maksimum sıcak. farkı"/>
+<text id="2627" value="Maks. IsıDeğiş. sıcak."/>
+<text id="2628" value="Maksimum ısı değiştirgeci sıcaklığı"/>
+<text id="2629" value="Min. brüner kapalı"/>
+<text id="2630" value="Minimum brüner anti döngü süresi"/>
+<text id="2631" value="Maks. brüner kapalı"/>
+<text id="2632" value="Maksimum brüner anti döngü süresi"/>
+<text id="2633" value="Fanhızı baca valfi"/>
+<text id="2634" value="Bacavalfinin açılmasında fanhızı, resirkülasyon koruması"/>
+<text id="2635" value="Stabilizasyonsüresi"/>
+<text id="2636" value="Brüner başlangıcından sonra stabilizasyon süresi CH"/>
+<text id="2637" value="Temizlik ön. süre"/>
+<text id="2638" value="Brüner başlangıcı için temizlik öncesi süre"/>
+<text id="2639" value="Temiz. sonr. süre"/>
+<text id="2640" value="Brüner durma için temizlik sonrası süre"/>
+<text id="2641" value="Fanhızı CH maksimum"/>
+<text id="2642" value="Fanhızı CH baş."/>
+<text id="2643" value="Fanhızı CH minimum"/>
+<text id="2644" value="CH için min fanhızı"/>
+<text id="2645" value="Histerezis CH"/>
+<text id="2646" value="CH için başlangıç histerezisi"/>
+<text id="2647" value="Darbe fanı"/>
+<text id="2648" value="Fanın devir başına takometre darbesi"/>
+<text id="2649" value="CH çalış. sonr. pom."/>
+<text id="2650" value="CH çalışma sonrası pompa süresi CH, 99 = Pompa sürekli"/>
+<text id="2651" value="Kazan kontrol"/>
+<text id="2652" value="Kazan fonksiyonu etkin veya etkin değil"/>
+<text id="2653" value="Min subasıncı"/>
+<text id="2654" value="Bloklama için minimum subasıncı, 0 = Kontrol yok"/>
+<text id="2655" value="Eğim dTMaks 1"/>
+<text id="2656" value="Azalan modül. için maksimum eğim"/>
+<text id="2657" value="Eğim dTMaks 2"/>
+<text id="2658" value="Basınçlı minimal yükleme için maksimum eğim"/>
+<text id="2659" value="Eğim dTMaks 3"/>
+<text id="2660" value="Bloklama için maksimum eğim"/>
+<text id="2661" value="Kontrol bandı CH"/>
+<text id="2662" value="CH&apos;de modül. için sıcaklık aralığı"/>
+<text id="2663" value="Maks. Akış sıcak."/>
+<text id="2664" value="Bloklama için maksimum akış sıcaklığı"/>
+<text id="2665" value="3yollu valf bekleme"/>
+<text id="2666" value="3 yollu valf bekleme: CH veya DHW"/>
+<text id="2667" value="CH"/>
+<text id="2668" value="DHW"/>
+<text id="2669" value="Min DHW akışı"/>
+<text id="2670" value="DHW algılama için min DHW akışı"/>
+<text id="2671" value="DHW pompa baş."/>
+<text id="2672" value="Pompa kontrol, DHW açık DHW istemini başlat"/>
+<text id="2673" value="CH pompa başlangıcı"/>
+<text id="2674" value="Pompa kontrol, CH açık ısıistemini başlat"/>
+<text id="2675" value="Pompa CH min"/>
+<text id="2676" value="Pompa kontrol, CH minimum hız"/>
+<text id="2677" value="Pompa CH maks"/>
+<text id="2678" value="Pompa kontrol, CH maksimum hız"/>
+<text id="2679" value="Pompa DHW min"/>
+<text id="2680" value="Pompa kontrol, DHW minimum hız"/>
+<text id="2681" value="Pompa DHW maks"/>
+<text id="2682" value="Pompa kontrol, DHW maksimum hız"/>
+<text id="2683" value="I faktör pompa CH"/>
+<text id="2684" value="CH&apos;de pompa kontrolü için I faktör"/>
+<text id="2685" value="I faktör pompa DHW"/>
+<text id="2686" value="DHW&apos;de pompa kontrolü için I faktör"/>
+<text id="2687" value="dT(Akış,Dönüş)"/>
+<text id="2688" value="Akış ve dönüş arasındaki maksimum sıcak. farkı"/>
+<text id="2689" value="Pompa dTayarı CH"/>
+<text id="2690" value="Pompa kontrol, CH için dT kontrol aralığı"/>
+<text id="2691" value="Pompa dTayarı DHW"/>
+<text id="2692" value="Pompa kontrol, DHW için dT kontrol aralığı"/>
+<text id="2693" value="%Tf/Tr DHWpom. %20"/>
+<text id="2694" value="%20 pompahızında DHW kontrol sıcak. için %Tf/Tr"/>
+<text id="2695" value="%Tf/Tr DHWpom. %100"/>
+<text id="2696" value="%100 pompahızında DHW kontrol sıcak. için %Tf/Tr"/>
+<text id="2697" value="DHW sensörü"/>
+<text id="2698" value="DHW algılaması için sensör tipi"/>
+<text id="2699" value="DHW Akış sensörü"/>
+<text id="2700" value="DHW Akış anahtarı"/>
+<text id="2701" value="DHW Sıcak. sensörü"/>
+<text id="2702" value="Kısmiyükleme deng."/>
+<text id="2703" value="Kısmiyükleme fanhızında dengeleme"/>
+<text id="2704" value="Havalandırma dön."/>
+<text id="2705" value="Başlangıçta havalandırma döngüleri miktarı"/>
+<text id="2706" value="HRU etkin"/>
+<text id="2707" value="HRU bağlı"/>
+<text id="2708" value="CH antidön. hist."/>
+<text id="2709" value="Histerezis antidöngü CH"/>
+<text id="2710" value="Servis bildirimi"/>
+<text id="2711" value="Kazan bağımlı bakım için servis bildirimi"/>
+<text id="2712" value="ABC"/>
+<text id="2713" value="Özel"/>
+<text id="2714" value="Servis saatleri"/>
+<text id="2715" value="Ana beslemeye bağlı kazan için servis saatleri"/>
+<text id="2716" value="Servis yanma"/>
+<text id="2717" value="Kazan brülör için servis saatleri"/>
+<text id="2718" value="Pompa CH dengeleme"/>
+<text id="2719" value="Sıcaklık dT kontrolünde pompa kontrol CH dengelemesi"/>
+<text id="2720" value="DHW baş. artışı"/>
+<text id="2721" value="Çalış. DHW akışına bağlı DHW başlangıç artışı"/>
+<text id="2722" value="K-Faktör DHW"/>
+<text id="2723" value="Düzeltme faktörü l/dak&apos;ya DHW darbeleri"/>
+<text id="2724" value="Akışalgılama süresi"/>
+<text id="2725" value="Dinamik akışalgılaması faktörü"/>
+<text id="2726" value="DHW stabilizasyonu"/>
+<text id="2727" value="Pompa modülasyonu için DHW stabilizasyon süresi"/>
+<text id="2728" value="DHW eğim"/>
+<text id="2729" value="Stabilizasyon süresi pompası için DHW eğrisi"/>
+<text id="2730" value="DHWGüçlendirici kap"/>
+<text id="2731" value="DHW&apos;nin devre dışı olduğu aralık"/>
+<text id="2732" value="P DHW başlangıç"/>
+<text id="2733" value="Başlangıç DHW&apos;de güçlendirici için P faktör"/>
+<text id="2734" value="P DHW FFWD"/>
+<text id="2735" value="Akış DHW&apos;de ön besleme için P faktör"/>
+<text id="2736" value="P DHW akışdeğiş."/>
+<text id="2737" value="Akışdeğişimi DHW güçlendirici için P faktör"/>
+<text id="2738" value="Ekran LED&apos;i kırmızı"/>
+<text id="2739" value="Normal ekran arka ışığı için PWM değeri kırmızı"/>
+<text id="2740" value="Ekran LED&apos;i mavi"/>
+<text id="2741" value="Normal ekran arka ışığı için PWM değeri mavi"/>
+<text id="2742" value="Ekran LED&apos;i yeşil"/>
+<text id="2743" value="Normal ekran arka ışığı için PWM değeri yeşil"/>
+<text id="2744" value="Ekran parlaklığı"/>
+<text id="2745" value="Arka ışık aktif olduğunda ekran parlaklığı"/>
+<text id="2746" value="Düşük"/>
+<text id="2747" value="Yüksek"/>
+<text id="2748" value="Ekran birimleri"/>
+<text id="2749" value="Ekran birimleri"/>
+<text id="2750" value="&#176;C / bar"/>
+<text id="2751" value="&#176;F / Psi"/>
+<text id="2752" value="x100h"/>
+<text id="2753" value="Oto + Tuş Kilidi"/>
+<text id="2754" value="İzin girdisi"/>
+<text id="2755" value="İzin girdisinin fonksiyonu"/>
+<text id="2756" value="Brüner izni"/>
+<text id="2757" value="Bildirim için minimum subasıncı"/>
+<text id="2758" value="DHW dah. eğim"/>
+<text id="2759" value="Stabilizasyon süresini tekrar başlatmak için DHW dah. eğim"/>
+<text id="2760" value="dT pompa deng."/>
+<text id="2761" value="dT pompa deng."/>
+<text id="2762" value="Deng. kont sıcak."/>
+<text id="2763" value="Deng. kont sıcak."/>
+<text id="2764" value="RPMdak&apos;da DHW Akışı"/>
+<text id="2765" value="Minimum çıktı gücünde DHW Akışı"/>
+<text id="2766" value="su basıncı sensörü"/>
+<text id="2767" value="Subasıncı sen. tipi"/>
+<text id="2768" value="3 Bar"/>
+<text id="2769" value="4 Bar"/>
+<text id="2770" value="Faktör ort. akış"/>
+<text id="2771" value="Ortalama akış sıcaklık hesaplaması için tau faktör"/>
+<text id="2772" value="Kont. soğ. durdur"/>
+<text id="2773" value="Bu sıcaklıkta basınçlı kontrol biriminin soğutmasını durdur"/>
+<text id="2774" value="Kont. soğ. başl."/>
+<text id="2775" value="Bu sıcaklıkta basınçlı kontrol biriminin soğutmasını başlat"/>
+<text id="2776" value="Maks.kont.bir.sıcak"/>
+<text id="2777" value="Kilitleme için mutlak maksimum kontrol birimi sıcaklığı"/>
+<text id="2778" value="CH akış süresisabit"/>
+<text id="2779" value="CH Ta süresi sabit"/>
+<text id="2780" value="Aşam. ısı değ. algoritması"/>
+<text id="2781" value="PH Kontrol bandı"/>
+<text id="2782" value="PH Kontrol bandı"/>
+<text id="2783" value="P aşamalı"/>
+<text id="2784" value="P faktör aşamalı ısı değ. algoritması"/>
+<text id="2785" value="I aşamalı"/>
+<text id="2786" value="I faktör aşamalı ısı değ. algoritması"/>
+<text id="2787" value="dTFMaks1 aşamalı"/>
+<text id="2788" value="Eğim düzey 1 reg. Aşamalı"/>
+<text id="2789" value="Havalandırma döng."/>
+<text id="2790" value="Başlangıçta havalandırma döngüsü için pompa tipi"/>
+<text id="2791" value="Pompa yok,hava. yok"/>
+<text id="2792" value="Tek hızlı pompa"/>
+<text id="2793" value="Pompa modülasyonu"/>
+<text id="2794" value="Gaz hava tipi"/>
+<text id="2795" value="Gaz-Hava birimi tipi"/>
+<text id="2796" value="GA 28"/>
+<text id="2797" value="GA 40"/>
+<text id="2798" value="Analog verim"/>
+<text id="2799" value="Analog verimin işlevi"/>
+<text id="2800" value="0-10 volt Wilo pomp."/>
+<text id="2801" value="0-10 volt Grundfos pomp."/>
+<text id="2802" value="PWM pom."/>
+<text id="2803" value="Güç çıkt. (%)"/>
+<text id="2804" value="Modül. girişi"/>
+<text id="2805" value="Modül. girişi seçimi"/>
+<text id="2806" value="OpenTherm"/>
+<text id="2807" value="0-10 Volt Sıcaklık"/>
+<text id="2808" value="0-10 Volt Güç"/>
+<text id="2809" value="Durum rölesi 1"/>
+<text id="2810" value="Alarm/çalışma sinyali rölesinden konum 1"/>
+<text id="2811" value="Durum rölesi 2"/>
+<text id="2812" value="Alarm/çalışma sinyali rölesinden konum 2"/>
+<text id="2813" value="dT(TFlow-THeatExch)"/>
+<text id="2814" value="dT(THeatExch-TFlow)"/>
+<text id="2815" value="Isı değişt. ve akış arasındaki maks. sıcaklık farkı"/>
+<text id="2816" value="Ön. boş. RPM"/>
+<text id="2817" value="Ön. boş. fan hızı (x100)"/>
+<text id="2818" value="Operating voltage"/>
+<text id="2819" value="CH Offset"/>
+<text id="2820" value="Power rating"/>
+<text id="2999" value="Ayrılmıştır"/>
+<text id="3001" value="Elektrik Gücü"/>
+<text id="3002" value="Spool valfi kon."/>
+<text id="3003" value="Motor Kafa Sıcak."/>
+<text id="3004" value="Şebeke Voltajı"/>
+<text id="3005" value="Üretilen akım"/>
+<text id="3006" value="Akış hızı kazan"/>
+<text id="3007" value="Gaz Valfi Motoru"/>
+<text id="3008" value="Gaz Valfi Kay."/>
+<text id="3009" value="İyonizasyon Motoru"/>
+<text id="3010" value="İyonizasyon Kay."/>
+<text id="3011" value="Temizleme Motoru"/>
+<text id="3012" value="Temizleme Kay."/>
+<text id="3013" value="Şebeke Bağlı"/>
+<text id="3014" value="G83 durumu"/>
+<text id="3015" value="Akış Termostatı"/>
+<text id="3016" value="Dengesizlik Anh."/>
+<text id="3017" value="WCS Termostatı"/>
+<text id="3018" value="Yüksek akım anh."/>
+<text id="3019" value="Pompa Hızı"/>
+<text id="3020" value="Tahrik düzeneği yok"/>
+<text id="3021" value="Açık/kapalı valf"/>
+<text id="3022" value="Karıştırma valfi"/>
+<text id="3023" value="Serbest yapılandırma"/>
+<text id="3024" value="W Planı"/>
+<text id="3025" value="S Planı"/>
+<text id="3026" value="Y Planı"/>
+<text id="3027" value="1 ısınma dön."/>
+<text id="3028" value="2 ısınma dön."/>
+<text id="3029" value="3 ısınma dön."/>
+<text id="3030" value="Sıcak. ölçümü"/>
+<text id="3031" value="Aşama 1"/>
+<text id="3032" value="Aşama 2"/>
+<text id="3033" value="Aşama 3"/>
+<text id="3034" value="Sınırlama yok"/>
+<text id="3035" value="Sadece motor brülör"/>
+<text id="3036" value="İlk şarj sadece motor brülör"/>
+<text id="3037" value="İlk şarj. motor brülör, yoksa kay. brülör"/>
+<text id="3038" value="Bir kez / gün"/>
+<text id="3039" value="Bir kaç kez / gün"/>
+<text id="3040" value="Mutlak"/>
+<text id="3041" value="Değişken"/>
+<text id="3042" value="Hiç biri"/>
+<text id="3043" value="24s/gün"/>
+<text id="3044" value="Zaman programları HCler"/>
+<text id="3045" value="Zaman programı 3/HCP"/>
+<text id="3046" value="DHW izni"/>
+<text id="3047" value="Zaman programı 4/DHW"/>
+<text id="3048" value="Tekrar şarj ediliyor"/>
+<text id="3049" value="Tam şarj ediliyor"/>
+<text id="3050" value="Tam şarj ediliyor lejyo."/>
+<text id="3051" value="Tam şarj gün içinde ilk kez"/>
+<text id="3052" value="Tam şarj lejyo ilk kez"/>
+<text id="3053" value="DHW çalışma modu"/>
+<text id="3054" value="DHW Azalmış ayarnoktası"/>
+<text id="3055" value="DHW Kırmızı ayarnok"/>
+<text id="3056" value="DHW izni"/>
+<text id="3057" value="Şarj önceliği DHW"/>
+<text id="3058" value="Şarj önce. DHW"/>
+<text id="3059" value="Maks yer ayarnok."/>
+<text id="3060" value="Maks yer ayarnok."/>
+<text id="3061" value="DHW Şarj ediliyor"/>
+<text id="3062" value="Akış ayarnoktası güçlendirmesi DHW"/>
+<text id="3063" value="Akışayarnok.güç.DHW"/>
+<text id="3066" value="Şarj tipi"/>
+<text id="3067" value="Ayırt edici değiştirme DHW"/>
+<text id="3068" value="Ayırt ed. değiş.DHW"/>
+<text id="3069" value="Şarj süresi sınırlaması"/>
+<text id="3070" value="Şarj süresi sınır."/>
+<text id="3071" value="Koruma deşarj ediliyor DHW"/>
+<text id="3072" value="Kor. deşarj ed. DHW"/>
+<text id="3073" value="Otomatik itme"/>
+<text id="3074" value="Otomatik itme"/>
+<text id="3075" value="SD Güneş Enerjisi Eko Açık"/>
+<text id="3076" value="SD Gün. En. EkoAçık"/>
+<text id="3077" value="SD Güneş Enerjisi Eko Kapalı"/>
+<text id="3078" value="SD Gün. En. EkoKap."/>
+<text id="3079" value="Tesis tipi"/>
+<text id="3080" value="Tip ısınma dön. 1"/>
+<text id="3081" value="Tip ısınma dön. 2"/>
+<text id="3082" value="Tip ısınma dön. 3"/>
+<text id="3083" value="Hiç biri"/>
+<text id="3084" value="Kazan pompası Q1"/>
+<text id="3085" value="DHW kont. öğe. Q3"/>
+<text id="3086" value="HC1 tahrik düzeneği Q2"/>
+<text id="3087" value="HC2 tahrik düzeneği Q6"/>
+<text id="3088" value="HC3 tahrik düzeneği Q20"/>
+<text id="3089" value="Alarm çıktısı K10"/>
+<text id="3090" value="Sirkülasyon pompası Q4"/>
+<text id="3091" value="Sistem pompası Q14"/>
+<text id="3092" value="Kazan pompası aşama 2"/>
+<text id="3093" value="Kazan pompası aşama 3"/>
+<text id="3094" value="Kon. spool valfi"/>
+<text id="3095" value="Akış sıcak. ayarnok"/>
+<text id="3096" value="Toplam enerji"/>
+<text id="3097" value="Mot. brü. çalışma saatleri"/>
+<text id="3098" value="Mot. brü. başlangıç sayacı"/>
+<text id="3099" value="Kayn. brülör çalışma saatleri"/>
+<text id="3103" value="Kayn. brülör başlangıç sayacı"/>
+<text id="3100" value="Kilitlemeler ve bloklamalar sıfırlanacak."/>
+<text id="3101" value="Kilitlemekodları verinoktası yapılandırmasında mevcut değil."/>
+<text id="3102" value="Bloklamakodları verinoktası yapılandırmasında mevcut değil."/>
+<text id="3104" value="Hiç biri"/>
+<text id="3105" value="Oda termostatı HC1"/>
+<text id="3106" value="Oda termostatı HC2"/>
+<text id="3107" value="Oda termostatı HC3"/>
+<text id="3108" value="DHW termostatı"/>
+<text id="3109" value="Süre program HC1"/>
+<text id="3110" value="Süre program HC2"/>
+<text id="3111" value="Süre program HC3"/>
+<text id="3112" value="Süre program DHW"/>
+<text id="3113" value="Har. ısı ist, iz. Mot. Brü"/>
+<text id="3114" value="Har. ısı ist, iz. Kayn. Brü"/>
+<text id="3115" value="Har ısı ist, Mot+KaynBrü"/>
+<text id="3116" value="Fonksiyon EX1"/>
+<text id="3117" value="Kont tipi EX1"/>
+<text id="3118" value="Fonksiyon EX2"/>
+<text id="3119" value="Kont tipi EX2"/>
+<text id="3120" value="1 hız"/>
+<text id="3121" value="2 hız"/>
+<text id="3122" value="3 hız"/>
+<text id="3123" value="Rah. Sıcak. HC1"/>
+<text id="3124" value="Rah. Sıcak. HC2"/>
+<text id="3125" value="Rah. Sıcak. HC3"/>
+<text id="3126" value="Azl. ayarn. HC1"/>
+<text id="3127" value="Azl. ayarn. HC1"/>
+<text id="3128" value="Azl. ayarn. HC2"/>
+<text id="3129" value="Azl. ayarn. HC2"/>
+<text id="3130" value="Azl. ayarn. HC3"/>
+<text id="3131" value="Azl. ayarn. HC3"/>
+<text id="3132" value="Ayarn. D. ko. HC1"/>
+<text id="3133" value="Ayarn. Donma koruması HC1"/>
+<text id="3134" value="Ayarn. D. ko. HC2"/>
+<text id="3135" value="Ayarn. Donma koruması HC2"/>
+<text id="3136" value="Ayarn. D. ko. HC3"/>
+<text id="3137" value="Ayarn. Donma koruması HC3"/>
+<text id="3138" value="Maks. Rah. SıcHIC1"/>
+<text id="3139" value="Maks. Rah. SıcHIC2"/>
+<text id="3140" value="Maks. Rah. SıcHIC3"/>
+<text id="3141" value="Maks. Rah. Sıc.HIC1"/>
+<text id="3142" value="Maks. Rah. Sıc.HIC2"/>
+<text id="3143" value="Maks. Rah. Sıc.HIC3"/>
+<text id="3144" value="Pom. Tipi"/>
+<text id="3145" value="Isı. eğr. eğ. HC1"/>
+<text id="3146" value="Isı. eğrisi eğimi HC1"/>
+<text id="3147" value="Isı. eğr. eğ. HC2"/>
+<text id="3148" value="Isı. eğrisi eğimi HC2"/>
+<text id="3149" value="Isı. eğr. eğ. HC3"/>
+<text id="3150" value="Isı. eğrisi eğimi HC3"/>
+<text id="3151" value="Isı. eğ. yer de. HC1"/>
+<text id="3152" value="Isı. eğimi yer değişt. HC1"/>
+<text id="3153" value="Isı. eğ. yer de. HC2"/>
+<text id="3154" value="Isı. eğimi yer değişt. HC2"/>
+<text id="3155" value="Isı. eğ. yer de. HC3"/>
+<text id="3156" value="Isı. eğimi yer değişt. HC3"/>
+<text id="3157" value="Isı eğ. adap. HC1"/>
+<text id="3158" value="Isı eğrisi adaptasyonu HC1"/>
+<text id="3159" value="Isı eğ. adap. HC2"/>
+<text id="3160" value="Isı eğrisi adaptasyonu HC2"/>
+<text id="3161" value="Isı eğ. adap. HC3"/>
+<text id="3162" value="Isı eğrisi adaptasyonu HC3"/>
+<text id="3163" value="Min. Ak. Sıc. HC1"/>
+<text id="3164" value="Min. Ak. Sıc. HC2"/>
+<text id="3165" value="Min. Ak. Sıc. HC3"/>
+<text id="3166" value="Mak. Ak. Sıc. HC1"/>
+<text id="3167" value="Mak. Ak. Sıc. HC2"/>
+<text id="3168" value="Mak. Ak. Sıc. HC3"/>
+<text id="3169" value="Ak. Ayarn.Te. HC1"/>
+<text id="3170" value="Ak. sıc. ayarn. term. HC1"/>
+<text id="3171" value="Ak. Ayarn. Te. HC2"/>
+<text id="3172" value="Ak. sıc. ayarn. term. HC2"/>
+<text id="3173" value="Ak. Ayarn. Te. HC3"/>
+<text id="3174" value="Ak. sıc. ayarn. term. HC3"/>
+<text id="3175" value="Oda etkisi HC1"/>
+<text id="3176" value="Oda etkisi HC2"/>
+<text id="3177" value="Oda etkisi HC3"/>
+<text id="3178" value="Yaz/kış Lim. HC1"/>
+<text id="3179" value="Yaz/kış Lim. HC2"/>
+<text id="3180" value="Yaz/kış Lim. HC3"/>
+<text id="3181" value="Tip oda ısıt. HC1"/>
+<text id="3182" value="Tip oda ısıt. HC2"/>
+<text id="3183" value="Tip oda ısıt. HC3"/>
+<text id="3184" value="Radyatör. hızlı"/>
+<text id="3185" value="Radyatör. orta"/>
+<text id="3186" value="Radyatör. yav."/>
+<text id="3187" value="Zem. ıst. hızlı"/>
+<text id="3188" value="Zem. ıst. orta"/>
+<text id="3189" value="Zemin ıst. yav."/>
+<text id="3190" value="Oda sıc. limiti HC1"/>
+<text id="3191" value="Oda sıc. limiti HC2"/>
+<text id="3192" value="Oda sıc. limiti HC3"/>
+<text id="3193" value="Te. sür. legionella"/>
+<text id="3194" value="Tekrar. süresi legionella"/>
+<text id="3195" value="gün"/>
+<text id="3196" value="Legionella ayarn."/>
+<text id="3197" value="Ek brülör min. değ."/>
+<text id="3198" value="Ek br. mak. değ. CH"/>
+<text id="3199" value="Ek br. mak. değ. DHW"/>
+<text id="3200" value=""/>
+<text id="3201" value="DHW Ş.oluyor"/>
+<text id="3202" value="DHW Akış ay. nok. güç."/>
+<text id="3203" value="Dhw aktrım güçl."/>
+<text id="3204" value="DHW tek. şarj kontr."/>
+<text id="3205" value="1=Tek. şarj"/>
+<text id="3206" value="2=Tam şarj"/>
+<text id="3207" value="3=Legio tam şarj"/>
+<text id="3208" value="Tam şarj günde ilk defa"/>
+<text id="3209" value="Tam şarj ilk Legio"/>
+<text id="3210" value="DHW tek. şarj kontr."/>
+<text id="3211" value="DHW ay. ed. değ."/>
+<text id="3212" value="DHW şarj sıc. maks."/>
+<text id="3213" value="DHW oto. itme"/>
+<text id="3214" value="DHW depolama tankına sahip ani ısıtıcı"/>
+<text id="3215" value="Tamponlu DHW ani ısıtıcı"/>
+<text id="3216" value="Isıtma dön. 1"/>
+<text id="3217" value="Isıtma dön. 2"/>
+<text id="3218" value="Isıtma dön. 3"/>
+<text id="3219" value="Tesis diy. seçimi"/>
+<text id="3220" value="Röle çıkt. QX1"/>
+<text id="3221" value="Röle çıkt. QX2"/>
+<text id="3222" value="Röle çıkt. QX3"/>
+<text id="3223" value="Röle çıkt. QX4"/>
+<text id="3224" value="Röle çıkt. QX5"/>
+<text id="3225" value="0=Hçbr"/>
+<text id="3226" value="Sirk. pompası Q4"/>
+<text id="3227" value="Kolek. pompası Q5"/>
+<text id="3228" value="Sab. dev. pompası VK1 Q15"/>
+<text id="3229" value="Kazan pomp. Q1"/>
+<text id="3230" value="Alarm çıkt. K10"/>
+<text id="3231" value="2. pompa hızı HC1 Q21"/>
+<text id="3232" value="2. pompa hızı HC2 Q22"/>
+<text id="3233" value="2. pompa hızı HC3 Q23"/>
+<text id="3234" value="Sab. dev. pompası HC3 Q20"/>
+<text id="3235" value="Sab. dev. pompası VK2 Q18"/>
+<text id="3236" value="Si. pompası Q14"/>
+<text id="3237" value="Isıt. kapama valfi Y4"/>
+<text id="3238" value="Sür. prog. 5 K13"/>
+<text id="3239" value="Tam. g. dön. valfi Y15"/>
+<text id="3240" value="Solar pom. har. d. K9"/>
+<text id="3241" value="Solar kont. el. tam. K8"/>
+<text id="3242" value="Solar kont. el. y. hav. K18"/>
+<text id="3243" value="Y. havuzu pompası Q19"/>
+<text id="3244" value="Baca gazı röl. K17"/>
+<text id="3245" value="Kas. pompa Q25"/>
+<text id="3246" value="D. tankı tra. pomp. Q11"/>
+<text id="3247" value="DHW kar. pomp. Q35"/>
+<text id="3248" value="DHW a. devre pomp. Q33"/>
+<text id="3249" value="Isı istemli K27"/>
+<text id="3250" value="Sab. dev. pompası HC1 Q2"/>
+<text id="3251" value="Sab. dev. pompası HC2 Q6"/>
+<text id="3252" value="DHW kon. el. Q3"/>
+<text id="3253" value="Ani ısıt. kon. elem. Q34"/>
+<text id="3254" value="Besleme kayn. kont.K32"/>
+<text id="3255" value="2. kaz. pomp. hızı Q27"/>
+<text id="3256" value="Durum çıkt. K35"/>
+<text id="3257" value="Durum bilgisi K36"/>
+<text id="3258" value="Fan kapatma K38"/>
+<text id="3259" value="Aşırı ısı tahliyesi K11"/>
+<text id="3260" value="Röle çıkt. QX21 em 1"/>
+<text id="3261" value="Röle çıkt. QX22 em 1"/>
+<text id="3262" value="Röle çıkt. QX23 em 1"/>
+<text id="3263" value="Röle çıkt. QX21 em 2"/>
+<text id="3264" value="Röle çıkt. QX22 em 2"/>
+<text id="3265" value="Röle çıkt. QX23 em 2"/>
+<text id="3266" value="Röle çıkt. QX21 em 3"/>
+<text id="3267" value="Röle çıkt. QX22 em 3"/>
+<text id="3268" value="Röle çıkt. QX23 em 3"/>
+<text id="3269" value="Fonk. gir. EX21 modül 1"/>
+<text id="3270" value="K.tipi gir. EX21 modül 1"/>
+<text id="3271" value="Fonk. gir. EX21 modül 2"/>
+<text id="3272" value="K. tip gir. EX21 modül 2"/>
+<text id="3273" value="Fonk. gir. EX21 modül 3"/>
+<text id="3274" value="K. tip gir. EX21 modül 3"/>
+<text id="3275" value="iSense Bağl."/>
+<text id="3276" value="Ani WH kon. elem. Q34"/>
+<text id="3277" value="Hçbr"/>
+<text id="3278" value="Pom."/>
+<text id="3279" value="Ayrışt. valfi"/>
+<text id="3280" value="önceki ısı istemi"/>
+<text id="3281" value="Da. kon. ayrışt. valfi"/>
+<text id="3282" value="Da. kon. ayrışt. valfi Q34"/>
+<text id="3283" value="Hçbr"/>
+<text id="3284" value="Çok fonksiyonlu"/>
+<text id="3285" value="Isıt. devresi 1"/>
+<text id="3286" value="Isıt. devresi 2"/>
+<text id="3287" value="Isıt. devresi 3"/>
+<text id="3288" value="Solar DHW"/>
+<text id="3289" value="Bir. kontrol/sis. pompası"/>
+<text id="3290" value="DHW bir. kontrolör"/>
+<text id="3291" value="Ani DHW ısıtıcı"/>
+<text id="3292" value="Kazan bir. kontolörü"/>
+<text id="3293" value="Fonk. EM 1"/>
+<text id="3294" value="Fonk. EM 2"/>
+<text id="3295" value="Fonk. EM 3"/>
+<text id="3296" value="Sensör gird. BX21 EM 1"/>
+<text id="3297" value="Sensör gird. BX22 EM 1"/>
+<text id="3298" value="Sensör gird. BX21 EM 2"/>
+<text id="3299" value="Sensör gird. BX22 EM 2"/>
+<text id="3300" value="Sensör gird. BX21 EM 3"/>
+<text id="3301" value="Sensör gird. BX22 EM 3"/>
+<text id="3302" value="Hçbr"/>
+<text id="3303" value="DHW sensör B31"/>
+<text id="3304" value="Kolek. sensör B6"/>
+<text id="3305" value="DHW sirk. sensörü B39"/>
+<text id="3306" value="Tamp. sensörü B4"/>
+<text id="3307" value="Tamp. sensörü B41"/>
+<text id="3308" value="Bac. gazı sıc. sens. B8"/>
+<text id="3309" value="Genel akış sensörü B10"/>
+<text id="3310" value="DHW şarj sensörü B36"/>
+<text id="3311" value="Tamp. sensörü B42"/>
+<text id="3312" value="Gen. dön. sensörü B73"/>
+<text id="3313" value="Kaskad dön. sensörü B70"/>
+<text id="3314" value="Yüz. havuzu sensörü B13"/>
+<text id="3315" value="Solar ak. sensörü B63"/>
+<text id="3316" value="Solar dön. sensörü B64"/>
+<text id="3317" value="DHW çıkış sensörü B38"/>
+<text id="3318" value="Ani WH sensörü B37"/>
+<text id="3319" value="DHW sensör B3"/>
+<text id="3320" value="Göv. sıc. sensörü B23"/>
+<text id="3321" value="Dönüş sensörü B74"/>
+<text id="3322" value="Paralel"/>
+<text id="3323" value="Seri"/>
+<text id="3500" value="Valf grup 1"/>
+<text id="3501" value="Valf ayarları grup 1. aynı zamanda, döner anahtar ile ayarlanabilir"/>
+<text id="3502" value="Manuel kapalı"/>
+<text id="3503" value="Manuel açık"/>
+<text id="3504" value="Termal 2 kontak 3 yollu"/>
+<text id="3505" value="Termal 2 kontak 2 yollu"/>
+<text id="3506" value="2 kontak 2 yollu (0-30s)"/>
+<text id="3507" value="2 kontak 2 yollu (30-120s)"/>
+<text id="3508" value="2 kontak 2 yollu (120-240s)"/>
+<text id="3509" value="2 kontak 3 yollu (0-30s)"/>
+<text id="3510" value="2 kontak 3 yollu (30-120s)"/>
+<text id="3511" value="2 kontak 3 yollu (120-240s)"/>
+<text id="3512" value="3 kontak 3 yollu (0-30s)"/>
+<text id="3513" value="3 kontak 3 yollu (30-60s)"/>
+<text id="3514" value="3 kontak 3 yollu (60-120s)"/>
+<text id="3515" value="3 kontak 3 yollu (120-240s)"/>
+<text id="3516" value="Fonksiyon yok"/>
+<text id="3517" value="DHW eko"/>
+<text id="3518" value="DHW grup"/>
+<text id="3519" value="Valf grup 2"/>
+<text id="3520" value="Valf ayarları grup 2. Aynı zamanda, döner anahtar ile ayarlanabilir"/>
+<text id="3521" value="Grup 1 ayarlama"/>
+<text id="3522" value="Pompa ve DHW paralel çalışma ayarları grup 1. Aynı zamanda, döner anahtar ile ayarlanabilir."/>
+<text id="3523" value="Pompa oto / DHW par. değil"/>
+<text id="3524" value="Pompa 0s / DHW paralel değil"/>
+<text id="3525" value="Pompa 1dak / DHW par. değil"/>
+<text id="3526" value="Pompa 10dak / DHW par. değil"/>
+<text id="3527" value="Pompa açık / DHW par. değil"/>
+<text id="3528" value="Grup 2 ayarlama"/>
+<text id="3529" value="Pompa ve DHW paralel çalışma ayarları grup 2. Aynı zamanda, döner anahtar ile ayarlanabilir."/>
+<text id="3530" value="Grup önceliği"/>
+<text id="3531" value="Grup önceliğini ayarlama. Aynı zamanda, anahtar ile ayarlanabilir."/>
+<text id="3532" value="Öncelik ayarı Grup 1&apos;de"/>
+<text id="3533" value="Öncelik ayarı Grup 2&apos;de"/>
+<text id="3534" value="Öncelik yok"/>
+<text id="3535" value="Kontrol birimleri"/>
+<text id="3536" value="Bağlı OpenTherm kontrol birimleri"/>
+<text id="3537" value="OpenTherm kontrol birimi yok"/>
+<text id="3538" value="Açık bağlantı 1"/>
+<text id="3539" value="Açık bağlantı 1 ve 2"/>
+<text id="3540" value="Açık bağlantı 1 (2 grup)"/>
+<text id="3541" value="Açık 1 (2 grup) ve 2"/>
+<text id="3542" value="Sensörler"/>
+<text id="3543" value="Sıcaklık sensörleri kullanıldı"/>
+<text id="3544" value="Tdış=Hayır,T1=Hayır,T2=Hayır"/>
+<text id="3545" value="Tdış=Evet,T1=Hayır, T2=Hayır"/>
+<text id="3546" value="Tdış=Hayır,T1=Evet, T2=Hayır"/>
+<text id="3547" value="Tdış=Evet, T1=Evet, T2=Hayır"/>
+<text id="3548" value="Tdış=Hayır,T1=Hayır,T2=Evet"/>
+<text id="3549" value="Tdış=Evet, T1=Hayır, T2=Evet"/>
+<text id="3550" value="Tdış=Hayır, T1=Evet, T2=Evet"/>
+<text id="3551" value="Tdış=Evet, T1=Evet, T2=Evet"/>
+<text id="3552" value="DHW başlangıç"/>
+<text id="3553" value="Ölçülen DHW sıcak DHW ayar nok sıcak. eksi bu değerin altına düştüğünde, DHWgrup DHWkanal&apos;ı ısıtır."/>
+<text id="3554" value="DHW durma"/>
+<text id="3555" value="Ölçülen DHWsıcak DHW ayar nok + bu değer&apos;in üstüne çıktığında, DHWgrup DHWkanal&apos;ı ısınmayı durdurur"/>
+<text id="3556" value="DHW en yüksek sıcak"/>
+<text id="3557" value="DHW grup, DHW kanalı DHW ayar noktası artı bu parametre&apos;ye eşdeğer bir sıcaklıkta ısınır."/>
+<text id="3558" value="CH en yüksek sıcak"/>
+<text id="3559" value="Valf açık ve CHsıcak&apos;na henüz ulaşılmadığında, CHsıcak ayar noktası bu değere kadar yükselir"/>
+<text id="3560" value="DHW ayar noktası"/>
+<text id="3561" value="DHW ayar noktası için varsayılan değer"/>
+<text id="3562" value="AÇIK/Kapalıarttırma"/>
+<text id="3563" value="Bir açık/kapalı yönetici kullanıldığında, akış ayarnoktasını arttırmak ve azaltmak için değer"/>
+<text id="3564" value="P faktör valfi"/>
+<text id="3565" value="Karıştırma valfinin PI kontrolü için P faktör"/>
+<text id="3566" value="I faktör valfi"/>
+<text id="3567" value="Karıştırma valfinin PI kontrolü için I faktör"/>
+<text id="3568" value="Min valf başlangıç"/>
+<text id="3569" value="Toplam valf açılmaları bu değerin üzerinde olduğunda, kazanı başlat"/>
+<text id="3570" value="HerDakİç.Del.Tak."/>
+<text id="3571" value="Gruptaki Takış azalması bu değerin altında olduğunda, pom. oto.&apos;te olduğunda çalışma zamanı biter"/>
+<text id="3572" value="CH enyüksıcak. Iüst"/>
+<text id="3573" value="Valf açık ve bekleme süresi bittiğinde, yuk doğru kont edildiğinde Ikont CH en yükseksıcak. için I"/>
+<text id="3574" value="CH enyüksıcak. Ialt"/>
+<text id="3575" value="Valf açık ve bekleme süresi bittiğinde, aşa.doğru kont edildiğinde Ikont CH en yükseksıcak. için I"/>
+<text id="3576" value="CH enyüksıcakbeksür"/>
+<text id="3577" value="CH en yüksek sıcak. kontrolünü kullanmadan önceki bekleme süresi"/>
+<text id="3578" value="Isınma süresi"/>
+<text id="3579" value="Kazanı başlatmadan önce termal motorun ısınma süresi"/>
+<text id="3580" value="Isınma kapat. sür."/>
+<text id="3581" value="Termal motoru sıcak tutmak için ısınma kapatma zamanı"/>
+<text id="3582" value="Isınma açma zamanı"/>
+<text id="3583" value="Termal motoru sıcak tutmak için ısınma açma zamanı"/>
+<text id="3584" value="Açık bağlantı 2"/>
+<text id="3585" value="Pompa oto / DHW paralel"/>
+<text id="3586" value="Pompa 0s / DHW paralel"/>
+<text id="3587" value="Pompa 1dak / DHW paralel"/>
+<text id="3588" value="Pompa 10dak / DHW paralel"/>
+<text id="3589" value="Pompa açık / DHW paralel"/>
+<text id="3590" value="CH sıcak min grup 1"/>
+<text id="3591" value="Minimal CH sıcaklık grup 1"/>
+<text id="3592" value="CH sıcak maksgrup 1"/>
+<text id="3593" value="Maksimum CH sıcaklık grup 1"/>
+<text id="3594" value="CH sıcak min grup 2"/>
+<text id="3595" value="Minimal CH sıcaklık grup 2"/>
+<text id="3596" value="CH sıcak maksgrup 2"/>
+<text id="3597" value="Maksimum CH sıcaklık grup 2"/>
+<text id="3600" value="*0,01&#176;C / s"/>
+<text id="3601" value="% / K"/>
+<text id="3602" value="*%0,01 / s"/>
+<text id="3603" value="*0,1&#176;C/dak"/>
+<text id="3604" value="*0,001&#176;C / s"/>
+<text id="3605" value="#"/>
+<text id="3610" value="Bekleme"/>
+<text id="3611" value="Başlıyor"/>
+<text id="3612" value="Çalışıyor"/>
+<text id="3613" value="Bloklama"/>
+<text id="3614" value="Manuel"/>
+<text id="3620" value="Sensör kayboldu"/>
+<text id="3621" value="OT iletişim hatası bağımlı"/>
+<text id="3622" value="OTiletişim hatası yönetici"/>
+<text id="3623" value="Ayarlar yapılan. eşdeğ.değil"/>
+<text id="3624" value="Parametre CRC hatası"/>
+<text id="3625" value="Dahili veya flash hatası"/>
+<text id="3626" value="Yapılan. algıla ve kaydet..."/>
+<text id="3630" value="0: Mevcut değil"/>
+<text id="3631" value="1: Honeywell BV"/>
+<text id="3632" value="2: Honeywell Control Systems"/>
+<text id="3634" value="4: Siemens Building Technol"/>
+<text id="3635" value="5: Itho"/>
+<text id="3636" value="6: Elster"/>
+<text id="3638" value="8: SIT controls BV"/>
+<text id="3639" value="9: AGPO ferroli"/>
+<text id="3641" value="11: Remeha BV"/>
+<text id="3643" value="13: Honeywell CCP"/>
+<text id="3645" value="15: Grässlin"/>
+<text id="3646" value="16: Unical"/>
+<text id="3648" value="18: Theben"/>
+<text id="3649" value="19: Technosystem"/>
+<text id="3650" value="20: TEM AG"/>
+<text id="3651" value="21: Zhen Sen"/>
+<text id="3652" value="22: EBV"/>
+<text id="3653" value="23: Danfoss"/>
+<text id="3654" value="24: AWB"/>
+<text id="3655" value="25: Hager"/>
+<text id="3656" value="26: Atlantic"/>
+<text id="3657" value="27: Bertelli"/>
+<text id="3659" value="29: Daalderop"/>
+<text id="3661" value="31: Riello"/>
+<text id="3662" value="32: Storkair"/>
+<text id="3663" value="33: Viessman"/>
+<text id="3664" value="34: Pactrol Controls"/>
+<text id="3665" value="35: Invensys Controls"/>
+<text id="3669" value="39: Techum"/>
+<text id="3685" value="55: DeDietrich"/>
+<text id="3686" value="56: Baxi"/>
+<text id="3700" value="Chaz adı"/>
+<text id="3701" value="Bağımlı OT kimlik"/>
+<text id="3702" value="Bağımlı versiyonu"/>
+<text id="3703" value="Bağımlı tipi"/>
+<text id="3704" value="Yönetici 1 OT kim."/>
+<text id="3705" value="Yönetici 1 ver."/>
+<text id="3706" value="Yönetici 1 tipi"/>
+<text id="3707" value="Yönetici 2 OT kim."/>
+<text id="3708" value="Yönetici 2 ver."/>
+<text id="3709" value="Yönetici 2 tipi"/>
+<text id="3720" value="T1 ayar nok.yön."/>
+<text id="3721" value="T1 ayar nok. c-Mix"/>
+<text id="3722" value="T1 enyükseksıcak"/>
+<text id="3723" value="T1"/>
+<text id="3724" value="T2 ayar noktası Y2"/>
+<text id="3725" value="T2 ayar nok. c-Mix"/>
+<text id="3726" value="T2 enyükseksıcak"/>
+<text id="3727" value="T2"/>
+<text id="3728" value="Toda ayar nok. Y1"/>
+<text id="3729" value="Toda 1"/>
+<text id="3730" value="Toda ayar nok. Y2"/>
+<text id="3731" value="Toda 2"/>
+<text id="3732" value="T ayar nok. bağımlı"/>
+<text id="3733" value="T dış c-Mix"/>
+<text id="3734" value="T3 ay.nok. c-Mix"/>
+<text id="3735" value="T ww ayar nok."/>
+<text id="3736" value="Toda2 ayar nok. Y1"/>
+<text id="3737" value="Toda2 Y1"/>
+<text id="3738" value="T2 ayar nok. Y1"/>
+<text id="3739" value="T akış bağımlı"/>
+<text id="3740" value="T akış maks bağımlı"/>
+<text id="3741" value="Valf1 ayar nok."/>
+<text id="3742" value="Valf1 konum"/>
+<text id="3743" value="Modülasyon G1"/>
+<text id="3744" value="Valf2 ayar nok."/>
+<text id="3745" value="Valf2 konum"/>
+<text id="3746" value="Modülasyon G2"/>
+<text id="3747" value="Modülasyon maks Y1"/>
+<text id="3748" value="Modülasyon maks Y2"/>
+<text id="3749" value="Modülasyon bağımlı"/>
+<text id="3750" value="Bağımlı hatakodu"/>
+<text id="3751" value="Bağımlı Servis HB"/>
+<text id="3752" value="Bağımlı Servis LB"/>
+<text id="3753" value="CH istem G1 Y1"/>
+<text id="3754" value="CH konum G1 Y1"/>
+<text id="3755" value="Pompa G1"/>
+<text id="3756" value="Alev G1"/>
+<text id="3757" value="CH istem Y2"/>
+<text id="3758" value="CH konum Y2"/>
+<text id="3759" value="Pompa G2"/>
+<text id="3760" value="Alev G2"/>
+<text id="3761" value="Alev bağımlı"/>
+<text id="3762" value="CH konum bağımlı"/>
+<text id="3763" value="DHW konum bağımlı"/>
+<text id="3764" value="Hata bağımlı"/>
+<text id="3765" value="Bağım.düşük subasın"/>
+<text id="3766" value="Bağımlı servis gös."/>
+<text id="3767" value="Bağımlı servis ist."/>
+<text id="3768" value="CH istemi c-Mix"/>
+<text id="3769" value="DHW eko c-Mix"/>
+<text id="3770" value="DHW kapalı c-Mix"/>
+<text id="3771" value="CH istem G2 Y1"/>
+<text id="3772" value="DHW mevcut c-Mix"/>
+<text id="3773" value="DHW mevcut bağımlı"/>
+<text id="3774" value="DHW eko Y1"/>
+<text id="3775" value="DHW eko Y2"/>
+<text id="3776" value="DHW kapalı Y1"/>
+<text id="3777" value="DHW kapalı Y2"/>
+<text id="3778" value="Hata c-Mix Y1"/>
+<text id="3779" value="Hata c-Mix Y2"/>
+<text id="3780" value="DHW kon c-Mix Y1"/>
+<text id="3781" value="Servis gös. Y1"/>
+<text id="3782" value="Servis gös. Y2"/>
+<text id="3783" value="Manuel G1"/>
+<text id="3784" value="Manuel G2"/>
+<text id="3785" value="Donma koruması G1"/>
+<text id="3786" value="Donma koruması G2"/>
+<text id="3787" value="Yaz başlangıç G1"/>
+<text id="3788" value="Yaz başlangıç G2"/>
+<text id="3789" value="CH konum G2 Y1"/>
+<text id="3790" value="Elek üretimi"/>
+<text id="3999" value="einde c-Mix"/>
+<text id="4000" value=""/>
+<text id="5000" value="Servis anahtarı cihaz bulamadı."/>
+<text id="5001" value="Servis anahtarı cihazı bulamadı.\n\nServis anahtarı cihaza bağlı mı?\nCihaz açık mı?"/>
+<text id="5002" value="Code 1"/>
+<text id="5003" value="Code 2"/>
+<text id="5004" value="Tanılama plakasından kodlarını girin:"/>
+<text id="5005" value="Dikkat! Tanılama plakasında gösterilmeyen hiç bir kodunu girmemelisiniz!"/>
+<text id="5006" value="Dikkat! Tüm parametreler fabrika ayarlarına döndürülecek. Diğer tüm ayarlar silinecek."/>
+<text id="5007" value="Bu kodunu fabrika ayarlarına dönmek için kullanmak istiyor musunuz?"/>
+<text id="5008" value="Girilen kodunun tanılama plakasıyla eşleştiğinden emin misiniz?"/>
+<text id="5009" value="Emin misiniz?"/>
+<text id="5010" value="Konfigürasyon sürüm seti"/>
+<text id="5011" value="UYARI: Hiçbir bilgi alınmadı."/>
+<text id="5012" value="Cihaz verileri"/>
+<text id="5013" value="Verileri indir"/>
+<text id="5014" value="Tümünü seç"/>
+<text id="5015" value="Tümünün seçimini kaldır"/>
+<text id="5016" value="Veriler yükleniyor..."/>
+<text id="5017" value="Yüklü"/>
+<text id="5018" value="Verilerini indirmek istediğiniz cihazları seçin"/>
+<text id="5019" value="Senkronize et"/>
+<text id="5020" value="Veriler kaldırılıyor..."/>
+<text id="5021" value="Güncelleme var"/>
+<text id="5022" value="Yüklenmemiş"/>
+<text id="5023" value="Veriler indirilemiyor. Lütfen İnternete bağlı olduğunuzdan emin olun."/>
+<text id="5024" value="VERİ GÖRÜNÜMÜ"/>
+<text id="5025" value="BELGELER"/>
+<text id="5026" value="Yükleme başarısız oldu"/>
+<text id="5027" value="Yüklenemiyor. Yeniden denensin mi?"/>
+<text id="5028" value="Veri yok. Verileri ayarlar yoluyla indirin."/>
+<text id="5029" value="İndiriliyor..."/>
+<text id="5030" value="Seçilen verileri kontrol edin."/>
+<text id="5031" value="İnternete bağlanın ve ayarlar menüsünden indirilecek verileri seçin."/>
+<text id="5032" value="Deneme sürümü başlatılamıyor.  Deneme sürümü verisi yok. Verileri ayarlar yoluyla indirin."/>
+<text id="5033" value="Restart the app to activate the updates."/>
+<text id="5034" value="Updated"/>
+<text id="5035" value="Language"/>
+<text id="5036" value="Country"/>
+<text id="5037" value="Are you sure you wanr to install a new language? All downloaded content will be deleted, and must be downloaded in the new language."/>
+<text id="5038" value="Are you sure you want to change the country? All downloaded content will be deleted, and must be downloaded for the new country."/>
+<text id="5039" value="SERVICE SETTINGS"/>
+<text id="6000" value="GVC sub state"/>
+<text id="6001" value="GVC mode"/>
+<text id="6002" value="Thermocouple setpoint"/>
+<text id="6003" value="Gas valve setpoint "/>
+<text id="6004" value="Mass flow"/>
+<text id="6005" value="Mass flow setpoint "/>
+<text id="6006" value="Gas valve correction "/>
+<text id="6007" value="GVC PWM value "/>
+<text id="6008" value="Power"/>
+<text id="6009" value="Power setpoint "/>
+<text id="6010" value="Burner temperature 1 "/>
+<text id="6011" value="Burner temperature 2 "/>
+<text id="6012" value="Gvc gas valve position "/>
+<text id="6100" value="High power status"/>
+<text id="6101" value="Low power status"/>
+<text id="6329" value="29:GVC parameter changed"/>
+<text id="6330" value="dT(heatexch,return)&lt;min"/>
+<text id="6331" value="24h GVC reset in progress"/>
+<text id="6548" value="GVC durumu"/>
+<text id="6549" value="GVC bloklama"/>
+<text id="6550" value="GVC kilitleme"/>
+<text id="10000" value="Sensör Tipi"/>
+<text id="10001" value="NTC12K veya NTC10K"/>
+<text id="10002" value="NTC12K"/>
+<text id="10003" value="NTC10K"/>
+<text id="10004" value="Kazan pompasını durdur"/>
+<text id="10005" value="Sıcak DHW Ayar noktası"/>
+<text id="10006" value="SKS üretimi için kazan sıcaklığı"/>
+<text id="10007" value="SKS çıkış"/>
+<text id="10008" value="0 : Pompa , 1 : EV"/>
+<text id="10009" value="Pompa"/>
+<text id="10010" value="EV "/>
+<text id="10011" value="DHW ÖNCELİK"/>
+<text id="10012" value="0 : Sadece SKS , 1 : SKS + Isıtma"/>
+<text id="10013" value="tümü"/>
+<text id="10014" value="hayir"/>
+<text id="10015" value="diferansiyel dhw ON"/>
+<text id="10016" value="diferansiyel dhw "/>
+<text id="10017" value="diferansiyel dhw OFF"/>
+<text id="10018" value="yakit basinc"/>
+<text id="10019" value="Ayarlar yakit basinc"/>
+<text id="10020" value="Nispi güç ayarı"/>
+<text id="10021" value="Hat Voltajı"/>
+<text id="10022" value="V"/>
+<text id="10023" value="motor devri"/>
+<text id="10024" value="güç değeri"/>
+<text id="10025" value="11:Open Flue gas valve"/>
+<text id="10026" value="12:Brülör kalkış"/>
+<text id="10027" value="13: Ön ısıtma"/>
+<text id="10028" value="14:Ön atesleme"/>
+<text id="10029" value="15: Modülasyonlu pompa çalışıyor"/>
+<text id="10030" value="16: Post iyonizasyon"/>
+<text id="10031" value="17: Alev stabilizasyonu"/>
+<text id="10032" value="42:Kapalı baca damperi "/>
+<text id="10033" value="43: Harici gaz valfi kapalı"/>
+<text id="10034" value="2:stb açik"/>
+<text id="10035" value="3: Yakıt basıncı hatası"/>
+<text id="10036" value="4:Alev yok "/>
+<text id="10037" value="5:ic ariza"/>
+<text id="10038" value="6:Motor error"/>
+<text id="10039" value="7: Önısıtma gecikmesi bitti"/>
+<text id="10040" value="8:False flame"/>
+<text id="10041" value="9:Oil pressure out of limit"/>
+<text id="10042" value="33:Kazan akış sensörü açık devre"/>
+<text id="10043" value="33: Akış sensörü kapalı"/>
+<text id="10044" value="34:Dönüş sensörü kısa çevrildi"/>
+<text id="10045" value="35:Dönüş sensörü kapalı"/>
+<text id="10046" value="23:Şebeke voltajı &lt; 180 V "/>
+<text id="10047" value="28:Sensörler mevcut ama hatalı konfigürasyon"/>
+<text id="10048" value="29:Solar kollektör sensörü arızası"/>
+<text id="10049" value="30: Solar SKS tankı arızası"/>
+<text id="10050" value="31:ta-s bagl.deyi"/>
+<text id="10051" value="32:ta-s kisa devr"/>
+<text id="10052" value="33: SCU ile solar kollektör arası iletişim yok"/>
+<text id="10053" value="SKS Pompa / EV"/>
+<text id="10054" value="Oil valfi"/>
+<text id="10055" value="Güne? enerjisi DHW düzeltme"/>
+<text id="10056" value="Güne? enerjisi pom %100&apos;de oldu?unda DHW ayarnoktas? dü?er"/>
+<text id="10057" value="TAS"/>
+<text id="10058" value="HAYIR: Hiç bir bloklama üretilmedi"/>
+<text id="10059" value="HAYIR"/>
+<text id="10060" value="Evet"/>
+<text id="10061" value="Minimum DHW yüklemezaman?"/>
+<text id="10062" value="DHW&apos;nin ba?lang?c?ndaki Pdak&apos;daki çal??ma süresi"/>
+<text id="10063" value="28:2 DHW sensörleri alg?land?"/>
+<text id="10064" value="33: Güne? enerjisi toplay?c?s? sensörü ba?ar?s?z"/>
+<text id="10065" value="34: Güne? enerjisi DHW tank sensörü ba?ar?s?z"/>
+<text id="10066" value="31: TAS Ba?l? de?il"/>
+<text id="10067" value="32:TAS k?sa devre"/>
+<text id="10068" value="30:Diemasol ileti?imi kayboldu"/>
+<text id="10069" value="29:SCUS-191 ileti?imi kayboldu"/>
+<text id="10070" value="Güne? en. s?cak su s?cakl???"/>
+<text id="10071" value="Güne? en. toplay. s?cakl???"/>
+<text id="10072" value="Güne? enerjisi pompa h?z?"/>
+<text id="10073" value="SU STB girdisi"/>
+<text id="10074" value="Güne? enerjisi pompas?"/>
+<text id="10075" value="hata.dis grup"/>
+<text id="10076" value="Kompresör "/>
+<text id="10077" value="Buz çözme "/>
+<text id="10078" value="Nem sensörü"/>
+<text id="10079" value="mit derecesi"/>
+<text id="10080" value="ort.mit der."/>
+<text id="10081" value="isit p.gidis der"/>
+<text id="10082" value="disderisi pomp"/>
+<text id="10083" value="boyler derece"/>
+<text id="10084" value="ger.don.d.is."/>
+<text id="10085" value="Eşanjör akışkan sıc."/>
+<text id="10086" value="akis.evap.der."/>
+<text id="10087" value="Evap akışkan sıc."/>
+<text id="10088" value="Çıkış Kompresör "/>
+<text id="10089" value="T.Evaporator"/>
+<text id="10090" value="Akış sıcaklığı MIT"/>
+<text id="10091" value="MIT çıkış ort. Sıcak."/>
+<text id="10092" value="IAkış sıcaklığı isi pompasi"/>
+<text id="10093" value="Isi pompasi dış sıcaklığı "/>
+<text id="10094" value="Boyler su sıcaklığı "/>
+<text id="10095" value="Isi pompasi dönüş sıcaklığı "/>
+<text id="10096" value="Eşanjör Freon sıcaklığı "/>
+<text id="10097" value="SKS ayar sıcak."/>
+<text id="10098" value="Batarya Freon sıcaklığı "/>
+<text id="10099" value="kompresör çıkışında soğutucu sıcaklığı "/>
+<text id="10100" value="Dış ünite çıkışında ölçülen sıcaklık "/>
+<text id="10101" value="2: T akış &gt; max."/>
+<text id="10102" value="3:Alev yok "/>
+<text id="10103" value="22:SU parametre hatası"/>
+<text id="10104" value="kompresör 1 çalışma saatleri "/>
+<text id="10105" value="kompresör 2 çalışma saatleri "/>
+<text id="10106" value="kompressör 1&apos;in dur/kalk sayısı"/>
+<text id="10107" value="kompressör 2&apos;in dur/kalk sayısı"/>
+<text id="10108" value="çalışma saat sayısı yedek 1"/>
+<text id="10109" value="çalışma saat sayısı yedek 2"/>
+<text id="10110" value="Nb start backup 1"/>
+<text id="10111" value="Nb start backup 2"/>
+<text id="10112" value="Atikgaz Term. FGTS"/>
+<text id="10113" value="DHW Ayar noktası AUTO"/>
+<text id="10114" value="DHW Ayar noktası ECO"/>
+<text id="10115" value="Mod CETD"/>
+<text id="10116" value="Fiyat bilgisi"/>
+<text id="10117" value="Arka ışık zamanı"/>
+<text id="10118" value="Banyo hacmi"/>
+<text id="10119" value="Max Boost Run zamanı"/>
+<text id="10120" value="Destek Tipi "/>
+<text id="10121" value="Backup başlama zamanı"/>
+<text id="10122" value="Fan Max. hız zamanı"/>
+<text id="10123" value="Fan modu"/>
+<text id="10124" value="Anti-Legionella SKS"/>
+<text id="10125" value="Tank Koruma Sis. Volt ölç"/>
+<text id="10126" value="Tank Koruma Sis. Bağlan ölç"/>
+<text id="10127" value="TKS Voltaj kapatma"/>
+<text id="10128" value="TKS Voltaj set değeri"/>
+<text id="10129" value="Histerezis DHW"/>
+<text id="10130" value="Max. defrost zamanı"/>
+<text id="10131" value="Ortam Sıc. Defrost Aktif"/>
+<text id="10132" value="Evap. Sıc. Defrost Deaktif"/>
+<text id="10133" value="Min. Sıc. Compr. Çalışma"/>
+<text id="10134" value="Max. Sıc. Compr. Çalışma"/>
+<text id="10135" value="Min. Sıc. Ort. Fan hızı"/>
+<text id="10136" value="KS Saat başlama Per1"/>
+<text id="10137" value="KS Dak başlama Per1"/>
+<text id="10138" value="KS Saat Bitiş Per1"/>
+<text id="10139" value="KS Dak bitiş Per1"/>
+<text id="10140" value="KS Saat başlama Per2"/>
+<text id="10141" value="KS Dak başlama Per2"/>
+<text id="10142" value="KS Saat Bitiş Per2"/>
+<text id="10143" value="KS Dak bitiş Per2"/>
+<text id="10144" value="KS Saat başlama Per3"/>
+<text id="10145" value="KS Dak başlama Per3"/>
+<text id="10146" value="KS Saat Bitiş Per3"/>
+<text id="10147" value="KS Dak bitiş Per3"/>
+<text id="10148" value="WE Saat başlama Per1"/>
+<text id="10149" value="WE Dak başlama Per1"/>
+<text id="10150" value="WE Saat Bitiş Per1"/>
+<text id="10151" value="WE Dak bitiş Per1"/>
+<text id="10152" value="WE Saat başlama Per2"/>
+<text id="10153" value="WE Dak başlama Per2"/>
+<text id="10154" value="WE Saat Bitiş Per2"/>
+<text id="10155" value="WE Dak bitiş Per2"/>
+<text id="10156" value="WE Saat başlama Per3"/>
+<text id="10157" value="WE Dak başlama Per3"/>
+<text id="10158" value="WE Saat Bitiş Per3"/>
+<text id="10159" value="WE Dak bitiş Per3"/>
+<text id="10160" value="AUTO"/>
+<text id="10161" value="EKO"/>
+<text id="10162" value="BOOST"/>
+<text id="10163" value="TATİLLER"/>
+<text id="10164" value="Zaman programlamasını kullanın"/>
+<text id="10165" value="Used Tariff Information (HC=0)"/>
+<text id="10166" value="0: TAS Aktif değil"/>
+<text id="10167" value="1: TAS Aktif"/>
+<text id="10168" value="10L"/>
+<text id="10169" value="SAAT"/>
+<text id="10170" value="Elektrik"/>
+<text id="10171" value="Hidrolik"/>
+<text id="10172" value="OFF"/>
+<text id="10173" value="ON"/>
+<text id="10174" value="0.01V"/>
+<text id="10175" value="SKS Yüksek Sıc."/>
+<text id="10176" value="SKS Orta Sıc."/>
+<text id="10177" value="SKS Düşük Sıc."/>
+<text id="10178" value="Evaporatör Sıc."/>
+<text id="10179" value="Ortam Sıc."/>
+<text id="10180" value="TAS Voltajı kesmeden önce"/>
+<text id="10181" value="TAS Gerilim"/>
+<text id="10182" value="TAS Pwm"/>
+<text id="10183" value="Dahili ayarnoktası"/>
+<text id="10184" value="Elektrik takviyesi "/>
+<text id="10185" value="Hidrolik Ek Isıtma Opsiyonu "/>
+<text id="10186" value="Min. Fan Hızı"/>
+<text id="10187" value="Max. Fan Hızı"/>
+<text id="10188" value="Antilejyonella modu"/>
+<text id="10189" value="DHW istemi"/>
+<text id="10190" value="Peak/OffPeak"/>
+<text id="10191" value="Manometre "/>
+<text id="10192" value="kompresör 1 çalışma saatleri"/>
+<text id="10193" value="SKS Pompası Çalışma zamanı"/>
+<text id="10194" value="Isı Pompası Çalışma zamanı"/>
+<text id="10195" value="Nb Isıtma pompası start"/>
+<text id="10196" value="Nb SKS pompası start"/>
+<text id="10197" value="SKS rezistans çalışma süresi"/>
+<text id="10198" value="Nb Start defrost"/>
+<text id="10199" value="Defrost Çalışma hata"/>
+<text id="10200" value="Isıtma döngüsü devrede"/>
+<text id="10201" value="Soğutma döngüsü devrede"/>
+<text id="10202" value="Isı Pompası Kontrol"/>
+<text id="10203" value="Kompresör 1"/>
+<text id="10204" value="Kompresör 2"/>
+<text id="10205" value="4YV "/>
+<text id="10206" value="Düşük Basınç"/>
+<text id="10207" value="Isı Pompası Pompa"/>
+<text id="10208" value="Yüksek Basınç"/>
+<text id="10209" value="MIT Pompa"/>
+<text id="10210" value="Backup E1/ Pompa"/>
+<text id="10211" value="Backup E2/Kazan"/>
+<text id="10212" value="İlave backup tankı"/>
+<text id="10213" value="BL konumu"/>
+<text id="10214" value="Primer Pompa / Fan"/>
+<text id="10215" value="SKS Sıc. Kontrol"/>
+<text id="10216" value="SKS Soğuk Sıc."/>
+<text id="10217" value="Kademeli"/>
+<text id="10218" value="Dt hata pompa"/>
+<text id="10219" value="Pompanın Dt hata faktörü"/>
+<text id="10220" value="SKS FFwrd"/>
+<text id="10221" value="SKS Dt kazanç"/>
+<text id="10222" value="SKS TF TR düzeltmesi"/>
+<text id="10223" value="Ağırlıklı ortalama TF/TR"/>
+<text id="10224" value="SKS FFwrd start"/>
+<text id="10225" value="Dt düzeltme FFwrd"/>
+<text id="10226" value="Brülör tipi"/>
+<text id="10227" value="SPM"/>
+<text id="10228" value="1 kademe brülör"/>
+<text id="10229" value="FGPS anti-rebound"/>
+<text id="10230" value="Deşarj basınç öncesi bloke zamanı"/>
+<text id="10231" value="FGTS anti-rebound"/>
+<text id="10232" value="Deşarj sıc. öncesi bloke zamanı"/>
+<text id="10233" value="Max. Hız Isıtma Pompa Faktör"/>
+<text id="10234" value="Pompa Max. Faktör Isıtma Modu"/>
+<text id="10235" value="I faktör pompa CH"/>
+<text id="10236" value="CH&apos;de pompa kontrolü için I faktör"/>
+<text id="10237" value="Fgps Bloke"/>
+<text id="10238" value="Son 24 saat süresince kilitlemeden önce FGPS Bloke sayısı"/>
+<text id="10239" value="FGTS kilitli"/>
+<text id="10240" value="Son 24 saat içinde kilitlemeden önce FGPS Bloke sayısı"/>
+<text id="10241" value="max mit"/>
+<text id="10242" value="Max. MIT sıc."/>
+<text id="10243" value="SKS Ayarı"/>
+<text id="10244" value="istenen DHW sıcaklığı "/>
+<text id="10245" value="Kontroller "/>
+<text id="10246" value="Isıtma, sıcak su, Soğutma ayar modu"/>
+<text id="10247" value="ISITMA,SKS ve SOĞUTMA off"/>
+<text id="10248" value="ISITMA ve SKS on,SOĞUTMA off"/>
+<text id="10249" value="ISITMA on,SKS ve SOĞUTMA off"/>
+<text id="10250" value="ISITMA off,SKS on,SOĞUTM off"/>
+<text id="10251" value="ISITMA ve SKS off,SOĞUTMA on"/>
+<text id="10252" value="ISITMA on,SKS on,SOĞUTMA on"/>
+<text id="10253" value="ISITMA on,SKS off,SOĞUTMA on"/>
+<text id="10254" value="ISITMA off,SKS ve SOĞUTMA on"/>
+<text id="10255" value="MIT Pmp.G."/>
+<text id="10256" value="Kazan Pompası çalışma öncesi zamanı"/>
+<text id="10257" value="Boyler Pmp.G."/>
+<text id="10258" value="SKS Pompası çalışma öncesi zamanı"/>
+<text id="10259" value="Soğutma ayarı"/>
+<text id="10260" value="Soğutma havası set değeri"/>
+<text id="10261" value="max isi pompa"/>
+<text id="10262" value="Isı Pompası Max. Sıc."/>
+<text id="10263" value="Pt Start Dış Hava Kontrol"/>
+<text id="10264" value="Dış hava sıc. Göre regülasyon start değeri"/>
+<text id="10265" value="Pt start Akış Sıc. Kontrol"/>
+<text id="10266" value="MIT Çıkış değerine Göre regülasyon start değeri"/>
+<text id="10267" value="Pt bitiş Dış Hava Kontrol"/>
+<text id="10268" value="Dış Hava sıc. Regülasyon bitiş noktası"/>
+<text id="10269" value="BS röle"/>
+<text id="10270" value="Alarm röle"/>
+<text id="10271" value="Röle Brülör"/>
+<text id="10272" value="Isı Pompası min soğutma sıc."/>
+<text id="10273" value="Isı Pompası min. Soğutma sıc."/>
+<text id="10274" value="Soğutma bandı nötr"/>
+<text id="10275" value="Isıtma ve soğutma arası ölübant"/>
+<text id="10276" value="BL Çıkış Noktası "/>
+<text id="10277" value="Komple blokaj"/>
+<text id="10278" value="Kısmi blokaj"/>
+<text id="10279" value="Kullanıcı reset blokaj"/>
+<text id="10280" value="Isıtma destek"/>
+<text id="10281" value="Isıtma ve Sıcak su destek ve kompresör"/>
+<text id="10282" value="Kompresör"/>
+<text id="10283" value="Reverse için min. zaman"/>
+<text id="10284" value="Soğtma ve ısıtma arasındaki min. zaman"/>
+<text id="10285" value="Döngü önleme süresi"/>
+<text id="10286" value="Durmaya en kısa zaman"/>
+<text id="10287" value="HP Type"/>
+<text id="10288" value="CIAT"/>
+<text id="10289" value="DIMPLEX"/>
+<text id="10290" value="TEM"/>
+<text id="10291" value="MITSU"/>
+<text id="10292" value="Isı Pompası tipini seçiniz"/>
+<text id="10293" value="Destek birimin başlaması"/>
+<text id="10294" value="Kompresör ve destek başlama zaman farkı"/>
+<text id="10295" value="Destekler arası başla zam."/>
+<text id="10296" value="iki destek arası zaman"/>
+<text id="10297" value="0"/>
+<text id="10298" value="Elektrik destek için pompanın devreye girmesi için gerekli zaman"/>
+<text id="10299" value="tip destekleme "/>
+<text id="10300" value="Farklı destek tipleri"/>
+<text id="10301" value="elektrik takviyesi 1"/>
+<text id="10302" value="elektrik takviyesi 1&amp;2"/>
+<text id="10303" value="hidrolik ek isıtma opsiyonu "/>
+<text id="10304" value="Soğutma modu "/>
+<text id="10305" value="Soğutma yok"/>
+<text id="10306" value="Soğutma var, sıcak su yok"/>
+<text id="10307" value="Soğıtma ve sıcak su var"/>
+<text id="10308" value="Ev beslemesi tek olarak kes."/>
+<text id="10309" value="Kullan ımıyor"/>
+<text id="10310" value="Kullanılıyor"/>
+<text id="10311" value="PWM Pompa"/>
+<text id="10312" value="Quadro"/>
+<text id="10313" value="Min. Defrost zamanı"/>
+<text id="10314" value="Defrostun min. sıcaklığı"/>
+<text id="10315" value="Isı Pomp. dışındaki min. sıc"/>
+<text id="10316" value="Min. dış hava sıcaklığı"/>
+<text id="10317" value="Isı pompası için dT Sıcak su "/>
+<text id="10318" value="Kompresör başlama ve sıcak su min. dT"/>
+<text id="10319" value="Max. zaman sıcak su başlama"/>
+<text id="10320" value="Isı pompası için maksimum sıak su üretimi"/>
+<text id="10321" value="Min. zaman sıcak su başlama"/>
+<text id="10322" value="Isı pompası için min. sıcak su üretim gecikmesi"/>
+<text id="10323" value="İki kompresör arası zaman"/>
+<text id="10324" value="2 destek arası başlama zamanı"/>
+<text id="10325" value="Ses düşürme"/>
+<text id="10326" value="fan sesini azaltma"/>
+<text id="10327" value="ompresör aktif"/>
+<text id="10328" value="Kompresörü çalıtır veya durdur"/>
+<text id="10329" value="Kompresör permutasyon"/>
+<text id="10330" value="Dalgalı komprsörü yönetin"/>
+<text id="10331" value="Auto"/>
+<text id="10332" value="1nci Komp1"/>
+<text id="10333" value="1nci Komp2"/>
+<text id="10334" value="Max Fan Sıc"/>
+<text id="10335" value="Isıtma modunda fan hız oranı"/>
+<text id="10336" value="Defrost adaptasyonu"/>
+<text id="10337" value="Max. soğutma fanı"/>
+<text id="10338" value="Soğutma modunda fan hız oranı"/>
+<text id="10339" value="Harici eşanjör"/>
+<text id="10340" value="pompa isit.g."/>
+<text id="10341" value="Isı pompasının pompa zamanı"/>
+<text id="10342" value="Manuel ısı talebi Aktif"/>
+<text id="10343" value="Manuel ısıtma modunu aktif yap"/>
+<text id="10344" value="Ort. Çıkış sabiti"/>
+<text id="10345" value="Ortalama çıkış sıc. Ort. Sabiti"/>
+<text id="10346" value="3 dak"/>
+<text id="10347" value="4 dak"/>
+<text id="10348" value="5 dak"/>
+<text id="10349" value="7 dak"/>
+<text id="10350" value="10 dak"/>
+<text id="10351" value="15 dak"/>
+<text id="10352" value="Histerezis "/>
+<text id="10353" value="SKS Histersis"/>
+<text id="10354" value="Sıcak su pompası"/>
+<text id="10355" value="FGPS deaktif olma süresi"/>
+<text id="10356" value="Kontrol Voltaj ı"/>
+<text id="10357" value="bivalence der."/>
+<text id="10358" value="Isı pompası kontrol,"/>
+<text id="10359" value="2:MIT flow sensor failure "/>
+<text id="10360" value="3:HP çıkış sensörü arızası "/>
+<text id="10361" value="4:Dış sensör arızası / Kaynak HP"/>
+<text id="10362" value="5:hatalı bağlantı Dönüş HP"/>
+<text id="10363" value="6: IP eşanjör su sensörü hatası"/>
+<text id="10364" value="7: IP eşanjör hava sensörü hatası"/>
+<text id="10365" value="8:Isıtma gazı hatası HP"/>
+<text id="10366" value="9: IP Evaporatör sensör hatası"/>
+<text id="10367" value="10: IP dış ünite hatası"/>
+<text id="10368" value="13:hatalı bağlantı DHW HP"/>
+<text id="10369" value="14:hatalı bağlantı dış MIT"/>
+<text id="10370" value="21: IP COM hatası"/>
+<text id="10371" value="15: IP Yüksek basınç hatası"/>
+<text id="10372" value="16: IP düşük basınç hatası"/>
+<text id="10373" value="HP Source Temp"/>
+<text id="10374" value="Dis derece MIT"/>
+<text id="10375" value="23:Def.V4V HP"/>
+<text id="10376" value="24: IP Pompa hatası"/>
+<text id="10377" value="26: IP off limit 51 hatası"/>
+<text id="10378" value="26: IP off limit 53 hatası"/>
+<text id="10379" value="28: IP Jel eşanjör hatası"/>
+<text id="10380" value="31: IP eeprom hatası"/>
+<text id="10381" value="1: TEM ayar hatası"/>
+<text id="10382" value="01: Rotasyon yok"/>
+<text id="10383" value="09: Yüksek basınç"/>
+<text id="10384" value="04:4YV "/>
+<text id="10385" value="03: Pompa akışı"/>
+<text id="10386" value="08: Sıcaklık deşarj"/>
+<text id="10387" value="04:Hors limit"/>
+<text id="10388" value="05:serpantin donmuş 6"/>
+<text id="10389" value="06:serpantin donmuş 8"/>
+<text id="10390" value="11: Basınç kaynağı"/>
+<text id="10391" value="12: Antifiriz kaynağı"/>
+<text id="10392" value="13. Motor koruma kaynağı"/>
+<text id="10393" value="10: Düşük basınç"/>
+<text id="10395" value="14: Kondenser antifiriz"/>
+<text id="10396" value="15:Buz çözme "/>
+<text id="10397" value="16:kompresör koruma "/>
+<text id="10398" value="17: Sıcak Gaz"/>
+<text id="10399" value="19:Kazan gidiş sensörü "/>
+<text id="10400" value="20:Dönüş sıcaklık sensörü "/>
+<text id="10401" value="21: Hava giriş sensörü"/>
+<text id="10402" value="22:Hava çıkış sensörü"/>
+<text id="10403" value="23:Emiş pompası "/>
+<text id="10404" value="24:Czujnik parownika"/>
+<text id="10405" value="25: Kondenser sensörü"/>
+<text id="10406" value=": Sıcak gaz sensörü"/>
+<text id="10407" value="26: Kullanıcı Reset fonksiyonu veya blokaj girişi"/>
+<text id="10408" value="8:Sinyal blokaj"/>
+<text id="10409" value="9: Sinyal blokaj don koruması"/>
+<text id="10410" value="11:Default Komünikasyon SCU"/>
+<text id="10411" value="12:Min. hidro. basıncı"/>
+<text id="10412" value="16:Tanıla. SU eşleşmiyor"/>
+<text id="10413" value="17:Tanıla. dF/dU tablo hatası"/>
+<text id="10414" value="18:Tanıla. PSU eşleşmiyor"/>
+<text id="10415" value="19:Tanıla. dF/dU gerekli"/>
+<text id="10416" value="20:Tanılama çalışıyor"/>
+<text id="10417" value="33: Sıcak gaz"/>
+<text id="10418" value="34: Motor koruma"/>
+<text id="10419" value="35:Deneme yanılma "/>
+<text id="10420" value="36:Su debisi "/>
+<text id="10421" value="37:Dahili hatası"/>
+<text id="10422" value="Hata kodu"/>
+<text id="10423" value="07:ROEII İletişim yok "/>
+<text id="10424" value="18:TEM İletişim yok "/>
+<text id="10425" value="Bekleme"/>
+<text id="10426" value="Sııcak Su tipi"/>
+<text id="10427" value="Sıcak Su Rezistans"/>
+<text id="10428" value="Rezistans başlama zamanı"/>
+<text id="10429" value="Razist. boyler arası zaman"/>
+<text id="10430" value="Sıcak Su Boost"/>
+<text id="10431" value="MIT destek enerji"/>
+<text id="10432" value="Tank Destek enerji"/>
+<text id="10433" value="MIT destek enerji/Tank soğ."/>
+<text id="10434" value="Primer"/>
+<text id="10435" value="Sekonder"/>
+<text id="10436" value="Start"/>
+<text id="10437" value="DHW"/>
+<text id="10438" value="ISITMA"/>
+<text id="10439" value="ISITMA Ayar noktası"/>
+<text id="10440" value="22: Default Kompresör rotasyon"/>
+<text id="10441" value="25: Default Sıc. Deşarj"/>
+<text id="10442" value="29:serpantin donmuş 8"/>
+<text id="10443" value="30:CIAT COM hatası"/>
+<text id="10444" value="1: Isıtma/SıcakSU/Soğutma talep"/>
+<text id="10445" value="1: Anti kısa devre"/>
+<text id="10446" value="30:normal işletim "/>
+<text id="10447" value="31: Normal çalışma, Backup OFF bivalence noktası"/>
+<text id="10448" value="32: Kompresör OFF yükleme"/>
+<text id="10449" value="33: OFF backup yükleme"/>
+<text id="10450" value="34: OFF backup yükleme"/>
+<text id="10451" value="3: Isıtma çalışma"/>
+<text id="10452" value="4: Sıcak su çalışma"/>
+<text id="10453" value="35:Buz çözme "/>
+<text id="10454" value="36:ECS seçeneği "/>
+<text id="10455" value="50: Isı pompası pompası ilave çalışma süresi"/>
+<text id="10456" value="60: Isı pompası pompası ilave çalışma süresi"/>
+<text id="10457" value="Hat Voltajı"/>
+<text id="10458" value="2: Isıtma veya sıcak su bekleme şartı"/>
+<text id="10459" value="3: Kompresör ve backup OFF yükleme, donma koruma"/>
+<text id="10460" value="10: Zaman çevrimi aktif"/>
+<text id="10461" value="2: Kompresör ve backup OFF güç kesik"/>
+<text id="10462" value="5: STOP Isı Pompası"/>
+<text id="10463" value="6: Stop MIT"/>
+<text id="10464" value="Debimetre"/>
+<text id="10465" value="Min. debi mesajı"/>
+<text id="10466" value="Min. debi durma"/>
+<text id="10467" value="Soğutma Blokaj"/>
+<text id="10468" value="Soğutma yok"/>
+<text id="10469" value="Soğutma onay P35"/>
+<text id="10470" value="Min. çıkış suyu"/>
+<text id="10471" value="39: Default yetersiz akış"/>
+<text id="10472" value="40: Yetersiz akış hatası - STOP Kompresör + Backup"/>
+<text id="10473" value="MIT üretebilec. max sıcak su"/>
+<text id="10474" value="Backup MIT ve Sıcak su"/>
+<text id="10475" value="Sıcak sı backup"/>
+<text id="10476" value="Sıcak Su &amp; Kompresör Backup"/>
+<text id="10477" value="HL Tank için DF"/>
+<text id="10478" value="PWM ISI Pompası pompa"/>
+<text id="10479" value="PWM ISI Pompası pompa"/>
+<text id="10480" value="hızı 1 - 85%"/>
+<text id="10481" value="hızı 2 - 67%"/>
+<text id="10482" value="hızı 3 - 50%"/>
+<text id="10483" value="hızı 4 - 30%"/>
+<text id="10484" value="hızı 5 - &lt;10%"/>
+<text id="10485" value="Temp.probe"/>
+<text id="10486" value="31: Isı Pompası OFF yüksek sıcaklık (&gt;Max HP)"/>
+<text id="10487" value="33: Normal çalışma, min sıcaklık ayarında"/>
+<text id="10488" value="37: Isı Pompası OFF defrost duruunda ve hp&gt;18°"/>
+<text id="10489" value="39: Min. Defrost set değeri aktif"/>
+<text id="10490" value="7: Soğutma çalışmada"/>
+<text id="10491" value="MIT pompası atış"/>
+<text id="10492" value="MIT pompası atış"/>
+<text id="10493" value="Döngü"/>
+<text id="10494" value="Dis Hava Sic. SCU"/>
+<text id="10495" value="Boyler Derece SCU"/>
+<text id="10496" value="Oda Derecesi A SCU"/>
+<text id="10497" value="Cikis Der. B SCU"/>
+<text id="10498" value="Cikis Der. C SCU"/>
+<text id="10499" value="Oda Derecesi B SCU"/>
+<text id="10500" value="Sistem Derece SCU"/>
+<text id="10501" value="Oda Derecesi C SCU"/>
+<text id="10502" value="Hesapl.Isi A SCU"/>
+<text id="10503" value="Hesapl.Isi B SCU"/>
+<text id="10504" value="Hesapl.Isi C SCU"/>
+<text id="10505" value="Sist.Der.Hesa. SCU"/>
+<text id="10506" value="Hesa.Isi Boyler SCU"/>
+<text id="10507" value="AC Vana B SCU"/>
+<text id="10508" value="Cl.3WV B SCU"/>
+<text id="10509" value="AC Vana C SCU"/>
+<text id="10510" value="Cl.3WV B SCU"/>
+<text id="10511" value="T.CIK SCU"/>
+<text id="10512" value="Pompa.A SCU"/>
+<text id="10513" value="Pompa.B SCU"/>
+<text id="10514" value="Pompa.C SCU"/>
+<text id="10515" value="Boyl.Pompa. SCU"/>
+<text id="10516" value="Pompa.Devre SCU"/>
+<text id="10517" value="Giris 0-10V SCU"/>
+<text id="10518" value="Kademe"/>
+<text id="10519" value="Inter sayacı Allure"/>
+<text id="10520" value="Nb"/>
+<text id="10521" value="TEL.Gir."/>
+<text id="10522" value="MC-Radio"/>
+<text id="10523" value="Mevcut RF prob"/>
+<text id="10524" value="CDI A Mevcut"/>
+<text id="10525" value="CDI B Mevcut"/>
+<text id="10526" value="CDI C Mevcut"/>
+<text id="10527" value="Opsiyon V3V Mevcut"/>
+<text id="10528" value="D3:B DEV.SENS.ARZ"/>
+<text id="10529" value="D4:C DEV.SENS.ARZ"/>
+<text id="10530" value="D5:DIS HAVA S.ARZ"/>
+<text id="10531" value="D7:YEDEK S.ARZ"/>
+<text id="10532" value="D9:DHW SENS.ARZ"/>
+<text id="10533" value="61:Dönüşüm valfi ısıtma modu"/>
+<text id="10534" value="64:MIT Pompa ve IP ON atış"/>
+<text id="10535" value="65:MIT Pompa ve IP OFF atış"/>
+<text id="10536" value="63:Dönüşüm valfi sıcak su modu"/>
+<text id="10537" value="11: Isıtmada dalga modu"/>
+<text id="10538" value="12: soğutmada dalga modu"/>
+<text id="10539" value="yaz/kis"/>
+<text id="10540" value="26: COM kilitleme SCUS-192"/>
+<text id="10541" value="41:COM hata SCU_S192"/>
+<text id="10542" value="EE ISITMA"/>
+<text id="10543" value="EE SICAK SU"/>
+<text id="10544" value="EE SOĞUTMA"/>
+<text id="10545" value="TEE"/>
+<text id="10546" value="TE ISITMA"/>
+<text id="10547" value="TE SICAK SU"/>
+<text id="10548" value="TE SOĞUTMA"/>
+<text id="10549" value="TTE"/>
+<text id="10550" value="SPF"/>
+<text id="10551" value="TEE YIL-1"/>
+<text id="10552" value="TTE YIL-1"/>
+<text id="10553" value="SPF YIL-1"/>
+<text id="10554" value="TEE YIL-2"/>
+<text id="10555" value="TTE YIL-2"/>
+<text id="10556" value="D11:A ODA S.ARZ"/>
+<text id="10557" value="D12:B ODA S.ARZ"/>
+<text id="10558" value="D13:C ODA S.ARZ"/>
+<text id="10559" value="D14:MC İLET.ARIZA"/>
+<text id="10560" value="D15:TAMP. T. S.ARZ"/>
+<text id="10561" value="D16:B HAVUZ S.ARZ"/>
+<text id="10562" value="D16:C HAVUZ S.ARZ"/>
+<text id="10563" value="D17:DHW 2 S.ARZ"/>
+<text id="10564" value="D27:PCU İLET.ARZ"/>
+<text id="10565" value="D32:5 RESET:AC/KAP"/>
+<text id="10566" value="D37:TA-S KISA DEVR"/>
+<text id="10567" value="D38:TA-S BAGL.DEYI"/>
+<text id="10568" value="D39:TA-S ARIZA"/>
+<text id="10569" value="D50:OTH İLET.ARZ"/>
+<text id="10570" value="D51:DEF:BAKIN KAZAN"/>
+<text id="10571" value="D18:SOLAR T. S.ARZ"/>
+<text id="10572" value="D19:SOLAR S. ARZ"/>
+<text id="10573" value="D20:SOLAR İLET.ARZ"/>
+<text id="10574" value="D99:YALNIS PCU ARZ "/>
+<text id="10575" value="D40:ARZ BİLİNMİYOR"/>
+<text id="10576" value="D254:ARZ BİLİNMİYOR "/>
+<text id="10577" value="M4:REVİZYON"/>
+<text id="10578" value="M5:A REVIZYON"/>
+<text id="10579" value="M6:B REVIZYON"/>
+<text id="10580" value="M7:C REVIZYON"/>
+<text id="10581" value="M8:REVİZYON OTOM."/>
+<text id="10582" value="M10:IKI.ZEM.GUN"/>
+<text id="10583" value="M20:HAVASINI ALMAK"/>
+<text id="10584" value="M21:BL GİRİSİ ACIK"/>
+<text id="10585" value="M23:DIS H.SENS.DEGİSİM"/>
+<text id="10586" value="M25:ANTI CYCLE"/>
+<text id="10587" value="M26:DUR SAYI %02d"/>
+<text id="10588" value="M30:HATA.MODBUS İLET"/>
+<text id="10589" value="M31:HATA.SİSTEM AĞ"/>
+<text id="10590" value="M254:HATA.BİLİNMEYEN"/>
+<text id="10591" value="E250:SU EKSİK. ARZ"/>
+<text id="10592" value="E251:MANOMETRE ARZ"/>
+<text id="10593" value="Devrelerin A:Gün modu "/>
+<text id="10594" value="Devrelerin A:Ggündüz modu "/>
+<text id="10595" value="Devrelerin A:Antifiriz "/>
+<text id="10596" value="Devrelerin B:Gün modu "/>
+<text id="10597" value="Devrelerin B:Ggündüz modu "/>
+<text id="10598" value="Devrelerin B:Antifiriz "/>
+<text id="10599" value="50:SCUS 192 flow sensor failure "/>
+<text id="10600" value="51:hatalı bağlantı Dönüş SCUS 192"/>
+<text id="10601" value="52:Elec1 Bakliyat fay SCUS 192"/>
+<text id="10602" value="53:Elec2 Bakliyat fay SCUS 192"/>
+<text id="10603" value="54:termal Bakliyat fay SCUS 192"/>
+<text id="10604" value="55: Debimetre fay SCUS 192"/>
+<text id="10605" value="MIT Type"/>
+<text id="10606" value="Inverter "/>
+<text id="10607" value="ON - OFF"/>
+<text id="10608" value="TAM"/>
+<text id="10609" value="SOLO NAPO"/>
+<text id="10610" value="Min. sıcaklık kompr. durur"/>
+<text id="10611" value="Sıcaklık yeniden kompresör"/>
+<text id="10612" value="4:Soğutma yok (Nem sensörü)"/>
+<text id="10613" value="pompa tipi"/>
+<text id="10614" value="Normal pompa"/>
+<text id="10615" value="Mali.düşük tarife"/>
+<text id="10616" value="Mali.yüks.tarife"/>
+<text id="10617" value="maliyet gaz.aka."/>
+<text id="10618" value="Etkin hybrid"/>
+<text id="10619" value="Koef.CO2.e.isit"/>
+<text id="10620" value="Koef.CO2.e.dhw"/>
+<text id="10621" value="Koef.CO2.gaz.aka"/>
+<text id="10622" value="Kazan verimi"/>
+<text id="10623" value="Maliyet"/>
+<text id="10624" value="Birincil Enerji"/>
+<text id="10625" value="CO2"/>
+<text id="10626" value="HP/HC"/>
+<text id="10627" value="Isıtma ve Sıcak ve kompresör"/>
+<text id="10628" value="Orta COP"/>
+<text id="10629" value="Eşik COP"/>
+<text id="10630" value="Elektrik Maliyeti Enerji yüksek tarife"/>
+<text id="10631" value="Elektrik Maliyeti Enerji düşük tarife"/>
+<text id="10632" value="Fosil Maliyeti Enerji (Gaz / Yağ)"/>
+<text id="10633" value="Katsayı Elektrik CO2 ısıtma emisyon kip"/>
+<text id="10634" value="Katsayı Elektrik CO2 suyu emisyon kip"/>
+<text id="10635" value="Katsayı Gaz veya Sıvı CO2 emisyon"/>
+<text id="10636" value="Kazan verimi"/>
+<text id="10637" value="cts"/>
+<text id="10638" value="E1:Elektrik takviyesi1 E2:Elektrik takviyesi2 H:Hidrolik Ek Isıtma Opsiyonu "/>
+<text id="10639" value="İşlevler Engelleme girişi"/>
+<text id="10640" value="HAYIR: Soğu.modu yokEVET:Soğutma modu va rEVET+DHW:Soğutma modu+DHW"/>
+<text id="10641" value="DHW boyler kurulum tipi seçimi"/>
+<text id="10642" value="DHW yedekleri seçimi"/>
+<text id="10643" value="Minimum değeri önce debimetre engelleme"/>
+<text id="10644" value="Minimum değeri önce debimetre PAC durdurma"/>
+<text id="10645" value="DHW yapımında ilk istek derece ayarı"/>
+<text id="10646" value="ısı pompası pompa hızı"/>
+<text id="10647" value="MIT pompa hızı"/>
+<text id="11192" value="SKS kompresör ile üretimi"/>
+<text id="11193" value="SKS destek ile üretimi"/>
+<text id="11194" value="SKS komp ve des ile üretimi"/>
+<text id="11195" value="Başlama durumu bekleme"/>
+<text id="11196" value="Kopmresör başlama prosedürü"/>
+<text id="11197" value="Backup Açık"/>
+<text id="11198" value="Fan hızı kontrolü"/>
+<text id="11199" value="Buz çözme "/>
+<text id="11200" value="İki defrost arası zaman"/>
+<text id="11201" value="Fan max. Hız"/>
+<text id="11202" value="Fan ort. Hız"/>
+<text id="11203" value="HC operasyon zamanı"/>
+<text id="11204" value="HP operasyon zamanı"/>
+<text id="11205" value="Defrost döngü sayısı"/>
+<text id="11206" value="DT Segment Yönetim 1"/>
+<text id="11207" value="DT Segment Yönetim 2"/>
+<text id="11208" value="DT Segment Yönetim 3"/>
+<text id="11209" value="DT Segment Yönetim 4"/>
+<text id="11210" value="Tank hacmi"/>
+<text id="11211" value="01:Yüksek basınç akışkan"/>
+<text id="11212" value="02:T. DHW Yük&gt;85ºC"/>
+<text id="11213" value="03: T. Oda sıc. &gt; max."/>
+<text id="11214" value="04: T. Oda sıc. &lt; min."/>
+<text id="11215" value="25: Düşük DHW sensör kısa devre"/>
+<text id="11216" value="26: DHW sensör açık devre düşük"/>
+<text id="11217" value="27:Yüksek DHW sensör kısa devre"/>
+<text id="11218" value="28:Yüksek DHW sensör açık devre"/>
+<text id="11219" value="32: TAS AÇIK"/>
+<text id="11220" value="33: TAS kısa devre"/>
+<text id="11221" value="Nb Kompresör start"/>
+<text id="11222" value="Nb backup start"/>
+<text id="11223" value="01:DHW orta sensör kısa devre"/>
+<text id="11224" value="02: DHW orta sensör açık devre"/>
+<text id="11225" value="02: T.DHW Üst &gt; 85ºC"/>
+<text id="11226" value="04: Orta oda sıc. Kısa devre"/>
+<text id="11227" value="05:Orta Oda sıc. Açık devre"/>
+<text id="11228" value="06:Orta Evaporatör Sensörü kısa devre"/>
+<text id="11229" value="07: Orta Evaporatör Sensörü açık devre"/>
+<text id="11230" value="08: Defrost çalışmıyor"/>
+<text id="11231" value="09: Yüksek basınç akışkan"/>
+<text id="11232" value="10: Akışkan basıncı Pb"/>
+<text id="11233" value="Su basıncı"/>
+<text id="11234" value="DHW sensörü aktivasyonu"/>
+<text id="11235" value="Durum basınç anahtarı Aktif"/>
+<text id="11236" value="25: Dış hava sensörü kopuk düşük voltaj"/>
+<text id="11237" value="26: Tank sensörü kopuk düşük voltaj"/>
+<text id="11238" value="26: Tank sensörü kopuk sensör düşük voltaj"/>
+<text id="11239" value="03:Alev yok "/>
+<text id="11240" value="04: Baca gazı sıc. Limit üstü"/>
+<text id="11241" value="V3V bekleme pozisyonu"/>
+<text id="11242" value="ISI"/>
+<text id="11243" value="Kompresör histeresis kesme"/>
+<text id="11244" value="Kompresör Sıc. Kesme"/>
+<text id="11245" value="2 fan başlama arası zaman"/>
+<text id="11246" value="DHW MinYükZaman sonrası"/>
+<text id="11247" value="ISI MinYük Zaman sonrası"/>
+<text id="11248" value="Offset ECS CTRL sıc. HL"/>
+<text id="11249" value="12:FGPS limit aşımı"/>
+<text id="11250" value="12: FGPS actif &gt;2  24saat"/>
+<text id="11251" value="Brlüör alarm girişi"/>
+<text id="11252" value="Mevcut sıcaklık Kompresör "/>
+<text id="11253" value="Kompresör set değeri 0ºC &apos;de"/>
+<text id="11254" value="Minimum Comp loadtime"/>
+<text id="11255" value="ZAMAN "/>
+<text id="11256" value="dakika "/>
+<text id="11257" value="Tarih"/>
+<text id="11258" value="AY"/>
+<text id="11259" value="Yıl "/>
+<text id="11260" value="Hydraulic add. heating "/>
+<text id="11261" value="Output state when a request of the hydraulic add.heating"/>
+<text id="11262" value="SUM/WIN"/>
+<text id="11263" value="5:normal operation"/>
+<text id="11264" value="Once / week"/>
+<text id="11265" value="9:Anti blocking"/>
+<text id="11266" value="Service operating hours"/>
+<text id="11267" value="Operating hours for custom service notification"/>
+<text id="11268" value="Service burning hours"/>
+<text id="11269" value="Burner  hours for custom service notification"/>
+<text id="11270" value="Auto service burning hours"/>
+<text id="11271" value="Burner hours for automatic service notification"/>
+<text id="11272" value="Pump cmd type"/>
+<text id="11273" value="Type of command use for switch pump ON"/>
+<text id="11274" value="CH pump"/>
+<text id="11275" value="Alim CH pump"/>
+<text id="11276" value="instantaneous power"/>
+<text id="11277" value="power input in Mwatts"/>
+<text id="11278" value="power input in Kwatts"/>
+<text id="11279" value="power input in Watts"/>
+<text id="11280" value="KW"/>
+<text id="11281" value="36:Loss of flame 3 times"/>
+<text id="11282" value="30:FGTS locking"/>
+<text id="11283" value="31:FGPS locking"/>
+<text id="11284" value="5:Antifriz koruma"/>
+<text id="11285" value="Use Tariff Information (HC=1)"/>
+<text id="11286" value="Time Measure Ambient"/>
+<text id="11287" value="Time Between 2 FrostProtection"/>
+<text id="11288" value="Time Load FrostProtetcion"/>
+<text id="11289" value="Time waiting after compressor stopto acquire the ambient temperature"/>
+<text id="11290" value="Time waiting  Between 2 Frost Protection procedure start"/>
+<text id="11291" value="Time running frost protetction"/>
+<text id="11292" value="DHW sıcaklık ayarı AUTO Paz."/>
+<text id="11293" value="DHW sıcaklık ayarı AUTO Salı "/>
+<text id="11294" value="DHW sıcaklık ayarı AUTO Çarş"/>
+<text id="11295" value="DHW sıcaklık ayarı AUTO Perş"/>
+<text id="11296" value="DHW sıcaklık ayarı AUTO Cuma "/>
+<text id="11297" value="DHW sıcaklık ayarı AUTO Cuma"/>
+<text id="11298" value="DHW sıcaklık ayarı AUTO Paz"/>
+<text id="11299" value="DHW sıcaklık ayarı EKO Pazar"/>
+<text id="11300" value="DHW sıcaklık ayarı EKO Salı "/>
+<text id="11301" value="DHW sıcaklık ayarı EKO Çarş"/>
+<text id="11302" value="DHW sıcaklık ayarı EKO Perş"/>
+<text id="11303" value="DHW sıcaklık ayarı EKO Cuma "/>
+<text id="11304" value="DHW sıcaklık ayarı EKO Cuma"/>
+<text id="11305" value="DHW sıcaklık ayarı EKO Pazar"/>
+<text id="11306" value="Maksimum pik saatlerde"/>
+<text id="11307" value="Basınç  Hava "/>
+<text id="11308" value="Pa"/>
+<text id="11309" value="Histerezis DHW indirimli"/>
+<text id="11310" value="Histerezis DHW Konfor "/>
+<text id="11311" value="Fan Röportaj"/>
+<text id="11312" value="AY"/>
+<text id="11313" value="Komp maksimum çalışma süresi"/>
+<text id="11314" value="Maksimum kompresör set"/>
+<text id="11315" value="Faktör D Fan"/>
+<text id="11316" value="Fanı durdur "/>
+<text id="11317" value="Max faktörü Fan"/>
+<text id="11318" value="Ters PWM fan"/>
+<text id="11319" value="Ters PWM Vententilateur"/>
+<text id="11320" value="Diff Engelleme Depresyon"/>
+<text id="11321" value="Depresyon diff kilidi"/>
+<text id="11322" value="sipariş FrostProtection"/>
+<text id="11323" value="sipariş FrostProtection"/>
+<text id="11324" value="sipariş Anti-Lejyonella  DHW"/>
+<text id="11325" value="Histerezis DHW Boost"/>
+<text id="11326" value="ta-ssaat rağmen"/>
+<text id="11327" value="Hav.bas.kilit.oluş.içi.zaman"/>
+<text id="11328" value="Engelleme hava basıncı oluşturmak için bekleme süresi"/>
+<text id="11329" value="Hav.bas.kilit.oluş.içi.zaman"/>
+<text id="11330" value="Hava basıncı kilit üretmek için bekleme süresi"/>
+<text id="11331" value="Kil.bas.kilit.oluş.içi.zaman"/>
+<text id="11332" value="Kilidi anahtarı oluşturmak için bekleme süresi"/>
+<text id="11333" value="DT ekstra katkısı"/>
+<text id="11334" value="İlave tarafından sağlanan sıcaklık farkı"/>
+<text id="11335" value="Delta yedek ulaşmak için zam"/>
+<text id="11336" value="Delta Sıcaklık ulaşmak Zaman ekstra tarafından sağlanan"/>
+<text id="11337" value="OLAY SAYISI.BL.Manometre"/>
+<text id="11338" value="Anahtar engelleme oluşma sayısı"/>
+<text id="11339" value="sipariş Basınç  Hava "/>
+<text id="11340" value="Kompr ayarnoktası"/>
+<text id="11341" value="destekle ayarnoktası"/>
+<text id="11342" value="Kompresör giriş"/>
+<text id="11343" value="Alarm girişi"/>
+<text id="11344" value="Fan"/>
+<text id="11345" value="Isıtma /Soğutma "/>
+<text id="11346" value="4,16666666666667E-02"/>
+<text id="11347" value="06::Basınç  Hava  çok düşük"/>
+<text id="11348" value="02: Akışkan basıncı Pb"/>
+<text id="11349" value="04: IP düşük basınç hatası"/>
+<text id="11350" value="01:Isı değ. sıc. &gt;85°C"/>
+<text id="11351" value="02:ta-s bagl.deyi"/>
+<text id="11352" value="03:ta-s kisa devr"/>
+<text id="11353" value="04: Düşük basınç"/>
+<text id="11354" value="06: T. Oda sıc. &gt; max."/>
+<text id="11355" value="05: T. Oda sıc. &lt; min."/>
+<text id="11356" value="07:kompresör çalışma saatleri &gt; max"/>
+<text id="11357" value="10:Basınç  Hava  düşük"/>
+<text id="11358" value="12:DHW orta sensör kısa devre"/>
+<text id="11359" value="11: DHW orta sensör açık devre"/>
+<text id="11360" value="16: Düşük DHW sensör kısa devre"/>
+<text id="11361" value="15: DHW sensör açık devre düşük"/>
+<text id="11362" value="14:Yüksek DHW sensör kısa devre"/>
+<text id="11363" value="13:Yüksek DHW sensör açık devre"/>
+<text id="11364" value="08:Basınç  Hava Bacalı   "/>
+<text id="11365" value="09:Basınç Hava Kısa Devre"/>
+<text id="11366" value="evet tatilleri hariç"/>
+<text id="11367" value="daima"/>
+<text id="11368" value="DF Brülör"/>
+<text id="11369" value="18Kw"/>
+<text id="11370" value="24Kw"/>
+<text id="11371" value="30Kw"/>
+<text id="11372" value="Boyl.Pompa."/>
+<text id="11373" value="Sıcak su pompası(EAP)"/>
+<text id="11374" value="mevcut alev "/>
+<text id="11375" value="Enerji Elek.Komp(Wh)"/>
+<text id="11376" value="Enerji Elek.Takvi(Wh) "/>
+<text id="11377" value="Enerji Elek.Komp(kWh)"/>
+<text id="11378" value="Enerji Elek.Takvi(kWh) "/>
+<text id="11379" value="Enerji Elek.Komp(MWh)"/>
+<text id="11380" value="Enerji Elek.Takvi(MWh) "/>
+<text id="11381" value="Zaman programm/FV-S(HCO)"/>
+<text id="11382" value="Zaman programm/FV-S(HP1)"/>
+<text id="11383" value="Zaman prog./FV-S Takvi. HCO"/>
+<text id="11384" value="Zaman prog./FV-S Takvi. HPO"/>
+<text id="11385" value="Zaman prog./FV-S Takvi. HP1"/>
+<text id="11386" value="Enerji Elektrik Kompresör "/>
+<text id="11387" value="Enerji Elektrik Takviyesi "/>
+<text id="11388" value="DHW Ayar noktası BOOST"/>
+<text id="11389" value="05:Pwm Fan"/>
+<text id="11390" value="02:Pwm Fan"/>
+<text id="11391" value="20:Basınç  Hava  düşük"/>
+<text id="11392" value="31:DHW orta sensör kısa devre"/>
+<text id="11393" value="30: DHW orta sensör açık devre"/>
+<text id="11394" value="35: Düşük DHW sensör kısa devre"/>
+<text id="11395" value="34: DHW sensör açık devre düşük"/>
+<text id="11396" value="33:Yüksek DHW sensör kısa devre"/>
+<text id="11397" value="32:Yüksek DHW sensör açık devre"/>
+<text id="11398" value="10: Akışkan basıncı Pb"/>
+<text id="11399" value="11: IP düşük basınç hatası"/>
+<text id="11400" value="12: Orta oda sıc. Kısa devre"/>
+<text id="11401" value="13:Orta Oda sıc. Açık devre"/>
+<text id="11402" value="03:ta-s bagl.deyi"/>
+<text id="11403" value="04:ta-s kisa devr"/>
+<text id="11404" value="05: Düşük basınç"/>
+<text id="11405" value="06: T. Oda sıc. &lt; min."/>
+<text id="11406" value="07: T. Oda sıc. &gt; max."/>
+<text id="11407" value="08:kompresör çalışma saatleri &gt; max"/>
+<text id="11408" value="10:Basınç  Hava  düşük"/>
+<text id="11409" value="09:Basınç  Hava Bacalı   "/>
+<text id="11410" value="10:Basınç Hava Kısa Devre"/>
+<text id="11411" value="11::Basınç  Hava  çok düşük"/>
+<text id="11412" value="Engel.Bek.Fan.Pwm"/>
+<text id="11413" value="Engelleme Pwm Fan oluşturmak için bekleme süresi"/>
+<text id="11414" value="Diff Engelleme Depresyon Fan"/>
+<text id="11415" value="Olay Sayisi.BL.Pwm.Fan"/>
+<text id="11416" value="Arasındaki süre Bl.fan.Pwm"/>
+<text id="11417" value="2:start"/>
+<text id="11418" value="16:frost-protection"/>
+<text id="11419" value="4: Isıtma veya sıcak su bekleme şartı"/>
+<text id="11420" value="max EHCS"/>
+<text id="11421" value="1: IP dış ünite hatası"/>
+<text id="11422" value="2:Default Komünikasyon IP"/>
+<text id="11423" value="Hybrid flow sensor failure "/>
+<text id="11424" value="4:No Communication with Gas Boiler"/>
+<text id="11425" value="7:Default T.Flow HP"/>
+<text id="11426" value="1:Default Gas Boiler"/>
+<text id="11427" value="2: IP dış ünite hatası"/>
+<text id="11428" value="3: 4 BL 7 occurred"/>
+<text id="11429" value="4: Kullanıcı Reset fonksiyonu veya blokaj girişi"/>
+<text id="11430" value="kompresör çalışma saatleri "/>
+<text id="11431" value="kompressör &apos;in dur/kalk sayısı"/>
+<text id="11432" value="NB Starts Boiler"/>
+<text id="11433" value="NB Starts Pump Boiler"/>
+<text id="11434" value="Operating Hours Boiler"/>
+<text id="11435" value="Dahili ayarnoktası IP"/>
+<text id="11436" value="Internal setpoint Gas"/>
+<text id="11437" value="Akış sıcak. EHCS"/>
+<text id="11438" value="Temp Flow Boiler"/>
+<text id="11439" value="Temp Return Boiler"/>
+<text id="11440" value="Compressor Frequency"/>
+<text id="11441" value="Time Min Sart Backup"/>
+<text id="11442" value="Time Max Sart Backup"/>
+<text id="11443" value="Temp Outside min Backup"/>
+<text id="11444" value="Temp Outside max Backup"/>
+<text id="11445" value="Tempearture Hybrid "/>
+<text id="11446" value="Temperature Average Hybrid"/>
+<text id="11447" value="RefrigerantGasTemperature"/>
+<text id="11448" value="RefrigerantLiquidTemperature"/>
+<text id="11449" value="Setpoint Hybrid Heating"/>
+<text id="11450" value="Setpoint Hybrid DHW"/>
+<text id="11451" value="Boiler DHW Temperature"/>
+<text id="11452" value="Input BL Temperature"/>
+<text id="11453" value="Output 0-10V"/>
+<text id="11454" value=""/>
+<text id="11455" value="Isıtma Pmp.G."/>
+<text id="11456" value="Disable HP Error"/>
+<text id="11457" value="Temp Outside Max Hubrid"/>
+<text id="11458" value="Period Flow average"/>
+<text id="11459" value="Enable Manual Heat Demand"/>
+<text id="11460" value="De air Cycle"/>
+<text id="11461" value="Boiler"/>
+<text id="11462" value="HP"/>
+<text id="11463" value="Boiler + HP"/>
+<text id="11464" value="HP Power"/>
+<text id="11465" value="50:System Sensor Open "/>
+<text id="11466" value="51:System Sensor Closed"/>
+<text id="11467" value="52: Kompresör ve backup OFF güç kesik"/>
+<text id="11468" value="53: Kompresör OFF yükleme"/>
+<text id="11469" value="54: OFF backup yükleme"/>
+<text id="11470" value="55:communication HP"/>
+<text id="11471" value="56:communication Boiler"/>
+<text id="11472" value="Heat Pump error"/>
+<text id="11473" value="10:HP pump startup"/>
+<text id="11474" value="11:Compressor AntiCycling"/>
+<text id="11475" value="12:HP defrosting"/>
+<text id="11476" value="13:Temp HP over max"/>
+<text id="11477" value="14:Function Hybrid Disable HP"/>
+<text id="11478" value="20:HP used for Heating"/>
+<text id="11479" value="21:Boiler used for Heating"/>
+<text id="11480" value="22: HP &amp; Boiler used for Heating"/>
+<text id="11481" value="30:Boiler in DHW and HP in CH"/>
+<text id="11482" value="31:Boiler used for DHW"/>
+<text id="11483" value="40:HP pump for CH"/>
+<text id="11484" value="41:Boiler pump for CH"/>
+<text id="11485" value="42:HP and Boiler Pumps for CH"/>
+<text id="11486" value="50: HP pump for CH and Boiler in DHW mode"/>
+<text id="11487" value="51:Boiler Pump DHW"/>
+<text id="11488" value="Isı Pompası Pompa EHC"/>
+<text id="11489" value="50:DEF BOILER OTH"/>
+<text id="11490" value="57:Boiler BSB Erreur"/>
+<text id="11491" value="33: Akış arızası "/>
+<text id="11492" value=""/>
+<text id="11493" value=""/>
+<text id="11494" value="Reset Device"/>
+<text id="11495" value="Do you want to reset this device?"/>
+<text id="11496" value="Are you sure you want to reset this device?"/>
+<text id="11497" value="The WiFi network has been changed"/>
+<text id="11498" value="Network interface"/>
+<text id="11499" value="Previous network"/>
+<text id="11500" value="Current network"/>
+<text id="30001" value="Hiçbir Islev Yok"/>
+<text id="30002" value="Gaz tipi seçimi"/>
+<text id="30003" value="Hidrolik sistem konfigürasyonu"/>
+<text id="30004" value="Röle 1 çikislari konfigürasyonu"/>
+<text id="30005" value="Röle 1 çikislari konfigürasyonu (0..13)"/>
+<text id="30006" value="Röle 2 çikislari konfigürasyonu"/>
+<text id="30007" value="Röle 2 çikislari konfigürasyonu (0..13)"/>
+<text id="30008" value="Harici sensör giris konfigürasyonu"/>
+<text id="30009" value="Harici sensör giris konfigürasyonu (0..4)"/>
+<text id="30010" value="Yardimci girisi konfigürasyonu"/>
+<text id="30011" value="Yardimci girisi konfigürasyonu (0..4)"/>
+<text id="30012" value="Sihhi sensör girisi konfigürasyonu"/>
+<text id="30013" value="Sihhi sensör girisi konfigürasyonu (0..2)"/>
+<text id="30014" value="Sihhi öncelik konfigürasyonu"/>
+<text id="30015" value="Sihhi öncelik konfigürasyonu (0..3)"/>
+<text id="30016" value="OT/OT isitma ayar konfigürasyonu"/>
+<text id="30017" value="OT/OT isitma ayar konfigürasyonu (0..3)"/>
+<text id="30018" value="2 hizli pompanin"/>
+<text id="30019" value="2 hizli pompanin etkin kilinmasi / devreden çikarilmasi"/>
+<text id="30020" value="WPM testinin"/>
+<text id="30021" value="WPM testinin etkin kilinmasi / devreden çikarilmasi"/>
+<text id="30022" value="Isitma maksimum güç ayari"/>
+<text id="30023" value="Isitma maksimum güç ayari (0-100%)"/>
+<text id="30024" value="Sihhi maksimum güç ayari"/>
+<text id="30025" value="Sihhi maksimum güç ayari (0-100%)"/>
+<text id="30026" value="Isitma minimum güç ayari"/>
+<text id="30027" value="Isitma minimum güç ayari (0-100%)"/>
+<text id="30028" value="Isitma maksimum ayar noktasi seçimi"/>
+<text id="30029" value="Isitma maksimum ayar noktasi seçimi (00=nominal 80&#176;C 01=azaltilmis 45°C)"/>
+<text id="30030" value="Isitmada post sirkülasyon süresi"/>
+<text id="30031" value="Isitmada post sirkülasyon süresi (1..240min)"/>
+<text id="30032" value="Isi sebebi kapatma akabinde brülörün yeniden çalistirilmasindan önce bekleme süresi"/>
+<text id="30033" value="Isi sebebi kapatma akabinde brülörün yeniden çalistirilmasindan önce bekleme süresi (0..10min - 0=10s)"/>
+<text id="30034" value="Pompa etkin kilma süresi"/>
+<text id="30035" value="Pompa etkin kilma süresi (0..15min)"/>
+<text id="30036" value="Sihhide post sirkülasyon süresi"/>
+<text id="30037" value="Sihhide post sirkülasyon süresi (0..255s)"/>
+<text id="30038" value="Bakteri Önleyici Islev"/>
+<text id="30039" value="Bakteri Önleyici Islev (00=devre disi islev - 55...67 = etkin islev (&#176;C ayar noktasi))"/>
+<text id="30040" value="P42&apos;den P76&apos;ya parametre okuma/degistirme etkin kilma"/>
+<text id="30041" value="P42&apos;den P76&apos;ya parametre okuma/degistirme etkin kilma (0..40 - 22 etkin islev)"/>
+<text id="30042" value="Sihhi ayar noktasi maksimum isi degeri (&#176;C) ayari"/>
+<text id="30043" value="Sihhi ayar noktasi (55&#176;C .65&#176;C) maksimum isi degeri (°C) ayari"/>
+<text id="30044" value="Türbinli akisölçer ile sihhi talep etkin kilma gecikmesi"/>
+<text id="30045" value="Türbinli akisölçer ile sihhi talep etkin kilma gecikmesi (0..255*0.02s)"/>
+<text id="30046" value="Su kontrol düzeni seçimi"/>
+<text id="30047" value="Su kontrol düzeni seçimi (00=WPS hidrolik basinçölçer 01=WFS hidrolik diferansiyel basinçölçeri)"/>
+<text id="30048" value="Kimlik kazan"/>
+<text id="30049" value="Kimlik kazan (H byte) (salt okunur)"/>
+<text id="30051" value="Kimlik kazan (L byte) (salt okunur)"/>
+<text id="30052" value="Programlama kimlik kazan"/>
+<text id="30053" value="Programlama kimlik kazan (H byte) (salt okunur)"/>
+<text id="30055" value="Programlama kimlik kazan (L byte) (salt okunur)"/>
+<text id="30056" value="Sihhi Offset ayari"/>
+<text id="30057" value="Sihhi Offset ayari 0.15&#176;C"/>
+<text id="30058" value="Telekontrolden minimum isi ayar noktasi"/>
+<text id="30059" value="Telekontrolden minimum isi ayar noktasi (30..85&#176;C)"/>
+<text id="30060" value="Besleme sensörü üzerinde dereceli kontrol kilma çikarma"/>
+<text id="30061" value="Besleme sensörü üzerinde dereceli kontrol etkin kilma / devreden çikarma"/>
+<text id="30062" value="Çalisma Frekansi ayari"/>
+<text id="30063" value="Çalisma Frekansi ayari(0=50Hz 1=60Hz)"/>
+<text id="30064" value="Isi ölçü birimi ayari"/>
+<text id="30065" value="ISITMA talebi zorlama"/>
+<text id="30066" value="OpenTherm komünikasyon eksikligi sebebi ISITMA talebi zorlama (E83 - deger araligi=0, 1, 2)"/>
+<text id="30067" value="Yanma islevi etkin kilma"/>
+<text id="30068" value="Yanma islevi etkin kilma (bit0=otomatik test - bit1=maksimum hiz azaltma - bit2=dalgalanma kontrolü - bit3=yanma otomatik ayar- bit4=anti rüzgar testi - bit5=hatali yanma seviyeleri sebebi fan stop - bit6=alev kaybi sonrasi 6000rpm testi - bit7=EEPROM&apos;dan ayarlanmis atesleme parametreleri)"/>
+<text id="30069" value="Modülatöre empals süresi"/>
+<text id="30070" value="Islev etkin kilma"/>
+<text id="30071" value="Islev etkin kilma (bit0=1 modülatör akim kontrolü - bit2=1 tikanma kontrolü devreden çikarma"/>
+<text id="30072" value="Ateslemede offset"/>
+<text id="30073" value="Ateslemede offset (0..100 - default=50)"/>
+<text id="30074" value="Service due"/>
+<text id="30075" value="Service due (6..25 - 25 devreden service due)"/>
+<text id="30076" value="Sihhi çalismada isitma besleme ayar noktasi offset"/>
+<text id="30077" value="Sihhi çalismada isitma besleme ayar noktasi offset HS=5,8,15,18 (15..35&#176;C)"/>
+<text id="30078" value="Sihhi çalismada besleme kapatma isisi (sadece F03=06 için)"/>
+<text id="30079" value="Sihhi çalismada besleme kapatma isisi (sadece F03=06 için) (80..90&#176;C)"/>
+<text id="30080" value="Isitma offset"/>
+<text id="30081" value="Isitma offset (sadece P03=06 için) (-20..20&#176;C)"/>
+<text id="30082" value="Düsük isilar için sihhi itme katsayisi yükselme"/>
+<text id="30083" value="Düsük isilar için sihhi itme katsayisi yükselme (sadece P03=06 ile)(0..255)"/>
+<text id="30084" value="Ayar noktasi hizlilik kilma çikarma"/>
+<text id="30085" value="Ayar noktasi hizlilik etkin kilma / devreden çikarma (sadece P03=06 için)(0..1)"/>
+<text id="30086" value="Sihhi Donma Önleme kilma çikarma"/>
+<text id="30087" value="Sihhi Donma Önleme etkin kilma / devreden çikarma (sadece P03=06 için) (0=Etkin 1=Devre disi)"/>
+<text id="30088" value="Kondanse önleyici: pompa etkin kilma"/>
+<text id="30089" value="Kondanse önleyici: pompa etkin kilmak için isi esigi (20..40&#176;C)"/>
+<text id="30090" value="Kondanse önleyici: pompa devreden çikarma"/>
+<text id="30091" value="Kondanse önleyici: pompa devreden çikarma sebebi histerez (3..20&#176;C)"/>
+<text id="30092" value="Kondanse önleyici: süre"/>
+<text id="30093" value="Kondanse önleyici: süre (0=devre disi 1..15 dak)"/>
+<text id="30094" value="Termostatli sirkülasyon sonrasi"/>
+<text id="30095" value="SIHHI&apos;de Termostatli sirkülasyon sonrasi (0 devre disi, 53..88°C)"/>
+<text id="30096" value="Bir günde otomatik su yükleme için maksimum sayaç sayisi"/>
+<text id="30097" value="Bir günde otomatik su yükleme için maksimum sayaç sayisi (6..60)"/>
+<text id="30098" value="Otomatik su yükleme için sayaç sayisinin ayarlanmasi(3..15)"/>
+<text id="30099" value="3WV sonrasi pompa etkin kilma gecikmesi"/>
+<text id="30100" value="HS=5,6,8 (0..20s) için 3WV sonrasi pompa etkin kilma gecikmesi"/>
+<text id="30101" value="Sihhi talep ile yardimci röle etkin kilma"/>
+<text id="30102" value="Sihhi talep ile yardimci röle etkin kilma (F04/F05=10)"/>
+<text id="30103" value="Akilli ön isitma süresi"/>
+<text id="30104" value="Akilli ön isitma süresi (0..60min)"/>
+<text id="30105" value="Komünikasyon Protokol seçimi"/>
+<text id="30106" value="Komünikasyon protokol seçimi (0=PP 1=BP 2=STD)"/>
+<text id="30107" value="SIHHI etkin kilma bekleme süresi"/>
+<text id="30108" value="SIHHI etkin kilma bekleme süresi (0..60 san)"/>
+<text id="30109" value="Özel konfigürasyon"/>
+<text id="30110" value="Özel konfigürasyon (5 P19 dakika için röle etkin kilma (yazin P19/2))"/>
+<text id="30111" value="Ateslemede fan hizi"/>
+<text id="30112" value="Ateslemede fan hizi (Hiz=P70*100rpm)"/>
+<text id="30113" value="Fan maksimum hizi"/>
+<text id="30114" value="Fan maksimum hizi (Hiz=5000+P71*10 rpm)"/>
+<text id="30115" value="Fan minimum hizi"/>
+<text id="30116" value="Fan minimum hizi (Hiz=750+P72*10rpm)"/>
+<text id="30117" value="Kazan maksimum güç seçimi"/>
+<text id="30118" value="Kazan maksimum güç seçimi (1=24/28kw 2=28/33kw 3=32/40kw 4=12kw 5=15kw 6=18kw 7=24/20kw 8=24/28kw Al 9=28kw HO 10=32kw HO)"/>
+<text id="30119" value="Atesleme gecikmesi"/>
+<text id="30120" value="Atesleme gecikmesi (0..255sec)"/>
+<text id="30121" value="Fonksiyon commissioning"/>
+<text id="30122" value="Fonksiyon commissioning (50=commissionig aktif 100=commissioning kapali)"/>
+<text id="30123" value="Estetik"/>
+<text id="30124" value="Kazan beslemede görüntüleme"/>
+<text id="30125" value="Kazan beslemede görüntüleme (0..1: 0=yazilim versiyonu 1=yazilim versiyonu - donanim versiyonu - uygulama versiyonu)"/>
+<text id="30126" value="Giris seçimi 0..10V"/>
+<text id="30127" value="Giris seçimi 0..10V (0..2 0=hiçbir giris 1=ISITMA talebi 2=ISITMA ayar noktasi"/>
+<text id="30128" value="SIHHI kapatma offset"/>
+<text id="30129" value="SIHHI kapatma offset (0..15&#176;C 0=sabit deger olarak OFF 1..15 Off=SIHHI ayar noktasi+F79 )"/>
+<text id="30130" value="MFF1 giris konfigürasyonu"/>
+<text id="30131" value="MFF1 giris konfigürasyonu (0=termik sigorta 1=duman sensörü 2=kondanse önleyici alarm 3= 0..10V girisi 4=Kullanilmayan Default=0)"/>
+<text id="30132" value="MFF2 giris konfigürasyonu"/>
+<text id="30133" value="MFF2 giris konfigürasyonu (0=termik sigorta 1=duman sensörü 2=kondanse önleyici alarm 3= 0..10V girisi 4=Kullanilmayan Default=1)"/>
+<text id="30134" value="MFF3 giris konfigürasyonu"/>
+<text id="30135" value="MFF3 giris konfigürasyonu (0=termik sigorta 1=duman sensörü 2=kondanse önleyici alarm 3= 0..10V girisi 4=Kullanilmayan Default=4)"/>
+<text id="30300" value="Kazan ailesi tipi"/>
+<text id="30301" value="Parametre dosyasi"/>
+<text id="30302" value="Elektronik kart belirleme"/>
+<text id="30303" value="Yazilim Belirleme"/>
+<text id="30304" value="Müsteri Belirleme"/>
+<text id="30305" value="Özel Uygulama"/>
+<text id="30306" value="Satici kodu"/>
+<text id="30307" value="Yazilim Versiyonu"/>
+<text id="30308" value="TSP üretim bilgisi"/>
+<text id="30309" value="Donanim Belirleme"/>
+<text id="30400" value="Hata sayisi"/>
+<text id="30401" value="Hata sayisi (00 son hatadir, 06 ilk hatadir)"/>
+<text id="30402" value="Hata kodu"/>
+<text id="30403" value="Ayni hata tekrarlama sayisi"/>
+<text id="30404" value="Gün sayisi"/>
+<text id="30405" value="Hata meydana geldikten sonra geçen gün sayisi"/>
+<text id="30406" value="Sistem durumu"/>
+<text id="30407" value="Sistem durumu (0=standby 1=SIHHI ON 2=CSF 3=ISITMA ON 4=ön isitma etkin 5=donma önleyici isitma etkin 6=donma önleyici sihhi etkin 7=sirkülasyon sonrasi 8=termostatli sirkülasyon sonrasi)"/>
+<text id="30408" value="Sistem fazi"/>
+<text id="30409" value="Sistem fazi (0=stand-by 1=ön temizlik fazi 3=temizlik fazi 4=güvenlik süresi 5=çalisma 6=bloke 11=ara temizlik 1(2&#176; 3&#176; deneme) 15=havalandirma sonrasi 16=termostatli havalandirma sonrasi)"/>
+<text id="30410" value="Besleme isisi"/>
+<text id="30411" value="Hata meydana geldiginde besleme isisi"/>
+<text id="30412" value="Bloke sayisi"/>
+<text id="30413" value="Bloke sayisi (00 son blokedir, 06 ilk blokedir)"/>
+<text id="30414" value="Bloke kodu"/>
+<text id="30415" value="Ayni bloke tekrarlama sayisi"/>
+<text id="30500" value="SIHHI kaynatici ayar noktasi"/>
+<text id="30501" value="ISITMADA SIHHI kaynatici ayar noktasi"/>
+<text id="30502" value="ISITMADA OFF ayar noktasi"/>
+<text id="30503" value="LTU sayaci"/>
+<text id="30504" value="ISITMADA 3 yollu vana"/>
+<text id="30505" value="SIHHIDE 3 yollu vana"/>
+<text id="30506" value="Pompa etkin"/>
+<text id="30507" value="AÇIK pompa yüksek hizi"/>
+<text id="30508" value="Alev AÇIK"/>
+<text id="30509" value="230VAC Ortam Termostati etkin"/>
+<text id="30510" value="Güvenlik termostati kapali"/>
+<text id="30511" value="Yardimci röle 1 etkin"/>
+<text id="30512" value="Yardimci röle 2 etkin"/>
+<text id="99999" value="end of file"/>
+  <checksum value="38413" />
+</language>

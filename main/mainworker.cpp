@@ -85,6 +85,7 @@
 #include "../hardware/CurrentCostMeterSerial.h"
 #include "../hardware/CurrentCostMeterTCP.h"
 #include "../hardware/SolarEdgeAPI.h"
+#include "../hardware/RemehaSerial.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -863,6 +864,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_CurrentCostMeterLAN:
 		//LAN
 		pHardware = new CurrentCostMeterTCP(ID, Address, Port);
+		break;
+	case HTYPE_RemehaUSBInterface:
+		pHardware = new RemehaSerial(ID, SerialPort, 9600);
 		break;
 	}
 

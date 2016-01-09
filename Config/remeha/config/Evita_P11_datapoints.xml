@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Objects>
+  <identifications>
+    <identification adress="327780" byte="0" type="LBLOCK" length="10"></identification>
+  </identifications>
+   <parameters>
+      <parameter adress="3212657" byte="0" nr="1393" type="VALME8"><!--DHW operating mode--></parameter>
+      <parameter adress="3212985" byte="1" nr="1721" type="VALI"><!--DHW temperature nominal setpoint--></parameter>
+      <parameter adress="3212986" byte="3" nr="1722" type="VALI"><!--DHW temperature reduced setpoint--></parameter>
+      <parameter adress="3212984" byte="5" nr="1720" type="VALI"><!--DHW temperature nominal setpoint max--></parameter>
+      <parameter adress="2426658" byte="7" nr="1826" type="VALME8"><!--DHW release--></parameter>
+      <parameter adress="3213089" byte="8" nr="1825" type="VALME8"><!--DHW charging priority--></parameter>
+      <parameter adress="3213145" byte="9" nr="1881" type="VALME8"><!--Legionella function--></parameter>
+      <parameter adress="3213112" byte="10" nr="1848" type="VALMN8"><!--Legionella function periodicity--></parameter>
+      <parameter adress="3213150" byte="11" nr="1886" type="VALME8"><!--Legionella function day--></parameter>
+      <parameter adress="3212988" byte="12" nr="1724" type="VALI"><!--Legionella function setpoint--></parameter>
+      <parameter adress="3212438" byte="14" nr="1174" type="VALI"><!--Dwelling time at legionella function setpoint--></parameter>
+      <parameter adress="3213483" byte="16" nr="2219" type="VALME8"><!--Circul. pump operation during legionella func--></parameter>
+      <parameter adress="2426670" byte="17" nr="1838" type="VALME8"><!--DHW circulating pump release--></parameter>
+      <parameter adress="2426505" byte="18" nr="1673" type="VALME8"><!--DHW circulating pump cycling --></parameter>
+      <parameter adress="854315" byte="19" nr="2347" type="VALI"><!--Boiler temp max limitatio--></parameter>
+      <parameter adress="329971" byte="21" nr="2291" type="VALI"><!--Boiler temp max limitation OEM--></parameter>
+      <parameter adress="855644" byte="23" nr="3676" type="VALI"><!--Setpoint max room heating--></parameter>
+      <parameter adress="332116" byte="25" nr="4436" type="VALME8"><!--Zero flow protection--></parameter>
+      <parameter adress="332117" byte="26" nr="4437" type="VALME8"><!--Zero flow protection type--></parameter>
+      <parameter adress="331285" byte="27" nr="3605" type="VALME8"><!--Dry fire protection--></parameter>
+      <parameter adress="1115708" byte="28" nr="1596" type="VALME8"><!--Frost protection for plant  boiler pump--></parameter>
+      <parameter adress="332099" byte="29" nr="4419" type="VALN8"><!--Switching diff flow detection--></parameter>
+      <parameter adress="332132" byte="30" nr="4452" type="VALN8"><!--Thresh flow detec eng'bu--></parameter>
+      <parameter adress="332133" byte="31" nr="4453" type="VALN8"><!--Thresh flow detec supp'bu--></parameter>
+      <parameter adress="1117195" byte="32" nr="3083" type="VALI"><!--Eng Burner Xp Headtemp--></parameter>
+      <parameter adress="1117196" byte="34" nr="3084" type="VALI"><!--Eng Burner Tn Headtemp--></parameter>
+      <parameter adress="1117197" byte="36" nr="3085" type="VALI"><!--Eng Burner Xp Boilertemp--></parameter>
+      <parameter adress="1117198" byte="38" nr="3086" type="VALI"><!--Eng Burner Tn Boilertemp--></parameter>
+      <parameter adress="1117199" byte="40" nr="3087" type="VALI"><!--Eng Burner Tv BoilerTemp--></parameter>
+      <parameter adress="1117239" byte="42" nr="3127" type="VALI"><!--Supp Burner Xp--></parameter>
+      <parameter adress="1117240" byte="44" nr="3128" type="VALI"><!--Supp Burner Tn--></parameter>
+      <parameter adress="1117372" byte="46" nr="3260" type="VALI"><!--Max diff temp flow-return--></parameter>
+      <parameter adress="1117379" byte="48" nr="3267" type="VALB"><!--Auto deaeration procedure--></parameter>
+      <parameter adress="1117380" byte="49" nr="3268" type="VALI"><!--DiffTempMinFlRtDryF--></parameter>
+      <parameter adress="1117381" byte="51" nr="3269" type="VALI"><!--DiffTempMaxFlDryF--></parameter>
+      <parameter adress="1117382" byte="53" nr="3270" type="VALI"><!--DiffTempMaxRtDryF--></parameter>
+      <parameter adress="1117383" byte="55" nr="3271" type="VALME8"><!--Pump speed Dry fire--></parameter>
+      <parameter adress="1117386" byte="56" nr="3274" type="VALN8"><!--Test time ZFl EngBu--></parameter>
+      <parameter adress="1117388" byte="57" nr="3276" type="VALN8"><!--Test time ZFl SuppBu--></parameter>
+      <parameter adress="1117390" byte="58" nr="3278" type="VALI"><!--Temp Max rise ZFl--></parameter>
+      <parameter adress="1117189" byte="60" nr="3077" type="VALI"><!--Eng Burner  Min rate--></parameter>
+      <parameter adress="1117190" byte="62" nr="3078" type="VALI"><!--Eng Burner ignition rate--></parameter>
+      <parameter adress="1117191" byte="64" nr="3079" type="VALI"><!--Eng Burner Max rate--></parameter>
+      <parameter adress="1117192" byte="66" nr="3080" type="VALI"><!--Supp Burner Min rate--></parameter>
+      <parameter adress="1117193" byte="68" nr="3081" type="VALI"><!--Supp Burner ignition rate--></parameter>
+      <parameter adress="1117400" byte="70" nr="3288" type="VALI"><!--Supp burner max rate OEM--></parameter>
+      <parameter adress="1117194" byte="72" nr="3082" type="VALI"><!--Supp bu max rate CH--></parameter>
+      <parameter adress="1117401" byte="74" nr="3289" type="VALI"><!--Supp bu max rate DHW Com--></parameter>
+      <parameter adress="330898" byte="75" nr="3218" type="VALB"><!--Burner start limitation--></parameter>
+      <parameter adress="330890" byte="77" nr="3210" type="VALI"><!--Engine burner phase 1--></parameter>
+      <parameter adress="330900" byte="79" nr="3220" type="VALI"><!--Engine burner phase 2--></parameter>
+      <parameter adress="330903" byte="81" nr="3223" type="VALI"><!--Supp bu start phase--></parameter>
+      <parameter adress="330899" byte="83" nr="3219" type="VALI32"><!--Head temp phase 2--></parameter>
+      <parameter adress="330901" byte="87" nr="3221" type="VALI32"><!--Head temp phase 3--></parameter>
+      <parameter adress="330902" byte="91" nr="3222" type="VALN8"><!--Time duration phase 3--></parameter>
+      <parameter adress="854312" byte="92" nr="2344" type="VALI"><!--Boiler switching diff--></parameter>
+      <parameter adress="854329" byte="94" nr="2361" type="VALI8"><!--Burner running time min limitation--></parameter>
+      <parameter adress="330754" byte="95" nr="3074" type="VALI"><!--Burner off time min--></parameter>
+      <parameter adress="1117769" byte="97" nr="3657" type="VALI"><!--Supp Bu off time min--></parameter>
+      <parameter adress="1117172" byte="99" nr="3060" type="VALN8"><!--Min wait time 2nd burner--></parameter>
+      <parameter adress="1117178" byte="100" nr="3066" type="VALN8"><!--Locking time min supp bu--></parameter>
+      <parameter adress="1117179" byte="101" nr="3067" type="VALI"><!--Release integral  sup bu--></parameter>
+      <parameter adress="1117183" byte="103" nr="3071" type="VALI32"><!--H'temp start delay supp bu--></parameter>
+      <parameter adress="1117184" byte="107" nr="3072" type="VALN8"><!--Rel time min mod supp bu--></parameter>
+      <parameter adress="1117182" byte="108" nr="3070" type="VALI"><!--Rel integr mod supp bu--></parameter>
+      <parameter adress="1117253" byte="110" nr="3141" type="VALI"><!--Reset integral supp bu--></parameter>
+      <parameter adress="1117689" byte="112" nr="3577" type="VALI"><!--Roomtempdiff rel. supp bu--></parameter>
+      <parameter adress="1117786" byte="114" nr="3674" type="VALME8"><!--Release DHW charging--></parameter>
+      <parameter adress="330742" byte="115" nr="3062" type="VALI32"><!--Head temp set point max--></parameter>
+      <parameter adress="330846" byte="119" nr="3166" type="VALI32"><!--Head temp min off--></parameter>
+      <parameter adress="330744" byte="123" nr="3064" type="VALI32"><!--Head temp grid connect--></parameter>
+      <parameter adress="330745" byte="127" nr="3065" type="VALI32"><!--Head temp grid discon--></parameter>
+      <parameter adress="330801" byte="131" nr="3121" type="VALI32"><!--Head temp grid con en--></parameter>
+      <parameter adress="330721" byte="135" nr="3041" type="VALI32"><!--Head overtemp off--></parameter>
+      <parameter adress="330772" byte="139" nr="3092" type="VALI32"><!--Head temp min operation--></parameter>
+      <parameter adress="331359" byte="143" nr="3679" type="VALI"><!--Power set point--></parameter>
+      <parameter adress="330743" byte="145" nr="3063" type="VALI32"><!--Return temp power roll-off--></parameter>
+      <parameter adress="330716" byte="149" nr="3036" type="VALN8"><!--Power roll-off rate--></parameter>
+      <parameter adress="2426679" byte="150" nr="1847" type="VALB"><!--DHW charging--></parameter>
+      <parameter adress="2426656" byte="151" nr="1824" type="VALI"><!--DHW flow setpoint boost--></parameter>
+      <parameter adress="2427003" byte="153" nr="2171" type="VALME8"><!--DHW recharging control--></parameter>
+      <parameter adress="3213085" byte="154" nr="1821" type="VALI"><!--DHW switching differential--></parameter>
+      <parameter adress="2426673" byte="156" nr="1841" type="VALI"><!--DHW charging time limitation--></parameter>
+      <parameter adress="2426708" byte="158" nr="1876" type="VALME8"><!--DHW discharging protection--></parameter>
+      <parameter adress="3213482" byte="159" nr="2218" type="VALB"><!--DHW automatic push--></parameter>
+      <parameter adress="3214103" byte="160" nr="2839" type="VALN8"><!--charging priority time push--></parameter>
+      <parameter adress="2427083" byte="161" nr="2251" type="VALME8"><!--DHW storage tank overtemperature drop--></parameter>
+      <parameter adress="1117351" byte="162" nr="3239" type="VALI"><!--Temp Diff Eng Bu Stop--></parameter>
+      <parameter adress="1117352" byte="164" nr="3240" type="VALI"><!--Temp Diff SuppBu Stop--></parameter>
+      <parameter adress="1117353" byte="166" nr="3241" type="VALI"><!--Switch'Diff SuppBu--></parameter>
+      <parameter adress="1117363" byte="168" nr="3251" type="VALN"><!--Time Temp stabilisation--></parameter>
+      <parameter adress="1117354" byte="170" nr="3242" type="VALI"><!--SuppBu Prop Band--></parameter>
+      <parameter adress="1117355" byte="172" nr="3243" type="VALN"><!--SuppBu Int Action Time--></parameter>
+      <parameter adress="1117356" byte="174" nr="3244" type="VALN"><!--SuppBu Deriv Action Time--></parameter>
+      <parameter adress="1117364" byte="176" nr="3252" type="VALI"><!--Temp Diff Pump Speed--></parameter>
+      <parameter adress="1117365" byte="178" nr="3253" type="VALI"><!--Temp DHW warm up EngBu--></parameter>
+      <parameter adress="1117366" byte="180" nr="3254" type="VALN"><!--Overrun time warm up EnBu--></parameter>
+      <parameter adress="1117367" byte="182" nr="3255" type="VALI"><!--Temp DHW warm up SuppBu--></parameter>
+      <parameter adress="1117368" byte="184" nr="3256" type="VALN"><!--Overrun time warm up SuppBu--></parameter>
+      <parameter adress="1117369" byte="186" nr="3257" type="VALN"><!--Time DHW warm up--></parameter>
+      <parameter adress="1117370" byte="188" nr="3258" type="VALI"><!--SD Solar Eco On--></parameter>
+      <parameter adress="1117371" byte="190" nr="3259" type="VALI"><!--SD Solar Eco Off--></parameter>
+      <parameter adress="330769" byte="192" nr="3089" type="VALME8"><!--Plant type--></parameter>
+      <parameter adress="330730" byte="193" nr="3050" type="VALME8"><!--Type Heating circuit 1--></parameter>
+      <parameter adress="396266" byte="194" nr="3050" type="VALME8"><!--Type Heating circuit 2--></parameter>
+      <parameter adress="461802" byte="195" nr="3050" type="VALME8"><!--Type Heating circuit 3--></parameter>
+      <parameter adress="330731" byte="196" nr="3051" type="VALME8"><!--Type DHW Charging--></parameter>
+      <parameter adress="2426652" byte="197" nr="1820" type="VALME8"><!--DHW actuating device Q3--></parameter>
+      <parameter adress="330732" byte="198" nr="3052" type="VALME8"><!--Type Boiler--></parameter>
+      <parameter adress="330930" byte="199" nr="3250" type="VALME8"><!--Type Boiler pump--></parameter>
+      <parameter adress="328855" byte="200" nr="1175" type="VALME8"><!--Relay output QX1--></parameter>
+      <parameter adress="329447" byte="201" nr="1767" type="VALME8"><!--Reset error history--></parameter>
+	  <parameter adress="329096" byte="202" nr="1416" type="VALME8"><!--Q4 relay function--></parameter>
+	  <parameter adress="329097" byte="203" nr="1417" type="VALME8"><!--Q5 relay function--></parameter>
+	  <parameter adress="330237" byte="204" nr="2557" type="VALME8"><!--Function EX1--></parameter>
+	  <parameter adress="330238" byte="205" nr="2558" type="VALME8"><!--EX1 normally opened closed--></parameter>
+	  <parameter adress="329678" byte="206" nr="1998" type="VALME8"><!--Function EX2--></parameter>
+	  <parameter adress="329681" byte="207" nr="2001" type="VALME8"><!--EX2 normally opened closed--></parameter>
+</parameters>
+   <errors>
+      <error><!--Time stamp error history entry 1-->
+         <code adress="329748" app="0" byte="4" inst="1" nr="2068" type="VALME"/>
+         <time adress="329427" app="0" byte="0" inst="1" nr="1747" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 2-->
+         <code adress="329748" app="0" byte="12" inst="1" nr="2069" type="VALME"/>
+         <time adress="329428" app="0" byte="8" inst="1" nr="1748" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 3-->
+         <code adress="329750" app="0" byte="20" inst="1" nr="2070" type="VALME"/>
+         <time adress="329429" app="0" byte="16" inst="1" nr="1749" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 4-->
+         <code adress="329751" app="0" byte="28" inst="1" nr="2071" type="VALME"/>
+         <time adress="329430" app="0" byte="24" inst="1" nr="1750" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 5-->
+         <code adress="329752" app="0" byte="36" inst="1" nr="2072" type="VALME"/>
+         <time adress="329431" app="0" byte="32" inst="1" nr="1751" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 6-->
+         <code adress="329753" app="0" byte="44" inst="1" nr="2073" type="VALME"/>
+         <time adress="329432" app="0" byte="40" inst="1" nr="1752" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 7-->
+         <code adress="329754" app="0" byte="52" inst="1" nr="2074" type="VALME"/>
+         <time adress="329433" app="0" byte="48" inst="1" nr="1753" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 8-->
+         <code adress="329755" app="0" byte="60" inst="1" nr="2075" type="VALME"/>
+         <time adress="329434" app="0" byte="56" inst="1" nr="1754" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 9-->
+         <code adress="329756" app="0" byte="68" inst="1" nr="2076" type="VALME"/>
+         <time adress="329435" app="0" byte="64" inst="1" nr="1755" type="VALDATE"/>
+      </error>
+      <error><!--Time stamp error history entry 10-->
+         <code adress="329757" app="0" byte="76" inst="1" nr="2077" type="VALME"/>
+         <time adress="329436" app="0" byte="72" inst="1" nr="1756" type="VALDATE"/>
+      </error>
+   </errors>
+   <errorList>
+      <errorCode nr="0" type="blocking"/>
+      <errorCode nr="10" type="blocking"/>
+      <errorCode nr="20" type="blocking"/>
+      <errorCode nr="30" type="blocking"/>
+      <errorCode nr="32" type="blocking"/>
+      <errorCode nr="40" type="blocking"/>
+      <errorCode nr="50" type="blocking"/>
+      <errorCode nr="52" type="blocking"/>
+      <errorCode nr="54" type="blocking"/>
+      <errorCode nr="57" type="blocking"/>
+      <errorCode nr="60" type="blocking"/>
+      <errorCode nr="65" type="blocking"/>
+      <errorCode nr="68" type="blocking"/>
+      <errorCode nr="83" type="blocking"/>
+      <errorCode nr="84" type="blocking"/>
+      <errorCode nr="85" type="blocking"/>
+      <errorCode nr="91" type="locking"/>
+      <errorCode nr="92" type="locking"/>
+      <errorCode nr="95" type="blocking"/>
+      <errorCode nr="96" type="blocking"/>
+      <errorCode nr="97" type="locking"/>
+      <errorCode nr="98" type="blocking"/>
+      <errorCode nr="99" type="blocking"/>
+      <errorCode nr="100" type="blocking"/>
+      <errorCode nr="102" type="blocking"/>
+      <errorCode nr="121" type="blocking"/>
+      <errorCode nr="122" type="blocking"/>
+      <errorCode nr="127" type="blocking"/>
+      <errorCode nr="157" type="locking"/>
+      <errorCode nr="158" type="locking"/>
+      <errorCode nr="164" type="blocking"/>
+      <errorCode nr="187" type="blocking"/>
+      <errorCode nr="253" type="locking"/>
+      <errorCode nr="254" type="blocking"/>
+      <errorCode nr="259" type="locking"/>
+      <errorCode nr="261" type="locking"/>
+      <errorCode nr="262" type="locking"/>
+      <errorCode nr="263" type="locking"/>
+      <errorCode nr="264" type="locking"/>
+      <errorCode nr="265" type="locking"/>
+      <errorCode nr="266" type="locking"/>
+      <errorCode nr="267" type="blocking"/>
+      <errorCode nr="268" type="locking"/>
+      <errorCode nr="269" type="locking"/>
+      <errorCode nr="270" type="blocking"/>
+      <errorCode nr="273" type="locking"/>
+	  <errorCode nr="274" type="locking"/>
+      <errorCode nr="275" type="locking"/>
+      <errorCode nr="276" type="blocking"/>
+      <errorCode nr="277" type="locking"/>
+      <errorCode nr="278" type="blocking"/>
+      <errorCode nr="280" type="blocking"/>
+      <errorCode nr="281" type="locking"/>
+      <errorCode nr="282" type="blocking"/>
+      <errorCode nr="283" type="locking"/>
+      <errorCode nr="284" type="locking"/>
+      <errorCode nr="285" type="blocking"/>
+      <errorCode nr="286" type="locking"/>
+      <errorCode nr="287" type="blocking"/>
+      <errorCode nr="288" type="locking"/>
+      <errorCode nr="289" type="locking"/>
+      <errorCode nr="290" type="locking"/>
+      <errorCode nr="291" type="locking"/>
+      <errorCode nr="292" type="locking"/>
+      <errorCode nr="293" type="locking"/>
+      <errorCode nr="294" type="locking"/>
+      <errorCode nr="295" type="locking"/>
+      <errorCode nr="296" type="locking"/>
+      <errorCode nr="298" type="blocking"/>
+      <errorCode nr="299" type="blocking"/>
+      <errorCode nr="300" type="locking"/>
+      <errorCode nr="301" type="blocking"/>
+      <errorCode nr="302" type="locking"/>
+      <errorCode nr="303" type="locking"/>
+      <errorCode nr="304" type="locking"/>
+      <errorCode nr="305" type="locking"/>
+      <errorCode nr="306" type="blocking"/>
+      <errorCode nr="307" type="blocking"/>
+      <errorCode nr="308" type="locking"/>
+      <errorCode nr="309" type="blocking"/>
+      <errorCode nr="310" type="blocking"/>
+      <errorCode nr="311" type="blocking"/>
+      <errorCode nr="319" type="locking"/>
+      <errorCode nr="394" type="blocking"/>
+      <errorCode nr="395" type="blocking"/>
+      <errorCode nr="396" type="blocking"/>
+      <errorCode nr="397" type="blocking"/>
+      <errorCode nr="398" type="blocking"/>
+      <errorCode nr="399" type="blocking"/>
+      <errorCode nr="422" type="blocking"/>
+      <errorCode nr="423" type="blocking"/>
+      <errorCode nr="424" type="locking"/>
+      <errorCode nr="425" type="locking"/>
+      <errorCode nr="428" type="blocking"/>
+   </errorList>
+   <counters>
+      <counter adress="330720" app="0" byte="0" inst="1" nr="3040" type="VALI32"><!--Energy to date--></counter>
+      <counter adress="331107" app="0" byte="4" inst="1" nr="3427" type="VALI32"><!--Energy since reset--></counter>
+      <counter adress="1117205" app="4" byte="8" inst="1" nr="3093" type="VALI"><!--Eng burner hours run--></counter>
+      <counter adress="1117207" app="4" byte="10" inst="1" nr="3095" type="VALI32"><!--Eng burner start counter--></counter>
+      <counter adress="1117206" app="4" byte="14" inst="1" nr="3094" type="VALI"><!--Supp burner hours run--></counter>
+      <counter adress="1117208" app="4" byte="16" inst="1" nr="3096" type="VALI32"><!--Supp burner start counter--></counter>
+   </counters>
+  <checksum value="11484" />
+</Objects>

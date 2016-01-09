@@ -1,0 +1,3272 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<language name="french">
+<text id="0" value="Français"/>
+<text id="1" value="6.82"/>
+<text id="2" value="FR"/>
+<text id="15" value="Post-ventilation 10 sec."/>
+<text id="18" value="continu"/>
+<text id="23" value="Vanne 3-voies"/>
+<text id="24" value="Circulateur ECS"/>
+<text id="25" value="Vanne 3-voies inversée"/>
+<text id="26" value="T dép pour ECS"/>
+<text id="27" value="Débit max. ECS"/>
+<text id="30" value="Avec contrôle de rotation"/>
+<text id="31" value="Ne pas contrôler"/>
+<text id="32" value="Interface externe"/>
+<text id="33" value="Interface OpenTherm"/>
+<text id="38" value="Erreur de communication"/>
+<text id="43" value="Mot de passe invalide"/>
+<text id="100" value="W40/W60"/>
+<text id="101" value="W21s"/>
+<text id="106" value="Fermée"/>
+<text id="107" value="Ouverte"/>
+<text id="110" value="0:Simulation de flamme"/>
+<text id="111" value="1:Court-circuit  circ 24V"/>
+<text id="112" value="2:Absence de flamme"/>
+<text id="113" value="3:Triac vanne gaz défectueux"/>
+<text id="114" value="4:Verrouillage permanent"/>
+<text id="115" value="5:Abs.accord du processeur"/>
+<text id="116" value="6:Dérangement entrée"/>
+<text id="117" value="7:Dérangem relais vanne gaz"/>
+<text id="118" value="8:press. air ne ferme pas"/>
+<text id="119" value="10:Erreur logiciel"/>
+<text id="120" value="11:Erreur EEPROM"/>
+<text id="121" value="12:Entrée therm. Sécur. Ouv"/>
+<text id="122" value="13:Dérang. circ de sortie"/>
+<text id="123" value="14:Dérangement circ test NTC"/>
+<text id="124" value="15:Convers. ADC trop longue"/>
+<text id="125" value="16:Dérangement ADC multiplex"/>
+<text id="126" value="17:Surveillance vanne à gaz"/>
+<text id="127" value="18:Temp. départ trop élevée"/>
+<text id="128" value="19:Temp. retour trop élevée"/>
+<text id="129" value="24:Sondes dép-retour invers."/>
+<text id="130" value="25:Vit.montée Tdép dépassée"/>
+<text id="131" value="26:Pression de gaz minimale"/>
+<text id="132" value="28:Ventilateur à l&apos;arrêt"/>
+<text id="133" value="29:Ventil. cont à fonct."/>
+<text id="134" value="30:Delta dépt retour dépassé"/>
+<text id="135" value="41:Dérangement sortie P0"/>
+<text id="136" value="42:Dérangement sortie P1"/>
+<text id="137" value="44:Dérangem relais vanne gaz"/>
+<text id="138" value="52:Temp. fumées trop élevée"/>
+<text id="139" value="61:Press. air ne ferme pas"/>
+<text id="140" value="77:Abs ioni. brûleur en serv"/>
+<text id="141" value="No. de dérangement inconnu"/>
+<text id="145" value="0: Arrêt, pas de demande"/>
+<text id="146" value="1:Pré- / Post- ventilation"/>
+<text id="147" value="2:Allumage"/>
+<text id="148" value="3:Fonctionnement chauffage"/>
+<text id="149" value="4:Fonctionnement ECS"/>
+<text id="150" value="5:Att:ouvert ou ferm press air"/>
+<text id="151" value="6:Arrêt Chaud en posit chauff"/>
+<text id="152" value="7:Post-circ. ppe  posit chauff"/>
+<text id="153" value="8:Post-circ. ppe en posit ECS"/>
+<text id="154" value="9:Arrêt brûleur: Pt de consign"/>
+<text id="155" value="17:Grande allure forcée"/>
+<text id="156" value="20:Petite allure forcée"/>
+<text id="157" value="No. de séquence inconnu"/>
+<text id="162" value="8:transport insuffisant"/>
+<text id="163" value="61:Transport dur. arrêt chaudière"/>
+<text id="164" value="No data available"/>
+<text id="202" value="Départ"/>
+<text id="203" value="Retour"/>
+<text id="204" value="Ballon"/>
+<text id="205" value="Dehors"/>
+<text id="206" value="Fumées"/>
+<text id="207" value="Rotations "/>
+<text id="208" value="Pt de consigne"/>
+<text id="210" value="Ligne de mesure"/>
+<text id="213" value="Calc. tours "/>
+<text id="214" value="Demande chauff."/>
+<text id="215" value="Pompe"/>
+<text id="216" value="Vanne gaz"/>
+<text id="217" value="Pressostat air"/>
+<text id="218" value="Ionisation"/>
+<text id="220" value="Demande ECS"/>
+<text id="223" value="Service"/>
+<text id="224" value="Arrêt"/>
+<text id="225" value="Press. gaz mini"/>
+<text id="227" value="&amp;Fichier"/>
+<text id="229" value="&amp;Imprimer"/>
+<text id="230" value="&amp;Clôturer"/>
+<text id="231" value="&amp;Communication"/>
+<text id="232" value="&amp;Paramètres"/>
+<text id="233" value="&amp;Valeurs actuelles"/>
+<text id="236" value="&amp;Graphique"/>
+<text id="237" value="Mot de &amp;passe"/>
+<text id="238" value="Ligne de mesure fixe"/>
+<text id="242" value="&amp;Aide"/>
+<text id="243" value="&amp;Infos"/>
+<text id="252" value="&amp;Ouvrir données de mesure"/>
+<text id="253" value="&amp;Mémoriser préférences"/>
+<text id="262" value="Durée démarrage"/>
+<text id="263" value="Régime démarrage"/>
+<text id="264" value="Vitesse montée"/>
+<text id="278" value="Dummy ketel"/>
+<text id="279" value="Affi. et diodes"/>
+<text id="281" value="Temps maxi bloc."/>
+<text id="282" value="Détect. temp ECS"/>
+<text id="283" value="Temp primaire pour démarrage chaudière en service ECS "/>
+<text id="284" value="Durée du fonctionnement du ventilateur en régime réduit"/>
+<text id="285" value="nombre de rotations du ventilateur en régime réduit"/>
+<text id="288" value="U:Temps d&apos;attente maxi avant redémarage du servi chauffage"/>
+<text id="289" value="Réduction puissance si départ &gt; ce par."/>
+<text id="290" value="Détect. ECS &gt;32"/>
+<text id="291" value="Vitesse descente température pour enclenchement ECS (&gt;32)"/>
+<text id="292" value="Temp ajoutée à temp ECS pour obtenir Pt de consg temp dépt"/>
+<text id="293" value="Chaud. avec diodes de signalisation diff. Fonctionnements"/>
+<text id="294" value="ECS à l&apos;aide d&apos;une sonde"/>
+<text id="295" value="Système solaire"/>
+<text id="296" value="Ecran de calcul"/>
+<text id="297" value="Ligne de calcul"/>
+<text id="298" value="Delta"/>
+<text id="299" value="Delta/sec"/>
+<text id="307" value="Détect. ECS &lt;=32"/>
+<text id="308" value="Vitesse descente température pour enclenchement ECS (&lt;=32)"/>
+<text id="309" value="Temp dpt à 0 V"/>
+<text id="310" value="Tmp dpt à 10 V"/>
+<text id="311" value="Commande chaudière grande/petite allure forcée"/>
+<text id="312" value="&#176;C"/>
+<text id="313" value="rpm"/>
+<text id="314" value="Min."/>
+<text id="316" value="&#176;/10s"/>
+<text id="317" value="Hrs"/>
+<text id="318" value="mg/s"/>
+<text id="319" value="kW"/>
+<text id="329" value="T ECS + diff."/>
+<text id="331" value="après fin dem. ECS T3 &gt; (Par. r/4) + (ce Par.)"/>
+<text id="334" value="Cocher dans le cas d&apos;une pompe en fonctionnement continu"/>
+<text id="339" value="80KW"/>
+<text id="340" value="120KW"/>
+<text id="341" value="160KW"/>
+<text id="342" value="200KW"/>
+<text id="343" value="*10s"/>
+<text id="344" value=" all mini forcée"/>
+<text id="345" value="Charge brûleur en % à petite allure"/>
+<text id="346" value="%"/>
+<text id="347" value="Puissance maxi"/>
+<text id="348" value="Permet de réduire la puissance maximale"/>
+<text id="349" value="Puis mini forcée"/>
+<text id="350" value="Puissance à petite allure avec réglage haut/bas"/>
+<text id="351" value="Niv enc aff serv"/>
+<text id="352" value="Pourcentage d&apos;enclenchement signalisation grande allure"/>
+<text id="353" value="Tps anti-cou cyc"/>
+<text id="354" value="Temps d&apos;arrêt mini entre arrêt chauff. et démar. chauff."/>
+<text id="355" value="Press eau mini"/>
+<text id="356" value="La chaud se mettra en blocage en dessous de cette valeur"/>
+<text id="357" value="/10mBar"/>
+<text id="358" value="Opt niv serv"/>
+<text id="359" value="1=sde Press.Hydr; 2=sde Encr..; 4=0-10V; 8=Contr. Étanch.gaz"/>
+<text id="360" value="Addition binaire"/>
+<text id="361" value="LED &apos;entretien'"/>
+<text id="362" value="LED &apos;entretien&apos; se mettra à clignoter au-dessus de ce dP"/>
+<text id="363" value="/10mBar"/>
+<text id="364" value="Hyst.coupe bloc"/>
+<text id="365" value="Chaudière à l&apos;arrêt si Tbloc &gt; Tdépart + ce paramètre"/>
+<text id="366" value="Max dT démarrage"/>
+<text id="367" value="Différ. maxi Temp.départ-Temp.retour permettant démarrage"/>
+<text id="368" value="Dur.démarr.forcé"/>
+<text id="369" value="Durée chaudière en puissance de démarrage"/>
+<text id="370" value="*6sec"/>
+<text id="371" value="Fourch.morte SMI"/>
+<text id="372" value="Variation du point de consigne, interdisant le SMI de réagir"/>
+<text id="373" value="/10 %"/>
+<text id="374" value="Pos. démarr. SMI"/>
+<text id="375" value="Pos.SMI permettant le démarrage de la chaudière"/>
+<text id="376" value="Pos.SMI pour LDS"/>
+<text id="377" value="Pos.SMI la plus élevée gardant contact LDS fermé"/>
+<text id="378" value="Pos.SMI baisse P"/>
+<text id="379" value="Pos.SMI en baissant (P)uissance au minimum"/>
+<text id="380" value="Attente du SMI"/>
+<text id="381" value="Durée en Pos. Attente du SMI"/>
+<text id="382" value="sec"/>
+<text id="383" value="SMI t.mort mini"/>
+<text id="384" value="Temps traversée écluse de lumière du fanion en petite allure"/>
+<text id="385" value="/10s"/>
+<text id="386" value="SMI t.fonct maxi"/>
+<text id="387" value="Temps passage de 0 au fanion maximal en fonctionnement maxi"/>
+<text id="388" value="SMI temps/degré"/>
+<text id="389" value="Durée Pos. intermédiaire SMI, avant modulation vers le haut"/>
+<text id="390" value="SMI vers le haut"/>
+<text id="391" value="Nombre de degrés de modulation vers le haut du SMI"/>
+<text id="392" value="NR"/>
+<text id="393" value="Options Usine"/>
+<text id="394" value="1=Allumage 2=Réserve 4=Demande 8=2e niv.ionis. 16=Press.air"/>
+<text id="395" value="25:Phase de test SMI"/>
+<text id="396" value="25:Exces montée de vitesse Tbloc"/>
+<text id="397" value="1=Press.Hydr;2=sde Encr;4=0-10V;8=Contr.Étanch.gaz,16=psi/F"/>
+<text id="399" value="94:DT max Tcorps et Tdpt dépas"/>
+<text id="400" value="60:Dérangt pendant lect param"/>
+<text id="401" value="83:T&#176; corps chauff trop élevée"/>
+<text id="402" value="86:Pos S1 Pos S3 SMI simultané"/>
+<text id="403" value="87:Pos Ferm. SMI non-signalée"/>
+<text id="404" value="89:Etanchéité Bloc gaz incorr"/>
+<text id="405" value="93:Pos S1 Pos S2 SMI simultané"/>
+<text id="407" value="Puissance"/>
+<text id="408" value="Puissance consignée"/>
+<text id="409" value="Corps de chauffe"/>
+<text id="410" value="Press hydrau"/>
+<text id="411" value="Puiss max"/>
+<text id="413" value="Blocage"/>
+<text id="415" value="Montée maxi bloc"/>
+<text id="416" value="Arrêt chaudière si vitesse augment.Tbloc (T6) &gt; cette valeur"/>
+<text id="420" value="Chauffage à l&apos;arrêt"/>
+<text id="421" value="Chauffage en service"/>
+<text id="422" value="Combi avec tampon"/>
+<text id="423" value="Combi sans tampon"/>
+<text id="424" value="Solo"/>
+<text id="425" value="Temp. extérieure minimale courbe de chauffe interne"/>
+<text id="426" value="Entrer ici la température extérieure minimale"/>
+<text id="427" value="Surtemp. de maintenance de temp."/>
+<text id="428" value="Fin chauffage sans tampon: moyenne(T1,T2)&gt;par39+par32+ce par"/>
+<text id="434" value="Sonde corps court-circuit"/>
+<text id="435" value="Sonde corps de chauffe ouverte"/>
+<text id="436" value="Pos. mini SMI &gt; pos de dém SMI"/>
+<text id="437" value="Pos. S2 du SMI non-signalée"/>
+<text id="438" value="Pos. S3 du SMI non-signalée"/>
+<text id="439" value="Gas310-5 éléments"/>
+<text id="440" value="Gas310-6 éléments"/>
+<text id="441" value="Gas310-7 éléments"/>
+<text id="442" value="Gas310-8 éléments"/>
+<text id="443" value="Gas310-9 éléments"/>
+<text id="444" value="Gas610-6 éléments"/>
+<text id="445" value="Gas610-7 éléments"/>
+<text id="446" value="Gas610-8 éléments"/>
+<text id="447" value="Gas610-9 éléments"/>
+<text id="450" value="Arrêt de la demande d&apos;e.c.s. si T3&gt;32+(ce paramètre)"/>
+<text id="451" value="Niveau pour affichage &apos;brûleur allure mini'"/>
+<text id="452" value="Vit ventilateur pour affichage &apos;en fonction'"/>
+<text id="455" value="Vit mini ventilateur à  mini/max contrôle flamme"/>
+<text id="456" value="Contrôle chaud pour vit ventilateur=21"/>
+<text id="458" value="Vitesse max abs."/>
+<text id="459" value="Ceci est la vitesse maximale absolue"/>
+<text id="461" value="Vitesse min abs."/>
+<text id="462" value="ceci est la vitesse minimale absolue"/>
+<text id="464" value="Durée &gt; vit. max"/>
+<text id="465" value="Si durée à vitesse max dépasse ce par. : blocage"/>
+<text id="466" value="*6sec"/>
+<text id="470" value="Contrôle LDS"/>
+<text id="471" value="à cette valeur LDS doit inverser."/>
+<text id="476" value=" Temps de post circ pompe"/>
+<text id="477" value=" Entrez temps post circ pompe"/>
+<text id="479" value="31: Départ court-circuit"/>
+<text id="480" value="32: Retour court-circuit"/>
+<text id="481" value="35: Fumées court-circuit"/>
+<text id="482" value="36: Départ ouverte"/>
+<text id="483" value="37: Retour ouverte"/>
+<text id="484" value="40: Fumées ouverte"/>
+<text id="485" value="Entrer la petite allure forcée"/>
+<text id="486" value="Pos ppe pour serv chauff. Pour l&apos;ECS toujours la pos maxi"/>
+<text id="487" value="Position de la pompe pendant la post-circulation"/>
+<text id="488" value="Hystérèsie dépt chauff. Arrêt Chaud. temp dépt consig +5&#176;C"/>
+<text id="489" value="Entrer la température des fumées maximal"/>
+<text id="490" value="Température de départ maximale au niveau service"/>
+<text id="491" value="Point de départ réduction puissance en fonction du dT"/>
+<text id="804" value="écran de contôle"/>
+<text id="818" value="OK"/>
+<text id="819" value="annuler"/>
+<text id="820" value="Défaut"/>
+<text id="823" value=" valeur hors limite"/>
+<text id="900" value="Entrer ici la temp de départ pendant le service chauffage"/>
+<text id="901" value="Entrer la durée de la post-circulation de la pompe"/>
+<text id="902" value="Entrer ici la température de l&apos; ECS"/>
+<text id="912" value="Entrez le pt inférieur temp départ pour la régulation"/>
+<text id="913" value="Entrer la vitesse de rotation max pour le serv chauffage"/>
+<text id="914" value="Entrer la vitesse de rotation minimale"/>
+<text id="915" value="Entrer la vitesse de rotation maximale pour ECS"/>
+<text id="916" value="Entrer vit. rotation de contrôle pour vérif pressostat air"/>
+<text id="917" value="Entrer la vitesse de rotation au démarrage de la chaudière"/>
+<text id="918" value="Départ max pour ECS"/>
+<text id="919" value="Pos ppe pour serv chauff. Pour l&apos;ECS toujours la pos maxi"/>
+<text id="920" value="Position de la pompe pendant la post-circulation"/>
+<text id="921" value="Hystérèsie dépt chauff. Arrêt Chaud. temp dépt consig +5&#176;C"/>
+<text id="922" value="Interval pour chauffer le réservoir tampon"/>
+<text id="923" value="Point de départ réduction puissance en fonction du dT"/>
+<text id="924" value="Hystérèsie pour l&apos;ECS"/>
+<text id="925" value="Entrer la température des fumées maximal"/>
+<text id="926" value="Entrer la petite allure forcée"/>
+<text id="927" value="Sélection vanne 3-voies ou pompe pour l&apos;ECS"/>
+<text id="928" value="Entrer type de chaudière"/>
+<text id="929" value="Faire une sélection"/>
+<text id="930" value="Enclencher ou déclencher le contrôle de temp des fumées"/>
+<text id="931" value="Avec ceci l&apos;interface interne est arrêtée ou mise en serv"/>
+<text id="932" value="Température de départ max pendant la petite allure forcée"/>
+<text id="933" value="Température de départ maximale au niveau service"/>
+<text id="934" value="Vitesse de rotation maximale"/>
+<text id="935" value="Vitesse de rotation minimale"/>
+<text id="936" value="Facteur proportionnel pendant le service chauffage"/>
+<text id="937" value="Facteur intégrant pendant le service chauffage"/>
+<text id="938" value="Facteur proportionnel pendant le service ECS"/>
+<text id="939" value="Facteur intégrant pendant le service ECS"/>
+<text id="940" value="Facteur différentiel pendant le service ECS"/>
+<text id="941" value="Fréquence de la commande du ventilateur et de la pompe"/>
+<text id="943" value="Soi-disant réglage maximal pour le départ"/>
+<text id="944" value="Arrêt chaudière si vitesse augment.Tdépart &gt; cette valeur"/>
+<text id="945" value="Différence maximale entre départ et retour"/>
+<text id="946" value="Nombre de pulsations par rotation du ventilateur"/>
+<text id="947" value="Vitesse d&apos;augmentation maxi  de la vitesse du ventilateur"/>
+<text id="955" value="43:Paramètres hors limites"/>
+<text id="958" value="88:Entrée mise sécurité ouvert"/>
+<text id="966" value="Fnt continu ppe"/>
+<text id="967" value="Chauff constant"/>
+<text id="971" value="Temps"/>
+<text id="1003" value="Oui"/>
+<text id="1004" value="Non"/>
+<text id="1018" value="Déterminer la valeur de consigne du petit écran d&apos;affichage"/>
+<text id="1022" value="Vitesse d&apos;abaissement maxi de la vitesse du ventilateur"/>
+<text id="1026" value="Choix temp dpt "/>
+<text id="1027" value="Tempo ppe"/>
+<text id="1028" value="Choix temp ECS"/>
+<text id="1029" value="Progr chaud."/>
+<text id="1030" value="Modul. dans mode accélérateur"/>
+<text id="1031" value="Haut/bas entrée externe"/>
+<text id="1032" value="Modul sans mode accélérateur"/>
+<text id="1033" value="Entrée analogique pour temp"/>
+<text id="1034" value="Entrée analogique pour puiss "/>
+<text id="1035" value="Chauff. l’arrêt, ECS l’arrêt"/>
+<text id="1036" value="Chauff. service, ECS service"/>
+<text id="1037" value="Chauff. service, ECS l’arrêt"/>
+<text id="1038" value="Chauff. l’arrêt, ECS service"/>
+<text id="1039" value="Pt inf pente"/>
+<text id="1040" value="Vit max chauff"/>
+<text id="1041" value="Vit min chaufECS"/>
+<text id="1042" value="Vit max ECS "/>
+<text id="1043" value="Pas de fonction"/>
+<text id="1044" value="Nb tr/mn. démarr"/>
+<text id="1046" value="Pos ppe chauff"/>
+<text id="1047" value="Pos ppe pst-circ"/>
+<text id="1048" value="Diff temp. dépt "/>
+<text id="1049" value="Tps attent chauf"/>
+<text id="1050" value="réduc puis à dT"/>
+<text id="1051" value="Diff pour ECS"/>
+<text id="1052" value="T max fumées"/>
+<text id="1053" value="Dém. all 1 forcé"/>
+<text id="1054" value="Cde Fnt ECS"/>
+<text id="1055" value="Dénomin. Chaud."/>
+<text id="1056" value="Activ ctrl fumée"/>
+<text id="1057" value="Securité T fumée"/>
+<text id="1058" value="Sélect interface"/>
+<text id="1059" value="Temp dpt forcé"/>
+<text id="1060" value="Régl Temp sécu"/>
+<text id="1061" value="rpm absolut.max"/>
+<text id="1062" value="rpm absolut.min"/>
+<text id="1063" value="Fact. P chauff."/>
+<text id="1064" value="Fact. I chauff."/>
+<text id="1065" value="Fact. P ECS"/>
+<text id="1066" value="Fact. I ECS"/>
+<text id="1067" value="Fact. D ECS"/>
+<text id="1068" value="Fréq. PWM vent."/>
+<text id="1070" value="T.max départ"/>
+<text id="1071" value="Vitesse max dép."/>
+<text id="1072" value="dT max dép./ret."/>
+<text id="1073" value="Puls./rév. vent."/>
+<text id="1074" value="Fact I haut vent"/>
+<text id="1075" value="Fact I bas vent"/>
+<text id="1076" value="Hystér. fin ECS"/>
+<text id="1077" value="Affi 2 et 1digit"/>
+<text id="1078" value="Affi 3 et 4digit"/>
+<text id="1084" value="Niv. service"/>
+<text id="1085" value="Niv. utilisateur"/>
+<text id="1088" value="Paramètres"/>
+<text id="1101" value="Entrer ici le mot de passe"/>
+<text id="1106" value="Fichier incorrect. Erreur"/>
+<text id="1121" value="Axe du temps (sec)"/>
+<text id="1122" value="Temps échantillon"/>
+<text id="1123" value="Code erreur"/>
+<text id="1124" value="Etapes du programme"/>
+<text id="1125" value="Température de départ"/>
+<text id="1126" value="Température de retour"/>
+<text id="1127" value="Température ECS"/>
+<text id="1128" value="Température des fumées"/>
+<text id="1129" value="Temps révolu depuis dernier dérangement"/>
+<text id="1130" value="Echant. journaux max"/>
+<text id="1138" value="Port COM sélectionnée : Com "/>
+<text id="1150" value="----------"/>
+<text id="1151" value="Petite allure pendant 15 min"/>
+<text id="1152" value="Grande allure pendant 15 min"/>
+<text id="1153" value="Vers mode standard"/>
+<text id="1154" value="Mode cheminée"/>
+<text id="1155" value="Pos. v.chauffage"/>
+<text id="1156" value="Pos. v.chauffage quand (Tdép+Tret)/2&lt;TBallon+ ce paramètre"/>
+<text id="1157" value="ECS Set 32&#176;C / ECS encl."/>
+<text id="1158" value="ECS Set 32&#176;C / ECS h.serv."/>
+<text id="1159" value="ECS Set 40&#176;C / ECS encl."/>
+<text id="1160" value="ECS Set 40&#176;C / ECS h.serv."/>
+<text id="1161" value="ECS Set 50&#176;C / ECS encl."/>
+<text id="1162" value="ECS Set 50&#176;C / ECS h.serv."/>
+<text id="1163" value="Par.r / ECS encl."/>
+<text id="1164" value="Par.r / ECS h.serv."/>
+<text id="1165" value="ECS 45&#176;C / Déb. 60°C"/>
+<text id="1166" value="ECS 45&#176;C / Déb. 75°C"/>
+<text id="1167" value="ECS 45&#176;C / Déb. Par.1"/>
+<text id="1168" value="ECS 55&#176;C / Déb. 60°C"/>
+<text id="1169" value="ECS 55&#176;C / Déb. 75°C"/>
+<text id="1170" value="ECS 55&#176;C / Déb. Par.1"/>
+<text id="1171" value="Par.3 / Déb. 60&#176;C"/>
+<text id="1172" value="Par.3 / Déb. 75&#176;C"/>
+<text id="1173" value="Par.3 / Déb. Par.1"/>
+<text id="1174" value="Bas"/>
+<text id="1175" value="Haut"/>
+<text id="1176" value="ECS45/ CH encl. /ECS encl."/>
+<text id="1177" value="ECS45/ CH encl. /ECS h.serv."/>
+<text id="1178" value="ECS45/ CH h.serv. /ECS h.serv."/>
+<text id="1179" value="ECS55/ CH encl. /ECS encl."/>
+<text id="1180" value="ECS55/ CH encl. /ECS h.serv."/>
+<text id="1181" value="ECS55/ CH h.serv. /ECS h.serv."/>
+<text id="1182" value="Par3/ CH encl. / ECS encl."/>
+<text id="1183" value="Par3/ CH encl. / ECS h.serv."/>
+<text id="1184" value="Par3/ CH h.serv. / ECS h.serv."/>
+<text id="1185" value="Déb.60&#176;C / Par2"/>
+<text id="1186" value="Déb.60&#176;C / Circ.cont."/>
+<text id="1187" value="Déb.75&#176;C / Par2"/>
+<text id="1188" value="Déb.75&#176;C / Circ.cont."/>
+<text id="1189" value="Par1 / Par2"/>
+<text id="1190" value="Par1 / Circ.cont."/>
+<text id="1191" value="Dummy"/>
+<text id="1192" value="10: Quinta 10 NL Solo"/>
+<text id="1193" value="11: Quinta 10 NL Combi"/>
+<text id="1194" value="12: Quinta 10 Exp Solo"/>
+<text id="1195" value="13: Quinta 10 Exp Combi"/>
+<text id="1196" value="14: Quinta 10 GB Solo"/>
+<text id="1197" value="15: Quinta 10 GB Combi"/>
+<text id="1198" value="16: Quinta10 -"/>
+<text id="1199" value="17: Quinta10 -"/>
+<text id="1200" value="20: W21 NL Solo"/>
+<text id="1201" value="21: W21 NL Combi"/>
+<text id="1202" value="22: W21 Exp Solo"/>
+<text id="1203" value="23: W21 Exp Combi"/>
+<text id="1204" value="24: W21 GB Solo"/>
+<text id="1205" value="25: W21 GB Combi"/>
+<text id="1206" value="26: W21 -"/>
+<text id="1207" value="27: W21 -"/>
+<text id="1208" value="30: W28 NL Solo"/>
+<text id="1209" value="31: W28 NL Combi"/>
+<text id="1210" value="32: W28 Exp Solo"/>
+<text id="1211" value="33: W28 Exp Combi"/>
+<text id="1212" value="34: W28 GB Solo"/>
+<text id="1213" value="35: W28 GB Combi"/>
+<text id="1214" value="36: W28 -"/>
+<text id="1215" value="37: W28 -"/>
+<text id="1216" value="40: Quinta 45 NL Solo"/>
+<text id="1217" value="41: Quinta 45 NL Combi"/>
+<text id="1218" value="42: Quinta 45 Exp Solo"/>
+<text id="1219" value="43: Quinta 45 Exp Combi"/>
+<text id="1220" value="44: Quinta 45 GB Solo"/>
+<text id="1221" value="45: Quinta 45 GB Combi"/>
+<text id="1222" value="46: Quinta 45 -"/>
+<text id="1223" value="47: Quinta 45 -"/>
+<text id="1224" value="50: Q25/28/35 NL Solo"/>
+<text id="1225" value="51: Q25/28/35 NL Combi"/>
+<text id="1226" value="52: Q25/28/35 Exp Solo"/>
+<text id="1227" value="53: Q25/28/35 Exp Combi"/>
+<text id="1228" value="54: Q25/28/35 GB Solo"/>
+<text id="1229" value="55: Q25/28/35 GB Combi"/>
+<text id="1230" value="56: Q25/28/35 -"/>
+<text id="1231" value="57: Q25/28/35 -"/>
+<text id="1232" value="60: Quinta 65 NL Solo"/>
+<text id="1233" value="61: Quinta 65 NL Combi"/>
+<text id="1234" value="62: Quinta 65 Exp Solo"/>
+<text id="1235" value="63: Quinta 65 Exp Combi"/>
+<text id="1236" value="64: Quinta 65 GB Solo"/>
+<text id="1237" value="65: Quinta 65 GB Combi"/>
+<text id="1238" value="66: Quinta 65 -"/>
+<text id="1239" value="67: Quinta 65 -"/>
+<text id="1240" value="70: Quinta 30 NL Solo"/>
+<text id="1241" value="71: Quinta 30 NL Combi"/>
+<text id="1242" value="72: Quinta 30 Exp Solo"/>
+<text id="1243" value="73: Quinta 30 Exp Combi"/>
+<text id="1244" value="74: Quinta 30 GB Solo"/>
+<text id="1245" value="75: Quinta 30 GB Combi"/>
+<text id="1246" value="76: Quinta 30 -"/>
+<text id="1247" value="77: Quinta 30 -"/>
+<text id="1248" value="80: Quinta 85 NL Solo"/>
+<text id="1249" value="81: Quinta 85 NL Combi"/>
+<text id="1250" value="82: Quinta 85 Exp Solo"/>
+<text id="1251" value="83: Quinta 85 Exp Combi"/>
+<text id="1252" value="84: Quinta 85 GB Solo"/>
+<text id="1253" value="85: Quinta 85 GB Combi"/>
+<text id="1254" value="86: Quinta 85 -"/>
+<text id="1255" value="87: Quinta 85 -"/>
+<text id="1256" value="Analogue 0V"/>
+<text id="1257" value="Analogue 10V"/>
+<text id="1264" value="ECS Set 0&#176;C / ECS encl."/>
+<text id="1265" value="ECS Set 0&#176;C / ECS h.serv."/>
+<text id="1266" value="80kW High Alt"/>
+<text id="1267" value="200kW HighAlt"/>
+<text id="1268" value="200 extraHigh"/>
+<text id="1300" value="6:Temps post-circ pompe chauff"/>
+<text id="1301" value="7:Temps post-circ pompe ECS"/>
+<text id="1302" value="8:Arrêt de Réglage"/>
+<text id="1303" value="9:Blocage"/>
+<text id="1304" value="E00: défaut sonde"/>
+<text id="1305" value="E01: Débit &gt; Tmax."/>
+<text id="1306" value="E02: Retour &gt; Départ"/>
+<text id="1307" value="E03: Défaut terre ou automate"/>
+<text id="1308" value="E04: pas de flamme"/>
+<text id="1309" value="E05: &gt;5 démarrages ratés"/>
+<text id="1310" value="E06: simulation flamme"/>
+<text id="1311" value="E07: Press eau trop basse"/>
+<text id="1312" value="E08: défaut ventilateur"/>
+<text id="1313" value="E12: défaut contrôle WTW"/>
+<text id="1314" value="E13: fusible"/>
+<text id="1315" value="E43: limite paramètre"/>
+<text id="1316" value="E44: contrôle paramètres"/>
+<text id="1317" value="E45: paramètres par défaut"/>
+<text id="1318" value="B90: augmentation température"/>
+<text id="1319" value="B91: deltaT trop grand"/>
+<text id="1320" value="B80: entrée ouverte"/>
+<text id="1335" value="Débit temp max durant mode chauffage"/>
+<text id="1336" value="Température eau désirée"/>
+<text id="1337" value="Type régl. Chaudière"/>
+<text id="1338" value="Interrupteur encl./h.serv. fonct. ECS/chauffage"/>
+<text id="1339" value="Confort ECS"/>
+<text id="1340" value="stockpour confort eau chaude"/>
+<text id="1341" value="Toujours encl."/>
+<text id="1342" value="Toujours h.serv."/>
+<text id="1343" value="Regler"/>
+<text id="1344" value="Anticiper"/>
+<text id="1345" value="Anticipation thermostat tout ou rien"/>
+<text id="1346" value="Arrêt auto écran"/>
+<text id="1347" value="arrêt auto écran après 3 mn"/>
+<text id="1348" value="Vit max ventil durant fonct chauffage"/>
+<text id="1349" value="Vit max ventil durant fonct ECS"/>
+<text id="1350" value="Vit mini ventil fonct ECS+chauffage"/>
+<text id="1351" value="vit ventil au démarr chaudière"/>
+<text id="1352" value="Position du circ durant fonct. en chauffage"/>
+<text id="1353" value="WTW actif"/>
+<text id="1354" value="WTW connexion ouvert externe"/>
+<text id="1362" value="Temp.départ"/>
+<text id="1363" value="Température de départ"/>
+<text id="1364" value="Temp.retour"/>
+<text id="1365" value="Température de retour"/>
+<text id="1366" value="Temp.ECS"/>
+<text id="1367" value="Température de l&apos;ECS"/>
+<text id="1376" value="Temp.ambiante"/>
+<text id="1377" value="Température ambiante régulateur OT"/>
+<text id="1378" value="Réglage chauffage"/>
+<text id="1379" value="Réglage pour fonctionnement en chauffage"/>
+<text id="1380" value="Réglage ECS"/>
+<text id="1381" value="Réglage température de départ pour fonctionnement en ECS"/>
+<text id="1382" value="Régl. T.ambiante"/>
+<text id="1383" value="Réglage température ambiante régulateur OT"/>
+<text id="1384" value="Réglage ventilateur"/>
+<text id="1385" value="Réglage vitesse ventilateur"/>
+<text id="1386" value="Vitesse ventilateur"/>
+<text id="1387" value="Vitesse de rotation du ventilateur"/>
+<text id="1388" value="Courant ionisation"/>
+<text id="1389" value="Courant ionisation"/>
+<text id="1396" value="Vitesse pompe"/>
+<text id="1397" value="Vitesse pompe"/>
+<text id="1400" value="Puissance disponible"/>
+<text id="1401" value="Puissance maxi désirée par régulateur"/>
+<text id="1402" value="Puissance actuelle"/>
+<text id="1403" value="Puissance actuelle de la chaudière"/>
+<text id="1404" value="Régulateur mod."/>
+<text id="1405" value="Régulateur modulant l connecté"/>
+<text id="1406" value="Demande modulant"/>
+<text id="1407" value="Demande de chaleur du régulateur modulant"/>
+<text id="1408" value="Demande Tout/Rien"/>
+<text id="1409" value="Demande de chaleur du régulateur Tout ou Rien"/>
+<text id="1412" value="Eco ECS"/>
+<text id="1413" value="Eco ECS, température non-maintenue"/>
+<text id="1414" value="Demande de chaleur"/>
+<text id="1415" value="Demande d&apos;ECS"/>
+<text id="1416" value="Entrée fermée"/>
+<text id="1417" value="Entrée fermée ou test WTW "/>
+<text id="1420" value="Ionisation"/>
+<text id="1422" value="Contrôle débit"/>
+<text id="1423" value="Contrôle débit pour détect ECS"/>
+<text id="1432" value="Vanne gaz"/>
+<text id="1436" value="allumage"/>
+<text id="1438" value="vanne 3 voies"/>
+<text id="1446" value="Pompe"/>
+<text id="1465" value="uA"/>
+<text id="1466" value="erreur code"/>
+<text id="1467" value="Status"/>
+<text id="1468" value="Nombre"/>
+<text id="1469" value="T1 temp départ"/>
+<text id="1470" value="T2 temp retour"/>
+<text id="1471" value="2: préallumage et allumage "/>
+<text id="1472" value="3:Fonctionnement chauffage"/>
+<text id="1473" value="5:Attente ouv/ferm presst air"/>
+<text id="1474" value="6:Arrêt brûleur pour défaut"/>
+<text id="1475" value="7:Temps post circ mode chauff."/>
+<text id="1476" value="9:arrêt brûleur (défaut)"/>
+<text id="1477" value="12:refroidissement brûleur"/>
+<text id="1478" value="H: forcé allure max"/>
+<text id="1479" value="L:forcé allure mini"/>
+<text id="1480" value="t:Teste système vanne gaz"/>
+<text id="1481" value="B81: erreur contrôl WTW "/>
+<text id="1482" value="Verrouillages"/>
+<text id="1483" value="Blocages"/>
+<text id="1484" value="20:Vit ventilateur &gt; max"/>
+<text id="1485" value="38:Court-circuit presst air"/>
+<text id="1486" value="39:Presst air ouvert"/>
+<text id="1487" value="45:Court circ sonde d&apos;eau"/>
+<text id="1488" value="46:Sonde d&apos;eau ouverte"/>
+<text id="1489" value="47:Sonde encrass. court-circ"/>
+<text id="1490" value="48:Sonde encrass. ouverte"/>
+<text id="1491" value="62:Press eau trop basse"/>
+<text id="1492" value="90:Fuite gaz dans VA2"/>
+<text id="1493" value="91:Err Press air durant préventil"/>
+<text id="1494" value="97:Delta T temp eau depassé"/>
+<text id="1495" value="99:entrée déblocage ne ferme pas"/>
+<text id="1496" value="Vitesse rotation actuelle"/>
+<text id="1497" value="heure fonctionnement"/>
+<text id="1498" value="uA"/>
+<text id="1499" value="Nombre de verrouillages"/>
+<text id="1500" value="Nombre de blocages"/>
+<text id="1501" value="Pas de verrouillages"/>
+<text id="1502" value="Pas de blocages"/>
+<text id="1503" value="CES chaud, ECS arrêtée"/>
+<text id="1504" value="réduction vanne"/>
+<text id="1512" value="Connecté à :"/>
+<text id="1535" value="Appuyez sur Reset pour activer les paramètres"/>
+<text id="1540" value="Chaudière non connectée"/>
+<text id="1544" value="Bande contrôle ECS"/>
+<text id="1545" value="Retard. circ. ECS"/>
+<text id="1546" value="Post-circulat chauff"/>
+<text id="1547" value="Post-circulat ECS"/>
+<text id="1548" value="Point départ modul."/>
+<text id="1549" value="Charge part. forcée"/>
+<text id="1550" value="Hyst. chauff"/>
+<text id="1551" value="Intervalle réchauff"/>
+<text id="1552" value="Réchauff ECS si T&lt;"/>
+<text id="1553" value="Réchauff ECS jusqu&apos;à"/>
+<text id="1554" value="Offset ECS"/>
+<text id="1555" value="Offset échan.à plaq"/>
+<text id="1556" value="Tmaxi"/>
+<text id="1557" value="Fact. P chauff."/>
+<text id="1558" value="Fact. I chauff."/>
+<text id="1559" value="Fact. P ECS"/>
+<text id="1560" value="Fact. I ECS"/>
+<text id="1561" value="Augment.max."/>
+<text id="1562" value="maxi +dN/dt ven"/>
+<text id="1563" value="maxi -dN/dt ven"/>
+<text id="1564" value="Rpm/s"/>
+<text id="1565" value="/10&#176;C"/>
+<text id="1566" value="90+par"/>
+<text id="1567" value="*10min"/>
+<text id="1568" value="Temp. Automate"/>
+<text id="1569" value="Vitesse préventilat"/>
+<text id="1570" value="Vitesse de rotation durant la préventilation"/>
+<text id="1571" value="Maxi rpm overshoot"/>
+<text id="1572" value="Après1 tentative en blocage 20"/>
+<text id="1573" value="pt consg départ lup"/>
+<text id="1574" value="Iup ventilateur si (Tset-Tdépart)&lt;5K"/>
+<text id="1575" value="T.max bloc"/>
+<text id="1576" value="Si dépassement de cette limite -&gt; blocage 31"/>
+<text id="1577" value="*3 sec"/>
+<text id="1578" value="Point inversion LDS"/>
+<text id="1579" value="dP mini pour démarrage"/>
+<text id="1580" value="Etape mod: %"/>
+<text id="1581" value="Après dépassement 2&#176;limite"/>
+<text id="1582" value="Etape mod: interval"/>
+<text id="1583" value="Etape mod. vers haut si dépassement 2&#176;limite"/>
+<text id="1584" value="Etape mod: T.bloc"/>
+<text id="1585" value="Etape mod. vers bas si augment. T.bloc, &gt;1&#176;limite, Par.29"/>
+<text id="1586" value="augm.T.bloc 1&#176;limit"/>
+<text id="1587" value="Si dépassement de cette limite -&gt; mod. vers le bas"/>
+<text id="1588" value="&#176;C/sec"/>
+<text id="1589" value="augm.T.bloc 2&#176;limit"/>
+<text id="1590" value="Si dépassement de cette limite -&gt; chaud. en petite allure"/>
+<text id="1591" value="augm.T.bloc 3&#176;limit"/>
+<text id="1592" value="Si dépassement de cette limite -&gt; chaud. en blocage"/>
+<text id="1593" value="&amp;Mises à jour disponibles"/>
+<text id="1595" value="&amp;Contrôle Connexion"/>
+<text id="1596" value="&amp;Communication"/>
+<text id="1597" value="&amp;Eeprom"/>
+<text id="1598" value="&amp;Ouvrir fichier"/>
+<text id="1599" value="&amp;Ouvrir. . ."/>
+<text id="1600" value="&amp;Chercher dans l&apos;automate"/>
+<text id="1601" value="&amp;Sauvegarder fichier"/>
+<text id="1602" value="&amp;Chercher dans l&apos;automate"/>
+<text id="1603" value="&amp;Remise à zéro"/>
+<text id="1605" value="&amp;Envoyer à l&apos;automate"/>
+<text id="1606" value="Infos. . ."/>
+<text id="1608" value="Auto detect"/>
+<text id="1610" value="Préférences communication"/>
+<text id="1611" value="Liste port COM"/>
+<text id="1616" value="Dec-read"/>
+<text id="1617" value="Dec-write"/>
+<text id="1618" value="Erreur dur sauvegarde Eeprom"/>
+<text id="1620" value="Graphique options"/>
+<text id="1621" value="Graphique"/>
+<text id="1622" value="Hex-read"/>
+<text id="1623" value="en service"/>
+<text id="1624" value="Mot de passe"/>
+<text id="1625" value="Fabricant"/>
+<text id="1626" value="ms"/>
+<text id="1627" value="Chaudière non-trouvée"/>
+<text id="1629" value="Mémoriser"/>
+<text id="1636" value="Préférences"/>
+<text id="1638" value="inconnu"/>
+<text id="1641" value="Trouvé"/>
+<text id="1642" value="Vous changez de chaudière? Tous les écrans seront fermés."/>
+<text id="1643" value="&amp;Préférences"/>
+<text id="1644" value="Transférer les données dans un journal de bord?"/>
+<text id="1646" value="Axe X valeur &#176;C maximale"/>
+<text id="1647" value="Axe Y valeur &#176;C minimale"/>
+<text id="1648" value="Type chaudière:"/>
+<text id="1649" value="Augment. modulation"/>
+<text id="1650" value="Plage T. modulation en fonct. ECS"/>
+<text id="1651" value="Attente av. démarrage circ. pour préchauffage échang.plaques"/>
+<text id="1652" value="Postcirculation circulateur circuit de chauffage"/>
+<text id="1653" value="Postcirculation circulateur circuit ECS"/>
+<text id="1654" value="Modulation vers le bas si dT plus grand que ce paramètre"/>
+<text id="1655" value="Petite allure forcée en chauff. + lors transit. ECS-&gt;chauff."/>
+<text id="1656" value="Démarrage en fonct. chauff. si T &lt; Tset + 5&#176;C - ce par."/>
+<text id="1657" value="Intervalle entre démarrages préchauff. de la chaudière"/>
+<text id="1658" value="Quand ECO=éteint: préchauff. si T &lt; ce paramètre"/>
+<text id="1659" value="Quand ECO=éteint: préchauff. primaire jusqu&apos;à ce paramètre"/>
+<text id="1660" value="Correction T.ECS pour réglage sur retour"/>
+<text id="1661" value="Correction T.ECS pour TsetECS-Tretour échang.plaques"/>
+<text id="1662" value="T.max départ durant fonct. chauff."/>
+<text id="1663" value="Fact. P régulateur chauff."/>
+<text id="1664" value="Fact. I régulateur chauff."/>
+<text id="1665" value="Fact. P régulateur ECS"/>
+<text id="1666" value="Fact. I régulateur ECS"/>
+<text id="1667" value="Blocage si vitesse augment. plus grande que ce paramètre"/>
+<text id="1668" value="Vitesse max augment. de vitesse de rotation du ventilateur"/>
+<text id="1669" value="Vitesse max diminut. de vitesse de rotation du ventilateur"/>
+<text id="1670" value="Modulation vers le bas si augment.vitesse &gt; ce paramètre"/>
+<text id="1671" value="Vanne Gaz 2"/>
+<text id="1672" value="Pompe Shunt"/>
+<text id="1673" value="Vanne obtur. EPC"/>
+<text id="1674" value="Temp. ballon ECS"/>
+<text id="1675" value="Température ballon ECS"/>
+<text id="1676" value="Temp. prod.comb."/>
+<text id="1677" value="Température des produits de la combustion"/>
+<text id="1678" value="Temp. ext"/>
+<text id="1679" value="Température à l&apos;extérier"/>
+<text id="1680" value="Temp. M1"/>
+<text id="1681" value="Teste température M1"/>
+<text id="1682" value="Hyst. ECS"/>
+<text id="1683" value="Consigne hausse ECS"/>
+<text id="1684" value="pt de consigne hausse T.ECS par rapport à Tset"/>
+<text id="1687" value="Enclench. circ ECS"/>
+<text id="1688" value="Rallent. enclench. circ ECS par rapport au circ CH"/>
+<text id="1689" value="Post-circ ECS"/>
+<text id="1690" value="Post-circulation du circulateur ECS"/>
+<text id="1691" value="Point inf. T.départ"/>
+<text id="1692" value="Point inférieur de la pente de chauffe tempér. départ"/>
+<text id="1693" value="Point inf. T.extér."/>
+<text id="1694" value="Point inférieur de la pente de chauffe tempér. extérieure"/>
+<text id="1695" value="Point clima T.extér"/>
+<text id="1696" value="Point clima de la pente de chauffe tempér. extérieure"/>
+<text id="1697" value="Entrée blocage 1"/>
+<text id="1698" value="Entrée blocage 2"/>
+<text id="1699" value="Comm. position"/>
+<text id="1700" value="Communication de la pos. du relais mise en sécurité/fonct."/>
+<text id="1701" value="Temp. M2"/>
+<text id="1702" value="Teste température M2"/>
+<text id="1703" value="Température automate"/>
+<text id="1704" value="Consg hausse dém.ECS"/>
+<text id="1705" value="hausse pt de consigne en démarrage fonct. ECS"/>
+<text id="1706" value="Type chaudière:"/>
+<text id="1707" value="Type chaudière et régulation:"/>
+<text id="1708" value="Combi"/>
+<text id="1709" value="Solo (+ballon)"/>
+<text id="1710" value="Colonne Confort"/>
+<text id="1711" value="CH encl."/>
+<text id="1712" value="ECS encl."/>
+<text id="1714" value="Des mises à jours sont possibles."/>
+<text id="1715" value="Des mises à jours ne sont pas possibles."/>
+<text id="1717" value="Lecture Eeprom"/>
+<text id="1718" value="Memo"/>
+<text id="1721" value="Verrouillage"/>
+<text id="1722" value="kW pour 10000rpm"/>
+<text id="1723" value="Puissance en kW pour 10.000 rpm théoriques"/>
+<text id="1724" value="rpm pour 0kW"/>
+<text id="1725" value="Vitesse de rotation pour 0kW théoriques"/>
+<text id="1726" value="Recherche. . ."/>
+<text id="1727" value="Verrouillage"/>
+<text id="1728" value="Blocage"/>
+<text id="1729" value="Interrompre"/>
+<text id="1730" value="10:Cycle purge d&apos;air"/>
+<text id="1731" value="11:Petite allure forcée"/>
+<text id="1732" value="12:Grande allure forcée Chauff"/>
+<text id="1733" value="13:Grande allure forcée ECS"/>
+<text id="1734" value="15:Demande chaleur manuelle"/>
+<text id="1735" value="Indication écran"/>
+<text id="1736" value="Quantité d&apos;information sur l&apos;écran"/>
+<text id="1737" value="Simple"/>
+<text id="1738" value="Etendu"/>
+<text id="1739" value="Automatique"/>
+<text id="1740" value="Signalisation dérangement"/>
+<text id="1741" value="Signalisation fonctionnement"/>
+<text id="1742" value="Vanne gaz externe"/>
+<text id="1743" value="Anti-Légionellose"/>
+<text id="1744" value="Protection anti-Légionellose ballon ECS"/>
+<text id="1745" value="Hyst. Ballon ECS"/>
+<text id="1746" value="Enclench. Hyst. Ballon ECS"/>
+<text id="1747" value="Offset calorifier"/>
+<text id="1748" value="Arrêt. Offset sonde ECS"/>
+<text id="1749" value="Enclench. Hyst. Préparation ECS"/>
+<text id="1750" value="B23: dérangement sonde ECS"/>
+<text id="1751" value="B92: irrigation insuffisante"/>
+<text id="1752" value="E09 : pression hydr. faible"/>
+<text id="1753" value="E10: insuffisamment purgé"/>
+<text id="1754" value="E11: temp. Boîte à air &gt; max"/>
+<text id="1755" value="5:Anti court-cycle Chauff."/>
+<text id="1756" value="Heures circ. Chauff."/>
+<text id="1757" value="Heures circ. Shunt"/>
+<text id="1758" value="Heures Vanne 3-Voies ECS"/>
+<text id="1759" value="Heures Vanne 3-Voies Chauffage"/>
+<text id="1760" value="Heures circ. ECS"/>
+<text id="1761" value="Heures Fonct. Chauff.+ECS"/>
+<text id="1762" value="Heures Fonct. Chauffage"/>
+<text id="1763" value="Heures Fonct. ECS"/>
+<text id="1764" value="Heures sous Tension"/>
+<text id="1765" value="Démarrages circ. Chauffage"/>
+<text id="1766" value="Démarrages circ. Shunt"/>
+<text id="1767" value="Cycles Vanne 3-Voies"/>
+<text id="1768" value="Démarrages circ. ECS"/>
+<text id="1769" value="Démarrages brûleur Chauf+ECS"/>
+<text id="1770" value="Démarrages brûleur Chauff."/>
+<text id="1771" value="Démarrages brûleur ECS"/>
+<text id="1772" value="Démarrages brûleurs incompl."/>
+<text id="1773" value="Démarrages brûleurs complets"/>
+<text id="1774" value="Nombre d&apos;extinctions de flamme"/>
+<text id="1777" value="Fact. P ventilateur"/>
+<text id="1778" value="Fact. P régulation ventilateur"/>
+<text id="1779" value="Fact. I ventilateur"/>
+<text id="1780" value="Fact. I régulation ventilateur"/>
+<text id="1781" value="Paramètres teste pratique:"/>
+<text id="1782" value="Compteurs"/>
+<text id="1784" value="Open vented"/>
+<text id="1785" value="Révolutions max. chauff."/>
+<text id="1786" value="Révolutions max. absolu chauffage"/>
+<text id="1787" value="Révolutions max. ECS"/>
+<text id="1788" value="Révolutions max. absolu ECS"/>
+<text id="1789" value="dF-code"/>
+<text id="1790" value="dU-code"/>
+<text id="1792" value="Circulateur CC externe"/>
+<text id="1793" value="&amp;Compteurs"/>
+<text id="1795" value="B40: Code chaudière inconnu"/>
+<text id="1796" value="10: Quinta 115 NL Solo"/>
+<text id="1797" value="12: Quinta 115 Exp Solo"/>
+<text id="1798" value="14: Quinta 115 GB Solo"/>
+<text id="1799" value="121:débit CC ne suffit pas"/>
+<text id="1800" value="maxT1-T2 0flow"/>
+<text id="1801" value="maxT1-T2 après 30s charge min CC + dT1&gt;P38 pour 0flow -&gt;B121"/>
+<text id="1802" value="P CC régl dimin."/>
+<text id="1803" value="Facteur P CC régl diminuer. Régl augmenter P=0"/>
+<text id="1804" value="I CC régl dimin."/>
+<text id="1805" value="Facteur I CC régl diminuer. Régl augmenter I/10"/>
+<text id="1806" value="  "/>
+<text id="1807" value="E46: dF/dU erreur table"/>
+<text id="1808" value="Offset échauffement"/>
+<text id="1809" value="Offset lors échauffement pour confort ECS"/>
+<text id="1810" value="Hysterese échauffement"/>
+<text id="1811" value="Hysterese lors échauffement pour confort ECS"/>
+<text id="1812" value="Intervalle de chauffage CC"/>
+<text id="1813" value="Intervalle de chauffage pour ECS après CC"/>
+<text id="1814" value="Bande controle cons.ECS"/>
+<text id="1815" value="Ecart Temp. pour modulation sur Tconsigne ECS"/>
+<text id="1816" value="Facteur P cons.ECS"/>
+<text id="1817" value="Facteur P pour ECS dans bande controle Tconsigne ECS"/>
+<text id="1818" value="Facteur I cons.ECS"/>
+<text id="1819" value="Facteur I pour ECS dans bande controle Tconsigne ECS"/>
+<text id="1820" value="Facteur P CC diminuer"/>
+<text id="1821" value="Facteur P pour CC régl quand T1&gt;point consigne"/>
+<text id="1822" value="Facteur I CC diminuer"/>
+<text id="1823" value="Facteur I pour CC régl quand T1&gt;point consigne"/>
+<text id="1824" value="Pt de consigne int."/>
+<text id="1825" value="Mode Anti-légionellose"/>
+<text id="1826" value="Inverseur pression gaz"/>
+<text id="1827" value="Retardement flowswitch ECS"/>
+<text id="1828" value="Retardement  d&apos;enclenchement après détection puisage ECS"/>
+<text id="1829" value="115:ADC range error"/>
+<text id="1830" value="116:Hz - Resonator fault"/>
+<text id="1831" value="Heures circ. Chauff.+ECS"/>
+<text id="1832" value="Démarrages circ. Chauff.+ECS"/>
+<text id="1834" value="Relais externe circ chauff."/>
+<text id="1835" value="Thermostat ECS"/>
+<text id="1836" value="22: MC115"/>
+<text id="1837" value="Développement"/>
+<text id="1838" value="Imprimer"/>
+<text id="1839" value="1=sde PressHydr 2=sdeEncr 4=0-10V 8=Contr.Étanch.gaz 16=&#176;C/F"/>
+<text id="1840" value="123 : Défaillance sonde temp"/>
+<text id="1841" value="W21 Combi"/>
+<text id="1842" value="123 : fissure NTC1/NTC7"/>
+<text id="1843" value="124 : collage NTC1/NTC7"/>
+<text id="1844" value="125 : permutation NTC2/NTC7"/>
+<text id="1845" value="Langue"/>
+<text id="1846" value="Nederlands"/>
+<text id="1847" value="English"/>
+<text id="1848" value="Français"/>
+<text id="1849" value="Deutsch"/>
+<text id="1850" value="Italiano"/>
+<text id="1851" value="Langue du programme modifiée"/>
+<text id="1852" value="Redémarrez l&apos;application pour activer la modification."/>
+<text id="1853" value="Fichier introuvable"/>
+<text id="1854" value="Fich config chaud introuv : "/>
+<text id="1855" value="www.remeha.com"/>
+<text id="1856" value="0..255"/>
+<text id="1857" value="Entrez un nombre entier compris entre 0 et255."/>
+<text id="1858" value="Rempl. tous les champs, seuls les nombres sont autorisés."/>
+<text id="1859" value="Lecture impossible depuis la chaudière"/>
+<text id="1860" value="Envoi imporssible à la chaudière"/>
+<text id="1861" value="Configuration inconnue pour "/>
+<text id="1862" value="Défaillance de la configuration"/>
+<text id="1863" value="Sauvegarde du fichier :"/>
+<text id="1864" value="Cert données n&apos;ont pas pu être sauveg à l&apos;empl souhaité. Sélect. autre empl."/>
+<text id="1865" value="Chaudière introuvable. Nouvel essai..."/>
+<text id="1866" value="Abandon, veuillez patienter..."/>
+<text id="1869" value="Erreur lue à l&apos;enregistrement avec horodateur :"/>
+<text id="1870" value="Español"/>
+<text id="1871" value="Magyar"/>
+<text id="1872" value="Česky"/>
+<text id="1873" value="Polski"/>
+<text id="1874" value="Türkçe"/>
+<text id="1875" value="Srpski"/>
+<text id="1876" value="русский"/>
+<text id="1877" value="Pompe ECS (haute)"/>
+<text id="1878" value="Paramétrage de la pompe ECS (haute)"/>
+<text id="1879" value="Pompe de chauffage central (basse)"/>
+<text id="1880" value="Paramétrage de la pompe de chauffage central (basse)"/>
+<text id="1900" value="Données lues"/>
+<text id="1901" value="Aucune donnée disponible"/>
+<text id="1902" value="Convertir"/>
+<text id="1903" value="Convertir fichier"/>
+<text id="1904" value="Fermer"/>
+<text id="1905" value="Progress"/>
+<text id="1906" value="Chaud incon détectée"/>
+<text id="1907" value="Impos créer fichier :"/>
+<text id="1908" value="Impos convert fichier :"/>
+<text id="1909" value="Cause:"/>
+<text id="1910" value="Créé :"/>
+<text id="1911" value="Annulé"/>
+<text id="1912" value="Chaud incon"/>
+<text id="1913" value="Les données seront stockées mais ne peuvent être affichées."/>
+<text id="1914" value="Une mise à jour est disponible."/>
+<text id="1915" value="Voulez-vous téléch et install la nouvelle version ?"/>
+<text id="1916" value="Installation annulée"/>
+<text id="1917" value="Téléch de la nouv vers..."/>
+<text id="1918" value="La nouv vers va être installée."/>
+<text id="1919" value="Éteignez cette application pour pouvoir installer la nouvelle version."/>
+<text id="1920" value="L&apos;installation a échoué."/>
+<text id="1921" value="Contin"/>
+<text id="1922" value="Recherche de mises à jour"/>
+<text id="1923" value="Aucun fich à convert"/>
+<text id="1924" value="Rapp de convers :"/>
+<text id="1925" value="Conversion terminée."/>
+<text id="1926" value="Lect du fich:"/>
+<text id="1927" value="Heure de début :"/>
+<text id="1928" value="Heure de fin :"/>
+<text id="1929" value="Groupe1"/>
+<text id="1930" value="Groupe2"/>
+<text id="1931" value="Groupe3"/>
+<text id="1932" value="Exporter élément :"/>
+<text id="1933" value="Sauveg des don en cours. Cela peut prendre qlq min..."/>
+<text id="1934" value="Err lors de la dem d&apos;info de màj"/>
+<text id="1935" value="Demde d&apos;info de mise à jour..."/>
+<text id="1936" value="Lecture données de l&apos;appareil suppl..."/>
+<text id="1937" value="En attente..."/>
+<text id="1938" value="Lecture..."/>
+<text id="1939" value="Échec écriture sur fichier"/>
+<text id="1940" value="Ignorer"/>
+<text id="1941" value="Terminé"/>
+<text id="1942" value="Mise à jour installée. Redémarrez l&apos;application pour que les modifications s&apos;appliquent."/>
+<text id="1943" value="Réglage de la version de configuration"/>
+<text id="1944" value="Lire données suppl. pdt cs"/>
+<text id="1945" value="Une mise à jour de l&apos;application est disponible."/>
+<text id="1946" value="Une mise à jour de la configuartion est disponible"/>
+<text id="1947" value="Droits administrateur requis pour l&apos;installation"/>
+<text id="1948" value="Connecté"/>
+<text id="1949" value="Appareil inconnu"/>
+<text id="1950" value="Rechercher Wi-Fi..."/>
+<text id="1951" value="Pas de Clé Service Wi-Fi trouvée.\n\nls est ce que le Wi-Fi est activé ?\nPour la connexion, activer le Wi-Fi et connecter l&apos;appareil au réseau Wi-Fi de la Clé Service.\nls Est-ce que la Clé Service est allumée ?\nls est ce que le générateur est sous tension ?"/>
+<text id="1952" value="Rechercher Wi-Fi (défaut)..."/>
+<text id="1953" value="Maintenance"/>
+<text id="1954" value="Type d&apos;usage"/>
+<text id="1955" value="Maintenance"/>
+<text id="1956" value="Installation"/>
+<text id="1957" value="Gestion des erreurs"/>
+<text id="1958" value="Mise à jour"/>
+<text id="1959" value="Mises à jour"/>
+<text id="1960" value="Accueil"/>
+<text id="1961" value="Mesures"/>
+<text id="1962" value="dF/dU"/>
+<text id="1963" value="Envoyer"/>
+<text id="1964" value="Utilisateur"/>
+<text id="1965" value="Installateur"/>
+<text id="1966" value="S.A.V"/>
+<text id="1967" value="Autres"/>
+<text id="1968" value="Temp."/>
+<text id="1969" value="Etats"/>
+<text id="1970" value="SU"/>
+<text id="1971" value="Aide au dépannage"/>
+<text id="1972" value="L&apos;envoi des données a échoué"/>
+<text id="1973" value="Notice"/>
+<text id="1974" value="Le réseau Wi-Fi par défaut est introuvable.\n\nModifier les réglages Wi-Fi et connecter l&apos;appareil au réseau par défaut de la Clé Service."/>
+<text id="1975" value="Rechercher la Clé Service..."/>
+<text id="1976" value="Pas de connexion avec la Clé Service.\n\n Attendre 20s pendant le démarrage de la Clé Service.\nls la Clé Service est peut être utilisée par un autre générateur."/>
+<text id="1977" value="Recherche générateur"/>
+<text id="1978" value="Pas de générateur trouvé.\n\nConnectez la Clé Service au générateur et mettez le sous tension."/>
+<text id="1980" value="Réinitialisation messages"/>
+<text id="1981" value="Réinitialisation défauts"/>
+<text id="1982" value="Echec de la réinitialisation"/>
+<text id="1983" value="Réinitialisation"/>
+<text id="1984" value="Réinit. Compteurs"/>
+<text id="1985" value="Démo"/>
+<text id="1986" value="Mode hors ligne"/>
+<text id="1987" value="Sélectionner un générateur"/>
+<text id="1988" value="Utiliser la Clé Service"/>
+<text id="1989" value="Identifiant"/>
+<text id="1990" value="Wi-Fi"/>
+<text id="1991" value="Identification réussie"/>
+<text id="1992" value="Paramètres Utilisateur"/>
+<text id="1993" value="identifiants incorrects"/>
+<text id="1994" value="Entrer le mot de passe approprié pour accéder au niveau d&apos;identification souhaité"/>
+<text id="1995" value="Niveau d’identification"/>
+<text id="1996" value="Notice d&apos;installation"/>
+<text id="1997" value="Information non disponible"/>
+<text id="1998" value="Changer Identifiant"/>
+<text id="1999" value="Chargement"/>
+<text id="2000" value="Identification"/>
+<text id="2001" value="Nombre d&apos;appareils"/>
+<text id="2002" value="Chaudière"/>
+<text id="2003" value="PSU"/>
+<text id="2004" value="PCU"/>
+<text id="2005" value="SU N&#176;"/>
+<text id="2006" value="SCU-C"/>
+<text id="2007" value="SCU-S N&#176;"/>
+<text id="2008" value="IF"/>
+<text id="2009" value="Type d&apos;appareil"/>
+<text id="2010" value="Version logiciel"/>
+<text id="2011" value="Version matériel"/>
+<text id="2012" value="Version paramètres"/>
+<text id="2013" value="Type de paramètre"/>
+<text id="2014" value="Heures fonct."/>
+<text id="2015" value="Numéro de série"/>
+<text id="2016" value="Nom de la chaudière"/>
+<text id="2017" value="Type SU connectée"/>
+<text id="2018" value="Type PSU connectée"/>
+<text id="2019" value="Type PCU connectée"/>
+<text id="2020" value="Dern. code blocage"/>
+<text id="2021" value="Dern. code verr."/>
+<text id="2022" value="Dern. erreur int."/>
+<text id="2023" value="État"/>
+<text id="2024" value="Sous-état"/>
+<text id="2025" value="Blocage b"/>
+<text id="2026" value="Verrouillage E"/>
+<text id="2027" value="Pas d&apos;identification disponible"/>
+<text id="2028" value="Importer fichier journal"/>
+<text id="2029" value="Adresse"/>
+<text id="2030" value="1er bloc"/>
+<text id="2031" value="Nombre de blocs"/>
+<text id="2032" value="1er bloc hors tolérance :"/>
+<text id="2033" value="Nombre de blocs hors tolérance :"/>
+<text id="2034" value="Affichage blocs :"/>
+<text id="2035" value="Auc. donnée !"/>
+<text id="2036" value="Auc. donnée val."/>
+<text id="2037" value="Eeprom"/>
+<text id="2038" value="Modifier"/>
+<text id="2039" value="Valeur décimale :"/>
+<text id="2040" value="Code acc SAV suiv"/>
+<text id="2041" value="Exporter"/>
+<text id="2042" value="Annuler événement entretien"/>
+<text id="2043" value="Vous pouvez annuler l&apos;événement d&apos;entretien indiqué lorsqu&apos;il est terminé."/>
+<text id="2044" value="Voulez-vous annuler un événement d&apos;entretien terminé ?"/>
+<text id="2045" value="Veuillez patienter jusqu&apos;à ce que la chaudière termine le processus de détection..."/>
+<text id="2046" value="Détecter les accessoires"/>
+<text id="2047" value="Remarque Tous les mod. d&apos;exp. vont être suppr. et le proc. de détect. va redémarrer. La chaud. peut prendre plusieurs sec. pour terminer ce processus."/>
+<text id="2048" value="Etes-vous sûr de vouloir que la chaudière détecte à nouveau tous les modules d&apos;expansion ?"/>
+<text id="2049" value="Détecter"/>
+<text id="2050" value="Entretien"/>
+<text id="2051" value="La commande n&apos;est pas reconnue par la chaudière."/>
+<text id="2052" value="Echec de l&apos;enregistrement."/>
+<text id="2053" value="Sais. codes dF et dU de la plaque d&apos;identification :"/>
+<text id="2054" value="Remarque Vous ne devez pas saisir de code dF/dU non indiqué sur la plaque d&apos;identification !"/>
+<text id="2055" value="Remarque Tous les paramètres d&apos;usine vont être restaurés. Tous les autres paramètres vont être supprimés."/>
+<text id="2056" value="Voulez-vous utiliser ce code dF/dU pour restaurer les paramètres d&apos;usine ?"/>
+<text id="2057" value="Etes-vous sûr que les codes dF/dU saisis correspondent à ceux de la plaque d&apos;identification ?"/>
+<text id="2058" value="Etes-vous sûr ?"/>
+<text id="2059" value="Saisissez le code dF/dU"/>
+<text id="2060" value="Annulation possible"/>
+<text id="2099" value="gereserveerd"/>
+<text id="2100" value="0:Veille"/>
+<text id="2101" value="1:Démarrage chaudière"/>
+<text id="2102" value="2:Démarrage brûleur"/>
+<text id="2103" value="3:CC en marche"/>
+<text id="2104" value="4:ECS en marche"/>
+<text id="2105" value="5:Arrêt brûleur"/>
+<text id="2106" value="6:Arrêt chaudière"/>
+<text id="2107" value="7:-"/>
+<text id="2108" value="8:Arrêt contrôlé"/>
+<text id="2109" value="9:Mode blocage"/>
+<text id="2110" value="10:Mode verrouillage"/>
+<text id="2111" value="11:Mode cheminée L"/>
+<text id="2112" value="12:Mode cheminée h"/>
+<text id="2113" value="13:Mode cheminée H"/>
+<text id="2114" value="14:-"/>
+<text id="2115" value="15:Requête chauffage manu."/>
+<text id="2116" value="16:Protec. antigel chaudière"/>
+<text id="2117" value="17:Désaération"/>
+<text id="2118" value="18:protection contrôl temp"/>
+<text id="2119" value="19:-"/>
+<text id="2120" value="20:-"/>
+<text id="2198" value="État inconnu"/>
+<text id="2199" value="Arrêt contrôlé"/>
+<text id="2200" value="0:Veille"/>
+<text id="2201" value="1:Anti-cyclage"/>
+<text id="2202" value="2:Ouverture vanne hydr."/>
+<text id="2203" value="3:Démarrage pompe"/>
+<text id="2204" value="4:Attente démarrage brûleur"/>
+<text id="2205" value="5:-"/>
+<text id="2206" value="6:-"/>
+<text id="2207" value="7:-"/>
+<text id="2208" value="8:-"/>
+<text id="2209" value="9:-"/>
+<text id="2210" value="10:Ouverture vanne gaz ext."/>
+<text id="2211" value="11:Vit. ventil. vanne évac."/>
+<text id="2212" value="12:Ouverture vanne d&apos;évac."/>
+<text id="2213" value="13:Pré-purge"/>
+<text id="2214" value="14:Attente décl."/>
+<text id="2215" value="15:Démarrage brûleur"/>
+<text id="2216" value="16:Test VPS"/>
+<text id="2217" value="17:Pré-allumage"/>
+<text id="2218" value="18:Allumage"/>
+<text id="2219" value="19:Vérification flamme"/>
+<text id="2220" value="20:Purge intermédiaire"/>
+<text id="2230" value="30:Pt consigne int. normal"/>
+<text id="2231" value="31:Pt consigne int. limité"/>
+<text id="2232" value="32:Contrôle puissance norm."/>
+<text id="2233" value="33:Niveau contrôle pente 1"/>
+<text id="2234" value="34:Niveau contrôle pente 2"/>
+<text id="2235" value="35:Niveau contrôle pente 3"/>
+<text id="2236" value="36:Protection flamme"/>
+<text id="2237" value="37:Temps de stabilisation"/>
+<text id="2238" value="38:Démarrage à froid"/>
+<text id="2239" value="39:-"/>
+<text id="2240" value="40:Arrêt brûleur"/>
+<text id="2241" value="41:Post-purge"/>
+<text id="2242" value="42:Vit. ventil. vanne évac."/>
+<text id="2243" value="43:Fermet. vanne d&apos;évac."/>
+<text id="2244" value="44:Arrêt ventilateur"/>
+<text id="2245" value="45:Fermeture vanne gaz ext."/>
+<text id="2246" value="46:-"/>
+<text id="2247" value="47:-"/>
+<text id="2248" value="48:-"/>
+<text id="2249" value="49:-"/>
+<text id="2250" value="39:-"/>
+<text id="2260" value="60:Pause pompe"/>
+<text id="2261" value="61:Arrêt pompe"/>
+<text id="2262" value="62:Fermeture vanne hydr."/>
+<text id="2263" value="63:Dém. minuteur anti-cycle"/>
+<text id="2298" value="Sous-état inconnu"/>
+<text id="2299" value="255:Temps d&apos;attente réinit."/>
+<text id="2300" value="0:Pb paramètre PCU"/>
+<text id="2301" value="1:T fluide &gt; max."/>
+<text id="2302" value="2:dT/s fluide &gt; max."/>
+<text id="2303" value="3:T ÉchTherm &gt; max."/>
+<text id="2304" value="4:dT/s ÉchTherm &gt; max."/>
+<text id="2305" value="5:dT(ÉchTherm,Retour) &gt; max."/>
+<text id="2306" value="6:dT(Fluide,ÉchTherm) &gt; max."/>
+<text id="2307" value="7:dT(Fluide,Retour) &gt; max."/>
+<text id="2308" value="8:Auc. signal décl."/>
+<text id="2309" value="9:Vidange L-N"/>
+<text id="2310" value="10:Signal blocage gel exclu"/>
+<text id="2311" value="11:Sign. blocage gel inclus"/>
+<text id="2312" value="12:HMI non connecté"/>
+<text id="2313" value="13:Communication SCU"/>
+<text id="2314" value="14:Pression hydraul. mini"/>
+<text id="2315" value="15:Pression gaz mini"/>
+<text id="2316" value="16:Ident. SU non conforme"/>
+<text id="2317" value="17:Err. tableau ident. dF/dU"/>
+<text id="2318" value="18:Ident. PSU non conforme"/>
+<text id="2319" value="19:Ident. dF/dU requise"/>
+<text id="2320" value="20:Identification en cours"/>
+<text id="2321" value="21:Perte communication SU"/>
+<text id="2322" value="22:Perte flamme"/>
+<text id="2323" value="23:-"/>
+<text id="2324" value="24:Échec test VPS"/>
+<text id="2325" value="25:Erreur SU interne"/>
+<text id="2326" value="26 er. sonde bal. eau chaude"/>
+<text id="2327" value="27 : erreur sonde ECS"/>
+<text id="2328" value="28:Réinit en cours..."/>
+<text id="2329" value="29:GVC parameter changed"/>
+<text id="2330" value="30:-"/>
+<text id="2331" value="31:-"/>
+<text id="2332" value="32:-"/>
+<text id="2333" value="33:-"/>
+<text id="2334" value="34:-"/>
+<text id="2335" value="35:-"/>
+<text id="2336" value="36:-"/>
+<text id="2337" value="41:-"/>
+<text id="2338" value="43:-"/>
+<text id="2339" value="44:-"/>
+<text id="2340" value="45:-"/>
+<text id="2398" value="Code de blocage inconnu"/>
+<text id="2399" value="Pas de blocage"/>
+<text id="2400" value="00:PSU non connecté"/>
+<text id="2401" value="01:Pb paramètre SU"/>
+<text id="2402" value="02:T ÉchTherm. fermé"/>
+<text id="2403" value="03:T ÉchTherm. ouvert"/>
+<text id="2404" value="04:T ÉchTherm. &lt; min."/>
+<text id="2405" value="05:T ÉchTherm. &gt; max."/>
+<text id="2406" value="06:T Retour fermé"/>
+<text id="2407" value="07:T Retour ouvert"/>
+<text id="2408" value="08:T Retour &lt; min."/>
+<text id="2409" value="09:T Retour &gt; max."/>
+<text id="2410" value="10:dT(ÉchTherm,Retour) &gt; max"/>
+<text id="2411" value="11:dT(Retour,ÉchTherm) &gt; max"/>
+<text id="2412" value="12:STB activé"/>
+<text id="2413" value="13:-"/>
+<text id="2414" value="14:5x Échec démarrage"/>
+<text id="2415" value="15:5x Échec test VPS"/>
+<text id="2416" value="16:Erreur flamme"/>
+<text id="2417" value="17:Err. pilote vanne gaz SU"/>
+<text id="2432" value="32:T Fluide fermé"/>
+<text id="2433" value="33:T Fluide ouvert"/>
+<text id="2434" value="34:Ventil. hors tolérance"/>
+<text id="2435" value="35:Retour temp. fluide"/>
+<text id="2436" value="36:5x Perte flamme"/>
+<text id="2437" value="37:Communication SU"/>
+<text id="2438" value="38:Communication SCU-S"/>
+<text id="2439" value="39:Entrée chaud. verr."/>
+<text id="2440" value="40:-"/>
+<text id="2441" value="41:PCB temperature"/>
+<text id="2442" value="42:Low water pressure"/>
+<text id="2443" value="43:No gradient"/>
+<text id="2445" value="45:De-air test failed"/>
+<text id="2450" value="50:External PSU timeout"/>
+<text id="2451" value="51:Onboard PSU timeout"/>
+<text id="2452" value="52:GVC lockout"/>
+<text id="2490" value="10:dT(Fluide,Retour) &gt; max."/>
+<text id="2491" value="11:dT(Retour,Fluide) &gt; max."/>
+<text id="2492" value="02:T Fluide fermé"/>
+<text id="2493" value="03:T Fluide ouvert"/>
+<text id="2494" value="04:T Fluide &lt; min."/>
+<text id="2495" value="05:T Fluide &gt; max."/>
+<text id="2498" value="Code de verrouillage inconnu"/>
+<text id="2499" value="Pas de verrouillage"/>
+<text id="2500" value="Vanne d&apos;évac."/>
+<text id="2501" value="Vanne hydraulique"/>
+<text id="2502" value="Vanne à gaz ext."/>
+<text id="2503" value="Pression d&apos;évac."/>
+<text id="2504" value="Vanne Gaz 1"/>
+<text id="2505" value="SU État"/>
+<text id="2506" value="SU Blocage"/>
+<text id="2507" value="SU Verrouillage"/>
+<text id="2508" value="Brûleur faible"/>
+<text id="2509" value="Brûleur élevé"/>
+<text id="2510" value="Point de consigne brûleur"/>
+<text id="2511" value="Protection antigel"/>
+<text id="2512" value="Temp. ÉchTherm."/>
+<text id="2513" value="Temp. échangeur thermique"/>
+<text id="2514" value="Entrée décl."/>
+<text id="2515" value="Inter. pression VPS"/>
+<text id="2516" value="bar"/>
+<text id="2517" value=".1 bar"/>
+<text id="2518" value=".01C/s"/>
+<text id="2519" value="Blocage ECS"/>
+<text id="2520" value="Régul. temp."/>
+<text id="2521" value="Régulation températ"/>
+<text id="2522" value="Débit ECS"/>
+<text id="2523" value=",1C/l/m"/>
+<text id="2524" value="l/min"/>
+<text id="2525" value="Temp. Solaire"/>
+<text id="2526" value="Température solaire"/>
+<text id="2527" value="OT Smart power"/>
+<text id="2528" value="OpenTherm Smart power"/>
+<text id="2529" value="Vanne 3-voies ext."/>
+<text id="2530" value="Pompe CC externe"/>
+<text id="2531" value="*10 %"/>
+<text id="2532" value="/s"/>
+<text id="2533" value="HMI éclairage"/>
+<text id="2534" value="0.1l/m"/>
+<text id="2535" value="CH encl."/>
+<text id="2536" value="ECS encl."/>
+<text id="2537" value="Act min CC"/>
+<text id="2538" value="Act minut ECS"/>
+<text id="2539" value="Temp. EC"/>
+<text id="2540" value="Température EC"/>
+<text id="2541" value="HMI pt de consigne chauf. central"/>
+<text id="2542" value="HMI pt de consigne ECS"/>
+<text id="2543" value="HMI actif"/>
+<text id="2544" value="Régl. débit"/>
+<text id="2545" value="Pt de consigne débit"/>
+<text id="2546" value="Débit"/>
+<text id="2547" value="Débit réel"/>
+<text id="2548" value="Flue gas temp"/>
+<text id="2549" value="Flue gas temperature"/>
+<text id="2550" value="CH Offset"/>
+<text id="2551" value="CH Offset"/>
+<text id="2552" value="DHW anti leg. time"/>
+<text id="2553" value="DHW anti legionella time"/>
+<text id="2554" value="Antileg.time-out"/>
+<text id="2555" value="DHW Antilegionella time-out"/>
+<text id="2556" value="Min. flame current"/>
+<text id="2557" value="Minimum flame current"/>
+<text id="2558" value="PVC 65 &#176;C"/>
+<text id="2559" value="CPVC 95 &#176;C"/>
+<text id="2560" value="PP 100 &#176;C"/>
+<text id="2599" value="Pour usage futur"/>
+<text id="2600" value="Débit maxi système"/>
+<text id="2601" value="Température maxi fluide système de chauffage"/>
+<text id="2602" value="Temp prot. Antigel"/>
+<text id="2603" value="Temp extérieure mini protection antigel"/>
+<text id="2604" value="Pression gaz mini"/>
+<text id="2605" value="Détection pression gaz mini"/>
+<text id="2606" value="Délai vanne hydr."/>
+<text id="2607" value="Temps d&apos;attente vanne hydr."/>
+<text id="2608" value="Délai vanne évac."/>
+<text id="2609" value="Temps d&apos;attente vanne d&apos;évac. des gaz"/>
+<text id="2610" value="Tps d&apos;attente décl."/>
+<text id="2611" value="Temps d&apos;att. signal décl. valide, 0 = Non vér."/>
+<text id="2612" value="VPS Présent"/>
+<text id="2613" value="Séquence test vanne au démarrage brûleur"/>
+<text id="2614" value="Détection alim. L-N"/>
+<text id="2615" value="Détection de phase L-N activée"/>
+<text id="2616" value="Entrée de blocage"/>
+<text id="2617" value="Fonction entrée de blocage"/>
+<text id="2618" value="Blocage sans protec. antigel"/>
+<text id="2619" value="Blocage avec protec. antigel"/>
+<text id="2620" value="Verr. avec protec. antigel"/>
+<text id="2621" value="Requ. chauff. manu"/>
+<text id="2622" value="Fonction Requête chauffage manuelle activée dans menu"/>
+<text id="2623" value="dT(ÉchTherm,Retour)"/>
+<text id="2624" value="Écart de température maxi entre éch. thermique et retour"/>
+<text id="2625" value="dT(Fluide,ÉchTherm)"/>
+<text id="2626" value="Écart de température maxi entre fluide et éch. thermique"/>
+<text id="2627" value="Temp maxi ÉchTherm."/>
+<text id="2628" value="Température maxi échangeur thermique"/>
+<text id="2629" value="Désact. brûleur min"/>
+<text id="2630" value="Durée mini anti-cycle brûleur"/>
+<text id="2631" value="Désact. brûleur max"/>
+<text id="2632" value="Durée maxi anti-cycle brûleur"/>
+<text id="2633" value="Vit. vent. van. év."/>
+<text id="2634" value="Vit. ventil. à l&apos;ouverture vanne évac, protec. anti-recirc."/>
+<text id="2635" value="Tps stabilisation"/>
+<text id="2636" value="Temps de stabilisation après démarrage brûleur CC"/>
+<text id="2637" value="Temps pré-purge"/>
+<text id="2638" value="Temps pré-purge pour démarrage brûleur"/>
+<text id="2639" value="Temps post-purge"/>
+<text id="2640" value="Temps post-purge pour arrêt brûleur"/>
+<text id="2641" value="Vit. max ventil. CC"/>
+<text id="2642" value="Démar. ventil. CC"/>
+<text id="2643" value="Vit. min ventil. CC"/>
+<text id="2644" value="Vitesse ventil. min pour CC"/>
+<text id="2645" value="Hystérèse CC"/>
+<text id="2646" value="Démarrage hystérèse CC"/>
+<text id="2647" value="Pulsations ventil."/>
+<text id="2648" value="Pulsations tacho par tour du ventilateur"/>
+<text id="2649" value="Pause pompe CC"/>
+<text id="2650" value="Temps de pause pompe CC, 99 = Pompage continu"/>
+<text id="2651" value="Thermostat chaud."/>
+<text id="2652" value="Aciver/désactiver chaudière"/>
+<text id="2653" value="Pression hydr. mini"/>
+<text id="2654" value="Pression hydr. de blocage mini, 0 = Non vérifiée"/>
+<text id="2655" value="Pente dTMax 1"/>
+<text id="2656" value="Pente maxi pr modulation décroissante"/>
+<text id="2657" value="Pente dTMax 2"/>
+<text id="2658" value="Pente maxi pour charge forcée mini"/>
+<text id="2659" value="Pente dTMax 3"/>
+<text id="2660" value="Pente maxi pour blocage"/>
+<text id="2661" value="Bande commande CC"/>
+<text id="2662" value="Plage de temp. pour modulation CC"/>
+<text id="2663" value="Temp. fluide max"/>
+<text id="2664" value="Température fluide maxi pour blocage"/>
+<text id="2665" value="Veille vanne 3voies"/>
+<text id="2666" value="Veille vanne 3-voies : CC ou ECS"/>
+<text id="2667" value="CC"/>
+<text id="2668" value="ECS"/>
+<text id="2669" value="Débit min. ECS"/>
+<text id="2670" value="Débit min ECS pour détection ECS"/>
+<text id="2671" value="Démarrage pompe ECS"/>
+<text id="2672" value="Contrôle pompe, ECS à la demande de démarrage d&apos;ECS"/>
+<text id="2673" value="Démarrage pompe CC"/>
+<text id="2674" value="Contrôle pompe, CC requête démarr. chauffage"/>
+<text id="2675" value="Min pompe CC"/>
+<text id="2676" value="Contrôle pompe, vitesse mininum CC"/>
+<text id="2677" value="Max. pompe CC"/>
+<text id="2678" value="Contrôle pompe, vitesse maximum CC"/>
+<text id="2679" value="Min. pompe ECS"/>
+<text id="2680" value="Contrôle pompe, vitesse mininum ECS"/>
+<text id="2681" value="Max. pompe ECS"/>
+<text id="2682" value="Contrôle pompe, vitesse maximum ECS"/>
+<text id="2683" value="Pompe CC facteur I"/>
+<text id="2684" value="Facteur I pour contrôle pompe sur CC"/>
+<text id="2685" value="Pompe ECS facteur I"/>
+<text id="2686" value="Facteur I pour contrôle pompe sur ECS"/>
+<text id="2687" value="dT(Fluide, Retour)"/>
+<text id="2688" value="Écart de température maxi entre fluide et retour"/>
+<text id="2689" value="CC dTset pompe"/>
+<text id="2690" value="Contrôle pompe, tolérance dT pour CC"/>
+<text id="2691" value="ECS dTset pompe"/>
+<text id="2692" value="Contrôle pompe, tolérance dT pour ECS"/>
+<text id="2693" value="%Tf/Tr pompeECS20%"/>
+<text id="2694" value="%Tf/Tr temp. régul. ECS à vitesse pompe 20 %"/>
+<text id="2695" value="%Tf/Tr pompeECS100%"/>
+<text id="2696" value="%Tf/Tr temp. régul. ECS à vitesse pompe 100 %"/>
+<text id="2697" value="Sonde ECS"/>
+<text id="2698" value="Type de sonde pour la détection ECS"/>
+<text id="2699" value="Sonde débit ECS"/>
+<text id="2700" value="Comm débit ECS"/>
+<text id="2701" value="Temp. sonde ECS"/>
+<text id="2702" value="Charge pièce décal"/>
+<text id="2703" value="Décalage sur vitesse ventilateur de chargement partiel"/>
+<text id="2704" value="Cycles désaération"/>
+<text id="2705" value="Nombre de cycles de désaération au démarrage"/>
+<text id="2706" value="WTW actif"/>
+<text id="2707" value="WTW connexion ouvert externe"/>
+<text id="2708" value="Hystér anticycl CC"/>
+<text id="2709" value="Hystérèse anticyclique CC"/>
+<text id="2710" value="Notif. d&apos;entretien"/>
+<text id="2711" value="Notif. d&apos;entretien chaudière nécessitant maintenance"/>
+<text id="2712" value="ABC"/>
+<text id="2713" value="Personnalisé"/>
+<text id="2714" value="Heures fonct."/>
+<text id="2715" value="Heures fonct. pour chaudière reliée au câble d&apos;alim."/>
+<text id="2716" value="Mise en marche"/>
+<text id="2717" value="Heures de fonctionnement du brûleur de chaudière"/>
+<text id="2718" value="Décalage pompe CC"/>
+<text id="2719" value="Décal. contrôle pompe CC sur régulation temp. dT"/>
+<text id="2720" value="Hausse dém. ECS"/>
+<text id="2721" value="Hausse démarrage ECS selon débit ECS"/>
+<text id="2722" value="ECS facteur K"/>
+<text id="2723" value="Pulsation ECS facteur de correction en l/min"/>
+<text id="2724" value="Temps détect débit"/>
+<text id="2725" value="Facteur pour détection du débit dynamique"/>
+<text id="2726" value="Stabilisation ECS"/>
+<text id="2727" value="Temps de stabilisation ECS pour modulation pompe"/>
+<text id="2728" value="Gradient ECS"/>
+<text id="2729" value="Gradient ECS pour temps de stabilisation de la pompe"/>
+<text id="2730" value="Accél. ECS dés."/>
+<text id="2731" value="Plage dans laquelle l&apos;accélérateur ECS est désactivé"/>
+<text id="2732" value="Démarrage ECS P"/>
+<text id="2733" value="Facteur P pour accélérateur au démarrage de l&apos;ECS"/>
+<text id="2734" value="Act. prév ECS P"/>
+<text id="2735" value="Facteur P pour l&apos;action prévisionnelle sur débit ECS"/>
+<text id="2736" value="Var. débit ECS P"/>
+<text id="2737" value="Facteur P pr accél. pendant var. débit ECS"/>
+<text id="2738" value="Affichage LED rouge"/>
+<text id="2739" value="Valeur PWM rouge pour rétro+T921 normal de l&apos;affichage"/>
+<text id="2740" value="Affichage LED bleu"/>
+<text id="2741" value="Valeur PWM bleu pour rétroéclairage normal de l&apos;affichage"/>
+<text id="2742" value="Affichage LED vert"/>
+<text id="2743" value="Valeur PWM vert pour rétroéclairage normal de l&apos;affichage"/>
+<text id="2744" value="Lumin. affichage"/>
+<text id="2745" value="Luminosité de l&apos;affichage lorsque rétroéclairage activé"/>
+<text id="2746" value="Faible"/>
+<text id="2747" value="Élevée"/>
+<text id="2748" value="Unités d&apos;affichage"/>
+<text id="2749" value="Unités d&apos;affichage"/>
+<text id="2750" value="&#176;C / bar"/>
+<text id="2751" value="&#176;F / Psi"/>
+<text id="2752" value="x100h"/>
+<text id="2753" value="Verr. auto+touches"/>
+<text id="2754" value="Entrée décl."/>
+<text id="2755" value="Fonct. entrée décl."/>
+<text id="2756" value="Décl. chaudière"/>
+<text id="2757" value="Pression hydr. mini,"/>
+<text id="2758" value="Gradient eau chaude"/>
+<text id="2759" value="Gradient eau chaude pr redémar. temps stabili."/>
+<text id="2760" value="Décal. pompe dT"/>
+<text id="2761" value="Décal. pompe dT"/>
+<text id="2762" value="Régul. temp. décal."/>
+<text id="2763" value="Régul. temp. décal."/>
+<text id="2764" value="Déb ECS tr/min min"/>
+<text id="2765" value="Déb ECS à puissance sortie min"/>
+<text id="2766" value="av. sde de pression"/>
+<text id="2767" value="Type de sonde de pres hydr"/>
+<text id="2768" value="3 bar"/>
+<text id="2769" value="4 bar"/>
+<text id="2770" value="Débit moy. usine"/>
+<text id="2771" value="Fact Tau pour calcul de la temp. débit moyen"/>
+<text id="2772" value="Arrêt refroid. contr."/>
+<text id="2773" value="Arrêt refroid. forcé du contr. à cette temp."/>
+<text id="2774" value="Démarr. refr. contr."/>
+<text id="2775" value="Dém. refroid. forcé du contr. à cette temp."/>
+<text id="2776" value="Temp. max contr."/>
+<text id="2777" value="Temp. max absolue contr. pour verrouil."/>
+<text id="2778" value="Heure déb. CC constant"/>
+<text id="2779" value="Heure déb. Ta const."/>
+<text id="2780" value="Algor ballon eau ch progr"/>
+<text id="2781" value="Bande commande PH"/>
+<text id="2782" value="Bande commande PH"/>
+<text id="2783" value="P progressif"/>
+<text id="2784" value="Algorithme ballon eau chaude progr. facteur P"/>
+<text id="2785" value="I progressif"/>
+<text id="2786" value="Algorithme ballon eau chaude progr. facteur I"/>
+<text id="2787" value="dTFMax1 progressif"/>
+<text id="2788" value="Pente niveau 1 contr. Progressif"/>
+<text id="2789" value="Cycle désaération"/>
+<text id="2790" value="Type pompe pour cycle désaér. au démarr."/>
+<text id="2791" value="Pas de pompe, pas de désaér."/>
+<text id="2792" value="Pompe 1 vitesse"/>
+<text id="2793" value="Pompe modul."/>
+<text id="2794" value="Type air gaz"/>
+<text id="2795" value="Type unité gaz-air"/>
+<text id="2796" value="GA 28"/>
+<text id="2797" value="GA 40"/>
+<text id="2798" value="Sortie analogique"/>
+<text id="2799" value="Fonction de la sortie analogique"/>
+<text id="2800" value="Pompe Wilo 0 à 10 volts"/>
+<text id="2801" value="Pompe Grundfos 0 à 10 volts"/>
+<text id="2802" value="Pompe PWM"/>
+<text id="2803" value="Puissance de sortie (%)"/>
+<text id="2804" value="Entrée modulable"/>
+<text id="2805" value="Sélection de l&apos;entrée modulable"/>
+<text id="2806" value="OpenTherm"/>
+<text id="2807" value="Température 0 à 10 volts"/>
+<text id="2808" value="Puissance 0 à 10 volts"/>
+<text id="2809" value="Relais d&apos;état 1"/>
+<text id="2810" value="Communication de la pos. du relais mise en sécurité/fonct.1"/>
+<text id="2811" value="Relais d&apos;état 2"/>
+<text id="2812" value="Communication de la pos. du relais mise en sécurité/fonct.2"/>
+<text id="2813" value="dT(T.Chaud-T.Echan)"/>
+<text id="2814" value="dT(T.Echan-T.Chaud)"/>
+<text id="2815" value="Écart de température maxi entre éch. thermique et fluide"/>
+<text id="2816" value="Tr/min pré-purge"/>
+<text id="2817" value="Vit. vent. pré-purge (x100)"/>
+<text id="2818" value="Operating voltage"/>
+<text id="2819" value="CH Offset"/>
+<text id="2820" value="Power rating"/>
+<text id="2999" value="Reserved"/>
+<text id="3001" value="Alimentation"/>
+<text id="3002" value="Posi. vanne débit"/>
+<text id="3003" value="T. culasse moteur"/>
+<text id="3004" value="Tension de grille"/>
+<text id="3005" value="Courant généré"/>
+<text id="3006" value="Vites. circu. chau."/>
+<text id="3007" value="Moteur vanne à gaz"/>
+<text id="3008" value="Vanne à gaz supplé."/>
+<text id="3009" value="Moteur à ionisation"/>
+<text id="3010" value="Ionisation supplé."/>
+<text id="3011" value="Purger le moteur"/>
+<text id="3012" value="Purge supplé."/>
+<text id="3013" value="Grille connectée"/>
+<text id="3014" value="État G83"/>
+<text id="3015" value="Thermostat circu."/>
+<text id="3016" value="Commu. surcourse"/>
+<text id="3017" value="Th. joint refroidi"/>
+<text id="3018" value="Commu. surintensité"/>
+<text id="3019" value="Vitesse de la pompe"/>
+<text id="3020" value="aucun organe de réglage"/>
+<text id="3021" value="  Vanne tout ou rien"/>
+<text id="3022" value="  Vanne mélangeuse"/>
+<text id="3023" value=" configuration libre"/>
+<text id="3024" value="Schéma W"/>
+<text id="3025" value="Schéma S"/>
+<text id="3026" value="Schéma Y"/>
+<text id="3027" value="1 circuit de chauffage"/>
+<text id="3028" value="2 circuits de chauffage"/>
+<text id="3029" value="3 circuits de chauffage"/>
+<text id="3030" value="Mesure de la température"/>
+<text id="3031" value="Allure 1"/>
+<text id="3032" value="Allure 2"/>
+<text id="3033" value="Allure 3"/>
+<text id="3034" value="Pas de restrictions"/>
+<text id="3035" value="Seulement brûleur Stirling"/>
+<text id="3036" value="1ère charge seulement brûleur.Stirling."/>
+<text id="3037" value="1e charge brûleur Stirling+autre"/>
+<text id="3038" value="Une fois/jour"/>
+<text id="3039" value="Plusieurs fois/jour"/>
+<text id="3040" value="Absolue"/>
+<text id="3041" value="Glissante"/>
+<text id="3042" value="Sans"/>
+<text id="3043" value="24h/24"/>
+<text id="3044" value="Prog. horair. des circ.chauf."/>
+<text id="3045" value="Programme horaire 3 / CCP"/>
+<text id="3046" value="Libération ECS"/>
+<text id="3047" value="Programme horaire 4/ECS"/>
+<text id="3048" value="Rechargement"/>
+<text id="3049" value="Charge complète"/>
+<text id="3050" value="Charge complète anti-légio."/>
+<text id="3051" value="Charge compl. 1ère du  jour"/>
+<text id="3052" value="Charge compl anti-legio+1e"/>
+<text id="3053" value="Mode fonction. ECS"/>
+<text id="3054" value="Pt de consigne réduit ECS"/>
+<text id="3055" value="Pt cons. réd. ECS"/>
+<text id="3056" value="Libération ECS"/>
+<text id="3057" value="Priorité charge ECS"/>
+<text id="3058" value="Priorité charge ECS"/>
+<text id="3059" value="Pt cons. amb. max"/>
+<text id="3060" value="Pt cons. amb. max"/>
+<text id="3061" value="Chargement ECS"/>
+<text id="3062" value="Pt de consigne débit suraliment. ECS"/>
+<text id="3063" value="Pt cs dbt sural.ECS"/>
+<text id="3066" value="Type de charge ECS"/>
+<text id="3067" value="Différentiel ECS"/>
+<text id="3068" value="Différentiel ECS"/>
+<text id="3069" value="Limitation durée de charge"/>
+<text id="3070" value="Charge time limit"/>
+<text id="3071" value="Protection évac. eau chaude"/>
+<text id="3072" value="Protec. évac. ECS"/>
+<text id="3073" value="Charge ECS accélérée auto."/>
+<text id="3074" value="Automatic push"/>
+<text id="3075" value="SD Solar Eco act."/>
+<text id="3076" value="SD Solar Eco act."/>
+<text id="3077" value="SD Solar Eco désac."/>
+<text id="3078" value="SD Solar Eco désac."/>
+<text id="3079" value="Type d&apos;installation"/>
+<text id="3080" value="Type CC1"/>
+<text id="3081" value="Type CC2"/>
+<text id="3082" value="Type CC3"/>
+<text id="3083" value="Sans"/>
+<text id="3084" value="Pompe chaudière Q1"/>
+<text id="3085" value="Pompe/vanne ECS Q3"/>
+<text id="3086" value="organe de réglage  CC1 Q2"/>
+<text id="3087" value="organe de réglage CC2 Q6"/>
+<text id="3088" value="organe de réglage CC3 Q20"/>
+<text id="3089" value="Sortie d&apos;alarme K10"/>
+<text id="3090" value="Pompe bouclage ECS Q4"/>
+<text id="3091" value="Pompe primaire Q14"/>
+<text id="3092" value="Pompe de chaudière allure 2"/>
+<text id="3093" value="Pompe de chaudière allure 3"/>
+<text id="3094" value="Pos. vanne débit"/>
+<text id="3095" value="T&#176; consigne dép min"/>
+<text id="3096" value="Total énergie"/>
+<text id="3097" value="Heures fonc brûleur Stirling"/>
+<text id="3098" value="Compt. démarr. brûl. Stirling"/>
+<text id="3099" value="Heures fonc brûleur suppl"/>
+<text id="3103" value="Compt. démarr. brûl. suppl."/>
+<text id="3100" value="Le verrouillage et le blocage seront rétablis."/>
+<text id="3101" value="Code verr. n&apos;existe pas dans config. des points de données"/>
+<text id="3102" value="Code blocage n&apos;existe pas dans config. des points de données"/>
+<text id="3104" value="Sans"/>
+<text id="3105" value="Thermostat d&apos;ambiance CC1"/>
+<text id="3106" value="Thermostat d&apos;ambiance CC2"/>
+<text id="3107" value="Thermostat d&apos;ambiance CC3"/>
+<text id="3108" value="Thermostat ECS"/>
+<text id="3109" value="Horloge programmation CC1"/>
+<text id="3110" value="Horloge programmation CC2"/>
+<text id="3111" value="Horloge  programmation CC3"/>
+<text id="3112" value="Horloge programmation ECS"/>
+<text id="3113" value="Demde ext.libér. Brûl. Stirl."/>
+<text id="3114" value="Demde ext. libér. Brûl. Suppl"/>
+<text id="3115" value="Demde ext. libér. Stirl.+suppl"/>
+<text id="3116" value="Fonction  EX1"/>
+<text id="3117" value="Sens d&apos;action  EX1"/>
+<text id="3118" value="Fonction  EX1"/>
+<text id="3119" value="Sens d&apos;action  EX1"/>
+<text id="3120" value="1 allures"/>
+<text id="3121" value="2 allures"/>
+<text id="3122" value="3 allures"/>
+<text id="3123" value="Consigne confortCC1"/>
+<text id="3124" value="Consigne confortCC2"/>
+<text id="3125" value="Consigne confortCC3"/>
+<text id="3126" value="Consigne réduit CC1"/>
+<text id="3127" value="Consigne réduit CC1"/>
+<text id="3128" value="Consigne réduit CC2"/>
+<text id="3129" value="Consigne réduit CC2"/>
+<text id="3130" value="Consigne réduit CC3"/>
+<text id="3131" value="Consigne réduit CC3"/>
+<text id="3132" value="Cons. hors-gel CC1"/>
+<text id="3133" value="Consigne hors-gel CC1"/>
+<text id="3134" value="Cons. hors-gel CC2"/>
+<text id="3135" value="Consigne hors-gel CC2"/>
+<text id="3136" value="Cons. hors-gel CC3"/>
+<text id="3137" value="Consigne hors-gel CC3"/>
+<text id="3138" value="confort max CC1"/>
+<text id="3139" value="confort max CC2"/>
+<text id="3140" value="confort max CC3"/>
+<text id="3141" value="Consigne confort max CC1"/>
+<text id="3142" value="Consigne confort max CC2"/>
+<text id="3143" value="Consigne confort max CC3"/>
+<text id="3144" value="Type Pumpe"/>
+<text id="3145" value="Pente de courbe CC1"/>
+<text id="3146" value="Pente de la courbe CC1"/>
+<text id="3147" value="Pente de courbe CC2"/>
+<text id="3148" value="Pente de la courbe CC2"/>
+<text id="3149" value="Pente de courbe CC3"/>
+<text id="3150" value="Pente de la courbe CC3"/>
+<text id="3151" value="Transl.de courbeCC1"/>
+<text id="3152" value="Translation de la courbe CC1"/>
+<text id="3153" value="Transl.de courbeCC2"/>
+<text id="3154" value="Translation de la courbe CC2"/>
+<text id="3155" value="Transl.de courbeCC3"/>
+<text id="3156" value="Translation de la courbe CC3"/>
+<text id="3157" value="Adapt. courbe CC1"/>
+<text id="3158" value="Adaptation de la courbe CC1"/>
+<text id="3159" value="Adapt. courbe CC2"/>
+<text id="3160" value="Adaptation de la courbe CC2"/>
+<text id="3161" value="Adapt. courbe CC3"/>
+<text id="3162" value="Adaptation de la courbe CC3"/>
+<text id="3163" value="T départ min CC1"/>
+<text id="3164" value="T départ min CC2"/>
+<text id="3165" value="T départ min CC3"/>
+<text id="3166" value="T départ max CC1"/>
+<text id="3167" value="T départ max CC2"/>
+<text id="3168" value="T départ max CC3"/>
+<text id="3169" value="T&#176; consig therm CC1"/>
+<text id="3170" value="T&#176; consig. dép thermost amb CC1"/>
+<text id="3171" value="T&#176; consig therm CC2"/>
+<text id="3172" value="T&#176; consig. dép thermost amb CC2"/>
+<text id="3173" value="T&#176; consig therm CC3"/>
+<text id="3174" value="T&#176; consig. dép thermost amb CC3"/>
+<text id="3175" value="Influence ambiance CC1"/>
+<text id="3176" value="Influence ambiance CC2"/>
+<text id="3177" value="Influence ambiance CC3"/>
+<text id="3178" value="Lim chauffe été/hiver CC1"/>
+<text id="3179" value="Limi chauffe été/hiver CC2"/>
+<text id="3180" value="Lim chauffe été/hiver CC3"/>
+<text id="3181" value="Type d&apos;appareil ambiance CC1"/>
+<text id="3182" value="Type d&apos;appareil ambiance CC2"/>
+<text id="3183" value="Type d&apos;appareil ambiance CC3"/>
+<text id="3184" value="radiateurs: rapide"/>
+<text id="3185" value="radiateurs: moyen"/>
+<text id="3186" value="radiateurs: lente"/>
+<text id="3187" value="planch chauf rapide"/>
+<text id="3188" value="planch chauf moyen"/>
+<text id="3189" value="planch chauf lente"/>
+<text id="3190" value="Limit. Infl. ambiance CC1"/>
+<text id="3191" value="Limit. Infl. ambiance CC2"/>
+<text id="3192" value="Limit. Infl. ambiance CC3"/>
+<text id="3193" value="Inter répét.  Legio"/>
+<text id="3194" value="Intervalle répét. anti-légionelles"/>
+<text id="3195" value="jour"/>
+<text id="3196" value="Consigne anti-légionelles"/>
+<text id="3197" value="Supp burner min rate"/>
+<text id="3198" value="Supp bu max rate CH"/>
+<text id="3199" value="Supp bu max rate DHW"/>
+<text id="3200" value=""/>
+<text id="3201" value="Chargement ECS"/>
+<text id="3202" value="Pt cs dbt ECS sural."/>
+<text id="3203" value="Suralim. transfert ECS"/>
+<text id="3204" value="Contrôle du rechargement ECS"/>
+<text id="3205" value="1=Rechargement"/>
+<text id="3206" value="2=Chargement complet"/>
+<text id="3207" value="3=Chargement complet légio"/>
+<text id="3208" value="Chgmt complet Jr 1er dém."/>
+<text id="3209" value="Chgmt complet 1re légio"/>
+<text id="3210" value="Contrôle rechargmt ECS"/>
+<text id="3211" value="Diff. de passage ECS"/>
+<text id="3212" value="Temp. chargmt maxi ECS"/>
+<text id="3213" value="Pression auto ECS"/>
+<text id="3214" value="Dispositif de chauffage instantané avec réservoir de stockage ECS"/>
+<text id="3215" value="Dispositif de chauffage ECS instantané avec tampon"/>
+<text id="3216" value="CC1"/>
+<text id="3217" value="CC2"/>
+<text id="3218" value="CC3"/>
+<text id="3219" value="Plant diagram select"/>
+<text id="3220" value="Relay output QX1"/>
+<text id="3221" value="Relay output QX2"/>
+<text id="3222" value="Relay output QX3"/>
+<text id="3223" value="Relay output QX4"/>
+<text id="3224" value="Relay output QX5"/>
+<text id="3225" value="Sans"/>
+<text id="3226" value="Pompe bouclage ECS Q4"/>
+<text id="3227" value="Pompe panneau solaire Q5"/>
+<text id="3228" value="Ppe circuit. consomm. 1 Q15"/>
+<text id="3229" value="Pompe chaudière Q1"/>
+<text id="3230" value="Sortie d&apos;alarme K10"/>
+<text id="3231" value="2e vitesse pompe CC1 Q21"/>
+<text id="3232" value="2e vitesse pompe CC2 Q22"/>
+<text id="3233" value="2e vitesse pompe CC3 Q23"/>
+<text id="3234" value="Pompe CC3 Q20"/>
+<text id="3235" value="Ppe circuit. consomm. 2 Q15"/>
+<text id="3236" value="Pompe primaire Q14"/>
+<text id="3237" value="Vanne arrêt générateur Y4"/>
+<text id="3238" value="Programme horaire 5 K13"/>
+<text id="3239" value="Vanne retour bal. stock Y15"/>
+<text id="3240" value="Pompe échang extern sol K9"/>
+<text id="3241" value="Ppe/vanne bal stock sol K8"/>
+<text id="3242" value="Ppe/vanne piscine sol K18"/>
+<text id="3243" value="Pompe circuit piscine Q19"/>
+<text id="3244" value="Relais fumée K17"/>
+<text id="3245" value="Pompe cascade Q25"/>
+<text id="3246" value="Ppe trnsfert stockage Q11"/>
+<text id="3247" value="Ppe déstratif. ECS Q35"/>
+<text id="3248" value="Ppe ECS circuit interm Q33"/>
+<text id="3249" value="Demande chaleur K27"/>
+<text id="3250" value="Pompe CC1 Q2"/>
+<text id="3251" value="Pompe CC2 Q6"/>
+<text id="3252" value="Pompe/vanne ECS Q3"/>
+<text id="3253" value="Résist élec ECS instant Q34"/>
+<text id="3254" value="Régulation génér relève K32"/>
+<text id="3255" value="allure 2e  ppe chaud Q27"/>
+<text id="3256" value="Sortie de signalisation K35"/>
+<text id="3257" value="Message d&apos;état K36"/>
+<text id="3258" value="Arrêt ventilateur K38"/>
+<text id="3259" value="Libération excédent T&#176; K11"/>
+<text id="3260" value="Sortie relais QX21 em 1"/>
+<text id="3261" value="Sortie relais QX22 em 1"/>
+<text id="3262" value="Sortie relais QX23 em 1"/>
+<text id="3263" value="Sortie relais QX21 em 2"/>
+<text id="3264" value="Sortie relais QX22 em 2"/>
+<text id="3265" value="Sortie relais QX23 em 2"/>
+<text id="3266" value="Sortie relais QX21 em 3"/>
+<text id="3267" value="Sortie relais QX22 em 3"/>
+<text id="3268" value="Sortie relais QX23 em 3"/>
+<text id="3269" value="Fonct entrée EX21 module 1"/>
+<text id="3270" value="Sens action entr EX21 mod1"/>
+<text id="3271" value="Fonct entrée EX21 module 2"/>
+<text id="3272" value="Sens action entr EX21 mod2"/>
+<text id="3273" value="Fonct entrée EX21 module 3"/>
+<text id="3274" value="Sens action entr EX21 mod3"/>
+<text id="3275" value="iSense Connect"/>
+<text id="3276" value="Résist élec ECS instant Q34"/>
+<text id="3277" value="Sans"/>
+<text id="3278" value="Pompe"/>
+<text id="3279" value="Vanne directionnelle"/>
+<text id="3280" value="Dernière demande"/>
+<text id="3281" value="Pos. base vanne direct"/>
+<text id="3282" value="Pos. base vanne direct Q34"/>
+<text id="3283" value="Sans"/>
+<text id="3284" value="Multifonction"/>
+<text id="3285" value="Circuit chauffage 1"/>
+<text id="3286" value="Circuit chauffage 2"/>
+<text id="3287" value="Circuit chauffage 3"/>
+<text id="3288" value="Solaire ECS"/>
+<text id="3289" value="Régulateur/pompe primaire"/>
+<text id="3290" value="Régulateur primaire ECS"/>
+<text id="3291" value="Chauffe-eau instantané ECS"/>
+<text id="3292" value="Régulateur chaud. Primaire"/>
+<text id="3293" value="Fonct EM 1"/>
+<text id="3294" value="Fonct EM 2"/>
+<text id="3295" value="Fonct EM 3"/>
+<text id="3296" value="Entrée sonde BX21 EM 1"/>
+<text id="3297" value="Entrée sonde BX22 EM 1"/>
+<text id="3298" value="Entrée sonde BX21 EM 2"/>
+<text id="3299" value="Entrée sonde BX22 EM 2"/>
+<text id="3300" value="Entrée sonde BX21 EM 3"/>
+<text id="3301" value="Entrée sonde BX22 EM 3"/>
+<text id="3302" value="Sans"/>
+<text id="3303" value="Sonde ECS B31"/>
+<text id="3304" value="Sonde collect. solaire B6"/>
+<text id="3305" value="Sonde circulation ECS B39"/>
+<text id="3306" value="Sonde ballon stockage B4"/>
+<text id="3307" value="Sonde ballon stockage B41"/>
+<text id="3308" value="Sonde T&#176; fumées B8"/>
+<text id="3309" value="Sonde départ commun B10"/>
+<text id="3310" value="Sonde charge ECS B36"/>
+<text id="3311" value="Sonde ballon stockage B42"/>
+<text id="3312" value="Sonde retour ligne B73"/>
+<text id="3313" value="Sonde retour cascade B70"/>
+<text id="3314" value="Sonde piscine B13"/>
+<text id="3315" value="Sonde départ solaire B63"/>
+<text id="3316" value="Sonde retour solaire B64"/>
+<text id="3317" value="Sonde soutirage ECS B38"/>
+<text id="3318" value="Sonde ECS instantanée B37"/>
+<text id="3319" value="Sonde ECS B3"/>
+<text id="3320" value="Sonde temp. boîtier B23"/>
+<text id="3321" value="Sonde de retour B74"/>
+<text id="3322" value="Parallèle"/>
+<text id="3323" value="Série"/>
+<text id="3500" value="Groupe de vannes 1"/>
+<text id="3501" value="Groupe des paramètres de vannes 1. Peut également être défini via un interrupteur rotatif"/>
+<text id="3502" value="Manuel fermé"/>
+<text id="3503" value="Manuel ouvert"/>
+<text id="3504" value="Sonde therm. 2 cont. 3 voies"/>
+<text id="3505" value="Sonde therm. 2 cont. 2 voies"/>
+<text id="3506" value="2 contacts 2 voies 0-30s"/>
+<text id="3507" value="2 contacts 2 voies 30-120s"/>
+<text id="3508" value="2 contacts 2 voies 120-240s"/>
+<text id="3509" value="2 contacts 3 voies 0-30s"/>
+<text id="3510" value="2 contacts 3 voies 30-120s"/>
+<text id="3511" value="2 contacts 3 voies 120-240s"/>
+<text id="3512" value="3 contacts 3 voies 0-30s"/>
+<text id="3513" value="3 contacts 3 voies 30-60s"/>
+<text id="3514" value="3 contacts 3 voies 60-120s"/>
+<text id="3515" value="3 contacts 3 voies 120-240s"/>
+<text id="3516" value="Aucune fonction"/>
+<text id="3517" value="Eco ECS"/>
+<text id="3518" value="Groupe ECS"/>
+<text id="3519" value="Groupe de vannes 2"/>
+<text id="3520" value="Groupe de paramètres de vannes 2. Peut également être défini via un interrupteur rotatif"/>
+<text id="3521" value="Réglage groupe 1"/>
+<text id="3522" value="Param opér parall pompe et ECS groupe 1. Peut également être défini via un interrupteur rotatif."/>
+<text id="3523" value="Pompe auto / ECS non parall."/>
+<text id="3524" value="Pompe 0s / ECS non parall."/>
+<text id="3525" value="Pompe 1min / ECS non parall."/>
+<text id="3526" value="Pompe 10min / ECS non parall."/>
+<text id="3527" value="Pompe act / ECS non parall."/>
+<text id="3528" value="Param groupe 2"/>
+<text id="3529" value="Param. opér. parall. pompe et ECS groupe 2. Peut également être défini via un interrupteur rotatif."/>
+<text id="3530" value="Priorité du groupe"/>
+<text id="3531" value="Param. priorité du gr. Peut aussi être défini via interr."/>
+<text id="3532" value="Priorité déf. sur groupe 1"/>
+<text id="3533" value="Priorité déf. sur groupe 2"/>
+<text id="3534" value="Pas de priorité"/>
+<text id="3535" value="Contrôleurs"/>
+<text id="3536" value="Contrôleurs OpenTherm connectés"/>
+<text id="3537" value="Pas de contrôleur OpenTherm"/>
+<text id="3538" value="A la connexion 1"/>
+<text id="3539" value="Aux connexions 1 et 2"/>
+<text id="3540" value="A la connexion 1 (2 groupes)"/>
+<text id="3541" value="A 1 (2 groupes) et 2"/>
+<text id="3542" value="Sondes"/>
+<text id="3543" value="Sondes de température utilisées"/>
+<text id="3544" value="Temp ext=Non, T1=Non, T2=Non"/>
+<text id="3545" value="Temp ext=Oui, T1=Non, T2=Non"/>
+<text id="3546" value="Temp ext=Non, T1=Oui, T2=Non"/>
+<text id="3547" value="Temp ext=Oui, T1=Oui, T2=Non"/>
+<text id="3548" value="Temp ext=Non, T1=Non, T2=Oui"/>
+<text id="3549" value="Temp ext=Oui, T1=Non, T2=Oui"/>
+<text id="3550" value="Temp ext=Non, T1=Oui, T2=Oui"/>
+<text id="3551" value="Temp ext=Oui, T1=Oui, T2=Oui"/>
+<text id="3552" value="Démarrage ECS"/>
+<text id="3553" value="Gr. ECS chauffe rés. ECS quand temp. ECS mesurée inf. à temp. du pt consigne ECS moins cette valeur."/>
+<text id="3554" value="Arrêt ECS"/>
+<text id="3555" value="Gr. ECS arrête chauffage rés. ECS quand temp ECS mesurée sup. à temp. pt de cons. + cette valeur."/>
+<text id="3556" value="Temp. excess. ECS"/>
+<text id="3557" value="Le groupe ECS chauffe le rés. ECS avec une temp. égale au point de cons. ECS plus ce paramètre."/>
+<text id="3558" value="Temp. excess. CC."/>
+<text id="3559" value="Pt cons. temp. CC atteint cette valeur quand vanne ouverte et temp. CC pas encore atteinte."/>
+<text id="3560" value="Pt de cons. ECS"/>
+<text id="3561" value="Valeur par défaut du point de consigne ECS"/>
+<text id="3562" value="Augmentation ON/OFF"/>
+<text id="3563" value="Valeur pour augmenter ou diminuer pt consigne du débit lorsqu&apos;un maître activé/désactivé est utilisé"/>
+<text id="3564" value="Vanne facteur P"/>
+<text id="3565" value="Facteur P pour contrôle proportionnel-intégral d&apos;une vanne de mélange"/>
+<text id="3566" value="Vanne facteur int."/>
+<text id="3567" value="Facteur I pour contrôle proportionnel-intégral d&apos;une vanne de mélange"/>
+<text id="3568" value="Démarr. vanne min."/>
+<text id="3569" value="Démarrer la chaudière lorsque nombre ttal d&apos;ouvertures de vannes dépasse cette valeur"/>
+<text id="3570" value="DeltaTflowPerMinute"/>
+<text id="3571" value="Si pompe sur auto, post exéc. s&apos;arrête quand la dimin. de temp. débit du gr. est inf. à cette val."/>
+<text id="3572" value="CH over-temp I-up"/>
+<text id="3573" value="I pr ctrl intégral temp. excess. CC pdt ctrl vers le haut qd vanne ouverte et tps d&apos;attente expiré"/>
+<text id="3574" value="CH over-temp I-down"/>
+<text id="3575" value="I pr ctrl intégral temp. excess. CC pdt ctrl vers le bas qd vanne ouverte et tps d&apos;attente expiré"/>
+<text id="3576" value="Tps att. Texces. CC"/>
+<text id="3577" value="Temps d&apos;attente avant d&apos;utiliser le contrôle de temp. excess. du CC"/>
+<text id="3578" value="Temps de chauffage"/>
+<text id="3579" value="Temps de chauffage du moteur thermique avant de démarrer la chaudière"/>
+<text id="3580" value="Tps non fonc.chauff"/>
+<text id="3581" value="Temps de non fonctionnement du chauffage utilisé pour conserver la chaleur du moteur thermique"/>
+<text id="3582" value="Tps fonc. chauff."/>
+<text id="3583" value="Temps de fonctionnement du chauffage utilisé pour conserver la chaleur du moteur thermique"/>
+<text id="3584" value="A la connexion 2"/>
+<text id="3585" value="Pompe auto / ECS parall."/>
+<text id="3586" value="Pompe 0s / ECS parall."/>
+<text id="3587" value="Pompe 1min / ECS parall."/>
+<text id="3588" value="Pompe 10min / ECS parall."/>
+<text id="3589" value="Pompe act / ECS parall."/>
+<text id="3590" value="Temp CC min groupe1"/>
+<text id="3591" value="Temp CC min groupe 1"/>
+<text id="3592" value="Temp CC max groupe1"/>
+<text id="3593" value="Temp CC max groupe 1"/>
+<text id="3594" value="Temp CC min groupe2"/>
+<text id="3595" value="Temp CC min groupe 2"/>
+<text id="3596" value="Temp CC max groupe2"/>
+<text id="3597" value="Temp CC max groupe 2"/>
+<text id="3600" value="*0,01&#176;C / s"/>
+<text id="3601" value="% / K"/>
+<text id="3602" value="*0,01 % / s"/>
+<text id="3603" value="*0,1&#176;C/min"/>
+<text id="3604" value="*0,001&#176;C / s"/>
+<text id="3605" value="#"/>
+<text id="3610" value="Veille"/>
+<text id="3611" value="Démarrage"/>
+<text id="3612" value="Fonctionnement"/>
+<text id="3613" value="Blocage"/>
+<text id="3614" value="Manuel"/>
+<text id="3620" value="Perte sonde"/>
+<text id="3621" value="Défaut communication OT escl"/>
+<text id="3622" value="Défaut comm. OT maître"/>
+<text id="3623" value="Paramètres inégaux à config"/>
+<text id="3624" value="Défaut paramètre CRC"/>
+<text id="3625" value="Défaut interne ou flash"/>
+<text id="3626" value="Détecter et enreg. config"/>
+<text id="3630" value="0: Non disponible"/>
+<text id="3631" value="1: Honeywell BV"/>
+<text id="3632" value="2: Honeywell Control Systems"/>
+<text id="3634" value="4: Siemens Building Technol"/>
+<text id="3635" value="5: Itho"/>
+<text id="3636" value="6: Elster"/>
+<text id="3638" value="8: SIT controls BV"/>
+<text id="3639" value="9: AGPO ferroli"/>
+<text id="3641" value="11: Remeha BV"/>
+<text id="3643" value="13: Honeywell CCP"/>
+<text id="3645" value="15: Grässlin"/>
+<text id="3646" value="16: Unical"/>
+<text id="3648" value="18: Theben"/>
+<text id="3649" value="19: Technosystem"/>
+<text id="3650" value="20: TEM AG"/>
+<text id="3651" value="21: Zhen Sen"/>
+<text id="3652" value="22: EBV"/>
+<text id="3653" value="23: Danfoss"/>
+<text id="3654" value="24: AWB"/>
+<text id="3655" value="25: Hager"/>
+<text id="3656" value="26: Atlantic"/>
+<text id="3657" value="27: Bertelli"/>
+<text id="3659" value="29: Daalderop"/>
+<text id="3661" value="31: Riello"/>
+<text id="3662" value="32: Storkair"/>
+<text id="3663" value="33: Viessman"/>
+<text id="3664" value="34: Pactrol Controls"/>
+<text id="3665" value="35: Invensys Controls"/>
+<text id="3669" value="39: Techum"/>
+<text id="3685" value="55: DeDietrich"/>
+<text id="3686" value="56: Baxi"/>
+<text id="3700" value="Nom de l&apos;appareil"/>
+<text id="3701" value="Id OT escl."/>
+<text id="3702" value="Version escl."/>
+<text id="3703" value="Type escl."/>
+<text id="3704" value="Id OT maître 1"/>
+<text id="3705" value="Version maître 1"/>
+<text id="3706" value="Type maître 1"/>
+<text id="3707" value="Id OT maître 2"/>
+<text id="3708" value="Version maître 2"/>
+<text id="3709" value="Type maître 2"/>
+<text id="3720" value="Pt cons. T1 maître"/>
+<text id="3721" value="Pt cons. T1 c-Mix"/>
+<text id="3722" value="T1 excess."/>
+<text id="3723" value="T1"/>
+<text id="3724" value="Pt cons. T2 M2"/>
+<text id="3725" value="Pt cons. T2 c-Mix"/>
+<text id="3726" value="T2 excess."/>
+<text id="3727" value="T2"/>
+<text id="3728" value="Pt cons. T amb. M1"/>
+<text id="3729" value="Temp. ambiante 1"/>
+<text id="3730" value="Pt cons. T amb. M2"/>
+<text id="3731" value="Temp. ambiante 2"/>
+<text id="3732" value="Pt cons. T esclave"/>
+<text id="3733" value="T hors c-Mix"/>
+<text id="3734" value="Pt de cons T3 c-Mix"/>
+<text id="3735" value="Pt cons. eau ch. T"/>
+<text id="3736" value="Pt cons. T amb.2 M1"/>
+<text id="3737" value="Temp. ambiante 2 M1"/>
+<text id="3738" value="Pt de cons. T2 M1"/>
+<text id="3739" value="T débit esclave"/>
+<text id="3740" value="T débit max. escl."/>
+<text id="3741" value="Point cons. vanne1"/>
+<text id="3742" value="Position vanne1"/>
+<text id="3743" value="Modulation G1"/>
+<text id="3744" value="Pt cons. vanne2"/>
+<text id="3745" value="Position vanne2"/>
+<text id="3746" value="Modulation G2"/>
+<text id="3747" value="Modulation max. M1"/>
+<text id="3748" value="Modulation max. M2"/>
+<text id="3749" value="Modulation esc."/>
+<text id="3750" value="Code erreur escl."/>
+<text id="3751" value="Service escl. HB"/>
+<text id="3752" value="Service escl. LB"/>
+<text id="3753" value="Demande CC G1 M1"/>
+<text id="3754" value="Position CC G1 M1"/>
+<text id="3755" value="Pompe G1"/>
+<text id="3756" value="Flamme G1"/>
+<text id="3757" value="Demande CC M2"/>
+<text id="3758" value="Position CC M2"/>
+<text id="3759" value="Pompe G2"/>
+<text id="3760" value="Flamme G2"/>
+<text id="3761" value="Flamme escl."/>
+<text id="3762" value="Position CC escl."/>
+<text id="3763" value="Position ECS escl."/>
+<text id="3764" value="Défaut escl."/>
+<text id="3765" value="Fbl pres eau escl."/>
+<text id="3766" value="Indic service escl."/>
+<text id="3767" value="Serv. escl. requis"/>
+<text id="3768" value="Demande CC c-Mix"/>
+<text id="3769" value="Eco ECS c-Mix"/>
+<text id="3770" value="ECS désac. c-Mix"/>
+<text id="3771" value="Demande CC G2 M1"/>
+<text id="3772" value="ECS actuel c-Mix"/>
+<text id="3773" value="ECS actuel escl."/>
+<text id="3774" value="Eco ECS M1"/>
+<text id="3775" value="Eco ECS M2"/>
+<text id="3776" value="ECS désac. M1"/>
+<text id="3777" value="ECS désac. M2"/>
+<text id="3778" value="Défaut c-Mix M1"/>
+<text id="3779" value="Défaut c-Mix M2"/>
+<text id="3780" value="Pos. ECS c-Mix M1"/>
+<text id="3781" value="Indic. service M1"/>
+<text id="3782" value="Indic. service M2"/>
+<text id="3783" value="Manuel G1"/>
+<text id="3784" value="Manuel G2"/>
+<text id="3785" value="Limite anti-gel G1"/>
+<text id="3786" value="Limite anti-gel G2"/>
+<text id="3787" value="Dém. forcé été G1"/>
+<text id="3788" value="Dém. forcé été G2"/>
+<text id="3789" value="Position CH G2 M1"/>
+<text id="3790" value="Production élec."/>
+<text id="3999" value="einde c-Mix"/>
+<text id="4000" value=""/>
+<text id="5000" value="Aucun générateur trouvé par Clé Service"/>
+<text id="5001" value="La Clé Service n&apos;a trouvé aucun générateur.\n\nVérifier si la Clé Service est raccordée au générateur.\n Vérifier si le générateur est sous tension."/>
+<text id="5002" value="Code 1"/>
+<text id="5003" value="Code 2"/>
+<text id="5004" value="Sais. codes de la plaque d&apos;identification :"/>
+<text id="5005" value="Remarque Vous ne devez pas saisir de code non indiqué sur la plaque d&apos;identification !"/>
+<text id="5006" value="Remarque Tous les paramètres d&apos;usine vont être restaurés. Tous les autres paramètres vont être supprimés."/>
+<text id="5007" value="Voulez-vous utiliser ce code pour restaurer les paramètres d&apos;usine ?"/>
+<text id="5008" value="Etes-vous sûr que les codes saisis correspondent à ceux de la plaque d&apos;identification ?"/>
+<text id="5009" value="Etes-vous sûr ?"/>
+<text id="5010" value="Réglage de la version de configuration"/>
+<text id="5011" value="ATTENTION : aucune information reçue."/>
+<text id="5012" value="Données système"/>
+<text id="5013" value="Télécharger les données"/>
+<text id="5014" value="Tout sélectionner"/>
+<text id="5015" value="Tout désélectionner"/>
+<text id="5016" value="Installation des données..."/>
+<text id="5017" value="Installé"/>
+<text id="5018" value="Sélectionner des appareils pour télécharger leurs données"/>
+<text id="5019" value="Synchroniser"/>
+<text id="5020" value="Suppression des données..."/>
+<text id="5021" value="Mise à jour disponible"/>
+<text id="5022" value="Non installé"/>
+<text id="5023" value="Impossible de télécharger les données. Vérifiez que vous êtes connecté à Internet."/>
+<text id="5024" value="AFFICHAGE DES DONNÉES"/>
+<text id="5025" value="DOCUMENTATION"/>
+<text id="5026" value="L&apos;installation a échoué"/>
+<text id="5027" value="Installation impossible. Réessayer ?"/>
+<text id="5028" value="Données indisponibles. Télécharger les données dans les paramètres."/>
+<text id="5029" value="Téléchargement..."/>
+<text id="5030" value="Vérifier les données sélectionnées."/>
+<text id="5031" value="Connecter l&apos;appareil à Internet et sélectionner les données à télécharger dans le menu des paramètres."/>
+<text id="5032" value="Impossible de démarrer la démonstration.  Les données de démonstration sont indisponibles. Télécharger les données dans les paramètres."/>
+<text id="5033" value="Restart the app to activate the updates."/>
+<text id="5034" value="Updated"/>
+<text id="5035" value="Language"/>
+<text id="5036" value="Country"/>
+<text id="5037" value="Are you sure you wanr to install a new language? All downloaded content will be deleted, and must be downloaded in the new language."/>
+<text id="5038" value="Are you sure you want to change the country? All downloaded content will be deleted, and must be downloaded for the new country."/>
+<text id="5039" value="SERVICE SETTINGS"/>
+<text id="6000" value="GVC sub state"/>
+<text id="6001" value="GVC mode"/>
+<text id="6002" value="Thermocouple setpoint"/>
+<text id="6003" value="Gas valve setpoint "/>
+<text id="6004" value="Mass flow"/>
+<text id="6005" value="Mass flow setpoint "/>
+<text id="6006" value="Gas valve correction "/>
+<text id="6007" value="GVC PWM value "/>
+<text id="6008" value="Power"/>
+<text id="6009" value="Power setpoint "/>
+<text id="6010" value="Burner temperature 1 "/>
+<text id="6011" value="Burner temperature 2 "/>
+<text id="6012" value="Gvc gas valve position "/>
+<text id="6100" value="High power status"/>
+<text id="6101" value="Low power status"/>
+<text id="6329" value="29:GVC parameter changed"/>
+<text id="6330" value="dT(heatexch,return)&lt;min"/>
+<text id="6331" value="24h GVC reset in progress"/>
+<text id="6548" value="GVC État"/>
+<text id="6549" value="GVC Blocage"/>
+<text id="6550" value="GVC Verrouillage"/>
+<text id="10000" value="Type Sonde"/>
+<text id="10001" value="CTN12K ou CTN10K"/>
+<text id="10002" value="CTN12K"/>
+<text id="10003" value="CTN10K"/>
+<text id="10004" value="Arret pompe ch."/>
+<text id="10005" value="Consigne primaire ECS"/>
+<text id="10006" value="Température depart chaudiere pour la production sanitaire"/>
+<text id="10007" value="Sortie ECS"/>
+<text id="10008" value="0 : Pompe , 1 : VI"/>
+<text id="10009" value="Pompe"/>
+<text id="10010" value="VI"/>
+<text id="10011" value="Priorite ECS"/>
+<text id="10012" value="0 : totale , 1 : aucune"/>
+<text id="10013" value="Totale"/>
+<text id="10014" value="Aucune"/>
+<text id="10015" value="Differentiel ECS ON"/>
+<text id="10016" value="Differentiel ECS"/>
+<text id="10017" value="Differentiel ECS OFF"/>
+<text id="10018" value="pression fioul"/>
+<text id="10019" value="réglage pression fioul"/>
+<text id="10020" value="réglage puissance relative"/>
+<text id="10021" value="Tension vers PAC"/>
+<text id="10022" value="V"/>
+<text id="10023" value="vitesse moteur"/>
+<text id="10024" value="puissance relative"/>
+<text id="10025" value="11:Ouverture vanne d&apos;évac."/>
+<text id="10026" value="12:Démarrage brûleur"/>
+<text id="10027" value="13:Préchauffage"/>
+<text id="10028" value="14:Pré-allumage"/>
+<text id="10029" value="15:Démarrage modulation pompe"/>
+<text id="10030" value="16:Post-allumage"/>
+<text id="10031" value="17:Stabilisation de flamme"/>
+<text id="10032" value="42:Fermeture clapet obturateur"/>
+<text id="10033" value="43:Fermeture vanne gaz externe"/>
+<text id="10034" value="2:STB ouvert"/>
+<text id="10035" value="3:Erreur pression fuel"/>
+<text id="10036" value="4:Pas de flamme"/>
+<text id="10037" value="5:Erreur interne"/>
+<text id="10038" value="6:Probleme moteur"/>
+<text id="10039" value="7:Délai préchauffage dépassé"/>
+<text id="10040" value="8:Flamme parasite"/>
+<text id="10041" value="9:Pression fuel hors limite"/>
+<text id="10042" value="32:Sonde chaudière en court-circuit"/>
+<text id="10043" value="33:Sonde chaudière en circuit ouvert"/>
+<text id="10044" value="34:Sonde retour en court-circuit"/>
+<text id="10045" value="35:Sonde retour en circuit ouvert"/>
+<text id="10046" value="23:Tension inférieure à 190V"/>
+<text id="10047" value="28:Mauvaise configuration de sondes ECS"/>
+<text id="10048" value="29:Sonde collecteur solaire HS"/>
+<text id="10049" value="30:Sonde ballon solaire HS"/>
+<text id="10050" value="31:TAS ouvert"/>
+<text id="10051" value="32:TAS en court-circuit"/>
+<text id="10052" value="33:Plus de communication avec regulateur solaire"/>
+<text id="10053" value="Vanne d&apos;inversion"/>
+<text id="10054" value="Vanne fuel"/>
+<text id="10055" value="Correction ECS solaire"/>
+<text id="10056" value="baisse de la consigne ECS maximum quand la pompe solaire est à 100%"/>
+<text id="10057" value="TAS"/>
+<text id="10058" value="NON: pas de BL generer"/>
+<text id="10059" value="NON"/>
+<text id="10060" value="OUI"/>
+<text id="10061" value="Durée Pmin ECS"/>
+<text id="10062" value="Durée de fonctionnement à Pmin au démarrage de l&apos;ECS"/>
+<text id="10063" value="28: 2 sondes ECS détectées"/>
+<text id="10064" value="33: defaut sonde panneau solaire"/>
+<text id="10065" value="34: defaut sonde ballon solaire"/>
+<text id="10066" value="31: TAS debranché"/>
+<text id="10067" value="32: TAS court-circuit"/>
+<text id="10068" value="30: Perte communication Diemasol"/>
+<text id="10069" value="29: Perte communication SCUS-191"/>
+<text id="10070" value="Temperature ballon solaire"/>
+<text id="10071" value="Temperature panneau solaire "/>
+<text id="10072" value="Vitesse pompe solaire"/>
+<text id="10073" value="entrée STB du SU"/>
+<text id="10074" value="Pompe solaire"/>
+<text id="10075" value="Défaut groupe exterieur"/>
+<text id="10076" value="Compresseur"/>
+<text id="10077" value="Dégivrage"/>
+<text id="10078" value="Capteur d&apos;humidité"/>
+<text id="10079" value="Temp. MIT"/>
+<text id="10080" value="Temp. MIT Moy"/>
+<text id="10081" value="Temp. PAC"/>
+<text id="10082" value="Temp. ext. PAC"/>
+<text id="10083" value="Temp. Ballon ECS"/>
+<text id="10084" value="Temp. retour PAC"/>
+<text id="10085" value="Temp. freon ech"/>
+<text id="10086" value="Consigne ECS"/>
+<text id="10087" value="Temp. Freon Batt"/>
+<text id="10088" value="Sortie compresseur"/>
+<text id="10089" value="Temp. Evaporateur"/>
+<text id="10090" value="Temperature de départ MIT"/>
+<text id="10091" value="Temperature de depart MIT moy"/>
+<text id="10092" value="Temperature de départ PAC"/>
+<text id="10093" value="Temperature Exterieur PAC"/>
+<text id="10094" value="Temperature du Ballon ECS"/>
+<text id="10095" value="Temperature de retour PAC"/>
+<text id="10096" value="Temperature du fluide frigorigène à l&apos;echangeur"/>
+<text id="10097" value="Temperature de consigne ECS"/>
+<text id="10098" value="Temperature du fluide frigorigène a la batterie à ailettes"/>
+<text id="10099" value="Temperature du fluide frigorigène en sortie compresseur"/>
+<text id="10100" value="Temperature du fluide frigorigène en sortie de la batterie à ailettes"/>
+<text id="10101" value="2 :T Fluide &gt; max."/>
+<text id="10102" value="3 : perte de flamme"/>
+<text id="10103" value="22:Pb paramètre SU"/>
+<text id="10104" value="Heure fct Compresseur 1"/>
+<text id="10105" value="Heure fct Compresseur 2"/>
+<text id="10106" value="Nb démarrage Compresseur 1"/>
+<text id="10107" value="Nb démarrage Compresseur 2"/>
+<text id="10108" value="Heure fct Backup 1"/>
+<text id="10109" value="Heure fct Backup 2"/>
+<text id="10110" value="Nb démarrage Backup 1"/>
+<text id="10111" value="Nb démarrage Backup 2"/>
+<text id="10112" value="STB fumée FGTS"/>
+<text id="10113" value="Consigne ECS AUTO"/>
+<text id="10114" value="Consigne ECS ECO"/>
+<text id="10115" value="Mode CETD"/>
+<text id="10116" value="Information Tarif"/>
+<text id="10117" value="Tempo du Backlight"/>
+<text id="10118" value="Volume Bain"/>
+<text id="10119" value="Durée Max du Boost"/>
+<text id="10120" value="Type d&apos;appoint"/>
+<text id="10121" value="Tempo demmarage d&apos;appoint"/>
+<text id="10122" value="Tempo Vent. Vitesse Maxi"/>
+<text id="10123" value="Mode Ventilateur"/>
+<text id="10124" value="Antilegionelose ECS"/>
+<text id="10125" value="TAS avant coupure"/>
+<text id="10126" value="Test deconnection TAS"/>
+<text id="10127" value="TAS deconnecté"/>
+<text id="10128" value="TAS Tension Régulation"/>
+<text id="10129" value="Hysteresis ECS"/>
+<text id="10130" value="Durée de dégivrage maximale"/>
+<text id="10131" value="Temp.Amb dégivrage active"/>
+<text id="10132" value="Temp.Evap dégivrage desactive"/>
+<text id="10133" value="Min Temp.Amb fct compresseur"/>
+<text id="10134" value="Max Temp.Amb fct compresseur"/>
+<text id="10135" value="Min Temp.Amb Vent Vitesse Min"/>
+<text id="10136" value="JSHeureDebutPeriode1"/>
+<text id="10137" value="JSHMinuteDebutPeriode1"/>
+<text id="10138" value="JSHeurefinPeriode1"/>
+<text id="10139" value="JSMinuteFinPeriode1"/>
+<text id="10140" value="JSHeureDebutPeriode2"/>
+<text id="10141" value="JSHMinuteDebutPeriode2"/>
+<text id="10142" value="JSHeurefinPeriode2"/>
+<text id="10143" value="JSMinuteFinPeriode2"/>
+<text id="10144" value="JSHeureDebutPeriode3"/>
+<text id="10145" value="JSHMinuteDebutPeriode3"/>
+<text id="10146" value="JSHeurefinPeriode3"/>
+<text id="10147" value="JSMinuteFinPeriode3"/>
+<text id="10148" value="WEHeureDebutPeriode1"/>
+<text id="10149" value="WEHMinuteDebutPeriode1"/>
+<text id="10150" value="WEHeurefinPeriode1"/>
+<text id="10151" value="WEMinuteFinPeriode1"/>
+<text id="10152" value="WEHeureDebutPeriode2"/>
+<text id="10153" value="WEHMinuteDebutPeriode2"/>
+<text id="10154" value="WEHeurefinPeriode2"/>
+<text id="10155" value="WEMinuteFinPeriode2"/>
+<text id="10156" value="WEHeureDebutPeriode3"/>
+<text id="10157" value="WEHMinuteDebutPeriode3"/>
+<text id="10158" value="WEHeurefinPeriode3"/>
+<text id="10159" value="WEMinuteFinPeriode3"/>
+<text id="10160" value="AUTO"/>
+<text id="10161" value="ECO"/>
+<text id="10162" value="BOOST"/>
+<text id="10163" value="VACANCES"/>
+<text id="10164" value="Utilisation Programme horraire"/>
+<text id="10165" value="Util. information tarif (HC=0)"/>
+<text id="10166" value="0 :Tas Désactivé"/>
+<text id="10167" value="1 :Tas Activé"/>
+<text id="10168" value="10L"/>
+<text id="10169" value="Hrs"/>
+<text id="10170" value="Electrique"/>
+<text id="10171" value="Hydraulique"/>
+<text id="10172" value="OFF"/>
+<text id="10173" value="ON"/>
+<text id="10174" value="0.01V"/>
+<text id="10175" value="Temp Haute ECS"/>
+<text id="10176" value="Temp Milieu ECS"/>
+<text id="10177" value="Temp Basse ECS"/>
+<text id="10178" value="Temp Evaporateur"/>
+<text id="10179" value="Temp Air Ambiant"/>
+<text id="10180" value="Tension TAS Avant coupure"/>
+<text id="10181" value="Tension TAS"/>
+<text id="10182" value="TAS Pwm"/>
+<text id="10183" value="Pt de consigne int."/>
+<text id="10184" value="Appoint Electrique"/>
+<text id="10185" value="Appoint Hydraulique"/>
+<text id="10186" value="vitesse vent minimale"/>
+<text id="10187" value="vitesse vent maximale"/>
+<text id="10188" value="Mode Anti-légionellose"/>
+<text id="10189" value="Demande ECS"/>
+<text id="10190" value="HC / HP"/>
+<text id="10191" value="Pressostat"/>
+<text id="10192" value="Heure fct Pompe PAC"/>
+<text id="10193" value="Heure fct Pompe ECS"/>
+<text id="10194" value="Heure fct Pompe MIT"/>
+<text id="10195" value="Nb demarrage Pompe PAC"/>
+<text id="10196" value="Nb demarrage Pompe ECS"/>
+<text id="10197" value="Heure fct Backup ECS"/>
+<text id="10198" value="Nb demarrage degivrage"/>
+<text id="10199" value="Mauvais demarrage degivrage"/>
+<text id="10200" value="Heure fct Heating"/>
+<text id="10201" value="Heure fct Froid"/>
+<text id="10202" value="Commande PAC"/>
+<text id="10203" value="Compresseur 1"/>
+<text id="10204" value="Compresseur 2"/>
+<text id="10205" value="V4V"/>
+<text id="10206" value="Pression basse"/>
+<text id="10207" value="Pompe PAC"/>
+<text id="10208" value="Haute Pression"/>
+<text id="10209" value="Pompe MIT"/>
+<text id="10210" value="Appoint E1 / Pompe"/>
+<text id="10211" value="Appoint E2 / Bruleur"/>
+<text id="10212" value="Appoint Ballon"/>
+<text id="10213" value="Etat BL"/>
+<text id="10214" value="Pompe Primaire/Ventilateur"/>
+<text id="10215" value="Température CTRL ECS"/>
+<text id="10216" value="Temp ECS froid"/>
+<text id="10217" value="Layered"/>
+<text id="10218" value="Dt erreur pompe"/>
+<text id="10219" value="Dt facteur d&apos;erreur de la pompe"/>
+<text id="10220" value="DHW FFwrd"/>
+<text id="10221" value="Gain Dt Ecs"/>
+<text id="10222" value="ECS TF TR correction"/>
+<text id="10223" value="Pondération moyenne TF/TR"/>
+<text id="10224" value="ECS FFwrd start"/>
+<text id="10225" value="Dt de la correction FFwrd"/>
+<text id="10226" value="Type de bruleur"/>
+<text id="10227" value="SPM"/>
+<text id="10228" value="bruleur 1 allure"/>
+<text id="10229" value="Fgps anti-rebond"/>
+<text id="10230" value="temps avant blocking pression d&apos;évacuation"/>
+<text id="10231" value="Fgts anti-rebond"/>
+<text id="10232" value="temps avant blocking température d&apos;évacuation"/>
+<text id="10233" value="Facteur vitesse max pompe CH"/>
+<text id="10234" value="Facteur maximum de la vitesse de pompe en mode chauffage"/>
+<text id="10235" value="Pompe CC facteur I"/>
+<text id="10236" value="Facteur I pour contrôle pompe sur CC"/>
+<text id="10237" value="Fgps locking"/>
+<text id="10238" value="nombre de blocking Fgps en 24h avant locking"/>
+<text id="10239" value="Fgts locking"/>
+<text id="10240" value="nombre de blocking Fgts en 24h avant locking"/>
+<text id="10241" value="Temp Max MIT"/>
+<text id="10242" value="Temperature maximale MIT"/>
+<text id="10243" value="Reglage ECS"/>
+<text id="10244" value="Température eau désirée"/>
+<text id="10245" value="Control"/>
+<text id="10246" value="Mode de reglage Chauffage, ECS, Froid"/>
+<text id="10247" value="CH off, ECS off, FR off"/>
+<text id="10248" value="CH on, ECS on, FR off"/>
+<text id="10249" value="CH on, ECS off, FR off"/>
+<text id="10250" value="CH off, ECS on, FR off"/>
+<text id="10251" value="CH off, ECS off, FR on"/>
+<text id="10252" value="CH on, ECS on, FR on"/>
+<text id="10253" value="CH on, ECS off, FR on"/>
+<text id="10254" value="CH off, ECS on, FR on"/>
+<text id="10255" value="Tempo pompe MIT"/>
+<text id="10256" value="Le temps avant le démarrage de la pompe chaudière"/>
+<text id="10257" value="Tempo pompe ECS"/>
+<text id="10258" value="Le temps avant le démarrage de la pompe ECS"/>
+<text id="10259" value="Reglage Rafraichissement"/>
+<text id="10260" value="Consigne de reglage du Rafraichissement de l&apos;air"/>
+<text id="10261" value="Temp Max PAC"/>
+<text id="10262" value="Temperature maximale Pompe à chaleur"/>
+<text id="10263" value="Pt Dep Regul Temp Ext"/>
+<text id="10264" value="Le point de depart de la regulation de la temperature Exterieure"/>
+<text id="10265" value="Pt Dep Regul Temp Dep"/>
+<text id="10266" value="Le point de depart de la regulation de la temperature Depart MIT"/>
+<text id="10267" value="Pt Fin Regul Temp Ext"/>
+<text id="10268" value="Le point de fin de la regulation de la temperature Exterieure"/>
+<text id="10269" value="BS Relais"/>
+<text id="10270" value="Relais Alarme"/>
+<text id="10271" value="Relais Bruleur"/>
+<text id="10272" value="Temp min Rafraich.PAC"/>
+<text id="10273" value="La température minimum de lrafraichissement de la pompe a chaleur"/>
+<text id="10274" value="Bande neutre Rafraich."/>
+<text id="10275" value="La bande neutre entre le chauffage et le rafraichissement"/>
+<text id="10276" value="BL Fonction"/>
+<text id="10277" value="Blocking Complet"/>
+<text id="10278" value="Blocking Partiel"/>
+<text id="10279" value="Blocking utilisateur reset"/>
+<text id="10280" value="Appoint MIT"/>
+<text id="10281" value="Appoint MIT, Appoint ECS et compresseur"/>
+<text id="10282" value="Compresseur"/>
+<text id="10283" value="Tempo min reversibilité"/>
+<text id="10284" value="Le temps minimum entre le mode chaufface et le mode refroidissement"/>
+<text id="10285" value="Tempo Anti-Cours cycle"/>
+<text id="10286" value="La periode minimum a l&apos;arret"/>
+<text id="10287" value="Type PAC"/>
+<text id="10288" value="CIAT"/>
+<text id="10289" value="DIMPLEX"/>
+<text id="10290" value="TEM"/>
+<text id="10291" value="MITSU"/>
+<text id="10292" value="Choix du type de la PAC"/>
+<text id="10293" value="Tempo démarrage appoint"/>
+<text id="10294" value="La tempo entre le le demarrage compresseur et le demmarrage des appoints"/>
+<text id="10295" value="Tempo entre appoints"/>
+<text id="10296" value="Temps entre les 2 appoints"/>
+<text id="10297" value="Tempo P. CH pr appoint"/>
+<text id="10298" value="Le temps avant le demarrage de la pompe chaudiere pour les appoints electrique"/>
+<text id="10299" value="Type d&apos;appoint"/>
+<text id="10300" value="Les differents types d&apos;appoints disponibles"/>
+<text id="10301" value="Appoint 1 Seul"/>
+<text id="10302" value="Appoint 1 et 2"/>
+<text id="10303" value="Appoint chaudiere"/>
+<text id="10304" value="Type Rafraichissement"/>
+<text id="10305" value="Pas de rafraichaissement"/>
+<text id="10306" value="rafraichaissement, pas d&apos;ECS"/>
+<text id="10307" value="rafraichaissement, avec ECS"/>
+<text id="10308" value="Delestage Individuel"/>
+<text id="10309" value="Pas Utilisé"/>
+<text id="10310" value="Utilisé"/>
+<text id="10311" value="PWM Pompe"/>
+<text id="10312" value="Quadro"/>
+<text id="10313" value="Temp min degivrage"/>
+<text id="10314" value="La temperature minimale de degivrage"/>
+<text id="10315" value="Temp min ext. PAC"/>
+<text id="10316" value="La temperature minimale exterieure PAC seulement pour CIAT"/>
+<text id="10317" value="Dif Allowing ECS PAC"/>
+<text id="10318" value="Le delta-T minimum entre le demarrage du compresseur et de l&apos;ECS"/>
+<text id="10319" value="Tempo max prod ECS PAC"/>
+<text id="10320" value="La durée maximale de la production ECS pour la PAC"/>
+<text id="10321" value="Tempo min prod ECS PAC"/>
+<text id="10322" value="Le delais minimum de la production ECS pour la PAC"/>
+<text id="10323" value="Tempo entre 2 compres."/>
+<text id="10324" value="La tempo entre les 2 niveau du compresseur"/>
+<text id="10325" value="Reduction bruit"/>
+<text id="10326" value="Affaiblir le bruit du ventilateur"/>
+<text id="10327" value="Compresseur Activé"/>
+<text id="10328" value="Activer ou non le compresseur"/>
+<text id="10329" value="Permutation compresseur"/>
+<text id="10330" value="Gerer la permutation des compresseur"/>
+<text id="10331" value="Auto"/>
+<text id="10332" value="Comp1 en 1er"/>
+<text id="10333" value="Comp2 en 1er"/>
+<text id="10334" value="Ventilateur Chaud Max"/>
+<text id="10335" value="Pourcatage du ventilateur en vitesse maximale en mode chaud"/>
+<text id="10336" value="Auto-adaptivité Degivrage"/>
+<text id="10337" value="Ventilateur Froid Max"/>
+<text id="10338" value="Pourcatage du ventilateur en vitesse maximale en mode froid"/>
+<text id="10339" value="Echangeur chaud externe"/>
+<text id="10340" value="Tempo Pompe PAC"/>
+<text id="10341" value="La tempo de la pompe PAC"/>
+<text id="10342" value="Activer Manuel Dem Chauff"/>
+<text id="10343" value="Activer la fonction manuel de la demande de chauff"/>
+<text id="10344" value="Coef Moy Dep"/>
+<text id="10345" value="Le coefficient moyen de la temp depart"/>
+<text id="10346" value="3 min"/>
+<text id="10347" value="4 min"/>
+<text id="10348" value="5 min"/>
+<text id="10349" value="7 min"/>
+<text id="10350" value="10 min"/>
+<text id="10351" value="15 min"/>
+<text id="10352" value="Hysteresis"/>
+<text id="10353" value="Hysteresis ECS"/>
+<text id="10354" value="pompe sanitaire"/>
+<text id="10355" value="Durée de non prise en compte FGPS"/>
+<text id="10356" value="Tension de commande"/>
+<text id="10357" value="Temp Bivalence"/>
+<text id="10358" value="Commande PAC"/>
+<text id="10359" value="2:Defaut sonde départ MIT"/>
+<text id="10360" value="3:Defaut sonde départ PAC (S1)"/>
+<text id="10361" value="4:Defaut sonde Exterieure/Source PAC (S5/6)"/>
+<text id="10362" value="5:Defaut sonde Retour PAC (S1)"/>
+<text id="10363" value="6:Defaut sonde Echangeur Eau PAC (S3)"/>
+<text id="10364" value="7:Defaut sonde Echangeur Air PAC (S4)"/>
+<text id="10365" value="8:Defaut sonde Gaz chaud PAC (S8)"/>
+<text id="10366" value="9:Defaut sonde Evaporateur PAC (S9)"/>
+<text id="10367" value="10:Defaut Groupe exterieur PAC"/>
+<text id="10368" value="13:Defaut Sonde ECS MIT"/>
+<text id="10369" value="14:Defaut Sonde Exterieure MIT"/>
+<text id="10370" value="21:Defaut COM HPC"/>
+<text id="10371" value="15:Defaut Pression Haute PAC"/>
+<text id="10372" value="16:Defaut Pression Basse PAC"/>
+<text id="10373" value="Temp Source PAC"/>
+<text id="10374" value="Temp Exterieure MIT"/>
+<text id="10375" value="23:Defaut V4V PAC"/>
+<text id="10376" value="24:Defaut debit pompe PAC"/>
+<text id="10377" value="26:Defaut hors limit 51 PAC"/>
+<text id="10378" value="27:Defaut hors limit 53 PAC"/>
+<text id="10379" value="28:Defaut gel echangeur PAC"/>
+<text id="10380" value="31:Defaut defaut eeprom PAC"/>
+<text id="10381" value="1:Defaut pas de config Tem"/>
+<text id="10382" value="01:Pas de rotation"/>
+<text id="10383" value="09:Haute pression"/>
+<text id="10384" value="02:V4V"/>
+<text id="10385" value="03:debit pompe "/>
+<text id="10386" value="08:Temperature refoulement"/>
+<text id="10387" value="04:hors limit"/>
+<text id="10388" value="05:gel echangeur 6"/>
+<text id="10389" value="06:gel echangeur 8"/>
+<text id="10390" value="11:Pression source"/>
+<text id="10391" value="12:Antigel source"/>
+<text id="10392" value="13:protection moteur source"/>
+<text id="10393" value="10:Basse Pression"/>
+<text id="10395" value="14:Antigel condenseur"/>
+<text id="10396" value="15:degivrage"/>
+<text id="10397" value="16:Protection compresseur"/>
+<text id="10398" value="17:gaz chaud"/>
+<text id="10399" value="19:sonde depart"/>
+<text id="10400" value="20:sonde retour"/>
+<text id="10401" value="21:Sonde entree air"/>
+<text id="10402" value="22:sonde sortie air"/>
+<text id="10403" value="23:sonde aspiration"/>
+<text id="10404" value="24:sonde evaporateur"/>
+<text id="10405" value="25:sonde condenseur"/>
+<text id="10406" value=":sonde gaz chaud"/>
+<text id="10407" value="26:Reset Utilisateur ouEntrée Blocking"/>
+<text id="10408" value="8:Signal Blocking"/>
+<text id="10409" value="9:Signal Blocking Protection antigel possible"/>
+<text id="10410" value="11:Defaut Communciation SCU"/>
+<text id="10411" value="12:Press eau mini"/>
+<text id="10412" value="17:Err. tableau ident. dF/dU"/>
+<text id="10413" value="18:Ident. PSU non conforme"/>
+<text id="10414" value="19:Ident. dF/dU requise"/>
+<text id="10415" value="20:Identification en cours"/>
+<text id="10416" value="32:Circuit froid"/>
+<text id="10417" value="33:gaz chaud"/>
+<text id="10418" value="34:protection moteur"/>
+<text id="10419" value="35:anti-court cycle"/>
+<text id="10420" value="36:debit eau"/>
+<text id="10421" value="37:Erreur interne"/>
+<text id="10422" value="Code erreur"/>
+<text id="10423" value="07:ROEII pas de communication"/>
+<text id="10424" value="18:TEM pas de communication"/>
+<text id="10425" value="Anticipation"/>
+<text id="10426" value="Type ECS"/>
+<text id="10427" value="Appoint ECS"/>
+<text id="10428" value="Tpo demmarage appoint ECS"/>
+<text id="10429" value="Tempo entre appoints ECS"/>
+<text id="10430" value="Boost ECS"/>
+<text id="10431" value="Appoint MIT"/>
+<text id="10432" value="Appoint Ballon"/>
+<text id="10433" value="Appoint MIT/Ballon Raf."/>
+<text id="10434" value="Primaire"/>
+<text id="10435" value="Secondaire"/>
+<text id="10436" value="Marche"/>
+<text id="10437" value="ECS"/>
+<text id="10438" value="CHAUF"/>
+<text id="10439" value="Consigne CHAUF"/>
+<text id="10440" value="22:Defaut rotation compresseur"/>
+<text id="10441" value="25:Defaut Temp refoulement"/>
+<text id="10442" value="29:Gel echangeur 8"/>
+<text id="10443" value="30:Defaut com CIAT"/>
+<text id="10444" value="1:Demande de CH / DHW / Rafraichissement"/>
+<text id="10445" value="1:Anti-court-cycle"/>
+<text id="10446" value="30:Fonctionnement normal"/>
+<text id="10447" value="31:Fonctionnement normal, appoint OFF du au point de bivalence"/>
+<text id="10448" value="32:Compresseur OFF du au delestage"/>
+<text id="10449" value="33:Appoint OFF du au delestage"/>
+<text id="10450" value="34:Compresseur OFF du a la temperature exterieure minimum"/>
+<text id="10451" value="3:Fonctionnement Chauffage"/>
+<text id="10452" value="4:Fonctionnement ECS"/>
+<text id="10453" value="35:Degivrage"/>
+<text id="10454" value="36:Appoint ECS"/>
+<text id="10455" value="50: Temps de post-fonctionnement de la pompe PAC"/>
+<text id="10456" value="60: Temps de post-fonctionnement de la pompe MIT"/>
+<text id="10457" value="Tension vers PAC"/>
+<text id="10458" value="2:En attente des condition Chauffage ou ECS"/>
+<text id="10459" value="3:Compresseur et appoint OFF du au delestage protection anti-givre"/>
+<text id="10460" value="10:Tempo Reversibilité active"/>
+<text id="10461" value="2:Compresseur et appoint OFF du au delestage"/>
+<text id="10462" value="5: Arret PAC"/>
+<text id="10463" value="6: Arret MIT"/>
+<text id="10464" value="Debit Metre"/>
+<text id="10465" value="Débit mini message"/>
+<text id="10466" value="Debit mini arrêt"/>
+<text id="10467" value="Blocage rafraichissement"/>
+<text id="10468" value="Pas de rafraichissement"/>
+<text id="10469" value="Rafraichissement autorisé si P35"/>
+<text id="10470" value="Minimum depart d&apos;eau"/>
+<text id="10471" value="39:Defaut Débit d&apos;eau insuffisant"/>
+<text id="10472" value="40:Defaut Débit d&apos;eau insuffisant - Arrêt Compresseur + Appoints"/>
+<text id="10473" value="Temp Max MIT Prod. ECS"/>
+<text id="10474" value="Appoint MIT et Appoint ECS"/>
+<text id="10475" value="Appoint ECS"/>
+<text id="10476" value="Appoint ECS et compresseur"/>
+<text id="10477" value="DF pour Colonne Confort"/>
+<text id="10478" value="PWM Pompe PAC"/>
+<text id="10479" value="PWM Pompe MIT"/>
+<text id="10480" value="Vitesse 1 - 85%"/>
+<text id="10481" value="Vitesse 2 - 67%"/>
+<text id="10482" value="Vitesse 3 - 50%"/>
+<text id="10483" value="Vitesse 4 - 30%"/>
+<text id="10484" value="Vitesse 5 - &lt;10%"/>
+<text id="10485" value="Temp.probe"/>
+<text id="10486" value="31:PAC OFF du a une temperature haute (&gt;Max PAC)"/>
+<text id="10487" value="33:Fonctionnement normal, avec une temperature minimum setpoint active"/>
+<text id="10488" value="37:PAC OFF du a un degivrage loupé et temp depart pac &gt; 18°"/>
+<text id="10489" value="39:Dégivrage avec temperature minimum setpoint active"/>
+<text id="10490" value="7:Fonctionnement Rafraichissement"/>
+<text id="10491" value="Purge Pompe MIT"/>
+<text id="10492" value="Purge Pompe PAC"/>
+<text id="10493" value="cycle"/>
+<text id="10494" value="Temp. Exterieur SCU"/>
+<text id="10495" value="Temp.Ballon SCU"/>
+<text id="10496" value="Temp.Amb A SCU"/>
+<text id="10497" value="Temp.Départ B SCU"/>
+<text id="10498" value="Temp. Départ C SCU"/>
+<text id="10499" value="Temp.Amb B SCU"/>
+<text id="10500" value="Temp.Systeme SCU"/>
+<text id="10501" value="Temp.Amb C SCU"/>
+<text id="10502" value="T.Calculee A SCU"/>
+<text id="10503" value="T.Calculee B SCU"/>
+<text id="10504" value="T.Calculee C SCU"/>
+<text id="10505" value="T Calc Syst SCU"/>
+<text id="10506" value="T.Calc.ECS. SCU"/>
+<text id="10507" value="Ouv V3V B SCU"/>
+<text id="10508" value="Ferm.V3V B SCU "/>
+<text id="10509" value="Ouv V3V C SCU"/>
+<text id="10510" value="Ferm.V3V C SCU "/>
+<text id="10511" value="S. TEL SCU"/>
+<text id="10512" value="Pompe A SCU"/>
+<text id="10513" value="Pompe B SCU"/>
+<text id="10514" value="Pompe C SCU"/>
+<text id="10515" value="Pompe ECS SCU"/>
+<text id="10516" value="Pompe AUX SCU"/>
+<text id="10517" value="Entr.0-10V SCU"/>
+<text id="10518" value="Allures SCU"/>
+<text id="10519" value="Cpt. Inter Allure"/>
+<text id="10520" value="Nb"/>
+<text id="10521" value="Entrée TEL"/>
+<text id="10522" value="MC-Radio"/>
+<text id="10523" value="Sonde RF Presente"/>
+<text id="10524" value="CDI A Present"/>
+<text id="10525" value="CDI B Present"/>
+<text id="10526" value="CDI C Present"/>
+<text id="10527" value="V3V Option Presente"/>
+<text id="10528" value="D3:DEF.S.DEP.B"/>
+<text id="10529" value="D4:DEF.S.DEP.C"/>
+<text id="10530" value="D5:DEF.S.EXT."/>
+<text id="10531" value="D7:DEF.S.SYST."/>
+<text id="10532" value="D9:DEF.S.ECS"/>
+<text id="10533" value="61:Vanne d&apos;inversion en Position CH"/>
+<text id="10534" value="64:Pompe MIT et PAC ON en purge"/>
+<text id="10535" value="62: Pompe MIT et PAC OFF en purge"/>
+<text id="10536" value="63:Vanne d&apos;inversion en Position ECS"/>
+<text id="10537" value="11:Mode Ramoneur CHAUF"/>
+<text id="10538" value="12:Mode Ramoneur FROID"/>
+<text id="10539" value="Été/Hiver"/>
+<text id="10540" value="26: Locking Communication SCU-192"/>
+<text id="10541" value="41:Defaut Communciation SCU_S192"/>
+<text id="10542" value="EE CH "/>
+<text id="10543" value="EE ECS "/>
+<text id="10544" value="EE COOL"/>
+<text id="10545" value="TEE"/>
+<text id="10546" value="TE CH"/>
+<text id="10547" value="TE ECS"/>
+<text id="10548" value="TE COOL"/>
+<text id="10549" value="TTE"/>
+<text id="10550" value="SPF"/>
+<text id="10551" value="TEE Année-1"/>
+<text id="10552" value="TTE Année-1"/>
+<text id="10553" value="SPF Année-1"/>
+<text id="10554" value="TEE Année-2"/>
+<text id="10555" value="TTE Année-2"/>
+<text id="10556" value="D11:DEF.S.AMB.A"/>
+<text id="10557" value="D12:DEF.S.AMB.B"/>
+<text id="10558" value="D13:DEF.S.AMB.C"/>
+<text id="10559" value="D14:DEF.COM MC"/>
+<text id="10560" value="D15:DEF.S.BAL.TP"/>
+<text id="10561" value="D16:DEF.S.PISC.B"/>
+<text id="10562" value="D16:DEF.S.PISC.C"/>
+<text id="10563" value="D17:DEF.S.BAL.2"/>
+<text id="10564" value="D27:DEF.COM.PCU"/>
+<text id="10565" value="D32:5 RESET:ON/OFF"/>
+<text id="10566" value="D37:TA-S COURT-CIR"/>
+<text id="10567" value="D38:TA-S DEBRANCHE"/>
+<text id="10568" value="D39:TA-S HS"/>
+<text id="10569" value="D50:DEF.COM.OTH"/>
+<text id="10570" value="D51:DEF :VOIR CHAUD"/>
+<text id="10571" value="D18:DEF.S.BAL.SOL."/>
+<text id="10572" value="D19:DEF.S.COL.SOL."/>
+<text id="10573" value="D20:DEF.COM.SOL."/>
+<text id="10574" value="D99:DEF.MAUVAIS.PCU"/>
+<text id="10575" value="D40:DEF.INCONNU"/>
+<text id="10576" value="D254:DEF.INCONNU"/>
+<text id="10577" value="M4:REVISION"/>
+<text id="10578" value="M5:REVISION A"/>
+<text id="10579" value="M6:REVISION B"/>
+<text id="10580" value="M7:REVISION C"/>
+<text id="10581" value="M8:REVISION AUTO"/>
+<text id="10582" value="M10:SEC.CHAP JOURS"/>
+<text id="10583" value="M20:PURGE"/>
+<text id="10584" value="M21:ENTREE BL OUV."/>
+<text id="10585" value="M23:CHANGER SONDE EXT."/>
+<text id="10586" value="M25:ANTI COURT CYCLE"/>
+<text id="10587" value="M26:ARRET NUMERO"/>
+<text id="10588" value="M30:BL.COM MODBUS"/>
+<text id="10589" value="M31:BL.RESEAU SYSTÈME"/>
+<text id="10590" value="M254:BL.INCONNU"/>
+<text id="10591" value="E250:DEF.MANQUE EAU"/>
+<text id="10592" value="E251:DEF.MANOMETRE"/>
+<text id="10593" value="Circuit A: Mode Jour"/>
+<text id="10594" value="Circuit A: Mode Nuit"/>
+<text id="10595" value="Circuit A: Antigel"/>
+<text id="10596" value="Circuit B: Mode Jour"/>
+<text id="10597" value="Circuit B: Mode Nuit"/>
+<text id="10598" value="Circuit B: Antigel"/>
+<text id="10599" value="50:Défaut Temp Depart  SCUS 192"/>
+<text id="10600" value="51:Defaut Sonde retour SCUS 192"/>
+<text id="10601" value="52:Defaut Elec1 Pulse SCUS 192"/>
+<text id="10602" value="53: Defaut Elec2 Pulse SCUS 192"/>
+<text id="10603" value="54:Défaut Thermal Pulse SCUS 192"/>
+<text id="10604" value="55:Défaut Debitmetre SCUS 192"/>
+<text id="10605" value="Type MIT"/>
+<text id="10606" value="Inverter "/>
+<text id="10607" value="ON - OFF"/>
+<text id="10608" value="TOUT"/>
+<text id="10609" value="SOLO NAPO"/>
+<text id="10610" value="Temp Min arret Compr."/>
+<text id="10611" value="Temp redemarrage Comp."/>
+<text id="10612" value="4: Pas de Rafraichissement (Capteur d&apos;humidité)"/>
+<text id="10613" value="Type de pompe"/>
+<text id="10614" value="Pompe Normale"/>
+<text id="10615" value="Cout heure pleine"/>
+<text id="10616" value="Cout heure creuse"/>
+<text id="10617" value="Cout fuel/gaz"/>
+<text id="10618" value="Activer hybrid"/>
+<text id="10619" value="Coef.CO2 e.ch"/>
+<text id="10620" value="Coef.CO2 e.ecs"/>
+<text id="10621" value="Coef.CO2 gaz.oil"/>
+<text id="10622" value="Rendement Chaudiere"/>
+<text id="10623" value="Coût"/>
+<text id="10624" value="Energie Primaire"/>
+<text id="10625" value="CO2"/>
+<text id="10626" value="HP/HC"/>
+<text id="10627" value="Appoint MIT et compresseur"/>
+<text id="10628" value="COP Moyen"/>
+<text id="10629" value="COP seuil"/>
+<text id="10630" value="Coüt de l&apos;energie electrique en heure pleine"/>
+<text id="10631" value="Coüt de l&apos;energie electrique en heure creuse"/>
+<text id="10632" value="Coût de l&apos;energie fossile (Gaz/Fuel)"/>
+<text id="10633" value="Coefficient d&apos;emission de CO2 en Electrique en mode chauffage"/>
+<text id="10634" value="Coefficient d&apos;emission de CO2 en Electrique en mode ECS"/>
+<text id="10635" value="Coefficient d&apos;emission de CO2 en Gaz/Fuel"/>
+<text id="10636" value="Rendement de la chaudiere"/>
+<text id="10637" value="cts"/>
+<text id="10638" value="E1:Appoint électrique1 E2:Appoint électrique2 H:Appoint Hydraulique"/>
+<text id="10639" value="Les differents fonctionnement de l&apos;entrée blocking"/>
+<text id="10640" value="NON:pas de mode froid OUI:mode froid OUI+ECS:mode froid+ecs"/>
+<text id="10641" value="Choix du type d&apos;installation du ballon  ECS"/>
+<text id="10642" value="Choix des appoints pour la production ECS "/>
+<text id="10643" value="Valeur minimum du débitmètre avant affichage du blocking"/>
+<text id="10644" value="Valeur minimum du débitmètre avant l&apos;arrêt de la PAC"/>
+<text id="10645" value="Réglage de la température de consigne primaire pendant la production ECS"/>
+<text id="10646" value="vitesse de pompe de la pompe à chaleur"/>
+<text id="10647" value="vitesse de pompe du MIT"/>
+<text id="11192" value="Prod ECS avec Compresseur"/>
+<text id="11193" value="Prod ECS avec appoint"/>
+<text id="11194" value="Prod ECS avec Comp+appoint"/>
+<text id="11195" value="Attente Cond Démarrage"/>
+<text id="11196" value="Procédure Démarrage Compresseur"/>
+<text id="11197" value="Appoint allumé"/>
+<text id="11198" value="Gestion Vitesse Ventiltateur"/>
+<text id="11199" value="Dégivrage"/>
+<text id="11200" value="Temps min entre 2 degivrages"/>
+<text id="11201" value="Ventilateur Vit.Max"/>
+<text id="11202" value="Ventilateur Vit.Moy"/>
+<text id="11203" value="Heure Fonctionnement HC"/>
+<text id="11204" value="Heure Fonctionnement HP"/>
+<text id="11205" value="Nombre Cycle Dégivrage"/>
+<text id="11206" value="DT Gestion Segment 1"/>
+<text id="11207" value="DT Gestion Segment 2"/>
+<text id="11208" value="DT Gestion Segment 3"/>
+<text id="11209" value="DT Gestion Segment 4"/>
+<text id="11210" value="Volume du Ballon"/>
+<text id="11211" value="01:Pression Fluide Haute"/>
+<text id="11212" value="02:T.ECS Haut &gt; 85°c."/>
+<text id="11213" value="03:T.Ambiance &gt; max."/>
+<text id="11214" value="04:T.Ambiance &lt; min."/>
+<text id="11215" value="25:Sonde ECS Bas en court-circuit"/>
+<text id="11216" value="26:Sonde ECS Bas en circuit ouvert"/>
+<text id="11217" value="27:Sonde ECS Haut en court-circuit"/>
+<text id="11218" value="28:Sonde ECS Haut en circuit ouvert"/>
+<text id="11219" value="32: TAS ouvert"/>
+<text id="11220" value="33: TAS court-circuit"/>
+<text id="11221" value="Nb démarrage Compresseur"/>
+<text id="11222" value="Nb démarrage Backup"/>
+<text id="11223" value="01:Sonde ECS Milieu en court-circuit"/>
+<text id="11224" value="02:Sonde ECS Milieu en circuit ouvert"/>
+<text id="11225" value="03:Temp.ECS Haut &gt; 85°c."/>
+<text id="11226" value="04:Sonde Ambiance en court-circuit"/>
+<text id="11227" value="05:Sonde Ambiance  en circuit ouvert"/>
+<text id="11228" value="06:Sonde Evaporateur Milieu en court-circuit"/>
+<text id="11229" value="07:Sonde Evaporateur Milieu en circuit ouvert"/>
+<text id="11230" value="08:Dégivrage non fonctionnel"/>
+<text id="11231" value="09:Pression Fluide Haute"/>
+<text id="11232" value="10:Pb Pression Fluide"/>
+<text id="11233" value="Pression eau"/>
+<text id="11234" value="Activer Algo Sonde.ECS"/>
+<text id="11235" value="Etat Presso Active"/>
+<text id="11236" value="25:Sonde extèrieure déconnectée sous-tension"/>
+<text id="11237" value="26:Sonde Ballon déconnectée sous-tension"/>
+<text id="11238" value="27:Sonde Ballon in déconnectée sous-tension"/>
+<text id="11239" value="03:Perte de flamme"/>
+<text id="11240" value="04:Temp. fumée au-dessus de la limite"/>
+<text id="11241" value="V3V position attente"/>
+<text id="11242" value="CH"/>
+<text id="11243" value="Hysteresis coupure comp"/>
+<text id="11244" value="Temp Coupure Comp"/>
+<text id="11245" value="Temps entre DemarrageVentilo"/>
+<text id="11246" value="Puiss.ECS apres min loadtime"/>
+<text id="11247" value="PuissCH apres min load time"/>
+<text id="11248" value="offset ECS CTRL temp HL"/>
+<text id="11249" value="12: FGPS over limit"/>
+<text id="11250" value="12: FGPS activé plus de 2 fois en 24h"/>
+<text id="11251" value="Entrée alarme bruleur"/>
+<text id="11252" value="Cons Compresseur"/>
+<text id="11253" value="Consigne Compr.r à 0 degré"/>
+<text id="11254" value="Durée de fonct. mini du Comp"/>
+<text id="11255" value="Heure"/>
+<text id="11256" value="Minute"/>
+<text id="11257" value="Date"/>
+<text id="11258" value="Mois"/>
+<text id="11259" value="Annee"/>
+<text id="11260" value="Appoint Hydraulique"/>
+<text id="11261" value="Etat de la sortie quand il y a demande d&apos;appoint hydraulique"/>
+<text id="11262" value="Été/hiver"/>
+<text id="11263" value="5:Fonctionnement normal"/>
+<text id="11264" value="Une fois/semaine"/>
+<text id="11265" value="9:Antigommage"/>
+<text id="11266" value="Heure de fonct. entretien"/>
+<text id="11267" value="Nombre d&apos;heure de fonctionnement  avant entretien"/>
+<text id="11268" value="Fct.bruleur entretien"/>
+<text id="11269" value="Nombre d&apos;heure de fonctionnement  du bruleur avant entretien"/>
+<text id="11270" value="Entretien auto du bruleur"/>
+<text id="11271" value="Heure d&apos;entretien automatic du bruleur"/>
+<text id="11272" value="type cmd pompe"/>
+<text id="11273" value="Type de postfonctionnement de la pompe "/>
+<text id="11274" value="Pompe CH"/>
+<text id="11275" value="Alim CH pump"/>
+<text id="11276" value="Puissance instantanee"/>
+<text id="11277" value="Puissance enfournée en Mwatts"/>
+<text id="11278" value="Puissance enfournée en Kwatts"/>
+<text id="11279" value="Puissance enfournée en Watts"/>
+<text id="11280" value="KW"/>
+<text id="11281" value="36:Perte de flamme 3 fois "/>
+<text id="11282" value="30:FGTS locking"/>
+<text id="11283" value="31:FGPS locking"/>
+<text id="11284" value="5:HorsGelProtection"/>
+<text id="11285" value="Util information tarif (HC=1)"/>
+<text id="11286" value="Temps Mesure Ambiante"/>
+<text id="11287" value="Temps Entre 2 Prot. Horsgel"/>
+<text id="11288" value="Durée Protection Hors gel"/>
+<text id="11289" value="Temps d&apos;attente après arrêt compresseur pour mesurer T.Ambiente"/>
+<text id="11290" value="Temps d&apos;attente entre deux protection hors gel"/>
+<text id="11291" value="Durée de la protection hors gel"/>
+<text id="11292" value="Consigne ECS AUTO Lundi"/>
+<text id="11293" value="Consigne ECS AUTO Mardi"/>
+<text id="11294" value="Consigne ECS AUTO Mercredi"/>
+<text id="11295" value="Consigne ECS AUTO Jeudi"/>
+<text id="11296" value="Consigne ECS AUTO Vendredi"/>
+<text id="11297" value="Consigne ECS AUTO Samedi"/>
+<text id="11298" value="Consigne ECS AUTO Dimanche"/>
+<text id="11299" value="Consigne ECS ECO Lundi"/>
+<text id="11300" value="Consigne ECS ECO Mardi"/>
+<text id="11301" value="Consigne ECS ECO Mercredi"/>
+<text id="11302" value="Consigne ECS ECO Jeudi"/>
+<text id="11303" value="Consigne ECS ECO Vendredi"/>
+<text id="11304" value="Consigne ECS ECO Samedi"/>
+<text id="11305" value="Consigne ECS ECO Dimanche"/>
+<text id="11306" value="Durée Max Heure Creuse"/>
+<text id="11307" value="Pression de l&apos;air"/>
+<text id="11308" value="Pa"/>
+<text id="11309" value="Hysteresis ECS réduit"/>
+<text id="11310" value="Hysteresis ECS Confort"/>
+<text id="11311" value="Entretien Ventilateur"/>
+<text id="11312" value="MOIS"/>
+<text id="11313" value="Durée de fonct. max du Comp"/>
+<text id="11314" value="Cons Compresseur Maxi"/>
+<text id="11315" value="Fact. D Ventilateur"/>
+<text id="11316" value="Arrêt ventilateur"/>
+<text id="11317" value="Facteur vitesse max Vent."/>
+<text id="11318" value="Temps échantillon Vent"/>
+<text id="11319" value="Vent. PWM Inversée"/>
+<text id="11320" value="Delta Depression Blocage"/>
+<text id="11321" value="Delta Depression Vérouillage"/>
+<text id="11322" value="Cons. hors-gel "/>
+<text id="11323" value="Consigne hors-gel "/>
+<text id="11324" value="Consigne Antilegionelose ECS"/>
+<text id="11325" value="Hysteresis ECS Boost"/>
+<text id="11326" value="Heure Dérogation TAS"/>
+<text id="11327" value="Temps.Gen.BL.Pres Air"/>
+<text id="11328" value="Temps d&apos;attente pour générer du blocage pression air"/>
+<text id="11329" value="Temps.Gen.Ver.Pres Air"/>
+<text id="11330" value="Temps d&apos;attente pour générer le vérouillage pression air"/>
+<text id="11331" value="Temps.Gen.Ver.Pressostat"/>
+<text id="11332" value="Temps d&apos;attente pour générer le vérouillage pressostat"/>
+<text id="11333" value="Apport DT Appoint"/>
+<text id="11334" value="Delta de température apporté par l&apos;appoint"/>
+<text id="11335" value="Temps Dt.Ecs avec Appoint"/>
+<text id="11336" value="Temps pour atteindre Delta de temp apporté par l&apos;appoint"/>
+<text id="11337" value="Nb.Occurence.BL.Pressostat"/>
+<text id="11338" value="Nombre d&apos;occurrence du blocage pressostat"/>
+<text id="11339" value="Cons Pression de l&apos;air"/>
+<text id="11340" value="Pt de consigne Comp"/>
+<text id="11341" value="Pt de cons Appoint"/>
+<text id="11342" value="Entrée Compresseur"/>
+<text id="11343" value="Entrée alarme PAC"/>
+<text id="11344" value="Ventilateur"/>
+<text id="11345" value="Chauffage/Raffraichiss"/>
+<text id="11346" value="01:Sonde ECS Milieu/Haut en défaut"/>
+<text id="11347" value="06:Pression Air très faible"/>
+<text id="11348" value="02:Pb Pression Fluide"/>
+<text id="11349" value="04:Defaut Pression Basse PAC"/>
+<text id="11350" value="01:Temp. ballon ECS &gt; 85°c."/>
+<text id="11351" value="02:TAS ouvert"/>
+<text id="11352" value="03:TAS en court-circuit"/>
+<text id="11353" value="04:Basse Pression"/>
+<text id="11354" value="06:T.Ambiance &gt; max."/>
+<text id="11355" value="05:T.Ambiance &lt; min."/>
+<text id="11356" value="07:Heure fct Compresseur &gt;max"/>
+<text id="11357" value="10:Pression Air faible"/>
+<text id="11358" value="12:Sonde ECS Milieu en court-circuit"/>
+<text id="11359" value="11:Sonde ECS Milieu en circuit ouvert"/>
+<text id="11360" value="16:Sonde ECS Bas en court-circuit"/>
+<text id="11361" value="15:Sonde ECS Bas en circuit ouvert"/>
+<text id="11362" value="14:Sonde ECS Haut en court-circuit"/>
+<text id="11363" value="13:Sonde ECS Haut en circuit ouvert"/>
+<text id="11364" value="08:Capteur.Pression Air Ouvert"/>
+<text id="11365" value="09:Capteur.Pression Air Court-circuit"/>
+<text id="11366" value="Oui Hors Vacances"/>
+<text id="11367" value="Toujours"/>
+<text id="11368" value="DF Brûleur"/>
+<text id="11369" value="18Kw"/>
+<text id="11370" value="24Kw"/>
+<text id="11371" value="30Kw"/>
+<text id="11372" value="Pompe ECS"/>
+<text id="11373" value="Pompe sanitaire(EAP)"/>
+<text id="11374" value="Présence flamme"/>
+<text id="11375" value="Energie.Elec.Comp(Wh)"/>
+<text id="11376" value="Energie.Elec.Appoint(Wh)"/>
+<text id="11377" value="Energie.Elec.Comp(kWh)"/>
+<text id="11378" value="Energie.Elec.Appoint(kWh)"/>
+<text id="11379" value="Energie.Elec.Comp(MWh)"/>
+<text id="11380" value="Energie.Elec.Appoint(MWh)"/>
+<text id="11381" value="Prog.horaire/PV-S(HC0)"/>
+<text id="11382" value="Prog.horaire/PV-S(HP1)"/>
+<text id="11383" value="Prog.hor/PV-S Appoint HC0"/>
+<text id="11384" value="Prog.hor/PV-S Appoint HP0"/>
+<text id="11385" value="Prog.hor/PV-S Appoint HP1"/>
+<text id="11386" value="Energie Elec Compresseur"/>
+<text id="11387" value="Energie Elec Appoint"/>
+<text id="11388" value="Consigne ECS BOOST"/>
+<text id="11389" value="05:Pwm.Ventilateur"/>
+<text id="11390" value="02:Pwm.Ventilateur"/>
+<text id="11391" value="20:Pression Air faible"/>
+<text id="11392" value="31:Sonde ECS Milieu en court-circuit"/>
+<text id="11393" value="30:Sonde ECS Milieu en circuit ouvert"/>
+<text id="11394" value="35:Sonde ECS Bas en court-circuit"/>
+<text id="11395" value="34:Sonde ECS Bas en circuit ouvert"/>
+<text id="11396" value="33:Sonde ECS Haut en court-circuit"/>
+<text id="11397" value="32:Sonde ECS Haut en circuit ouvert"/>
+<text id="11398" value="10:Pb Pression Fluide"/>
+<text id="11399" value="11:Defaut Pression Basse PAC"/>
+<text id="11400" value="12:Sonde Ambiance en court-circuit"/>
+<text id="11401" value="13:Sonde Ambiance  en circuit ouvert"/>
+<text id="11402" value="03:TAS ouvert"/>
+<text id="11403" value="04:TAS en court-circuit"/>
+<text id="11404" value="05:Basse Pression"/>
+<text id="11405" value="06:T.Ambiance &lt; min."/>
+<text id="11406" value="07:T.Ambiance &gt; max."/>
+<text id="11407" value="08:Heure fct Compresseur &gt;max"/>
+<text id="11408" value="10:Pression Air faible"/>
+<text id="11409" value="09:Capteur.Pression Air Ouvert"/>
+<text id="11410" value="10:Capteur.Pression Air Court-circuit"/>
+<text id="11411" value="11:Pression Air très faible"/>
+<text id="11412" value="Temps.Gen.BL.PWM.Vent"/>
+<text id="11413" value="Temps d&apos;attente pour générer du blocage Pwm Ventilateur"/>
+<text id="11414" value="Delta Depression.Vent.BL"/>
+<text id="11415" value="Nb.Occurence.BL.Pwm.Vent"/>
+<text id="11416" value="Temps.Entre.BL.Pwm.Vent"/>
+<text id="11417" value="2:Démarrage"/>
+<text id="11418" value="16:Protec. Antigel"/>
+<text id="11419" value="4:En attente des condition Chauffage ou ECS"/>
+<text id="11420" value="Temp Max EHCS"/>
+<text id="11421" value="1:Defaut Groupe exterieur PAC"/>
+<text id="11422" value="2:Defaut Communciation PAC"/>
+<text id="11423" value="3:Defaut sonde départ hybride"/>
+<text id="11424" value="4:Defaut Communciation Chaudiere Gaz"/>
+<text id="11425" value="7:Defaut Depart PAC"/>
+<text id="11426" value="1:Defaut chaudiere Gaz"/>
+<text id="11427" value="2:Defaut Groupe exterieur PAC"/>
+<text id="11428" value="3:4 BL7 succesifs"/>
+<text id="11429" value="4:Reset Utilisateur ouEntrée Blocking"/>
+<text id="11430" value="Heure fct Compresseur"/>
+<text id="11431" value="Nb démarrage Compresseur "/>
+<text id="11432" value="Nb démarrage chaudiere gaz "/>
+<text id="11433" value="Nb demarrage Pompe CH gaz"/>
+<text id="11434" value="Heure fct chaudiere Gaz"/>
+<text id="11435" value="Pt consigne int PAC"/>
+<text id="11436" value="Pt consigne int Gaz"/>
+<text id="11437" value="Temp.départ EHCS"/>
+<text id="11438" value="Temp Depart Gaz"/>
+<text id="11439" value="Temp Retour Gaz"/>
+<text id="11440" value="Frequence Compresseur"/>
+<text id="11441" value="Tempo Min Appoint"/>
+<text id="11442" value="Tempo Max Appoint"/>
+<text id="11443" value="Temp min ext. Appoint"/>
+<text id="11444" value="Temp max ext. Appoint"/>
+<text id="11445" value="Temp Hybride"/>
+<text id="11446" value="Temp Hybride moy"/>
+<text id="11447" value="Temp Refr. gaz PAC"/>
+<text id="11448" value="Temp Refr. liquide PAC"/>
+<text id="11449" value="Consigne Hybride CH"/>
+<text id="11450" value="Consigne Hybride ECS"/>
+<text id="11451" value="Temp ECS Gaz"/>
+<text id="11452" value="Temp Signal bloquant"/>
+<text id="11453" value="sortie.0-10V"/>
+<text id="11454" value=""/>
+<text id="11455" value="Tempo pompe CH"/>
+<text id="11456" value="Desactiver Erreur PAC"/>
+<text id="11457" value="Temp Max Ext Hybrid"/>
+<text id="11458" value="Periode Temp Moy Depart"/>
+<text id="11459" value="Activer Demande CH Manuel"/>
+<text id="11460" value="Cycle de purge"/>
+<text id="11461" value="Chaudiere"/>
+<text id="11462" value="PAC"/>
+<text id="11463" value="Chaudiere+PAC"/>
+<text id="11464" value="Puissance PAC"/>
+<text id="11465" value="50:S,System court-circuit"/>
+<text id="11466" value="51:S,System ouverte"/>
+<text id="11467" value="52:Compresseur et appoint OFF du au delestage"/>
+<text id="11468" value="53:Compresseur OFF du au delestage"/>
+<text id="11469" value="54:Appoint OFF du au delestage"/>
+<text id="11470" value="55:communication PAC"/>
+<text id="11471" value="56:communication Chaudière"/>
+<text id="11472" value="Erreur Pac"/>
+<text id="11473" value="10:demarrage Pompe PAC"/>
+<text id="11474" value="11:Anticyclage Compresseur"/>
+<text id="11475" value="12:Dégivrage PAC"/>
+<text id="11476" value="13:Limite PAC dépassée"/>
+<text id="11477" value="14:Fonction Hybride a désactive PAC"/>
+<text id="11478" value="20:PAC fait du chauffage"/>
+<text id="11479" value="21:Chaudière fait du chauffage"/>
+<text id="11480" value="22:Chaudière et PAC font du chauffage"/>
+<text id="11481" value="30:Chaudière DHW et PAC chauffage"/>
+<text id="11482" value="31:Chaudière fait du DHW"/>
+<text id="11483" value="40:Pompe Pac Chauffage"/>
+<text id="11484" value="41:Pompe chaudière Chauffage"/>
+<text id="11485" value="42:Pompe Pac et chaudière Chauffage"/>
+<text id="11486" value="50:Pompe Pac chauffage  et chaudière ECS"/>
+<text id="11487" value="51:Pompe chaudière ECS"/>
+<text id="11488" value="Pompe PAC EHC"/>
+<text id="11489" value="50:Défaut Chaudière OTH"/>
+<text id="11490" value="57:Chaudière BSB Erreur"/>
+<text id="11491" value="33:Defaut Débit"/>
+<text id="11492" value="Hysteresis Limite Pac sup"/>
+<text id="11493" value="Hysteresis Limite Pac  Inf"/>
+<text id="11494" value="Reset Device"/>
+<text id="11495" value="Do you want to reset this device?"/>
+<text id="11496" value="Are you sure you want to reset this device?"/>
+<text id="11497" value="The WiFi network has been changed"/>
+<text id="11498" value="Network interface"/>
+<text id="11499" value="Previous network"/>
+<text id="11500" value="Current network"/>
+<text id="30001" value="Aucune fonction"/>
+<text id="30002" value="Seléction type gaz"/>
+<text id="30003" value="Système hydraulique"/>
+<text id="30004" value="Configuration relais1"/>
+<text id="30005" value="Configuration relais1 (0..13)"/>
+<text id="30006" value="Configuration relais2"/>
+<text id="30007" value="Configuration relais2 (0..13)"/>
+<text id="30008" value="Configuration sonde externe"/>
+<text id="30009" value="Configuration sonde externe (0..4)"/>
+<text id="30010" value="Configuration entrée auxiliaire"/>
+<text id="30011" value="Configuration entrée auxiliaire (0..4)"/>
+<text id="30012" value="Configuration sonde sanitaire"/>
+<text id="30013" value="Configuration sonde sanitaire (0..2)"/>
+<text id="30014" value="Configuration priorité sanitaire"/>
+<text id="30015" value="Configuration priorité sanitaire (0..3)"/>
+<text id="30016" value="Configuration point de consigne chauffage"/>
+<text id="30017" value="Configuration point de consigne chauffage (0..3)"/>
+<text id="30018" value="Pompe à 2 vitesses"/>
+<text id="30019" value="Pompe à 2 vitesses (0=activée 1=désactivée)"/>
+<text id="30020" value="Activation test WPM"/>
+<text id="30021" value="Activation test WPM (0=disactivée)"/>
+<text id="30022" value="Configuration puissance maximale chauffage"/>
+<text id="30023" value="Configuration puissance maximale chauffage (0-100%)"/>
+<text id="30024" value="Configuration puissance maximale sanitaire"/>
+<text id="30025" value="Configuration puissance maximale sanitaire (0-100%)"/>
+<text id="30026" value="Configuration puissance minimale chauffage"/>
+<text id="30027" value="Configuration puissance minimale chauffage (0-100%)"/>
+<text id="30028" value="Sélection point de consigne max chauffage"/>
+<text id="30029" value="Sélection point de consigne max chauffage (0=nominal 1=réduit)"/>
+<text id="30030" value="Temps de post-circulation en chauffage"/>
+<text id="30031" value="Temps de post-circulation en chauffage (1..240min)"/>
+<text id="30032" value="Temps d&apos;attente avant une nouvelle mise en marche du bruleur"/>
+<text id="30033" value="Temps d&apos;attente avant une nouvelle mise en marche du bruleur (0..10min - 0=10s)"/>
+<text id="30034" value="Temps d&apos;activation de la pompe"/>
+<text id="30035" value="Temps d&apos;activation de la pompe (0..15min)"/>
+<text id="30036" value="Temps de post-circulation en sanitaire"/>
+<text id="30037" value="Temps de post-circulation en sanitaire (0..255s)"/>
+<text id="30038" value="Fonction anti-légionellose"/>
+<text id="30039" value="Fonction anti-légionellose (0 désactivée - 55..67&#176;C point de consigne)"/>
+<text id="30040" value="Activation paramètres de P42 à P76  e OT, TA230, OT et TA230 disactivéè"/>
+<text id="30041" value="Activation lecture/modifier paramètres de P42 à P76 (0..40 - 22 activéè) OT disactivéè (28) TA230 (29) OT et TA230 (30)"/>
+<text id="30042" value="Max point de consigne sanitaire"/>
+<text id="30043" value="Réglage valeur de température maximale (&#176;C) depuis point de consigne sanitaire (55&#176;C .65°C)"/>
+<text id="30044" value="Retard activation demande sanitaire"/>
+<text id="30045" value="Retard activation demande sanitaire avec débitmètre à turbine (0..255*0.02s)"/>
+<text id="30046" value="Sélection dispositif de commande eau"/>
+<text id="30047" value="Sélection dispositif de commande eau  (Huba/WFS (0,1))"/>
+<text id="30048" value="Identification chaudiére"/>
+<text id="30049" value="Identification chaudiére (H byte) (en lecture seule)"/>
+<text id="30051" value="Identification chaudiére (L byte) (en lecture seule)"/>
+<text id="30052" value="Identification programmation chaudiére"/>
+<text id="30053" value="Identification programmation chaudiére (H byte) (en lecture seule)"/>
+<text id="30055" value="Identification programmation chaudiére (L byte) (en lecture seule)"/>
+<text id="30056" value="Réglage décalage sanitaire"/>
+<text id="30057" value="Réglage décalage sanitaire (0..15&#176;C)"/>
+<text id="30058" value="Point de consigne minimal de température depuis télécontrôle"/>
+<text id="30059" value="Point de consigne minimal de température depuis télécontrôle (30..85&#176;C)"/>
+<text id="30060" value="Contrôle gradient sur sonde refoulement"/>
+<text id="30061" value="Activation/désactivation contrôle gradient sur sonde refoulement"/>
+<text id="30062" value="Paramétrage fréquence de fonctionnement"/>
+<text id="30063" value="Paramétrage fréquence de fonctionnement (0=50Hz 1=60Hz)"/>
+<text id="30064" value="Paramétrage unité de mesure de la température &#176;C °F"/>
+<text id="30065" value="Forçage requis CHAUFFAGE"/>
+<text id="30066" value="Forçage requis CHAUFFAGE pour manque de communication OpenTherm(E83 - plage=0, 1, 2)"/>
+<text id="30067" value="Activation fonction combustion"/>
+<text id="30068" value="Activation fonction combustion (bit0=test automatique - bit1=réduction vitesse maxi - bit2=contrôle ripple - bit3= autoréglage combustion - bit4=test anti-vent - bit5=arrêt ventilateur pour niveaux de combustion erronés - bit6=test 6000tr/min après extinction de flamme - bit7=paramètres allumage réglés par EEPROM)"/>
+<text id="30069" value="Temps impulsion au modulateur"/>
+<text id="30070" value="Activation fonction"/>
+<text id="30071" value="Activation fonction (bit0=1 contrôle courant modulateur - bit2=1 désactivation contrôle obstruction"/>
+<text id="30072" value="Décalage en allumage"/>
+<text id="30073" value="Décalage en allumage(0..100 - par défaut=50)"/>
+<text id="30074" value="Fonction Service due"/>
+<text id="30075" value="Fonction Service due (6..25 - 25 service due disactivée)"/>
+<text id="30076" value="Décalage point de consigne refoulement chauffage en sanitaire"/>
+<text id="30077" value="Décalage pour point de consigne refoulement chauffage en mode sanitaire pour HS=5,8,15,18 (15..35&#176;C) (Sp_CH_in DHW=Sp_DHW+Offset)"/>
+<text id="30078" value="Température d&apos;arrêt du refoulement en mode sanitaire pour HS=5,8,15,18"/>
+<text id="30079" value="Température d&apos;arrêt du refoulement en mode sanitaire pour HS=5,8,15,18 (80..90°C)"/>
+<text id="30080" value="Décalage chauffage"/>
+<text id="30081" value="Décalage chauffage (pour P03=06)(-20..20&#176;C)"/>
+<text id="30082" value="Coefficient de poussée sanitaire pour basses températures"/>
+<text id="30083" value="Coefficient de poussée sanitaire pour basses températures (pour P03=06)(0..255)"/>
+<text id="30084" value="Rapidité au point de consigne (pour P03=06)"/>
+<text id="30085" value="Activation/désactivation rapidité au point de consigne (pour P03=06)(0..1)"/>
+<text id="30086" value="Antigel sanitaire"/>
+<text id="30087" value="Activation/désactivation antigel sanitaire (pour P03=06) (0=activée 1=disactivée)"/>
+<text id="30088" value="Anti-condensation : activation pompe"/>
+<text id="30089" value="Anti-condensation : seuil de température pour l&apos;activation pompe (20..40°C)"/>
+<text id="30090" value="Anti-condensation : désactivation pompe"/>
+<text id="30091" value="Anti-condensation : hystérésis pour désactivation pompe (3..20&#176;C)"/>
+<text id="30092" value="Anti-condensation : durée"/>
+<text id="30093" value="Anti-condensation : durée (0=désactivée 1..15min)"/>
+<text id="30094" value="Post-circulation thermostatée"/>
+<text id="30095" value="Post-circulation thermostatée en SANITAIRE(0 désactivé, 53..88&#176;C)"/>
+<text id="30096" value="Nombre maximum de compteurs pour le chargement automatique d&apos;eau en un jour"/>
+<text id="30097" value="Nombre maximum de compteurs pour le chargement automatique d&apos;eau en un jour (6..60)"/>
+<text id="30098" value="Paramétrage du nombre de compteurs pour le chargement automatique d&apos;eau (3..15)"/>
+<text id="30099" value="Retard activation pompe après 3WV"/>
+<text id="30100" value="Retard activation pompe après 3WV pour HS=5,6,8 (0..20s)"/>
+<text id="30101" value="Activation relais auxiliaire avec demande sanitaire"/>
+<text id="30102" value="Activation relais auxiliaire avec demande sanitaire (F04/F05=10)"/>
+<text id="30103" value="Temps préchauffage intelligent"/>
+<text id="30104" value="Temps préchauffage intelligent (0..60min)"/>
+<text id="30105" value="Sélection protocole communication"/>
+<text id="30106" value="Sélection protocole de communication (0=PP 1=BP 2=STD)"/>
+<text id="30107" value="Temps d&apos;attente activation SAN"/>
+<text id="30108" value="Temps d&apos;attente activation SAN (0..60s)"/>
+<text id="30109" value="Configuration spéciale"/>
+<text id="30110" value="Configuration spéciale (5 activation relais pendant P19 minutes (P19/2 en été)"/>
+<text id="30111" value="Vitesse ventilateur en allumage"/>
+<text id="30112" value="Vitesse ventilateur en allumage (Vitesse=P70*100rpm)"/>
+<text id="30113" value="Vitesse maximale ventilateur"/>
+<text id="30114" value="Vitesse maximale ventilateur (Vitesse=5000+P71*10 rpm)"/>
+<text id="30115" value="Vitesse minimale ventilateur"/>
+<text id="30116" value="Vitesse minimale ventilateur (Vitesse=750+P72*10rpm)"/>
+<text id="30117" value="Sélection puissance maximale chaudière"/>
+<text id="30118" value="Sélection puissance maximale chaudière  (1=24/28kw 2=28/33kw 3=32/40kw 4=12kw 5=15kw 6=18kw 7=24/20kw 8=24/28kw Al 9=28kw HO 10=32kw HO)"/>
+<text id="30119" value="Retard d&apos;allumage"/>
+<text id="30120" value="Retard d&apos;allumage après chauffage (0..255sec)"/>
+<text id="30121" value="Fonction commissioning"/>
+<text id="30122" value="Fonction commissioning (50=commissionig activée 100=commissioning disactivée)"/>
+<text id="30123" value="Aspect"/>
+<text id="30124" value="Affichage alimentation chaudière"/>
+<text id="30125" value="Affichage alimentation chaudière(0..1: 0=version logiciel 1=version logiciel - version matériel - version application)"/>
+<text id="30126" value="Sélection entrée 0..10V"/>
+<text id="30127" value="Sélection entrée 0..10V (0..2 0=aucune entrée 1=demande CHAUFFAGE 2=point de consigne CHAUFFAGE"/>
+<text id="30128" value="Décalage arrêt SANITAIRE"/>
+<text id="30129" value="Décalage arrêt SANITAIRE (0..15&#176;C 0=OFF comme valeur fixe 1..15 Off=point de consigne SANITAIRE+F79)"/>
+<text id="30130" value="Configuration entrée MFF1"/>
+<text id="30131" value="Configuration entrée MFF1(0=thermofusible 1=sonde fumées 2=alarme anti-condensation 3=entrée 0..10V 4=Non utilisé Par défaut=0)"/>
+<text id="30132" value="Configuration entrée MFF2"/>
+<text id="30133" value="Configuration entrée MFF2(0=thermofusible 1=sonde fumées 2=alarme anti-condensation 3=entrée 0..10V 4=Non utilisé Par défaut=1)"/>
+<text id="30134" value="Configuration entrée MFF3"/>
+<text id="30135" value="Configuration entrée MFF3(0=thermofusible 1=sonde fumées 2=alarme anti-condensation 3=entrée 0..10V 4=Non utilisé Par défaut=4)"/>
+<text id="30300" value="Type famille chaudière"/>
+<text id="30301" value="Fichier paramètres"/>
+<text id="30302" value="Identification fiche électronique"/>
+<text id="30303" value="Identification logiciel"/>
+<text id="30304" value="Identification client"/>
+<text id="30305" value="Application spéciale"/>
+<text id="30306" value="Code fournisseur"/>
+<text id="30307" value="Version logiciel"/>
+<text id="30308" value="Information production TSP"/>
+<text id="30309" value="Identification matériel"/>
+<text id="30400" value="Numéro erreur"/>
+<text id="30401" value="Numéro erreur (00 dernière erreur -06 première erreur)"/>
+<text id="30402" value="Code erreur"/>
+<text id="30403" value="Nombre de fois même erreur"/>
+<text id="30404" value="Nombre de jours"/>
+<text id="30405" value="Nombre de jours écoulés depuis l&apos;erreur"/>
+<text id="30406" value="État système"/>
+<text id="30407" value="État système (0=en attente 1=SANITAIRE ALLUMÉ 2=CSF 3=CHAUFFAGE ALLUMÉ 4=préchauffage activé 5=antigel chauffage activé 6=antigel sanitaire activé 7=post-circulation 8=post-circulation thermostatée)"/>
+<text id="30408" value="Phase système"/>
+<text id="30409" value="Phase système (0=en attente 1=phase de pré-nettoyage 3=phase de nettoyage  4=temps de sécurité 5=fonctionnement 6=blocage 11=interpurge1(2e 3e tentative) 15=post-ventilation 16=post-ventilation thermostatée)"/>
+<text id="30410" value="Température refoulement"/>
+<text id="30411" value="Température de refoulement lors de l&apos;erreur"/>
+<text id="30412" value="Numéro blocage"/>
+<text id="30413" value="Numéro blocages (00 est le dernier blocage 06 est le premier blocage)"/>
+<text id="30414" value="Code blocage"/>
+<text id="30415" value="Nombre de fois même blocage"/>
+<text id="30500" value="Point de consigne bouilloire SANITAIRE"/>
+<text id="30501" value="Point de consigne bouilloire SANITAIRE en CHAUFFAGE"/>
+<text id="30502" value="Point de consigne arrêt en CHAUFFAGE"/>
+<text id="30503" value="Compteur LTU"/>
+<text id="30504" value="Vanne à 3 voies en CHAUFFAGE"/>
+<text id="30505" value="Vanne à 3 voies en SANITAIRE"/>
+<text id="30506" value="Pompe activée"/>
+<text id="30507" value="Vitesse élevée de la pompe ACTIVEÉ"/>
+<text id="30508" value="Flamme ALLUMÉE"/>
+<text id="30509" value="Thermostat d&apos;ambiance 230VAC activé"/>
+<text id="30510" value="Thermostat sécurité fermé"/>
+<text id="30511" value="Relais auxiliaire 1 activé"/>
+<text id="30512" value="Relais auxiliaire 2 activé"/>
+<text id="99999" value="end of file"/>
+  <checksum value="15233" />
+</language>
