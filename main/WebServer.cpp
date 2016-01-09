@@ -5845,11 +5845,41 @@ namespace http {
 			else if (cparam == "setcolbrightnessvalue")
 			{
 				std::string idx = request::findValue(&req, "idx");
+
+				if (idx.empty())
+				{
+					return;
+				}
+
+				std::string hex = request::findValue(&req, "hex");
 				std::string hue = request::findValue(&req, "hue");
 				std::string brightness = request::findValue(&req, "brightness");
 				std::string iswhite = request::findValue(&req, "iswhite");
 
-				if ((idx == "") || (hue == "") || (brightness == "") || (iswhite == ""))
+				if (!hex.empty())
+				{
+					std::stringstream sstr;
+					sstr << hex;
+					int ihex;
+					sstr >> std::hex >> ihex;
+					unsigned char r = (unsigned char)((ihex & 0xFF0000) >> 16);
+					unsigned char g = (unsigned char)((ihex & 0x00FF00) >> 8);
+					unsigned char b = (unsigned char)ihex & 0xFF;
+					double hsl[3];
+					rgb2hsl(r, g, b, hsl);
+					hsl[0] *= 360.0;
+					hsl[1] *= 255.0;
+					hsl[2] *= 100.0;
+					char szConv[20];
+					sprintf(szConv, "%d", (int)hsl[0]);
+					hue = szConv;
+					//sprintf(szConv, "%d", (int)hsl[1]);
+					//sat = szConv;
+					iswhite = (hsl[1] < 20.0) ? "true" : "false";
+					sprintf(szConv, "%d", (int)hsl[2]);
+					brightness = szConv;
+				}
+				if (hue.empty() || brightness.empty() || iswhite.empty())
 				{
 					return;
 				}

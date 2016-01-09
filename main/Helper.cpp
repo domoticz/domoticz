@@ -539,6 +539,49 @@ void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxV
 	}
 }
 
+/**
+* Converts an RGB color value to HSL. Conversion formula
+* adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+* https://github.com/ratkins/RGBConverter/blob/master/RGBConverter.cpp
+* Assumes r, g, and b are contained in the set [0, 255] and
+* returns h, s, and l in the set [0, 1].
+*
+* @param   Number  r       The red color value
+* @param   Number  g       The green color value
+* @param   Number  b       The blue color value
+* @return  Array           The HSL representation
+*/
+void rgb2hsl(const unsigned char r, const unsigned char g, const unsigned char b, double hsl[])
+{
+	double rd = (double)r / 255;
+	double gd = (double)g / 255;
+	double bd = (double)b / 255;
+	double max = max(rd, max(gd, bd));
+	double min = min(rd, min(gd, bd));
+	double h, s, l = (max + min) / 2;
+
+	if (max == min) {
+		h = s = 0; // achromatic
+	}
+	else {
+		double d = max - min;
+		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+		if (max == rd) {
+			h = (gd - bd) / d + (gd < bd ? 6 : 0);
+		}
+		else if (max == gd) {
+			h = (bd - rd) / d + 2;
+		}
+		else if (max == bd) {
+			h = (rd - gd) / d + 4;
+		}
+		h /= 6;
+	}
+	hsl[0] = h;
+	hsl[1] = s;
+	hsl[2] = l;
+}
+
 bool is_number(const std::string& s)
 {
 	std::string::const_iterator it = s.begin();
