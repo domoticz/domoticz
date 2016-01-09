@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 90
+#define DB_VERSION 91
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1616,11 +1616,44 @@ bool CSQLHelper::OpenDatabase()
 				query("ALTER TABLE EventMaster ADD COLUMN [Type] VARCHAR(10) DEFAULT 'All'");
 			}
 		}
+		if (dbversion < 91)
+		{
+			//Add DomoticzInternal as normal hardware class (if not already added)
+			int oldHwdID = 1000;
+			int hwdID = -1;
+			std::string securityPanelDeviceID = "148702"; // 0x00148702
+			std::vector<std::vector<std::string> > result;
+			result = safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_DomoticzInternal);
+			if (result.size() < 1) {
+				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
+				result = safe_query("SELECT ID FROM Hardware WHERE (Type==%d)", HTYPE_DomoticzInternal);
+			}
+			if (result.size() > 0) {
+				hwdID = atoi(result[0][0].c_str());
+			}
+			if (hwdID > 0) {
+				// Update HardwareID for Security Panel device
+				result = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d)", oldHwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
+				if (result.size() > 0)
+				{
+					m_sql.safe_query("UPDATE DeviceStatus SET HardwareID=%d WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d)", hwdID, oldHwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
+				}
+				// Update Name for Security Panel device
+				result = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d) AND Name='Unknown'", hwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
+				if (result.size() > 0)
+				{
+					m_sql.safe_query("UPDATE DeviceStatus SET Name='Domoticz Security Panel' WHERE (HardwareID==%d) AND (DeviceID='%q') AND (Type=%d) AND (SubType=%d) AND Name='Unknown'", hwdID, securityPanelDeviceID.c_str(), pTypeSecurity1, sTypeDomoticzSecurity);
+				}
+			}
+		}
+
 	}
 	else if (bNewInstall)
 	{
 		//place here actions that needs to be performed on new databases
 		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
+		// Add hardawre for internal use
+		m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
 

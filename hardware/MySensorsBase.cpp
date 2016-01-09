@@ -1078,16 +1078,23 @@ bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, cons
 	m_AckNodeID = NodeID;
 	m_AckChildID = ChildID;
 	m_AckSetType = SubType;
+	int repeat = 0;
+	int repeats = 2;
 
-	SendCommandInt(NodeID, ChildID, messageType, bUseAck, SubType, Payload);
-	if (!bUseAck)
-		return true;
-	//Wait some time till we receive an ACK (should be received in 1000ms, but we wait 1200ms)
-	int waitRetries = 0;
-	while ((!m_bAckReceived) && (waitRetries < 12))
+	//Resend failed command
+	while ((!m_bAckReceived) && (repeat < repeats))
 	{
-		sleep_milliseconds(100);
-		waitRetries++;
+		SendCommandInt(NodeID, ChildID, messageType, bUseAck, SubType, Payload);
+		if (!bUseAck)
+			return true;
+		//Wait some time till we receive an ACK (should be received in 1000ms, but we wait 1200ms)
+		int waitRetries = 0;
+		while ((!m_bAckReceived) && (waitRetries < 12))
+		{
+			sleep_milliseconds(100);
+			waitRetries++;
+		}
+		repeat++;
 	}
 	return m_bAckReceived;
 }
@@ -1561,12 +1568,9 @@ void MySensorsBase::ParseLine()
 			m_AckNodeID = m_AckChildID = -1;
 			m_AckSetType = V_UNKNOWN;
 			m_bAckReceived = true;
-		}
+                        //No need to process ack commands
+                        return;
 
-		if (ack == 1)
-		{
-			//No need to process ack commands
-			return;
 		}
 
 		bool bHaveValue = false;
