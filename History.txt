@@ -4,6 +4,7 @@ Version 2.3xxx
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
+- Implemented: Dummy Hardware, option to create an RGBW switch
 - Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Log View, added options to display All/Status/Error
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
