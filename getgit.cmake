@@ -5,26 +5,26 @@ if(NOT GIT_FOUND)
 endif()
 
 MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C "${dir}"  rev-list HEAD --count
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-list HEAD --count
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_REVISION)
 
 MACRO(Gitversion_GET_HASH dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C "${dir}"  rev-parse --short HEAD
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_HASH)
 
 MACRO(Gitversion_GET_DATE dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C "${dir}"  show -s --format=%ct
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} show -s --format=%ct
     OUTPUT_VARIABLE ${variable}
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 ENDMACRO(Gitversion_GET_DATE)
 
-Gitversion_GET_REVISION("${SOURCE_DIR}" ProjectRevision)
-Gitversion_GET_HASH("${SOURCE_DIR}" ProjectHash)
-Gitversion_GET_DATE("${SOURCE_DIR}" ProjectDate)
+Gitversion_GET_REVISION(. ProjectRevision)
+Gitversion_GET_HASH(. ProjectHash)
+Gitversion_GET_DATE(. ProjectDate)
 
 # write a file with the APPVERSION define
 MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
