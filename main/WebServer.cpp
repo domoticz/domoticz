@@ -89,6 +89,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "fi", "Finnish" },
 	{ "he", "Hebrew" },
 	{ "hu", "Hungarian" },
+	{ "is", "Icelandic" },
 	{ "it", "Italian" },
 	{ "lt", "Lithuanian" },
 	{ "mk", "Macedonian" },

@@ -74,6 +74,7 @@ Version 2.3521 (October 31th 2015)
 - Implemented: Hebrew translation (big thanks to mickeyv!!)
 - Implemented: HTTP Data push, new types for Type/SubType/Hostname/Device Name
 - Implemented: HTTPS support for On/Off actions
+- Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Icon Uploader, now possible to edit name and description
 - Implemented: Icon Uploader, now possible to upload zip files with multiple folders
 - Implemented: Icons for RFXMeter Gas/Water
