@@ -210,6 +210,7 @@
     <ClInclude Include="..\main\Camera.h" />
     <ClInclude Include="..\main\CmdLine.h" />
     <ClInclude Include="..\hardware\DomoticzHardware.h" />
+    <ClInclude Include="..\hardware\DomoticzInternal.h" />
     <ClInclude Include="..\hardware\DomoticzTCP.h" />
     <ClInclude Include="..\hardware\hardwaretypes.h" />
     <ClInclude Include="..\main\concurrent_queue.h" />
@@ -404,6 +405,7 @@
     <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />
     <ClCompile Include="..\main\CmdLine.cpp" />
     <ClCompile Include="..\hardware\DomoticzHardware.cpp" />
+    <ClCompile Include="..\hardware\DomoticzInternal.cpp" />
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
     <ClCompile Include="..\main\DataPush.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />

@@ -995,6 +995,10 @@ namespace http {
 					}
 				}
 			}
+			else if (htype == HTYPE_DomoticzInternal)	{
+				// DomoticzInternal cannot be added manually
+				return;
+			}
 			else if (htype == HTYPE_Domoticz) {
 				//Remote Domoticz
 				if (address == "")
@@ -1220,6 +1224,10 @@ namespace http {
 				//Lan
 				if (address == "")
 					return;
+			}
+			else if (htype == HTYPE_DomoticzInternal) {
+				// DomoticzInternal cannot be updated
+				return;
 			}
 			else if (htype == HTYPE_Domoticz) {
 				//Remote Domoticz
@@ -1538,6 +1546,12 @@ namespace http {
 			if (idx == "")
 				return;
 			int hwID = atoi(idx.c_str());
+
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(hwID);
+			if ((pBaseHardware != NULL) && (pBaseHardware->HwdType == HTYPE_DomoticzInternal)) {
+				// DomoticzInternal cannot be removed
+				return;
+			}
 
 			root["status"] = "OK";
 			root["title"] = "DeleteHardware";
