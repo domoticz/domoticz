@@ -17,6 +17,13 @@
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 
+#ifndef max
+	#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef min
+	#define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -556,6 +563,7 @@ void rgb2hsl(const unsigned char r, const unsigned char g, const unsigned char b
 	double rd = (double)r / 255;
 	double gd = (double)g / 255;
 	double bd = (double)b / 255;
+	int aa = min(10, 4);
 	double vmax = max(rd, max(gd, bd));
 	double vmin = min(rd, min(gd, bd));
 	double h, s, l = (vmax + vmin) / 2;
