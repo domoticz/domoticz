@@ -644,6 +644,8 @@ define(['app'], function (app) {
 										else if (item.SwitchType == "Selector") {
 											if ((item.Status === "Off")) {
 												img += '<img src="images/' + item.Image + '48_Off.png" height="40" width="40">';
+											} else if (item.LevelOffHidden) {
+												img += '<img src="images/' + item.Image + '48_On.png" height="40" width="40">';
 											} else {
 												img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
 											}
@@ -1963,6 +1965,9 @@ define(['app'], function (app) {
 											xhtm += '<div id="selector" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
 												xhtm += '<input type="radio" id="dSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="dSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 											});
 											xhtm += '</div>';
@@ -1971,6 +1976,9 @@ define(['app'], function (app) {
 											xhtm += '<select id="selector" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
 												xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 											});
 											xhtm += '</select>';
@@ -2213,6 +2221,8 @@ define(['app'], function (app) {
 									else if (item.SwitchType === "Selector") {
 										if (item.Status === 'Off') {
 											xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" height="40" width="40"></td>\n';
+										} else if (item.LevelOffHidden) {
+											xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" height="40" width="40"></td>\n';
 										} else {
 											xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
 										}
@@ -2267,6 +2277,9 @@ define(['app'], function (app) {
 											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
 												xhtm += '<input type="radio" id="dSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="dSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 											});
 											xhtm += '</div></td>';
@@ -2275,6 +2288,9 @@ define(['app'], function (app) {
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
 												xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 											});
 											xhtm += '</select>';

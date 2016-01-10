@@ -745,12 +745,17 @@ define(['app'], function (app) {
 			var devOptionsParam = [], devOptions = [];
 			if ($.bIsSelectorSwitch) {
 				var levelNames = $("#lightcontent #selectorlevelstable").data('levelNames'),
-					selectorStyle = $("#lightcontent .selector-switch-options input[type=radio]:checked").val();
+					selectorStyle = $("#lightcontent .selector-switch-options.style input[type=radio]:checked").val(),
+					levelOffHidden = $("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked');
 				devOptions.push("LevelNames:");
 				devOptions.push(levelNames);
 				devOptions.push(";");
 				devOptions.push("SelectorStyle:");
 				devOptions.push(selectorStyle);
+				devOptions.push(";");
+				devOptions.push("LevelOffHidden:");
+				devOptions.push(levelOffHidden);
+				devOptions.push(";");
 				devOptionsParam.push(devOptions.join(''));
 			}
 			
@@ -1179,8 +1184,13 @@ define(['app'], function (app) {
 
 			if ($.bIsSelectorSwitch) {
 				// backup selector switch level names before displaying edit edit form
-				$.selectorSwitchStyle = $("#selector" + $.devIdx).data("selectorstyle");
-				$.selectorSwitchLevels = unescape($("#selector" + $.devIdx).data("levelnames")).split('|');
+				var selectorSwitch$ = $("#selector" + $.devIdx),
+					ssLevelNames = unescape(selectorSwitch$.data("levelnames")),
+					ssStyle = selectorSwitch$.data("selectorstyle"),
+					ssLevelOffHidden = selectorSwitch$.data("leveloffhidden"),
+				$.selectorSwitchStyle = ssStyle;
+				$.selectorSwitchLevelOffHidden = ssLevelOffHidden;
+				$.selectorSwitchLevels = ssLevelNames.split('|');
 			}
 
 			$('#modal').show();
@@ -1350,7 +1360,7 @@ define(['app'], function (app) {
 					BuildSelectorLevelsTable();
 
 					$("#lightcontent .selector-switch-options.style input[value=" + $.selectorSwitchStyle + "]").attr('checked', true);
-
+					$("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked', $.selectorSwitchLevelOffHidden);
 					$("#lightcontent .selector-switch-options").show();
 				}
 				$("#lightcontent #combosubdevice").html("");
@@ -1903,6 +1913,8 @@ define(['app'], function (app) {
 					else if (item.SwitchType === "Selector") {
 						if ((item.Status === "Off")) {
 							img += '<img src="images/' + item.Image + '48_Off.png" height="48" width="48">';
+						} else if (item.LevelOffHidden) {
+							img += '<img src="images/' + item.Image + '48_On.png" height="48" width="48">';
 						} else {
 							img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 						}
@@ -2413,6 +2425,8 @@ define(['app'], function (app) {
 							else if (item.SwitchType === "Selector") {
 								if (item.Status === 'Off') {
 									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" height="48" width="48"></td>\n';
+								} else if (item.LevelOffHidden) {
+									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								} else {
 									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								}
@@ -2465,16 +2479,22 @@ define(['app'], function (app) {
 					else if (item.SwitchType == "Selector") {
 						xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 						if (item.SelectorStyle === 0) {
-							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
+								if ((index === 0) && (item.LevelOffHidden)) {
+									return;
+								}
 								xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 							});
 							xhtm += '</div>';
 						} else if (item.SelectorStyle === 1) {
-							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
+								if ((index === 0) && (item.LevelOffHidden)) {
+									return;
+								}
 								xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 							});
 							xhtm += '</select>';
