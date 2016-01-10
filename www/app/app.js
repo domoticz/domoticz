@@ -740,7 +740,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 
 	app.directive('timesun', function () {
 		return {
-			template: '<table><tbody><tr><td align="left" valign="top" id="timesun"><div><span ng-bind="data.ServerTime"></span> <font color="yellow">☀</font>▲<span ng-bind="data.Sunrise"></span> ▼<span ng-bind="data.Sunset"></span></div></td></tr></tbody></table>',
+			templateUrl: 'timesuntemplate',
 			controller: [ '$scope', function($scope) {
 					var self = $scope;
 					$scope.data = {};
