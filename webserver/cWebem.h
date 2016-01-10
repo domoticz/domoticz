@@ -239,6 +239,8 @@ namespace http {
 			std::string m_actTheme;
 			// root of url for reverse proxy servers
 			std::string m_webRoot;
+			/// request handler specialized to handle webem requests
+			cWebemRequestHandler myRequestHandler;
 		};
 
 	}
