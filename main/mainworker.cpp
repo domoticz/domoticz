@@ -122,6 +122,7 @@ extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 extern std::string szAppVersion;
+extern std::string szWebRoot;
 
 extern http::server::CWebServerHelper m_webservers;
 
@@ -960,6 +961,8 @@ bool MainWorker::StartThread()
 	{
 		m_webservers.SetWebTheme(sValue);
 	}
+
+	m_webservers.SetWebRoot(szWebRoot);
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();

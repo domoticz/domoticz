@@ -214,38 +214,14 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
     rep = reply::stock_reply(reply::bad_request);
     return;
   }
-  if (request_path.find(".htpasswd")!=std::string::npos)
-  {
-	  rep = reply::stock_reply(reply::bad_request);
-	  return;
-  }
 
-  int paramPos = request_path.find_first_of('?');
-  if (paramPos != std::string::npos)
-  {
-	  request_path = request_path.substr(0, paramPos);
-  }
-
-  // Request path must be absolute and not contain "..".
-  if (request_path.empty() || request_path[0] != '/'
-      || request_path.find("..") != std::string::npos)
+  if (myWebem->IsBadRequestPath(request_path))
   {
     rep = reply::stock_reply(reply::bad_request);
     return;
   }
 
-  if (request_path.find("/@login")==0)
-	  request_path="/";
-
-  // If path ends in slash (i.e. is a directory) then add "index.html".
-  if (request_path[request_path.size() - 1] == '/')
-  {
-    request_path += "index.html";
-  }
-  else if (myWebem && request_path.find("/acttheme/") == 0)
-  {
-	  request_path = myWebem->m_actTheme + request_path.substr(9);
-  }
+  request_path = myWebem->ExtractRequestPath(request_path);
 
   // Determine the file extension.
   std::size_t last_slash_pos = request_path.find_last_of("/");

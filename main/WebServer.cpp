@@ -636,11 +636,19 @@ namespace http {
 				return;
 			m_pWebEm->SetAuthenticationMethod((_eAuthenticationMethod)amethod);
 		}
+
 		void CWebServer::SetWebTheme(const std::string &themename)
 		{
 			if (m_pWebEm == NULL)
 				return;
 			m_pWebEm->SetWebTheme(themename);
+		}
+
+		void CWebServer::SetWebRoot(const std::string &webRoot)
+		{
+			if (m_pWebEm == NULL)
+				return;
+			m_pWebEm->SetWebRoot(webRoot);
 		}
 
 		void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication)

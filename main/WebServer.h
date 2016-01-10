@@ -70,6 +70,7 @@ public:
 	int FindUser(const char* szUserName);
 	void SetAuthenticationMethod(int amethod);
 	void SetWebTheme(const std::string &themename);
+	void SetWebRoot(const std::string &webRoot);
 	std::vector<_tWebUserPassword> m_users;
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const std::string &username);
