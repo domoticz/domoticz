@@ -441,13 +441,7 @@ define(['app'], function (app) {
 		  
 			if ($.isSelector) {
 				// backup selector switch level names before displaying edit edit form
-				$.selectorSwitchLevels = [];
-				$("#selector" + $.devIdx + " label").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
-				$("#selector" + $.devIdx + " option").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
+				$.selectorSwitchLevels = unescape($("#selector" + $.devIdx).data("levelnames")).split('|');
 			}
 			var oTable;
 			
@@ -1186,13 +1180,7 @@ define(['app'], function (app) {
 			if ($.bIsSelectorSwitch) {
 				// backup selector switch level names before displaying edit edit form
 				$.selectorSwitchStyle = $("#selector" + $.devIdx).data("selectorstyle");
-				$.selectorSwitchLevels = [];
-				$("#selector" + $.devIdx + " label").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
-				$("#selector" + $.devIdx + " option").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
+				$.selectorSwitchLevels = unescape($("#selector" + $.devIdx).data("levelnames")).split('|');
 			}
 
 			$('#modal').show();
@@ -2477,14 +2465,14 @@ define(['app'], function (app) {
 					else if (item.SwitchType == "Selector") {
 						xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 						if (item.SelectorStyle === 0) {
-							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
 								xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 							});
 							xhtm += '</div>';
 						} else if (item.SelectorStyle === 1) {
-							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
 								xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
