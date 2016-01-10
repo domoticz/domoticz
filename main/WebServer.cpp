@@ -5850,6 +5850,10 @@ namespace http {
 				{
 					return;
 				}
+				unsigned long long ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
 
 				std::string hex = request::findValue(&req, "hex");
 				std::string hue = request::findValue(&req, "hue");
@@ -5865,29 +5869,24 @@ namespace http {
 					unsigned char r = (unsigned char)((ihex & 0xFF0000) >> 16);
 					unsigned char g = (unsigned char)((ihex & 0x00FF00) >> 8);
 					unsigned char b = (unsigned char)ihex & 0xFF;
-					double hsl[3];
-					rgb2hsl(r, g, b, hsl);
-					hsl[0] *= 360.0;
-					hsl[1] *= 255.0;
-					hsl[2] *= 100.0;
+					float hsb[3];
+					rgb2hsb(r, g, b, hsb);
+					hsb[0] *= 360.0;
+					hsb[1] *= 255.0;
+					hsb[2] *= 100.0;
 					char szConv[20];
-					sprintf(szConv, "%d", (int)hsl[0]);
+					sprintf(szConv, "%d", (int)hsb[0]);
 					hue = szConv;
-					//sprintf(szConv, "%d", (int)hsl[1]);
+					//sprintf(szConv, "%d", (int)hsb[1]);
 					//sat = szConv;
-					iswhite = (hsl[1] < 20.0) ? "true" : "false";
-					sprintf(szConv, "%d", (int)hsl[2]);
+					iswhite = (hsb[1] < 20.0) ? "true" : "false";
+					sprintf(szConv, "%d", (int)hsb[2]);
 					brightness = szConv;
 				}
 				if (hue.empty() || brightness.empty() || iswhite.empty())
 				{
 					return;
 				}
-
-				unsigned long long ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
 
 				if (iswhite != "true")
 				{

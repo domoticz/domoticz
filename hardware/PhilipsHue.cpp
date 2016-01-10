@@ -230,6 +230,10 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	{
 		sPostData << "{\"on\": true, \"sat\": 255 , \"hue\": " << svalue << " }";
 	}
+	else if (LCmd == "Set Hex")
+	{
+		sPostData << "{\"on\": true, \"sat\": 255 , \"hue\": " << svalue << " }";
+	}
 	else
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid light command received!");
