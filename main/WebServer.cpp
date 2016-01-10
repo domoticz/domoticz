@@ -7825,10 +7825,11 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Selector)
 						{
-							std::string selectorStyle = m_sql.BuildDeviceOptions(sOptions)["SelectorStyle"];
-							std::string levelNames = m_sql.BuildDeviceOptions(sOptions)["LevelNames"];
+							std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+							std::string selectorStyle = options["SelectorStyle"];
+							std::string levelNames = options["LevelNames"];
 							if (selectorStyle.empty()) {
-								selectorStyle.assign("0"); // default is button set
+								selectorStyle.assign("0"); // default is 'button set'
 							}
 							if (levelNames.empty()) {
 								levelNames.assign("Off"); // default is Off only
