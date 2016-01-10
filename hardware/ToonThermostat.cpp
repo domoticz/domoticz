@@ -196,15 +196,6 @@ void CToonThermostat::Do_Work()
 
 void CToonThermostat::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
 
@@ -222,31 +213,11 @@ void CToonThermostat::SendTempSensor(const unsigned char Idx, const float Temp, 
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
 void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-
-	char szID[10];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, 0, Idx);
-
-	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-		m_HwdID, szID);
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	_tThermostat thermos;
 	thermos.subtype=sTypeThermSetpoint;
 	thermos.id1=0;
@@ -257,14 +228,7 @@ void CToonThermostat::SendSetPointSensor(const unsigned char Idx, const float Te
 
 	thermos.temp=Temp;
 
-	sDecodeRXMessage(this, (const unsigned char *)&thermos, NULL, 255);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-			defaultname.c_str(), m_HwdID, szID);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
 void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
@@ -275,11 +239,7 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 		m_HwdID, pTypeLighting2, sTypeAC, szIdx);
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-	else
+	if (!result.empty())
 	{
 		//check if we have a change, if not do not update it
 		int nvalue = atoi(result[0][1].c_str());
@@ -314,14 +274,7 @@ void CToonThermostat::UpdateSwitch(const unsigned char Idx, const bool bOn, cons
 	lcmd.LIGHTING2.level = level;
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
-	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, 255);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			defaultname.c_str(), m_HwdID, pTypeLighting2, sTypeAC, szIdx);
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
 

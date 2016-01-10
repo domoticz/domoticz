@@ -27,6 +27,9 @@
     <Filter Include="Devices\Domoticz">
       <UniqueIdentifier>{222696d2-1c77-4abb-a483-83548f0b75d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\DomoticzInternal">
+      <UniqueIdentifier>{68487f2d-089f-4a1b-a961-32f1cd6fb8de}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Windows">
       <UniqueIdentifier>{b2fc9567-e487-4cee-b23e-9f6002b503b9}</UniqueIdentifier>
     </Filter>
@@ -308,6 +311,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\DomoticzHardware.h">
       <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DomoticzInternal.h">
+      <Filter>Devices\DomoticzInternal</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\hardwaretypes.h">
       <Filter>Devices</Filter>
@@ -744,6 +750,12 @@
     <ClInclude Include="..\hardware\Winddelen.h">
       <Filter>Devices\Winddelen</Filter>
     </ClInclude>
+    <ClInclude Include="..\webserver\proxyclient.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\proxycommon.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\SatelIntegra.h">
       <Filter>Devices\SatelIntegra</Filter>
     </ClInclude>
@@ -782,6 +794,15 @@
     </ClInclude>
     <ClInclude Include="..\hardware\SolarEdgeAPI.h">
       <Filter>Devices\SolarEdge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -838,6 +859,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\DomoticzHardware.cpp">
       <Filter>Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DomoticzInternal.cpp">
+      <Filter>Devices\DomoticzInternal</Filter>
     </ClCompile>
     <ClCompile Include="..\httpclient\UrlEncode.cpp">
       <Filter>HTTPClient</Filter>
@@ -1217,6 +1241,12 @@
     <ClCompile Include="..\hardware\Winddelen.cpp">
       <Filter>Devices\Winddelen</Filter>
     </ClCompile>
+    <ClCompile Include="..\webserver\proxyclient.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\proxycommon.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\SatelIntegra.cpp">
       <Filter>Devices\SatelIntegra</Filter>
     </ClCompile>
@@ -1255,6 +1285,15 @@
     </ClCompile>
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp">
       <Filter>Devices\SolarEdge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,11 @@
 Version 2.3xxx
+- Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
+- Implemented: Blockly, now possible to send a notification with a user variable/device as subject/body
 - Implemented: Day display in energy/gas/water/temp report
+- Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
+- Implemented: Dummy Hardware, option to create an RGBW switch
+- Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Log View, added options to display All/Status/Error
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
 - Implemented: MySensors Ethernet gateway will now request the gateway version on startup
@@ -11,10 +16,15 @@ Version 2.3xxx
 - Implemented: Nest Thermostat, support for multiple thermostats
 - Implemented: Netatmo, support for multiple Thermostats
 - Implemented: Netatmo, support for multiple weather stations (from the weathermap) and multiple rain sensors
+- Implemented: New switch type 'Selector' (big thanks to cgaudry)
 - Implemented: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
+- Implemented: OTGW, added firmware version number in hardware setup page
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
+- Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
 - Implemented: RFXCom support for Legrand CAD
+- Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: SolarEdge via Web API
+- Implemented: Temperature Tab room selector
 - Implemented: Thermosmart option to set specify outside temperature sensor
 - Implemented: Waterflow sensor
 - Implemented: Wind Beaufort scale
@@ -38,6 +48,7 @@ Version 2.3xxx
 - Fixed: Manual add LightwaveRF type (DeviceID was wrong)
 - Fixed: Month temperature report avarage is now calculated by the daily avarage value
 - Fixed: Nest Thermostat, setting set point in Fahrenheit
+- Fixed: RFXCom (433) protocol setup, Home Comfort checkbox did not show correct state
 - Fixed: RGB sensor now also uses the RGB popup system
 - Fixed: S0 Meter, fix for reloading totals of (#179)
 - Fixed: Thermosmart unpauze

@@ -121,6 +121,16 @@
 #define sSwitchTypeElroDB			0x3b
 #define sSwitchTypeAOK				0x3c
 #define sSwitchTypeUnitec			0x3d
+#define sSwitchTypeSelector			0x3e
+#define sSwitchTypeMaclean			0x3f
+#define sSwitchTypeR546				0x40
+#define sSwitchTypeDiya				0x41
+#define sSwitchTypeX10secu			0x42
+#define sSwitchTypeX10secu			0x42
+#define sSwitchTypeAtlantic			0x43
+//#define sSwitchTypeSilvercrest		0x44 //Already defined above!?
+#define sSwitchTypeMedionDB			0x45
+#define sSwitchTypeVMC				0x46
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -147,6 +157,7 @@
 #define gswitch_sSetVolume			0x15
 #define gswitch_sPlayPlaylist		0x16
 #define gswitch_sPlayFavorites		0x17
+#define gswitch_sExecute			0x18
 //--------------
 
 #define pTypeLux		0xF6
@@ -458,6 +469,7 @@ typedef struct _tLimitlessLights {
 #define Limitless_NightMode 20
 #define Limitless_FullBrightness 21
 #define Limitless_DiscoSpeedFasterLong 22 //exclude RGB
+#define Limitless_SetHEXColour 23
 
 typedef union tREVOBUF {
 	struct _tEVOHOME1 {

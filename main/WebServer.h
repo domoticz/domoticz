@@ -192,7 +192,12 @@ private:
 	void Cmd_GetSerialDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesList(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesListOnOff(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_RegisterWithPhilipsHue(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueRegister(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueGetGroups(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueAddGroup(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueDeleteGroup(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueGroupAddLight(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueGroupRemoveLight(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetCustomIconSet(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
@@ -291,6 +296,7 @@ private:
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;
 	bool m_bDoStop;
+	bool m_bIsSecure;
 
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
