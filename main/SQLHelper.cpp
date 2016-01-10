@@ -2803,7 +2803,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		int maxDimLevel=0;
 
 		result = safe_query(
-			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2 FROM DeviceStatus WHERE (ID = %llu)",
+			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2,Options FROM DeviceStatus WHERE (ID = %llu)",
 			ulID);
 		if (result.size()>0)
 		{
@@ -2830,6 +2830,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				//Perform any On/Off actions
 				std::string OnAction=sd[3];
 				std::string OffAction=sd[4];
+				std::string Options=sd[5];
 
 				if(devType==pTypeEvohome)//would this be ok to extend as a general purpose feature?
 				{
@@ -2838,9 +2839,14 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 					//boost::replace_all(OnAction, ID);//future expansion
 					//boost::replace_all(OnAction, "{status}", lstatus);
 					bIsLightSwitchOn=true;//Force use of OnAction for all actions
+
+				} else if (switchtype == STYPE_Selector) {
+					bIsLightSwitchOn = (llevel > 0) ? true : false;
+					OnAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel));
+					OffAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0));
 				}
 				
-				HandleOnOffAction(bIsLightSwitchOn,OnAction,OffAction);
+				HandleOnOffAction(bIsLightSwitchOn, OnAction, OffAction);
 			}
 
 			//Check if we need to email a snapshot of a Camera
