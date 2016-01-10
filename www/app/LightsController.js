@@ -745,10 +745,17 @@ define(['app'], function (app) {
 			var devOptionsParam = [], devOptions = [];
 			if ($.bIsSelectorSwitch) {
 				var levelNames = $("#lightcontent #selectorlevelstable").data('levelNames'),
+					levelActions = $("#lightcontent #selectoractionstable").data('levelActions').split('|'),
 					selectorStyle = $("#lightcontent .selector-switch-options.style input[type=radio]:checked").val(),
 					levelOffHidden = $("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked');
 				devOptions.push("LevelNames:");
 				devOptions.push(levelNames);
+				devOptions.push(";");
+				devOptions.push("LevelActions:");
+				$.each(levelActions, function (index, item) {
+					levelActions[index] = encodeURIComponent(item);
+				});
+				devOptions.push(levelActions.join('|'));
 				devOptions.push(";");
 				devOptions.push("SelectorStyle:");
 				devOptions.push(selectorStyle);
@@ -1060,6 +1067,7 @@ define(['app'], function (app) {
 			levelNames.splice(index, 1);
 			table$.data('levelNames', levelNames.join('|'));
 			BuildSelectorLevelsTable();
+			DeleteSelectorAction(index);
 		};
 		UpdateSelectorLevel = function (index, levelName) {
 			var table$ = $("#lightcontent #selectorlevelstable"),
@@ -1098,6 +1106,7 @@ define(['app'], function (app) {
 			levelNames.push(levelName);
 			table$.data('levelNames', levelNames.join('|'));
 			BuildSelectorLevelsTable();
+			AddSelectorAction();
 		};
 		BuildSelectorLevelsTable = function () {
 			var table$ = $("#lightcontent #selectorlevelstable"),
@@ -1159,6 +1168,89 @@ define(['app'], function (app) {
 			}
 		};
 
+		UpdateSelectorAction = function (index, levelAction) {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions[index] = levelAction;
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		EditSelectorAction = function (index, levelAction) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			if (index >= 0) {
+				$("#dialog-editselectoraction #selectorlevelindex").val(index);
+				$("#dialog-editselectoraction #selectoraction").val(unescape(levelAction));
+				$("#dialog-editselectoraction").i18n();
+				$("#dialog-editselectoraction").dialog("open");
+			}
+		};
+		ClearSelectorAction = function (index) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions[index] = '';
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		DeleteSelectorAction = function (index) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions.splice(index, 1);
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		AddSelectorAction = function () {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions.push('');
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		BuildSelectorActionsTable = function () {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|'),
+				levelActionsMaxLength = 11,
+				initializeTable = $('#selectoractionstable_wrapper').length === 0,
+				oTable = (initializeTable) ? table$.dataTable({
+					"iDisplayLength": 25,
+					"bLengthChange": false,
+					"bFilter": false,
+					"bInfo": false,
+					"bPaginate": false
+				}) : table$.dataTable();
+			oTable.fnClearTable();
+			$.each(levelActions, function (index, item) {
+				var level = index * 10,
+					levelAction = levelActions[index],
+					rendelImg = "";
+				// Add Rename image
+				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ',\'' + levelActions[index] + '\');" class="lcursor" width="16" height="16"></img>';
+				rendelImg += '&nbsp;';
+				rendelImg += '<img src="images/delete.png" title="' + $.t("Clear") + '" onclick="ClearSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
+				oTable.fnAddData({
+					"DT_RowId": index,
+					"Name": levelAction,
+					"Edit": index,
+					"0": level,
+					"1": levelAction.replace('&', '&amp;'),
+					"2": rendelImg
+				});
+			});
+		};
+
 		appLampCooler = function()
 		{
 			$.ajax({
@@ -1188,9 +1280,18 @@ define(['app'], function (app) {
 					ssLevelNames = unescape(selectorSwitch$.data("levelnames")),
 					ssStyle = selectorSwitch$.data("selectorstyle"),
 					ssLevelOffHidden = selectorSwitch$.data("leveloffhidden"),
+					ssLevelActions = selectorSwitch$.data("levelactions");
 				$.selectorSwitchStyle = ssStyle;
 				$.selectorSwitchLevelOffHidden = ssLevelOffHidden;
 				$.selectorSwitchLevels = ssLevelNames.split('|');
+				$.selectorSwitchActions = ssLevelActions.split('|');
+				$.each($.selectorSwitchLevels, function (index, item) {
+					if (index <= ($.selectorSwitchActions.length - 1)) {
+						$.selectorSwitchActions[index] = decodeURIComponent($.selectorSwitchActions[index]);
+					} else {
+						$.selectorSwitchActions.push(""); // force missing action
+					}
+				});
 			}
 
 			$('#modal').show();
@@ -1358,6 +1459,37 @@ define(['app'], function (app) {
 					});
 					$("#lightcontent #selectorlevelstable").data('levelNames', $.selectorSwitchLevels.join('|'));
 					BuildSelectorLevelsTable();
+
+					dialog_editselectoraction_buttons[$.t("Save")] = function () {
+						var selectorAction$ = $("#dialog-editselectoraction #selectoraction"),
+							selectorIndex$ = $("#dialog-editselectoraction #selectorlevelindex"),
+							levelIndex = selectorIndex$.val(),
+							levelAction = selectorAction$.val().trim(),
+							bValid = true;
+						bValid = bValid && (levelIndex >= 0);
+						bValid = bValid && checkLength(selectorAction$, 0, 200);
+						bValid = bValid && ((levelAction === '') ||
+								(((levelAction.toLowerCase().indexOf('http://') === 0) && (levelAction.length > 7)) ||
+										((levelAction.toLowerCase().indexOf('script://') === 0) && (levelAction.length > 9))));
+						if (bValid) {
+							$(this).dialog("close");
+							UpdateSelectorAction(levelIndex, levelAction);
+						}
+					};
+					dialog_editselectoraction_buttons[$.t("Cancel")] = function () {
+						$(this).dialog("close");
+					};
+					$("#dialog-editselectoraction").dialog({
+						autoOpen: false,
+						width: 'auto',
+						height: 'auto',
+						modal: true,
+						resizable: false,
+						title: $.t("Edit level action"),
+						buttons: dialog_editselectoraction_buttons
+					});
+					$("#lightcontent #selectoractionstable").data('levelActions', $.selectorSwitchActions.join('|'));
+					BuildSelectorActionsTable();
 
 					$("#lightcontent .selector-switch-options.style input[value=" + $.selectorSwitchStyle + "]").attr('checked', true);
 					$("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked', $.selectorSwitchLevelOffHidden);
@@ -2479,7 +2611,7 @@ define(['app'], function (app) {
 					else if (item.SwitchType == "Selector") {
 						xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 						if (item.SelectorStyle === 0) {
-							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '">';
+							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
 								if ((index === 0) && (item.LevelOffHidden)) {
@@ -2489,7 +2621,7 @@ define(['app'], function (app) {
 							});
 							xhtm += '</div>';
 						} else if (item.SelectorStyle === 1) {
-							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '">';
+							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
 								if ((index === 0) && (item.LevelOffHidden)) {

@@ -132,6 +132,20 @@
 					<span data-i18n="Level name">Level name</span>:<input type="text" id="newselectorlevel"><a id="newselectorlevelbutton" class="btnstyle3" onclick="AddSelectorLevel();" data-i18n="Add">Add</a>
 				</td>
 			</tr>
+			<tr class="selector-switch-options actions">
+				<td align="right"><label><span data-i18n="Selector Actions">Selector Actions</span>:</label></td>
+				<td>
+					<table class="display" id="selectoractionstable" border="0" cellpadding="0" cellspacing="0" width="100%">
+						<thead>
+							<tr valign="middle">
+								<th width="40" align="center" data-i18n="Level">Level</th>
+								<th align="left" data-i18n="Action">Action</th>
+								<th width="60" align="center"></th>
+							</tr>
+						</thead>
+					</table>
+				</td>
+			</tr>
 			<tr>
 				<td align="right" style="width:120px"><label for="devicedescription"><span data-i18n="Description"></span>: </label></td>
 				<td><textarea id="devicedescription" name="devicedescription" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
@@ -432,6 +446,17 @@
 		<tr>
 			<td align="right" style="width:80px"><label for="selectorlevelname"><span data-i18n="Name"></span>:</label></td>
 			<td><input type="text" id="selectorlevelname" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
+		</table>
+	</form>
+</div>
+<div id="dialog-editselectoraction" title="Edit selector action" style="display: none;">
+	<form>
+		<input type="hidden" id="selectorlevelindex">
+		<table border="0" cellpadding="0" cellspacing="4">
+		<tr>
+			<td align="right" style="width:80px"><label for="selectoraction"><span data-i18n="Action"></span>:</label></td>
+			<td><input type="text" id="selectoraction" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 		</table>
 	</form>
