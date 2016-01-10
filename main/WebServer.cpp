@@ -7827,15 +7827,22 @@ namespace http {
 						{
 							std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 							std::string selectorStyle = options["SelectorStyle"];
+							std::string levelOffHidden = options["LevelOffHidden"];
 							std::string levelNames = options["LevelNames"];
+							std::string levelActions = options["LevelActions"];
 							if (selectorStyle.empty()) {
 								selectorStyle.assign("0"); // default is 'button set'
+							}
+							if (levelOffHidden.empty()) {
+								levelOffHidden.assign("false"); // default is 'not hidden'
 							}
 							if (levelNames.empty()) {
 								levelNames.assign("Off"); // default is Off only
 							}
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
+							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
 							root["result"][ii]["LevelNames"] = levelNames;
+							root["result"][ii]["LevelActions"] = levelActions;
 						}
 						if (llevel != 0)
 							sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
