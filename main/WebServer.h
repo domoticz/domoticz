@@ -191,7 +191,12 @@ private:
 	void Cmd_GetSerialDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesList(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevicesListOnOff(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_RegisterWithPhilipsHue(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueRegister(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueGetGroups(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueAddGroup(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueDeleteGroup(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueGroupAddLight(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PhilipsHueGroupRemoveLight(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetCustomIconSet(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
