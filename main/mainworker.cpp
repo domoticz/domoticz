@@ -2173,7 +2173,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%llu)", BatteryLevel, DeviceRowIdx);
 	}
 
-	if ((defaultName != NULL) && (DeviceName == "Unknown"))
+	if ((defaultName != NULL) && ((DeviceName == "Unknown") || (DeviceName.empty())))
 	{
 		DeviceName = defaultName;
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
