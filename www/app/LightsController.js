@@ -770,7 +770,7 @@ define(['app'], function (app) {
 						  '&strparam2=' + btoa(strParam2) +
 						  '&protected=' + bIsProtected +
 						  '&used=true' +
-						  '&options=' + btoa(devOptionsParam.join('')),
+						  '&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -804,7 +804,7 @@ define(['app'], function (app) {
 							'&switchtype=' + $("#lightcontent #comboswitchtype").val() + 
 							'&customimage=' + CustomImage + 
 							'&used=true' + addjvalstr +
-							'&options=' + btoa(devOptionsParam.join('')),
+							'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {

@@ -10686,7 +10686,7 @@ namespace http {
 			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string sOptions = base64_decode(request::findValue(&req, "options"));
+			std::string sOptions = CURLEncode::URLDecode(base64_decode(request::findValue(&req, "options")));
 
 			char szTmp[200];
 
