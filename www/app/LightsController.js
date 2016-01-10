@@ -1139,10 +1139,10 @@ define(['app'], function (app) {
 				}
 				if (index > 0) {
 					// Add Rename image
-					rendelImg = '<img src="images/rename.png" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
+					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
 					// Add Delete image
 					rendelImg += '&nbsp;';
-					rendelImg += '<img src="images/delete.png" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
+					rendelImg += '<img src="images/delete.png" title="' + $.t("Delete") + '" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				} else {
 					rendelImg = '<img src="images/empty16.png" width="16" height="16"></img>';
 				}
