@@ -1072,10 +1072,6 @@ define(['app'], function (app) {
 		UpdateSelectorLevel = function (index, levelName) {
 			var table$ = $("#lightcontent #selectorlevelstable"),
 				levelNames = table$.data('levelNames').split('|');
-			if ((levelName === '') ||							// avoid empty name
-					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
-				return;
-			}
 			levelNames[index] = levelName;
 			table$.data('levelNames', levelNames.join('|'));
 			BuildSelectorLevelsTable();
@@ -1435,14 +1431,22 @@ define(['app'], function (app) {
 				    $("#lightcontent #SwitchIconDiv").show();
 				}
 				if (switchtype == 18) {
-					var dialog_renameselectorlevel_buttons = {};
+					var dialog_renameselectorlevel_buttons = {}, dialog_editselectoraction_buttons = {};
 					dialog_renameselectorlevel_buttons[$.t("Rename")] = function () {
-						var bValid = true;
-						bValid = bValid && checkLength($("#dialog-renameselectorlevel #selectorlevelname"), 2, 20);
+						var selectorLevelName$ = $("#dialog-renameselectorlevel #selectorlevelname"),
+							selectorIndex$ = $("#dialog-renameselectorlevel #selectorlevelindex"),
+							levelIndex = selectorIndex$.val(),
+							levelName = selectorLevelName$.val().trim(),
+							table$ = $("#lightcontent #selectorlevelstable"),
+							levelNames = table$.data('levelNames').split('|'),
+							bValid = true;
+						bValid = bValid && (levelIndex >= 0);
+						bValid = bValid && checkLength(selectorLevelName$, 2, 20);
+						bValid = bValid && (levelName !== '') &&			// avoid empty
+								($.inArray(levelName, levelNames) === -1);	// avoid duplicate
 						if (bValid) {
 							$(this).dialog("close");
-							UpdateSelectorLevel($("#dialog-renameselectorlevel #selectorlevelindex").val(),
-									$("#dialog-renameselectorlevel #selectorlevelname").val());
+							UpdateSelectorLevel(levelIndex, levelName);
 						}
 					};
 					dialog_renameselectorlevel_buttons[$.t("Cancel")] = function () {
