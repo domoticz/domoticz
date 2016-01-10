@@ -1051,14 +1051,14 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-			levelNames = table$.data('levelNames').split('|');
+				levelNames = table$.data('levelNames').split('|');
 			levelNames.splice(index, 1);
 			table$.data('levelNames', levelNames.join('|'));
 			BuildSelectorLevelsTable();
 		};
 		UpdateSelectorLevel = function (index, levelName) {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-			levelNames = table$.data('levelNames').split('|');
+				levelNames = table$.data('levelNames').split('|');
 			if ((levelName === '') ||							// avoid empty name
 					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
 				return;
@@ -1079,7 +1079,7 @@ define(['app'], function (app) {
 				$("#dialog-renameselectorlevel").i18n();
 				$("#dialog-renameselectorlevel").dialog("open");
 			}
-		}
+		};
 		AddSelectorLevel = function () {
 			var button$ = $("#newselectorlevelbutton"),
 				table$ = $("#lightcontent #selectorlevelstable"),
@@ -1093,14 +1093,14 @@ define(['app'], function (app) {
 			levelNames.push(levelName);
 			table$.data('levelNames', levelNames.join('|'));
 			BuildSelectorLevelsTable();
-		}
+		};
 		BuildSelectorLevelsTable = function () {
 			var table$ = $("#lightcontent #selectorlevelstable"),
 				levelNames = table$.data('levelNames').split('|'),
 				levelNamesMaxLength = 11,
 				initializeTable = $('#selectorlevelstable_wrapper').length === 0,
 				oTable = (initializeTable) ? table$.dataTable({
-					"iDisplayLength" : 25,
+					"iDisplayLength": 25,
 					"bLengthChange": false,
 					"bFilter": false,
 					"bInfo": false,
@@ -1176,7 +1176,7 @@ define(['app'], function (app) {
 			$.bIsSelectorSwitch = (devsubtype === "Selector Switch");
 
 			var oTable;
-			
+
 			if ($.bIsSelectorSwitch) {
 				// backup selector switch level names before displaying edit edit form
 				$.selectorSwitchStyle = $("#selector" + $.devIdx).data("selectorstyle");
@@ -1189,7 +1189,7 @@ define(['app'], function (app) {
 			$('#lightcontent').html(htmlcontent);
 			//$('#lightcontent').html($compile(htmlcontent)($scope));
 			$('#lightcontent').i18n();
-			
+
 			oTable = $('#lightcontent #subdevicestable').dataTable( {
 				"sDom": '<"H"frC>t<"F"i>',
 				"oTableTools": {
@@ -1211,7 +1211,7 @@ define(['app'], function (app) {
 			cHSB.b=100;
 			$('#lightcontent #Brightness').val(100);
 			$('#lightcontent #Hue').val(128);
-			
+
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 			$.bIsRGB=(devsubtype=="RGB");
 			$.bIsRGBW=(devsubtype=="RGBW");
@@ -1264,7 +1264,7 @@ define(['app'], function (app) {
 
 			$("#lightcontent #devicename").val(unescape(name));
 			$("#lightcontent #devicedescription").val(unescape(description));
-			
+
 			if ($.stype=="Security") {
 				$("#lightcontent #SwitchType").hide();
 				$("#lightcontent #OnDelayDiv").hide();
@@ -1294,7 +1294,7 @@ define(['app'], function (app) {
 						$("#lightcontent #offdelay").val(addjvalue);
 						$("#lightcontent #ondelay").val(addjvalue2);
 					}
-					
+
 					if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
 						$("#lightcontent #SwitchIconDiv").show();
 					}
@@ -1302,7 +1302,7 @@ define(['app'], function (app) {
 						$("#lightcontent .selector-switch-options").show();
 					}
 				});
-				
+
 				$("#lightcontent #comboswitchtype").val(switchtype);
 
 				$("#lightcontent #OnDelayDiv").hide();
@@ -1354,12 +1354,12 @@ define(['app'], function (app) {
 					$("#lightcontent .selector-switch-options").show();
 				}
 				$("#lightcontent #combosubdevice").html("");
-				
+
 				$("#lightcontent #onaction").val(atob(strParam1));
 				$("#lightcontent #offaction").val(atob(strParam2));
 
 				$('#lightcontent #protected').prop('checked',(bIsProtected==true));
-				
+
 				$.each($.LightsAndSwitches, function(i,item){
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
@@ -1392,7 +1392,7 @@ define(['app'], function (app) {
 			}
 
 			$("#dialog-addmanuallightdevice #combosubdevice").html("");
-			
+
 			$.each($.LightsAndSwitches, function(i,item){
 				var option = $('<option />');
 				option.attr('value', item.idx).text(item.name);
@@ -1409,14 +1409,14 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-		  
+
 			$("#dialog-addlightdevice #combosubdevice").html("");
 			$.each($.LightsAndSwitches, function(i,item){
 				var option = $('<option />');
 				option.attr('value', item.idx).text(item.name);
 				$("#dialog-addlightdevice #combosubdevice").append(option);
 			});
-		  
+
 			ShowNotify($.t('Press button on Remote...'));
 
 			setTimeout(function() {
