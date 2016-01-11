@@ -3174,7 +3174,7 @@ input[type="submit"].btn.btn-mini {
 .nav > li > a:hover,
 .nav > li > a:focus {
   text-decoration: none;
-  background-color: #eeeeee;
+  background-color: #bbbbbb;
 }
 
 .nav > li > a > img {
@@ -3292,7 +3292,7 @@ input[type="submit"].btn.btn-mini {
 
 .nav-tabs > li > a:hover,
 .nav-tabs > li > a:focus {
-  border-color: #eeeeee #eeeeee #dddddd;
+  border-color: #cccccc #cccccc transparent;
 }
 
 .nav-tabs > .active > a,
@@ -3300,8 +3300,8 @@ input[type="submit"].btn.btn-mini {
 .nav-tabs > .active > a:focus {
   color: #555555;
   cursor: default;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
+  background-color: #bbb;
+  border: 1px solid #ccc;
   border-bottom-color: transparent;
 }
 
