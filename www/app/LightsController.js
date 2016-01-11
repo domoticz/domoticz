@@ -2126,8 +2126,18 @@ define(['app'], function (app) {
 							var selector$ = $(id + " #selector" + item.idx);
 							if (typeof selector$ !== 'undefined') {
 								if (item.SelectorStyle === 0) {
-									selector$.find('input[value="' + item.LevelInt + '"]').prop("checked", true);
-									selector$.buttonset('refresh');
+									selector$
+										.find('label')
+											.removeClass('ui-state-active')
+											.removeClass('ui-state-focus')
+											.end()
+										.find('input:radio')
+											.removeProp('checked')
+											.filter('[value="' + item.LevelInt + '"]')
+												.prop('checked', true)
+												.end()
+											.end()
+										.buttonset('refresh');
 								} else if (item.SelectorStyle === 1) {
 									selector$.val(item.LevelInt);
 									selector$.selectmenu('refresh');
