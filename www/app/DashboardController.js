@@ -1279,7 +1279,7 @@ define(['app'], function (app) {
 											}
 								}
 								else if (item.SubType=="Alert") {
-									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+									status=item.Data + " (" + item.Desc + ")" + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 									status+=item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1360,7 +1360,7 @@ define(['app'], function (app) {
 									status=item.Data;
 								}
 								else if (item.SubType=="Alert") {
-									status=item.Data;
+									status=item.Data + " (" + item.Desc + ")";
 									img='<img src="images/Alert48_' + item.Level + '.png" height="40" width="40">';
 								}
 								else if (item.Type == "Lux") {
@@ -3148,7 +3148,7 @@ define(['app'], function (app) {
 									}
 						}
 						else if (item.SubType=="Alert") {
-							status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+							status=item.Data + " (" + item.Desc + ")" + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							status=' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign +'</button> ';
@@ -3352,7 +3352,7 @@ define(['app'], function (app) {
 						}
 						else if (item.SubType=="Alert") {
 							xhtm+='Alert48_' + item.Level + '.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-							status=item.Data;
+							status=item.Data + " (" + item.Desc + ")";
 						}
 						else if (item.SubType=="Pressure") {
 							xhtm+='gauge48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
