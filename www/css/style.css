@@ -2727,7 +2727,7 @@ tspan{
 	margin-top: 5px;
 }
 .selector-switch-options.style input[type=radio] {
-	margin: 10px 5px;
+	margin: 10px 5px 10px 0px;
 }
 .selector-switch-options.style label {
 	vertical-align: middle;
