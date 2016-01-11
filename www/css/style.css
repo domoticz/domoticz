@@ -61,7 +61,7 @@ h2 {
 	text-transform: none;
 	font-size: 1.5em;
 	font-weight: 200;
-	color: #CCCCCC;
+	color: #BBBBBB;
 }
 
 h1, h3 {
@@ -1823,6 +1823,28 @@ html,body{
 	background-color: #353535;
 	border-bottom: 1px solid #666666;
 }             
+
+.nav > li > a:hover,
+.nav > li > a:focus {
+  text-decoration: none;
+  background-color: #bbbbbb;
+}
+
+.nav-tabs > li > a:hover,
+.nav-tabs > li > a:focus {
+  border-color: #cccccc #cccccc transparent;
+}
+
+.nav-tabs > .active > a,
+.nav-tabs > .active > a:hover,
+.nav-tabs > .active > a:focus {
+  color: #555555;
+  cursor: default;
+  background-color: #bbb;
+  border: 1px solid #ccc;
+  border-bottom-color: transparent;
+}
+
 .navbar .divider-vertical {
 	height: 40px;
 	margin: 0 2px;
@@ -2463,23 +2485,57 @@ span.evomobile .ui-popup {
 
 .sub-tabs > li > a {
 	color: #555555;
-	cursor: default;
+	cursor: pointer;
 	background-color: #ffffff;
-	border: 1px solid #ddd;
+	border: 1px solid #ccc;
 	border-bottom-color: transparent;
 }
 
 .sub-tabs > .active > a {
 	color: #555555;
 	cursor: default;
-	background-color: #ccc;
-	border: 1px solid #ddd;
+	background-color: #bbb;
+	border: 1px solid #ccc;
 	border-bottom-color: transparent;
 }
 
 .sub-tabs-apply {
 	color: #fff!important;
 	border: 1px solid #ff0000!important;
+}
+
+.sub-tabs-apply {
+	border:1px solid #ff0000;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #EE5F5B), color-stop(100%, #bd362f));
+	background-image: -webkit-linear-gradient(top, #EE5F5B, #bd362f);
+	background-image: -moz-linear-gradient(top, #EE5F5B, #bd362f);
+	background-image: -ms-linear-gradient(top, #EE5F5B, #bd362f);
+	background-image: -o-linear-gradient(top, #EE5F5B, #bd362f);
+	background-image: linear-gradient(top, #EE5F5B, #bd362f);
+	filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#EE5F5B, endColorstr=#bd362f);
+	color: #ffffff!important;
+	cursor: pointer;
+}
+
+.sub-tabs-apply:hover {
+	color: #fff!important;
+	border: 1px solid #ff0000!important;
+}
+
+.sub-tabs-apply:hover {
+	border:1px solid #ff0000;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #a9302a), color-stop(100%, #bd362f));
+	background-image: -webkit-linear-gradient(top, #a9302a, #bd362f);
+	background-image: -moz-linear-gradient(top, #a9302a, #bd362f);
+	background-image: -ms-linear-gradient(top, #a9302a, #bd362f);
+	background-image: -o-linear-gradient(top, #a9302a, #bd362f);
+	background-image: linear-gradient(top, #a9302a, #bd362f);
+	filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#a9302a, endColorstr=#bd362f);
+	color: #FFFFFF;
+	cursor: pointer;
+	-webkit-border-radius: 4px 4px 0 0;
+   -moz-border-radius: 4px 4px 0 0;
+   border-radius: 4px 4px 0 0;
 }
 
 .iconcell {
