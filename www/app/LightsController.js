@@ -1495,6 +1495,8 @@ define(['app'], function (app) {
 					$("#lightcontent #selectoractionstable").data('levelActions', $.selectorSwitchActions.join('|'));
 					BuildSelectorActionsTable();
 
+					$("#lightcontent #OnActionDiv").hide();
+					$("#lightcontent #OffActionDiv").hide();
 					$("#lightcontent .selector-switch-options.style input[value=" + $.selectorSwitchStyle + "]").attr('checked', true);
 					$("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked', $.selectorSwitchLevelOffHidden);
 					$("#lightcontent .selector-switch-options").show();
