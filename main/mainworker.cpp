@@ -2178,8 +2178,11 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 
 	if ((defaultName != NULL) && ((DeviceName == "Unknown") || (DeviceName.empty())))
 	{
-		DeviceName = defaultName;
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
+		if (strlen(defaultName) > 0)
+		{
+			DeviceName = defaultName;
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
+		}
 	}
 
 	if (pHardware->m_bOutputLog)
