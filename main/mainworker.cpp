@@ -10968,12 +10968,14 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else
 		{
 			float tempDest = TempValue;
-			unsigned char tSign = m_sql.m_tempsign[0];
-			if (tSign == 'F')
+			//if ((pHardware->HwdType != HTYPE_OpenZWave) && (pHardware->HwdType != HTYPE_RazberryZWave))
 			{
-				//Maybe this should be done in the main app, so all other devices will also do this
-				//Convert to Celsius
-				tempDest = (tempDest - 32.0f) / 1.8f;
+				unsigned char tSign = m_sql.m_tempsign[0];
+				if (tSign == 'F')
+				{
+					//Convert to Celsius
+					tempDest = (tempDest - 32.0f) / 1.8f;
+				}
 			}
 
 			_tThermostat tmeter;
