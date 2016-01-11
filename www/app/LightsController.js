@@ -441,7 +441,9 @@ define(['app'], function (app) {
 		  
 			if ($.isSelector) {
 				// backup selector switch level names before displaying edit edit form
-				$.selectorSwitchLevels = unescape($("#selector" + $.devIdx).data("levelnames")).split('|');
+				var selectorSwitch$ = $("#selector" + $.devIdx);
+				$.selectorSwitchLevels = unescape(selectorSwitch$.data("levelnames")).split('|');
+				$.selectorSwitchLevelOffHidden = selectorSwitch$.data("leveloffhidden");
 			}
 			var oTable;
 			
@@ -612,6 +614,9 @@ define(['app'], function (app) {
 				// Replace dimmer levels by selector level names
 				var levelDiv$ = $("#lightcontent #LevelDiv"),
 					html = [];
+				if ($.selectorSwitchLevelOffHidden) {
+					$("#lightcontent #combocommand").prop('disabled', true);
+				}
 				$.each($.selectorSwitchLevels, function (index, item) {
 					var level = index * 10,
 						levelName = item;
