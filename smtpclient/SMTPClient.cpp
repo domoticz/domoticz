@@ -213,8 +213,8 @@ const std::string SMTPClient::MakeMessage()
 	std::vector<std::string>::const_iterator itt;
 	char szBoundary[40];
 	char szBoundaryMixed[40];
-	sprintf_s(szBoundary, "--------------000000000000000000000000");
-	sprintf_s(szBoundaryMixed, "--------------000000000000000000000000");
+	sprintf(szBoundary, "--------------000000000000000000000000");
+	sprintf(szBoundaryMixed, "--------------000000000000000000000000");
 	MakeBoundry(szBoundary);
 	MakeBoundry(szBoundaryMixed);
 
