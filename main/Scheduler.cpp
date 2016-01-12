@@ -439,15 +439,50 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		pItem->startTime = rtime;
 		return true;
 	}
-	//else if (pItem->timerType == TTYPE_MONTHLY_WD)
-	//{
-	//	typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
-	//	nth_dow ndm(nth_dow::third, boost::gregorian::Monday, boost::gregorian::Jan);
-	//	boost::gregorian::date d = ndm.get_date(2002);
-	//}
-	//else if (pItem->timerType == TTYPE_YEARLY)
-	//{
-	//}
+	else if (pItem->timerType == TTYPE_MONTHLY_WD)
+	{
+		ltime.tm_hour = pItem->startHour;
+		ltime.tm_min = pItem->startMin;
+
+		int dayz = 4;
+		//int monthz = 4;
+		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
+		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(dayz);
+		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+
+		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
+		//nth_dow ndm(nth_dow::third, boost::gregorian::Monday, boost::gregorian::Jan);
+		nth_dow ndm(Occurence, Day, Month);
+		boost::gregorian::date d = ndm.get_date(2016);
+
+		int mon = d.month();
+		int dy = d.day();
+		int yr = d.year();
+	}
+	else if (pItem->timerType == TTYPE_YEARLY)
+	{
+		ltime.tm_mday = pItem->MDay;
+		ltime.tm_mon = pItem->Month - 1;
+		ltime.tm_hour = pItem->startHour;
+		ltime.tm_min = pItem->startMin;
+		//if mday exceeds max days in month, find next year with this amount of days
+		while (ltime.tm_mday > boost::gregorian::gregorian_calendar::end_of_month_day(ltime.tm_year + 1900, ltime.tm_mon + 1))
+		{
+			ltime.tm_year++;
+		}
+		rtime = mktime(&ltime) + (roffset * 60);
+		if (rtime < atime) //past date/time
+		{
+			//schedule for next year
+			boost::gregorian::year_iterator m_itr(boost::gregorian::date(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday));
+			++m_itr;
+			ltime.tm_year = m_itr->year() - 1900;
+			rtime = mktime(&ltime) + (roffset * 60);
+		}
+
+		pItem->startTime = rtime;
+		return true;
+	}
 	//else if (pItem->timerType == TTYPE_YEARLY_WD)
 	//{
 	//}

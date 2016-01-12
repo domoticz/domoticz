@@ -116,8 +116,27 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if ((tsettings.timertype==8) || (tsettings.timertype==10)) {
+			else if (tsettings.timertype==8) {
 				tsettings.days = 0x80;
+				if (tsettings.mday>28) {
+					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
+				}
+			}
+			else if (tsettings.timertype==10) {
+				tsettings.days = 0x80;
+				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
+					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
+					return;
+				}
+				if (tsettings.month==2) {
+					if (tsettings.mday>29) {
+						ShowNotify($.t('February does not have more than 29 days!'), 2500, true);
+						return;
+					}
+					if (tsettings.mday==29) {
+						ShowNotify($.t('Not al years have this date, some years will be skipped!'), 2500, true);
+					}
+				}
 			}
 			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
 				tsettings.days = Math.pow(2, tsettings.weekday);
@@ -171,8 +190,27 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if ((tsettings.timertype==8) || (tsettings.timertype==10)) {
+			else if (tsettings.timertype==8) {
 				tsettings.days = 0x80;
+				if (tsettings.mday>28) {
+					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
+				}
+			}
+			else if (tsettings.timertype==10) {
+				tsettings.days = 0x80;
+				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
+					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
+					return;
+				}
+				if (tsettings.month==2) {
+					if (tsettings.mday>29) {
+						ShowNotify($.t('February does not have more than 29 days!'), 2500, true);
+						return;
+					}
+					if (tsettings.mday==29) {
+						ShowNotify($.t('Not al years have this date, some years will be skipped!'), 2500, true);
+					}
+				}
 			}
 			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
 				tsettings.days = Math.pow(2, tsettings.weekday);
