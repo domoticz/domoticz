@@ -393,8 +393,29 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Selector") {
-											// no buttons, no status needed in mobile mode
+											// no status needed in mobile mode
 											status = '';
+											// update buttons
+											var selector$ = $("#selector" + item.idx);
+											if (typeof selector$ !== 'undefined') {
+												if (item.SelectorStyle === 0) {
+													selector$
+														.find('label')
+															.removeClass('ui-state-active')
+															.removeClass('ui-state-focus')
+															.end()
+														.find('input:radio')
+															.removeProp('checked')
+															.filter('[value="' + item.LevelInt + '"]')
+																.prop('checked', true)
+																.end()
+															.end()
+														.buttonset('refresh');
+												} else if (item.SelectorStyle === 1) {
+													selector$.val(item.LevelInt);
+													selector$.selectmenu('refresh');
+												}
+											}
 										}
 										else {
 											if (
@@ -709,7 +730,7 @@ define(['app'], function (app) {
 											}
 										}
 										if (item.SwitchType === "Selector") {
-											var selector$ = $(id + " #selector" + item.idx);
+											var selector$ = $("#selector" + item.idx);
 											if (typeof selector$ !== 'undefined') {
 												if (item.SelectorStyle === 0) {
 													selector$
@@ -1972,7 +1993,7 @@ define(['app'], function (app) {
 										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
 										if (item.SelectorStyle === 0) {
 											xhtm += '<div style="margin: -15px -4px -5px 24px;" class="selectorlevels">';
-											xhtm += '<div id="selector" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
@@ -1983,7 +2004,7 @@ define(['app'], function (app) {
 											xhtm += '</div>';
 										} else if (item.SelectorStyle === 1) {
 											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: center;" class="selectorlevels">';
-											xhtm += '<select id="selector" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
