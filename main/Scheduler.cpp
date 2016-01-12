@@ -444,20 +444,35 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		ltime.tm_hour = pItem->startHour;
 		ltime.tm_min = pItem->startMin;
 
-		int dayz = 4;
-		//int monthz = 4;
+		//pItem->Days: mon=0 .. sat=5, sun=6
+		//convert to : sun=0, mon=1 .. sat=6
+		int daynum = (int)log2(pItem->Days) + 1;
+		if (daynum == 7) daynum = 0;
+
 		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
-		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(dayz);
+		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(daynum);
 		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
 
 		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
-		//nth_dow ndm(nth_dow::third, boost::gregorian::Monday, boost::gregorian::Jan);
 		nth_dow ndm(Occurence, Day, Month);
-		boost::gregorian::date d = ndm.get_date(2016);
+		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
 
-		int mon = d.month();
-		int dy = d.day();
-		int yr = d.year();
+		ltime.tm_mday = d.day();
+		rtime = mktime(&ltime) + (roffset * 60);
+
+		if (rtime < atime) //past date/time
+		{
+			//schedule for next month
+			ltime.tm_mon++;
+			Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+			nth_dow ndm(Occurence, Day, Month);
+			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
+			ltime.tm_mday = d.day();
+			rtime = mktime(&ltime) + (roffset * 60);
+		}
+
+		pItem->startTime = rtime;
+		return true;
 	}
 	else if (pItem->timerType == TTYPE_YEARLY)
 	{
@@ -483,9 +498,40 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		pItem->startTime = rtime;
 		return true;
 	}
-	//else if (pItem->timerType == TTYPE_YEARLY_WD)
-	//{
-	//}
+	else if (pItem->timerType == TTYPE_YEARLY_WD)
+	{
+		ltime.tm_hour = pItem->startHour;
+		ltime.tm_min = pItem->startMin;
+		ltime.tm_mon = pItem->Month - 1;
+
+		//pItem->Days: mon=0 .. sat=5, sun=6
+		//convert to : sun=0, mon=1 .. sat=6
+		int daynum = (int)log2(pItem->Days) + 1;
+		if (daynum == 7) daynum = 0;
+
+		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
+		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(daynum);
+		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+
+		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
+		nth_dow ndm(Occurence, Day, Month);
+		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
+
+		ltime.tm_mday = d.day();
+		rtime = mktime(&ltime) + (roffset * 60);
+
+		if (rtime < atime) //past date/time
+		{
+			//schedule for next year
+			ltime.tm_year++;
+			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
+			ltime.tm_mday = d.day();
+			rtime = mktime(&ltime) + (roffset * 60);
+		}
+
+		pItem->startTime = rtime;
+		return true;
+	}
 	else
 		return false; //unknown timer type
 
