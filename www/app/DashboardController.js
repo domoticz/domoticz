@@ -393,8 +393,29 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SwitchType == "Selector") {
-											// no buttons, no status needed in mobile mode
+											// no status needed in mobile mode
 											status = '';
+											// update buttons
+											var selector$ = $("#selector" + item.idx);
+											if (typeof selector$ !== 'undefined') {
+												if (item.SelectorStyle === 0) {
+													selector$
+														.find('label')
+															.removeClass('ui-state-active')
+															.removeClass('ui-state-focus')
+															.end()
+														.find('input:radio')
+															.removeProp('checked')
+															.filter('[value="' + item.LevelInt + '"]')
+																.prop('checked', true)
+																.end()
+															.end()
+														.buttonset('refresh');
+												} else if (item.SelectorStyle === 1) {
+													selector$.val(item.LevelInt);
+													selector$.selectmenu('refresh');
+												}
+											}
 										}
 										else {
 											if (
@@ -644,6 +665,8 @@ define(['app'], function (app) {
 										else if (item.SwitchType == "Selector") {
 											if ((item.Status === "Off")) {
 												img += '<img src="images/' + item.Image + '48_Off.png" height="40" width="40">';
+											} else if (item.LevelOffHidden) {
+												img += '<img src="images/' + item.Image + '48_On.png" height="40" width="40">';
 											} else {
 												img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected +');" class="lcursor" height="40" width="40">';
 											}
@@ -707,11 +730,21 @@ define(['app'], function (app) {
 											}
 										}
 										if (item.SwitchType === "Selector") {
-											var selector$ = $(id + " #selector" + item.idx);
+											var selector$ = $("#selector" + item.idx);
 											if (typeof selector$ !== 'undefined') {
 												if (item.SelectorStyle === 0) {
-													selector$.find('input[value="' + item.LevelInt + '"]').prop("checked", true);
-													selector$.buttonset('refresh');
+													selector$
+														.find('label')
+															.removeClass('ui-state-active')
+															.removeClass('ui-state-focus')
+															.end()
+														.find('input:radio')
+															.removeProp('checked')
+															.filter('[value="' + item.LevelInt + '"]')
+																.prop('checked', true)
+																.end()
+															.end()
+														.buttonset('refresh');
 												} else if (item.SelectorStyle === 1) {
 													selector$.val(item.LevelInt);
 													selector$.selectmenu('refresh');
@@ -1277,7 +1310,7 @@ define(['app'], function (app) {
 											}
 								}
 								else if (item.SubType=="Alert") {
-									status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+									status=item.Data + " (" + item.Desc + ")" + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 								}
 								else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 									status+=item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1358,7 +1391,7 @@ define(['app'], function (app) {
 									status=item.Data;
 								}
 								else if (item.SubType=="Alert") {
-									status=item.Data;
+									status=item.Data + " (" + item.Desc + ")";
 									img='<img src="images/Alert48_' + item.Level + '.png" height="40" width="40">';
 								}
 								else if (item.Type == "Lux") {
@@ -1960,17 +1993,23 @@ define(['app'], function (app) {
 										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">';
 										if (item.SelectorStyle === 0) {
 											xhtm += '<div style="margin: -15px -4px -5px 24px;" class="selectorlevels">';
-											xhtm += '<div id="selector" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
 												xhtm += '<input type="radio" id="dSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="dSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 											});
 											xhtm += '</div>';
 										} else if (item.SelectorStyle === 1) {
 											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: center;" class="selectorlevels">';
-											xhtm += '<select id="selector" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
 												xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 											});
 											xhtm += '</select>';
@@ -2213,6 +2252,8 @@ define(['app'], function (app) {
 									else if (item.SwitchType === "Selector") {
 										if (item.Status === 'Off') {
 											xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" height="40" width="40"></td>\n';
+										} else if (item.LevelOffHidden) {
+											xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" height="40" width="40"></td>\n';
 										} else {
 											xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
 										}
@@ -2267,6 +2308,9 @@ define(['app'], function (app) {
 											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
 												xhtm += '<input type="radio" id="dSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="dSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 											});
 											xhtm += '</div></td>';
@@ -2275,6 +2319,9 @@ define(['app'], function (app) {
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function(index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
 												xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 											});
 											xhtm += '</select>';
@@ -3132,7 +3179,7 @@ define(['app'], function (app) {
 									}
 						}
 						else if (item.SubType=="Alert") {
-							status=item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+							status=item.Data + " (" + item.Desc + ")" + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
 						}
 						else if ((item.Type == "Thermostat")&&(item.SubType=="SetPoint")) {
 							status=' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign +'</button> ';
@@ -3336,7 +3383,7 @@ define(['app'], function (app) {
 						}
 						else if (item.SubType=="Alert") {
 							xhtm+='Alert48_' + item.Level + '.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-							status=item.Data;
+							status=item.Data + " (" + item.Desc + ")";
 						}
 						else if (item.SubType=="Pressure") {
 							xhtm+='gauge48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal +', \'' + item.SubType + '\');" height="40" width="40"></td>\n';

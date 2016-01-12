@@ -55,6 +55,7 @@ public:
 	void SetSecureWebserverPass(const std::string &passphrase);
 
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
+	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 
 	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue, const std::string &ooc, const int ExtraDelay);
 	bool SwitchLight(const unsigned long long idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay);
@@ -67,8 +68,8 @@ public:
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
 	bool SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until);
-	bool SetThermostatState(const std::string &idx, const int newState);
 	bool SetSetPointInt(const std::vector<std::string> &sd, const float TempValue);
+	bool SetThermostatState(const std::string &idx, const int newState);
 	bool SetClock(const std::string &idx, const std::string &clockstr);
 	bool SetClockInt(const std::vector<std::string> &sd, const std::string &clockstr);
 	bool SetZWaveThermostatMode(const std::string &idx, const int tMode);
@@ -107,7 +108,7 @@ public:
 	void SetInternalSecStatus();
 	bool GetSensorData(const unsigned long long idx, int &nValue, std::string &sValue);
 
-	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel);
+	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
 
 	boost::signals2::signal<void(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
 
@@ -213,7 +214,6 @@ private:
 	concurrent_queue<_tRxQueueItem> m_rxMessageQueue;
 	void UnlockRxMessageQueue();
 	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
-	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel, const bool wait);
 	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel); //battery level: 0-100, 255=no battery, -1 = don't set
 

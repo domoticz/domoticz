@@ -122,6 +122,7 @@ extern std::string szStartupFolder;
 extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 extern std::string szAppVersion;
+extern std::string szWebRoot;
 
 extern http::server::CWebServerHelper m_webservers;
 
@@ -960,6 +961,8 @@ bool MainWorker::StartThread()
 	{
 		m_webservers.SetWebTheme(sValue);
 	}
+
+	m_webservers.SetWebRoot(szWebRoot);
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
@@ -2173,10 +2176,13 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%llu)", BatteryLevel, DeviceRowIdx);
 	}
 
-	if ((defaultName != NULL) && (DeviceName == "Unknown"))
+	if ((defaultName != NULL) && ((DeviceName == "Unknown") || (DeviceName.empty())))
 	{
-		DeviceName = defaultName;
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
+		if (strlen(defaultName) > 0)
+		{
+			DeviceName = defaultName;
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
+		}
 	}
 
 	if (pHardware->m_bOutputLog)
@@ -10965,12 +10971,14 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else
 		{
 			float tempDest = TempValue;
-			unsigned char tSign = m_sql.m_tempsign[0];
-			if (tSign == 'F')
+			//if ((pHardware->HwdType != HTYPE_OpenZWave) && (pHardware->HwdType != HTYPE_RazberryZWave))
 			{
-				//Maybe this should be done in the main app, so all other devices will also do this
-				//Convert to Celsius
-				tempDest = (tempDest - 32.0f) / 1.8f;
+				unsigned char tSign = m_sql.m_tempsign[0];
+				if (tSign == 'F')
+				{
+					//Convert to Celsius
+					tempDest = (tempDest - 32.0f) / 1.8f;
+				}
 			}
 
 			_tThermostat tmeter;
@@ -11726,7 +11734,7 @@ void MainWorker::HeartbeatCheck()
 	}
 }
 
-bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel)
+bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger)
 {
 	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
 	if (pHardware)
@@ -11808,7 +11816,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		return false;
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	if (pHardware)
+	if ((pHardware)&&(parseTrigger))
 	{
 		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
 	}
