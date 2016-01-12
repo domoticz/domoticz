@@ -249,10 +249,19 @@ const std::string SMTPClient::MakeMessage()
 	struct tm timeinfo;
 	localtime_r(&t, &timeinfo);
 
-	if (strftime(timestring, 127, "Date: %a, %d %b %Y %H:%M:%S %Z", &timeinfo)) { // got the date
+	if (strftime(timestring, sizeof(timestring), "Date: %a, %d %b %Y %H:%M:%S %z\n", &timeinfo)) {
 		ret += timestring;
-		ret += "\r\n";
 	}
+#ifdef _WIN32
+	//fallback method for Windows when %z (time zone offset) fails
+	else if (strftime(timestring, sizeof(timestring), "Date: %a, %d %b %Y %H:%M:%S", &timeinfo)) {
+		TIME_ZONE_INFORMATION tzinfo;
+		if (GetTimeZoneInformation(&tzinfo) != TIME_ZONE_ID_INVALID)
+			sprintf(timestring + strlen(timestring), " %c%02i%02i", (tzinfo.Bias > 0 ? '-' : '+'), (int)-tzinfo.Bias / 60, (int)-tzinfo.Bias % 60);
+		ret += timestring;
+		ret += "\n";
+	}
+#endif
 
 	///////////////////////////////////////////////////////////////////////////
 	// add the subject
