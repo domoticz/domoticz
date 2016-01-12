@@ -441,13 +441,9 @@ define(['app'], function (app) {
 		  
 			if ($.isSelector) {
 				// backup selector switch level names before displaying edit edit form
-				$.selectorSwitchLevels = [];
-				$("#selector" + $.devIdx + " label").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
-				$("#selector" + $.devIdx + " option").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
+				var selectorSwitch$ = $("#selector" + $.devIdx);
+				$.selectorSwitchLevels = unescape(selectorSwitch$.data("levelnames")).split('|');
+				$.selectorSwitchLevelOffHidden = selectorSwitch$.data("leveloffhidden");
 			}
 			var oTable;
 			
@@ -618,6 +614,9 @@ define(['app'], function (app) {
 				// Replace dimmer levels by selector level names
 				var levelDiv$ = $("#lightcontent #LevelDiv"),
 					html = [];
+				if ($.selectorSwitchLevelOffHidden) {
+					$("#lightcontent #combocommand").prop('disabled', true);
+				}
 				$.each($.selectorSwitchLevels, function (index, item) {
 					var level = index * 10,
 						levelName = item;
@@ -751,12 +750,24 @@ define(['app'], function (app) {
 			var devOptionsParam = [], devOptions = [];
 			if ($.bIsSelectorSwitch) {
 				var levelNames = $("#lightcontent #selectorlevelstable").data('levelNames'),
-					selectorStyle = $("#lightcontent .selector-switch-options input[type=radio]:checked").val();
+					levelActions = $("#lightcontent #selectoractionstable").data('levelActions').split('|'),
+					selectorStyle = $("#lightcontent .selector-switch-options.style input[type=radio]:checked").val(),
+					levelOffHidden = $("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked');
 				devOptions.push("LevelNames:");
 				devOptions.push(levelNames);
 				devOptions.push(";");
+				devOptions.push("LevelActions:");
+				$.each(levelActions, function (index, item) {
+					levelActions[index] = encodeURIComponent(item);
+				});
+				devOptions.push(levelActions.join('|'));
+				devOptions.push(";");
 				devOptions.push("SelectorStyle:");
 				devOptions.push(selectorStyle);
+				devOptions.push(";");
+				devOptions.push("LevelOffHidden:");
+				devOptions.push(levelOffHidden);
+				devOptions.push(";");
 				devOptionsParam.push(devOptions.join(''));
 			}
 			
@@ -770,7 +781,7 @@ define(['app'], function (app) {
 						  '&strparam2=' + btoa(strParam2) +
 						  '&protected=' + bIsProtected +
 						  '&used=true' +
-						  '&options=' + btoa(devOptionsParam.join('')),
+						  '&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -804,7 +815,7 @@ define(['app'], function (app) {
 							'&switchtype=' + $("#lightcontent #comboswitchtype").val() + 
 							'&customimage=' + CustomImage + 
 							'&used=true' + addjvalstr +
-							'&options=' + btoa(devOptionsParam.join('')),
+							'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -1057,18 +1068,15 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-			levelNames = table$.data('levelNames').split('|');
+				levelNames = table$.data('levelNames').split('|');
 			levelNames.splice(index, 1);
 			table$.data('levelNames', levelNames.join('|'));
 			BuildSelectorLevelsTable();
+			DeleteSelectorAction(index);
 		};
 		UpdateSelectorLevel = function (index, levelName) {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-			levelNames = table$.data('levelNames').split('|');
-			if ((levelName === '') ||							// avoid empty name
-					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
-				return;
-			}
+				levelNames = table$.data('levelNames').split('|');
 			levelNames[index] = levelName;
 			table$.data('levelNames', levelNames.join('|'));
 			BuildSelectorLevelsTable();
@@ -1085,7 +1093,7 @@ define(['app'], function (app) {
 				$("#dialog-renameselectorlevel").i18n();
 				$("#dialog-renameselectorlevel").dialog("open");
 			}
-		}
+		};
 		AddSelectorLevel = function () {
 			var button$ = $("#newselectorlevelbutton"),
 				table$ = $("#lightcontent #selectorlevelstable"),
@@ -1099,14 +1107,15 @@ define(['app'], function (app) {
 			levelNames.push(levelName);
 			table$.data('levelNames', levelNames.join('|'));
 			BuildSelectorLevelsTable();
-		}
+			AddSelectorAction();
+		};
 		BuildSelectorLevelsTable = function () {
 			var table$ = $("#lightcontent #selectorlevelstable"),
 				levelNames = table$.data('levelNames').split('|'),
 				levelNamesMaxLength = 11,
 				initializeTable = $('#selectorlevelstable_wrapper').length === 0,
 				oTable = (initializeTable) ? table$.dataTable({
-					"iDisplayLength" : 25,
+					"iDisplayLength": 25,
 					"bLengthChange": false,
 					"bFilter": false,
 					"bInfo": false,
@@ -1135,10 +1144,10 @@ define(['app'], function (app) {
 				}
 				if (index > 0) {
 					// Add Rename image
-					rendelImg = '<img src="images/rename.png" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
+					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
 					// Add Delete image
 					rendelImg += '&nbsp;';
-					rendelImg += '<img src="images/delete.png" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
+					rendelImg += '<img src="images/delete.png" title="' + $.t("Delete") + '" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				} else {
 					rendelImg = '<img src="images/empty16.png" width="16" height="16"></img>';
 				}
@@ -1158,6 +1167,89 @@ define(['app'], function (app) {
 			if (levelNames.length === levelNamesMaxLength) {
 				$("#newselectorlevelbutton").prop("disabled", true).addClass("ui-state-disabled");
 			}
+		};
+
+		UpdateSelectorAction = function (index, levelAction) {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions[index] = levelAction;
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		EditSelectorAction = function (index, levelAction) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			if (index >= 0) {
+				$("#dialog-editselectoraction #selectorlevelindex").val(index);
+				$("#dialog-editselectoraction #selectoraction").val(unescape(levelAction));
+				$("#dialog-editselectoraction").i18n();
+				$("#dialog-editselectoraction").dialog("open");
+			}
+		};
+		ClearSelectorAction = function (index) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions[index] = '';
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		DeleteSelectorAction = function (index) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions.splice(index, 1);
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		AddSelectorAction = function () {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions.push('');
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		BuildSelectorActionsTable = function () {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|'),
+				levelActionsMaxLength = 11,
+				initializeTable = $('#selectoractionstable_wrapper').length === 0,
+				oTable = (initializeTable) ? table$.dataTable({
+					"iDisplayLength": 25,
+					"bLengthChange": false,
+					"bFilter": false,
+					"bInfo": false,
+					"bPaginate": false
+				}) : table$.dataTable();
+			oTable.fnClearTable();
+			$.each(levelActions, function (index, item) {
+				var level = index * 10,
+					levelAction = levelActions[index],
+					rendelImg = "";
+				// Add Rename image
+				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ',\'' + levelActions[index] + '\');" class="lcursor" width="16" height="16"></img>';
+				rendelImg += '&nbsp;';
+				rendelImg += '<img src="images/delete.png" title="' + $.t("Clear") + '" onclick="ClearSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
+				oTable.fnAddData({
+					"DT_RowId": index,
+					"Name": levelAction,
+					"Edit": index,
+					"0": level,
+					"1": levelAction.replace('&', '&amp;'),
+					"2": rendelImg
+				});
+			});
 		};
 
 		appLampCooler = function()
@@ -1182,16 +1274,24 @@ define(['app'], function (app) {
 			$.bIsSelectorSwitch = (devsubtype === "Selector Switch");
 
 			var oTable;
-			
+
 			if ($.bIsSelectorSwitch) {
 				// backup selector switch level names before displaying edit edit form
-				$.selectorSwitchStyle = $("#selector" + $.devIdx).data("selectorstyle");
-				$.selectorSwitchLevels = [];
-				$("#selector" + $.devIdx + " label").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
-				$("#selector" + $.devIdx + " option").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
+				var selectorSwitch$ = $("#selector" + $.devIdx),
+					ssLevelNames = unescape(selectorSwitch$.data("levelnames")),
+					ssStyle = selectorSwitch$.data("selectorstyle"),
+					ssLevelOffHidden = selectorSwitch$.data("leveloffhidden"),
+					ssLevelActions = selectorSwitch$.data("levelactions");
+				$.selectorSwitchStyle = ssStyle;
+				$.selectorSwitchLevelOffHidden = ssLevelOffHidden;
+				$.selectorSwitchLevels = ssLevelNames.split('|');
+				$.selectorSwitchActions = ssLevelActions.split('|');
+				$.each($.selectorSwitchLevels, function (index, item) {
+					if (index <= ($.selectorSwitchActions.length - 1)) {
+						$.selectorSwitchActions[index] = decodeURIComponent($.selectorSwitchActions[index]);
+					} else {
+						$.selectorSwitchActions.push(""); // force missing action
+					}
 				});
 			}
 
@@ -1201,7 +1301,7 @@ define(['app'], function (app) {
 			$('#lightcontent').html(htmlcontent);
 			//$('#lightcontent').html($compile(htmlcontent)($scope));
 			$('#lightcontent').i18n();
-			
+
 			oTable = $('#lightcontent #subdevicestable').dataTable( {
 				"sDom": '<"H"frC>t<"F"i>',
 				"oTableTools": {
@@ -1223,7 +1323,7 @@ define(['app'], function (app) {
 			cHSB.b=100;
 			$('#lightcontent #Brightness').val(100);
 			$('#lightcontent #Hue').val(128);
-			
+
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 			$.bIsRGB=(devsubtype=="RGB");
 			$.bIsRGBW=(devsubtype=="RGBW");
@@ -1276,7 +1376,7 @@ define(['app'], function (app) {
 
 			$("#lightcontent #devicename").val(unescape(name));
 			$("#lightcontent #devicedescription").val(unescape(description));
-			
+
 			if ($.stype=="Security") {
 				$("#lightcontent #SwitchType").hide();
 				$("#lightcontent #OnDelayDiv").hide();
@@ -1306,7 +1406,7 @@ define(['app'], function (app) {
 						$("#lightcontent #offdelay").val(addjvalue);
 						$("#lightcontent #ondelay").val(addjvalue2);
 					}
-					
+
 					if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
 						$("#lightcontent #SwitchIconDiv").show();
 					}
@@ -1314,7 +1414,7 @@ define(['app'], function (app) {
 						$("#lightcontent .selector-switch-options").show();
 					}
 				});
-				
+
 				$("#lightcontent #comboswitchtype").val(switchtype);
 
 				$("#lightcontent #OnDelayDiv").hide();
@@ -1336,14 +1436,22 @@ define(['app'], function (app) {
 				    $("#lightcontent #SwitchIconDiv").show();
 				}
 				if (switchtype == 18) {
-					var dialog_renameselectorlevel_buttons = {};
+					var dialog_renameselectorlevel_buttons = {}, dialog_editselectoraction_buttons = {};
 					dialog_renameselectorlevel_buttons[$.t("Rename")] = function () {
-						var bValid = true;
-						bValid = bValid && checkLength($("#dialog-renameselectorlevel #selectorlevelname"), 2, 20);
+						var selectorLevelName$ = $("#dialog-renameselectorlevel #selectorlevelname"),
+							selectorIndex$ = $("#dialog-renameselectorlevel #selectorlevelindex"),
+							levelIndex = selectorIndex$.val(),
+							levelName = selectorLevelName$.val().trim(),
+							table$ = $("#lightcontent #selectorlevelstable"),
+							levelNames = table$.data('levelNames').split('|'),
+							bValid = true;
+						bValid = bValid && (levelIndex >= 0);
+						bValid = bValid && checkLength(selectorLevelName$, 2, 20);
+						bValid = bValid && (levelName !== '') &&			// avoid empty
+								($.inArray(levelName, levelNames) === -1);	// avoid duplicate
 						if (bValid) {
 							$(this).dialog("close");
-							UpdateSelectorLevel($("#dialog-renameselectorlevel #selectorlevelindex").val(),
-									$("#dialog-renameselectorlevel #selectorlevelname").val());
+							UpdateSelectorLevel(levelIndex, levelName);
 						}
 					};
 					dialog_renameselectorlevel_buttons[$.t("Cancel")] = function () {
@@ -1361,17 +1469,50 @@ define(['app'], function (app) {
 					$("#lightcontent #selectorlevelstable").data('levelNames', $.selectorSwitchLevels.join('|'));
 					BuildSelectorLevelsTable();
 
-					$("#lightcontent .selector-switch-options.style input[value=" + $.selectorSwitchStyle + "]").attr('checked', true);
+					dialog_editselectoraction_buttons[$.t("Save")] = function () {
+						var selectorAction$ = $("#dialog-editselectoraction #selectoraction"),
+							selectorIndex$ = $("#dialog-editselectoraction #selectorlevelindex"),
+							levelIndex = selectorIndex$.val(),
+							levelAction = selectorAction$.val().trim(),
+							bValid = true;
+						bValid = bValid && (levelIndex >= 0);
+						bValid = bValid && checkLength(selectorAction$, 0, 200);
+						bValid = bValid && ((levelAction === '') ||
+								(((levelAction.toLowerCase().indexOf('http://') === 0) && (levelAction.length > 7)) ||
+										((levelAction.toLowerCase().indexOf('script://') === 0) && (levelAction.length > 9))));
+						if (bValid) {
+							$(this).dialog("close");
+							UpdateSelectorAction(levelIndex, levelAction);
+						}
+					};
+					dialog_editselectoraction_buttons[$.t("Cancel")] = function () {
+						$(this).dialog("close");
+					};
+					$("#dialog-editselectoraction").dialog({
+						autoOpen: false,
+						width: 'auto',
+						height: 'auto',
+						modal: true,
+						resizable: false,
+						title: $.t("Edit level action"),
+						buttons: dialog_editselectoraction_buttons
+					});
+					$("#lightcontent #selectoractionstable").data('levelActions', $.selectorSwitchActions.join('|'));
+					BuildSelectorActionsTable();
 
+					$("#lightcontent #OnActionDiv").hide();
+					$("#lightcontent #OffActionDiv").hide();
+					$("#lightcontent .selector-switch-options.style input[value=" + $.selectorSwitchStyle + "]").attr('checked', true);
+					$("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked', $.selectorSwitchLevelOffHidden);
 					$("#lightcontent .selector-switch-options").show();
 				}
 				$("#lightcontent #combosubdevice").html("");
-				
+
 				$("#lightcontent #onaction").val(atob(strParam1));
 				$("#lightcontent #offaction").val(atob(strParam2));
 
 				$('#lightcontent #protected').prop('checked',(bIsProtected==true));
-				
+
 				$.each($.LightsAndSwitches, function(i,item){
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
@@ -1404,7 +1545,7 @@ define(['app'], function (app) {
 			}
 
 			$("#dialog-addmanuallightdevice #combosubdevice").html("");
-			
+
 			$.each($.LightsAndSwitches, function(i,item){
 				var option = $('<option />');
 				option.attr('value', item.idx).text(item.name);
@@ -1421,14 +1562,14 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-		  
+
 			$("#dialog-addlightdevice #combosubdevice").html("");
 			$.each($.LightsAndSwitches, function(i,item){
 				var option = $('<option />');
 				option.attr('value', item.idx).text(item.name);
 				$("#dialog-addlightdevice #combosubdevice").append(option);
 			});
-		  
+
 			ShowNotify($.t('Press button on Remote...'));
 
 			setTimeout(function() {
@@ -1915,6 +2056,8 @@ define(['app'], function (app) {
 					else if (item.SwitchType === "Selector") {
 						if ((item.Status === "Off")) {
 							img += '<img src="images/' + item.Image + '48_Off.png" height="48" width="48">';
+						} else if (item.LevelOffHidden) {
+							img += '<img src="images/' + item.Image + '48_On.png" height="48" width="48">';
 						} else {
 							img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 						}
@@ -1980,11 +2123,21 @@ define(['app'], function (app) {
 							}
 						}
 						if (item.SwitchType === "Selector") {
-							var selector$ = $(id + " #selector" + item.idx);
+							var selector$ = $("#selector" + item.idx);
 							if (typeof selector$ !== 'undefined') {
 								if (item.SelectorStyle === 0) {
-									selector$.find('input[value="' + item.LevelInt + '"]').prop("checked", true);
-									selector$.buttonset('refresh');
+									selector$
+										.find('label')
+											.removeClass('ui-state-active')
+											.removeClass('ui-state-focus')
+											.end()
+										.find('input:radio')
+											.removeProp('checked')
+											.filter('[value="' + item.LevelInt + '"]')
+												.prop('checked', true)
+												.end()
+											.end()
+										.buttonset('refresh');
 								} else if (item.SelectorStyle === 1) {
 									selector$.val(item.LevelInt);
 									selector$.selectmenu('refresh');
@@ -2425,6 +2578,8 @@ define(['app'], function (app) {
 							else if (item.SwitchType === "Selector") {
 								if (item.Status === 'Off') {
 									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" height="48" width="48"></td>\n';
+								} else if (item.LevelOffHidden) {
+									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								} else {
 									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								}
@@ -2477,16 +2632,22 @@ define(['app'], function (app) {
 					else if (item.SwitchType == "Selector") {
 						xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 						if (item.SelectorStyle === 0) {
-							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
+								if ((index === 0) && (item.LevelOffHidden)) {
+									return;
+								}
 								xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 							});
 							xhtm += '</div>';
 						} else if (item.SelectorStyle === 1) {
-							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
+								if ((index === 0) && (item.LevelOffHidden)) {
+									return;
+								}
 								xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 							});
 							xhtm += '</select>';

@@ -510,7 +510,7 @@ namespace http {
 			RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1, _2, _3));
 			RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1, _2, _3));
 
-			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_RegisterWithPhilipsHue, this, _1, _2, _3));
+			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_PhilipsHueRegister, this, _1, _2, _3));
 
 			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1, _2, _3));
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1, _2, _3));
@@ -636,11 +636,19 @@ namespace http {
 				return;
 			m_pWebEm->SetAuthenticationMethod((_eAuthenticationMethod)amethod);
 		}
+
 		void CWebServer::SetWebTheme(const std::string &themename)
 		{
 			if (m_pWebEm == NULL)
 				return;
 			m_pWebEm->SetWebTheme(themename);
+		}
+
+		void CWebServer::SetWebRoot(const std::string &webRoot)
+		{
+			if (m_pWebEm == NULL)
+				return;
+			m_pWebEm->SetWebRoot(webRoot);
 		}
 
 		void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication)
@@ -5850,6 +5858,10 @@ namespace http {
 				{
 					return;
 				}
+				unsigned long long ID;
+				std::stringstream s_strid;
+				s_strid << idx;
+				s_strid >> ID;
 
 				std::string hex = request::findValue(&req, "hex");
 				std::string hue = request::findValue(&req, "hue");
@@ -5865,29 +5877,24 @@ namespace http {
 					unsigned char r = (unsigned char)((ihex & 0xFF0000) >> 16);
 					unsigned char g = (unsigned char)((ihex & 0x00FF00) >> 8);
 					unsigned char b = (unsigned char)ihex & 0xFF;
-					double hsl[3];
-					rgb2hsl(r, g, b, hsl);
-					hsl[0] *= 360.0;
-					hsl[1] *= 255.0;
-					hsl[2] *= 100.0;
+					float hsb[3];
+					rgb2hsb(r, g, b, hsb);
+					hsb[0] *= 360.0;
+					hsb[1] *= 255.0;
+					hsb[2] *= 100.0;
 					char szConv[20];
-					sprintf(szConv, "%d", (int)hsl[0]);
+					sprintf(szConv, "%d", (int)hsb[0]);
 					hue = szConv;
-					//sprintf(szConv, "%d", (int)hsl[1]);
+					//sprintf(szConv, "%d", (int)hsb[1]);
 					//sat = szConv;
-					iswhite = (hsl[1] < 20.0) ? "true" : "false";
-					sprintf(szConv, "%d", (int)hsl[2]);
+					iswhite = (hsb[1] < 20.0) ? "true" : "false";
+					sprintf(szConv, "%d", (int)hsb[2]);
 					brightness = szConv;
 				}
 				if (hue.empty() || brightness.empty() || iswhite.empty())
 				{
 					return;
 				}
-
-				unsigned long long ID;
-				std::stringstream s_strid;
-				s_strid << idx;
-				s_strid >> ID;
 
 				if (iswhite != "true")
 				{
@@ -7818,16 +7825,24 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Selector)
 						{
-							std::string selectorStyle = m_sql.BuildDeviceOptions(sOptions)["SelectorStyle"];
-							std::string levelNames = m_sql.BuildDeviceOptions(sOptions)["LevelNames"];
+							std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+							std::string selectorStyle = options["SelectorStyle"];
+							std::string levelOffHidden = options["LevelOffHidden"];
+							std::string levelNames = options["LevelNames"];
+							std::string levelActions = options["LevelActions"];
 							if (selectorStyle.empty()) {
-								selectorStyle.assign("0"); // default is button set
+								selectorStyle.assign("0"); // default is 'button set'
+							}
+							if (levelOffHidden.empty()) {
+								levelOffHidden.assign("false"); // default is 'not hidden'
 							}
 							if (levelNames.empty()) {
 								levelNames.assign("Off"); // default is Off only
 							}
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
+							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
 							root["result"][ii]["LevelNames"] = levelNames;
+							root["result"][ii]["LevelActions"] = levelActions;
 						}
 						if (llevel != 0)
 							sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
@@ -10679,7 +10694,7 @@ namespace http {
 			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string sOptions = base64_decode(request::findValue(&req, "options"));
+			std::string sOptions = CURLEncode::URLDecode(base64_decode(request::findValue(&req, "options")));
 
 			char szTmp[200];
 

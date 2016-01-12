@@ -17,13 +17,6 @@
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 
-#ifndef max
-	#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-#ifndef min
-	#define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -546,48 +539,40 @@ void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxV
 	}
 }
 
-/**
-* Converts an RGB color value to HSL. Conversion formula
-* adapted from http://en.wikipedia.org/wiki/HSL_color_space.
-* https://github.com/ratkins/RGBConverter/blob/master/RGBConverter.cpp
-* Assumes r, g, and b are contained in the set [0, 255] and
-* returns h, s, and l in the set [0, 1].
-*
-* @param   Number  r       The red color value
-* @param   Number  g       The green color value
-* @param   Number  b       The blue color value
-* @return  Array           The HSL representation
-*/
-void rgb2hsl(const unsigned char r, const unsigned char g, const unsigned char b, double hsl[])
+void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 {
-	double rd = (double)r / 255;
-	double gd = (double)g / 255;
-	double bd = (double)b / 255;
-	int aa = min(10, 4);
-	double vmax = max(rd, max(gd, bd));
-	double vmin = min(rd, min(gd, bd));
-	double h, s, l = (vmax + vmin) / 2;
+	float hue, saturation, brightness;
+	if (hsbvals == NULL)
+		return;
+	int cmax = (r > g) ? r : g;
+	if (b > cmax) cmax = b;
+	int cmin = (r < g) ? r : g;
+	if (b < cmin) cmin = b;
 
-	if (vmax == vmin) {
-		h = s = 0; // achromatic
-	}
+	brightness = ((float)cmax) / 255.0f;
+	if (cmax != 0)
+		saturation = ((float)(cmax - cmin)) / ((float)cmax);
+	else
+		saturation = 0;
+	if (saturation == 0)
+		hue = 0;
 	else {
-		double d = vmax - vmin;
-		s = l > 0.5 ? d / (2 - vmax - vmin) : d / (vmax + vmin);
-		if (vmax == rd) {
-			h = (gd - bd) / d + (gd < bd ? 6 : 0);
-		}
-		else if (vmax == gd) {
-			h = (bd - rd) / d + 2;
-		}
-		else if (vmax == bd) {
-			h = (rd - gd) / d + 4;
-		}
-		h /= 6;
+		float redc = ((float)(cmax - r)) / ((float)(cmax - cmin));
+		float greenc = ((float)(cmax - g)) / ((float)(cmax - cmin));
+		float bluec = ((float)(cmax - b)) / ((float)(cmax - cmin));
+		if (r == cmax)
+			hue = bluec - greenc;
+		else if (g == cmax)
+			hue = 2.0f + redc - bluec;
+		else
+			hue = 4.0f + greenc - redc;
+		hue = hue / 6.0f;
+		if (hue < 0)
+			hue = hue + 1.0f;
 	}
-	hsl[0] = h;
-	hsl[1] = s;
-	hsl[2] = l;
+	hsbvals[0] = hue;
+	hsbvals[1] = saturation;
+	hsbvals[2] = brightness;
 }
 
 bool is_number(const std::string& s)

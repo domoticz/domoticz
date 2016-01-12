@@ -211,6 +211,7 @@ void GetLightStatus(
 	bool &bHaveGroupCmd);
 
 int  GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName);
+std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string> & options, const int level);
 void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses);
 
 bool GetLightCommand(

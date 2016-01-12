@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 91
+#define DB_VERSION 92
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -64,7 +64,7 @@ const char *sqlCreateDeviceStatus =
 "[Protected] INTEGER DEFAULT 0, "
 "[CustomImage] INTEGER DEFAULT 0, "
 "[Description] VARCHAR(200) DEFAULT '', "
-"[Options] VARCHAR(1024) DEFAULT null);";
+"[Options] TEXT DEFAULT null);";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -1646,6 +1646,40 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+		if (dbversion < 92) {
+			// Change DeviceStatus.Options datatype from VARCHAR(1024) to TEXT
+			std::string tableName = "DeviceStatus";
+			std::string fieldList = "[ID],[HardwareID],[DeviceID],[Unit],[Name],[Used],[Type],[SubType],[SwitchType],[Favorite],[SignalLevel],[BatteryLevel],[nValue],[sValue],[LastUpdate],[Order],[AddjValue],[AddjMulti],[AddjValue2],[AddjMulti2],[StrParam1],[StrParam2],[LastLevel],[Protected],[CustomImage],[Description],[Options]";
+			std::stringstream szQuery;
+
+			sqlite3_exec(m_dbase, "PRAGMA foreign_keys=off", NULL, NULL, NULL);
+			sqlite3_exec(m_dbase, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+			// Drop indexes and trigger
+			safe_query("DROP TRIGGER IF EXISTS devicestatusupdate");
+			// Save all table rows
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "ALTER TABLE " << tableName << " RENAME TO _" << tableName << "_old";
+			safe_query(szQuery.str().c_str());
+			// Create new table
+			safe_query(sqlCreateDeviceStatus);
+			// Restore all table rows
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "INSERT INTO " << tableName << " (" << fieldList << ") SELECT " << fieldList << " FROM _" << tableName << "_old";
+			safe_query(szQuery.str().c_str());
+			// Restore indexes and triggers
+			safe_query(sqlCreateDeviceStatusTrigger);
+			// Delete old table
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "DROP TABLE IF EXISTS _" << tableName << "_old";
+			safe_query(szQuery.str().c_str());
+
+			sqlite3_exec(m_dbase, "END TRANSACTION", NULL, NULL, NULL);
+			sqlite3_exec(m_dbase, "PRAGMA foreign_keys=on", NULL, NULL, NULL);
+		}
 
 	}
 	else if (bNewInstall)
@@ -2803,7 +2837,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 		int maxDimLevel=0;
 
 		result = safe_query(
-			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2 FROM DeviceStatus WHERE (ID = %llu)",
+			"SELECT Name,SwitchType,AddjValue,StrParam1,StrParam2,Options FROM DeviceStatus WHERE (ID = %llu)",
 			ulID);
 		if (result.size()>0)
 		{
@@ -2830,6 +2864,7 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 				//Perform any On/Off actions
 				std::string OnAction=sd[3];
 				std::string OffAction=sd[4];
+				std::string Options=sd[5];
 
 				if(devType==pTypeEvohome)//would this be ok to extend as a general purpose feature?
 				{
@@ -2838,9 +2873,14 @@ unsigned long long CSQLHelper::UpdateValueInt(const int HardwareID, const char* 
 					//boost::replace_all(OnAction, ID);//future expansion
 					//boost::replace_all(OnAction, "{status}", lstatus);
 					bIsLightSwitchOn=true;//Force use of OnAction for all actions
+
+				} else if (switchtype == STYPE_Selector) {
+					bIsLightSwitchOn = (llevel > 0) ? true : false;
+					OnAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel));
+					OffAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0));
 				}
 				
-				HandleOnOffAction(bIsLightSwitchOn,OnAction,OffAction);
+				HandleOnOffAction(bIsLightSwitchOn, OnAction, OffAction);
 			}
 
 			//Check if we need to email a snapshot of a Camera

@@ -138,8 +138,6 @@ define(['app'], function (app) {
 		  bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
-
-			
 		AddMultipleDataToTempChart = function(data,chart,isday,deviceid,devicename)
 		{
 			var datatablete = [];
