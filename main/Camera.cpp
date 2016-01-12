@@ -278,6 +278,25 @@ bool CCameraHandler::TakeSnapshot(const unsigned long long CamID, std::vector<un
 	return HTTPClient::GETBinary(szURL,ExtraHeaders,camimage,5);
 }
 
+std::string WrapBase64(const std::string &szSource, const size_t lsize=72)
+{
+	std::string cstring = szSource;
+	std::string ret = "";
+	while (cstring.size() > lsize)
+	{
+		std::string pstring = cstring.substr(0, lsize);
+		if (!ret.empty())
+			ret += "\n";
+		ret += pstring;
+		cstring = cstring.substr(lsize);
+	}
+	if (!cstring.empty())
+	{
+		ret += "\n" + cstring;
+	}
+	return ret;
+}
+
 bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject)
 {
 	int nValue;
@@ -316,6 +335,7 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 	std::string imgstring;
 	imgstring.insert(imgstring.end(),filedata.begin(),filedata.end());
 	imgstring=base64_encode((const unsigned char*)imgstring.c_str(),filedata.size());
+	imgstring = WrapBase64(imgstring);
 
 	std::string htmlMsg=
 		"<html>\r\n"
