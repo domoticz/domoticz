@@ -2123,7 +2123,7 @@ define(['app'], function (app) {
 							}
 						}
 						if (item.SwitchType === "Selector") {
-							var selector$ = $(id + " #selector" + item.idx);
+							var selector$ = $("#selector" + item.idx);
 							if (typeof selector$ !== 'undefined') {
 								if (item.SelectorStyle === 0) {
 									selector$
