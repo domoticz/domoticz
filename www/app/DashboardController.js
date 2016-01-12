@@ -3737,7 +3737,7 @@ define(['app'], function (app) {
 			width=$(".mobileitem").width()-63;
 			$("#dashcontent .mobileitem .dimslidersmall").width(width);
 			
-			width=$("#dashcontent #name").width()-80;
+			width=$("#dashcontent #name").width()-85;
 			$("#dashcontent .span4 .dimslidersmalldouble").width(width);
 			$("#dashcontent .span3 .dimslidersmalldouble").width(width);
 		}
