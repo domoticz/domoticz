@@ -11734,7 +11734,7 @@ void MainWorker::HeartbeatCheck()
 	}
 }
 
-bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel)
+bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger)
 {
 	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
 	if (pHardware)
@@ -11816,7 +11816,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		return false;
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	if (pHardware)
+	if ((pHardware)&&(parseTrigger))
 	{
 		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
 	}

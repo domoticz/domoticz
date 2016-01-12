@@ -108,7 +108,7 @@ public:
 	void SetInternalSecStatus();
 	bool GetSensorData(const unsigned long long idx, int &nValue, std::string &sValue);
 
-	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel);
+	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
 
 	boost::signals2::signal<void(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
 

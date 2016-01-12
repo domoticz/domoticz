@@ -1355,7 +1355,14 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT, vID) == true)
 	{
-		if (!m_pManager->SetValue(vID, value))
+		std::string vUnits = m_pManager->GetValueUnits(vID);
+		float temp = value;
+		if (vUnits == "F")
+		{
+			//Convert to Fahrenheit
+			temp = (float)ConvertToFahrenheit(temp);
+		}
+		if (!m_pManager->SetValue(vID, temp))
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Error setting Thermostat Setpoint Value! NodeID: %d (0x%02x)", nodeID, nodeID);
 		}
