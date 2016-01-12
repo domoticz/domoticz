@@ -253,7 +253,7 @@ const std::string SMTPClient::MakeMessage()
 	time(&t);
 	char timestring[128] = "";
 	struct tm timeinfo;
-	localtime_s(&timeinfo, &t);
+	localtime_r(&t, &timeinfo);
 
 	if (strftime(timestring, sizeof(timestring), "Date: %a, %d %b %Y %H:%M:%S %z\n", &timeinfo)) {
 		ret += timestring;
