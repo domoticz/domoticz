@@ -138,7 +138,7 @@ bool RFXComTCP::onInternalMessage(const unsigned char *pBuffer, const size_t Len
 				}
 			}
 			else
-				sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL, 255);
+				sDecodeRXMessage(this, (const unsigned char *)&m_rxbuffer, NULL, -1);
 			m_rxbufferpos = 0;    //set to zero to receive next message
 		}
 		ii++;

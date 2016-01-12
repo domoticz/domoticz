@@ -2005,6 +2005,30 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 	return level;
 }
 
+/**
+ * Returns the action associated with a level
+ */
+std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string> & options, const int level) {
+	std::string action = ""; // not found
+	std::map< std::string, std::string >::const_iterator itt = options.find("LevelActions");
+	if (itt != options.end()) {
+		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level action...");
+		std::string sOptions = itt->second;
+		std::vector<std::string> strarray;
+		StringSplit(sOptions, "|", strarray);
+		std::vector<std::string>::iterator itt;
+		int i = 0;
+		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+			if (i == level) {
+				action = *itt;
+				break;
+			}
+			i += 10;
+		}
+	}
+	return action;
+}
+
 bool GetLightCommand(
 	const unsigned char dType,
 	const unsigned char dSubType,
