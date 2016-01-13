@@ -1169,7 +1169,7 @@ define(['app'], function (app) {
 								$("#scenecontent #timerparamstable #roccurence").hide();
 								$("#scenecontent #timerparamstable #rmonths").hide();
 							}
-							if ((timerType==6) || (timerType==7)) {
+							else if ((timerType==6) || (timerType==7)) {
 								$("#scenecontent #timerparamstable #rdate").hide();
 								$("#scenecontent #timerparamstable #rnorm").hide();
 								$("#scenecontent #timerparamstable #rdays").hide();
@@ -1306,7 +1306,7 @@ define(['app'], function (app) {
 					$("#scenecontent #timerparamstable #roccurence").hide();
 					$("#scenecontent #timerparamstable #rmonths").hide();
 				}
-				if ((timerType==6) || (timerType==7)) {
+				else if ((timerType==6) || (timerType==7)) {
 					$("#scenecontent #timerparamstable #rdate").hide();
 					$("#scenecontent #timerparamstable #rnorm").hide();
 					$("#scenecontent #timerparamstable #rdays").hide();

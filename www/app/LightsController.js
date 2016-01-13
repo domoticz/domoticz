@@ -487,7 +487,7 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").hide();
 							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
-						if ((timerType==6) || (timerType==7)) {
+						else if ((timerType==6) || (timerType==7)) {
 							$("#lightcontent #timerparamstable #rdate").hide();
 							$("#lightcontent #timerparamstable #rnorm").hide();
 							$("#lightcontent #timerparamstable #rdays").hide();
@@ -636,7 +636,7 @@ define(['app'], function (app) {
 					$("#lightcontent #timerparamstable #roccurence").hide();
 					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
-				if ((timerType==6) || (timerType==7)) {
+				else if ((timerType==6) || (timerType==7)) {
 					$("#lightcontent #timerparamstable #rdate").hide();
 					$("#lightcontent #timerparamstable #rnorm").hide();
 					$("#lightcontent #timerparamstable #rdays").hide();
