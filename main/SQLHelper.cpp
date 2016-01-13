@@ -5704,7 +5704,11 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 #endif
 	if (bpos!=std::string::npos)
 		fpath=m_dbase_name.substr(0,bpos+1);
+#ifdef WIN32
 	std::string outputfile=fpath+"restore.db";
+#else
+	std::string outputfile = "/tmp/restore.db";
+#endif
 	std::ofstream outfile;
 	outfile.open(outputfile.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
 	if (!outfile.is_open())
@@ -6620,7 +6624,11 @@ void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
 bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage)
 {
 	//write file to disk
+#ifdef WIN32
 	std::string outputfile = "custom_icons.zip";
+#else
+	std::string outputfile = "/tmp/custom_icons.zip";
+#endif
 	std::ofstream outfile;
 	outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!outfile.is_open())
