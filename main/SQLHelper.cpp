@@ -6598,8 +6598,15 @@ bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &
 	outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!outfile.is_open())
 	{
-		ErrorMessage = "Error writing zip to disk";
-		return false;
+		//path might not be writable on linux, fall back to good old /tmp
+		outputfile = "/tmp/custom_icons.zip";
+		outfile.clear();
+		outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+		if (!outfile.is_open())
+		{
+			ErrorMessage = "Error writing zip to disk";
+			return false;
+		}
 	}
 	outfile << szZip;
 	outfile.flush();
