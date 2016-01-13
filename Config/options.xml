@@ -15,4 +15,5 @@
   Devices) This option will make the UserCode CC stop on the first
   "available" usercode slot rather than retrieve every one -->
   <Option name="RefreshAllUserCodes" value="false" />
+  <Option name="ThreadTerminateTimeout" value="5000" />
 </Options>

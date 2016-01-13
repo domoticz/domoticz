@@ -651,6 +651,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \return A string containing the node's manufacturer ID, or an empty string if the manufactuer
 		 * specific command class is not supported by the device.
 		 * \see GetNodeProductType, GetNodeProductId, GetNodeManufacturerName, GetNodeProductName
+		 * \todo Change the return to uint16 in 2.0 timeframe
 		 */
 		string GetNodeManufacturerId( uint32 const _homeId, uint8 const _nodeId );
 
@@ -666,6 +667,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \return A string containing the node's product type, or an empty string if the manufactuer
 		 * specific command class is not supported by the device.
 		 * \see GetNodeManufacturerId, GetNodeProductId, GetNodeManufacturerName, GetNodeProductName
+		 * \todo Change the return to uint16 in 2.0 timeframe
 		 */
 		string GetNodeProductType( uint32 const _homeId, uint8 const _nodeId );
 
@@ -681,6 +683,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * \return A string containing the node's product ID, or an empty string if the manufactuer
 		 * specific command class is not supported by the device.
 		 * \see GetNodeManufacturerId, GetNodeProductType, GetNodeManufacturerName, GetNodeProductName
+		 * \todo Change the return to uint16 in 2.0 timeframe
 		 */
 		string GetNodeProductId( uint32 const _homeId, uint8 const _nodeId );
 

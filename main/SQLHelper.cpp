@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 92
+#define DB_VERSION 93
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1679,6 +1679,33 @@ bool CSQLHelper::OpenDatabase()
 
 			sqlite3_exec(m_dbase, "END TRANSACTION", NULL, NULL, NULL);
 			sqlite3_exec(m_dbase, "PRAGMA foreign_keys=on", NULL, NULL, NULL);
+		}
+		if (dbversion < 93)
+		{
+			if (!DoesColumnExistsInTable("Month", "Timers"))
+			{
+				query("ALTER TABLE Timers ADD COLUMN [Month] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("MDay", "Timers"))
+			{
+				query("ALTER TABLE Timers ADD COLUMN [MDay] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("Occurence", "Timers"))
+			{
+				query("ALTER TABLE Timers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("Month", "SceneTimers"))
+			{
+				query("ALTER TABLE SceneTimers ADD COLUMN [Month] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("MDay", "SceneTimers"))
+			{
+				query("ALTER TABLE SceneTimers ADD COLUMN [MDay] INTEGER DEFAULT 0");
+			}
+			if (!DoesColumnExistsInTable("Occurence", "SceneTimers"))
+			{
+				query("ALTER TABLE SceneTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
+			}
 		}
 
 	}
@@ -5677,7 +5704,11 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 #endif
 	if (bpos!=std::string::npos)
 		fpath=m_dbase_name.substr(0,bpos+1);
+#ifdef WIN32
 	std::string outputfile=fpath+"restore.db";
+#else
+	std::string outputfile = "/tmp/restore.db";
+#endif
 	std::ofstream outfile;
 	outfile.open(outputfile.c_str(),std::ios::out|std::ios::binary|std::ios::trunc);
 	if (!outfile.is_open())
@@ -6593,7 +6624,11 @@ void CSQLHelper::AllowNewHardwareTimer(const int iTotMinutes)
 bool CSQLHelper::InsertCustomIconFromZip(const std::string &szZip, std::string &ErrorMessage)
 {
 	//write file to disk
+#ifdef WIN32
 	std::string outputfile = "custom_icons.zip";
+#else
+	std::string outputfile = "/tmp/custom_icons.zip";
+#endif
 	std::ofstream outfile;
 	outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!outfile.is_open())

@@ -915,8 +915,11 @@ namespace http {
 					}
 				}
 			}
-
+#ifdef WIN32
 			std::string outputfile = szStartupFolder + "rfx_firmware.hex";
+#else
+			std::string outputfile = "/tmp/rfx_firmware.hex";
+#endif
 			std::ofstream outfile;
 			outfile.open(outputfile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 			if (!outfile.is_open())

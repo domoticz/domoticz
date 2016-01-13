@@ -195,47 +195,54 @@ bool SMTPClient::SendEmail()
 	return true;
 }
 
+void MakeBoundry(char *pszBoundry)
+{
+	char* p = pszBoundry;
+	while (*p) {
+		if (*p == '0')
+			*p = '0' + rand() % 10;
+		p++;
+	}
+}
+
 const std::string SMTPClient::MakeMessage()
 {
 	std::string ret;
 
 	int ii;
 	std::vector<std::string>::const_iterator itt;
+	char szBoundary[40];
+	char szBoundaryMixed[40];
+	sprintf(szBoundary, "--------------000000000000000000000000");
+	sprintf(szBoundaryMixed, "--------------000000000000000000000000");
+	MakeBoundry(szBoundary);
+	MakeBoundry(szBoundaryMixed);
 
 	//From
-	ret =	"From: " + m_From + "\r\n" +
-			"Reply-To: " + m_From + "\r\n";
+	ret = "From: " + m_From + "\n";
 
 	//To (first one, rest in BCC)
-	ii=0;
-	for (itt=m_Recipients.begin(); itt!=m_Recipients.end(); ++itt)
+	ii = 0;
+	for (itt = m_Recipients.begin(); itt != m_Recipients.end(); ++itt)
 	{
-		if (ii==0)
-		{
+		if (ii == 0)
 			ret += "To: " + *itt;
-			ret+="\r\n";
-		}
 		else {
-			ret += "Cc: " + *itt;
-			if (itt+1<m_Recipients.end())
-				ret+=", ";
-			ret+="\r\n";
+			if (ii == 1)
+			{
+				ret += "\nCc: ";
+			}
+			ret += *itt;
+			if (itt + 1 < m_Recipients.end())
+				ret += ", ";
 		}
 		ii++;
 	}
+	ret += "\n";
 
-	const std::string boundary("bounds=_NextP_0056wi_0_8_ty789432_tp");
-	bool MIME=(m_Attachments.size() || m_HTMLBody.size());
-
-	if(MIME)
-	{	
-		// we have attachments (or HTML mail)
-		// use MIME 1.0
-		ret+="MIME-Version: 1.0\r\n"
-			"Content-Type: multipart/mixed;\r\n"
-			"\tboundary=\"" + boundary + "\"\r\n";
-	}
-
+	///////////////////////////////////////////////////////////////////////////
+	// add the subject
+	ret += "Subject: " + m_Subject + "\n";
 	///////////////////////////////////////////////////////////////////////////
 	// add the current time.
 	// format is
@@ -245,127 +252,120 @@ const std::string SMTPClient::MakeMessage()
 	time_t t;
 	time(&t);
 	char timestring[128] = "";
-
 	struct tm timeinfo;
 	localtime_r(&t, &timeinfo);
 
-	if (strftime(timestring, 127, "Date: %a, %d %b %Y %H:%M:%S %Z", &timeinfo)) { // got the date
+	if (strftime(timestring, sizeof(timestring), "Date: %a, %d %b %Y %H:%M:%S %z\n", &timeinfo)) {
 		ret += timestring;
-		ret += "\r\n";
+	}
+#ifdef _WIN32
+	//fallback method for Windows when %z (time zone offset) fails
+	else if (strftime(timestring, sizeof(timestring), "Date: %a, %d %b %Y %H:%M:%S", &timeinfo)) {
+		TIME_ZONE_INFORMATION tzinfo;
+		if (GetTimeZoneInformation(&tzinfo) != TIME_ZONE_ID_INVALID)
+			sprintf(timestring + strlen(timestring), " %c%02i%02i", (tzinfo.Bias > 0 ? '-' : '+'), (int)-tzinfo.Bias / 60, (int)-tzinfo.Bias % 60);
+		ret += timestring;
+		ret += "\n";
+	}
+#endif
+	ret += "MIME-Version: 1.0\n";
+	bool bHaveSendMimeFormat = false;
+	if (!m_Attachments.empty())
+	{
+		// we have attachments
+		ret += "Content-Type: multipart/mixed;\n"
+			"\tboundary=\"" + std::string(szBoundaryMixed) + "\"\n\n";
+		ret += "This is a multi-part message in MIME format.\n";
+		bHaveSendMimeFormat = true;
 	}
 
-	///////////////////////////////////////////////////////////////////////////
-	// add the subject
-	ret+= "Subject: " + m_Subject + "\r\n\r\n";
-
-	///////////////////////////////////////////////////////////////////////////
-	//
-	// everything else added is the body of the email message.
-	//
-	///////////////////////////////////////////////////////////////////////////
-
-	if(MIME) 
+	if ((!m_PlainBody.empty()) || (!m_HTMLBody.empty()))
 	{
-		ret += "This is a MIME encapsulated message\r\n\r\n";
-		ret += "--" + boundary + "\r\n";
-		if(!m_HTMLBody.size()) {
-			// plain text message first.
-			ret +=	"Content-type: text/plain; charset=iso-8859-1\r\n"
-					"Content-transfer-encoding: 7BIT\r\n\r\n";
+		ret += "Content-Type: multipart/alternative;\n"
+			"\tboundary=\"" + std::string(szBoundary) + "\"\n\n";
+		if (!bHaveSendMimeFormat)
+			ret += "This is a multi-part message in MIME format.\n";
 
+		if (!m_PlainBody.empty()) {
+			ret += "--" + std::string(szBoundary) + "\n";
+			ret += "Content-type: text/plain; charset=utf-8; format=flowed\n"
+				"Content-transfer-encoding: 8bit\n\n";
 			ret += m_PlainBody;
-			ret += "\r\n\r\n--" + boundary + "\r\n";
+			ret += "\n";
 		}
-		else {
-			// make it multipart/alternative as we have html
-			const std::string innerboundary("inner_jfd_0078hj_0_8_part_tp");
-			ret +=	"Content-Type: multipart/alternative;\r\n"
-					"\tboundary=\"" + innerboundary + "\"\r\n";
-
-			// need the inner boundary starter.
-			ret += "\r\n\r\n--" + innerboundary + "\r\n";
-
-			// plain text message first.
-			ret += "Content-type: text/plain; charset=iso-8859-1\r\n"
-					 "Content-transfer-encoding: 7BIT\r\n\r\n";
-			if (m_PlainBody.size())
-			{
-				ret+=m_PlainBody;
-			}
-			ret += "\r\n\r\n--" + innerboundary + "\r\n";
-			///////////////////////////////////
-			// Add html message here!
-			ret +=	"Content-type: text/html; charset=UTF-8\r\n"
-					"Content-Transfer-Encoding: base64\r\n\r\n";
-
-			std::string szHTML=base64_encode((const unsigned char*)m_HTMLBody.c_str(),m_HTMLBody.size());
-			ret +=szHTML;
-			ret += "\r\n\r\n--" + innerboundary + "--\r\n";
-
-			// end the boundaries if there are no attachments
-			if(!m_Attachments.size())
-				ret += "\r\n--" + boundary + "--\r\n";
-			else
-				ret += "\r\n--" + boundary + "\r\n";
-			///////////////////////////////////
+		if (!m_HTMLBody.empty())
+		{
+			ret += "--" + std::string(szBoundary) + "\n";
+			ret += "Content-type: text/html; charset=utf-8\n"
+				"Content-Transfer-Encoding: 8bit\n\n";
+			ret += m_HTMLBody;
+			ret += "\n";
 		}
+		ret += "--" + std::string(szBoundary) + "--\n";
+	}
+	else
+	{
+		//no text
+		ret += "--" + std::string(szBoundaryMixed) + "\n";
+		ret += "Content-type: text/plain; charset=utf-8; format=flowed\n"
+			"Content-transfer-encoding: 7bit\n\n";
+		ret += "\n";
+	}
 
+	if (!m_Attachments.empty())
+	{
+		ret += "\n";
 		// now add each attachment.
 		std::vector<std::pair<std::string, std::string> >::const_iterator it1;
-		for(it1 = m_Attachments.begin(); it1!=m_Attachments.end(); ++ it1)
+		for (it1 = m_Attachments.begin(); it1 != m_Attachments.end(); ++it1)
 		{
-			if(it1->second.length() > 3)
+			ret += "--" + std::string(szBoundaryMixed) + "\n";
+			if (it1->second.length() > 3)
 			{ // long enough for an extension
-				std::string typ(it1->second.substr(it1->second.length()-4, 4));
-				if(typ == ".gif") { // gif format presumably
-					ret+= "Content-Type: image/gif;\r\n";
+				std::string typ(it1->second.substr(it1->second.length() - 4, 4));
+				if (typ == ".gif") { // gif format presumably
+					ret += "Content-Type: image/gif;\n";
 				}
-				else if(typ == ".jpg" || typ == "jpeg") { // j-peg format presumably
-					ret+= "Content-Type: image/jpg;\r\n";
+				else if (typ == ".jpg" || typ == "jpeg") { // j-peg format presumably
+					ret += "Content-Type: image/jpg;\n";
 				}
-				else if(typ == ".txt") { // text format presumably
-					ret+= "Content-Type: plain/txt;\r\n";
+				else if (typ == ".txt") { // text format presumably
+					ret += "Content-Type: plain/txt;\n";
 				}
-				else if(typ == ".bmp") { // windows bitmap format presumably
-					ret+= "Content-Type: image/bmp;\r\n";
+				else if (typ == ".bmp") { // windows bitmap format presumably
+					ret += "Content-Type: image/bmp;\n";
 				}
-				else if(typ == ".htm" || typ == "html") { // hypertext format presumably
-					ret+= "Content-Type: plain/htm;\r\n";
+				else if (typ == ".htm" || typ == "html") { // hypertext format presumably
+					ret += "Content-Type: plain/htm;\n";
 				}
-				else if(typ == ".png") { // portable network graphic format presumably
-					ret+= "Content-Type: image/png;\r\n";
+				else if (typ == ".png") { // portable network graphic format presumably
+					ret += "Content-Type: image/png;\n";
 				}
-				else if(typ == ".exe") { // application
-					ret+= "Content-Type: application/X-exectype-1;\r\n";
+				else if (typ == ".exe") { // application
+					ret += "Content-Type: application/X-exectype-1;\n";
 				}
 				else { // add other types
-					// everything else
-					ret+= "Content-Type: application/X-other-1;\r\n";
+					   // everything else
+					ret += "Content-Type: application/X-other-1;\n";
 				}
 			}
 			else {
 				// default to don't know
-				ret+= "Content-Type: application/X-other-1;\r\n";
+				ret += "Content-Type: application/X-other-1;\n";
 			}
 
-			ret+= "\tname=\"" + it1->second + "\"\r\n";
-			ret+= "Content-Transfer-Encoding: base64\r\n";
-			ret+= "Content-Disposition: attachment; filename=\"" + it1->second + "\"\r\n\r\n";
+			ret += "\tname=\"" + it1->second + "\"\n";
+			ret += "Content-Transfer-Encoding: base64\n";
+			ret += "Content-Disposition: attachment;\n filename=\"" + it1->second + "\"\n\n";
 
 			ret.insert(ret.end(), it1->first.begin(), it1->first.end());
-
-			// terminate the message with the boundary + "--"
-			if((it1 + 1) == m_Attachments.end())
-				ret += "\r\n\r\n--" + boundary + "--\r\n";
-			else
-				ret += "\r\n\r\n--" + boundary + "\r\n";
+			ret += "\n";
 		}
+		ret += "--" + std::string(szBoundaryMixed) + "--\n";
 	}
-	else // just a plain text message only
-		ret+=m_PlainBody;
 
 	// end the data in the message.
-	ret += "\r\n.\r\n";
+	ret += "\n.\n";
 
 	return ret;
 }

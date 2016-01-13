@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NotificationEmail.h"
 #include "../smtpclient/SMTPClient.h"
+#include "../main/Helper.h"
 
 CNotificationEmail::CNotificationEmail() : CNotificationBase(std::string("email"), OPTIONS_HTML_BODY)
 {
@@ -30,6 +31,7 @@ bool CNotificationEmail::SendMessageImplementation(const std::string &Subject, c
 	SMTPClient sclient;
 
 	std::string HtmlBody = std::string("<html>\n<body>\n<b>") + Text + std::string("</body>\n</html>\n");
+	stdreplace(HtmlBody, "&lt;br&gt;", "<br>");
 	sclient.SetFrom(_EmailFrom.c_str());
 	sclient.SetTo(_EmailTo.c_str());
 	if (_EmailUsername != "" && _EmailPassword != "") {
