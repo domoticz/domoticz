@@ -116,13 +116,16 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if (tsettings.timertype==8) {
+			else if ((tsettings.timertype==6) || (tsettings.timertype==7)) {
+				tsettings.days = 0x80;
+			}
+			else if (tsettings.timertype==10) {
 				tsettings.days = 0x80;
 				if (tsettings.mday>28) {
 					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
 				}
 			}
-			else if (tsettings.timertype==10) {
+			else if (tsettings.timertype==12) {
 				tsettings.days = 0x80;
 				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
 					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
@@ -138,7 +141,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
+			else if ((tsettings.timertype==11) || (tsettings.timertype==13)) {
 				tsettings.days = Math.pow(2, tsettings.weekday);
 			}
 			else if (tsettings.days==0)
@@ -190,13 +193,16 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if (tsettings.timertype==8) {
+			else if ((tsettings.timertype==6) || (tsettings.timertype==7)) {
+				tsettings.days = 0x80;
+			}
+			else if (tsettings.timertype==10) {
 				tsettings.days = 0x80;
 				if (tsettings.mday>28) {
 					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
 				}
 			}
-			else if (tsettings.timertype==10) {
+			else if (tsettings.timertype==12) {
 				tsettings.days = 0x80;
 				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
 					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
@@ -212,7 +218,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
+			else if ((tsettings.timertype==11) || (tsettings.timertype==13)) {
 				tsettings.days = Math.pow(2, tsettings.weekday);
 			}
 			else if (tsettings.days==0)
@@ -316,7 +322,7 @@ define(['app'], function (app) {
 					
 					var DayStr = "";
 					var DayStrOrig = "";
-					if ((item.Type<=7) && (item.Type!=5)) {
+					if ((item.Type<=4) || (item.Type==8) || (item.Type==9)) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
 							DayStrOrig="Everyday";
@@ -355,17 +361,17 @@ define(['app'], function (app) {
 							}
 						}
 					}
-					else if (item.Type==8) {
+					else if (item.Type==10) {
 						DayStrOrig="Monthly on Day " + item.MDay;
 					}
-					else if (item.Type==9) {
+					else if (item.Type==11) {
 						var Weekday = Math.log2(parseInt(item.Days));
 						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
 					}
-					else if (item.Type==10) {
+					else if (item.Type==12) {
 						DayStrOrig="Yearly on " + item.MDay + " " + $.myglobals.MonthStr[item.Month-1];
 					}
-					else if (item.Type==11) {
+					else if (item.Type==13) {
 						var Weekday = Math.log2(parseInt(item.Days));
 						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
 					}
@@ -481,7 +487,14 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").hide();
 							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
-						else if (timerType==8) {
+						if ((timerType==6) || (timerType==7)) {
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==10) {
 							$("#lightcontent #timerparamstable #days").val(data["8"]);
 							$("#lightcontent #timerparamstable #rdate").hide();
 							$("#lightcontent #timerparamstable #rnorm").hide();
@@ -489,7 +502,7 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").hide();
 							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
-						else if (timerType==9) {
+						else if (timerType==11) {
 							$("#lightcontent #timerparamstable #occurence").val(data["9"]);
 							$("#lightcontent #timerparamstable #weekdays").val(data["10"]);
 							$("#lightcontent #timerparamstable #rdate").hide();
@@ -498,7 +511,7 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").show();
 							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
-						else if (timerType==10) {
+						else if (timerType==12) {
 							$("#lightcontent #timerparamstable #months").val(data["7"]);
 							$("#lightcontent #timerparamstable #days").val(data["8"]);
 							$("#lightcontent #timerparamstable #rdate").hide();
@@ -507,7 +520,7 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").hide();
 							$("#lightcontent #timerparamstable #rmonths").show();
 						}
-						else if (timerType==11) {
+						else if (timerType==13) {
 							$("#lightcontent #timerparamstable #months").val(data["7"]);
 							$("#lightcontent #timerparamstable #occurence").val(data["9"]);
 							$("#lightcontent #timerparamstable #weekdays").val(data["10"]);
@@ -623,18 +636,11 @@ define(['app'], function (app) {
 					$("#lightcontent #timerparamstable #roccurence").hide();
 					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
-				else if (timerType==8) {
-					$("#lightcontent #timerparamstable #rdate").hide();
-					$("#lightcontent #timerparamstable #rnorm").hide();
-					$("#lightcontent #timerparamstable #rdays").show();
-					$("#lightcontent #timerparamstable #roccurence").hide();
-					$("#lightcontent #timerparamstable #rmonths").hide();
-				}
-				else if (timerType==9) {
+				if ((timerType==6) || (timerType==7)) {
 					$("#lightcontent #timerparamstable #rdate").hide();
 					$("#lightcontent #timerparamstable #rnorm").hide();
 					$("#lightcontent #timerparamstable #rdays").hide();
-					$("#lightcontent #timerparamstable #roccurence").show();
+					$("#lightcontent #timerparamstable #roccurence").hide();
 					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
 				else if (timerType==10) {
@@ -642,9 +648,23 @@ define(['app'], function (app) {
 					$("#lightcontent #timerparamstable #rnorm").hide();
 					$("#lightcontent #timerparamstable #rdays").show();
 					$("#lightcontent #timerparamstable #roccurence").hide();
-					$("#lightcontent #timerparamstable #rmonths").show();
+					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
 				else if (timerType==11) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").show();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==12) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").show();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").show();
+				}
+				else if (timerType==13) {
 					$("#lightcontent #timerparamstable #rdate").hide();
 					$("#lightcontent #timerparamstable #rnorm").hide();
 					$("#lightcontent #timerparamstable #rdays").hide();
