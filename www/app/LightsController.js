@@ -79,6 +79,10 @@ define(['app'], function (app) {
 				if ($('#lightcontent #timerparamstable #ChkSun').is(":checked"))
 					tsettings.days|=0x40;
 			}
+			tsettings.mday=$("#lightcontent #timerparamstable #days").val();
+			tsettings.month=$("#lightcontent #timerparamstable #months").val();
+			tsettings.occurence=$("#lightcontent #timerparamstable #occurence").val();
+			tsettings.weekday=$("#lightcontent #timerparamstable #weekdays").val();
 			if (tsettings.cmd==0)
 			{
 				if ($.bIsLED) {
@@ -112,6 +116,31 @@ define(['app'], function (app) {
 					return;
 				}
 			}
+			else if (tsettings.timertype==8) {
+				tsettings.days = 0x80;
+				if (tsettings.mday>28) {
+					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
+				}
+			}
+			else if (tsettings.timertype==10) {
+				tsettings.days = 0x80;
+				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
+					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
+					return;
+				}
+				if (tsettings.month==2) {
+					if (tsettings.mday>29) {
+						ShowNotify($.t('February does not have more than 29 days!'), 2500, true);
+						return;
+					}
+					if (tsettings.mday==29) {
+						ShowNotify($.t('Not al years have this date, some years will be skipped!'), 2500, true);
+					}
+				}
+			}
+			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
+				tsettings.days = Math.pow(2, tsettings.weekday);
+			}
 			else if (tsettings.days==0)
 			{
 				ShowNotify($.t('Please select some days!'), 2500, true);
@@ -128,7 +157,10 @@ define(['app'], function (app) {
 							"&command=" + tsettings.cmd +
 							"&level=" + tsettings.level +
 							"&hue=" + tsettings.hue +
-							"&days=" + tsettings.days,
+							"&days=" + tsettings.days +
+							"&mday=" + tsettings.mday +
+							"&month=" + tsettings.month +
+							"&occurence=" + tsettings.occurence,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -158,6 +190,31 @@ define(['app'], function (app) {
 					return;
 				}
 			}
+			else if (tsettings.timertype==8) {
+				tsettings.days = 0x80;
+				if (tsettings.mday>28) {
+					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
+				}
+			}
+			else if (tsettings.timertype==10) {
+				tsettings.days = 0x80;
+				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
+					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
+					return;
+				}
+				if (tsettings.month==2) {
+					if (tsettings.mday>29) {
+						ShowNotify($.t('February does not have more than 29 days!'), 2500, true);
+						return;
+					}
+					if (tsettings.mday==29) {
+						ShowNotify($.t('Not al years have this date, some years will be skipped!'), 2500, true);
+					}
+				}
+			}
+			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
+				tsettings.days = Math.pow(2, tsettings.weekday);
+			}
 			else if (tsettings.days==0)
 			{
 				ShowNotify($.t('Please select some days!'), 2500, true);
@@ -174,7 +231,10 @@ define(['app'], function (app) {
 							"&command=" + tsettings.cmd +
 							"&level=" + tsettings.level +
 							"&hue=" + tsettings.hue +
-							"&days=" + tsettings.days,
+							"&days=" + tsettings.days +
+							"&mday=" + tsettings.mday +
+							"&month=" + tsettings.month +
+							"&occurence=" + tsettings.occurence,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -256,7 +316,7 @@ define(['app'], function (app) {
 					
 					var DayStr = "";
 					var DayStrOrig = "";
-					if (item.Type!=5) {
+					if ((item.Type<=7) && (item.Type!=5)) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
 							DayStrOrig="Everyday";
@@ -295,17 +355,36 @@ define(['app'], function (app) {
 							}
 						}
 					}
+					else if (item.Type==8) {
+						DayStrOrig="Monthly on Day " + item.MDay;
+					}
+					else if (item.Type==9) {
+						var Weekday = Math.log2(parseInt(item.Days));
+						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
+					}
+					else if (item.Type==10) {
+						DayStrOrig="Yearly on " + item.MDay + " " + $.myglobals.MonthStr[item.Month-1];
+					}
+					else if (item.Type==11) {
+						var Weekday = Math.log2(parseInt(item.Days));
+						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
+					}
+					
 					//translate daystring
-					var res = DayStrOrig.split(", ");
+					var splitstr = ", ";
+					if (item.Type > 5) {
+						splitstr = " ";
+					}
+					var res = DayStrOrig.split(splitstr);
 					$.each(res, function(i,item){
 						DayStr+=$.t(item);
 						if (i!=res.length-1) {
-							DayStr+=", ";
+							DayStr+=splitstr;
 						}
 					});
 					
 					var rEnabled="No";
-					if (item.Randomness==true) {
+					if (item.Randomness=="true") {
 						rEnabled="Yes";
 					}
 								
@@ -325,7 +404,11 @@ define(['app'], function (app) {
 						"3": item.Time,
 						"4": $.t(rEnabled),
 						"5": $.t(tCommand),
-						"6": DayStr
+						"6": DayStr,
+						"7": item.Month,
+						"8": item.MDay,
+						"9": item.Occurence,
+						"10": Math.log2(parseInt(item.Days))
 					} );
 				});
 			  }
@@ -394,10 +477,52 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #sdate").val(data["2"]);
 							$("#lightcontent #timerparamstable #rdate").show();
 							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==8) {
+							$("#lightcontent #timerparamstable #days").val(data["8"]);
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").show();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==9) {
+							$("#lightcontent #timerparamstable #occurence").val(data["9"]);
+							$("#lightcontent #timerparamstable #weekdays").val(data["10"]);
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").show();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==10) {
+							$("#lightcontent #timerparamstable #months").val(data["7"]);
+							$("#lightcontent #timerparamstable #days").val(data["8"]);
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").show();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").show();
+						}
+						else if (timerType==11) {
+							$("#lightcontent #timerparamstable #months").val(data["7"]);
+							$("#lightcontent #timerparamstable #occurence").val(data["9"]);
+							$("#lightcontent #timerparamstable #weekdays").val(data["10"]);
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").show();
+							$("#lightcontent #timerparamstable #rmonths").show();
 						}
 						else {
 							$("#lightcontent #timerparamstable #rdate").hide();
 							$("#lightcontent #timerparamstable #rnorm").show();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
 						
 						var disableDays=false;
@@ -473,6 +598,9 @@ define(['app'], function (app) {
 			$('#lightcontent').i18n();
 			$("#lightcontent #timerparamstable #rdate").hide();
 			$("#lightcontent #timerparamstable #rnorm").show();
+			$("#lightcontent #timerparamstable #rdays").hide();
+			$("#lightcontent #timerparamstable #roccurence").hide();
+			$("#lightcontent #timerparamstable #rmonths").hide();
 
 			$rootScope.RefreshTimeAndSun();
 
@@ -491,10 +619,44 @@ define(['app'], function (app) {
 				if (timerType==5) {
 					$("#lightcontent #timerparamstable #rdate").show();
 					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==8) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").show();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==9) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").show();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==10) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").show();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").show();
+				}
+				else if (timerType==11) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").show();
+					$("#lightcontent #timerparamstable #rmonths").show();
 				}
 				else {
 					$("#lightcontent #timerparamstable #rdate").hide();
 					$("#lightcontent #timerparamstable #rnorm").show();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
 			});
 
@@ -557,8 +719,9 @@ define(['app'], function (app) {
 			} );
 			$('#timerparamstable #combotimehour >option').remove();
 			$('#timerparamstable #combotimemin >option').remove();
+			$('#timerparamstable #days >option').remove();
 						
-			//fill hour/minute comboboxes
+			//fill hour/minute/days comboboxes
 			for (ii=0; ii<24; ii++)
 			{
 				$('#timerparamstable #combotimehour').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
@@ -566,6 +729,10 @@ define(['app'], function (app) {
 			for (ii=0; ii<60; ii++)
 			{
 				$('#timerparamstable #combotimemin').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
+			}
+			for (ii=1; ii<=31; ii++)
+			{
+				$('#timerparamstable #days').append($('<option></option>').val(ii).html(ii));  
 			}
 		  
 			$("#lightcontent #timerparamstable #when_1").click(function() {
@@ -3297,6 +3464,9 @@ define(['app'], function (app) {
 			$.myglobals = {
 				TimerTypesStr : [],
 				CommandStr : [],
+				OccurenceStr : [],
+				MonthStr : [],
+				WeekdayStr : [],
 				SelectedTimerIdx: 0
 			};
 			$.LightsAndSwitches = [];
@@ -3307,6 +3477,15 @@ define(['app'], function (app) {
 			});
 			$('#timerparamstable #combocommand > option').each(function() {
 						 $.myglobals.CommandStr.push($(this).text());
+			});
+			$('#timerparamstable #occurence > option').each(function() {
+						 $.myglobals.OccurenceStr.push($(this).text());
+			});
+			$('#timerparamstable #months > option').each(function() {
+						 $.myglobals.MonthStr.push($(this).text());
+			});
+			$('#timerparamstable #weekdays > option').each(function() {
+						 $.myglobals.WeekdayStr.push($(this).text());
 			});
 
 			$(window).resize(function() { $scope.ResizeDimSliders(); });
