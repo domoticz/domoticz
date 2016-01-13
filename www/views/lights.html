@@ -455,9 +455,11 @@
 		<input type="hidden" id="selectorlevelindex">
 		<table border="0" cellpadding="0" cellspacing="4">
 		<tr>
-			<td align="right" style="width:80px"><label for="selectoraction"><span data-i18n="Action"></span>:</label></td>
-			<td><input type="text" id="selectoraction" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>
+			<td style="width:80px; text-align: right; vertical-align: baseline;"><label for="selectoraction"><span data-i18n="Action"></span>:</label></td>
+			<td style="vertical-align: baseline;">
+				<input type="text" id="selectoraction" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+				<br><span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span>
+			</td>
 		</table>
 	</form>
 </div>
