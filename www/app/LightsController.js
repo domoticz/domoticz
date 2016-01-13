@@ -134,7 +134,7 @@ define(['app'], function (app) {
 						return;
 					}
 					if (tsettings.mday==29) {
-						ShowNotify($.t('Not al years have this date, some years will be skipped!'), 2500, true);
+						ShowNotify($.t('Not all years have this date, some years will be skipped!'), 2500, true);
 					}
 				}
 			}
@@ -208,7 +208,7 @@ define(['app'], function (app) {
 						return;
 					}
 					if (tsettings.mday==29) {
-						ShowNotify($.t('Not al years have this date, some years will be skipped!'), 2500, true);
+						ShowNotify($.t('Not all years have this date, some years will be skipped!'), 2500, true);
 					}
 				}
 			}
@@ -1646,7 +1646,8 @@ define(['app'], function (app) {
 						bValid = bValid && checkLength(selectorAction$, 0, 200);
 						bValid = bValid && ((levelAction === '') ||
 								(((levelAction.toLowerCase().indexOf('http://') === 0) && (levelAction.length > 7)) ||
-										((levelAction.toLowerCase().indexOf('script://') === 0) && (levelAction.length > 9))));
+									((levelAction.toLowerCase().indexOf('https://') === 0) && (levelAction.length > 8)) ||
+											((levelAction.toLowerCase().indexOf('script://') === 0) && (levelAction.length > 9))));
 						if (bValid) {
 							$(this).dialog("close");
 							UpdateSelectorAction(levelIndex, levelAction);
@@ -3005,24 +3006,27 @@ define(['app'], function (app) {
 			$('#lightcontent .selectorlevels div').buttonset({
 				//Selector selectmenu events
 				create: function (event, ui) {
-					var idx = $(this).data('idx'),
-						type = $(this).data('type'),
-						isprotected = $(this).data('isprotected'),
-						disabled = $(this).data('disabled'),
-						level = $(this).data('level'),
-						levelname = $(this).data('levelname');
-					$(this).buttonset("option", "idx", idx);
-					$(this).buttonset("option", "type", type);
-					$(this).buttonset("option", "isprotected", isprotected);
+					var div$ = $(this),
+						idx = div$.data('idx'),
+						type = div$.data('type'),
+						isprotected = div$.data('isprotected'),
+						disabled = div$.data('disabled'),
+						level = div$.data('level'),
+						levelname = div$.data('levelname');
 					if (disabled === true) {
-						$(this).buttonset("disable");
+						div$.buttonset("disable");
 					}
-					$(this).find('input[value="' + level + '"]').prop("checked", true);
+					div$.find('input[value="' + level + '"]').prop("checked", true);
 
-					$(this).find('input').click(function (event){
-						var idx = $(this).parent().data("idx"),
-							level = parseInt(event.target.value, 10);
-						SetDimValue(idx, level);
+					div$.find('input').click(function (event){
+						var target$ = $(event.target);
+						level = parseInt(target$.val(), 10);
+						levelname= div$.find('label[for="' + target$.attr('id') + '"]').text();
+						// Send command
+						SwitchSelectorLevel(idx, unescape(levelname), level, RefreshLights, isprotected);
+						// Synchronize buttons and div attributes
+						div$.data('level', level);
+						div$.data('levelname', levelname);
 					});
 
 					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
@@ -3036,25 +3040,31 @@ define(['app'], function (app) {
 				value: 0,
 				//Selector selectmenu events
 				create: function (event, ui) {
-					var idx = $(this).data('idx'),
-						type = $(this).data('type'),
-						isprotected = $(this).data('isprotected'),
-						disabled = $(this).data('disabled'),
-						level = $(this).data('level'),
-						levelname = $(this).data('levelname');
-					$(this).selectmenu("option", "idx", idx);
-					$(this).selectmenu("option", "type", type);
-					$(this).selectmenu("option", "isprotected", isprotected);
-					$(this).selectmenu("option", "disabled", disabled === true);
-					$(this).selectmenu("menuWidget").addClass('selectorlevels-menu');
-					$(this).val(level);
+					var select$ = $(this),
+						idx = select$.data('idx'),
+						isprotected = select$.data('isprotected'),
+						disabled = select$.data('disabled'),
+						level = select$.data('level'),
+						levelname = select$.data('levelname');
+					select$.selectmenu("option", "idx", idx);
+					select$.selectmenu("option", "isprotected", isprotected);
+					select$.selectmenu("option", "disabled", disabled === true);
+					select$.selectmenu("menuWidget").addClass('selectorlevels-menu');
+					select$.val(level);
 
 					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
 				},
-				change: function (event, ui) { //When the user selects an item
-					var idx = $(this).selectmenu("option", "idx"),
-						level = $(this).selectmenu().val();
-					SetDimValue(idx, level);
+				change: function (event, ui) { //When the user selects an option
+					var select$ = $(this),
+						idx = select$.selectmenu("option", "idx"),
+						level = select$.selectmenu().val(),
+						levelname = select$.find('option[value="' + level + '"]').text(),
+						isprotected = select$.selectmenu("option", "isprotected");
+					// Send command
+					SwitchSelectorLevel(idx, unescape(levelname), level, RefreshLights, isprotected);
+					// Synchronize buttons and select attributes
+					select$.data('level', level);
+					select$.data('levelname', levelname);
 				}
 			}).selectmenu('refresh');
 

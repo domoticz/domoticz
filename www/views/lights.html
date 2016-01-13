@@ -52,11 +52,11 @@
 			</tr>
 			<tr id="OnActionDiv">
 				<td align="right"><label for="onaction"><span data-i18n="On Action">On Action</span>:</label></td>
-				<td><input type="text" id="onaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span></td>
+				<td><input type="text" id="onaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span></td>
 			</tr>
 			<tr id="OffActionDiv">
 				<td align="right"><label for="offaction"><span data-i18n="Off Action">Off Action</span>:</label></td>
-				<td><input type="text" id="offaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span></td>
+				<td><input type="text" id="offaction" style="width: 340px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span></td>
 			</tr>
 			<tr id="ProtectionDiv">
 				<td align="right"><label for="protected"><span data-i18n="Protected">Protected</span>:</label></td>
@@ -455,9 +455,11 @@
 		<input type="hidden" id="selectorlevelindex">
 		<table border="0" cellpadding="0" cellspacing="4">
 		<tr>
-			<td align="right" style="width:80px"><label for="selectoraction"><span data-i18n="Action"></span>:</label></td>
-			<td><input type="text" id="selectoraction" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-		</tr>
+			<td style="width:80px; text-align: right; vertical-align: baseline;"><label for="selectoraction"><span data-i18n="Action"></span>:</label></td>
+			<td style="vertical-align: baseline;">
+				<input type="text" id="selectoraction" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+				<br><span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span>
+			</td>
 		</table>
 	</form>
 </div>

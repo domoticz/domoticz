@@ -4025,6 +4025,9 @@ namespace http {
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB)|| (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
 						if (dtype == pTypeLighting1) {
 							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
+							if (subtype == sTypeAB400D) subtype = sSwitchTypeAB400D;
+							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
 							std::stringstream s_strid;
 							s_strid << std::hex << atoi(devid.c_str());
 							devid = s_strid.str();
@@ -4032,16 +4035,63 @@ namespace http {
 						}
 						else if (dtype == pTypeLighting2) {
 							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeAC) { // 0
-								subtype = sSwitchTypeAC;
-							}
-							if (subtype == sTypeHEU) { // 1
-								subtype = sSwitchTypeHEU;
-								devid = "7" + devid;
-							}
-							if (subtype == sTypeKambrook) { // 3
-								subtype = sSwitchTypeKambrook;
-							}
+							if (subtype == sTypeAC) subtype = sSwitchTypeAC;
+							if (subtype == sTypeHEU) { subtype = sSwitchTypeHEU; devid = "7" + devid; }
+							if (subtype == sTypeKambrook) subtype = sSwitchTypeKambrook;
+							devid = "0" + devid;
+						}
+						if (dtype == pTypeLighting3) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeKoppla) subtype = sSwitchTypeKoppla;
+						}
+						else
+						if (dtype == pTypeLighting4) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeTriState;
+						}
+						else
+						if (dtype == pTypeLighting5) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeEMW100) { subtype = sSwitchTypeEMW100; devid = "00" + devid; }
+							if (subtype == sTypeLivolo) { subtype = sSwitchTypeLivolo; devid = "00" + devid; }
+							if (subtype == sTypeLightwaveRF) { subtype = sSwitchTypeLightwaveRF; devid = "00" + devid; }
+							if (subtype == sTypeLivoloAppliance) { subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid; }
+							if (subtype == sTypeEurodomest) subtype = sSwitchTypeEurodomest;
+						}
+						else
+						if (dtype == pTypeLighting6) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeBlyss;
+						}
+						else
+						if (dtype == pTypeChime) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeByronSX) subtype = sSwitchTypeByronSX;
+							if (subtype == sTypeSelectPlus) subtype = sSwitchTypeSelectPlus;
+							if (subtype == sTypeSelectPlus3) subtype = sSwitchTypeSelectPlus3;
+							if (subtype == sTypeByronMP001) subtype = sSwitchTypeByronMP001;
+						}
+						else
+						if (dtype == pTypeSecurity1) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeSecX10) subtype = sSwitchTypeX10secu;
+							if (subtype == sTypeSecX10M) subtype = sSwitchTypeX10secu;
+							if (subtype == sTypeSecX10R) subtype = sSwitchTypeX10secu;
+						}
+						else
+						if (dtype == pTypeHomeConfort) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeHomeConfort;
+						}
+						else
+						if (dtype == pTypeBlinds) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
+							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 						}
 					}
 				}
@@ -4484,27 +4534,78 @@ namespace http {
 						if (dtype == pTypeLighting1){
 							dtype = pTypeGeneralSwitch;
 
+							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
+							if (subtype == sTypeAB400D) subtype = sSwitchTypeAB400D;
+							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
+
 							std::stringstream s_strid;
 							s_strid << std::hex << atoi(devid.c_str());
 							devid = s_strid.str();
 							devid = "000000" + devid;
 						}
 						else
-							if (dtype == pTypeLighting2){
-								dtype = pTypeGeneralSwitch;
-                            
-                                if (subtype == sTypeAC){ // 0
-                                   subtype = sSwitchTypeAC;
-                                }
-                                if (subtype == sTypeHEU){ // 1
-                                   subtype = sSwitchTypeHEU;
-								   devid = "7" + devid;
-                                }
-                                if (subtype == sTypeKambrook){ // 3
-                                   subtype = sSwitchTypeKambrook;
-                                }
-								devid = "0" + devid;
-							}
+						if (dtype == pTypeLighting2) {
+							dtype = pTypeGeneralSwitch;
+
+							if (subtype == sTypeAC) subtype = sSwitchTypeAC;
+							if (subtype == sTypeHEU) { subtype = sSwitchTypeHEU; devid = "7" + devid;}
+							if (subtype == sTypeKambrook) subtype = sSwitchTypeKambrook;
+							devid = "0" + devid;
+						}
+						else
+						if (dtype == pTypeLighting3) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeKoppla) subtype = sSwitchTypeKoppla;
+						}
+						else	
+						if (dtype == pTypeLighting4) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeTriState;
+						}
+						else
+						if (dtype == pTypeLighting5) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeEMW100) { subtype = sSwitchTypeEMW100; devid = "00" + devid; }
+							if (subtype == sTypeLivolo) { subtype = sSwitchTypeLivolo; devid = "00" + devid;}
+							if (subtype == sTypeLightwaveRF) {subtype = sSwitchTypeLightwaveRF; devid = "00" + devid;}
+							if (subtype == sTypeLivoloAppliance) {subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid;}
+							if (subtype == sTypeEurodomest) subtype = sSwitchTypeEurodomest; 
+						}
+						else
+						if (dtype == pTypeLighting6) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeBlyss;
+						}
+						else
+						if (dtype == pTypeChime) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeByronSX) subtype = sSwitchTypeByronSX;
+							if (subtype == sTypeSelectPlus) subtype = sSwitchTypeSelectPlus;
+							if (subtype == sTypeSelectPlus3) subtype = sSwitchTypeSelectPlus3;
+							if (subtype == sTypeByronMP001) subtype = sSwitchTypeByronMP001;
+						}
+						else
+						if (dtype == pTypeSecurity1) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeSecX10) subtype = sSwitchTypeX10secu;
+							if (subtype == sTypeSecX10M) subtype = sSwitchTypeX10secu;
+							if (subtype == sTypeSecX10R) subtype = sSwitchTypeX10secu;
+						}
+						else
+						if (dtype == pTypeHomeConfort) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeHomeConfort;
+						}
+						else
+						if (dtype == pTypeBlinds) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
+							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+						}
 					}
 				}
                 // -----------------------------------------------
@@ -7797,10 +7898,10 @@ namespace http {
 							)
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
-							if (lstatus == "On") {
+							if ((lstatus == "On")||(lstatus=="Close inline relay")) {
 								lstatus = "Closed";
 							}
-							else if (lstatus == "Stop") {
+							else if ((lstatus == "Stop")||(lstatus=="Stop inline relay")) {
 								lstatus = "Stopped";
 							}
 							else {
@@ -9423,7 +9524,11 @@ namespace http {
 		std::string CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
+#ifdef WIN32
 			std::string OutputFileName = szUserDataFolder + "backup.db";
+#else
+			std::string OutputFileName = "/tmp/backup.db";
+#endif
 			if (m_sql.BackupDatabase(OutputFileName))
 			{
 				std::ifstream testFile(OutputFileName.c_str(), std::ios::binary);

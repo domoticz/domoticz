@@ -79,9 +79,11 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Diya", sSwitchTypeDiya },	         // p..
 	{ "X10Secure", sSwitchTypeX10secu },	 // p..
 	{ "Atlantic", sSwitchTypeAtlantic },	 // p..
-	{ "Silvercrest", sSwitchTypeSilvercrest }, // p..
+	{ "SilvercrestDB", sSwitchTypeSilvercrestDB }, // p..
 	{ "MedionDB", sSwitchTypeMedionDB },	 // p..
 	{ "VMC", sSwitchTypeVMC },	 // p..
+	{ "Keeloq", sSwitchTypeKeeloq },	 // p..
+	{ "CustomSwitch", sSwitchCustomSwitch },	 // p..
 	{ "", -1 }
 };
 

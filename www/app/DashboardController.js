@@ -3628,24 +3628,27 @@ define(['app'], function (app) {
 			$('#dashcontent .selectorlevels div').buttonset({
 				//Selector selectmenu events
 				create: function (event, ui) {
-					var idx = $(this).data('idx'),
-						type = $(this).data('type'),
-						isprotected = $(this).data('isprotected'),
-						disabled = $(this).data('disabled'),
-						level = $(this).data('level'),
-						levelname = $(this).data('levelname');
-					$(this).buttonset("option", "idx", idx);
-					$(this).buttonset("option", "type", type);
-					$(this).buttonset("option", "isprotected", isprotected);
+					var div$ = $(this),
+						idx = div$.data('idx'),
+						type = div$.data('type'),
+						isprotected = div$.data('isprotected'),
+						disabled = div$.data('disabled'),
+						level = div$.data('level'),
+						levelname = div$.data('levelname');
 					if (disabled === true) {
-						$(this).buttonset("disable");
+						div$.buttonset("disable");
 					}
-					$(this).find('input[value="' + level + '"]').prop("checked", true);
+					div$.find('input[value="' + level + '"]').prop("checked", true);
 
-					$(this).find('input').click(function (event){
-						var idx = $(this).parent().data("idx"),
-							level = parseInt(event.target.value, 10);
-						SetDimValue(idx, level);
+					div$.find('input').click(function (event){
+						var target$ = $(event.target);
+						level = parseInt(target$.val(), 10);
+						levelname= div$.find('label[for="' + target$.attr('id') + '"]').text();
+						// Send command
+						SwitchSelectorLevel(idx, unescape(levelname), level, RefreshFavorites, isprotected);
+						// Synchronize buttons and div attributes
+						div$.data('level', level);
+						div$.data('levelname', levelname);
 					});
 
 					if (($scope.config.DashboardType === 2) || (window.myglobals.ismobile === true)) {
@@ -3663,18 +3666,17 @@ define(['app'], function (app) {
 				value: 0,
 				//Selector selectmenu events
 				create: function (event, ui) {
-					var idx = $(this).data('idx'),
-						type = $(this).data('type'),
-						isprotected = $(this).data('isprotected'),
-						disabled = $(this).data('disabled'),
-						level = $(this).data('level'),
-						levelname = $(this).data('levelname');
-					$(this).selectmenu("option", "idx", idx);
-					$(this).selectmenu("option", "type", type);
-					$(this).selectmenu("option", "isprotected", isprotected);
-					$(this).selectmenu("option", "disabled", disabled === true);
-					$(this).selectmenu("menuWidget").addClass('selectorlevels-menu');
-					$(this).val(level);
+					var select$ = $(this),
+						idx = select$.data('idx'),
+						isprotected = select$.data('isprotected'),
+						disabled = select$.data('disabled'),
+						level = select$.data('level'),
+						levelname = select$.data('levelname');
+					select$.selectmenu("option", "idx", idx);
+					select$.selectmenu("option", "isprotected", isprotected);
+					select$.selectmenu("option", "disabled", disabled === true);
+					select$.selectmenu("menuWidget").addClass('selectorlevels-menu');
+					select$.val(level);
 
 					if (($scope.config.DashboardType === 2) || (window.myglobals.ismobile === true)) {
 						$('#dashcontent #light_' + idx + " #status").html('');
@@ -3682,10 +3684,17 @@ define(['app'], function (app) {
 						$('#dashcontent #light_' + idx + " #bigtext").html(unescape(levelname));
 					}
 				},
-				select: function (event, ui) { //When the user selects an option
-					var idx = $(this).selectmenu("option", "idx"),
-						level = $(this).selectmenu().val();
-					SetDimValue(idx, level);
+				change: function (event, ui) { //When the user selects an option
+					var select$ = $(this),
+						idx = select$.selectmenu("option", "idx"),
+						level = select$.selectmenu().val(),
+						levelname = select$.find('option[value="' + level + '"]').text(),
+						isprotected = select$.selectmenu("option", "isprotected");
+					// Send command
+					SwitchSelectorLevel(idx, unescape(levelname), level, RefreshFavorites, isprotected);
+					// Synchronize buttons and select attributes
+					select$.data('level', level);
+					select$.data('levelname', levelname);
 				}
 			}).selectmenu('refresh');
 
@@ -3758,7 +3767,7 @@ define(['app'], function (app) {
 			width=$(".mobileitem").width()-63;
 			$("#dashcontent .mobileitem .dimslidersmall").width(width);
 			
-			width=$("#dashcontent #name").width()-80;
+			width=$("#dashcontent #name").width()-85;
 			$("#dashcontent .span4 .dimslidersmalldouble").width(width);
 			$("#dashcontent .span3 .dimslidersmalldouble").width(width);
 		}

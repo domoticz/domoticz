@@ -871,7 +871,7 @@ define(['app'], function (app) {
 						return;
 					}
 					if (tsettings.mday==29) {
-						ShowNotify($.t('Not al years have this date, some years will be skipped!'), 2500, true);
+						ShowNotify($.t('Not all years have this date, some years will be skipped!'), 2500, true);
 					}
 				}
 			}
@@ -944,7 +944,7 @@ define(['app'], function (app) {
 						return;
 					}
 					if (tsettings.mday==29) {
-						ShowNotify($.t('Not al years have this date, some years will be skipped!'), 2500, true);
+						ShowNotify($.t('Not all years have this date, some years will be skipped!'), 2500, true);
 					}
 				}
 			}
