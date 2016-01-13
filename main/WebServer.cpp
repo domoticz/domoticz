@@ -9423,7 +9423,11 @@ namespace http {
 		std::string CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
+#ifdef WIN32
 			std::string OutputFileName = szUserDataFolder + "backup.db";
+#else
+			std::string OutputFileName = "/tmp/backup.db";
+#endif
 			if (m_sql.BackupDatabase(OutputFileName))
 			{
 				std::ifstream testFile(OutputFileName.c_str(), std::ios::binary);
