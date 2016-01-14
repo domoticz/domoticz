@@ -219,6 +219,22 @@ void CNefitEasy::GetStatusDetails()
 			SendTempSensor(1, -1, temp, "Room Temperature");
 		}
 	}
+	if (!root2["BAI"].empty())
+	{
+		tmpstr = root2["BAI"].asString();
+		if (tmpstr != "null")
+		{
+			std::string bstatus = "";
+			if (tmpstr == "CH")
+				bstatus = "central heating";
+			else if (tmpstr == "HW")
+				bstatus = "hot water";
+			else if (tmpstr == "No")
+				bstatus = "off";
+			if (!bstatus.empty())
+				SendTextSensor(1, 2, -1, bstatus, "Boiler Status");
+		}
+	}
 
 	//Outdoor Temperature
 #ifdef DEBUG_NefitEasyR
@@ -343,7 +359,7 @@ void CNefitEasy::GetStatusDetails()
 		display_code = "burner doesn't ignite";
 	else if (dcode == "rE")
 		display_code = "system restarting";
-	SendTextSensor(1, 1, -1, display_code, "Status Code");
+	SendTextSensor(1, 1, -1, display_code, "Display Code");
 }
 
 void CNefitEasy::GetPressureDetails()
@@ -451,4 +467,5 @@ void CNefitEasy::SetSetpoint(const int idx, const float temp)
 		_log.Log(LOG_ERROR, "NefitEasy: Error setting Setpoint!");
 		return;
 	}
+	GetStatusDetails();
 }
