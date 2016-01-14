@@ -1972,11 +1972,12 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		}
 	}
 
+	_tRxMessageProcessingResult procResult;
+	procResult.DeviceName = "";
+	procResult.DeviceRowIdx = -1;
+	procResult.bProcessBatteryValue = true;
 	if (DeviceRowIdx == -1)
 	{
-		_tRxMessageProcessingResult procResult;
-		procResult.DeviceName = "";
-		procResult.DeviceRowIdx = -1;
 		switch (pRXCommand[1])
 		{
 		case pTypeInterfaceMessage:
@@ -2171,7 +2172,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	if (DeviceRowIdx == -1)
 		return;
 
-	if (BatteryLevel != -1)
+	if ((BatteryLevel != -1) && (procResult.bProcessBatteryValue))
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%llu)", BatteryLevel, DeviceRowIdx);
 	}
@@ -7842,7 +7843,8 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 	gdevice.subtype = sTypeKwh;
 	gdevice.floatval1 = (float)instant;
 	gdevice.floatval2 = (float)total;
-	decode_General(HwdID, HwdType, (const tRBUF*)&gdevice, procResult);
+	decode_General(HwdID, HwdType, (const tRBUF*)&gdevice, procResult, SignalLevel, BatteryLevel);
+	procResult.bProcessBatteryValue = false;
 }
 
 void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
@@ -8953,7 +8955,7 @@ void MainWorker::decode_Thermostat(const int HwdID, const _eHardwareTypes HwdTyp
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
-void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult, const unsigned char SignalLevel, const unsigned char BatteryLevel)
 {
 	char szTmp[200];
 	const _tGeneralDevice *pMeter=(const _tGeneralDevice*)pResponse;
@@ -8987,8 +8989,6 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	std::string ID=szTmp;
 	unsigned char Unit=1;
 	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
-	unsigned char BatteryLevel = 255;
 
 	unsigned long long DevRowIdx=-1;
 
@@ -9129,7 +9129,6 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		sprintf(szTmp, "%.3f;%.3f", pMeter->floatval1, pMeter->floatval2);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
-
 	}
 	else if (subType == sTypeAlert)
 	{
