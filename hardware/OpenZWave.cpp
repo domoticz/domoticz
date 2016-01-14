@@ -156,6 +156,12 @@ const char *cclassStr(uint8 cc)
 		return "METER PULSE";
 	case 0x38:
 		return "THERMOSTAT HEATING";
+	case 0x3C:
+		return "METER_TBL_CONFIG";
+	case 0x3D:
+		return "METER_TBL_MONITOR";
+	case 0x3E:
+		return "METER_TBL_PUSH";
 	case 0x40:
 		return "THERMOSTAT MODE";
 	case 0x42:

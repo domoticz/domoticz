@@ -118,6 +118,8 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_BEFORESUNSET, "Before Sunset" },
 		{ TTYPE_AFTERSUNSET, "After Sunset" },
 		{ TTYPE_FIXEDDATETIME, "Fixed Date/Time" },
+		{ TTYPE_DAYSODD, "Odd Day Numbers" },
+		{ TTYPE_DAYSEVEN, "Even Day Numbers" },
 		{ TTYPE_WEEKSODD, "Odd Week Numbers"},
 		{ TTYPE_WEEKSEVEN, "Even Week Numbers" },
 		{ TTYPE_MONTHLY, "Monthly" },

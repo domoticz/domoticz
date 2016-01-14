@@ -31,7 +31,7 @@
 	#include "../msbuild/WindowsHelper.h"
 #endif
 
-#define DB_VERSION 93
+#define DB_VERSION 94
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -1706,6 +1706,16 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE SceneTimers ADD COLUMN [Occurence] INTEGER DEFAULT 0");
 			}
+		}
+		if (dbversion < 94)
+		{
+			std::stringstream szQuery;
+			szQuery << "UPDATE Timers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_BEFORESUNSET << ")";
+			query(szQuery.str());
+			szQuery.clear();
+			szQuery.str("");
+			szQuery << "UPDATE SceneTimers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_BEFORESUNSET << ")";
+			query(szQuery.str());
 		}
 
 	}

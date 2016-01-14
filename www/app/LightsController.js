@@ -116,13 +116,16 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if (tsettings.timertype==8) {
+			else if ((tsettings.timertype==6) || (tsettings.timertype==7)) {
+				tsettings.days = 0x80;
+			}
+			else if (tsettings.timertype==10) {
 				tsettings.days = 0x80;
 				if (tsettings.mday>28) {
 					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
 				}
 			}
-			else if (tsettings.timertype==10) {
+			else if (tsettings.timertype==12) {
 				tsettings.days = 0x80;
 				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
 					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
@@ -138,7 +141,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
+			else if ((tsettings.timertype==11) || (tsettings.timertype==13)) {
 				tsettings.days = Math.pow(2, tsettings.weekday);
 			}
 			else if (tsettings.days==0)
@@ -190,13 +193,16 @@ define(['app'], function (app) {
 					return;
 				}
 			}
-			else if (tsettings.timertype==8) {
+			else if ((tsettings.timertype==6) || (tsettings.timertype==7)) {
+				tsettings.days = 0x80;
+			}
+			else if (tsettings.timertype==10) {
 				tsettings.days = 0x80;
 				if (tsettings.mday>28) {
 					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
 				}
 			}
-			else if (tsettings.timertype==10) {
+			else if (tsettings.timertype==12) {
 				tsettings.days = 0x80;
 				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
 					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
@@ -212,7 +218,7 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			else if ((tsettings.timertype==9) || (tsettings.timertype==11)) {
+			else if ((tsettings.timertype==11) || (tsettings.timertype==13)) {
 				tsettings.days = Math.pow(2, tsettings.weekday);
 			}
 			else if (tsettings.days==0)
@@ -316,7 +322,7 @@ define(['app'], function (app) {
 					
 					var DayStr = "";
 					var DayStrOrig = "";
-					if ((item.Type<=7) && (item.Type!=5)) {
+					if ((item.Type<=4) || (item.Type==8) || (item.Type==9)) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
 							DayStrOrig="Everyday";
@@ -355,17 +361,17 @@ define(['app'], function (app) {
 							}
 						}
 					}
-					else if (item.Type==8) {
+					else if (item.Type==10) {
 						DayStrOrig="Monthly on Day " + item.MDay;
 					}
-					else if (item.Type==9) {
+					else if (item.Type==11) {
 						var Weekday = Math.log2(parseInt(item.Days));
 						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
 					}
-					else if (item.Type==10) {
+					else if (item.Type==12) {
 						DayStrOrig="Yearly on " + item.MDay + " " + $.myglobals.MonthStr[item.Month-1];
 					}
-					else if (item.Type==11) {
+					else if (item.Type==13) {
 						var Weekday = Math.log2(parseInt(item.Days));
 						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
 					}
@@ -481,7 +487,14 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").hide();
 							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
-						else if (timerType==8) {
+						else if ((timerType==6) || (timerType==7)) {
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==10) {
 							$("#lightcontent #timerparamstable #days").val(data["8"]);
 							$("#lightcontent #timerparamstable #rdate").hide();
 							$("#lightcontent #timerparamstable #rnorm").hide();
@@ -489,7 +502,7 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").hide();
 							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
-						else if (timerType==9) {
+						else if (timerType==11) {
 							$("#lightcontent #timerparamstable #occurence").val(data["9"]);
 							$("#lightcontent #timerparamstable #weekdays").val(data["10"]);
 							$("#lightcontent #timerparamstable #rdate").hide();
@@ -498,7 +511,7 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").show();
 							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
-						else if (timerType==10) {
+						else if (timerType==12) {
 							$("#lightcontent #timerparamstable #months").val(data["7"]);
 							$("#lightcontent #timerparamstable #days").val(data["8"]);
 							$("#lightcontent #timerparamstable #rdate").hide();
@@ -507,7 +520,7 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #roccurence").hide();
 							$("#lightcontent #timerparamstable #rmonths").show();
 						}
-						else if (timerType==11) {
+						else if (timerType==13) {
 							$("#lightcontent #timerparamstable #months").val(data["7"]);
 							$("#lightcontent #timerparamstable #occurence").val(data["9"]);
 							$("#lightcontent #timerparamstable #weekdays").val(data["10"]);
@@ -623,18 +636,11 @@ define(['app'], function (app) {
 					$("#lightcontent #timerparamstable #roccurence").hide();
 					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
-				else if (timerType==8) {
-					$("#lightcontent #timerparamstable #rdate").hide();
-					$("#lightcontent #timerparamstable #rnorm").hide();
-					$("#lightcontent #timerparamstable #rdays").show();
-					$("#lightcontent #timerparamstable #roccurence").hide();
-					$("#lightcontent #timerparamstable #rmonths").hide();
-				}
-				else if (timerType==9) {
+				else if ((timerType==6) || (timerType==7)) {
 					$("#lightcontent #timerparamstable #rdate").hide();
 					$("#lightcontent #timerparamstable #rnorm").hide();
 					$("#lightcontent #timerparamstable #rdays").hide();
-					$("#lightcontent #timerparamstable #roccurence").show();
+					$("#lightcontent #timerparamstable #roccurence").hide();
 					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
 				else if (timerType==10) {
@@ -642,9 +648,23 @@ define(['app'], function (app) {
 					$("#lightcontent #timerparamstable #rnorm").hide();
 					$("#lightcontent #timerparamstable #rdays").show();
 					$("#lightcontent #timerparamstable #roccurence").hide();
-					$("#lightcontent #timerparamstable #rmonths").show();
+					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
 				else if (timerType==11) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").show();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==12) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").show();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").show();
+				}
+				else if (timerType==13) {
 					$("#lightcontent #timerparamstable #rdate").hide();
 					$("#lightcontent #timerparamstable #rnorm").hide();
 					$("#lightcontent #timerparamstable #rdays").hide();
@@ -916,18 +936,15 @@ define(['app'], function (app) {
 			}
 			var devOptionsParam = [], devOptions = [];
 			if ($.bIsSelectorSwitch) {
-				var levelNames = $("#lightcontent #selectorlevelstable").data('levelNames'),
-					levelActions = $("#lightcontent #selectoractionstable").data('levelActions').split('|'),
+				var levelNames = unescape($("#lightcontent #selectorlevelstable").data('levelNames')),
+					levelActions = $("#lightcontent #selectoractionstable").data('levelActions'),
 					selectorStyle = $("#lightcontent .selector-switch-options.style input[type=radio]:checked").val(),
 					levelOffHidden = $("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked');
 				devOptions.push("LevelNames:");
 				devOptions.push(levelNames);
 				devOptions.push(";");
 				devOptions.push("LevelActions:");
-				$.each(levelActions, function (index, item) {
-					levelActions[index] = encodeURIComponent(item);
-				});
-				devOptions.push(levelActions.join('|'));
+				devOptions.push(levelActions);
 				devOptions.push(";");
 				devOptions.push("SelectorStyle:");
 				devOptions.push(selectorStyle);
@@ -1213,6 +1230,9 @@ define(['app'], function (app) {
 			});
 		}
 
+		CleanDeviceOptionValue = function (value) {
+			return value.replace(/[:;|<>]/g,"").trim();
+		}
 		ChangeSelectorLevelsOrder = function (from, to) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
@@ -1220,12 +1240,12 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|'),
+				levelNames = unescape(table$.data('levelNames')).split('|'),
 				fromLevel = levelNames[from],
 				toLevel = levelNames[to];
 			levelNames[to] = fromLevel;
 			levelNames[from] = toLevel;
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
 		DeleteSelectorLevel = function (index) {
@@ -1235,28 +1255,31 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|');
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			levelNames.splice(index, 1);
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 			DeleteSelectorAction(index);
 		};
 		UpdateSelectorLevel = function (index, levelName) {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|');
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			levelNames[index] = levelName;
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
-		RenameSelectorLevel = function (index, levelName) {
+		RenameSelectorLevel = function (index) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
-			if ((index >= 0) && (levelName != '')) {
+			if (index >= 0) {
+				var table$ = $("#lightcontent #selectorlevelstable"),
+					levelNames = unescape(table$.data('levelNames')).split('|'),
+					levelName = levelNames[index];
 				$("#dialog-renameselectorlevel #selectorlevelindex").val(index);
-				$("#dialog-renameselectorlevel #selectorlevelname").val(unescape(levelName));
+				$("#dialog-renameselectorlevel #selectorlevelname").val(levelName);
 				$("#dialog-renameselectorlevel").i18n();
 				$("#dialog-renameselectorlevel").dialog("open");
 			}
@@ -1264,21 +1287,23 @@ define(['app'], function (app) {
 		AddSelectorLevel = function () {
 			var button$ = $("#newselectorlevelbutton"),
 				table$ = $("#lightcontent #selectorlevelstable"),
-				levelName = $("#lightcontent #newselectorlevel").val().trim(),
-				levelNames = table$.data('levelNames').split('|');
+				levelName = $("#lightcontent #newselectorlevel").val(),
+				levelNames = unescape(table$.data('levelNames')).split('|');
+			// clean unauthorized characters
+			levelName = CleanDeviceOptionValue(levelName);
 			if ((button$.prop("disabled") === true) ||			// limit length
 					(levelName === '') ||						// avoid empty name
 					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
 				return;
 			}
 			levelNames.push(levelName);
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 			AddSelectorAction();
 		};
 		BuildSelectorLevelsTable = function () {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|'),
+				levelNames = unescape(table$.data('levelNames')).split('|'),
 				levelNamesMaxLength = 11,
 				initializeTable = $('#selectorlevelstable_wrapper').length === 0,
 				oTable = (initializeTable) ? table$.dataTable({
@@ -1311,7 +1336,7 @@ define(['app'], function (app) {
 				}
 				if (index > 0) {
 					// Add Rename image
-					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
+					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
 					// Add Delete image
 					rendelImg += '&nbsp;';
 					rendelImg += '<img src="images/delete.png" title="' + $.t("Delete") + '" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
@@ -1339,17 +1364,20 @@ define(['app'], function (app) {
 		UpdateSelectorAction = function (index, levelAction) {
 			var table$ = $("#lightcontent #selectoractionstable"),
 				levelActions = table$.data('levelActions').split('|');
-			levelActions[index] = levelAction;
+			levelActions[index] = escape(levelAction);
 			table$.data('levelActions', levelActions.join('|'));
 			BuildSelectorActionsTable();
 		};
-		EditSelectorAction = function (index, levelAction) {
+		EditSelectorAction = function (index) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 			if (index >= 0) {
+				var table$ = $("#lightcontent #selectoractionstable"),
+					levelActions = table$.data('levelActions').split('|'),
+					levelAction = levelActions[index];
 				$("#dialog-editselectoraction #selectorlevelindex").val(index);
 				$("#dialog-editselectoraction #selectoraction").val(unescape(levelAction));
 				$("#dialog-editselectoraction").i18n();
@@ -1402,10 +1430,10 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 			$.each(levelActions, function (index, item) {
 				var level = index * 10,
-					levelAction = levelActions[index],
+					levelAction = unescape(levelActions[index]),
 					rendelImg = "";
 				// Add Rename image
-				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ',\'' + levelActions[index] + '\');" class="lcursor" width="16" height="16"></img>';
+				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				rendelImg += '&nbsp;';
 				rendelImg += '<img src="images/delete.png" title="' + $.t("Clear") + '" onclick="ClearSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				oTable.fnAddData({
@@ -1454,12 +1482,13 @@ define(['app'], function (app) {
 				$.selectorSwitchLevels = ssLevelNames.split('|');
 				$.selectorSwitchActions = ssLevelActions.split('|');
 				$.each($.selectorSwitchLevels, function (index, item) {
-					if (index <= ($.selectorSwitchActions.length - 1)) {
-						$.selectorSwitchActions[index] = decodeURIComponent($.selectorSwitchActions[index]);
-					} else {
+					if (index > ($.selectorSwitchActions.length - 1)) {
 						$.selectorSwitchActions.push(""); // force missing action
 					}
 				});
+				if ($.selectorSwitchActions.length > $.selectorSwitchLevels.length) { // truncate if necessary
+					$.selectorSwitchActions.splice($.selectorSwitchLevels.length, $.selectorSwitchActions.length - $.selectorSwitchLevels.length);
+				}
 			}
 
 			$('#modal').show();
@@ -1608,10 +1637,12 @@ define(['app'], function (app) {
 						var selectorLevelName$ = $("#dialog-renameselectorlevel #selectorlevelname"),
 							selectorIndex$ = $("#dialog-renameselectorlevel #selectorlevelindex"),
 							levelIndex = selectorIndex$.val(),
-							levelName = selectorLevelName$.val().trim(),
+							levelName = selectorLevelName$.val(),
 							table$ = $("#lightcontent #selectorlevelstable"),
-							levelNames = table$.data('levelNames').split('|'),
+							levelNames = unescape(table$.data('levelNames')).split('|'),
 							bValid = true;
+						// clean unauthorized characters
+						levelName = CleanDeviceOptionValue(levelName);
 						bValid = bValid && (levelIndex >= 0);
 						bValid = bValid && checkLength(selectorLevelName$, 2, 20);
 						bValid = bValid && (levelName !== '') &&			// avoid empty
@@ -1633,7 +1664,7 @@ define(['app'], function (app) {
 						title: $.t("Rename level name"),
 						buttons: dialog_renameselectorlevel_buttons
 					});
-					$("#lightcontent #selectorlevelstable").data('levelNames', $.selectorSwitchLevels.join('|'));
+					$("#lightcontent #selectorlevelstable").data('levelNames', escape($.selectorSwitchLevels.join('|')));
 					BuildSelectorLevelsTable();
 
 					dialog_editselectoraction_buttons[$.t("Save")] = function () {
