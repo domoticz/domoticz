@@ -1323,7 +1323,8 @@ define(['app'], function (app) {
 					if (updownImg !== "") {
 						updownImg += "&nbsp;";
 					}
-					updownImg += '<img src="images/down.png" onclick="ChangeSelectorLevelsOrder(' + index + ',' + (index + 1) + ');" class="lcursor" width="16" height="16"></img>';
+					// Add Down image
+					updownImg += '<img src="images/down.png" title="' + $.t("Move down") + '" onclick="ChangeSelectorLevelsOrder(' + index + ',' + (index + 1) + ');" class="lcursor" width="16" height="16"></img>';
 				} else {
 					updownImg += '<img src="images/empty16.png" width="16" height="16"></img>';
 				}
@@ -1332,7 +1333,7 @@ define(['app'], function (app) {
 					if (updownImg !== "") {
 						updownImg += "&nbsp;";
 					}
-					updownImg += '<img src="images/up.png" onclick="ChangeSelectorLevelsOrder(' + index + ',' + (index - 1) + ');" class="lcursor" width="16" height="16"></img>';
+					updownImg += '<img src="images/up.png" title="' + $.t("Move up") + '" onclick="ChangeSelectorLevelsOrder(' + index + ',' + (index - 1) + ');" class="lcursor" width="16" height="16"></img>';
 				}
 				if (index > 0) {
 					// Add Rename image
