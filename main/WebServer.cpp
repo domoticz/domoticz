@@ -4095,6 +4095,10 @@ namespace http {
 							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
 							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 						}
+						if (dtype == pTypeRFY) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeRTS;
+						}
 					}
 				}
                 // -----------------------------------------------
@@ -4607,6 +4611,10 @@ namespace http {
 							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
 							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
 							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+						}
+						if (dtype == pTypeRFY) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeRTS;
 						}
 					}
 				}
