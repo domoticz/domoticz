@@ -352,20 +352,18 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	int roffset = 0;
 	if (pItem->bUseRandomness)
 	{
-		if ((pItem->timerType == TTYPE_ONTIME) || 
-			(pItem->timerType == TTYPE_FIXEDDATETIME) ||
-			(pItem->timerType == TTYPE_WEEKSODD) ||
-			(pItem->timerType == TTYPE_WEEKSEVEN) ||
-			(pItem->timerType == TTYPE_MONTHLY) ||
-			(pItem->timerType == TTYPE_MONTHLY_WD) ||
-			(pItem->timerType == TTYPE_YEARLY) ||
-			(pItem->timerType == TTYPE_YEARLY_WD))
-			roffset = rand() % (nRandomTimerFrame * 2) - nRandomTimerFrame;
-		else
+		if ((pItem->timerType == TTYPE_BEFORESUNRISE) ||
+			(pItem->timerType == TTYPE_AFTERSUNRISE) ||
+			(pItem->timerType == TTYPE_BEFORESUNSET) ||
+			(pItem->timerType == TTYPE_AFTERSUNSET))
 			roffset = rand() % (nRandomTimerFrame);
+		else
+			roffset = rand() % (nRandomTimerFrame * 2) - nRandomTimerFrame;
 	}
 
 	if ((pItem->timerType == TTYPE_ONTIME) ||
+		(pItem->timerType == TTYPE_DAYSODD) ||
+		(pItem->timerType == TTYPE_DAYSEVEN) ||
 		(pItem->timerType == TTYPE_WEEKSODD) ||
 		(pItem->timerType == TTYPE_WEEKSEVEN))
 	{
@@ -444,7 +442,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		ltime.tm_hour = pItem->startHour;
 		ltime.tm_min = pItem->startMin;
 
-		//pItem->Days: mon=0 .. sat=5, sun=6
+		//pItem->Days: mon=1 .. sat=32, sun=64
 		//convert to : sun=0, mon=1 .. sat=6
 		int daynum = (int)log2(pItem->Days) + 1;
 		if (daynum == 7) daynum = 0;
@@ -504,7 +502,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		ltime.tm_min = pItem->startMin;
 		ltime.tm_mon = pItem->Month - 1;
 
-		//pItem->Days: mon=0 .. sat=5, sun=6
+		//pItem->Days: mon=1 .. sat=32, sun=64
 		//convert to : sun=0, mon=1 .. sat=6
 		int daynum = (int)log2(pItem->Days) + 1;
 		if (daynum == 7) daynum = 0;
@@ -594,6 +592,14 @@ void CScheduler::CheckSchedules()
 			if (itt->timerType == TTYPE_FIXEDDATETIME)
 			{
 				bOkToFire = true;
+			}
+			else if (itt->timerType == TTYPE_DAYSODD)
+			{
+				bOkToFire = (ltime.tm_mday % 2 != 0);
+			}
+			else if (itt->timerType == TTYPE_DAYSEVEN)
+			{
+				bOkToFire = (ltime.tm_mday % 2 == 0);
 			}
 			else
 			{
