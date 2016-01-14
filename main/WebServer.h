@@ -218,6 +218,7 @@ private:
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_LightLog(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_TextLog(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_HistoryLog(WebEmSession & session, const request & req, Json::Value & root);
 	void RType_Settings(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Events(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Hardware(WebEmSession & session, const request& req, Json::Value &root);

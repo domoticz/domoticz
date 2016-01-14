@@ -527,6 +527,7 @@ namespace http {
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
 			RegisterRType("textlog", boost::bind(&CWebServer::RType_TextLog, this, _1, _2, _3));
+			RegisterRType("historylog", boost::bind(&CWebServer::RType_HistoryLog, this, _1, _2, _3));
 			RegisterRType("settings", boost::bind(&CWebServer::RType_Settings, this, _1, _2, _3));
 			RegisterRType("events", boost::bind(&CWebServer::RType_Events, this, _1, _2, _3));
 			RegisterRType("hardware", boost::bind(&CWebServer::RType_Hardware, this, _1, _2, _3));
@@ -11573,6 +11574,104 @@ namespace http {
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Date"] = sd[2];
 					root["result"][ii]["Data"] = sd[1];
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::RType_HistoryLog(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string limit = request::findValue(&req, "limit");
+			std::vector<std::vector<std::string> > result;
+
+			root["status"] = "OK";
+			root["title"] = "HistoryLog";
+
+			char szLimit[50];
+			if (limit == "")
+				strcpy(szLimit, "LIMIT 10000");
+			else
+			{
+				sprintf(szLimit, "LIMIT %s", limit.c_str());
+			}
+			result = m_sql.safe_query(
+				"SELECT A.Date, A.DeviceRowID, A.nValue, A.sValue, B.Name, B.Type,"
+				" B.SubType, B.SwitchType, B.Options, C.ID, C.Name, C.Type"
+				" FROM LightingLog as A LEFT OUTER JOIN DeviceStatus as B ON(A.DeviceRowID = B.ID)"
+				" LEFT OUTER JOIN Hardware as C ON(B.HardwareID = C.ID)"
+				" ORDER BY A.Date DESC"
+				" %s",
+				szLimit);
+
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					int hardwareType = atoi(sd[11].c_str());
+					unsigned char dType = atoi(sd[5].c_str());
+					unsigned char dSubType = atoi(sd[6].c_str());
+					_eSwitchType switchtype = (_eSwitchType)atoi(sd[7].c_str());
+					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[8].c_str());
+
+					std::map<std::string, std::string> selectorStatuses;
+					if (switchtype == STYPE_Selector) {
+						GetSelectorSwitchStatuses(options, selectorStatuses);
+					}
+
+					int nValue = atoi(sd[2].c_str());
+					std::string sValue = sd[3];
+
+					//skip 0-values in log for MediaPlayers
+					if ((switchtype == STYPE_Media) && (sValue == "0")) continue;
+
+					root["result"][ii]["idx"] = sd[1];
+					root["result"][ii]["Date"] = sd[0];
+					root["result"][ii]["Name"] = sd[4];
+					root["result"][ii]["HardwareID"] = atoi(sd[9].c_str());
+					root["result"][ii]["HardwareName"] = sd[10];
+					root["result"][ii]["HardwareType"] = Hardware_Type_Desc(hardwareType);
+					root["result"][ii]["HardwareTypeVal"] = hardwareType;
+					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
+					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
+					root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);
+					root["result"][ii]["SwitchTypeVal"] = switchtype;
+
+					//add light details
+					std::string lstatus = "";
+					std::string ldata = "";
+					int llevel = 0;
+					bool bHaveDimmer = false;
+					bool bHaveSelector = false;
+					bool bHaveGroupCmd = false;
+					int maxDimLevel = 0;
+
+					if (switchtype == STYPE_Media) {
+						lstatus = sValue;
+						ldata = lstatus;
+					}
+					else if ((switchtype == STYPE_Selector) && (selectorStatuses.size() > 0)) {
+						if (ii == 0) {
+							bHaveSelector = true;
+							maxDimLevel = selectorStatuses.size();
+						}
+						ldata = selectorStatuses[sValue];
+						lstatus = "Set Level: " + selectorStatuses[sValue];
+						llevel = atoi(sValue.c_str());
+
+					}
+					else {
+						GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+						ldata = lstatus;
+					}
+
+					root["result"][ii]["Data"] = ldata;
+					root["result"][ii]["Status"] = lstatus;
+					root["result"][ii]["Level"] = llevel;
+
 					ii++;
 				}
 			}
