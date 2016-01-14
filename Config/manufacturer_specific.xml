@@ -223,7 +223,7 @@
 		<Product type="0002" id="0001" name="EUR_COMETZ Wall Radiator Thermostat Valve Control" config="eurotronic/eur_cometz.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0128" name="Eneco">
-		<Product type="0000" id="0000" name="ED2.0 Meter Adapter"/>
+		<Product type="0000" id="0000" name="ED2.0 Meter Adapter" config="eneco/ed20.xml"/>
 		<Product type="0128" id="0000" name="ED2.0 Display"/>
 	</Manufacturer>
 	<Manufacturer id="011a" name="Enerwave">

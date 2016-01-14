@@ -936,18 +936,15 @@ define(['app'], function (app) {
 			}
 			var devOptionsParam = [], devOptions = [];
 			if ($.bIsSelectorSwitch) {
-				var levelNames = $("#lightcontent #selectorlevelstable").data('levelNames'),
-					levelActions = $("#lightcontent #selectoractionstable").data('levelActions').split('|'),
+				var levelNames = unescape($("#lightcontent #selectorlevelstable").data('levelNames')),
+					levelActions = $("#lightcontent #selectoractionstable").data('levelActions'),
 					selectorStyle = $("#lightcontent .selector-switch-options.style input[type=radio]:checked").val(),
 					levelOffHidden = $("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked');
 				devOptions.push("LevelNames:");
 				devOptions.push(levelNames);
 				devOptions.push(";");
 				devOptions.push("LevelActions:");
-				$.each(levelActions, function (index, item) {
-					levelActions[index] = encodeURIComponent(item);
-				});
-				devOptions.push(levelActions.join('|'));
+				devOptions.push(levelActions);
 				devOptions.push(";");
 				devOptions.push("SelectorStyle:");
 				devOptions.push(selectorStyle);
@@ -1233,6 +1230,9 @@ define(['app'], function (app) {
 			});
 		}
 
+		CleanDeviceOptionValue = function (value) {
+			return value.replace(/[:;|<>]/g,"").trim();
+		}
 		ChangeSelectorLevelsOrder = function (from, to) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
@@ -1240,12 +1240,12 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|'),
+				levelNames = unescape(table$.data('levelNames')).split('|'),
 				fromLevel = levelNames[from],
 				toLevel = levelNames[to];
 			levelNames[to] = fromLevel;
 			levelNames[from] = toLevel;
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
 		DeleteSelectorLevel = function (index) {
@@ -1255,28 +1255,31 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|');
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			levelNames.splice(index, 1);
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 			DeleteSelectorAction(index);
 		};
 		UpdateSelectorLevel = function (index, levelName) {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|');
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			levelNames[index] = levelName;
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
-		RenameSelectorLevel = function (index, levelName) {
+		RenameSelectorLevel = function (index) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
-			if ((index >= 0) && (levelName != '')) {
+			if (index >= 0) {
+				var table$ = $("#lightcontent #selectorlevelstable"),
+					levelNames = unescape(table$.data('levelNames')).split('|'),
+					levelName = levelNames[index];
 				$("#dialog-renameselectorlevel #selectorlevelindex").val(index);
-				$("#dialog-renameselectorlevel #selectorlevelname").val(unescape(levelName));
+				$("#dialog-renameselectorlevel #selectorlevelname").val(levelName);
 				$("#dialog-renameselectorlevel").i18n();
 				$("#dialog-renameselectorlevel").dialog("open");
 			}
@@ -1284,21 +1287,23 @@ define(['app'], function (app) {
 		AddSelectorLevel = function () {
 			var button$ = $("#newselectorlevelbutton"),
 				table$ = $("#lightcontent #selectorlevelstable"),
-				levelName = $("#lightcontent #newselectorlevel").val().trim(),
-				levelNames = table$.data('levelNames').split('|');
+				levelName = $("#lightcontent #newselectorlevel").val(),
+				levelNames = unescape(table$.data('levelNames')).split('|');
+			// clean unauthorized characters
+			levelName = CleanDeviceOptionValue(levelName);
 			if ((button$.prop("disabled") === true) ||			// limit length
 					(levelName === '') ||						// avoid empty name
 					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
 				return;
 			}
 			levelNames.push(levelName);
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 			AddSelectorAction();
 		};
 		BuildSelectorLevelsTable = function () {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|'),
+				levelNames = unescape(table$.data('levelNames')).split('|'),
 				levelNamesMaxLength = 11,
 				initializeTable = $('#selectorlevelstable_wrapper').length === 0,
 				oTable = (initializeTable) ? table$.dataTable({
@@ -1331,7 +1336,7 @@ define(['app'], function (app) {
 				}
 				if (index > 0) {
 					// Add Rename image
-					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
+					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
 					// Add Delete image
 					rendelImg += '&nbsp;';
 					rendelImg += '<img src="images/delete.png" title="' + $.t("Delete") + '" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
@@ -1359,17 +1364,20 @@ define(['app'], function (app) {
 		UpdateSelectorAction = function (index, levelAction) {
 			var table$ = $("#lightcontent #selectoractionstable"),
 				levelActions = table$.data('levelActions').split('|');
-			levelActions[index] = levelAction;
+			levelActions[index] = escape(levelAction);
 			table$.data('levelActions', levelActions.join('|'));
 			BuildSelectorActionsTable();
 		};
-		EditSelectorAction = function (index, levelAction) {
+		EditSelectorAction = function (index) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 			if (index >= 0) {
+				var table$ = $("#lightcontent #selectoractionstable"),
+					levelActions = table$.data('levelActions').split('|'),
+					levelAction = levelActions[index];
 				$("#dialog-editselectoraction #selectorlevelindex").val(index);
 				$("#dialog-editselectoraction #selectoraction").val(unescape(levelAction));
 				$("#dialog-editselectoraction").i18n();
@@ -1422,10 +1430,10 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 			$.each(levelActions, function (index, item) {
 				var level = index * 10,
-					levelAction = levelActions[index],
+					levelAction = unescape(levelActions[index]),
 					rendelImg = "";
 				// Add Rename image
-				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ',\'' + levelActions[index] + '\');" class="lcursor" width="16" height="16"></img>';
+				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				rendelImg += '&nbsp;';
 				rendelImg += '<img src="images/delete.png" title="' + $.t("Clear") + '" onclick="ClearSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				oTable.fnAddData({
@@ -1474,12 +1482,13 @@ define(['app'], function (app) {
 				$.selectorSwitchLevels = ssLevelNames.split('|');
 				$.selectorSwitchActions = ssLevelActions.split('|');
 				$.each($.selectorSwitchLevels, function (index, item) {
-					if (index <= ($.selectorSwitchActions.length - 1)) {
-						$.selectorSwitchActions[index] = decodeURIComponent($.selectorSwitchActions[index]);
-					} else {
+					if (index > ($.selectorSwitchActions.length - 1)) {
 						$.selectorSwitchActions.push(""); // force missing action
 					}
 				});
+				if ($.selectorSwitchActions.length > $.selectorSwitchLevels.length) { // truncate if necessary
+					$.selectorSwitchActions.splice($.selectorSwitchLevels.length, $.selectorSwitchActions.length - $.selectorSwitchLevels.length);
+				}
 			}
 
 			$('#modal').show();
@@ -1628,10 +1637,12 @@ define(['app'], function (app) {
 						var selectorLevelName$ = $("#dialog-renameselectorlevel #selectorlevelname"),
 							selectorIndex$ = $("#dialog-renameselectorlevel #selectorlevelindex"),
 							levelIndex = selectorIndex$.val(),
-							levelName = selectorLevelName$.val().trim(),
+							levelName = selectorLevelName$.val(),
 							table$ = $("#lightcontent #selectorlevelstable"),
-							levelNames = table$.data('levelNames').split('|'),
+							levelNames = unescape(table$.data('levelNames')).split('|'),
 							bValid = true;
+						// clean unauthorized characters
+						levelName = CleanDeviceOptionValue(levelName);
 						bValid = bValid && (levelIndex >= 0);
 						bValid = bValid && checkLength(selectorLevelName$, 2, 20);
 						bValid = bValid && (levelName !== '') &&			// avoid empty
@@ -1653,7 +1664,7 @@ define(['app'], function (app) {
 						title: $.t("Rename level name"),
 						buttons: dialog_renameselectorlevel_buttons
 					});
-					$("#lightcontent #selectorlevelstable").data('levelNames', $.selectorSwitchLevels.join('|'));
+					$("#lightcontent #selectorlevelstable").data('levelNames', escape($.selectorSwitchLevels.join('|')));
 					BuildSelectorLevelsTable();
 
 					dialog_editselectoraction_buttons[$.t("Save")] = function () {
