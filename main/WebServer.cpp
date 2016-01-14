@@ -3092,7 +3092,7 @@ namespace http {
 
 						int iTimerType = atoi(sd[6].c_str());
 						std::string sdate = sd[4];
-						if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+						if ((iTimerType == TTYPE_ONCEONLY) && (sdate.size() == 10))
 						{
 							int Year = atoi(sdate.substr(0, 4).c_str());
 							int Month = atoi(sdate.substr(5, 2).c_str());
@@ -3143,7 +3143,7 @@ namespace http {
 
 						int iTimerType = atoi(sd[6].c_str());
 						std::string sdate = sd[4];
-						if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+						if ((iTimerType == TTYPE_ONCEONLY) && (sdate.size() == 10))
 						{
 							int Year = atoi(sdate.substr(0, 4).c_str());
 							int Month = atoi(sdate.substr(5, 2).c_str());
@@ -6554,7 +6554,7 @@ namespace http {
 		{
 			m_retstr = "";
 			char szTmp[200];
-			for (int ii = 0; ii <= TTYPE_FIXEDDATETIME; ii++)
+			for (int ii = 0; ii <= TTYPE_ONCEONLY; ii++)
 			{
 				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
 				m_retstr += szTmp;
