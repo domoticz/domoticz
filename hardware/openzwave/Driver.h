@@ -149,6 +149,7 @@ namespace OpenZWave
 		void RemoveQueues( uint8 const _nodeId );
 
 		Thread*					m_driverThread;			/**< Thread for reading from the Z-Wave controller, and for creating and managing the other threads for sending, polling etc. */
+		Mutex*					m_initMutex;            /**< Mutex to ensure proper ordering of initialization/deinitialization */
 		bool					m_exit;					/**< Flag that is set when the application is exiting. */
 		bool					m_init;					/**< Set to true once the driver has been initialised */
 		bool					m_awakeNodesQueried;	/**< Set to true once the driver has polled all awake nodes */
@@ -418,9 +419,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		bool IsNodeZWavePlus( uint8 const _nodeId );
 
 
-		string GetNodeManufacturerId( uint8 const _nodeId );
-		string GetNodeProductType( uint8 const _nodeId );
-		string GetNodeProductId( uint8 const _nodeId );
+		uint16 GetNodeManufacturerId( uint8 const _nodeId );
+		uint16 GetNodeProductType( uint8 const _nodeId );
+		uint16 GetNodeProductId( uint8 const _nodeId );
 		void SetNodeManufacturerName( uint8 const _nodeId, string const& _manufacturerName );
 		void SetNodeProductName( uint8 const _nodeId, string const& _productName );
 		void SetNodeName( uint8 const _nodeId, string const& _nodeName );
@@ -479,7 +480,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 * Controller States.
 		 * States reported via the callback handler passed into the BeginControllerCommand method.
 		 * \see Manager::BeginControllerCommand
-	     */
+		 */
 		enum ControllerState
 		{
 			ControllerState_Normal = 0,				/**< No command in progress. */
@@ -658,7 +659,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 				m_queryStage(Node::QueryStage_None),
 				m_retry(false),
 				m_cci(NULL)
-		  	{}
+			{}
 
 			bool operator == ( MsgQueueItem const& _other )const
 			{

@@ -87,6 +87,7 @@ const char *szHelp=
 	"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
 	"\t-userdata file_path (for example /opt/domoticz)\n"
 #endif
+	"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 	"\t-verbose x (where x=0 is none, x=1 is debug)\n"
 	"\t-startupdelay seconds (default=0)\n"
 	"\t-nowwwpwd (in case you forgot the web server username/password)\n"
@@ -111,6 +112,7 @@ const char *szHelp=
 std::string szStartupFolder;
 std::string szUserDataFolder;
 std::string szWWWFolder;
+std::string szWebRoot;
 
 bool bHasInternalTemperature=false;
 std::string szInternalTemperatureCommand = "/opt/vc/bin/vcgencmd measure_temp";
@@ -397,7 +399,8 @@ int main(int argc, char**argv)
 
 	szStartupFolder = "";
 	szWWWFolder = "";
-
+	szWebRoot = "";
+	
 	CCmdLine cmdLine;
 
 	// parse argc,argv 
@@ -679,6 +682,18 @@ int main(int argc, char**argv)
 		std::string szroot = cmdLine.GetSafeArgument("-wwwroot", 0, "");
 		if (szroot.size() != 0)
 			szWWWFolder = szroot;
+	}
+
+	if (cmdLine.HasSwitch("-webroot"))
+	{
+		if (cmdLine.GetArgumentCount("-webroot") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a web root path");
+			return 1;
+		}
+		std::string szroot = cmdLine.GetSafeArgument("-webroot", 0, "");
+		if (szroot.size() != 0)
+			szWebRoot = szroot;
 	}
 
 	if (cmdLine.HasSwitch("-verbose"))

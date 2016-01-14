@@ -227,21 +227,65 @@
 									<br>			
 								</div>
 							</div>
-							<div id="NewHardware">
-								<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
-								<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td colspan="2">
-											<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
-										</td>
-									</tr>
-									<tr>
-										<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
-									</tr>
-									<tr>
-										<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"/> <span data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</span></td>
-									</tr>
-								</table>
+							<div class="row-fluid">
+								<div class="span6">
+									<div id="NewHardware">
+										<h2><span data-i18n="AcceptNewHardware">Hardware/Devices</span>:</h2>
+										<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
+											<tr>
+												<td colspan="2">
+													<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
+												</td>
+											</tr>
+											<tr>
+												<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
+											</tr>
+											<tr>
+												<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"/> <span data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</span></td>
+											</tr>
+										</table>
+									</div>
+								</div>
+								<div class="span6">
+									<div id="MyDomoticzTab">
+										<h2><span data-i18n="MyDomoticzSettings">MyDomoticz settings</span>:</h2>
+										<table class="display" id="mydomoticztable" border="0" cellpadding="0" cellspacing="0">
+											<tr>
+												<td>
+													<span data-i18n="MyInstanceId">MyDomoticz Instance ID</span>:
+												</td>
+												<td>
+													<span id="mydomoticzinstanceidid">(none)</span>
+												</td>
+											</tr>
+											<tr>
+												<td>
+													MyDomoticz <span data-i18n="API Key"></span>:
+												</td>
+												<td>
+													<span id="mydomoticzuseridid"><input type="text" name="MyDomoticzUserId" id="MyDomoticzUserId" value="" class="text ui-widget-content ui-corner-all" /></span>
+												</td>
+											</tr>
+											<tr>
+												<td>
+													<span data-i18n="Password">MyDomoticz password</span>:
+												</td>
+												<td>
+													<span id="mydomoticzpasswordid"><input type="password" name="MyDomoticzPassword" id="MyDomoticzPassword" value="" class="text ui-widget-content ui-corner-all" /></span>
+												</td>
+											</tr>
+											<tr>
+												<td colspan="2">
+													<input type="checkbox" name="SubsystemHttp" id="SubsystemHttp" value="1" /> <span data-i18n="Enabled"></span><br/>
+													<input type="checkbox" name="SubsystemShared" id="SubsystemShared" value="2" /> <span data-i18n="SharedDomoticzAllowed">Shared Domoticz Allowed</span><br/>
+													<input type="checkbox" name="SubsystemApps" id="SubsystemApps" value="4" /> <span data-i18n="AppsAllowed">Apps Allowed</span>
+												</td>
+											</tr>
+										</table>
+										<br/>
+										To register for a MyDomoticz account, click <a href="https://my.domoticz.com/login" target="_blank">here</a>.
+									</div>
+								</div>
 							</div>
 							<br>			
 							<div id="ActiveTabs">
@@ -300,16 +344,6 @@
 									<option value="6">6</option>
 									<option value="7">7</option>
 								</select>&nbsp;&nbsp;<button data-i18n="Clear" class="btn btn-danger" ng-click="CleanupShortLog()">Clear</button></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Interval">Interval</span>: </label></td>
-								<td><select id="comboshortloginterval" name="ShortLogInterval" style="width:60px" class="combobox ui-corner-all">
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-									<option value="5">5</option>
-								</select>&nbsp;&nbsp;<span data-i18n="Minutes">Minutes</span></td>
 							</tr>
 							</table>
 						</section>
@@ -473,7 +507,7 @@
 										<td align="right"><label for="HTTPURL"><span data-i18n="URL"></span>/<span data-i18n="Action"></span>: </label></td>
 										<td>
 											<textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
-											<span data-i18n="(Should start with http:// or script://)">(Should start with http:// or script://)</span><br>
+											<span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span><br>
 											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE
 										</td>
 									</tr>
@@ -913,16 +947,6 @@
 								<td>
 									<input type="input" id="UVCParams" name="UVCParams" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
 									(<span data-i18n="default"></span>: -S80 -B128 -C128 -G80 -x800 -y600 -q100)
-								</td>
-							</tr>
-							</table>
-							<br>
-							<h2><span data-i18n="Degree Days"></span>:</h2>
-							<table class="display" id="ddaystable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:140px; vertical-align:top;"><label><span data-i18n="Base Temperature"></span>: </label></td>
-								<td>
-									<input type="input" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 								</td>
 							</tr>
 							</table>

@@ -823,6 +823,10 @@ define(['app'], function (app) {
 				if ($('#scenecontent #timerparamstable #ChkSun').is(":checked"))
 					tsettings.days|=0x40;
 			}
+			tsettings.mday=$("#scenecontent #timerparamstable #days").val();
+			tsettings.month=$("#scenecontent #timerparamstable #months").val();
+			tsettings.occurence=$("#scenecontent #timerparamstable #occurence").val();
+			tsettings.weekday=$("#scenecontent #timerparamstable #weekdays").val();
 			if (tsettings.cmd==0)
 			{
 				if ($.isDimmer) {
@@ -849,6 +853,34 @@ define(['app'], function (app) {
 					return;
 				}
 			}
+			else if ((tsettings.timertype==6) || (tsettings.timertype==7)) {
+				tsettings.days = 0x80;
+			}
+			else if (tsettings.timertype==10) {
+				tsettings.days = 0x80;
+				if (tsettings.mday>28) {
+					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
+				}
+			}
+			else if (tsettings.timertype==12) {
+				tsettings.days = 0x80;
+				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
+					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
+					return;
+				}
+				if (tsettings.month==2) {
+					if (tsettings.mday>29) {
+						ShowNotify($.t('February does not have more than 29 days!'), 2500, true);
+						return;
+					}
+					if (tsettings.mday==29) {
+						ShowNotify($.t('Not all years have this date, some years will be skipped!'), 2500, true);
+					}
+				}
+			}
+			else if ((tsettings.timertype==11) || (tsettings.timertype==13)) {
+				tsettings.days = Math.pow(2, tsettings.weekday);
+			}
 			else if (tsettings.days==0)
 			{
 				ShowNotify($.t('Please select some days!'), 2500, true);
@@ -864,7 +896,10 @@ define(['app'], function (app) {
 							"&randomness=" + tsettings.Randomness +
 							"&command=" + tsettings.cmd +
 							"&level=" + tsettings.level +
-							"&days=" + tsettings.days,
+							"&days=" + tsettings.days +
+							"&mday=" + tsettings.mday +
+							"&month=" + tsettings.month +
+							"&occurence=" + tsettings.occurence,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -894,6 +929,34 @@ define(['app'], function (app) {
 					return;
 				}
 			}
+			else if ((tsettings.timertype==6) || (tsettings.timertype==7)) {
+				tsettings.days = 0x80;
+			}
+			else if (tsettings.timertype==10) {
+				tsettings.days = 0x80;
+				if (tsettings.mday>28) {
+					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
+				}
+			}
+			else if (tsettings.timertype==12) {
+				tsettings.days = 0x80;
+				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
+					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
+					return;
+				}
+				if (tsettings.month==2) {
+					if (tsettings.mday>29) {
+						ShowNotify($.t('February does not have more than 29 days!'), 2500, true);
+						return;
+					}
+					if (tsettings.mday==29) {
+						ShowNotify($.t('Not all years have this date, some years will be skipped!'), 2500, true);
+					}
+				}
+			}
+			else if ((tsettings.timertype==11) || (tsettings.timertype==13)) {
+				tsettings.days = Math.pow(2, tsettings.weekday);
+			}
 			else if (tsettings.days==0)
 			{
 				ShowNotify($.t('Please select some days!'), 2500, true);
@@ -909,7 +972,10 @@ define(['app'], function (app) {
 							"&randomness=" + tsettings.Randomness +
 							"&command=" + tsettings.cmd +
 							"&level=" + tsettings.level +
-							"&days=" + tsettings.days,
+							"&days=" + tsettings.days +
+							"&mday=" + tsettings.mday +
+							"&month=" + tsettings.month +
+							"&occurence=" + tsettings.occurence,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -965,7 +1031,7 @@ define(['app'], function (app) {
 					}
 					var DayStr = "";
 					var DayStrOrig = "";
-					if (item.Type!=5) {
+					if ((item.Type<=4) || (item.Type==8) || (item.Type==9)) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
 							DayStrOrig="Everyday";
@@ -1004,17 +1070,36 @@ define(['app'], function (app) {
 							}
 						}
 					}
+					else if (item.Type==10) {
+						DayStrOrig="Monthly on Day " + item.MDay;
+					}
+					else if (item.Type==11) {
+						var Weekday = Math.log2(parseInt(item.Days));
+						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
+					}
+					else if (item.Type==12) {
+						DayStrOrig="Yearly on " + item.MDay + " " + $.myglobals.MonthStr[item.Month-1];
+					}
+					else if (item.Type==13) {
+						var Weekday = Math.log2(parseInt(item.Days));
+						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
+					}
+
 					//translate daystring
-					var res = DayStrOrig.split(", ");
+					var splitstr = ", ";
+					if (item.Type > 5) {
+						splitstr = " ";
+					}
+					var res = DayStrOrig.split(splitstr);
 					$.each(res, function(i,item){
 						DayStr+=$.t(item);
 						if (i!=res.length-1) {
-							DayStr+=", ";
+							DayStr+=splitstr;
 						}
 					});
 
 					var rEnabled="No";
-					if (item.Randomness==true) {
+					if (item.Randomness=="true") {
 						rEnabled="Yes";
 					}
 							
@@ -1033,7 +1118,11 @@ define(['app'], function (app) {
 						"3": item.Time,
 						"4": $.t(rEnabled),
 						"5": $.t(tCommand),
-						"6": DayStr
+						"6": DayStr,
+						"7": item.Month,
+						"8": item.MDay,
+						"9": item.Occurence,
+						"10": Math.log2(parseInt(item.Days))
 					} );
 				});
 			  }
@@ -1076,10 +1165,59 @@ define(['app'], function (app) {
 								$("#scenecontent #timerparamstable #sdate").val(data["2"]);
 								$("#scenecontent #timerparamstable #rdate").show();
 								$("#scenecontent #timerparamstable #rnorm").hide();
+								$("#scenecontent #timerparamstable #rdays").hide();
+								$("#scenecontent #timerparamstable #roccurence").hide();
+								$("#scenecontent #timerparamstable #rmonths").hide();
+							}
+							else if ((timerType==6) || (timerType==7)) {
+								$("#scenecontent #timerparamstable #rdate").hide();
+								$("#scenecontent #timerparamstable #rnorm").hide();
+								$("#scenecontent #timerparamstable #rdays").hide();
+								$("#scenecontent #timerparamstable #roccurence").hide();
+								$("#scenecontent #timerparamstable #rmonths").hide();
+							}
+							else if (timerType==10) {
+								$("#scenecontent #timerparamstable #days").val(data["8"]);
+								$("#scenecontent #timerparamstable #rdate").hide();
+								$("#scenecontent #timerparamstable #rnorm").hide();
+								$("#scenecontent #timerparamstable #rdays").show();
+								$("#scenecontent #timerparamstable #roccurence").hide();
+								$("#scenecontent #timerparamstable #rmonths").hide();
+							}
+							else if (timerType==11) {
+								$("#scenecontent #timerparamstable #occurence").val(data["9"]);
+								$("#scenecontent #timerparamstable #weekdays").val(data["10"]);
+								$("#scenecontent #timerparamstable #rdate").hide();
+								$("#scenecontent #timerparamstable #rnorm").hide();
+								$("#scenecontent #timerparamstable #rdays").hide();
+								$("#scenecontent #timerparamstable #roccurence").show();
+								$("#scenecontent #timerparamstable #rmonths").hide();
+							}
+							else if (timerType==12) {
+								$("#scenecontent #timerparamstable #months").val(data["7"]);
+								$("#scenecontent #timerparamstable #days").val(data["8"]);
+								$("#scenecontent #timerparamstable #rdate").hide();
+								$("#scenecontent #timerparamstable #rnorm").hide();
+								$("#scenecontent #timerparamstable #rdays").show();
+								$("#scenecontent #timerparamstable #roccurence").hide();
+								$("#scenecontent #timerparamstable #rmonths").show();
+							}
+							else if (timerType==13) {
+								$("#scenecontent #timerparamstable #months").val(data["7"]);
+								$("#scenecontent #timerparamstable #occurence").val(data["9"]);
+								$("#scenecontent #timerparamstable #weekdays").val(data["10"]);
+								$("#scenecontent #timerparamstable #rdate").hide();
+								$("#scenecontent #timerparamstable #rnorm").hide();
+								$("#scenecontent #timerparamstable #rdays").hide();
+								$("#scenecontent #timerparamstable #roccurence").show();
+								$("#scenecontent #timerparamstable #rmonths").show();
 							}
 							else {
 								$("#scenecontent #timerparamstable #rdate").hide();
 								$("#scenecontent #timerparamstable #rnorm").show();
+								$("#scenecontent #timerparamstable #rdays").hide();
+								$("#scenecontent #timerparamstable #roccurence").hide();
+								$("#scenecontent #timerparamstable #rmonths").hide();
 							}
 							
 							var disableDays=false;
@@ -1146,6 +1284,9 @@ define(['app'], function (app) {
 		  $('#scenecontent').i18n();
 		  $("#scenecontent #timerparamstable #rdate").hide();
 		  $("#scenecontent #timerparamstable #rnorm").show();
+		  $("#scenecontent #timerparamstable #rdays").hide();
+		  $("#scenecontent #timerparamstable #roccurence").hide();
+		  $("#scenecontent #timerparamstable #rmonths").hide();
 		  
 			var nowTemp = new Date();
 			var now = new Date(nowTemp.getFullYear(), nowTemp.getMonth(), nowTemp.getDate(), 0, 0, 0, 0);
@@ -1161,10 +1302,51 @@ define(['app'], function (app) {
 				if (timerType==5) {
 					$("#scenecontent #timerparamstable #rdate").show();
 					$("#scenecontent #timerparamstable #rnorm").hide();
+					$("#scenecontent #timerparamstable #rdays").hide();
+					$("#scenecontent #timerparamstable #roccurence").hide();
+					$("#scenecontent #timerparamstable #rmonths").hide();
+				}
+				else if ((timerType==6) || (timerType==7)) {
+					$("#scenecontent #timerparamstable #rdate").hide();
+					$("#scenecontent #timerparamstable #rnorm").hide();
+					$("#scenecontent #timerparamstable #rdays").hide();
+					$("#scenecontent #timerparamstable #roccurence").hide();
+					$("#scenecontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==10) {
+					$("#scenecontent #timerparamstable #rdate").hide();
+					$("#scenecontent #timerparamstable #rnorm").hide();
+					$("#scenecontent #timerparamstable #rdays").show();
+					$("#scenecontent #timerparamstable #roccurence").hide();
+					$("#scenecontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==11) {
+					$("#scenecontent #timerparamstable #rdate").hide();
+					$("#scenecontent #timerparamstable #rnorm").hide();
+					$("#scenecontent #timerparamstable #rdays").hide();
+					$("#scenecontent #timerparamstable #roccurence").show();
+					$("#scenecontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==12) {
+					$("#scenecontent #timerparamstable #rdate").hide();
+					$("#scenecontent #timerparamstable #rnorm").hide();
+					$("#scenecontent #timerparamstable #rdays").show();
+					$("#scenecontent #timerparamstable #roccurence").hide();
+					$("#scenecontent #timerparamstable #rmonths").show();
+				}
+				else if (timerType==13) {
+					$("#scenecontent #timerparamstable #rdate").hide();
+					$("#scenecontent #timerparamstable #rnorm").hide();
+					$("#scenecontent #timerparamstable #rdays").hide();
+					$("#scenecontent #timerparamstable #roccurence").show();
+					$("#scenecontent #timerparamstable #rmonths").show();
 				}
 				else {
 					$("#scenecontent #timerparamstable #rdate").hide();
 					$("#scenecontent #timerparamstable #rnorm").show();
+					$("#scenecontent #timerparamstable #rdays").hide();
+					$("#scenecontent #timerparamstable #roccurence").hide();
+					$("#scenecontent #timerparamstable #rmonths").hide();
 				}
 			});
 
@@ -1185,12 +1367,13 @@ define(['app'], function (app) {
 						} );
 			$('#timerparamstable #combotimehour >option').remove();
 			$('#timerparamstable #combotimemin >option').remove();
+			$('#timerparamstable #days >option').remove();
 
 			if (itemtype=="Scene") {
 				$("#scenecontent #timerparamstable #combocommand option[value='1']").remove();
 			}
 						
-		  //fill hour/minute comboboxes
+		  //fill hour/minute/days comboboxes
 		  for (ii=0; ii<24; ii++)
 		  {
 				$('#timerparamstable #combotimehour').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
@@ -1198,6 +1381,10 @@ define(['app'], function (app) {
 		  for (ii=0; ii<60; ii++)
 		  {
 				$('#timerparamstable #combotimemin').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
+		  }
+		  for (ii=1; ii<=31; ii++)
+		  {
+				$('#timerparamstable #days').append($('<option></option>').val(ii).html(ii));  
 		  }
 		  $("#scenecontent #timerparamstable #when_1").click(function() {
 				EnableDisableDays("Everyday",true);
@@ -1515,6 +1702,9 @@ define(['app'], function (app) {
 			$.myglobals = {
 				TimerTypesStr : [],
 				CommandStr : [],
+				OccurenceStr : [],
+				MonthStr : [],
+				WeekdayStr : [],
 				SelectedTimerIdx: 0
 			};
 			$.LightsAndSwitches = [];
@@ -1525,6 +1715,15 @@ define(['app'], function (app) {
 			});
 			$('#timerparamstable #combocommand > option').each(function() {
 						 $.myglobals.CommandStr.push($(this).text());
+			});
+			$('#timerparamstable #occurence > option').each(function() {
+						 $.myglobals.OccurenceStr.push($(this).text());
+			});
+			$('#timerparamstable #months > option').each(function() {
+						 $.myglobals.MonthStr.push($(this).text());
+			});
+			$('#timerparamstable #weekdays > option').each(function() {
+						 $.myglobals.WeekdayStr.push($(this).text());
 			});
 
 			$( "#dialog-addscene" ).dialog({

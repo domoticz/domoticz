@@ -12,7 +12,7 @@
 		<meta name="description" content="" />
 		<meta name="keywords" content="" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="shortcut icon" href="favicon.ico" />
 		<link rel="apple-touch-icon" href="images/iphone-icon.png"/>
 		<link rel="icon" sizes="196x196" href="images/logo.png">
 		<link rel="icon" sizes="192x192" href="images/logo192.png">
@@ -129,6 +129,10 @@ function ClearNotifyCacheRefresh()
 }
 
 function logEvent(event) {
+	var re = /https:\/\/my.domoticz.com\/.*\/html5.appcache/i;
+	if (event.type == "error" && event.url.match(re) != null) {
+		document.location = "https://my.domoticz.com/mydomoticz/dashboard";
+	}
 }
 
 if (window.applicationCache) {
@@ -254,7 +258,8 @@ $(document).ready(function() {
 		DegreeDaysBaseTemperature: 18.0,
 		historytype : 1,
 		LastPlanSelected: 0,
-		DashboardType: 0
+		DashboardType: 0,
+		isproxied: false
 	};
 
 	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
@@ -1304,11 +1309,7 @@ $(document).ready(function() {
 				</tr>
 				<tr>
 					<td align="right"><label for="checkalways"><span data-i18n="Ignore Interval">Ignore Interval</span>:</label></td>
-					<td><input type="checkbox" id="checkalways"></td>
-				</tr>
-				<tr>
-					<td></td>
-					<td><span data-i18n="If enabled, it will bypass the Notification interval specified in the Settings page">If enabled, it will bypass the Notification interval specified in the Settings page</span></td>
+					<td><input type="checkbox" id="checkalways">&nbsp;(<span data-i18n="If enabled, it will bypass the Notification interval specified in the Settings page">If enabled, it will bypass the Notification interval specified in the Settings page</span>)</td>
 				</tr>
 				<tr>
 					<td align="right"><label for="custommessage"><span data-i18n="Custom Message"></span>:</label></td>
@@ -1339,6 +1340,8 @@ $(document).ready(function() {
                 <div class="container">
 					<a class="brand hidden-phone" id="version" href="#Dashboard"><img src="images/logo/57.png"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
                         <ul class="nav" id="appnavbar">
+                            <li ng-show="config.EnableTabProxy" class="clDashboard"><a id="cProxy" href="/mydomoticz/dashboard"><img src="images/proxy.png"> <span class="hidden-phone hidden-tablet" data-i18n="Proxy">Proxy</span></a></li>
+                            <li ng-show="config.EnableTabDashboard" class="divider-vertical clDashboard"></li>
                             <li ng-show="config.EnableTabDashboard" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
                             <li ng-show="config.EnableTabFloorplans" class="divider-vertical clFloorplans"></li>
 							<li ng-show="config.EnableTabFloorplans" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>

@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# ref 1146
+# ref 1172
 
 CACHE:
 # CSS
@@ -241,6 +241,7 @@ images/Printer48_Off.png
 images/Printer48_On.png
 images/program.png
 images/program_mini.png
+images/proxy.png
 images/push.png
 images/push48.png
 images/pushoff.png
@@ -419,6 +420,7 @@ i18n/domoticz-fi.json
 i18n/domoticz-fr.json
 i18n/domoticz-he.json
 i18n/domoticz-hu.json
+i18n/domoticz-is.json
 i18n/domoticz-it.json
 i18n/domoticz-lt.json
 i18n/domoticz-mk.json
@@ -576,5 +578,5 @@ ozwcp/cp.html
 
 # Fallback content
 FALLBACK:
-/images images/iphone-icon.png
+images images/iphone-icon.png
 / views/offline.html

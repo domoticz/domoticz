@@ -14,13 +14,49 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_array.hpp>
+#ifdef WIN32
+#include <boost/date_time/local_time/local_time.hpp>
+#include <boost/date_time/date.hpp>
+#endif
+#include <time.h>
 #include "mime_types.hpp"
 #include "reply.hpp"
 #include "request.hpp"
 #include "cWebem.h"
 #include "GZipHelper.h"
 
+// remove
+#include "../main/Logger.h"
+
 #define ZIPREADBUFFERSIZE (8192)
+
+#define HTTP_DATE_RFC_1123 "%a, %d %b %Y %H:%M:%S %Z" // Sun, 06 Nov 1994 08:49:37 GMT
+#define HTTP_DATE_RFC_850  "%A, %d-%b-%y %H:%M:%S %Z" // Sunday, 06-Nov-94 08:49:37 GMT
+#define HTTP_DATE_ASCTIME  "%a %b %e %H:%M:%S %Y"     // Sun Nov  6 08:49:37 1994
+
+#ifdef WIN32
+// some ported functions
+#define timegm _mkgmtime
+#define stat _stat
+
+extern "C" const char* strptime(const char* s, const char* f, struct tm* tm)
+{
+	try {
+		boost::posix_time::ptime d;
+		std::stringstream ss;
+		ss.exceptions(std::ios_base::failbit);
+		boost::local_time::local_time_input_facet *input_facet = new boost::local_time::local_time_input_facet(f);
+		ss.imbue(std::locale(ss.getloc(), input_facet));
+		ss.str(s);
+		ss >> d; // throws bad date exception AND sets failbit on stream
+		*tm = boost::posix_time::to_tm(d);
+		return s + strlen(s);
+	}
+	catch (...) {
+	}
+	return NULL;
+}
+#endif
 
 namespace http {
 namespace server {
@@ -28,7 +64,6 @@ namespace server {
 
 request_handler::request_handler(const std::string& doc_root, cWebem* webem)
   : doc_root_(doc_root), myWebem(webem)
-
 {
 #ifndef WEBSERVER_DONT_USE_ZIP
 	m_uf=NULL;
@@ -82,8 +117,96 @@ int request_handler::do_extract_currentfile(unzFile uf, const char* password, st
 }
 #endif
 
+static time_t convert_from_http_date(const std::string &str)
+{
+	if (str.empty())
+		return 0;
+
+	struct tm time_data;
+	memset(&time_data, 0, sizeof(struct tm));
+
+	bool success = strptime(str.c_str(), HTTP_DATE_RFC_1123, &time_data)
+		|| strptime(str.c_str(), HTTP_DATE_RFC_850, &time_data)
+		|| strptime(str.c_str(), HTTP_DATE_ASCTIME, &time_data);
+
+	if (!success)
+		return 0;
+
+	return timegm(&time_data);
+}
+
+static std::string convert_to_http_date(time_t time)
+{
+	struct tm *tm_result = gmtime(&time);
+
+	if (!tm_result)
+		return std::string();
+
+	char buffer[1024];
+	strftime(buffer, sizeof(buffer), HTTP_DATE_RFC_1123, tm_result);
+	buffer[sizeof(buffer) - 1] = '\0';
+
+	return buffer;
+}
+
+static time_t last_write_time(const std::string &path)
+{
+	struct stat st;
+	if (stat(path.c_str(), &st) == 0) {
+		return st.st_mtime;
+	}
+	_log.Log(LOG_ERROR, "stat returned errno = %d", errno);
+	return 0;
+}
+
+bool request_handler::not_modified(std::string full_path, const request &req, reply &rep, modify_info &mInfo)
+{
+	mInfo.last_written = last_write_time(full_path);
+	if (mInfo.last_written == 0) {
+		// file system doesn't support this, don't enable header
+		mInfo.mtime_support = false;
+		mInfo.is_modified = true;
+		return false;
+	}
+	mInfo.mtime_support = true;
+	// propagate timestamp to browser
+	reply::AddHeader(&rep, "Last-Modified", convert_to_http_date(mInfo.last_written));
+	const char *if_modified = request::get_req_header(&req, "If-Modified-Since");
+	if (NULL == if_modified) {
+		// we have no if-modified header, continue to serve content
+		mInfo.is_modified = true;
+		//_log.Log(LOG_STATUS, "%s: No If-Modified-Since header", full_path.c_str());
+		return false;
+	}
+	time_t if_modified_since_time = convert_from_http_date(if_modified);
+	if (if_modified_since_time >= mInfo.last_written) {
+		mInfo.is_modified = false;
+		if (mInfo.delay_status) {
+			//_log.Log(LOG_STATUS, "%s: Delaying status code", full_path.c_str());
+			return false;
+		}
+		else {
+			rep = reply::stock_reply(reply::not_modified);
+			//_log.Log(LOG_STATUS, "%s: Setting status code reply::not_modified", full_path.c_str());
+			return true;
+		}
+	}
+	mInfo.is_modified = true;
+	// file is newer, force new content
+	//_log.Log(LOG_STATUS, "%s: Force content", full_path.c_str());
+	return false;
+}
+
 void request_handler::handle_request(const request& req, reply& rep)
 {
+	modify_info mInfo;
+	handle_request(req, rep, mInfo);
+}
+
+
+void request_handler::handle_request(const request &req, reply &rep, modify_info &mInfo)
+{
+  mInfo.mtime_support = false;
   // Decode url to path.
   std::string request_path;
   if (!url_decode(req.uri, request_path))
@@ -91,38 +214,14 @@ void request_handler::handle_request(const request& req, reply& rep)
     rep = reply::stock_reply(reply::bad_request);
     return;
   }
-  if (request_path.find(".htpasswd")!=std::string::npos)
-  {
-	  rep = reply::stock_reply(reply::bad_request);
-	  return;
-  }
 
-  int paramPos = request_path.find_first_of('?');
-  if (paramPos != std::string::npos)
-  {
-	  request_path = request_path.substr(0, paramPos);
-  }
-
-  // Request path must be absolute and not contain "..".
-  if (request_path.empty() || request_path[0] != '/'
-      || request_path.find("..") != std::string::npos)
+  if (myWebem->IsBadRequestPath(request_path))
   {
     rep = reply::stock_reply(reply::bad_request);
     return;
   }
 
-  if (request_path.find("/@login")==0)
-	  request_path="/";
-
-  // If path ends in slash (i.e. is a directory) then add "index.html".
-  if (request_path[request_path.size() - 1] == '/')
-  {
-    request_path += "index.html";
-  }
-  else if (request_path.find("/acttheme/") == 0)
-  {
-	  request_path = myWebem->m_actTheme + request_path.substr(9);
-  }
+  request_path = myWebem->ExtractRequestPath(request_path);
 
   // Determine the file extension.
   std::size_t last_slash_pos = request_path.find_last_of("/");
@@ -162,6 +261,11 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		  if (is)
 		  {
+			  mInfo.delay_status = false;
+			  if (not_modified(full_path, req, rep, mInfo)) {
+				  return;
+			  }
+			  // check if file date is still the same since last request
 			  bHaveLoadedgzip=true;
 			  rep.bIsGZIP=true;
 			  // Fill out the reply to be sent to the client.
@@ -182,6 +286,7 @@ void request_handler::handle_request(const request& req, reply& rep)
 			  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
 			  if (is.is_open())
 			  {
+				  // check if file date is still the same since last request
 				  bHaveLoadedgzip = true;
 				  std::string gzcontent((std::istreambuf_iterator<char>(is)),
 					  (std::istreambuf_iterator<char>()));
@@ -217,6 +322,12 @@ void request_handler::handle_request(const request& req, reply& rep)
 			  rep.status = reply::ok;
 			  rep.content.append((std::istreambuf_iterator<char>(is)),
 				  (std::istreambuf_iterator<char>()));
+			  // set delay_status to true, because it can possibly have
+			  // include codes in it.
+			  mInfo.delay_status = true;
+			  if (not_modified(full_path, req, rep, mInfo)) {
+				  return;
+			  }
 		  }
 	  }
   }
@@ -236,7 +347,7 @@ void request_handler::handle_request(const request& req, reply& rep)
 		  std::string gzpath = request_path + ".gz";
 		  if (unzLocateFile(m_uf,gzpath.c_str(),0)==UNZ_OK)
 		  {
-			  if (do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
+			  if (myWebem && do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
 			  {
 				  rep = reply::stock_reply(reply::not_found);
 				  return;
@@ -251,7 +362,7 @@ void request_handler::handle_request(const request& req, reply& rep)
 			  rep = reply::stock_reply(reply::not_found);
 			  return;
 		  }
-		  if (do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
+		  if (myWebem && do_extract_currentfile(m_uf,myWebem->m_zippassword.c_str(),rep.content)!=UNZ_OK)
 		  {
 			  rep = reply::stock_reply(reply::not_found);
 			  return;
@@ -261,35 +372,18 @@ void request_handler::handle_request(const request& req, reply& rep)
 
   }
 #endif
-  int ExtraHeaders = 0;
-  if (req.keep_alive)
-  {
-	  ExtraHeaders += 2;
-  }
-  if (!bHaveLoadedgzip)
-	  rep.headers.resize(3 + ExtraHeaders);
-  else
-	  rep.headers.resize(4 + ExtraHeaders);
-  
-  int iHeader = 0;
 
-  rep.headers[iHeader].name = "Content-Length";
-  rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-  rep.headers[iHeader].name = "Content-Type";
-  rep.headers[iHeader++].value = mime_types::extension_to_type(extension);
-  rep.headers[iHeader].name = "Access-Control-Allow-Origin";
-  rep.headers[iHeader++].value = "*";
+  reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+  reply::AddHeader(&rep, "Content-Type", mime_types::extension_to_type(extension));
+  reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
   if (req.keep_alive)
   {
-	  rep.headers[iHeader].name = "Connection";
-	  rep.headers[iHeader++].value = "Keep-Alive";
-	  rep.headers[iHeader].name = "Keep-Alive";
-	  rep.headers[iHeader++].value = "max=20, timeout=10";
+  	reply::AddHeader(&rep, "Connection", "Keep-Alive");
+  	reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
   }
   if (bHaveLoadedgzip)
   {
-	  rep.headers[iHeader].name = "Content-Encoding";
-	  rep.headers[iHeader++].value = "gzip";
+	reply::AddHeader(&rep, "Content-Encoding", "gzip");
   }
 }
 

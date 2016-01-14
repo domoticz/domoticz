@@ -55,7 +55,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;NS_ENABLE_SSL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;NS_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -210,6 +210,7 @@
     <ClInclude Include="..\main\Camera.h" />
     <ClInclude Include="..\main\CmdLine.h" />
     <ClInclude Include="..\hardware\DomoticzHardware.h" />
+    <ClInclude Include="..\hardware\DomoticzInternal.h" />
     <ClInclude Include="..\hardware\DomoticzTCP.h" />
     <ClInclude Include="..\hardware\hardwaretypes.h" />
     <ClInclude Include="..\main\concurrent_queue.h" />
@@ -264,6 +265,8 @@
     <ClInclude Include="..\notifications\NotificationPushover.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
+    <ClInclude Include="..\webserver\proxyclient.h" />
+    <ClInclude Include="..\webserver\proxycommon.h" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
@@ -402,6 +405,7 @@
     <ClCompile Include="..\hardware\Rego6XXSerial.cpp" />
     <ClCompile Include="..\main\CmdLine.cpp" />
     <ClCompile Include="..\hardware\DomoticzHardware.cpp" />
+    <ClCompile Include="..\hardware\DomoticzInternal.cpp" />
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
     <ClCompile Include="..\main\DataPush.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
@@ -525,6 +529,8 @@
     <ClCompile Include="..\webserver\connection_manager.cpp" />
     <ClCompile Include="..\webserver\cWebem.cpp" />
     <ClCompile Include="..\webserver\mime_types.cpp" />
+    <ClCompile Include="..\webserver\proxyclient.cpp" />
+    <ClCompile Include="..\webserver\proxycommon.cpp" />
     <ClCompile Include="..\webserver\reply.cpp" />
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />

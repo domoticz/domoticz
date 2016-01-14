@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WebServer.h"
+#include "WebServerHelper.h"
 #include <boost/bind.hpp>
 #include <iostream>
 #include <fstream>
@@ -88,6 +89,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "fi", "Finnish" },
 	{ "he", "Hebrew" },
 	{ "hu", "Hungarian" },
+	{ "is", "Icelandic" },
 	{ "it", "Italian" },
 	{ "lt", "Lithuanian" },
 	{ "mk", "Macedonian" },
@@ -104,6 +106,8 @@ static const _tGuiLanguage guiLanguage[] =
 
 	{ NULL, NULL }
 };
+
+extern http::server::CWebServerHelper m_webservers;
 
 namespace http {
 	namespace server {
@@ -354,6 +358,7 @@ namespace http {
 			m_pWebEm->RegisterIncludeCode("switchtypes", boost::bind(&CWebServer::DisplaySwitchTypesCombo, this));
 			m_pWebEm->RegisterIncludeCode("metertypes", boost::bind(&CWebServer::DisplayMeterTypesCombo, this));
 			m_pWebEm->RegisterIncludeCode("timertypes", boost::bind(&CWebServer::DisplayTimerTypesCombo, this));
+			m_pWebEm->RegisterIncludeCode("timertypesextended", boost::bind(&CWebServer::DisplayTimerTypesComboExtendend, this));
 			m_pWebEm->RegisterIncludeCode("combolanguage", boost::bind(&CWebServer::DisplayLanguageCombo, this));
 
 			m_pWebEm->RegisterPageCode("/json.htm", boost::bind(&CWebServer::GetJSonPage, this, _1, _2));
@@ -506,7 +511,7 @@ namespace http {
 			RegisterCommandCode("devices_list", boost::bind(&CWebServer::Cmd_GetDevicesList, this, _1, _2, _3));
 			RegisterCommandCode("devices_list_onoff", boost::bind(&CWebServer::Cmd_GetDevicesListOnOff, this, _1, _2, _3));
 
-			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_RegisterWithPhilipsHue, this, _1, _2, _3));
+			RegisterCommandCode("registerhue", boost::bind(&CWebServer::Cmd_PhilipsHueRegister, this, _1, _2, _3));
 
 			RegisterCommandCode("getcustomiconset", boost::bind(&CWebServer::Cmd_GetCustomIconSet, this, _1, _2, _3));
 			RegisterCommandCode("deletecustomicon", boost::bind(&CWebServer::Cmd_DeleteCustomIcon, this, _1, _2, _3));
@@ -632,11 +637,19 @@ namespace http {
 				return;
 			m_pWebEm->SetAuthenticationMethod((_eAuthenticationMethod)amethod);
 		}
+
 		void CWebServer::SetWebTheme(const std::string &themename)
 		{
 			if (m_pWebEm == NULL)
 				return;
 			m_pWebEm->SetWebTheme(themename);
+		}
+
+		void CWebServer::SetWebRoot(const std::string &webRoot)
+		{
+			if (m_pWebEm == NULL)
+				return;
+			m_pWebEm->SetWebRoot(webRoot);
 		}
 
 		void CWebServer::RegisterCommandCode(const char* idname, webserver_response_function ResponseFunction, bool bypassAuthentication)
@@ -992,6 +1005,10 @@ namespace http {
 					}
 				}
 			}
+			else if (htype == HTYPE_DomoticzInternal)	{
+				// DomoticzInternal cannot be added manually
+				return;
+			}
 			else if (htype == HTYPE_Domoticz) {
 				//Remote Domoticz
 				if (address == "")
@@ -1217,6 +1234,10 @@ namespace http {
 				//Lan
 				if (address == "")
 					return;
+			}
+			else if (htype == HTYPE_DomoticzInternal) {
+				// DomoticzInternal cannot be updated
+				return;
 			}
 			else if (htype == HTYPE_Domoticz) {
 				//Remote Domoticz
@@ -1535,6 +1556,12 @@ namespace http {
 			if (idx == "")
 				return;
 			int hwID = atoi(idx.c_str());
+
+			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardware(hwID);
+			if ((pBaseHardware != NULL) && (pBaseHardware->HwdType == HTYPE_DomoticzInternal)) {
+				// DomoticzInternal cannot be removed
+				return;
+			}
 
 			root["status"] = "OK";
 			root["title"] = "DeleteHardware";
@@ -2099,7 +2126,7 @@ namespace http {
 				}
 
 			}
-			
+
 			int nValue;
 			std::string sValue;
 
@@ -2150,6 +2177,11 @@ namespace http {
 			root["Latitude"] = Latitude;
 			root["Longitude"] = Longitude;
 
+#ifndef NOCLOUD
+			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
+#else
+			bool bEnableTabProxy = false;
+#endif
 			int bEnableTabDashboard = 1;
 			int bEnableTabFloorplans = 1;
 			int bEnableTabLight = 1;
@@ -2192,6 +2224,7 @@ namespace http {
 				//Floorplan , no need to show a tab floorplan
 				bEnableTabFloorplans = 0;
 			}
+			root["result"]["EnableTabProxy"] = bEnableTabProxy;
 			root["result"]["EnableTabDashboard"] = bEnableTabDashboard != 0;
 			root["result"]["EnableTabFloorplans"] = bEnableTabFloorplans != 0;
 			root["result"]["EnableTabLights"] = bEnableTabLight != 0;
@@ -2745,12 +2778,12 @@ namespace http {
 			if (session.rights != 2)
 				return; //Only admin users may update
 
-			int nValue = 0;
-			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+				int nValue = 0;
+				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 			if (nValue != 1)
-			{
+				{
 				return;
-			}
+					}
 
 			bool bIsForced = (request::findValue(&req, "forced") == "true");
 
@@ -2764,7 +2797,7 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "DownloadUpdate";
-		}
+			}
 
 		void CWebServer::Cmd_DownloadReady(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -3043,7 +3076,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetTimerList";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d) ORDER BY d.[Name], t.Time",
+				result = m_sql.safe_query("SELECT t.ID, t.Active, d.[Name], t.DeviceRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness, t.MDay, t.Month, t.Occurence FROM Timers as t, DeviceStatus as d WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d) ORDER BY d.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
 				if (result.size() > 0)
 				{
@@ -3082,6 +3115,9 @@ namespace http {
 						root["result"][ii]["Hue"] = atoi(sd[9].c_str());
 						root["result"][ii]["Days"] = atoi(sd[10].c_str());
 						root["result"][ii]["Randomness"] = (atoi(sd[11].c_str()) == 0) ? "false" : "true";
+						root["result"][ii]["MDay"] = atoi(sd[12].c_str());
+						root["result"][ii]["Month"] = atoi(sd[13].c_str());
+						root["result"][ii]["Occurence"] = atoi(sd[14].c_str());
 						ii++;
 					}
 				}
@@ -3091,7 +3127,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetSceneTimerList";
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT t.ID, t.Active, s.[Name], t.SceneRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness FROM SceneTimers as t, Scenes as s WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d) ORDER BY s.[Name], t.Time",
+				result = m_sql.safe_query("SELECT t.ID, t.Active, s.[Name], t.SceneRowID, t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, t.Days, t.UseRandomness, t.MDay, T.Month, t.Occurence FROM SceneTimers as t, Scenes as s WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d) ORDER BY s.[Name], t.Time",
 					m_sql.m_ActiveTimerPlan);
 				if (result.size() > 0)
 				{
@@ -3130,6 +3166,9 @@ namespace http {
 						root["result"][ii]["Hue"] = atoi(sd[9].c_str());
 						root["result"][ii]["Days"] = atoi(sd[10].c_str());
 						root["result"][ii]["Randomness"] = (atoi(sd[11].c_str()) == 0) ? "false" : "true";
+						root["result"][ii]["MDay"] = atoi(sd[12].c_str());
+						root["result"][ii]["Month"] = atoi(sd[13].c_str());
+						root["result"][ii]["Occurence"] = atoi(sd[14].c_str());
 						ii++;
 					}
 				}
@@ -3774,7 +3813,7 @@ namespace http {
 					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W))
 						devid = "00" + id;
 					else
-						devid = id;
+					devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -3986,6 +4025,9 @@ namespace http {
 					if ((pBaseHardware->HwdType == HTYPE_RFLINKUSB)|| (pBaseHardware->HwdType == HTYPE_RFLINKTCP)) {
 						if (dtype == pTypeLighting1) {
 							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
+							if (subtype == sTypeAB400D) subtype = sSwitchTypeAB400D;
+							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
 							std::stringstream s_strid;
 							s_strid << std::hex << atoi(devid.c_str());
 							devid = s_strid.str();
@@ -3993,16 +4035,63 @@ namespace http {
 						}
 						else if (dtype == pTypeLighting2) {
 							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeAC) { // 0
-								subtype = sSwitchTypeAC;
-							}
-							if (subtype == sTypeHEU) { // 1
-								subtype = sSwitchTypeHEU;
-								devid = "7" + devid;
-							}
-							if (subtype == sTypeKambrook) { // 3
-								subtype = sSwitchTypeKambrook;
-							}
+							if (subtype == sTypeAC) subtype = sSwitchTypeAC;
+							if (subtype == sTypeHEU) { subtype = sSwitchTypeHEU; devid = "7" + devid; }
+							if (subtype == sTypeKambrook) subtype = sSwitchTypeKambrook;
+							devid = "0" + devid;
+						}
+						if (dtype == pTypeLighting3) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeKoppla) subtype = sSwitchTypeKoppla;
+						}
+						else
+						if (dtype == pTypeLighting4) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeTriState;
+						}
+						else
+						if (dtype == pTypeLighting5) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeEMW100) { subtype = sSwitchTypeEMW100; devid = "00" + devid; }
+							if (subtype == sTypeLivolo) { subtype = sSwitchTypeLivolo; devid = "00" + devid; }
+							if (subtype == sTypeLightwaveRF) { subtype = sSwitchTypeLightwaveRF; devid = "00" + devid; }
+							if (subtype == sTypeLivoloAppliance) { subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid; }
+							if (subtype == sTypeEurodomest) subtype = sSwitchTypeEurodomest;
+						}
+						else
+						if (dtype == pTypeLighting6) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeBlyss;
+						}
+						else
+						if (dtype == pTypeChime) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeByronSX) subtype = sSwitchTypeByronSX;
+							if (subtype == sTypeSelectPlus) subtype = sSwitchTypeSelectPlus;
+							if (subtype == sTypeSelectPlus3) subtype = sSwitchTypeSelectPlus3;
+							if (subtype == sTypeByronMP001) subtype = sSwitchTypeByronMP001;
+						}
+						else
+						if (dtype == pTypeSecurity1) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeSecX10) subtype = sSwitchTypeX10secu;
+							if (subtype == sTypeSecX10M) subtype = sSwitchTypeX10secu;
+							if (subtype == sTypeSecX10R) subtype = sSwitchTypeX10secu;
+						}
+						else
+						if (dtype == pTypeHomeConfort) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeHomeConfort;
+						}
+						else
+						if (dtype == pTypeBlinds) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
+							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
 						}
 					}
 				}
@@ -4179,7 +4268,7 @@ namespace http {
 					if ((subtype != sTypeEMW100) && (subtype != sTypeLivolo) && (subtype != sTypeLivoloAppliance) && (subtype != sTypeRGB432W) && (subtype != sTypeLightwaveRF))
 						devid = "00" + id;
 					else
-						devid = id;
+					devid = id;
 				}
 				else if (lighttype < 70)
 				{
@@ -4445,27 +4534,78 @@ namespace http {
 						if (dtype == pTypeLighting1){
 							dtype = pTypeGeneralSwitch;
 
+							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
+							if (subtype == sTypeAB400D) subtype = sSwitchTypeAB400D;
+							if (subtype == sTypeIMPULS) subtype = sSwitchTypeTriState;
+
 							std::stringstream s_strid;
 							s_strid << std::hex << atoi(devid.c_str());
 							devid = s_strid.str();
 							devid = "000000" + devid;
 						}
 						else
-							if (dtype == pTypeLighting2){
-								dtype = pTypeGeneralSwitch;
-                            
-                                if (subtype == sTypeAC){ // 0
-                                   subtype = sSwitchTypeAC;
-                                }
-                                if (subtype == sTypeHEU){ // 1
-                                   subtype = sSwitchTypeHEU;
-								   devid = "7" + devid;
-                                }
-                                if (subtype == sTypeKambrook){ // 3
-                                   subtype = sSwitchTypeKambrook;
-                                }
-								devid = "0" + devid;
-							}
+						if (dtype == pTypeLighting2) {
+							dtype = pTypeGeneralSwitch;
+
+							if (subtype == sTypeAC) subtype = sSwitchTypeAC;
+							if (subtype == sTypeHEU) { subtype = sSwitchTypeHEU; devid = "7" + devid;}
+							if (subtype == sTypeKambrook) subtype = sSwitchTypeKambrook;
+							devid = "0" + devid;
+						}
+						else
+						if (dtype == pTypeLighting3) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeKoppla) subtype = sSwitchTypeKoppla;
+						}
+						else	
+						if (dtype == pTypeLighting4) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeTriState;
+						}
+						else
+						if (dtype == pTypeLighting5) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeEMW100) { subtype = sSwitchTypeEMW100; devid = "00" + devid; }
+							if (subtype == sTypeLivolo) { subtype = sSwitchTypeLivolo; devid = "00" + devid;}
+							if (subtype == sTypeLightwaveRF) {subtype = sSwitchTypeLightwaveRF; devid = "00" + devid;}
+							if (subtype == sTypeLivoloAppliance) {subtype = sSwitchTypeLivoloAppliance; devid = "00" + devid;}
+							if (subtype == sTypeEurodomest) subtype = sSwitchTypeEurodomest; 
+						}
+						else
+						if (dtype == pTypeLighting6) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeBlyss;
+						}
+						else
+						if (dtype == pTypeChime) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeByronSX) subtype = sSwitchTypeByronSX;
+							if (subtype == sTypeSelectPlus) subtype = sSwitchTypeSelectPlus;
+							if (subtype == sTypeSelectPlus3) subtype = sSwitchTypeSelectPlus3;
+							if (subtype == sTypeByronMP001) subtype = sSwitchTypeByronMP001;
+						}
+						else
+						if (dtype == pTypeSecurity1) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeSecX10) subtype = sSwitchTypeX10secu;
+							if (subtype == sTypeSecX10M) subtype = sSwitchTypeX10secu;
+							if (subtype == sTypeSecX10R) subtype = sSwitchTypeX10secu;
+						}
+						else
+						if (dtype == pTypeHomeConfort) {
+							dtype = pTypeGeneralSwitch;
+							subtype = sSwitchTypeHomeConfort;
+						}
+						else
+						if (dtype == pTypeBlinds) {
+							dtype = pTypeGeneralSwitch;
+							if (subtype == sTypeBlindsT5) subtype = sSwitchTypeBofu;
+							if (subtype == sTypeBlindsT6) subtype = sSwitchTypeBrel;
+							if (subtype == sTypeBlindsT7) subtype = sSwitchTypeAOK;
+							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
+							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
+							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+						}
 					}
 				}
                 // -----------------------------------------------
@@ -5618,30 +5758,38 @@ namespace http {
 			} 
 			else if (cparam == "switchlight")
 			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-					{
-						urights = static_cast<int>(m_users[iUser].userrights);
-						_log.Log(LOG_STATUS, "User: %s initiated a switch command", m_users[iUser].Username.c_str());
-					}
-				}
-				if (urights < 1)
-					return;
+				if (session.rights < 1)
+					return;//Only user/admin allowed
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "switchcmd");
 				std::string level = request::findValue(&req, "level");
 				std::string onlyonchange=request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
+				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = request::findValue(&req, "passcode");
-				if (passcode.size() > 0)
+				result = m_sql.safe_query(
+					"SELECT [Protected] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
+				if (result.empty())
 				{
+					//Switch not found!
+					return;
+				}
+				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				if (bIsProtected)
+				{
+					if (passcode.empty())
+					{
+						//Switch is protected, but no passcode has been
+						root["title"] = "SwitchLight";
+						root["status"] = "ERROR";
+						root["message"] = "WRONG CODE";
+						return;
+					}
 					//Check if passcode is correct
 					passcode = GenerateMD5Hash(passcode);
 					std::string rpassword;
@@ -5649,12 +5797,16 @@ namespace http {
 					m_sql.GetPreferencesVar("ProtectionPassword", nValue, rpassword);
 					if (passcode != rpassword)
 					{
+						_log.Log(LOG_ERROR, "User: %s initiated a switch command (Wrong code!)", Username.c_str());
 						root["title"] = "SwitchLight";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
 						return;
 					}
 				}
+
+				_log.Log(LOG_STATUS, "User: %s initiated a switch command", Username.c_str());
+
 				if (switchcmd == "Toggle") {
 					//Request current state of switch
 					result = m_sql.safe_query(
@@ -5689,25 +5841,35 @@ namespace http {
 			} //(rtype=="switchlight")
 			else if (cparam == "switchscene")
 			{
-				int urights = 3;
-				if (bHaveUser)
-				{
-					int iUser = -1;
-					iUser = FindUser(session.username.c_str());
-					if (iUser != -1)
-						urights = static_cast<int>(m_users[iUser].userrights);
-				}
-				if (urights < 1)
-					return;
+				if (session.rights < 1)
+					return;//Only user/admin allowed
+				std::string Username = "Admin";
+				if (!session.username.empty())
+					Username = session.username;
 
 				std::string idx = request::findValue(&req, "idx");
 				std::string switchcmd = request::findValue(&req, "switchcmd");
+				std::string passcode = request::findValue(&req, "passcode");
 				if ((idx == "") || (switchcmd == ""))
 					return;
 
-				std::string passcode = request::findValue(&req, "passcode");
-				if (passcode.size() > 0)
+				result = m_sql.safe_query(
+					"SELECT [Protected] FROM Scenes WHERE (ID = '%q')", idx.c_str());
+				if (result.empty())
 				{
+					//Scene/Group not found!
+					return;
+				}
+				bool bIsProtected = atoi(result[0][0].c_str()) != 0;
+				if (bIsProtected)
+				{
+					if (passcode.empty())
+					{
+						root["title"] = "SwitchScene";
+						root["status"] = "ERROR";
+						root["message"] = "WRONG CODE";
+						return;
+					}
 					//Check if passcode is correct
 					passcode = GenerateMD5Hash(passcode);
 					std::string rpassword;
@@ -5718,9 +5880,11 @@ namespace http {
 						root["title"] = "SwitchScene";
 						root["status"] = "ERROR";
 						root["message"] = "WRONG CODE";
+						_log.Log(LOG_ERROR, "User: %s initiated a scene/group command (Wrong code!)", Username.c_str());
 						return;
 					}
 				}
+				_log.Log(LOG_STATUS, "User: %s initiated a scene/group command", Username.c_str());
 
 				if (m_mainworker.SwitchScene(idx, switchcmd) == true)
 				{
@@ -5797,19 +5961,48 @@ namespace http {
 			else if (cparam == "setcolbrightnessvalue")
 			{
 				std::string idx = request::findValue(&req, "idx");
-				std::string hue = request::findValue(&req, "hue");
-				std::string brightness = request::findValue(&req, "brightness");
-				std::string iswhite = request::findValue(&req, "iswhite");
 
-				if ((idx == "") || (hue == "") || (brightness == "") || (iswhite == ""))
+				if (idx.empty())
 				{
 					return;
 				}
-
 				unsigned long long ID;
 				std::stringstream s_strid;
 				s_strid << idx;
 				s_strid >> ID;
+
+				std::string hex = request::findValue(&req, "hex");
+				std::string hue = request::findValue(&req, "hue");
+				std::string brightness = request::findValue(&req, "brightness");
+				std::string iswhite = request::findValue(&req, "iswhite");
+
+				if (!hex.empty())
+				{
+					std::stringstream sstr;
+					sstr << hex;
+					int ihex;
+					sstr >> std::hex >> ihex;
+					unsigned char r = (unsigned char)((ihex & 0xFF0000) >> 16);
+					unsigned char g = (unsigned char)((ihex & 0x00FF00) >> 8);
+					unsigned char b = (unsigned char)ihex & 0xFF;
+					float hsb[3];
+					rgb2hsb(r, g, b, hsb);
+					hsb[0] *= 360.0;
+					hsb[1] *= 255.0;
+					hsb[2] *= 100.0;
+					char szConv[20];
+					sprintf(szConv, "%d", (int)hsb[0]);
+					hue = szConv;
+					//sprintf(szConv, "%d", (int)hsb[1]);
+					//sat = szConv;
+					iswhite = (hsb[1] < 20.0) ? "true" : "false";
+					sprintf(szConv, "%d", (int)hsb[2]);
+					brightness = szConv;
+				}
+				if (hue.empty() || brightness.empty() || iswhite.empty())
+				{
+					return;
+				}
 
 				if (iswhite != "true")
 				{
@@ -6361,6 +6554,18 @@ namespace http {
 		{
 			m_retstr = "";
 			char szTmp[200];
+			for (int ii = 0; ii <= TTYPE_FIXEDDATETIME; ii++)
+			{
+				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
+				m_retstr += szTmp;
+			}
+			return (char*)m_retstr.c_str();
+		}
+
+		char * CWebServer::DisplayTimerTypesComboExtendend()
+		{
+			m_retstr = "";
+			char szTmp[200];
 			for (int ii = 0; ii < TTYPE_END; ii++)
 			{
 				sprintf(szTmp, "<option data-i18n=\"%s\" value=\"%d\">%s</option>\n", Timer_Type_Desc(ii), ii, Timer_Type_Desc(ii));
@@ -6740,6 +6945,26 @@ namespace http {
 			m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour").c_str()).c_str());
 			m_sql.UpdatePreferencesVar("FloorplanActiveOpacity", atoi(request::findValue(&req, "FloorplanActiveOpacity").c_str()));
 			m_sql.UpdatePreferencesVar("FloorplanInactiveOpacity", atoi(request::findValue(&req, "FloorplanInactiveOpacity").c_str()));
+
+#ifndef NOCLOUD
+			std::string md_userid, md_password, pf_userid, pf_password;
+			int md_subsystems, pf_subsystems;
+			m_sql.GetPreferencesVar("MyDomoticzUserId", pf_userid);
+			m_sql.GetPreferencesVar("MyDomoticzPassword", pf_password);
+			m_sql.GetPreferencesVar("MyDomoticzSubsystems", pf_subsystems);
+			md_userid = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzUserId"));
+			md_password = CURLEncode::URLDecode(request::findValue(&req, "MyDomoticzPassword"));
+			md_subsystems = (request::findValue(&req, "SubsystemHttp").empty() ? 0 : 1) + (request::findValue(&req, "SubsystemShared").empty() ? 0 : 2) + (request::findValue(&req, "SubsystemApps").empty() ? 0 : 4);
+			if (md_userid != pf_userid || md_password != pf_password || md_subsystems != pf_subsystems) {
+				m_sql.UpdatePreferencesVar("MyDomoticzUserId", md_userid);
+				if (md_password != pf_password) {
+					md_password = base64_encode((unsigned char const*)md_password.c_str(), md_password.size());
+					m_sql.UpdatePreferencesVar("MyDomoticzPassword", md_password);
+				}
+				m_sql.UpdatePreferencesVar("MyDomoticzSubsystems", md_subsystems);
+				m_webservers.RestartProxy();
+			}
+#endif
 
 			m_notifications.LoadConfig();
 
@@ -7673,10 +7898,10 @@ namespace http {
 							)
 						{
 							root["result"][ii]["TypeImg"] = "blinds";
-							if (lstatus == "On") {
+							if ((lstatus == "On")||(lstatus=="Close inline relay")) {
 								lstatus = "Closed";
 							}
-							else if (lstatus == "Stop") {
+							else if ((lstatus == "Stop")||(lstatus=="Stop inline relay")) {
 								lstatus = "Stopped";
 							}
 							else {
@@ -7720,16 +7945,24 @@ namespace http {
 						}
 						else if (switchtype == STYPE_Selector)
 						{
-							std::string selectorStyle = m_sql.BuildDeviceOptions(sOptions)["SelectorStyle"];
-							std::string levelNames = m_sql.BuildDeviceOptions(sOptions)["LevelNames"];
+							std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+							std::string selectorStyle = options["SelectorStyle"];
+							std::string levelOffHidden = options["LevelOffHidden"];
+							std::string levelNames = options["LevelNames"];
+							std::string levelActions = options["LevelActions"];
 							if (selectorStyle.empty()) {
-								selectorStyle.assign("0"); // default is button set
+								selectorStyle.assign("0"); // default is 'button set'
+							}
+							if (levelOffHidden.empty()) {
+								levelOffHidden.assign("false"); // default is 'not hidden'
 							}
 							if (levelNames.empty()) {
 								levelNames.assign("Off"); // default is Off only
 							}
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
+							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
 							root["result"][ii]["LevelNames"] = levelNames;
+							root["result"][ii]["LevelActions"] = levelActions;
 						}
 						if (llevel != 0)
 							sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
@@ -9291,7 +9524,11 @@ namespace http {
 		std::string CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req)
 		{
 			m_retstr = "";
+#ifdef WIN32
 			std::string OutputFileName = szUserDataFolder + "backup.db";
+#else
+			std::string OutputFileName = "/tmp/backup.db";
+#endif
 			if (m_sql.BackupDatabase(OutputFileName))
 			{
 				std::ifstream testFile(OutputFileName.c_str(), std::ios::binary);
@@ -10246,7 +10483,7 @@ namespace http {
 
 			m_sql.safe_query("UPDATE CustomImages SET Name='%q', Description='%q' WHERE (ID == %d)", sname.c_str(), sdescription.c_str(), idx);
 			ReloadCustomSwitchIcons();
-		}
+			}
 
 		void CWebServer::Cmd_RenameDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -10581,7 +10818,7 @@ namespace http {
 			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string sOptions = base64_decode(request::findValue(&req, "options"));
+			std::string sOptions = CURLEncode::URLDecode(base64_decode(request::findValue(&req, "options")));
 
 			char szTmp[200];
 
@@ -10850,6 +11087,11 @@ namespace http {
 				return;
 			root["status"] = "OK";
 			root["title"] = "settings";
+#ifndef NOCLOUD
+			root["cloudenabled"] = true;
+#else
+			root["cloudenabled"] = false;
+#endif
 
 			std::vector<std::vector<std::string> >::const_iterator itt;
 			for (itt = result.begin(); itt != result.end(); ++itt)
@@ -11135,6 +11377,20 @@ namespace http {
 				{
 					root["WebTheme"] = sValue;
 				}
+#ifndef NOCLOUD
+				else if (Key == "MyDomoticzInstanceId") {
+					root["MyDomoticzInstanceId"] = sValue;
+				}
+				else if (Key == "MyDomoticzUserId") {
+					root["MyDomoticzUserId"] = sValue;
+				}
+				else if (Key == "MyDomoticzPassword") {
+					root["MyDomoticzPassword"] = sValue;
+				}
+				else if (Key == "MyDomoticzSubsystems") {
+					root["MyDomoticzSubsystems"] = nValue;
+				}
+#endif
 			}
 		}
 

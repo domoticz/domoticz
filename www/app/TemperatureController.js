@@ -21,7 +21,7 @@ define(['app'], function (app) {
 			 }
 		  });
 		}
-			
+
 		EditTempDevice = function(idx,name,description,addjvalue)
 		{
 			if (typeof $scope.mytimer != 'undefined') {
@@ -138,8 +138,6 @@ define(['app'], function (app) {
 		  bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
-
-			
 		AddMultipleDataToTempChart = function(data,chart,isday,deviceid,devicename)
 		{
 			var datatablete = [];
@@ -578,7 +576,7 @@ define(['app'], function (app) {
 			}
 		  var id="";
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&lastupdate="+$.LastUpdateTime,
+			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&lastupdate="+$.LastUpdateTime+"&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -745,27 +743,96 @@ define(['app'], function (app) {
 		  $('#modal').show();
 
 		  var htmlcontent = '';
+		  var bShowRoomplan=false;
+		  $.RoomPlans = [];
+		  $.ajax({
+			 url: "json.htm?type=plans",
+			 async: false, 
+			 dataType: 'json',
+			 success: function(data) {
+				if (typeof data.result != 'undefined') {
+					var totalItems=data.result.length;
+					if (totalItems>0) {
+						bShowRoomplan=true;
+		//				if (window.myglobals.ismobile==true) {
+			//				bShowRoomplan=false;
+				//		}
+						if (bShowRoomplan==true) {
+							$.each(data.result, function(i,item) {
+								$.RoomPlans.push({
+									idx: item.idx,
+									name: item.Name
+								});
+							});
+						}
+					}
+				}
+			 }
+		  });
+		  
 		  var bHaveAddedDevider = false;
-		  var tophtm=
-				'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-				'\t<tr>\n' +
-				'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-				'\t  <td align="right">\n' +
-				'\t    <a class="btnstyle" onclick="ShowCustomTempLog();" data-i18n="Custom Graph">Custom Graph</a>\n';
-		  if ($scope.config.Latitude!="") {
-			tophtm+=
-				'\t    <a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>\n';
+		  var tophtm="";
+		  if ($.RoomPlans.length==0) {
+			  tophtm+=
+					'\t<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<tr>\n' +
+					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
+					'\t  <td align="right">\n';
+			  if (window.myglobals.ismobile==false) {
+				  tophtm+=
+						'\t<table class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+						'\t<tr>\n' +
+						'\t  <td align="left"></td>\n' +
+						'\t  <td align="right">\n' +
+						'\t    <a class="btnstyle" onclick="ShowCustomTempLog();" data-i18n="Custom Graph">Custom Graph</a>\n';
+				  if ($scope.config.Latitude!="") {
+					tophtm+=
+						'\t    <a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>\n';
+				  }
+				  tophtm+=     
+						'\t  </td>\n' +
+						'\t</tr>\n' +
+						'\t</table>\n';
+			}
+			tophtm+=     
+					'</td>'+
+					'\t</tr>\n' +
+					'\t</table>\n';
 		  }
-		  tophtm+=     
-				'\t  </td>\n' +
-				'\t</tr>\n' +
-				'\t</table>\n';
-
+		  else {
+				tophtm+=
+					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+					'\t<tr>\n' +
+					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
+					'<td align="right" valign="top">'+
+					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">'+
+					'<option value="0" data-i18n="All">All</option>'+
+					'</select>'+
+					'</td>'+
+					'\t</tr>\n' +
+					'\t</table>\n';
+			  if (window.myglobals.ismobile==false) {
+				  tophtm+=
+						'\t<table class="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+						'\t<tr>\n' +
+						'\t  <td align="left"></td>\n' +
+						'\t  <td align="right">\n' +
+						'\t    <a class="btnstyle" onclick="ShowCustomTempLog();" data-i18n="Custom Graph">Custom Graph</a>\n';
+				  if ($scope.config.Latitude!="") {
+					tophtm+=
+						'\t    <a id="Forecast" class="btnstyle" onclick="ShowForecast();" data-i18n="Forecast">Forecast</a>\n';
+				  }
+				  tophtm+=     
+						'\t  </td>\n' +
+						'\t</tr>\n' +
+						'\t</table>\n';
+			}
+		  }
 
 		  var i=0;
 
 		  $.ajax({
-			 url: "json.htm?type=devices&filter=temp&used=true&order=Name",
+			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
@@ -949,6 +1016,21 @@ define(['app'], function (app) {
 		  $('#modal').hide();
 		  $('#tempcontent').html(tophtm+htmlcontent);
 		  $('#tempcontent').i18n();
+			if (bShowRoomplan==true) {
+				$.each($.RoomPlans, function(i,item){
+					var option = $('<option />');
+					option.attr('value', item.idx).text(item.name);
+					$("#tempcontent #comboroom").append(option);
+				});
+				if (typeof window.myglobals.LastPlanSelected!= 'undefined') {
+					$("#tempcontent #comboroom").val(window.myglobals.LastPlanSelected);
+				}
+				$("#tempcontent #comboroom").change(function() { 
+					var idx = $("#tempcontent #comboroom option:selected").val();
+					window.myglobals.LastPlanSelected=idx;
+					ShowTemps();
+				});
+			}
 
 			$rootScope.RefreshTimeAndSun();
 			
@@ -970,8 +1052,12 @@ define(['app'], function (app) {
 								drop: function() {
 									var myid=$(this).attr("id");
 									$.devIdx.split(' ');
+									var roomid = $("#lightcontent #comboroom option:selected").val();
+									if (typeof roomid == 'undefined') {
+										roomid=0;
+									}
 									$.ajax({
-										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx,
+										 url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
 										 async: false, 
 										 dataType: 'json',
 										 success: function(data) {

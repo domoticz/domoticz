@@ -16,6 +16,8 @@
     <script type="text/javascript" src="js/domoticzblocks.js"></script>
 	<script src="js/i18next-1.8.0.min.js"></script>
 	<script type="text/javascript" src="js/bootbox.min.js"></script>
+	<script type="text/javascript" src="js/ace/ace.js"></script>
+	<script type="text/javascript" src="js/ace/ext-language_tools.js"></script>
 	<link rel="stylesheet" href="css/bootstrap.css">
     <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
     <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui.min.css" />
@@ -40,8 +42,13 @@
       { border-spacing: 8px;
     	padding:2px 2px 2px 2px;
       }
+		#aceDiv { 
+			position: relative;
+			height: 700px;
+			}
     </style>
     <script>
+	  var editor;
 	  
       function init() {
       	Blockly.inject(document.getElementById('blocklyDiv'),
@@ -50,6 +57,10 @@
           //  {path: '../../', toolbox: document.getElementById('toolbox')});
         // Let the top-level application know that Blockly is ready.
         window.parent.blocklyLoaded(Blockly);
+
+		editor = ace.edit("aceDiv");
+		editor.setTheme("ace/theme/xcode");
+		editor.setOptions({enableBasicAutocompletion: true, enableSnippets: true, enableLiveAutocompletion: true});
         load_blocks();
       }
       
@@ -507,24 +518,37 @@
 			  	success: function(data) {
 				  	if (typeof data.result != 'undefined') {
 				  		if (data.status=="OK") {
-				  			var xmltemp = data.result[0].xmlstatement;
-				  			var xml = Blockly.Xml.textToDom(xmltemp);
-					  		Blockly.mainWorkspace.clear();
-					  		Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
-					  		$("#blockName").val(data.result[0].name);
-					  		$("#blockId").html(id);
-					  		if (data.result[0].eventstatus == '1') {
-					  			$("#eventActive").prop('checked', true);
-					  		}
-					  		else {
-						  		$("#eventActive").prop('checked',false);
-					  		}
-				  		}
+							$("#eventName").val(data.result[0].name);
+							$("#interpreter").val(data.result[0].interpreter).prop('disabled', true);
+							$("#eventType").val(data.result[0].type);
+							if (data.result[0].eventstatus == '1') {
+								$("#eventActive").prop('checked', true);
+							}
+							else {
+								$("#eventActive").prop('checked',false);
+							}
+							if (data.result[0].interpreter == 'Blockly') {
+								ResizeBlockyWindow();
+								var xmltemp = data.result[0].xmlstatement;
+								var xml = Blockly.Xml.textToDom(xmltemp);
+								Blockly.mainWorkspace.clear();
+								Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
+								$("#blockId").html(id);
+							}
+							else {
+								editor.setValue("");
+								editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
+								editor.setValue(data.result[0].xmlstatement);
+								editor.gotoLine(1);
+								ResizeAceWindow();
+							}
+							$('#btnSave').attr("class", "btnstyle3");
+							$('#btnDelete').attr("class", "btnstyle3");
+						}
 				  		else { bootbox.alert("Error loading event!");}
 					}
 				}
 			});
-
 	  }
 	  
       function delete_block() {
@@ -539,10 +563,14 @@
 						success: function(data) {
 							if (typeof data != 'undefined') {
 								if (data.status=="OK") {
-									generate_noty('alert', '<b>Event Deleted<br>'+$("#blockName").val(), 2000);
+									generate_noty('alert', '<b>Event Deleted<br>'+$("#eventName").val(), 2000);
 									Blockly.mainWorkspace.clear();
-									$("#blockName").val("");
+									editor.setValue("");
 									load_blocks();
+									$("#eventName").val("");
+									$("#interpreter").val("Blockly").prop('disabled', false);
+									$("#eventType").val("All");
+									ResizeBlockyWindow();
 								}
 							}
 						}
@@ -555,15 +583,22 @@
 		}
 	  }
 	  
-	  	  
 	  function load_blocks() {
 		  var select = document.getElementById("savedEvents");
 		  select.options.length = 0;
+		  var interpreters = document.getElementById("interpreter");
+		  interpreters.options.length = 0;
 		  $.ajax({
 		  	url: "json.htm?type=events&param=list", 
 		  	async: false, 
 		  	dataType: 'json',
 		  	success: function(data) {
+				var aInterpreters = data.interpreters.split(':');
+				$.each(aInterpreters, function(i,item){
+					var option = document.createElement("option");
+					option.text = item;
+					interpreters.appendChild(option); 
+				});
 			  	if (typeof data.result != 'undefined') {
 				  	$.each(data.result, function(i,item){
 						var option = document.createElement("option");
@@ -582,29 +617,51 @@
 			}
 		  });
 	  }
-	  function new_block() {
-	  	$("#blockName").val("");
-	  	$("#blockId").html("");
-	  	Blockly.mainWorkspace.clear();
-	  	$("#savedEvents").val("");
-	  }
+	  
+	function new_block() {
+		$("#blockId").html("");
+		Blockly.mainWorkspace.clear();
+		editor.setValue("");
+		$("#eventName").val("");
+		$("#savedEvents").val("");
+		$("#interpreter").prop('disabled', false);
+		$('#btnDelete').attr("class", "btnstyle3-dis");
+		if ($("#interpreter").val() == "Blockly") {
+			ResizeBlockyWindow();
+		}
+		else {
+			editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+			$.ajax({
+				url: "json.htm?type=events&param=new&interpreter="+$("#interpreter").val()+"&eventtype="+$("#eventType").val(), 
+				async: false, 
+				dataType: 'json',
+				success: function(data) {
+					if (typeof data.template != 'undefined') {
+						editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+						editor.setValue(data.template);
+						editor.gotoLine(1);
+					}
+					ResizeAceWindow();
+				}
+			});
+		}
+	}
       
       function save_block() {
-      	var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
-      	//$("#blockDebug").html(Blockly.Xml.domToPrettyText(xml));
-      	var blockName = $("#blockName").val();
+      	var eventName = $("#eventName").val();
+      	var eventInterpreter = $("#interpreter").val();
       	var id = "";
-      	if (blockName) { 
+      	if (eventName) { 
       		var exists = false; 
       		var doSave = false;
       		$('#savedEvents option').each(function(){
-	      		if (this.text == blockName) {
+	      		if (this.text == eventName) {
 		      		exists = true;
 					id=this.value;
 		      	}
 		     });
 		     if (exists) {
-			 	var answer = confirm("Overwrite "+blockName+"?")
+			 	var answer = confirm("Overwrite "+eventName+"?")
 			    if (answer){
 					doSave = true;
 				}
@@ -614,37 +671,57 @@
 			}
 			else {doSave = true;}
       		if (doSave) {
-      		   var blockXml  = Blockly.Xml.domToText( xml );
-      		   var logicArray = parseXml(xml);
-      		   if (typeof(logicArray)=='string') {
-      		   	var answerparts = logicArray.split(':');
-      		   	if (answerparts[0]=="err") {
-      		   		bootbox.alert(answerparts[1]);
-      		   	}
-      		   }
-      		   else if (typeof(logicArray)=='object') {
-      	    		//var conditions = blockXmlTranslated[0];
-      	    		//var actions = blockXmlTranslated[1];
-      	    		var isActive = 0;
-      	    		if ($('#eventActive').is(':checked')) {isActive = 1};
-      	    		$.ajax({
-	      	    		url : "json.htm?type=events&param=create&name="+encodeURIComponent(blockName)+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(JSON.stringify(logicArray))+"&eventid="+id+"&eventstatus="+isActive, 
-	      	    		async: false, 
-	      	    		dataType: 'json',
-	      	    		success: function(data) {
-	      	    			if (typeof data != 'undefined') {
-				  				if (data.status=="OK") {
-				  					generate_noty('information', '<b>Event saved:<br>'+blockName, 2000);
-				  					load_blocks();
-				  				}
-				  				if (data.status=="ERR") {
-				  					generate_noty('warning', '<b>Error while saving:<br>'+blockName, 2000);
-				  					load_blocks();
-				  				}
-				  			}
-				  		}
-				  	});
-			  } 	    
+				var logicArray;
+				if ($("#interpreter").val() == "Blockly") {
+					var xml = Blockly.Xml.workspaceToDom( Blockly.mainWorkspace );
+					var blockXml  = Blockly.Xml.domToText( xml );
+					logicArray = parseXml(xml);
+					if (typeof(logicArray)=='string') {
+						var answerparts = logicArray.split(':');
+						if (answerparts[0]=="err") {
+							bootbox.alert(answerparts[1]);
+							return;
+						}
+					}
+					else if (typeof(logicArray)=='object') {
+						logicArray = JSON.stringify(logicArray)
+					}
+				}
+				else {
+					logicArray = "";
+					blockXml = editor.getValue();
+				}
+
+				var isActive = 0;
+				if ($('#eventActive').is(':checked')) {isActive = 1};
+				$.ajax({
+					url : "json.htm?type=events&param=create&name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive, 
+					async: false, 
+					dataType: 'json',
+					success: function(data) {
+						if (typeof data != 'undefined') {
+							if (data.status=="OK") {
+								generate_noty('information', '<b>Event saved:<br>'+eventName, 2000);
+							}
+							if (data.status=="ERR") {
+								generate_noty('warning', '<b>Error while saving:<br>'+eventName, 2000);
+							}
+							load_blocks();
+							var selIndex = 0;
+							$('#savedEvents option').each(function(){
+								if (this.text == eventName)
+									$("#savedEvents").prop("selectedIndex",selIndex);
+								selIndex++;
+							});
+							selIndex = 0;
+							$('#interpreter option').each(function(){
+								if (this.text == eventInterpreter)
+									$("#interpreter").prop("selectedIndex",selIndex);
+								selIndex++;
+							});
+						}
+					}
+				});
 			}
 			else {
 				bootbox.alert("Save aborted!")
@@ -702,20 +779,38 @@
 	
 	}
 
-
-
 	$(window).resize(function() {
-		ResizeBlockyWindow();
+		if ($("#blocklyDiv").css("display") != "none") ResizeBlockyWindow();
+		if ($("#aceDiv").css("display") != "none") ResizeAceWindow();
 	});
-
 
 	function ResizeBlockyWindow()
 	{
+		if ($("#blocklyDiv").css("display") == "none") {
+			$("#aceDiv").css("display","none");
+			$("#blocklyDiv").css("display","");
+		}
 		$("#blocklyDiv").css("width", $(window).width()-250);
 		$("#blocklyDiv").css("height", $(window).height()-20);
-		$("#savedEvents").css("height", $(window).height()-260);
+		$("#savedEvents").css("height", $(window).height()-343);
 	}
 
+	function ResizeAceWindow()
+	{
+		if ($("#aceDiv").css("display") == "none") {
+			$("#blocklyDiv").css("display","none");
+			$("#aceDiv").css("display","");
+		}
+		$("#aceDiv").css("width", $(window).width()-250);
+		$("#aceDiv").css("height", $(window).height()-20);
+		$("#savedEvents").css("height", $(window).height()-343);
+	}
+
+	function SetSaveButton()
+	{
+		($("#eventName").val() == '') ? $('#btnSave').attr('class', 'btnstyle3-dis') : $('#btnSave').attr('class', 'btnstyle3');
+	}
+	
 	$(document).ready(function() 
 	{
 		$.ajax({
@@ -829,18 +924,51 @@
 		<div class="row-fluid">
 			<table id="saveTable" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
-				<td valign="top">
+				<td class=container" valign="top">
+					<menu type="context" id="acemenu">
+						<menu label="Editor Theme">
+							<menuitem label="Ambiance" type="radio" onclick="editor.setTheme('ace/theme/ambiance');"></menuitem>
+							<menuitem label="Chaos" type="radio" onclick="editor.setTheme('ace/theme/chaos');"></menuitem>
+							<menuitem label="Chrome" type="radio" onclick="editor.setTheme('ace/theme/chrome');"></menuitem>
+							<menuitem label="Cobalt" type="radio" onclick="editor.setTheme('ace/theme/cobalt');"></menuitem>
+							<menuitem label="Eclipse" type="radio" onclick="editor.setTheme('ace/theme/eclipse');"></menuitem>
+							<menuitem label="Merbivore" type="radio" onclick="editor.setTheme('ace/theme/merbivore');"></menuitem>
+							<menuitem label="Mono Industrial" type="radio" onclick="editor.setTheme('ace/theme/mono_industrial');"></menuitem>
+							<menuitem label="Monokai" type="radio" onclick="editor.setTheme('ace/theme/monokai');"></menuitem>
+							<menuitem label="Pastel on dark" type="radio" onclick="editor.setTheme('ace/theme/pastel_on_dark');"></menuitem>
+							<menuitem label="Terminal" type="radio" onclick="editor.setTheme('ace/theme/terminal');"></menuitem>
+							<menuitem label="Tomorrow" type="radio" onclick="editor.setTheme('ace/theme/tomorrow');"></menuitem>
+							<menuitem label="Vibrant_ink" type="radio" onclick="editor.setTheme('ace/theme/vibrant_ink');"></menuitem>
+							<menuitem label="XCode" type="radio" checked="checked" onclick="editor.setTheme('ace/theme/xcode');"></menuitem>
+						</menu>
+						<menuitem label="Auto Complete" type="checkbox" checked="true" onclick="editor.setOptions({enableLiveAutocompletion: this.getAttribute('checked')=='false'}); this.setAttribute('checked',this.getAttribute('checked')=='false');"></menuitem>
+					</menu>
+					<div id="aceDiv" class="ui-corner-all" style="display:none;" contextmenu="acemenu"></div>
 					<div id="blocklyDiv"></div>
 				</td>
-				<td style="width:200px" valign="top">
-					<label for="blockName">Event name:</label><br>
-					<input type="input" id="blockName" name="blockName" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+				<td style="width:250px" valign="top">
+					<label for="eventName">Event name:</label><br>
+					<input type="input" id="eventName" name="eventName" oninput="SetSaveButton();" onchange="SetSaveButton();" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+					<p>
+					<select name="interpreter" id="interpreter" class="ui-widget-content ui-corner-all" onchange="new_block();" style="width: 12em; padding: .2em; margin-top: 0.4em;">
+					  <option selected="selected">Blockly</option>
+					  <option>Lua</option>
+					  <option>Python</option>
+					</select>
+					<p>
+					<select name="eventType" id="eventType" class="ui-widget-content ui-corner-all" style="width: 12em; padding: .2em;">
+					  <option selected="selected">All</option>
+					  <option>Device</option>
+					  <option>Security</option>
+					  <option>Time</option>
+					  <option>UserVariable</option>
+					</select>
 					<p>
 					<label for="eventActive">Event active:</label>
 					<input type="checkbox" id="eventActive" name="eventActive"/>
 					</p>
 					<p>
-					<a class="btnstyle3" href="javascript:save_block()">Save</a>
+					<a class="btnstyle3-dis" id="btnSave" href="javascript:save_block()">Save</a>
 					<a class="btnstyle3" href="javascript:new_block()">New</a>
 					</p>
 					<p>
@@ -848,8 +976,8 @@
 					<select size="20" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);"></select>
 					</p>
 					<p>
-					<a class="btnstyle3" style="width: 80%" href="javascript:delete_block()">Delete selected</a>
-					<a class="btnstyle3" style="width: 80%" href="javascript:show_states()">Show current states</a>
+					<a class="btnstyle3-dis" id="btnDelete" style="width: 80%" href="javascript:delete_block()">Delete selected</a></br>
+					<a class="btnstyle3" style="width: 80%; margin-top: 0.4em;" href="javascript:show_states()">Show current states</a>
 					</p>
 					<div id="blockId" style="display:none;"/>
 				</td>

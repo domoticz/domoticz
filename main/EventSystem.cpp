@@ -104,7 +104,29 @@ void CEventSystem::LoadEvents()
 	m_events.clear();
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status, EventRules.SequenceNo FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
+	result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			_tEventItem eitem;
+			std::stringstream s_str(sd[0]);
+			s_str >> eitem.ID;
+			eitem.Name = sd[1];
+			eitem.Interpreter = sd[2];
+			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
+			eitem.Type = sd[3];
+			eitem.EventStatus = atoi(sd[4].c_str());
+			eitem.Actions = sd[5];
+			eitem.SequenceNo = 0;
+			m_events.push_back(eitem);
+
+		}
+	}
+
+	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -116,6 +138,9 @@ void CEventSystem::LoadEvents()
 			std::stringstream s_str(sd[0]);
 			s_str >> eitem.ID;
 			eitem.Name = sd[1] + "_" + sd[5];
+			eitem.Interpreter = sd[6];
+			std::transform(sd[7].begin(), sd[7].end(), sd[7].begin(), ::tolower);
+			eitem.Type = sd[7];
 			eitem.Conditions = sd[2];
 			eitem.Actions = sd[3];
 			eitem.EventStatus = atoi(sd[4].c_str());
@@ -123,10 +148,10 @@ void CEventSystem::LoadEvents()
 			m_events.push_back(eitem);
 
 		}
+	}
 #ifdef _DEBUG
 		_log.Log(LOG_STATUS, "EventSystem: Events (re)loaded");
 #endif
-	}
 }
 
 void CEventSystem::Do_Work()
@@ -1109,19 +1134,19 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 				{
 					if ((reason == "device") && (filename.find("_device_") != std::string::npos))
 					{
-						EvaluateLua(reason, lua_Dir + filename, DeviceID, devname, nValue, sValue, nValueWording, 0);
+						EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
 					}
 					else if ((reason == "time") && (filename.find("_time_") != std::string::npos))
 					{
-						EvaluateLua(reason, lua_Dir + filename);
+						EvaluateLua(reason, lua_Dir + filename, "");
 					}
 					else if ((reason == "security") && (filename.find("_security_") != std::string::npos))
 					{
-						EvaluateLua(reason, lua_Dir + filename);
+						EvaluateLua(reason, lua_Dir + filename, "");
 					}
 					else if ((reason == "uservariable") && (filename.find("_variable_") != std::string::npos))
 					{
-						EvaluateLua(reason, lua_Dir + filename, varId);
+						EvaluateLua(reason, lua_Dir + filename, "", varId);
 					}
 				}
 			}
@@ -1188,6 +1213,40 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 #endif
 
 	EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording, varId);
+
+	// handle database held scripts
+	try {
+		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
+		std::vector<_tEventItem>::iterator it;
+		for (it = m_events.begin(); it != m_events.end(); ++it) {
+			bool eventInScope = ((it->Interpreter != "Blockly") && ((it->Type == "all") || (it->Type == reason)));
+			bool eventActive = (it->EventStatus == 1);
+			if (eventInScope && eventActive) {
+				if (it->Interpreter == "Lua") {
+					if (reason == "device")			EvaluateLua(reason, it->Name, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
+					if (reason == "time")			EvaluateLua(reason, it->Name, it->Actions);
+					if (reason == "security")		EvaluateLua(reason, it->Name, it->Actions);
+					if (reason == "uservariable")	EvaluateLua(reason, it->Name, it->Actions, varId);
+				}
+				if (it->Interpreter == "Python") {
+#ifdef ENABLE_PYTHON
+//					Python codes does some strange things with the filename which I didn't undersdand
+//					Boost has a exec(str string, object global = object(), object local = object()); call that should work.
+//					if (reason == "device")			EvaluatePython(reason, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
+//					if (reason == "time")			EvaluatePython(reason, it->Actions);
+//					if (reason == "security")		EvaluatePython(reason, it->Actions);
+//					if (reason == "uservariable")	EvaluatePython(reason, it->Actions, varId);
+					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
+#else
+					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
+#endif
+				}
+			}
+		}
+	}
+	catch (...) {
+		_log.Log(LOG_ERROR, "EventSystem: Exception processing database scripts");
+	}
 }
 
 lua_State *CEventSystem::CreateBlocklyLuaState()
@@ -1417,12 +1476,13 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
+			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type=="all")||(it->Type == reason)));
 			bool eventActive = (it->EventStatus == 1);
 			std::stringstream sstr;
 			sstr << "device[" << DeviceID << "]";
 			std::string conditions (it->Conditions);
 			found = conditions.find(sstr.str());
-			if ((eventActive) && (found != std::string::npos)) {
+			if ((eventInScope) && (eventActive) && (found != std::string::npos)) {
 				// Replace Sunrise and sunset placeholder with actual time for query
 				if (conditions.find("@Sunrise") != std::string::npos) {
 					int intRise = getSunRiseSunSetMinutes("Sunrise");
@@ -1471,13 +1531,14 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
+			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == reason)));
 			bool eventActive = (it->EventStatus == 1);
 			std::stringstream sstr;
 			sstr << "securitystatus";
 			std::string conditions (it->Conditions);
 			found = conditions.find(sstr.str());
 
-			if ((eventActive) && (found != std::string::npos)) {
+			if ((eventInScope) && (eventActive) && (found != std::string::npos)) {
 
 				// Replace Sunrise and sunset placeholder with actual time for query
 				if (conditions.find("@Sunrise") != std::string::npos) {
@@ -1525,8 +1586,9 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
+			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == reason)));
 			bool eventActive = (it->EventStatus == 1);
-			if (eventActive) {
+			if ((eventInScope) && (eventActive)) {
 				// time rules will only run when time or date based critera are found
 				std::string conditions (it->Conditions);
 				if ((conditions.find("timeofday") != std::string::npos) || (conditions.find("weekday") != std::string::npos)) {
@@ -1578,13 +1640,14 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
+			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == reason)));
 			bool eventActive = (it->EventStatus == 1);
 			std::stringstream sstr;
 			sstr << "variable[" << varId << "]";
 			std::string conditions (it->Conditions);
 			found = conditions.find(sstr.str());
 
-			if ((eventActive) && (found != std::string::npos)) {
+			if ((eventInScope) && (eventActive) && (found != std::string::npos)) {
 
 				// Replace Sunrise and sunset placeholder with actual time for query
 				if (conditions.find("@Sunrise") != std::string::npos) {
@@ -2197,17 +2260,17 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 }
 #endif // ENABLE_PYTHON
 
-void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long varId)
+void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long varId)
 {
-	EvaluateLua(reason, filename, 0, "", 0, "", "", varId);
+	EvaluateLua(reason, filename, LuaString, 0, "", 0, "", "", varId);
 }
 
-void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename)
+void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString)
 {
-	EvaluateLua(reason, filename, 0, "", 0, "", "", 0);
+	EvaluateLua(reason, filename, LuaString, 0, "", 0, "", "", 0);
 }
 
-void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
 {
 	boost::lock_guard<boost::mutex> l(luaMutex);
 
@@ -2660,8 +2723,13 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "globalvariables");
 
-
-	int status = luaL_loadfile(lua_state, filename.c_str());
+	int status = 0;
+	if (LuaString.length() == 0) {
+		status = luaL_loadfile(lua_state, filename.c_str());
+	}
+	else {
+		status = luaL_loadstring(lua_state, LuaString.c_str());
+	}
 
 	if (status == 0)
 	{
@@ -3554,6 +3622,11 @@ namespace http {
 			{
 				root["title"] = "ListEvents";
 				root["status"] = "OK";
+#ifdef ENABLE_PYTHON
+				root["interpreters"] = "Blockly:Lua:Python";
+#else
+				root["interpreters"] = "Blockly:Lua";
+#endif
 
 				std::map<std::string, _tSortedEventsInt> _levents;
 				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC");
@@ -3591,6 +3664,35 @@ namespace http {
 					}
 				}
 			}
+			else if (cparam == "new")
+			{
+				root["title"] = "NewEvent";
+
+				std::string interpreter = request::findValue(&req, "interpreter");
+				if (interpreter == "")
+					return;
+
+				std::string eventType = request::findValue(&req, "eventtype");
+				if (eventType == "")
+					return;
+
+				std::stringstream template_file;
+#ifdef WIN32
+				template_file << szUserDataFolder << "scripts\\templates\\" << eventType << "." << interpreter;
+#else
+				template_file << szUserDataFolder << "scripts/templates/" << eventType << "." << interpreter;
+#endif
+				std::ifstream file;
+				std::stringstream template_content;
+				file.open(template_file.str().c_str(), std::ifstream::in);
+				if (file.is_open())
+				{
+					template_content << file.rdbuf();
+					file.close();
+				}
+				root["template"] = template_content.str();
+				root["status"] = "OK";
+			}
 			else if (cparam == "load")
 			{
 				root["title"] = "LoadEvent";
@@ -3601,7 +3703,7 @@ namespace http {
 
 				int ii = 0;
 
-				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status FROM EventMaster WHERE (ID=='%q')",
+				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status, Interpreter, Type FROM EventMaster WHERE (ID=='%q')",
 					idx.c_str());
 				if (result.size() > 0)
 				{
@@ -3619,12 +3721,13 @@ namespace http {
 						root["result"][ii]["name"] = Name;
 						root["result"][ii]["xmlstatement"] = XMLStatement;
 						root["result"][ii]["eventstatus"] = eventStatus;
+						root["result"][ii]["interpreter"] = sd[4];
+						root["result"][ii]["type"] = sd[5];
 						ii++;
 					}
 					root["status"] = "OK";
 				}
 			}
-
 			else if (cparam == "create")
 			{
 
@@ -3632,6 +3735,14 @@ namespace http {
 
 				std::string eventname = request::findValue(&req, "name");
 				if (eventname == "")
+					return;
+
+				std::string interpreter = request::findValue(&req, "interpreter");
+				if (interpreter == "")
+					return;
+
+				std::string eventtype = request::findValue(&req, "eventtype");
+				if (eventtype == "")
 					return;
 
 				std::string eventxml = request::findValue(&req, "xml");
@@ -3646,27 +3757,27 @@ namespace http {
 
 
 				std::string eventlogic = request::findValue(&req, "logicarray");
-				if (eventlogic == "")
+				if ((interpreter == "Blockly") && (eventlogic == ""))
 					return;
 
 				int eventStatus = atoi(eventactive.c_str());
 
+				bool parsingSuccessful = eventxml.length() > 0;
 				Json::Value jsonRoot;
-				Json::Reader reader;
-				std::stringstream ssel(eventlogic);
-
-				bool parsingSuccessful = reader.parse(ssel, jsonRoot);
+				if (interpreter == "Blockly") {
+					Json::Reader reader;
+					std::stringstream ssel(eventlogic);
+					parsingSuccessful = reader.parse(ssel, jsonRoot);
+				}
 
 				if (!parsingSuccessful)
 				{
-
 					_log.Log(LOG_ERROR, "Webserver event parser: Invalid data received!");
-
 				}
 				else {
 					if (eventid == "") {
-						m_sql.safe_query("INSERT INTO EventMaster (Name, XMLStatement, Status) VALUES ('%q','%q','%d')",
-							eventname.c_str(), eventxml.c_str(), eventStatus);
+						m_sql.safe_query("INSERT INTO EventMaster (Name, Interpreter, Type, XMLStatement, Status) VALUES ('%q','%q','%q','%q','%d')",
+							eventname.c_str(), interpreter.c_str(), eventtype.c_str(), eventxml.c_str(), eventStatus);
 						result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE (Name == '%q')",
 							eventname.c_str());
 						if (result.size() > 0)
@@ -3676,8 +3787,8 @@ namespace http {
 						}
 					}
 					else {
-						m_sql.safe_query("UPDATE EventMaster SET Name='%q', XMLStatement ='%q', Status ='%d' WHERE (ID == '%q')",
-							eventname.c_str(), eventxml.c_str(), eventStatus, eventid.c_str());
+						m_sql.safe_query("UPDATE EventMaster SET Name='%q', Interpreter='%q', Type='%q', XMLStatement ='%q', Status ='%d' WHERE (ID == '%q')",
+							eventname.c_str(), interpreter.c_str(), eventtype.c_str(), eventxml.c_str(), eventStatus, eventid.c_str());
 						m_sql.safe_query("DELETE FROM EventRules WHERE (EMID == '%q')",
 							eventid.c_str());
 					}
@@ -3688,19 +3799,21 @@ namespace http {
 						_log.Log(LOG_ERROR, "Error writing event actions to database!");
 					}
 					else {
-						const Json::Value array = jsonRoot["eventlogic"];
-						for (int index = 0; index < (int)array.size(); ++index)
-						{
-							std::string conditions = array[index].get("conditions", "").asString();
-							std::string actions = array[index].get("actions", "").asString();
-
-							if ((actions.find("SendNotification") != std::string::npos) || (actions.find("SendEmail") != std::string::npos) || (actions.find("SendSMS") != std::string::npos))
+						if (interpreter == "Blockly") {
+							const Json::Value array = jsonRoot["eventlogic"];
+							for (int index = 0; index < (int)array.size(); ++index)
 							{
-								stdreplace(actions, "$", "#");
+								std::string conditions = array[index].get("conditions", "").asString();
+								std::string actions = array[index].get("actions", "").asString();
+
+								if ((actions.find("SendNotification") != std::string::npos) || (actions.find("SendEmail") != std::string::npos) || (actions.find("SendSMS") != std::string::npos))
+								{
+									stdreplace(actions, "$", "#");
+								}
+								int sequenceNo = index + 1;
+								m_sql.safe_query("INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('%q','%q','%q','%d')",
+									eventid.c_str(), conditions.c_str(), actions.c_str(), sequenceNo);
 							}
-							int sequenceNo = index + 1;
-							m_sql.safe_query("INSERT INTO EventRules (EMID, Conditions, Actions, SequenceNo) VALUES ('%q','%q','%q','%d')",
-								eventid.c_str(), conditions.c_str(), actions.c_str(), sequenceNo);
 						}
 
 						m_mainworker.m_eventsystem.LoadEvents();

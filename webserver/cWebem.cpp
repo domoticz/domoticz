@@ -222,10 +222,13 @@ void cWebem::RegisterWhitelistURLString(const char* idname)
   If X has been registered with cWebem then the associated function
   is called to generate text to be inserted.
 
+  returns true if any text is replaced
+
 
 */
-void cWebem::Include( std::string& reply )
+bool cWebem::Include( std::string& reply )
 {
+	bool res = false;
 	int p = 0;
 	while( 1 ) {
 		// find next request for generated text
@@ -257,6 +260,7 @@ void cWebem::Include( std::string& reply )
 				
 			}
 			reply.insert( p, ret );
+			res = true;
 		} else {
 			// no function found, look for a wide character fuction
 			std::map < std::string, webem_include_function_w >::iterator pf = myIncludes_w.find( code );
@@ -275,12 +279,14 @@ void cWebem::Include( std::string& reply )
 				cUTF utf( wret.c_str() );
 				// insert generated text
 				reply.insert( p, utf.get8() );
+				res = true;
 			}
 		}
 
 		// adjust pointer into text for insertion
 		p = q + reply.length() - reply_len;
 	}
+	return res;
 }
 
 std::istream & safeGetline( std::istream & is, std::string & line ) {
@@ -321,8 +327,8 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 
 	req.parameters.clear();
 
-	std::string uri = req.uri;
-
+	std::string uri = ExtractRequestPath(req.uri);
+	
 	// find function matching action code
 	int q = uri.find(".webem");
 	std::string code = uri.substr(1,q-1);
@@ -481,11 +487,9 @@ bool cWebem::IsPageOverride(const request& req, reply& rep)
 		rep = reply::stock_reply(reply::bad_request);
 		return false;
 	}
-	int paramPos = request_path.find_first_of('?');
-	if (paramPos != std::string::npos)
-	{
-		request_path = request_path.substr(0, paramPos);
-	}
+	
+	request_path = ExtractRequestPath(request_path);
+
 	std::map < std::string, webem_page_function >::iterator
 		pfun = myPages.find(request_path);
 
@@ -511,32 +515,15 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 
 	session.lastRequestPath = request_path;
 
-	int paramPos = request_path.find_first_of('?');
-	if (paramPos != std::string::npos)
-	{
-		request_path = request_path.substr(0,paramPos);
-	}
-
-	// Request path must be absolute and not contain "..".
-	if (request_path.empty() || request_path[0] != '/'
-		|| request_path.find("..") != std::string::npos)
-	{
-		rep = reply::stock_reply(reply::bad_request);
-		return false;
-	}
-
-	// If path ends in slash (i.e. is a directory) then add "index.html".
-	if (request_path[request_path.size() - 1] == '/')
-	{
-		request_path += "index.html";
-	}
+	request_path = ExtractRequestPath(request_path);
+	
 	req.parameters.clear();
 
-	request_path = req.uri; // we need the raw request string to parse the get-request
-	paramPos=request_path.find_first_of('?');
+	std::string request_path2 = req.uri; // we need the raw request string to parse the get-request
+	int paramPos=request_path2.find_first_of('?');
 	if (paramPos!=std::string::npos)
 	{
-		std::string params=request_path.substr(paramPos+1);
+		std::string params=request_path2.substr(paramPos+1);
 		std::string name;
 		std::string value;
 
@@ -573,8 +560,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			req.parameters.insert( std::pair< std::string,std::string > ( name, decoded ) );
 			p = q+1;
 		}
-
-		request_path=request_path.substr(0,paramPos);
 	}
 	if (req.method == "POST") {
 		const char *pContent_Type = request::get_req_header(&req, "Content-Type");
@@ -678,7 +663,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		rep.content.append(retstr.c_str(), retstr.size());
 
 		std::string strMimeType=mime_types::extension_to_type(extension);
-		int extraheaders=0;
 		if (session.outputfilename!="")
 		{
 			std::size_t last_dot_pos = session.outputfilename.find_last_of(".");
@@ -687,58 +671,36 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 				extension = session.outputfilename.substr(last_dot_pos + 1);
 				strMimeType=mime_types::extension_to_type(extension);
 			}
-			extraheaders=1;
-		}
-		if (req.keep_alive) {
-			extraheaders += 2;
 		}
 
-		int iHeader = 0;
 		if (!boost::algorithm::starts_with(strMimeType, "image"))
 		{
-			rep.headers.resize(5 + extraheaders);
-			rep.headers[iHeader].name = "Content-Length";
-			rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-			rep.headers[iHeader].name = "Content-Type";
-			rep.headers[iHeader].value = strMimeType;
-			rep.headers[iHeader++].value += ";charset=UTF-8"; //ISO-8859-1
-			rep.headers[iHeader].name = "Cache-Control";
-			rep.headers[iHeader++].value = "no-cache";
-			rep.headers[iHeader].name = "Pragma";
-			rep.headers[iHeader++].value = "no-cache";
-			rep.headers[iHeader].name = "Access-Control-Allow-Origin";
-			rep.headers[iHeader++].value = "*";
+			reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+			reply::AddHeader(&rep, "Content-Type", strMimeType + ";charset=UTF-8");
+			reply::AddHeader(&rep, "Cache-Control", "no-cache");
+			reply::AddHeader(&rep, "Pragma", "no-cache");
+			reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
 			if (req.keep_alive) {
-				rep.headers[iHeader].name = "Connection";
-				rep.headers[iHeader++].value = "Keep-Alive";
-				rep.headers[iHeader].name = "Keep-Alive";
-				rep.headers[iHeader++].value = "max=20, timeout=10";
+				reply::AddHeader(&rep, "Connection", "Keep-Alive");
+				reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
 			}
 			if (session.outputfilename != "")
 			{
-				rep.headers[iHeader].name = "Content-Disposition";
-				rep.headers[iHeader++].value = "attachment; filename=" + session.outputfilename;
+				reply::AddHeader(&rep, "Content-Disposition", "attachment; filename=" + session.outputfilename);
 			}
 		}
 		else
 		{
-			rep.headers.resize(3 + extraheaders);
-			rep.headers[iHeader].name = "Content-Length";
-			rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-			rep.headers[iHeader].name = "Content-Type";
-			rep.headers[iHeader++].value = strMimeType;
-			rep.headers[iHeader].name = "Cache-Control";
-			rep.headers[iHeader++].value = "max-age=3600, public";
+			reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+			reply::AddHeader(&rep, "Content-Type", strMimeType);
+			reply::AddHeader(&rep, "Cache-Control", "max-age=3600, public");
 			if (req.keep_alive) {
-				rep.headers[iHeader].name = "Connection";
-				rep.headers[iHeader++].value = "Keep-Alive";
-				rep.headers[iHeader].name = "Keep-Alive";
-				rep.headers[iHeader++].value = "max=20, timeout=10";
+				reply::AddHeader(&rep, "Connection", "Keep-Alive");
+				reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
 			}
 			if (session.outputfilename != "")
 			{
-				rep.headers[iHeader].name = "Content-Disposition";
-				rep.headers[iHeader++].value = "attachment; filename=" + session.outputfilename;
+				reply::AddHeader(&rep, "Content-Disposition", "attachment; filename=" + session.outputfilename);
 			}
 		}
 		return true;
@@ -760,32 +722,18 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	}
 	cUTF utf( wret.c_str() );
 
-	int extraheaders = 0;
-	if (req.keep_alive) {
-		extraheaders += 2;
-	}
-
 	rep.status = reply::ok;
 	rep.content.append(utf.get8(), strlen(utf.get8()));
-	rep.headers.resize(5 + extraheaders);
 
-	int iHeader = 0;
-	rep.headers[iHeader].name = "Content-Length";
-	rep.headers[iHeader++].value = boost::lexical_cast<std::string>(rep.content.size());
-	rep.headers[iHeader].name = "Content-Type";
-	rep.headers[iHeader].value = mime_types::extension_to_type(extension);
-	rep.headers[iHeader++].value += ";charset=UTF-8";
-	rep.headers[iHeader].name = "Cache-Control";
-	rep.headers[iHeader++].value = "no-cache";
-	rep.headers[iHeader].name = "Pragma";
-	rep.headers[iHeader++].value = "no-cache";
-	rep.headers[iHeader].name = "Access-Control-Allow-Origin";
-	rep.headers[iHeader++].value = "*";
+	reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+	reply::AddHeader(&rep, "Content-Type", mime_types::extension_to_type(extension) + "; charset=UTF-8");
+	reply::AddHeader(&rep, "Cache-Control", "no-cache");
+	reply::AddHeader(&rep, "Pragma", "no-cache");
+	reply::AddHeader(&rep, "Access-Control-Allow-Origin", "*");
+
 	if (req.keep_alive) {
-		rep.headers[iHeader].name = "Connection";
-		rep.headers[iHeader++].value = "Keep-Alive";
-		rep.headers[iHeader].name = "Keep-Alive";
-		rep.headers[iHeader++].value = "max=20, timeout=10";
+		reply::AddHeader(&rep, "Connection", "Keep-Alive");
+		reply::AddHeader(&rep, "Keep-Alive", "max=20, timeout=10");
 	}
 	return true;
 }
@@ -793,6 +741,92 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 void cWebem::SetWebTheme(const std::string &themename)
 {
 	m_actTheme = "/styles/"+themename;
+}
+
+void cWebem::SetWebRoot(const std::string &webRoot)
+{
+	// remove trailing slash if required
+	if(m_webRoot.size() > 0 && m_webRoot[m_webRoot.size() - 1] != '/')
+	{
+		m_webRoot = webRoot.substr(0, webRoot.size() - 1);
+	}
+	else
+	{
+		m_webRoot = webRoot;
+	}
+	// put slash at the front if required
+	if(m_webRoot.size() > 0 && m_webRoot[0] != '/')
+	{
+		m_webRoot = "/" + webRoot;
+	}
+}
+
+std::string cWebem::ExtractRequestPath(const std::string& original_request_path)
+{
+	std::string request_path(original_request_path);
+	int paramPos = request_path.find_first_of('?');
+	if (paramPos != std::string::npos)
+	{
+		request_path = request_path.substr(0, paramPos);
+	}
+
+	if (request_path.find(m_webRoot + "/@login")==0)
+	{
+		request_path=m_webRoot + "/";
+	}
+
+	// If path ends in slash (i.e. is a directory) then add "index.html".
+	if (request_path[request_path.size() - 1] == '/')
+	{
+		request_path += "index.html";
+	}
+	
+	if(m_webRoot.size() > 0)
+	{
+		// remove web root if present otherwise
+		// create invalid request
+		if (request_path.find(m_webRoot) == 0)
+		{
+			request_path = request_path.substr(m_webRoot.size());
+		}
+		else
+		{
+			request_path= "";
+		}
+	}
+
+	if (request_path.find("/acttheme/") == 0)
+	{
+		request_path = m_actTheme + request_path.substr(9);
+	}
+	return request_path;
+}
+
+bool cWebem::IsBadRequestPath(const std::string& request_path)
+{
+	// Request path must be absolute and not contain "..".
+	if (request_path.empty() || request_path[0] != '/'
+		|| request_path.find("..") != std::string::npos)
+	{
+		return true;
+	}
+	
+	// don't allow access to control files
+	if (request_path.find(".htpasswd") != std::string::npos)
+	{
+		return true;
+	}
+	
+	// if we have a web root set the request must start with it
+	if(m_webRoot.size() > 0)
+	{
+		if (request_path.find(m_webRoot) != 0)
+		{
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs)
@@ -1150,13 +1184,10 @@ char *make_web_time(const time_t rawtime)
 
 void cWebemRequestHandler::send_remove_cookie(reply& rep)
 {
-	size_t ahsize = rep.headers.size();
-	rep.headers.resize(ahsize + 1);
-	rep.headers[ahsize].name = "Set-Cookie";
 	std::stringstream sstr;
 	sstr << "SID=none";
-	sstr << "; path=/; Expires= " << make_web_time(0);
-	rep.headers[ahsize].value = sstr.str();
+	sstr << "; path=/; Expires=" << make_web_time(0);
+	reply::AddHeader(&rep, "Set-Cookie", sstr.str(), false);
 }
 
 std::string cWebemRequestHandler::generateSessionID()
@@ -1212,30 +1243,22 @@ std::string cWebemRequestHandler::generateAuthToken(const WebEmSession & session
 
 void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 {
-	int ahsize = rep.headers.size();
-	rep.headers.resize(ahsize + 1);
-	rep.headers[ahsize].name = "Set-Cookie";
 	std::stringstream sstr;
 	sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
-	sstr << "; path=/; Expires= " << make_web_time(session.expires);
-	rep.headers[ahsize].value = sstr.str();
+	sstr << "; path=/; Expires=" << make_web_time(session.expires);
+	reply::AddHeader(&rep, "Set-Cookie", sstr.str(), false);
 }
 
 void cWebemRequestHandler::send_authorization_request(reply& rep)
 {
 	rep.status = reply::unauthorized;
-	size_t ahsize = rep.headers.size();
-	rep.headers.resize(ahsize+2);
-	rep.headers[ahsize].name = "Content-Length";
-	rep.headers[ahsize].value = boost::lexical_cast<std::string>(rep.content.size());
-	rep.headers[ahsize+1].name = "WWW-Authenticate";
-
+	reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 	char szAuthHeader[200];
 	sprintf(szAuthHeader,
 		"Basic "
 		"realm=\"%s\"",
 		myWebem->m_DigistRealm.c_str());
-	rep.headers[ahsize+1].value = szAuthHeader;
+	reply::AddHeader(&rep, "WWW-Authenticate", szAuthHeader);
 }
 
 bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
@@ -1263,17 +1286,14 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 			CA2GZIP gzip((char*)rep.content.c_str(), rep.content.size());
 			if ((gzip.Length>0)&&(gzip.Length<(int)rep.content.size()))
 			{
+				rep.bIsGZIP = true; // flag for later
 				rep.content.clear();
 				rep.content.append((char*)gzip.pgzip, gzip.Length);
 				//Set new content length
-				std::string szSize=boost::lexical_cast<std::string>(rep.content.size());
-
-				rep.headers[0].value = szSize;
+				reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
 				//Add gzip header
-				int ohsize=rep.headers.size();
-				rep.headers.resize(ohsize+1);
-				rep.headers[ohsize].name = "Content-Encoding";
-				rep.headers[ohsize].value = "gzip";
+				reply::AddHeader(&rep, "Content-Encoding", "gzip");
+				return true;
 			}
 		}
 	}
@@ -1327,10 +1347,8 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				scookie = scookie.substr(0, epos);
 			}
 		}
-
 		int upos = scookie.find("_", fpos);
 		int ppos = scookie.find(".", upos);
-
 		time_t now = mytime(NULL);
 		if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 		{
@@ -1465,7 +1483,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 	}
 
 #ifdef _DEBUG
-	//_log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
+	// _log.Log(LOG_STATUS, "CheckAuthToken(%s_%s_%s) : user authenticated", session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
 
 	if (session.username.empty()) {
@@ -1524,8 +1542,6 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 
 void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
-	//_log.Log(LOG_NORM, "www-request: %s", req.uri.c_str());
-
 	// Initialize session
 	WebEmSession session;
 	session.remote_host = req.host;
@@ -1534,7 +1550,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.forcelogin = false;
 	session.rememberme = false;
 
-	rep.bIsGZIP = false;
+		rep.bIsGZIP = false;
 
 	bool isPage = myWebem->IsPageOverride(req, rep);
 	bool isAction = myWebem->IsAction(req);
@@ -1544,7 +1560,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	if (isPage || isAction) {
 		bCheckAuthentication = true;
 	}
-
+	
 	if (isPage && (req.uri.find("dologout") != std::string::npos))
 	{
 		//Remove session id based on cookie
@@ -1570,6 +1586,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.username = "";
 		session.rights = -1;
 		session.forcelogin = true;
+		_log.Log(LOG_ERROR, "Setting removecookie = true");
 		session.removecookie = true;
 		bCheckAuthentication = false; // do not authenticate the user, just logout
 	}
@@ -1592,12 +1609,13 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		myWebem->CheckForAction(session, requestCopy);
 	}
 
+	modify_info mInfo;
 	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 	{
 		// do normal handling
 		try
 		{
-			request_handler::handle_request(requestCopy, rep);
+			request_handler::handle_request(requestCopy, rep, mInfo);
 		}
 		catch (...)
 		{
@@ -1605,45 +1623,70 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			return;
 		}
 
-		if (rep.headers[1].value == "text/html" 
-			|| rep.headers[1].value == "text/plain" 
-			|| rep.headers[1].value == "text/css"
-			|| rep.headers[1].value == "text/javascript"
+		// find content type header
+		std::string content_type;
+		for (unsigned int h = 0; h < rep.headers.size(); h++) {
+			if (boost::iequals(rep.headers[h].name, "Content-Type")) {
+				content_type = rep.headers[h].value;
+				break;
+			}
+		}
+
+		if (content_type == "text/html"
+			|| content_type == "text/plain"
+			|| content_type == "text/css"
+			|| content_type == "text/javascript"
+			|| content_type == "application/javascript"
 			)
 		{
-			// Find and include any special cWebem strings
-			myWebem->Include( rep.content );
+			// check if content is not gzipped, include won´t work with non-text content
+			if (!rep.bIsGZIP) {
+				// Find and include any special cWebem strings
+				if (!myWebem->Include(rep.content)) {
+					if (mInfo.mtime_support && !mInfo.is_modified) {
+						//_log.Log(LOG_STATUS, "%s not modified (1).", req.uri.c_str());
+						rep = reply::stock_reply(reply::not_modified);
+						return;
+					}
+				}
 
-			// adjust content length header
-			// ( Firefox ignores this, but apparently some browsers truncate display without it.
-			// fix provided by http://www.codeproject.com/Members/jaeheung72 )
+				// adjust content length header
+				// ( Firefox ignores this, but apparently some browsers truncate display without it.
+				// fix provided by http://www.codeproject.com/Members/jaeheung72 )
 
-			rep.headers[0].value = boost::lexical_cast<std::string>(rep.content.size());
+				reply::AddHeader(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+
+				//check gzip support if yes, send it back in gzip format
+				CompressWebOutput(req, rep);
+			}
 
 			// tell browser that we are using UTF-8 encoding
-			rep.headers[1].value += ";charset=UTF-8";
-
-			//check gzip support if yes, send it back in gzip format
-			if (!rep.bIsGZIP)
-				CompressWebOutput(req,rep);
+			reply::AddHeader(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
-		else if (rep.headers[1].value.find("image/")!=std::string::npos)
+		else if (content_type.find("image/")!=std::string::npos)
 		{
+			if (mInfo.mtime_support && !mInfo.is_modified) {
+				rep = reply::stock_reply(reply::not_modified);
+				//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
+				return;
+			}
 			//Cache images
-			int theaders = rep.headers.size();
-			rep.headers.resize(theaders + 2);
-
-			rep.headers[theaders].name = "Date";
-			rep.headers[theaders].value = strftime_t("%a, %d %b %Y %H:%M:%S GMT",mytime(NULL));
-
-			rep.headers[theaders + 1].name = "Expires";
-			rep.headers[theaders + 1].value = "Sat, 26 Dec 2099 11:40:31 GMT";
+			reply::AddHeader(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
+			reply::AddHeader(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+		}
+		else {
+			if (mInfo.mtime_support && !mInfo.is_modified) {
+				rep = reply::stock_reply(reply::not_modified);
+				//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
+				return;
+			}
 		}
 	}
 	else
 	{
-		if (!rep.bIsGZIP)
-			CompressWebOutput(req,rep);
+		if (!rep.bIsGZIP) {
+			CompressWebOutput(req, rep);
+		}
 	}
 
 	// Set timeout to make session in use
@@ -1686,7 +1729,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			}
 		}
 	}
-
 }
 
 } //namespace server {

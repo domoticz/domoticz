@@ -23,6 +23,8 @@ class CEventSystem
 	{
 		unsigned long long ID;
 		std::string Name;
+		std::string Interpreter;
+		std::string Type;
 		std::string Conditions;
 		std::string Actions;
 		int SequenceNo;
@@ -99,9 +101,9 @@ private:
 	void EvaluatePython(const std::string &reason, const std::string &filename);
 	void EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
 #endif
-	void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long varId);
-	void EvaluateLua(const std::string &reason, const std::string &filename);
-	void EvaluateLua(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
+	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long varId);
+	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString);
+	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue, const std::map<std::string, std::string> & options);

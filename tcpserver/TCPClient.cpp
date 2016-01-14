@@ -2,14 +2,26 @@
 #include "TCPClient.h"
 #include "TCPServer.h"
 #include "../main/Helper.h"
-
+#include "../main/Logger.h"
 namespace tcp {
 namespace server {
 
-CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerInt *pManager)
-: socket_(ios), pConnectionManager(pManager), m_username("")
+CTCPClientBase::CTCPClientBase(CTCPServerIntBase *pManager)
+	: pConnectionManager(pManager), m_username("")
 {
-	m_bIsLoggedIn=false;
+	socket_ = NULL;
+	m_bIsLoggedIn = false;
+}
+
+CTCPClientBase::~CTCPClientBase(void)
+{
+	if (socket_) delete socket_;
+}
+
+CTCPClient::CTCPClient(boost::asio::io_service& ios, CTCPServerIntBase *pManager)
+	: CTCPClientBase(pManager)
+{
+	socket_ = new boost::asio::ip::tcp::socket(ios);
 }
 
 
@@ -19,7 +31,7 @@ CTCPClient::~CTCPClient(void)
 
 void CTCPClient::start()
 {
-	socket_.async_read_some(boost::asio::buffer(buffer_),
+	socket_->async_read_some(boost::asio::buffer(buffer_),
 		boost::bind(&CTCPClient::handleRead, shared_from_this(),
 		boost::asio::placeholders::error,
 		boost::asio::placeholders::bytes_transferred));
@@ -27,7 +39,7 @@ void CTCPClient::start()
 
 void CTCPClient::stop()
 {
-	 socket_.close();
+	 socket_->close();
 }
 
 void CTCPClient::handleRead(const boost::system::error_code& e,
@@ -48,7 +60,7 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 				StringSplit(recstr, ";", strarray);
 				if (strarray.size()==3)
 				{
-					m_bIsLoggedIn=pConnectionManager->HandleAuthentication(shared_from_this(),strarray[1],strarray[2]);
+					m_bIsLoggedIn=pConnectionManager->HandleAuthentication(shared_from_this(), strarray[1] ,strarray[2]);
 					if (!m_bIsLoggedIn)
 					{
 						//Wrong username/password
@@ -65,7 +77,7 @@ void CTCPClient::handleRead(const boost::system::error_code& e,
 		}
 
 		//ready for next read
-		socket_.async_read_some(boost::asio::buffer(buffer_),
+		socket_->async_read_some(boost::asio::buffer(buffer_),
 			boost::bind(&CTCPClient::handleRead, shared_from_this(),
 			boost::asio::placeholders::error,
 			boost::asio::placeholders::bytes_transferred));
@@ -80,7 +92,7 @@ void CTCPClient::write(const char *pData, size_t Length)
 {
 	if (!m_bIsLoggedIn)
 		return;
-	boost::asio::async_write(socket_, boost::asio::buffer(pData, Length),
+	boost::asio::async_write(*socket_, boost::asio::buffer(pData, Length),
 		boost::bind(&CTCPClient::handleWrite, shared_from_this(),
 		boost::asio::placeholders::error));
 }
@@ -92,6 +104,51 @@ void CTCPClient::handleWrite(const boost::system::error_code& error)
 		pConnectionManager->stopClient(shared_from_this());
 	}
 }
+
+#ifndef NOCLOUD
+/* shared server via proxy client class */
+CSharedClient::CSharedClient(CTCPServerIntBase *pManager, http::server::CProxyClient *proxy, const std::string &token, const std::string &username) : CTCPClientBase(pManager)
+{
+	m_pProxyClient = proxy;
+	m_username = username;
+	_token = token;
+}
+
+CSharedClient::~CSharedClient()
+{
+}
+
+void CSharedClient::start()
+{
+	m_bIsLoggedIn = true;
+}
+
+void CSharedClient::stop()
+{
+	m_bIsLoggedIn = false;
+}
+
+void CSharedClient::OnIncomingData(const unsigned char *data, size_t bytes_transferred)
+{
+	if (!m_bIsLoggedIn) {
+		return;
+	}
+	pConnectionManager->DoDecodeMessage(this, data);
+}
+
+void CSharedClient::write(const char *pData, size_t Length)
+{
+	if (!m_bIsLoggedIn)
+		return;
+	// RK, todo: m_pProxyClient is not valid after a reconnect
+	m_pProxyClient->WriteSlaveData(_token, pData, Length);
+}
+
+bool CSharedClient::CompareToken(const std::string &token)
+{
+	return (token == _token);
+}
+#endif
 
 } // namespace server
 } // namespace tcp

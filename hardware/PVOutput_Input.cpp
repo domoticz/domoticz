@@ -85,15 +85,6 @@ bool CPVOutputInput::WriteToHardware(const char *pdata, const unsigned char leng
 
 void CPVOutputInput::SendTempSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	RBUF tsen;
 	memset(&tsen,0,sizeof(RBUF));
 
@@ -111,74 +102,27 @@ void CPVOutputInput::SendTempSensor(const unsigned char Idx, const float Temp, c
 	at10-=(tsen.TEMP.temperatureh*256);
 	tsen.TEMP.temperaturel=(BYTE)(at10);
 
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID==%d) AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, int(Idx), int(pTypeTEMP), int(sTypeTEMP10));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, defaultname.c_str(), 255);
 }
 
 void CPVOutputInput::SendVoltage(const unsigned long Idx, const float Volt, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp,"%08X", (unsigned int)Idx);
-
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	_tGeneralDevice gDevice;
 	gDevice.subtype=sTypeVoltage;
 	gDevice.id=1;
 	gDevice.floatval1=Volt;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, 255);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeVoltage));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CPVOutputInput::SendPercentage(const unsigned long Idx, const float Percentage, const std::string &defaultname)
 {
-	bool bDeviceExits=true;
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp,"%08X", (unsigned int)Idx);
-
-	result=m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
-	if (result.size()<1)
-	{
-		bDeviceExits=false;
-	}
-
 	_tGeneralDevice gDevice;
 	gDevice.subtype=sTypePercentage;
 	gDevice.id=1;
 	gDevice.floatval1=Percentage;
 	gDevice.intval1 = static_cast<int>(Idx);
-	sDecodeRXMessage(this, (const unsigned char *)&gDevice, NULL, 255);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
-	}
+	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), 255);
 }
 
 void CPVOutputInput::GetMeterDetails()

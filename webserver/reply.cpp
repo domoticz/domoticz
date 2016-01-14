@@ -11,6 +11,7 @@
 #include "reply.hpp"
 #include <string>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace http {
 namespace server {
@@ -265,6 +266,22 @@ reply reply::stock_reply(reply::status_type status)
   rep.headers[1].name = "Content-Type";
   rep.headers[1].value = "text/html";
   return rep;
+}
+
+void reply::AddHeader(reply *rep, const std::string &name, const std::string &value, bool replace)
+{
+	int num = rep->headers.size();
+	if (replace) {
+		for (int h = 0; h < num; h++) {
+			if (boost::iequals(rep->headers[h].name, name)) {
+				rep->headers[h].value = value;
+				return;
+			}
+		}
+	}
+	rep->headers.resize(num + 1);
+	rep->headers[num].name = name;
+	rep->headers[num].value = value;
 }
 
 } // namespace server

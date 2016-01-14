@@ -105,7 +105,7 @@ void CPhilipsHue::Do_Work()
 			if (sec_counter % HUE_POLL_INTERVAL == 0)
 			{
 				m_LastHeartbeat = mytime(NULL);
-				GetLightStates();
+				GetStates();
 			}
 		}
 	}
@@ -230,6 +230,10 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	{
 		sPostData << "{\"on\": true, \"sat\": 255 , \"hue\": " << svalue << " }";
 	}
+	else if (LCmd == "Set Hex")
+	{
+		sPostData << "{\"on\": true, \"sat\": 255 , \"hue\": " << svalue << " }";
+	}
 	else
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid light command received!");
@@ -237,10 +241,22 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 	}
 
 	std::stringstream sstr2;
-	sstr2 << "http://" << m_IPAddress
-		<< ":" << m_Port
-		<< "/api/" << m_UserName
-		<< "/lights/" << nodeID << "/state";
+	if (nodeID < 1000)
+	{
+		//Light
+		sstr2 << "http://" << m_IPAddress
+			<< ":" << m_Port
+			<< "/api/" << m_UserName
+			<< "/lights/" << nodeID << "/state";
+	}
+	else
+	{
+		//Group
+		sstr2 << "http://" << m_IPAddress
+			<< ":" << m_Port
+			<< "/api/" << m_UserName
+			<< "/groups/" << nodeID-1000 << "/action";
+	}
 	std::string sURL = sstr2.str();
 	if (!HTTPClient::PUT(sURL, sPostData.str(), ExtraHeaders, sResult))
 	{
@@ -359,7 +375,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		lcmd.id = NodeID;
 		lcmd.command = Limitless_LedOff;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 
 		//Set Name/Parameters
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND(DeviceID == '%q')",
@@ -446,7 +462,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		lcmd.LIGHTING2.filler = 0;
 		lcmd.LIGHTING2.rssi = 12;
 
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
 
 		//Set Name/Parameters
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d, nValue=%d, sValue='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
@@ -455,7 +471,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 }
 
 
-bool CPhilipsHue::GetLightStates()
+bool CPhilipsHue::GetStates()
 {
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
@@ -502,97 +518,243 @@ bool CPhilipsHue::GetLightStates()
 		return false;
 	}
 
-	int totLights = root["lights"].size();
 	char szNode[10];
-	for (int ii = 0; ii < 255; ii++)
+	int ii;
+
+	//Lights
+	int totLights = root["lights"].size();
+	if (totLights > 0)
 	{
-		sprintf(szNode, "%d", ii + 1);
-		if (root["lights"][szNode].empty())
-			continue;
-		std::string ltype = root["lights"][szNode]["type"].asString();
-		if (
-			(ltype == "Dimmable plug-in unit") ||
-			(ltype == "Dimmable light") ||
-			(ltype == "Color temperature light")
-			)
+		for (ii = 0; ii < 255; ii++)
 		{
-			//Normal light (with dim option)
-			bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
-			int tbri = root["lights"][szNode]["state"]["bri"].asInt();
-			int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
-			_tHueLight tlight;
-			if (bIsOn)
+			sprintf(szNode, "%d", ii + 1);
+			if (root["lights"][szNode].empty())
+				continue;
+			std::string ltype = root["lights"][szNode]["type"].asString();
+			if (
+				(ltype == "Dimmable plug-in unit") ||
+				(ltype == "Dimmable light") ||
+				(ltype == "Color temperature light")
+				)
 			{
-				tlight.cmd = (BrightnessLevel != 0) ? light2_sSetLevel: light2_sOn;
-			}
-			else
-				tlight.cmd = light2_sOff;
-			tlight.level = BrightnessLevel;
-			tlight.sat = 0;
-			tlight.hue = 0;
-			bool bDoSend = true;
-			if (m_lights.find(ii + 1) != m_lights.end())
-			{
-				_tHueLight alight = m_lights[ii + 1];
-				if (
-					(alight.cmd == tlight.cmd) &&
-					(alight.level == tlight.level)
-					)
+				//Normal light (with dim option)
+				bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
+				int tbri = root["lights"][szNode]["state"]["bri"].asInt();
+				if ((tbri != 0) && (tbri != 255))
+					tbri += 1; //hue reports 255 as 254
+				int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
+				_tHueLight tlight;
+				if (bIsOn)
 				{
-					bDoSend = false;
+					tlight.cmd = (BrightnessLevel != 0) ? light2_sSetLevel : light2_sOn;
+				}
+				else
+					tlight.cmd = light2_sOff;
+				tlight.level = BrightnessLevel;
+				tlight.sat = 0;
+				tlight.hue = 0;
+				bool bDoSend = true;
+				if (m_lights.find(ii + 1) != m_lights.end())
+				{
+					_tHueLight alight = m_lights[ii + 1];
+					if (
+						(alight.cmd == tlight.cmd) &&
+						(alight.level == tlight.level)
+						)
+					{
+						bDoSend = false;
+					}
+				}
+				m_lights[ii + 1] = tlight;
+				if (bDoSend)
+					InsertUpdateSwitch(ii + 1, HLTYPE_DIM, bIsOn, BrightnessLevel, 0, 0, root["lights"][szNode]["name"].asString());
+			}
+			else if (
+				(ltype == "Extended color light") ||
+				(ltype == "Color light")
+				)
+			{
+				//RGBW type
+				bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
+				int tbri = root["lights"][szNode]["state"]["bri"].asInt();
+				int tsat = root["lights"][szNode]["state"]["sat"].asInt();
+				int thue = root["lights"][szNode]["state"]["hue"].asInt();
+				if ((tbri != 0) && (tbri != 255))
+					tbri += 1; //hue reports 255 as 254
+				int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
+				_tHueLight tlight;
+				if (bIsOn)
+				{
+					tlight.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
+				}
+				else
+					tlight.cmd = Limitless_LedOff;
+				tlight.level = BrightnessLevel;
+				tlight.sat = tsat;
+				tlight.hue = thue;
+				bool bDoSend = true;
+				if (m_lights.find(ii + 1) != m_lights.end())
+				{
+					_tHueLight alight = m_lights[ii + 1];
+					if (
+						(alight.cmd == tlight.cmd) &&
+						(alight.level == tlight.level) &&
+						(alight.sat == tlight.sat) &&
+						(alight.hue == tlight.hue)
+						)
+					{
+						bDoSend = false;
+					}
+				}
+				m_lights[ii + 1] = tlight;
+				if (bDoSend)
+				{
+					InsertUpdateSwitch(ii + 1, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, root["lights"][szNode]["name"].asString());
 				}
 			}
-			m_lights[ii + 1] = tlight;
-			if (bDoSend)
-				InsertUpdateSwitch(ii + 1, HLTYPE_DIM, bIsOn, BrightnessLevel, 0, 0, root["lights"][szNode]["name"].asString());
-		}
-		else if (
-			(ltype == "Extended color light") ||
-			(ltype == "Color light")
-			)
-		{
-			//RGBW type
-			bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
-			int tbri = root["lights"][szNode]["state"]["bri"].asInt();
-			int tsat = root["lights"][szNode]["state"]["sat"].asInt();
-			int thue = root["lights"][szNode]["state"]["hue"].asInt();
-			int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
-			_tHueLight tlight;
-			if (bIsOn)
-			{
-				tlight.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
-			}
-			else
-				tlight.cmd = Limitless_LedOff;
-			tlight.level = BrightnessLevel;
-			tlight.sat = tsat;
-			tlight.hue = thue;
-			bool bDoSend = true;
-			if (m_lights.find(ii + 1) != m_lights.end())
-			{
-				_tHueLight alight = m_lights[ii + 1];
-				if (
-					(alight.cmd == tlight.cmd) &&
-					(alight.level == tlight.level)&&
-					(alight.sat == tlight.sat)&&
-					(alight.hue == tlight.hue)
-					)
-				{
-					bDoSend = false;
-				}
-			}
-			m_lights[ii + 1] = tlight;
-			if (bDoSend)
-				InsertUpdateSwitch(ii + 1, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, root["lights"][szNode]["name"].asString());
 		}
 	}
+
+	//Groups (0=All)
+	int totGroups = root["groups"].size();
+	if (totGroups > 0)
+	{
+		for (ii = 0; ii < 255; ii++)
+		{
+			sprintf(szNode, "%d", ii + 1);
+			if (root["groups"][szNode].empty())
+				continue;
+
+			bool bIsOn = false;
+			int tbri = 255;
+			int tsat = 255;
+			int thue = 255;
+
+			if (!root["groups"][szNode]["action"]["on"].empty())
+				bIsOn = root["groups"][szNode]["action"]["on"].asBool();
+			if (!root["groups"][szNode]["action"]["bri"].empty())
+				tbri = root["groups"][szNode]["action"]["bri"].asInt();
+			if (!root["groups"][szNode]["action"]["sat"].empty())
+				tsat = root["groups"][szNode]["action"]["sat"].asInt();
+			if (!root["groups"][szNode]["action"]["hue"].empty())
+				thue = root["groups"][szNode]["action"]["hue"].asInt();
+			if ((tbri != 0) && (tbri != 255))
+				tbri += 1; //hue reports 255 as 254
+			int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
+			_tHueLight tstate;
+			if (bIsOn)
+			{
+				tstate.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
+			}
+			else
+				tstate.cmd = Limitless_LedOff;
+			tstate.level = BrightnessLevel;
+			tstate.sat = tsat;
+			tstate.hue = thue;
+			bool bDoSend = true;
+			int gID = ii + 1;
+			if (m_groups.find(gID) != m_groups.end())
+			{
+				_tHueGroup agroup = m_groups[gID];
+				if (
+					(agroup.gstate.cmd == tstate.cmd) &&
+					(agroup.gstate.level == tstate.level) &&
+					(agroup.gstate.sat == tstate.sat) &&
+					(agroup.gstate.hue == tstate.hue)
+					)
+				{
+					bDoSend = false;
+				}
+			}
+			m_groups[gID].gstate = tstate;
+			if (bDoSend)
+			{
+				std::string Name = "Group " + root["groups"][szNode]["name"].asString();
+				InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, Name);
+			}
+		}
+	}
+	//Special Request for Group0 (All Lights)
+	sstr2 << "/groups/0";
+	sURL = sstr2.str();
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
+		return false;
+	}
+	ret = jReader.parse(sResult, root);
+	if (!ret)
+	{
+		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
+		return false;
+	}
+
+	if (sResult.find("\"error\":") != std::string::npos)
+	{
+		//We had an error
+		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root[0]["error"]["description"].asString().c_str());
+		return false;
+	}
+
+	if (sResult.find("lights") == std::string::npos)
+	{
+		return false;
+	}
+	bool bIsOn = false;
+	int tbri = 255;
+	int tsat = 255;
+	int thue = 255;
+
+	if (!root["action"]["on"].empty())
+		bIsOn = root["action"]["on"].asBool();
+	if (!root["action"]["bri"].empty())
+		tbri = root["action"]["bri"].asInt();
+	if (!root["action"]["sat"].empty())
+		tsat = root["action"]["sat"].asInt();
+	if (!root["action"]["hue"].empty())
+		thue = root["action"]["hue"].asInt();
+	if ((tbri != 0) && (tbri != 255))
+		tbri += 1; //hue reports 255 as 254
+	int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
+	_tHueLight tstate;
+	if (bIsOn)
+	{
+		tstate.cmd = (BrightnessLevel != 0) ? Limitless_SetBrightnessLevel : Limitless_LedOn;
+	}
+	else
+		tstate.cmd = Limitless_LedOff;
+	tstate.level = BrightnessLevel;
+	tstate.sat = tsat;
+	tstate.hue = thue;
+	bool bDoSend = true;
+	int gID = 0;
+	if (m_groups.find(gID) != m_groups.end())
+	{
+		_tHueGroup agroup = m_groups[gID];
+		if (
+			(agroup.gstate.cmd == tstate.cmd) &&
+			(agroup.gstate.level == tstate.level) &&
+			(agroup.gstate.sat == tstate.sat) &&
+			(agroup.gstate.hue == tstate.hue)
+			)
+		{
+			bDoSend = false;
+		}
+	}
+	m_groups[gID].gstate = tstate;
+	if (bDoSend)
+	{
+		std::string Name = "Group All Lights";
+		InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, Name);
+	}
+
 	return true;
 }
 
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_RegisterWithPhilipsHue(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_PhilipsHueRegister(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "RegisterOnHue";
 
@@ -617,6 +779,26 @@ namespace http {
 			}
 			root["status"] = "OK";
 			root["username"] = strarray[1];
+		}
+		void CWebServer::Cmd_PhilipsHueGetGroups(WebEmSession & session, const request& req, Json::Value &root)
+		{
+
+		}
+		void CWebServer::Cmd_PhilipsHueAddGroup(WebEmSession & session, const request& req, Json::Value &root)
+		{
+
+		}
+		void CWebServer::Cmd_PhilipsHueDeleteGroup(WebEmSession & session, const request& req, Json::Value &root)
+		{
+
+		}
+		void CWebServer::Cmd_PhilipsHueGroupAddLight(WebEmSession & session, const request& req, Json::Value &root)
+		{
+
+		}
+		void CWebServer::Cmd_PhilipsHueGroupRemoveLight(WebEmSession & session, const request& req, Json::Value &root)
+		{
+
 		}
 	}
 }
