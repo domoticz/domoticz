@@ -1351,13 +1351,16 @@ define(['app'], function (app) {
 			table$.data('levelActions', levelActions.join('|'));
 			BuildSelectorActionsTable();
 		};
-		EditSelectorAction = function (index, levelAction) {
+		EditSelectorAction = function (index) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
 			if (index >= 0) {
+				var table$ = $("#lightcontent #selectoractionstable"),
+					levelActions = table$.data('levelActions').split('|'),
+					levelAction = levelActions[index];
 				$("#dialog-editselectoraction #selectorlevelindex").val(index);
 				$("#dialog-editselectoraction #selectoraction").val(unescape(levelAction));
 				$("#dialog-editselectoraction").i18n();
@@ -1413,7 +1416,7 @@ define(['app'], function (app) {
 					levelAction = levelActions[index],
 					rendelImg = "";
 				// Add Rename image
-				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ',\'' + levelActions[index] + '\');" class="lcursor" width="16" height="16"></img>';
+				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				rendelImg += '&nbsp;';
 				rendelImg += '<img src="images/delete.png" title="' + $.t("Clear") + '" onclick="ClearSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				oTable.fnAddData({
