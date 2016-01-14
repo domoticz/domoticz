@@ -232,7 +232,13 @@ void CNefitEasy::GetStatusDetails()
 			else if (tmpstr == "No")
 				bstatus = "off";
 			if (!bstatus.empty())
-				SendTextSensor(1, 2, -1, bstatus, "Boiler Status");
+			{
+				if (m_LastBoilerStatus != bstatus)
+				{
+					m_LastBoilerStatus = bstatus;
+					SendTextSensor(1, 2, -1, bstatus, "Boiler Status");
+				}
+			}
 		}
 	}
 
@@ -359,7 +365,12 @@ void CNefitEasy::GetStatusDetails()
 		display_code = "burner doesn't ignite";
 	else if (dcode == "rE")
 		display_code = "system restarting";
-	SendTextSensor(1, 1, -1, display_code, "Display Code");
+
+	if (m_LastDisplayCode != display_code)
+	{
+		m_LastDisplayCode = display_code;
+		SendTextSensor(1, 1, -1, display_code, "Display Code");
+	}
 }
 
 void CNefitEasy::GetPressureDetails()

@@ -13,6 +13,10 @@ public:
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
+
+	std::string m_LastDisplayCode;
+	std::string m_LastBoilerStatus;
+
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
