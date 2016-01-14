@@ -7059,10 +7059,10 @@ namespace http {
 
 			char szOrderBy[50];
 			if (order == "")
-				strcpy(szOrderBy, "LastUpdate DESC");
+				strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 			else
 			{
-				sprintf(szOrderBy, "[Order],%s ASC", order.c_str());
+				sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 			}
 
 			unsigned char tempsign = m_sql.m_tempsign[0];
@@ -7102,19 +7102,34 @@ namespace http {
 					//add scenes
 					if (rowid != "")
 						result = m_sql.safe_query(
-							"SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, Description FROM Scenes WHERE (ID=='%q')",
+							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
+							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
+							" FROM Scenes as A, DeviceToPlansMap as B, Plans as C"
+							" WHERE (A.ID=='%q') AND (C.ID==B.PlanID) AND (B.DeviceRowID==a.ID)"
+							" AND (B.DevSceneType==1)",
 							rowid.c_str());
 					else if ((planID != "") && (planID != "0"))
 						result = m_sql.safe_query(
-							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID=='%q') AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
+							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
+							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
+							" FROM Scenes as A, DeviceToPlansMap as B WHERE (B.PlanID=='%q')"
+							" AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
 							planID.c_str());
 					else if ((floorID != "") && (floorID != "0"))
 						result = m_sql.safe_query(
-								"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType, A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description FROM Scenes as A, DeviceToPlansMap as B, Plans as C WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID) AND(B.DeviceRowID==a.ID) AND (B.DevSceneType==1) ORDER BY B.[Order]",
-								floorID.c_str());
+							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
+							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
+							" FROM Scenes as A, DeviceToPlansMap as B, Plans as C"
+							" WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID) AND (B.DeviceRowID==a.ID)"
+							" AND (B.DevSceneType==1) ORDER BY B.[Order]",
+							floorID.c_str());
 					else
 						result = m_sql.safe_query(
-							"SELECT ID, Name, nValue, LastUpdate, Favorite, SceneType, Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, Description FROM Scenes ORDER BY %s",
+							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
+							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
+							" FROM Scenes as A, DeviceToPlansMap as B, Plans as C"
+							" WHERE (C.ID==B.PlanID) AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
+							" ORDER BY %s",
 							szOrderBy);
 
 					if (result.size() > 0)
@@ -7160,12 +7175,30 @@ namespace http {
 								root["result"][ii]["Type"] = "Group";
 								root["result"][ii]["TypeImg"] = "group";
 							}
+
+							// has this scene/group already been seen, now with different plan?
+							// assume results are ordered such that same device is adjacent
+							// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
+							std::string thisIdx = sd[0];
+							if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString()) {
+								std::string typeOfThisOne = root["result"][ii]["Type"].asString();
+								if (typeOfThisOne == root["result"][ii - 1]["Type"].asString()) {
+									root["result"][ii - 1]["PlanIDs"].append(atoi(sd[9].c_str()));
+									continue;
+								}
+							}
+
 							root["result"][ii]["idx"] = sd[0];
 							root["result"][ii]["Name"] = sSceneName;
 							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
 							root["result"][ii]["LastUpdate"] = sLastUpdate;
+							root["result"][ii]["PlanID"] = sd[9].c_str();
+							Json::Value jsonArray;
+							jsonArray.append(atoi(sd[9].c_str()));
+							root["result"][ii]["PlanIDs"] = jsonArray;
+
 							if (nValue == 0)
 								root["result"][ii]["Status"] = "Off";
 							else if (nValue == 1)
