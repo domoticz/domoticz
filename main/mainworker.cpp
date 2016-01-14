@@ -86,6 +86,7 @@
 #include "../hardware/CurrentCostMeterTCP.h"
 #include "../hardware/SolarEdgeAPI.h"
 #include "../hardware/DomoticzInternal.h"
+#include "../hardware/NefitEasy.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -751,6 +752,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_KMTronicTCP:
 		//LAN
 		pHardware = new KMTronicTCP(ID, Address, Port, Username, Password);
+		break;
+	case HTYPE_NefitEastLAN:
+		pHardware = new CNefitEasy(ID, Address, Port);
 		break;
 	case HTYPE_ECODEVICES:
 		//LAN
@@ -10882,8 +10886,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 	if (pHardware==NULL)
 		return false;
 	if (
-		(pHardware->HwdType==HTYPE_OpenThermGateway)||
-		(pHardware->HwdType==HTYPE_OpenThermGatewayTCP)||
+		(pHardware->HwdType == HTYPE_OpenThermGateway) ||
+		(pHardware->HwdType == HTYPE_OpenThermGatewayTCP) ||
 		(pHardware->HwdType == HTYPE_ICYTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_NEST) ||
@@ -10891,23 +10895,24 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
-		(pHardware->HwdType == HTYPE_Netatmo)
+		(pHardware->HwdType == HTYPE_Netatmo) ||
+		(pHardware->HwdType == HTYPE_NefitEastLAN)
 		)
 	{
-		if (pHardware->HwdType==HTYPE_OpenThermGateway)
+		if (pHardware->HwdType == HTYPE_OpenThermGateway)
 		{
-			OTGWSerial *pGateway=(OTGWSerial*)pHardware;
-			pGateway->SetSetpoint(ID4,TempValue);
+			OTGWSerial *pGateway = (OTGWSerial*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
 		}
-		else if (pHardware->HwdType==HTYPE_OpenThermGatewayTCP)
+		else if (pHardware->HwdType == HTYPE_OpenThermGatewayTCP)
 		{
-			OTGWTCP *pGateway=(OTGWTCP*)pHardware;
-			pGateway->SetSetpoint(ID4,TempValue);
+			OTGWTCP *pGateway = (OTGWTCP*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
 		}
-		else if (pHardware->HwdType==HTYPE_ICYTHERMOSTAT)
+		else if (pHardware->HwdType == HTYPE_ICYTHERMOSTAT)
 		{
-			CICYThermostat *pGateway=(CICYThermostat*)pHardware;
-			pGateway->SetSetpoint(ID4,TempValue);
+			CICYThermostat *pGateway = (CICYThermostat*)pHardware;
+			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_TOONTHERMOSTAT)
 		{
@@ -10934,9 +10939,14 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CNetatmo *pGateway = (CNetatmo*)pHardware;
 			pGateway->SetSetpoint(ID2, TempValue);
 		}
+		else if (pHardware->HwdType == HTYPE_NefitEastLAN)
+		{
+			CNefitEasy *pGateway = (CNefitEasy*)pHardware;
+			pGateway->SetSetpoint(ID2, TempValue);
+		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
 		{
-			SetSetPoint(sd[7],TempValue,CEvohome::zmPerm,"");
+			SetSetPoint(sd[7], TempValue, CEvohome::zmPerm, "");
 		}
 	}
 	else
