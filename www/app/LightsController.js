@@ -1213,6 +1213,9 @@ define(['app'], function (app) {
 			});
 		}
 
+		CleanDeviceOptionValue = function (value) {
+			return value.replace(/[:;|<>]/g,"").trim();
+		}
 		ChangeSelectorLevelsOrder = function (from, to) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
@@ -1267,8 +1270,10 @@ define(['app'], function (app) {
 		AddSelectorLevel = function () {
 			var button$ = $("#newselectorlevelbutton"),
 				table$ = $("#lightcontent #selectorlevelstable"),
-				levelName = $("#lightcontent #newselectorlevel").val().trim(),
+				levelName = $("#lightcontent #newselectorlevel").val(),
 				levelNames = unescape(table$.data('levelNames')).split('|');
+			// clean unauthorized characters
+			levelName = CleanDeviceOptionValue(levelName);
 			if ((button$.prop("disabled") === true) ||			// limit length
 					(levelName === '') ||						// avoid empty name
 					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
@@ -1611,10 +1616,12 @@ define(['app'], function (app) {
 						var selectorLevelName$ = $("#dialog-renameselectorlevel #selectorlevelname"),
 							selectorIndex$ = $("#dialog-renameselectorlevel #selectorlevelindex"),
 							levelIndex = selectorIndex$.val(),
-							levelName = selectorLevelName$.val().trim(),
+							levelName = selectorLevelName$.val(),
 							table$ = $("#lightcontent #selectorlevelstable"),
 							levelNames = unescape(table$.data('levelNames')).split('|'),
 							bValid = true;
+						// clean unauthorized characters
+						levelName = CleanDeviceOptionValue(levelName);
 						bValid = bValid && (levelIndex >= 0);
 						bValid = bValid && checkLength(selectorLevelName$, 2, 20);
 						bValid = bValid && (levelName !== '') &&			// avoid empty
