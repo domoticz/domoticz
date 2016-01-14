@@ -1468,6 +1468,9 @@ define(['app'], function (app) {
 						$.selectorSwitchActions.push(""); // force missing action
 					}
 				});
+				if ($.selectorSwitchActions.length > $.selectorSwitchLevels.length) { // truncate if necessary
+					$.selectorSwitchActions.splice($.selectorSwitchLevels.length, $.selectorSwitchActions.length - $.selectorSwitchLevels.length);
+				}
 			}
 
 			$('#modal').show();
