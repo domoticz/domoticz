@@ -916,7 +916,7 @@ define(['app'], function (app) {
 			}
 			var devOptionsParam = [], devOptions = [];
 			if ($.bIsSelectorSwitch) {
-				var levelNames = $("#lightcontent #selectorlevelstable").data('levelNames'),
+				var levelNames = unescape($("#lightcontent #selectorlevelstable").data('levelNames')),
 					levelActions = $("#lightcontent #selectoractionstable").data('levelActions').split('|'),
 					selectorStyle = $("#lightcontent .selector-switch-options.style input[type=radio]:checked").val(),
 					levelOffHidden = $("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked');
@@ -1220,12 +1220,12 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|'),
+				levelNames = unescape(table$.data('levelNames')).split('|'),
 				fromLevel = levelNames[from],
 				toLevel = levelNames[to];
 			levelNames[to] = fromLevel;
 			levelNames[from] = toLevel;
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
 		DeleteSelectorLevel = function (index) {
@@ -1235,17 +1235,17 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|');
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			levelNames.splice(index, 1);
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 			DeleteSelectorAction(index);
 		};
 		UpdateSelectorLevel = function (index, levelName) {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|');
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			levelNames[index] = levelName;
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
 		RenameSelectorLevel = function (index, levelName) {
@@ -1265,20 +1265,20 @@ define(['app'], function (app) {
 			var button$ = $("#newselectorlevelbutton"),
 				table$ = $("#lightcontent #selectorlevelstable"),
 				levelName = $("#lightcontent #newselectorlevel").val().trim(),
-				levelNames = table$.data('levelNames').split('|');
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			if ((button$.prop("disabled") === true) ||			// limit length
 					(levelName === '') ||						// avoid empty name
 					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
 				return;
 			}
 			levelNames.push(levelName);
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 			AddSelectorAction();
 		};
 		BuildSelectorLevelsTable = function () {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|'),
+				levelNames = unescape(table$.data('levelNames')).split('|'),
 				levelNamesMaxLength = 11,
 				initializeTable = $('#selectorlevelstable_wrapper').length === 0,
 				oTable = (initializeTable) ? table$.dataTable({
@@ -1339,7 +1339,7 @@ define(['app'], function (app) {
 		UpdateSelectorAction = function (index, levelAction) {
 			var table$ = $("#lightcontent #selectoractionstable"),
 				levelActions = table$.data('levelActions').split('|');
-			levelActions[index] = levelAction;
+			levelActions[index] = levelAction;// value is already escaped
 			table$.data('levelActions', levelActions.join('|'));
 			BuildSelectorActionsTable();
 		};
@@ -1610,7 +1610,7 @@ define(['app'], function (app) {
 							levelIndex = selectorIndex$.val(),
 							levelName = selectorLevelName$.val().trim(),
 							table$ = $("#lightcontent #selectorlevelstable"),
-							levelNames = table$.data('levelNames').split('|'),
+							levelNames = unescape(table$.data('levelNames')).split('|'),
 							bValid = true;
 						bValid = bValid && (levelIndex >= 0);
 						bValid = bValid && checkLength(selectorLevelName$, 2, 20);
@@ -1633,7 +1633,7 @@ define(['app'], function (app) {
 						title: $.t("Rename level name"),
 						buttons: dialog_renameselectorlevel_buttons
 					});
-					$("#lightcontent #selectorlevelstable").data('levelNames', $.selectorSwitchLevels.join('|'));
+					$("#lightcontent #selectorlevelstable").data('levelNames', escape($.selectorSwitchLevels.join('|')));
 					BuildSelectorLevelsTable();
 
 					dialog_editselectoraction_buttons[$.t("Save")] = function () {
