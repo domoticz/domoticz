@@ -1248,15 +1248,18 @@ define(['app'], function (app) {
 			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
-		RenameSelectorLevel = function (index, levelName) {
+		RenameSelectorLevel = function (index) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
-			if ((index >= 0) && (levelName != '')) {
+			if (index >= 0) {
+				var table$ = $("#lightcontent #selectorlevelstable"),
+					levelNames = unescape(table$.data('levelNames')).split('|'),
+					levelName = levelNames[index];
 				$("#dialog-renameselectorlevel #selectorlevelindex").val(index);
-				$("#dialog-renameselectorlevel #selectorlevelname").val(unescape(levelName));
+				$("#dialog-renameselectorlevel #selectorlevelname").val(levelName);
 				$("#dialog-renameselectorlevel").i18n();
 				$("#dialog-renameselectorlevel").dialog("open");
 			}
@@ -1311,7 +1314,7 @@ define(['app'], function (app) {
 				}
 				if (index > 0) {
 					// Add Rename image
-					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
+					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
 					// Add Delete image
 					rendelImg += '&nbsp;';
 					rendelImg += '<img src="images/delete.png" title="' + $.t("Delete") + '" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
