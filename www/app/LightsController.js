@@ -917,17 +917,14 @@ define(['app'], function (app) {
 			var devOptionsParam = [], devOptions = [];
 			if ($.bIsSelectorSwitch) {
 				var levelNames = unescape($("#lightcontent #selectorlevelstable").data('levelNames')),
-					levelActions = $("#lightcontent #selectoractionstable").data('levelActions').split('|'),
+					levelActions = $("#lightcontent #selectoractionstable").data('levelActions'),
 					selectorStyle = $("#lightcontent .selector-switch-options.style input[type=radio]:checked").val(),
 					levelOffHidden = $("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked');
 				devOptions.push("LevelNames:");
 				devOptions.push(levelNames);
 				devOptions.push(";");
 				devOptions.push("LevelActions:");
-				$.each(levelActions, function (index, item) {
-					levelActions[index] = encodeURIComponent(item);
-				});
-				devOptions.push(levelActions.join('|'));
+				devOptions.push(levelActions);
 				devOptions.push(";");
 				devOptions.push("SelectorStyle:");
 				devOptions.push(selectorStyle);
@@ -1347,7 +1344,7 @@ define(['app'], function (app) {
 		UpdateSelectorAction = function (index, levelAction) {
 			var table$ = $("#lightcontent #selectoractionstable"),
 				levelActions = table$.data('levelActions').split('|');
-			levelActions[index] = levelAction;// value is already escaped
+			levelActions[index] = escape(levelAction);
 			table$.data('levelActions', levelActions.join('|'));
 			BuildSelectorActionsTable();
 		};
@@ -1413,7 +1410,7 @@ define(['app'], function (app) {
 			oTable.fnClearTable();
 			$.each(levelActions, function (index, item) {
 				var level = index * 10,
-					levelAction = levelActions[index],
+					levelAction = unescape(levelActions[index]),
 					rendelImg = "";
 				// Add Rename image
 				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
@@ -1465,9 +1462,7 @@ define(['app'], function (app) {
 				$.selectorSwitchLevels = ssLevelNames.split('|');
 				$.selectorSwitchActions = ssLevelActions.split('|');
 				$.each($.selectorSwitchLevels, function (index, item) {
-					if (index <= ($.selectorSwitchActions.length - 1)) {
-						$.selectorSwitchActions[index] = decodeURIComponent($.selectorSwitchActions[index]);
-					} else {
+					if (index > ($.selectorSwitchActions.length - 1)) {
 						$.selectorSwitchActions.push(""); // force missing action
 					}
 				});
