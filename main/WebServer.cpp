@@ -2319,6 +2319,130 @@ namespace http {
 			}
 		}
 
+		static int l_domoticz_applyJsonPath(lua_State* lua_state)
+		{
+			int nargs = lua_gettop(lua_state);
+			if (nargs >= 2)
+			{
+				if (lua_isstring(lua_state, 1) && lua_isstring(lua_state, 2))
+				{
+					std::string buffer = lua_tostring(lua_state, 1);
+					std::string jsonpath = lua_tostring(lua_state, 2);
+
+					Json::Value root;
+					Json::Reader jReader;
+					if (!jReader.parse(buffer, root))
+					{
+						_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Invalid Json data received");
+						return 0;
+					}
+					Json::PathArgument arg1;
+					Json::PathArgument arg2;
+					Json::PathArgument arg3;
+					Json::PathArgument arg4;
+					Json::PathArgument arg5;
+					if (nargs >= 3)
+					{
+						if (lua_isstring(lua_state, 3))
+						{
+							arg1 = Json::PathArgument(lua_tostring(lua_state, 3));
+						}
+						else
+						{
+							_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Invalid extra argument #1 for domoticz_applyJsonPath");
+							return 0;
+						}
+						if (nargs >= 4)
+						{
+							if (lua_isstring(lua_state, 4))
+							{
+								arg2 = Json::PathArgument(lua_tostring(lua_state, 4));
+							}
+							else
+							{
+								_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Invalid extra argument #2 for domoticz_applyJsonPath");
+								return 0;
+							}
+							if (nargs >= 5)
+							{
+								if (lua_isstring(lua_state, 5))
+								{
+									arg3 = Json::PathArgument(lua_tostring(lua_state, 5));
+								}
+								else
+								{
+									_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Invalid extra argument #3 for domoticz_applyJsonPath");
+									return 0;
+								}
+								if (nargs >= 6)
+								{
+									if (lua_isstring(lua_state, 6))
+									{
+										arg2 = Json::PathArgument(lua_tostring(lua_state, 6));
+									}
+									else
+									{
+										_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Invalid extra argument #4 for domoticz_applyJsonPath");
+										return 0;
+									}
+									if (nargs >= 7)
+									{
+										if (lua_isstring(lua_state, 7))
+										{
+											arg5 = Json::PathArgument(lua_tostring(lua_state, 7));
+										}
+										else
+										{
+											_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Invalid extra argument #5 for domoticz_applyJsonPath");
+											return 0;
+										}
+									}
+								}
+							}
+						}
+					}
+
+
+					Json::Path path(jsonpath, arg1, arg2, arg3, arg4, arg5);
+					Json::Value& node = path.make(root);
+					if (!node.isNull())
+					{
+						if (node.isDouble())
+						{
+							lua_pushnumber(lua_state, node.asDouble());
+							return 1;
+						}
+						if (node.isInt())
+						{
+							lua_pushnumber(lua_state, (double)node.asInt());
+							return 1;
+						}
+						if (node.isInt64())
+						{
+							lua_pushnumber(lua_state, (double)node.asInt64());
+							return 1;
+						}
+						if (node.isString())
+						{
+							lua_pushstring(lua_state, node.asCString());
+							return 1;
+						}
+						lua_pushnil(lua_state);
+						return 1;
+					}
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Incorrect parameters type");
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Incorrect parameters count");
+			}
+			return 0;
+		}
+
 		static int l_domoticz_updateDevice(lua_State* lua_state)
 		{
 			int nargs = lua_gettop(lua_state);
@@ -2433,6 +2557,9 @@ namespace http {
 
 			lua_pushcfunction(lua_state, l_domoticz_updateDevice);
 			lua_setglobal(lua_state, "domoticz_updateDevice");
+
+			lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
+			lua_setglobal(lua_state, "domoticz_applyJsonPath");
 
 			lua_createtable(lua_state, 1, 0);
 			lua_pushstring(lua_state, "content");
