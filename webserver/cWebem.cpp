@@ -993,25 +993,40 @@ void cWebem::CleanTimedOutSessions() {
 // Return 1 on success. Always initializes the ah structure.
 int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 {
-	const char *auth_header;
+        const char *auth_header;
 
-	if ((auth_header = request::get_req_header(&req, "Authorization")) == NULL)
-	{
-		return 0;
-	}
+        if ((auth_header = request::get_req_header(&req, "Authorization")) == NULL)
+        {
+                return 0;
+        }
 
-	//Only accept Basic Auth header
-	if (!boost::icontains(auth_header, "Basic "))
-		return 0;
+        // X509 Auth header
+        if (boost::icontains(auth_header, "/CN="))
+        {
+                // DN looks like: /C=Country/ST=State/L=City/O=Org/OU=OrganizationUnit/CN=username/emailAddress=user@mail.com
+                std::string dn = auth_header;
+                int spos = dn.find("/CN=");
+                int epos = dn.find("/emailAddress=");
 
-	std::string decoded = base64_decode(auth_header + 6);
-	int npos = decoded.find(':');
-	if (npos == std::string::npos)
-		return 0;
+                ah->user = dn.substr(spos + 4, epos - spos - 4);
+                ah->response = dn.substr(epos + 14);
+                return 1;
+        }
 
-	ah->user = decoded.substr(0, npos);
-	ah->response = decoded.substr(npos + 1);
-	return 1;
+        // Basic Auth header
+        else if (boost::icontains(auth_header, "Basic "))
+        {
+                std::string decoded = base64_decode(auth_header + 6);
+                int npos = decoded.find(':');
+                if (npos == std::string::npos)
+                        return 0;
+
+                ah->user = decoded.substr(0, npos);
+                ah->response = decoded.substr(npos + 1);
+                return 1;
+        }
+        else
+                return 0;
 }
 
 // Authorize against the opened passwords file. Return 1 if authorized.
