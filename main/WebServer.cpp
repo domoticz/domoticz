@@ -2336,6 +2336,8 @@ namespace http {
 						_log.Log(LOG_ERROR, "WebServer (applyJsonPath from LUA) : Invalid Json data received");
 						return 0;
 					}
+
+					// Grab optional arguments
 					Json::PathArgument arg1;
 					Json::PathArgument arg2;
 					Json::PathArgument arg3;
@@ -2402,9 +2404,11 @@ namespace http {
 						}
 					}
 
-
+					// Apply the JsonPath to the Json
 					Json::Path path(jsonpath, arg1, arg2, arg3, arg4, arg5);
 					Json::Value& node = path.make(root);
+
+					// Check if some data has been found
 					if (!node.isNull())
 					{
 						if (node.isDouble())
