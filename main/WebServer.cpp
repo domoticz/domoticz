@@ -4105,7 +4105,7 @@ namespace http {
 						}
 						if (dtype == pTypeRFY) {
 							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeRTS;
+							subtype = sSwitchTypeRTS;
 						}
 					}
 				}
@@ -4630,7 +4630,7 @@ namespace http {
 						}
 						if (dtype == pTypeRFY) {
 							dtype = pTypeGeneralSwitch;
-							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeRTS;
+							subtype = sSwitchTypeRTS;
 						}
 					}
 				}
