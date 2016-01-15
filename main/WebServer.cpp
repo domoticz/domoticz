@@ -4094,6 +4094,14 @@ namespace http {
 							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
 							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
 							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+							std::stringstream s_strid;
+							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
+							unsigned long deviceid = 0;
+							s_strid >> deviceid;
+							deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
+							sprintf(szTmp, "%x", deviceid);
+							//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
+							devid = szTmp;
 						}
 						if (dtype == pTypeRFY) {
 							dtype = pTypeGeneralSwitch;
@@ -4611,6 +4619,14 @@ namespace http {
 							if (subtype == sTypeBlindsT8) subtype = sSwitchTypeBofu;
 							if (subtype == sTypeBlindsT9) subtype = sSwitchTypeBrel;
 							if (subtype == sTypeBlindsT10) subtype = sSwitchTypeAOK;
+							std::stringstream s_strid;
+							s_strid << std::hex << strtoul(devid.c_str(), NULL, 16);
+							unsigned long deviceid = 0;
+							s_strid >> deviceid;
+							deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
+							sprintf(szTmp, "%x", deviceid);
+							//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
+							devid = szTmp;
 						}
 						if (dtype == pTypeRFY) {
 							dtype = pTypeGeneralSwitch;
