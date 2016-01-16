@@ -3255,6 +3255,21 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 		Action = Action.substr(0, 13);
 	}
+	if ((Action.find("Play Favorites") == 0) && (Action.length() > 14))
+	{
+		std::string	sParams = Action.substr(15);
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
+		if (pBaseHardware != NULL)
+		{
+			CKodi			*pHardware = (CKodi*)pBaseHardware;
+			if (sParams.length() > 0)
+			{
+				_level = atoi(sParams.c_str());
+			}
+		}
+
+		Action = Action.substr(0, 14);
+	}
 	if (Action.find("Execute") == 0)
 	{
 		std::string	sParams = Action.substr(8);
