@@ -4,6 +4,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/evohome.h"
 #include "Helper.h"
+#include <boost/algorithm/string.hpp>
 //#include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
@@ -1971,7 +1972,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch statuses...");
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
-		StringSplit(sOptions, "|", strarray);
+		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
 		std::stringstream ss;
@@ -1996,7 +1997,7 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level...");
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
-		StringSplit(sOptions, "|", strarray);
+		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
 		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
@@ -2020,7 +2021,7 @@ std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level action...");
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
-		StringSplit(sOptions, "|", strarray);
+		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
 		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {

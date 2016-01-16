@@ -55,13 +55,17 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-#define NEFITEASY_STATUS_URL "/bridge/ecus/rrc/uiStatus"
-#define NEFITEASY_OUTDOOR_URL "/bridge/system/sensors/temperatures/outdoor_t1"
-#define NEFITEASY_PRESSURE_URL "/bridge/system/appliance/systemPressure"
-#define NEFITEASY_DISPLAYCODE_URL "/bridge/system/appliance/displaycode"
-#define NEFITEASY_SET_TEMP_ROOM "/bridge/heatingCircuits/hc1/temperatureRoomManual"
-#define NEFITEASY_SET_TEMP_OVERRIDE "/bridge/heatingCircuits/hc1/manualTempOverride/status"
-#define NEFITEASY_SET_TEMP_OVERRIDE_TEMP "/bridge/heatingCircuits/hc1/manualTempOverride/temperature"
+#define NEFITEASY_HTTP_BRIDGE "/bridge"
+#define NEFITEASY_STATUS_URL "/ecus/rrc/uiStatus"
+#define NEFITEASY_OUTDOOR_URL "/system/sensors/temperatures/outdoor_t1"
+#define NEFITEASY_PRESSURE_URL "/system/appliance/systemPressure"
+#define NEFITEASY_DISPLAYCODE_URL "/system/appliance/displaycode"
+#define NEFITEASY_CAUSECODE_URL "/system/appliance/causecode"
+#define NEFITEASY_SET_TEMP_ROOM "/heatingCircuits/hc1/temperatureRoomManual"
+#define NEFITEASY_SET_TEMP_OVERRIDE "/heatingCircuits/hc1/manualTempOverride/status"
+#define NEFITEASY_SET_TEMP_OVERRIDE_TEMP "/heatingCircuits/hc1/manualTempOverride/temperature"
+#define NEFITEASY_LOCATION_LATITUDE "/system/location/latitude"
+#define NEFITEASY_LOCATION_LONGITUDE "/system/location/longitude"
 
 CNefitEasy::CNefitEasy(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
 m_szIPAddress(IPAddress)
@@ -157,7 +161,7 @@ void CNefitEasy::GetStatusDetails()
 	sResult = ReadFile("E:\\nefit_uistatus.json");
 #else
 	std::stringstream szURL;
-	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_STATUS_URL;
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_STATUS_URL;
 	try
 	{
 		bool bret;
@@ -199,7 +203,37 @@ void CNefitEasy::GetStatusDetails()
 		_log.Log(LOG_ERROR, "NefitEasy: Invalid data received");
 		return;
 	}
-
+/*
+Status output:
+ARS -> '?' string
+BAI -> 'boiler indicator' ('CH' = 'central heating', 'HW' = 'hot water', 'No' = 'off' ) string
+BBE -> 'boiler block' bool
+BLE -> 'boiler lock' bool
+BMR -> 'boiler maintainance' bool
+CPM -> 'clock program' string (auto)
+CSP -> 'current switchpoint' string float
+CTD -> 'current time/date' string
+CTR -> 'control' string (room)
+DAS -> '?' on/off
+DHW -> '?Domestic Hot Water' on/off
+ESI -> 'powersave active' on/off
+FPA -> 'fireplace mode active, continue heating even when maximum setpoint temperature reached' string
+HED_DB -> '?'
+HED_DEV -> 'hed device at home' bool
+HED_EN -> 'hed enabled' bool
+HMD -> 'holiday mode' on/off
+IHS -> 'in house status' string (ok)
+IHT -> 'in house temp' string float
+MMT -> 'temp manual setpoint' string float
+PMR -> '?' bool
+RS -> '?' on/off
+TAS -> '?' on/off
+TOD -> 'temp override duration' string integer?
+TOR -> 'temp override' on/off
+TOT -> 'temp override temp setpoint' string float
+TSP -> 'temp setpoint' string float
+UMD -> 'user mode' string (clock)
+*/
 	std::string tmpstr;
 	if (!root2["TSP"].empty())
 	{
@@ -247,7 +281,7 @@ void CNefitEasy::GetStatusDetails()
 	sResult = ReadFile("E:\\nefit_outdoor.json");
 #else
 	std::stringstream szURL2;
-	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_OUTDOOR_URL;
+	szURL2 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_OUTDOOR_URL;
 	try
 	{
 		bool bret;
@@ -288,7 +322,7 @@ void CNefitEasy::GetStatusDetails()
 	sResult = ReadFile("E:\\nefit_displaycode.json");
 #else
 	std::stringstream szURL3;
-	szURL3 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_DISPLAYCODE_URL;
+	szURL3 << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_DISPLAYCODE_URL;
 	try
 	{
 		bool bret;
@@ -382,7 +416,7 @@ void CNefitEasy::GetPressureDetails()
 	sResult = ReadFile("E:\\nefit_pressure.json");
 #else
 	std::stringstream szURL;
-	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_PRESSURE_URL;
+	szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_PRESSURE_URL;
 	try
 	{
 		bool bret;
@@ -429,12 +463,13 @@ void CNefitEasy::SetSetpoint(const int idx, const float temp)
 	std::stringstream szURL;
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
+	//ExtraHeaders.push_back("User-Agent: NefitEasy");
 	ExtraHeaders.push_back("Content-Type: application/json");
 
 	try
 	{
 
-		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_SET_TEMP_ROOM;
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_TEMP_ROOM;
 		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
 		{
 			_log.Log(LOG_ERROR, "NefitEasy: Error setting setpoint!");
@@ -446,7 +481,7 @@ void CNefitEasy::SetSetpoint(const int idx, const float temp)
 		{
 			Json::Value root2;
 			root2["value"] = "on";
-			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_SET_TEMP_OVERRIDE;
+			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_TEMP_OVERRIDE;
 			if (!HTTPClient::POST(szURL.str(), root2.toStyledString(), ExtraHeaders, sResult))
 			{
 				_log.Log(LOG_ERROR, "NefitEasy: Error setting setpoint!");
@@ -454,7 +489,7 @@ void CNefitEasy::SetSetpoint(const int idx, const float temp)
 			}
 			szURL.clear();
 			szURL.str("");
-			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_SET_TEMP_OVERRIDE_TEMP;
+			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_TEMP_OVERRIDE_TEMP;
 			if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
 			{
 				_log.Log(LOG_ERROR, "NefitEasy: Error setting setpoint!");
@@ -465,7 +500,7 @@ void CNefitEasy::SetSetpoint(const int idx, const float temp)
 		{
 			Json::Value root2;
 			root2["value"] = "off";
-			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_SET_TEMP_OVERRIDE;
+			szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_TEMP_OVERRIDE;
 			if (!HTTPClient::POST(szURL.str(), root2.toStyledString(), ExtraHeaders, sResult))
 			{
 				_log.Log(LOG_ERROR, "NefitEasy: Error setting setpoint!");
