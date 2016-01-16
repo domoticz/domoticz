@@ -1716,11 +1716,11 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 94)
 		{
 			std::stringstream szQuery;
-			szQuery << "UPDATE Timers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_FIXEDDATETIME << ")";
+			szQuery << "UPDATE Timers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_ONCEONLY << ")";
 			query(szQuery.str());
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "UPDATE SceneTimers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_FIXEDDATETIME << ")";
+			szQuery << "UPDATE SceneTimers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_ONCEONLY << ")";
 			query(szQuery.str());
 		}
 
