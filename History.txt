@@ -21,6 +21,7 @@ Version 2.3xxx
 - Implemented: OTGW, added firmware version number in hardware setup page
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
+- Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
 - Implemented: RFXCom support for Legrand CAD
 - Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: SolarEdge via Web API

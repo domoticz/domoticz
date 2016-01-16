@@ -249,13 +249,36 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string &LCmd, const i
 			<< "/api/" << m_UserName
 			<< "/lights/" << nodeID << "/state";
 	}
-	else
+	else if (nodeID < 2000)
 	{
 		//Group
 		sstr2 << "http://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
-			<< "/groups/" << nodeID-1000 << "/action";
+			<< "/groups/" << nodeID - 1000 << "/action";
+	}
+	else
+	{
+		//Scene
+		//Because Scenes does not have a unique numeric value (but a string as ID),
+		//lookup the Options, and activate this scene
+		char szID[10];
+		unsigned char unitcode = 1;
+		sprintf(szID, "%08x", (unsigned int)nodeID);
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')", m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
+		if (result.empty())
+		{
+			_log.Log(LOG_ERROR, "Philips Hue: Scene not found!");
+			return false;
+		}
+		sPostData.clear();
+		sPostData.str("");
+		sPostData << "{\"scene\": \"" << result[0][0] << "\"}";
+		sstr2 << "http://" << m_IPAddress
+			<< ":" << m_Port
+			<< "/api/" << m_UserName
+			<< "/groups/0/action";
 	}
 	std::string sURL = sstr2.str();
 	if (!HTTPClient::PUT(sURL, sPostData.str(), ExtraHeaders, sResult))
@@ -328,7 +351,7 @@ std::string CPhilipsHue::RegisterUser(const std::string &IPAddress, const unsign
 	return retStr;
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name, const std::string &Options)
 {
 	if (LType == HLTYPE_RGBW)
 	{
@@ -380,6 +403,28 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		//Set Name/Parameters
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND(DeviceID == '%q')",
 			Name.c_str(), int(STYPE_Dimmer), int(cmd), szSValue, BrightnessLevel, m_HwdID, szID);
+	}
+	else if (LType == HLTYPE_SCENE)
+	{
+		char szID[10];
+		unsigned char unitcode = 1;
+		sprintf(szID, "%08x", (unsigned int)NodeID);
+
+		//Check if we already exist
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')", m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
+		if (result.empty())
+		{
+			//Send as LimitlessLight
+			_tLimitlessLights lcmd;
+			lcmd.id = NodeID;
+			lcmd.command = Limitless_LedOff;
+			lcmd.value = 0;
+			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
+			//Set Name/Parameters
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, Options='%q' WHERE(HardwareID == %d) AND(DeviceID == '%q')",
+				Name.c_str(), int(STYPE_PushOn), Options.c_str(), m_HwdID, szID);
+		}
 	}
 	else
 	{
@@ -470,7 +515,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 	}
 }
 
-
 bool CPhilipsHue::GetStates()
 {
 	std::vector<std::string> ExtraHeaders;
@@ -512,25 +556,30 @@ bool CPhilipsHue::GetStates()
 		return false;
 	}
 
-	if (sResult.find("lights") == std::string::npos)
+
+	if (!GetLights(root))
 	{
 		//_log.Log(LOG_ERROR, "Philips Hue: No Lights found!");
 		return false;
 	}
+	GetGroups(root);
+	GetScenes(root);
+	return true;
+}
 
-	char szNode[10];
-	int ii;
+bool CPhilipsHue::GetLights(const Json::Value &root)
+{
+	if (root["lights"].empty())
+		return false;
 
-	//Lights
-	int totLights = root["lights"].size();
-	if (totLights > 0)
+	for (Json::Value::iterator iLight = root["lights"].begin(); iLight != root["lights"].end(); ++iLight)
 	{
-		for (ii = 0; ii < 255; ii++)
+		Json::Value light = *iLight;
+		if (light.isObject())
 		{
-			sprintf(szNode, "%d", ii + 1);
-			if (root["lights"][szNode].empty())
-				continue;
-			std::string ltype = root["lights"][szNode]["type"].asString();
+			std::string szLID = iLight.key().asString();
+			int lID = atoi(szLID.c_str());
+			std::string ltype = light["type"].asString();
 			if (
 				(ltype == "Dimmable plug-in unit") ||
 				(ltype == "Dimmable light") ||
@@ -538,8 +587,8 @@ bool CPhilipsHue::GetStates()
 				)
 			{
 				//Normal light (with dim option)
-				bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
-				int tbri = root["lights"][szNode]["state"]["bri"].asInt();
+				bool bIsOn = light["state"]["on"].asBool();
+				int tbri = light["state"]["bri"].asInt();
 				if ((tbri != 0) && (tbri != 255))
 					tbri += 1; //hue reports 255 as 254
 				int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
@@ -554,9 +603,9 @@ bool CPhilipsHue::GetStates()
 				tlight.sat = 0;
 				tlight.hue = 0;
 				bool bDoSend = true;
-				if (m_lights.find(ii + 1) != m_lights.end())
+				if (m_lights.find(lID) != m_lights.end())
 				{
-					_tHueLight alight = m_lights[ii + 1];
+					_tHueLight alight = m_lights[lID];
 					if (
 						(alight.cmd == tlight.cmd) &&
 						(alight.level == tlight.level)
@@ -565,9 +614,9 @@ bool CPhilipsHue::GetStates()
 						bDoSend = false;
 					}
 				}
-				m_lights[ii + 1] = tlight;
+				m_lights[lID] = tlight;
 				if (bDoSend)
-					InsertUpdateSwitch(ii + 1, HLTYPE_DIM, bIsOn, BrightnessLevel, 0, 0, root["lights"][szNode]["name"].asString());
+					InsertUpdateSwitch(lID, HLTYPE_DIM, bIsOn, BrightnessLevel, 0, 0, light["name"].asString(), "");
 			}
 			else if (
 				(ltype == "Extended color light") ||
@@ -575,10 +624,10 @@ bool CPhilipsHue::GetStates()
 				)
 			{
 				//RGBW type
-				bool bIsOn = root["lights"][szNode]["state"]["on"].asBool();
-				int tbri = root["lights"][szNode]["state"]["bri"].asInt();
-				int tsat = root["lights"][szNode]["state"]["sat"].asInt();
-				int thue = root["lights"][szNode]["state"]["hue"].asInt();
+				bool bIsOn = light["state"]["on"].asBool();
+				int tbri = light["state"]["bri"].asInt();
+				int tsat = light["state"]["sat"].asInt();
+				int thue = light["state"]["hue"].asInt();
 				if ((tbri != 0) && (tbri != 255))
 					tbri += 1; //hue reports 255 as 254
 				int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
@@ -593,9 +642,9 @@ bool CPhilipsHue::GetStates()
 				tlight.sat = tsat;
 				tlight.hue = thue;
 				bool bDoSend = true;
-				if (m_lights.find(ii + 1) != m_lights.end())
+				if (m_lights.find(lID) != m_lights.end())
 				{
-					_tHueLight alight = m_lights[ii + 1];
+					_tHueLight alight = m_lights[lID];
 					if (
 						(alight.cmd == tlight.cmd) &&
 						(alight.level == tlight.level) &&
@@ -606,38 +655,44 @@ bool CPhilipsHue::GetStates()
 						bDoSend = false;
 					}
 				}
-				m_lights[ii + 1] = tlight;
+				m_lights[lID] = tlight;
 				if (bDoSend)
 				{
-					InsertUpdateSwitch(ii + 1, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, root["lights"][szNode]["name"].asString());
+					InsertUpdateSwitch(lID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, light["name"].asString(), "");
 				}
 			}
 		}
 	}
+	return true;
+}
 
+bool CPhilipsHue::GetGroups(const Json::Value &root)
+{
 	//Groups (0=All)
-	int totGroups = root["groups"].size();
-	if (totGroups > 0)
-	{
-		for (ii = 0; ii < 255; ii++)
-		{
-			sprintf(szNode, "%d", ii + 1);
-			if (root["groups"][szNode].empty())
-				continue;
 
+	if (root["groups"].empty())
+		return false;
+
+	for (Json::Value::iterator iGroup = root["groups"].begin(); iGroup != root["groups"].end(); ++iGroup)
+	{
+		Json::Value group = *iGroup;
+		if (group.isObject())
+		{
+			std::string szGID = iGroup.key().asString();
+			int gID = atoi(szGID.c_str());
 			bool bIsOn = false;
 			int tbri = 255;
 			int tsat = 255;
 			int thue = 255;
 
-			if (!root["groups"][szNode]["action"]["on"].empty())
-				bIsOn = root["groups"][szNode]["action"]["on"].asBool();
-			if (!root["groups"][szNode]["action"]["bri"].empty())
-				tbri = root["groups"][szNode]["action"]["bri"].asInt();
-			if (!root["groups"][szNode]["action"]["sat"].empty())
-				tsat = root["groups"][szNode]["action"]["sat"].asInt();
-			if (!root["groups"][szNode]["action"]["hue"].empty())
-				thue = root["groups"][szNode]["action"]["hue"].asInt();
+			if (!group["action"]["on"].empty())
+				bIsOn = group["action"]["on"].asBool();
+			if (!group["action"]["bri"].empty())
+				tbri = group["action"]["bri"].asInt();
+			if (!group["action"]["sat"].empty())
+				tsat = group["action"]["sat"].asInt();
+			if (!group["action"]["hue"].empty())
+				thue = group["action"]["hue"].asInt();
 			if ((tbri != 0) && (tbri != 255))
 				tbri += 1; //hue reports 255 as 254
 			int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
@@ -652,7 +707,6 @@ bool CPhilipsHue::GetStates()
 			tstate.sat = tsat;
 			tstate.hue = thue;
 			bool bDoSend = true;
-			int gID = ii + 1;
 			if (m_groups.find(gID) != m_groups.end())
 			{
 				_tHueGroup agroup = m_groups[gID];
@@ -669,20 +723,28 @@ bool CPhilipsHue::GetStates()
 			m_groups[gID].gstate = tstate;
 			if (bDoSend)
 			{
-				std::string Name = "Group " + root["groups"][szNode]["name"].asString();
-				InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, Name);
+				std::string Name = "Group " + group["name"].asString();
+				InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, Name, "");
 			}
 		}
 	}
 	//Special Request for Group0 (All Lights)
-	sstr2 << "/groups/0";
-	sURL = sstr2.str();
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	std::stringstream sstr2;
+	sstr2 << "http://" << m_IPAddress
+		<< ":" << m_Port
+		<< "/api/" << m_UserName
+		<< "/groups/0";
+	std::string sResult;
+	std::vector<std::string> ExtraHeaders;
+	if (!HTTPClient::GET(sstr2.str(), ExtraHeaders, sResult))
 	{
 		//No group all(0)
 		return true;
 	}
-	ret = jReader.parse(sResult, root);
+	Json::Reader jReader;
+	Json::Value root2;
+	bool ret = jReader.parse(sResult, root2);
+	ret = jReader.parse(sResult, root2);
 	if (!ret)
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Invalid data received, or invalid IPAddress/Username!");
@@ -692,7 +754,7 @@ bool CPhilipsHue::GetStates()
 	if (sResult.find("\"error\":") != std::string::npos)
 	{
 		//We had an error
-		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root[0]["error"]["description"].asString().c_str());
+		_log.Log(LOG_ERROR, "Philips Hue: Error received: %s", root2[0]["error"]["description"].asString().c_str());
 		return false;
 	}
 
@@ -705,14 +767,14 @@ bool CPhilipsHue::GetStates()
 	int tsat = 255;
 	int thue = 255;
 
-	if (!root["action"]["on"].empty())
-		bIsOn = root["action"]["on"].asBool();
-	if (!root["action"]["bri"].empty())
-		tbri = root["action"]["bri"].asInt();
-	if (!root["action"]["sat"].empty())
-		tsat = root["action"]["sat"].asInt();
-	if (!root["action"]["hue"].empty())
-		thue = root["action"]["hue"].asInt();
+	if (!root2["action"]["on"].empty())
+		bIsOn = root2["action"]["on"].asBool();
+	if (!root2["action"]["bri"].empty())
+		tbri = root2["action"]["bri"].asInt();
+	if (!root2["action"]["sat"].empty())
+		tsat = root2["action"]["sat"].asInt();
+	if (!root2["action"]["hue"].empty())
+		thue = root2["action"]["hue"].asInt();
 	if ((tbri != 0) && (tbri != 255))
 		tbri += 1; //hue reports 255 as 254
 	int BrightnessLevel = int((100.0f / 255.0f)*float(tbri));
@@ -745,11 +807,48 @@ bool CPhilipsHue::GetStates()
 	if (bDoSend)
 	{
 		std::string Name = "Group All Lights";
-		InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, Name);
+		InsertUpdateSwitch(1000 + gID, HLTYPE_RGBW, bIsOn, BrightnessLevel, tsat, thue, Name,"");
 	}
-
 	return true;
 }
+
+bool CPhilipsHue::GetScenes(const Json::Value &root)
+{
+	if (root["scenes"].empty())
+		return false;
+
+	int ii=0;
+	for (Json::Value::iterator iScene = root["scenes"].begin(); iScene != root["scenes"].end(); ++iScene)
+	{
+		Json::Value scene = *iScene;
+		if (scene.isObject())
+		{
+			_tHueScene hscene;
+			hscene.id = iScene.key().asString();;
+			hscene.name = scene["name"].asString();
+			hscene.lastupdated = scene["lastupdated"].asString();
+			int sID = ii + 1;
+			bool bDoSend = true;
+			if (m_scenes.find(sID) != m_scenes.end())
+			{
+				_tHueScene ascene = m_scenes[sID];
+				if (ascene.lastupdated == hscene.lastupdated)
+				{
+					bDoSend = false;
+				}
+			}
+			m_scenes[sID] = hscene;
+			if (bDoSend)
+			{
+				std::string Name = "Scene " + hscene.name;
+				InsertUpdateSwitch(2000 + sID, HLTYPE_SCENE, false, 1000, 0, 0, Name, hscene.id);
+			}
+		}
+		ii++;
+	}
+	return true;
+}
+
 
 //Webserver helpers
 namespace http {
