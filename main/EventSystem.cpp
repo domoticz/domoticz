@@ -604,55 +604,27 @@ void CEventSystem::GetCurrentMeasurementStates()
 		{
 			if (!splitresults.empty())
 			{
-				if (sitem.subType == sTypeVisibility)
+				if ((sitem.subType == sTypeVisibility)
+				 || (sitem.subType == sTypeSolarRadiation))
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 					weatherval = utilityval;
 					isWeather = true;
 				}
-				else if (sitem.subType == sTypeAlert)
+				else if ((sitem.subType == sTypeAlert)
+					  || (sitem.subType == sTypeDistance)
+					  || (sitem.subType == sTypePercentage)
+					  || (sitem.subType == sTypeWaterflow)
+					  || (sitem.subType == sTypeVoltage)
+		 			  || (sitem.subType == sTypeCurrent)
+		 			  || (sitem.subType == sTypeSetPoint)
+					  || (sitem.subType == sTypeKwh))
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
-				else if (sitem.subType == sTypeDistance)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeSolarRadiation)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-					weatherval = utilityval;
-					isWeather = true;
-				}
-				else if (sitem.subType == sTypePercentage)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeWaterflow)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeVoltage)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeCurrent)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeSetPoint)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
+
 			}
 			else
 			{

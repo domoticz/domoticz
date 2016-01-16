@@ -349,6 +349,7 @@ bool SatelIntegra::GetInfo()
 				else
 				{
 					_log.Log(LOG_STATUS, "Satel Integra: unknown version of ETHM-1");
+					return false;
 				}
 			}
 			else
@@ -407,6 +408,8 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 			if (firstTime)
 			{
+				m_LastHeartbeat = mytime(NULL);
+
 				unsigned char buffer[21];
 #ifdef DEBUG_SatelIntegra
 				_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d name", index + 1);
@@ -418,7 +421,6 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 				if (SendCommand(cmd, 3, buffer) > 0)
 				{
 					ReportZonesViolation(index + 1, violate);
-					//UpdateZoneName(index + 1, &buffer[4], buffer[20]);  	 Security1 does not support units - partition
 					UpdateZoneName(index + 1, &buffer[4], 1);
 				}
 				else
@@ -477,6 +479,8 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 
 				if (firstTime)
 				{
+					m_LastHeartbeat = mytime(NULL);
+
 					unsigned char buffer[21];
 #ifdef DEBUG_SatelIntegra
 					_log.Log(LOG_STATUS, "Satel Integra: Reading temperature zone %d name", index + 1);
@@ -686,12 +690,6 @@ bool SatelIntegra::ReadAlarm(const bool firstTime)
 void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool violation)
 {
 	m_zonesLastState[Idx - 1] = violation;
-
-//	char szTmp[4];
-//	sprintf(szTmp, "%02X", (unsigned int)Idx);
-//	std::string devname;
-
-//	m_sql.UpdateValue(m_HwdID, szTmp, 0, pTypeGeneral, sTypeAlert, 12, 255, violation ? 3 : 1, violation ? "Violate" : "Normal", devname);
 
 	_tGeneralDevice zone;
 	zone.subtype = sTypeAlert;
@@ -1014,7 +1012,6 @@ void SatelIntegra::UpdateAlarmAndArmName()
 	}
 
 }
-
 
 void expandForSpecialValue(std::list<unsigned char> &result)
 {
