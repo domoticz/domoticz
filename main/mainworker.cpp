@@ -11341,7 +11341,8 @@ bool MainWorker::SwitchScene(const unsigned long long idx, const std::string &sw
 	result = m_sql.safe_query(
 		"SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == %llu) ORDER BY [Order] ASC", idx);
 	if (result.size()<1)
-		return false;
+		return true; //no devices in the scene
+
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
