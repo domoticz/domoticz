@@ -485,6 +485,49 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				
 					SetLanguage(data.language);
 					
+					//Translate Highcharts (partly)
+					Highcharts.setOptions({
+						lang: {
+							months: [
+								$.t('January'),
+								$.t('February'),
+								$.t('March'),
+								$.t('April'),
+								$.t('May'),
+								$.t('June'),
+								$.t('July'),
+								$.t('August'),
+								$.t('September'),
+								$.t('October'),
+								$.t('November'),
+								$.t('December')
+							],
+							shortMonths: [
+								$.t('Jan'),
+								$.t('Feb'),
+								$.t('Mar'),
+								$.t('Apr'),
+								$.t('May'),
+								$.t('Jun'),
+								$.t('Jul'),
+								$.t('Aug'),
+								$.t('Sep'),
+								$.t('Oct'),
+								$.t('Nov'),
+								$.t('Dec')
+							],
+							weekdays: [
+								$.t('Monday'),
+								$.t('Tuesday'),
+								$.t('Wednesday'),
+								$.t('Thursday'),
+								$.t('Friday'),
+								$.t('Saturday'),
+								$.t('Sunday')
+							]
+						}
+					});
+					
 					$rootScope.MakeGlobalConfig();
 
 					if (typeof data.result.templates!= 'undefined') {
