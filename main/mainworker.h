@@ -220,6 +220,7 @@ private:
 	struct _tRxMessageProcessingResult {
 		std::string DeviceName;
 		unsigned long long DeviceRowIdx;
+		bool bProcessBatteryValue;
 	};
 
 	//(RFX) Message decoders
@@ -272,7 +273,7 @@ private:
 	void decode_Rego6XXValue(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Usage(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Lux(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-	void decode_General(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_General(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult, const unsigned char SignalLevel = 12, const unsigned char BatteryLevel = 255);
 	void decode_GeneralSwitch(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_HomeConfort(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Thermostat(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);

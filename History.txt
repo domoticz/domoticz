@@ -21,6 +21,7 @@ Version 2.3xxx
 - Implemented: OTGW, added firmware version number in hardware setup page
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
 - Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
+- Implemented: Philips Hue, support for stored Scenes (create them with an external app like Hue Pro)
 - Implemented: RFXCom support for Legrand CAD
 - Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: SolarEdge via Web API
@@ -29,6 +30,7 @@ Version 2.3xxx
 - Implemented: Waterflow sensor
 - Implemented: Wind Beaufort scale
 - Implemented: Wind Graph, option to delete a short-log data point
+- Changed: Alert sensor, removed level notation in user interface
 - Changed: EventSystem, don't process unused devices
 - Changed: Fritzbox, Now updating text sensor on connect/disconnect
 - Changed: OpenZWave, Control Panel log starts displaying from the end when entering for the first time
