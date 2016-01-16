@@ -98,7 +98,7 @@ void CScheduler::ReloadSchedules()
 				titem.Month = 0;
 				titem.Occurence = 0;
 
-				if (timerType == TTYPE_FIXEDDATETIME)
+				if (timerType == TTYPE_ONCEONLY)
 				{
 					std::string sdate = sd[10];
 					if (sdate.size() != 10)
@@ -182,7 +182,7 @@ void CScheduler::ReloadSchedules()
 
 			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
 
-			if (timerType == TTYPE_FIXEDDATETIME)
+			if (timerType == TTYPE_ONCEONLY)
 			{
 				std::string sdate = sd[8];
 				if (sdate.size() != 10)
@@ -263,7 +263,7 @@ void CScheduler::ReloadSchedules()
 
 			_eTimerType timerType = (_eTimerType)atoi(sd[2].c_str());
 
-			if (timerType == TTYPE_FIXEDDATETIME)
+			if (timerType == TTYPE_ONCEONLY)
 			{
 				std::string sdate = sd[6];
 				if (sdate.size() != 10)
@@ -371,7 +371,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		ltime.tm_min = pItem->startMin;
 		rtime = mktime(&ltime) + (roffset * 60);
 	}
-	else if (pItem->timerType == TTYPE_FIXEDDATETIME)
+	else if (pItem->timerType == TTYPE_ONCEONLY)
 	{
 		ltime.tm_year = pItem->startYear - 1900;
 		ltime.tm_mon = pItem->startMonth - 1;
@@ -589,7 +589,7 @@ void CScheduler::CheckSchedules()
 		{
 			//check if we are on a valid day
 			bool bOkToFire = false;
-			if (itt->timerType == TTYPE_FIXEDDATETIME)
+			if (itt->timerType == TTYPE_ONCEONLY)
 			{
 				bOkToFire = true;
 			}
@@ -758,7 +758,7 @@ void CScheduler::CheckSchedules()
 			if (!AdjustScheduleItem(&*itt, true))
 			{
 				//something is wrong, probably no sunset/rise
-				if (itt->timerType != TTYPE_FIXEDDATETIME)
+				if (itt->timerType != TTYPE_ONCEONLY)
 				{
 					itt->startTime += atime + (24 * 3600);
 				}
@@ -785,14 +785,14 @@ void CScheduler::DeleteExpiredTimers()
 	std::vector<std::vector<std::string> > result;
 	// Check Timers
 	result = m_sql.safe_query("SELECT ID FROM Timers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
-		TTYPE_FIXEDDATETIME,
+		TTYPE_ONCEONLY,
 		szDate,
 		szDate,
 		szTime
 		);
 	if (result.size() > 0) {
 		m_sql.safe_query("DELETE FROM Timers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
-			TTYPE_FIXEDDATETIME,
+			TTYPE_ONCEONLY,
 			szDate,
 			szDate,
 			szTime
@@ -802,14 +802,14 @@ void CScheduler::DeleteExpiredTimers()
 	
 	// Check SceneTimers
 	result = m_sql.safe_query("SELECT ID FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
-		TTYPE_FIXEDDATETIME,
+		TTYPE_ONCEONLY,
 		szDate,
 		szDate,
 		szTime
 		);
 	if (result.size() > 0) {
 		m_sql.safe_query("DELETE FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
-			TTYPE_FIXEDDATETIME,
+			TTYPE_ONCEONLY,
 			szDate,
 			szDate,
 			szTime
@@ -905,7 +905,7 @@ namespace http {
 
 					int iTimerType = atoi(sd[4].c_str());
 					std::string sdate = sd[2];
-					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+					if ((iTimerType == TTYPE_ONCEONLY) && (sdate.size() == 10))
 					{
 						int Year = atoi(sdate.substr(0, 4).c_str());
 						int Month = atoi(sdate.substr(5, 2).c_str());
@@ -976,7 +976,7 @@ namespace http {
 			int Month = tm1.tm_mon + 1;
 			int Day = tm1.tm_mday;
 
-			if (iTimerType == TTYPE_FIXEDDATETIME)
+			if (iTimerType == TTYPE_ONCEONLY)
 			{
 				if (sdate.size() == 10)
 				{
@@ -1081,7 +1081,7 @@ namespace http {
 			int Month = tm1.tm_mon + 1;
 			int Day = tm1.tm_mday;
 
-			if (iTimerType == TTYPE_FIXEDDATETIME)
+			if (iTimerType == TTYPE_ONCEONLY)
 			{
 				if (sdate.size() == 10)
 				{
@@ -1250,7 +1250,7 @@ namespace http {
 
 					int iTimerType = atoi(sd[4].c_str());
 					std::string sdate = sd[2];
-					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+					if ((iTimerType == TTYPE_ONCEONLY) && (sdate.size() == 10))
 					{
 						int Year = atoi(sdate.substr(0, 4).c_str());
 						int Month = atoi(sdate.substr(5, 2).c_str());
@@ -1307,7 +1307,7 @@ namespace http {
 			int Month = tm1.tm_mon + 1;
 			int Day = tm1.tm_mday;
 
-			if (iTimerType == TTYPE_FIXEDDATETIME)
+			if (iTimerType == TTYPE_ONCEONLY)
 			{
 				if (sdate.size() == 10)
 				{
@@ -1372,7 +1372,7 @@ namespace http {
 			int Month = tm1.tm_mon + 1;
 			int Day = tm1.tm_mday;
 
-			if (iTimerType == TTYPE_FIXEDDATETIME)
+			if (iTimerType == TTYPE_ONCEONLY)
 			{
 				if (sdate.size() == 10)
 				{
@@ -1473,7 +1473,7 @@ namespace http {
 
 					int iTimerType = atoi(sd[4].c_str());
 					std::string sdate = sd[2];
-					if ((iTimerType == TTYPE_FIXEDDATETIME) && (sdate.size() == 10))
+					if ((iTimerType == TTYPE_ONCEONLY) && (sdate.size() == 10))
 					{
 						int Year = atoi(sdate.substr(0, 4).c_str());
 						int Month = atoi(sdate.substr(5, 2).c_str());
@@ -1543,7 +1543,7 @@ namespace http {
 			int Month = tm1.tm_mon + 1;
 			int Day = tm1.tm_mday;
 
-			if (iTimerType == TTYPE_FIXEDDATETIME)
+			if (iTimerType == TTYPE_ONCEONLY)
 			{
 				if (sdate.size() == 10)
 				{
@@ -1646,7 +1646,7 @@ namespace http {
 			int Month = tm1.tm_mon + 1;
 			int Day = tm1.tm_mday;
 
-			if (iTimerType == TTYPE_FIXEDDATETIME)
+			if (iTimerType == TTYPE_ONCEONLY)
 			{
 				if (sdate.size() == 10)
 				{
