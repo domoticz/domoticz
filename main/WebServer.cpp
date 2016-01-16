@@ -54,6 +54,8 @@ extern "C" {
 #endif
 }
 
+#include "../tinyxpath/xpath_processor.h"
+
 
 #include "mainstructs.h"
 
@@ -2319,6 +2321,42 @@ namespace http {
 			}
 		}
 
+		static int l_domoticz_applyXPath(lua_State* lua_state)
+		{
+			int nargs = lua_gettop(lua_state);
+			if (nargs >= 2)
+			{
+				if (lua_isstring(lua_state, 1) && lua_isstring(lua_state, 2))
+				{
+					std::string buffer = lua_tostring(lua_state, 1);
+					std::string xpath = lua_tostring(lua_state, 2);
+
+					TiXmlDocument doc;
+					doc.Parse(buffer.c_str(), 0, TIXML_ENCODING_UTF8);
+					
+					TiXmlElement* root = doc.RootElement();
+					if (!root)
+					{
+						_log.Log(LOG_ERROR, "WebServer (applyXPath from LUA) : Invalid data received!");
+						return 0;
+					}
+					TinyXPath::xpath_processor processor(root,xpath.c_str());
+					TiXmlString xresult = processor.S_compute_xpath();
+					lua_pushstring(lua_state, xresult.c_str());
+					return 1;
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "WebServer (applyXPath from LUA) : Incorrect parameters type");
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "WebServer (applyXPath from LUA) : Not enough parameters");
+			}
+			return 0;
+		}
+
 		static int l_domoticz_applyJsonPath(lua_State* lua_state)
 		{
 			int nargs = lua_gettop(lua_state);
@@ -2564,6 +2602,9 @@ namespace http {
 
 			lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
 			lua_setglobal(lua_state, "domoticz_applyJsonPath");
+
+			lua_pushcfunction(lua_state, l_domoticz_applyXPath);
+			lua_setglobal(lua_state, "domoticz_applyXPath");
 
 			lua_createtable(lua_state, 1, 0);
 			lua_pushstring(lua_state, "content");
@@ -9444,10 +9485,12 @@ namespace http {
 						}
 						else if (dSubType == sTypeAlert)
 						{
+							sprintf(szData, "Level: %d", nValue);
+							root["result"][ii]["Data"] = szData;
 							if (!sValue.empty())
-								root["result"][ii]["Data"] = sValue;
+								root["result"][ii]["Desc"] = sValue;
 							else
-								root["result"][ii]["Data"] = Get_Alert_Desc(nValue);
+								root["result"][ii]["Desc"] = Get_Alert_Desc(nValue);
 							root["result"][ii]["TypeImg"] = "Alert";
 							root["result"][ii]["Level"] = nValue;
 							root["result"][ii]["HaveTimeout"] = false;

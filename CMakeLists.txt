@@ -308,6 +308,22 @@ webserver/proxyclient.cpp
 json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp
+tinyxpath/action_store.cpp
+tinyxpath/tinyxml.cpp
+tinyxpath/tokenlist.cpp
+tinyxpath/xpath_processor.cpp
+tinyxpath/xpath_stream.cpp
+tinyxpath/htmlutil.cpp
+tinyxpath/node_set.cpp
+tinyxpath/tinyxmlerror.cpp
+tinyxpath/xml_util.cpp
+tinyxpath/xpath_stack.cpp
+tinyxpath/xpath_syntax.cpp
+tinyxpath/lex_util.cpp
+tinyxpath/tinystr.cpp
+tinyxpath/tinyxmlparser.cpp
+tinyxpath/xpath_expression.cpp
+tinyxpath/xpath_static.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 
