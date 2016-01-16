@@ -191,7 +191,11 @@ namespace http {
 
 			void SetAuthenticationMethod(const _eAuthenticationMethod amethod);
 			void SetWebTheme(const std::string &themename);
+			void SetWebRoot(const std::string &webRoot);
 			void AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs);
+			std::string ExtractRequestPath(const std::string& original_request_path);
+			bool IsBadRequestPath(const std::string& original_request_path);
+			
 			void ClearUserPasswords();
 			std::vector<_tWebUserPassword> m_userpasswords;
 			void AddLocalNetworks(std::string network);
@@ -212,8 +216,6 @@ namespace http {
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
-			// actual theme selected
-			std::string m_actTheme;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;
@@ -233,7 +235,10 @@ namespace http {
 			session_store* mySessionStore;
 			/// next timed out session cleanup time
 			time_t myNextSessionCleanup;
-		protected:
+			// actual theme selected
+			std::string m_actTheme;
+			// root of url for reverse proxy servers
+			std::string m_webRoot;
 			/// request handler specialized to handle webem requests
 			cWebemRequestHandler myRequestHandler;
 		};

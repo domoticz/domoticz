@@ -74,6 +74,7 @@ namespace OpenZWave
 		int32 const GetItemIdxByValue( int32 const _value );
 
 		bool GetItemLabels( vector<string>* o_items );
+		bool GetItemValues( vector<int32>* o_values );
 
 		uint8 const GetSize()const{ return m_size; }
 

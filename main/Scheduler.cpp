@@ -9,6 +9,7 @@
 #include "WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
+#include "boost/date_time/gregorian/gregorian.hpp"
 
 CScheduler::CScheduler(void)
 {
@@ -56,8 +57,12 @@ void CScheduler::ReloadSchedules()
 
 	std::vector<std::vector<std::string> > result;
 
+	time_t atime = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
 	//Add Device Timers
-	result = m_sql.safe_query("SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue, T1.[Date] FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID",
+	result = m_sql.safe_query("SELECT T1.DeviceRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T2.Used, T1.UseRandomness, T1.Hue, T1.[Date], T1.MDay, T1.Month, T1.Occurence FROM Timers as T1, DeviceStatus as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.DeviceRowID)) ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
@@ -87,8 +92,11 @@ void CScheduler::ReloadSchedules()
 				titem.timerType = timerType;
 				titem.timerCmd = (_eTimerCommand)atoi(sd[3].c_str());
 				titem.Level = (unsigned char)atoi(sd[4].c_str());
-				titem.bUseRandmoness = (atoi(sd[8].c_str()) != 0);
+				titem.bUseRandomness = (atoi(sd[8].c_str()) != 0);
 				titem.Hue = atoi(sd[9].c_str());
+				titem.MDay = 0;
+				titem.Month = 0;
+				titem.Occurence = 0;
 
 				if (timerType == TTYPE_FIXEDDATETIME)
 				{
@@ -98,6 +106,38 @@ void CScheduler::ReloadSchedules()
 					titem.startYear = (unsigned short)atoi(sdate.substr(0, 4).c_str());
 					titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
 					titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
+				}
+				else if (timerType == TTYPE_MONTHLY)
+				{
+					std::string smday = sd[11];
+					if (smday == "0")
+						continue; //invalid
+					titem.MDay = atoi(smday.c_str());
+				}
+				else if (timerType == TTYPE_MONTHLY_WD)
+				{
+					std::string socc = sd[13];
+					if (socc == "0")
+						continue; //invalid
+					titem.Occurence = atoi(socc.c_str());
+				}
+				else if (timerType == TTYPE_YEARLY)
+				{
+					std::string smday = sd[11];
+					std::string smonth = sd[12];
+					if ((smday == "0") || (smonth == "0"))
+						continue; //invalid
+					titem.MDay = atoi(smday.c_str());
+					titem.Month = atoi(smonth.c_str());
+				}
+				else if (timerType == TTYPE_YEARLY_WD)
+				{
+					std::string smonth = sd[12];
+					std::string socc = sd[13];
+					if ((smonth == "0") || (socc == "0"))
+						continue; //invalid
+					titem.Month = atoi(smonth.c_str());
+					titem.Occurence = atoi(socc.c_str());
 				}
 
 				if ((titem.timerCmd == TCMD_ON) && (titem.Level == 0))
@@ -119,7 +159,7 @@ void CScheduler::ReloadSchedules()
 	}
 
 	//Add Scene Timers
-	result = m_sql.safe_query("SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness, T1.[Date] FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID",
+	result = m_sql.safe_query("SELECT T1.SceneRowID, T1.Time, T1.Type, T1.Cmd, T1.Level, T1.Days, T2.Name, T1.UseRandomness, T1.[Date], T1.MDay, T1.Month, T1.Occurence FROM SceneTimers as T1, Scenes as T2 WHERE ((T1.Active == 1) AND (T1.TimerPlan == %d) AND (T2.ID == T1.SceneRowID)) ORDER BY T1.ID",
 		m_sql.m_ActiveTimerPlan);
 	if (result.size() > 0)
 	{
@@ -133,6 +173,9 @@ void CScheduler::ReloadSchedules()
 			titem.bEnabled = true;
 			titem.bIsScene = true;
 			titem.bIsThermostat = false;
+			titem.MDay = 0;
+			titem.Month = 0;
+			titem.Occurence = 0;
 
 			std::stringstream s_str(sd[0]);
 			s_str >> titem.RowID;
@@ -148,6 +191,38 @@ void CScheduler::ReloadSchedules()
 				titem.startMonth = (unsigned char)atoi(sdate.substr(5, 2).c_str());
 				titem.startDay = (unsigned char)atoi(sdate.substr(8, 2).c_str());
 			}
+			else if (timerType == TTYPE_MONTHLY)
+			{
+				std::string smday = sd[9];
+				if (smday == "0")
+					continue; //invalid
+				titem.MDay = atoi(smday.c_str());
+			}
+			else if (timerType == TTYPE_MONTHLY_WD)
+			{
+				std::string socc = sd[11];
+				if (socc == "0")
+					continue; //invalid
+				titem.Occurence = atoi(socc.c_str());
+			}
+			else if (timerType == TTYPE_YEARLY)
+			{
+				std::string smday = sd[9];
+				std::string smonth = sd[10];
+				if ((smday == "0") || (smonth == "0"))
+					continue; //invalid
+				titem.MDay = atoi(smday.c_str());
+				titem.Month = atoi(smonth.c_str());
+			}
+			else if (timerType == TTYPE_YEARLY_WD)
+			{
+				std::string smonth = sd[10];
+				std::string socc = sd[11];
+				if ((smonth == "0") || (socc == "0"))
+					continue; //invalid
+				titem.Month = atoi(smonth.c_str());
+				titem.Occurence = atoi(socc.c_str());
+			}
 
 			titem.startHour = (unsigned char)atoi(sd[1].substr(0, 2).c_str());
 			titem.startMin = (unsigned char)atoi(sd[1].substr(3, 2).c_str());
@@ -155,7 +230,7 @@ void CScheduler::ReloadSchedules()
 			titem.timerType = timerType;
 			titem.timerCmd = (_eTimerCommand)atoi(sd[3].c_str());
 			titem.Level = (unsigned char)atoi(sd[4].c_str());
-			titem.bUseRandmoness = (atoi(sd[7].c_str()) != 0);
+			titem.bUseRandomness = (atoi(sd[7].c_str()) != 0);
 			if ((titem.timerCmd == TCMD_ON) && (titem.Level == 0))
 			{
 				titem.Level = 100;
@@ -205,7 +280,7 @@ void CScheduler::ReloadSchedules()
 			titem.timerCmd = TCMD_ON;
 			titem.Temperature = static_cast<float>(atof(sd[3].c_str()));
 			titem.Level = 100;
-			titem.bUseRandmoness = false;
+			titem.bUseRandomness = false;
 			titem.Days = atoi(sd[4].c_str());
 			titem.DeviceName = sd[5];
 			if (AdjustScheduleItem(&titem, false) == true)
@@ -275,15 +350,22 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	if (nRandomTimerFrame == 0)
 		nRandomTimerFrame = 15;
 	int roffset = 0;
-	if (pItem->bUseRandmoness)
+	if (pItem->bUseRandomness)
 	{
-		if ((pItem->timerType == TTYPE_ONTIME) || (pItem->timerType == TTYPE_FIXEDDATETIME))
-			roffset = rand() % (nRandomTimerFrame * 2) - nRandomTimerFrame;
-		else
+		if ((pItem->timerType == TTYPE_BEFORESUNRISE) ||
+			(pItem->timerType == TTYPE_AFTERSUNRISE) ||
+			(pItem->timerType == TTYPE_BEFORESUNSET) ||
+			(pItem->timerType == TTYPE_AFTERSUNSET))
 			roffset = rand() % (nRandomTimerFrame);
+		else
+			roffset = rand() % (nRandomTimerFrame * 2) - nRandomTimerFrame;
 	}
 
-	if (pItem->timerType == TTYPE_ONTIME)
+	if ((pItem->timerType == TTYPE_ONTIME) ||
+		(pItem->timerType == TTYPE_DAYSODD) ||
+		(pItem->timerType == TTYPE_DAYSEVEN) ||
+		(pItem->timerType == TTYPE_WEEKSODD) ||
+		(pItem->timerType == TTYPE_WEEKSEVEN))
 	{
 		ltime.tm_hour = pItem->startHour;
 		ltime.tm_min = pItem->startMin;
@@ -325,6 +407,128 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		if (m_tSunRise == 0)
 			return false;
 		rtime = m_tSunRise + HourMinuteOffset + (roffset * 60);
+	}
+	else if (pItem->timerType == TTYPE_MONTHLY)
+	{
+		ltime.tm_mday = pItem->MDay;
+		ltime.tm_hour = pItem->startHour;
+		ltime.tm_min = pItem->startMin;
+		//if mday exceeds max days in month, find next month with this amount of days
+		while(ltime.tm_mday > boost::gregorian::gregorian_calendar::end_of_month_day(ltime.tm_year + 1900, ltime.tm_mon + 1))
+		{
+			ltime.tm_mon++;
+			if (ltime.tm_mon > 11)
+			{
+				ltime.tm_mon = 0;
+				ltime.tm_year++;
+			}
+		}
+		rtime = mktime(&ltime) + (roffset * 60);
+		if (rtime < atime) //past date/time
+		{
+			//schedule for next month
+			boost::gregorian::month_iterator m_itr(boost::gregorian::date(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday));
+			++m_itr;
+			ltime.tm_mon = m_itr->month() - 1;
+			ltime.tm_year = m_itr->year() - 1900;
+			rtime = mktime(&ltime) + (roffset * 60);
+		}
+
+		pItem->startTime = rtime;
+		return true;
+	}
+	else if (pItem->timerType == TTYPE_MONTHLY_WD)
+	{
+		ltime.tm_hour = pItem->startHour;
+		ltime.tm_min = pItem->startMin;
+
+		//pItem->Days: mon=1 .. sat=32, sun=64
+		//convert to : sun=0, mon=1 .. sat=6
+		int daynum = (int)log2(pItem->Days) + 1;
+		if (daynum == 7) daynum = 0;
+
+		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
+		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(daynum);
+		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+
+		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
+		nth_dow ndm(Occurence, Day, Month);
+		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
+
+		ltime.tm_mday = d.day();
+		rtime = mktime(&ltime) + (roffset * 60);
+
+		if (rtime < atime) //past date/time
+		{
+			//schedule for next month
+			ltime.tm_mon++;
+			Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+			nth_dow ndm(Occurence, Day, Month);
+			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
+			ltime.tm_mday = d.day();
+			rtime = mktime(&ltime) + (roffset * 60);
+		}
+
+		pItem->startTime = rtime;
+		return true;
+	}
+	else if (pItem->timerType == TTYPE_YEARLY)
+	{
+		ltime.tm_mday = pItem->MDay;
+		ltime.tm_mon = pItem->Month - 1;
+		ltime.tm_hour = pItem->startHour;
+		ltime.tm_min = pItem->startMin;
+		//if mday exceeds max days in month, find next year with this amount of days
+		while (ltime.tm_mday > boost::gregorian::gregorian_calendar::end_of_month_day(ltime.tm_year + 1900, ltime.tm_mon + 1))
+		{
+			ltime.tm_year++;
+		}
+		rtime = mktime(&ltime) + (roffset * 60);
+		if (rtime < atime) //past date/time
+		{
+			//schedule for next year
+			boost::gregorian::year_iterator m_itr(boost::gregorian::date(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday));
+			++m_itr;
+			ltime.tm_year = m_itr->year() - 1900;
+			rtime = mktime(&ltime) + (roffset * 60);
+		}
+
+		pItem->startTime = rtime;
+		return true;
+	}
+	else if (pItem->timerType == TTYPE_YEARLY_WD)
+	{
+		ltime.tm_hour = pItem->startHour;
+		ltime.tm_min = pItem->startMin;
+		ltime.tm_mon = pItem->Month - 1;
+
+		//pItem->Days: mon=1 .. sat=32, sun=64
+		//convert to : sun=0, mon=1 .. sat=6
+		int daynum = (int)log2(pItem->Days) + 1;
+		if (daynum == 7) daynum = 0;
+
+		boost::gregorian::nth_day_of_the_week_in_month::week_num Occurence = static_cast<boost::gregorian::nth_day_of_the_week_in_month::week_num>(pItem->Occurence);
+		boost::gregorian::greg_weekday::weekday_enum Day = static_cast<boost::gregorian::greg_weekday::weekday_enum>(daynum);
+		boost::gregorian::months_of_year Month = static_cast<boost::gregorian::months_of_year>(ltime.tm_mon + 1);
+
+		typedef boost::gregorian::nth_day_of_the_week_in_month nth_dow;
+		nth_dow ndm(Occurence, Day, Month);
+		boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
+
+		ltime.tm_mday = d.day();
+		rtime = mktime(&ltime) + (roffset * 60);
+
+		if (rtime < atime) //past date/time
+		{
+			//schedule for next year
+			ltime.tm_year++;
+			boost::gregorian::date d = ndm.get_date(ltime.tm_year + 1900);
+			ltime.tm_mday = d.day();
+			rtime = mktime(&ltime) + (roffset * 60);
+		}
+
+		pItem->startTime = rtime;
+		return true;
 	}
 	else
 		return false; //unknown timer type
@@ -389,6 +593,14 @@ void CScheduler::CheckSchedules()
 			{
 				bOkToFire = true;
 			}
+			else if (itt->timerType == TTYPE_DAYSODD)
+			{
+				bOkToFire = (ltime.tm_mday % 2 != 0);
+			}
+			else if (itt->timerType == TTYPE_DAYSEVEN)
+			{
+				bOkToFire = (ltime.tm_mday % 2 == 0);
+			}
 			else
 			{
 				if (itt->Days & 0x80)
@@ -425,6 +637,26 @@ void CScheduler::CheckSchedules()
 						bOkToFire = true;//Saturday
 					if ((itt->Days & 0x40) && (ltime.tm_wday == 0))
 						bOkToFire = true;//Sunday
+				}
+				if (bOkToFire)
+				{
+					if ((itt->timerType == TTYPE_WEEKSODD) ||
+						(itt->timerType == TTYPE_WEEKSEVEN))
+					{
+						struct tm timeinfo;
+						localtime_r(&itt->startTime, &timeinfo);
+
+						boost::gregorian::date d = boost::gregorian::date(
+							timeinfo.tm_year + 1900,
+							timeinfo.tm_mon + 1,
+							timeinfo.tm_mday);
+						int w = d.week_number();
+
+						if (itt->timerType == TTYPE_WEEKSODD)
+							bOkToFire = (w % 2 != 0);
+						else
+							bOkToFire = (w % 2 == 0);
+					}
 				}
 			}
 			if (bOkToFire)
@@ -618,9 +850,10 @@ namespace http {
 				root["result"][ii]["Type"] = (itt->bIsScene) ? "Scene" : "Device";
 				root["result"][ii]["RowID"] = itt->RowID;
 				root["result"][ii]["DevName"] = itt->DeviceName;
-				root["result"][ii]["TimerType"] = Timer_Type_Desc(itt->timerType);
+				root["result"][ii]["TimerTypeStr"] = Timer_Type_Desc(itt->timerType);
+				root["result"][ii]["TimerType"] = itt->timerType;
 				root["result"][ii]["TimerCmd"] = Timer_Cmd_Desc(itt->timerCmd);
-				root["result"][ii]["IsThermostat"] = itt->bIsThermostat;
+				root["result"][ii]["IsThermostat"] = (itt->bIsThermostat) ? "true" : "false";
 				if (itt->bIsThermostat == true)
 				{
 					char szTemp[10];
@@ -628,6 +861,9 @@ namespace http {
 					root["result"][ii]["Temperature"] = szTemp;
 				}
 				root["result"][ii]["Days"] = itt->Days;
+				root["result"][ii]["MDay"] = itt->MDay;
+				root["result"][ii]["Month"] = itt->Month;
+				root["result"][ii]["Occurence"] = itt->Occurence;
 
 				struct tm timeinfo;
 				localtime_r(&itt->startTime, &timeinfo);
@@ -653,7 +889,7 @@ namespace http {
 			char szTmp[50];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM Timers WHERE (DeviceRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness, MDay, Month, Occurence FROM Timers WHERE (DeviceRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
@@ -689,7 +925,10 @@ namespace http {
 					root["result"][ii]["Level"] = iLevel;
 					root["result"][ii]["Hue"] = atoi(sd[7].c_str());
 					root["result"][ii]["Days"] = atoi(sd[8].c_str());
-					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) != 0);
+					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["MDay"] = atoi(sd[10].c_str());
+					root["result"][ii]["Month"] = atoi(sd[11].c_str());
+					root["result"][ii]["Occurence"] = atoi(sd[12].c_str());
 					ii++;
 				}
 			}
@@ -714,6 +953,9 @@ namespace http {
 			std::string sdays = request::findValue(&req, "days");
 			std::string slevel = request::findValue(&req, "level");	//in percentage
 			std::string shue = request::findValue(&req, "hue");
+			std::string smday = "0";
+			std::string smonth = "0";
+			std::string soccurence = "0";
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -743,6 +985,28 @@ namespace http {
 					Year = atoi(sdate.substr(6, 4).c_str());
 				}
 			}
+			else if (iTimerType == TTYPE_MONTHLY)
+			{
+				smday = request::findValue(&req, "mday");
+				if (smday == "") return;
+			}
+			else if (iTimerType == TTYPE_MONTHLY_WD)
+			{
+				soccurence = request::findValue(&req, "occurence");
+				if (soccurence == "") return;
+			}
+			else if (iTimerType == TTYPE_YEARLY)
+			{
+				smday = request::findValue(&req, "mday");
+				smonth = request::findValue(&req, "month");
+				if ((smday == "") || (smonth == "")) return;
+			}
+			else if (iTimerType == TTYPE_YEARLY_WD)
+			{
+				smonth = request::findValue(&req, "month");
+				soccurence = request::findValue(&req, "occurence");
+				if ((smonth == "") || (soccurence == "")) return;
+			}
 
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
@@ -750,10 +1014,13 @@ namespace http {
 			int days = atoi(sdays.c_str());
 			unsigned char level = atoi(slevel.c_str());
 			int hue = atoi(shue.c_str());
+			int mday = atoi(smday.c_str());
+			int month = atoi(smonth.c_str());
+			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "AddTimer";
 			m_sql.safe_query(
-				"INSERT INTO Timers (Active, DeviceRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Hue, Days, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d)",
+				"INSERT INTO Timers (Active, DeviceRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Hue, Days, MDay, Month, Occurence, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d,%d,%d,%d)",
 				(active == "true") ? 1 : 0,
 				idx.c_str(),
 				Year, Month, Day,
@@ -764,6 +1031,9 @@ namespace http {
 				level,
 				hue,
 				days,
+				mday,
+				month,
+				occurence,
 				m_sql.m_ActiveTimerPlan
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -788,6 +1058,9 @@ namespace http {
 			std::string sdays = request::findValue(&req, "days");
 			std::string slevel = request::findValue(&req, "level");	//in percentage
 			std::string shue = request::findValue(&req, "hue");
+			std::string smday = "0";
+			std::string smonth = "0";
+			std::string soccurence = "0";
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -817,6 +1090,28 @@ namespace http {
 					Year = atoi(sdate.substr(6, 4).c_str());
 				}
 			}
+			else if (iTimerType == TTYPE_MONTHLY)
+			{
+				smday = request::findValue(&req, "mday");
+				if (smday == "") return;
+			}
+			else if (iTimerType == TTYPE_MONTHLY_WD)
+			{
+				soccurence = request::findValue(&req, "occurence");
+				if (soccurence == "") return;
+			}
+			else if (iTimerType == TTYPE_YEARLY)
+			{
+				smday = request::findValue(&req, "mday");
+				smonth = request::findValue(&req, "month");
+				if ((smday == "") || (smonth == "")) return;
+			}
+			else if (iTimerType == TTYPE_YEARLY_WD)
+			{
+				smonth = request::findValue(&req, "month");
+				soccurence = request::findValue(&req, "occurence");
+				if ((smonth == "") || (soccurence == "")) return;
+			}
 
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
@@ -824,10 +1119,13 @@ namespace http {
 			int days = atoi(sdays.c_str());
 			unsigned char level = atoi(slevel.c_str());
 			int hue = atoi(shue.c_str());
+			int mday = atoi(smday.c_str());
+			int month = atoi(smonth.c_str());
+			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateTimer";
 			m_sql.safe_query(
-				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d WHERE (ID == '%q')",
+				"UPDATE Timers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Hue=%d, Days=%d, MDay=%d, Month=%d, Occurence=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -837,6 +1135,9 @@ namespace http {
 				level,
 				hue,
 				days,
+				mday,
+				month,
+				occurence,
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -1156,7 +1457,7 @@ namespace http {
 			char szTmp[40];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness FROM SceneTimers WHERE (SceneRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Hue, Days, UseRandomness, MDay, Month, Occurence FROM SceneTimers WHERE (SceneRowID==%llu) AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
@@ -1192,7 +1493,10 @@ namespace http {
 					root["result"][ii]["Level"] = iLevel;
 					root["result"][ii]["Hue"] = atoi(sd[7].c_str());
 					root["result"][ii]["Days"] = atoi(sd[8].c_str());
-					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) != 0);
+					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["MDay"] = atoi(sd[10].c_str());
+					root["result"][ii]["Month"] = atoi(sd[11].c_str());
+					root["result"][ii]["Occurence"] = atoi(sd[12].c_str());
 					ii++;
 				}
 			}
@@ -1216,6 +1520,9 @@ namespace http {
 			std::string scmd = request::findValue(&req, "command");
 			std::string sdays = request::findValue(&req, "days");
 			std::string slevel = request::findValue(&req, "level");	//in percentage
+			std::string smday = "0";
+			std::string smonth = "0";
+			std::string soccurence = "0";
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1245,16 +1552,41 @@ namespace http {
 					Year = atoi(sdate.substr(6, 4).c_str());
 				}
 			}
+			else if (iTimerType == TTYPE_MONTHLY)
+			{
+				smday = request::findValue(&req, "mday");
+				if (smday == "") return;
+			}
+			else if (iTimerType == TTYPE_MONTHLY_WD)
+			{
+				soccurence = request::findValue(&req, "occurence");
+				if (soccurence == "") return;
+			}
+			else if (iTimerType == TTYPE_YEARLY)
+			{
+				smday = request::findValue(&req, "mday");
+				smonth = request::findValue(&req, "month");
+				if ((smday == "") || (smonth == "")) return;
+			}
+			else if (iTimerType == TTYPE_YEARLY_WD)
+			{
+				smonth = request::findValue(&req, "month");
+				soccurence = request::findValue(&req, "occurence");
+				if ((smonth == "") || (soccurence == "")) return;
+			}
 
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
 			unsigned char icmd = atoi(scmd.c_str());
 			int days = atoi(sdays.c_str());
 			unsigned char level = atoi(slevel.c_str());
+			int mday = atoi(smday.c_str());
+			int month = atoi(smonth.c_str());
+			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "AddSceneTimer";
 			m_sql.safe_query(
-				"INSERT INTO SceneTimers (Active, SceneRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Days, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d)",
+				"INSERT INTO SceneTimers (Active, SceneRowID, [Date], Time, Type, UseRandomness, Cmd, Level, Days, MDay, Month, Occurence, TimerPlan) VALUES (%d,'%q','%04d-%02d-%02d','%02d:%02d',%d,%d,%d,%d,%d,%d,%d,%d,%d)",
 				(active == "true") ? 1 : 0,
 				idx.c_str(),
 				Year, Month, Day,
@@ -1264,6 +1596,9 @@ namespace http {
 				icmd,
 				level,
 				days,
+				mday,
+				month,
+				occurence,
 				m_sql.m_ActiveTimerPlan
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();
@@ -1287,6 +1622,9 @@ namespace http {
 			std::string scmd = request::findValue(&req, "command");
 			std::string sdays = request::findValue(&req, "days");
 			std::string slevel = request::findValue(&req, "level");	//in percentage
+			std::string smday = "0";
+			std::string smonth = "0";
+			std::string soccurence = "0";
 			if (
 				(idx == "") ||
 				(active == "") ||
@@ -1317,16 +1655,41 @@ namespace http {
 					Year = atoi(sdate.substr(6, 4).c_str());
 				}
 			}
+			else if (iTimerType == TTYPE_MONTHLY)
+			{
+				smday = request::findValue(&req, "mday");
+				if (smday == "") return;
+			}
+			else if (iTimerType == TTYPE_MONTHLY_WD)
+			{
+				soccurence = request::findValue(&req, "occurence");
+				if (soccurence == "") return;
+			}
+			else if (iTimerType == TTYPE_YEARLY)
+			{
+				smday = request::findValue(&req, "mday");
+				smonth = request::findValue(&req, "month");
+				if ((smday == "") || (smonth == "")) return;
+			}
+			else if (iTimerType == TTYPE_YEARLY_WD)
+			{
+				smonth = request::findValue(&req, "month");
+				soccurence = request::findValue(&req, "occurence");
+				if ((smonth == "") || (soccurence == "")) return;
+			}
 
 			unsigned char hour = atoi(shour.c_str());
 			unsigned char min = atoi(smin.c_str());
 			unsigned char icmd = atoi(scmd.c_str());
 			int days = atoi(sdays.c_str());
 			unsigned char level = atoi(slevel.c_str());
+			int mday = atoi(smday.c_str());
+			int month = atoi(smonth.c_str());
+			int occurence = atoi(soccurence.c_str());
 			root["status"] = "OK";
 			root["title"] = "UpdateSceneTimer";
 			m_sql.safe_query(
-				"UPDATE SceneTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d WHERE (ID == '%q')",
+				"UPDATE SceneTimers SET Active=%d, [Date]='%04d-%02d-%02d', Time='%02d:%02d', Type=%d, UseRandomness=%d, Cmd=%d, Level=%d, Days=%d, MDay=%d, Month=%d, Occurence=%d WHERE (ID == '%q')",
 				(active == "true") ? 1 : 0,
 				Year, Month, Day,
 				hour, min,
@@ -1335,6 +1698,9 @@ namespace http {
 				icmd,
 				level,
 				days,
+				mday,
+				month,
+				occurence,
 				idx.c_str()
 				);
 			m_mainworker.m_scheduler.ReloadSchedules();

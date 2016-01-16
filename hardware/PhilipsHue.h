@@ -19,6 +19,11 @@ class CPhilipsHue : public CDomoticzHardwareBase
 		int sat;
 		int hue;
 	};
+	struct _tHueGroup
+	{
+		_tHueLight gstate;
+		std::vector<int> lights;
+	};
 public:
 	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username);
 	~CPhilipsHue(void);
@@ -31,12 +36,13 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<int, _tHueLight> m_lights;
+	std::map<int, _tHueGroup> m_groups;
 
 	void Init();
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
-	bool GetLightStates();
+	bool GetStates();
 	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue);
 };

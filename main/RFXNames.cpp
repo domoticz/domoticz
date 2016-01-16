@@ -4,6 +4,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/evohome.h"
 #include "Helper.h"
+#include <boost/algorithm/string.hpp>
 //#include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
@@ -118,6 +119,14 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_BEFORESUNSET, "Before Sunset" },
 		{ TTYPE_AFTERSUNSET, "After Sunset" },
 		{ TTYPE_FIXEDDATETIME, "Fixed Date/Time" },
+		{ TTYPE_DAYSODD, "Odd Day Numbers" },
+		{ TTYPE_DAYSEVEN, "Even Day Numbers" },
+		{ TTYPE_WEEKSODD, "Odd Week Numbers"},
+		{ TTYPE_WEEKSEVEN, "Even Week Numbers" },
+		{ TTYPE_MONTHLY, "Monthly" },
+		{ TTYPE_MONTHLY_WD, "Monthly (Weekday)" },
+		{ TTYPE_YEARLY, "Yearly" },
+		{ TTYPE_YEARLY_WD, "Yearly (Weekday)" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);
@@ -205,6 +214,8 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
 		{ HTYPE_CurrentCostMeterLAN, "CurrentCost Meter with LAN interface" },
+		{ HTYPE_DomoticzInternal, "Domoticz Internal interface" },
+		{ HTYPE_NefitEastLAN, "Nefit Easy HTTP server over LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -748,6 +759,12 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeR546, "R546" },
 		{ pTypeGeneralSwitch, sSwitchTypeDiya, "Diya" },
 		{ pTypeGeneralSwitch, sSwitchTypeX10secu, "X10Secure" },
+		{ pTypeGeneralSwitch, sSwitchTypeAtlantic, "Atlantic" },
+		{ pTypeGeneralSwitch, sSwitchTypeSilvercrestDB, "SilvercrestDB" },
+		{ pTypeGeneralSwitch, sSwitchTypeMedionDB, "MedionDB" },
+		{ pTypeGeneralSwitch, sSwitchTypeVMC, "VMC" },
+		{ pTypeGeneralSwitch, sSwitchTypeKeeloq, "Keeloq" },
+		{ pTypeGeneralSwitch, sSwitchCustomSwitch, "CustomSwitch" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1955,7 +1972,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch statuses...");
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
-		StringSplit(sOptions, "|", strarray);
+		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
 		std::stringstream ss;
@@ -1980,7 +1997,7 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level...");
 		std::string sOptions = itt->second;
 		std::vector<std::string> strarray;
-		StringSplit(sOptions, "|", strarray);
+		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
 		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
@@ -1992,6 +2009,30 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 		}
 	}
 	return level;
+}
+
+/**
+ * Returns the action associated with a level
+ */
+std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string> & options, const int level) {
+	std::string action = ""; // not found
+	std::map< std::string, std::string >::const_iterator itt = options.find("LevelActions");
+	if (itt != options.end()) {
+		//_log.Log(LOG_STATUS, "DEBUG : Get selector switch level action...");
+		std::string sOptions = itt->second;
+		std::vector<std::string> strarray;
+		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
+		std::vector<std::string>::iterator itt;
+		int i = 0;
+		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+			if (i == level) {
+				action = *itt;
+				break;
+			}
+			i += 10;
+		}
+	}
+	return action;
 }
 
 bool GetLightCommand(
@@ -2186,12 +2227,21 @@ bool GetLightCommand(
 		else if (dSubType!=sTypeLightwaveRF)
 		{
 			//Only LightwaveRF devices have a set-level
-			if (switchcmd=="Set Level")
-				switchcmd="On";
+ 			if (switchcmd=="Set Level")
+ 				switchcmd="On";
+ 		}
+			// The LightwaveRF inline relay has to be controlled by Venetian blinds logic as it has a stop setting
+		else if ((dSubType==sTypeLightwaveRF)&&(switchtype==STYPE_VenetianBlindsEU)){
+				if (switchcmd=="On")
+					switchcmd="Close inline relay";
+				else if (switchcmd=="Off")
+					switchcmd="Open inline relay";
+				else if (switchcmd=="Stop")
+					switchcmd="Stop inline relay";
 		}
-
-		if (switchtype==STYPE_Doorbell)
-		{
+ 
+ 		if (switchtype==STYPE_Doorbell)
+ 		{
 			if ((switchcmd=="On")||(switchcmd=="Group On"))
 			{
 				cmd=light5_sGroupOn;
@@ -2235,9 +2285,24 @@ bool GetLightCommand(
 			return true;
 		}
 		else if (switchcmd=="Group On")
-		{
-			cmd=light5_sGroupOn;
+ 		{
+ 			cmd=light5_sGroupOn;
 			return true;
+		}
+		else if (switchcmd=="Close inline relay")
+		{
+			cmd=light5_sClose;
+			return true;
+		}
+		else if (switchcmd=="Stop inline relay")
+		{
+			cmd=light5_sStop;
+			return true;
+		}
+		else if (switchcmd=="Open inline relay")
+		{
+			cmd=light5_sOpen;
+ 			return true;
 		}
 		else
 			return false;

@@ -27,6 +27,9 @@
     <Filter Include="Devices\Domoticz">
       <UniqueIdentifier>{222696d2-1c77-4abb-a483-83548f0b75d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\DomoticzInternal">
+      <UniqueIdentifier>{68487f2d-089f-4a1b-a961-32f1cd6fb8de}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Windows">
       <UniqueIdentifier>{b2fc9567-e487-4cee-b23e-9f6002b503b9}</UniqueIdentifier>
     </Filter>
@@ -246,6 +249,9 @@
     <Filter Include="Devices\Comm5 MA-5XXX">
       <UniqueIdentifier>{92aba4fe-bf95-4946-a1c4-0b761e9144a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Nefit-Easy">
+      <UniqueIdentifier>{eda6c8ec-7cdc-4897-9d23-c502aedbee4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -308,6 +314,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\DomoticzHardware.h">
       <Filter>Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DomoticzInternal.h">
+      <Filter>Devices\DomoticzInternal</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\hardwaretypes.h">
       <Filter>Devices</Filter>
@@ -798,6 +807,9 @@
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\NefitEasy.h">
+      <Filter>Devices\Nefit-Easy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -853,6 +865,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\DomoticzHardware.cpp">
       <Filter>Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DomoticzInternal.cpp">
+      <Filter>Devices\DomoticzInternal</Filter>
     </ClCompile>
     <ClCompile Include="..\httpclient\UrlEncode.cpp">
       <Filter>HTTPClient</Filter>
@@ -1285,6 +1300,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NefitEasy.cpp">
+      <Filter>Devices\Nefit-Easy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

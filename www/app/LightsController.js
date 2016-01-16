@@ -79,6 +79,10 @@ define(['app'], function (app) {
 				if ($('#lightcontent #timerparamstable #ChkSun').is(":checked"))
 					tsettings.days|=0x40;
 			}
+			tsettings.mday=$("#lightcontent #timerparamstable #days").val();
+			tsettings.month=$("#lightcontent #timerparamstable #months").val();
+			tsettings.occurence=$("#lightcontent #timerparamstable #occurence").val();
+			tsettings.weekday=$("#lightcontent #timerparamstable #weekdays").val();
 			if (tsettings.cmd==0)
 			{
 				if ($.bIsLED) {
@@ -112,6 +116,34 @@ define(['app'], function (app) {
 					return;
 				}
 			}
+			else if ((tsettings.timertype==6) || (tsettings.timertype==7)) {
+				tsettings.days = 0x80;
+			}
+			else if (tsettings.timertype==10) {
+				tsettings.days = 0x80;
+				if (tsettings.mday>28) {
+					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
+				}
+			}
+			else if (tsettings.timertype==12) {
+				tsettings.days = 0x80;
+				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
+					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
+					return;
+				}
+				if (tsettings.month==2) {
+					if (tsettings.mday>29) {
+						ShowNotify($.t('February does not have more than 29 days!'), 2500, true);
+						return;
+					}
+					if (tsettings.mday==29) {
+						ShowNotify($.t('Not all years have this date, some years will be skipped!'), 2500, true);
+					}
+				}
+			}
+			else if ((tsettings.timertype==11) || (tsettings.timertype==13)) {
+				tsettings.days = Math.pow(2, tsettings.weekday);
+			}
 			else if (tsettings.days==0)
 			{
 				ShowNotify($.t('Please select some days!'), 2500, true);
@@ -128,7 +160,10 @@ define(['app'], function (app) {
 							"&command=" + tsettings.cmd +
 							"&level=" + tsettings.level +
 							"&hue=" + tsettings.hue +
-							"&days=" + tsettings.days,
+							"&days=" + tsettings.days +
+							"&mday=" + tsettings.mday +
+							"&month=" + tsettings.month +
+							"&occurence=" + tsettings.occurence,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -158,6 +193,34 @@ define(['app'], function (app) {
 					return;
 				}
 			}
+			else if ((tsettings.timertype==6) || (tsettings.timertype==7)) {
+				tsettings.days = 0x80;
+			}
+			else if (tsettings.timertype==10) {
+				tsettings.days = 0x80;
+				if (tsettings.mday>28) {
+					ShowNotify($.t('Not al months have this amount of days, some months will be skipped!'), 2500, true);
+				}
+			}
+			else if (tsettings.timertype==12) {
+				tsettings.days = 0x80;
+				if ((tsettings.month==4 || tsettings.month==6 || tsettings.month==9 || tsettings.month==11) && tsettings.mday==31) {
+					ShowNotify($.t('This month does not have 31 days!'), 2500, true);
+					return;
+				}
+				if (tsettings.month==2) {
+					if (tsettings.mday>29) {
+						ShowNotify($.t('February does not have more than 29 days!'), 2500, true);
+						return;
+					}
+					if (tsettings.mday==29) {
+						ShowNotify($.t('Not all years have this date, some years will be skipped!'), 2500, true);
+					}
+				}
+			}
+			else if ((tsettings.timertype==11) || (tsettings.timertype==13)) {
+				tsettings.days = Math.pow(2, tsettings.weekday);
+			}
 			else if (tsettings.days==0)
 			{
 				ShowNotify($.t('Please select some days!'), 2500, true);
@@ -174,7 +237,10 @@ define(['app'], function (app) {
 							"&command=" + tsettings.cmd +
 							"&level=" + tsettings.level +
 							"&hue=" + tsettings.hue +
-							"&days=" + tsettings.days,
+							"&days=" + tsettings.days +
+							"&mday=" + tsettings.mday +
+							"&month=" + tsettings.month +
+							"&occurence=" + tsettings.occurence,
 				 async: false, 
 				 dataType: 'json',
 				 success: function(data) {
@@ -256,7 +322,7 @@ define(['app'], function (app) {
 					
 					var DayStr = "";
 					var DayStrOrig = "";
-					if (item.Type!=5) {
+					if ((item.Type<=4) || (item.Type==8) || (item.Type==9)) {
 						var dayflags = parseInt(item.Days);
 						if (dayflags & 0x80)
 							DayStrOrig="Everyday";
@@ -295,17 +361,36 @@ define(['app'], function (app) {
 							}
 						}
 					}
+					else if (item.Type==10) {
+						DayStrOrig="Monthly on Day " + item.MDay;
+					}
+					else if (item.Type==11) {
+						var Weekday = Math.log2(parseInt(item.Days));
+						DayStrOrig="Monthly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday];
+					}
+					else if (item.Type==12) {
+						DayStrOrig="Yearly on " + item.MDay + " " + $.myglobals.MonthStr[item.Month-1];
+					}
+					else if (item.Type==13) {
+						var Weekday = Math.log2(parseInt(item.Days));
+						DayStrOrig="Yearly on " + $.myglobals.OccurenceStr[item.Occurence-1] + " " + $.myglobals.WeekdayStr[Weekday] + " in " + $.myglobals.MonthStr[item.Month-1];
+					}
+					
 					//translate daystring
-					var res = DayStrOrig.split(", ");
+					var splitstr = ", ";
+					if (item.Type > 5) {
+						splitstr = " ";
+					}
+					var res = DayStrOrig.split(splitstr);
 					$.each(res, function(i,item){
 						DayStr+=$.t(item);
 						if (i!=res.length-1) {
-							DayStr+=", ";
+							DayStr+=splitstr;
 						}
 					});
 					
 					var rEnabled="No";
-					if (item.Randomness==true) {
+					if (item.Randomness=="true") {
 						rEnabled="Yes";
 					}
 								
@@ -325,7 +410,11 @@ define(['app'], function (app) {
 						"3": item.Time,
 						"4": $.t(rEnabled),
 						"5": $.t(tCommand),
-						"6": DayStr
+						"6": DayStr,
+						"7": item.Month,
+						"8": item.MDay,
+						"9": item.Occurence,
+						"10": Math.log2(parseInt(item.Days))
 					} );
 				});
 			  }
@@ -394,10 +483,59 @@ define(['app'], function (app) {
 							$("#lightcontent #timerparamstable #sdate").val(data["2"]);
 							$("#lightcontent #timerparamstable #rdate").show();
 							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if ((timerType==6) || (timerType==7)) {
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==10) {
+							$("#lightcontent #timerparamstable #days").val(data["8"]);
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").show();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==11) {
+							$("#lightcontent #timerparamstable #occurence").val(data["9"]);
+							$("#lightcontent #timerparamstable #weekdays").val(data["10"]);
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").show();
+							$("#lightcontent #timerparamstable #rmonths").hide();
+						}
+						else if (timerType==12) {
+							$("#lightcontent #timerparamstable #months").val(data["7"]);
+							$("#lightcontent #timerparamstable #days").val(data["8"]);
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").show();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").show();
+						}
+						else if (timerType==13) {
+							$("#lightcontent #timerparamstable #months").val(data["7"]);
+							$("#lightcontent #timerparamstable #occurence").val(data["9"]);
+							$("#lightcontent #timerparamstable #weekdays").val(data["10"]);
+							$("#lightcontent #timerparamstable #rdate").hide();
+							$("#lightcontent #timerparamstable #rnorm").hide();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").show();
+							$("#lightcontent #timerparamstable #rmonths").show();
 						}
 						else {
 							$("#lightcontent #timerparamstable #rdate").hide();
 							$("#lightcontent #timerparamstable #rnorm").show();
+							$("#lightcontent #timerparamstable #rdays").hide();
+							$("#lightcontent #timerparamstable #roccurence").hide();
+							$("#lightcontent #timerparamstable #rmonths").hide();
 						}
 						
 						var disableDays=false;
@@ -441,13 +579,9 @@ define(['app'], function (app) {
 		  
 			if ($.isSelector) {
 				// backup selector switch level names before displaying edit edit form
-				$.selectorSwitchLevels = [];
-				$("#selector" + $.devIdx + " label").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
-				$("#selector" + $.devIdx + " option").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
+				var selectorSwitch$ = $("#selector" + $.devIdx);
+				$.selectorSwitchLevels = unescape(selectorSwitch$.data("levelnames")).split('|');
+				$.selectorSwitchLevelOffHidden = selectorSwitch$.data("leveloffhidden");
 			}
 			var oTable;
 			
@@ -477,6 +611,9 @@ define(['app'], function (app) {
 			$('#lightcontent').i18n();
 			$("#lightcontent #timerparamstable #rdate").hide();
 			$("#lightcontent #timerparamstable #rnorm").show();
+			$("#lightcontent #timerparamstable #rdays").hide();
+			$("#lightcontent #timerparamstable #roccurence").hide();
+			$("#lightcontent #timerparamstable #rmonths").hide();
 
 			$rootScope.RefreshTimeAndSun();
 
@@ -495,10 +632,51 @@ define(['app'], function (app) {
 				if (timerType==5) {
 					$("#lightcontent #timerparamstable #rdate").show();
 					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if ((timerType==6) || (timerType==7)) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==10) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").show();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==11) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").show();
+					$("#lightcontent #timerparamstable #rmonths").hide();
+				}
+				else if (timerType==12) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").show();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").show();
+				}
+				else if (timerType==13) {
+					$("#lightcontent #timerparamstable #rdate").hide();
+					$("#lightcontent #timerparamstable #rnorm").hide();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").show();
+					$("#lightcontent #timerparamstable #rmonths").show();
 				}
 				else {
 					$("#lightcontent #timerparamstable #rdate").hide();
 					$("#lightcontent #timerparamstable #rnorm").show();
+					$("#lightcontent #timerparamstable #rdays").hide();
+					$("#lightcontent #timerparamstable #roccurence").hide();
+					$("#lightcontent #timerparamstable #rmonths").hide();
 				}
 			});
 
@@ -561,8 +739,9 @@ define(['app'], function (app) {
 			} );
 			$('#timerparamstable #combotimehour >option').remove();
 			$('#timerparamstable #combotimemin >option').remove();
+			$('#timerparamstable #days >option').remove();
 						
-			//fill hour/minute comboboxes
+			//fill hour/minute/days comboboxes
 			for (ii=0; ii<24; ii++)
 			{
 				$('#timerparamstable #combotimehour').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
@@ -570,6 +749,10 @@ define(['app'], function (app) {
 			for (ii=0; ii<60; ii++)
 			{
 				$('#timerparamstable #combotimemin').append($('<option></option>').val(ii).html($.strPad(ii,2)));  
+			}
+			for (ii=1; ii<=31; ii++)
+			{
+				$('#timerparamstable #days').append($('<option></option>').val(ii).html(ii));  
 			}
 		  
 			$("#lightcontent #timerparamstable #when_1").click(function() {
@@ -618,6 +801,9 @@ define(['app'], function (app) {
 				// Replace dimmer levels by selector level names
 				var levelDiv$ = $("#lightcontent #LevelDiv"),
 					html = [];
+				if ($.selectorSwitchLevelOffHidden) {
+					$("#lightcontent #combocommand").prop('disabled', true);
+				}
 				$.each($.selectorSwitchLevels, function (index, item) {
 					var level = index * 10,
 						levelName = item;
@@ -750,13 +936,22 @@ define(['app'], function (app) {
 			}
 			var devOptionsParam = [], devOptions = [];
 			if ($.bIsSelectorSwitch) {
-				var levelNames = $("#lightcontent #selectorlevelstable").data('levelNames'),
-					selectorStyle = $("#lightcontent .selector-switch-options input[type=radio]:checked").val();
+				var levelNames = unescape($("#lightcontent #selectorlevelstable").data('levelNames')),
+					levelActions = $("#lightcontent #selectoractionstable").data('levelActions'),
+					selectorStyle = $("#lightcontent .selector-switch-options.style input[type=radio]:checked").val(),
+					levelOffHidden = $("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked');
 				devOptions.push("LevelNames:");
 				devOptions.push(levelNames);
 				devOptions.push(";");
+				devOptions.push("LevelActions:");
+				devOptions.push(levelActions);
+				devOptions.push(";");
 				devOptions.push("SelectorStyle:");
 				devOptions.push(selectorStyle);
+				devOptions.push(";");
+				devOptions.push("LevelOffHidden:");
+				devOptions.push(levelOffHidden);
+				devOptions.push(";");
 				devOptionsParam.push(devOptions.join(''));
 			}
 			
@@ -770,7 +965,7 @@ define(['app'], function (app) {
 						  '&strparam2=' + btoa(strParam2) +
 						  '&protected=' + bIsProtected +
 						  '&used=true' +
-						  '&options=' + btoa(devOptionsParam.join('')),
+						  '&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -804,7 +999,7 @@ define(['app'], function (app) {
 							'&switchtype=' + $("#lightcontent #comboswitchtype").val() + 
 							'&customimage=' + CustomImage + 
 							'&used=true' + addjvalstr +
-							'&options=' + btoa(devOptionsParam.join('')),
+							'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -1035,6 +1230,9 @@ define(['app'], function (app) {
 			});
 		}
 
+		CleanDeviceOptionValue = function (value) {
+			return value.replace(/[:;|<>]/g,"").trim();
+		}
 		ChangeSelectorLevelsOrder = function (from, to) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
@@ -1042,12 +1240,12 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|'),
+				levelNames = unescape(table$.data('levelNames')).split('|'),
 				fromLevel = levelNames[from],
 				toLevel = levelNames[to];
 			levelNames[to] = fromLevel;
 			levelNames[from] = toLevel;
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
 		DeleteSelectorLevel = function (index) {
@@ -1057,56 +1255,59 @@ define(['app'], function (app) {
 				return;
 			}
 			var table$ = $("#lightcontent #selectorlevelstable"),
-			levelNames = table$.data('levelNames').split('|');
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			levelNames.splice(index, 1);
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
+			DeleteSelectorAction(index);
 		};
 		UpdateSelectorLevel = function (index, levelName) {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-			levelNames = table$.data('levelNames').split('|');
-			if ((levelName === '') ||							// avoid empty name
-					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
-				return;
-			}
+				levelNames = unescape(table$.data('levelNames')).split('|');
 			levelNames[index] = levelName;
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
 		};
-		RenameSelectorLevel = function (index, levelName) {
+		RenameSelectorLevel = function (index) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
-			if ((index >= 0) && (levelName != '')) {
+			if (index >= 0) {
+				var table$ = $("#lightcontent #selectorlevelstable"),
+					levelNames = unescape(table$.data('levelNames')).split('|'),
+					levelName = levelNames[index];
 				$("#dialog-renameselectorlevel #selectorlevelindex").val(index);
-				$("#dialog-renameselectorlevel #selectorlevelname").val(unescape(levelName));
+				$("#dialog-renameselectorlevel #selectorlevelname").val(levelName);
 				$("#dialog-renameselectorlevel").i18n();
 				$("#dialog-renameselectorlevel").dialog("open");
 			}
-		}
+		};
 		AddSelectorLevel = function () {
 			var button$ = $("#newselectorlevelbutton"),
 				table$ = $("#lightcontent #selectorlevelstable"),
-				levelName = $("#lightcontent #newselectorlevel").val().trim(),
-				levelNames = table$.data('levelNames').split('|');
+				levelName = $("#lightcontent #newselectorlevel").val(),
+				levelNames = unescape(table$.data('levelNames')).split('|');
+			// clean unauthorized characters
+			levelName = CleanDeviceOptionValue(levelName);
 			if ((button$.prop("disabled") === true) ||			// limit length
 					(levelName === '') ||						// avoid empty name
 					($.inArray(levelName, levelNames) !== -1)) {	// avoid duplicate
 				return;
 			}
 			levelNames.push(levelName);
-			table$.data('levelNames', levelNames.join('|'));
+			table$.data('levelNames', escape(levelNames.join('|')));
 			BuildSelectorLevelsTable();
-		}
+			AddSelectorAction();
+		};
 		BuildSelectorLevelsTable = function () {
 			var table$ = $("#lightcontent #selectorlevelstable"),
-				levelNames = table$.data('levelNames').split('|'),
+				levelNames = unescape(table$.data('levelNames')).split('|'),
 				levelNamesMaxLength = 11,
 				initializeTable = $('#selectorlevelstable_wrapper').length === 0,
 				oTable = (initializeTable) ? table$.dataTable({
-					"iDisplayLength" : 25,
+					"iDisplayLength": 25,
 					"bLengthChange": false,
 					"bFilter": false,
 					"bInfo": false,
@@ -1135,10 +1336,10 @@ define(['app'], function (app) {
 				}
 				if (index > 0) {
 					// Add Rename image
-					rendelImg = '<img src="images/rename.png" onclick="RenameSelectorLevel(' + index + ',\'' + levelNames[index] + '\');" class="lcursor" width="16" height="16"></img>';
+					rendelImg = '<img src="images/rename.png" title="' + $.t("Rename") + '" onclick="RenameSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
 					// Add Delete image
 					rendelImg += '&nbsp;';
-					rendelImg += '<img src="images/delete.png" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
+					rendelImg += '<img src="images/delete.png" title="' + $.t("Delete") + '" onclick="DeleteSelectorLevel(' + index + ');" class="lcursor" width="16" height="16"></img>';
 				} else {
 					rendelImg = '<img src="images/empty16.png" width="16" height="16"></img>';
 				}
@@ -1158,6 +1359,92 @@ define(['app'], function (app) {
 			if (levelNames.length === levelNamesMaxLength) {
 				$("#newselectorlevelbutton").prop("disabled", true).addClass("ui-state-disabled");
 			}
+		};
+
+		UpdateSelectorAction = function (index, levelAction) {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions[index] = escape(levelAction);
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		EditSelectorAction = function (index) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			if (index >= 0) {
+				var table$ = $("#lightcontent #selectoractionstable"),
+					levelActions = table$.data('levelActions').split('|'),
+					levelAction = levelActions[index];
+				$("#dialog-editselectoraction #selectorlevelindex").val(index);
+				$("#dialog-editselectoraction #selectoraction").val(unescape(levelAction));
+				$("#dialog-editselectoraction").i18n();
+				$("#dialog-editselectoraction").dialog("open");
+			}
+		};
+		ClearSelectorAction = function (index) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions[index] = '';
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		DeleteSelectorAction = function (index) {
+			if (!permissions.hasPermission("Admin")) {
+				HideNotify();
+				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+				return;
+			}
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions.splice(index, 1);
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		AddSelectorAction = function () {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|');
+			levelActions.push('');
+			table$.data('levelActions', levelActions.join('|'));
+			BuildSelectorActionsTable();
+		};
+		BuildSelectorActionsTable = function () {
+			var table$ = $("#lightcontent #selectoractionstable"),
+				levelActions = table$.data('levelActions').split('|'),
+				levelActionsMaxLength = 11,
+				initializeTable = $('#selectoractionstable_wrapper').length === 0,
+				oTable = (initializeTable) ? table$.dataTable({
+					"iDisplayLength": 25,
+					"bLengthChange": false,
+					"bFilter": false,
+					"bInfo": false,
+					"bPaginate": false
+				}) : table$.dataTable();
+			oTable.fnClearTable();
+			$.each(levelActions, function (index, item) {
+				var level = index * 10,
+					levelAction = unescape(levelActions[index]),
+					rendelImg = "";
+				// Add Rename image
+				rendelImg = '<img src="images/rename.png" title="' + $.t("Edit") + '" onclick="EditSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
+				rendelImg += '&nbsp;';
+				rendelImg += '<img src="images/delete.png" title="' + $.t("Clear") + '" onclick="ClearSelectorAction(' + index + ');" class="lcursor" width="16" height="16"></img>';
+				oTable.fnAddData({
+					"DT_RowId": index,
+					"Name": levelAction,
+					"Edit": index,
+					"0": level,
+					"1": levelAction.replace('&', '&amp;'),
+					"2": rendelImg
+				});
+			});
 		};
 
 		appLampCooler = function()
@@ -1182,17 +1469,26 @@ define(['app'], function (app) {
 			$.bIsSelectorSwitch = (devsubtype === "Selector Switch");
 
 			var oTable;
-			
+
 			if ($.bIsSelectorSwitch) {
 				// backup selector switch level names before displaying edit edit form
-				$.selectorSwitchStyle = $("#selector" + $.devIdx).data("selectorstyle");
-				$.selectorSwitchLevels = [];
-				$("#selector" + $.devIdx + " label").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
+				var selectorSwitch$ = $("#selector" + $.devIdx),
+					ssLevelNames = unescape(selectorSwitch$.data("levelnames")),
+					ssStyle = selectorSwitch$.data("selectorstyle"),
+					ssLevelOffHidden = selectorSwitch$.data("leveloffhidden"),
+					ssLevelActions = selectorSwitch$.data("levelactions");
+				$.selectorSwitchStyle = ssStyle;
+				$.selectorSwitchLevelOffHidden = ssLevelOffHidden;
+				$.selectorSwitchLevels = ssLevelNames.split('|');
+				$.selectorSwitchActions = ssLevelActions.split('|');
+				$.each($.selectorSwitchLevels, function (index, item) {
+					if (index > ($.selectorSwitchActions.length - 1)) {
+						$.selectorSwitchActions.push(""); // force missing action
+					}
 				});
-				$("#selector" + $.devIdx + " option").each(function (index, item) {
-					$.selectorSwitchLevels.push($(item).text());
-				});
+				if ($.selectorSwitchActions.length > $.selectorSwitchLevels.length) { // truncate if necessary
+					$.selectorSwitchActions.splice($.selectorSwitchLevels.length, $.selectorSwitchActions.length - $.selectorSwitchLevels.length);
+				}
 			}
 
 			$('#modal').show();
@@ -1201,7 +1497,7 @@ define(['app'], function (app) {
 			$('#lightcontent').html(htmlcontent);
 			//$('#lightcontent').html($compile(htmlcontent)($scope));
 			$('#lightcontent').i18n();
-			
+
 			oTable = $('#lightcontent #subdevicestable').dataTable( {
 				"sDom": '<"H"frC>t<"F"i>',
 				"oTableTools": {
@@ -1223,7 +1519,7 @@ define(['app'], function (app) {
 			cHSB.b=100;
 			$('#lightcontent #Brightness').val(100);
 			$('#lightcontent #Hue').val(128);
-			
+
 			$.bIsLED=(devsubtype.indexOf("RGB") >= 0);
 			$.bIsRGB=(devsubtype=="RGB");
 			$.bIsRGBW=(devsubtype=="RGBW");
@@ -1276,7 +1572,7 @@ define(['app'], function (app) {
 
 			$("#lightcontent #devicename").val(unescape(name));
 			$("#lightcontent #devicedescription").val(unescape(description));
-			
+
 			if ($.stype=="Security") {
 				$("#lightcontent #SwitchType").hide();
 				$("#lightcontent #OnDelayDiv").hide();
@@ -1306,7 +1602,7 @@ define(['app'], function (app) {
 						$("#lightcontent #offdelay").val(addjvalue);
 						$("#lightcontent #ondelay").val(addjvalue2);
 					}
-					
+
 					if ((switchtype == 0) || (switchtype == 17) || (switchtype == 18)) {
 						$("#lightcontent #SwitchIconDiv").show();
 					}
@@ -1314,7 +1610,7 @@ define(['app'], function (app) {
 						$("#lightcontent .selector-switch-options").show();
 					}
 				});
-				
+
 				$("#lightcontent #comboswitchtype").val(switchtype);
 
 				$("#lightcontent #OnDelayDiv").hide();
@@ -1336,14 +1632,24 @@ define(['app'], function (app) {
 				    $("#lightcontent #SwitchIconDiv").show();
 				}
 				if (switchtype == 18) {
-					var dialog_renameselectorlevel_buttons = {};
+					var dialog_renameselectorlevel_buttons = {}, dialog_editselectoraction_buttons = {};
 					dialog_renameselectorlevel_buttons[$.t("Rename")] = function () {
-						var bValid = true;
-						bValid = bValid && checkLength($("#dialog-renameselectorlevel #selectorlevelname"), 2, 20);
+						var selectorLevelName$ = $("#dialog-renameselectorlevel #selectorlevelname"),
+							selectorIndex$ = $("#dialog-renameselectorlevel #selectorlevelindex"),
+							levelIndex = selectorIndex$.val(),
+							levelName = selectorLevelName$.val(),
+							table$ = $("#lightcontent #selectorlevelstable"),
+							levelNames = unescape(table$.data('levelNames')).split('|'),
+							bValid = true;
+						// clean unauthorized characters
+						levelName = CleanDeviceOptionValue(levelName);
+						bValid = bValid && (levelIndex >= 0);
+						bValid = bValid && checkLength(selectorLevelName$, 2, 20);
+						bValid = bValid && (levelName !== '') &&			// avoid empty
+								($.inArray(levelName, levelNames) === -1);	// avoid duplicate
 						if (bValid) {
 							$(this).dialog("close");
-							UpdateSelectorLevel($("#dialog-renameselectorlevel #selectorlevelindex").val(),
-									$("#dialog-renameselectorlevel #selectorlevelname").val());
+							UpdateSelectorLevel(levelIndex, levelName);
 						}
 					};
 					dialog_renameselectorlevel_buttons[$.t("Cancel")] = function () {
@@ -1358,20 +1664,54 @@ define(['app'], function (app) {
 						title: $.t("Rename level name"),
 						buttons: dialog_renameselectorlevel_buttons
 					});
-					$("#lightcontent #selectorlevelstable").data('levelNames', $.selectorSwitchLevels.join('|'));
+					$("#lightcontent #selectorlevelstable").data('levelNames', escape($.selectorSwitchLevels.join('|')));
 					BuildSelectorLevelsTable();
 
-					$("#lightcontent .selector-switch-options.style input[value=" + $.selectorSwitchStyle + "]").attr('checked', true);
+					dialog_editselectoraction_buttons[$.t("Save")] = function () {
+						var selectorAction$ = $("#dialog-editselectoraction #selectoraction"),
+							selectorIndex$ = $("#dialog-editselectoraction #selectorlevelindex"),
+							levelIndex = selectorIndex$.val(),
+							levelAction = selectorAction$.val().trim(),
+							bValid = true;
+						bValid = bValid && (levelIndex >= 0);
+						bValid = bValid && checkLength(selectorAction$, 0, 200);
+						bValid = bValid && ((levelAction === '') ||
+								(((levelAction.toLowerCase().indexOf('http://') === 0) && (levelAction.length > 7)) ||
+									((levelAction.toLowerCase().indexOf('https://') === 0) && (levelAction.length > 8)) ||
+											((levelAction.toLowerCase().indexOf('script://') === 0) && (levelAction.length > 9))));
+						if (bValid) {
+							$(this).dialog("close");
+							UpdateSelectorAction(levelIndex, levelAction);
+						}
+					};
+					dialog_editselectoraction_buttons[$.t("Cancel")] = function () {
+						$(this).dialog("close");
+					};
+					$("#dialog-editselectoraction").dialog({
+						autoOpen: false,
+						width: 'auto',
+						height: 'auto',
+						modal: true,
+						resizable: false,
+						title: $.t("Edit level action"),
+						buttons: dialog_editselectoraction_buttons
+					});
+					$("#lightcontent #selectoractionstable").data('levelActions', $.selectorSwitchActions.join('|'));
+					BuildSelectorActionsTable();
 
+					$("#lightcontent #OnActionDiv").hide();
+					$("#lightcontent #OffActionDiv").hide();
+					$("#lightcontent .selector-switch-options.style input[value=" + $.selectorSwitchStyle + "]").attr('checked', true);
+					$("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked', $.selectorSwitchLevelOffHidden);
 					$("#lightcontent .selector-switch-options").show();
 				}
 				$("#lightcontent #combosubdevice").html("");
-				
+
 				$("#lightcontent #onaction").val(atob(strParam1));
 				$("#lightcontent #offaction").val(atob(strParam2));
 
 				$('#lightcontent #protected').prop('checked',(bIsProtected==true));
-				
+
 				$.each($.LightsAndSwitches, function(i,item){
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
@@ -1404,7 +1744,7 @@ define(['app'], function (app) {
 			}
 
 			$("#dialog-addmanuallightdevice #combosubdevice").html("");
-			
+
 			$.each($.LightsAndSwitches, function(i,item){
 				var option = $('<option />');
 				option.attr('value', item.idx).text(item.name);
@@ -1421,14 +1761,14 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-		  
+
 			$("#dialog-addlightdevice #combosubdevice").html("");
 			$.each($.LightsAndSwitches, function(i,item){
 				var option = $('<option />');
 				option.attr('value', item.idx).text(item.name);
 				$("#dialog-addlightdevice #combosubdevice").append(option);
 			});
-		  
+
 			ShowNotify($.t('Press button on Remote...'));
 
 			setTimeout(function() {
@@ -1915,6 +2255,8 @@ define(['app'], function (app) {
 					else if (item.SwitchType === "Selector") {
 						if ((item.Status === "Off")) {
 							img += '<img src="images/' + item.Image + '48_Off.png" height="48" width="48">';
+						} else if (item.LevelOffHidden) {
+							img += '<img src="images/' + item.Image + '48_On.png" height="48" width="48">';
 						} else {
 							img += '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 						}
@@ -1980,11 +2322,21 @@ define(['app'], function (app) {
 							}
 						}
 						if (item.SwitchType === "Selector") {
-							var selector$ = $(id + " #selector" + item.idx);
+							var selector$ = $("#selector" + item.idx);
 							if (typeof selector$ !== 'undefined') {
 								if (item.SelectorStyle === 0) {
-									selector$.find('input[value="' + item.LevelInt + '"]').prop("checked", true);
-									selector$.buttonset('refresh');
+									selector$
+										.find('label')
+											.removeClass('ui-state-active')
+											.removeClass('ui-state-focus')
+											.end()
+										.find('input:radio')
+											.removeProp('checked')
+											.filter('[value="' + item.LevelInt + '"]')
+												.prop('checked', true)
+												.end()
+											.end()
+										.buttonset('refresh');
 								} else if (item.SelectorStyle === 1) {
 									selector$.val(item.LevelInt);
 									selector$.selectmenu('refresh');
@@ -2425,6 +2777,8 @@ define(['app'], function (app) {
 							else if (item.SwitchType === "Selector") {
 								if (item.Status === 'Off') {
 									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" height="48" width="48"></td>\n';
+								} else if (item.LevelOffHidden) {
+									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" height="48" width="48"></td>\n';
 								} else {
 									xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								}
@@ -2477,16 +2831,22 @@ define(['app'], function (app) {
 					else if (item.SwitchType == "Selector") {
 						xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 						if (item.SelectorStyle === 0) {
-							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
+								if ((index === 0) && (item.LevelOffHidden)) {
+									return;
+								}
 								xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index +'" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index +'">' + levelName + '</label>';
 							});
 							xhtm += '</div>';
 						} else if (item.SelectorStyle === 1) {
-							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+							xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 							var levelNames = item.LevelNames.split('|');
 							$.each(levelNames, function(index, levelName) {
+								if ((index === 0) && (item.LevelOffHidden)) {
+									return;
+								}
 								xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 							});
 							xhtm += '</select>';
@@ -2677,24 +3037,27 @@ define(['app'], function (app) {
 			$('#lightcontent .selectorlevels div').buttonset({
 				//Selector selectmenu events
 				create: function (event, ui) {
-					var idx = $(this).data('idx'),
-						type = $(this).data('type'),
-						isprotected = $(this).data('isprotected'),
-						disabled = $(this).data('disabled'),
-						level = $(this).data('level'),
-						levelname = $(this).data('levelname');
-					$(this).buttonset("option", "idx", idx);
-					$(this).buttonset("option", "type", type);
-					$(this).buttonset("option", "isprotected", isprotected);
+					var div$ = $(this),
+						idx = div$.data('idx'),
+						type = div$.data('type'),
+						isprotected = div$.data('isprotected'),
+						disabled = div$.data('disabled'),
+						level = div$.data('level'),
+						levelname = div$.data('levelname');
 					if (disabled === true) {
-						$(this).buttonset("disable");
+						div$.buttonset("disable");
 					}
-					$(this).find('input[value="' + level + '"]').prop("checked", true);
+					div$.find('input[value="' + level + '"]').prop("checked", true);
 
-					$(this).find('input').click(function (event){
-						var idx = $(this).parent().data("idx"),
-							level = parseInt(event.target.value, 10);
-						SetDimValue(idx, level);
+					div$.find('input').click(function (event){
+						var target$ = $(event.target);
+						level = parseInt(target$.val(), 10);
+						levelname= div$.find('label[for="' + target$.attr('id') + '"]').text();
+						// Send command
+						SwitchSelectorLevel(idx, unescape(levelname), level, RefreshLights, isprotected);
+						// Synchronize buttons and div attributes
+						div$.data('level', level);
+						div$.data('levelname', levelname);
 					});
 
 					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
@@ -2708,25 +3071,31 @@ define(['app'], function (app) {
 				value: 0,
 				//Selector selectmenu events
 				create: function (event, ui) {
-					var idx = $(this).data('idx'),
-						type = $(this).data('type'),
-						isprotected = $(this).data('isprotected'),
-						disabled = $(this).data('disabled'),
-						level = $(this).data('level'),
-						levelname = $(this).data('levelname');
-					$(this).selectmenu("option", "idx", idx);
-					$(this).selectmenu("option", "type", type);
-					$(this).selectmenu("option", "isprotected", isprotected);
-					$(this).selectmenu("option", "disabled", disabled === true);
-					$(this).selectmenu("menuWidget").addClass('selectorlevels-menu');
-					$(this).val(level);
+					var select$ = $(this),
+						idx = select$.data('idx'),
+						isprotected = select$.data('isprotected'),
+						disabled = select$.data('disabled'),
+						level = select$.data('level'),
+						levelname = select$.data('levelname');
+					select$.selectmenu("option", "idx", idx);
+					select$.selectmenu("option", "isprotected", isprotected);
+					select$.selectmenu("option", "disabled", disabled === true);
+					select$.selectmenu("menuWidget").addClass('selectorlevels-menu');
+					select$.val(level);
 
 					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
 				},
-				change: function (event, ui) { //When the user selects an item
-					var idx = $(this).selectmenu("option", "idx"),
-						level = $(this).selectmenu().val();
-					SetDimValue(idx, level);
+				change: function (event, ui) { //When the user selects an option
+					var select$ = $(this),
+						idx = select$.selectmenu("option", "idx"),
+						level = select$.selectmenu().val(),
+						levelname = select$.find('option[value="' + level + '"]').text(),
+						isprotected = select$.selectmenu("option", "isprotected");
+					// Send command
+					SwitchSelectorLevel(idx, unescape(levelname), level, RefreshLights, isprotected);
+					// Synchronize buttons and select attributes
+					select$.data('level', level);
+					select$.data('levelname', levelname);
 				}
 			}).selectmenu('refresh');
 
@@ -3136,6 +3505,9 @@ define(['app'], function (app) {
 			$.myglobals = {
 				TimerTypesStr : [],
 				CommandStr : [],
+				OccurenceStr : [],
+				MonthStr : [],
+				WeekdayStr : [],
 				SelectedTimerIdx: 0
 			};
 			$.LightsAndSwitches = [];
@@ -3146,6 +3518,15 @@ define(['app'], function (app) {
 			});
 			$('#timerparamstable #combocommand > option').each(function() {
 						 $.myglobals.CommandStr.push($(this).text());
+			});
+			$('#timerparamstable #occurence > option').each(function() {
+						 $.myglobals.OccurenceStr.push($(this).text());
+			});
+			$('#timerparamstable #months > option').each(function() {
+						 $.myglobals.MonthStr.push($(this).text());
+			});
+			$('#timerparamstable #weekdays > option').each(function() {
+						 $.myglobals.WeekdayStr.push($(this).text());
 			});
 
 			$(window).resize(function() { $scope.ResizeDimSliders(); });

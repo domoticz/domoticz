@@ -4,6 +4,8 @@ Version 2.3xxx
 - Implemented: Day display in energy/gas/water/temp report
 - Implemented: Dummy Hardware, Option to supply name, sensor is now also directly added to the system
 - Implemented: Dummy Hardware, Wind+Temp+Chill
+- Implemented: Dummy Hardware, option to create an RGBW switch
+- Implemented: Icelandic language support, big thanks to Magnus!!
 - Implemented: Log View, added options to display All/Status/Error
 - Implemented: Macedonian translation (Big thanks to jocogvg!!!)
 - Implemented: MySensors Ethernet gateway will now request the gateway version on startup
@@ -18,9 +20,11 @@ Version 2.3xxx
 - Implemented: OpenZWave, added COMMAND_CLASS_PROTECTION in configuration options
 - Implemented: OTGW, added firmware version number in hardware setup page
 - Implemented: Option to transfer old Percentage sensors to new Percentage sensors
+- Implemented: Philips Hue, support for Groups (create them with an external app like HueMote)
 - Implemented: RFXCom support for Legrand CAD
 - Implemented: SBFSpot, support for multiple inverter instances
 - Implemented: SolarEdge via Web API
+- Implemented: Temperature Tab room selector
 - Implemented: Thermosmart option to set specify outside temperature sensor
 - Implemented: Waterflow sensor
 - Implemented: Wind Beaufort scale

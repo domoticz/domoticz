@@ -327,8 +327,8 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 
 	req.parameters.clear();
 
-	std::string uri = req.uri;
-
+	std::string uri = ExtractRequestPath(req.uri);
+	
 	// find function matching action code
 	int q = uri.find(".webem");
 	std::string code = uri.substr(1,q-1);
@@ -487,11 +487,9 @@ bool cWebem::IsPageOverride(const request& req, reply& rep)
 		rep = reply::stock_reply(reply::bad_request);
 		return false;
 	}
-	int paramPos = request_path.find_first_of('?');
-	if (paramPos != std::string::npos)
-	{
-		request_path = request_path.substr(0, paramPos);
-	}
+	
+	request_path = ExtractRequestPath(request_path);
+
 	std::map < std::string, webem_page_function >::iterator
 		pfun = myPages.find(request_path);
 
@@ -517,32 +515,15 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 
 	session.lastRequestPath = request_path;
 
-	int paramPos = request_path.find_first_of('?');
-	if (paramPos != std::string::npos)
-	{
-		request_path = request_path.substr(0,paramPos);
-	}
-
-	// Request path must be absolute and not contain "..".
-	if (request_path.empty() || request_path[0] != '/'
-		|| request_path.find("..") != std::string::npos)
-	{
-		rep = reply::stock_reply(reply::bad_request);
-		return false;
-	}
-
-	// If path ends in slash (i.e. is a directory) then add "index.html".
-	if (request_path[request_path.size() - 1] == '/')
-	{
-		request_path += "index.html";
-	}
+	request_path = ExtractRequestPath(request_path);
+	
 	req.parameters.clear();
 
-	request_path = req.uri; // we need the raw request string to parse the get-request
-	paramPos=request_path.find_first_of('?');
+	std::string request_path2 = req.uri; // we need the raw request string to parse the get-request
+	int paramPos=request_path2.find_first_of('?');
 	if (paramPos!=std::string::npos)
 	{
-		std::string params=request_path.substr(paramPos+1);
+		std::string params=request_path2.substr(paramPos+1);
 		std::string name;
 		std::string value;
 
@@ -579,8 +560,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			req.parameters.insert( std::pair< std::string,std::string > ( name, decoded ) );
 			p = q+1;
 		}
-
-		request_path=request_path.substr(0,paramPos);
 	}
 	if (req.method == "POST") {
 		const char *pContent_Type = request::get_req_header(&req, "Content-Type");
@@ -764,6 +743,92 @@ void cWebem::SetWebTheme(const std::string &themename)
 	m_actTheme = "/styles/"+themename;
 }
 
+void cWebem::SetWebRoot(const std::string &webRoot)
+{
+	// remove trailing slash if required
+	if(m_webRoot.size() > 0 && m_webRoot[m_webRoot.size() - 1] != '/')
+	{
+		m_webRoot = webRoot.substr(0, webRoot.size() - 1);
+	}
+	else
+	{
+		m_webRoot = webRoot;
+	}
+	// put slash at the front if required
+	if(m_webRoot.size() > 0 && m_webRoot[0] != '/')
+	{
+		m_webRoot = "/" + webRoot;
+	}
+}
+
+std::string cWebem::ExtractRequestPath(const std::string& original_request_path)
+{
+	std::string request_path(original_request_path);
+	int paramPos = request_path.find_first_of('?');
+	if (paramPos != std::string::npos)
+	{
+		request_path = request_path.substr(0, paramPos);
+	}
+
+	if (request_path.find(m_webRoot + "/@login")==0)
+	{
+		request_path=m_webRoot + "/";
+	}
+
+	// If path ends in slash (i.e. is a directory) then add "index.html".
+	if (request_path[request_path.size() - 1] == '/')
+	{
+		request_path += "index.html";
+	}
+	
+	if(m_webRoot.size() > 0)
+	{
+		// remove web root if present otherwise
+		// create invalid request
+		if (request_path.find(m_webRoot) == 0)
+		{
+			request_path = request_path.substr(m_webRoot.size());
+		}
+		else
+		{
+			request_path= "";
+		}
+	}
+
+	if (request_path.find("/acttheme/") == 0)
+	{
+		request_path = m_actTheme + request_path.substr(9);
+	}
+	return request_path;
+}
+
+bool cWebem::IsBadRequestPath(const std::string& request_path)
+{
+	// Request path must be absolute and not contain "..".
+	if (request_path.empty() || request_path[0] != '/'
+		|| request_path.find("..") != std::string::npos)
+	{
+		return true;
+	}
+	
+	// don't allow access to control files
+	if (request_path.find(".htpasswd") != std::string::npos)
+	{
+		return true;
+	}
+	
+	// if we have a web root set the request must start with it
+	if(m_webRoot.size() > 0)
+	{
+		if (request_path.find(m_webRoot) != 0)
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 void cWebem::AddUserPassword(const unsigned long ID, const std::string &username, const std::string &password, const _eUserRights userrights, const int activetabs)
 {
 	_tWebUserPassword wtmp;
@@ -928,25 +993,40 @@ void cWebem::CleanTimedOutSessions() {
 // Return 1 on success. Always initializes the ah structure.
 int cWebemRequestHandler::parse_auth_header(const request& req, struct ah *ah)
 {
-	const char *auth_header;
+        const char *auth_header;
 
-	if ((auth_header = request::get_req_header(&req, "Authorization")) == NULL)
-	{
-		return 0;
-	}
+        if ((auth_header = request::get_req_header(&req, "Authorization")) == NULL)
+        {
+                return 0;
+        }
 
-	//Only accept Basic Auth header
-	if (!boost::icontains(auth_header, "Basic "))
-		return 0;
+        // X509 Auth header
+        if (boost::icontains(auth_header, "/CN="))
+        {
+                // DN looks like: /C=Country/ST=State/L=City/O=Org/OU=OrganizationUnit/CN=username/emailAddress=user@mail.com
+                std::string dn = auth_header;
+                int spos = dn.find("/CN=");
+                int epos = dn.find("/emailAddress=");
 
-	std::string decoded = base64_decode(auth_header + 6);
-	int npos = decoded.find(':');
-	if (npos == std::string::npos)
-		return 0;
+                ah->user = dn.substr(spos + 4, epos - spos - 4);
+                ah->response = dn.substr(epos + 14);
+                return 1;
+        }
 
-	ah->user = decoded.substr(0, npos);
-	ah->response = decoded.substr(npos + 1);
-	return 1;
+        // Basic Auth header
+        else if (boost::icontains(auth_header, "Basic "))
+        {
+                std::string decoded = base64_decode(auth_header + 6);
+                int npos = decoded.find(':');
+                if (npos == std::string::npos)
+                        return 0;
+
+                ah->user = decoded.substr(0, npos);
+                ah->response = decoded.substr(npos + 1);
+                return 1;
+        }
+        else
+                return 0;
 }
 
 // Authorize against the opened passwords file. Return 1 if authorized.
@@ -1495,7 +1575,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	if (isPage || isAction) {
 		bCheckAuthentication = true;
 	}
-
+	
 	if (isPage && (req.uri.find("dologout") != std::string::npos))
 	{
 		//Remove session id based on cookie

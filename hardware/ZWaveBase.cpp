@@ -9,6 +9,7 @@
 
 #include "../main/Helper.h"
 #include "../main/RFXtrx.h"
+#include "../main/mainworker.h"
 #include "hardwaretypes.h"
 
 #include "../main/localtime_r.h"
@@ -232,11 +233,10 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.id = lID;
 		lcmd.command = Limitless_LedOff;
 		lcmd.value = 0;
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd, NULL, BatLevel);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, pDevice->label.c_str(), BatLevel);
 
-		//Set Name
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-			pDevice->label.c_str(), STYPE_Dimmer, m_HwdID, szID);
+		//Set Switch Type
+		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", STYPE_Dimmer, m_HwdID, szID);
 	}
 	else
 	{
@@ -307,13 +307,12 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		lcmd.LIGHTING2.filler = 0;
 		lcmd.LIGHTING2.rssi = 12;
 
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, BatLevel);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, pDevice->label.c_str(), BatLevel);
 
 		int SwitchType = (pDevice->devType == ZDTYPE_SWITCH_DIMMER) ? 7 : 0;
 
-		//Set Name
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')",
-			pDevice->label.c_str(), SwitchType, m_HwdID, szID);
+		//Set SwitchType
+		m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (HardwareID==%d) AND (DeviceID=='%q')", SwitchType, m_HwdID, szID);
 	}
 }
 

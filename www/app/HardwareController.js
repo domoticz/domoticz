@@ -44,7 +44,7 @@ define(['app'], function (app) {
             var datatimeout=$('#hardwarecontent #hardwareparamstable #combodatatimeout').val();
 
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
-            if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("GPIO") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0)||(text.indexOf("Kodi") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
+            if ((text.indexOf("Domoticz Internal") >= 0)||(text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("1-Wire") >= 0)||(text.indexOf("GPIO") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0)||(text.indexOf("Motherboard") >= 0)||(text.indexOf("Kodi") >= 0)||(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0))
             {
                 $.ajax({
                      url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -489,7 +489,7 @@ define(['app'], function (app) {
 
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
 
-            if ((text.indexOf("TE923") >= 0) || (text.indexOf("Volcraft") >= 0) || (text.indexOf("1-Wire") >= 0) || (text.indexOf("BMP085") >= 0) || (text.indexOf("Dummy") >= 0) || (text.indexOf("System Alive") >= 0) || (text.indexOf("Kodi") >= 0) || (text.indexOf("PiFace") >= 0) || (text.indexOf("GPIO") >= 0) || (text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) || (text.indexOf("Tellstick") >= 0) || (text.indexOf("Motherboard") >= 0))
+            if ((text.indexOf("Domoticz Internal") >= 0) || (text.indexOf("TE923") >= 0) || (text.indexOf("Volcraft") >= 0) || (text.indexOf("1-Wire") >= 0) || (text.indexOf("BMP085") >= 0) || (text.indexOf("Dummy") >= 0) || (text.indexOf("System Alive") >= 0) || (text.indexOf("Kodi") >= 0) || (text.indexOf("PiFace") >= 0) || (text.indexOf("GPIO") >= 0) || (text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) || (text.indexOf("Tellstick") >= 0) || (text.indexOf("Motherboard") >= 0))
             {
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=1&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
@@ -2491,7 +2491,7 @@ define(['app'], function (app) {
                  success: function(data) {
                     if (data.status == 'OK') {
                         noty({
-                            text: '<center>' + $.t('ZWave Network Information') + '</center><p><p><iframe src="../zwavetopology.html?hwid='+$.devIdx+'" name="topoframe" frameBorder="0" height="'+window.innerHeight*0.7+'" width="100%"/>',
+                            text: '<center>' + $.t('ZWave Network Information') + '</center><p><p><iframe src="zwavetopology.html?hwid='+$.devIdx+'" name="topoframe" frameBorder="0" height="'+window.innerHeight*0.7+'" width="100%"/>',
                             type: 'alert',
                             modal: true,
                             buttons: [
@@ -3105,7 +3105,10 @@ define(['app'], function (app) {
 
                     var SerialName="Unknown!?";
                     var intport=0;
-                    if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0) ||(HwTypeStr.indexOf("Harmony") >= 0)||(HwTypeStr.indexOf("Philips Hue") >= 0))
+                    if (item.Type == 67) { // DomoticzInternal
+                        SerialName="";
+                    }
+                    else if ((HwTypeStr.indexOf("LAN") >= 0)||(HwTypeStr.indexOf("Domoticz") >= 0) ||(HwTypeStr.indexOf("Harmony") >= 0)||(HwTypeStr.indexOf("Philips Hue") >= 0))
                     {
                         SerialName=item.Port;
                     }
@@ -3330,7 +3333,7 @@ define(['app'], function (app) {
                         $('#hardwarecontent #hardwareparamstable #combodatatimeout').val(data["DataTimeout"]);
 
                         UpdateHardwareParamControls();
-                        if ((data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0)||(data["Type"].indexOf("System Alive") >= 0) ||(data["Type"].indexOf("PiFace") >= 0)||(data["Type"].indexOf("Tellstick") >= 0))
+                        if ((data["Type"].indexOf("Domoticz Internal") >= 0)||(data["Type"].indexOf("TE923") >= 0)||(data["Type"].indexOf("Volcraft") >= 0)||(data["Type"].indexOf("1-Wire") >= 0)||(data["Type"].indexOf("BMP085") >= 0)||(data["Type"].indexOf("Dummy") >= 0)||(data["Type"].indexOf("System Alive") >= 0) ||(data["Type"].indexOf("PiFace") >= 0)||(data["Type"].indexOf("Tellstick") >= 0))
                         {
                             //nothing to be set
                         }
@@ -3441,6 +3444,11 @@ define(['app'], function (app) {
 
         UpdateHardwareParamControls = function()
         {
+            $("#hardwarecontent #hardwareparamstable #enabled").prop('disabled', false);
+            $("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', false);
+            $("#hardwarecontent #hardwareparamstable #combotype").prop('disabled', false);
+            $("#hardwarecontent #hardwareparamstable #combodatatimeout").prop('disabled', false);
+
             var text = $("#hardwarecontent #hardwareparamstable #combotype option:selected").text();
             $("#hardwarecontent #username").show();
             $("#hardwarecontent #lblusername").show();
@@ -3451,7 +3459,17 @@ define(['app'], function (app) {
             $("#hardwarecontent #divmqtt").hide();
             $("#hardwarecontent #divsolaredgeapi").hide();
 
-            if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
+            if (text.indexOf("Domoticz Internal") >= 0) {
+                $("#hardwarecontent #hardwareparamstable #enabled").prop('disabled', true);
+                $("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', true);
+                $("#hardwarecontent #hardwareparamstable #combotype").prop('disabled', true);
+                $("#hardwarecontent #hardwareparamstable #combodatatimeout").prop('disabled', true);
+                $("#hardwarecontent #divserial").hide();
+                $("#hardwarecontent #divremote").hide();
+                $("#hardwarecontent #divlogin").hide();
+                $("#hardwarecontent #divunderground").hide();
+            }
+            else if ((text.indexOf("TE923") >= 0)||(text.indexOf("Volcraft") >= 0)||(text.indexOf("BMP085") >= 0)||(text.indexOf("Dummy") >= 0)||(text.indexOf("System Alive") >= 0)||(text.indexOf("PiFace") >= 0))
             {
                 $("#hardwarecontent #divserial").hide();
                 $("#hardwarecontent #divremote").hide();

@@ -78,6 +78,12 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "R546", sSwitchTypeR546 },	         // p..
 	{ "Diya", sSwitchTypeDiya },	         // p..
 	{ "X10Secure", sSwitchTypeX10secu },	 // p..
+	{ "Atlantic", sSwitchTypeAtlantic },	 // p..
+	{ "SilvercrestDB", sSwitchTypeSilvercrestDB }, // p..
+	{ "MedionDB", sSwitchTypeMedionDB },	 // p..
+	{ "VMC", sSwitchTypeVMC },	 // p..
+	{ "Keeloq", sSwitchTypeKeeloq },	 // p..
+	{ "CustomSwitch", sSwitchCustomSwitch },	 // p..
 	{ "", -1 }
 };
 
@@ -324,6 +330,18 @@ static unsigned int RFLinkGetIntStringValue(const std::string &svalue)
 	return ret;
 }
 
+static unsigned int RFLinkGetIntDecStringValue(const std::string &svalue)
+{
+	unsigned int ret = -1;
+	size_t pos = svalue.find(".");
+	if (pos == std::string::npos)
+		return ret;
+	std::stringstream ss;
+	ss << std::dec << svalue.substr(pos + 1);
+	ss >> ret;
+	return ret;
+}
+
 bool CRFLinkBase::ParseLine(const std::string &sLine)
 {
 	m_LastReceivedTime = mytime(NULL);
@@ -357,11 +375,37 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		if ((Name_ID.find("Nodo RadioFrequencyLink") != std::string::npos) || (Name_ID.find("RFLink Gateway") != std::string::npos))
 		{
 			_log.Log(LOG_STATUS, "RFLink: Controller Initialized!...");
+			WriteInt("10;VERSION;\n");  // 20;3C;VER=1.1;REV=37;BUILD=01;
 			//Enable DEBUG
 			//write("10;RFDEBUG=ON;\n");
 
 			//Enable Undecoded DEBUG
 			//write("10;RFUDEBUG=ON;\n");
+			return true;
+		}
+		if (Name_ID.find("VER") != std::string::npos) {
+			//_log.Log(LOG_STATUS, "RFLink: %s", sLine.c_str());
+			int versionlo = 0;
+			int versionhi = 0;
+			int revision = 0;
+			int build = 0;
+			if (results[2].find("VER") != std::string::npos) {
+				versionhi = RFLinkGetIntStringValue(results[2]);
+				versionlo = RFLinkGetIntDecStringValue(results[2]);
+			}
+			if (results[3].find("REV") != std::string::npos){
+				revision = RFLinkGetIntStringValue(results[3]);
+			}
+			if (results[4].find("BUILD") != std::string::npos) {
+				build = RFLinkGetIntStringValue(results[4]);
+			}
+			_log.Log(LOG_STATUS, "RFLink Detected, Version: %d.%d Revision: %d Build: %d", versionhi, versionlo, revision, build);
+
+			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
+			mytime(&m_LastHeartbeat);  // keep heartbeat happy
+			m_LastReceivedTime = m_LastHeartbeat;
+
+			m_bTXokay = true; // variable to indicate an OK was received
 			return true;
 		}
 		if (Name_ID.find("PONG") != std::string::npos) {
