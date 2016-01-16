@@ -158,7 +158,10 @@ const char *sqlCreateTimers =
 "[Hue] INTEGER DEFAULT 0, "
 "[UseRandomness] INTEGER DEFAULT 0, "
 "[TimerPlan] INTEGER DEFAULT 0, "
-"[Days] INTEGER NOT NULL);";
+"[Days] INTEGER NOT NULL, "
+"[Month] INTEGER DEFAULT 0, "
+"[MDay] INTEGER DEFAULT 0, "
+"[Occurence] INTEGER DEFAULT 0);";
 
 const char *sqlCreateUV =
 "CREATE TABLE IF NOT EXISTS [UV] ("
@@ -380,7 +383,10 @@ const char *sqlCreateSceneTimers =
 "[Hue] INTEGER DEFAULT 0, "
 "[UseRandomness] INTEGER DEFAULT 0, "
 "[TimerPlan] INTEGER DEFAULT 0, "
-"[Days] INTEGER NOT NULL);";
+"[Days] INTEGER NOT NULL, "
+"[Month] INTEGER DEFAULT 0, "
+"[MDay] INTEGER DEFAULT 0, "
+"[Occurence] INTEGER DEFAULT 0);";
 
 const char *sqlCreateSetpointTimers =
 "CREATE TABLE IF NOT EXISTS [SetpointTimers] ("
@@ -1710,11 +1716,11 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 94)
 		{
 			std::stringstream szQuery;
-			szQuery << "UPDATE Timers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_BEFORESUNSET << ")";
+			szQuery << "UPDATE Timers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_FIXEDDATETIME << ")";
 			query(szQuery.str());
 			szQuery.clear();
 			szQuery.str("");
-			szQuery << "UPDATE SceneTimers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_BEFORESUNSET << ")";
+			szQuery << "UPDATE SceneTimers SET [Type]=[Type]+2 WHERE ([Type]>" << TTYPE_FIXEDDATETIME << ")";
 			query(szQuery.str());
 		}
 

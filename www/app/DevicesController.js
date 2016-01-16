@@ -225,6 +225,12 @@ define(['app'], function (app) {
 													itemImage='<img src="images/lightbulboff.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
 									}
 				  }
+				  else if (TypeImg.indexOf("pushoff")==0) {
+					itemImage='<img src="images/pushoff.png" title="Turn Off" onclick="SwitchLight(' + item.idx + ',\'Off\',ShowDevices);" class="lcursor">';
+				  }
+				  else if (TypeImg.indexOf("push")==0) {
+					itemImage='<img src="images/push.png" title="Turn On" onclick="SwitchLight(' + item.idx + ',\'On\',ShowDevices);" class="lcursor">';
+				  }
 				  else if (TypeImg.indexOf("motion")==0) {
 									if (
 											(item.Status == 'On')||

@@ -164,6 +164,7 @@
     <ClInclude Include="..\hardware\MySensorsBase.h" />
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
+    <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
@@ -358,6 +359,7 @@
     <ClCompile Include="..\hardware\MySensorsBase.cpp" />
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
+    <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
     <ClCompile Include="..\hardware\OpenZWave.cpp" />

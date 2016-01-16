@@ -147,6 +147,7 @@ enum _eHardwareTypes {
 	HTYPE_CurrentCostMeter,		//65
 	HTYPE_CurrentCostMeterLAN,	//66
 	HTYPE_DomoticzInternal,		//67
+	HTYPE_NefitEastLAN,			//68
 	HTYPE_END
 };
 
