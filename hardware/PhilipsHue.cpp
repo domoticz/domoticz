@@ -679,8 +679,8 @@ bool CPhilipsHue::GetStates()
 	sURL = sstr2.str();
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
-		return false;
+		//No group all(0)
+		return true;
 	}
 	ret = jReader.parse(sResult, root);
 	if (!ret)
