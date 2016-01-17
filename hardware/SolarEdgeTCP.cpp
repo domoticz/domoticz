@@ -10,6 +10,8 @@
 
 #define RETRY_DELAY 30
 
+//#define DEBUG_SOLAREDGE
+
 SolarEdgeTCP::SolarEdgeTCP(const int ID, const unsigned short usListenPort, const std::string &DestHost, const unsigned short usDestPort)
 {
 	m_HwdID=ID;
@@ -21,6 +23,15 @@ SolarEdgeTCP::SolarEdgeTCP(const int ID, const unsigned short usListenPort, cons
 	std::stringstream sstr;
 	sstr << usDestPort;
 	m_szDestPort=sstr.str();
+
+#ifdef DEBUG_SOLAREDGE
+	std::ifstream is("E:\\solarbin.log", std::ios::in | std::ios::binary);
+	std::string slog;
+	slog.append((std::istreambuf_iterator<char>(is)),
+		(std::istreambuf_iterator<char>()));
+	const unsigned char *pData = (const unsigned char *)slog.c_str();
+	ParseData(pData, slog.size());
+#endif
 }
 
 SolarEdgeTCP::~SolarEdgeTCP(void)

@@ -517,13 +517,13 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 								$.t('Dec')
 							],
 							weekdays: [
+								$.t('Sunday'),
 								$.t('Monday'),
 								$.t('Tuesday'),
 								$.t('Wednesday'),
 								$.t('Thursday'),
 								$.t('Friday'),
-								$.t('Saturday'),
-								$.t('Sunday')
+								$.t('Saturday')
 							]
 						}
 					});
