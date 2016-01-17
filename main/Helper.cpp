@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "Helper.h"
-#if !defined WIN32
-	#include <dirent.h>
+#ifdef WIN32
+#include "dirent_windows.h"
+#else
+#include <dirent.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
