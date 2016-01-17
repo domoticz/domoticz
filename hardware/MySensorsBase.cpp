@@ -641,7 +641,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		}
 		else
 		{
-			SendHumiditySensor(cNode, pChild->batValue, Humidity);
+			SendHumiditySensor(cNode, pChild->batValue, Humidity, (!pChild->childName.empty()) ? pChild->childName : "Hum");
 		}
 	}
 	break;
@@ -708,7 +708,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 		}
 		else
-			SendBaroSensor(pChild->nodeID, pChild->childID, pChild->batValue, Baro, forecast);
+			SendBaroSensor(pChild->nodeID, pChild->childID, pChild->batValue, Baro, forecast, (!pChild->childName.empty()) ? pChild->childName : "Baro");
 	}
 	break;
 	case V_TRIPPED:
@@ -884,7 +884,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 						if (Baro < 1010)
 							forecast = bmpbaroforecast_rain;
 					}
-					SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, Baro, forecast);
+					SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, Baro, forecast, (!pChild->childName.empty()) ? pChild->childName : "Baro");
 				}
 			}
 			else
