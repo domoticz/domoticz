@@ -9741,7 +9741,7 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "DeleteDevice";
-			m_sql.DeleteDevice(idx);
+			m_sql.DeleteDevices(idx);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -10878,7 +10878,7 @@ namespace http {
 			m_sql.TransferDevice(newidx, sidx);
 
 			//now delete the NEW device
-			m_sql.DeleteDevice(newidx);
+			m_sql.DeleteDevices(newidx);
 
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
@@ -11255,7 +11255,7 @@ namespace http {
 			if ((used == 0) && (maindeviceidx == ""))
 			{
 				//really remove it, including log etc
-				m_sql.DeleteDevice(idx);
+				m_sql.DeleteDevices(idx);
 			}
 			if (result.size() > 0)
 			{
