@@ -10,7 +10,7 @@ build_script:
 - '7z x WindowsLibraries.7z > NUL:'
 - cd ..
 - msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-- cp appversion.h.txt version_win32.h
+- cp appversion.h version_win32.h
 - cp History.txt history_win32.txt
 - '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" msbuild\WindowsInstaller\DomoticzSetup.iss'
 - msbuild msbuild\package.proj
