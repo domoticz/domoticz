@@ -1022,9 +1022,9 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	machine = "armv7l";
 #endif
 
-	if ((systemname == "windows") || ((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
+	if (((systemname != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
 	{
-		//Only Raspberry Pi (Wheezy)/Ubuntu for now!
+		//Only Raspberry Pi (Wheezy)/Ubuntu/windows/osx for now!
 		return false;
 	}
 	time_t atime = mytime(NULL);

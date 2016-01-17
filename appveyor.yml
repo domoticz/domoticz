@@ -16,7 +16,7 @@ build_script:
 - msbuild msbuild\package.proj
 
 artifacts:
-- path: domoticz-*-latest.zip
+- path: domoticz_windows_x86.zip
 - path: version_windows_x86.h
 - path: history_windows_x86.txt
 
