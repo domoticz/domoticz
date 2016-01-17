@@ -10,15 +10,15 @@ build_script:
 - '7z x WindowsLibraries.7z > NUL:'
 - cd ..
 - msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-- cp appversion.h version_win32.h
-- cp History.txt history_win32.txt
+- cp appversion.h version_windows_x86.h
+- cp History.txt history_windows_x86.txt
 - '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" msbuild\WindowsInstaller\DomoticzSetup.iss'
 - msbuild msbuild\package.proj
 
 artifacts:
 - path: domoticz-*-latest.zip
-- path: version_win32.h
-- path: history_win32.txt
+- path: version_windows_x86.h
+- path: history_windows_x86.txt
 
 test: off
 
