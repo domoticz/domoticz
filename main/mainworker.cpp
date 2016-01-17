@@ -108,7 +108,7 @@
 
 #ifdef _DEBUG
 	//#define PARSE_RFXCOM_DEVICE_LOG
-	#define DEBUG_DOWNLOAD
+	//#define DEBUG_DOWNLOAD
 	//#define DEBUG_RXQUEUE
 #endif
 
@@ -1070,10 +1070,11 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	int version = atoi(szAppVersion.substr(szAppVersion.find(".") + 1).c_str());
 	m_iRevision = atoi(strarray[2].c_str());
 #ifdef DEBUG_DOWNLOAD
-	return true;
+	m_bHaveUpdate = true;
 #else
-	return (version != m_iRevision);
+	m_bHaveUpdate = (version != m_iRevision);
 #endif
+	return m_bHaveUpdate;
 }
 
 bool MainWorker::StartDownloadUpdate()
