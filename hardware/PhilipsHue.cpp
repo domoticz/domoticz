@@ -388,7 +388,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			char szLastUpdate[40];
 			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-			m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel = %d, LastUpdate='%q' WHERE(HardwareID == %d) AND(DeviceID == '%q')",
+			m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', LastLevel = %d, LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')",
 				int(cmd), szSValue, BrightnessLevel, szLastUpdate, m_HwdID, szID);
 			return;
 		}
@@ -401,18 +401,18 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
 
 		//Set Name/Parameters
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND(DeviceID == '%q')",
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, nValue=%d, sValue='%q', LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')",
 			Name.c_str(), int(STYPE_Dimmer), int(cmd), szSValue, BrightnessLevel, m_HwdID, szID);
 	}
 	else if (LType == HLTYPE_SCENE)
 	{
-		char szID[10];
 		unsigned char unitcode = 1;
+		char szID[10];
 		sprintf(szID, "%08x", (unsigned int)NodeID);
 
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')", m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID);
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID == '%q') AND (Options=='%q')", m_HwdID, int(unitcode), pTypeLimitlessLights, sTypeLimitlessRGBW, szID, Options.c_str());
 		if (result.empty())
 		{
 			//Send as LimitlessLight
@@ -421,8 +421,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			lcmd.command = Limitless_LedOff;
 			lcmd.value = 0;
 			m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, Name.c_str(), 255);
-			//Set Name/Parameters
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, Options='%q' WHERE(HardwareID == %d) AND(DeviceID == '%q')",
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, Options='%q' WHERE (HardwareID == %d) AND(DeviceID == '%q')",
 				Name.c_str(), int(STYPE_PushOn), Options.c_str(), m_HwdID, szID);
 		}
 	}
@@ -827,17 +826,25 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 			hscene.id = iScene.key().asString();;
 			hscene.name = scene["name"].asString();
 			hscene.lastupdated = scene["lastupdated"].asString();
+
+			//Strip some info
+			size_t tpos = hscene.name.find(" from ");
+			if (tpos != std::string::npos)
+			{
+				hscene.name = hscene.name.substr(0, tpos);
+			}
+
 			int sID = ii + 1;
 			bool bDoSend = true;
-			if (m_scenes.find(sID) != m_scenes.end())
+			if (m_scenes.find(hscene.id) != m_scenes.end())
 			{
-				_tHueScene ascene = m_scenes[sID];
+				_tHueScene ascene = m_scenes[hscene.id];
 				if (ascene.lastupdated == hscene.lastupdated)
 				{
 					bDoSend = false;
 				}
 			}
-			m_scenes[sID] = hscene;
+			m_scenes[hscene.id] = hscene;
 			if (bDoSend)
 			{
 				std::string Name = "Scene " + hscene.name;
