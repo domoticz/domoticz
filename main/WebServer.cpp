@@ -683,7 +683,7 @@ namespace http {
 			{
 				while ((ent = readdir(dir)) != NULL)
 				{
-					if (ent->d_type == DT_DIR)
+					if (dirent_is_directory(DirPath, ent))
 					{
 						if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
 						{

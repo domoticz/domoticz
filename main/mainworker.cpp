@@ -252,7 +252,7 @@ void MainWorker::GetAvailableWebThemes()
 		while ((de = readdir(d)))
 		{
 			std::string dirname = de->d_name;
-			if (de->d_type == DT_DIR)
+			if (dirent_is_directory(ThemeFolder, de))
 			{
 				if ((dirname != ".") && (dirname != "..") && (dirname != ".svn"))
 				{
