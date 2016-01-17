@@ -9488,9 +9488,9 @@ namespace http {
 							sprintf(szData, "Level: %d", nValue);
 							root["result"][ii]["Data"] = szData;
 							if (!sValue.empty())
-								root["result"][ii]["Desc"] = sValue;
+								root["result"][ii]["Data"] = sValue;
 							else
-								root["result"][ii]["Desc"] = Get_Alert_Desc(nValue);
+								root["result"][ii]["Data"] = Get_Alert_Desc(nValue);
 							root["result"][ii]["TypeImg"] = "Alert";
 							root["result"][ii]["Level"] = nValue;
 							root["result"][ii]["HaveTimeout"] = false;
