@@ -1983,13 +1983,15 @@ namespace http {
 			if (session.rights != 2)
 			{
 				//only admin users will receive the update notification
-				root["haveupdate"] = false;
+				root["HaveUpdate"] = false;
 			}
 			else
 			{
-				root["haveupdate"] = (nValue == 1) ? m_mainworker.m_bHaveUpdate : false;
+				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(true);
+				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
+				root["SystemName"] = m_mainworker.m_szSystemName;
+				root["Revision"] = m_mainworker.m_iRevision;
 			}
-			root["revision"] = m_mainworker.m_iRevision;
 		}
 
 		void CWebServer::Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root)
@@ -2081,7 +2083,7 @@ namespace http {
 					machine = "armv7l";
 				}
 
-				if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
+				if (((machine != "armv6l") && (machine != "armv7l") && (systemname!="windows") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
 					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history";
 				else
 					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
@@ -2906,22 +2908,24 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "CheckForUpdate";
 			root["HaveUpdate"] = false;
-			root["revision"] = m_mainworker.m_iRevision;
+			root["Revision"] = m_mainworker.m_iRevision;
 
 			if (session.rights != 2)
 				return; //Only admin users may update
 
-				int nValue = 0;
-				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+			int nValue = 0;
+			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 			if (nValue != 1)
-				{
+			{
 				return;
-					}
+			}
 
 			bool bIsForced = (request::findValue(&req, "forced") == "true");
 
 			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
-			root["revision"] = m_mainworker.m_iRevision;
+			root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
+			root["SystemName"] = m_mainworker.m_szSystemName;
+			root["Revision"] = m_mainworker.m_iRevision;
 		}
 
 		void CWebServer::Cmd_DownloadUpdate(WebEmSession & session, const request& req, Json::Value &root)

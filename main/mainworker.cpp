@@ -108,7 +108,7 @@
 
 #ifdef _DEBUG
 	//#define PARSE_RFXCOM_DEVICE_LOG
-	//#define DEBUG_DOWNLOAD
+	#define DEBUG_DOWNLOAD
 	//#define DEBUG_RXQUEUE
 #endif
 
@@ -1007,9 +1007,9 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	if (uname(&my_uname) < 0)
 		return false;
 
-	std::string systemname = my_uname.sysname;
+	m_szSystemName = my_uname.sysname;
 	std::string machine = my_uname.machine;
-	std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
+	std::transform(m_szSystemName.begin(), m_szSystemName.end(), m_szSystemName.begin(), ::tolower);
 
 	if (machine == "armv6l")
 	{
@@ -1018,11 +1018,11 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	}
 
 #ifdef DEBUG_DOWNLOAD
-	systemname = "linux";
-	machine = "armv7l";
+	//m_szSystemName = "linux";
+	//machine = "armv7l";
 #endif
 
-	if (((systemname != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
+	if (((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")))
 	{
 		//Only Raspberry Pi (Wheezy)/Ubuntu/windows/osx for now!
 		return false;
@@ -1040,17 +1040,30 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	m_sql.GetPreferencesVar("ReleaseChannel", nValue);
 	bool bIsBetaChannel = (nValue != 0);
 
-	std::string szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + systemname + "&machine=" + machine;
-	if (bIsBetaChannel)
+	std::string szURL;
+	if (!bIsBetaChannel)
 	{
-		szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + systemname + "&machine=" + machine;
+		szURL = "http://www.domoticz.com/download.php?channel=stable&type=version&system=" + m_szSystemName + "&machine=" + machine;
+		m_szDomoticzUpdateURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + m_szSystemName + "&machine=" + machine;
+		m_szDomoticzUpdateChecksumURL = "http://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + m_szSystemName + "&machine=" + machine;
 	}
+	else
+	{
+		szURL = "http://www.domoticz.com/download.php?channel=beta&type=version&system=" + m_szSystemName + "&machine=" + machine;
+		m_szDomoticzUpdateURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + m_szSystemName + "&machine=" + machine;
+		m_szDomoticzUpdateChecksumURL = "http://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + m_szSystemName + "&machine=" + machine;
+	}
+
 	std::string revfile;
 
 	if (!HTTPClient::GET(szURL, revfile))
 		return false;
+	stdreplace(revfile, "\r\n", "\n");
 	std::vector<std::string> strarray;
-	StringSplit(revfile, " ", strarray);
+	StringSplit(revfile, "\n", strarray);
+	if (strarray.size() != 3)
+		return false;
+	StringSplit(strarray[0], " ", strarray);
 	if (strarray.size() != 3)
 		return false;
 
@@ -1065,46 +1078,12 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 
 bool MainWorker::StartDownloadUpdate()
 {
-	if (!IsUpdateAvailable(true))
-		return false; //no new version available
-
-	int nValue;
-	m_sql.GetPreferencesVar("ReleaseChannel", nValue);
-	bool bIsBetaChannel = (nValue != 0);
-
-	utsname my_uname;
-	if (uname(&my_uname) < 0)
-		return false;
-
-	std::string systemname = my_uname.sysname;
-	std::string machine = my_uname.machine;
-	std::transform(systemname.begin(), systemname.end(), systemname.begin(), ::tolower);
-
-	if (machine == "armv6l")
-	{
-		//Seems like old arm systems can also use the new arm build
-		machine = "armv7l";
-	}
-
-#ifdef DEBUG_DOWNLOAD
-	systemname = "linux";
-	machine = "armv7l";
+#ifdef WIN32
+	return false; //managed by web gui
 #endif
 
-	std::string downloadURL;
-	std::string checksumURL;
-	if (!bIsBetaChannel)
-	{
-		downloadURL = "http://www.domoticz.com/download.php?channel=stable&type=release&system=" + systemname + "&machine=" + machine;
-		checksumURL = "http://www.domoticz.com/download.php?channel=stable&type=checksum&system=" + systemname + "&machine=" + machine;
-	}
-	else
-	{
-		downloadURL = "http://www.domoticz.com/download.php?channel=beta&type=release&system=" + systemname + "&machine=" + machine;
-		checksumURL = "http://www.domoticz.com/download.php?channel=beta&type=checksum&system=" + systemname + "&machine=" + machine;
-	}
-	m_szDomoticzUpdateURL = downloadURL;
-	m_szDomoticzUpdateChecksumURL = checksumURL;
+	if (!IsUpdateAvailable(true))
+		return false; //no new version available
 
 	m_bHaveDownloadedDomoticzUpdate = false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull = false;

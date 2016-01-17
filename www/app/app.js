@@ -566,11 +566,13 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				$rootScope.config.appdate=data.build_time;
 				$rootScope.config.versiontooltip="'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate+"'";
 				$( "#appversion" ).text("V" + data.version);
-				$rootScope.config.HaveUpdate=data.haveupdate;
+				if (data.SystemName!="windows") {
+					$rootScope.config.HaveUpdate=data.HaveUpdate;
+				}
 				$rootScope.config.isproxied=data.isproxied;
-				if (data.haveupdate == true)
+				if (data.HaveUpdate == true)
 				{
-					ShowUpdateNotification(data.revision);
+					ShowUpdateNotification(data.Revision,data.SystemName,data.DomoticzUpdateURL);
 				}
 			}
 		 },
