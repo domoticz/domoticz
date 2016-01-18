@@ -325,10 +325,6 @@ body table#mobileitem tr td:first-child{
     text-align: center;
 }
 
-.bannav{
-	width: 98% !important;
-}
-
 .dimslider {
 	z-index:1;
 	border-width: 1px;
