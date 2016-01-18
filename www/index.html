@@ -1386,7 +1386,7 @@ $(document).ready(function() {
 									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/update.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
                                     <li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/update.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
                                     <li class="dropdown-submenu">
-										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
+										<a id="cMoreOptions" tabindex="-1"><img src="images/more.png"> <span data-i18n="More options">More options</span></a>
 										<ul class="dropdown-menu pull-left">
 											<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
 											<li ng-class="{'current_page_item':getClass('/Users')}" id="mUsers"><a id="cUsers" href="#Users"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
