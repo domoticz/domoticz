@@ -7306,9 +7306,9 @@ namespace http {
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
-							" FROM Scenes as A, DeviceToPlansMap as B, Plans as C"
-							" WHERE (A.ID=='%q') AND (C.ID==B.PlanID) AND (B.DeviceRowID==a.ID)"
-							" AND (B.DevSceneType==1)",
+							" FROM Scenes as A"
+							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
+							" WHERE (A.ID=='%q')",
 							rowid.c_str());
 					else if ((planID != "") && (planID != "0"))
 						result = m_sql.safe_query(
@@ -7328,8 +7328,9 @@ namespace http {
 					else
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
-							" A.Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, A.Description"
+							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A"
+							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
 							" ORDER BY %s",
 							szOrderBy);
 
