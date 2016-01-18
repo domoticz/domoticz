@@ -15,6 +15,7 @@
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
+#include <boost/lexical_cast.hpp>
 #include <map>
 
 #if defined WIN32
@@ -579,11 +580,12 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 
 	std::vector<std::vector<std::string> > result;
 
-	result = m_sql.safe_query("SELECT SwitchType, CustomImage FROM DeviceStatus WHERE (ID=%llu)",
+	result = m_sql.safe_query("SELECT SwitchType, CustomImage, Options FROM DeviceStatus WHERE (ID=%llu)",
 		Idx);
 	if (result.size() == 0)
 		return false;
 	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][0].c_str());
+	std::string sOptions = result[0][2].c_str();
 	std::string szExtraData = "|Name=" + devicename + "|SwitchType=" + result[0][0] + "|CustomImage=" + result[0][1] + "|";
 
 	std::string msg = "";
@@ -638,7 +640,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					}
 
 				}
-				else {
+				else if (ntype == NTYPE_SWITCH_OFF) {
 					szExtraData += "Status=Off|";
 					switch (switchtype)
 					{
@@ -650,6 +652,20 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						msg += " >> OFF";
 						break;
 					}
+				}
+				else {
+					int llevel = ((int)ntype - (int)NTYPE_LEVEL10 + 1);
+					std::string slevel = boost::lexical_cast<std::string>(llevel * 10);
+					szExtraData += "Status=Level " + slevel + "|";
+					if (switchtype == STYPE_Selector) {
+						std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
+						std::string levelNames = options["LevelNames"];
+						std::vector<std::string> splitresults;
+						StringSplit(levelNames, "|", splitresults);
+						msg += " >> " + splitresults[llevel];
+					}
+					else
+						msg += " >> LEVEL " + slevel;
 				}
 			}
 			if (bSendNotification)

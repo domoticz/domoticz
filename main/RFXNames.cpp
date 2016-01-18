@@ -293,6 +293,16 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_PAUSED, "Pause Stream", "Y" },
 		{ NTYPE_STOPPED, "Stop Stream", "Q" },
 		{ NTYPE_PLAYING, "Play Stream", "a" },
+		{ NTYPE_LEVEL10, "Level 10", "s1" },
+		{ NTYPE_LEVEL20, "Level 20", "s2" },
+		{ NTYPE_LEVEL30, "Level 30", "s3" },
+		{ NTYPE_LEVEL40, "Level 40", "s4" },
+		{ NTYPE_LEVEL50, "Level 50", "s5" },
+		{ NTYPE_LEVEL60, "Level 60", "s6" },
+		{ NTYPE_LEVEL70, "Level 70", "s7" },
+		{ NTYPE_LEVEL80, "Level 80", "s8" },
+		{ NTYPE_LEVEL90, "Level 90", "s9" },
+		{ NTYPE_LEVEL100, "Level 100", "s10" },
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
