@@ -78,6 +78,12 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "R546", sSwitchTypeR546 },	         // p..
 	{ "Diya", sSwitchTypeDiya },	         // p..
 	{ "X10Secure", sSwitchTypeX10secu },	 // p..
+	{ "Atlantic", sSwitchTypeAtlantic },	 // p..
+	{ "SilvercrestDB", sSwitchTypeSilvercrestDB }, // p..
+	{ "MedionDB", sSwitchTypeMedionDB },	 // p..
+	{ "VMC", sSwitchTypeVMC },	 // p..
+	{ "Keeloq", sSwitchTypeKeeloq },	 // p..
+	{ "CustomSwitch", sSwitchCustomSwitch },	 // p..
 	{ "", -1 }
 };
 
@@ -324,6 +330,18 @@ static unsigned int RFLinkGetIntStringValue(const std::string &svalue)
 	return ret;
 }
 
+static unsigned int RFLinkGetIntDecStringValue(const std::string &svalue)
+{
+	unsigned int ret = -1;
+	size_t pos = svalue.find(".");
+	if (pos == std::string::npos)
+		return ret;
+	std::stringstream ss;
+	ss << std::dec << svalue.substr(pos + 1);
+	ss >> ret;
+	return ret;
+}
+
 bool CRFLinkBase::ParseLine(const std::string &sLine)
 {
 	m_LastReceivedTime = mytime(NULL);
@@ -357,11 +375,38 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		if ((Name_ID.find("Nodo RadioFrequencyLink") != std::string::npos) || (Name_ID.find("RFLink Gateway") != std::string::npos))
 		{
 			_log.Log(LOG_STATUS, "RFLink: Controller Initialized!...");
+			WriteInt("10;VERSION;\n");  // 20;3C;VER=1.1;REV=37;BUILD=01;
+
 			//Enable DEBUG
 			//write("10;RFDEBUG=ON;\n");
 
 			//Enable Undecoded DEBUG
 			//write("10;RFUDEBUG=ON;\n");
+			return true;
+		}
+		if (Name_ID.find("VER") != std::string::npos) {
+			//_log.Log(LOG_STATUS, "RFLink: %s", sLine.c_str());
+			int versionlo = 0;
+			int versionhi = 0;
+			int revision = 0;
+			int build = 0;
+			if (results[2].find("VER") != std::string::npos) {
+				versionhi = RFLinkGetIntStringValue(results[2]);
+				versionlo = RFLinkGetIntDecStringValue(results[2]);
+			}
+			if (results[3].find("REV") != std::string::npos){
+				revision = RFLinkGetIntStringValue(results[3]);
+			}
+			if (results[4].find("BUILD") != std::string::npos) {
+				build = RFLinkGetIntStringValue(results[4]);
+			}
+			_log.Log(LOG_STATUS, "RFLink Detected, Version: %d.%d Revision: %d Build: %d", versionhi, versionlo, revision, build);
+
+			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
+			mytime(&m_LastHeartbeat);  // keep heartbeat happy
+			m_LastReceivedTime = m_LastHeartbeat;
+
+			m_bTXokay = true; // variable to indicate an OK was received
 			return true;
 		}
 		if (Name_ID.find("PONG") != std::string::npos) {
@@ -620,128 +665,110 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		}
 	}
 
+	std::string tmp_Name = results[2];
 	if (bHaveTemp&&bHaveHum&&bHaveBaro)
 	{
-		SendTempHumBaroSensor(ID, BatteryLevel, temp, humidity, baro, baroforecast);
+		SendTempHumBaroSensor(ID, BatteryLevel, temp, humidity, baro, baroforecast, tmp_Name);
 	}
 	else if (bHaveTemp&&bHaveHum)
 	{
-        std::string tmp_Name = results[2];        
 		SendTempHumSensor(ID, BatteryLevel, temp, humidity, tmp_Name);
 	}
 	else if (bHaveTemp)
 	{
-        std::string tmp_Name = results[2];    
 		SendTempSensor(ID, BatteryLevel, temp, tmp_Name);
 	}
 	else if (bHaveHum)
 	{
-		SendHumiditySensor(ID, BatteryLevel, humidity);
+		SendHumiditySensor(ID, BatteryLevel, humidity, tmp_Name);
 	}
 	else if (bHaveBaro)
 	{
-		SendBaroSensor(Node_ID, Child_ID, BatteryLevel, baro, baroforecast);
+		SendBaroSensor(Node_ID, Child_ID, BatteryLevel, baro, baroforecast, tmp_Name);
 	}
 
 	if (bHaveLux)
 	{
-        std::string tmp_Name = results[2];        
 		SendLuxSensor(Node_ID, Child_ID, BatteryLevel, lux, tmp_Name);
 	}
 
 	if (bHaveUV)
 	{
-        std::string tmp_Name = results[2];        
   		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, tmp_Name);
 	}
     
 	if (bHaveRain)
 	{
-        std::string tmp_Name = results[2];        
 		SendRainSensor(ID, BatteryLevel, float(raincounter), tmp_Name);
 	}
 
 	if (bHaveWindDir && bHaveWindSpeed && bHaveWindGust && bHaveWindChill)
 	{
-        std::string tmp_Name = results[2];        
 		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
 	else if (bHaveWindDir && bHaveWindGust)
 	{
-        std::string tmp_Name = results[2];        
 		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
 	else if (bHaveWindSpeed)
 	{
-        std::string tmp_Name = results[2];        
 		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
     
 	if (bHaveCO2)
 	{
-        std::string tmp_Name = results[2];        
 		SendAirQualitySensor((ID & 0xFF00) >> 8, ID & 0xFF, BatteryLevel, co2, tmp_Name);
 	}
 	if (bHaveSound)
 	{
-        std::string tmp_Name = results[2];        
 		SendSoundSensor(ID, BatteryLevel, sound, tmp_Name);
 	}
 
 	if (bHaveRGB)
 	{
 		//RRGGBB
-        std::string tmp_Name = results[2];        
 		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgb, false, tmp_Name);
 	}
 	if (bHaveRGBW)
 	{
 		//RRGGBBWW
-        std::string tmp_Name = results[2];        
 		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgbw, true, tmp_Name);
 	}
 	if (bHaveBlind)
 	{
-        std::string tmp_Name = results[2];        
 		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, tmp_Name);
 	}
 
 	if (bHaveKWatt&bHaveWatt)
 	{
-		std::string tmp_Name = results[2];
 		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
-	} else if (bHaveKWatt)
+	}
+	else if (bHaveKWatt)
 	{
-        std::string tmp_Name = results[2];        
 		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
-	} else if (bHaveWatt)
+	}
+	else if (bHaveWatt)
 	{
-        std::string tmp_Name = results[2];        
 		SendKwhMeterOldWay(Node_ID, Child_ID, BatteryLevel, watt / 100.0f, kwatt, tmp_Name);
 	}
 	if (bHaveDistance)
 	{
-        std::string tmp_Name = results[2];        
 		SendDistanceSensor(Node_ID, Child_ID, BatteryLevel, distance, tmp_Name);
 	}
 	if (bHaveMeter)
 	{
-        std::string tmp_Name = results[2];        
 		SendMeterSensor(Node_ID, Child_ID, BatteryLevel, meter, tmp_Name);
 	}
 	if (bHaveVoltage)
 	{
-        std::string tmp_Name = results[2];        
 		SendVoltageSensor(Node_ID, Child_ID, BatteryLevel, voltage, tmp_Name);
 	}
 	if (bHaveCurrent)
 	{
-        std::string tmp_Name = results[2];        
 		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, tmp_Name);
 	}
 	if (bHaveImpedance)
 	{
-        std::string tmp_Name = results[2];        
 		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, tmp_Name);
 	}
 	if (bHaveSwitch && bHaveSwitchCmd)

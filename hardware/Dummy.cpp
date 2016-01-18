@@ -336,6 +336,20 @@ namespace http {
 					bCreated = true;
 				}
 				break;
+			case 1003:
+				//RGBW switch
+				{
+					std::string rID = std::string(ID);
+					padLeft(rID, 8, '0');
+					unsigned long long devidx = DeviceRowIdx = m_sql.UpdateValue(HwdID, rID.c_str(), 1, pTypeLimitlessLights, sTypeLimitlessRGBW, 12, 255, 1, devname);
+					if (devidx != -1)
+					{
+						//Set switch type to dimmer
+						m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%llu)", STYPE_Dimmer, devidx);
+					}
+					bCreated = true;
+				}
+				break;
 			}
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;

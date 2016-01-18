@@ -1,3 +1,4 @@
+
 #pragma once
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
@@ -32,6 +33,8 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
 
 void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue = 100.0);
+void rgb2hsb(const int r, const int g, const int b, float hsbvals[3]);
+
 bool is_number(const std::string& s);
 void padLeft(std::string &str, const size_t num, const char paddingChar = '0');
 
@@ -39,3 +42,6 @@ bool IsLightOrSwitch(const int devType, const int subType);
 
 int MStoBeaufort(const float ms);
 
+struct dirent;
+bool dirent_is_directory(std::string dir, struct dirent *ent);
+bool dirent_is_file(std::string dir, struct dirent *ent);

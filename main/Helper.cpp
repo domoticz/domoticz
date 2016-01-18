@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "Helper.h"
-#if !defined WIN32
-	#include <dirent.h>
+#ifdef WIN32
+#include "dirent_windows.h"
+#else
+#include <dirent.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -539,6 +541,42 @@ void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxV
 	}
 }
 
+void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
+{
+	float hue, saturation, brightness;
+	if (hsbvals == NULL)
+		return;
+	int cmax = (r > g) ? r : g;
+	if (b > cmax) cmax = b;
+	int cmin = (r < g) ? r : g;
+	if (b < cmin) cmin = b;
+
+	brightness = ((float)cmax) / 255.0f;
+	if (cmax != 0)
+		saturation = ((float)(cmax - cmin)) / ((float)cmax);
+	else
+		saturation = 0;
+	if (saturation == 0)
+		hue = 0;
+	else {
+		float redc = ((float)(cmax - r)) / ((float)(cmax - cmin));
+		float greenc = ((float)(cmax - g)) / ((float)(cmax - cmin));
+		float bluec = ((float)(cmax - b)) / ((float)(cmax - cmin));
+		if (r == cmax)
+			hue = bluec - greenc;
+		else if (g == cmax)
+			hue = 2.0f + redc - bluec;
+		else
+			hue = 4.0f + greenc - redc;
+		hue = hue / 6.0f;
+		if (hue < 0)
+			hue = hue + 1.0f;
+	}
+	hsbvals[0] = hue;
+	hsbvals[1] = saturation;
+	hsbvals[2] = brightness;
+}
+
 bool is_number(const std::string& s)
 {
 	std::string::const_iterator it = s.begin();
@@ -610,4 +648,34 @@ int MStoBeaufort(const float ms)
 	if (ms < 32.6f)
 		return 11;
 	return 12;
+}
+
+bool dirent_is_directory(std::string dir, struct dirent *ent)
+{
+	if (ent->d_type == DT_DIR)
+		return true;
+#ifndef WIN32
+	if (ent->d_type == DT_UNKNOWN) {
+		std::string fname = dir + "/" + ent->d_name;
+		struct stat st;
+		if (!lstat(fname.c_str(), &st))
+			return S_ISDIR(st.st_mode);
+	}
+#endif
+	return false;
+}
+
+bool dirent_is_file(std::string dir, struct dirent *ent)
+{
+	if (ent->d_type == DT_REG)
+		return true;
+#ifndef WIN32
+	if (ent->d_type == DT_UNKNOWN) {
+		std::string fname = dir + "/" + ent->d_name;
+		struct stat st;
+		if (!lstat(fname.c_str(), &st))
+			return S_ISREG(st.st_mode);
+	}
+#endif
+	return false;
 }

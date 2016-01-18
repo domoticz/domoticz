@@ -47,6 +47,14 @@ enum _eTimerType
 	TTYPE_BEFORESUNSET, 
 	TTYPE_AFTERSUNSET,
 	TTYPE_FIXEDDATETIME,
+	TTYPE_DAYSODD,
+	TTYPE_DAYSEVEN,
+	TTYPE_WEEKSODD,
+	TTYPE_WEEKSEVEN,
+	TTYPE_MONTHLY,
+	TTYPE_MONTHLY_WD,
+	TTYPE_YEARLY,
+	TTYPE_YEARLY_WD,
 	TTYPE_END
 };
 
@@ -138,6 +146,8 @@ enum _eHardwareTypes {
 	HTYPE_SolarEdgeAPI,			//64
 	HTYPE_CurrentCostMeter,		//65
 	HTYPE_CurrentCostMeterLAN,	//66
+	HTYPE_DomoticzInternal,		//67
+	HTYPE_NefitEastLAN,			//68
 	HTYPE_END
 };
 
@@ -210,6 +220,7 @@ void GetLightStatus(
 	bool &bHaveGroupCmd);
 
 int  GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, const std::string & levelName);
+std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string> & options, const int level);
 void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & options, std::map<std::string, std::string> & statuses);
 
 bool GetLightCommand(

@@ -128,6 +128,13 @@ namespace http {
 			 }
 		}
 
+		void CWebServerHelper::SetWebRoot(const std::string &webRoot)
+		{
+			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
+				(*it)->SetWebRoot(webRoot);
+			 }
+		}
+
 		void CWebServerHelper::ClearUserPasswords()
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {

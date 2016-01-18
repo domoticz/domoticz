@@ -641,7 +641,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 		}
 		else
 		{
-			SendHumiditySensor(cNode, pChild->batValue, Humidity);
+			SendHumiditySensor(cNode, pChild->batValue, Humidity, (!pChild->childName.empty()) ? pChild->childName : "Hum");
 		}
 	}
 	break;
@@ -708,7 +708,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 			}
 		}
 		else
-			SendBaroSensor(pChild->nodeID, pChild->childID, pChild->batValue, Baro, forecast);
+			SendBaroSensor(pChild->nodeID, pChild->childID, pChild->batValue, Baro, forecast, (!pChild->childName.empty()) ? pChild->childName : "Baro");
 	}
 	break;
 	case V_TRIPPED:
@@ -884,7 +884,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 						if (Baro < 1010)
 							forecast = bmpbaroforecast_rain;
 					}
-					SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, Baro, forecast);
+					SendBaroSensor(pSensorBaro->nodeID, pSensorBaro->childID, pSensorBaro->batValue, Baro, forecast, (!pChild->childName.empty()) ? pChild->childName : "Baro");
 				}
 			}
 			else
@@ -1078,16 +1078,23 @@ bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, cons
 	m_AckNodeID = NodeID;
 	m_AckChildID = ChildID;
 	m_AckSetType = SubType;
+	int repeat = 0;
+	int repeats = 2;
 
-	SendCommandInt(NodeID, ChildID, messageType, bUseAck, SubType, Payload);
-	if (!bUseAck)
-		return true;
-	//Wait some time till we receive an ACK (should be received in 1000ms, but we wait 1200ms)
-	int waitRetries = 0;
-	while ((!m_bAckReceived) && (waitRetries < 12))
+	//Resend failed command
+	while ((!m_bAckReceived) && (repeat < repeats))
 	{
-		sleep_milliseconds(100);
-		waitRetries++;
+		SendCommandInt(NodeID, ChildID, messageType, bUseAck, SubType, Payload);
+		if (!bUseAck)
+			return true;
+		//Wait some time till we receive an ACK (should be received in 1000ms, but we wait 1200ms)
+		int waitRetries = 0;
+		while ((!m_bAckReceived) && (waitRetries < 12))
+		{
+			sleep_milliseconds(100);
+			waitRetries++;
+		}
+		repeat++;
 	}
 	return m_bAckReceived;
 }
@@ -1561,12 +1568,9 @@ void MySensorsBase::ParseLine()
 			m_AckNodeID = m_AckChildID = -1;
 			m_AckSetType = V_UNKNOWN;
 			m_bAckReceived = true;
-		}
+                        //No need to process ack commands
+                        return;
 
-		if (ack == 1)
-		{
-			//No need to process ack commands
-			return;
 		}
 
 		bool bHaveValue = false;

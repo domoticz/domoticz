@@ -583,6 +583,49 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				
 					SetLanguage(data.language);
 					
+					//Translate Highcharts (partly)
+					Highcharts.setOptions({
+						lang: {
+							months: [
+								$.t('January'),
+								$.t('February'),
+								$.t('March'),
+								$.t('April'),
+								$.t('May'),
+								$.t('June'),
+								$.t('July'),
+								$.t('August'),
+								$.t('September'),
+								$.t('October'),
+								$.t('November'),
+								$.t('December')
+							],
+							shortMonths: [
+								$.t('Jan'),
+								$.t('Feb'),
+								$.t('Mar'),
+								$.t('Apr'),
+								$.t('May'),
+								$.t('Jun'),
+								$.t('Jul'),
+								$.t('Aug'),
+								$.t('Sep'),
+								$.t('Oct'),
+								$.t('Nov'),
+								$.t('Dec')
+							],
+							weekdays: [
+								$.t('Sunday'),
+								$.t('Monday'),
+								$.t('Tuesday'),
+								$.t('Wednesday'),
+								$.t('Thursday'),
+								$.t('Friday'),
+								$.t('Saturday')
+							]
+						}
+					});
+					
 					$rootScope.MakeGlobalConfig();
 
 					if (typeof data.result.templates!= 'undefined') {
@@ -621,11 +664,13 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				$rootScope.config.appdate=data.build_time;
 				$rootScope.config.versiontooltip="'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate+"'";
 				$( "#appversion" ).text("V" + data.version);
-				$rootScope.config.HaveUpdate=data.haveupdate;
+				if (data.SystemName!="windows") {
+					$rootScope.config.HaveUpdate=data.HaveUpdate;
+				}
 				$rootScope.config.isproxied=data.isproxied;
-				if (data.haveupdate == true)
+				if (data.HaveUpdate == true)
 				{
-					ShowUpdateNotification(data.revision);
+					ShowUpdateNotification(data.Revision,data.SystemName,data.DomoticzUpdateURL);
 				}
 			}
 		 },

@@ -156,6 +156,12 @@ const char *cclassStr(uint8 cc)
 		return "METER PULSE";
 	case 0x38:
 		return "THERMOSTAT HEATING";
+	case 0x3C:
+		return "METER_TBL_CONFIG";
+	case 0x3D:
+		return "METER_TBL_MONITOR";
+	case 0x3E:
+		return "METER_TBL_PUSH";
 	case 0x40:
 		return "THERMOSTAT MODE";
 	case 0x42:
@@ -1355,7 +1361,14 @@ void COpenZWave::SetThermostatSetPoint(const int nodeID, const int instanceID, c
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClass(nodeID, instanceID, COMMAND_CLASS_THERMOSTAT_SETPOINT, vID) == true)
 	{
-		if (!m_pManager->SetValue(vID, value))
+		std::string vUnits = m_pManager->GetValueUnits(vID);
+		float temp = value;
+		if (vUnits == "F")
+		{
+			//Convert to Fahrenheit
+			temp = (float)ConvertToFahrenheit(temp);
+		}
+		if (!m_pManager->SetValue(vID, temp))
 		{
 			_log.Log(LOG_ERROR, "OpenZWave: Error setting Thermostat Setpoint Value! NodeID: %d (0x%02x)", nodeID, nodeID);
 		}

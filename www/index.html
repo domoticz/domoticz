@@ -84,7 +84,7 @@
         <link type="text/css" rel="stylesheet" href="acttheme/custom.css" />
         <link type="text/css" rel="stylesheet" href="css/remote.css" />
 
-        <script src="js/jquery-1.11.3.min.js"></script>
+        <script src="js/jquery-1.12.0.min.js"></script>
 		<script src="js/i18next-1.8.0.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
 		<script src="js/bootbox.min.js"></script>
@@ -145,10 +145,20 @@ if (window.applicationCache) {
 	window.applicationCache.addEventListener('error',logEvent,false);
 }
 
-function ShowUpdateNotification(Revision) {
+function WindowsDownloadURL(url)
+{
+	window.location.href = url;
+}
+
+function ShowUpdateNotification(Revision, SystemName, DownloadURL) {
 	var msgtxt=$.t('A new version of Domoticz is Available!...');
 	msgtxt+='<br>' + $.t('Version') + ': <b>' + Revision + '</b>, ' + $.t('Latest Changes') + ': <b><a class="norm-link" onclick="ShowLatestHistory();">' + $.t('Click Here') + '</a></b>';
-	msgtxt+='<br><center><a class="btn btn-danger" onclick="SwitchLayout(\'Update\');">' + $.t('Update Now') + '</a></center>';
+	if (SystemName=="windows") {
+		msgtxt+='<br><center><a class="btn btn-danger" onclick="WindowsDownloadURL(\'' + DownloadURL + '\')">' + $.t('Update Now') + '</a></center>';
+	}
+	else {
+		msgtxt+='<br><center><a class="btn btn-danger" onclick="SwitchLayout(\'Update\');">' + $.t('Update Now') + '</a></center>';
+	}
 	generate_noty('success', msgtxt, false);
 }
 
@@ -172,17 +182,22 @@ function CheckForUpdate(showdialog) {
 				userrights : urights,
 				hasupdatesupport : false
 			};
-
+			showdialog=false;
 			if (data.HaveUpdate == true) {
 				if (showdialog) {
-					bootbox.confirm($.t("Update Available !... Update Now?")+"<br>"+$.t('Version')+" #"+data.revision, function(result) {
+					bootbox.confirm($.t("Update Available !... Update Now?")+"<br>"+$.t('Version')+" #"+data.Revision, function(result) {
 						if (result==true) {
-							SwitchLayout('Update');
+							if (data.SystemName=="windows") {
+								window.location.href = data.DomoticzUpdateURL;
+							}
+							else {
+								SwitchLayout('Update');
+							}
 						}
 					});
 				}
 				else {
-					ShowUpdateNotification(data.Revision);
+					ShowUpdateNotification(data.Revision,data.SystemName,data.DomoticzUpdateURL);
 				}
 				return true;
 			}
@@ -1316,11 +1331,7 @@ $(document).ready(function() {
 				</tr>
 				<tr>
 					<td align="right"><label for="checkalways"><span data-i18n="Ignore Interval">Ignore Interval</span>:</label></td>
-					<td><input type="checkbox" id="checkalways"></td>
-				</tr>
-				<tr>
-					<td></td>
-					<td><span data-i18n="If enabled, it will bypass the Notification interval specified in the Settings page">If enabled, it will bypass the Notification interval specified in the Settings page</span></td>
+					<td><input type="checkbox" id="checkalways">&nbsp;(<span data-i18n="If enabled, it will bypass the Notification interval specified in the Settings page">If enabled, it will bypass the Notification interval specified in the Settings page</span>)</td>
 				</tr>
 				<tr>
 					<td align="right"><label for="custommessage"><span data-i18n="Custom Message"></span>:</label></td>
@@ -1420,7 +1431,7 @@ $(document).ready(function() {
                                 </ul>
                             </li>
                             <li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
-							<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
+							<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span class="hidden-phone hidden-tablet" data-i18n="Logout">Logout</span></a></li>
                         </ul>
                 </div>
             </div>

@@ -726,7 +726,7 @@ define(['app'], function (app) {
 							status=item.Data;
 						}
 						else if (item.SubType == "Alert") {
-							status=item.Data + " (" + item.Desc + ")";
+							status=item.Data;
 							img='<img src="images/Alert48_' + item.Level + '.png" height="48" width="48">';
 						}
 						else if (item.Type == "Lux") {
@@ -770,7 +770,7 @@ define(['app'], function (app) {
 							if (item.CounterDeliv!=0) {
 								status+='<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
 								if (item.UsageDeliv.charAt(0) != 0) {
-									bigtext='-' + item.UsageDeliv;
+									bigtext+='-' + item.UsageDeliv;
 								}
 							}
 						}
@@ -1065,7 +1065,7 @@ define(['app'], function (app) {
 					}
 					else if (item.SubType == "Alert") {
 					  xhtm+='Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
-					  status=item.Data + " (" + item.Desc + ")";
+					  status=item.Data;
 					}
 					else if (item.SubType == "Pressure") {
 					  xhtm+='gauge48.png" height="48" width="48"></td>\n';

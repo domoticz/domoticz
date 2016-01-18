@@ -6,21 +6,26 @@ install:
 
 build_script:
 - cd msbuild
-- appveyor DownloadFile http://www.domoticz.com/WindowsLibraries.7z
+- appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
 - '7z x WindowsLibraries.7z > NUL:'
 - cd ..
 - msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+- cp appversion.h version_windows_x86.h
+- cp History.txt history_windows_x86.txt
 - '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" msbuild\WindowsInstaller\DomoticzSetup.iss'
 - msbuild msbuild\package.proj
 
 artifacts:
-- path: domoticz-*-latest.zip
+- path: domoticz_windows_x86.zip
+- path: version_windows_x86.h
+- path: history_windows_x86.txt
+- path: History.txt
 
 test: off
 
 deploy:
 - provider: FTP
-  host: 62.84.241.110
+  host: 188.166.24.182
   folder: beta
   protocol: ftps
   username: uploads@domoticz.com

@@ -200,6 +200,7 @@ hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DomoticzHardware.cpp
+hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
 hardware/EcoDevices.cpp
@@ -227,15 +228,12 @@ hardware/MQTT.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
 hardware/MySensorsTCP.cpp
+hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
 hardware/openzwave/control_panel/zwavelib.cpp
-hardware/openzwave/control_panel/tinyxml/tinystr.cpp
-hardware/openzwave/control_panel/tinyxml/tinyxml.cpp
-hardware/openzwave/control_panel/tinyxml/tinyxmlerror.cpp
-hardware/openzwave/control_panel/tinyxml/tinyxmlparser.cpp
 hardware/OTGWBase.cpp
 hardware/OTGWSerial.cpp
 hardware/OTGWTCP.cpp
@@ -306,6 +304,22 @@ webserver/proxyclient.cpp
 json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp
+tinyxpath/action_store.cpp
+tinyxpath/tinyxml.cpp
+tinyxpath/tokenlist.cpp
+tinyxpath/xpath_processor.cpp
+tinyxpath/xpath_stream.cpp
+tinyxpath/htmlutil.cpp
+tinyxpath/node_set.cpp
+tinyxpath/tinyxmlerror.cpp
+tinyxpath/xml_util.cpp
+tinyxpath/xpath_stack.cpp
+tinyxpath/xpath_syntax.cpp
+tinyxpath/lex_util.cpp
+tinyxpath/tinystr.cpp
+tinyxpath/tinyxmlparser.cpp
+tinyxpath/xpath_expression.cpp
+tinyxpath/xpath_static.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 
@@ -501,18 +515,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   ENDIF(USE_STATIC_LIBSTDCXX)
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
-# If it wasn't overridden from command line / cache.
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
-endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-
-install(TARGETS domoticz DESTINATION /opt/domoticz)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION /opt/domoticz USE_SOURCE_PERMISSIONS)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION /opt/domoticz)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION /opt/domoticz)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION /opt/domoticz USE_SOURCE_PERMISSIONS)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION /opt/domoticz USE_SOURCE_PERMISSIONS)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION /opt/domoticz PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 
 # build a CPack driven installer package
 INCLUDE(InstallRequiredSystemLibraries)
@@ -541,6 +543,16 @@ SET(CPACK_PACKAGE_EXECUTABLES "domoticz;Home Automation System (Domotica).")
 SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
 
 INCLUDE(CPack)
+
+set(CMAKE_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
+
+install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 
 INCLUDE(TestBigEndian)
 

@@ -604,55 +604,27 @@ void CEventSystem::GetCurrentMeasurementStates()
 		{
 			if (!splitresults.empty())
 			{
-				if (sitem.subType == sTypeVisibility)
+				if ((sitem.subType == sTypeVisibility)
+				 || (sitem.subType == sTypeSolarRadiation))
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 					weatherval = utilityval;
 					isWeather = true;
 				}
-				else if (sitem.subType == sTypeAlert)
+				else if ((sitem.subType == sTypeAlert)
+					  || (sitem.subType == sTypeDistance)
+					  || (sitem.subType == sTypePercentage)
+					  || (sitem.subType == sTypeWaterflow)
+					  || (sitem.subType == sTypeVoltage)
+		 			  || (sitem.subType == sTypeCurrent)
+		 			  || (sitem.subType == sTypeSetPoint)
+					  || (sitem.subType == sTypeKwh))
 				{
 					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
 					isUtility = true;
 				}
-				else if (sitem.subType == sTypeDistance)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeSolarRadiation)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-					weatherval = utilityval;
-					isWeather = true;
-				}
-				else if (sitem.subType == sTypePercentage)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeWaterflow)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeVoltage)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeCurrent)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
-				else if (sitem.subType == sTypeSetPoint)
-				{
-					utilityval = static_cast<float>(atof(splitresults[0].c_str()));
-					isUtility = true;
-				}
+
 			}
 			else
 			{
@@ -1124,7 +1096,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 		while ((ent = readdir(lDir)) != NULL)
 		{
 			std::string filename = ent->d_name;
-			if (ent->d_type == DT_REG)
+			if (dirent_is_file(lua_Dir, ent))
 			{
 				if ((filename.length() < 4) || (filename.compare(filename.length() - 4, 4, ".lua") != 0))
 				{
@@ -1174,7 +1146,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 			while ((ent = readdir(lDir)) != NULL)
 			{
 				std::string filename = ent->d_name;
-				if (ent->d_type == DT_REG)
+				if (dirent_is_file(python_Dir, ent))
 				{
 					if ((filename.length() < 4) || (filename.compare(filename.length() - 3, 3, ".py") != 0))
 					{
@@ -3254,6 +3226,21 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		}
 
 		Action = Action.substr(0, 13);
+	}
+	if ((Action.find("Play Favorites") == 0) && (Action.length() > 14))
+	{
+		std::string	sParams = Action.substr(15);
+		CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByType(HTYPE_Kodi);
+		if (pBaseHardware != NULL)
+		{
+			CKodi			*pHardware = (CKodi*)pBaseHardware;
+			if (sParams.length() > 0)
+			{
+				_level = atoi(sParams.c_str());
+			}
+		}
+
+		Action = Action.substr(0, 14);
 	}
 	if (Action.find("Execute") == 0)
 	{

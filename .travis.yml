@@ -18,7 +18,7 @@ sources:
 # Domoticz ftp server account & encrypted password
 env:
   global:
-    - "FTP_HOST=62.84.241.110"
+    - "FTP_HOST=188.166.24.182"
     - "FTP_USER=uploads@domoticz.com"
 
 # What to install before the build
@@ -88,14 +88,14 @@ matrix:
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
 before_deploy:
-  - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
-  - shasum -a 256 domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz > domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz.sha256sum
+  - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
+  - shasum -a 256 domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz > domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum
   - cp appversion.h.txt version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h
   - cp History.txt history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt
 deploy:
   skip_cleanup: true
   provider: script
-  script: curl --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}_latest.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
+  script: curl --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
   on:
     branch: master
     repo: domoticz/domoticz
