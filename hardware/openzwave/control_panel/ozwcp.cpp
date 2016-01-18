@@ -45,7 +45,7 @@
 #include "Group.h"
 #include "Notification.h"
 
-#include "tinyxml/tinyxml.h"
+#include "../../tinyxpath/tinyxml.h"
 
 #include <sys/stat.h>
 #include <fstream>

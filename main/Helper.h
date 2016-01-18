@@ -1,3 +1,4 @@
+
 #pragma once
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
@@ -41,3 +42,6 @@ bool IsLightOrSwitch(const int devType, const int subType);
 
 int MStoBeaufort(const float ms);
 
+struct dirent;
+bool dirent_is_directory(std::string dir, struct dirent *ent);
+bool dirent_is_file(std::string dir, struct dirent *ent);

@@ -241,7 +241,7 @@ public:
 
     void DeleteEvent(const std::string &idx);
     
-	void DeleteDevice(const std::string &idx);
+	void DeleteDevices(const std::string &idx);
 
 	void TransferDevice(const std::string &oldidx, const std::string &newidx);
 
@@ -260,6 +260,7 @@ public:
 
 	std::vector<std::vector<std::string> > safe_query(const char *fmt, ...);
 	std::vector<std::vector<std::string> > safe_queryBlob(const char *fmt, ...);
+	void safe_exec_no_return(const char *fmt, ...);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 	std::string DeleteUserVariable(const std::string &idx);
 	std::string SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue);

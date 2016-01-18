@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "Helper.h"
-#if !defined WIN32
-	#include <dirent.h>
+#ifdef WIN32
+#include "dirent_windows.h"
+#else
+#include <dirent.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -646,4 +648,34 @@ int MStoBeaufort(const float ms)
 	if (ms < 32.6f)
 		return 11;
 	return 12;
+}
+
+bool dirent_is_directory(std::string dir, struct dirent *ent)
+{
+	if (ent->d_type == DT_DIR)
+		return true;
+#ifndef WIN32
+	if (ent->d_type == DT_UNKNOWN) {
+		std::string fname = dir + "/" + ent->d_name;
+		struct stat st;
+		if (!lstat(fname.c_str(), &st))
+			return S_ISDIR(st.st_mode);
+	}
+#endif
+	return false;
+}
+
+bool dirent_is_file(std::string dir, struct dirent *ent)
+{
+	if (ent->d_type == DT_REG)
+		return true;
+#ifndef WIN32
+	if (ent->d_type == DT_UNKNOWN) {
+		std::string fname = dir + "/" + ent->d_name;
+		struct stat st;
+		if (!lstat(fname.c_str(), &st))
+			return S_ISREG(st.st_mode);
+	}
+#endif
+	return false;
 }

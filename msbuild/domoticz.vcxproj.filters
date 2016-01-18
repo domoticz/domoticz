@@ -252,6 +252,9 @@
     <Filter Include="Devices\Nefit-Easy">
       <UniqueIdentifier>{eda6c8ec-7cdc-4897-9d23-c502aedbee4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="tinyxpath">
+      <UniqueIdentifier>{dec41c77-32d9-454a-a9fc-a9c2de0dc4a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -547,12 +550,6 @@
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.h">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\openzwave\control_panel\tinyxml\tinyxml.h">
       <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\evohome.h">
@@ -1067,18 +1064,6 @@
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
       <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinystr.cpp">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxml.cpp">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxmlerror.cpp">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\openzwave\control_panel\tinyxml\tinyxmlparser.cpp">
-      <Filter>Devices\ZWave\OpenZWave\Control Panel</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\evohome.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
@@ -1303,6 +1288,54 @@
     </ClCompile>
     <ClCompile Include="..\hardware\NefitEasy.cpp">
       <Filter>Devices\Nefit-Easy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\action_store.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\htmlutil.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\lex_util.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\node_set.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tinystr.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tinyxml.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tinyxmlerror.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tinyxmlparser.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\tokenlist.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xml_util.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_expression.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_processor.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_stack.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_static.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_stream.cpp">
+      <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
+      <Filter>tinyxpath</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

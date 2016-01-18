@@ -1096,7 +1096,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 		while ((ent = readdir(lDir)) != NULL)
 		{
 			std::string filename = ent->d_name;
-			if (ent->d_type == DT_REG)
+			if (dirent_is_file(lua_Dir, ent))
 			{
 				if ((filename.length() < 4) || (filename.compare(filename.length() - 4, 4, ".lua") != 0))
 				{
@@ -1146,7 +1146,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 			while ((ent = readdir(lDir)) != NULL)
 			{
 				std::string filename = ent->d_name;
-				if (ent->d_type == DT_REG)
+				if (dirent_is_file(python_Dir, ent))
 				{
 					if ((filename.length() < 4) || (filename.compare(filename.length() - 3, 3, ".py") != 0))
 					{

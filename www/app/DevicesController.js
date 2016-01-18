@@ -71,21 +71,25 @@ define(['app'], function (app) {
 				bootbox.alert($.t('No Devices selected to Delete!'));
 				return;
 			}
-			bootbox.confirm($.t("Are you sure you want to delete the selected Devices?"), function(result) {
+			var d2delete = "";
+			var delCount = 0;
+			$('#devices input:checkbox:checked').each(function() {
+				if (d2delete!="")
+					d2delete+=";";
+				d2delete+=$(this).val();
+				delCount++;
+			});
+			bootbox.confirm($.t("Are you sure you want to delete the selected Devices?") + " (" + delCount + ")", function(result) {
 				if (result==true) {
-					var delCount = 0;
-						$('#devices input:checkbox:checked').each(function() {
-							$.ajax({
-								url: "json.htm?type=deletedevice&idx=" + $(this).val(),
-								async: false, 
-								dataType: 'json',
-								success: function(data) {
-									delCount++;
-								}
-						});
+					$.ajax({
+						url: "json.htm?type=deletedevice&idx=" + d2delete,
+						async: false, 
+						dataType: 'json',
+						success: function(data) {
+							bootbox.alert(delCount+" " + $.t("Devices deleted."));
+							ShowDevices();
+						}
 					});
-					bootbox.alert(delCount+" " + $.t("Devices deleted."));
-					ShowDevices();
 				}
 			});
 		}
