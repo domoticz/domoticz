@@ -49,7 +49,7 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<int, _tHueLight> m_lights;
 	std::map<int, _tHueGroup> m_groups;
-	std::map<int, _tHueScene> m_scenes;
+	std::map<std::string, _tHueScene> m_scenes;
 
 	void Init();
 	bool StartHardware();

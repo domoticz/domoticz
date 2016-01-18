@@ -54,6 +54,8 @@ extern "C" {
 #endif
 }
 
+#include "../tinyxpath/xpath_processor.h"
+
 
 #include "mainstructs.h"
 
@@ -683,7 +685,7 @@ namespace http {
 			{
 				while ((ent = readdir(dir)) != NULL)
 				{
-					if (ent->d_type == DT_DIR)
+					if (dirent_is_directory(DirPath, ent))
 					{
 						if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
 						{
@@ -1983,13 +1985,15 @@ namespace http {
 			if (session.rights != 2)
 			{
 				//only admin users will receive the update notification
-				root["haveupdate"] = false;
+				root["HaveUpdate"] = false;
 			}
 			else
 			{
-				root["haveupdate"] = (nValue == 1) ? m_mainworker.m_bHaveUpdate : false;
+				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(true);
+				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
+				root["SystemName"] = m_mainworker.m_szSystemName;
+				root["Revision"] = m_mainworker.m_iRevision;
 			}
-			root["revision"] = m_mainworker.m_iRevision;
 		}
 
 		void CWebServer::Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root)
@@ -2081,7 +2085,7 @@ namespace http {
 					machine = "armv7l";
 				}
 
-				if (((machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
+				if (((machine != "armv6l") && (machine != "armv7l") && (systemname!="windows") && (machine != "x86_64")) || (strstr(my_uname.release, "ARCH+") != NULL))
 					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history";
 				else
 					szHistoryURL = "http://www.domoticz.com/download.php?channel=beta&type=history&system=" + systemname + "&machine=" + machine;
@@ -2317,6 +2321,42 @@ namespace http {
 				_log.Log(LOG_ERROR, "WebServer: %s", lua_tostring(L, -1));
 				lua_pop(L, 1); // remove error message
 			}
+		}
+
+		static int l_domoticz_applyXPath(lua_State* lua_state)
+		{
+			int nargs = lua_gettop(lua_state);
+			if (nargs >= 2)
+			{
+				if (lua_isstring(lua_state, 1) && lua_isstring(lua_state, 2))
+				{
+					std::string buffer = lua_tostring(lua_state, 1);
+					std::string xpath = lua_tostring(lua_state, 2);
+
+					TiXmlDocument doc;
+					doc.Parse(buffer.c_str(), 0, TIXML_ENCODING_UTF8);
+					
+					TiXmlElement* root = doc.RootElement();
+					if (!root)
+					{
+						_log.Log(LOG_ERROR, "WebServer (applyXPath from LUA) : Invalid data received!");
+						return 0;
+					}
+					TinyXPath::xpath_processor processor(root,xpath.c_str());
+					TiXmlString xresult = processor.S_compute_xpath();
+					lua_pushstring(lua_state, xresult.c_str());
+					return 1;
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "WebServer (applyXPath from LUA) : Incorrect parameters type");
+				}
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "WebServer (applyXPath from LUA) : Not enough parameters");
+			}
+			return 0;
 		}
 
 		static int l_domoticz_applyJsonPath(lua_State* lua_state)
@@ -2564,6 +2604,9 @@ namespace http {
 
 			lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
 			lua_setglobal(lua_state, "domoticz_applyJsonPath");
+
+			lua_pushcfunction(lua_state, l_domoticz_applyXPath);
+			lua_setglobal(lua_state, "domoticz_applyXPath");
 
 			lua_createtable(lua_state, 1, 0);
 			lua_pushstring(lua_state, "content");
@@ -2906,22 +2949,24 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "CheckForUpdate";
 			root["HaveUpdate"] = false;
-			root["revision"] = m_mainworker.m_iRevision;
+			root["Revision"] = m_mainworker.m_iRevision;
 
 			if (session.rights != 2)
 				return; //Only admin users may update
 
-				int nValue = 0;
-				m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
+			int nValue = 0;
+			m_sql.GetPreferencesVar("UseAutoUpdate", nValue);
 			if (nValue != 1)
-				{
+			{
 				return;
-					}
+			}
 
 			bool bIsForced = (request::findValue(&req, "forced") == "true");
 
 			root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(bIsForced);
-			root["revision"] = m_mainworker.m_iRevision;
+			root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
+			root["SystemName"] = m_mainworker.m_szSystemName;
+			root["Revision"] = m_mainworker.m_iRevision;
 		}
 
 		void CWebServer::Cmd_DownloadUpdate(WebEmSession & session, const request& req, Json::Value &root)
@@ -7283,9 +7328,8 @@ namespace http {
 					else
 						result = m_sql.safe_query(
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
-							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
-							" FROM Scenes as A, DeviceToPlansMap as B, Plans as C"
-							" WHERE (C.ID==B.PlanID) AND (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
+							" A.Protected, 0 as XOffset, 0 as YOffset, 0 as PlanID, A.Description"
+							" FROM Scenes as A"
 							" ORDER BY %s",
 							szOrderBy);
 
@@ -9444,6 +9488,8 @@ namespace http {
 						}
 						else if (dSubType == sTypeAlert)
 						{
+							sprintf(szData, "Level: %d", nValue);
+							root["result"][ii]["Data"] = szData;
 							if (!sValue.empty())
 								root["result"][ii]["Data"] = sValue;
 							else
@@ -9742,7 +9788,7 @@ namespace http {
 
 			root["status"] = "OK";
 			root["title"] = "DeleteDevice";
-			m_sql.DeleteDevice(idx);
+			m_sql.DeleteDevices(idx);
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
@@ -10879,7 +10925,7 @@ namespace http {
 			m_sql.TransferDevice(newidx, sidx);
 
 			//now delete the NEW device
-			m_sql.DeleteDevice(newidx);
+			m_sql.DeleteDevices(newidx);
 
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
@@ -11256,7 +11302,7 @@ namespace http {
 			if ((used == 0) && (maindeviceidx == ""))
 			{
 				//really remove it, including log etc
-				m_sql.DeleteDevice(idx);
+				m_sql.DeleteDevices(idx);
 			}
 			if (result.size() > 0)
 			{

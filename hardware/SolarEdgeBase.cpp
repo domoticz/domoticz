@@ -220,6 +220,7 @@ int SolarEdgeBase::ParsePacket(const unsigned char *pData, int len)
 	else
 	{
 		_log.Log(LOG_ERROR,"SolarEdge: Unknown Type: %04d",*pCustomID);
+		return orgdlen;
 	}
 
 	//CRC word left

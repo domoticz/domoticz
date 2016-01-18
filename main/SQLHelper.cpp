@@ -2388,6 +2388,21 @@ bool CSQLHelper::DoesColumnExistsInTable(const std::string &columnname, const st
 	return columnExists;
 }
 
+void CSQLHelper::safe_exec_no_return(const char *fmt, ...)
+{
+	if (!m_dbase)
+		return;
+
+	va_list args;
+	va_start(args, fmt);
+	char *zQuery = sqlite3_vmprintf(fmt, args);
+	va_end(args);
+	if (!zQuery)
+		return;
+	sqlite3_exec(m_dbase, zQuery, NULL, NULL, NULL);
+	sqlite3_free(zQuery);
+}
+
 std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, ...)
 {
 	va_list args;
@@ -5261,12 +5276,16 @@ void CSQLHelper::DeleteHardware(const std::string &idx)
 	result=safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID == '%q')",idx.c_str());
 	if (result.size()>0)
 	{
+		std::string devs2delete = "";
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt=result.begin(); itt!=result.end(); ++itt)
 		{
-			std::vector<std::string> sd=*itt;
-			DeleteDevice(sd[0]);
+			std::vector<std::string> sd = *itt;
+			if (!devs2delete.empty())
+				devs2delete += ";";
+			devs2delete += sd[0];
 		}
+		DeleteDevices(devs2delete);
 	}
 	//also delete all records in other tables
 	safe_query("DELETE FROM ZWaveNodes WHERE (HardwareID== '%q')",idx.c_str());
@@ -5292,37 +5311,55 @@ void CSQLHelper::DeleteEvent(const std::string &idx)
 	safe_query("DELETE FROM EventMaster WHERE (ID == '%q')",idx.c_str());
 }
 
-void CSQLHelper::DeleteDevice(const std::string &idx)
+//Argument, one or multiple devices separated by a semicolumn (;)
+void CSQLHelper::DeleteDevices(const std::string &idx)
 {
-	safe_query("DELETE FROM LightingLog WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM LightSubDevices WHERE (ParentID == '%q')",idx.c_str());
-	safe_query("DELETE FROM LightSubDevices WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Notifications WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Rain WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Rain_Calendar WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Temperature WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Temperature_Calendar WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Timers WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM SetpointTimers WHERE (DeviceRowID == '%q')", idx.c_str());
-	safe_query("DELETE FROM UV WHERE (DeviceRowID == '%q')", idx.c_str());
-	safe_query("DELETE FROM UV_Calendar WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Wind WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Wind_Calendar WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Meter WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM Meter_Calendar WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM MultiMeter WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM SceneDevices WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')",idx.c_str());
-	safe_query("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')",idx.c_str());
+	std::vector<std::string> _idx;
+	StringSplit(idx, ";", _idx);
+	if (!_idx.empty())
+	{
+		//Avoid mutex deadlock here
+		boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
+		std::vector<std::string>::const_iterator itt;
+
+		char* errorMessage;
+		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", NULL, NULL, &errorMessage);
+
+		for (itt = _idx.begin(); itt != _idx.end(); ++itt)
+		{
+			safe_exec_no_return("DELETE FROM LightingLog WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM LightSubDevices WHERE (ParentID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM LightSubDevices WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Notifications WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Rain WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Rain_Calendar WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Temperature WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Temperature_Calendar WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Timers WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM SetpointTimers WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM UV WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM UV_Calendar WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Wind WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Wind_Calendar WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Meter WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM Meter_Calendar WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM MultiMeter WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM SceneDevices WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", (*itt).c_str());
+			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", (*itt).c_str());
+			//notify eventsystem device is no longer present
+			m_mainworker.m_eventsystem.RemoveSingleState(atoi((*itt).c_str()));
+			//and now delete all records in the DeviceStatus table itself
+			safe_exec_no_return("DELETE FROM DeviceStatus WHERE (ID == '%q')", (*itt).c_str());
+		}
+		sqlite3_exec(m_dbase, "COMMIT TRANSACTION", NULL, NULL, &errorMessage);
+	}
+	else
+		return;
+
 	m_notifications.ReloadNotifications();
-
-
-    //notify eventsystem device is no longer present
-	m_mainworker.m_eventsystem.RemoveSingleState(atoi(idx.c_str()));
-	//and now delete all records in the DeviceStatus table itself
-	safe_query("DELETE FROM DeviceStatus WHERE (ID == '%q')",idx.c_str());
 }
 
 void CSQLHelper::TransferDevice(const std::string &idx, const std::string &newidx)
