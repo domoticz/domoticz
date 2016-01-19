@@ -1777,12 +1777,6 @@
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\NefitEasy.h">
-      <Filter>Devices\Nefit-Easy</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\PanasonicTV.h">
-      <Filter>Devices\PanasonicTV</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2261,60 +2255,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\NefitEasy.cpp">
-      <Filter>Devices\Nefit-Easy</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\action_store.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\htmlutil.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\lex_util.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\node_set.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tinystr.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tinyxml.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tinyxmlerror.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tinyxmlparser.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\tokenlist.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xml_util.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_expression.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_processor.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_stack.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_static.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_stream.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
-      <Filter>tinyxpath</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\PanasonicTV.cpp">
-      <Filter>Devices\PanasonicTV</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
