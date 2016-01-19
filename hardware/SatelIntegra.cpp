@@ -67,7 +67,12 @@ SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const uns
 		m_isTemperature[i] = false;
 	}
 
-	m_armLast = false;
+	for (unsigned int i = 0; i< 32; ++i)
+	{
+		m_isPartitions[i] = false;
+		m_armLastState[i] = false;
+	}
+
 	m_alarmLast = false;
 
 	errorCodes[1] = "requesting user code not found";
@@ -421,6 +426,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 					cmd[2] = (unsigned char)(index + 1);
 					if (SendCommand(cmd, 3, buffer) > 0)
 					{
+						m_isPartitions[buffer[20] - 1] = true;
 						ReportZonesViolation(index + 1, violate);
 						UpdateZoneName(index + 1, &buffer[4], 1);
 					}
@@ -611,29 +617,29 @@ bool SatelIntegra::ReadArmState(const bool firstTime)
 	cmd[0] = 0x0A; // read armed partition
 	if (SendCommand(cmd, 1, buffer) > 0)
 	{
-		bool armed = false;
+		bool armed;
+		unsigned int byteNumber;
+		unsigned int bitNumber;
 
-		for (unsigned int index = 0; index < 4; ++index)
+		for (unsigned int index = 0; index < 32; ++index)
 		{
-			if (buffer[index + 1])
-			{
-				armed = true;
-				break;
-			}
-		}
+			byteNumber = index / 8;
+			bitNumber = index % 8;
+			armed = (buffer[byteNumber + 1] >> bitNumber) & 0x01;
 
-		if (firstTime || (m_armLast != armed))
-		{
-			if (armed)
+			if ((firstTime || (m_armLastState[index] != armed)) && (m_isPartitions[index]))
 			{
-				_log.Log(LOG_STATUS, "Satel Integra: System arm");
-			}
-			else
-			{
-				_log.Log(LOG_STATUS, "Satel Integra: System not arm");
-			}
+				if (armed)
+				{
+					_log.Log(LOG_STATUS, "Satel Integra: partition %d arm", index + 1);
+				}
+				else
+				{
+					_log.Log(LOG_STATUS, "Satel Integra: partition %d not arm", index + 1);
+				}
 
-			ReportArmState(armed);
+				ReportArmState(index, armed);
+			}
 		}
 	}
 	else
@@ -737,15 +743,15 @@ void SatelIntegra::ReportOutputState(const unsigned long Idx, const bool state)
 	}
 }
 
-void SatelIntegra::ReportArmState(const bool isArm)
+void SatelIntegra::ReportArmState(const unsigned int Idx, const bool isArm)
 {
-	m_armLast = isArm;
+	m_armLastState[Idx-1] = isArm;
 
 	_tGeneralSwitch arm;
 	arm.len = sizeof(_tGeneralSwitch) - 1;
 	arm.type = pTypeGeneralSwitch;
 	arm.subtype = sSwitchTypeAC;
-	arm.id = 1;
+	arm.id = Idx;
 	arm.unitcode = 2;
 	arm.cmnd = isArm ? gswitch_sOn : gswitch_sOff;
 	arm.level = 0;
@@ -995,6 +1001,7 @@ void SatelIntegra::UpdateAlarmAndArmName()
 {
 	std::vector<std::vector<std::string> > result;
 
+	// Alarm
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Name=='Alarm') AND (Unit=2)", m_HwdID);
 	if (result.size() < 1)
 	{
@@ -1005,14 +1012,33 @@ void SatelIntegra::UpdateAlarmAndArmName()
 		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Alarm' WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Unit=2)", m_HwdID);
 	}
 
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='00000001') AND (Name=='Arm') AND (Unit=2)", m_HwdID);
-	if (result.size() < 1)
+//	// Arm
+//	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='00000000') AND (Name=='Arm all') AND (Unit=2)", m_HwdID);
+//	if (result.size() < 1)
+//	{
+//		//Assign name for Arm
+//#ifdef DEBUG_SatelIntegra
+//		_log.Log(LOG_STATUS, "Satel Integra: update Arm name for to 'Arm all'");
+//#endif
+//		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm all' WHERE (HardwareID==%d) AND (DeviceID=='00000000') AND (Unit=2)", m_HwdID);
+//	}
+
+	for (unsigned int i = 0; i< 32; ++i)
 	{
-		//Assign name for Arm
+		if (m_isPartitions[i])
+		{
+			char szTmp[10];
+			sprintf(szTmp, "%08X", (unsigned int)i);
+			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Arm %d partition') AND (Unit=2)", m_HwdID, szTmp, i);
+			if (result.size() < 1)
+			{
+				//Assign name for Arm
 #ifdef DEBUG_SatelIntegra
-		_log.Log(LOG_STATUS, "Satel Integra: update Arm name for to 'Arm'");
+				_log.Log(LOG_STATUS, "Satel Integra: update Arm name for to 'Arm %d partition'", i);
 #endif
-		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm' WHERE (HardwareID==%d) AND (DeviceID=='00000001') AND (Unit=2)", m_HwdID);
+				result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", i, m_HwdID, szTmp);
+			}
+		}
 	}
 
 }
