@@ -347,6 +347,11 @@ table#itemtabledoubleicon .dimslider {
 	margin-top: 12px !important;
 }
 
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td{
+	font-size: 85%;
+	white-space: nowrap;
+}
+
 /* Mobile and Minimum Sizes */
 
 @media (min-width: 768px) and (max-width: 979px) {
