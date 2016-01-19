@@ -450,6 +450,7 @@
     <ClInclude Include="..\hardware\OTGWBase.h" />
     <ClInclude Include="..\hardware\OTGWSerial.h" />
     <ClInclude Include="..\hardware\OTGWTCP.h" />
+    <ClInclude Include="..\hardware\PanasonicTV.h" />
     <ClInclude Include="..\hardware\PhilipsHue.h" />
     <ClInclude Include="..\hardware\PiFace.h" />
     <ClInclude Include="..\hardware\Pinger.h" />
@@ -644,6 +645,7 @@
     <ClCompile Include="..\hardware\OTGWBase.cpp" />
     <ClCompile Include="..\hardware\OTGWSerial.cpp" />
     <ClCompile Include="..\hardware\OTGWTCP.cpp" />
+    <ClCompile Include="..\hardware\PanasonicTV.cpp" />
     <ClCompile Include="..\hardware\PhilipsHue.cpp" />
     <ClCompile Include="..\hardware\PiFace.cpp" />
     <ClCompile Include="..\hardware\Pinger.cpp" />

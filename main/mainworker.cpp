@@ -87,6 +87,7 @@
 #include "../hardware/SolarEdgeAPI.h"
 #include "../hardware/DomoticzInternal.h"
 #include "../hardware/NefitEasy.h"
+#include "../hardware/PanasonicTV.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -771,6 +772,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Kodi:
 		//Kodi Media Player
 		pHardware = new CKodi(ID, Mode1, Mode2);
+		break;
+	case HTYPE_PanasonicTV:
+		//Panasonic Viera TV's
+		pHardware = new CPanasonic(ID, Mode1, Mode2);
 		break;
 	case HTYPE_Mochad:
 		//LAN
@@ -2166,8 +2171,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		if (strlen(defaultName) > 0)
 		{
 			DeviceName = defaultName;
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
-		}
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%llu)", defaultName, DeviceRowIdx);
+	}
 	}
 
 	if (pHardware->m_bOutputLog)
@@ -10719,7 +10724,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	if(tsen.EVOHOME1.mode==CEvohome::cmTmp)
 		CEvohomeDateTime::DecodeISODate(tsen.EVOHOME1,until.c_str());
 	WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME1));
-
+		
 	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 	PushRxMessage(pHardware, (const unsigned char *)&tsen, NULL, 255);
 	return true;
@@ -10962,12 +10967,12 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			float tempDest = TempValue;
 			//if ((pHardware->HwdType != HTYPE_OpenZWave) && (pHardware->HwdType != HTYPE_RazberryZWave))
 			{
-				unsigned char tSign = m_sql.m_tempsign[0];
-				if (tSign == 'F')
-				{
-					//Convert to Celsius
-					tempDest = (tempDest - 32.0f) / 1.8f;
-				}
+			unsigned char tSign = m_sql.m_tempsign[0];
+			if (tSign == 'F')
+			{
+				//Convert to Celsius
+				tempDest = (tempDest - 32.0f) / 1.8f;
+			}
 			}
 
 			_tThermostat tmeter;
@@ -11547,26 +11552,26 @@ void MainWorker::SetInternalSecStatus()
 
 	if (m_verboselevel == EVBL_ALL)
 	{
-		char szDate[100];
+	char szDate[100];
 #if !defined WIN32
-		// Get a timestamp
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
+	// Get a timestamp
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
 
-		struct tm timeinfo;
-		localtime_r(&tv.tv_sec, &timeinfo);
+	struct tm timeinfo;
+	localtime_r(&tv.tv_sec, &timeinfo);
 
-		// create a time stamp string for the log message
-		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+	// create a time stamp string for the log message
+	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
 #else
-		// Get a timestamp
-		SYSTEMTIME time;
-		::GetLocalTime(&time);
+	// Get a timestamp
+	SYSTEMTIME time;
+	::GetLocalTime(&time);
 
-		// create a time stamp string for the log message
-		sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+	// create a time stamp string for the log message
+	sprintf_s(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
 #endif
 
 		_log.Log(LOG_NORM, "%s (System) Domoticz Security Status", szDate);
