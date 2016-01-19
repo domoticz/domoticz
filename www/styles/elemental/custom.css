@@ -311,8 +311,12 @@ body table#mobileitem tr td:first-child{
 
 .selectorlevels {
 	font-size: 1.1em;
-	margin-top:4px;
+	margin-top: 8px !important;
 	text-align: center;
+}
+
+.selectorlevels .ui-button-text-only .ui-button-text {
+	padding: .2em 0.7em;
 }
 
 #dashcontent .selectorlevels {
