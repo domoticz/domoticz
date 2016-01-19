@@ -89,7 +89,7 @@ void CEventSystem::StopEventSystem()
 
 void CEventSystem::SetEnabled(const bool bEnabled)
 {
-	m_bEnabled = bEnabled; 
+	m_bEnabled = bEnabled;
 	if (!bEnabled)
 	{
 		//Remove from heartbeat system
@@ -165,7 +165,7 @@ void CEventSystem::Do_Work()
 
 	localtime_r(&lasttime, &tmptime);
 	int _LastMinute = tmptime.tm_min;
-	
+
 	_log.Log(LOG_STATUS, "EventSystem: Started");
 	while (!m_stoprequested)
 	{
@@ -1156,19 +1156,19 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 					{
 						if ((reason == "device") && (filename.find("_device_") != std::string::npos))
 						{
-							EvaluatePython(reason, python_Dir + filename, DeviceID, devname, nValue, sValue, nValueWording, 0);
+							EvaluatePython(reason, python_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
 						}
 						else if ((reason == "time") && (filename.find("_time_") != std::string::npos))
 						{
-							EvaluatePython(reason, python_Dir + filename);
+							EvaluatePython(reason, python_Dir + filename, "");
 						}
 						else if ((reason == "security") && (filename.find("_security_") != std::string::npos))
 						{
-							EvaluatePython(reason, python_Dir + filename);
+							EvaluatePython(reason, python_Dir + filename, "");
 						}
 						else if ((reason == "uservariable") && (filename.find("_variable_") != std::string::npos))
 						{
-							EvaluatePython(reason, python_Dir + filename, varId);
+							EvaluatePython(reason, python_Dir + filename, "", varId);
 						}
 					}
 				}
@@ -1202,13 +1202,11 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const unsigned long 
 				}
 				if (it->Interpreter == "Python") {
 #ifdef ENABLE_PYTHON
-//					Python codes does some strange things with the filename which I didn't undersdand
-//					Boost has a exec(str string, object global = object(), object local = object()); call that should work.
-//					if (reason == "device")			EvaluatePython(reason, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
-//					if (reason == "time")			EvaluatePython(reason, it->Actions);
-//					if (reason == "security")		EvaluatePython(reason, it->Actions);
-//					if (reason == "uservariable")	EvaluatePython(reason, it->Actions, varId);
-					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
+					if (reason == "device")			EvaluatePython(reason, it->Name, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
+					if (reason == "time")			EvaluatePython(reason, it->Name, it->Actions);
+					if (reason == "security")		EvaluatePython(reason, it->Name, it->Actions);
+					if (reason == "uservariable")	EvaluatePython(reason, it->Name, it->Actions, varId);
+					//_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
 #else
 					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
 #endif
@@ -1483,7 +1481,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const unsigned lon
 				{
 					_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
 				}
-				else 
+				else
 				{
 					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
 					if (ruleTrue != 0)
@@ -1824,7 +1822,7 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 std::string CEventSystem::ParseBlocklyString(const std::string &oString)
 {
 	std::string retString = oString;
-	
+
 	while (1)
 	{
 		size_t pos1, pos2;
@@ -2017,14 +2015,14 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 
 #ifdef ENABLE_PYTHON
 
-void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long varId)
+void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long varId)
 {
-	EvaluatePython(reason, filename, 0, "", 0, "", "", varId);
+	EvaluatePython(reason, filename, PyString, 0, "", 0, "", "", varId);
 }
 
-void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename)
+void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString)
 {
-	EvaluatePython(reason, filename, 0, "", 0, "", "", 0);
+	EvaluatePython(reason, filename, PyString, 0, "", 0, "", "", 0);
 }
 
 
@@ -2041,7 +2039,7 @@ PyDomoticz_log(PyObject *self, PyObject *args)
 	_log.Log((_eLogLevel)type, msg);
 	Py_INCREF(Py_None);
     return Py_None;
-	
+
 }
 
 static PyMethodDef DomoticzMethods[] = {
@@ -2062,10 +2060,11 @@ boost::python::dict toPythonDict(std::map<K, V> map) {
 	return dictionary;
 }
 
+
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
 
-void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
+void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const unsigned long long DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const unsigned long long varId)
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	//_log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
@@ -2086,7 +2085,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		PyObject* sys = PyImport_ImportModule("sys");
 		PyObject *path = PyObject_GetAttrString(sys, "path");
 		PyList_Append(path, PyString_FromString(python_Dir.c_str()));
-		
+
 		bool (CEventSystem::*ScheduleEventMethod)(std::string ID, const std::string &Action, const std::string &eventName) = &CEventSystem::ScheduleEvent;
 		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
 			.def("command", ScheduleEventMethod)
@@ -2106,7 +2105,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		//object alldevices = dict();
 		object devices = domoticz_module.attr("devices");
 		object domoticz_namespace = domoticz_module.attr("__dict__");
-		
+
 		domoticz_namespace["event_system"] = ptr(this);
 
 		main_namespace["changed_device_name"] = str(devname);
@@ -2129,8 +2128,8 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 			domoticz_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
 		}
 		devicestatesMutexLock1.unlock();
-		
-		
+
+
 		int intRise = getSunRiseSunSetMinutes("Sunrise");
 		int intSet = getSunRiseSunSetMinutes("Sunset");
 		time_t now = time(0);
@@ -2149,12 +2148,12 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		main_namespace["is_nighttime"] = nightTimeBool;
 		main_namespace["sunrise_in_minutes"] = intRise;
 		main_namespace["sunset_in_minutes"] = intSet;
-		
+
 		domoticz_namespace["is_daytime"] = dayTimeBool;
 		domoticz_namespace["is_nighttime"] = nightTimeBool;
 		domoticz_namespace["sunrise_in_minutes"] = intRise;
 		domoticz_namespace["sunset_in_minutes"] = intSet;
-		
+
 		//main_namespace["timeofday"] = ... 		// not sure how to set this
 
 
@@ -2170,7 +2169,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 			secstatusw = "Disarmed";
 		}
 		main_namespace["Security"] = secstatusw;*/
-		
+
 		// put variables in user_variables dict, but also in the namespace
 		object user_variables = dict();
 		{
@@ -2209,7 +2208,10 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		main_namespace["otherdevices_windspeed"] = toPythonDict(m_windspeedValuesByName);
 		main_namespace["otherdevices_windgust"] = toPythonDict(m_windgustValuesByName);
 
-		object ignored = exec_file(str(filename), main_namespace);
+		if(PyString.length() > 0)
+			exec(str(PyString), main_namespace);
+		else
+			object ignored = exec_file(str(filename), main_namespace);
 	} catch(...) {
 
 		PyObject *exc,*val,*tb;
@@ -2225,7 +2227,10 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 		std::string formatted_str = extract<std::string>(formatted);
 		//PyErr_Print();
 		PyErr_Clear();
-		_log.Log(LOG_ERROR, "%s",formatted_str.c_str());
+		if(PyString.length() > 0)
+			_log.Log(LOG_ERROR, "in event %s: %s", filename.c_str(), formatted_str.c_str());
+		else
+			_log.Log(LOG_ERROR, "%s",formatted_str.c_str());
 	}
 	fclose(PythonScriptFile);
 	//Py_Finalize();
@@ -2721,7 +2726,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 	else
 	{
-		report_errors(lua_state, status);
+		report_errors(lua_state, status, filename);
 		lua_close(lua_state);
 		return;
 	}
@@ -2762,9 +2767,9 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 {
 	int status;
-	
+
 	status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
-	report_errors(lua_state, status);
+	report_errors(lua_state, status, filename);
 
 	bool scriptTrue = false;
 	lua_getglobal(lua_state, "commandArray");
@@ -2777,7 +2782,7 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 	{
 		if (status == 0)
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Lua script did not return a commandArray");
+			_log.Log(LOG_ERROR, "EventSystem: Lua script %s did not return a commandArray", filename.c_str());
 		}
 	}
 
@@ -2819,7 +2824,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "EventSystem: commandArray should only return ['string']='actionstring' or [integer]={['string']='actionstring'}");
+			_log.Log(LOG_ERROR, "EventSystem: commandArray in script %s should only return ['string']='actionstring' or [integer]={['string']='actionstring'}", filename.c_str());
 		}
 		// removes 'value'; keeps 'key' for next iteration
 		lua_pop(lua_state, 1);
@@ -2915,7 +2920,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if (result.size() > 0)
 		{
 			std::vector<std::string> sd = result[0];
-			
+
 			variableValue = ProcessVariableArgument(variableValue);
 
 			if (afterTimerSeconds == 0)
@@ -2951,10 +2956,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 }
 
 
-void CEventSystem::report_errors(lua_State *L, int status)
+void CEventSystem::report_errors(lua_State *L, int status, std::string filename)
 {
 	if (status != 0) {
-		_log.Log(LOG_ERROR, "EventSystem: %s", lua_tostring(L, -1));
+		_log.Log(LOG_ERROR, "EventSystem: in %s: %s", filename.c_str(), lua_tostring(L, -1));
 		lua_pop(L, 1); // remove error message
 	}
 }
@@ -3083,7 +3088,7 @@ void CEventSystem::OpenURL(const std::string &URL)
 
 void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat)
 {
-	
+
 	if (devNameNoQuotes == "WriteToLogText")
 	{
 		_log.Log(LOG_STATUS, "%s", doWhat.c_str());

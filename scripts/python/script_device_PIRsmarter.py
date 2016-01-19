@@ -1,5 +1,6 @@
 import domoticz
 
+#print "test"
 # similar to http://www.domoticz.com/wiki/Smart_Lua_Scripts
 # name is PIR <options> <switch controlled>
 # options can be day/night/all
