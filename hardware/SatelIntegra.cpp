@@ -401,36 +401,38 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 
 		for (unsigned int index = 0; index < zonesCount; ++index)
 		{
-
-			byteNumber = index / 8;
-			bitNumber = index % 8;
-			violate = (buffer[byteNumber + 1] >> bitNumber) & 0x01;
-
-			if (firstTime)
+			if (!m_stoprequested)
 			{
-				m_LastHeartbeat = mytime(NULL);
+				byteNumber = index / 8;
+				bitNumber = index % 8;
+				violate = (buffer[byteNumber + 1] >> bitNumber) & 0x01;
 
-				unsigned char buffer[21];
+				if (firstTime)
+				{
+					m_LastHeartbeat = mytime(NULL);
+
+					unsigned char buffer[21];
 #ifdef DEBUG_SatelIntegra
-				_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d name", index + 1);
+					_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d name", index + 1);
 #endif
-				unsigned char cmd[3];
-				cmd[0] = 0xEE;
-				cmd[1] = 0x05;
-				cmd[2] = (unsigned char)(index + 1);
-				if (SendCommand(cmd, 3, buffer) > 0)
+					unsigned char cmd[3];
+					cmd[0] = 0xEE;
+					cmd[1] = 0x05;
+					cmd[2] = (unsigned char)(index + 1);
+					if (SendCommand(cmd, 3, buffer) > 0)
+					{
+						ReportZonesViolation(index + 1, violate);
+						UpdateZoneName(index + 1, &buffer[4], 1);
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed", index + 1);
+					}
+				}
+				else if (m_zonesLastState[index] != violate)
 				{
 					ReportZonesViolation(index + 1, violate);
-					UpdateZoneName(index + 1, &buffer[4], 1);
 				}
-				else
-				{
-					_log.Log(LOG_ERROR, "Satel Integra: Receive info about zone %d failed", index + 1);
-				}
-			}
-			else if (m_zonesLastState[index] != violate)
-			{
-				ReportZonesViolation(index + 1, violate);
 			}
 		}
 
@@ -465,7 +467,7 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 	}
 
 	for (unsigned int index = 0; index < zonesCount; ++index)
-		if (m_isTemperature[index])
+		if ((m_isTemperature[index]) && (!m_stoprequested))
 		{
 #ifdef DEBUG_SatelIntegra
 			_log.Log(LOG_STATUS, "Satel Integra: Reading zone %d temperature", index + 1);
@@ -542,50 +544,52 @@ bool SatelIntegra::ReadOutputsState(const bool firstTime)
 
 		for (unsigned int index = 0; index < outputsCount; ++index)
 		{
-			byteNumber = index / 8;
-			bitNumber = index % 8;
-			outputState = (buffer[byteNumber + 1] >> bitNumber) & 0x01;
-
-			if (firstTime)
+			if (!m_stoprequested)
 			{
-#ifdef DEBUG_SatelIntegra
-				_log.Log(LOG_STATUS, "Satel Integra: Reading output %d name", index + 1);
-#endif
-				unsigned char buffer[21];
-				unsigned char cmd[3];
-				cmd[0] = 0xEE;
-				cmd[1] = 0x04;
-				cmd[2] = (unsigned char)(index + 1);
-				if (SendCommand(cmd, 3, buffer) > 0)
+				byteNumber = index / 8;
+				bitNumber = index % 8;
+				outputState = (buffer[byteNumber + 1] >> bitNumber) & 0x01;
+
+				if (firstTime)
 				{
-					if (buffer[3] != 0x00)
+#ifdef DEBUG_SatelIntegra
+					_log.Log(LOG_STATUS, "Satel Integra: Reading output %d name", index + 1);
+#endif
+					unsigned char buffer[21];
+					unsigned char cmd[3];
+					cmd[0] = 0xEE;
+					cmd[1] = 0x04;
+					cmd[2] = (unsigned char)(index + 1);
+					if (SendCommand(cmd, 3, buffer) > 0)
 					{
-						if ((buffer[3] == 24) || (buffer[3] == 25) || (buffer[3] == 105) || (buffer[3] == 106) || // switch MONO, switch BI, roller blind up/down
-							((buffer[3] >= 64) && (buffer[3] <= 79)))  // DTMF
+						if (buffer[3] != 0x00)
 						{
-							m_isOutputSwitch[index] = true;
+							if ((buffer[3] == 24) || (buffer[3] == 25) || (buffer[3] == 105) || (buffer[3] == 106) || // switch MONO, switch BI, roller blind up/down
+								((buffer[3] >= 64) && (buffer[3] <= 79)))  // DTMF
+							{
+								m_isOutputSwitch[index] = true;
+							}
+							ReportOutputState(index + 1, outputState);
+							UpdateOutputName(index + 1, &buffer[4], m_isOutputSwitch[index]);
 						}
-						ReportOutputState(index + 1, outputState);
-						UpdateOutputName(index + 1, &buffer[4], m_isOutputSwitch[index]);
+						else
+						{
+#ifdef DEBUG_SatelIntegra
+							_log.Log(LOG_STATUS, "Satel Integra: output %d is not used", index + 1);
+#endif
+						}
 					}
 					else
 					{
-#ifdef DEBUG_SatelIntegra
-						_log.Log(LOG_STATUS, "Satel Integra: output %d is not used", index + 1);
-#endif
+						_log.Log(LOG_ERROR, "Satel Integra: Receive info about output %d failed", index);
 					}
 				}
-				else
+				else if (m_outputsLastState[index] != outputState)
 				{
-					_log.Log(LOG_ERROR, "Satel Integra: Receive info about output %d failed", index);
+					ReportOutputState(index + 1, outputState);
 				}
 			}
-			else if (m_outputsLastState[index] != outputState)
-			{
-				ReportOutputState(index + 1, outputState);
-			}
 		}
-
 	}
 	else
 	{
@@ -1082,6 +1086,12 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	}
 
 	int ret = recv(m_socket, (char*)&buffer, MAX_LENGTH_OF_ANSWER, 0);
+
+	if ((ret <= 0) || (ret >= MAX_LENGTH_OF_ANSWER)) 
+	{
+		_log.Log(LOG_STATUS, "Satel Integra: bad data length received");
+		return -1;
+	}
 
 	// remove special chars
 	int offset = 0;
