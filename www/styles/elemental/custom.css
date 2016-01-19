@@ -344,6 +344,7 @@ body table#mobileitem tr td:first-child{
 table#itemtablesmalldoubleicon .dimslider,
 table#itemtabledoubleicon .dimslider {
 	width: calc(98% - 118px) !important;
+	margin-top: 12px !important;
 }
 
 /* Mobile and Minimum Sizes */
