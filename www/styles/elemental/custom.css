@@ -86,7 +86,13 @@ body table#itemtabledoubleicon tr td:first-child + td{
 	white-space: nowrap;
 	color: #000000;
 }
-
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td{
+	font-size: 90%;
+	margin-top: 0px;
+	clear: both;
+	padding: 0px 5% 2px 5%;
+	line-height: 130%;
+}
 .navbar .nav {margin: 7.5px !important;}
 
 .navbar .divider-vertical {
