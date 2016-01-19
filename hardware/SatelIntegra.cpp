@@ -45,7 +45,7 @@ static Model models[TOT_MODELS] =
 
 #define MAX_LENGTH_OF_ANSWER 63 * 2 + 4 + 1
 
-const unsigned char partitions[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
+// const unsigned char allPartitions[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
 
 SatelIntegra::SatelIntegra(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode) :
 	m_modelIndex(-1),
@@ -154,9 +154,9 @@ void SatelIntegra::Do_Work()
 	if (GetInfo())
 	{
 
+		ReadZonesState(true);
 		ReadAlarm(true);
 		ReadArmState(true);
-		ReadZonesState(true);
 		ReadTemperatures(true);
 		ReadOutputsState(true);
 
@@ -522,7 +522,6 @@ bool SatelIntegra::ReadTemperatures(const bool firstTime)
 	return true;
 }
 
-
 bool SatelIntegra::ReadOutputsState(const bool firstTime)
 {
 	if (m_modelIndex == -1)
@@ -638,7 +637,7 @@ bool SatelIntegra::ReadArmState(const bool firstTime)
 					_log.Log(LOG_STATUS, "Satel Integra: partition %d not arm", index + 1);
 				}
 
-				ReportArmState(index, armed);
+				ReportArmState(index + 1, armed);
 			}
 		}
 	}
@@ -695,7 +694,6 @@ bool SatelIntegra::ReadAlarm(const bool firstTime)
 
 	return true;
 }
-
 
 void SatelIntegra::ReportZonesViolation(const unsigned long Idx, const bool violation)
 {
@@ -772,7 +770,6 @@ void SatelIntegra::ReportAlarm(const bool isAlarm)
 	m_sql.UpdateValue(m_HwdID, "Alarm", 2, pTypeGeneral, sTypeAlert, 12, 255, isAlarm ? 4 : 1, isAlarm ? "Alarm !" : "Normal", devname);
 }
 
-
 void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
 {
 	RBUF tsen;
@@ -795,44 +792,45 @@ void SatelIntegra::ReportTemperature(const unsigned long Idx, int temp)
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP, NULL, 255);
 }
 
-bool SatelIntegra::ArmPartitions(const unsigned char* partitions, const unsigned int mode)
+bool SatelIntegra::ArmPartitions(const unsigned int partition, const unsigned int mode)
 {
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: arming partitions");
+	_log.Log(LOG_STATUS, "Satel Integra: arming partition %d", partition);
 #endif
 	if (mode > 3)
 	{
-		_log.Log(LOG_ERROR, "Satel Integra: incorrect mode %d", mode);
+		_log.Log(LOG_ERROR, "Satel Integra: incorrect arm mode %d", mode);
 		return false;
 	}
 
 	unsigned char buffer[2];
 
-	unsigned char cmd[13];
+	unsigned char cmd[13] = { 0 };
 	cmd[0] = (unsigned char)(0x80 + mode); // arm in mode 0
 	for (unsigned int i = 0; i < 8; ++i)
 	{
 		cmd[i + 1] = m_userCode[i];
 	}
-	for (unsigned int i = 0; i < 4; ++i)
-	{
-		cmd[i + 9] = partitions[i];
-	}
+
+	unsigned char byteNumber = (partition - 1) / 8;
+	unsigned char bitNumber = (partition - 1) % 8;
+
+	cmd[byteNumber + 9] = 0x01 << bitNumber;
 
 	if (SendCommand(cmd, 13, buffer) == -1) // arm
 	{
-		_log.Log(LOG_ERROR, "Satel Integra: Send 'Arm' failed");
+		_log.Log(LOG_ERROR, "Satel Integra: Send 'Arm partition %d' failed", partition);
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "Satel Integra: System armed");
+	_log.Log(LOG_STATUS, "Satel Integra: Partition %d armed", partition);
 	return true;
 }
 
-bool SatelIntegra::DisarmPartitions(const unsigned char* partitions)
+bool SatelIntegra::DisarmPartitions(const unsigned int partition)
 {
 #ifdef DEBUG_SatelIntegra
-	_log.Log(LOG_STATUS, "Satel Integra: disarming partitions");
+	_log.Log(LOG_STATUS, "Satel Integra: disarming partition %d", partition);
 #endif
 
 	unsigned char buffer[2];
@@ -843,18 +841,19 @@ bool SatelIntegra::DisarmPartitions(const unsigned char* partitions)
 	{
 		cmd[i + 1] = m_userCode[i];
 	}
-	for (unsigned int i = 0; i < 4; ++i)
-	{
-		cmd[i + 9] = partitions[i];
-	}
+
+	unsigned char byteNumber = (partition - 1) / 8;
+	unsigned char bitNumber = (partition - 1) % 8;
+
+	cmd[byteNumber + 9] = 0x01 << bitNumber;
 
 	if (SendCommand(cmd, 13, buffer) == -1) // disarm
 	{
-		_log.Log(LOG_ERROR, "Satel Integra: Send 'Disarm' failed");
+		_log.Log(LOG_ERROR, "Satel Integra: Send 'Disarm partition %d' failed", partition);
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "Satel Integra: System disarmed");
+	_log.Log(LOG_STATUS, "Satel Integra: Partition %d disarmed", partition);
 	return true;
 }
 
@@ -869,11 +868,11 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 		{
 			if (general->cmnd == gswitch_sOn)
 			{
-				return ArmPartitions(partitions);
+				return ArmPartitions(general->id);
 			}
 			else
 			{
-				return DisarmPartitions(partitions);
+				return DisarmPartitions(general->id);
 			}
 		}
 		else if (general->unitcode == 1) // outputs
@@ -1012,31 +1011,21 @@ void SatelIntegra::UpdateAlarmAndArmName()
 		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Alarm' WHERE (HardwareID==%d) AND (DeviceID=='Alarm') AND (Unit=2)", m_HwdID);
 	}
 
-//	// Arm
-//	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='00000000') AND (Name=='Arm all') AND (Unit=2)", m_HwdID);
-//	if (result.size() < 1)
-//	{
-//		//Assign name for Arm
-//#ifdef DEBUG_SatelIntegra
-//		_log.Log(LOG_STATUS, "Satel Integra: update Arm name for to 'Arm all'");
-//#endif
-//		result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm all' WHERE (HardwareID==%d) AND (DeviceID=='00000000') AND (Unit=2)", m_HwdID);
-//	}
-
+	//Arm
 	for (unsigned int i = 0; i< 32; ++i)
 	{
 		if (m_isPartitions[i])
 		{
 			char szTmp[10];
-			sprintf(szTmp, "%08X", (unsigned int)i);
-			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Arm %d partition') AND (Unit=2)", m_HwdID, szTmp, i);
+			sprintf(szTmp, "%08X", (unsigned int)i+1);
+			result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Arm %d partition') AND (Unit=2)", m_HwdID, szTmp, i+1);
 			if (result.size() < 1)
 			{
 				//Assign name for Arm
 #ifdef DEBUG_SatelIntegra
-				_log.Log(LOG_STATUS, "Satel Integra: update Arm name for to 'Arm %d partition'", i);
+				_log.Log(LOG_STATUS, "Satel Integra: update Arm name to 'Arm %d partition'", i+1);
 #endif
-				result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", i, m_HwdID, szTmp);
+				result = m_sql.safe_query("UPDATE DeviceStatus SET Name='Arm %d partition' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit=2)", i+1, m_HwdID, szTmp);
 			}
 		}
 	}
@@ -1089,6 +1078,7 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	if (send(m_socket, (const char*)cmdPayload.first, cmdPayload.second, 0) < 0)
 	{
 		_log.Log(LOG_ERROR, "Satel Integra: Send command '%02X' failed", cmdPayload.first[2]);
+		DestroySocket();
 		delete [] cmdPayload.first;
 		return -1;
 	}

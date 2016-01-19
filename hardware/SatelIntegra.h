@@ -86,9 +86,9 @@ private:
 	// Reports temperatures to domoticz
 	void ReportTemperature(const unsigned long Idx, int temp);
 	// arms given partitions
-	bool ArmPartitions(const unsigned char* partitions, const unsigned int mode = 0);
+	bool ArmPartitions(const unsigned int  partition, const unsigned int mode = 0);
 	// disarms given partitions
-	bool DisarmPartitions(const unsigned char* partitions);
+	bool DisarmPartitions(const unsigned int partition);
 
 	std::pair<unsigned char*, unsigned int> getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength);
 	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer);
