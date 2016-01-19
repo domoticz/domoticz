@@ -50,22 +50,17 @@ devices = {}
 device = None
 
 
-def do():
-	print "lalalal"
-
 testing = False
 commands = []
 
 event_sytem = None # will be filled in by domoticz
 def command(name, action, file):
 	if testing:
-		print "COMMAND", name, action
 		commands.append((name, action))
 	else:
 		event_system.command(name, action, file)
 
 def process_commands():
-	#print "processing commands"
 	for name, action in commands:
 		device = devices[name]
 		if action == "On":
