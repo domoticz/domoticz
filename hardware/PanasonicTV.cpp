@@ -300,7 +300,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	catch (std::exception& e)
 	{
 		socket.close();
-		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Exception in Write/Read message: %s", m_Name.c_str(), e.what());
+		//_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Exception in Write/Read message: %s", m_Name.c_str(), e.what());
 		std::string error = "ERROR";
 		return error;
 	}
@@ -556,8 +556,8 @@ void CPanasonicNode::SendCommand(const std::string command)
 	{
 		if (handleWriteAndRead(sPanasonicCall) != "ERROR")
 			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Sent command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
-		else
-			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
+		//else
+		//	_log.Log(LOG_NORM, "Panasonic Plugin: (%s) can't send command: '%s'.", m_Name.c_str(), sPanasonicCall.c_str());
 	}
 	
 }
