@@ -45,9 +45,9 @@ public:
 	CPanasonicNode(const int, const int, const int, const std::string&, const std::string&, const std::string&, const std::string&);
 	~CPanasonicNode(void);
 	void			Do_Work();
-	void			SendCommand(const std::string&);
-	void			SendCommand(const std::string&, const int iValue);
-	void			SetExecuteCommand(const std::string& command);
+	void			SendCommand(const std::string);
+	void			SendCommand(const std::string, const int iValue);
+	void			SetExecuteCommand(const std::string command);
 	bool			SendShutdown();
 	void			StopRequest() { m_stoprequested = true; };
 	bool			IsBusy() { return m_Busy; };
@@ -64,8 +64,8 @@ protected:
 
 private:
 	bool			handleConnect(boost::asio::ip::tcp::socket&, boost::asio::ip::tcp::endpoint, boost::system::error_code&);
-	std::string		handleWriteAndRead(std::string&);
-	int				handleMessage(std::string&);
+	std::string		handleWriteAndRead(std::string);
+	int				handleMessage(std::string);
 	std::string		buildXMLStringRendCtl(std::string, std::string);
 	std::string		buildXMLStringRendCtl(std::string, std::string, std::string);
 	std::string		buildXMLStringNetCtl(std::string);
