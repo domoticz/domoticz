@@ -159,9 +159,11 @@ images/Fan.png
 images/Fan48_Off.png
 images/Fan48_On.png
 images/favorite.png
+images/fibarolink.png
 images/Fireplace.png
 images/Fireplace48_Off.png
 images/Fireplace48_On.png
+images/floorplan.png
 images/forward_disabled.png
 images/forward_enabled.png
 images/forward_enabled_hover.png
@@ -185,6 +187,7 @@ images/Heating48_On.png
 images/hold.png
 images/hold_mini.png
 images/house.png
+images/http.png
 images/ice.png
 images/insert.png
 images/iphone-icon.png
@@ -210,6 +213,7 @@ images/mode.png
 images/mode48.png
 images/moisture.png
 images/moisture48.png
+images/more.png
 images/motion.png
 images/motion48-off.png
 images/motion48-on.png
@@ -262,11 +266,13 @@ images/restart.png
 images/RGB.png
 images/RGB48_Off.png
 images/RGB48_On.png
+images/roomplan.png
 images/scale.png
 images/scale48.png
 images/scenes.png
 images/security.png
 images/security48.png
+images/settings.png
 images/setup.png
 images/shutdown.png
 images/siren.png
@@ -305,6 +311,7 @@ images/unknown.png
 images/up.png
 images/Up48.png
 images/Up48_2.png
+images/update.png
 images/users.png
 images/utility.png
 images/uv.png
