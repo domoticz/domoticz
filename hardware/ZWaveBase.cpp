@@ -373,11 +373,11 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		// Now check the values
 		if (level == 0)
 			lcmd.LIGHTING2.cmnd = light2_sOff;
-		else if (level == 255)
+		else if ((level == 255) && (pDevice->devType == ZDTYPE_SWITCH_NORMAL))
 			lcmd.LIGHTING2.cmnd = light2_sOn;
 		else
 		{
-			level = (level > 99) ? 99 : level;
+			level = (level > 99) ? 100 : level;
 			lcmd.LIGHTING2.cmnd = light2_sSetLevel;
 		}
 
