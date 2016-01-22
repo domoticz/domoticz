@@ -15,11 +15,13 @@ CNotificationPushover::~CNotificationPushover()
 
 bool CNotificationPushover::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 {
+	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
+
 	bool bRet;
 	std::string sResult;
 	std::stringstream sPostData;
 
-	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << Subject << "&message=" << Text;
+	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << cSubject << "&message=" << Text;
 
 	size_t posDevice = ExtraData.find("|Device=");
 	if (posDevice != std::string::npos) {

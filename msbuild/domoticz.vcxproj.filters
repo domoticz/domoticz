@@ -387,6 +387,9 @@
     <Filter Include="www\views">
       <UniqueIdentifier>{59523cae-1093-486a-9c2b-9f939ce7e8d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\CurrentCost">
+      <UniqueIdentifier>{44396f52-871f-4e10-831e-2ddeb202fbbd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1765,17 +1768,17 @@
     <ClInclude Include="..\hardware\SolarEdgeAPI.h">
       <Filter>Devices\SolarEdge</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\NefitEasy.h">
       <Filter>Devices\Nefit-Easy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterBase.h">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterTCP.h">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CurrentCostMeterSerial.h">
+      <Filter>Devices\CurrentCost</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2247,15 +2250,6 @@
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp">
       <Filter>Devices\SolarEdge</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\NefitEasy.cpp">
       <Filter>Devices\Nefit-Easy</Filter>
     </ClCompile>
@@ -2306,6 +2300,15 @@
     </ClCompile>
     <ClCompile Include="..\tinyxpath\xpath_syntax.cpp">
       <Filter>tinyxpath</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp">
+      <Filter>Devices\CurrentCost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp">
+      <Filter>Devices\CurrentCost</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
