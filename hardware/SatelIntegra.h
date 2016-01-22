@@ -90,6 +90,9 @@ private:
 	// disarms given partitions
 	bool DisarmPartitions(const unsigned int partition);
 
+	// convert string from iso to utf8
+	std::string ISO2UTF8(const std::string &name);
+
 	std::pair<unsigned char*, unsigned int> getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength);
 	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer);
 };

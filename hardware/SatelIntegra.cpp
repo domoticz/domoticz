@@ -917,6 +917,33 @@ bool SatelIntegra::WriteToHardware(const char *pdata, const unsigned char length
 	return false;
 }
 
+std::string SatelIntegra::ISO2UTF8(const std::string &name)
+{
+	char cp1250[] = "\xB9\xE6\xEA\xB3\xF1\xF3\x9C\x9F\xBF\xA5\xC6\xCA\xA3\xD1\xD3\x8C\x8F\xAF";
+	char utf8[] = "\xC4\x85\xC4\x87\xC4\x99\xC5\x82\xC5\x84\xC3\xB3\xC5\x9B\xC5\xBA\xC5\xBC\xC4\x84\xC4\x86\xC4\x98\xC5\x81\xC5\x83\xC3\x93\xC5\x9A\xC5\xB9\xC5\xBB";
+
+	std::string UTF8Name;
+	for (int i = 0; i < name.length(); ++i)
+	{
+		bool changed = false;
+		for (int j = 0; j < sizeof(cp1250); ++j)
+		{
+			if (name[i] == cp1250[j])
+			{
+				UTF8Name += utf8[j * 2];
+				UTF8Name += utf8[j * 2 + 1];
+				changed = true;
+				break;
+			}
+		}
+		if (!changed)
+		{
+			UTF8Name += name[i];
+		}
+	}
+	return UTF8Name;
+}
+
 void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* name, const unsigned int partition)
 {
 	std::vector<std::vector<std::string> > result;
@@ -927,6 +954,7 @@ void SatelIntegra::UpdateZoneName(const unsigned int Idx, const unsigned char* n
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
+	shortName = ISO2UTF8(shortName);
 
 	std::string namePrefix = "Zone";
 	if (shortName.find("ATD100") != std::string::npos)
@@ -956,6 +984,7 @@ void SatelIntegra::UpdateTempName(const unsigned int Idx, const unsigned char* n
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
+	shortName = ISO2UTF8(shortName);
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Temp:%q') AND (Unit=0)", m_HwdID, szTmp, shortName.c_str());
 	if (result.size() < 1)
@@ -978,6 +1007,7 @@ void SatelIntegra::UpdateOutputName(const unsigned int Idx, const unsigned char*
 	std::string shortName((char*)name, 16);
 	std::string::size_type pos = shortName.find_last_not_of(' ');
 	shortName.erase(pos + 1);
+	shortName = ISO2UTF8(shortName);
 
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Name=='Output:%q') AND (Unit=1)", m_HwdID, szTmp, shortName.c_str());
 	if (result.size() < 1)
